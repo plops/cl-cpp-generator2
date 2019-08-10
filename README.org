@@ -1,9 +1,14 @@
 * Goal
 
 The purpose of this Lisp package is to bring the power of Common Lisp
-macros to swift development.
+macros to languages of that look like C or C++. This code generator is
+an incompatible successor to cl-cpp-generator. I add improvements in
+the semantics that I discovered when implementing
+cl-py-generator. Most notably Common Lisp style type declarations,
+Common Lisp style operator names (incf, logior, and) and implicit
+function calls.
 
-This is the ninth in a series of code generators.
+This is the tenth in a series of code generators.
 
 - https://github.com/plops/cl-cpp-generator I tried this generator
   with C/C++/ISPC/OpenCL/Cuda. It was my first attempt. The largest
@@ -65,28 +70,19 @@ This is the ninth in a series of code generators.
   Common Lisp directly wouldn't be the better approach.
 
 
-* Install swift in Arch Linux
+- https://github.com/plops/cl-kotlin-generator Write Android apps. I
+  implemented a sufficiently large range of examples and I am
+  confident that this code generator can be useful. I don't plan to
+  write any Android apps right now, though.
 
-#+BEGIN_EXAMPLE
-aurman -S swift-bin
-#+END_EXAMPLE
+- https://github.com/plops/cl-swift-generator (abandoned for now)
+  Fueled by the success with the kotlin generator I started
+  this. However, I don't have access to xcode and iphone and currently
+  no interest. So this is on hold.
+
   
-
-
-* Examples
-
-|    | comment                                                                                                 |
-|----+---------------------------------------------------------------------------------------------------------|
-| 01 | define layout in xml for a few buttons and some kotlin handlers (based on Big Nerd Ranch quiz_activity) |
-|    |                                                                                                         |
-
-* Developing the first example 
-
 
 
 * References
 
-
-* References (Library Books)
-
-** Learning Swift
+- https://github.com/plops/cl-cpp-generator
