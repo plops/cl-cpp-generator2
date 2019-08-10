@@ -1,6 +1,6 @@
-(defpackage :cl-swift-generator
+(defpackage :cl-cpp-generator2
   (:use :cl
 	:alexandria)
   (:export
    #:write-source
-   #:emit-swift))
+   #:emit-c))

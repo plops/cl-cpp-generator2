@@ -1,12 +1,12 @@
 
 #-nil
 (progn (ql:quickload "alexandria")
-       (defpackage :cl-swift-generator
+       (defpackage :cl-cpp-generator2
 	 (:use :cl
 	       :alexandria)
 	 (:export
 	  #:write-source)))
-(in-package :cl-swift-generator)
+(in-package :cl-cpp-generator2)
 
 (setf (readtable-case *readtable*) :invert)
 
@@ -16,7 +16,7 @@
 				 ignore-hash)
   (let* ((fn (merge-pathnames (format nil "~a.kt" name)
 			      dir))
-	(code-str (emit-swift
+	(code-str (emit-c
 		   :code code))
 	(fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
@@ -31,13 +31,8 @@
 			  :if-exists :supersede
 			  :if-does-not-exist :create)
 	 (write-sequence code-str s))
-
-       ;; FIXME: need to get swift-format
-       #+nil
-       (sb-ext:run-program
-	"/home/martin/Downloads/ktlint"
-	(list "-F"  (namestring fn))
-	)))))
+       (sb-ext:run-program "/usr/bin/clang-format"
+			   (list "-i"  (namestring fn)))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
 ;; http://clhs.lisp.se/Body/d_type.htm
@@ -179,18 +174,6 @@ entry return-values contains a list of return values"
 			(car r))))
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
 
-
-
-
-
-
-
-
-
-
-
-
-
 (defun print-sufficient-digits-f64 (f)
   "print a double floating point number as a string with a given nr. of
   digits. parse it again and increase nr. of digits until the same bit
@@ -203,14 +186,12 @@ entry return-values contains a list of return values"
 		       (read-from-string s)))
 	       1d-12))
    (substitute #\e #\d s)))
-
-			  
 			  
 (progn
-  (defun emit-kt (&key code (str nil)  (level 0))
+  (defun emit-c (&key code (str nil)  (level 0))
     (flet ((emit (code &optional (dl 0))
 	     "change the indentation level. this is used in do"
-	     (emit-kt :code code :level (+ dl level))))
+	     (emit-c :code code :level (+ dl level))))
       (if code
 	  (if (listp code)
 	      (case (car code)
@@ -436,39 +417,8 @@ entry return-values contains a list of return values"
   #+nil(progn
    (defparameter *bla*
      (emit-kt :code `(do0
-		      (package com.example.firstgame)
-		      (import android.content.Intent
-			      android.os.Bundle
-			      androidx.appcompat.app.AppCompatActivity
-			      android.util.Log.d
-			      kotlinx.android.synthetic.main.activity_main.*
-			      kotlinx.android.synthetic.main.content_main.*
-			      )
-		      (defclass FriendsAdapter ((RecyclerView.Adapter<FriendsAdapter.ViewHolder>))
-			(override (defun onCreateViewHolder (parent viewType)
-				    (declare (type ViewGroup parent)
-					     (type int viewType)
-					     (values ViewHolder))
-				    (let ((view (dot
-						 (LayoutInflater.from
-						  parent.context)
-						 (inflate R.layout.row_friend
-							  parent
-							  false))))
-				      (return (ViewHolder view)))))
-		       
-			)
-		      (defclass MainActivity ((AppCompatActivity))
-			(override (defun onCreate (savedInstanceState)
-				    (declare (type Bundle? savedInstanceState))
-				    (super.onCreate savedInstanceState)
-				    (setContentView R.layout.activity_main)
-				    (setSupportActionBar toolbar)
-				    ))
-			)
 		      )))
    (format t "~a" *bla*)))
-
 
 #+nil((ntuple (let ((args (cdr code)))
 			   (format nil "~{~a~^, ~}" (mapcar #'emit args))))
