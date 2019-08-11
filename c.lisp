@@ -250,7 +250,7 @@ entry return-values contains a list of return values"
 				(emit `(comma parents))
 				(emit `(progn ,@body))
 				)))
-		(protected (format nil "protected ~a" (emit (cadr code))))
+ 		(protected (format nil "protected ~a" (emit (cadr code))))
 		(public (format nil "public ~a" (emit (cadr code))))
 		(defun (parse-defun code #'emit))
 		(return (format nil "return ~a" (emit (car (cdr code)))))
@@ -360,29 +360,41 @@ entry return-values contains a list of return values"
 		    (destructuring-bind (keyform &rest clauses)
 			(cdr code)
 		      (format
-		       nil "when(~a) ~a"
+		       nil "switch(~a) ~a"
 		       (emit keyform)
 			     (emit
 			      `(progn
 				 ,@(loop for c in clauses collect
 					(destructuring-bind (key &rest forms) c
 					  (if (eq key t)
-					      (format nil "else -> ~a"
+					      (format nil "default: ~a"
 						      (emit
 						       `(do0
 							 ,@(mapcar #'emit
 								   forms))))
-					      (format nil "~a -> ~a"
+					      (format nil "~a: ~a"
 						      (emit key)
 						      (emit
 						       `(do0
 							 ,@(mapcar #'emit
 								   forms))))))))))))
-		(for (destructuring-bind ((item collection) &rest body) (cdr code)
-		       (format nil "for (~a in ~a) ~a"
+		(for (destructuring-bind ((start end iter) &rest body) (cdr code)
+		       (format nil "for (~a;~a;~a) ~a"
+			       (emit start)
+			       (emit end)
+			       (emit iter)
+			       (emit `(progn ,@body)))))
+		(dotimes (destructuring-bind ((i n) &rest body) (cdr code)
+			   (emit `(for ((setf ,(emit i) 0)
+					(< ,(emit i) ,(emit n))
+					(incf ,(emit i)))
+				       ,@body))))
+		(foreach (destructuring-bind ((item collection) &rest body) (cdr code)
+		       (format nil "for (auto& ~a : ~a) ~a"
 			       (emit item)
 			       (emit collection)
 			       (emit `(progn ,@body)))))
+		
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
