@@ -195,18 +195,23 @@ entry return-values contains a list of return values"
       (if code
 	  (if (listp code)
 	      (case (car code)
+		(comma
+		 ;; comma {args}*
+		 (let ((args (cdr code)))
+		   (format nil "~{~a~^, ~}" (mapcar #'emit args))))
 		(paren
 		 ;; paren {args}*
 		 (let ((args (cdr code)))
-		   (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
+		   (format nil "(~a)" (emit `(comma ,args)))))
 		(bracket
 		 ;; bracket {args}*
 		 (let ((args (cdr code)))
-		   (format nil "[~{~a~^, ~}]" (mapcar #'emit args))))
+		   (format nil "[~a]" (emit `(comma ,args)))
+		   ))
 		(curly
 		 ;; curly {args}*
 		 (let ((args (cdr code)))
-		   (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
+		   (format nil "{~a}" (emit `(comma ,args)))))
 		(indent
 		 ;; indent form
 		 (format nil "~{~a~}~a"
