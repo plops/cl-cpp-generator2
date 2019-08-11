@@ -254,6 +254,7 @@ entry return-values contains a list of return values"
 		(public (format nil "public ~a" (emit (cadr code))))
 		(defun (parse-defun code #'emit))
 		(return (format nil "return ~a" (emit (car (cdr code)))))
+		
 		(let (parse-let code #'emit))
 		(setf 
 		 (let ((args (cdr code)))
@@ -318,6 +319,7 @@ entry return-values contains a list of return values"
 			    (format nil "(~a)--" (emit a)))))
 		(string (format nil "\"~a\"" (cadr code)))
 		(char (format nil "'~a'" (cadr code)))
+		
 		(if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 		      (with-output-to-string (s)
 			(format s "if ( ~a ) ~a"
@@ -351,8 +353,7 @@ entry return-values contains a list of return values"
 		       ;(format nil "~{~a~^.~}" (mapcar #'emit args))
 		       ))
 		(lambda (parse-lambda code #'emit))
-		(as (let ((args (cdr code)))
-		      (format nil "~a as ~a" (emit (car args)) (emit (cadr args)))))
+		
 		(case
 		    ;; case keyform {normal-clause}* [otherwise-clause]
 		    ;; normal-clause::= (keys form*) 
@@ -403,6 +404,13 @@ entry return-values contains a list of return values"
 				    (emit condition)
 				    (emit `(progn ,@body)))
 			    ))
+		(deftype
+		    ;; deftype name lambda-list {form}*
+		    ;; only the first form of the body is used, lambda list is ignored
+		    (destructuring-bind (name lambda-list &rest body) (cdr code)
+		      (declare (ignore lambda-list))
+		      (format nil "typedef ~a ~a" (emit (car body)) name)))
+		(struct (format nil "struct ~a" (emit (car (cdr code)))))
 		(defstruct0
 		 ;; defstruct without init-form
 		 ;; defstruct name {slot-description}*
@@ -416,7 +424,7 @@ entry return-values contains a list of return values"
 		 ;; C++, execept if you overload the struct name with
 		 ;; a function:
 		 
-		 ;; typedef struct Address 
+		 ;; struct 
 		 ;; { 
 		 ;;    char name[50]; 
 		 ;;    char street[100]; 
@@ -424,18 +432,21 @@ entry return-values contains a list of return values"
 		 ;;    char state[20]; 
 		 ;;    int pin; 
 		 ;; } Address;
+		 ;; typedef struct Address Address;
 		 ;; int Address(int b){ ...}
 		 
 		 ;; https://stackoverflow.com/questions/1675351/typedef-struct-vs-struct-definitions
 		 (destructuring-bind (name &rest slot-descriptions) (cdr code)
-		   (format nil "typedef struct ~a ~a ~a"
-			   name
-			   (emit
-			    `(progn
-			       ,@(loop for desc in slot-descriptions collect
-				      (destructuring-bind (slot-name &optional type) desc
-					(format nil "~a~@[ ~a~]" slot-name type)))))
-			   name)))
+		   (format nil "~a"
+			   (emit `(do0
+				   ,(format nil "struct ~a ~a"
+					    name
+					    (emit
+					     `(progn
+						,@(loop for desc in slot-descriptions collect
+						       (destructuring-bind (slot-name &optional type) desc
+							 (format nil "~a~@[ ~a~]" slot-name type))))))
+				   (deftype ,name (struct ,name)))))))
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
