@@ -411,24 +411,31 @@ entry return-values contains a list of return values"
 		 ;; a slot-name without type can be used to create a
 		 ;; composed type with a struct embedding
 		 
+		 ;; i think i should use this pattern that works in C
+		 ;; and in C++. Typedef isn't strictly necessary in
+		 ;; C++, execept if you overload the struct name with
+		 ;; a function:
 		 
-		 ;; struct address 
+		 ;; typedef struct Address 
 		 ;; { 
 		 ;;    char name[50]; 
 		 ;;    char street[100]; 
 		 ;;    char city[50]; 
 		 ;;    char state[20]; 
 		 ;;    int pin; 
-		 ;; };
-
-			  (destructuring-bind (name &rest slot-descriptions) (cdr code)
-			    (format nil "typedef ~a struct ~a"
-				    name
-				    (emit
-				     `(progn
-					,@(loop for desc in slot-descriptions collect
-					       (destructuring-bind (slot-name &optional type) desc
-						 (format nil "~a~@[ ~a~]" slot-name type))))))))
+		 ;; } Address;
+		 ;; int Address(int b){ ...}
+		 
+		 ;; https://stackoverflow.com/questions/1675351/typedef-struct-vs-struct-definitions
+		 (destructuring-bind (name &rest slot-descriptions) (cdr code)
+		   (format nil "typedef struct ~a ~a ~a"
+			   name
+			   (emit
+			    `(progn
+			       ,@(loop for desc in slot-descriptions collect
+				      (destructuring-bind (slot-name &optional type) desc
+					(format nil "~a~@[ ~a~]" slot-name type)))))
+			   name)))
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
