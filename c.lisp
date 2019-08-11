@@ -86,9 +86,8 @@ entry return-values contains a list of return values"
   "get the type of a variable from an environment"
   (gethash name env))
 
-(defun parse-let (code emit style)
+(defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
-  ;; style can be val or var
   (destructuring-bind (decls &rest body) (cdr code)
     (multiple-value-bind (body env) (consume-declare body)
       (with-output-to-string (s)
@@ -98,21 +97,21 @@ entry return-values contains a list of return values"
 			  ,@(loop for decl in decls collect
 				 (if (listp decl) ;; split into name and initform
 				     (destructuring-bind (name &optional value) decl
-				       (format nil "~a ~a~@[: ~a~]~@[ = ~a~]"
-					       style
-					       (funcall emit name)
+				       (format nil "~a ~a ~@[ = ~a~];"
 					       (let ((type (lookup-type name :env env)))
 						 (if type
 						     (funcall emit type)
-						     type))
+						     "auto"))
+					       (funcall emit name)
 					       (funcall emit value)))
-				     (format nil "~a ~a: ~a"
-					     style
-					     decl
+				     (format nil "~a ~a"
 					     (let ((type (lookup-type decl :env env)))
 					       (if type
 						   (funcall emit type)
-						   (break "type ~a not defined." decl))))))
+						   "auto"
+					;(break "type ~a not defined." decl)
+						   ))
+					     decl)))
 			  ,@body)))))))
 
 (defun parse-defun (code emit)
@@ -252,7 +251,6 @@ entry return-values contains a list of return values"
 				(emit `(comma parents))
 				(emit `(progn ,@body))
 				)))
-		(override (format nil "override ~a" (emit (cadr code))))
 		(protected (format nil "protected ~a" (emit (cadr code))))
 		(public (format nil "public ~a" (emit (cadr code))))
 		(defun (parse-defun code #'emit))
