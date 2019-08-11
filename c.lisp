@@ -115,11 +115,7 @@ entry return-values contains a list of return values"
 			  ,@body)))))))
 
 (defun parse-defun (code emit)
-  ;;  defun function-name lambda-list [declaration*] form*
-  ;; https://kotlinlang.org/docs/reference/basic-syntax.html
-  ;; fun onCreate(savedInstanceState: Bundle?) { .. }
-  ;; fun sum(a: Int, b: Int): Int { .. }
-  
+  ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
@@ -129,21 +125,24 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "fun ~a~a~@[: ~a ~]"
+	  (format s "~a ~a ~a"
+		  (let ((r (gethash 'return-values env)))
+		    (if (< 1 (length r))
+					;(funcall emit `(paren ,@r))
+			(break "multiple return values unsupported: ~a"
+			       r)
+			(car r)))
 		  name
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect
-					 (format nil "~a~@[: ~a~]"
-						 p
+					 (format nil "~a ~a"
 						 (let ((type (gethash p env)))
 						   (if type
 						       type
-						       #+nil (break "can't find type for ~a in defun"
-							      p)))))))
-		  (let ((r (gethash 'return-values env)))
-		    (if (< 1 (length r))
-			(funcall emit `(paren ,@r))
-			(car r))))
+						       (break "can't find type for ~a in defun"
+							      p)))
+						 p
+						 )))))
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
 
 (defun parse-lambda (code emit)
@@ -255,8 +254,7 @@ entry return-values contains a list of return values"
 		(public (format nil "public ~a" (emit (cadr code))))
 		(defun (parse-defun code #'emit))
 		(return (format nil "return ~a" (emit (car (cdr code)))))
-		(let (parse-let code #'emit 'val))
-		(let-var (parse-let code #'emit 'var))
+		(let (parse-let code #'emit))
 		(setf 
 		 (let ((args (cdr code)))
 		   ;; "setf {pair}*"
