@@ -245,11 +245,11 @@ entry return-values contains a list of return values"
 		      (format s "~{~&~a;~}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
 		(defclass
 		      ;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
-		      
+		      ;; class TA : public Faculty, public Student { ... } 
 		      (destructuring-bind (name parents &rest body) (cdr code)
-			(format nil "class ~a : ~{~a~^,~} ~a"
+			(format nil "class ~a ~@[: ~a~] ~a"
 				(emit name)
-				(mapcar #'emit parents)
+				(emit `(comma parents))
 				(emit `(progn ,@body))
 				)))
 		(override (format nil "override ~a" (emit (cadr code))))
