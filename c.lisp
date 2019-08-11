@@ -385,14 +385,11 @@ entry return-values contains a list of return values"
 			       (emit item)
 			       (emit collection)
 			       (emit `(progn ,@body)))))
-		(while
-			  ;; while condition {forms}*
-			  
-			  (destructuring-bind (condition &rest body) (cdr code)
-			    (format nil "while (~a) ~a"
-				    (emit condition)
-				    (emit `(progn ,@body)))
-			    ))
+		(while  ;; while condition {forms}*
+		    (destructuring-bind (condition &rest body) (cdr code)
+		      (format nil "while (~a) ~a"
+			      (emit condition)
+			      (emit `(progn ,@body)))))
 		(deftype
 		    ;; deftype name lambda-list {form}*
 		    ;; only the first form of the body is used, lambda list is ignored
@@ -454,10 +451,6 @@ entry return-values contains a list of return values"
 				 (eq (aref (format nil "~a" (car args)) 0) #\.))
 			   #+nil (format nil "~a~a" name
 					 (emit args))
-
-
-			   
-			   
 			   (format nil "~a~a" name
 				   (emit `(paren ,@args))))))))
 	      (cond
