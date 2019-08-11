@@ -337,21 +337,10 @@ entry return-values contains a list of return values"
 				     (do0
 				      ,@forms)))))
 		(aref (destructuring-bind (name &rest indices) (cdr code)
-			      (format nil "~a[~{~a~^,~}]" (emit name) (mapcar #'emit indices))))
+		      (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
 		(dot (let ((args (cdr code)))
-		       ;; special case: when a single ? is observed, dont print point
-		       (with-output-to-string (s)
-			 (loop for i below (length args) do
-			      (format s "~a" (emit (elt args i)))
-			      (unless (or (and
-					   (< (+ i 1) (length args))
-					   (or (eq (elt args (+ i 1)) '?)
-					       (and (listp (elt args (+ i 1)))
-						(eq (car (elt args (+ i 1))) 'progn))))
-					  (eq i (1- (length args))))
-				(format s "."))))
-		       ;(format nil "~{~a~^.~}" (mapcar #'emit args))
-		       ))
+		       (format nil "~{~a~^.~}" (mapcar #'emit args))))
+		
 		(lambda (parse-lambda code #'emit))
 		
 		(case
