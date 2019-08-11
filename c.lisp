@@ -317,6 +317,7 @@ entry return-values contains a list of return values"
 			    (format nil "(~a)-=(~a)" (emit a) (emit b))
 			    (format nil "(~a)--" (emit a)))))
 		(string (format nil "\"~a\"" (cadr code)))
+		(char (format nil "'~a'" (cadr code)))
 		(if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 		      (with-output-to-string (s)
 			(format s "if ( ~a ) ~a"
@@ -379,7 +380,7 @@ entry return-values contains a list of return values"
 							 ,@(mapcar #'emit
 								   forms))))))))))))
 		(for (destructuring-bind ((start end iter) &rest body) (cdr code)
-		       (format nil "for (~a;~a;~a) ~a"
+		       (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
 			       (emit start)
 			       (emit end)
 			       (emit iter)
@@ -394,7 +395,40 @@ entry return-values contains a list of return values"
 			       (emit item)
 			       (emit collection)
 			       (emit `(progn ,@body)))))
-		
+		(while
+			  ;; while condition {forms}*
+			  
+			  (destructuring-bind (condition &rest body) (cdr code)
+			    (format nil "while (~a) ~a"
+				    (emit condition)
+				    (emit `(progn ,@body)))
+			    ))
+		(defstruct0
+		 ;; defstruct without init-form
+		 ;; defstruct name {slot-description}*
+		 ;; slot-description::= slot-name | (slot-name [slot-type])
+		 
+		 ;; a slot-name without type can be used to create a
+		 ;; composed type with a struct embedding
+		 
+		 
+		 ;; struct address 
+		 ;; { 
+		 ;;    char name[50]; 
+		 ;;    char street[100]; 
+		 ;;    char city[50]; 
+		 ;;    char state[20]; 
+		 ;;    int pin; 
+		 ;; };
+
+			  (destructuring-bind (name &rest slot-descriptions) (cdr code)
+			    (format nil "typedef ~a struct ~a"
+				    name
+				    (emit
+				     `(progn
+					,@(loop for desc in slot-descriptions collect
+					       (destructuring-bind (slot-name &optional type) desc
+						 (format nil "~a~@[ ~a~]" slot-name type))))))))
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
@@ -425,7 +459,7 @@ entry return-values contains a list of return values"
 		 (format nil "~a" code))
 		((numberp code) ;; print constants
 		 (cond ((integerp code) (format str "~a" code))
-		       ((floatp code) ;; FIXME arbitrary precision?
+		       ((floatp code) 
 			(format str "(~a)" (print-sufficient-digits-f64 code)))))))
 	  "")))
   #+nil(progn
@@ -512,21 +546,7 @@ entry return-values contains a list of return values"
 			  (destructuring-bind (name lambda-list &rest body) (cdr code)
 			    (declare (ignore lambda-list))
 			    (format nil "type ~a ~a" name (emit (car body)))))
-		      (defstruct0
-			  ;; defstruct without init-form
-			  ;; defstruct name {slot-description}*
-			  ;; slot-description::= slot-name | (slot-name [slot-type])
-
-			  ;; a slot-name without type can be used to create a
-			  ;; composed type with a struct embedding
-			  (destructuring-bind (name &rest slot-descriptions) (cdr code)
-			    (format nil "type ~a struct ~a"
-				    name
-				    (emit
-				     `(progn
-					,@(loop for desc in slot-descriptions collect
-					       (destructuring-bind (slot-name &optional type) desc
-						 (format nil "~a~@[ ~a~]" slot-name type))))))))
+		      
 
 		      (definterface
 			  
@@ -599,21 +619,14 @@ entry return-values contains a list of return values"
 				       (emit (car decl))))
 			   (format s "~a" (emit `(progn ,@body))))))
 
-		      (while
-			  ;; while condition {forms}*
-			  
-			  (destructuring-bind (condition &rest body) (cdr code)
-			    (with-output-to-string (s)
-			      (format s "for ~a "
-				      (emit condition))
-			      (format s "~a" (emit `(progn ,@body))))))
+		      
 		      (dotimes (destructuring-bind ((var end) &rest body) (cdr code)
 				 (emit `(for ((:= ,var 0)
 					      (< ,var ,end)
 					      (incf ,var))
 					     ,@body))))
       
-		      (char (format nil "'~a'" (cadr code)))
+		      
 		      (slice (let ((args (cdr code)))
 			       (if (null args)
 				   (format nil ":")
