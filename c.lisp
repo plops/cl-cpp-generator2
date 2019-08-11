@@ -199,6 +199,14 @@ entry return-values contains a list of return values"
 		 ;; paren {args}*
 		 (let ((args (cdr code)))
 		   (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
+		(bracket
+		 ;; bracket {args}*
+		 (let ((args (cdr code)))
+		   (format nil "[~{~a~^, ~}]" (mapcar #'emit args))))
+		(curly
+		 ;; curly {args}*
+		 (let ((args (cdr code)))
+		   (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
 		(indent
 		 ;; indent form
 		 (format nil "~{~a~}~a"
@@ -208,38 +216,31 @@ entry return-values contains a list of return values"
 		(do0 (with-output-to-string (s)
 		       ;; do0 {form}*
 		       ;; write each form into a newline, keep current indentation level
-		       (format s "~&~a~{~&~a~}"
+		       (format s "~&~a;~{~&~a;~}"
 			       (emit (cadr code))
 			       (mapcar #'(lambda (x) (emit `(indent ,x) 0)) (cddr code)))))
-		(package (format nil "package ~a" (car (cdr code))))
-		(import (let ((args (cdr code)))
-			  ;; import {[name|pair]}*
-			  ;; pair := nickname name
-			  ;; https://kotlinlang.org/docs/tutorials/kotlin-for-py/packages-and-imports.html
-			  ;; import content.exercises.Exercise
-			  ;; import content.exercises.*
-			  ;; import content.exercises.Exercise as Ex
-			  (with-output-to-string (s)
-			    (loop for e in args do
-				 (if (listp e)
-				     (destructuring-bind (nick name) e
-				       (format s "~&import ~a as ~a"
-					       name nick ))
-				     (format s "~&import ~a" e))))))
+		(include (let ((args (cdr code)))
+			   ;; include {name}*
+			   ;; (include <stdio.h>)   => #include <stdio.h>
+			   ;; (include interface.h) => #include "interface.h"
+			   (with-output-to-string (s)
+			     (loop for e in args do
+				;; emit string if first character is not <
+				  (format s "~&#include ~a"
+					  (emit (if (eq #\< (aref (format nil "~a" e) 0))
+						    e
+						    `(string ,e))))))))
 		(progn (with-output-to-string (s)
-			 ;; progrn {form}*
+			 ;; progn {form}*
 			 ;; like do but surrounds forms with braces.
-			 (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
+			 (format s "{~{~&~a;~}~&}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
 		(do (with-output-to-string (s)
 		      ;; do {form}*
 		      ;; print each form on a new line with one more indentation.
-		      (format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
+		      (format s "~{~&~a;~}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
 		(defclass
 		      ;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
-		      ;; https://kotlinlang.org/docs/reference/classes.html
-		      ;; class Example // Implicitly inherits from Any
-		      ;; class Derived(p: Int) : Base(p)
-		      ;; class C() : A(), B { .. }
+		      
 		      (destructuring-bind (name parents &rest body) (cdr code)
 			(format nil "class ~a : ~{~a~^,~} ~a"
 				(emit name)

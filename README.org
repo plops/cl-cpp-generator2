@@ -3,8 +3,8 @@
 The purpose of this Lisp package is to bring the power of Common Lisp
 macros to languages of that look like C or C++. This code generator is
 an incompatible successor to cl-cpp-generator. I add improvements in
-the semantics that I discovered when implementing
-cl-py-generator. Most notably Common Lisp style type declarations,
+the semantics that I discovered when implementing cl-py-generator and
+cl-golang-generator. Most notably Common Lisp style type declarations,
 Common Lisp style operator names (incf, logior, and) and implicit
 function calls.
 
