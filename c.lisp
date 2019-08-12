@@ -14,10 +14,9 @@
 
 (defun write-source (name code &optional (dir (user-homedir-pathname))
 				 ignore-hash)
-  (let* ((fn (merge-pathnames (format nil "~a.kt" name)
+  (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
-	(code-str (emit-c
-		   :code code))
+	(code-str (emit-c :code code))
 	(fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
     (multiple-value-bind (old-code-hash exists) (gethash fn-hash *file-hashes*)
@@ -200,16 +199,15 @@ entry return-values contains a list of return values"
 		(paren
 		 ;; paren {args}*
 		 (let ((args (cdr code)))
-		   (format nil "(~a)" (emit `(comma ,args)))))
+		   (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
 		(bracket
 		 ;; bracket {args}*
 		 (let ((args (cdr code)))
-		   (format nil "[~a]" (emit `(comma ,args)))
-		   ))
+		   (format nil "[~{~a~^, ~}]" (mapcar #'emit args))))
 		(curly
 		 ;; curly {args}*
 		 (let ((args (cdr code)))
-		   (format nil "{~a}" (emit `(comma ,args)))))
+		   (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
 		(indent
 		 ;; indent form
 		 (format nil "~{~a~}~a"
@@ -462,10 +460,16 @@ entry return-values contains a list of return values"
 		       ((floatp code) 
 			(format str "(~a)" (print-sufficient-digits-f64 code)))))))
 	  "")))
-  #+nil(progn
+  #+nil (progn
    (defparameter *bla*
-     (emit-kt :code `(do0
-		      )))
+     (emit-c :code `(do0
+		     (include <stdio.h>)
+		     (defun main (argc argv)
+		       (declare (type int argc)
+				(type char** argv)
+				(values int))
+		       (printf (string "hello world!"))
+		       (return 0)))))
    (format t "~a" *bla*)))
 
 #+nil((ntuple (let ((args (cdr code)))
