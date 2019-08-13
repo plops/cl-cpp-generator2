@@ -217,8 +217,19 @@ entry return-values contains a list of return values"
 		(do0 (with-output-to-string (s)
 		       ;; do0 {form}*
 		       ;; write each form into a newline, keep current indentation level
+		       (format s "~{~&~a~}"
+			       (mapcar
+				 #'(lambda (x)
+				     (let ((b (emit `(indent ,x) 0)))
+				       (format nil "~a~a"
+					       b
+					       (if (eq #\; (aref b (- (length b) 1)))
+						   ""
+						   ";"))))
+				 (cdr code)))
+		       #+nil
 		       (let ((a (emit (cadr code))))
-			(format s "~&~a~a~{~&~a~}"
+			 (format s "~&~a~a~{~&~a~}"
 				a
 				(if (eq #\; (aref a (- (length a) 1)))
 				    ""
