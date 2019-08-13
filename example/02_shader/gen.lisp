@@ -12,6 +12,18 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/02_shader/source/shader.c"))
   (let* ((code
 	  `(do0
+	    (defun sdGuy (pos)
+	      (declare (type "in vec3" pos))
+	      
+	      (let ((tt (fract iTime))
+		    (y (* (* 4.0 tt)
+			     (- 1.0 tt)))
+		    (cen (vec3 .0 y .0)))
+		(declare (type float y tt)
+			 (type vec3 cen )
+			 
+			 (values float))
+		(return (length))))
 	    (defun map (pos)
 	      (declare (type "in vec3" pos)
 		       (values float))
@@ -55,7 +67,7 @@
 				iResolution.xy))
 			  iResolution.y))
 		    (ro (vec3 0.0 0.0 2.0))
-		    (ww (normalize (- ta ro)))
+		    (ww (normalize (- ta ro))) ;; moving camera
 		    (uu (normalize (cross ww
 					  (vec3 0 1 0))))
 		    (vv (normalize (cross uu ww)))

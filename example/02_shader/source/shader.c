@@ -1,3 +1,13 @@
+nil sdGuy(in vec3 pos) {
+  float tt = fract(iTime);
+  ;
+  float y = (((((4.e+0)) * (tt))) * ((((1.e+0)) - (tt))));
+  ;
+  vec3 cen = vec3((0.0e+0), y, (0.0e+0));
+  ;
+  return length();
+  ;
+};
 float map(in vec3 pos) {
   float d = ((length(pos)) - ((2.5e-1)));
   ;
