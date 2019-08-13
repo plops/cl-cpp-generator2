@@ -55,7 +55,7 @@
 		(when (< t 20.0)
 		  (let ((pos (+ ro (* t rd)))
 			(nor (calcNormal pos))
-			(sun_dir )
+			(sun_dir (normalize (vec3 .8 .4 -.2)))
 			(dif (clamp (dot nor sim_dir)
 				    0.0 1.0)))
 		    (declare (type vec3  pos nor sun_dir)

@@ -42,7 +42,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     vec3 nor = calcNormal(pos);
     ;
-    vec3 sun_dir = ;
+    vec3 sun_dir = normalize(vec3((8.00000011920929e-1), (4.000000059604645e-1),
+                                  (-2.0000000298023224e-1)));
     ;
     float dif = clamp(nor.sim_dir, (0.0e+0), (1.e+0));
     ;
