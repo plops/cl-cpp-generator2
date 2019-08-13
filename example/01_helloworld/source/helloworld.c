@@ -1,5 +1,1 @@
-#include <stdio.h>;
-int main(int argc, char **argv) {
-  printf("hello world!");
-  return 0;
-};
+void mainImage(out vec4 fragColor, in vec2 fragCoord){};
