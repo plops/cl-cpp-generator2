@@ -47,8 +47,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     float sun_dif = clamp(nor.sim_dir, (0.0e+0), (1.e+0));
     ;
-    float sky_dif =
-        clamp(nor.vec((0.0e+0), (1.e+0), (0.0e+0)), (0.0e+0), (1.e+0));
+    float sky_dif = clamp(
+        (((5.e-1)) + ((((5.e-1)) * (nor.vec((0.0e+0), (1.e+0), (0.0e+0)))))),
+        (0.0e+0), (1.e+0));
     ;
     col = ((vec3((1.e+0), (6.99999988079071e-1), (5.e-1))) * (sun_dif));
     ;

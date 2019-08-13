@@ -58,7 +58,8 @@
 			(sun_dir (normalize (vec3 .8 .4 .2)))
 			(sun_dif (clamp (dot nor sim_dir)
 					0.0 1.0))
-			(sky_dif (clamp (dot nor (vec 0.0 1.0 0.0))
+			(sky_dif (clamp (+ .5
+					   (* .5 (dot nor (vec 0.0 1.0 0.0))))
 					0.0 1.0)))
 		    (declare (type vec3  pos nor sun_dir)
 			     (type float sun_dif sky_dif))
