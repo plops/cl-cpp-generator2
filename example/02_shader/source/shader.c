@@ -50,11 +50,14 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     vec3 nor = calcNormal(pos);
     ;
+    vec3 mate = vec3((2.0000000298023224e-1), (2.0000000298023224e-1),
+                     (2.0000000298023224e-1));
+    ;
     vec3 sun_dir = normalize(vec3((8.00000011920929e-1), (4.000000059604645e-1),
                                   (2.0000000298023224e-1)));
     ;
     auto sun_sha =
-        castRay(((pos) + ((((1.0000000474974513e-3)))) + (nor)), sun_dir);
+        step(castRay(((pos) + ((((1.0000000474974513e-3)))) + (nor)), sun_dir));
     ;
     float sun_dif = clamp(nor.sim_dir, (0.0e+0), (1.e+0));
     ;
@@ -62,11 +65,12 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         (((5.e-1)) + ((((5.e-1)) * (nor.vec((0.0e+0), (1.e+0), (0.0e+0)))))),
         (0.0e+0), (1.e+0));
     ;
-    col = ((vec3((1.e+0), (6.99999988079071e-1), (5.e-1))) * (sun_dif) *
-           (sun_sha));
+    col = ((mate) * (vec3((1.e+0), (6.99999988079071e-1), (5.e-1))) *
+           (sun_dif) * (sun_sha));
     ;
     (col) +=
-        (((vec3((0.0e+0), (2.0000000298023224e-1), (4.000000059604645e-1))) *
+        (((mate) *
+          (vec3((0.0e+0), (2.0000000298023224e-1), (4.000000059604645e-1))) *
           (sky_dif)));
     ;
     ;

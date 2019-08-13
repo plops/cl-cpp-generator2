@@ -65,21 +65,24 @@
 		(when (< t 20.0)
 		  (let ((pos (+ ro (* tt rd)))
 			(nor (calcNormal pos))
+			(mate (vec3 .2 .2 .2))
 			(sun_dir (normalize (vec3 .8 .4 .2)))
-			(sun_sha (castRay (+ pos
-					     (* .001) nor) sun_dir))
+			(sun_sha (step (castRay (+ pos
+						   (* .001) nor) sun_dir)))
 			(sun_dif (clamp (dot nor sim_dir)
 					0.0 1.0))
 			(sky_dif (clamp (+ .5
 					   (* .5 (dot nor
 						      (vec 0.0 1.0 0.0))))
 					0.0 1.0)))
-		    (declare (type vec3  pos nor sun_dir)
+		    (declare (type vec3  pos nor sun_dir mate)
 			     (type float sun_dif sky_dif))
-		    (setf col (* (vec3 1.0 .7 0.5)
+		    (setf col (* mate
+				 (vec3 1.0 .7 0.5)
 				 sun_dif
 				 sun_sha))
-		    (incf col (* (vec3 0.0 .2 0.4)
+		    (incf col (* mate
+				 (vec3 0.0 .2 0.4)
 				 sky_dif))))
 		(setf col (pow col (vec3 .4545)))
 		(setf fragColor (vec4 col 1.0)))
