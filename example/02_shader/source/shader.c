@@ -1,7 +1,9 @@
 float sdEllipsoid(in vec3 pos) {
-  float d = ((length(((pos) / (rad)))) - ((1.e+0)));
+  float k0 = length(((pos) / (rad)));
   ;
-  return ((d) * (rad));
+  float k1 = length(((pos) / (((rad) * (rad)))));
+  ;
+  return ((((k0) * (((k0) - ((1.e+0)))))) / (k1));
   ;
 };
 float sdGuy(in vec3 pos) {
@@ -11,7 +13,13 @@ float sdGuy(in vec3 pos) {
   ;
   vec3 cen = vec3((0.0e+0), y, (0.0e+0));
   ;
-  return length();
+  float sy = (((5.e-1)) + ((((5.e-1)) * (y))));
+  ;
+  float sz = ;
+  ;
+  vec3 rad = vec3((2.5e-1), (((2.5e-1)) * (sy)), (((2.5e-1)) * (sz)));
+  ;
+  return sdEllipsoid(((pos) - (cen)), rad);
   ;
 };
 float map(in vec3 pos) {
