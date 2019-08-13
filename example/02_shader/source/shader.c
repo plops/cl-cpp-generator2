@@ -6,6 +6,12 @@ float sdEllipsoid(in vec3 pos) {
   return ((((k0) * (((k0) - ((1.e+0)))))) / (k1));
   ;
 };
+float smin(in float a, in float b, float k) {
+  float h = max(((k) - (abs(((a) - (b))))), k);
+  ;
+  return ((min(a, b)) - (((((h) * (h))) / (((k) * ((4.e+0)))))));
+  ;
+};
 float sdGuy(in vec3 pos) {
   float tt = fract(iTime);
   ;
@@ -13,7 +19,7 @@ float sdGuy(in vec3 pos) {
   ;
   float dy = (((4.e+0)) * ((((1.e+0)) - ((((2.e+0)) * (tt))))));
   ;
-  vec3 u = vec3((1.e+0), dy);
+  vec3 u = normalize(vec3((1.e+0), dy));
   ;
   vec3 v = vec3(-dy, (1.e+0));
   ;
@@ -27,9 +33,13 @@ float sdGuy(in vec3 pos) {
   ;
   vec3 q = ((pos) - (cen));
   ;
-  q.yz = vec2(u.q.yz, v.q.yz);
+  float d = sdEllipsoid(q, rad);
   ;
-  return sdEllipsoid(q, rad);
+  auto h = ((pos) - (vec3((0.0e+0))));
+  ;
+  float d2 = sdEllipsoid(q, rad);
+  ;
+  return;
   ;
 };
 float map(in vec3 pos) {
