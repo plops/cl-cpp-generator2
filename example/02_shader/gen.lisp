@@ -13,6 +13,18 @@
   (let* ((code
 	  `(do0
 	    
+	    (defun sdSphere (pos)
+	      (declare (type "in vec3" pos)
+		       (values float))
+	      
+	      (let (
+		    (k0 (length (/ pos rad)))
+		    (k1 (length (/ pos (* rad rad))))
+		    )
+		(declare (type float k0 k1)
+			 )
+		(return (/ (* k0 (- k0 1.0))
+			   k1))))
 	    (defun sdEllipsoid (pos)
 	      (declare (type "in vec3" pos)
 		       (values float))
@@ -51,15 +63,26 @@
 		    (rad (vec3 .25 (* .25 sy)  (* .25 sz)))
 		    (q (- pos cen))
 		    (d (sdEllipsoid q rad))
-		    (h (- pos (vec3 .0 )))
-		    (d2 (sdEllipsoid q rad)))
+		    (h q ;(- pos (vec3 .0 ))
+		      )
+		    ;; head
+		    (d2 (sdEllipsoid (- h (vec3 .0 .28 .0)
+					)
+				     (vec3 .2)))
+		    (d3 (sdEllipsoid (- h (vec3 .0 .28 .1)
+					)
+				     (vec3 .2))))
 		(declare (type float y tt sy sz dy d d2)
 			 (type vec3 cen rad u v q)
 			 
 			 (values float))
 		#+nil (setf q.yz (vec2 (dot u q.yz)
-				 (dot v q.yz)))
-		(return )))
+				       (dot v q.yz)))
+		(setf d2 (smin d2 d3 .03)
+		      d (smin d d2 .1))
+		;; eye
+		
+		(return d)))
 	    (defun map (pos)
 	      (declare (type "in vec3" pos)
 		       (values float))
