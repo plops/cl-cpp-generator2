@@ -2,18 +2,15 @@ float sdSphere(in vec3 pos) {
   float k0 = length(((pos) / (rad)));
   float k1 = length(((pos) / (((rad) * (rad)))));
   return ((((k0) * (((k0) - ((1.e+0)))))) / (k1));
-  ;
 };
 float sdEllipsoid(in vec3 pos) {
   float k0 = length(((pos) / (rad)));
   float k1 = length(((pos) / (((rad) * (rad)))));
   return ((((k0) * (((k0) - ((1.e+0)))))) / (k1));
-  ;
 };
 float smin(in float a, in float b, float k) {
   float h = max(((k) - (abs(((a) - (b))))), k);
   return ((min(a, b)) - (((((h) * (h))) / (((k) * ((4.e+0)))))));
-  ;
 };
 float sdGuy(in vec3 pos) {
   float tt = fract(iTime);
@@ -37,13 +34,11 @@ float sdGuy(in vec3 pos) {
   d2 = smin(d2, d3, (2.9999999329447746e-2));
   d = smin(d, d2, (1.0000000149011612e-1));
   return d;
-  ;
 };
 float map(in vec3 pos) {
   float d = ((length(pos)) - ((2.5e-1)));
   float d2 = ((pos.y) - (-0.25()));
   return min(d, d2);
-  ;
 };
 vec3 calcNormal(in vec3 pos) {
   return normalize(vec3(((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy))))),
@@ -57,17 +52,13 @@ float castRay(vec3 ro, vec3 rd) {
     float h = map(pos);
     if (h < (1.0000000474974513e-3)) {
       break;
-      ;
     };
     (tt) += (h);
     if ((2.e+1) < t) {
       break;
-      ;
     };
-    ;
   };
   return tt;
-  ;
 };
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 p =
@@ -110,9 +101,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
                (vec3((6.99999988079071e-1), (3.0000001192092896e-1),
                      (2.0000000298023224e-1))) *
                (bou_dif)));
-    ;
   };
   col = pow(col, vec3((4.5449998974800104e-1)));
   fragColor = vec4(col, (1.e+0));
-  ;
 };
