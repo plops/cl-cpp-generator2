@@ -65,6 +65,7 @@
 		(when (< t 20.0)
 		  (let ((pos (+ ro (* tt rd)))
 			(nor (calcNormal pos))
+			;; albedo of grass
 			(mate (vec3 .2 .2 .2))
 			(sun_dir (normalize (vec3 .8 .4 .2)))
 			(sun_sha (step (castRay (+ pos
@@ -78,11 +79,13 @@
 		    (declare (type vec3  pos nor sun_dir mate)
 			     (type float sun_dif sky_dif))
 		    (setf col (* mate
-				 (vec3 1.0 .7 0.5)
+				 ;; sun has around 10
+				 (vec3 9.0 8.0 5.0)
 				 sun_dif
 				 sun_sha))
 		    (incf col (* mate
-				 (vec3 0.0 .2 0.4)
+				 ;; fill light around 1
+				 (vec3 0.5 .8 0.9)
 				 sky_dif))))
 		(setf col (pow col (vec3 .4545)))
 		(setf fragColor (vec4 col 1.0)))
