@@ -12,7 +12,9 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/02_shader/source/shader.c"))
   (let* ((code
 	  `(do0
-	    
+	    (defun map (pos)
+	      (declare (type "in vec3" pos)
+		       (values float)))
 	    (defun mainImage (fragColor fragCoord)
 	      (declare (type "out vec4" fragColor)
 		       (type "in vec2" fragCoord)
@@ -25,10 +27,15 @@
 		    (rd (normalize (vec3 p -1.5)))
 		    (col (vec3 0.0))
 		    (tt 0.0))
-		(declare (type vec3 ro rd col)
+		(declare (type vec2 p)
+			 (type vec3 ro rd col)
 			 (type float tt))
 		(dotimes (i 100)
-		  )
+		  (let ((pos (+ ro (* tt rd)))
+			(h (map pos)))
+		    (declare (type vec3 pos)
+			     (type float h))
+		    (incf tt h)))
 		(setf fragColor (vec4 col 1.0)))
 	      ))))
     (write-source *code-file* code)))

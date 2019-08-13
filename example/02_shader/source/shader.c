@@ -1,5 +1,6 @@
+float map(in vec3 pos){};
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  auto p =
+  vec2 p =
       (((((2.e+0)) * (((fragCoord) - (iResolution.xy))))) / (iResolution.y));
   ;
   vec3 ro = vec3((0.0e+0), (0.0e+0), (2.e+0));
@@ -11,6 +12,12 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   float tt = (0.0e+0);
   ;
   for (i = 0;; i < 100; (i)++) {
+    vec3 pos = ((ro) + (((tt) * (rd))));
+    ;
+    float h = map(pos);
+    ;
+    (tt) += (h);
+    ;
   };
   fragColor = vec4(col, (1.e+0));
   ;
