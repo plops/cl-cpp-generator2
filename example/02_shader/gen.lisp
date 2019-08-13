@@ -38,12 +38,15 @@
 		    (cen (vec3 .0 y .0))
 		    (sy (+ .5 (* .5 y)))
 		    (sz (/ 1.0 sy)) ;; keep volume constant
-		    (rad (vec3 .25 (* .25 sy)  (* .25 sz))))
+		    (rad (vec3 .25 (* .25 sy)  (* .25 sz)))
+		    (q (- pos cen)))
 		(declare (type float y tt sy sz dy)
-			 (type vec3 cen rad u v)
+			 (type vec3 cen rad u v q)
 			 
 			 (values float))
-		(return (sdEllipsoid (- pos cen) rad))))
+		(setf q.yz (vec2 (dot u q.yz)
+				 (dot v q.yz)))
+		(return (sdEllipsoid q rad))))
 	    (defun map (pos)
 	      (declare (type "in vec3" pos)
 		       (values float))

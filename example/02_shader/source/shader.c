@@ -25,7 +25,11 @@ float sdGuy(in vec3 pos) {
   ;
   vec3 rad = vec3((2.5e-1), (((2.5e-1)) * (sy)), (((2.5e-1)) * (sz)));
   ;
-  return sdEllipsoid(((pos) - (cen)), rad);
+  vec3 q = ((pos) - (cen));
+  ;
+  q.yz = vec2(u.q.yz, v.q.yz);
+  ;
+  return sdEllipsoid(q, rad);
   ;
 };
 float map(in vec3 pos) {
