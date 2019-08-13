@@ -39,13 +39,25 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   ;
   vec3 ro = vec3((0.0e+0), (0.0e+0), (2.e+0));
   ;
-  vec3 rd = normalize(vec3(p, (-1.4999999999999997e+0)));
+  auto ww = normalize(((ta) - (ro)));
+  ;
+  auto uu = normalize(cross(ww, vec3(0, 1, 0)));
+  ;
+  auto vv = normalize(cross(uu, ww));
+  ;
+  vec3 rd = normalize(vec3(((((p.x) * (uu))) + (((p.y) * (vv))) +
+                            ((((1.4999999999999997e+0)) * (ww))))));
   ;
   vec3 col = ((vec3((6.499999761581421e-1), (7.499999999999999e-1),
                     (8.99999976158142e-1))) -
               ((((5.e-1)) * (rd.y))));
   ;
   float tt = castRay(ro, rd);
+  ;
+  col = mix(col,
+            vec3((6.99999988079071e-1), (7.499999999999999e-1),
+                 (8.00000011920929e-1)),
+            exp(((-10) * (rd.y))));
   ;
   if (t < (2.e+1)) {
     vec3 pos = ((ro) + (((tt) * (rd))));

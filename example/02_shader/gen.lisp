@@ -55,14 +55,24 @@
 				iResolution.xy))
 			  iResolution.y))
 		    (ro (vec3 0.0 0.0 2.0))
-		    (rd (normalize (vec3 p -1.5)))
-		    (col (- (vec3 .65 .75 .9)
+		    (ww (normalize (- ta ro)))
+		    (uu (normalize (cross ww
+					  (vec3 0 1 0))))
+		    (vv (normalize (cross uu ww)))
+		    (rd (normalize (vec3 (+ (* p.x uu)
+					    (* p.y vv)
+					    (* 1.5 ww)))))
+		    
+		    (col (- (vec3 .65 .75 .9) ;; sky gradient
 			    (* .5 rd.y)))
+		    
 		    (tt (castRay ro rd)))
 		(declare (type vec2 p)
 			 (type vec3 ro rd col)
 			 (type float tt))
-		
+		(setf col (mix col
+			       (vec3 .7 .75 .8)
+			       (exp (* -10 rd.y))))
 		(when (< t 20.0)
 		  (let ((pos (+ ro (* tt rd)))
 			(nor (calcNormal pos))
