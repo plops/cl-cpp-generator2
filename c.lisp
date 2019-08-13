@@ -223,7 +223,9 @@ entry return-values contains a list of return values"
 				     (let ((b (emit `(indent ,x) 0)))
 				       (format nil "~a~a"
 					       b
-					       (if (eq #\; (aref b (- (length b) 1)))
+					       (if (or (eq #\; (aref b (- (length b) 1)))
+						       (and (listp x)
+							    (member (car x) `(defun if for include))))
 						   ""
 						   ";"))))
 				 (cdr code)))
