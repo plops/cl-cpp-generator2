@@ -77,7 +77,8 @@
 		    (declare (type vec3  pos nor sun_dir)
 			     (type float sun_dif sky_dif))
 		    (setf col (* (vec3 1.0 .7 0.5)
-				 sun_dif))
+				 sun_dif
+				 sun_sha))
 		    (incf col (* (vec3 0.0 .2 0.4)
 				 sky_dif))))
 		(setf col (pow col (vec3 .4545)))
