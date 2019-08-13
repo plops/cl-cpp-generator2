@@ -142,7 +142,7 @@
 			 (type vec3 ro rd col)
 			 (type float tt))
 		(setf col (mix col
-			       (vec3 .7 .75 .8)q
+			       (vec3 .7 .75 .8)
 			       (exp (* -10 rd.y))))
 		(when (< t 20.0)
 		  (let ((pos (+ ro (* tt rd)))
