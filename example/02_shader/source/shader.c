@@ -70,6 +70,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     ;
   };
+  col = pow(col, vec3((4.5449998974800104e-1)));
+  ;
   fragColor = vec4(col, (1.e+0));
   ;
   ;

@@ -80,6 +80,7 @@
 				 sun_dif))
 		    (incf col (* (vec3 0.0 .2 0.4)
 				 sky_dif))))
+		(setf col (pow col (vec3 .4545)))
 		(setf fragColor (vec4 col 1.0)))
 	      ))))
     (write-source *code-file* code)))
