@@ -15,8 +15,11 @@
 	    (defun map (pos)
 	      (declare (type "in vec3" pos)
 		       (values float))
-	      (let ((d (- (length pos) .25)))
-		(return d)))
+	      (let ((d (- (length pos) .25))
+		    (d2 (- pos.y (-.25))) ;; plane at vertical offset
+		    )
+		(declare (type float d d2))
+		(return (min d d2))))
 	    (defun calcNormal (pos)
 	      (declare (type "in vec3" pos)
 		       (values vec3))
@@ -59,7 +62,8 @@
 			(sun_dif (clamp (dot nor sim_dir)
 					0.0 1.0))
 			(sky_dif (clamp (+ .5
-					   (* .5 (dot nor (vec 0.0 1.0 0.0))))
+					   (* .5 (dot nor
+						      (vec 0.0 1.0 0.0))))
 					0.0 1.0)))
 		    (declare (type vec3  pos nor sun_dir)
 			     (type float sun_dif sky_dif))

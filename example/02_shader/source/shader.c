@@ -1,7 +1,9 @@
 float map(in vec3 pos) {
-  auto d = ((length(pos)) - ((2.5e-1)));
+  float d = ((length(pos)) - ((2.5e-1)));
   ;
-  return d;
+  float d2 = ((pos.y) - (-0.25()));
+  ;
+  return min(d, d2);
   ;
 };
 vec3 calcNormal(in vec3 pos) {
