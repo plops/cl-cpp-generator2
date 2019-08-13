@@ -1,4 +1,10 @@
-float map(in vec3 pos){};
+float map(in vec3 pos) {
+  auto d = ((length(pos)) - ((2.5e-1)));
+  ;
+  return d;
+  ;
+};
+vec3 calcNormal(in vec3 pos){};
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 p =
       (((((2.e+0)) * (((fragCoord) - (iResolution.xy))))) / (iResolution.y));
@@ -16,7 +22,19 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     float h = map(pos);
     ;
+    if (h < (1.0000000474974513e-3)) {
+      break;
+      ;
+    };
     (tt) += (h);
+    if ((2.e+1) < t) {
+      break;
+      ;
+    };
+    ;
+  };
+  if (t < (2.e+1)) {
+    break;
     ;
   };
   fragColor = vec4(col, (1.e+0));
