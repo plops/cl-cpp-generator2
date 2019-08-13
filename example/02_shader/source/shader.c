@@ -8,6 +8,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   ;
   vec3 col = vec3((0.0e+0));
   ;
+  float tt = (0.0e+0);
+  ;
+  for (i = 0;; i < 100; (i)++) {
+  };
   fragColor = vec4(col, (1.e+0));
   ;
   ;
