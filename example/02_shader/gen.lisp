@@ -75,18 +75,27 @@
 			(sky_dif (clamp (+ .5
 					   (* .5 (dot nor
 						      (vec 0.0 1.0 0.0))))
+					0.0 1.0))
+			;; yellow bounce from floor
+			(bou_dif (clamp (+ .5
+					   (* .5 (dot nor
+						      (vec 0.0 -1.0 0.0))))
 					0.0 1.0)))
 		    (declare (type vec3  pos nor sun_dir mate)
-			     (type float sun_dif sky_dif))
+			     (type float sun_dif sky_dif bou_dif))
 		    (setf col (* mate
 				 ;; sun has around 10
-				 (vec3 9.0 8.0 5.0)
+				 (vec3 7.0 5.0 3.0)
 				 sun_dif
 				 sun_sha))
 		    (incf col (* mate
 				 ;; fill light around 1
 				 (vec3 0.5 .8 0.9)
-				 sky_dif))))
+				 sky_dif))
+		    (incf col (* mate
+				 ;; bounce light
+				 (vec3 0.7 .3 0.2)
+				 bou_dif))))
 		(setf col (pow col (vec3 .4545)))
 		(setf fragColor (vec4 col 1.0)))
 	      ))))
