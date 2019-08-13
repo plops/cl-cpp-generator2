@@ -11,16 +11,7 @@ vec3 calcNormal(in vec3 pos) {
                         ((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy))))),
                         ((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy)))))));
 };
-void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-  vec2 p =
-      (((((2.e+0)) * (((fragCoord) - (iResolution.xy))))) / (iResolution.y));
-  ;
-  vec3 ro = vec3((0.0e+0), (0.0e+0), (2.e+0));
-  ;
-  vec3 rd = normalize(vec3(p, (-1.4999999999999997e+0)));
-  ;
-  vec3 col = vec3((0.0e+0));
-  ;
+vec3 castRay(vec3 ro, vec3 rd) {
   float tt = (0.0e+0);
   ;
   for (i = 0;; i < 100; (i)++) {
@@ -39,6 +30,18 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     };
     ;
   };
+  ;
+};
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 p =
+      (((((2.e+0)) * (((fragCoord) - (iResolution.xy))))) / (iResolution.y));
+  ;
+  vec3 ro = vec3((0.0e+0), (0.0e+0), (2.e+0));
+  ;
+  vec3 rd = normalize(vec3(p, (-1.4999999999999997e+0)));
+  ;
+  vec3 col = vec3((0.0e+0));
+  ;
   if (t < (2.e+1)) {
     vec3 pos = ((ro) + (((t) * (rd))));
     ;
@@ -46,6 +49,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
     vec3 sun_dir = normalize(vec3((8.00000011920929e-1), (4.000000059604645e-1),
                                   (2.0000000298023224e-1)));
+    ;
+    auto sun_sha =
+        castRay(((pos) + ((9.999999776482582e-3)) + (sun_dir)), sun_dir);
     ;
     float sun_dif = clamp(nor.sim_dir, (0.0e+0), (1.e+0));
     ;
