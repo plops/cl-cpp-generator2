@@ -12,8 +12,20 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/02_shader/source/shader.c"))
   (let* ((code
 	  `(do0
+	    
+	    (defun sdEllipsoid (pos)
+	      (declare (type "in vec3" pos)
+		       (values float))
+	      
+	      (let ((d (- (length (/ pos rad))
+			  1.0))
+		    )
+		(declare (type float d)
+			 )
+		(return (* d rad))))
 	    (defun sdGuy (pos)
-	      (declare (type "in vec3" pos))
+	      (declare (type "in vec3" pos)
+		       (values float))
 	      
 	      (let ((tt (fract iTime))
 		    (y (* (* 4.0 tt)

@@ -1,4 +1,10 @@
-nil sdGuy(in vec3 pos) {
+float sdEllipsoid(in vec3 pos) {
+  float d = ((length(((pos) / (rad)))) - ((1.e+0)));
+  ;
+  return ((d) * (rad));
+  ;
+};
+float sdGuy(in vec3 pos) {
   float tt = fract(iTime);
   ;
   float y = (((((4.e+0)) * (tt))) * ((((1.e+0)) - (tt))));
