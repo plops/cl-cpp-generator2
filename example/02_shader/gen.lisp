@@ -32,12 +32,15 @@
 	      (let ((tt (fract iTime))
 		    (y (* (* 4.0 tt)
 			  (- 1.0 tt)))
+		    (dy (* 4.0 (- 1.0 (* 2.0 tt))))
+		    (u (vec3 1.0 dy))
+		    (v (vec3 -dy 1.0))
 		    (cen (vec3 .0 y .0))
 		    (sy (+ .5 (* .5 y)))
-		    (sz ) ;; keep volume constant
+		    (sz (/ 1.0 sy)) ;; keep volume constant
 		    (rad (vec3 .25 (* .25 sy)  (* .25 sz))))
-		(declare (type float y tt sy sz)
-			 (type vec3 cen rad)
+		(declare (type float y tt sy sz dy)
+			 (type vec3 cen rad u v)
 			 
 			 (values float))
 		(return (sdEllipsoid (- pos cen) rad))))

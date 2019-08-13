@@ -11,11 +11,17 @@ float sdGuy(in vec3 pos) {
   ;
   float y = (((((4.e+0)) * (tt))) * ((((1.e+0)) - (tt))));
   ;
+  float dy = (((4.e+0)) * ((((1.e+0)) - ((((2.e+0)) * (tt))))));
+  ;
+  vec3 u = vec3((1.e+0), dy);
+  ;
+  vec3 v = vec3(-dy, (1.e+0));
+  ;
   vec3 cen = vec3((0.0e+0), y, (0.0e+0));
   ;
   float sy = (((5.e-1)) + ((((5.e-1)) * (y))));
   ;
-  float sz = ;
+  float sz = (((1.e+0)) / (sy));
   ;
   vec3 rad = vec3((2.5e-1), (((2.5e-1)) * (sy)), (((2.5e-1)) * (sz)));
   ;
