@@ -246,11 +246,11 @@ entry return-values contains a list of return values"
 		(progn (with-output-to-string (s)
 			 ;; progn {form}*
 			 ;; like do but surrounds forms with braces.
-			 (format s "{~{~&~a;~}~&}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
+			 (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
 		(do (with-output-to-string (s)
 		      ;; do {form}*
 		      ;; print each form on a new line with one more indentation.
-		      (format s "~{~&~a;~}" (mapcar #'(lambda (x) (emit `(indent ,x) 1)) (cdr code)))))
+		      (format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
 		(defclass
 		      ;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 		      ;; class TA : public Faculty, public Student { ... } 
