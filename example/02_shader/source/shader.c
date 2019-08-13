@@ -41,7 +41,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   ;
   vec3 rd = normalize(vec3(p, (-1.4999999999999997e+0)));
   ;
-  vec3 col = vec3((0.0e+0));
+  vec3 col = ((vec3((6.499999761581421e-1), (7.499999999999999e-1),
+                    (8.99999976158142e-1))) -
+              ((((5.e-1)) * (rd.y))));
   ;
   float tt = castRay(ro, rd);
   ;
