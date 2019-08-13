@@ -4,7 +4,11 @@ float map(in vec3 pos) {
   return d;
   ;
 };
-vec3 calcNormal(in vec3 pos){};
+vec3 calcNormal(in vec3 pos) {
+  return normalize(vec3(((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy))))),
+                        ((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy))))),
+                        ((map(((pos) + (e.xyy)))) - (map(((pos) - (e.xyy)))))));
+};
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 p =
       (((((2.e+0)) * (((fragCoord) - (iResolution.xy))))) / (iResolution.y));
@@ -34,7 +38,17 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     ;
   };
   if (t < (2.e+1)) {
-    break;
+    vec3 pos = ((ro) + (((t) * (rd))));
+    ;
+    vec3 nor = calcNormal(pos);
+    ;
+    vec3 sun_dir = ;
+    ;
+    float dif = clamp(nor.sim_dir, (0.0e+0), (1.e+0));
+    ;
+    col = ((vec3((1.e+0), (8.e+0), (5.e-1))) * (dif));
+    ;
+    ;
     ;
   };
   fragColor = vec4(col, (1.e+0));
