@@ -201,5 +201,6 @@
 		(setf fragColor (vec4 col 1.0)))
 	      ))))
     (write-source *code-file* code)
+    
     (sb-ext:run-program "/usr/bin/xclip"
 			(list "-i"  (namestring *code-file*)))))
