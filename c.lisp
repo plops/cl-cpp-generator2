@@ -225,7 +225,7 @@ entry return-values contains a list of return values"
 					       b
 					       (if (or (eq #\; (aref b (- (length b) 1)))
 						       (and (listp x)
-							    (member (car x) `(defun if for include))))
+							    (member (car x) `(defun if for include dotimes while case))))
 						   ""
 						   ";"))))
 				 (cdr code)))

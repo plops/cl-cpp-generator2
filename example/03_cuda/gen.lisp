@@ -50,6 +50,14 @@
   (let* ((code
 	  `(do0
 	    (include <wmma.h>)
+
+	    (dotimes (i M)
+	      (dotimes (j N)
+		(dotimes (k K)
+		  (incf (aref C i j)
+			(* (aref A i k)
+			   (aref B k j))))))
+	    
 	    (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")
 		       (type float* d c)
