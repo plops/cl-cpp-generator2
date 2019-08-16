@@ -51,9 +51,20 @@
 	  `(do0
 	    (include <wmma.h>)
 
+	    "// independent dot products"
+	    "// inefficient due to large working sets to hold parts of A and B"
 	    (dotimes (i M)
 	      (dotimes (j N)
 		(dotimes (k K)
+		  (incf (aref C i j)
+			(* (aref A i k)
+			   (aref B k j))))))
+
+	    "// accumulate outer products"
+	    "// load elements of A and B exactly once"
+	    (dotimes (k K)
+	      (dotimes (i M)
+		(dotimes (j N)
 		  (incf (aref C i j)
 			(* (aref A i k)
 			   (aref B k j))))))
