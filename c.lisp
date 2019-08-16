@@ -399,7 +399,7 @@ entry return-values contains a list of return values"
 			       (emit iter)
 			       (emit `(progn ,@body)))))
 		(dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			   (emit `(for ((setf ,(emit i) 0)
+			   (emit `(for ((= ,(emit i) 0)
 					(< ,(emit i) ,(emit n))
 					(incf ,(emit i) ,(emit step)))
 				       ,@body))))
