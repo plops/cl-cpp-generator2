@@ -398,10 +398,10 @@ entry return-values contains a list of return values"
 			       (emit end)
 			       (emit iter)
 			       (emit `(progn ,@body)))))
-		(dotimes (destructuring-bind ((i n) &rest body) (cdr code)
+		(dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
 			   (emit `(for ((setf ,(emit i) 0)
 					(< ,(emit i) ,(emit n))
-					(incf ,(emit i)))
+					(incf ,(emit i) ,(emit step)))
 				       ,@body))))
 		(foreach (destructuring-bind ((item collection) &rest body) (cdr code)
 		       (format nil "for (auto& ~a : ~a) ~a"
