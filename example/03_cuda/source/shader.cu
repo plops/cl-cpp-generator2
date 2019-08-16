@@ -17,6 +17,13 @@ for (k = 0;; k < K; (k)++) {
     }
   }
 }
+// partition into Mtile-by-Ntile independent matrix products;
+for (mb = 0;; mb < M; (mb) += (Mtile)) {
+  for (nb = 0;; nb < N; (nb) += (Ntile)) {
+    for (kb = 0;; kb < K; (kb) += (Ktile)) {
+    }
+  }
+}
 __device__ void tensor_op_16_16_16(float *d, half *a, half *b, float *c) {
   wmma::fragment<matrix_a, ...> Amat = ;
   wmma::fragment<matrix_b, ...> Bmat = ;

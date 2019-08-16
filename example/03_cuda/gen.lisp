@@ -68,8 +68,13 @@
 		  (incf (aref C i j)
 			(* (aref A i k)
 			   (aref B k j))))))
-	    
-	    (defun tensor_op_16_16_16 (d a b c)
+
+	    "// partition into Mtile-by-Ntile independent matrix products"
+	    (for ((setf mb 0) (< mb M) (incf mb Mtile))
+		 (for ((setf nb 0) (< nb N) (incf nb Ntile))
+		      (for ((setf kb 0) (< kb K) (incf kb Ktile))))
+	      )
+	      (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")
 		       (type float* d c)
 		       (type half* a b))
