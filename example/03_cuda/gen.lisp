@@ -36,9 +36,14 @@
 ;; int lane = threadIdx.x % 32
 ;; int c = lane % 8
 ;; int s = lane / 8
+;; // permutation function:
 ;; int smem_row = (c & 1) | ((c>>1) & 2)
 ;; int bank = ((c<<1) & 4) | s ^ smem_row       <-- parens around xor, how?
 ;; int smem_offset = smem_row * ldm_smem + bank
+
+;; memory loads from 32 threads (36:17)
+
+;; free fortran, c, c++ compiler:  https://www.pgroup.com/products/community.htm
 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
