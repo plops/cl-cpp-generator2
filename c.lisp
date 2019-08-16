@@ -223,7 +223,11 @@ entry return-values contains a list of return values"
 				     (let ((b (emit `(indent ,x) 0)))
 				       (format nil "~a~a"
 					       b
+					       ;; don't add semicolon if there is already one
+					       ;; or if x contains a string
+					       ;; or if x is an s-expression with a c thing that doesn't end with semicolon
 					       (if (or (eq #\; (aref b (- (length b) 1)))
+						       (and (typep x 'string))
 						       (and (listp x)
 							    (member (car x) `(defun if for include dotimes while case))))
 						   ""
