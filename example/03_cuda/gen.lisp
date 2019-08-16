@@ -8,6 +8,25 @@
 ;; https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9593-cutensor-high-performance-tensor-operations-in-cuda-v2.pdf
 ;; http://on-demand.gputechconf.com/gtc/2018/presentation/s8854-cutlass-software-primitives-for-dense-linear-algebra-at-all-levels-and-scales-within-cuda.pdf
 ;; https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions-wmma-st
+
+;; in order to improve efficiency (28:45):
+;; - access memory with 128bit
+;; - prevent bank conflicts during memory stores and loads
+
+;; work level structure
+;; block
+;; thread block tile
+;; warp tile
+;; thread tile
+
+;; 4 mma instructions to cover 32-by-32-by-4 matrix multiply (30:14)
+;; spatially interleaved to allow 128bit loads
+;; bank conflict (31:40)
+;;  - 16 byte access (128bit) in 4 phases, 8 threads per phase
+;;  - bank conflicts only possible by groups of 8 threads at a time
+;;  - more details in gtc 2018 s81006 thomas-collignon
+
+
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
   (let* ((code
