@@ -26,6 +26,19 @@
 ;;  - bank conflicts only possible by groups of 8 threads at a time
 ;;  - more details in gtc 2018 s81006 thomas-collignon
 
+;; global memory striped pattern (32:50)
+;; int lane = threadIdx.x % 32
+;; int c = lane % 8
+;; int s = lane / 8
+;; int gmem_offset = c + s * lda
+
+;; permuted layout in shared mem (33:17)
+;; int lane = threadIdx.x % 32
+;; int c = lane % 8
+;; int s = lane / 8
+;; int smem_row = (c & 1) | ((c>>1) & 2)
+;; int bank = ((c<<1) & 4) | s ^ smem_row       <-- parens around xor, how?
+;; int smem_offset = smem_row * ldm_smem + bank
 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
