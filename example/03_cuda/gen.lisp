@@ -109,8 +109,29 @@
 			(dotimes (tm warp_m thread_m)
 			  (dotimes (tn warp_n thread_n)
 			    (dotimes (tk warp_k thread_k)
-			      "// compute thread_m by thread_n by thread_k GEMM"))))))))
-	      )
+			      "// compute thread_m by thread_n by thread_k GEMM")))))))))
+	    "// threads compute accumulated matrix product"
+	    "// A,B and C held in registers"
+	    "// O(M*N) computations on O(M+N) elements"
+	    "// opportunity for data reuse"
+	    (dotimes (mb M Mtile)
+	      (dotimes (nb N Ntile)
+		(dotimes (kb K Ktile)
+		  "// load A and B tiles into shared memory"
+		  (dotimes (m Mtile warp_m)
+		    (dotimes (n Ntile warp_n)
+		      (dotimes (k Ktile warp_k)
+			"// load A and B tile from SMEM into registers"
+			(dotimes (tm warp_m thread_m)
+			  (dotimes (tn warp_n thread_n)
+			    (dotimes (tk warp_k thread_k)
+			      (dotimes (m thread_m)
+				(dotimes (n thread_n)
+				  (dotimes (k thread_k)
+				    "// FMA instructions"
+				    (incf (aref C m n)
+					  (* (aref A m k)
+					     (aref B n k)))))))))))))))
 	    
 	      (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")

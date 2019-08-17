@@ -32,7 +32,7 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
         }
       }
     }
-}
+  }
 }
 // each warp computes independent matrix product
 for (mb = 0; mb < M; (mb) += (Mtile)) {
@@ -62,6 +62,38 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
               for (tn = 0; tn < warp_n; (tn) += (thread_n)) {
                 for (tk = 0; tk < warp_k; (tk) += (thread_k)) {
                   // compute thread_m by thread_n by thread_k GEMM
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+// threads compute accumulated matrix product
+// A,B and C held in registers
+// O(M*N) computations on O(M+N) elements
+// opportunity for data reuse
+for (mb = 0; mb < M; (mb) += (Mtile)) {
+  for (nb = 0; nb < N; (nb) += (Ntile)) {
+    for (kb = 0; kb < K; (kb) += (Ktile)) {
+      // load A and B tiles into shared memory
+      for (m = 0; m < Mtile; (m) += (warp_m)) {
+        for (n = 0; n < Ntile; (n) += (warp_n)) {
+          for (k = 0; k < Ktile; (k) += (warp_k)) {
+            // load A and B tile from SMEM into registers
+            for (tm = 0; tm < warp_m; (tm) += (thread_m)) {
+              for (tn = 0; tn < warp_n; (tn) += (thread_n)) {
+                for (tk = 0; tk < warp_k; (tk) += (thread_k)) {
+                  for (m = 0; m < thread_m; (m) += (1)) {
+                    for (n = 0; n < thread_n; (n) += (1)) {
+                      for (k = 0; k < thread_k; (k) += (1)) {
+                        // FMA instructions
+                        (C[m][n]) += (((A[m][k]) * (B[n][k])));
+                      }
+                    }
+                  }
                 }
               }
             }
