@@ -24,8 +24,8 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
       for (k = 0; k < Ktile; (k) += (1)) {
         for (i = 0; i < Mtile; (i) += (1)) {
           for (j = 0; j < Ntile; (j) += (1)) {
-            auto row = ((mb) + (i));
-            auto col = ((nb) + (j));
+            auto = ((mb) + (i));
+            auto = ((nb) + (j));
             (C[row][col]) +=
                 (((A[row][((kb) + (k))]) * (B[((kb) + (k))][col])));
           }
@@ -122,9 +122,9 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
       for (m = 0; m < Mtile; (m) += (warp_m)) {
         for (n = 0; n < Ntile; (n) += (warp_n)) {
           __device__ void block_matrix_product() {
-            auto frag_a[THREAD_ITEMS_X] = ;
-            auto frag_b[THREAD_ITEMS_Y] = ;
-            auto accum[THREAD_ITEMS_X][THREAD_ITEMS_Y] = ;
+            fp16 frag_a[THREAD_ITEMS_X];
+            fp16 frag_b[THREAD_ITEMS_Y];
+            fp32 accum[THREAD_ITEMS_X, THREAD_ITEMS_Y];
             // load A and B tile from SMEM into registers
             for (kblock = 0; kblock < Kdim; (kblock) += (BlockItemsK)) {
               __syncthreads();
@@ -153,7 +153,7 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
 __device__ void tensor_op_16_16_16(float *d, half *a, half *b, float *c) {
   wmma::fragment<matrix_a, ...> Amat = ;
   wmma::fragment<matrix_b, ...> Bmat = ;
-  auto Cmat = ;
+  auto = ;
   wmma::load_matrix_sync(Amat, a, 16);
   wmma::load_matrix_sync(Bmat, b, 16);
   wmma::fill_fragment(Cmat, .0s);

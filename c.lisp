@@ -85,6 +85,25 @@ entry return-values contains a list of return values"
   "get the type of a variable from an environment"
   (gethash name env))
 
+(defun variable-declaration (&key name env emit)
+  (let* ((type (lookup-type name :env env)))
+    (if (listp type)
+	(if (null type)
+	    "auto"
+	 (progn
+	   ;; array
+	   (destructuring-bind (array_ element-type &rest dims) type
+	     (assert (eq array_ 'array))
+	     (format nil "~a ~a~a"
+		     element-type
+		     (funcall emit name)
+		     (funcall emit `(bracket ,@dims))))))
+	(format nil "~a ~a"
+		(if type
+		    (funcall emit type)
+		    "auto")
+		(funcall emit name)))))
+
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
@@ -96,21 +115,11 @@ entry return-values contains a list of return values"
 			  ,@(loop for decl in decls collect
 				 (if (listp decl) ;; split into name and initform
 				     (destructuring-bind (name &optional value) decl
-				       (format nil "~a ~a ~@[ = ~a~];"
-					       (let ((type (lookup-type name :env env)))
-						 (if type
-						     (funcall emit type)
-						     "auto"))
-					       (funcall emit name)
+				       (format nil "~a ~@[ = ~a~];"
+					       (variable-declaration :name name :env env :emit emit)
 					       (funcall emit value)))
-				     (format nil "~a ~a"
-					     (let ((type (lookup-type decl :env env)))
-					       (if type
-						   (funcall emit type)
-						   "auto"
-					;(break "type ~a not defined." decl)
-						   ))
-					     decl)))
+				     (format nil "~a;"
+					     (variable-declaration :name decl :env env :emit emit))))
 			  ,@body)))))))
 
 (defun parse-defun (code emit)

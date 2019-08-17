@@ -156,11 +156,12 @@
 		    (dotimes (n Ntile warp_n)
 		      (defun block_matrix_product ()
 			(declare (values "__device__ void"))
-			(let (((aref frag_a THREAD_ITEMS_X))
-			      ((aref frag_b THREAD_ITEMS_Y))
-			      ((aref accum THREAD_ITEMS_X THREAD_ITEMS_Y)))
-			  (declare (type fp16 frag_a frag_b)
-				   (type fp32 accum))
+			(let (frag_a
+			      frag_b
+			      accum)
+			  (declare (type (array fp16 THREAD_ITEMS_X) frag_a)
+				   (type (array fp16 THREAD_ITEMS_Y) frag_b)
+				   (type (array fp32 THREAD_ITEMS_X THREAD_ITEMS_Y) accum))
 			    "// load A and B tile from SMEM into registers"
 			  (dotimes (kblock  Kdim  BlockItemsK)
 			    (__syncthreads)
