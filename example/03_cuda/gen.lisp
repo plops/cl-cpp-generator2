@@ -154,18 +154,28 @@
 		  "// load A and B tiles into shared memory"
 		  (dotimes (m Mtile warp_m)
 		    (dotimes (n Ntile warp_n)
-		      (dotimes (k Ktile warp_k)
-			"// load A and B tile from SMEM into registers"
-			(dotimes (tm warp_m thread_m)
-			  (dotimes (tn warp_n thread_n)
-			    (dotimes (tk warp_k thread_k)
-			      (dotimes (m thread_m)
-				(dotimes (n thread_n)
-				  (dotimes (k thread_k)
-				    "// FMA instructions"
-				    (incf (aref C m n)
-					  (* (aref A m k)
-					     (aref B n k)))))))))))))))
+		      (defun block_matrix_product ()
+			(declare (values "__device__ void"))
+			(let (((aref frag_a THREAD_ITEMS_X))
+			      ((aref frag_b THREAD_ITEMS_Y))
+			      ((aref accum THREAD_ITEMS_X THREAD_ITEMS_Y)))
+			  (declare (type fp16 frag_a frag_b)
+				   (type fp32 accum))
+			    "// load A and B tile from SMEM into registers"
+			  (dotimes (kblock  Kdim  BlockItemsK)
+			    (__syncthreads)
+			    "#pragma unroll"
+			    (dotimes (warp_k BlockItemsK WarpItemsK)
+			      "// fetch frag_a and frag_b from SMEM corresponding to k index"
+			      "// accumulate an outer product"
+			      "#pragma unroll"
+			      (dotimes (thread_x ThreadItemsX)
+				"#pragma unroll"
+				(dotimes (thread_y ThreadItemsY)
+				  (incf (aref accum thread_x thread_y)
+					(* (aref frag_a y)
+					   (aref frag_b x))))))
+			    (__syncthreads)))))))))
 	    
 	      (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")

@@ -103,6 +103,53 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
     }
   }
 }
+// warp output tiles have to be accessed once per math operation
+// store in register file to enable fastest access from 32 threads in warp
+// warps in the same row load the same data from A
+// warps in the same column load the same data from B
+// call __syncthreads() as appropriate to ensure warp-synchronous execution
+// threads can't access each others registers.
+// organize data such that an individual thread can reuse data as much as
+// possible each thread computes an outer product threads in the same row of a
+// warp fetch the same data from A threads in the same column of a warp fetch
+// the same data from B wmma api is an alternative to the thread tile structure
+// each tensor core can process a 4x4x4 operation with matrices D=A.B+C (A,B
+// fp16; D,C fp16 or fp32)
+for (mb = 0; mb < M; (mb) += (Mtile)) {
+  for (nb = 0; nb < N; (nb) += (Ntile)) {
+    for (kb = 0; kb < K; (kb) += (Ktile)) {
+      // load A and B tiles into shared memory
+      for (m = 0; m < Mtile; (m) += (warp_m)) {
+        for (n = 0; n < Ntile; (n) += (warp_n)) {
+          __device__ void block_matrix_product() {
+            auto frag_a[THREAD_ITEMS_X] = ;
+            auto frag_b[THREAD_ITEMS_Y] = ;
+            auto accum[THREAD_ITEMS_X][THREAD_ITEMS_Y] = ;
+            // load A and B tile from SMEM into registers
+            for (kblock = 0; kblock < Kdim; (kblock) += (BlockItemsK)) {
+              __syncthreads();
+#pragma unroll
+              for (warp_k = 0; warp_k < BlockItemsK; (warp_k) += (WarpItemsK)) {
+// fetch frag_a and frag_b from SMEM corresponding to k index
+// accumulate an outer product
+#pragma unroll
+                for (thread_x = 0; thread_x < ThreadItemsX; (thread_x) += (1)) {
+#pragma unroll
+                  for (thread_y = 0; thread_y < ThreadItemsY;
+                       (thread_y) += (1)) {
+                    (accum[thread_x][thread_y]) +=
+                        (((frag_a[y]) * (frag_b[x])));
+                  }
+                }
+              }
+              __syncthreads();
+            };
+          }
+        }
+      }
+    }
+  }
+}
 __device__ void tensor_op_16_16_16(float *d, half *a, half *b, float *c) {
   wmma::fragment<matrix_a, ...> Amat = ;
   wmma::fragment<matrix_b, ...> Bmat = ;
