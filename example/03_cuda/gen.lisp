@@ -97,6 +97,20 @@
 				(* (aref A row (+ kb k))
 				   (aref B (+ kb k) col)))))))))
 	      )
+	    "// accumulated matrix product in warps"
+	    (dotimes (mb M Mtile)
+	      (dotimes (nb N Ntile)
+		(dotimes (kb K Ktile)
+		  "// load A and B tiles into shared memory"
+		  (dotimes (m Mtile warp_m)
+		    (dotimes (n Ntile warp_n)
+		      (dotimes (k Ktile warp_k)
+			"// load A and B tile from SMEM into registers"
+			(dotimes (tm warp_m thread_m)
+			  (dotimes (tn warp_n thread_n)
+			    (dotimes (tk warp_k thread_k)
+			      "// compute thread_m by thread_n by thread_k GEMM"))))))))
+	      )
 	    
 	      (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")
