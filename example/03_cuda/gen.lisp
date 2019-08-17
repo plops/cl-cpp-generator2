@@ -82,6 +82,22 @@
 				(* (aref A row (+ kb k))
 				   (aref B (+ kb k) col)))))))))
 	      )
+	    "// each warp computes independent matrix product"
+	    (dotimes (mb M Mtile)
+	      (dotimes (nb N Ntile)
+		(dotimes (kb K Ktile)
+		  "// load A and B tiles into shared memory"
+		  (dotimes (m Mtile warp_m)
+		    (dotimes (n Ntile warp_n)
+		      (dotimes (k Ktile warp_k)
+			"// compute warp_m by warp_n by warp_k GEMM"
+			#+nil (let ((row (+ mb i))
+			      (col (+ nb j)))
+			  (incf (aref C row col)
+				(* (aref A row (+ kb k))
+				   (aref B (+ kb k) col)))))))))
+	      )
+	    
 	      (defun tensor_op_16_16_16 (d a b c)
 	      (declare (values "__device__ void")
 		       (type float* d c)

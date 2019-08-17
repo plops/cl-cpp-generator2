@@ -34,6 +34,21 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
     }
   }
 }
+// each warp computes independent matrix product
+for (mb = 0; mb < M; (mb) += (Mtile)) {
+  for (nb = 0; nb < N; (nb) += (Ntile)) {
+    for (kb = 0; kb < K; (kb) += (Ktile)) {
+      // load A and B tiles into shared memory
+      for (m = 0; m < Mtile; (m) += (warp_m)) {
+        for (n = 0; n < Ntile; (n) += (warp_n)) {
+          for (k = 0; k < Ktile; (k) += (warp_k)) {
+            // compute warp_m by warp_n by warp_k GEMM
+          }
+        }
+      }
+    }
+  }
+}
 __device__ void tensor_op_16_16_16(float *d, half *a, half *b, float *c) {
   wmma::fragment<matrix_a, ...> Amat = ;
   wmma::fragment<matrix_b, ...> Bmat = ;
