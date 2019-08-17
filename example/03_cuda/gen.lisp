@@ -2,6 +2,9 @@
   (ql:quickload "cl-cpp-generator2"))
 
 (in-package :cl-cpp-generator2)
+
+;; https://devblogs.nvidia.com/cutlass-linear-algebra-cuda/
+
 ;; https://developer.nvidia.com/gtc/2018/video/S8854/video ;; intro to cutlass c++ templates for gemm
 ;; https://developer.nvidia.com/gtc/2019/video/S9593/video ;; low level at 21:20
 ;; https://developer.download.nvidia.com/video/gputechconf/gtc/2019/video/S9593/s9593-cutensor-high-performance-tensor-operations-in-cuda.mp4
@@ -44,6 +47,7 @@
 ;; memory loads from 32 threads (36:17)
 
 ;; free fortran, c, c++ compiler:  https://www.pgroup.com/products/community.htm
+
 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
