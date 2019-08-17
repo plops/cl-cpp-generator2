@@ -141,7 +141,14 @@
 	    "// warps in the same row load the same data from A"
 	    "// warps in the same column load the same data from B"
 	    "// call __syncthreads() as appropriate to ensure warp-synchronous execution"
-	    (dotimes (mb M Mtile)
+	    "// threads can't access each others registers."
+	    "// organize data such that an individual thread can reuse data as much as possible"
+	    "// each thread computes an outer product"
+	    "// threads in the same row of a warp fetch the same data from A"
+	    "// threads in the same column of a warp fetch the same data from B"
+	    "// wmma api is an alternative to the thread tile structure"
+	    "// each tensor core can process a 4x4x4 operation with matrices D=A.B+C (A,B fp16; D,C fp16 or fp32)"
+	     (dotimes (mb M Mtile)
 	      (dotimes (nb N Ntile)
 		(dotimes (kb K Ktile)
 		  "// load A and B tiles into shared memory"
