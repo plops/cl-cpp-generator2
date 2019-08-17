@@ -94,10 +94,10 @@ entry return-values contains a list of return values"
 	   ;; array
 	   (destructuring-bind (array_ element-type &rest dims) type
 	     (assert (eq array_ 'array))
-	     (format nil "~a ~a~a"
+	     (format nil "~a ~a~{[~a]~}"
 		     element-type
 		     (funcall emit name)
-		     (funcall emit `(bracket ,@dims))))))
+		     (mapcar emit dims)))))
 	(format nil "~a ~a"
 		(if type
 		    (funcall emit type)

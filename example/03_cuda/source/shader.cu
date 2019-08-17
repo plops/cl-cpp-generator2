@@ -124,7 +124,7 @@ for (mb = 0; mb < M; (mb) += (Mtile)) {
           __device__ void block_matrix_product() {
             fp16 frag_a[THREAD_ITEMS_X];
             fp16 frag_b[THREAD_ITEMS_Y];
-            fp32 accum[THREAD_ITEMS_X, THREAD_ITEMS_Y];
+            fp32 accum[THREAD_ITEMS_X][THREAD_ITEMS_Y];
             // load A and B tile from SMEM into registers
             for (kblock = 0; kblock < Kdim; (kblock) += (BlockItemsK)) {
               __syncthreads();
