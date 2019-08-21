@@ -50,7 +50,7 @@
 
 ;; free fortran, c, c++ compiler:  https://www.pgroup.com/products/community.htm
 
-
+;; https://arxiv.org/abs/1908.06649 A Computational Model for Tensor Core Units
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
   (let* ((code
