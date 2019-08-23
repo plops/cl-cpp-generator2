@@ -51,6 +51,9 @@
 ;; free fortran, c, c++ compiler:  https://www.pgroup.com/products/community.htm
 
 ;; https://arxiv.org/abs/1908.06649 A Computational Model for Tensor Core Units
+
+;; mandelbrot example on V100 tensor cores:
+;; https://code.it4i.cz/jansik/mandelbrot/blob/master/mandelbrot-real-wmma-ptx-f16-dump.cu 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/shader.cu"))
   (let* ((code
