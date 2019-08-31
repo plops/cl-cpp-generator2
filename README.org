@@ -86,3 +86,8 @@ This is the tenth in a series of code generators.
 * References
 
 - https://github.com/plops/cl-cpp-generator
+
+- https://www.youtube.com/watch?v=ZAcavCjAhEE dynamic dispatch
+- https://www.youtube.com/watch?v=RBA_q9iVhls prefetching
+- https://www.youtube.com/watch?v=UNvCuYQCXAI google benchmark
+- https://www.youtube.com/watch?v=9ULGJwRu0Q0 cache associativity
