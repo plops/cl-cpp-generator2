@@ -82,10 +82,37 @@ This is the tenth in a series of code generators.
 
 * Documentation
 
+| defun name lambda-list [declaration*] form*                     | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
+| setf {pair}*                                                    | (setf a 3)                                                     | a=3                                                      |
+| + / * - {summands}*                                             | (+ a b)                                                        | a+b                                                      |
+| logior {arg}*                                                   | (logior a b)                                                   | a \vert b                                                |
+| logand {arg}*                                                   | (logand a b)                                                   | a & b                                                    |
+| or {arg}*                                                       | (or a b)                                                       | a \vert b                                                |
+| and {arg}*                                                      | (and a b)                                                      | a && b                                                   |
+| /= *= <= != == ^=                                               | (/= a b)                                                       | a /= b                                                   |
+| < << >>                                                         | (<< a b)                                                       | a << b                                                   |
+| incf a [b=1], decf                                              | (incf a 2)                                                     | a+=2                                                     |
+| when                                                            | (when a b)                                                     | if(a) { b; }                                             |
+| unless                                                          | (unless a b)                                                   | if(!a) { b; }                                            |
+| if                                                              | (if a b c)                                                     | if(a) { b; } else {c;}                                   |
+| case                                                            | (case a (b (return 3)) (t (return 4)))                         | switch a .. TBD                                          |
+| string                                                          | (string "a")                                                   | "a"                                                      |
+| char                                                            | (char "a")                                                     | 'a'                                                      |
+| aref                                                            | (aref a 2 3)                                                   | a[2][3]                                                  |
+| dot                                                             | (dot b (f 3))                                                  | b.f(3)                                                   |
+| lambda                                                          | (lambda (x) y)                                                 | TBD                                                      |
+| defclass  name ({superclass}*) ({slot-specifier}*) [[class-option]] | (defclass Employee (Person) ... TBD                            | class Employee : Person { ... TBD                        |
+| for start end iter                                              | (for ((= a 0) (< a 12) (incf a)) ...)                          | for (a=0; a<12;a++){ ...                                 |
+| dotimes i n                                                     | (dotimes (i 12) ...)                                           | for (int i=0; i<12; i++) { ...                           |
+| while cond                                                      | (while (== a 1) ...)                                           | while (a==1) { ...                                       |
+| foreach item collection                                         | (foreach (a data) ...)                                         | for (auto& a: data) { ...                                |
+| deftype name lambda-list {form}*                                | (deftype csf64 () "complex float")                             | typedef complex float csf64                              |
+| defstruct0 name {slot-description}*                             | (defstruct0 Point (x int) (y int))                             | struct { int x; int y} Point; typedef sruct Point Point; |
+|                                                                 |                                                                |                                                          |
+|                                                                 |                                                                |                                                          |
+|                                                                 |                                                                |                                                          |
 
-| setf {pair}*  | (setf a 3) | a=3 |
-| + {summands}* | (+ a b)    | a+b |
-|               |            |     |
+
 
 
 * References
