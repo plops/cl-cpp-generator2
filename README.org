@@ -80,7 +80,12 @@ This is the tenth in a series of code generators.
   this. However, I don't have access to xcode and iphone and currently
   no interest. So this is on hold.
 
-  
+* Documentation
+
+
+| setf {pair}*  | (setf a 3) | a=3 |
+| + {summands}* | (+ a b)    | a+b |
+|               |            |     |
 
 
 * References
