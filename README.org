@@ -88,7 +88,7 @@ This is the tenth in a series of code generators.
 | + {summands}*, /, *,  -                                         | (+ a b)                                                        | a+b                                                      |
 | logior {arg}*                                                   | (logior a b)                                                   | a \vert b                                                |
 | logand {arg}*                                                   | (logand a b)                                                   | a & b                                                    |
-| or {arg}*                                                       | (or a b)                                                       | a \vert b                                                |
+| or {arg}*                                                       | (or a b)                                                       | a \vert\vert b                                           |
 | and {arg}*                                                      | (and a b)                                                      | a && b                                                   |
 | /= a b, *=, <=, !=, ==, ^=                                      | (/= a b)                                                       | a /= b                                                   |
 | <<, >>, <                                                       | (<< a b)                                                       | a << b                                                   |
