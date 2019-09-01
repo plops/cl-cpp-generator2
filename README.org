@@ -83,14 +83,15 @@ This is the tenth in a series of code generators.
 * Documentation
 
 | defun name lambda-list [declaration*] form*                     | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
+| let ({var \vert (var [init-form])}*) declaration* form*"        | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
 | setf {pair}*                                                    | (setf a 3)                                                     | a=3                                                      |
-| + / * - {summands}*                                             | (+ a b)                                                        | a+b                                                      |
+| + {summands}*, /, *,  -                                         | (+ a b)                                                        | a+b                                                      |
 | logior {arg}*                                                   | (logior a b)                                                   | a \vert b                                                |
 | logand {arg}*                                                   | (logand a b)                                                   | a & b                                                    |
 | or {arg}*                                                       | (or a b)                                                       | a \vert b                                                |
 | and {arg}*                                                      | (and a b)                                                      | a && b                                                   |
-| /= *= <= != == ^=                                               | (/= a b)                                                       | a /= b                                                   |
-| < << >>                                                         | (<< a b)                                                       | a << b                                                   |
+| /= a b, *=, <=, !=, ==, ^=                                      | (/= a b)                                                       | a /= b                                                   |
+| <<, >>, <                                                       | (<< a b)                                                       | a << b                                                   |
 | incf a [b=1], decf                                              | (incf a 2)                                                     | a+=2                                                     |
 | when                                                            | (when a b)                                                     | if(a) { b; }                                             |
 | unless                                                          | (unless a b)                                                   | if(!a) { b; }                                            |
