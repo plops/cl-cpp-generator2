@@ -32,10 +32,10 @@
 		(when (and (< row n) (< col n))
 		  (dotimes (k n)
 		    "//row of a times column of b"
-		    (incf temp_sum
+		    (incf sum
 			  (* (aref a (+ k (* row n)))
 			     (aref b (+ col (* k n))))))
-		  (setf (aref c (+ col (* row n))) temp_sum))))
+		  (setf (aref c (+ col (* row n))) sum))))
 	    (defun matrix_mul_cpu_assert (a b c n)
 	      (declare (values void)
 		       (type int* a b c)

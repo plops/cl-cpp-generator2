@@ -11,10 +11,9 @@ __global__ void matrix_mul(int *a, int *b, int *c, int n) {
   if (((row < n) && (col < n))) {
     for (int k = 0; k < n; (k) += (1)) {
       // row of a times column of b
-      (temp_sum) +=
-          (((a[((k) + (((row) * (n))))]) * (b[((col) + (((k) * (n))))])));
+      (sum) += (((a[((k) + (((row) * (n))))]) * (b[((col) + (((k) * (n))))])));
     }
-    c[((col) + (((row) * (n))))] = temp_sum;
+    c[((col) + (((row) * (n))))] = sum;
   };
 }
 void matrix_mul_cpu_assert(int *a, int *b, int *c, int n) {
