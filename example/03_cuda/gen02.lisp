@@ -23,6 +23,7 @@
 		       (type int n))
 	      (let ((tid (+ (* blockDim.x blockIdx.x)
 			    threadIdx.x)))
+		(declare (type int tid))
 		(when (< tid n)
 		 (setf (aref c tid)
 		       (+ (aref a tid)

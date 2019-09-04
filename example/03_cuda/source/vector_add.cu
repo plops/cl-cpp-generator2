@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 using namespace std;
 __global__ void vector_add(int *a, int *b, int *c, int n) {
-  auto = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
+  int tid = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
   if (tid < n) {
     c[tid] = ((a[tid]) + (b[tid]));
   };
@@ -19,8 +19,8 @@ void vector_add_cpu_assert(int *a, int *b, int *c, int n) {
   }
 }
 int main() {
-  auto = 1 << 20;
-  auto = ((n) * (sizeof(int)));
+  auto n = 1 << 20;
+  auto bytes = ((n) * (sizeof(int)));
   int *a;
   int *b;
   int *c;
@@ -31,8 +31,8 @@ int main() {
   init_array(b, n);
   // no communication between threads, so work splitting not critical
   // add padding
-  auto = 256;
-  auto = ((((n) + (((threads) - (1))))) / (threads));
+  auto threads = 256;
+  auto blocks = ((((n) + (((threads) - (1))))) / (threads));
   // n=1048576 threads=127 blocks=1048702/127=8257
   // n=1048576 threads=128 blocks=1048703/128=8192
   // n=1048576 threads=129 blocks=349568/43=8129
