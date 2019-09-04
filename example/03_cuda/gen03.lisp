@@ -33,14 +33,11 @@
 	      (declare (values int))
 	      "// 1024x1024 square matrix"
 	      (let ((n (<< 1 10))
-		    (bytes (* n (sizeof int)))
+		    (bytes (* n n (sizeof int)))
 		    a
 		    b
 		    c)
-		(declare (type int* a b c)
-			 ;(type int n)
-			 ;x(type size_t bytes)
-			 )
+		(declare (type int* a b c))
 		,@(loop for e in `(a b c) collect
 		       `(cudaMallocManaged ,(format nil "&~a" e) bytes))
 		,@(loop for e in `(a b) collect

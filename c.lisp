@@ -304,6 +304,8 @@ entry return-values contains a list of return values"
 					   (b (elt args (+ 1 i))))
 				       `(= ,a ,b))))))))
 		(not (format nil "!(~a)" (emit (car (cdr code)))))
+		(deref (format nil "*(~a)" (emit (car (cdr code)))))
+		(ref (format nil "&(~a)" (emit (car (cdr code)))))
 		(+ (let ((args (cdr code)))
 		     ;; + {summands}*
 		     (format nil "(~{(~a)~^+~})" (mapcar #'emit args))))
