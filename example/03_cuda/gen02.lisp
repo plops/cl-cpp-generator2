@@ -30,12 +30,25 @@
 		    b
 		    c)
 		(declare (type int* a b c)
-			 (type int n)
-			 (type size_t bytes))
+			 ;(type int n)
+			 ;x(type size_t bytes)
+			 )
 		,@(loop for e in `(a b c) collect
 		       `(cudaMallocManaged ,(format nil "&~a" e) bytes))
 		,@(loop for e in `(a b) collect
-		       `(init_array ,e n))))
+		       `(init_array ,e n))
+		;; no communication between threads
+		;; add padding
+		(let ((threads 256)
+		      (blocks (/ (+ n (- threads 1)) threads)))
+		  ,@(let ((n (expt 2 20)))
+		      (loop for th in `(127 128 129 200 256 257 258) collect
+			   `(string ,(format nil "// n=~a threads=~a blocks=~a=~a"
+					     n th (/ (+ n (- th 1))
+						     th)
+					     (floor (+ n (- th 1))
+						     th))))))
+		))
 	    
 	    )))
     (write-source *code-file* code)))
