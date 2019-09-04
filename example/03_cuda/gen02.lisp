@@ -13,8 +13,16 @@
 	    (include <cuda_runtime.h>
 		     <device_launch_parameters.h>
 		     <cstdlib>)
-	    (defun vector_add ()
-	      (declare (values "__global__ void")))
+	    (defun vector_add (a b c n)
+	      (declare (values "__global__ void")
+		       (type int* a b c)
+		       (type int n))
+	      (let ((tid (+ (* blockDim.x blockIdx.x)
+			    threadIdx.x)))
+		(when (< tid n)
+		 (setf (aref c tid)
+		       (+ (aref a tid)
+			  (aref b tid))))))
 	    (defun init_array (a n)
 	      (declare (values void)
 		       (type int* a)
@@ -41,14 +49,12 @@
 		;; add padding
 		(let ((threads 256)
 		      (blocks (/ (+ n (- threads 1)) threads)))
-		  ,@(let ((n (expt 2 20)))
+		  #+nil ,@(let ((n (expt 2 20)))
 		      (loop for th in `(127 128 129 200 256 257 258) collect
 			   `(string ,(format nil "// n=~a threads=~a blocks=~a=~a"
 					     n th (/ (+ n (- th 1))
 						     th)
 					     (floor (+ n (- th 1))
-						     th))))))
-		))
-	    
-	    )))
+						    th)))))
+		  ("vector_add<<<blocks, threads, 0, 0>>>" a b c n)))))))
     (write-source *code-file* code)))
