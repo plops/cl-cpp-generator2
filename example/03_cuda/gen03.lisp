@@ -31,7 +31,7 @@
 		(declare (type int row col sum))
 		(when (and (< row n) (< col n))
 		  (dotimes (k n)
-		    "//row of a times column of b"
+		    "//row of a times column of b" 
 		    (incf sum
 			  (* (aref a (+ k (* row n)))
 			     (aref b (+ col (* k n))))))
