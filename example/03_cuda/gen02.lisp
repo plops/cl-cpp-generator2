@@ -11,11 +11,31 @@
   (let* ((code
 	  `(do0
 	    (include <cuda_runtime.h>
-		     <device_launch_parameters.h>)
+		     <device_launch_parameters.h>
+		     <cstdlib>)
 	    (defun vector_add ()
 	      (declare (values "__global__ void")))
+	    (defun init_array (a n)
+	      (declare (values void)
+		       (type int* a)
+		       (type int n))
+	      (dotimes (i n)
+		(setf (aref a i)
+		      (% (rand) 100))))
 	    (defun main ()
-	      (declare (values int)))
+	      (declare (values int))
+	      (let ((n (<< 1 20))
+		    (bytes (* n (sizeof bytes)))
+		    a
+		    b
+		    c)
+		(declare (type int* a b c)
+			 (type int n)
+			 (type size_t bytes))
+		,@(loop for e in `(a b c) collect
+		       `(cudaMallocManaged ,(format nil "&~a" e) bytes))
+		,@(loop for e in `(a b) collect
+		       `(init_array ,e n))))
 	    
 	    )))
     (write-source *code-file* code)))
