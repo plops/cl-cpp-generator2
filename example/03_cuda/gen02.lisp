@@ -75,3 +75,4 @@
 		  (vector_add_cpu_assert a b c n)
 		  (return 0)))))))
     (write-source *code-file* code)))
+ 
