@@ -42,6 +42,7 @@ int main() {
   // n=1048576 threads=258 blocks=349611/86=4065
   // async kernel start
   vector_add<<<blocks, threads, 0, 0>>>(a, b, c, n);
+  // managed memory need explicit sync
   cudaDeviceSynchronize();
   vector_add_cpu_assert(a, b, c, n);
   return 0;
