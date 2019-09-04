@@ -21,13 +21,18 @@
 	      (declare (values "__global__ void")
 		       (type int* a b c)
 		       (type int n))
-	      (let ((tid (+ (* blockDim.x blockIdx.x)
-			    threadIdx.x)))
-		(declare (type int tid))
-		(when (< tid n)
-		 (setf (aref c tid)
-		       (+ (aref a tid)
-			  (aref b tid))))))
+	      (let ((col (+ (* blockDim.x blockIdx.x)
+			    threadIdx.x))
+		    (row (+ (* blockDim.y blockIdx.y)
+			    threadIdx.y))
+		    (sum 0))
+		(declare (type int row col sum))
+		(when (and (< row n) (< col n))
+		  (dotimes (k n)
+		    (incf temp_sum
+			  (* (aref a (+ k (* row n)))
+			     (aref b (+ col (* k n))))))
+		  (setf (aref c (+ col (* row n))) temp_sum))))
 	    (defun init_matrix (a n)
 	      (declare (values void)
 		       (type int* a)
@@ -48,19 +53,22 @@
 		       `(cudaMallocManaged (ref ,e) bytes))
 		,@(loop for e in `(a b) collect
 		       `(init_matrix ,e n))
-		"// no communication between threads, so work splitting not critical"
-		"// add padding"
-		(let ((threads 256)
+		"// one thread per output element"
+		"// square thread blocks"
+		(let ((threads 16)
 		      (blocks (/ (+ n (- threads 1)) threads)))
-		  ,@(let ((n (expt 2 20)))
-		      (loop for th in `(127 128 129 200 256 257 258) collect
+		  ,@(let ((n (expt 2 10)))
+		      (loop for th in `(14 16 32) collect
 			   (format nil "// n=~a threads=~a blocks=~a=~a"
 				    n th (/ (+ n (- th 1))
 					    th)
 				    (floor (+ n (- th 1))
 					   th))))
-		  "// async kernel start"
-		  ("vector_add<<<blocks, threads, 0, 0>>>" a b c n)
+		  "// kernel launch parameters"
+		  (let ((threads2 (dim3 threads threads))
+			(blocks2 (dim3 blocks blocks)))
+		   "// async kernel start"
+		   ("matrix_mul<<<blocks2, threads2, 0, 0>>>" a b c n))
 		  "// managed memory need explicit sync"
 		  (cudaDeviceSynchronize)
 		  (vector_add_cpu_assert a b c n)

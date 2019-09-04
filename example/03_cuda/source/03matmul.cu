@@ -3,9 +3,15 @@
 #include <cuda_runtime.h>
 using namespace std;
 __global__ void matrix_mul(int *a, int *b, int *c, int n) {
-  int tid = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
-  if (tid < n) {
-    c[tid] = ((a[tid]) + (b[tid]));
+  int col = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
+  int row = ((((blockDim.y) * (blockIdx.y))) + (threadIdx.y));
+  int sum = 0;
+  if (((row < n) && (col < n))) {
+    for (int k = 0; k < n; (k) += (1)) {
+      (temp_sum) +=
+          (((a[((k) + (((row) * (n))))]) * (b[((col) + (((k) * (n))))])));
+    }
+    c[((col) + (((row) * (n))))] = temp_sum;
   };
 }
 void init_matrix(int *a, int n) {
@@ -25,19 +31,18 @@ int main() {
   cudaMallocManaged(&(c), bytes);
   init_matrix(a, n);
   init_matrix(b, n);
-  // no communication between threads, so work splitting not critical
-  // add padding
-  auto threads = 256;
+  // one thread per output element
+  // square thread blocks
+  auto threads = 16;
   auto blocks = ((((n) + (((threads) - (1))))) / (threads));
-  // n=1048576 threads=127 blocks=1048702/127=8257
-  // n=1048576 threads=128 blocks=1048703/128=8192
-  // n=1048576 threads=129 blocks=349568/43=8129
-  // n=1048576 threads=200 blocks=41951/8=5243
-  // n=1048576 threads=256 blocks=1048831/256=4096
-  // n=1048576 threads=257 blocks=1048832/257=4081
-  // n=1048576 threads=258 blocks=349611/86=4065
+  // n=1024 threads=14 blocks=1037/14=74
+  // n=1024 threads=16 blocks=1039/16=64
+  // n=1024 threads=32 blocks=1055/32=32
+  // kernel launch parameters
+  auto threads2 = dim3(threads, threads);
+  auto blocks2 = dim3(blocks, blocks);
   // async kernel start
-  vector_add<<<blocks, threads, 0, 0>>>(a, b, c, n);
+  matrix_mul<<<blocks2, threads2, 0, 0>>>(a, b, c, n);
   // managed memory need explicit sync
   cudaDeviceSynchronize();
   vector_add_cpu_assert(a, b, c, n);
