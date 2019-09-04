@@ -6,8 +6,8 @@
 #define SHM_SIZE (16 * 16)
 
 __global__ void matrix_mul(int *a, int *b, int *c, int n) {
-  __shared__ int A[SHM_SIZE] = {0};
-  __shared__ int B[SHM_SIZE] = {0};
+  __shared__ int A[SHM_SIZE] = ;
+  __shared__ int B[SHM_SIZE] = ;
   int col = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
   int row = ((((blockDim.y) * (blockIdx.y))) + (threadIdx.y));
   auto tx = threadIdx.x;
