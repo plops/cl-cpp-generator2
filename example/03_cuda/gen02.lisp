@@ -70,5 +70,6 @@
 		  "// async kernel start"
 		  ("vector_add<<<blocks, threads, 0, 0>>>" a b c n)
 		  (cudaDeviceSynchronize)
-		  (vector_add_cpu_assert a b c n)))))))
+		  (vector_add_cpu_assert a b c n)
+		  (return 0)))))))
     (write-source *code-file* code)))
