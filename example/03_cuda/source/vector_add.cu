@@ -1,7 +1,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cuda_runtime.h>
-using namespace std __global__ void vector_add(int *a, int *b, int *c, int n) {
+using namespace std;
+__global__ void vector_add(int *a, int *b, int *c, int n) {
   auto = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
   if (tid < n) {
     c[tid] = ((a[tid]) + (b[tid]));

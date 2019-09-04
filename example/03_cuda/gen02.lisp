@@ -16,7 +16,7 @@
 		     <cassert>
 		     ; <iostream>
 		     )
-	    "using namespace std"
+	    "using namespace std;"
 	    (defun vector_add (a b c n)
 	      (declare (values "__global__ void")
 		       (type int* a b c)
