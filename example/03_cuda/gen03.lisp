@@ -12,7 +12,7 @@
 	  `(do0
 	    (include <cuda_runtime.h>
 		     ;<device_launch_parameters.h>
-		     <cstdlib>
+		     <cstdlib> ;; randx
 		     <cassert>
 		     ; <iostream>
 		     )
@@ -28,7 +28,13 @@
 		 (setf (aref c tid)
 		       (+ (aref a tid)
 			  (aref b tid))))))
-	    
+	    (defun init_matrix (a n)
+	      (declare (values void)
+		       (type int* a)
+		       (type int n))
+	      (dotimes (i (* n n))
+		(setf (aref a i) (% (rand) 100)))
+	      )
 	    (defun main ()
 	      (declare (values int))
 	      "// 1024x1024 square matrix"
@@ -39,9 +45,9 @@
 		    c)
 		(declare (type int* a b c))
 		,@(loop for e in `(a b c) collect
-		       `(cudaMallocManaged ,(format nil "&~a" e) bytes))
+		       `(cudaMallocManaged (ref ,e) bytes))
 		,@(loop for e in `(a b) collect
-		       `(init_array ,e n))
+		       `(init_matrix ,e n))
 		"// no communication between threads, so work splitting not critical"
 		"// add padding"
 		(let ((threads 256)

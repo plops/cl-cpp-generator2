@@ -8,18 +8,23 @@ __global__ void matrix_mul(int *a, int *b, int *c, int n) {
     c[tid] = ((a[tid]) + (b[tid]));
   };
 }
+void init_matrix(int *a, int n) {
+  for (int i = 0; i < ((n) * (n)); (i) += (1)) {
+    a[i] = rand() % 100;
+  }
+}
 int main() {
   // 1024x1024 square matrix
   auto n = 1 << 10;
-  auto bytes = ((n) * (sizeof(int)));
+  auto bytes = ((n) * (n) * (sizeof(int)));
   int *a;
   int *b;
   int *c;
-  cudaMallocManaged(&a, bytes);
-  cudaMallocManaged(&b, bytes);
-  cudaMallocManaged(&c, bytes);
-  init_array(a, n);
-  init_array(b, n);
+  cudaMallocManaged(&(a), bytes);
+  cudaMallocManaged(&(b), bytes);
+  cudaMallocManaged(&(c), bytes);
+  init_matrix(a, n);
+  init_matrix(b, n);
   // no communication between threads, so work splitting not critical
   // add padding
   auto threads = 256;
