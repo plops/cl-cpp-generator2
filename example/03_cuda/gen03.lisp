@@ -10,6 +10,8 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/03matmul.cu"))
   (let* ((code
 	  `(do0
+	    "// nvcc -o 03matmul 03matmul.cu"
+	    "// nvprof 03matmul"
 	    (include <cuda_runtime.h>
 		     ;<device_launch_parameters.h>
 		     <cstdlib> ;; randx
@@ -29,10 +31,27 @@
 		(declare (type int row col sum))
 		(when (and (< row n) (< col n))
 		  (dotimes (k n)
+		    "//row of a times column of b"
 		    (incf temp_sum
 			  (* (aref a (+ k (* row n)))
 			     (aref b (+ col (* k n))))))
 		  (setf (aref c (+ col (* row n))) temp_sum))))
+	    (defun matrix_mul_cpu_assert (a b c n)
+	      (declare (values void)
+		       (type int* a b c)
+		       (type int n))
+	      (let ((tmp 0))
+		(declare (type int tmp))
+		"// every row i"
+		(dotimes (i n)
+		  "// every column j"
+		  (dotimes (j n)
+		    "// every row-col pair"
+		    (setf tmp 0)
+		    (dotimes (k n)
+		      (incf tmp (* (aref a (+ k (* i n)))
+				   (aref b (+ j (* k n))))))
+		    (assert (== tmp (aref c (+ j (* i n)))))))))
 	    (defun init_matrix (a n)
 	      (declare (values void)
 		       (type int* a)
@@ -71,7 +90,7 @@
 		   ("matrix_mul<<<blocks2, threads2, 0, 0>>>" a b c n))
 		  "// managed memory need explicit sync"
 		  (cudaDeviceSynchronize)
-		  (vector_add_cpu_assert a b c n)
+		  (matrix_mul_cpu_assert a b c n)
 		  (return 0)))))))
     (write-source *code-file* code)))
  

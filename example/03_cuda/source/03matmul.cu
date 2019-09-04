@@ -1,3 +1,5 @@
+// nvcc -o 03matmul 03matmul.cu
+// nvprof 03matmul
 #include <cassert>
 #include <cstdlib>
 #include <cuda_runtime.h>
@@ -8,10 +10,26 @@ __global__ void matrix_mul(int *a, int *b, int *c, int n) {
   int sum = 0;
   if (((row < n) && (col < n))) {
     for (int k = 0; k < n; (k) += (1)) {
+      // row of a times column of b
       (temp_sum) +=
           (((a[((k) + (((row) * (n))))]) * (b[((col) + (((k) * (n))))])));
     }
     c[((col) + (((row) * (n))))] = temp_sum;
+  };
+}
+void matrix_mul_cpu_assert(int *a, int *b, int *c, int n) {
+  int tmp = 0;
+  // every row i
+  for (int i = 0; i < n; (i) += (1)) {
+    // every column j
+    for (int j = 0; j < n; (j) += (1)) {
+      // every row-col pair
+      tmp = 0;
+      for (int k = 0; k < n; (k) += (1)) {
+        (tmp) += (((a[((k) + (((i) * (n))))]) * (b[((j) + (((k) * (n))))])));
+      }
+      assert((tmp) == (c[((j) + (((i) * (n))))]));
+    }
   };
 }
 void init_matrix(int *a, int n) {
@@ -45,6 +63,6 @@ int main() {
   matrix_mul<<<blocks2, threads2, 0, 0>>>(a, b, c, n);
   // managed memory need explicit sync
   cudaDeviceSynchronize();
-  vector_add_cpu_assert(a, b, c, n);
+  matrix_mul_cpu_assert(a, b, c, n);
   return 0;
 }
