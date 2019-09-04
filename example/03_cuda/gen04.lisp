@@ -3,39 +3,52 @@
 
 (in-package :cl-cpp-generator2)
 
-;; https://www.youtube.com/watch?v=DpEgZe2bbU0
-;; https://github.com/CoffeeBeforeArch/cuda_programming/blob/master/matrixMul/matrix_mul/matrix_mul/matrix_mul.cu
-
+;; https://www.youtube.com/watch?v=ga2ML1uGr5o
+;; https://github.com/CoffeeBeforeArch/cuda_programming/tree/master/matrixMul/tiled_matrix_mul
+;; https://github.com/CoffeeBeforeArch/from_scratch/blob/master/cacheTiling/matrix_mul.cu
 (progn
-  (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/03matmul.cu"))
+  (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/04matmul.cu"))
   (let* ((code
 	  `(do0
-	    "// nvcc -o 03matmul 03matmul.cu"
-	    "// nvprof 03matmul"
+	    "// nvcc -o 04matmul 04matmul.cu"
+	    "// nvprof 04matmul"
 	    (include <cuda_runtime.h>
 		     ;<device_launch_parameters.h>
 		     <cstdlib> ;; randx
 		     <cassert>
 		     ; <iostream>
 		     )
-	    "using namespace std;"
+					; "using namespace std;"
+	    "#define SHM_SIZE (16*16)"
+	    " "
 	    (defun matrix_mul (a b c n)
-	      (declare (values "__global__ void")
-		       (type int* a b c)
-		       (type int n))
-	      (let ((col (+ (* blockDim.x blockIdx.x)
-			    threadIdx.x))
-		    (row (+ (* blockDim.y blockIdx.y)
-			    threadIdx.y))
-		    (sum 0))
-		(declare (type int row col sum))
-		(when (and (< row n) (< col n))
-		  (dotimes (k n)
-		    "//row of a times column of b" 
-		    (incf sum
-			  (* (aref a (+ k (* row n)))
-			     (aref b (+ col (* k n))))))
-		  (setf (aref c (+ col (* row n))) sum))))
+	       (declare (values "__global__ void")
+			(type int* a b c)
+			(type int n))
+	       (let (((aref A SHM_SIZE) (curly 0))
+		     ((aref B SHM_SIZE) (curly 0))
+		     (col (+ (* blockDim.x blockIdx.x)
+			     threadIdx.x))
+		     (row (+ (* blockDim.y blockIdx.y)
+			     threadIdx.y))
+		     (tx threadIdx.x)
+		     (ty threadIdx.y)
+		     (dim blockDim.x))
+		 (declare (type int row col sum)
+			  (type "__shared__ int" (aref A SHM_SIZE)
+				(aref B SHM_SIZE)))
+		 "// move tile across length of grid"
+		 (dotimes (i (/ (+ N dim -1)
+				dim))
+		   (setf (aref A (+ tx (* dim ty))) (aref a (+ (* i dim) tx (* row n)))
+			 (aref B (+ tx (* dim ty))) (aref b (+ (* i dim n) (* ty n) col))))
+		 (when (and (< row n) (< col n))
+		   (dotimes (k n)
+		     "//row of a times column of b" 
+		     (incf sum
+			   (* (aref a (+ k (* row n)))
+			      (aref b (+ col (* k n))))))
+		   (setf (aref c (+ col (* row n))) sum))))
 	    (defun matrix_mul_cpu_assert (a b c n)
 	      (declare (values void)
 		       (type int* a b c)

@@ -3,11 +3,23 @@
 #include <cassert>
 #include <cstdlib>
 #include <cuda_runtime.h>
-using namespace std;
+#define SHM_SIZE (16 * 16)
+
 __global__ void matrix_mul(int *a, int *b, int *c, int n) {
+  __shared__ int A[SHM_SIZE] = {0};
+  __shared__ int B[SHM_SIZE] = {0};
   int col = ((((blockDim.x) * (blockIdx.x))) + (threadIdx.x));
   int row = ((((blockDim.y) * (blockIdx.y))) + (threadIdx.y));
-  int sum = 0;
+  auto tx = threadIdx.x;
+  auto ty = threadIdx.y;
+  auto dim = blockDim.x;
+  // move tile across length of grid
+  for (int i = 0; i < ((((N) + (dim) + (-1))) / (dim)); (i) += (1)) {
+    A[((tx) + (((dim) * (ty))))] =
+        a[((((i) * (dim))) + (tx) + (((row) * (n))))];
+    B[((tx) + (((dim) * (ty))))] =
+        b[((((i) * (dim) * (n))) + (((ty) * (n))) + (col))];
+  }
   if (((row < n) && (col < n))) {
     for (int k = 0; k < n; (k) += (1)) {
       // row of a times column of b
