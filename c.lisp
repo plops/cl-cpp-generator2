@@ -118,7 +118,9 @@ entry return-values contains a list of return values"
 				     (destructuring-bind (name &optional value) decl
 				       (format nil "~a ~@[ = ~a~];"
 					       (variable-declaration :name name :env env :emit emit)
-					       (funcall emit value)))
+					       
+					       (when value
+						   (funcall emit value))))
 				     (format nil "~a;"
 					     (variable-declaration :name decl :env env :emit emit))))
 			  ,@body)))))))
