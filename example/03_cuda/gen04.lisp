@@ -21,7 +21,7 @@
 					; "using namespace std;"
 	    "#define SHM_SIZE (16*16)"
 	    " "
-	    (defun matrix_mul (a b c n)
+	    (defun matrix_mul (a b c n) 
 	       (declare (values "__global__ void")
 			(type int* a b c)
 			(type int n))
