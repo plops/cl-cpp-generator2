@@ -13,20 +13,22 @@ __global__ void matrix_mul(int *a, int *b, int *c, int n) {
   auto tx = threadIdx.x;
   auto ty = threadIdx.y;
   auto dim = blockDim.x;
+  int sum = 0;
   // move tile across length of grid
-  for (int i = 0; i < ((((N) + (dim) + (-1))) / (dim)); (i) += (1)) {
+  for (int i = 0; i < ((((n) + (dim) + (-1))) / (dim)); (i) += (1)) {
     A[((tx) + (((dim) * (ty))))] =
         a[((((i) * (dim))) + (tx) + (((row) * (n))))];
     B[((tx) + (((dim) * (ty))))] =
         b[((((i) * (dim) * (n))) + (((ty) * (n))) + (col))];
-  }
-  if (((row < n) && (col < n))) {
-    for (int k = 0; k < n; (k) += (1)) {
-      // row of a times column of b
-      (sum) += (((a[((k) + (((row) * (n))))]) * (b[((col) + (((k) * (n))))])));
+    __syncthreads();
+    // accumulate partial results
+    for (int j = 0; j < dim; (j) += (1)) {
+      (sum) +=
+          (((A[((((ty) * (dim))) + (j))]) * (B[((((j) * (dim))) + (tx))])));
     }
-    c[((col) + (((row) * (n))))] = sum;
-  };
+    __syncthreads();
+  }
+  c[((col) + (((row) * (n))))] = sum;
 }
 void matrix_mul_cpu_assert(int *a, int *b, int *c, int n) {
   int tmp = 0;
