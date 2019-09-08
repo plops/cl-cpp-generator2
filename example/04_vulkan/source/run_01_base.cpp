@@ -1,4 +1,5 @@
 // https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code
+// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Validation_layers
 // g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
 // -o run_01_base
 
@@ -63,6 +64,7 @@ private:
     }
   }
   void cleanup() {
+    vkDestroyInstance(_instance, nullptr);
     glfwDestroyWindow(_window);
     glfwTerminate();
   };
