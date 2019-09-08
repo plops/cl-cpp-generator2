@@ -71,10 +71,27 @@
 		       :pEngineName (string "No Engine")
 		       :engineVersion (VK_MAKE_VERSION 1 0 0)
 		       :apiVersion VK_API_VERSION_1_0))
+		 
+		 (let ((glfwExtensionCount  0)
+		       (glfwExtensions))
+		   (declare (type uint32_t glfwExtensionCount)
+			    (type "const char**" glfwExtensions))
+		   (setf glfwExtensions (glfwGetRequiredInstanceExtensions
+					 &glfwExtensionCount))
 
-		 
-		 
-		 )
+		   ,(vk `(VkInstanceCreateInfo
+			  createInfo
+			  :sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
+			  :pApplicationInfo &appInfo
+			  :enabledExtensionCount glfwExtensionCount
+			  :ppEnabledExtensionNames glfwExtensions
+			  :enabledLayerCount 0))
+		   (unless (== VK_SUCCESS
+			       (vkCreateInstance &createInfo
+						 nullptr
+						 &_instance))
+		     (throw ("std::runtime_error"
+			     (string "failed to create instance"))))))
 	       (defun initVulkan ()
 		 (declare (values void))
 		 (createInstance)
