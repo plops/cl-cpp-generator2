@@ -476,7 +476,7 @@ entry return-values contains a list of return values"
 					     `(progn
 						,@(loop for desc in slot-descriptions collect
 						       (destructuring-bind (slot-name &optional type) desc
-							 (format nil "~a~@[ ~a~]" slot-name type))))))
+							 (format nil "~a ~a;" type slot-name))))))
 				   (deftype ,name (struct ,name)))))))
 		(handler-case
 		    ;; handler-case expression [[{error-clause}*]]

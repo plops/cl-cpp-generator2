@@ -17,7 +17,28 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphicsFamily;
+} typedef QueueFamilyIndices;
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+  QueueFamilyIndices indices;
+  uint32_t queueFamilyCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+  std::vector < VkQueueFamilyProperties queueFamilies(queueFamilyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                           queueFamilies.data());
+  auto i = 0;
+  for (auto &family : queueFamilies) {
+    if (((0 < family.queueCount) &&
+         (((family.queueFlags) & (VK_QUEUE_GRAPHICS_BIT))))) {
+      indices.graphicsFamily = i;
+    };
+    (i)++;
+  };
+  return indices;
+}
 class HelloTriangleApplication {
 public:
   void run() {
@@ -89,7 +110,10 @@ private:
     createInstance();
     pickPhysicalDevice();
   }
-  bool isDeviceSuitable(VkPhysicalDevice device) { return true; }
+  bool isDeviceSuitable(VkPhysicalDevice device) {
+    QueueFamilyIndices indices = findQueueFamilies(device);
+    return indices.graphicsFamily.has_value();
+  }
   void pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
