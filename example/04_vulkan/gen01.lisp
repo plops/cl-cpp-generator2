@@ -51,8 +51,7 @@
 		(declare (type HelloTriangleApplication app))
 		(handler-case
 		    (app.run)
-		  (e
-		      (declare (type "const std::exception&" e))
+		  ("const std::exception&" (e)
 		    (return EXIT_FAILURE)))
 		(return EXIT_SUCCESS))
 	      

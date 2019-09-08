@@ -477,6 +477,29 @@ entry return-values contains a list of return values"
 						       (destructuring-bind (slot-name &optional type) desc
 							 (format nil "~a~@[ ~a~]" slot-name type))))))
 				   (deftype ,name (struct ,name)))))))
+		(handler-case
+		    ;; handler-case expression [[{error-clause}*]]
+		    ;; error-clause::= (typespec ([var]) declaration* form*)
+		    ;; if typespec is t, catch any kind of exception
+
+		    ;; (handler-case form
+		    ;;   (typespec1 (var1) form1)
+		    ;;   (typespec2 (var2) form2))
+
+		    ;; a clause such as:
+		    ;; (typespec (var) (declare (ignore var)) form)
+		    ;; can be written as (typespec () form)
+
+		    
+		    ;; try {
+		    ;;   // code here
+		    ;; }
+		    ;; catch (int param) { cout << "int exception"; }
+		    ;; catch (char param) { cout << "char exception"; }
+		    ;; catch (...) { cout << "default exception"; }
+		    
+		    (destructuring-bind (expr ))
+		    )
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
