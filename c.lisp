@@ -294,6 +294,7 @@ entry return-values contains a list of return values"
 		(public (format nil "public ~a" (emit (cadr code))))
 		(defun (parse-defun code #'emit))
 		(return (format nil "return ~a" (emit (car (cdr code)))))
+		(throw (format nil "throw ~a" (emit (car (cdr code)))))
 		
 		(let (parse-let code #'emit))
 		(setf 

@@ -3,6 +3,9 @@
 
 (in-package :cl-cpp-generator2)
 
+;(setf *features* (union *features* '(:nolog)))
+(setf *features* (set-difference *features* '(:nolog)))
+
 (progn
   (defun vk (params)
     (destructuring-bind (type var &rest args) params
@@ -52,13 +55,13 @@
 	      "private:"
 	      (let ((_window)
 		    (_instance)
-		    (_enableValidationLayers true)
-		    (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation"))))
+		    #-nolog (_enableValidationLayers true)
+		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation"))))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
-			 (type "const bool" _enableValidationLayers)
-			 (type "const std::vector<const char*>" _validationLayers))
-	       (defun checkValidationLayerSupport ()
+			 #-nolog (type "const bool" _enableValidationLayers)
+			 #-nolog (type "const std::vector<const char*>" _validationLayers))
+	       #-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
 		   (declare (type uint32_t layerCount))
@@ -92,6 +95,10 @@
 						nullptr)))
 	       (defun createInstance ()
 		 (declare (values void))
+		 #-nolog (when (and _enableValidationLayers
+				    (not (checkValidationLayerSupport)))
+			   (throw ("std::runtime_error"
+				   (string "validation layers requested, but unavailable."))))
 		 ,(vk `(VkApplicationInfo
 		       appInfo
 		       :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
@@ -114,7 +121,12 @@
 			  :pApplicationInfo &appInfo
 			  :enabledExtensionCount glfwExtensionCount
 			  :ppEnabledExtensionNames glfwExtensions
-			  :enabledLayerCount 0))
+			  :enabledLayerCount
+			  #+nolog 0
+			  #-nolog ("static_cast<uint32_t>"
+				   (_validationLayers.size))
+			  #-nolog :ppEnabledLayerNames
+			  #-nolog (_validationLayers.data)))
 		   (unless (== VK_SUCCESS
 			       (vkCreateInstance &createInfo
 						 nullptr

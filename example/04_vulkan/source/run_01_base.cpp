@@ -59,6 +59,9 @@ private:
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   }
   void createInstance() {
+    if (((_enableValidationLayers) && (!(checkValidationLayerSupport())))) {
+      throw std::runtime_error("validation layers requested, but unavailable.");
+    };
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Hello Triangle";
@@ -74,10 +77,12 @@ private:
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = glfwExtensionCount;
     createInfo.ppEnabledExtensionNames = glfwExtensions;
-    createInfo.enabledLayerCount = 0;
+    createInfo.enabledLayerCount =
+        static_cast<uint32_t>(_validationLayers.size());
+    createInfo.ppEnabledLayerNames = _validationLayers.data();
     if (!((VK_SUCCESS) ==
           (vkCreateInstance(&createInfo, nullptr, &_instance)))) {
-      throw(std::runtime_error("failed to create instance"));
+      throw std::runtime_error("failed to create instance");
     };
   }
   void initVulkan() { createInstance(); }
