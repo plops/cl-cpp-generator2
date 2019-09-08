@@ -27,13 +27,15 @@ public:
 
 private:
   GLFWwindow *_window;
+  VkInstance _instance;
   void initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   }
-  void initVulkan() {}
+  void createInstance() { auto appinfo = {}; }
+  void initVulkan() { createInstance(); }
   void mainLoop() {
     while (!(glfwWindowShouldClose(_window))) {
       glfwPollEvents();

@@ -4,6 +4,13 @@
 (in-package :cl-cpp-generator2)
 
 (progn
+  (defmacro vk (type var &rest args)
+    `(let ((,var (curly)))
+       (declare (type ,type ,var))
+       ,@(loop for i from 0 upto (length args) by 2 collect
+	      (let ((keyword (aref args i))
+		    (value (aref args (+ i 1))))
+		`(setf (dot ,var ,keyword) ,value)))))
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.cpp"))
   (let* ((code
 	  `(do0
@@ -40,8 +47,10 @@
 		(mainLoop)
 		(cleanup))
 	      "private:"
-	      (let ((_window))
-		(declare (type GLFWwindow* _window))
+	      (let ((_window)
+		    (_instance))
+		(declare (type GLFWwindow* _window)
+			 (type VkInstance _instance))
 	       (defun initWindow ()
 		 (declare (values void))
 		 (glfwInit)
@@ -51,8 +60,23 @@
 						(string "vulkan window")
 						nullptr
 						nullptr)))
+	       (defun createInstance ()
+		 (declare (values void))
+		 ,(vk VkApplicationInfo appInfo
+		     :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
+		     :pApplicationName (string "Hello Triangle")
+		     :applicationVersion (VK_MAKE_VERSION 1 0 0)
+		     :pEngineName (string "No Engine")
+		     :engineVersion (VK_MAKE_VERSION 1 0 0)
+		     :apiVersion VK_API_VERSION_1_0)
+
+		 
+		 
+		 )
 	       (defun initVulkan ()
-		 (declare (values void)))
+		 (declare (values void))
+		 (createInstance)
+		 )
 	       (defun mainLoop ()
 		 (declare (values void))
 		 (while (not (glfwWindowShouldClose _window))
