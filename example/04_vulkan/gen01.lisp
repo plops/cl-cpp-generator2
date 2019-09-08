@@ -60,7 +60,7 @@
 		(vkGetPhysicalDeviceQueueFamilyProperties
 		 device &queueFamilyCount nullptr)
 		(let (((queueFamilies queueFamilyCount)))
-		  (declare (type "std::vector<VkQueueFamilyProperties"
+		  (declare (type "std::vector<VkQueueFamilyProperties>"
 				 (queueFamilies queueFamilyCount)))
 		  (vkGetPhysicalDeviceQueueFamilyProperties
 		   device

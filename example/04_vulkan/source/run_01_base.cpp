@@ -19,15 +19,15 @@
 #include <iostream>
 #include <optional>
 #include <stdexcept>
-struct {
+struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
-} QueueFamilyIndices;
-typedef QueueFamilyIndices;
+};
+typedef struct QueueFamilyIndices QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
   QueueFamilyIndices indices;
   uint32_t queueFamilyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-  std::vector < VkQueueFamilyProperties queueFamilies(queueFamilyCount);
+  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                            queueFamilies.data());
   auto i = 0;

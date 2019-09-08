@@ -471,14 +471,14 @@ entry return-values contains a list of return values"
 		   (format nil "~a"
 			   (emit `(do0
 				   ,(format nil "struct ~a ~a;"
-					    
+					    name
 					    (emit
 					     `(progn
 						,@(loop for desc in slot-descriptions collect
 						       (destructuring-bind (slot-name &optional type) desc
 							 (format nil "~a ~a;" type slot-name)))))
-					    name)
-				   (deftype ,name (struct ,name)))))))
+					   )
+				   (deftype ,name () (struct ,name)))))))
 		(handler-case
 		    ;; handler-case expression [[{error-clause}*]]
 		    ;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
