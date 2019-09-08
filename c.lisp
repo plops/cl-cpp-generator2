@@ -479,16 +479,18 @@ entry return-values contains a list of return values"
 				   (deftype ,name (struct ,name)))))))
 		(handler-case
 		    ;; handler-case expression [[{error-clause}*]]
-		    ;; error-clause::= (typespec ([var]) declaration* form*)
+		    ;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
+		    ;; error-clause::= (typespec ([var]) form*)
 		    ;; if typespec is t, catch any kind of exception
 
-		    ;; (handler-case form
+		    ;; (handler-case (progn forma formb)
 		    ;;   (typespec1 (var1) form1)
 		    ;;   (typespec2 (var2) form2))
 
 		    ;; a clause such as:
 		    ;; (typespec (var) (declare (ignore var)) form)
 		    ;; can be written as (typespec () form)
+		    
 
 		    
 		    ;; try {
@@ -498,8 +500,20 @@ entry return-values contains a list of return values"
 		    ;; catch (char param) { cout << "char exception"; }
 		    ;; catch (...) { cout << "default exception"; }
 		    
-		    (destructuring-bind (expr ))
-		    )
+		    (destructuring-bind (expr &rest clauses) (cdr code)
+		      (with-output-to-string (s)
+			(format s "try ~a"
+				(if (eq 'progn (car expr))
+				    (emit expr)
+				    (emit `(progn ,expr))))
+			(loop for clause in clauses do
+			     (destructuring-bind (typespec (var) &rest forms) clause
+			       (format s "catch (~a) ~a"
+				       (if (and (eq 't typespec)
+						(null var))
+					   (format nil "...")
+					   (format nil "~a ~a" typespec var))
+				       (emit `(progn ,@forms))))))))
 		(t (destructuring-bind (name &rest args) code
 
 		     (if (listp name)
