@@ -16,19 +16,33 @@
 #include <functional>
 #include <iostream>
 #include <stdexcept>
-#include <vulkan/vulkan.h>
 class HelloTriangleApplication {
 public:
   void run() {
+    initWindow();
     initVulkan();
     mainLoop();
     cleanup();
   }
 
 private:
+  GLFWwindow *_window;
+  void initWindow() {
+    glfwInit();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
+  }
   void initVulkan() {}
-  void mainLoop() {}
-  void cleanup() {}
+  void mainLoop() {
+    while (!(glfwWindowShouldClose(_window))) {
+      glfwPollEvents();
+    }
+  }
+  void cleanup() {
+    glfwDestroyWindow(_window);
+    glfwTerminate();
+  };
 };
 int main() {
   HelloTriangleApplication app;
@@ -39,18 +53,4 @@ int main() {
     return EXIT_FAILURE;
   };
   return EXIT_SUCCESS;
-  glfwInit();
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  auto window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
-  uint32_t extensionCount = 0;
-  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-  glm::mat4 matrix;
-  glm::vec4 vec;
-  auto test = ((matrix) * (vec));
-  while (!(glfwWindowShouldClose(window))) {
-    glfwPollEvents();
-  }
-  glfwDestroyWindow(window);
-  glfwTerminate();
-  return 0;
 }

@@ -13,6 +13,8 @@
 	    (do0 "#define GLFW_INCLUDE_VULKAN"
 		 (include <GLFW/glfw3.h>)
 		 " ")
+	    #+nil
+	    (include <vulkan/vulkan.h>)
 	    
 	    (do0
 	     "#define GLM_FORCE_RADIANS"
@@ -28,21 +30,38 @@
 		     <stdexcept>
 		     <functional>
 		     <cstdlib>
-		     <vulkan/vulkan.h>)
+		     )
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
 		(declare (values void))
+		(initWindow)
 		(initVulkan)
 		(mainLoop)
 		(cleanup))
 	      "private:"
-	      (defun initVulkan ()
-		(declare (values void)))
-	      (defun mainLoop ()
-		(declare (values void)))
-	      (defun cleanup ()
-		(declare (values void)))
+	      (let ((_window))
+		(declare (type GLFWwindow* _window))
+	       (defun initWindow ()
+		 (declare (values void))
+		 (glfwInit)
+		 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+		 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+		 (setf _window (glfwCreateWindow 800 600
+						(string "vulkan window")
+						nullptr
+						nullptr)))
+	       (defun initVulkan ()
+		 (declare (values void)))
+	       (defun mainLoop ()
+		 (declare (values void))
+		 (while (not (glfwWindowShouldClose _window))
+		   (glfwPollEvents)))
+	       (defun cleanup ()
+		 (declare (values void))
+		 (glfwDestroyWindow _window)
+		 (glfwTerminate)
+		 ))
 	      )
 	    (defun main ()
 	      (declare (values int))
@@ -58,12 +77,9 @@
 		    (return EXIT_FAILURE)))
 		(return EXIT_SUCCESS))
 	      
-	      (glfwInit)
-	      (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-	      (let ((window (glfwCreateWindow 800 600
-					      (string "vulkan window")
-					      nullptr
-					      nullptr)))
+	      
+	     #+nnil
+	      (let ()
 		(let ((extensionCount 0))
 		  (declare (type uint32_t extensionCount))
 		  (vkEnumerateInstanceExtensionProperties
@@ -75,10 +91,7 @@
 		      (test (* matrix vec)))
 		  (declare (type "glm::mat4" matrix)
 			   (type "glm::vec4" vec))
-		  (while (not (glfwWindowShouldClose window))
-		    (glfwPollEvents))
-		  (glfwDestroyWindow window)
-		  (glfwTerminate)
+		  
 		  (return 0)))))))
     (write-source *code-file* code)))
  
