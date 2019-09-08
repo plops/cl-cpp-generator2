@@ -55,12 +55,14 @@
 	      "private:"
 	      (let ((_window)
 		    (_instance)
-		    #-nolog (_enableValidationLayers true)
-		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation"))))
+		    ;#-nolog (_enableValidationLayers true)
+		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
+		    (_physicalDevice VK_NULL_HANDLE))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
-			 #-nolog (type "const std::vector<const char*>" _validationLayers))
+			 #-nolog (type "const std::vector<const char*>" _validationLayers)
+			 (type VkPhysicalDevice _physicalDevice))
 	       #-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
@@ -95,8 +97,8 @@
 						nullptr)))
 	       (defun createInstance ()
 		 (declare (values void))
-		 #-nolog (when (and _enableValidationLayers
-				    (not (checkValidationLayerSupport)))
+		 #-nolog (;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
+			  unless (checkValidationLayerSupport)
 			   (throw ("std::runtime_error"
 				   (string "validation layers requested, but unavailable."))))
 		 ,(vk `(VkApplicationInfo
@@ -136,6 +138,32 @@
 	       (defun initVulkan ()
 		 (declare (values void))
 		 (createInstance)
+		 (pickPhysicalDevice))
+	       (defun isDeviceSuitable ( device)
+		 (declare (values bool)
+			  (type VkPhysicalDevice device))
+		 (return true))
+	       (defun pickPhysicalDevice ()
+		 (declare (values void))
+		 (let ((deviceCount 0))
+		   (declare (type uint32_t deviceCount))
+		   (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
+		   (when (== 0 deviceCount)
+		     (throw ("std::runtime_error"
+			     (string "failed to find gpu with vulkan support."))))
+		   (let (((devices deviceCount)))
+		     (declare (type "std::vector<VkPhysicalDevice>"
+				    (devices deviceCount)))
+		     (vkEnumeratePhysicalDevices _instance &deviceCount
+						 (devices.data))
+		     (foreach (device devices)
+			      (when (isDeviceSuitable device)
+				(setf _physicalDevice device)
+				break))
+		     (when (== VK_NULL_HANDLE
+			       _physicalDevice)
+		       (throw ("std::runtime_error"
+			       (string "failed to find a suitable gpu."))))))
 		 )
 	       (defun mainLoop ()
 		 (declare (values void))

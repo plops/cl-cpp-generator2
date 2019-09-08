@@ -30,9 +30,9 @@ public:
 private:
   GLFWwindow *_window;
   VkInstance _instance;
-  const bool _enableValidationLayers = true;
   const std::vector<const char *> _validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
+  VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -59,7 +59,7 @@ private:
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   }
   void createInstance() {
-    if (((_enableValidationLayers) && (!(checkValidationLayerSupport())))) {
+    if (!(checkValidationLayerSupport())) {
       throw std::runtime_error("validation layers requested, but unavailable.");
     };
     VkApplicationInfo appInfo = {};
@@ -85,7 +85,29 @@ private:
       throw std::runtime_error("failed to create instance");
     };
   }
-  void initVulkan() { createInstance(); }
+  void initVulkan() {
+    createInstance();
+    pickPhysicalDevice();
+  }
+  bool isDeviceSuitable(VkPhysicalDevice device) { return true; }
+  void pickPhysicalDevice() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
+    if ((0) == (deviceCount)) {
+      throw std::runtime_error("failed to find gpu with vulkan support.");
+    };
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
+    for (auto &device : devices) {
+      if (isDeviceSuitable(device)) {
+        _physicalDevice = device;
+        break;
+      };
+    };
+    if ((VK_NULL_HANDLE) == (_physicalDevice)) {
+      throw std::runtime_error("failed to find a suitable gpu.");
+    };
+  }
   void mainLoop() {
     while (!(glfwWindowShouldClose(_window))) {
       glfwPollEvents();
