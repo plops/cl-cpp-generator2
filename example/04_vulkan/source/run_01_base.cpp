@@ -14,6 +14,7 @@
 ;
 
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
@@ -29,6 +30,28 @@ public:
 private:
   GLFWwindow *_window;
   VkInstance _instance;
+  const bool _enableValidationLayers = true;
+  const std::vector<const char *> _validationLayers = {
+      "VK_LAYER_KHRONOS_validation"};
+  bool checkValidationLayerSupport() {
+    uint32_t layerCount = 0;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+    for (auto &layerName : _validationLayers) {
+      auto layerFound = false;
+      for (auto &layerProperties : availableLayers) {
+        if ((0) == (strcmp(layerName, layerProperties.layerName))) {
+          layerFound = true;
+          break;
+        };
+      };
+      if (!(layerFound)) {
+        return false;
+      };
+    };
+    return true;
+  }
   void initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

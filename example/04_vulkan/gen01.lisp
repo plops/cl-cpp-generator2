@@ -39,6 +39,7 @@
 		     <stdexcept>
 		     <functional>
 		     <cstdlib>
+		     <cstring>
 		     )
 	    (defclass HelloTriangleApplication ()
 	      "public:"
@@ -50,9 +51,36 @@
 		(cleanup))
 	      "private:"
 	      (let ((_window)
-		    (_instance))
+		    (_instance)
+		    (_enableValidationLayers true)
+		    (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation"))))
 		(declare (type GLFWwindow* _window)
-			 (type VkInstance _instance))
+			 (type VkInstance _instance)
+			 (type "const bool" _enableValidationLayers)
+			 (type "const std::vector<const char*>" _validationLayers))
+	       (defun checkValidationLayerSupport ()
+		 (declare (values bool))
+		 (let ((layerCount 0))
+		   (declare (type uint32_t layerCount))
+		   (vkEnumerateInstanceLayerProperties &layerCount nullptr)
+		   (let (((availableLayers layerCount)))
+		     (declare (type "std::vector<VkLayerProperties>"
+				    (availableLayers layerCount)))
+		     (vkEnumerateInstanceLayerProperties
+		      &layerCount
+		      (availableLayers.data))
+
+		     (foreach
+		      (layerName _validationLayers)
+		      (let ((layerFound false))
+			(foreach
+			 (layerProperties availableLayers)
+			 (when (== 0 (strcmp layerName layerProperties.layerName))
+			   (setf layerFound true)
+			   break))
+			(unless layerFound
+			  (return false))))
+		     (return true))))
 	       (defun initWindow ()
 		 (declare (values void))
 		 (glfwInit)
