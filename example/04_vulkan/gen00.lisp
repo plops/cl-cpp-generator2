@@ -8,22 +8,38 @@
   (let* ((code
 	  `(do0
 	    "// https://vulkan-tutorial.com/"
+	    "// g++ -std=c++17 run_00_test.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_00_test"
 	    " "
 	    (do0 "#define GLFW_INCLUDE_VULKAN"
-		 (include <GLFW/glfw3.h>))
-
+		 (include <GLFW/glfw3.h>)
+		 " ")
+	    
 	    (do0
 	     "#define GLM_FORCE_RADIANS"
 	     "#define GLM_FORCE_DEPTH_ZERO_TO_ONE"
 	     " "
 	     (include <glm/vec4.hpp>
-		      <glm/mat4x4.hpp>))
+		      <glm/mat4x4.hpp>)
+	     " "
+	     )
+	    
+	    " "
 	    (include <iostream>
 		     )
 	    
 	    (defun main ()
 	      (declare (values int))
 	      (glfwInit)
-	      ))))
+	      (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+	      (let ((window (glfwCreateWindow 800 600
+					      (string "vulkan window")
+					      nullptr
+					      nullptr)))
+		(let ((extensionCount 0))
+		  (declare (type uint32_t extensionCount))
+		  (vkEnumerateInstanceExtensionProperties
+		   nullptr
+		   &extensionCount
+		   nullptr)))))))
     (write-source *code-file* code)))
  
