@@ -1,6 +1,6 @@
-// https://vulkan-tutorial.com/
-// g++ -std=c++17 run_00_test.cpp  `pkg-config --static --libs glfw3` -lvulkan
-// -o run_00_test
+// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code
+// g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
+// -o run_00_base
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -17,18 +17,18 @@
 #include <iostream>
 #include <stdexcept>
 #include <vulkan/vulkan.h>
-class HelloTriangleApplication : parents {
+class HelloTriangleApplication {
 public:
-  nil run() {
+  void run() {
     initVulkan();
     mainLoop();
     cleanup();
   }
 
 private:
-  nil initVulkan() {}
-  nil mainLoop() {}
-  nil cleanup() {}
+  void initVulkan() {}
+  void mainLoop() {}
+  void cleanup() {}
 };
 int main() {
   glfwInit();

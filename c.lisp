@@ -286,7 +286,8 @@ entry return-values contains a list of return values"
 		      (destructuring-bind (name parents &rest body) (cdr code)
 			(format nil "class ~a ~@[: ~a~] ~a"
 				(emit name)
-				(emit `(comma parents))
+				(when parents
+				 (emit `(comma ,parents)))
 				(emit `(progn ,@body))
 				)))
  		(protected (format nil "protected ~a" (emit (cadr code))))

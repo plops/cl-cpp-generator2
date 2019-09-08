@@ -7,8 +7,8 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.cpp"))
   (let* ((code
 	  `(do0
-	    "// https://vulkan-tutorial.com/"
-	    "// g++ -std=c++17 run_00_test.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_00_test"
+	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
+	    "// g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_00_base"
 	    " "
 	    (do0 "#define GLFW_INCLUDE_VULKAN"
 		 (include <GLFW/glfw3.h>)
@@ -32,13 +32,18 @@
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
+		(declare (values void))
 		(initVulkan)
 		(mainLoop)
 		(cleanup))
 	      "private:"
-	      (defun initVulkan ())
-	      (defun mainLoop ())
-	      (defun cleanup ()))
+	      (defun initVulkan ()
+		(declare (values void)))
+	      (defun mainLoop ()
+		(declare (values void)))
+	      (defun cleanup ()
+		(declare (values void)))
+	      )
 	    (defun main ()
 	      (declare (values int))
 	      (glfwInit)
