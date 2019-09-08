@@ -46,6 +46,16 @@
 	      )
 	    (defun main ()
 	      (declare (values int))
+
+	      (let ((app))
+		(declare (type HelloTriangleApplication app))
+		(handler-case
+		    (app.run)
+		  (e
+		      (declare (type "const std::exception&" e))
+		    (return EXIT_FAILURE)))
+		(return EXIT_SUCCESS))
+	      
 	      (glfwInit)
 	      (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
 	      (let ((window (glfwCreateWindow 800 600
