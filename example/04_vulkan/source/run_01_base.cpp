@@ -1,6 +1,6 @@
 // https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code
 // g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
-// -o run_00_base
+// -o run_01_base
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -35,6 +35,7 @@ int main() {
   try {
     app.run();
   } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   };
   return EXIT_SUCCESS;
