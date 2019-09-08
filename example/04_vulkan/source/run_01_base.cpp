@@ -19,9 +19,10 @@
 #include <iostream>
 #include <optional>
 #include <stdexcept>
-struct QueueFamilyIndices {
+struct {
   std::optional<uint32_t> graphicsFamily;
-} typedef QueueFamilyIndices;
+} QueueFamilyIndices;
+typedef QueueFamilyIndices;
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
   QueueFamilyIndices indices;
   uint32_t queueFamilyCount = 0;

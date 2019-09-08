@@ -470,13 +470,14 @@ entry return-values contains a list of return values"
 		 (destructuring-bind (name &rest slot-descriptions) (cdr code)
 		   (format nil "~a"
 			   (emit `(do0
-				   ,(format nil "struct ~a ~a"
-					    name
+				   ,(format nil "struct ~a ~a;"
+					    
 					    (emit
 					     `(progn
 						,@(loop for desc in slot-descriptions collect
 						       (destructuring-bind (slot-name &optional type) desc
-							 (format nil "~a ~a;" type slot-name))))))
+							 (format nil "~a ~a;" type slot-name)))))
+					    name)
 				   (deftype ,name (struct ,name)))))))
 		(handler-case
 		    ;; handler-case expression [[{error-clause}*]]
