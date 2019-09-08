@@ -4,13 +4,14 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (defmacro vk (type var &rest args)
-    `(let ((,var (curly)))
-       (declare (type ,type ,var))
-       ,@(loop for i from 0 upto (length args) by 2 collect
-	      (let ((keyword (aref args i))
-		    (value (aref args (+ i 1))))
-		`(setf (dot ,var ,keyword) ,value)))))
+  (defun vk (params)
+    (destructuring-bind (type var &rest args) params
+     `(let ((,var (curly)))
+	(declare (type ,type ,var))
+	,@(loop for i from 0 below (length args) by 2 collect
+	       (let ((keyword (elt args i))
+		     (value (elt args (+ i 1))))
+		 `(setf (dot ,var ,keyword) ,value))))))
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.cpp"))
   (let* ((code
 	  `(do0
@@ -62,13 +63,14 @@
 						nullptr)))
 	       (defun createInstance ()
 		 (declare (values void))
-		 ,(vk VkApplicationInfo appInfo
-		     :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
-		     :pApplicationName (string "Hello Triangle")
-		     :applicationVersion (VK_MAKE_VERSION 1 0 0)
-		     :pEngineName (string "No Engine")
-		     :engineVersion (VK_MAKE_VERSION 1 0 0)
-		     :apiVersion VK_API_VERSION_1_0)
+		 ,(vk `(VkApplicationInfo
+		       appInfo
+		       :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
+		       :pApplicationName (string "Hello Triangle")
+		       :applicationVersion (VK_MAKE_VERSION 1 0 0)
+		       :pEngineName (string "No Engine")
+		       :engineVersion (VK_MAKE_VERSION 1 0 0)
+		       :apiVersion VK_API_VERSION_1_0))
 
 		 
 		 
