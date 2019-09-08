@@ -19,4 +19,13 @@ int main() {
   auto window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   uint32_t extensionCount = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+  glm::mat4 matrix;
+  glm::vec4 vec;
+  auto test = ((matrix) * (vec));
+  while (!(glfwWindowShouldClose(window))) {
+    glfwPollEvents();
+  }
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  return 0;
 }

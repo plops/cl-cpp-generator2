@@ -40,6 +40,16 @@
 		  (vkEnumerateInstanceExtensionProperties
 		   nullptr
 		   &extensionCount
-		   nullptr)))))))
+		   nullptr))
+		(let ((matrix)
+		      (vec)
+		      (test (* matrix vec)))
+		  (declare (type "glm::mat4" matrix)
+			   (type "glm::vec4" vec))
+		  (while (not (glfwWindowShouldClose window))
+		    (glfwPollEvents))
+		  (glfwDestroyWindow window)
+		  (glfwTerminate)
+		  (return 0)))))))
     (write-source *code-file* code)))
  
