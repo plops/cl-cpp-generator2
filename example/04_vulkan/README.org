@@ -6,4 +6,6 @@ sudo pacman -S vulkan-extra-layers glm vulkan-headers glfw-x11
 * Installation on ubuntu
 #+BEGIN_EXAMPLE
 sudo apt install libglm-dev vulkan-validationlayers-dev
+sudo apt install renderdoc vulkan-utils vulkan-tools
+
 #+END_EXAMPLE
