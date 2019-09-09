@@ -1,0 +1,5 @@
+* Installation on arch
+
+#+BEGIN_EXAMPLE
+sudo pacman -S vulkan-extra-layers glm vulkan-headers glfw-x11
+#+END_EXAMPLE
