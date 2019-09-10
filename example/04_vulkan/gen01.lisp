@@ -70,6 +70,7 @@ more structs. this function helps to initialize those structs."
 		    (_instance)
 		    ;#-nolog (_enableValidationLayers true)
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
+		    #+surface (_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
 		    (_graphicsQueue)
@@ -84,7 +85,9 @@ more structs. this function helps to initialize those structs."
 			 (type VkQueue _graphicsQueue
 			       #+surface _presentQueue)
 			 
-			 #+surface (type VkSurfaceKHR _surface))
+			 #+surface (type VkSurfaceKHR _surface)
+			 #+surface (type "const std::vector<const char*>"
+					 _deviceExtensions))
 		(defun findQueueFamilies (device)
 	      (declare (type VkPhysicalDevice device)
 		       (values QueueFamilyIndices))
@@ -258,13 +261,44 @@ more structs. this function helps to initialize those structs."
 		     #+surface
 		     (vkGetDeviceQueue _device (indices.presentFamily.value)
 				       0 &_presentQueue))))
+	       #+surface
+	       (defun checkDeviceExtensionSupport (device)
+		 (declare (values bool)
+			  (type VkPhysicalDevice device))
+		 (let ((extensionCount 0))
+		   (declare (type uint32_t extensionCount))
+		   (vkEnumerateDeviceExtensionProperties
+		    device nullptr &extensionCount nullptr)
+		   (let (((availableExtensions extensionCount)))
+		     (declare (type
+			       "std::vector<VkExtensionProperties>"
+			       (availableExtensions extensionCount)
+			       ))
+		     (vkEnumerateDeviceExtensionProperties
+		      device
+		      nullptr
+		      &extensionCount
+		      (availableExtensions.data))
+		     (let (((requiredExtensions
+			     (_deviceExtensions.begin)
+			     (_deviceExtensions.end))))
+		       (declare (type
+				 "std::set<std::string>"
+				 (requiredExtensions
+				  (_deviceExtensions.begin)
+				  (_deviceExtensions.end))))
+		       (foreach (extension availableExtensions)
+				(requiredExtensions.erase
+				 extension.extensionName))
+		       (return (requiredExtensions.empty))))))
 	       (defun isDeviceSuitable ( device)
 		 (declare (values bool)
 			  (type VkPhysicalDevice device))
 		 (let ((indices (findQueueFamilies device)))
 		   (declare (type QueueFamilyIndices indices))
 		   (return (and (indices.graphicsFamily.has_value)
-				#+surface (indices.presentFamily.has_value)))
+				#+surface (and (indices.presentFamily.has_value)
+					       (checkDeviceExtensionSupport device))))
 		   #+nil (return (indices.isComplete))))
 	       (defun pickPhysicalDevice ()
 		 

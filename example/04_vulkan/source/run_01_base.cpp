@@ -39,6 +39,8 @@ private:
   VkInstance _instance;
   const std::vector<const char *> _validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
+  const std::vector<const char *> _deviceExtensions = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
@@ -170,10 +172,25 @@ private:
                      &_graphicsQueue);
     vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
   }
+  bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    uint32_t extensionCount = 0;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                         nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                         availableExtensions.data());
+    std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
+                                             _deviceExtensions.end());
+    for (auto &extension : availableExtensions) {
+      requiredExtensions.erase(extension.extensionName);
+    };
+    return requiredExtensions.empty();
+  }
   bool isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
     return ((indices.graphicsFamily.has_value()) &&
-            (indices.presentFamily.has_value()));
+            (((indices.presentFamily.has_value()) &&
+              (checkDeviceExtensionSupport(device)))));
   }
   void pickPhysicalDevice() {
     // initialize member _physicalDevice
