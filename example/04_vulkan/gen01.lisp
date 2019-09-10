@@ -96,6 +96,25 @@ more structs. this function helps to initialize those structs."
 	     <cstdint> 
 	     <algorithm>
 	     )
+
+	    (do0
+	     "// code to load binary shader from file"
+	     (include <fstream>)
+	     (defun readFile (filename)
+	       (declare (type "const std::string&" filename)
+			(values "std::vector<char>"))
+	       (let ((file ("std::ifstream" filename (logior "std::ios::ate"
+							   "std::ios::binary"))))
+		 (unless (file.is_open)
+		  (throw ("std::runtime_error"
+			  (string "failed to open file."))))
+		 (let ((fileSize (file.tellg))
+		       (buffer ("std::vector<char>" fileSize)))
+		   (file.seekg 0)
+		   (file.read (buffer.data)
+			      fileSize)
+		   (file.close)
+		   (return buffer)))))
 	    (defstruct0 QueueFamilyIndices 
 		(graphicsFamily "std::optional<uint32_t>")
 	      #+surface (presentFamily "std::optional<uint32_t>")

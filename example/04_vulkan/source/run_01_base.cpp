@@ -22,6 +22,20 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+// code to load binary shader from file
+#include <fstream>
+std::vector<char> readFile(const std::string &filename) {
+  auto file = std::ifstream(filename, ((std::ios::ate) | (std::ios::binary)));
+  if (!(file.is_open())) {
+    throw std::runtime_error("failed to open file.");
+  };
+  auto fileSize = file.tellg();
+  auto buffer = std::vector<char>(fileSize);
+  file.seekg(0);
+  file.read(buffer.data(), fileSize);
+  file.close();
+  return buffer;
+};
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
   std::optional<uint32_t> presentFamily;
@@ -120,7 +134,7 @@ private:
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              nullptr);
-    auto queueFamilies(queueFamilyCount);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              queueFamilies.data());
     auto i = 0;
@@ -142,7 +156,7 @@ private:
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    auto availableLayers(layerCount);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
     for (auto &layerName : _validationLayers) {
       auto layerFound = false;
@@ -325,10 +339,11 @@ private:
     uint32_t extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          nullptr);
-    auto availableExtensions(extensionCount);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          availableExtensions.data());
-    auto requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
+    std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
+                                             _deviceExtensions.end());
     for (auto &extension : availableExtensions) {
       requiredExtensions.erase(extension.extensionName);
     };
@@ -354,7 +369,7 @@ private:
     if ((0) == (deviceCount)) {
       throw std::runtime_error("failed to find gpu with vulkan support.");
     };
-    auto devices(deviceCount);
+    std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
     for (auto &device : devices) {
       if (isDeviceSuitable(device)) {
