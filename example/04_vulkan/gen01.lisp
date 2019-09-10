@@ -382,6 +382,25 @@ more structs. this function helps to initialize those structs."
 						  (readFile (string "vert.spv"))))
 			       (fragShaderModule (createShaderModule
 						  (readFile (string "frag.spv")))))
+			   ,@(loop for e in `(frag vert) collect
+				  (vk
+				   `(VkPipelineShaderStageCreateInfo
+				     ,(format nil "~aShaderStageInfo" e)
+				     :sType VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
+				     :stage ,(case e
+					       (vert 'VK_SHADER_STAGE_VERTEX_BIT)
+					       (frag 'VK_SHADER_STAGE_FRAGMENT_BIT))
+				     :module ,(format nil "~aShaderModule" e)
+				     ;; entrypoint
+				     :pName (string "main")
+				     ;; this would allow specification of constants:
+				     :pSpecializationInfo nullptr)))
+			   (let (("shaderStages[]"
+				  (curly vertShaderStageInfo
+					 fragShaderStageInfo)))
+			     (declare (type VkPipelineShaderStageCreateInfo
+					    "shaderStages[]")))
+			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
 						  nullptr)
