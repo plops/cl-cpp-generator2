@@ -936,6 +936,8 @@ more structs. this function helps to initialize those structs."
 		       
 		       #+surface
 		       (do0
+			(foreach (b _swapChainFramebuffers)
+				 (vkDestroyFramebuffer _device b nullptr))
 			(vkDestroyPipeline _device _graphicsPipeline nullptr)
 			(vkDestroyPipelineLayout
 			_device

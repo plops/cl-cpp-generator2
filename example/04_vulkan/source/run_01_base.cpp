@@ -578,6 +578,9 @@ private:
     }
   }
   void cleanup() {
+    for (auto &b : _swapChainFramebuffers) {
+      vkDestroyFramebuffer(_device, b, nullptr);
+    };
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
     vkDestroyRenderPass(_device, _renderPass, nullptr);
