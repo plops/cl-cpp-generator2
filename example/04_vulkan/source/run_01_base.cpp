@@ -276,7 +276,7 @@ private:
       createInfo.subresourceRange.baseMipLevel = 0;
       createInfo.subresourceRange.levelCount = 1;
       createInfo.subresourceRange.baseArrayLayer = 0;
-      createInfo.subresourceRange.layerCount = 0;
+      createInfo.subresourceRange.layerCount = 1;
       if (!((VK_SUCCESS) == (vkCreateImageView(_device, &createInfo, nullptr,
                                                &(_swapChainImageViews[i]))))) {
         throw std::runtime_error("failed to create image view.");

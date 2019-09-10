@@ -429,7 +429,7 @@ more structs. this function helps to initialize those structs."
 			      :subresourceRange.baseMipLevel 0
 			      :subresourceRange.levelCount 1
 			      :subresourceRange.baseArrayLayer 0
-			      :subresourceRange.layerCount 0
+			      :subresourceRange.layerCount 1
 			      ))
 			  (unless
 			      (== VK_SUCCESS
