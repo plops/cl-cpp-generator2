@@ -9,4 +9,5 @@ vec3 colors[3] =
 void main() {
   gl_Position = vec4(positions[gl_VertexIndex], (0.0e+0), 1);
   fragColor = colors[gl_VertexIndex];
-};
+}
+// vertex shader end ;
