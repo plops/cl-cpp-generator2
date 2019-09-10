@@ -160,7 +160,9 @@ private:
     createInfo.queueCreateInfoCount =
         static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledExtensionCount =
+        static_cast<uint32_t>(_deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
     createInfo.enabledLayerCount =
         static_cast<uint32_t>(_validationLayers.size());
     createInfo.ppEnabledLayerNames = _validationLayers.data();

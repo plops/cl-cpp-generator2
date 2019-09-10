@@ -247,7 +247,10 @@ more structs. this function helps to initialize those structs."
 			 :queueCreateInfoCount (static_cast<uint32_t>
 						(queueCreateInfos.size))
 			 :pEnabledFeatures &deviceFeatures
-			 :enabledExtensionCount 0
+			 :enabledExtensionCount #-surface 0
+			 #+surface (static_cast<uint32_t> (_deviceExtensions.size))
+			 #+surface :ppEnabledExtensionNames 
+			 #+surface (_deviceExtensions.data)
 			 :enabledLayerCount
 			 #-nolog (static_cast<uint32_t> (_validationLayers.size))
 			 #+nolog 0
