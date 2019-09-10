@@ -247,7 +247,8 @@ more structs. this function helps to initialize those structs."
 				(_swapChainFramebuffers)
 				(_commandPool)
 				(_commandBuffers)
-				)
+				(_imageAvailableSemaphore)
+				(_renderFinishedSemaphore))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -266,7 +267,9 @@ more structs. this function helps to initialize those structs."
 				(type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
 				(type VkCommandPool _commandPool)
 				(type "std::vector<VkCommandBuffer>"
-				      _commandBuffers))
+				      _commandBuffers)
+				(type VkSemaphore _imageAvailableSemaphore
+				      _renderFinishedSemaphore))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -390,12 +393,34 @@ more structs. this function helps to initialize those structs."
 			(createGraphicsPipeline)
 			(createFramebuffers)
 			(createCommandPool)
-			(createCommandBuffers)))
+			(createCommandBuffers)
+			(createSemaphores)))
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
+		       (defun createSemaphores ()
+			 (declare (values void))
+			 ,(vk
+			   `(VkSemaphoreCreateInfo
+			     semaphoreInfo
+			     :sType VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO))
+			 (unless (and
+				  (== VK_SUCCESS
+				      (vkCreateSemaphore
+				       _device
+				       &semaphoreInfo
+				       nullptr
+				       &_imageAvailableSemaphore))
+				  (== VK_SUCCESS
+				      (vkCreateSemaphore
+				       _device
+				       &semaphoreInfo
+				       nullptr
+				       &_renderFinishedSemaphore)))
+			   (throw ("std::runtime_error"
+				   (string "failed to create semaphores.")))))
 		       (defun createCommandBuffers ()
 			 (declare (values void))
 			 (_commandBuffers.resize
@@ -1027,12 +1052,59 @@ more structs. this function helps to initialize those structs."
 		     (defun mainLoop ()
 		       (declare (values void))
 		       (while (not (glfwWindowShouldClose _window))
-			 (glfwPollEvents)))
+			 (glfwPollEvents)
+			 #+surface (drawFrame)))
+		     #+surface
+		     (defun drawFrame ()
+		       (declare (values void))
+		       (let ((imageIndex 0))
+			 (declare (type uint32_t imageIndex))
+			 (vkAcquireNextImageKHR
+			  _device
+			  _swapChain
+			  UINT64_MAX ;; disable timeout for image 
+			  _imageAvailableSemaphore
+			  VK_NULL_HANDLE
+			  &imageIndex)
+			 
+			 (let ((waitSemaphores[] (curly _imageAvailableSemaphore))
+			       (signalSemaphores[] (curly _renderFinishedSemaphore))
+			       (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
+			   (declare (type VkSemaphore waitSemaphores[]
+					  signalSemaphores[])
+				    (type VkPipelineStageFlags waitStages[]))
+			   ,(vk
+			   `(VkSubmitInfo submitInfo
+					  :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+					  :waitSemaphoreCount 1
+					  :pWaitSemaphores waitSemaphores
+					  ;; pipeline has to wait for image before writing color buffer
+					  :pWaitDstStageMask waitStages
+					  :commandBufferCount 1
+					  :pCommandBuffers (ref (aref _commandBuffers imageIndex))
+					  :signalSemaphoreCount 1
+					  :pSignalSemaphores signalSemaphores))
+			   (unless (== VK_SUCCESS
+				       (vkQueueSubmit
+					_graphicsQueue
+					1
+					&submitInfo
+					VK_NULL_HANDLE ;; fence
+					)
+				       )
+			     (throw ("std::runtime_error"
+				     (string "failed to submit draw command buffer.")))))))
 		     (defun cleanup ()
 		       (declare (values void))
 		       
 		       #+surface
 		       (do0
+			(vkDestroySemaphore _device
+					    _renderFinishedSemaphore
+					    nullptr)
+			(vkDestroySemaphore _device
+					    _imageAvailableSemaphore
+					    nullptr)
 			(vkDestroyCommandPool _device _commandPool nullptr)
 			(foreach (b _swapChainFramebuffers)
 				 (vkDestroyFramebuffer _device b nullptr))

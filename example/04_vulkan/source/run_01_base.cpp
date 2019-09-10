@@ -135,6 +135,8 @@ private:
   std::vector<VkFramebuffer> _swapChainFramebuffers;
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
+  VkSemaphore _imageAvailableSemaphore;
+  VkSemaphore _renderFinishedSemaphore;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -225,8 +227,19 @@ private:
     createFramebuffers();
     createCommandPool();
     createCommandBuffers();
+    createSemaphores();
   }
   // shader stuff
+  void createSemaphores() {
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    if (!((((VK_SUCCESS) == (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                                               &_imageAvailableSemaphore))) &&
+           ((VK_SUCCESS) == (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                                               &_renderFinishedSemaphore)))))) {
+      throw std::runtime_error("failed to create semaphores.");
+    };
+  }
   void createCommandBuffers() {
     _commandBuffers.resize(_swapChainFramebuffers.size());
     VkCommandBufferAllocateInfo allocInfo = {};
@@ -630,9 +643,35 @@ private:
   void mainLoop() {
     while (!(glfwWindowShouldClose(_window))) {
       glfwPollEvents();
+      drawFrame();
     }
   }
+  void drawFrame() {
+    uint32_t imageIndex = 0;
+    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX,
+                          _imageAvailableSemaphore, VK_NULL_HANDLE,
+                          &imageIndex);
+    VkSemaphore waitSemaphores[] = {_imageAvailableSemaphore};
+    VkSemaphore signalSemaphores[] = {_renderFinishedSemaphore};
+    VkPipelineStageFlags waitStages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &(_commandBuffers[imageIndex]);
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+    if (!((VK_SUCCESS) ==
+          (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE)))) {
+      throw std::runtime_error("failed to submit draw command buffer.");
+    };
+  }
   void cleanup() {
+    vkDestroySemaphore(_device, _renderFinishedSemaphore, nullptr);
+    vkDestroySemaphore(_device, _imageAvailableSemaphore, nullptr);
     vkDestroyCommandPool(_device, _commandPool, nullptr);
     for (auto &b : _swapChainFramebuffers) {
       vkDestroyFramebuffer(_device, b, nullptr);
