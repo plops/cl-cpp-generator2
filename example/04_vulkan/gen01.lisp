@@ -174,7 +174,9 @@ more structs. this function helps to initialize those structs."
 				(_presentQueue)
 				(_surface)
 				(_swapChain)
-				(_swapChainImages))
+				(_swapChainImages)
+				(_swapChainImageFormat)
+				(_swapChainExtent))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -183,7 +185,9 @@ more structs. this function helps to initialize those structs."
 				(type "const std::vector<const char*>"
 				      _deviceExtensions)
 				(type VkSwapchainKHR _swapChain)
-				(type "std::vector<VkImage>" _swapChainImages))
+				(type "std::vector<VkImage>" _swapChainImages)
+				(type VkFormat _swapChainImageFormat)
+				(type VkExtent2D _swapChainExtent))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -394,6 +398,8 @@ more structs. this function helps to initialize those structs."
 						    _swapChain
 						    &imageCount
 						    (_swapChainImages.data))
+			   (setf _swapChainImageFormat surfaceFormat.format
+				 _swapChainExtent extent)
 			   ))))
 		     (defun createLogicalDevice ()
 		       (declare (values void))

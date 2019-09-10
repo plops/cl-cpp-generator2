@@ -112,6 +112,8 @@ private:
   VkSurfaceKHR _surface;
   VkSwapchainKHR _swapChain;
   std::vector<VkImage> _swapChainImages;
+  VkFormat _swapChainImageFormat;
+  VkExtent2D _swapChainExtent;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -253,6 +255,8 @@ private:
     _swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount,
                             _swapChainImages.data());
+    _swapChainImageFormat = surfaceFormat.format;
+    _swapChainExtent = extent;
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
