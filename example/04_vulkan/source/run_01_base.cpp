@@ -200,7 +200,9 @@ private:
     createLogicalDevice();
     createSwapChain();
     createImageViews();
+    createGraphicsPipeline();
   }
+  void createGraphicsPipeline() {}
   void createSurface() {
     // initialize _surface member
     // must be destroyed before the instance is destroyed

@@ -20,7 +20,38 @@ more structs. this function helps to initialize those structs."
 		      (value (elt args (+ i 1))))
 		  `(setf (dot ,var ,keyword) ,value))))))
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.cpp"))
-  (let* ((code
+  (defparameter *vertex-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.vert"))
+  (defparameter *frag-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.frag"))
+  (let* ((vertex-code
+	  `(do0
+	    "#version 450"
+	    " "
+	    (let (((aref positions 3) ((aref vec2)
+				       (vec2 .0 -.5)
+				       (vec2 .5 .5)
+				       (vec2 -.5 .5))))
+	      (declare (type vec2 (aref positions 3)))
+	      (defun main ()
+		(declare (values void))
+		(setf gl_Position
+		      (vec4 (aref positions gl_VertexIndex)
+			    .0
+			    1.))))))
+	 (frag-code
+	  `(do0
+	    "#version 450"
+	    "extension GL_ARB_separate_shader_objects : enable"
+	    " "
+	    "layout(location = 0) out vec4 outColor;"
+	    
+	    (defun main ()
+	      (declare (values void))
+	      (setf outColor
+		    (vec4 1.
+			  .0
+			  .0
+			  1.)))))
+	 (code
 	  `(do0
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Validation_layers"
@@ -308,10 +339,15 @@ more structs. this function helps to initialize those structs."
 		       #+surface
 		       (do0
 			(createSwapChain)
-			(createImageViews)))
+			(createImageViews))
+		       (createGraphicsPipeline)
+		       )
 		     
 		     #+surface
 		     (do0
+		      (defun createGraphicsPipeline ()
+			(declare (values void))
+			)
 		      (defun createSurface ()
 			(declare (values void))
 			"// initialize _surface member"
@@ -615,5 +651,7 @@ more structs. this function helps to initialize those structs."
 			   (type "glm::vec4" vec))
 		  
 		  (return 0)))))))
-    (write-source *code-file* code)))
+    (write-source *code-file* code)
+    (write-source *vertex-file* vertex-code)
+    (write-source *frag-file* frag-code)))
  
