@@ -56,6 +56,50 @@ more structs. this function helps to initialize those structs."
 	      #+nil(defun isComplete ()
 		(declare (values bool))
 		(return (graphicsFamily.has_value))))
+
+	    #+surface
+	    (do0
+	     (defstruct0 SwapChainSupportDetails
+		 (capabilities VkSurfaceCapabilitiesKHR)
+	       (formats "std::vector<VkSurfaceFormatKHR>")
+	       (presentModes "std::vector<VkPresentModeKHR>")
+	       )
+	     (defun querySwapChainSupport (device surface)
+	       (declare (values SwapChainSupportDetails)
+			(type VkPhysicalDevice device)
+			(type VkSurfaceKHR surface))
+	       (let ((details))
+		 (declare (type SwapChainSupportDetails details))
+		 (vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+		  device
+		  surface
+		  &details.capabilities)
+		 
+
+		 (let ((formatCount 0))
+		   (declare (type uint32_t formatCount))
+		   (vkGetPhysicalDeviceSurfaceFormatsKHR device surface &formatCount
+							 nullptr)
+		   (unless (== 0 formatCount)
+		     (details.formats.resize formatCount)
+		     (vkGetPhysicalDeviceSurfaceFormatsKHR
+		      device surface &formatCount
+		      (details.formats.data))))
+
+		 (let ((presentModeCount 0))
+		   (declare (type uint32_t presentModeCount
+				  ))
+		   (vkGetPhysicalDeviceSurfacePresentModesKHR
+		    device surface &presentModeCount
+		    nullptr)
+		   (unless (== 0 presentModeCount)
+		     (details.presentModes.resize presentModeCount)
+		     (vkGetPhysicalDeviceSurfacePresentModesKHR
+		      device surface &presentModeCount
+		      (details.presentModes.data))))
+		 
+		 (return details)))
+	     )
 	    
 	    (defclass HelloTriangleApplication ()
 	      "public:"
@@ -88,6 +132,7 @@ more structs. this function helps to initialize those structs."
 			 #+surface (type VkSurfaceKHR _surface)
 			 #+surface (type "const std::vector<const char*>"
 					 _deviceExtensions))
+		
 		(defun findQueueFamilies (device)
 	      (declare (type VkPhysicalDevice device)
 		       (values QueueFamilyIndices))
@@ -297,11 +342,21 @@ more structs. this function helps to initialize those structs."
 	       (defun isDeviceSuitable ( device)
 		 (declare (values bool)
 			  (type VkPhysicalDevice device))
+		 #+surface
+		 (let ((extensionsSupported (checkDeviceExtensionSupport device))
+		       (swapChainAdequate false))
+		   (declare (type bool swapChainAdequate))
+		   (when extensionsSupported
+		     (let ((swapChainSupport (querySwapChainSupport device _surface)))
+		       (setf swapChainAdequate
+			     (and (not swapChainSupport.formats.empty)
+				  (not swapChainSupport.presentModes.empty))))))
 		 (let ((indices (findQueueFamilies device)))
 		   (declare (type QueueFamilyIndices indices))
 		   (return (and (indices.graphicsFamily.has_value)
 				#+surface (and (indices.presentFamily.has_value)
-					       (checkDeviceExtensionSupport device))))
+					       extensionsSupported
+					       swapChainAdequate)))
 		   #+nil (return (indices.isComplete))))
 	       (defun pickPhysicalDevice ()
 		 

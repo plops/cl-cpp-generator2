@@ -25,6 +25,34 @@ struct QueueFamilyIndices {
   std::optional<uint32_t> presentFamily;
 };
 typedef struct QueueFamilyIndices QueueFamilyIndices;
+struct SwapChainSupportDetails {
+  VkSurfaceCapabilitiesKHR capabilities;
+  std::vector<VkSurfaceFormatKHR> formats;
+  std::vector<VkPresentModeKHR> presentModes;
+};
+typedef struct SwapChainSupportDetails SwapChainSupportDetails;
+SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device,
+                                              VkSurfaceKHR surface) {
+  SwapChainSupportDetails details;
+  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface,
+                                            &details.capabilities);
+  uint32_t formatCount = 0;
+  vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+  if (!((0) == (formatCount))) {
+    details.formats.resize(formatCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
+                                         details.formats.data());
+  };
+  uint32_t presentModeCount = 0;
+  vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount,
+                                            nullptr);
+  if (!((0) == (presentModeCount))) {
+    details.presentModes.resize(presentModeCount);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(
+        device, surface, &presentModeCount, details.presentModes.data());
+  };
+  return details;
+};
 class HelloTriangleApplication {
 public:
   void run() {
@@ -189,10 +217,17 @@ private:
     return requiredExtensions.empty();
   }
   bool isDeviceSuitable(VkPhysicalDevice device) {
+    auto extensionsSupported = checkDeviceExtensionSupport(device);
+    bool swapChainAdequate = false;
+    if (extensionsSupported) {
+      auto swapChainSupport = querySwapChainSupport(device, _surface);
+      swapChainAdequate = ((!(swapChainSupport.formats.empty)) &&
+                           (!(swapChainSupport.presentModes.empty)));
+    };
     QueueFamilyIndices indices = findQueueFamilies(device);
     return ((indices.graphicsFamily.has_value()) &&
-            (((indices.presentFamily.has_value()) &&
-              (checkDeviceExtensionSupport(device)))));
+            (((indices.presentFamily.has_value()) && (extensionsSupported) &&
+              (swapChainAdequate))));
   }
   void pickPhysicalDevice() {
     // initialize member _physicalDevice
