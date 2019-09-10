@@ -92,13 +92,15 @@ more structs. this function helps to initialize those structs."
 		    ;#-nolog (_enableValidationLayers true)
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
 		    (_physicalDevice VK_NULL_HANDLE)
-		    (_device))
+		    (_device)
+		    (_graphicsQueue))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
 			 (type VkPhysicalDevice _physicalDevice)
-			 (type VkDevice _device))
+			 (type VkDevice _device)
+			 (type VkQueue _graphicsQueue))
 	       #-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
@@ -133,6 +135,7 @@ more structs. this function helps to initialize those structs."
 						nullptr)))
 	       (defun createInstance ()
 		 (declare (values void))
+		 "# initialize member _instance"
 		 #-nolog (;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
 			  unless (checkValidationLayerSupport)
 			   (throw ("std::runtime_error"
@@ -178,6 +181,7 @@ more structs. this function helps to initialize those structs."
 		 (createLogicalDevice))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
+		 "# initialize members _device and _graphicsQueue"
 		 (let ((indices (findQueueFamilies _physicalDevice))
 		       (queuePriority 1s0))
 		   (declare (type float queuePriority))
@@ -214,7 +218,9 @@ more structs. this function helps to initialize those structs."
 		   (return (indices.graphicsFamily.has_value))
 		   #+nil (return (indices.isComplete))))
 	       (defun pickPhysicalDevice ()
+		 
 		 (declare (values void))
+		 "# initialize member _physicalDevice"
 		 (let ((deviceCount 0))
 		   (declare (type uint32_t deviceCount))
 		   (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)

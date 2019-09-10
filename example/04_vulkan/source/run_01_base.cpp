@@ -56,6 +56,7 @@ private:
       "VK_LAYER_KHRONOS_validation"};
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
+  VkQueue _graphicsQueue;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -82,6 +83,7 @@ private:
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   }
   void createInstance() {
+#initialize member _instance
     if (!(checkValidationLayerSupport())) {
       throw std::runtime_error("validation layers requested, but unavailable.");
     };
@@ -114,6 +116,7 @@ private:
     createLogicalDevice();
   }
   void createLogicalDevice() {
+#initialize members _device and _graphicsQueue
     auto indices = findQueueFamilies(_physicalDevice);
     float queuePriority = (1.e+0);
     VkDeviceQueueCreateInfo queueCreateInfo = {};
@@ -141,6 +144,7 @@ private:
     return indices.graphicsFamily.has_value();
   }
   void pickPhysicalDevice() {
+#initialize member _physicalDevice
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
     if ((0) == (deviceCount)) {
