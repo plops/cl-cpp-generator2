@@ -21,25 +21,9 @@
 #include <stdexcept>
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
+  std::optional<uint32_t> presentFamily;
 };
 typedef struct QueueFamilyIndices QueueFamilyIndices;
-QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-  QueueFamilyIndices indices;
-  uint32_t queueFamilyCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                           queueFamilies.data());
-  auto i = 0;
-  for (auto &family : queueFamilies) {
-    if (((0 < family.queueCount) &&
-         (((family.queueFlags) & (VK_QUEUE_GRAPHICS_BIT))))) {
-      indices.graphicsFamily = i;
-    };
-    (i)++;
-  };
-  return indices;
-}
 class HelloTriangleApplication {
 public:
   void run() {
@@ -58,6 +42,30 @@ private:
   VkDevice _device;
   VkQueue _graphicsQueue;
   VkSurfaceKHR _surface;
+  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices indices;
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                             nullptr);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                             queueFamilies.data());
+    auto i = 0;
+    for (auto &family : queueFamilies) {
+      if (((0 < family.queueCount) &&
+           (((family.queueFlags) & (VK_QUEUE_GRAPHICS_BIT))))) {
+        indices.graphicsFamily = i;
+      };
+      VkBool32 presentSupport = false;
+      vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface,
+                                           &presentSupport);
+      if (((0 < family.queueCount) && (presentSupport))) {
+        indices.presentFamily = i;
+      };
+      (i)++;
+    };
+    return indices;
+  }
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -154,7 +162,8 @@ private:
   }
   bool isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
-    return indices.graphicsFamily.has_value();
+    return ((indices.graphicsFamily.has_value()) &&
+            (indices.presentFamily.has_value()));
   }
   void pickPhysicalDevice() {
     // initialize member _physicalDevice

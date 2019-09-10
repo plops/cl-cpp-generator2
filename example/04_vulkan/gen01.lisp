@@ -50,35 +50,12 @@ more structs. this function helps to initialize those structs."
 		     <optional>
 		     )
 	    (defstruct0 QueueFamilyIndices 
-	      (graphicsFamily "std::optional<uint32_t>")
+		(graphicsFamily "std::optional<uint32_t>")
+	      #+surface (presentFamily "std::optional<uint32_t>")
 	      #+nil(defun isComplete ()
 		(declare (values bool))
 		(return (graphicsFamily.has_value))))
-	    (defun findQueueFamilies (device)
-	      (declare (type VkPhysicalDevice device)
-		       (values QueueFamilyIndices))
-	      (let ((indices)
-		    (queueFamilyCount 0))
-		(declare (type QueueFamilyIndices indices)
-			 (type uint32_t queueFamilyCount))
-		(vkGetPhysicalDeviceQueueFamilyProperties
-		 device &queueFamilyCount nullptr)
-		(let (((queueFamilies queueFamilyCount)))
-		  (declare (type "std::vector<VkQueueFamilyProperties>"
-				 (queueFamilies queueFamilyCount)))
-		  (vkGetPhysicalDeviceQueueFamilyProperties
-		   device
-		   &queueFamilyCount
-		   (queueFamilies.data))
-		  (let ((i 0))
-		    (foreach
-		     (family queueFamilies)
-		     (when (and (< 0 family.queueCount)
-				(logand family.queueFlags
-					VK_QUEUE_GRAPHICS_BIT))
-		       (setf indices.graphicsFamily i))
-		     (incf i))))
-		(return indices)))
+	    
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
@@ -104,7 +81,40 @@ more structs. this function helps to initialize those structs."
 			 (type VkDevice _device)
 			 (type VkQueue _graphicsQueue)
 			 #+surface (type VkSurfaceKHR _surface))
-	       #-nolog (defun checkValidationLayerSupport ()
+		(defun findQueueFamilies (device)
+	      (declare (type VkPhysicalDevice device)
+		       (values QueueFamilyIndices))
+	      (let ((indices)
+		    (queueFamilyCount 0))
+		(declare (type QueueFamilyIndices indices)
+			 (type uint32_t queueFamilyCount))
+		(vkGetPhysicalDeviceQueueFamilyProperties
+		 device &queueFamilyCount nullptr)
+		(let (((queueFamilies queueFamilyCount)))
+		  (declare (type "std::vector<VkQueueFamilyProperties>"
+				 (queueFamilies queueFamilyCount)))
+		  (vkGetPhysicalDeviceQueueFamilyProperties
+		   device
+		   &queueFamilyCount
+		   (queueFamilies.data))
+		  (let ((i 0))
+		    (foreach
+		     (family queueFamilies)
+		     (when (and (< 0 family.queueCount)
+				(logand family.queueFlags
+					VK_QUEUE_GRAPHICS_BIT))
+		       (setf indices.graphicsFamily i))
+		     #+surface
+		     (let ((presentSupport false))
+		       (declare (type VkBool32 presentSupport))
+		       (vkGetPhysicalDeviceSurfaceSupportKHR
+			device i _surface &presentSupport)
+		       (when (and (< 0 family.queueCount)
+				  presentSupport)
+			 (setf indices.presentFamily i)))
+		     (incf i))))
+		(return indices)))
+		#-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
 		   (declare (type uint32_t layerCount))
@@ -235,7 +245,8 @@ more structs. this function helps to initialize those structs."
 			  (type VkPhysicalDevice device))
 		 (let ((indices (findQueueFamilies device)))
 		   (declare (type QueueFamilyIndices indices))
-		   (return (indices.graphicsFamily.has_value))
+		   (return (and (indices.graphicsFamily.has_value)
+				#+surface (indices.presentFamily.has_value)))
 		   #+nil (return (indices.isComplete))))
 	       (defun pickPhysicalDevice ()
 		 
