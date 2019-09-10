@@ -209,6 +209,17 @@ private:
     auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     auto extent = chooseSwapExtent(swapChainSupport.capabilities);
     auto imageCount = ((swapChainSupport.capabilities.minImageCount) + (1));
+    auto indices = findQueueFamilies(_physicalDevice);
+    auto queueFamilyIndices = {indices.graphicsFamily.value(),
+                               indices.presentFamily.value()};
+    auto imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    auto queueFamilyIndexCount = 0;
+    auto pQueueFamilyIndices = nullptr;
+    if (!((indices.presentFamily) == (indices.graphicsFamily))) {
+      imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+      queueFamilyIndexCount = 2;
+      pQueueFamilyIndices = pQueueFamilyIndices;
+    };
     if (((0 < swapChainSupport.capabilities.maxImageCount) &&
          (swapChainSupport.capabilities.maxImageCount < imageCount))) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
@@ -222,6 +233,9 @@ private:
     createInfo.imageExtent = extent;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    createInfo.imageSharingMode = imageSharingMode;
+    createInfo.queueFamilyIndexCount = queueFamilyIndexCount;
+    createInfo.pQueueFamilyIndices = pQueueFamilyIndices;
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue

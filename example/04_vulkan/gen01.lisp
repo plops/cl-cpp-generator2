@@ -322,7 +322,19 @@ more structs. this function helps to initialize those structs."
 			 (chooseSwapExtent
 			  swapChainSupport.capabilities))
 			(imageCount
-			 (+ swapChainSupport.capabilities.minImageCount 1)))
+			 (+ swapChainSupport.capabilities.minImageCount 1))
+			(indices (findQueueFamilies _physicalDevice))
+			((aref queueFamilyIndices) (curly
+						    (indices.graphicsFamily.value)
+						    (indices.presentFamily.value)))
+			(imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
+			(queueFamilyIndexCount 0)
+			(pQueueFamilyIndices nullptr))
+		    (unless (== indices.presentFamily
+				indices.graphicsFamily)
+		      (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
+			    queueFamilyIndexCount 2
+			    pQueueFamilyIndices pQueueFamilyIndices))
 		    (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
 			       (< swapChainSupport.capabilities.maxImageCount
 				  imageCount))
@@ -336,7 +348,13 @@ more structs. this function helps to initialize those structs."
 			  :imageColorSpace surfaceFormat.colorSpace
 			  :imageExtent extent
 			  :imageArrayLayers 1
-			  :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)))))
+			  :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+			  ;; we could use VK_IMAGE_USAGE_TRANSFER_DST_BIT
+			  ;; if we want to enable post processing
+			  :imageSharingMode imageSharingMode
+			  :queueFamilyIndexCount queueFamilyIndexCount
+			  :pQueueFamilyIndices pQueueFamilyIndices
+			  )))))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
 		 "// initialize members _device and _graphicsQueue"
