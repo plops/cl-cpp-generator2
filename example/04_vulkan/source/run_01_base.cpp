@@ -18,6 +18,7 @@
 #include <functional>
 #include <iostream>
 #include <optional>
+#include <set>
 #include <stdexcept>
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
@@ -41,6 +42,7 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  VkQueue _presentQueue;
   VkSurfaceKHR _surface;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
@@ -138,16 +140,23 @@ private:
     // initialize members _device and _graphicsQueue
     auto indices = findQueueFamilies(_physicalDevice);
     float queuePriority = (1.e+0);
-    VkDeviceQueueCreateInfo queueCreateInfo = {};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
+                                              indices.presentFamily.value()};
+    for (auto &queueFamily : uniqueQueueFamilies) {
+      VkDeviceQueueCreateInfo queueCreateInfo = {};
+      queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+      queueCreateInfo.queueFamilyIndex = queueFamily;
+      queueCreateInfo.queueCount = 1;
+      queueCreateInfo.pQueuePriorities = &queuePriority;
+      queueCreateInfos.push_back(queueCreateInfo);
+    };
     VkPhysicalDeviceFeatures deviceFeatures = {};
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.queueCreateInfoCount =
+        static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = 0;
     createInfo.enabledLayerCount =
@@ -159,6 +168,7 @@ private:
     };
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
+    vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
   }
   bool isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);

@@ -48,6 +48,7 @@ more structs. this function helps to initialize those structs."
 		     <cstdlib>
 		     <cstring>
 		     <optional>
+		     #+surface <set>
 		     )
 	    (defstruct0 QueueFamilyIndices 
 		(graphicsFamily "std::optional<uint32_t>")
@@ -72,6 +73,7 @@ more structs. this function helps to initialize those structs."
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
 		    (_graphicsQueue)
+		    #+surface (_presentQueue)
 		    #+surface (_surface))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
@@ -79,7 +81,9 @@ more structs. this function helps to initialize those structs."
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
-			 (type VkQueue _graphicsQueue)
+			 (type VkQueue _graphicsQueue
+			       #+surface _presentQueue)
+			 
 			 #+surface (type VkSurfaceKHR _surface))
 		(defun findQueueFamilies (device)
 	      (declare (type VkPhysicalDevice device)
@@ -213,21 +217,32 @@ more structs. this function helps to initialize those structs."
 		 (let ((indices (findQueueFamilies _physicalDevice))
 		       (queuePriority 1s0))
 		   (declare (type float queuePriority))
-
-		   ,(vk `(VkDeviceQueueCreateInfo
-			 queueCreateInfo
-			 :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-			 :queueFamilyIndex (indices.graphicsFamily.value)
-			 :queueCount 1
-			 :pQueuePriorities &queuePriority))
+		   (let ((queueCreateInfos)
+			 (uniqueQueueFamilies
+			  (curly
+			   (indices.graphicsFamily.value)
+			   #+surface (indices.presentFamily.value))))
+		     (declare (type "std::vector<VkDeviceQueueCreateInfo>"
+				    queueCreateInfos)
+			      (type "std::set<uint32_t>" uniqueQueueFamilies))
+		     
+		     (foreach (queueFamily uniqueQueueFamilies)
+			      ,(vk `(VkDeviceQueueCreateInfo
+				       queueCreateInfo
+				       :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+				       :queueFamilyIndex queueFamily
+				       :queueCount 1
+				       :pQueuePriorities &queuePriority))
+			      (queueCreateInfos.push_back queueCreateInfo)))
 		   (let ((deviceFeatures (curly))
 			 )
 		     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
 		     ,(vk `(VkDeviceCreateInfo
 			 createInfo
 			 :sType VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
-			 :pQueueCreateInfos &queueCreateInfo
-			 :queueCreateInfoCount 1
+			 :pQueueCreateInfos (queueCreateInfos.data)
+			 :queueCreateInfoCount (static_cast<uint32_t>
+						(queueCreateInfos.size))
 			 :pEnabledFeatures &deviceFeatures
 			 :enabledExtensionCount 0
 			 :enabledLayerCount
@@ -239,7 +254,10 @@ more structs. this function helps to initialize those structs."
 						 nullptr &_device))
 		       (throw ("std::runtime_error" (string "failed to create logical device"))))
 		     (vkGetDeviceQueue _device (indices.graphicsFamily.value)
-				       0 &_graphicsQueue))))
+				       0 &_graphicsQueue)
+		     #+surface
+		     (vkGetDeviceQueue _device (indices.presentFamily.value)
+				       0 &_presentQueue))))
 	       (defun isDeviceSuitable ( device)
 		 (declare (values bool)
 			  (type VkPhysicalDevice device))
