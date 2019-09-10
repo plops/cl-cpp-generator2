@@ -565,13 +565,27 @@ more structs. this function helps to initialize those structs."
 			     ;; frag shader references this as outColor
 			     :pColorAttachments &colorAttachmentRef))
 			 ,(vk
+			   `(VkSubpassDependency
+			     dependency
+			     :srcSubpass VK_SUBPASS_EXTERNAL
+			     :dstSubpass 0
+			     :srcStageMask VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+			     :srcAccessMask 0
+			     :dstStageMask VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+			     :dstAccessMask (logior
+					     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+					     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)))
+			 ,(vk
 			   `(VkRenderPassCreateInfo
 			     renderPassInfo
 			     :sType VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO
 			     :attachmentCount 1
 			     :pAttachments &colorAttachment
 			     :subpassCount 1
-			     :pSubpasses &subpass))
+			     :pSubpasses &subpass
+			     ;; wait with writing of the color attachment
+			     :dependencyCount 1
+			     :pDependencies &dependency))
 			 (unless (== VK_SUCCESS
 				     (vkCreateRenderPass
 				      _device
@@ -1093,7 +1107,25 @@ more structs. this function helps to initialize those structs."
 					)
 				       )
 			     (throw ("std::runtime_error"
-				     (string "failed to submit draw command buffer.")))))))
+				     (string "failed to submit draw command buffer."))))
+			   ;; submit result for presentation
+			   (let ((swapChains[] (curly _swapChain))
+				 )
+			     (declare (type VkSwapchainKHR swapChains[]))
+			    ,(vk
+			      `(VkPresentInfoKHR
+				presentInfo
+				:sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
+				;; wait for signal before presentation
+				:waitSemaphoreCount 1
+				:pWaitSemaphores signalSemaphores
+				:swapchainCount 1
+				:pSwapchains swapChains
+				:pImageIndices &imageIndex
+				;; we could check if presentation was successful
+				:pResults nullptr))
+			    (vkQueuePresentKHR _presentQueue &presentInfo))
+			   )))
 		     (defun cleanup ()
 		       (declare (values void))
 		       
