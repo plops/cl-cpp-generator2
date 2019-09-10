@@ -246,6 +246,7 @@ more structs. this function helps to initialize those structs."
 				(_graphicsPipeline)
 				(_swapChainFramebuffers)
 				(_commandPool)
+				(_commandBuffers)
 				)
 		     #+surface (declare 
 				(type VkQueue 
@@ -263,7 +264,9 @@ more structs. this function helps to initialize those structs."
 				(type VkRenderPass _renderPass)
 				(type VkPipeline _graphicsPipeline)
 				(type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
-				(type VkCommandPool _commandPool))
+				(type VkCommandPool _commandPool)
+				(type "std::vector<VkCommandBuffer>"
+				      _commandBuffers))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -386,12 +389,30 @@ more structs. this function helps to initialize those structs."
 			(createRenderPass)
 			(createGraphicsPipeline)
 			(createFramebuffers)
-			(createCommandPool)))
+			(createCommandPool)
+			(createCommandBuffers)))
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
+		       (defun createCommandBuffers ()
+			 (declare (values void))
+			 (_commandBuffers.resize
+			  (_swapChainFramebuffers.size))
+			 ,(vk
+			   `(VkCommandBufferAllocateInfo
+			     allocInfo
+			     :sType VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO
+			     :commandPool _commandPool
+			     :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+			     :commandBufferCount (_commandBuffers.size)))
+			 (unless (== VK_SUCCESS
+				     (vkAllocateCommandBuffers _device
+							       &allocInfo
+							       (_commandBuffers.data)))
+			   (throw ("std::runtime_error"
+				   (string "failed to allocate command buffers.")))))
 		       (defun createCommandPool ()
 			 (declare (values void))
 			 (let ((queueFamilyIndices (findQueueFamilies
@@ -409,7 +430,38 @@ more structs. this function helps to initialize those structs."
 							  nullptr
 							  &_commandPool))
 			   (throw ("std::runtime_error"
-				   (string "failed to create command pool.")))))
+				   (string "failed to create command pool."))))
+			 (dotimes (i (_commandBuffers.size))
+			   ,(vk
+			     `(VkCommandBufferBeginInfo
+			       beginInfo
+			       :sType VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+			       ;; flags can select if exectution is
+			       ;; once, inside single renderpass, or
+			       ;; resubmittable
+			       :flags 0 
+			       :pInheritanceInfo nullptr
+			       ))
+			   (unless (== VK_SUCCESS
+				       (vkBeginCommandBuffer
+					(aref _commandBuffers i)
+					&beginInfo))
+			     (throw ("std::runtime_error"
+				     (string "failed to begin recording command buffer."))))
+			   (let ((clearColor (curly 0s0 0s0 0s0 0s0)))
+			     (declare (type VkClearValue clearColor))
+			    ,(vk
+			      `(VkRenderPassBeginInfo
+				renderPassInfo
+				:sType VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
+				:renderPass _renderPass
+				:framebuffer (aref _swapChainFramebuffers i)
+				:renderArea.offset (curly  0 0)
+				:renderArea.extent _swapChainExtent
+				:clearValueCount 1
+				:pClearValues &clearColor
+				)))
+			   ))
 		       (defun createFramebuffers ()
 			 (declare (values void))
 			 (_swapChainFramebuffers.resize

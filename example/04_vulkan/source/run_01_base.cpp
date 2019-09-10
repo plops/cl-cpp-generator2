@@ -134,6 +134,7 @@ private:
   VkPipeline _graphicsPipeline;
   std::vector<VkFramebuffer> _swapChainFramebuffers;
   VkCommandPool _commandPool;
+  std::vector<VkCommandBuffer> _commandBuffers;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -223,8 +224,21 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createCommandBuffers();
   }
   // shader stuff
+  void createCommandBuffers() {
+    _commandBuffers.resize(_swapChainFramebuffers.size());
+    VkCommandBufferAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = _commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = _commandBuffers.size();
+    if (!((VK_SUCCESS) == (vkAllocateCommandBuffers(_device, &allocInfo,
+                                                    _commandBuffers.data())))) {
+      throw std::runtime_error("failed to allocate command buffers.");
+    };
+  }
   void createCommandPool() {
     auto queueFamilyIndices = findQueueFamilies(_physicalDevice);
     VkCommandPoolCreateInfo poolInfo = {};
@@ -235,6 +249,25 @@ private:
           (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
       throw std::runtime_error("failed to create command pool.");
     };
+    for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
+      VkCommandBufferBeginInfo beginInfo = {};
+      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      beginInfo.flags = 0;
+      beginInfo.pInheritanceInfo = nullptr;
+      if (!((VK_SUCCESS) ==
+            (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo)))) {
+        throw std::runtime_error("failed to begin recording command buffer.");
+      };
+      VkClearValue clearColor = {(0.0e+0), (0.0e+0), (0.0e+0), (0.0e+0)};
+      VkRenderPassBeginInfo renderPassInfo = {};
+      renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      renderPassInfo.renderPass = _renderPass;
+      renderPassInfo.framebuffer = _swapChainFramebuffers[i];
+      renderPassInfo.renderArea.offset = {0, 0};
+      renderPassInfo.renderArea.extent = _swapChainExtent;
+      renderPassInfo.clearValueCount = 1;
+      renderPassInfo.pClearValues = &clearColor;
+    }
   }
   void createFramebuffers() {
     _swapChainFramebuffers.resize(_swapChainImageViews.size());
