@@ -28,16 +28,16 @@ more structs. this function helps to initialize those structs."
 	    " "
 	    "layout(location = 0) out vec3 fragColor;"
 	    
-	    (let (((aref positions 3) ("vec2[]"
-				       (vec2 .0 -.5)
-				       (vec2 .5 .5)
-				       (vec2 -.5 .5)))
-		  ((aref colors 3) ("vec3[]"
-				    (vec3 1.  .0 .0)
-				    (vec3 .0 1.  .0 )
-				    (vec3 .0 .0 1.))))
-	      (declare (type vec2 (aref positions 3))
-		       (type vec3 (aref colors 3)))
+	    (let (("positions[]" ("vec2[]"
+				(vec2 .0 -.5)
+				(vec2 .5 .5)
+				(vec2 -.5 .5)))
+		  ("colors[]" ("vec3[]"
+			     (vec3 1.  .0 .0)
+			     (vec3 .0 1.  .0 )
+			     (vec3 .0 .0 1.))))
+	      (declare (type vec2 "positions[]")
+		       (type vec3 "colors[]"))
 	      
 	      (defun main ()
 		(declare (values void))
@@ -664,7 +664,13 @@ more structs. this function helps to initialize those structs."
     (write-source *code-file* code)
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
-    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)))
-    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *vertex-file*)))))
+    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)
+							   "-o"
+							   ,(format nil "~a/frag.spv"
+								    (directory-namestring *vertex-file*))))
+    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *vertex-file*)
+							   "-o"
+							   ,(format nil "~a/vert.spv"
+								    (directory-namestring *vertex-file*))))))
  
 

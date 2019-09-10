@@ -120,7 +120,7 @@ private:
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              nullptr);
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    auto queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              queueFamilies.data());
     auto i = 0;
@@ -142,7 +142,7 @@ private:
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    std::vector<VkLayerProperties> availableLayers(layerCount);
+    auto availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
     for (auto &layerName : _validationLayers) {
       auto layerFound = false;
@@ -325,11 +325,10 @@ private:
     uint32_t extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          nullptr);
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    auto availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          availableExtensions.data());
-    std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
-                                             _deviceExtensions.end());
+    auto requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
     for (auto &extension : availableExtensions) {
       requiredExtensions.erase(extension.extensionName);
     };
@@ -355,7 +354,7 @@ private:
     if ((0) == (deviceCount)) {
       throw std::runtime_error("failed to find gpu with vulkan support.");
     };
-    std::vector<VkPhysicalDevice> devices(deviceCount);
+    auto devices(deviceCount);
     vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
     for (auto &device : devices) {
       if (isDeviceSuitable(device)) {
