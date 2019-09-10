@@ -454,7 +454,18 @@ more structs. this function helps to initialize those structs."
 				 :depthBiasConstantFactor 0s0
 				 ;; sometimes used for shadow mapping:
 				 :depthBiasClamp 0s0
-				 :depthBiasSlopeFactor 0s0)))
+				 :depthBiasSlopeFactor 0s0))
+			     ,(vk ;; for now disable multisampling
+			       `(VkPipelineMultisampleStateCreateInfo
+				 multisampling
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMLE_STATE_CREATE_INFO
+				 :sampleShadingEnable VK_FALSE
+				 :rasterizationSamples VK_SAMPLE_COUNT_1_BIT
+				 :minSampleShading 1s0
+				 :pSampleMask nullptr
+				 :alphaToCoverageEnable VK_FALSE
+				 :alphaToOneEnable VK_FALSE))
+			     )
 			   
 			   
 			   (vkDestroyShaderModule _device
