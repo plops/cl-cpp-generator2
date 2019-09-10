@@ -13,6 +13,8 @@
 #include <glm/vec4.hpp>
 ;
 
+#include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -52,6 +54,40 @@ SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device,
         device, surface, &presentModeCount, details.presentModes.data());
   };
   return details;
+}
+VkSurfaceFormatKHR chooseSwapSurfaceFormat(
+    const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+  for (auto &format : availableFormats) {
+    if ((((VK_FORMAT_B8G8R8A8_UNORM) == (format.format)) &&
+         ((VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) == (format.colorSpace)))) {
+      return format;
+    };
+  };
+  return availableFormats[0];
+}
+VkPresentModeKHR
+chooseSwapPresentFormat(const std::vector<VkPresentModeKHR> &modes) {
+  // prefer triple buffer (if available)
+  for (auto &mode : modes) {
+    if ((VK_PRESENT_MODE_MAILBOX_KHR) == (mode)) {
+      return mode;
+    };
+  };
+  return VK_PRESENT_MODE_FIFO_KHR;
+}
+VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+  if ((UINT32_MAX) != (capabilities.currentExtent.width)) {
+    return capabilities.currentExtent;
+  } else {
+    VkExtent2D actualExtent = {800, 600};
+    actualExtent.width = std::max(
+        capabilities.minImageExtent.width,
+        std::min(capabilities.maxImageExtent.width, actualExtent.width));
+    actualExtent.height = std::max(
+        capabilities.minImageExtent.height,
+        std::min(capabilities.maxImageExtent.height, actualExtent.height));
+    return actualExtent;
+  }
 };
 class HelloTriangleApplication {
 public:
@@ -157,6 +193,7 @@ private:
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+    createSwapChain();
   }
   void createSurface() {
     // initialize _surface member
@@ -166,6 +203,26 @@ private:
       throw std::runtime_error("failed to create window surface");
     };
   }
+  void createSwapChain() {
+    auto swapChainSupport = querySwapChainSupport(_physicalDevice, _surface);
+    auto surfaceFromat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+    auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+    auto extent = chooseSwapExtent(swapChainSupport.capabilities);
+    auto imageCount = ((swapChainSupport.capabilities.minImageCount) + (1));
+    if (((0 < swapChainSupport.capabilies.maxImageCount) &&
+         (swapChainSupport.capabilities.maxImageCount < imageCount))) {
+      imageCount = swapChainSupport.capabilities.maxImageCount;
+    };
+    VkSwapChainCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = _surface;
+    createInfo.minImageCount = imageCount;
+    createInfo.imageFormat = surfaceFormat.format;
+    createInfo.imageColorSpace = surfaceFormat.colorSpace;
+    createInfo.imageExtent = extent;
+    createInfo.imageArrayLayers = 1;
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
     auto indices = findQueueFamilies(_physicalDevice);

@@ -48,8 +48,13 @@ more structs. this function helps to initialize those structs."
 		     <cstdlib>
 		     <cstring>
 		     <optional>
-		     #+surface <set>
-		     )
+		     <set>)
+	    #+surface
+	    (include
+	     ;; UINT32_MAX:
+	     <cstdint> 
+	     <algorithm>
+	     )
 	    (defstruct0 QueueFamilyIndices 
 		(graphicsFamily "std::optional<uint32_t>")
 	      #+surface (presentFamily "std::optional<uint32_t>")
@@ -99,7 +104,47 @@ more structs. this function helps to initialize those structs."
 		      (details.presentModes.data))))
 		 
 		 (return details)))
-	     )
+
+	     (defun chooseSwapSurfaceFormat (availableFormats)
+	       (declare (values VkSurfaceFormatKHR)
+			(type "const std::vector<VkSurfaceFormatKHR>&"
+			      availableFormats))
+	       (foreach (format availableFormats)
+			(when (and (== VK_FORMAT_B8G8R8A8_UNORM
+				       format.format)
+				   (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+				       format.colorSpace))
+			  (return format)))
+	       (return (aref availableFormats 0)))
+	     (defun chooseSwapPresentFormat (modes)
+	       (declare (values VkPresentModeKHR)
+			(type "const std::vector<VkPresentModeKHR>&"
+			      modes))
+	       "// prefer triple buffer (if available)"
+	       (foreach (mode modes)
+		(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
+		  (return mode)))
+	       (return VK_PRESENT_MODE_FIFO_KHR))
+	     (defun chooseSwapExtent (capabilities)
+	       (declare (values VkExtent2D)
+			(type "const VkSurfaceCapabilitiesKHR&"
+			      capabilities))
+	       (if (!= UINT32_MAX capabilities.currentExtent.width)
+		   (do0
+		    (return capabilities.currentExtent))
+		   (do0
+		    (let ((actualExtent (curly 800 600))
+			  )
+		      (declare (type VkExtent2D actualExtent))
+
+		      ,@(loop for e in `(width height) collect
+			     `(setf (dot actualExtent ,e)
+				    ("std::max" (dot capabilities.minImageExtent ,e)
+					      ("std::min"
+					       (dot capabilities.maxImageExtent ,e)
+					       (dot actualExtent ,e)))))
+		      
+		      (return actualExtent))))))
 	    
 	    (defclass HelloTriangleApplication ()
 	      "public:"
@@ -246,19 +291,52 @@ more structs. this function helps to initialize those structs."
 		 (do0 "// create window surface because it can influence physical device selection"
 		      (createSurface))
 		 (pickPhysicalDevice)
-		 (createLogicalDevice))
+		 (createLogicalDevice)
+		 #+surface
+		 (createSwapChain))
 	       #+surface
-	       (defun createSurface ()
-		 (declare (values void))
-		 "// initialize _surface member"
-		 "// must be destroyed before the instance is destroyed"
-		 (unless (== VK_SUCCESS
-			     (glfwCreateWindowSurface
-			      _instance _window
-			      nullptr &_surface))
-		   (throw ("std::runtime_error"
-			     (string "failed to create window surface")))
-		   ))
+	       (do0
+		(defun createSurface ()
+		  (declare (values void))
+		  "// initialize _surface member"
+		  "// must be destroyed before the instance is destroyed"
+		  (unless (== VK_SUCCESS
+			      (glfwCreateWindowSurface
+			       _instance _window
+			       nullptr &_surface))
+		    (throw ("std::runtime_error"
+			    (string "failed to create window surface")))
+		    ))
+		
+		(defun createSwapChain ()
+		  (declare (values void))
+		  (let ((swapChainSupport
+			 (querySwapChainSupport _physicalDevice _surface))
+			(surfaceFromat
+			 (chooseSwapSurfaceFormat
+			  swapChainSupport.formats))
+			(presentMode
+			 (chooseSwapPresentMode
+			  swapChainSupport.presentModes))
+			(extent
+			 (chooseSwapExtent
+			  swapChainSupport.capabilities))
+			(imageCount
+			 (+ swapChainSupport.capabilities.minImageCount 1)))
+		    (when (and (< 0 swapChainSupport.capabilies.maxImageCount)
+			       (< swapChainSupport.capabilities.maxImageCount
+				  imageCount))
+		      (setf imageCount swapChainSupport.capabilities.maxImageCount))
+		    ,(vk `(VkSwapChainCreateInfoKHR
+			  createInfo
+			  :sType VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
+			  :surface _surface
+			  :minImageCount imageCount
+			  :imageFormat surfaceFormat.format
+			  :imageColorSpace surfaceFormat.colorSpace
+			  :imageExtent extent
+			  :imageArrayLayers 1
+			  :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)))))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
 		 "// initialize members _device and _graphicsQueue"
