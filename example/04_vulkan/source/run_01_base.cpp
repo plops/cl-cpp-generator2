@@ -66,7 +66,7 @@ VkSurfaceFormatKHR chooseSwapSurfaceFormat(
   return availableFormats[0];
 }
 VkPresentModeKHR
-chooseSwapPresentFormat(const std::vector<VkPresentModeKHR> &modes) {
+chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &modes) {
   // prefer triple buffer (if available)
   for (auto &mode : modes) {
     if ((VK_PRESENT_MODE_MAILBOX_KHR) == (mode)) {
@@ -205,15 +205,15 @@ private:
   }
   void createSwapChain() {
     auto swapChainSupport = querySwapChainSupport(_physicalDevice, _surface);
-    auto surfaceFromat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+    auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     auto extent = chooseSwapExtent(swapChainSupport.capabilities);
     auto imageCount = ((swapChainSupport.capabilities.minImageCount) + (1));
-    if (((0 < swapChainSupport.capabilies.maxImageCount) &&
+    if (((0 < swapChainSupport.capabilities.maxImageCount) &&
          (swapChainSupport.capabilities.maxImageCount < imageCount))) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
     };
-    VkSwapChainCreateInfoKHR createInfo = {};
+    VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = _surface;
     createInfo.minImageCount = imageCount;

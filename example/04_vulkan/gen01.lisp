@@ -116,7 +116,7 @@ more structs. this function helps to initialize those structs."
 				       format.colorSpace))
 			  (return format)))
 	       (return (aref availableFormats 0)))
-	     (defun chooseSwapPresentFormat (modes)
+	     (defun chooseSwapPresentMode (modes)
 	       (declare (values VkPresentModeKHR)
 			(type "const std::vector<VkPresentModeKHR>&"
 			      modes))
@@ -312,7 +312,7 @@ more structs. this function helps to initialize those structs."
 		  (declare (values void))
 		  (let ((swapChainSupport
 			 (querySwapChainSupport _physicalDevice _surface))
-			(surfaceFromat
+			(surfaceFormat
 			 (chooseSwapSurfaceFormat
 			  swapChainSupport.formats))
 			(presentMode
@@ -323,11 +323,11 @@ more structs. this function helps to initialize those structs."
 			  swapChainSupport.capabilities))
 			(imageCount
 			 (+ swapChainSupport.capabilities.minImageCount 1)))
-		    (when (and (< 0 swapChainSupport.capabilies.maxImageCount)
+		    (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
 			       (< swapChainSupport.capabilities.maxImageCount
 				  imageCount))
 		      (setf imageCount swapChainSupport.capabilities.maxImageCount))
-		    ,(vk `(VkSwapChainCreateInfoKHR
+		    ,(vk `(VkSwapchainCreateInfoKHR
 			  createInfo
 			  :sType VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
 			  :surface _surface
