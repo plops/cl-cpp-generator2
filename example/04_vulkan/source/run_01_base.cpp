@@ -83,7 +83,7 @@ private:
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
   }
   void createInstance() {
-#initialize member _instance
+    // initialize member _instance
     if (!(checkValidationLayerSupport())) {
       throw std::runtime_error("validation layers requested, but unavailable.");
     };
@@ -116,7 +116,7 @@ private:
     createLogicalDevice();
   }
   void createLogicalDevice() {
-#initialize members _device and _graphicsQueue
+    // initialize members _device and _graphicsQueue
     auto indices = findQueueFamilies(_physicalDevice);
     float queuePriority = (1.e+0);
     VkDeviceQueueCreateInfo queueCreateInfo = {};
@@ -138,13 +138,15 @@ private:
           (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device)))) {
       throw std::runtime_error("failed to create logical device");
     };
+    vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
+                     &_graphicsQueue);
   }
   bool isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
     return indices.graphicsFamily.has_value();
   }
   void pickPhysicalDevice() {
-#initialize member _physicalDevice
+    // initialize member _physicalDevice
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
     if ((0) == (deviceCount)) {

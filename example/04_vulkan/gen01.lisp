@@ -135,7 +135,7 @@ more structs. this function helps to initialize those structs."
 						nullptr)))
 	       (defun createInstance ()
 		 (declare (values void))
-		 "# initialize member _instance"
+		 "// initialize member _instance"
 		 #-nolog (;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
 			  unless (checkValidationLayerSupport)
 			   (throw ("std::runtime_error"
@@ -181,7 +181,7 @@ more structs. this function helps to initialize those structs."
 		 (createLogicalDevice))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
-		 "# initialize members _device and _graphicsQueue"
+		 "// initialize members _device and _graphicsQueue"
 		 (let ((indices (findQueueFamilies _physicalDevice))
 		       (queuePriority 1s0))
 		   (declare (type float queuePriority))
@@ -209,7 +209,9 @@ more structs. this function helps to initialize those structs."
 		     (unless (== VK_SUCCESS
 				 (vkCreateDevice _physicalDevice &createInfo
 						 nullptr &_device))
-		       (throw ("std::runtime_error" (string "failed to create logical device")))))))
+		       (throw ("std::runtime_error" (string "failed to create logical device"))))
+		     (vkGetDeviceQueue _device (indices.graphicsFamily.value)
+				       0 &_graphicsQueue))))
 	       (defun isDeviceSuitable ( device)
 		 (declare (values bool)
 			  (type VkPhysicalDevice device))
@@ -220,7 +222,7 @@ more structs. this function helps to initialize those structs."
 	       (defun pickPhysicalDevice ()
 		 
 		 (declare (values void))
-		 "# initialize member _physicalDevice"
+		 "// initialize member _physicalDevice"
 		 (let ((deviceCount 0))
 		   (declare (type uint32_t deviceCount))
 		   (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
