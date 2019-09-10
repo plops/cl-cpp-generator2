@@ -1067,7 +1067,8 @@ more structs. this function helps to initialize those structs."
 		       (declare (values void))
 		       (while (not (glfwWindowShouldClose _window))
 			 (glfwPollEvents)
-			 #+surface (drawFrame)))
+			 #+surface (drawFrame))
+		       (vkDeviceWaitIdle _device))
 		     #+surface
 		     (defun drawFrame ()
 		       (declare (values void))
@@ -1124,7 +1125,10 @@ more structs. this function helps to initialize those structs."
 				:pImageIndices &imageIndex 
 				;; we could check if presentation was successful
 				:pResults nullptr))
-			    (vkQueuePresentKHR _presentQueue &presentInfo))
+			    (vkQueuePresentKHR _presentQueue &presentInfo)
+			    ;; wait in case gpu can't keep up
+			    (vkQueueWaitIdle _presentQueue))
+			   
 			   )))
 		     (defun cleanup ()
 		       (declare (values void))

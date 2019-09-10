@@ -655,6 +655,7 @@ private:
       glfwPollEvents();
       drawFrame();
     }
+    vkDeviceWaitIdle(_device);
   }
   void drawFrame() {
     uint32_t imageIndex = 0;
@@ -688,6 +689,7 @@ private:
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
     vkQueuePresentKHR(_presentQueue, &presentInfo);
+    vkQueueWaitIdle(_presentQueue);
   }
   void cleanup() {
     vkDestroySemaphore(_device, _renderFinishedSemaphore, nullptr);
