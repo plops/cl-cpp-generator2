@@ -4,7 +4,8 @@
 (in-package :cl-cpp-generator2)
 
 ;; if nolog is off, then validation layers will be used to check for mistakes
-;(setf *features* (union *features* '(:nolog)))
+;; if surface is on, then a window surface is created; otherwise only off-screen render
+(setf *features* (union *features* '(:surface)))
 (setf *features* (set-difference *features* '(:nolog)))
 
 (progn
@@ -93,14 +94,16 @@ more structs. this function helps to initialize those structs."
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
-		    (_graphicsQueue))
+		    (_graphicsQueue)
+		    #+surface (_surface))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
-			 (type VkQueue _graphicsQueue))
+			 (type VkQueue _graphicsQueue)
+			 #+surface (type VkSurfaceKHR _surface))
 	       #-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
@@ -177,8 +180,23 @@ more structs. this function helps to initialize those structs."
 	       (defun initVulkan ()
 		 (declare (values void))
 		 (createInstance)
+		 #+surface
+		 (do0 "// create window surface because it can influence physical device selection"
+		      (createSurface))
 		 (pickPhysicalDevice)
 		 (createLogicalDevice))
+	       #+surface
+	       (defun createSurface ()
+		 (declare (values void))
+		 "// initialize _surface member"
+		 "// must be destroyed before the instance is destroyed"
+		 (unless (== VK_SUCCESS
+			     (glfwCreateWindowSurface
+			      _instance _window
+			      nullptr &_surface))
+		   (throw ("std::runtime_error"
+			     (string "failed to create window surface")))
+		   ))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
 		 "// initialize members _device and _graphicsQueue"
@@ -250,6 +268,8 @@ more structs. this function helps to initialize those structs."
 	       (defun cleanup ()
 		 (declare (values void))
 		 (vkDestroyDevice _device nullptr)
+		 #+surface
+		 (vkDestroySurfaceKHR _instance _surface nullptr)
 		 (vkDestroyInstance _instance nullptr)
 		 (glfwDestroyWindow _window)
 		 (glfwTerminate)

@@ -57,6 +57,7 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  VkSurfaceKHR _surface;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -112,8 +113,18 @@ private:
   }
   void initVulkan() {
     createInstance();
+    // create window surface because it can influence physical device selection
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+  }
+  void createSurface() {
+    // initialize _surface member
+    // must be destroyed before the instance is destroyed
+    if (!((VK_SUCCESS) ==
+          (glfwCreateWindowSurface(_instance, _window, nullptr, &_surface)))) {
+      throw std::runtime_error("failed to create window surface");
+    };
   }
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
@@ -171,6 +182,7 @@ private:
   }
   void cleanup() {
     vkDestroyDevice(_device, nullptr);
+    vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
     glfwDestroyWindow(_window);
     glfwTerminate();
