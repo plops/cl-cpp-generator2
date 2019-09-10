@@ -239,7 +239,9 @@ more structs. this function helps to initialize those structs."
 				(_swapChainExtent)
 				(_swapChainImageViews)
 				(_renderPass)
-				(_pipelineLayout))
+				(_pipelineLayout
+				 )
+				(_graphicsPipeline))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -253,7 +255,8 @@ more structs. this function helps to initialize those structs."
 				(type VkExtent2D _swapChainExtent)
 				(type "std::vector<VkImageView>" _swapChainImageViews)
 				(type VkPipelineLayout _pipelineLayout)
-				(type VkRenderPass _renderPass))
+				(type VkRenderPass _renderPass)
+				(type VkPipeline _graphicsPipeline))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -519,7 +522,7 @@ more structs. this function helps to initialize those structs."
 			     ,(vk
 			       `(VkPipelineColorBlendAttachmentState
 				 colorBlendAttachment
-				 ;; fixme: stype? perhaps not because it is not create
+				 
 				 :colorWriteMask
 				 (logior VK_COLOR_COMPONENT_R_BIT
 					 VK_COLOR_COMPONENT_G_BIT
@@ -533,12 +536,26 @@ more structs. this function helps to initialize those structs."
 				 :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
 				 :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
 				 :alphaBlendOp VK_BLEND_OP_ADD))
-			     ;; viewport, line width and blend constants
-			     ;; can be changed dynamically
-			     (let (("dynamicStates[]"
+			     ,(vk
+			       `(VkPipelineColorBlendStateCreateInfo
+				 colorBlending
+				 :sType
+				 VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
+				 :logicOpEnable VK_FALSE
+				 :logicOp VK_LOGIC_OP_COPY
+				 :attachmentCount 1
+				 :pAttachments &colorBlendAttachment
+				 :blendConstants[0] 0s0
+				 :blendConstants[1] 0s0
+				 :blendConstants[2] 0s0
+				 :blendConstants[3] 0s0))
+			     #+nil (let (("dynamicStates[]"
 				    (curly VK_DYNAMIC_STATE_VIEWPORT
 					   VK_DYNAMIC_STATE_LINE_WIDTH)))
 			       (declare (type VkDynamicState "dynamicStates[]"))
+			       ;; viewport, line width and blend constants
+			     ;; can be changed dynamically
+			     
 			       ,(vk
 				 `(VkPipelineDynamicStateCreateInfo
 				   dynamicState
@@ -566,6 +583,40 @@ more structs. this function helps to initialize those structs."
 								&_pipelineLayout))
 			      (throw ("std::runtime_error"
 				      (string "failed to create pipeline layout.")))))
+
+			   ,(vk
+			     `(VkGraphicsPipelineCreateInfo
+			       pipelineInfo
+			       :sType VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO
+			       :stageCount 2
+			       :pStages shaderStages
+			       :pVertexInputState &vertexInputInfo
+			       :pInputAssemblyState &inputAssembly
+			       :pViewportState &viewPortState
+			       :pRasterizationState &rasterizer
+			       :pMultisampleState &multisampling
+			       :pDepthStencilState nullptr
+			       :pColorBlendState &colorBlending
+			       ;; if we want to change linewidth:
+			       :pDynamicState nullptr
+			       :layout _pipelineLayout
+			       :renderPass _renderPass
+			       :subpass 0
+			       ;; similar pipelines can be derived
+			       ;; from each other to speed up
+			       ;; switching
+			       :basePipelineHandle VK_NULL_HANDLE
+			       :basePipelineIndex -1))
+			   (unless (== VK_SUCCESS
+				       (vkCreateGraphicsPipelines
+					_device
+					VK_NULL_HANDLE ;; pipline cache
+					1
+					&pipelineInfo
+					nullptr
+					&_graphicsPipeline))
+			     (throw ("std::runtime_error"
+				     (string "failed to create graphics pipeline."))))
 			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
@@ -856,10 +907,15 @@ more structs. this function helps to initialize those structs."
 		       
 		       #+surface
 		       (do0
+			(vkDestroyPipeline _device _graphicsPipeline nullptr)
 			(vkDestroyPipelineLayout
 			_device
 			_pipelineLayout
 			nullptr)
+			(vkDestroyRenderPass
+			 _device
+			 _renderPass
+			 nullptr)
 			(foreach (view _swapChainImageViews)
 				 (vkDestroyImageView
 				  _device
