@@ -120,7 +120,6 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
-  std::vector<VkFramebuffer> _swapChainFramebuffers;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -133,6 +132,8 @@ private:
   VkRenderPass _renderPass;
   VkPipelineLayout _pipelineLayout;
   VkPipeline _graphicsPipeline;
+  std::vector<VkFramebuffer> _swapChainFramebuffers;
+  VkCommandPool _commandPool;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -221,8 +222,20 @@ private:
     createRenderPass();
     createGraphicsPipeline();
     createFramebuffers();
+    createCommandPool();
   }
   // shader stuff
+  void createCommandPool() {
+    auto queueFamilyIndices = findQueueFamilies(_physicalDevice);
+    VkCommandPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.flags = 0;
+    if (!((VK_SUCCESS) ==
+          (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
+      throw std::runtime_error("failed to create command pool.");
+    };
+  }
   void createFramebuffers() {
     _swapChainFramebuffers.resize(_swapChainImageViews.size());
     for (int i = 0; i < _swapChainImageViews.size(); (i) += (1)) {
@@ -578,6 +591,7 @@ private:
     }
   }
   void cleanup() {
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
     for (auto &b : _swapChainFramebuffers) {
       vkDestroyFramebuffer(_device, b, nullptr);
     };

@@ -221,7 +221,7 @@ more structs. this function helps to initialize those structs."
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
 		    (_graphicsQueue)
-		    (_swapChainFramebuffers))
+		    )
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
@@ -229,7 +229,7 @@ more structs. this function helps to initialize those structs."
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
 			 (type VkQueue _graphicsQueue)
-			 (type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
+			 
 			 )
 		(let #-surface ()
 		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
@@ -243,7 +243,10 @@ more structs. this function helps to initialize those structs."
 				(_renderPass)
 				(_pipelineLayout
 				 )
-				(_graphicsPipeline))
+				(_graphicsPipeline)
+				(_swapChainFramebuffers)
+				(_commandPool)
+				)
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -258,7 +261,9 @@ more structs. this function helps to initialize those structs."
 				(type "std::vector<VkImageView>" _swapChainImageViews)
 				(type VkPipelineLayout _pipelineLayout)
 				(type VkRenderPass _renderPass)
-				(type VkPipeline _graphicsPipeline))
+				(type VkPipeline _graphicsPipeline)
+				(type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
+				(type VkCommandPool _commandPool))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -380,13 +385,31 @@ more structs. this function helps to initialize those structs."
 			(createImageViews)
 			(createRenderPass)
 			(createGraphicsPipeline)
-			(createFramebuffers))
-		       )
+			(createFramebuffers)
+			(createCommandPool)))
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
+		       (defun createCommandPool ()
+			 (declare (values void))
+			 (let ((queueFamilyIndices (findQueueFamilies
+						    _physicalDevice)))
+			  ,(vk
+			    `(VkCommandPoolCreateInfo
+			      poolInfo
+			      :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
+			      ;; cmds for drawing go to graphics queue
+			      :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
+			      :flags 0)))
+			 (unless (== VK_SUCCESS
+				     (vkCreateCommandPool _device
+							  &poolInfo
+							  nullptr
+							  &_commandPool))
+			   (throw ("std::runtime_error"
+				   (string "failed to create command pool.")))))
 		       (defun createFramebuffers ()
 			 (declare (values void))
 			 (_swapChainFramebuffers.resize
@@ -936,6 +959,7 @@ more structs. this function helps to initialize those structs."
 		       
 		       #+surface
 		       (do0
+			(vkDestroyCommandPool _device _commandPool nullptr)
 			(foreach (b _swapChainFramebuffers)
 				 (vkDestroyFramebuffer _device b nullptr))
 			(vkDestroyPipeline _device _graphicsPipeline nullptr)
