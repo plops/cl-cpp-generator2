@@ -371,6 +371,9 @@ private:
     }
   }
   void cleanup() {
+    for (auto &view : _swapChainImageViews) {
+      vkDestroyImageView(_device, view, nullptr);
+    };
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);

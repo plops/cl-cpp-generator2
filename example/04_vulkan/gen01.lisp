@@ -570,7 +570,13 @@ more structs. this function helps to initialize those structs."
 		     (defun cleanup ()
 		       (declare (values void))
 		       #+surface
-		       (vkDestroySwapchainKHR _device _swapChain nullptr)
+		       (do0
+			(foreach (view _swapChainImageViews)
+				 (vkDestroyImageView
+				  _device
+				  view
+				  nullptr))
+			(vkDestroySwapchainKHR _device _swapChain nullptr))
 		       (vkDestroyDevice _device nullptr)
 		       #+surface
 		       (vkDestroySurfaceKHR _instance _surface nullptr)
