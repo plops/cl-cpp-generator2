@@ -349,8 +349,8 @@ more structs. this function helps to initialize those structs."
 		   (when extensionsSupported
 		     (let ((swapChainSupport (querySwapChainSupport device _surface)))
 		       (setf swapChainAdequate
-			     (and (not swapChainSupport.formats.empty)
-				  (not swapChainSupport.presentModes.empty))))))
+			     (and (not (swapChainSupport.formats.empty))
+				  (not (swapChainSupport.presentModes.empty)))))))
 		 (let ((indices (findQueueFamilies device)))
 		   (declare (type QueueFamilyIndices indices))
 		   (return (and (indices.graphicsFamily.has_value)

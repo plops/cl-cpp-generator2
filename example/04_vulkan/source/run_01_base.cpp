@@ -221,8 +221,8 @@ private:
     bool swapChainAdequate = false;
     if (extensionsSupported) {
       auto swapChainSupport = querySwapChainSupport(device, _surface);
-      swapChainAdequate = ((!(swapChainSupport.formats.empty)) &&
-                           (!(swapChainSupport.presentModes.empty)));
+      swapChainAdequate = ((!(swapChainSupport.formats.empty())) &&
+                           (!(swapChainSupport.presentModes.empty())));
     };
     QueueFamilyIndices indices = findQueueFamilies(device);
     return ((indices.graphicsFamily.has_value()) &&
