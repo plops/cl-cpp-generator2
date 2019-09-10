@@ -258,7 +258,7 @@ private:
             (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo)))) {
         throw std::runtime_error("failed to begin recording command buffer.");
       };
-      VkClearValue clearColor = {(0.0e+0), (0.0e+0), (0.0e+0), (0.0e+0)};
+      VkClearValue clearColor = {(0.0e+0), (0.0e+0), (0.0e+0), (1.e+0)};
       VkRenderPassBeginInfo renderPassInfo = {};
       renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
       renderPassInfo.renderPass = _renderPass;
@@ -267,6 +267,15 @@ private:
       renderPassInfo.renderArea.extent = _swapChainExtent;
       renderPassInfo.clearValueCount = 1;
       renderPassInfo.pClearValues = &clearColor;
+      vkCmdBeginRenderPass(_commandBuffers[i], &renderPassInfo,
+                           VK_SUBPASS_CONTENTS_INLINE);
+      vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        _graphicsPipeline);
+      vkCmdDraw(_commandBuffers[i], 3, 1, 0, 0);
+      vkCmdEndRenderPass(_commandBuffers[i]);
+      if (!((VK_SUCCESS) == (vkEndCommandBuffer(_commandBuffers[i])))) {
+        throw std::runtime_error("failed to record command buffer.");
+      };
     }
   }
   void createFramebuffers() {

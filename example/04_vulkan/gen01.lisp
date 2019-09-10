@@ -448,7 +448,7 @@ more structs. this function helps to initialize those structs."
 					&beginInfo))
 			     (throw ("std::runtime_error"
 				     (string "failed to begin recording command buffer."))))
-			   (let ((clearColor (curly 0s0 0s0 0s0 0s0)))
+			   (let ((clearColor (curly 0s0 0s0 0s0 1s0)))
 			     (declare (type VkClearValue clearColor))
 			    ,(vk
 			      `(VkRenderPassBeginInfo
@@ -461,6 +461,28 @@ more structs. this function helps to initialize those structs."
 				:clearValueCount 1
 				:pClearValues &clearColor
 				)))
+			   (vkCmdBeginRenderPass
+			    (aref _commandBuffers i)
+			    &renderPassInfo
+			    ;; dont use secondary command buffers
+			    VK_SUBPASS_CONTENTS_INLINE)
+			   (vkCmdBindPipeline
+			    (aref _commandBuffers i)
+			    VK_PIPELINE_BIND_POINT_GRAPHICS _graphicsPipeline)
+			   ;; draw the triangle
+			   (vkCmdDraw (aref _commandBuffers i)
+				      3 ;; vertex count
+				      1 ;; no instance rendering
+ 				      0 ;; offset to first vertex
+				      0 ;; firstInstance
+				      )
+			   (vkCmdEndRenderPass
+			    (aref _commandBuffers i))
+			   (unless (== VK_SUCCESS
+				       (vkEndCommandBuffer
+					(aref _commandBuffers i)))
+			     (throw ("std::runtime_error"
+				     (string "failed to record command buffer."))))
 			   ))
 		       (defun createFramebuffers ()
 			 (declare (values void))
