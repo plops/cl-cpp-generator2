@@ -110,6 +110,7 @@ private:
   VkQueue _graphicsQueue;
   VkQueue _presentQueue;
   VkSurfaceKHR _surface;
+  VkSwapchainKHR _swapChain;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -216,6 +217,7 @@ private:
     auto queueFamilyIndexCount = 0;
     auto pQueueFamilyIndices = nullptr;
     if (!((indices.presentFamily) == (indices.graphicsFamily))) {
+      // this could be improved with ownership stuff
       imageSharingMode = VK_SHARING_MODE_CONCURRENT;
       queueFamilyIndexCount = 2;
       pQueueFamilyIndices = pQueueFamilyIndices;
@@ -236,6 +238,15 @@ private:
     createInfo.imageSharingMode = imageSharingMode;
     createInfo.queueFamilyIndexCount = queueFamilyIndexCount;
     createInfo.pQueueFamilyIndices = pQueueFamilyIndices;
+    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = VK_TRUE;
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    if (!((VK_SUCCESS) ==
+          (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain)))) {
+      throw std::runtime_error("failed to create swap chain");
+    };
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
@@ -325,6 +336,7 @@ private:
     }
   }
   void cleanup() {
+    vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);

@@ -164,7 +164,8 @@ more structs. this function helps to initialize those structs."
 		    (_device)
 		    (_graphicsQueue)
 		    #+surface (_presentQueue)
-		    #+surface (_surface))
+		    #+surface (_surface)
+		    #+surface (_swapChain))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
@@ -176,7 +177,8 @@ more structs. this function helps to initialize those structs."
 			 
 			 #+surface (type VkSurfaceKHR _surface)
 			 #+surface (type "const std::vector<const char*>"
-					 _deviceExtensions))
+					 _deviceExtensions)
+			 #+surface (type VkSwapchainKHR _swapChain))
 		
 		(defun findQueueFamilies (device)
 	      (declare (type VkPhysicalDevice device)
@@ -327,11 +329,13 @@ more structs. this function helps to initialize those structs."
 			((aref queueFamilyIndices) (curly
 						    (indices.graphicsFamily.value)
 						    (indices.presentFamily.value)))
+			;; best performance mode:
 			(imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
 			(queueFamilyIndexCount 0)
 			(pQueueFamilyIndices nullptr))
 		    (unless (== indices.presentFamily
 				indices.graphicsFamily)
+		      "// this could be improved with ownership stuff"
 		      (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
 			    queueFamilyIndexCount 2
 			    pQueueFamilyIndices pQueueFamilyIndices))
@@ -354,7 +358,25 @@ more structs. this function helps to initialize those structs."
 			  :imageSharingMode imageSharingMode
 			  :queueFamilyIndexCount queueFamilyIndexCount
 			  :pQueueFamilyIndices pQueueFamilyIndices
-			  )))))
+			  :preTransform swapChainSupport.capabilities.currentTransform
+			  ;; ignore alpha
+			  :compositeAlpha VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+			  :presentMode presentMode
+			  ;; turning on clipping can help performance
+			  ;; but reading values back may not work
+			  :clipped VK_TRUE
+			  ;; resizing the window might need a new swap
+			  ;; chain, complex topic
+			  :oldSwapchain VK_NULL_HANDLE
+			  ))
+		    (unless (== VK_SUCCESS
+				(vkCreateSwapchainKHR
+				 _device
+				 &createInfo
+				 nullptr
+				 &_swapChain))
+		      (throw ("std::runtime_error" (string "failed to create swap chain")))
+		      ))))
 	       (defun createLogicalDevice ()
 		 (declare (values void))
 		 "// initialize members _device and _graphicsQueue"
@@ -484,6 +506,8 @@ more structs. this function helps to initialize those structs."
 		   (glfwPollEvents)))
 	       (defun cleanup ()
 		 (declare (values void))
+		 #+surface
+		 (vkDestroySwapchainKHR _device _swapChain nullptr)
 		 (vkDestroyDevice _device nullptr)
 		 #+surface
 		 (vkDestroySurfaceKHR _instance _surface nullptr)
