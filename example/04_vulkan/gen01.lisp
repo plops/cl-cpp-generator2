@@ -176,7 +176,8 @@ more structs. this function helps to initialize those structs."
 				(_swapChain)
 				(_swapChainImages)
 				(_swapChainImageFormat)
-				(_swapChainExtent))
+				(_swapChainExtent)
+				(_swapChainImageViews))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -187,7 +188,8 @@ more structs. this function helps to initialize those structs."
 				(type VkSwapchainKHR _swapChain)
 				(type "std::vector<VkImage>" _swapChainImages)
 				(type VkFormat _swapChainImageFormat)
-				(type VkExtent2D _swapChainExtent))
+				(type VkExtent2D _swapChainExtent)
+				(type "std::vector<VkImageView>" _swapChainImageViews))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -304,7 +306,10 @@ more structs. this function helps to initialize those structs."
 		       (pickPhysicalDevice)
 		       (createLogicalDevice)
 		       #+surface
-		       (createSwapChain))
+		       (do0
+			(createSwapChain)
+			(createImageViews)))
+		     
 		     #+surface
 		     (do0
 		      (defun createSurface ()
@@ -400,7 +405,26 @@ more structs. this function helps to initialize those structs."
 						    (_swapChainImages.data))
 			   (setf _swapChainImageFormat surfaceFormat.format
 				 _swapChainExtent extent)
-			   ))))
+			   )))
+		      (defun createImageViews ()
+			(declare (values void))
+			(_swapChainImageViews.resize
+			 (_swapChainImages.size))
+			(dotimes (i (_swapChainImages.size))
+			  ,(vk
+			    `(VkImageViewCreateInfo
+			      createInfo
+			      :sType VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO
+			      :image (aref _swapChainImages i)
+			      :viewType VK_IMAGE_VIEW_TYPE_2D
+			      :format _swapChainImageFormat
+			      ;; here we could move color channels around
+			      :components.r VK_COMPONENT_SWIZZLE_IDENTITY
+			      ,@(loop for e in `(r g b a)
+				   appending
+				     `(,(intern (string-upcase (format nil ":components.~a" e)))
+					VK_COMPONTENT_SWIZZLE_IDENTITY))
+			      )))))
 		     (defun createLogicalDevice ()
 		       (declare (values void))
 		       "// initialize members _device and _graphicsQueue"

@@ -114,6 +114,7 @@ private:
   std::vector<VkImage> _swapChainImages;
   VkFormat _swapChainImageFormat;
   VkExtent2D _swapChainExtent;
+  std::vector<VkImageView> _swapChainImageViews;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -198,6 +199,7 @@ private:
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
+    createImageViews();
   }
   void createSurface() {
     // initialize _surface member
@@ -257,6 +259,21 @@ private:
                             _swapChainImages.data());
     _swapChainImageFormat = surfaceFormat.format;
     _swapChainExtent = extent;
+  }
+  void createImageViews() {
+    _swapChainImageViews.resize(_swapChainImages.size());
+    for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
+      VkImageViewCreateInfo createInfo = {};
+      createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      createInfo.image = _swapChainImages[i];
+      createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      createInfo.format = _swapChainImageFormat;
+      createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo. : components.r = VK_COMPONTENT_SWIZZLE_IDENTITY;
+      createInfo. : components.g = VK_COMPONTENT_SWIZZLE_IDENTITY;
+      createInfo. : components.b = VK_COMPONTENT_SWIZZLE_IDENTITY;
+      createInfo. : components.a = VK_COMPONTENT_SWIZZLE_IDENTITY;
+    }
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
