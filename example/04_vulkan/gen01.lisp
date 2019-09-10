@@ -1121,7 +1121,7 @@ more structs. this function helps to initialize those structs."
 				:pWaitSemaphores signalSemaphores
 				:swapchainCount 1
 				:pSwapchains swapChains
-				:pImageIndices &imageIndex
+				:pImageIndices &imageIndex 
 				;; we could check if presentation was successful
 				:pResults nullptr))
 			    (vkQueuePresentKHR _presentQueue &presentInfo))
