@@ -26,30 +26,39 @@ more structs. this function helps to initialize those structs."
 	  `(do0
 	    "#version 450"
 	    " "
-	    (let (((aref positions 3) ((aref vec2)
+	    "layout(location = 0) out vec3 fragColor;"
+	    
+	    (let (((aref positions 3) ("vec2[]"
 				       (vec2 .0 -.5)
 				       (vec2 .5 .5)
-				       (vec2 -.5 .5))))
-	      (declare (type vec2 (aref positions 3)))
+				       (vec2 -.5 .5)))
+		  ((aref colors 3) ("vec3[]"
+				    (vec3 1.  .0 .0)
+				    (vec3 .0 1.  .0 )
+				    (vec3 .0 .0 1.))))
+	      (declare (type vec2 (aref positions 3))
+		       (type vec3 (aref colors 3)))
+	      
 	      (defun main ()
 		(declare (values void))
 		(setf gl_Position
 		      (vec4 (aref positions gl_VertexIndex)
 			    .0
-			    1.))))))
+			    1.)
+		      fragColor
+		      (aref colors gl_VertexIndex))))))
 	 (frag-code
 	  `(do0
 	    "#version 450"
 	    "#extension GL_ARB_separate_shader_objects : enable"
 	    " "
 	    "layout(location = 0) out vec4 outColor;"
+	    "layout(location = 0) in vec3 fragColor;"
 	    
 	    (defun main ()
 	      (declare (values void))
 	      (setf outColor
-		    (vec4 1.
-			  .0
-			  .0
+		    (vec4 fragColor
 			  1.)))))
 	 (code
 	  `(do0
@@ -653,5 +662,8 @@ more structs. this function helps to initialize those structs."
 		  (return 0)))))))
     (write-source *code-file* code)
     (write-source *vertex-file* vertex-code)
-    (write-source *frag-file* frag-code)))
+    (write-source *frag-file* frag-code)
+    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)))
+    (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *vertex-file*)))))
  
+
