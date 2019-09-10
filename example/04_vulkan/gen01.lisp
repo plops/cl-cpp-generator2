@@ -238,6 +238,7 @@ more structs. this function helps to initialize those structs."
 				(_swapChainImageFormat)
 				(_swapChainExtent)
 				(_swapChainImageViews)
+				(_renderPass)
 				(_pipelineLayout))
 		     #+surface (declare 
 				(type VkQueue 
@@ -251,7 +252,8 @@ more structs. this function helps to initialize those structs."
 				(type VkFormat _swapChainImageFormat)
 				(type VkExtent2D _swapChainExtent)
 				(type "std::vector<VkImageView>" _swapChainImageViews)
-				(type VkPipelineLayout _pipelineLayout))
+				(type VkPipelineLayout _pipelineLayout)
+				(type VkRenderPass _renderPass))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -370,14 +372,61 @@ more structs. this function helps to initialize those structs."
 		       #+surface
 		       (do0
 			(createSwapChain)
-			(createImageViews))
-		       (createGraphicsPipeline)
+			(createImageViews)
+			(createRenderPass)
+			(createGraphicsPipeline))
 		       )
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
+		       (defun createRenderPass ()
+			   (declare (values void))
+			 ,(vk
+			   `(VkAttachmentDescription
+			     colorAttachment
+			     :format _swapChainImageFormat
+			     :samples VK_SAMPLE_COUNT_1_BIT
+			     :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
+			     :storeOp VK_ATTACHMENT_STORE_OP_STORE
+			     :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+			     :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+			     :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+			     ;; image to be presented in swap chain
+			     :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+			     ))
+			 ,(vk
+			   `(VkAttachmentReference
+			     colorAttachmentRef
+			     ;; we only have one attachment description
+			     :attachment 0
+			     ;; choose best layout for use case color buffer
+			     :layout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
+			 ,(vk
+			   `(VkSubpassDescription
+			     subpass
+			     :pipelineBindPoint VK_PIPELINE_BIND_POINT_GRAPHICS
+			     :colorAttachmentCount 1
+			     ;; frag shader references this as outColor
+			     :pColorAttachments &colorAttachmentRef))
+			 ,(vk
+			   `(VkRenderPassCreateInfo
+			     renderPassInfo
+			     :sType VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO
+			     :attachmentCount 1
+			     :pAttachments &colorAttachment
+			     :subpassCount 1
+			     :pSubpasses &subpass))
+			 (unless (== VK_SUCCESS
+				     (vkCreateRenderPass
+				      _device
+				      &renderPassInfo
+				      nullptr
+				      &_renderPass))
+			   (throw ("std::runtime_error"
+				   (string "failed to create render pass."))))
+			 )
 		       (defun createGraphicsPipeline ()
 			 (declare (values void))
 			 (let ((vertShaderModule (createShaderModule
@@ -460,7 +509,7 @@ more structs. this function helps to initialize those structs."
 			     ,(vk ;; for now disable multisampling
 			       `(VkPipelineMultisampleStateCreateInfo
 				 multisampling
-				 :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMLE_STATE_CREATE_INFO
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
 				 :sampleShadingEnable VK_FALSE
 				 :rasterizationSamples VK_SAMPLE_COUNT_1_BIT
 				 :minSampleShading 1s0
@@ -470,7 +519,7 @@ more structs. this function helps to initialize those structs."
 			     ,(vk
 			       `(VkPipelineColorBlendAttachmentState
 				 colorBlendAttachment
-				 ;; fixme: stype?
+				 ;; fixme: stype? perhaps not because it is not create
 				 :colorWriteMask
 				 (logior VK_COLOR_COMPONENT_R_BIT
 					 VK_COLOR_COMPONENT_G_BIT
@@ -489,6 +538,7 @@ more structs. this function helps to initialize those structs."
 			     (let (("dynamicStates[]"
 				    (curly VK_DYNAMIC_STATE_VIEWPORT
 					   VK_DYNAMIC_STATE_LINE_WIDTH)))
+			       (declare (type VkDynamicState "dynamicStates[]"))
 			       ,(vk
 				 `(VkPipelineDynamicStateCreateInfo
 				   dynamicState
