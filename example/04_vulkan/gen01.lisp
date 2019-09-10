@@ -374,9 +374,43 @@ more structs. this function helps to initialize those structs."
 		     
 		     #+surface
 		     (do0
-		      (defun createGraphicsPipeline ()
-			(declare (values void))
-			)
+		      (do0
+		       "// shader stuff"
+		       (defun createGraphicsPipeline ()
+			 (declare (values void))
+			 (let ((vertShaderModule (createShaderModule
+						  (readFile (string "vert.spv"))))
+			       (fragShaderModule (createShaderModule
+						  (readFile (string "frag.spv")))))
+			   (vkDestroyShaderModule _device
+						  fragShaderModule
+						  nullptr)
+			   (vkDestroyShaderModule _device
+						  vertShaderModule
+						  nullptr))
+			 )
+		       (defun createShaderModule (code)
+			 (declare (values VkShaderModule)
+				  (type "const std::vector<char>&" code))
+			 ;;std::vector<char> fullfills alignment requirements of uint32_t
+			 ,(vk
+			   `(VkShaderModuleCreateInfo
+			     createInfo
+			     :sType VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO
+			     :codeSize (code.size)
+			     :pCode ("reinterpret_cast<const uint32_t*>"
+				     (code.data))))
+			 (let ((shaderModule))
+			   (declare (type VkShaderModule shaderModule))
+			   (unless (== VK_SUCCESS
+				       (vkCreateShaderModule _device
+							     &createInfo
+							     nullptr
+							     &shaderModule))
+			     (throw ("std::runtime_error"
+				     (string "failed to create shader module."))))
+			   (return shaderModule))))
+		      
 		      (defun createSurface ()
 			(declare (values void))
 			"// initialize _surface member"
