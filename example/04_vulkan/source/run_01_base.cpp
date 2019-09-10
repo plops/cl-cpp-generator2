@@ -251,17 +251,6 @@ private:
                                                     _commandBuffers.data())))) {
       throw std::runtime_error("failed to allocate command buffers.");
     };
-  }
-  void createCommandPool() {
-    auto queueFamilyIndices = findQueueFamilies(_physicalDevice);
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-    poolInfo.flags = 0;
-    if (!((VK_SUCCESS) ==
-          (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
-      throw std::runtime_error("failed to create command pool.");
-    };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
       VkCommandBufferBeginInfo beginInfo = {};
       beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -290,6 +279,17 @@ private:
         throw std::runtime_error("failed to record command buffer.");
       };
     }
+  }
+  void createCommandPool() {
+    auto queueFamilyIndices = findQueueFamilies(_physicalDevice);
+    VkCommandPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.flags = 0;
+    if (!((VK_SUCCESS) ==
+          (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
+      throw std::runtime_error("failed to create command pool.");
+    };
   }
   void createFramebuffers() {
     _swapChainFramebuffers.resize(_swapChainImageViews.size());

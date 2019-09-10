@@ -437,25 +437,7 @@ more structs. this function helps to initialize those structs."
 							       &allocInfo
 							       (_commandBuffers.data)))
 			   (throw ("std::runtime_error"
-				   (string "failed to allocate command buffers.")))))
-		       (defun createCommandPool ()
-			 (declare (values void))
-			 (let ((queueFamilyIndices (findQueueFamilies
-						    _physicalDevice)))
-			  ,(vk
-			    `(VkCommandPoolCreateInfo
-			      poolInfo
-			      :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
-			      ;; cmds for drawing go to graphics queue
-			      :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
-			      :flags 0)))
-			 (unless (== VK_SUCCESS
-				     (vkCreateCommandPool _device
-							  &poolInfo
-							  nullptr
-							  &_commandPool))
-			   (throw ("std::runtime_error"
-				   (string "failed to create command pool."))))
+				   (string "failed to allocate command buffers."))))
 			 (dotimes (i (_commandBuffers.size))
 			   ,(vk
 			     `(VkCommandBufferBeginInfo
@@ -509,6 +491,25 @@ more structs. this function helps to initialize those structs."
 			     (throw ("std::runtime_error"
 				     (string "failed to record command buffer."))))
 			   ))
+		       (defun createCommandPool ()
+			 (declare (values void))
+			 (let ((queueFamilyIndices (findQueueFamilies
+						    _physicalDevice)))
+			  ,(vk
+			    `(VkCommandPoolCreateInfo
+			      poolInfo
+			      :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
+			      ;; cmds for drawing go to graphics queue
+			      :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
+			      :flags 0)))
+			 (unless (== VK_SUCCESS
+				     (vkCreateCommandPool _device
+							  &poolInfo
+							  nullptr
+							  &_commandPool))
+			   (throw ("std::runtime_error"
+				   (string "failed to create command pool."))))
+			 )
 		       (defun createFramebuffers ()
 			 (declare (values void))
 			 (_swapChainFramebuffers.resize
