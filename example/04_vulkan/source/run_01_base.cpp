@@ -269,10 +269,18 @@ private:
       createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
       createInfo.format = _swapChainImageFormat;
       createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-      createInfo. : components.r = VK_COMPONTENT_SWIZZLE_IDENTITY;
-      createInfo. : components.g = VK_COMPONTENT_SWIZZLE_IDENTITY;
-      createInfo. : components.b = VK_COMPONTENT_SWIZZLE_IDENTITY;
-      createInfo. : components.a = VK_COMPONTENT_SWIZZLE_IDENTITY;
+      createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+      createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      createInfo.subresourceRange.baseMipLevel = 0;
+      createInfo.subresourceRange.levelCount = 1;
+      createInfo.subresourceRange.baseArrayLayer = 0;
+      createInfo.subresourceRange.layerCount = 0;
+      if (!((VK_SUCCESS) == (vkCreateImageView(_device, &createInfo, nullptr,
+                                               &(_swapChainImageViews[i]))))) {
+        throw std::runtime_error("failed to create image view.");
+      };
     }
   };
   void createLogicalDevice() {

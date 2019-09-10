@@ -420,11 +420,26 @@ more structs. this function helps to initialize those structs."
 			      :format _swapChainImageFormat
 			      ;; here we could move color channels around
 			      :components.r VK_COMPONENT_SWIZZLE_IDENTITY
-			      ,@(loop for e in `(r g b a)
-				   appending
-				     `(,(intern (string-upcase (format nil ":components.~a" e)))
-					VK_COMPONTENT_SWIZZLE_IDENTITY))
-			      )))))
+			      :components.g VK_COMPONENT_SWIZZLE_IDENTITY
+			      :components.b VK_COMPONENT_SWIZZLE_IDENTITY
+			      :components.a VK_COMPONENT_SWIZZLE_IDENTITY
+			      ;; color targets without mipmapping or
+			      ;; multi layer (stereo)
+			      :subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+			      :subresourceRange.baseMipLevel 0
+			      :subresourceRange.levelCount 1
+			      :subresourceRange.baseArrayLayer 0
+			      :subresourceRange.layerCount 0
+			      ))
+			  (unless
+			      (== VK_SUCCESS
+				  (vkCreateImageView
+				   _device
+				   &createInfo
+				   nullptr
+				   (ref (aref _swapChainImageViews i))))
+			    (throw ("std::runtime_error"
+				    (string "failed to create image view.")))))))
 		     (defun createLogicalDevice ()
 		       (declare (values void))
 		       "// initialize members _device and _graphicsQueue"
