@@ -237,7 +237,8 @@ more structs. this function helps to initialize those structs."
 				(_swapChainImages)
 				(_swapChainImageFormat)
 				(_swapChainExtent)
-				(_swapChainImageViews))
+				(_swapChainImageViews)
+				(_pipelineLayout))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -249,7 +250,8 @@ more structs. this function helps to initialize those structs."
 				(type "std::vector<VkImage>" _swapChainImages)
 				(type VkFormat _swapChainImageFormat)
 				(type VkExtent2D _swapChainExtent)
-				(type "std::vector<VkImageView>" _swapChainImageViews))
+				(type "std::vector<VkImageView>" _swapChainImageViews)
+				(type VkPipelineLayout _pipelineLayout))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -465,8 +467,55 @@ more structs. this function helps to initialize those structs."
 				 :pSampleMask nullptr
 				 :alphaToCoverageEnable VK_FALSE
 				 :alphaToOneEnable VK_FALSE))
-			     )
+			     ,(vk
+			       `(VkPipelineColorBlendAttachmentState
+				 colorBlendAttachment
+				 ;; fixme: stype?
+				 :colorWriteMask
+				 (logior VK_COLOR_COMPONENT_R_BIT
+					 VK_COLOR_COMPONENT_G_BIT
+					 VK_COLOR_COMPONENT_B_BIT
+					 VK_COLOR_COMPONENT_A_BIT
+					 )
+				 :blendEnable VK_FALSE
+				 :srcColorBlendFactor VK_BLEND_FACTOR_ONE
+				 :dstColorBlendFactor VK_BLEND_FACTOR_ZERO
+				 :colorBlendOp VK_BLEND_OP_ADD
+				 :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
+				 :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
+				 :alphaBlendOp VK_BLEND_OP_ADD))
+			     ;; viewport, line width and blend constants
+			     ;; can be changed dynamically
+			     (let (("dynamicStates[]"
+				    (curly VK_DYNAMIC_STATE_VIEWPORT
+					   VK_DYNAMIC_STATE_LINE_WIDTH)))
+			       ,(vk
+				 `(VkPipelineDynamicStateCreateInfo
+				   dynamicState
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
+				   :dynamicStateCount 2
+				   :pDynamicStates dynamicStates)))
+			     
 			   
+			     
+			     )
+			   (do0
+			    ,(vk
+			      `(VkPipelineLayoutCreateInfo
+				pipelineLayoutInfo
+				:sType VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO
+				:setLayoutCount 0
+				:pSetLayouts nullptr
+				;; another way of passing dynamic values to shaders
+				:pushConstantRangeCount 0
+				:pPushConstantRanges nullptr))
+			    (unless (== VK_SUCCESS
+					(vkCreatePipelineLayout _device
+								&pipelineLayoutInfo
+								nullptr
+								&_pipelineLayout))
+			      (throw ("std::runtime_error"
+				      (string "failed to create pipeline layout.")))))
 			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
@@ -754,8 +803,13 @@ more structs. this function helps to initialize those structs."
 			 (glfwPollEvents)))
 		     (defun cleanup ()
 		       (declare (values void))
+		       
 		       #+surface
 		       (do0
+			(vkDestroyPipelineLayout
+			_device
+			_pipelineLayout
+			nullptr)
 			(foreach (view _swapChainImageViews)
 				 (vkDestroyImageView
 				  _device
