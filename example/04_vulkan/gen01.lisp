@@ -46,7 +46,8 @@ more structs. this function helps to initialize those structs."
 			    .0
 			    1.)
 		      fragColor
-		      (aref colors gl_VertexIndex))))))
+		      (aref colors gl_VertexIndex)))
+	      " ")))
 	 (frag-code
 	  `(do0
 	    "#version 450"
