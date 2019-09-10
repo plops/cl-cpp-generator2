@@ -103,14 +103,15 @@ private:
   VkInstance _instance;
   const std::vector<const char *> _validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
-  const std::vector<const char *> _deviceExtensions = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  const std::vector<const char *> _deviceExtensions = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
   VkSurfaceKHR _surface;
   VkSwapchainKHR _swapChain;
+  std::vector<VkImage> _swapChainImages;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -247,6 +248,11 @@ private:
           (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain)))) {
       throw std::runtime_error("failed to create swap chain");
     };
+    // now get the images, note will be destroyed with the swap chain
+    vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
+    _swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount,
+                            _swapChainImages.data());
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue

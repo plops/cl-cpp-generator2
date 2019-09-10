@@ -13,12 +13,12 @@
     "many vulkan functions get their arguments in the form of one or
 more structs. this function helps to initialize those structs."
     (destructuring-bind (type var &rest args) params
-     `(let ((,var (curly)))
-	(declare (type ,type ,var))
-	,@(loop for i from 0 below (length args) by 2 collect
-	       (let ((keyword (elt args i))
-		     (value (elt args (+ i 1))))
-		 `(setf (dot ,var ,keyword) ,value))))))
+      `(let ((,var (curly)))
+	 (declare (type ,type ,var))
+	 ,@(loop for i from 0 below (length args) by 2 collect
+		(let ((keyword (elt args i))
+		      (value (elt args (+ i 1))))
+		  `(setf (dot ,var ,keyword) ,value))))))
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/04_vulkan/source/run_01_base.cpp"))
   (let* ((code
 	  `(do0
@@ -59,8 +59,8 @@ more structs. this function helps to initialize those structs."
 		(graphicsFamily "std::optional<uint32_t>")
 	      #+surface (presentFamily "std::optional<uint32_t>")
 	      #+nil(defun isComplete ()
-		(declare (values bool))
-		(return (graphicsFamily.has_value))))
+		     (declare (values bool))
+		     (return (graphicsFamily.has_value))))
 
 	    #+surface
 	    (do0
@@ -122,8 +122,8 @@ more structs. this function helps to initialize those structs."
 			      modes))
 	       "// prefer triple buffer (if available)"
 	       (foreach (mode modes)
-		(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
-		  (return mode)))
+			(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
+			  (return mode)))
 	       (return VK_PRESENT_MODE_FIFO_KHR))
 	     (defun chooseSwapExtent (capabilities)
 	       (declare (values VkExtent2D)
@@ -140,9 +140,9 @@ more structs. this function helps to initialize those structs."
 		      ,@(loop for e in `(width height) collect
 			     `(setf (dot actualExtent ,e)
 				    ("std::max" (dot capabilities.minImageExtent ,e)
-					      ("std::min"
-					       (dot capabilities.maxImageExtent ,e)
-					       (dot actualExtent ,e)))))
+						("std::min"
+						 (dot capabilities.maxImageExtent ,e)
+						 (dot actualExtent ,e)))))
 		      
 		      (return actualExtent))))))
 	    
@@ -157,364 +157,382 @@ more structs. this function helps to initialize those structs."
 	      "private:"
 	      (let ((_window)
 		    (_instance)
-		    ;#-nolog (_enableValidationLayers true)
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
-		    #+surface (_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
-		    (_graphicsQueue)
-		    #+surface (_presentQueue)
-		    #+surface (_surface)
-		    #+surface (_swapChain))
+		    (_graphicsQueue))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
-			 (type VkQueue _graphicsQueue
-			       #+surface _presentQueue)
-			 
-			 #+surface (type VkSurfaceKHR _surface)
-			 #+surface (type "const std::vector<const char*>"
-					 _deviceExtensions)
-			 #+surface (type VkSwapchainKHR _swapChain))
-		
-		(defun findQueueFamilies (device)
-	      (declare (type VkPhysicalDevice device)
-		       (values QueueFamilyIndices))
-	      (let ((indices)
-		    (queueFamilyCount 0))
-		(declare (type QueueFamilyIndices indices)
-			 (type uint32_t queueFamilyCount))
-		(vkGetPhysicalDeviceQueueFamilyProperties
-		 device &queueFamilyCount nullptr)
-		(let (((queueFamilies queueFamilyCount)))
-		  (declare (type "std::vector<VkQueueFamilyProperties>"
-				 (queueFamilies queueFamilyCount)))
-		  (vkGetPhysicalDeviceQueueFamilyProperties
-		   device
-		   &queueFamilyCount
-		   (queueFamilies.data))
-		  (let ((i 0))
-		    (foreach
-		     (family queueFamilies)
-		     (when (and (< 0 family.queueCount)
-				(logand family.queueFlags
-					VK_QUEUE_GRAPHICS_BIT))
-		       (setf indices.graphicsFamily i))
-		     #+surface
-		     (let ((presentSupport false))
-		       (declare (type VkBool32 presentSupport))
-		       (vkGetPhysicalDeviceSurfaceSupportKHR
-			device i _surface &presentSupport)
-		       (when (and (< 0 family.queueCount)
-				  presentSupport)
-			 (setf indices.presentFamily i)))
-		     (incf i))))
-		(return indices)))
-		#-nolog (defun checkValidationLayerSupport ()
-		 (declare (values bool))
-		 (let ((layerCount 0))
-		   (declare (type uint32_t layerCount))
-		   (vkEnumerateInstanceLayerProperties &layerCount nullptr)
-		   (let (((availableLayers layerCount)))
-		     (declare (type "std::vector<VkLayerProperties>"
-				    (availableLayers layerCount)))
-		     (vkEnumerateInstanceLayerProperties
-		      &layerCount
-		      (availableLayers.data))
-
-		     (foreach
-		      (layerName _validationLayers)
-		      (let ((layerFound false))
-			(foreach
-			 (layerProperties availableLayers)
-			 (when (== 0 (strcmp layerName layerProperties.layerName))
-			   (setf layerFound true)
-			   break))
-			(unless layerFound
-			  (return false))))
-		     (return true))))
-	       (defun initWindow ()
-		 (declare (values void))
-		 (glfwInit)
-		 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-		 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
-		 (setf _window (glfwCreateWindow 800 600
-						(string "vulkan window")
-						nullptr
-						nullptr)))
-	       (defun createInstance ()
-		 (declare (values void))
-		 "// initialize member _instance"
-		 #-nolog (;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
-			  unless (checkValidationLayerSupport)
-			   (throw ("std::runtime_error"
-				   (string "validation layers requested, but unavailable."))))
-		 ,(vk `(VkApplicationInfo
-		       appInfo
-		       :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
-		       :pApplicationName (string "Hello Triangle")
-		       :applicationVersion (VK_MAKE_VERSION 1 0 0)
-		       :pEngineName (string "No Engine")
-		       :engineVersion (VK_MAKE_VERSION 1 0 0)
-		       :apiVersion VK_API_VERSION_1_0))
-		 
-		 (let ((glfwExtensionCount  0)
-		       (glfwExtensions))
-		   (declare (type uint32_t glfwExtensionCount)
-			    (type "const char**" glfwExtensions))
-		   (setf glfwExtensions (glfwGetRequiredInstanceExtensions
-					 &glfwExtensionCount))
-
-		   ,(vk `(VkInstanceCreateInfo
-			  createInfo
-			  :sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
-			  :pApplicationInfo &appInfo
-			  :enabledExtensionCount glfwExtensionCount
-			  :ppEnabledExtensionNames glfwExtensions
-			  :enabledLayerCount
-			  #+nolog 0
-			  #-nolog ("static_cast<uint32_t>"
-				   (_validationLayers.size))
-			  #-nolog :ppEnabledLayerNames
-			  #-nolog (_validationLayers.data)))
-		   (unless (== VK_SUCCESS
-			       (vkCreateInstance &createInfo
-						 nullptr
-						 &_instance))
-		     (throw ("std::runtime_error"
-			     (string "failed to create instance"))))))
-	       (defun initVulkan ()
-		 (declare (values void))
-		 (createInstance)
-		 #+surface
-		 (do0 "// create window surface because it can influence physical device selection"
-		      (createSurface))
-		 (pickPhysicalDevice)
-		 (createLogicalDevice)
-		 #+surface
-		 (createSwapChain))
-	       #+surface
-	       (do0
-		(defun createSurface ()
-		  (declare (values void))
-		  "// initialize _surface member"
-		  "// must be destroyed before the instance is destroyed"
-		  (unless (== VK_SUCCESS
-			      (glfwCreateWindowSurface
-			       _instance _window
-			       nullptr &_surface))
-		    (throw ("std::runtime_error"
-			    (string "failed to create window surface")))
-		    ))
-		
-		(defun createSwapChain ()
-		  (declare (values void))
-		  (let ((swapChainSupport
-			 (querySwapChainSupport _physicalDevice _surface))
-			(surfaceFormat
-			 (chooseSwapSurfaceFormat
-			  swapChainSupport.formats))
-			(presentMode
-			 (chooseSwapPresentMode
-			  swapChainSupport.presentModes))
-			(extent
-			 (chooseSwapExtent
-			  swapChainSupport.capabilities))
-			(imageCount
-			 (+ swapChainSupport.capabilities.minImageCount 1))
-			(indices (findQueueFamilies _physicalDevice))
-			((aref queueFamilyIndices) (curly
-						    (indices.graphicsFamily.value)
-						    (indices.presentFamily.value)))
-			;; best performance mode:
-			(imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
-			(queueFamilyIndexCount 0)
-			(pQueueFamilyIndices nullptr))
-		    (unless (== indices.presentFamily
-				indices.graphicsFamily)
-		      "// this could be improved with ownership stuff"
-		      (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
-			    queueFamilyIndexCount 2
-			    pQueueFamilyIndices pQueueFamilyIndices))
-		    (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
-			       (< swapChainSupport.capabilities.maxImageCount
-				  imageCount))
-		      (setf imageCount swapChainSupport.capabilities.maxImageCount))
-		    ,(vk `(VkSwapchainCreateInfoKHR
-			  createInfo
-			  :sType VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
-			  :surface _surface
-			  :minImageCount imageCount
-			  :imageFormat surfaceFormat.format
-			  :imageColorSpace surfaceFormat.colorSpace
-			  :imageExtent extent
-			  :imageArrayLayers 1
-			  :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-			  ;; we could use VK_IMAGE_USAGE_TRANSFER_DST_BIT
-			  ;; if we want to enable post processing
-			  :imageSharingMode imageSharingMode
-			  :queueFamilyIndexCount queueFamilyIndexCount
-			  :pQueueFamilyIndices pQueueFamilyIndices
-			  :preTransform swapChainSupport.capabilities.currentTransform
-			  ;; ignore alpha
-			  :compositeAlpha VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-			  :presentMode presentMode
-			  ;; turning on clipping can help performance
-			  ;; but reading values back may not work
-			  :clipped VK_TRUE
-			  ;; resizing the window might need a new swap
-			  ;; chain, complex topic
-			  :oldSwapchain VK_NULL_HANDLE
-			  ))
-		    (unless (== VK_SUCCESS
-				(vkCreateSwapchainKHR
-				 _device
-				 &createInfo
-				 nullptr
-				 &_swapChain))
-		      (throw ("std::runtime_error" (string "failed to create swap chain")))
-		      ))))
-	       (defun createLogicalDevice ()
-		 (declare (values void))
-		 "// initialize members _device and _graphicsQueue"
-		 (let ((indices (findQueueFamilies _physicalDevice))
-		       (queuePriority 1s0))
-		   (declare (type float queuePriority))
-		   (let ((queueCreateInfos)
-			 (uniqueQueueFamilies
-			  (curly
-			   (indices.graphicsFamily.value)
-			   #+surface (indices.presentFamily.value))))
-		     (declare (type "std::vector<VkDeviceQueueCreateInfo>"
-				    queueCreateInfos)
-			      (type "std::set<uint32_t>" uniqueQueueFamilies))
-		     
-		     (foreach (queueFamily uniqueQueueFamilies)
-			      ,(vk `(VkDeviceQueueCreateInfo
-				       queueCreateInfo
-				       :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-				       :queueFamilyIndex queueFamily
-				       :queueCount 1
-				       :pQueuePriorities &queuePriority))
-			      (queueCreateInfos.push_back queueCreateInfo)))
-		   (let ((deviceFeatures (curly))
+			 (type VkQueue _graphicsQueue)
 			 )
-		     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
-		     ,(vk `(VkDeviceCreateInfo
-			 createInfo
-			 :sType VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
-			 :pQueueCreateInfos (queueCreateInfos.data)
-			 :queueCreateInfoCount (static_cast<uint32_t>
-						(queueCreateInfos.size))
-			 :pEnabledFeatures &deviceFeatures
-			 :enabledExtensionCount #-surface 0
-			 #+surface (static_cast<uint32_t> (_deviceExtensions.size))
-			 #+surface :ppEnabledExtensionNames 
-			 #+surface (_deviceExtensions.data)
-			 :enabledLayerCount
-			 #-nolog (static_cast<uint32_t> (_validationLayers.size))
-			 #+nolog 0
-			 #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
-		     (unless (== VK_SUCCESS
-				 (vkCreateDevice _physicalDevice &createInfo
-						 nullptr &_device))
-		       (throw ("std::runtime_error" (string "failed to create logical device"))))
-		     (vkGetDeviceQueue _device (indices.graphicsFamily.value)
-				       0 &_graphicsQueue)
-		     #+surface
-		     (vkGetDeviceQueue _device (indices.presentFamily.value)
-				       0 &_presentQueue))))
-	       #+surface
-	       (defun checkDeviceExtensionSupport (device)
-		 (declare (values bool)
-			  (type VkPhysicalDevice device))
-		 (let ((extensionCount 0))
-		   (declare (type uint32_t extensionCount))
-		   (vkEnumerateDeviceExtensionProperties
-		    device nullptr &extensionCount nullptr)
-		   (let (((availableExtensions extensionCount)))
-		     (declare (type
-			       "std::vector<VkExtensionProperties>"
-			       (availableExtensions extensionCount)
-			       ))
-		     (vkEnumerateDeviceExtensionProperties
-		      device
-		      nullptr
-		      &extensionCount
-		      (availableExtensions.data))
-		     (let (((requiredExtensions
-			     (_deviceExtensions.begin)
-			     (_deviceExtensions.end))))
-		       (declare (type
-				 "std::set<std::string>"
-				 (requiredExtensions
-				  (_deviceExtensions.begin)
-				  (_deviceExtensions.end))))
-		       (foreach (extension availableExtensions)
-				(requiredExtensions.erase
-				 extension.extensionName))
-		       (return (requiredExtensions.empty))))))
-	       (defun isDeviceSuitable ( device)
-		 (declare (values bool)
-			  (type VkPhysicalDevice device))
-		 #+surface
-		 (let ((extensionsSupported (checkDeviceExtensionSupport device))
-		       (swapChainAdequate false))
-		   (declare (type bool swapChainAdequate))
-		   (when extensionsSupported
-		     (let ((swapChainSupport (querySwapChainSupport device _surface)))
-		       (setf swapChainAdequate
-			     (and (not (swapChainSupport.formats.empty))
-				  (not (swapChainSupport.presentModes.empty)))))))
-		 (let ((indices (findQueueFamilies device)))
-		   (declare (type QueueFamilyIndices indices))
-		   (return (and (indices.graphicsFamily.has_value)
-				#+surface (and (indices.presentFamily.has_value)
-					       extensionsSupported
-					       swapChainAdequate)))
-		   #+nil (return (indices.isComplete))))
-	       (defun pickPhysicalDevice ()
+		(let #-surface ()
+		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+				(_presentQueue)
+				(_surface)
+				(_swapChain)
+				(_swapChainImages))
+		     #+surface (declare 
+				(type VkQueue 
+				      _presentQueue)
+				
+				(type VkSurfaceKHR _surface)
+				(type "const std::vector<const char*>"
+				      _deviceExtensions)
+				(type VkSwapchainKHR _swapChain)
+				(type "std::vector<VkImage>" _swapChainImages))
+		
+		     (defun findQueueFamilies (device)
+		       (declare (type VkPhysicalDevice device)
+				(values QueueFamilyIndices))
+		       (let ((indices)
+			     (queueFamilyCount 0))
+			 (declare (type QueueFamilyIndices indices)
+				  (type uint32_t queueFamilyCount))
+			 (vkGetPhysicalDeviceQueueFamilyProperties
+			  device &queueFamilyCount nullptr)
+			 (let (((queueFamilies queueFamilyCount)))
+			   (declare (type "std::vector<VkQueueFamilyProperties>"
+					  (queueFamilies queueFamilyCount)))
+			   (vkGetPhysicalDeviceQueueFamilyProperties
+			    device
+			    &queueFamilyCount
+			    (queueFamilies.data))
+			   (let ((i 0))
+			     (foreach
+			      (family queueFamilies)
+			      (when (and (< 0 family.queueCount)
+					 (logand family.queueFlags
+						 VK_QUEUE_GRAPHICS_BIT))
+				(setf indices.graphicsFamily i))
+			      #+surface
+			      (let ((presentSupport false))
+				(declare (type VkBool32 presentSupport))
+				(vkGetPhysicalDeviceSurfaceSupportKHR
+				 device i _surface &presentSupport)
+				(when (and (< 0 family.queueCount)
+					   presentSupport)
+				  (setf indices.presentFamily i)))
+			      (incf i))))
+			 (return indices)))
+		     #-nolog (defun checkValidationLayerSupport ()
+			       (declare (values bool))
+			       (let ((layerCount 0))
+				 (declare (type uint32_t layerCount))
+				 (vkEnumerateInstanceLayerProperties &layerCount nullptr)
+				 (let (((availableLayers layerCount)))
+				   (declare (type "std::vector<VkLayerProperties>"
+						  (availableLayers layerCount)))
+				   (vkEnumerateInstanceLayerProperties
+				    &layerCount
+				    (availableLayers.data))
+
+				   (foreach
+				    (layerName _validationLayers)
+				    (let ((layerFound false))
+				      (foreach
+				       (layerProperties availableLayers)
+				       (when (== 0 (strcmp layerName layerProperties.layerName))
+					 (setf layerFound true)
+					 break))
+				      (unless layerFound
+					(return false))))
+				   (return true))))
+		     (defun initWindow ()
+		       (declare (values void))
+		       (glfwInit)
+		       (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+		       (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+		       (setf _window (glfwCreateWindow 800 600
+						       (string "vulkan window")
+						       nullptr
+						       nullptr)))
+		     (defun createInstance ()
+		       (declare (values void))
+		       "// initialize member _instance"
+		       #-nolog ( ;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
+				unless (checkValidationLayerSupport)
+				(throw ("std::runtime_error"
+					(string "validation layers requested, but unavailable."))))
+		       ,(vk `(VkApplicationInfo
+			      appInfo
+			      :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
+			      :pApplicationName (string "Hello Triangle")
+			      :applicationVersion (VK_MAKE_VERSION 1 0 0)
+			      :pEngineName (string "No Engine")
+			      :engineVersion (VK_MAKE_VERSION 1 0 0)
+			      :apiVersion VK_API_VERSION_1_0))
 		 
-		 (declare (values void))
-		 "// initialize member _physicalDevice"
-		 (let ((deviceCount 0))
-		   (declare (type uint32_t deviceCount))
-		   (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
-		   (when (== 0 deviceCount)
-		     (throw ("std::runtime_error"
-			     (string "failed to find gpu with vulkan support."))))
-		   (let (((devices deviceCount)))
-		     (declare (type "std::vector<VkPhysicalDevice>"
-				    (devices deviceCount)))
-		     (vkEnumeratePhysicalDevices _instance &deviceCount
-						 (devices.data))
-		     (foreach (device devices)
-			      (when (isDeviceSuitable device)
-				(setf _physicalDevice device)
-				break))
-		     (when (== VK_NULL_HANDLE
-			       _physicalDevice)
-		       (throw ("std::runtime_error"
-			       (string "failed to find a suitable gpu."))))))
-		 )
-	       (defun mainLoop ()
-		 (declare (values void))
-		 (while (not (glfwWindowShouldClose _window))
-		   (glfwPollEvents)))
-	       (defun cleanup ()
-		 (declare (values void))
-		 #+surface
-		 (vkDestroySwapchainKHR _device _swapChain nullptr)
-		 (vkDestroyDevice _device nullptr)
-		 #+surface
-		 (vkDestroySurfaceKHR _instance _surface nullptr)
-		 (vkDestroyInstance _instance nullptr)
-		 (glfwDestroyWindow _window)
-		 (glfwTerminate)
-		 ))
+		       (let ((glfwExtensionCount  0)
+			     (glfwExtensions))
+			 (declare (type uint32_t glfwExtensionCount)
+				  (type "const char**" glfwExtensions))
+			 (setf glfwExtensions (glfwGetRequiredInstanceExtensions
+					       &glfwExtensionCount))
+
+			 ,(vk `(VkInstanceCreateInfo
+				createInfo
+				:sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
+				:pApplicationInfo &appInfo
+				:enabledExtensionCount glfwExtensionCount
+				:ppEnabledExtensionNames glfwExtensions
+				:enabledLayerCount
+				#+nolog 0
+				#-nolog ("static_cast<uint32_t>"
+					 (_validationLayers.size))
+				#-nolog :ppEnabledLayerNames
+				#-nolog (_validationLayers.data)))
+			 (unless (== VK_SUCCESS
+				     (vkCreateInstance &createInfo
+						       nullptr
+						       &_instance))
+			   (throw ("std::runtime_error"
+				   (string "failed to create instance"))))))
+		     (defun initVulkan ()
+		       (declare (values void))
+		       (createInstance)
+		       #+surface
+		       (do0 "// create window surface because it can influence physical device selection"
+			    (createSurface))
+		       (pickPhysicalDevice)
+		       (createLogicalDevice)
+		       #+surface
+		       (createSwapChain))
+		     #+surface
+		     (do0
+		      (defun createSurface ()
+			(declare (values void))
+			"// initialize _surface member"
+			"// must be destroyed before the instance is destroyed"
+			(unless (== VK_SUCCESS
+				    (glfwCreateWindowSurface
+				     _instance _window
+				     nullptr &_surface))
+			  (throw ("std::runtime_error"
+				  (string "failed to create window surface")))
+			  ))
+		
+		      (defun createSwapChain ()
+			(declare (values void))
+			(let ((swapChainSupport
+			       (querySwapChainSupport _physicalDevice _surface))
+			      (surfaceFormat
+			       (chooseSwapSurfaceFormat
+				swapChainSupport.formats))
+			      (presentMode
+			       (chooseSwapPresentMode
+				swapChainSupport.presentModes))
+			      (extent
+			       (chooseSwapExtent
+				swapChainSupport.capabilities))
+			      (imageCount
+			       (+ swapChainSupport.capabilities.minImageCount 1))
+			      (indices (findQueueFamilies _physicalDevice))
+			      ((aref queueFamilyIndices) (curly
+							  (indices.graphicsFamily.value)
+							  (indices.presentFamily.value)))
+			      ;; best performance mode:
+			      (imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
+			      (queueFamilyIndexCount 0)
+			      (pQueueFamilyIndices nullptr))
+			  (unless (== indices.presentFamily
+				      indices.graphicsFamily)
+			    "// this could be improved with ownership stuff"
+			    (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
+				  queueFamilyIndexCount 2
+				  pQueueFamilyIndices pQueueFamilyIndices))
+			  (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
+				     (< swapChainSupport.capabilities.maxImageCount
+					imageCount))
+			    (setf imageCount swapChainSupport.capabilities.maxImageCount))
+			  ,(vk `(VkSwapchainCreateInfoKHR
+				 createInfo
+				 :sType VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
+				 :surface _surface
+				 :minImageCount imageCount
+				 :imageFormat surfaceFormat.format
+				 :imageColorSpace surfaceFormat.colorSpace
+				 :imageExtent extent
+				 :imageArrayLayers 1
+				 :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+				 ;; we could use VK_IMAGE_USAGE_TRANSFER_DST_BIT
+				 ;; if we want to enable post processing
+				 :imageSharingMode imageSharingMode
+				 :queueFamilyIndexCount queueFamilyIndexCount
+				 :pQueueFamilyIndices pQueueFamilyIndices
+				 :preTransform swapChainSupport.capabilities.currentTransform
+				 ;; ignore alpha
+				 :compositeAlpha VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+				 :presentMode presentMode
+				 ;; turning on clipping can help performance
+				 ;; but reading values back may not work
+				 :clipped VK_TRUE
+				 ;; resizing the window might need a new swap
+				 ;; chain, complex topic
+				 :oldSwapchain VK_NULL_HANDLE
+				 ))
+			  (unless (== VK_SUCCESS
+				      (vkCreateSwapchainKHR
+				       _device
+				       &createInfo
+				       nullptr
+				       &_swapChain))
+			    (throw ("std::runtime_error" (string "failed to create swap chain")))
+			    )
+			  
+			  (do0
+			   "// now get the images, note will be destroyed with the swap chain"
+			   (vkGetSwapchainImagesKHR _device
+						    _swapChain
+						    &imageCount
+						    nullptr)
+			   (_swapChainImages.resize imageCount)
+			   (vkGetSwapchainImagesKHR _device
+						    _swapChain
+						    &imageCount
+						    (_swapChainImages.data))
+			   ))))
+		     (defun createLogicalDevice ()
+		       (declare (values void))
+		       "// initialize members _device and _graphicsQueue"
+		       (let ((indices (findQueueFamilies _physicalDevice))
+			     (queuePriority 1s0))
+			 (declare (type float queuePriority))
+			 (let ((queueCreateInfos)
+			       (uniqueQueueFamilies
+				(curly
+				 (indices.graphicsFamily.value)
+				 #+surface (indices.presentFamily.value))))
+			   (declare (type "std::vector<VkDeviceQueueCreateInfo>"
+					  queueCreateInfos)
+				    (type "std::set<uint32_t>" uniqueQueueFamilies))
+		     
+			   (foreach (queueFamily uniqueQueueFamilies)
+				    ,(vk `(VkDeviceQueueCreateInfo
+					   queueCreateInfo
+					   :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+					   :queueFamilyIndex queueFamily
+					   :queueCount 1
+					   :pQueuePriorities &queuePriority))
+				    (queueCreateInfos.push_back queueCreateInfo)))
+			 (let ((deviceFeatures (curly))
+			       )
+			   (declare (type VkPhysicalDeviceFeatures deviceFeatures))
+			   ,(vk `(VkDeviceCreateInfo
+				  createInfo
+				  :sType VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
+				  :pQueueCreateInfos (queueCreateInfos.data)
+				  :queueCreateInfoCount (static_cast<uint32_t>
+							 (queueCreateInfos.size))
+				  :pEnabledFeatures &deviceFeatures
+				  :enabledExtensionCount #-surface 0
+				  #+surface (static_cast<uint32_t> (_deviceExtensions.size))
+				  #+surface :ppEnabledExtensionNames 
+				  #+surface (_deviceExtensions.data)
+				  :enabledLayerCount
+				  #-nolog (static_cast<uint32_t> (_validationLayers.size))
+				  #+nolog 0
+				  #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
+			   (unless (== VK_SUCCESS
+				       (vkCreateDevice _physicalDevice &createInfo
+						       nullptr &_device))
+			     (throw ("std::runtime_error" (string "failed to create logical device"))))
+			   (vkGetDeviceQueue _device (indices.graphicsFamily.value)
+					     0 &_graphicsQueue)
+			   #+surface
+			   (vkGetDeviceQueue _device (indices.presentFamily.value)
+					     0 &_presentQueue))))
+		     #+surface
+		     (defun checkDeviceExtensionSupport (device)
+		       (declare (values bool)
+				(type VkPhysicalDevice device))
+		       (let ((extensionCount 0))
+			 (declare (type uint32_t extensionCount))
+			 (vkEnumerateDeviceExtensionProperties
+			  device nullptr &extensionCount nullptr)
+			 (let (((availableExtensions extensionCount)))
+			   (declare (type
+				     "std::vector<VkExtensionProperties>"
+				     (availableExtensions extensionCount)
+				     ))
+			   (vkEnumerateDeviceExtensionProperties
+			    device
+			    nullptr
+			    &extensionCount
+			    (availableExtensions.data))
+			   (let (((requiredExtensions
+				   (_deviceExtensions.begin)
+				   (_deviceExtensions.end))))
+			     (declare (type
+				       "std::set<std::string>"
+				       (requiredExtensions
+					(_deviceExtensions.begin)
+					(_deviceExtensions.end))))
+			     (foreach (extension availableExtensions)
+				      (requiredExtensions.erase
+				       extension.extensionName))
+			     (return (requiredExtensions.empty))))))
+		     (defun isDeviceSuitable ( device)
+		       (declare (values bool)
+				(type VkPhysicalDevice device))
+		       #+surface
+		       (let ((extensionsSupported (checkDeviceExtensionSupport device))
+			     (swapChainAdequate false))
+			 (declare (type bool swapChainAdequate))
+			 (when extensionsSupported
+			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
+			     (setf swapChainAdequate
+				   (and (not (swapChainSupport.formats.empty))
+					(not (swapChainSupport.presentModes.empty)))))))
+		       (let ((indices (findQueueFamilies device)))
+			 (declare (type QueueFamilyIndices indices))
+			 (return (and (indices.graphicsFamily.has_value)
+				      #+surface (and (indices.presentFamily.has_value)
+						     extensionsSupported
+						     swapChainAdequate)))
+			 #+nil (return (indices.isComplete))))
+		     (defun pickPhysicalDevice ()
+		 
+		       (declare (values void))
+		       "// initialize member _physicalDevice"
+		       (let ((deviceCount 0))
+			 (declare (type uint32_t deviceCount))
+			 (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
+			 (when (== 0 deviceCount)
+			   (throw ("std::runtime_error"
+				   (string "failed to find gpu with vulkan support."))))
+			 (let (((devices deviceCount)))
+			   (declare (type "std::vector<VkPhysicalDevice>"
+					  (devices deviceCount)))
+			   (vkEnumeratePhysicalDevices _instance &deviceCount
+						       (devices.data))
+			   (foreach (device devices)
+				    (when (isDeviceSuitable device)
+				      (setf _physicalDevice device)
+				      break))
+			   (when (== VK_NULL_HANDLE
+				     _physicalDevice)
+			     (throw ("std::runtime_error"
+				     (string "failed to find a suitable gpu."))))))
+		       )
+		     (defun mainLoop ()
+		       (declare (values void))
+		       (while (not (glfwWindowShouldClose _window))
+			 (glfwPollEvents)))
+		     (defun cleanup ()
+		       (declare (values void))
+		       #+surface
+		       (vkDestroySwapchainKHR _device _swapChain nullptr)
+		       (vkDestroyDevice _device nullptr)
+		       #+surface
+		       (vkDestroySurfaceKHR _instance _surface nullptr)
+		       (vkDestroyInstance _instance nullptr)
+		       (glfwDestroyWindow _window)
+		       (glfwTerminate)
+		       )))
 	      )
 	    (defun main ()
 	      (declare (values int))
@@ -531,7 +549,7 @@ more structs. this function helps to initialize those structs."
 		(return EXIT_SUCCESS))
 	      
 	      
-	     #+nnil
+	      #+nnil
 	      (let ()
 		(let ((extensionCount 0))
 		  (declare (type uint32_t extensionCount))
