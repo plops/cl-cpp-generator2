@@ -3,11 +3,14 @@
 
 (in-package :cl-cpp-generator2)
 
+;; if nolog is off, then validation layers will be used to check for mistakes
 ;(setf *features* (union *features* '(:nolog)))
 (setf *features* (set-difference *features* '(:nolog)))
 
 (progn
   (defun vk (params)
+    "many vulkan functions get their arguments in the form of one or
+more structs. this function helps to initialize those structs."
     (destructuring-bind (type var &rest args) params
      `(let ((,var (curly)))
 	(declare (type ,type ,var))
@@ -88,12 +91,14 @@
 		    (_instance)
 		    ;#-nolog (_enableValidationLayers true)
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
-		    (_physicalDevice VK_NULL_HANDLE))
+		    (_physicalDevice VK_NULL_HANDLE)
+		    (_device))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
-			 (type VkPhysicalDevice _physicalDevice))
+			 (type VkPhysicalDevice _physicalDevice)
+			 (type VkDevice _device))
 	       #-nolog (defun checkValidationLayerSupport ()
 		 (declare (values bool))
 		 (let ((layerCount 0))
@@ -169,15 +174,45 @@
 	       (defun initVulkan ()
 		 (declare (values void))
 		 (createInstance)
-		 (pickPhysicalDevice))
+		 (pickPhysicalDevice)
+		 (createLogicalDevice))
+	       (defun createLogicalDevice ()
+		 (declare (values void))
+		 (let ((indices (findQueueFamilies _physicalDevice))
+		       (queuePriority 1s0))
+		   (declare (type float queuePriority))
+
+		   ,(vk `(VkDeviceQueueCreateInfo
+			 queueCreateInfo
+			 :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+			 :queueFamilyIndex (indices.graphicsFamily.value)
+			 :queueCount 1
+			 :pQueuePriorities &queuePriority))
+		   (let ((deviceFeatures (curly))
+			 )
+		     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
+		     ,(vk `(VkDeviceCreateInfo
+			 createInfo
+			 :sType VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
+			 :pQueueCreateInfos &queueCreateInfo
+			 :queueCreateInfoCount 1
+			 :pEnabledFeatures &deviceFeatures
+			 :enabledExtensionCount 0
+			 :enabledLayerCount
+			 #-nolog (static_cast<uint32_t> (_validationLayers.size))
+			 #+nolog 0
+			 #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
+		     (unless (== VK_SUCCESS
+				 (vkCreateDevice _physicalDevice &createInfo
+						 nullptr &_device))
+		       (throw ("std::runtime_error" (string "failed to create logical device")))))))
 	       (defun isDeviceSuitable ( device)
 		 (declare (values bool)
 			  (type VkPhysicalDevice device))
 		 (let ((indices (findQueueFamilies device)))
 		   (declare (type QueueFamilyIndices indices))
 		   (return (indices.graphicsFamily.has_value))
-		   #+nil (return (indices.isComplete)))
-		 )
+		   #+nil (return (indices.isComplete))))
 	       (defun pickPhysicalDevice ()
 		 (declare (values void))
 		 (let ((deviceCount 0))
@@ -206,6 +241,7 @@
 		   (glfwPollEvents)))
 	       (defun cleanup ()
 		 (declare (values void))
+		 (vkDestroyDevice _device nullptr)
 		 (vkDestroyInstance _instance nullptr)
 		 (glfwDestroyWindow _window)
 		 (glfwTerminate)
