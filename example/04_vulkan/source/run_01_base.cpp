@@ -120,6 +120,7 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  std::vector<VkFramebuffer> _swapChainFramebuffers;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -219,8 +220,28 @@ private:
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createFramebuffers();
   }
   // shader stuff
+  void createFramebuffers() {
+    _swapChainFramebuffers.resize(_swapChainImageViews.size());
+    for (int i = 0; i < _swapChainImageViews.size(); (i) += (1)) {
+      VkImageView attachments[] = {_swapChainImageViews[i]};
+      VkFramebufferCreateInfo framebufferInfo = {};
+      framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+      framebufferInfo.renderPass = _renderPass;
+      framebufferInfo.attachmentCount = 1;
+      framebufferInfo.pAttachments = attachments;
+      framebufferInfo.width = _swapChainExtent.width;
+      framebufferInfo.height = _swapChainExtent.height;
+      framebufferInfo.layers = 1;
+      if (!((VK_SUCCESS) ==
+            (vkCreateFramebuffer(_device, &framebufferInfo, nullptr,
+                                 &(_swapChainFramebuffers[i]))))) {
+        throw std::runtime_error("failed to create framebuffer.");
+      };
+    }
+  }
   void createRenderPass() {
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = _swapChainImageFormat;

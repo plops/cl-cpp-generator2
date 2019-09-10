@@ -220,7 +220,8 @@ more structs. this function helps to initialize those structs."
 		    #-nolog (_validationLayers (curly (string "VK_LAYER_KHRONOS_validation")))
 		    (_physicalDevice VK_NULL_HANDLE)
 		    (_device)
-		    (_graphicsQueue))
+		    (_graphicsQueue)
+		    (_swapChainFramebuffers))
 		(declare (type GLFWwindow* _window)
 			 (type VkInstance _instance)
 			 #-nolog (type "const bool" _enableValidationLayers)
@@ -228,6 +229,7 @@ more structs. this function helps to initialize those structs."
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
 			 (type VkQueue _graphicsQueue)
+			 (type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
 			 )
 		(let #-surface ()
 		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
@@ -377,15 +379,42 @@ more structs. this function helps to initialize those structs."
 			(createSwapChain)
 			(createImageViews)
 			(createRenderPass)
-			(createGraphicsPipeline))
+			(createGraphicsPipeline)
+			(createFramebuffers))
 		       )
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
+		       (defun createFramebuffers ()
+			 (declare (values void))
+			 (_swapChainFramebuffers.resize
+			  (_swapChainImageViews.size))
+			 (dotimes (i (_swapChainImageViews.size))
+			   (let (("attachments[]" (curly (aref _swapChainImageViews i))))
+			     (declare (type VkImageView "attachments[]"))
+			     ,(vk
+			       `(VkFramebufferCreateInfo
+				 framebufferInfo
+				 :sType VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO
+				 :renderPass _renderPass
+				 :attachmentCount 1
+				 :pAttachments attachments
+				 :width _swapChainExtent.width
+				 :height _swapChainExtent.height
+				 :layers 1))
+			     (unless (== VK_SUCCESS
+					 (vkCreateFramebuffer
+					  _device
+					  &framebufferInfo
+					  nullptr
+					  (ref
+					   (aref _swapChainFramebuffers i))))
+			       (throw ("std::runtime_error"
+				       (string "failed to create framebuffer.")))))))
 		       (defun createRenderPass ()
-			   (declare (values void))
+			 (declare (values void))
 			 ,(vk
 			   `(VkAttachmentDescription
 			     colorAttachment
