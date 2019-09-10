@@ -399,7 +399,63 @@ more structs. this function helps to initialize those structs."
 				  (curly vertShaderStageInfo
 					 fragShaderStageInfo)))
 			     (declare (type VkPipelineShaderStageCreateInfo
-					    "shaderStages[]")))
+					    "shaderStages[]"))
+			     ,(vk
+			       `(VkPipelineVertexInputStateCreateInfo
+				 vertexInputInfo
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+				 :vertexBindingDescriptionCount 0
+				 :pVertexBindingDescriptions nullptr
+				 :vertexAttributeDescriptionCount 0
+				 :pVertexAttributeDescriptions nullptr))
+			     ,(vk
+			       `(VkPipelineInputAssemblyStateCreateInfo
+				 inputAssembly
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
+				 :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+				 ;; this would allow to break up lines
+				 ;; and strips with 0xfff or 0xffffff
+				 :primitiveRestartEnable VK_FALSE))
+			     ,(vk
+			       `(VkViewport
+				 viewport
+				 :x 0s0
+				 :y 0s0
+				 :width (* 1s0 _swapChainExtent.width)
+				 :height (* 1s0 _swapChainExtent.height)
+				 :minDepth 0s0
+				 :maxDepth 1s0))
+			     ,(vk
+			       `(VkRect2D
+				 scissor
+				 :offset (curly 0 0)
+				 :extent _swapChainExtent))
+			     ,(vk
+			       `(VkPipelineViewportStateCreateInfo
+				 viewPortState
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+				 :viewportCount 1
+				 :pViewports &viewport
+				 :scissorCount 1
+				 :pScissors &scissor))
+			     ,(vk
+			       `(VkPipelineRasterizationStateCreateInfo
+				 rasterizer
+				 :sType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
+				 
+				 :depthClampEnable VK_FALSE
+				 ;; _LINE could do wireframe rendering
+				 :polygonMode VK_POLYGON_MODE_FILL
+				 ;; thicker than 1s0 needs wideLines GPU feature
+				 :lineWidth 1s0
+				 :cullMode VK_CULL_MODE_BACK_BIT
+				 :frontFace VK_FRONT_FACE_CLOCKWISE
+				 :depthBiasEnable VK_FALSE
+				 :depthBiasConstantFactor 0s0
+				 ;; sometimes used for shadow mapping:
+				 :depthBiasClamp 0s0
+				 :depthBiasSlopeFactor 0s0)))
+			   
 			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
