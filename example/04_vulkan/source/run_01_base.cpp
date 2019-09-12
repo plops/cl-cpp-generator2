@@ -179,6 +179,7 @@ private:
   size_t _currentFrame = 0;
   bool _framebufferResized = false;
   VkBuffer _vertexBuffer;
+  VkDeviceMemory _vertexBufferMemory;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -276,6 +277,37 @@ private:
       throw std::runtime_error("failed to (vkCreateBuffer _device &bufferInfo "
                                "nullptr &_vertexBuffer)");
     };
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(_device, _vertexBuffer, &memReq);
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memReq.size;
+    allocInfo.memoryTypeIndex = findMemoryType(
+        memReq.memoryTypeBits, ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
+                                (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
+    if (!((VK_SUCCESS) == (vkAllocateMemory(_device, &allocInfo, nullptr,
+                                            &_vertexBufferMemory)))) {
+      throw std::runtime_error("failed to (vkAllocateMemory _device &allocInfo "
+                               "nullptr &_vertexBufferMemory)");
+    };
+    vkBindBufferMemory(_device, _vertexBuffer, _vertexBufferMemory, 0);
+    void *data;
+    vkMapMemory(_device, _vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, g_vertices.data(), bufferInfo.size);
+    vkUnmapMemory(_device, _vertexBufferMemory);
+  }
+  uint32_t findMemoryType(uint32_t typeFilter,
+                          VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties ps;
+    vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &ps);
+    for (int i = 0; i < ps.memoryTypeCOunt(); (i) += (1)) {
+      if (((((1 << i) & (typeFilter))) &&
+           ((properties) ==
+            (((properties) & (ps.memoryTypes[i].propertyFlags)))))) {
+        return i;
+      };
+    }
+    throw std::runtime_error("failed to find suitable memory type.");
   }
   void initVulkan() {
     createInstance();
@@ -823,6 +855,8 @@ private:
   }
   void cleanup() {
     cleanupSwapChain();
+    vkDestroyBuffer(_device, _vertexBuffer, nullptr);
+    vkFreeMemory(_device, _vertexBufferMemory, nullptr);
     for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
       vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
       vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);

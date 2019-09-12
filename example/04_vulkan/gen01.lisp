@@ -306,7 +306,8 @@ more structs. this function helps to initialize those structs."
 				(_MAX_FRAMES_IN_FLIGHT 2)
 				(_currentFrame 0)
 				(_framebufferResized false)
-				(_vertexBuffer))
+				(_vertexBuffer)
+				(_vertexBufferMemory))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -332,7 +333,8 @@ more structs. this function helps to initialize those structs."
 				(type size_t _currentFrame)
 				(type "std::vector<VkFence>" _inFlightFences)
 				(type bool _framebufferResized)
-				(type VkBuffer _vertexBuffer))
+				(type VkBuffer _vertexBuffer)
+				(type VkDeviceMemory _vertexBufferMemory))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -470,7 +472,65 @@ more structs. this function helps to initialize those structs."
 						   &bufferInfo
 						   nullptr
 						   &_vertexBuffer))
+		       (let ((memReq))
+			 (declare (type VkMemoryRequirements memReq))
+			 (vkGetBufferMemoryRequirements _device
+							_vertexBuffer
+							&memReq)
+			 ,(vk
+			   `(VkMemoryAllocateInfo
+			     allocInfo
+			     :sType VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
+			     :allocationSize memReq.size
+			     :memoryTypeIndex (findMemoryType
+					       memReq.memoryTypeBits
+					       (logior
+						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+			 ,(vkthrow `(vkAllocateMemory _device
+						      &allocInfo
+						      nullptr
+						      &_vertexBufferMemory))
+			 (vkBindBufferMemory _device
+					     _vertexBuffer
+					     _vertexBufferMemory 0)
+			 (let ((data))
+			   (declare (type void* data))
+			   (vkMapMemory _device _vertexBufferMemory
+					0		;; offset
+					bufferInfo.size ;; size
+					0		;; flags
+					&data)
+			   (memcpy data (g_vertices.data)
+				   bufferInfo.size)
+			   ;; without coherent bit, the changed memory
+			   ;; might not immediatly be visible.
+			   ;; alternatively: vkFlushMappedMemoryRanges
+			   ;; or vkInvalidateMappedMemoryRanges; the
+			   ;; memory transfer is defined to be
+			   ;; complete as of the next call to
+			   ;; vkQueueSubmit
+			   (vkUnmapMemory _device _vertexBufferMemory)
+			   ))
 		       )
+		     (defun findMemoryType (typeFilter properties)
+		       (declare (values uint32_t)
+				(type uint32_t typeFilter)
+				(type VkMemoryPropertyFlags properties))
+		       (let ((ps))
+			 (declare (type VkPhysicalDeviceMemoryProperties ps))
+			 (vkGetPhysicalDeviceMemoryProperties _physicalDevice
+							      &ps)
+			 (dotimes (i (ps.memoryTypeCOunt))
+			   (when (and (logand (<< 1 i)
+					      typeFilter)
+				      (== properties
+					  (logand properties
+						  (dot (aref ps.memoryTypes i)
+						       propertyFlags))))
+			     (return i)))
+			 (throw ("std::runtime_error"
+				 (string "failed to find suitable memory type.")))))
 		     (defun initVulkan ()
 		       (declare (values void))
 		       (createInstance)
@@ -1375,6 +1435,8 @@ more structs. this function helps to initialize those structs."
 		       #+surface
 		       (do0
 			(cleanupSwapChain)
+			(vkDestroyBuffer _device _vertexBuffer nullptr)
+			(vkFreeMemory _device _vertexBufferMemory nullptr)
 			(dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			  (do0
 			   (vkDestroySemaphore _device
