@@ -140,6 +140,60 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities,
     return actualExtent;
   }
 };
+bool checkDeviceExtensionSupport(
+    VkPhysicalDevice device,
+    const std::vector<const char *> _deviceExtensions) {
+  uint32_t extensionCount = 0;
+  vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                       nullptr);
+  std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+  vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                       availableExtensions.data());
+  std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
+                                           _deviceExtensions.end());
+  for (auto &extension : availableExtensions) {
+    requiredExtensions.erase(extension.extensionName);
+  };
+  return requiredExtensions.empty();
+}
+bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR _surface,
+                      const std::vector<const char *> _deviceExtensions) {
+  auto extensionsSupported =
+      checkDeviceExtensionSupport(device, _deviceExtensions);
+  bool swapChainAdequate = false;
+  if (extensionsSupported) {
+    auto swapChainSupport = querySwapChainSupport(device, _surface);
+    swapChainAdequate = ((!(swapChainSupport.formats.empty())) &&
+                         (!(swapChainSupport.presentModes.empty())));
+  };
+  QueueFamilyIndices indices = findQueueFamilies(device, _surface);
+  return ((indices.graphicsFamily.has_value()) &&
+          (((indices.presentFamily.has_value()) && (extensionsSupported) &&
+            (swapChainAdequate))));
+}
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device,
+                                     VkSurfaceKHR _surface) {
+  QueueFamilyIndices indices;
+  uint32_t queueFamilyCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                           queueFamilies.data());
+  auto i = 0;
+  for (auto &family : queueFamilies) {
+    if (((0 < family.queueCount) &&
+         (((family.queueFlags) & (VK_QUEUE_GRAPHICS_BIT))))) {
+      indices.graphicsFamily = i;
+    };
+    VkBool32 presentSupport = false;
+    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface, &presentSupport);
+    if (((0 < family.queueCount) && (presentSupport))) {
+      indices.presentFamily = i;
+    };
+    (i)++;
+  };
+  return indices;
+};
 class HelloTriangleApplication {
 public:
   void run() {
@@ -180,30 +234,6 @@ private:
   bool _framebufferResized = false;
   VkBuffer _vertexBuffer;
   VkDeviceMemory _vertexBufferMemory;
-  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-    QueueFamilyIndices indices;
-    uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                             nullptr);
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                             queueFamilies.data());
-    auto i = 0;
-    for (auto &family : queueFamilies) {
-      if (((0 < family.queueCount) &&
-           (((family.queueFlags) & (VK_QUEUE_GRAPHICS_BIT))))) {
-        indices.graphicsFamily = i;
-      };
-      VkBool32 presentSupport = false;
-      vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface,
-                                           &presentSupport);
-      if (((0 < family.queueCount) && (presentSupport))) {
-        indices.presentFamily = i;
-      };
-      (i)++;
-    };
-    return indices;
-  }
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -421,7 +451,7 @@ private:
     }
   }
   void createCommandPool() {
-    auto queueFamilyIndices = findQueueFamilies(_physicalDevice);
+    auto queueFamilyIndices = findQueueFamilies(_physicalDevice, _surface);
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
@@ -653,7 +683,7 @@ private:
     auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     auto extent = chooseSwapExtent(swapChainSupport.capabilities, _window);
     auto imageCount = ((swapChainSupport.capabilities.minImageCount) + (1));
-    auto indices = findQueueFamilies(_physicalDevice);
+    auto indices = findQueueFamilies(_physicalDevice, _surface);
     auto queueFamilyIndices = {indices.graphicsFamily.value(),
                                indices.presentFamily.value()};
     auto imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -726,7 +756,7 @@ private:
   };
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
-    auto indices = findQueueFamilies(_physicalDevice);
+    auto indices = findQueueFamilies(_physicalDevice, _surface);
     float queuePriority = (1.e+0);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
@@ -761,33 +791,6 @@ private:
                      &_graphicsQueue);
     vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
   }
-  bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
-    uint32_t extensionCount = 0;
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
-                                         nullptr);
-    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
-                                         availableExtensions.data());
-    std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
-                                             _deviceExtensions.end());
-    for (auto &extension : availableExtensions) {
-      requiredExtensions.erase(extension.extensionName);
-    };
-    return requiredExtensions.empty();
-  }
-  bool isDeviceSuitable(VkPhysicalDevice device) {
-    auto extensionsSupported = checkDeviceExtensionSupport(device);
-    bool swapChainAdequate = false;
-    if (extensionsSupported) {
-      auto swapChainSupport = querySwapChainSupport(device, _surface);
-      swapChainAdequate = ((!(swapChainSupport.formats.empty())) &&
-                           (!(swapChainSupport.presentModes.empty())));
-    };
-    QueueFamilyIndices indices = findQueueFamilies(device);
-    return ((indices.graphicsFamily.has_value()) &&
-            (((indices.presentFamily.has_value()) && (extensionsSupported) &&
-              (swapChainAdequate))));
-  }
   void pickPhysicalDevice() {
     // initialize member _physicalDevice
     uint32_t deviceCount = 0;
@@ -798,7 +801,7 @@ private:
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
     for (auto &device : devices) {
-      if (isDeviceSuitable(device)) {
+      if (isDeviceSuitable(device, _surface, _deviceExtensions)) {
         _physicalDevice = device;
         break;
       };

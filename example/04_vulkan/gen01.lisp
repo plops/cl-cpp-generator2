@@ -260,7 +260,94 @@ more structs. this function helps to initialize those structs."
 						  (dot actualExtent ,e)))))
 		      
 		       (return actualExtent)))))))
-	    
+
+	    #+surface
+	    (do0
+	     (defun checkDeviceExtensionSupport (device _deviceExtensions)
+		       (declare (values bool)
+				(type VkPhysicalDevice device)
+				(type "const std::vector<const char*>" _deviceExtensions))
+		       (let ((extensionCount 0))
+			 (declare (type uint32_t extensionCount))
+			 (vkEnumerateDeviceExtensionProperties
+			  device nullptr &extensionCount nullptr)
+			 (let (((availableExtensions extensionCount)))
+			   (declare (type
+				     "std::vector<VkExtensionProperties>"
+				     (availableExtensions extensionCount)
+				     ))
+			   (vkEnumerateDeviceExtensionProperties
+			    device
+			    nullptr
+			    &extensionCount
+			    (availableExtensions.data))
+			   (let (((requiredExtensions
+				   (_deviceExtensions.begin)
+				   (_deviceExtensions.end))))
+			     (declare (type
+				       "std::set<std::string>"
+				       (requiredExtensions
+					(_deviceExtensions.begin)
+					(_deviceExtensions.end))))
+			     (foreach (extension availableExtensions)
+				      (requiredExtensions.erase
+				       extension.extensionName))
+			     (return (requiredExtensions.empty))))))
+	     (defun isDeviceSuitable ( device _surface  _deviceExtensions)
+		       (declare (values bool)
+				(type VkPhysicalDevice device)
+				(type VkSurfaceKHR _surface)
+				(type "const std::vector<const char*>" _deviceExtensions))
+		       #+surface
+		       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
+			     (swapChainAdequate false))
+			 (declare (type bool swapChainAdequate))
+			 (when extensionsSupported
+			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
+			     (setf swapChainAdequate
+				   (and (not (swapChainSupport.formats.empty))
+					(not (swapChainSupport.presentModes.empty)))))))
+		       (let ((indices (findQueueFamilies device _surface)))
+			 (declare (type QueueFamilyIndices indices))
+			 (return (and (indices.graphicsFamily.has_value)
+				      #+surface (and (indices.presentFamily.has_value)
+						     extensionsSupported
+						     swapChainAdequate)))
+			 #+nil (return (indices.isComplete))))
+	    (defun findQueueFamilies (device _surface)
+		       (declare (type VkPhysicalDevice device)
+				(type VkSurfaceKHR _surface)
+				(values QueueFamilyIndices))
+		       (let ((indices)
+			     (queueFamilyCount 0))
+			 (declare (type QueueFamilyIndices indices)
+				  (type uint32_t queueFamilyCount))
+			 (vkGetPhysicalDeviceQueueFamilyProperties
+			  device &queueFamilyCount nullptr)
+			 (let (((queueFamilies queueFamilyCount)))
+			   (declare (type "std::vector<VkQueueFamilyProperties>"
+					  (queueFamilies queueFamilyCount)))
+			   (vkGetPhysicalDeviceQueueFamilyProperties
+			    device
+			    &queueFamilyCount
+			    (queueFamilies.data))
+			   (let ((i 0))
+			     (foreach
+			      (family queueFamilies)
+			      (when (and (< 0 family.queueCount)
+					 (logand family.queueFlags
+						 VK_QUEUE_GRAPHICS_BIT))
+				(setf indices.graphicsFamily i))
+			      #+surface
+			      (let ((presentSupport false))
+				(declare (type VkBool32 presentSupport))
+				(vkGetPhysicalDeviceSurfaceSupportKHR
+				 device i _surface &presentSupport)
+				(when (and (< 0 family.queueCount)
+					   presentSupport)
+				  (setf indices.presentFamily i)))
+			      (incf i))))
+			 (return indices))) )
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
@@ -338,39 +425,8 @@ more structs. this function helps to initialize those structs."
 				(type VkBuffer _vertexBuffer)
 				(type VkDeviceMemory _vertexBufferMemory))
 		
-		     (defun findQueueFamilies (device)
-		       (declare (type VkPhysicalDevice device)
-				(values QueueFamilyIndices))
-		       (let ((indices)
-			     (queueFamilyCount 0))
-			 (declare (type QueueFamilyIndices indices)
-				  (type uint32_t queueFamilyCount))
-			 (vkGetPhysicalDeviceQueueFamilyProperties
-			  device &queueFamilyCount nullptr)
-			 (let (((queueFamilies queueFamilyCount)))
-			   (declare (type "std::vector<VkQueueFamilyProperties>"
-					  (queueFamilies queueFamilyCount)))
-			   (vkGetPhysicalDeviceQueueFamilyProperties
-			    device
-			    &queueFamilyCount
-			    (queueFamilies.data))
-			   (let ((i 0))
-			     (foreach
-			      (family queueFamilies)
-			      (when (and (< 0 family.queueCount)
-					 (logand family.queueFlags
-						 VK_QUEUE_GRAPHICS_BIT))
-				(setf indices.graphicsFamily i))
-			      #+surface
-			      (let ((presentSupport false))
-				(declare (type VkBool32 presentSupport))
-				(vkGetPhysicalDeviceSurfaceSupportKHR
-				 device i _surface &presentSupport)
-				(when (and (< 0 family.queueCount)
-					   presentSupport)
-				  (setf indices.presentFamily i)))
-			      (incf i))))
-			 (return indices)))
+
+		     
 		     #-nolog (defun checkValidationLayerSupport ()
 			       (declare (values bool))
 			       (let ((layerCount 0))
@@ -686,7 +742,8 @@ more structs. this function helps to initialize those structs."
 		       (defun createCommandPool ()
 			 (declare (values void))
 			 (let ((queueFamilyIndices (findQueueFamilies
-						    _physicalDevice)))
+						    _physicalDevice
+						    _surface)))
 			  ,(vk
 			    `(VkCommandPoolCreateInfo
 			      poolInfo
@@ -1018,7 +1075,7 @@ more structs. this function helps to initialize those structs."
 				_window))
 			      (imageCount
 			       (+ swapChainSupport.capabilities.minImageCount 1))
-			      (indices (findQueueFamilies _physicalDevice))
+			      (indices (findQueueFamilies _physicalDevice _surface))
 			      ((aref queueFamilyIndices) (curly
 							  (indices.graphicsFamily.value)
 							  (indices.presentFamily.value)))
@@ -1116,7 +1173,7 @@ more structs. this function helps to initialize those structs."
 		     (defun createLogicalDevice ()
 		       (declare (values void))
 		       "// initialize members _device and _graphicsQueue"
-		       (let ((indices (findQueueFamilies _physicalDevice))
+		       (let ((indices (findQueueFamilies _physicalDevice _surface))
 			     (queuePriority 1s0))
 			 (declare (type float queuePriority))
 			 (let ((queueCreateInfos)
@@ -1161,55 +1218,9 @@ more structs. this function helps to initialize those structs."
 			   #+surface
 			   (vkGetDeviceQueue _device (indices.presentFamily.value)
 					     0 &_presentQueue))))
-		     #+surface
-		     (defun checkDeviceExtensionSupport (device)
-		       (declare (values bool)
-				(type VkPhysicalDevice device))
-		       (let ((extensionCount 0))
-			 (declare (type uint32_t extensionCount))
-			 (vkEnumerateDeviceExtensionProperties
-			  device nullptr &extensionCount nullptr)
-			 (let (((availableExtensions extensionCount)))
-			   (declare (type
-				     "std::vector<VkExtensionProperties>"
-				     (availableExtensions extensionCount)
-				     ))
-			   (vkEnumerateDeviceExtensionProperties
-			    device
-			    nullptr
-			    &extensionCount
-			    (availableExtensions.data))
-			   (let (((requiredExtensions
-				   (_deviceExtensions.begin)
-				   (_deviceExtensions.end))))
-			     (declare (type
-				       "std::set<std::string>"
-				       (requiredExtensions
-					(_deviceExtensions.begin)
-					(_deviceExtensions.end))))
-			     (foreach (extension availableExtensions)
-				      (requiredExtensions.erase
-				       extension.extensionName))
-			     (return (requiredExtensions.empty))))))
-		     (defun isDeviceSuitable ( device)
-		       (declare (values bool)
-				(type VkPhysicalDevice device))
-		       #+surface
-		       (let ((extensionsSupported (checkDeviceExtensionSupport device))
-			     (swapChainAdequate false))
-			 (declare (type bool swapChainAdequate))
-			 (when extensionsSupported
-			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
-			     (setf swapChainAdequate
-				   (and (not (swapChainSupport.formats.empty))
-					(not (swapChainSupport.presentModes.empty)))))))
-		       (let ((indices (findQueueFamilies device)))
-			 (declare (type QueueFamilyIndices indices))
-			 (return (and (indices.graphicsFamily.has_value)
-				      #+surface (and (indices.presentFamily.has_value)
-						     extensionsSupported
-						     swapChainAdequate)))
-			 #+nil (return (indices.isComplete))))
+		     
+		     
+		     
 		     (defun pickPhysicalDevice ()
 		 
 		       (declare (values void))
@@ -1226,7 +1237,7 @@ more structs. this function helps to initialize those structs."
 			   (vkEnumeratePhysicalDevices _instance &deviceCount
 						       (devices.data))
 			   (foreach (device devices)
-				    (when (isDeviceSuitable device)
+				    (when (isDeviceSuitable device _surface _deviceExtensions)
 				      (setf _physicalDevice device)
 				      break))
 			   (when (== VK_NULL_HANDLE
