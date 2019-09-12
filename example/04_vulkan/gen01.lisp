@@ -1,5 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (ql:quickload "cl-cpp-generator2"))
+  (ql:quickload "cl-cpp-generator2")
+  (ql:quickload "cl-ppcre"))
 
 (in-package :cl-cpp-generator2)
 
@@ -16,6 +17,66 @@
 		 ,cmd)
        (throw ("std::runtime_error"
 	       (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
+
+  (progn
+    (defun vk-info-type (verb subject &key (prefix "vk")
+					(suffix "Info"))
+      "convert two lisp symbols like allocate command-buffer  to vkCommandBufferAllocate"
+      (format nil "~a~{~a~}~{~a~}~a"
+	      prefix
+	      (mapcar #'string-capitalize
+		      (cl-ppcre:split "-" (format nil "~a" subject)))
+	      (mapcar #'string-capitalize
+		      (cl-ppcre:split "-" (format nil "~a" verb)))
+	      suffix))
+    (defun vk-info-stype (verb subject &key (prefix "VK_")
+					(suffix "_INFO"))
+      "convert a lisp symbol like allocate command-buffer to VK_COMMAND_BUFFER_ALLOCATE_INFO"
+      (format nil "~a~{~a~^_~}_~{~a~^_~}~a"
+	      prefix
+	      (mapcar #'string-upcase
+		      (cl-ppcre:split "-" (format nil "~a" subject)))
+	      (mapcar #'string-upcase
+		      (cl-ppcre:split "-" (format nil "~a" verb)))
+	      suffix))
+    (defun vk-info-function (verb subject &key  (prefix "vk")
+					    (suffix ""))
+      "convert a lisp symbol like allocate command-buffer to vkAllocateCommandBuffers. use suffix to create plural"
+      (format nil "~a~{~a~}~{~a~}~a"
+	      prefix
+	      (mapcar #'string-capitalize
+		      (cl-ppcre:split "-" (format nil "~a" verb)))
+	      (mapcar #'string-capitalize
+		      (cl-ppcre:split "-" (format nil "~a" subject)))
+	      suffix))
+    (defun vkcall (params &key (plural nil) (throw nil))
+      "subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function"
+      (destructuring-bind (verb subject info-params args)
+	  params
+	`(progn
+	   ,(vk `(,(vk-info-type
+		    verb subject)
+		   info
+		   (:sType ,(vk-info-stype
+			     verb subject)
+			   ,@info-params)))
+	   ,(if throw
+		(vkthrow
+		 `(,(vk-info-function verb subject
+				      :suffix
+				      (if plural
+					  "s"
+					  ""))
+		    ,@args))
+		`(,(vk-info-function verb subject
+				     :suffix
+				     (if plural
+					 "s"
+					 ""))
+		   ,@args)))))
+    
+    )
+  
   (defun set-members (params)
     "setf on multiple member variables of an instance"
     (destructuring-bind (instance &rest args) params
@@ -528,6 +589,7 @@ more structs. this function helps to initialize those structs."
 						      &_instance))
 			 ))
 		     (defun createBuffer (size usage properties )
+		       ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
 		       (declare (values "std::tuple<VkBuffer,VkDeviceMemory>")
 				(type VkDeviceSize size)
 				(type VkBufferUsageFlags usage)
@@ -597,23 +659,17 @@ more structs. this function helps to initialize those structs."
 			 )))
 			 
 			 
-			#+nil(createBuffer
-			 bufferSize
-			 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-			 (logior
-			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-			 _vertexBuffer
-			 _vertexBufferMemory)
+			
 			
 			(let ((data))
 			  (declare (type void* data))
-			  (vkMapMemory _device _vertexBufferMemory
+			  (vkMapMemory _device stagingBufferMemory
 				       0		;; offset
 				       bufferSize ;; size
 				       0		 ;; flags
 				       &data)
-			  (memcpy data (g_vertices.data)
+			  (memcpy data
+				  (g_vertices.data)
 				  bufferSize)
 			  ;; without coherent bit, the changed memory
 			  ;; might not immediatly be visible.
@@ -622,9 +678,62 @@ more structs. this function helps to initialize those structs."
 			  ;; memory transfer is defined to be
 			  ;; complete as of the next call to
 			  ;; vkQueueSubmit
-			  (vkUnmapMemory _device _vertexBufferMemory)
+			  (vkUnmapMemory _device stagingBufferMemory)
 			  ))
+
+		       (setf (bracket
+			      _vertexBuffer
+			      _vertexBufferMemory)
+			(createBuffer
+			 bufferSize
+			 (logior
+			  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+			  ;; can be a data transfer destination
+			  VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+			 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			 ))
+		       
+		       (do0
+			(vkDestroyBuffer _device stagingBuffer nullptr)
+			(vkFreeMemory _device stagingBufferMemory nullptr))
+			
 		       )
+		     (defun copyBuffer (srcBuffer
+					dstBuffer
+					size)
+		       (declare (values void)
+				(type VkBuffer srcBuffer dstBuffer)
+				(type VkDeviceSize size))
+		       ,(vk
+			 `(VkCommandBufferAllocateInfo
+			   allocInfo
+			   :sType VK_STRUCTURE_TYPE_COMMAND_ALLOCATE_INFO
+			   :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+			   :commandPool _commandPool
+			   :commandBufferCount 1))
+		       (let ((commandBuffer))
+			 (declare (type VkCommandBuffer
+					commandBuffer))
+			 (vkAllocateCommandBuffers
+			  _device
+			  &allocInfo
+			  &commandBuffer)
+
+			 ,(vkcall `(allocate
+				    command-buffer
+				    (:level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+					    :commandPool _commandPool
+					    :commandBufferCount 1)
+				    (_device &info &commandBuffer)
+				    )
+				  :plural t
+				  )
+			 
+			 (vkFreeCommandBuffers
+			  _device
+			  _commandPool
+			  1
+			  &commandBuffer)))
 		     (defun findMemoryType (typeFilter properties)
 		       (declare (values uint32_t)
 				(type uint32_t typeFilter)
