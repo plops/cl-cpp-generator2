@@ -51,9 +51,15 @@ std::vector<char> readFile(const std::string &filename) {
   file.close();
   return buffer;
 };
+struct UniformBufferObject {
+  glm::mat4 model;
+  glm::mat4 view;
+  glm::mat4 proj;
+};
+typedef struct UniformBufferObject UniformBufferObject;
 struct Vertex {
   glm::vec2 pos;
-  glm::vec3 color;
+  glm::vec color;
   static VkVertexInputBindingDescription getBindingDescription();
   static std::array<VkVertexInputAttributeDescription, 2>
   getAttributeDescriptions();
@@ -243,6 +249,7 @@ private:
   VkExtent2D _swapChainExtent;
   std::vector<VkImageView> _swapChainImageViews;
   VkRenderPass _renderPass;
+  VkDescriptorSetLayout _descriptorSetLayout;
   VkPipelineLayout _pipelineLayout;
   VkPipeline _graphicsPipeline;
   std::vector<VkFramebuffer> _swapChainFramebuffers;
@@ -447,6 +454,7 @@ private:
     createSwapChain();
     createImageViews();
     createRenderPass();
+    createDescriptorSetLayout();
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
@@ -454,6 +462,27 @@ private:
     createIndexBuffer();
     createCommandBuffers();
     createSyncObjects();
+  }
+  void createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.pImmutableSamplers = nullptr;
+    {
+      VkDescriptorSetLayoutCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+      info.bindingCount = 1;
+      info.pBindings = &uboLayoutBinding;
+      if (!((VK_SUCCESS) ==
+            (vkCreateDescriptorSetLayout(_device, &info, nullptr,
+                                         &_descriptorSetLayout)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateDescriptorSetLayout _device &info nullptr      "
+            "      &_descriptorSetLayout)");
+      };
+    };
   }
   void recreateSwapChain() {
     int width = 0;

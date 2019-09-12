@@ -199,10 +199,13 @@ more structs. this function helps to initialize those structs."
 			      fileSize)
 		   (file.close)
 		   (return buffer)))))
-
+	    (defstruct0 UniformBufferObject
+		(model "glm::mat4")
+	      (view "glm::mat4")
+	      (proj "glm::mat4"))
 	    (defstruct0 Vertex
 		(pos "glm::vec2")
-	      (color "glm::vec3")
+	      (color "glm::vec")
 	      ;; here static means the function has no receiver object
 	      ;; outside of the class static would limit scope to only
 	      ;; this file (which i don't necessarily want)
@@ -470,8 +473,8 @@ more structs. this function helps to initialize those structs."
 				(_swapChainExtent)
 				(_swapChainImageViews)
 				(_renderPass)
-				(_pipelineLayout
-				 )
+				(_descriptorSetLayout)
+				(_pipelineLayout)
 				(_graphicsPipeline)
 				(_swapChainFramebuffers)
 				(_commandPool)
@@ -496,6 +499,7 @@ more structs. this function helps to initialize those structs."
 				(type VkFormat _swapChainImageFormat)
 				(type VkExtent2D _swapChainExtent)
 				(type "std::vector<VkImageView>" _swapChainImageViews)
+				(type VkDescriptorSetLayout _descriptorSetLayout)
 				(type VkPipelineLayout _pipelineLayout)
 				(type VkRenderPass _renderPass)
 				(type VkPipeline _graphicsPipeline)
@@ -834,6 +838,7 @@ more structs. this function helps to initialize those structs."
 			(createSwapChain)
 			(createImageViews)
 			(createRenderPass)
+			(createDescriptorSetLayout)
 			(createGraphicsPipeline)
 			(createFramebuffers)
 			(createCommandPool)
@@ -844,6 +849,25 @@ more structs. this function helps to initialize those structs."
 		     
 		     #+surface
 		     (do0
+		      (defun createDescriptorSetLayout ()
+			(declare (values void))
+			,(vk
+			  `(VkDescriptorSetLayoutBinding
+			    uboLayoutBinding
+			    :binding 0
+			    :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+			    :descriptorCount 1
+			    :stageFlags VK_SHADER_STAGE_VERTEX_BIT
+			    :pImmutableSamplers nullptr))
+			,(vkcall
+			  `(create
+			    descriptor-set-layout
+			    (:bindingCount 1
+					   :pBindings &uboLayoutBinding)
+			    (_device &info nullptr &_descriptorSetLayout)
+			    )
+			  :throw t)
+			)
 		      
 		      (defun recreateSwapChain ()
 			(declare (values void))
