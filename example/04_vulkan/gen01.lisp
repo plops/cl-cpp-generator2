@@ -8,12 +8,14 @@
 (setf *features* (union *features* '(:surface)))
 (setf *features* (set-difference *features* '(:nolog)))
 
+
+
 (progn
   (defun vkthrow (cmd)
 			`(unless (== VK_SUCCESS
 				    ,cmd)
 			   (throw ("std::runtime_error"
-				   (string ,(format nil "failed to ~a" cmd))))))
+				   (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
   (defun set-members (params)
     "setf on multiple member variables of an instance"
     (destructuring-bind (instance &rest args) params
@@ -447,12 +449,10 @@ more structs. this function helps to initialize those structs."
 					 (_validationLayers.size))
 				#-nolog :ppEnabledLayerNames
 				#-nolog (_validationLayers.data)))
-			 (unless (== VK_SUCCESS
-				     (vkCreateInstance &createInfo
+			 ,(vkthrow `(vkCreateInstance &createInfo
 						       nullptr
 						       &_instance))
-			   (throw ("std::runtime_error"
-				   (string "failed to create instance"))))))
+			 ))
 		     (defun createVertexBuffer ()
 		       (declare (values void))
 		       ,(vk
@@ -624,12 +624,10 @@ more structs. this function helps to initialize those structs."
 			     :commandPool _commandPool
 			     :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
 			     :commandBufferCount (_commandBuffers.size)))
-			 (unless (== VK_SUCCESS
-				     (vkAllocateCommandBuffers _device
-							       &allocInfo
-							       (_commandBuffers.data)))
-			   (throw ("std::runtime_error"
-				   (string "failed to allocate command buffers."))))
+			 ,(vkthrow `(vkAllocateCommandBuffers _device
+							      &allocInfo
+							      (_commandBuffers.data)))
+			 
 			 (dotimes (i (_commandBuffers.size))
 			   ,(vk
 			     `(VkCommandBufferBeginInfo
@@ -641,12 +639,10 @@ more structs. this function helps to initialize those structs."
 			       :flags 0 
 			       :pInheritanceInfo nullptr
 			       ))
-			   (unless (== VK_SUCCESS
-				       (vkBeginCommandBuffer
-					(aref _commandBuffers i)
-					&beginInfo))
-			     (throw ("std::runtime_error"
-				     (string "failed to begin recording command buffer."))))
+			   ,(vkthrow `(vkBeginCommandBuffer
+				       (aref _commandBuffers i)
+				       &beginInfo))
+			   
 			   (let ((clearColor (curly 0s0 0s0 0s0 1s0)))
 			     (declare (type VkClearValue clearColor))
 			    ,(vk
@@ -690,11 +686,8 @@ more structs. this function helps to initialize those structs."
 				      )
 			   (vkCmdEndRenderPass
 			    (aref _commandBuffers i))
-			   (unless (== VK_SUCCESS
-				       (vkEndCommandBuffer
+			   ,(vkthrow `(vkEndCommandBuffer
 					(aref _commandBuffers i)))
-			     (throw ("std::runtime_error"
-				     (string "failed to record command buffer."))))
 			   ))
 		       (defun createCommandPool ()
 			 (declare (values void))
@@ -707,13 +700,10 @@ more structs. this function helps to initialize those structs."
 			      ;; cmds for drawing go to graphics queue
 			      :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
 			      :flags 0)))
-			 (unless (== VK_SUCCESS
-				     (vkCreateCommandPool _device
+			 ,(vkthrow `(vkCreateCommandPool _device
 							  &poolInfo
 							  nullptr
 							  &_commandPool))
-			   (throw ("std::runtime_error"
-				   (string "failed to create command pool."))))
 			 )
 		       (defun createFramebuffers ()
 			 (declare (values void))
@@ -732,15 +722,12 @@ more structs. this function helps to initialize those structs."
 				 :width _swapChainExtent.width
 				 :height _swapChainExtent.height
 				 :layers 1))
-			     (unless (== VK_SUCCESS
-					 (vkCreateFramebuffer
+			     ,(vkthrow `(vkCreateFramebuffer
 					  _device
 					  &framebufferInfo
 					  nullptr
 					  (ref
-					   (aref _swapChainFramebuffers i))))
-			       (throw ("std::runtime_error"
-				       (string "failed to create framebuffer.")))))))
+					   (aref _swapChainFramebuffers i)))))))
 		       (defun createRenderPass ()
 			 (declare (values void))
 			 ,(vk
@@ -792,14 +779,11 @@ more structs. this function helps to initialize those structs."
 			     ;; wait with writing of the color attachment
 			     :dependencyCount 1
 			     :pDependencies &dependency))
-			 (unless (== VK_SUCCESS
-				     (vkCreateRenderPass
+			 ,(vkthrow `(vkCreateRenderPass
 				      _device
 				      &renderPassInfo
 				      nullptr
 				      &_renderPass))
-			   (throw ("std::runtime_error"
-				   (string "failed to create render pass."))))
 			 )
 		       (defun createGraphicsPipeline ()
 			 (declare (values void))
@@ -949,13 +933,12 @@ more structs. this function helps to initialize those structs."
 				;; another way of passing dynamic values to shaders
 				:pushConstantRangeCount 0
 				:pPushConstantRanges nullptr))
-			    (unless (== VK_SUCCESS
-					(vkCreatePipelineLayout _device
+			    ,(vkthrow
+			      `(vkCreatePipelineLayout _device
 								&pipelineLayoutInfo
 								nullptr
 								&_pipelineLayout))
-			      (throw ("std::runtime_error"
-				      (string "failed to create pipeline layout.")))))
+			    )
 
 			   ,(vk
 			     `(VkGraphicsPipelineCreateInfo
@@ -980,16 +963,14 @@ more structs. this function helps to initialize those structs."
 			       ;; switching
 			       :basePipelineHandle VK_NULL_HANDLE
 			       :basePipelineIndex -1))
-			   (unless (== VK_SUCCESS
-				       (vkCreateGraphicsPipelines
+			   ,(vkthrow `(vkCreateGraphicsPipelines
 					_device
 					VK_NULL_HANDLE ;; pipline cache
 					1
 					&pipelineInfo
 					nullptr
 					&_graphicsPipeline))
-			     (throw ("std::runtime_error"
-				     (string "failed to create graphics pipeline."))))
+			   
 			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
@@ -1011,13 +992,11 @@ more structs. this function helps to initialize those structs."
 				     (code.data))))
 			 (let ((shaderModule))
 			   (declare (type VkShaderModule shaderModule))
-			   (unless (== VK_SUCCESS
-				       (vkCreateShaderModule _device
-							     &createInfo
-							     nullptr
-							     &shaderModule))
-			     (throw ("std::runtime_error"
-				     (string "failed to create shader module."))))
+			   ,(vkthrow `(vkCreateShaderModule _device
+								 &createInfo
+								 nullptr
+								 &shaderModule))
+			   
 			   (return shaderModule))))
 		      
 		      (defun createSurface ()

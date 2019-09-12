@@ -262,7 +262,8 @@ private:
     createInfo.ppEnabledLayerNames = _validationLayers.data();
     if (!((VK_SUCCESS) ==
           (vkCreateInstance(&createInfo, nullptr, &_instance)))) {
-      throw std::runtime_error("failed to create instance");
+      throw std::runtime_error(
+          "failed to (vkCreateInstance &createInfo nullptr &_instance)");
     };
   }
   void createVertexBuffer() {
@@ -372,7 +373,8 @@ private:
     allocInfo.commandBufferCount = _commandBuffers.size();
     if (!((VK_SUCCESS) == (vkAllocateCommandBuffers(_device, &allocInfo,
                                                     _commandBuffers.data())))) {
-      throw std::runtime_error("failed to allocate command buffers.");
+      throw std::runtime_error("failed to (vkAllocateCommandBuffers _device "
+                               "&allocInfo (_commandBuffers.data))");
     };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
       VkCommandBufferBeginInfo beginInfo = {};
@@ -381,7 +383,8 @@ private:
       beginInfo.pInheritanceInfo = nullptr;
       if (!((VK_SUCCESS) ==
             (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo)))) {
-        throw std::runtime_error("failed to begin recording command buffer.");
+        throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
+                                 "_commandBuffers i) &beginInfo)");
       };
       VkClearValue clearColor = {(0.0e+0), (0.0e+0), (0.0e+0), (1.e+0)};
       VkRenderPassBeginInfo renderPassInfo = {};
@@ -402,7 +405,8 @@ private:
       vkCmdDraw(_commandBuffers[i], 3, 1, 0, 0);
       vkCmdEndRenderPass(_commandBuffers[i]);
       if (!((VK_SUCCESS) == (vkEndCommandBuffer(_commandBuffers[i])))) {
-        throw std::runtime_error("failed to record command buffer.");
+        throw std::runtime_error(
+            "failed to (vkEndCommandBuffer (aref _commandBuffers i))");
       };
     }
   }
@@ -414,7 +418,8 @@ private:
     poolInfo.flags = 0;
     if (!((VK_SUCCESS) ==
           (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
-      throw std::runtime_error("failed to create command pool.");
+      throw std::runtime_error("failed to (vkCreateCommandPool _device "
+                               "&poolInfo nullptr &_commandPool)");
     };
   }
   void createFramebuffers() {
@@ -432,7 +437,9 @@ private:
       if (!((VK_SUCCESS) ==
             (vkCreateFramebuffer(_device, &framebufferInfo, nullptr,
                                  &(_swapChainFramebuffers[i]))))) {
-        throw std::runtime_error("failed to create framebuffer.");
+        throw std::runtime_error(
+            "failed to (vkCreateFramebuffer _device &framebufferInfo nullptr   "
+            "         (ref (aref _swapChainFramebuffers i)))");
       };
     }
   }
@@ -471,7 +478,8 @@ private:
     renderPassInfo.pDependencies = &dependency;
     if (!((VK_SUCCESS) == (vkCreateRenderPass(_device, &renderPassInfo, nullptr,
                                               &_renderPass)))) {
-      throw std::runtime_error("failed to create render pass.");
+      throw std::runtime_error("failed to (vkCreateRenderPass _device "
+                               "&renderPassInfo nullptr &_renderPass)");
     };
   }
   void createGraphicsPipeline() {
@@ -576,7 +584,9 @@ private:
     if (!((VK_SUCCESS) ==
           (vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr,
                                   &_pipelineLayout)))) {
-      throw std::runtime_error("failed to create pipeline layout.");
+      throw std::runtime_error(
+          "failed to (vkCreatePipelineLayout _device &pipelineLayoutInfo "
+          "nullptr            &_pipelineLayout)");
     };
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -598,7 +608,9 @@ private:
     if (!((VK_SUCCESS) ==
           (vkCreateGraphicsPipelines(_device, VK_NULL_HANDLE, 1, &pipelineInfo,
                                      nullptr, &_graphicsPipeline)))) {
-      throw std::runtime_error("failed to create graphics pipeline.");
+      throw std::runtime_error(
+          "failed to (vkCreateGraphicsPipelines _device VK_NULL_HANDLE 1 "
+          "&pipelineInfo            nullptr &_graphicsPipeline)");
     };
     vkDestroyShaderModule(_device, fragShaderModule, nullptr);
     vkDestroyShaderModule(_device, vertShaderModule, nullptr);
@@ -611,7 +623,8 @@ private:
     VkShaderModule shaderModule;
     if (!((VK_SUCCESS) == (vkCreateShaderModule(_device, &createInfo, nullptr,
                                                 &shaderModule)))) {
-      throw std::runtime_error("failed to create shader module.");
+      throw std::runtime_error("failed to (vkCreateShaderModule _device "
+                               "&createInfo nullptr &shaderModule)");
     };
     return shaderModule;
   };
