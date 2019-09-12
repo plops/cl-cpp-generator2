@@ -257,7 +257,8 @@ more structs. this function helps to initialize those structs."
 				(_renderFinishedSemaphores)
 				(_inFlightFences)
 				(_MAX_FRAMES_IN_FLIGHT 2)
-				(_currentFrame 0))
+				(_currentFrame 0)
+				(_framebufferResized false))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -281,7 +282,8 @@ more structs. this function helps to initialize those structs."
 				      _renderFinishedSemaphores)
 				(type "const int" _MAX_FRAMES_IN_FLIGHT)
 				(type size_t _currentFrame)
-				(type "std::vector<VkFence>" _inFlightFences))
+				(type "std::vector<VkFence>" _inFlightFences)
+				(type bool _framebufferResized))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -339,6 +341,13 @@ more structs. this function helps to initialize those structs."
 				      (unless layerFound
 					(return false))))
 				   (return true))))
+		     (defun framebufferResizeCallback (window width height)
+		       (declare (values "static void")
+				;; static because glfw doesnt know how to call a member function with a this pointer
+				(type GLFWwindow* window)
+				(type int width height))
+		       (let ((app (reinterpret_cast<HelloTriangleApplication*> (glfwGetWindowUserPointer window))))
+			 (setf app->_framebufferResized true)))
 		     (defun initWindow ()
 		       (declare (values void))
 		       (glfwInit)
@@ -347,7 +356,11 @@ more structs. this function helps to initialize those structs."
 		       (setf _window (glfwCreateWindow 800 600
 						       (string "vulkan window")
 						       nullptr
-						       nullptr)))
+						       nullptr))
+		       ;; store this pointer to the instance for use in the callback
+		       (glfwSetWindowUserPointer _window this)
+		       (glfwSetFramebufferSizeCallback _window
+						       framebufferResizeCallback))
 		     (defun createInstance ()
 		       (declare (values void))
 		       "// initialize member _instance"
@@ -1183,8 +1196,10 @@ more structs. this function helps to initialize those structs."
 			    (progn
 			     (let ((result (vkQueuePresentKHR _presentQueue &presentInfo)))
 			       (if (or (== VK_SUBOPTIMAL_KHR result)
-				       (== VK_ERROR_OUT_OF_DATE_KHR result))
+				       (== VK_ERROR_OUT_OF_DATE_KHR result)
+				       _framebufferResized)
 				   (do0
+				    (setf _framebufferResized false)
 				    (recreateSwapChain))
 				   (unless (== VK_SUCCESS result)
 				     (throw ("std::runtime_error"

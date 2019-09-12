@@ -144,6 +144,7 @@ private:
   std::vector<VkFence> _inFlightFences;
   const int _MAX_FRAMES_IN_FLIGHT = 2;
   size_t _currentFrame = 0;
+  bool _framebufferResized = false;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -187,11 +188,19 @@ private:
     };
     return true;
   }
+  static void framebufferResizeCallback(GLFWwindow *window, int width,
+                                        int height) {
+    auto app = reinterpret_cast<HelloTriangleApplication *>(
+        glfwGetWindowUserPointer(window));
+    app->_framebufferResized = true;
+  }
   void initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     _window = glfwCreateWindow(800, 600, "vulkan window", nullptr, nullptr);
+    glfwSetWindowUserPointer(_window, this);
+    glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
   }
   void createInstance() {
     // initialize member _instance
@@ -729,7 +738,8 @@ private:
     {
       auto result = vkQueuePresentKHR(_presentQueue, &presentInfo);
       if ((((VK_SUBOPTIMAL_KHR) == (result)) ||
-           ((VK_ERROR_OUT_OF_DATE_KHR) == (result)))) {
+           ((VK_ERROR_OUT_OF_DATE_KHR) == (result)) || (_framebufferResized))) {
+        _framebufferResized = false;
         recreateSwapChain();
       } else {
         if (!((VK_SUCCESS) == (result))) {
