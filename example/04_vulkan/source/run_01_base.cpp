@@ -179,6 +179,9 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device,
     if (((0 < family.queueCount) && (presentSupport))) {
       indices.presentFamily = i;
     };
+    if (indices.isComplete()) {
+      break;
+    };
     (i)++;
   };
   return indices;
@@ -194,9 +197,8 @@ bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR _surface,
                          (!(swapChainSupport.presentModes.empty())));
   };
   QueueFamilyIndices indices = findQueueFamilies(device, _surface);
-  return ((indices.graphicsFamily.has_value()) &&
-          (((indices.presentFamily.has_value()) && (extensionsSupported) &&
-            (swapChainAdequate))));
+  return ((indices.isComplete()) &&
+          (((extensionsSupported) && (swapChainAdequate))));
 };
 class HelloTriangleApplication {
 public:

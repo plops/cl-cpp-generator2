@@ -328,7 +328,9 @@ more structs. this function helps to initialize those structs."
 				 device i _surface &presentSupport)
 				(when (and (< 0 family.queueCount)
 					   presentSupport)
-				  (setf indices.presentFamily i)))
+				  (setf indices.presentFamily i))
+				(when (indices.isComplete)
+				  break))
 			      (incf i))))
 			 (return indices)))
 
@@ -348,8 +350,8 @@ more structs. this function helps to initialize those structs."
 					(not (swapChainSupport.presentModes.empty)))))))
 		       (let ((indices (findQueueFamilies device _surface)))
 			 (declare (type QueueFamilyIndices indices))
-			 (return (and (indices.graphicsFamily.has_value)
-				      #+surface (and (indices.presentFamily.has_value)
+			 (return (and (indices.isComplete)
+				      #+surface (and 
 						     extensionsSupported
 						     swapChainAdequate)))
 			 #+nil (return (indices.isComplete)))))
