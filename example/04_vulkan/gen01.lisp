@@ -426,6 +426,17 @@ more structs. this function helps to initialize those structs."
 		      
 		      (defun recreateSwapChain ()
 			(declare (values void))
+
+			(let ((width 0)
+			      (height 0))
+			  (declare (type int width height))
+			  (while (or (== 0 width)
+				     (== 0 height))
+			    (glfwGetFramebufferSize _window
+						    &width
+						    &height)
+			    (glfwWaitEvents)))
+			
 			(vkDeviceWaitIdle _device) ;; wait for resources to be not in use anymore
 			(createSwapChain)
 			(createImageViews)

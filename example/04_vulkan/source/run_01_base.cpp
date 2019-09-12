@@ -246,6 +246,12 @@ private:
     createSyncObjects();
   }
   void recreateSwapChain() {
+    int width = 0;
+    int height = 0;
+    while ((((0) == (width)) || ((0) == (height)))) {
+      glfwGetFramebufferSize(_window, &width, &height);
+      glfwWaitEvents();
+    };
     vkDeviceWaitIdle(_device);
     createSwapChain();
     createImageViews();
