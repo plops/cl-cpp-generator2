@@ -1331,49 +1331,7 @@ more structs. this function helps to initialize those structs."
 			     (%
 			      (+ 1 _currentFrame)
 			      _MAX_FRAMES_IN_FLIGHT)))
-		     #+nil
-		     (defun cleanup ()
-		       (declare (values void))
-		       
-		       #+surface
-		       (do0
-			
-			(dotimes (i _MAX_FRAMES_IN_FLIGHT)
-			  (do0
-			   (vkDestroySemaphore _device
-					       (aref _renderFinishedSemaphores i)
-					       nullptr)
-			   (vkDestroySemaphore _device
-					       (aref _imageAvailableSemaphores i)
-					       nullptr)
-			   (vkDestroyFence _device
-					   (aref _inFlightFences i)
-					   nullptr)))
-			(vkDestroyCommandPool _device _commandPool nullptr)
-			(foreach (b _swapChainFramebuffers)
-				 (vkDestroyFramebuffer _device b nullptr))
-			(vkDestroyPipeline _device _graphicsPipeline nullptr)
-			(vkDestroyPipelineLayout
-			_device
-			_pipelineLayout
-			nullptr)
-			(vkDestroyRenderPass
-			 _device
-			 _renderPass
-			 nullptr)
-			(foreach (view _swapChainImageViews)
-				 (vkDestroyImageView
-				  _device
-				  view
-				  nullptr))
-			(vkDestroySwapchainKHR _device _swapChain nullptr))
-		       (vkDestroyDevice _device nullptr)
-		       #+surface
-		       (vkDestroySurfaceKHR _instance _surface nullptr)
-		       (vkDestroyInstance _instance nullptr)
-		       (glfwDestroyWindow _window)
-		       (glfwTerminate)
-		       )
+		  
 		     (defun cleanupSwapChain ()
 			(declare (values void))
 			
