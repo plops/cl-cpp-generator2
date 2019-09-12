@@ -352,15 +352,25 @@ private:
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
-      if (!((((VK_SUCCESS) ==
-              (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
-                                 &(_imageAvailableSemaphores[i])))) &&
-             ((VK_SUCCESS) ==
-              (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
-                                 &(_renderFinishedSemaphores[i])))) &&
-             ((VK_SUCCESS) == (vkCreateFence(_device, &fenceInfo, nullptr,
-                                             &(_inFlightFences[i]))))))) {
-        throw std::runtime_error("failed to create sync objects.");
+      if (!((VK_SUCCESS) ==
+            (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                               &(_imageAvailableSemaphores[i]))))) {
+        throw std::runtime_error(
+            "failed to (vkCreateSemaphore _device &semaphoreInfo nullptr       "
+            "     (ref (aref _imageAvailableSemaphores i)))");
+      };
+      if (!((VK_SUCCESS) ==
+            (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                               &(_renderFinishedSemaphores[i]))))) {
+        throw std::runtime_error(
+            "failed to (vkCreateSemaphore _device &semaphoreInfo nullptr       "
+            "     (ref (aref _renderFinishedSemaphores i)))");
+      };
+      if (!((VK_SUCCESS) == (vkCreateFence(_device, &fenceInfo, nullptr,
+                                           &(_inFlightFences[i]))))) {
+        throw std::runtime_error(
+            "failed to (vkCreateFence _device &fenceInfo nullptr            "
+            "(ref (aref _inFlightFences i)))");
       };
     }
   }
@@ -633,7 +643,8 @@ private:
     // must be destroyed before the instance is destroyed
     if (!((VK_SUCCESS) ==
           (glfwCreateWindowSurface(_instance, _window, nullptr, &_surface)))) {
-      throw std::runtime_error("failed to create window surface");
+      throw std::runtime_error("failed to (glfwCreateWindowSurface _instance "
+                               "_window nullptr &_surface)");
     };
   }
   void createSwapChain() {
@@ -677,7 +688,8 @@ private:
     createInfo.oldSwapchain = VK_NULL_HANDLE;
     if (!((VK_SUCCESS) ==
           (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain)))) {
-      throw std::runtime_error("failed to create swap chain");
+      throw std::runtime_error("failed to (vkCreateSwapchainKHR _device "
+                               "&createInfo nullptr &_swapChain)");
     };
     // now get the images, note will be destroyed with the swap chain
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
@@ -706,7 +718,9 @@ private:
       createInfo.subresourceRange.layerCount = 1;
       if (!((VK_SUCCESS) == (vkCreateImageView(_device, &createInfo, nullptr,
                                                &(_swapChainImageViews[i]))))) {
-        throw std::runtime_error("failed to create image view.");
+        throw std::runtime_error(
+            "failed to (vkCreateImageView _device &createInfo nullptr          "
+            "  (ref (aref _swapChainImageViews i)))");
       };
     }
   };
@@ -740,7 +754,8 @@ private:
     createInfo.ppEnabledLayerNames = _validationLayers.data();
     if (!((VK_SUCCESS) ==
           (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device)))) {
-      throw std::runtime_error("failed to create logical device");
+      throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
+                               "&createInfo nullptr &_device)");
     };
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
@@ -829,7 +844,9 @@ private:
     vkResetFences(_device, 1, &(_inFlightFences[_currentFrame]));
     if (!((VK_SUCCESS) == (vkQueueSubmit(_graphicsQueue, 1, &submitInfo,
                                          _inFlightFences[_currentFrame])))) {
-      throw std::runtime_error("failed to submit draw command buffer.");
+      throw std::runtime_error(
+          "failed to (vkQueueSubmit _graphicsQueue 1 &submitInfo            "
+          "(aref _inFlightFences _currentFrame))");
     };
     VkSwapchainKHR swapChains[] = {_swapChain};
     VkPresentInfoKHR presentInfo = {};

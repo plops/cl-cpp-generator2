@@ -592,27 +592,21 @@ more structs. this function helps to initialize those structs."
 			     :flags VK_FENCE_CREATE_SIGNALED_BIT)
 			   )
 			 (dotimes (i _MAX_FRAMES_IN_FLIGHT)
-			  (unless (and
-				   (== VK_SUCCESS
-				       (vkCreateSemaphore
+			   ,(vkthrow `(vkCreateSemaphore
 					_device
 					&semaphoreInfo
 					nullptr
 					(ref (aref _imageAvailableSemaphores i))))
-				   (== VK_SUCCESS
-				       (vkCreateSemaphore
+			   ,(vkthrow `(vkCreateSemaphore
 					_device
 					&semaphoreInfo
 					nullptr
 					(ref (aref _renderFinishedSemaphores i))))
-				   (== VK_SUCCESS
-				       (vkCreateFence
+			   ,(vkthrow `(vkCreateFence
 					_device
 					&fenceInfo
 					nullptr
-					(ref (aref _inFlightFences i)))))
-			    (throw ("std::runtime_error"
-				    (string "failed to create sync objects."))))))
+					(ref (aref _inFlightFences i))))))
 		       (defun createCommandBuffers ()
 			 (declare (values void))
 			 (_commandBuffers.resize
@@ -1003,13 +997,10 @@ more structs. this function helps to initialize those structs."
 			(declare (values void))
 			"// initialize _surface member"
 			"// must be destroyed before the instance is destroyed"
-			(unless (== VK_SUCCESS
-				    (glfwCreateWindowSurface
+			,(vkthrow `(glfwCreateWindowSurface
 				     _instance _window
 				     nullptr &_surface))
-			  (throw ("std::runtime_error"
-				  (string "failed to create window surface")))
-			  ))
+			)
 		
 		      (defun createSwapChain ()
 			(declare (values void))
@@ -1071,14 +1062,11 @@ more structs. this function helps to initialize those structs."
 				 ;; chain, complex topic
 				 :oldSwapchain VK_NULL_HANDLE
 				 ))
-			  (unless (== VK_SUCCESS
-				      (vkCreateSwapchainKHR
+			  ,(vkthrow `(vkCreateSwapchainKHR
 				       _device
 				       &createInfo
 				       nullptr
 				       &_swapChain))
-			    (throw ("std::runtime_error" (string "failed to create swap chain")))
-			    )
 			  
 			  (do0
 			   "// now get the images, note will be destroyed with the swap chain"
@@ -1119,15 +1107,12 @@ more structs. this function helps to initialize those structs."
 			      :subresourceRange.baseArrayLayer 0
 			      :subresourceRange.layerCount 1
 			      ))
-			  (unless
-			      (== VK_SUCCESS
-				  (vkCreateImageView
+			  ,(vkthrow `(vkCreateImageView
 				   _device
 				   &createInfo
 				   nullptr
 				   (ref (aref _swapChainImageViews i))))
-			    (throw ("std::runtime_error"
-				    (string "failed to create image view.")))))))
+			  )))
 		     (defun createLogicalDevice ()
 		       (declare (values void))
 		       "// initialize members _device and _graphicsQueue"
@@ -1169,10 +1154,8 @@ more structs. this function helps to initialize those structs."
 				  #-nolog (static_cast<uint32_t> (_validationLayers.size))
 				  #+nolog 0
 				  #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
-			   (unless (== VK_SUCCESS
-				       (vkCreateDevice _physicalDevice &createInfo
+			   ,(vkthrow `(vkCreateDevice _physicalDevice &createInfo
 						       nullptr &_device))
-			     (throw ("std::runtime_error" (string "failed to create logical device"))))
 			   (vkGetDeviceQueue _device (indices.graphicsFamily.value)
 					     0 &_graphicsQueue)
 			   #+surface
@@ -1301,17 +1284,15 @@ more structs. this function helps to initialize those structs."
 					  :signalSemaphoreCount 1
 					  :pSignalSemaphores signalSemaphores))
 			   (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame)))
-			   (unless (== VK_SUCCESS
-				       (vkQueueSubmit
+			   ,(vkthrow
+			     `(vkQueueSubmit
 					_graphicsQueue
 					1
 					&submitInfo
 					;VK_NULL_HANDLE ;; fence
 					(aref _inFlightFences _currentFrame)
-					)
-				       )
-			     (throw ("std::runtime_error"
-				     (string "failed to submit draw command buffer."))))
+					))
+			   
 			   ;; submit result for presentation
 			   (let ((swapChains[] (curly _swapChain))
 				 )
