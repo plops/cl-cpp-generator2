@@ -249,6 +249,7 @@ more structs. this function helps to initialize those structs."
 				(_commandBuffers)
 				(_imageAvailableSemaphores)
 				(_renderFinishedSemaphores)
+				(_inFlightFences)
 				(_MAX_FRAMES_IN_FLIGHT 2)
 				(_currentFrame 0))
 		     #+surface (declare 
@@ -273,7 +274,8 @@ more structs. this function helps to initialize those structs."
 				(type "std::vector<VkSemaphore>" _imageAvailableSemaphores
 				      _renderFinishedSemaphores)
 				(type "const int" _MAX_FRAMES_IN_FLIGHT)
-				(type size_t _currentFrame))
+				(type size_t _currentFrame)
+				(type "std::vector<VkFence>" _inFlightFences))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -398,20 +400,27 @@ more structs. this function helps to initialize those structs."
 			(createFramebuffers)
 			(createCommandPool)
 			(createCommandBuffers)
-			(createSemaphores)))
+			(createSyncObjects)))
 		     
 		     #+surface
 		     (do0
 		      (do0
 		       "// shader stuff"
-		       (defun createSemaphores ()
+		       (defun createSyncObjects ()
 			 (declare (values void))
 			 (_imageAvailableSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
 			 (_renderFinishedSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
+			 (_inFlightFences.resize _MAX_FRAMES_IN_FLIGHT)
 			 ,(vk
 			   `(VkSemaphoreCreateInfo
 			     semaphoreInfo
 			     :sType VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO))
+			 ,(vk
+			   `(VkFenceCreateInfo
+			     fenceInfo
+			     :sType VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+			     :flags VK_FENCE_CREATE_SIGNALED_BIT)
+			   )
 			 (dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			  (unless (and
 				   (== VK_SUCCESS
@@ -425,9 +434,15 @@ more structs. this function helps to initialize those structs."
 					_device
 					&semaphoreInfo
 					nullptr
-					(ref (aref _renderFinishedSemaphores i)))))
+					(ref (aref _renderFinishedSemaphores i))))
+				   (== VK_SUCCESS
+				       (vkCreateFence
+					_device
+					&fenceInfo
+					nullptr
+					(ref (aref _inFlightFences i)))))
 			    (throw ("std::runtime_error"
-				    (string "failed to create semaphores."))))))
+				    (string "failed to create sync objects."))))))
 		       (defun createCommandBuffers ()
 			 (declare (values void))
 			 (_commandBuffers.resize
@@ -1081,6 +1096,9 @@ more structs. this function helps to initialize those structs."
 		     #+surface
 		     (defun drawFrame ()
 		       (declare (values void))
+		       ;; wait for previous frame, FIXME _currentFrame-1?
+		       (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
+		       (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame)))
 		       (let ((imageIndex 0))
 			 (declare (type uint32_t imageIndex))
 			 (vkAcquireNextImageKHR
@@ -1113,7 +1131,8 @@ more structs. this function helps to initialize those structs."
 					_graphicsQueue
 					1
 					&submitInfo
-					VK_NULL_HANDLE ;; fence
+					;VK_NULL_HANDLE ;; fence
+					(aref _inFlightFences _currentFrame)
 					)
 				       )
 			     (throw ("std::runtime_error"
@@ -1135,8 +1154,9 @@ more structs. this function helps to initialize those structs."
 				;; we could check if presentation was successful
 				:pResults nullptr))
 			    (vkQueuePresentKHR _presentQueue &presentInfo)
-			    ;; wait in case gpu can't keep up
-			    (vkQueueWaitIdle _presentQueue))
+			    
+			    ;(vkQueueWaitIdle _presentQueue) ;; wait in case gpu can't keep up
+			    )
 			   
 			   ))
 		       (setf _currentFrame
@@ -1155,7 +1175,10 @@ more structs. this function helps to initialize those structs."
 					       nullptr)
 			   (vkDestroySemaphore _device
 					       (aref _imageAvailableSemaphores i)
-					       nullptr)))
+					       nullptr)
+			   (vkDestroyFence _device
+					   (aref _inFlightFences i)
+					   nullptr)))
 			(vkDestroyCommandPool _device _commandPool nullptr)
 			(foreach (b _swapChainFramebuffers)
 				 (vkDestroyFramebuffer _device b nullptr))
