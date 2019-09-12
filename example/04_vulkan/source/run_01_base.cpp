@@ -316,9 +316,11 @@ private:
           "failed to (vkCreateInstance &createInfo nullptr &_instance)");
     };
   }
-  void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                    VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                    VkDeviceMemory &bufferMemory) {
+  std::tuple<VkBuffer, VkDeviceMemory>
+  createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+               VkMemoryPropertyFlags properties) {
+    VkBuffer buffer;
+    VkDeviceMemory bufferMemory;
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
@@ -343,13 +345,14 @@ private:
                                "nullptr &bufferMemory)");
     };
     vkBindBufferMemory(_device, buffer, bufferMemory, 0);
+    return std::make_tuple(buffer, bufferMemory);
   }
   void createVertexBuffer() {
     auto bufferSize = ((sizeof(_vertices[0])) * (_vertices.size()));
-    createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
-                  (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)),
-                 _vertexBuffer, _vertexBufferMemory);
+    auto [stagingBuffer, stagingBufferMemory] =
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
+                      (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
     void *data;
     vkMapMemory(_device, _vertexBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, g_vertices.data(), bufferSize);

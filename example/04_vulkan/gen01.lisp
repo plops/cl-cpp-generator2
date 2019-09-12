@@ -527,58 +527,77 @@ more structs. this function helps to initialize those structs."
 						      nullptr
 						      &_instance))
 			 ))
-		     (defun createBuffer (size usage properties buffer bufferMemory)
-		       (declare (values void)
+		     (defun createBuffer (size usage properties )
+		       (declare (values "std::tuple<VkBuffer,VkDeviceMemory>")
 				(type VkDeviceSize size)
 				(type VkBufferUsageFlags usage)
 				(type VkMemoryPropertyFlags properties)
-				(type VkBuffer& buffer)
-				(type VkDeviceMemory& bufferMemory))
-		       ,(vk
-			 `(VkBufferCreateInfo
-			   bufferInfo
-			   :sType VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
-			   ;; buffer size in bytes
-			   :size size
-			   :usage usage
-			   ;; only graphics queue is using this buffer
-			   :sharingMode VK_SHARING_MODE_EXCLUSIVE
-			   ;; flags could indicate sparse memory (we
-			   ;; don't use that)
-			   :flags 0))
-		       ,(vkthrow `(vkCreateBuffer _device
-						  &bufferInfo
-						  nullptr
-						  &buffer))
-		       (let ((memReq))
-			 (declare (type VkMemoryRequirements memReq))
-			 (vkGetBufferMemoryRequirements _device
-							_vertexBuffer
-							&memReq)
-			 ,(vk
-			   `(VkMemoryAllocateInfo
-			     allocInfo
-			     :sType VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
-			     :allocationSize memReq.size
-			     :memoryTypeIndex (findMemoryType
-					       memReq.memoryTypeBits
-					       properties
-					       )))
-			 ,(vkthrow `(vkAllocateMemory _device
-						      &allocInfo
-						      nullptr
-						      &bufferMemory))
-			 (vkBindBufferMemory _device
-					     buffer
-					     bufferMemory
-					     0)
-			 )
+				)
+		       (let ((buffer)
+			     (bufferMemory)
+			     )
+			 (declare (type VkBuffer  buffer)
+				(type VkDeviceMemory bufferMemory)
+				)
+			,(vk
+			  `(VkBufferCreateInfo
+			    bufferInfo
+			    :sType VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
+			    ;; buffer size in bytes
+			    :size size
+			    :usage usage
+			    ;; only graphics queue is using this buffer
+			    :sharingMode VK_SHARING_MODE_EXCLUSIVE
+			    ;; flags could indicate sparse memory (we
+			    ;; don't use that)
+			    :flags 0))
+			,(vkthrow `(vkCreateBuffer _device
+						   &bufferInfo
+						   nullptr
+						   &buffer))
+			(let ((memReq))
+			  (declare (type VkMemoryRequirements memReq))
+			  (vkGetBufferMemoryRequirements _device
+							 _vertexBuffer
+							 &memReq)
+			  ,(vk
+			    `(VkMemoryAllocateInfo
+			      allocInfo
+			      :sType VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
+			      :allocationSize memReq.size
+			      :memoryTypeIndex (findMemoryType
+						memReq.memoryTypeBits
+						properties
+						)))
+			  ,(vkthrow `(vkAllocateMemory _device
+						       &allocInfo
+						       nullptr
+						       &bufferMemory))
+			  (vkBindBufferMemory _device
+					      buffer
+					      bufferMemory
+					      0)
+			  (return ("std::make_tuple"
+				   buffer
+				   bufferMemory))
+			  ))
 		       )
 		     (defun createVertexBuffer ()
 		       (declare (values void))
 		       (let ((bufferSize (* (sizeof (aref _vertices 0))
-			    (_vertices.size))))
-			(createBuffer
+					    (_vertices.size)))
+			     ((bracket stagingBuffer
+				       stagingBufferMemory)
+			      (createBuffer
+			 bufferSize
+			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+			 (logior
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+			 )))
+			 
+			 
+			#+nil(createBuffer
 			 bufferSize
 			 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 			 (logior
