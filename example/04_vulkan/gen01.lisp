@@ -1069,6 +1069,7 @@ more structs. this function helps to initialize those structs."
 		       (while (not (glfwWindowShouldClose _window))
 			 (glfwPollEvents)
 			 #+surface (drawFrame))
+		       ;; easy way to prevent cpu from submitting too many frames
 		       (vkDeviceWaitIdle _device))
 		     #+surface
 		     (defun drawFrame ()
