@@ -642,9 +642,7 @@ more structs. this function helps to initialize those structs."
 					      0)
 			  (return ("std::make_tuple"
 				   buffer
-				   bufferMemory))
-			  ))
-		       )
+				   bufferMemory)))))
 		     (defun createVertexBuffer ()
 		       (declare (values void))
 		       (let ((bufferSize (* (sizeof (aref g_vertices 0))
@@ -656,12 +654,8 @@ more structs. this function helps to initialize those structs."
 			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
 			 (logior
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-			 )))
-			 
-			 
-			
-			
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+			 			
 			(let ((data))
 			  (declare (type void* data))
 			  (vkMapMemory _device stagingBufferMemory
@@ -679,8 +673,7 @@ more structs. this function helps to initialize those structs."
 			  ;; memory transfer is defined to be
 			  ;; complete as of the next call to
 			  ;; vkQueueSubmit
-			  (vkUnmapMemory _device stagingBufferMemory)
-			  ))
+			  (vkUnmapMemory _device stagingBufferMemory)))
 
 		       (let  (((bracket
 				vertexBuffer
@@ -691,16 +684,16 @@ more structs. this function helps to initialize those structs."
 				 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 				 ;; can be a data transfer destination
 				 VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-				)))
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
 			 (setf _vertexBuffer vertexBuffer
-			       _vertexBufferMemory vertexBufferMemory))
+			       _vertexBufferMemory vertexBufferMemory)
+			 (copyBuffer stagingBuffer
+				     _vertexBuffer
+				     bufferSize))
 		       
 		       (do0
 			(vkDestroyBuffer _device stagingBuffer nullptr)
-			(vkFreeMemory _device stagingBufferMemory nullptr))
-			
-		       )
+			(vkFreeMemory _device stagingBufferMemory nullptr)))
 		     (defun copyBuffer (srcBuffer
 					dstBuffer
 					size)

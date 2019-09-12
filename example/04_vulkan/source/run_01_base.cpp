@@ -364,6 +364,7 @@ private:
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _vertexBuffer = vertexBuffer;
     _vertexBufferMemory = vertexBufferMemory;
+    copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
   }
