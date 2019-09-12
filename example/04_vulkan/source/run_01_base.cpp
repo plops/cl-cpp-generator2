@@ -673,9 +673,13 @@ private:
     vkDeviceWaitIdle(_device);
   }
   void drawFrame() {
-    vkWaitForFences(_device, 1, &(_inFlightFences[_currentFrame]), VK_TRUE,
+    int oldFrame = ((_currentFrame) - (1));
+    if ((-1) == (oldFrame)) {
+      oldFrame = ((_MAX_FRAMES_IN_FLIGHT) - (1));
+    }
+    vkWaitForFences(_device, 1, &(_inFlightFences[oldFrame]), VK_TRUE,
                     UINT64_MAX);
-    vkResetFences(_device, 1, &(_inFlightFences[_currentFrame]));
+    vkResetFences(_device, 1, &(_inFlightFences[oldFrame]));
     uint32_t imageIndex = 0;
     vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX,
                           _imageAvailableSemaphores[_currentFrame],
