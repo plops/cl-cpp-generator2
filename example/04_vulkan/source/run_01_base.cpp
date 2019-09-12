@@ -232,6 +232,15 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  void recreateSwapChain() {
+    vkDeviceWaitIdle(_device);
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createGraphicsPipeline();
+    createFramebuffers();
+    createCommandBuffers();
+  }
   // shader stuff
   void createSyncObjects() {
     _imageAvailableSemaphores.resize(_MAX_FRAMES_IN_FLIGHT);
@@ -709,16 +718,13 @@ private:
     vkQueuePresentKHR(_presentQueue, &presentInfo);
     _currentFrame = ((1) + (_currentFrame)) % _MAX_FRAMES_IN_FLIGHT;
   }
-  void cleanup() {
-    for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
-      vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
-      vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
-      vkDestroyFence(_device, _inFlightFences[i], nullptr);
-    }
-    vkDestroyCommandPool(_device, _commandPool, nullptr);
+  void cleanupSwapChain() {
     for (auto &b : _swapChainFramebuffers) {
       vkDestroyFramebuffer(_device, b, nullptr);
     };
+    vkFreeCommandBuffers(_device, _commandPool,
+                         static_cast<uint32_t>(_commandBuffers.size()),
+                         _commandBuffers.data());
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
     vkDestroyRenderPass(_device, _renderPass, nullptr);
@@ -726,6 +732,15 @@ private:
       vkDestroyImageView(_device, view, nullptr);
     };
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+  }
+  void cleanup() {
+    cleanupSwapChain();
+    for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
+      vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
+      vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
+      vkDestroyFence(_device, _inFlightFences[i], nullptr);
+    }
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
