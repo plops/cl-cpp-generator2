@@ -167,9 +167,12 @@ more structs. this function helps to initialize those structs."
 	    (defstruct0 QueueFamilyIndices 
 		(graphicsFamily "std::optional<uint32_t>")
 	      #+surface (presentFamily "std::optional<uint32_t>")
-	      #+nil(defun isComplete ()
-		     (declare (values bool))
-		     (return (graphicsFamily.has_value))))
+	      ("isComplete()" bool))
+	    (defun "QueueFamilyIndices::isComplete" ()
+	      (declare (values bool))
+	      (return (and
+		       (graphicsFamily.has_value)
+		       #+surface (presentFamily.has_value))))
 
 	    #+surface
 	    (do0
