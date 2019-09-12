@@ -185,10 +185,11 @@ more structs. this function helps to initialize those structs."
 			(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
 			  (return mode)))
 	       (return VK_PRESENT_MODE_FIFO_KHR))
-	     (defun chooseSwapExtent (capabilities)
+	     (defun chooseSwapExtent (capabilities _window)
 	       (declare (values VkExtent2D)
 			(type "const VkSurfaceCapabilitiesKHR&"
-			      capabilities))
+			      capabilities)
+			(type GLFWwindow* _window))
 	       (if (!= UINT32_MAX capabilities.currentExtent.width)
 		   (do0
 		    (return capabilities.currentExtent))
@@ -874,7 +875,8 @@ more structs. this function helps to initialize those structs."
 				swapChainSupport.presentModes))
 			      (extent
 			       (chooseSwapExtent
-				swapChainSupport.capabilities))
+				swapChainSupport.capabilities
+				_window))
 			      (imageCount
 			       (+ swapChainSupport.capabilities.minImageCount 1))
 			      (indices (findQueueFamilies _physicalDevice))
@@ -1112,27 +1114,27 @@ more structs. this function helps to initialize those structs."
 		     #+surface
 		     (defun drawFrame ()
 		       (declare (values void))
-		       ;; wait for previous frame, FIXME _currentFrame-1?
-		       #+nil (let ((oldFrame (- _currentFrame 1)))
-			 (declare (type int oldFrame))
-			 (if (== -1 oldFrame)
-			     (setf oldFrame (- _MAX_FRAMES_IN_FLIGHT 1)))
-			 (do0
-			  (vkWaitForFences _device 1 (ref (aref _inFlightFences oldFrame))  VK_TRUE UINT64_MAX)
-			  (vkResetFences _device 1 (ref (aref _inFlightFences oldFrame)))))
+		       
 		       (do0
 			  (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
-			  (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame))))
-		       (let ((imageIndex 0))
-			 (declare (type uint32_t imageIndex))
-			 (vkAcquireNextImageKHR
+			  )
+		       (let ((imageIndex 0)
+			     (result (vkAcquireNextImageKHR
 			  _device
 			  _swapChain
 			  UINT64_MAX ;; disable timeout for image 
 			  (aref _imageAvailableSemaphores _currentFrame)
 			  VK_NULL_HANDLE
-			  &imageIndex)
+			  &imageIndex)))
+			 (declare (type uint32_t imageIndex))
 			 
+			 (when (== VK_ERROR_OUT_OF_DATE_KHR result)
+			   (recreateSwapChain)
+			   (return))
+			 (unless (or (== VK_SUCCESS result)
+				     (== VK_SUBOPTIMAL_KHR result))
+			   (throw ("std::runtime_error"
+				   (string "failed to acquire swap chain image."))))
 			 (let ((waitSemaphores[] (curly (aref _imageAvailableSemaphores _currentFrame)))
 			       (signalSemaphores[] (curly (aref _renderFinishedSemaphores _currentFrame)))
 			       (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
@@ -1150,6 +1152,7 @@ more structs. this function helps to initialize those structs."
 					  :pCommandBuffers (ref (aref _commandBuffers imageIndex))
 					  :signalSemaphoreCount 1
 					  :pSignalSemaphores signalSemaphores))
+			   (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame)))
 			   (unless (== VK_SUCCESS
 				       (vkQueueSubmit
 					_graphicsQueue
@@ -1177,7 +1180,17 @@ more structs. this function helps to initialize those structs."
 				:pImageIndices &imageIndex 
 				;; we could check if presentation was successful
 				:pResults nullptr))
-			    (vkQueuePresentKHR _presentQueue &presentInfo)
+			    (progn
+			     (let ((result (vkQueuePresentKHR _presentQueue &presentInfo)))
+			       (if (or (== VK_SUBOPTIMAL_KHR result)
+				       (== VK_ERROR_OUT_OF_DATE_KHR result))
+				   (do0
+				    (recreateSwapChain))
+				   (unless (== VK_SUCCESS result)
+				     (throw ("std::runtime_error"
+					     (string "fialed to present swap chain image.")))))
+			      
+			       ))
 			    
 			    ;(vkQueueWaitIdle _presentQueue) 
 			    )

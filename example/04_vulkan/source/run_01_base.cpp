@@ -89,7 +89,8 @@ chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &modes) {
   };
   return VK_PRESENT_MODE_FIFO_KHR;
 }
-VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities,
+                            GLFWwindow *_window) {
   if ((UINT32_MAX) != (capabilities.currentExtent.width)) {
     return capabilities.currentExtent;
   } else {
@@ -525,7 +526,7 @@ private:
     auto swapChainSupport = querySwapChainSupport(_physicalDevice, _surface);
     auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    auto extent = chooseSwapExtent(swapChainSupport.capabilities);
+    auto extent = chooseSwapExtent(swapChainSupport.capabilities, _window);
     auto imageCount = ((swapChainSupport.capabilities.minImageCount) + (1));
     auto indices = findQueueFamilies(_physicalDevice);
     auto queueFamilyIndices = {indices.graphicsFamily.value(),
@@ -687,11 +688,17 @@ private:
   void drawFrame() {
     vkWaitForFences(_device, 1, &(_inFlightFences[_currentFrame]), VK_TRUE,
                     UINT64_MAX);
-    vkResetFences(_device, 1, &(_inFlightFences[_currentFrame]));
     uint32_t imageIndex = 0;
-    vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX,
-                          _imageAvailableSemaphores[_currentFrame],
-                          VK_NULL_HANDLE, &imageIndex);
+    auto result = vkAcquireNextImageKHR(
+        _device, _swapChain, UINT64_MAX,
+        _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    if ((VK_ERROR_OUT_OF_DATE_KHR) == (result)) {
+      recreateSwapChain();
+      return;
+    };
+    if (!((((VK_SUCCESS) == (result)) || ((VK_SUBOPTIMAL_KHR) == (result))))) {
+      throw std::runtime_error("failed to acquire swap chain image.");
+    };
     VkSemaphore waitSemaphores[] = {_imageAvailableSemaphores[_currentFrame]};
     VkSemaphore signalSemaphores[] = {_renderFinishedSemaphores[_currentFrame]};
     VkPipelineStageFlags waitStages[] = {
@@ -705,6 +712,7 @@ private:
     submitInfo.pCommandBuffers = &(_commandBuffers[imageIndex]);
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
+    vkResetFences(_device, 1, &(_inFlightFences[_currentFrame]));
     if (!((VK_SUCCESS) == (vkQueueSubmit(_graphicsQueue, 1, &submitInfo,
                                          _inFlightFences[_currentFrame])))) {
       throw std::runtime_error("failed to submit draw command buffer.");
@@ -718,7 +726,17 @@ private:
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
-    vkQueuePresentKHR(_presentQueue, &presentInfo);
+    {
+      auto result = vkQueuePresentKHR(_presentQueue, &presentInfo);
+      if ((((VK_SUBOPTIMAL_KHR) == (result)) ||
+           ((VK_ERROR_OUT_OF_DATE_KHR) == (result)))) {
+        recreateSwapChain();
+      } else {
+        if (!((VK_SUCCESS) == (result))) {
+          throw std::runtime_error("fialed to present swap chain image.");
+        };
+      };
+    };
     _currentFrame = ((1) + (_currentFrame)) % _MAX_FRAMES_IN_FLIGHT;
   }
   void cleanupSwapChain() {
