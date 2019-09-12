@@ -141,7 +141,7 @@ more structs. this function helps to initialize those structs."
 		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
 	      (return bindingDescription))
 	    (let ((g_vertices (curly
-			       (curly (curly  .0s0 -.5s0) (curly 1s0 0s0 0s0))
+			       (curly (curly  .0s0 -.5s0) (curly 1s0 1s0 1s0))
 			       (curly (curly  .5s0  .5s0) (curly 0s0 1s0 0s0))
 			       (curly (curly -.5s0  .5s0) (curly 0s0 0s0 1s0)))))
 	      (declare (type "std::vector<Vertex>" g_vertices)))

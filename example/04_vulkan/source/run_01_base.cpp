@@ -53,7 +53,7 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
   return bindingDescription;
 }
 std::vector<Vertex> g_vertices = {
-    {{(0.0e+0), (-5.e-1)}, {(1.e+0), (0.0e+0), (0.0e+0)}},
+    {{(0.0e+0), (-5.e-1)}, {(1.e+0), (1.e+0), (1.e+0)}},
     {{(5.e-1), (5.e-1)}, {(0.0e+0), (1.e+0), (0.0e+0)}},
     {{(-5.e-1), (5.e-1)}, {(0.0e+0), (0.0e+0), (1.e+0)}}};
 std::array<VkVertexInputAttributeDescription, 2>
