@@ -9,6 +9,11 @@
 (setf *features* (set-difference *features* '(:nolog)))
 
 (progn
+  (defun vkthrow (cmd)
+			`(unless (== VK_SUCCESS
+				    ,cmd)
+			   (throw ("std::runtime_error"
+				   (string ,(format nil "failed to ~a" cmd))))))
   (defun set-members (params)
     "setf on multiple member variables of an instance"
     (destructuring-bind (instance &rest args) params
@@ -33,7 +38,7 @@ more structs. this function helps to initialize those structs."
   (let* ((vertex-code
 	  `(do0
 	    "#version 450"
-	    "extension GL_ARB_separate_shader_objects : enable"
+	    "#extension GL_ARB_separate_shader_objects : enable"
 	    " "
 	    "layout(location = 0) in vec2 inPosition;" ;; if inPosition was dvec3 than next location would need to be 2
 	    "layout(location = 1) in vec3 inColor;"
@@ -300,7 +305,8 @@ more structs. this function helps to initialize those structs."
 				(_inFlightFences)
 				(_MAX_FRAMES_IN_FLIGHT 2)
 				(_currentFrame 0)
-				(_framebufferResized false))
+				(_framebufferResized false)
+				(_vertexBuffer))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -325,7 +331,8 @@ more structs. this function helps to initialize those structs."
 				(type "const int" _MAX_FRAMES_IN_FLIGHT)
 				(type size_t _currentFrame)
 				(type "std::vector<VkFence>" _inFlightFences)
-				(type bool _framebufferResized))
+				(type bool _framebufferResized)
+				(type VkBuffer _vertexBuffer))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -444,6 +451,26 @@ more structs. this function helps to initialize those structs."
 						       &_instance))
 			   (throw ("std::runtime_error"
 				   (string "failed to create instance"))))))
+		     (defun createVertexBuffer ()
+		       (declare (values void))
+		       ,(vk
+			 `(VkBufferCreateInfo
+			   bufferInfo
+			   :sType VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
+			   ;; buffer size in bytes
+			   :size (* (sizeof (aref g_vertices 0))
+				    (g_vertices.size))
+			   :usage VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+			   ;; only graphics queue is using this buffer
+			   :sharingMode VK_SHARING_MODE_EXCLUSIVE
+			   ;; flags could indicate sparse memory (we
+			   ;; don't use that)
+			   :flags 0))
+		       ,(vkthrow `(vkCreateBuffer _device
+						   &bufferInfo
+						   nullptr
+						   &_vertexBuffer))
+		       )
 		     (defun initVulkan ()
 		       (declare (values void))
 		       (createInstance)
@@ -460,6 +487,7 @@ more structs. this function helps to initialize those structs."
 			(createGraphicsPipeline)
 			(createFramebuffers)
 			(createCommandPool)
+			(createVertexBuffer)
 			(createCommandBuffers)
 			(createSyncObjects)))
 		     

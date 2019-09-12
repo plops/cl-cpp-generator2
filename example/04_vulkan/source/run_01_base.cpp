@@ -178,6 +178,7 @@ private:
   const int _MAX_FRAMES_IN_FLIGHT = 2;
   size_t _currentFrame = 0;
   bool _framebufferResized = false;
+  VkBuffer _vertexBuffer;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
@@ -263,6 +264,19 @@ private:
       throw std::runtime_error("failed to create instance");
     };
   }
+  void createVertexBuffer() {
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = ((sizeof(g_vertices[0])) * (g_vertices.size()));
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    bufferInfo.flags = 0;
+    if (!((VK_SUCCESS) ==
+          (vkCreateBuffer(_device, &bufferInfo, nullptr, &_vertexBuffer)))) {
+      throw std::runtime_error("failed to (vkCreateBuffer _device &bufferInfo "
+                               "nullptr &_vertexBuffer)");
+    };
+  }
   void initVulkan() {
     createInstance();
     // create window surface because it can influence physical device selection
@@ -275,6 +289,7 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createVertexBuffer();
     createCommandBuffers();
     createSyncObjects();
   }
