@@ -396,6 +396,9 @@ private:
                            VK_SUBPASS_CONTENTS_INLINE);
       vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
                         _graphicsPipeline);
+      VkBuffer vertexBuffers[] = {_vertexBuffer};
+      VkDeviceSize offsets[] = {0};
+      vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
       vkCmdDraw(_commandBuffers[i], 3, 1, 0, 0);
       vkCmdEndRenderPass(_commandBuffers[i]);
       if (!((VK_SUCCESS) == (vkEndCommandBuffer(_commandBuffers[i])))) {

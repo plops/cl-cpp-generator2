@@ -668,6 +668,19 @@ more structs. this function helps to initialize those structs."
 			   (vkCmdBindPipeline
 			    (aref _commandBuffers i)
 			    VK_PIPELINE_BIND_POINT_GRAPHICS _graphicsPipeline)
+			   (let ((vertexBuffers[] (curly _vertexBuffer))
+				 (offsets[] (curly 0))
+				 )
+			     (declare (type VkBuffer vertexBuffers[])
+				      (type VkDeviceSize offsets[]))
+			     (vkCmdBindVertexBuffers
+			      (aref _commandBuffers i)
+			      0
+			      1
+			      vertexBuffers
+			      offsets
+			      )
+			     )
 			   ;; draw the triangle
 			   (vkCmdDraw (aref _commandBuffers i)
 				      3 ;; vertex count
