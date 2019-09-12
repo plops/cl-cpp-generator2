@@ -22,8 +22,7 @@
       `(setf ,@(loop for i from 0 below (length args) by 2 appending
 		    (let ((keyword (elt args i))
 			  (value (elt args (+ i 1))))
-		      `((dot ,instance ,keyword) ,value)))))
-    )
+		      `((dot ,instance ,keyword) ,value))))))
   (defun vk (params)
     "many vulkan functions get their arguments in the form of one or
 more structs. this function helps to initialize those structs."
@@ -528,16 +527,20 @@ more structs. this function helps to initialize those structs."
 						      nullptr
 						      &_instance))
 			 ))
-		     (defun createVertexBuffer ()
-		       (declare (values void))
+		     (defun createBuffer (size usage properties buffer bufferMemory)
+		       (declare (values void)
+				(type VkDeviceSize size)
+				(type VkBufferUsageFlags usage)
+				(type VkMemoryPropertyFlags properties)
+				(type VkBuffer& buffer)
+				(type VkDeviceMemory& bufferMemory))
 		       ,(vk
 			 `(VkBufferCreateInfo
 			   bufferInfo
 			   :sType VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
 			   ;; buffer size in bytes
-			   :size (* (sizeof (aref g_vertices 0))
-				    (g_vertices.size))
-			   :usage VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+			   :size size
+			   :usage usage
 			   ;; only graphics queue is using this buffer
 			   :sharingMode VK_SHARING_MODE_EXCLUSIVE
 			   ;; flags could indicate sparse memory (we
@@ -546,7 +549,7 @@ more structs. this function helps to initialize those structs."
 		       ,(vkthrow `(vkCreateBuffer _device
 						  &bufferInfo
 						  nullptr
-						  &_vertexBuffer))
+						  &buffer))
 		       (let ((memReq))
 			 (declare (type VkMemoryRequirements memReq))
 			 (vkGetBufferMemoryRequirements _device
@@ -559,34 +562,49 @@ more structs. this function helps to initialize those structs."
 			     :allocationSize memReq.size
 			     :memoryTypeIndex (findMemoryType
 					       memReq.memoryTypeBits
-					       (logior
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+					       properties
+					       )))
 			 ,(vkthrow `(vkAllocateMemory _device
 						      &allocInfo
 						      nullptr
-						      &_vertexBufferMemory))
+						      &bufferMemory))
 			 (vkBindBufferMemory _device
-					     _vertexBuffer
-					     _vertexBufferMemory 0)
-			 (let ((data))
-			   (declare (type void* data))
-			   (vkMapMemory _device _vertexBufferMemory
-					0		;; offset
-					bufferInfo.size ;; size
-					0		 ;; flags
-					&data)
-			   (memcpy data (g_vertices.data)
-				   bufferInfo.size)
-			   ;; without coherent bit, the changed memory
-			   ;; might not immediatly be visible.
-			   ;; alternatively: vkFlushMappedMemoryRanges
-			   ;; or vkInvalidateMappedMemoryRanges; the
-			   ;; memory transfer is defined to be
-			   ;; complete as of the next call to
-			   ;; vkQueueSubmit
-			   (vkUnmapMemory _device _vertexBufferMemory)
-			   ))
+					     buffer
+					     bufferMemory
+					     0)
+			 )
+		       )
+		     (defun createVertexBuffer ()
+		       (declare (values void))
+		       (let ((bufferSize (* (sizeof (aref _vertices 0))
+			    (_vertices.size))))
+			(createBuffer
+			 bufferSize
+			 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+			 (logior
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+			 _vertexBuffer
+			 _vertexBufferMemory)
+			
+			(let ((data))
+			  (declare (type void* data))
+			  (vkMapMemory _device _vertexBufferMemory
+				       0		;; offset
+				       bufferSize ;; size
+				       0		 ;; flags
+				       &data)
+			  (memcpy data (g_vertices.data)
+				  bufferSize)
+			  ;; without coherent bit, the changed memory
+			  ;; might not immediatly be visible.
+			  ;; alternatively: vkFlushMappedMemoryRanges
+			  ;; or vkInvalidateMappedMemoryRanges; the
+			  ;; memory transfer is defined to be
+			  ;; complete as of the next call to
+			  ;; vkQueueSubmit
+			  (vkUnmapMemory _device _vertexBufferMemory)
+			  ))
 		       )
 		     (defun findMemoryType (typeFilter properties)
 		       (declare (values uint32_t)
