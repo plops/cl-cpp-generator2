@@ -722,11 +722,32 @@ more structs. this function helps to initialize those structs."
 				    )
 				  :plural t
 				  )
-			 (do0
+			 (progn
 			  ,(vkcall `(begin
 				     command-buffer
 				     (:flags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
-				     (commandBuffer &info))))
+				     (commandBuffer &info)))
+			  ,(vk
+			    `(VkBufferCopy
+			      copyRegion
+			      :srcOffset 0
+			      :dstOffset 0
+			      :size size))
+			  (vkCmdCopyBuffer commandBuffer srcBuffer
+					   dstBuffer 1 &copyRegion)
+			  (vkEndCommandBuffer commandBuffer)
+			  ,(vk
+			    `(VkSubmitInfo
+			      submitInfo
+			      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+			      :commandBufferCount 1
+			      :pCommandBuffers &commandBuffer))
+			  (vkQueueSubmit _graphicsQueue
+					 1
+					 &submitInfo
+					 VK_NULL_HANDLE)
+			  (vkQueueWaitIdle _graphicsQueue))
+			 
 			 
 			 
 			 (vkFreeCommandBuffers

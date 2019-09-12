@@ -378,10 +378,24 @@ private:
       vkAllocateCommandBuffers(_device, &info, &commandBuffer);
     };
     {
-      VkCommandBufferBeginInfo info = {};
-      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-      vkBeginCommandBuffer(commandBuffer, &info);
+      {
+        VkCommandBufferBeginInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(commandBuffer, &info);
+      };
+      VkBufferCopy copyRegion = {};
+      copyRegion.srcOffset = 0;
+      copyRegion.dstOffset = 0;
+      copyRegion.size = size;
+      vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+      vkEndCommandBuffer(commandBuffer);
+      VkSubmitInfo submitInfo = {};
+      submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+      submitInfo.commandBufferCount = 1;
+      submitInfo.pCommandBuffers = &commandBuffer;
+      vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+      vkQueueWaitIdle(_graphicsQueue);
     };
     vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
   }
