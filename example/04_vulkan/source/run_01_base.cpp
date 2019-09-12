@@ -156,21 +156,6 @@ bool checkDeviceExtensionSupport(
   };
   return requiredExtensions.empty();
 }
-bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR _surface,
-                      const std::vector<const char *> _deviceExtensions) {
-  auto extensionsSupported =
-      checkDeviceExtensionSupport(device, _deviceExtensions);
-  bool swapChainAdequate = false;
-  if (extensionsSupported) {
-    auto swapChainSupport = querySwapChainSupport(device, _surface);
-    swapChainAdequate = ((!(swapChainSupport.formats.empty())) &&
-                         (!(swapChainSupport.presentModes.empty())));
-  };
-  QueueFamilyIndices indices = findQueueFamilies(device, _surface);
-  return ((indices.graphicsFamily.has_value()) &&
-          (((indices.presentFamily.has_value()) && (extensionsSupported) &&
-            (swapChainAdequate))));
-}
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device,
                                      VkSurfaceKHR _surface) {
   QueueFamilyIndices indices;
@@ -193,6 +178,21 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device,
     (i)++;
   };
   return indices;
+}
+bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR _surface,
+                      const std::vector<const char *> _deviceExtensions) {
+  auto extensionsSupported =
+      checkDeviceExtensionSupport(device, _deviceExtensions);
+  bool swapChainAdequate = false;
+  if (extensionsSupported) {
+    auto swapChainSupport = querySwapChainSupport(device, _surface);
+    swapChainAdequate = ((!(swapChainSupport.formats.empty())) &&
+                         (!(swapChainSupport.presentModes.empty())));
+  };
+  QueueFamilyIndices indices = findQueueFamilies(device, _surface);
+  return ((indices.graphicsFamily.has_value()) &&
+          (((indices.presentFamily.has_value()) && (extensionsSupported) &&
+            (swapChainAdequate))));
 };
 class HelloTriangleApplication {
 public:

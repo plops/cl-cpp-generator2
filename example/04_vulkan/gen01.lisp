@@ -293,28 +293,8 @@ more structs. this function helps to initialize those structs."
 				      (requiredExtensions.erase
 				       extension.extensionName))
 			     (return (requiredExtensions.empty))))))
-	     (defun isDeviceSuitable ( device _surface  _deviceExtensions)
-		       (declare (values bool)
-				(type VkPhysicalDevice device)
-				(type VkSurfaceKHR _surface)
-				(type "const std::vector<const char*>" _deviceExtensions))
-		       #+surface
-		       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
-			     (swapChainAdequate false))
-			 (declare (type bool swapChainAdequate))
-			 (when extensionsSupported
-			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
-			     (setf swapChainAdequate
-				   (and (not (swapChainSupport.formats.empty))
-					(not (swapChainSupport.presentModes.empty)))))))
-		       (let ((indices (findQueueFamilies device _surface)))
-			 (declare (type QueueFamilyIndices indices))
-			 (return (and (indices.graphicsFamily.has_value)
-				      #+surface (and (indices.presentFamily.has_value)
-						     extensionsSupported
-						     swapChainAdequate)))
-			 #+nil (return (indices.isComplete))))
-	    (defun findQueueFamilies (device _surface)
+	     
+	    (defun findQueueFamilies (device _surface )
 		       (declare (type VkPhysicalDevice device)
 				(type VkSurfaceKHR _surface)
 				(values QueueFamilyIndices))
@@ -347,7 +327,29 @@ more structs. this function helps to initialize those structs."
 					   presentSupport)
 				  (setf indices.presentFamily i)))
 			      (incf i))))
-			 (return indices))) )
+			 (return indices)))
+
+	    (defun isDeviceSuitable ( device _surface  _deviceExtensions)
+		       (declare (values bool)
+				(type VkPhysicalDevice device)
+				(type VkSurfaceKHR _surface)
+				(type "const std::vector<const char*>" _deviceExtensions))
+		       #+surface
+		       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
+			     (swapChainAdequate false))
+			 (declare (type bool swapChainAdequate))
+			 (when extensionsSupported
+			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
+			     (setf swapChainAdequate
+				   (and (not (swapChainSupport.formats.empty))
+					(not (swapChainSupport.presentModes.empty)))))))
+		       (let ((indices (findQueueFamilies device _surface)))
+			 (declare (type QueueFamilyIndices indices))
+			 (return (and (indices.graphicsFamily.has_value)
+				      #+surface (and (indices.presentFamily.has_value)
+						     extensionsSupported
+						     swapChainAdequate)))
+			 #+nil (return (indices.isComplete)))))
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
