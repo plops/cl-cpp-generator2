@@ -9,6 +9,14 @@
 (setf *features* (set-difference *features* '(:nolog)))
 
 (progn
+  (defun set-members (params)
+    "setf on multiple member variables of an instance"
+    (destructuring-bind (instance &rest args) params
+      `(setf ,@(loop for i from 0 below (length args) by 2 appending
+		    (let ((keyword (elt args i))
+			  (value (elt args (+ i 1))))
+		      `((dot ,instance ,keyword) ,value)))))
+    )
   (defun vk (params)
     "many vulkan functions get their arguments in the form of one or
 more structs. this function helps to initialize those structs."
@@ -25,29 +33,20 @@ more structs. this function helps to initialize those structs."
   (let* ((vertex-code
 	  `(do0
 	    "#version 450"
+	    "extension GL_ARB_separate_shader_objects : enable"
 	    " "
+	    "layout(location = 0) in vec2 inPosition;" ;; if inPosition was dvec3 than next location would need to be 2
+	    "layout(location = 1) in vec3 inColor;"
 	    "layout(location = 0) out vec3 fragColor;"
 	    
-	    (let (("positions[]" ("vec2[]"
-				(vec2 .0 -.5)
-				(vec2 .5 .5)
-				(vec2 -.5 .5)))
-		  ("colors[]" ("vec3[]"
-			     (vec3 1.  .0 .0)
-			     (vec3 .0 1.  .0 )
-			     (vec3 .0 .0 1.))))
-	      (declare (type vec2 "positions[]")
-		       (type vec3 "colors[]"))
-	      
-	      (defun main ()
-		(declare (values void))
-		(setf gl_Position
-		      (vec4 (aref positions gl_VertexIndex)
-			    .0
-			    1.)
-		      fragColor
-		      (aref colors gl_VertexIndex)))
-	      "// vertex shader end ")))
+	    (defun main ()
+	      (declare (values void))
+	      (setf gl_Position
+		    (vec4 inPosition
+			  .0
+			  1.)
+		    fragColor inColor))
+	    "// vertex shader end "))
 	 (frag-code
 	  `(do0
 	    "#version 450"
@@ -78,7 +77,8 @@ more structs. this function helps to initialize those structs."
 	     "#define GLM_FORCE_DEPTH_ZERO_TO_ONE"
 	     " "
 	     (include <glm/vec4.hpp>
-		      <glm/mat4x4.hpp>)
+		      <glm/mat4x4.hpp>
+		      <glm/glm.hpp>)
 	     " "
 	     )
 	    
@@ -115,6 +115,48 @@ more structs. this function helps to initialize those structs."
 			      fileSize)
 		   (file.close)
 		   (return buffer)))))
+
+	    (defstruct0 Vertex
+		(pos "glm::vec2")
+	      (color "glm::vec3")
+	      ;; here static means the function has no receiver object
+	      ;; outside of the class static would limit scope to only
+	      ;; this file (which i don't necessarily want)
+	      ("getBindingDescription()" "static VkVertexInputBindingDescription")
+	      ("getAttributeDescriptions()"
+	       "static std::array<VkVertexInputAttributeDescription,2>"))
+	    (defun "Vertex::getBindingDescription" ()
+	      (declare (values "VkVertexInputBindingDescription"))
+	      ,(vk
+		`(vkVertexInputBindingDescription
+		  bindingDescription
+		  :binding 0
+		  :stride (sizeof Vertex)
+		  ;; move to next data after each vertex
+		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
+	      (return bindingDescription))
+	    (let ((g_vertices (curly
+			       (curly (curly  .0s0 -.5s0) (curly 1s0 0s0 0s0))
+			       (curly (curly  .5s0  .5s0) (curly 0s0 1s0 0s0))
+			       (curly (curly -.5s0  .5s0) (curly 0s0 0s0 1s0)))))
+	      (declare (type "std::vector<Vertex>" g_vertices)))
+	    (defun "Vertex::getAttributeDescriptions" ()
+	      (declare (values "std::array<VkVertexInputAttributeDescription,2>"))
+	      (let ((attributeDescriptions (curly)))
+		(declare (type "std::array<VkVertexInputAttributeDescription,2>"
+			       attributeDescriptions))
+		,(set-members `((aref attributeDescriptions 0)
+			       :binding 0
+			       :location 0
+			       :format VK_FORMAT_R32G32_SFLOAT
+			       :offset (offsetof Vertex pos)))
+		,(set-members `((aref attributeDescriptions 1)
+			       :binding 0
+			       :location 1
+			       :format VK_FORMAT_R32G32B32_SFLOAT
+			       :offset (offsetof Vertex color)))
+		(return attributeDescriptions)))
+	    
 	    (defstruct0 QueueFamilyIndices 
 		(graphicsFamily "std::optional<uint32_t>")
 	      #+surface (presentFamily "std::optional<uint32_t>")

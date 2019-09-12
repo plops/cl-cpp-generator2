@@ -9,6 +9,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 ;
@@ -36,6 +37,38 @@ std::vector<char> readFile(const std::string &filename) {
   file.close();
   return buffer;
 };
+struct Vertex {
+  glm::vec2 pos;
+  glm::vec3 color;
+  static VkVertexInputBindingDescription getBindingDescription();
+  static std::array<VkVertexInputAttributeDescription, 2>
+  getAttributeDescriptions();
+};
+typedef struct Vertex Vertex;
+VkVertexInputBindingDescription Vertex::getBindingDescription() {
+  vkVertexInputBindingDescription bindingDescription = {};
+  bindingDescription.binding = 0;
+  bindingDescription.stride = sizeof(Vertex);
+  bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  return bindingDescription;
+}
+std::vector<Vertex> g_vertices = {
+    {{(0.0e+0), (-5.e-1)}, {(1.e+0), (0.0e+0), (0.0e+0)}},
+    {{(5.e-1), (5.e-1)}, {(0.0e+0), (1.e+0), (0.0e+0)}},
+    {{(-5.e-1), (5.e-1)}, {(0.0e+0), (0.0e+0), (1.e+0)}}};
+std::array<VkVertexInputAttributeDescription, 2>
+Vertex::getAttributeDescriptions() {
+  std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+  attributeDescriptions[0].binding = 0;
+  attributeDescriptions[0].location = 0;
+  attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+  attributeDescriptions[0].offset = offsetof(Vertex, pos);
+  attributeDescriptions[1].binding = 0;
+  attributeDescriptions[1].location = 1;
+  attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+  attributeDescriptions[1].offset = offsetof(Vertex, color);
+  return attributeDescriptions;
+}
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
   std::optional<uint32_t> presentFamily;
