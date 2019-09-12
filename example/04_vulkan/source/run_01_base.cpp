@@ -30,6 +30,15 @@
 #include <stdexcept>
 // code to load binary shader from file
 #include <fstream>
+typedef struct SwapChainSupportDetails SwapChainSupportDetails;
+typedef struct QueueFamilyIndices QueueFamilyIndices;
+std::vector<char> readFile(const std::string &);
+SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice, VkSurfaceKHR);
+VkSurfaceFormatKHR
+chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &);
+VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &);
+VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &, GLFWwindow *);
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice, VkSurfaceKHR);
 std::vector<char> readFile(const std::string &filename) {
   auto file = std::ifstream(filename, ((std::ios::ate) | (std::ios::binary)));
   if (!(file.is_open())) {
@@ -872,13 +881,14 @@ private:
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
     {
-      auto result = vkQueuePresentKHR(_presentQueue, &presentInfo);
-      if ((((VK_SUBOPTIMAL_KHR) == (result)) ||
-           ((VK_ERROR_OUT_OF_DATE_KHR) == (result)) || (_framebufferResized))) {
+      auto result2 = vkQueuePresentKHR(_presentQueue, &presentInfo);
+      if ((((VK_SUBOPTIMAL_KHR) == (result2)) ||
+           ((VK_ERROR_OUT_OF_DATE_KHR) == (result2)) ||
+           (_framebufferResized))) {
         _framebufferResized = false;
         recreateSwapChain();
       } else {
-        if (!((VK_SUCCESS) == (result))) {
+        if (!((VK_SUCCESS) == (result2))) {
           throw std::runtime_error("fialed to present swap chain image.");
         };
       };

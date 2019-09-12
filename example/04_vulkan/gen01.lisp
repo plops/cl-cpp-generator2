@@ -102,11 +102,23 @@ more structs. this function helps to initialize those structs."
 	     ;; UINT32_MAX:
 	     <cstdint> 
 	     <algorithm>
-	     )
-
+	     ) 
 	    (do0
 	     "// code to load binary shader from file"
 	     (include <fstream>)
+
+	     (do0
+	      "typedef struct SwapChainSupportDetails SwapChainSupportDetails;"
+	      "typedef struct QueueFamilyIndices QueueFamilyIndices;"
+		"std::vector<char> readFile(const std::string&);"
+		"SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice, VkSurfaceKHR);"
+		"VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>&);"
+		"VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>&);"
+		"VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR&, GLFWwindow*);"
+		"QueueFamilyIndices findQueueFamilies(VkPhysicalDevice, VkSurfaceKHR);"
+		)
+	     
+	     
 	     (defun readFile (filename)
 	       (declare (type "const std::string&" filename)
 			(values "std::vector<char>"))
@@ -1267,6 +1279,7 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			  (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
 			  )
+		       
 		       (let ((imageIndex 0)
 			     (result (vkAcquireNextImageKHR
 			  _device
@@ -1328,18 +1341,16 @@ more structs. this function helps to initialize those structs."
 				;; we could check if presentation was successful
 				:pResults nullptr))
 			    (progn
-			     (let ((result (vkQueuePresentKHR _presentQueue &presentInfo)))
-			       (if (or (== VK_SUBOPTIMAL_KHR result)
-				       (== VK_ERROR_OUT_OF_DATE_KHR result)
+			     (let ((result2 (vkQueuePresentKHR _presentQueue &presentInfo)))
+			       (if (or (== VK_SUBOPTIMAL_KHR result2)
+				       (== VK_ERROR_OUT_OF_DATE_KHR result2)
 				       _framebufferResized)
 				   (do0
 				    (setf _framebufferResized false)
 				    (recreateSwapChain))
-				   (unless (== VK_SUCCESS result)
+				   (unless (== VK_SUCCESS result2)
 				     (throw ("std::runtime_error"
-					     (string "fialed to present swap chain image.")))))
-			      
-			       ))
+					     (string "fialed to present swap chain image.")))))))
 			    
 			    ;(vkQueueWaitIdle _presentQueue) 
 			    )
