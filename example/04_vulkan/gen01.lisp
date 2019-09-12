@@ -956,8 +956,7 @@ more structs. this function helps to initialize those structs."
 			      1
 			      vertexBuffers
 			      offsets
-			      )
-			     )
+			      ))
 			   (vkCmdBindIndexBuffer
 			      (aref _commandBuffers i)
 			      _indexBuffer
