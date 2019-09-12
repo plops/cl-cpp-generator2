@@ -1091,18 +1091,23 @@ more structs. this function helps to initialize those structs."
 		       (while (not (glfwWindowShouldClose _window))
 			 (glfwPollEvents)
 			 #+surface (drawFrame))
-		       ;; easy way to prevent cpu from submitting too many frames
-		       (vkDeviceWaitIdle _device))
+		       
+		       (vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
+		       )
 		     #+surface
 		     (defun drawFrame ()
 		       (declare (values void))
 		       ;; wait for previous frame, FIXME _currentFrame-1?
-		       (let ((oldFrame (- _currentFrame 1)))
+		       #+nil (let ((oldFrame (- _currentFrame 1)))
 			 (declare (type int oldFrame))
 			 (if (== -1 oldFrame)
 			     (setf oldFrame (- _MAX_FRAMES_IN_FLIGHT 1)))
-			(vkWaitForFences _device 1 (ref (aref _inFlightFences oldFrame))  VK_TRUE UINT64_MAX)
-			(vkResetFences _device 1 (ref (aref _inFlightFences oldFrame))))
+			 (do0
+			  (vkWaitForFences _device 1 (ref (aref _inFlightFences oldFrame))  VK_TRUE UINT64_MAX)
+			  (vkResetFences _device 1 (ref (aref _inFlightFences oldFrame)))))
+		       (do0
+			  (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
+			  (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame))))
 		       (let ((imageIndex 0))
 			 (declare (type uint32_t imageIndex))
 			 (vkAcquireNextImageKHR
@@ -1159,7 +1164,7 @@ more structs. this function helps to initialize those structs."
 				:pResults nullptr))
 			    (vkQueuePresentKHR _presentQueue &presentInfo)
 			    
-			    ;(vkQueueWaitIdle _presentQueue) ;; wait in case gpu can't keep up
+			    ;(vkQueueWaitIdle _presentQueue) 
 			    )
 			   
 			   ))
