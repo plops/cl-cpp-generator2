@@ -193,18 +193,23 @@ more structs. this function helps to initialize those structs."
 		   (do0
 		    (return capabilities.currentExtent))
 		   (do0
-		    (let ((actualExtent (curly 800 600))
+		    (let ((width 0)
+			   (height 0)
 			  )
-		      (declare (type VkExtent2D actualExtent))
+		      (declare (type int width height))
+		      (glfwGetFramebufferSize _window &width &height)
+		     (let ((actualExtent (curly width height))
+			   )
+		       (declare (type VkExtent2D actualExtent))
 
-		      ,@(loop for e in `(width height) collect
-			     `(setf (dot actualExtent ,e)
-				    ("std::max" (dot capabilities.minImageExtent ,e)
-						("std::min"
-						 (dot capabilities.maxImageExtent ,e)
-						 (dot actualExtent ,e)))))
+		       ,@(loop for e in `(width height) collect
+			      `(setf (dot actualExtent ,e)
+				     ("std::max" (dot capabilities.minImageExtent ,e)
+						 ("std::min"
+						  (dot capabilities.maxImageExtent ,e)
+						  (dot actualExtent ,e)))))
 		      
-		      (return actualExtent))))))
+		       (return actualExtent)))))))
 	    
 	    (defclass HelloTriangleApplication ()
 	      "public:"

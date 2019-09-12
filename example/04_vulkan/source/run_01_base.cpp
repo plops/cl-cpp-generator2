@@ -93,7 +93,10 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
   if ((UINT32_MAX) != (capabilities.currentExtent.width)) {
     return capabilities.currentExtent;
   } else {
-    VkExtent2D actualExtent = {800, 600};
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(_window, &width, &height);
+    VkExtent2D actualExtent = {width, height};
     actualExtent.width = std::max(
         capabilities.minImageExtent.width,
         std::min(capabilities.maxImageExtent.width, actualExtent.width));
