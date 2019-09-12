@@ -135,14 +135,16 @@ private:
   std::vector<VkFramebuffer> _swapChainFramebuffers;
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
-  VkSemaphore _imageAvailableSemaphore;
-  VkSemaphore _renderFinishedSemaphore;
+  std::vector<VkSemaphore> _imageAvailableSemaphores;
+  std::vector<VkSemaphore> _renderFinishedSemaphores;
+  const int _MAX_FRAMES_IN_FLIGHT = 2;
+  size_t _currentFrame = 0;
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              nullptr);
-    auto queueFamilies(queueFamilyCount);
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
                                              queueFamilies.data());
     auto i = 0;
@@ -164,7 +166,7 @@ private:
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    auto availableLayers(layerCount);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
     for (auto &layerName : _validationLayers) {
       auto layerFound = false;
@@ -231,14 +233,20 @@ private:
   }
   // shader stuff
   void createSemaphores() {
+    _imageAvailableSemaphores.resize(_MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(_MAX_FRAMES_IN_FLIGHT);
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (!((((VK_SUCCESS) == (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
-                                               &_imageAvailableSemaphore))) &&
-           ((VK_SUCCESS) == (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
-                                               &_renderFinishedSemaphore)))))) {
-      throw std::runtime_error("failed to create semaphores.");
-    };
+    for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
+      if (!((((VK_SUCCESS) ==
+              (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                                 &(_imageAvailableSemaphores[i])))) &&
+             ((VK_SUCCESS) ==
+              (vkCreateSemaphore(_device, &semaphoreInfo, nullptr,
+                                 &(_renderFinishedSemaphores[i]))))))) {
+        throw std::runtime_error("failed to create semaphores.");
+      };
+    }
   }
   void createCommandBuffers() {
     _commandBuffers.resize(_swapChainFramebuffers.size());
@@ -294,7 +302,7 @@ private:
   void createFramebuffers() {
     _swapChainFramebuffers.resize(_swapChainImageViews.size());
     for (int i = 0; i < _swapChainImageViews.size(); (i) += (1)) {
-      auto attachments[] = {_swapChainImageViews[i]};
+      VkImageView attachments[] = {_swapChainImageViews[i]};
       VkFramebufferCreateInfo framebufferInfo = {};
       framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
       framebufferInfo.renderPass = _renderPass;
@@ -365,7 +373,8 @@ private:
     vertShaderStageInfo.module = vertShaderModule;
     vertShaderStageInfo.pName = "main";
     vertShaderStageInfo.pSpecializationInfo = nullptr;
-    auto shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,
+                                                      fragShaderStageInfo};
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType =
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -607,10 +616,11 @@ private:
     uint32_t extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          nullptr);
-    auto availableExtensions(extensionCount);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
                                          availableExtensions.data());
-    auto requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
+    std::set<std::string> requiredExtensions(_deviceExtensions.begin(),
+                                             _deviceExtensions.end());
     for (auto &extension : availableExtensions) {
       requiredExtensions.erase(extension.extensionName);
     };
@@ -636,7 +646,7 @@ private:
     if ((0) == (deviceCount)) {
       throw std::runtime_error("failed to find gpu with vulkan support.");
     };
-    auto devices(deviceCount);
+    std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
     for (auto &device : devices) {
       if (isDeviceSuitable(device)) {
@@ -658,10 +668,10 @@ private:
   void drawFrame() {
     uint32_t imageIndex = 0;
     vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX,
-                          _imageAvailableSemaphore, VK_NULL_HANDLE,
-                          &imageIndex);
-    VkSemaphore waitSemaphores[] = {_imageAvailableSemaphore};
-    VkSemaphore signalSemaphores[] = {_renderFinishedSemaphore};
+                          _imageAvailableSemaphores[_currentFrame],
+                          VK_NULL_HANDLE, &imageIndex);
+    VkSemaphore waitSemaphores[] = {_imageAvailableSemaphores[_currentFrame]};
+    VkSemaphore signalSemaphores[] = {_renderFinishedSemaphores[_currentFrame]};
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     VkSubmitInfo submitInfo = {};
@@ -688,10 +698,13 @@ private:
     presentInfo.pResults = nullptr;
     vkQueuePresentKHR(_presentQueue, &presentInfo);
     vkQueueWaitIdle(_presentQueue);
+    _currentFrame = ((1) + (_currentFrame)) % _MAX_FRAMES_IN_FLIGHT;
   }
   void cleanup() {
-    vkDestroySemaphore(_device, _renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(_device, _imageAvailableSemaphore, nullptr);
+    for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
+      vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
+      vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
+    }
     vkDestroyCommandPool(_device, _commandPool, nullptr);
     for (auto &b : _swapChainFramebuffers) {
       vkDestroyFramebuffer(_device, b, nullptr);

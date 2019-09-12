@@ -247,8 +247,10 @@ more structs. this function helps to initialize those structs."
 				(_swapChainFramebuffers)
 				(_commandPool)
 				(_commandBuffers)
-				(_imageAvailableSemaphore)
-				(_renderFinishedSemaphore))
+				(_imageAvailableSemaphores)
+				(_renderFinishedSemaphores)
+				(_MAX_FRAMES_IN_FLIGHT 2)
+				(_currentFrame 0))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -268,8 +270,10 @@ more structs. this function helps to initialize those structs."
 				(type VkCommandPool _commandPool)
 				(type "std::vector<VkCommandBuffer>"
 				      _commandBuffers)
-				(type VkSemaphore _imageAvailableSemaphore
-				      _renderFinishedSemaphore))
+				(type "std::vector<VkSemaphore>" _imageAvailableSemaphores
+				      _renderFinishedSemaphores)
+				(type "const int" _MAX_FRAMES_IN_FLIGHT)
+				(type size_t _currentFrame))
 		
 		     (defun findQueueFamilies (device)
 		       (declare (type VkPhysicalDevice device)
@@ -402,25 +406,28 @@ more structs. this function helps to initialize those structs."
 		       "// shader stuff"
 		       (defun createSemaphores ()
 			 (declare (values void))
+			 (_imageAvailableSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
+			 (_renderFinishedSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
 			 ,(vk
 			   `(VkSemaphoreCreateInfo
 			     semaphoreInfo
 			     :sType VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO))
-			 (unless (and
-				  (== VK_SUCCESS
-				      (vkCreateSemaphore
-				       _device
-				       &semaphoreInfo
-				       nullptr
-				       &_imageAvailableSemaphore))
-				  (== VK_SUCCESS
-				      (vkCreateSemaphore
-				       _device
-				       &semaphoreInfo
-				       nullptr
-				       &_renderFinishedSemaphore)))
-			   (throw ("std::runtime_error"
-				   (string "failed to create semaphores.")))))
+			 (dotimes (i _MAX_FRAMES_IN_FLIGHT)
+			  (unless (and
+				   (== VK_SUCCESS
+				       (vkCreateSemaphore
+					_device
+					&semaphoreInfo
+					nullptr
+					(ref (aref _imageAvailableSemaphores i))))
+				   (== VK_SUCCESS
+				       (vkCreateSemaphore
+					_device
+					&semaphoreInfo
+					nullptr
+					(ref (aref _renderFinishedSemaphores i)))))
+			    (throw ("std::runtime_error"
+				    (string "failed to create semaphores."))))))
 		       (defun createCommandBuffers ()
 			 (declare (values void))
 			 (_commandBuffers.resize
@@ -1080,12 +1087,12 @@ more structs. this function helps to initialize those structs."
 			  _device
 			  _swapChain
 			  UINT64_MAX ;; disable timeout for image 
-			  _imageAvailableSemaphore
+			  (aref _imageAvailableSemaphores _currentFrame)
 			  VK_NULL_HANDLE
 			  &imageIndex)
 			 
-			 (let ((waitSemaphores[] (curly _imageAvailableSemaphore))
-			       (signalSemaphores[] (curly _renderFinishedSemaphore))
+			 (let ((waitSemaphores[] (curly (aref _imageAvailableSemaphores _currentFrame)))
+			       (signalSemaphores[] (curly (aref _renderFinishedSemaphores _currentFrame)))
 			       (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
 			   (declare (type VkSemaphore waitSemaphores[]
 					  signalSemaphores[])
@@ -1131,18 +1138,24 @@ more structs. this function helps to initialize those structs."
 			    ;; wait in case gpu can't keep up
 			    (vkQueueWaitIdle _presentQueue))
 			   
-			   )))
+			   ))
+		       (setf _currentFrame
+			     (%
+			      (+ 1 _currentFrame)
+			      _MAX_FRAMES_IN_FLIGHT)))
 		     (defun cleanup ()
 		       (declare (values void))
 		       
 		       #+surface
 		       (do0
-			(vkDestroySemaphore _device
-					    _renderFinishedSemaphore
-					    nullptr)
-			(vkDestroySemaphore _device
-					    _imageAvailableSemaphore
-					    nullptr)
+			(dotimes (i _MAX_FRAMES_IN_FLIGHT)
+			  (do0
+			   (vkDestroySemaphore _device
+					       (aref _renderFinishedSemaphores i)
+					       nullptr)
+			   (vkDestroySemaphore _device
+					       (aref _imageAvailableSemaphores i)
+					       nullptr)))
 			(vkDestroyCommandPool _device _commandPool nullptr)
 			(foreach (b _swapChainFramebuffers)
 				 (vkDestroyFramebuffer _device b nullptr))
