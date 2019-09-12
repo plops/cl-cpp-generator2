@@ -67,9 +67,11 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
   return bindingDescription;
 }
 std::vector<Vertex> g_vertices = {
-    {{(0.0e+0), (-5.e-1)}, {(1.e+0), (1.e+0), (1.e+0)}},
-    {{(5.e-1), (5.e-1)}, {(0.0e+0), (1.e+0), (0.0e+0)}},
-    {{(-5.e-1), (5.e-1)}, {(0.0e+0), (0.0e+0), (1.e+0)}}};
+    {{(-5.e-1), (-5.e-1)}, {(1.e+0), (0.0e+0), (0.0e+0)}},
+    {{(5.e-1), (-5.e-1)}, {(0.0e+0), (1.e+0), (0.0e+0)}},
+    {{(5.e-1), (5.e-1)}, {(0.0e+0), (0.0e+0), (1.e+0)}},
+    {{(-5.e-1), (5.e-1)}, {(1.e+0), (1.e+0), (1.e+0)}}};
+std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0};
 std::array<VkVertexInputAttributeDescription, 2>
 Vertex::getAttributeDescriptions() {
   std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
@@ -254,6 +256,8 @@ private:
   bool _framebufferResized = false;
   VkBuffer _vertexBuffer;
   VkDeviceMemory _vertexBufferMemory;
+  VkBuffer _indexBuffer;
+  VkDeviceMemory _indexBufferMemory;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -368,6 +372,27 @@ private:
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
   }
+  void createIndexBuffer() {
+    auto bufferSize = ((sizeof(g_indices[0])) * (g_indices.size()));
+    auto [stagingBuffer, stagingBufferMemory] =
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
+                      (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
+    void *data;
+    vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, g_indices.data(), bufferSize);
+    vkUnmapMemory(_device, stagingBufferMemory);
+    auto [indexBuffer, indexBufferMemory] =
+        createBuffer(bufferSize,
+                     ((VK_BUFFER_USAGE_INDEX_BUFFER_BIT) |
+                      (VK_BUFFER_USAGE_TRANSFER_DST_BIT)),
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    _indexBuffer = indexBuffer;
+    _indexBufferMemory = indexBufferMemory;
+    copyBuffer(stagingBuffer, _indexBuffer, bufferSize);
+    vkDestroyBuffer(_device, stagingBuffer, nullptr);
+    vkFreeMemory(_device, stagingBufferMemory, nullptr);
+  }
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
     VkCommandBuffer commandBuffer;
     {
@@ -426,6 +451,7 @@ private:
     createFramebuffers();
     createCommandPool();
     createVertexBuffer();
+    createIndexBuffer();
     createCommandBuffers();
     createSyncObjects();
   }
@@ -515,7 +541,10 @@ private:
       VkBuffer vertexBuffers[] = {_vertexBuffer};
       VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
-      vkCmdDraw(_commandBuffers[i], 3, 1, 0, 0);
+      vkCmdBindIndexBuffer(_commandBuffers[i], _indexBuffer, 0,
+                           VK_INDEX_TYPE_UINT16);
+      vkCmdDrawIndexed(_commandBuffers[i],
+                       static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
       vkCmdEndRenderPass(_commandBuffers[i]);
       if (!((VK_SUCCESS) == (vkEndCommandBuffer(_commandBuffers[i])))) {
         throw std::runtime_error(
@@ -967,6 +996,8 @@ private:
     cleanupSwapChain();
     vkDestroyBuffer(_device, _vertexBuffer, nullptr);
     vkFreeMemory(_device, _vertexBufferMemory, nullptr);
+    vkDestroyBuffer(_device, _indexBuffer, nullptr);
+    vkFreeMemory(_device, _indexBufferMemory, nullptr);
     for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
       vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
       vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);

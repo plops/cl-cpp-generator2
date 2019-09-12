@@ -216,10 +216,13 @@ more structs. this function helps to initialize those structs."
 		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
 	      (return bindingDescription))
 	    (let ((g_vertices (curly
-			       (curly (curly  .0s0 -.5s0) (curly 1s0 1s0 1s0))
-			       (curly (curly  .5s0  .5s0) (curly 0s0 1s0 0s0))
-			       (curly (curly -.5s0  .5s0) (curly 0s0 0s0 1s0)))))
-	      (declare (type "std::vector<Vertex>" g_vertices)))
+			       (curly (curly  -.5s0 -.5s0) (curly 1s0 0s0 0s0))
+			       (curly (curly  .5s0  -.5s0) (curly 0s0 1s0 0s0))
+			       (curly (curly .5s0  .5s0) (curly 0s0 0s0 1s0))
+			       (curly (curly -.5s0  .5s0) (curly 1s0 1s0 1s0))))
+		  (g_indices (curly 0 1 2 2 3 0)))
+	      (declare (type "std::vector<Vertex>" g_vertices)
+		       (type "std::vector<uint16_t>" g_indices)))
 	    (defun "Vertex::getAttributeDescriptions" ()
 	      (declare (values "std::array<VkVertexInputAttributeDescription,2>"))
 	      (let ((attributeDescriptions (curly)))
@@ -475,8 +478,8 @@ more structs. this function helps to initialize those structs."
 				(_MAX_FRAMES_IN_FLIGHT 2)
 				(_currentFrame 0)
 				(_framebufferResized false)
-				(_vertexBuffer)
-				(_vertexBufferMemory))
+				(_vertexBuffer) (_vertexBufferMemory)
+				(_indexBuffer) (_indexBufferMemory))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -502,8 +505,11 @@ more structs. this function helps to initialize those structs."
 				(type size_t _currentFrame)
 				(type "std::vector<VkFence>" _inFlightFences)
 				(type bool _framebufferResized)
-				(type VkBuffer _vertexBuffer)
-				(type VkDeviceMemory _vertexBufferMemory))
+				(type VkBuffer _vertexBuffer
+				      _indexBuffer)
+				(type VkDeviceMemory
+				      _vertexBufferMemory
+				      _indexBufferMemory))
 		     
 
 		     
@@ -694,6 +700,51 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			(vkDestroyBuffer _device stagingBuffer nullptr)
 			(vkFreeMemory _device stagingBufferMemory nullptr)))
+		      (defun createIndexBuffer ()
+		       (declare (values void))
+		       (let ((bufferSize (* (sizeof (aref g_indices 0))
+					    (g_indices.size)))
+			     ((bracket stagingBuffer
+				       stagingBufferMemory)
+			      (createBuffer
+			 bufferSize
+			 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+			 (logior
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+			 			
+			(let ((data))
+			  (declare (type void* data))
+			  (vkMapMemory _device stagingBufferMemory
+				       0		;; offset
+				       bufferSize ;; size
+				       0		 ;; flags
+				       &data)
+			  (memcpy data
+				  (g_indices.data)
+				  bufferSize)
+			  
+			  (vkUnmapMemory _device stagingBufferMemory)))
+
+		       (let  (((bracket
+				indexBuffer
+				indexBufferMemory)
+			       (createBuffer
+				bufferSize
+				(logior
+				 VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+				 ;; can be a data transfer destination
+				 VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
+			 (setf _indexBuffer indexBuffer
+			       _indexBufferMemory indexBufferMemory)
+			 (copyBuffer stagingBuffer
+				     _indexBuffer
+				     bufferSize))
+		       
+		       (do0
+			(vkDestroyBuffer _device stagingBuffer nullptr)
+			(vkFreeMemory _device stagingBufferMemory nullptr)))
 		     (defun copyBuffer (srcBuffer
 					dstBuffer
 					size)
@@ -783,6 +834,7 @@ more structs. this function helps to initialize those structs."
 			(createFramebuffers)
 			(createCommandPool)
 			(createVertexBuffer)
+			(createIndexBuffer)
 			(createCommandBuffers)
 			(createSyncObjects)))
 		     
@@ -906,13 +958,20 @@ more structs. this function helps to initialize those structs."
 			      offsets
 			      )
 			     )
+			   (vkCmdBindIndexBuffer
+			      (aref _commandBuffers i)
+			      _indexBuffer
+			      0
+			      VK_INDEX_TYPE_UINT16)
 			   ;; draw the triangle
-			   (vkCmdDraw (aref _commandBuffers i)
-				      3 ;; vertex count
-				      1 ;; no instance rendering
-				      0 ;; offset to first vertex
-				      0 ;; firstInstance
-				      )
+			   (vkCmdDrawIndexed
+			    (aref _commandBuffers i)
+			    (static_cast<uint32_t> (indices.size)) ;; count
+			    1 ;; no instance rendering
+			    0 ;; offset to first index into buffer
+			    0 ;; offset to add to index
+			    0 ;; firstInstance
+			    )
 			   (vkCmdEndRenderPass
 			    (aref _commandBuffers i))
 			   ,(vkthrow `(vkEndCommandBuffer
@@ -1555,8 +1614,10 @@ more structs. this function helps to initialize those structs."
 		       #+surface
 		       (do0
 			(cleanupSwapChain)
-			(vkDestroyBuffer _device _vertexBuffer nullptr)
-			(vkFreeMemory _device _vertexBufferMemory nullptr)
+			(do0 (vkDestroyBuffer _device _vertexBuffer nullptr)
+			     (vkFreeMemory _device _vertexBufferMemory nullptr))
+			(do0 (vkDestroyBuffer _device _indexBuffer nullptr)
+			     (vkFreeMemory _device _indexBufferMemory nullptr))
 			(dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			  (do0
 			   (vkDestroySemaphore _device
