@@ -348,7 +348,7 @@ private:
     return std::make_tuple(buffer, bufferMemory);
   }
   void createVertexBuffer() {
-    auto bufferSize = ((sizeof(_vertices[0])) * (_vertices.size()));
+    auto bufferSize = ((sizeof(g_vertices[0])) * (g_vertices.size()));
     auto [stagingBuffer, stagingBufferMemory] =
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
@@ -357,22 +357,26 @@ private:
     vkMapMemory(_device, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, g_vertices.data(), bufferSize);
     vkUnmapMemory(_device, stagingBufferMemory);
-    [ _vertexBuffer, _vertexBufferMemory ] =
+    auto [vertexBuffer, vertexBufferMemory] =
         createBuffer(bufferSize,
                      ((VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) |
                       (VK_BUFFER_USAGE_TRANSFER_DST_BIT)),
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    _vertexBuffer = vertexBuffer;
+    _vertexBufferMemory = vertexBufferMemory;
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
   }
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    VkCommandBufferAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = _commandPool;
-    allocInfo.commandBufferCount = 1;
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+    {
+      VkCommandBufferAllocateInfo info = {};
+      info.sType = VK_COMMAND_BUFFER_ALLOCATE_INFO;
+      info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      info.commandPool = _commandPool;
+      info.commandBufferCount = 1;
+      vkAllocateCommandBuffers(_device, &info, &commandBuffer);
+    };
     vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
   }
   uint32_t findMemoryType(uint32_t typeFilter,

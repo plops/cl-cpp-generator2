@@ -19,7 +19,7 @@
 	       (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
 
   (progn
-    (defun vk-info-type (verb subject &key (prefix "vk")
+    (defun vk-info-type (verb subject &key (prefix "Vk")
 					(suffix "Info"))
       "convert two lisp symbols like allocate command-buffer  to vkCommandBufferAllocate"
       (format nil "~a~{~a~}~{~a~}~a"
@@ -57,9 +57,10 @@
 	   ,(vk `(,(vk-info-type
 		    verb subject)
 		   info
-		   (:sType ,(vk-info-stype
-			     verb subject)
-			   ,@info-params)))
+		   :sType ,(vk-info-stype
+			    verb subject)
+		   ,@info-params)
+		)
 	   ,(if throw
 		(vkthrow
 		 `(,(vk-info-function verb subject
@@ -646,8 +647,8 @@ more structs. this function helps to initialize those structs."
 		       )
 		     (defun createVertexBuffer ()
 		       (declare (values void))
-		       (let ((bufferSize (* (sizeof (aref _vertices 0))
-					    (_vertices.size)))
+		       (let ((bufferSize (* (sizeof (aref g_vertices 0))
+					    (g_vertices.size)))
 			     ((bracket stagingBuffer
 				       stagingBufferMemory)
 			      (createBuffer
@@ -681,17 +682,19 @@ more structs. this function helps to initialize those structs."
 			  (vkUnmapMemory _device stagingBufferMemory)
 			  ))
 
-		       (setf (bracket
-			      _vertexBuffer
-			      _vertexBufferMemory)
-			(createBuffer
-			 bufferSize
-			 (logior
-			  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-			  ;; can be a data transfer destination
-			  VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-			 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			 ))
+		       (let  (((bracket
+				vertexBuffer
+				vertexBufferMemory)
+			       (createBuffer
+				bufferSize
+				(logior
+				 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+				 ;; can be a data transfer destination
+				 VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+				)))
+			 (setf _vertexBuffer vertexBuffer
+			       _vertexBufferMemory vertexBufferMemory))
 		       
 		       (do0
 			(vkDestroyBuffer _device stagingBuffer nullptr)
@@ -704,21 +707,12 @@ more structs. this function helps to initialize those structs."
 		       (declare (values void)
 				(type VkBuffer srcBuffer dstBuffer)
 				(type VkDeviceSize size))
-		       ,(vk
-			 `(VkCommandBufferAllocateInfo
-			   allocInfo
-			   :sType VK_STRUCTURE_TYPE_COMMAND_ALLOCATE_INFO
-			   :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
-			   :commandPool _commandPool
-			   :commandBufferCount 1))
+		       
+		       
+		       
 		       (let ((commandBuffer))
 			 (declare (type VkCommandBuffer
 					commandBuffer))
-			 (vkAllocateCommandBuffers
-			  _device
-			  &allocInfo
-			  &commandBuffer)
-
 			 ,(vkcall `(allocate
 				    command-buffer
 				    (:level VK_COMMAND_BUFFER_LEVEL_PRIMARY
@@ -728,6 +722,8 @@ more structs. this function helps to initialize those structs."
 				    )
 				  :plural t
 				  )
+
+			 
 			 
 			 (vkFreeCommandBuffers
 			  _device
