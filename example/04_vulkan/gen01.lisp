@@ -621,7 +621,7 @@ more structs. this function helps to initialize those structs."
 			(let ((memReq))
 			  (declare (type VkMemoryRequirements memReq))
 			  (vkGetBufferMemoryRequirements _device
-							 _vertexBuffer
+							 buffer
 							 &memReq)
 			  ,(vk
 			    `(VkMemoryAllocateInfo

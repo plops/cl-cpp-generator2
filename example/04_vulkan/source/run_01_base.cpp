@@ -333,7 +333,7 @@ private:
           "failed to (vkCreateBuffer _device &bufferInfo nullptr &buffer)");
     };
     VkMemoryRequirements memReq;
-    vkGetBufferMemoryRequirements(_device, _vertexBuffer, &memReq);
+    vkGetBufferMemoryRequirements(_device, buffer, &memReq);
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memReq.size;
