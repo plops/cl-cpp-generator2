@@ -12,10 +12,10 @@
 
 (progn
   (defun vkthrow (cmd)
-			`(unless (== VK_SUCCESS
-				    ,cmd)
-			   (throw ("std::runtime_error"
-				   (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
+    `(unless (== VK_SUCCESS
+		 ,cmd)
+       (throw ("std::runtime_error"
+	       (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
   (defun set-members (params)
     "setf on multiple member variables of an instance"
     (destructuring-bind (instance &rest args) params
@@ -110,23 +110,23 @@ more structs. this function helps to initialize those structs."
 	     (do0
 	      "typedef struct SwapChainSupportDetails SwapChainSupportDetails;"
 	      "typedef struct QueueFamilyIndices QueueFamilyIndices;"
-		"std::vector<char> readFile(const std::string&);"
-		"SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice, VkSurfaceKHR);"
-		"VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>&);"
-		"VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>&);"
-		"VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR&, GLFWwindow*);"
-		"QueueFamilyIndices findQueueFamilies(VkPhysicalDevice, VkSurfaceKHR);"
-		)
+	      "std::vector<char> readFile(const std::string&);"
+	      "SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice, VkSurfaceKHR);"
+	      "VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>&);"
+	      "VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>&);"
+	      "VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR&, GLFWwindow*);"
+	      "QueueFamilyIndices findQueueFamilies(VkPhysicalDevice, VkSurfaceKHR);"
+	      )
 	     
 	     
 	     (defun readFile (filename)
 	       (declare (type "const std::string&" filename)
 			(values "std::vector<char>"))
 	       (let ((file ("std::ifstream" filename (logior "std::ios::ate"
-							   "std::ios::binary"))))
+							     "std::ios::binary"))))
 		 (unless (file.is_open)
-		  (throw ("std::runtime_error"
-			  (string "failed to open file."))))
+		   (throw ("std::runtime_error"
+			   (string "failed to open file."))))
 		 (let ((fileSize (file.tellg))
 		       (buffer ("std::vector<char>" fileSize)))
 		   (file.seekg 0)
@@ -165,15 +165,15 @@ more structs. this function helps to initialize those structs."
 		(declare (type "std::array<VkVertexInputAttributeDescription,2>"
 			       attributeDescriptions))
 		,(set-members `((aref attributeDescriptions 0)
-			       :binding 0
-			       :location 0
-			       :format VK_FORMAT_R32G32_SFLOAT
-			       :offset (offsetof Vertex pos)))
+				:binding 0
+				:location 0
+				:format VK_FORMAT_R32G32_SFLOAT
+				:offset (offsetof Vertex pos)))
 		,(set-members `((aref attributeDescriptions 1)
-			       :binding 0
-			       :location 1
-			       :format VK_FORMAT_R32G32B32_SFLOAT
-			       :offset (offsetof Vertex color)))
+				:binding 0
+				:location 1
+				:format VK_FORMAT_R32G32B32_SFLOAT
+				:offset (offsetof Vertex color)))
 		(return attributeDescriptions)))
 	    
 	    (defstruct0 QueueFamilyIndices 
@@ -259,114 +259,114 @@ more structs. this function helps to initialize those structs."
 		    (return capabilities.currentExtent))
 		   (do0
 		    (let ((width 0)
-			   (height 0)
+			  (height 0)
 			  )
 		      (declare (type int width height))
 		      (glfwGetFramebufferSize _window &width &height)
-		     (let ((actualExtent (curly width height))
-			   )
-		       (declare (type VkExtent2D actualExtent))
+		      (let ((actualExtent (curly width height))
+			    )
+			(declare (type VkExtent2D actualExtent))
 
-		       ,@(loop for e in `(width height) collect
-			      `(setf (dot actualExtent ,e)
-				     ("std::max" (dot capabilities.minImageExtent ,e)
-						 ("std::min"
-						  (dot capabilities.maxImageExtent ,e)
-						  (dot actualExtent ,e)))))
-		      
-		       (return actualExtent)))))))
+			,@(loop for e in `(width height) collect
+			       `(setf (dot actualExtent ,e)
+				      ("std::max" (dot capabilities.minImageExtent ,e)
+						  ("std::min"
+						   (dot capabilities.maxImageExtent ,e)
+						   (dot actualExtent ,e)))))
+			
+			(return actualExtent)))))))
 
 	    #+surface
 	    (do0
 	     (defun checkDeviceExtensionSupport (device _deviceExtensions)
-		       (declare (values bool)
-				(type VkPhysicalDevice device)
-				(type "const std::vector<const char*>" _deviceExtensions))
-		       (let ((extensionCount 0))
-			 (declare (type uint32_t extensionCount))
-			 (vkEnumerateDeviceExtensionProperties
-			  device nullptr &extensionCount nullptr)
-			 (let (((availableExtensions extensionCount)))
-			   (declare (type
-				     "std::vector<VkExtensionProperties>"
-				     (availableExtensions extensionCount)
-				     ))
-			   (vkEnumerateDeviceExtensionProperties
-			    device
-			    nullptr
-			    &extensionCount
-			    (availableExtensions.data))
-			   (let (((requiredExtensions
-				   (_deviceExtensions.begin)
-				   (_deviceExtensions.end))))
-			     (declare (type
-				       "std::set<std::string>"
-				       (requiredExtensions
-					(_deviceExtensions.begin)
-					(_deviceExtensions.end))))
-			     (foreach (extension availableExtensions)
-				      (requiredExtensions.erase
-				       extension.extensionName))
-			     (return (requiredExtensions.empty))))))
+	       (declare (values bool)
+			(type VkPhysicalDevice device)
+			(type "const std::vector<const char*>" _deviceExtensions))
+	       (let ((extensionCount 0))
+		 (declare (type uint32_t extensionCount))
+		 (vkEnumerateDeviceExtensionProperties
+		  device nullptr &extensionCount nullptr)
+		 (let (((availableExtensions extensionCount)))
+		   (declare (type
+			     "std::vector<VkExtensionProperties>"
+			     (availableExtensions extensionCount)
+			     ))
+		   (vkEnumerateDeviceExtensionProperties
+		    device
+		    nullptr
+		    &extensionCount
+		    (availableExtensions.data))
+		   (let (((requiredExtensions
+			   (_deviceExtensions.begin)
+			   (_deviceExtensions.end))))
+		     (declare (type
+			       "std::set<std::string>"
+			       (requiredExtensions
+				(_deviceExtensions.begin)
+				(_deviceExtensions.end))))
+		     (foreach (extension availableExtensions)
+			      (requiredExtensions.erase
+			       extension.extensionName))
+		     (return (requiredExtensions.empty))))))
 	     
-	    (defun findQueueFamilies (device _surface )
-		       (declare (type VkPhysicalDevice device)
-				(type VkSurfaceKHR _surface)
-				(values QueueFamilyIndices))
-		       (let ((indices)
-			     (queueFamilyCount 0))
-			 (declare (type QueueFamilyIndices indices)
-				  (type uint32_t queueFamilyCount))
-			 (vkGetPhysicalDeviceQueueFamilyProperties
-			  device &queueFamilyCount nullptr)
-			 (let (((queueFamilies queueFamilyCount)))
-			   (declare (type "std::vector<VkQueueFamilyProperties>"
-					  (queueFamilies queueFamilyCount)))
-			   (vkGetPhysicalDeviceQueueFamilyProperties
-			    device
-			    &queueFamilyCount
-			    (queueFamilies.data))
-			   (let ((i 0))
-			     (foreach
-			      (family queueFamilies)
-			      (when (and (< 0 family.queueCount)
-					 (logand family.queueFlags
-						 VK_QUEUE_GRAPHICS_BIT))
-				(setf indices.graphicsFamily i))
-			      #+surface
-			      (let ((presentSupport false))
-				(declare (type VkBool32 presentSupport))
-				(vkGetPhysicalDeviceSurfaceSupportKHR
-				 device i _surface &presentSupport)
-				(when (and (< 0 family.queueCount)
-					   presentSupport)
-				  (setf indices.presentFamily i))
-				(when (indices.isComplete)
-				  break))
-			      (incf i))))
-			 (return indices)))
+	     (defun findQueueFamilies (device _surface )
+	       (declare (type VkPhysicalDevice device)
+			(type VkSurfaceKHR _surface)
+			(values QueueFamilyIndices))
+	       (let ((indices)
+		     (queueFamilyCount 0))
+		 (declare (type QueueFamilyIndices indices)
+			  (type uint32_t queueFamilyCount))
+		 (vkGetPhysicalDeviceQueueFamilyProperties
+		  device &queueFamilyCount nullptr)
+		 (let (((queueFamilies queueFamilyCount)))
+		   (declare (type "std::vector<VkQueueFamilyProperties>"
+				  (queueFamilies queueFamilyCount)))
+		   (vkGetPhysicalDeviceQueueFamilyProperties
+		    device
+		    &queueFamilyCount
+		    (queueFamilies.data))
+		   (let ((i 0))
+		     (foreach
+		      (family queueFamilies)
+		      (when (and (< 0 family.queueCount)
+				 (logand family.queueFlags
+					 VK_QUEUE_GRAPHICS_BIT))
+			(setf indices.graphicsFamily i))
+		      #+surface
+		      (let ((presentSupport false))
+			(declare (type VkBool32 presentSupport))
+			(vkGetPhysicalDeviceSurfaceSupportKHR
+			 device i _surface &presentSupport)
+			(when (and (< 0 family.queueCount)
+				   presentSupport)
+			  (setf indices.presentFamily i))
+			(when (indices.isComplete)
+			  break))
+		      (incf i))))
+		 (return indices)))
 
-	    (defun isDeviceSuitable ( device _surface  _deviceExtensions)
-		       (declare (values bool)
-				(type VkPhysicalDevice device)
-				(type VkSurfaceKHR _surface)
-				(type "const std::vector<const char*>" _deviceExtensions))
-		       #+surface
-		       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
-			     (swapChainAdequate false))
-			 (declare (type bool swapChainAdequate))
-			 (when extensionsSupported
-			   (let ((swapChainSupport (querySwapChainSupport device _surface)))
-			     (setf swapChainAdequate
-				   (and (not (swapChainSupport.formats.empty))
-					(not (swapChainSupport.presentModes.empty)))))))
-		       (let ((indices (findQueueFamilies device _surface)))
-			 (declare (type QueueFamilyIndices indices))
-			 (return (and (indices.isComplete)
-				      #+surface (and 
-						     extensionsSupported
-						     swapChainAdequate)))
-			 #+nil (return (indices.isComplete)))))
+	     (defun isDeviceSuitable ( device _surface  _deviceExtensions)
+	       (declare (values bool)
+			(type VkPhysicalDevice device)
+			(type VkSurfaceKHR _surface)
+			(type "const std::vector<const char*>" _deviceExtensions))
+	       #+surface
+	       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
+		     (swapChainAdequate false))
+		 (declare (type bool swapChainAdequate))
+		 (when extensionsSupported
+		   (let ((swapChainSupport (querySwapChainSupport device _surface)))
+		     (setf swapChainAdequate
+			   (and (not (swapChainSupport.formats.empty))
+				(not (swapChainSupport.presentModes.empty)))))))
+	       (let ((indices (findQueueFamilies device _surface)))
+		 (declare (type QueueFamilyIndices indices))
+		 (return (and (indices.isComplete)
+			      #+surface (and 
+					 extensionsSupported
+					 swapChainAdequate)))
+		 #+nil (return (indices.isComplete)))))
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
@@ -443,7 +443,7 @@ more structs. this function helps to initialize those structs."
 				(type bool _framebufferResized)
 				(type VkBuffer _vertexBuffer)
 				(type VkDeviceMemory _vertexBufferMemory))
-		
+		     
 
 		     
 		     #-nolog (defun checkValidationLayerSupport ()
@@ -504,7 +504,7 @@ more structs. this function helps to initialize those structs."
 			      :pEngineName (string "No Engine")
 			      :engineVersion (VK_MAKE_VERSION 1 0 0)
 			      :apiVersion VK_API_VERSION_1_0))
-		 
+		       
 		       (let ((glfwExtensionCount  0)
 			     (glfwExtensions))
 			 (declare (type uint32_t glfwExtensionCount)
@@ -525,8 +525,8 @@ more structs. this function helps to initialize those structs."
 				#-nolog :ppEnabledLayerNames
 				#-nolog (_validationLayers.data)))
 			 ,(vkthrow `(vkCreateInstance &createInfo
-						       nullptr
-						       &_instance))
+						      nullptr
+						      &_instance))
 			 ))
 		     (defun createVertexBuffer ()
 		       (declare (values void))
@@ -544,9 +544,9 @@ more structs. this function helps to initialize those structs."
 			   ;; don't use that)
 			   :flags 0))
 		       ,(vkthrow `(vkCreateBuffer _device
-						   &bufferInfo
-						   nullptr
-						   &_vertexBuffer))
+						  &bufferInfo
+						  nullptr
+						  &_vertexBuffer))
 		       (let ((memReq))
 			 (declare (type VkMemoryRequirements memReq))
 			 (vkGetBufferMemoryRequirements _device
@@ -574,7 +574,7 @@ more structs. this function helps to initialize those structs."
 			   (vkMapMemory _device _vertexBufferMemory
 					0		;; offset
 					bufferInfo.size ;; size
-					0		;; flags
+					0		 ;; flags
 					&data)
 			   (memcpy data (g_vertices.data)
 				   bufferInfo.size)
@@ -668,20 +668,20 @@ more structs. this function helps to initialize those structs."
 			   )
 			 (dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			   ,(vkthrow `(vkCreateSemaphore
-					_device
-					&semaphoreInfo
-					nullptr
-					(ref (aref _imageAvailableSemaphores i))))
+				       _device
+				       &semaphoreInfo
+				       nullptr
+				       (ref (aref _imageAvailableSemaphores i))))
 			   ,(vkthrow `(vkCreateSemaphore
-					_device
-					&semaphoreInfo
-					nullptr
-					(ref (aref _renderFinishedSemaphores i))))
+				       _device
+				       &semaphoreInfo
+				       nullptr
+				       (ref (aref _renderFinishedSemaphores i))))
 			   ,(vkthrow `(vkCreateFence
-					_device
-					&fenceInfo
-					nullptr
-					(ref (aref _inFlightFences i))))))
+				       _device
+				       &fenceInfo
+				       nullptr
+				       (ref (aref _inFlightFences i))))))
 		       (defun createCommandBuffers ()
 			 (declare (values void))
 			 (_commandBuffers.resize
@@ -714,17 +714,17 @@ more structs. this function helps to initialize those structs."
 			   
 			   (let ((clearColor (curly 0s0 0s0 0s0 1s0)))
 			     (declare (type VkClearValue clearColor))
-			    ,(vk
-			      `(VkRenderPassBeginInfo
-				renderPassInfo
-				:sType VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
-				:renderPass _renderPass
-				:framebuffer (aref _swapChainFramebuffers i)
-				:renderArea.offset (curly  0 0)
-				:renderArea.extent _swapChainExtent
-				:clearValueCount 1
-				:pClearValues &clearColor
-				)))
+			     ,(vk
+			       `(VkRenderPassBeginInfo
+				 renderPassInfo
+				 :sType VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
+				 :renderPass _renderPass
+				 :framebuffer (aref _swapChainFramebuffers i)
+				 :renderArea.offset (curly  0 0)
+				 :renderArea.extent _swapChainExtent
+				 :clearValueCount 1
+				 :pClearValues &clearColor
+				 )))
 			   (vkCmdBeginRenderPass
 			    (aref _commandBuffers i)
 			    &renderPassInfo
@@ -750,30 +750,30 @@ more structs. this function helps to initialize those structs."
 			   (vkCmdDraw (aref _commandBuffers i)
 				      3 ;; vertex count
 				      1 ;; no instance rendering
- 				      0 ;; offset to first vertex
+				      0 ;; offset to first vertex
 				      0 ;; firstInstance
 				      )
 			   (vkCmdEndRenderPass
 			    (aref _commandBuffers i))
 			   ,(vkthrow `(vkEndCommandBuffer
-					(aref _commandBuffers i)))
+				       (aref _commandBuffers i)))
 			   ))
 		       (defun createCommandPool ()
 			 (declare (values void))
 			 (let ((queueFamilyIndices (findQueueFamilies
 						    _physicalDevice
 						    _surface)))
-			  ,(vk
-			    `(VkCommandPoolCreateInfo
-			      poolInfo
-			      :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
-			      ;; cmds for drawing go to graphics queue
-			      :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
-			      :flags 0)))
+			   ,(vk
+			     `(VkCommandPoolCreateInfo
+			       poolInfo
+			       :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
+			       ;; cmds for drawing go to graphics queue
+			       :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
+			       :flags 0)))
 			 ,(vkthrow `(vkCreateCommandPool _device
-							  &poolInfo
-							  nullptr
-							  &_commandPool))
+							 &poolInfo
+							 nullptr
+							 &_commandPool))
 			 )
 		       (defun createFramebuffers ()
 			 (declare (values void))
@@ -793,11 +793,11 @@ more structs. this function helps to initialize those structs."
 				 :height _swapChainExtent.height
 				 :layers 1))
 			     ,(vkthrow `(vkCreateFramebuffer
-					  _device
-					  &framebufferInfo
-					  nullptr
-					  (ref
-					   (aref _swapChainFramebuffers i)))))))
+					 _device
+					 &framebufferInfo
+					 nullptr
+					 (ref
+					  (aref _swapChainFramebuffers i)))))))
 		       (defun createRenderPass ()
 			 (declare (values void))
 			 ,(vk
@@ -850,10 +850,10 @@ more structs. this function helps to initialize those structs."
 			     :dependencyCount 1
 			     :pDependencies &dependency))
 			 ,(vkthrow `(vkCreateRenderPass
-				      _device
-				      &renderPassInfo
-				      nullptr
-				      &_renderPass))
+				     _device
+				     &renderPassInfo
+				     nullptr
+				     &_renderPass))
 			 )
 		       (defun createGraphicsPipeline ()
 			 (declare (values void))
@@ -977,20 +977,20 @@ more structs. this function helps to initialize those structs."
 				 :blendConstants[2] 0s0
 				 :blendConstants[3] 0s0))
 			     #+nil (let (("dynamicStates[]"
-				    (curly VK_DYNAMIC_STATE_VIEWPORT
-					   VK_DYNAMIC_STATE_LINE_WIDTH)))
-			       (declare (type VkDynamicState "dynamicStates[]"))
-			       ;; viewport, line width and blend constants
-			     ;; can be changed dynamically
+					  (curly VK_DYNAMIC_STATE_VIEWPORT
+						 VK_DYNAMIC_STATE_LINE_WIDTH)))
+				     (declare (type VkDynamicState "dynamicStates[]"))
+				     ;; viewport, line width and blend constants
+				     ;; can be changed dynamically
+				     
+				     ,(vk
+				       `(VkPipelineDynamicStateCreateInfo
+					 dynamicState
+					 :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
+					 :dynamicStateCount 2
+					 :pDynamicStates dynamicStates)))
 			     
-			       ,(vk
-				 `(VkPipelineDynamicStateCreateInfo
-				   dynamicState
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
-				   :dynamicStateCount 2
-				   :pDynamicStates dynamicStates)))
 			     
-			   
 			     
 			     )
 			   (do0
@@ -1005,9 +1005,9 @@ more structs. this function helps to initialize those structs."
 				:pPushConstantRanges nullptr))
 			    ,(vkthrow
 			      `(vkCreatePipelineLayout _device
-								&pipelineLayoutInfo
-								nullptr
-								&_pipelineLayout))
+						       &pipelineLayoutInfo
+						       nullptr
+						       &_pipelineLayout))
 			    )
 
 			   ,(vk
@@ -1034,12 +1034,12 @@ more structs. this function helps to initialize those structs."
 			       :basePipelineHandle VK_NULL_HANDLE
 			       :basePipelineIndex -1))
 			   ,(vkthrow `(vkCreateGraphicsPipelines
-					_device
-					VK_NULL_HANDLE ;; pipline cache
-					1
-					&pipelineInfo
-					nullptr
-					&_graphicsPipeline))
+				       _device
+				       VK_NULL_HANDLE ;; pipline cache
+				       1
+				       &pipelineInfo
+				       nullptr
+				       &_graphicsPipeline))
 			   
 			   
 			   (vkDestroyShaderModule _device
@@ -1063,9 +1063,9 @@ more structs. this function helps to initialize those structs."
 			 (let ((shaderModule))
 			   (declare (type VkShaderModule shaderModule))
 			   ,(vkthrow `(vkCreateShaderModule _device
-								 &createInfo
-								 nullptr
-								 &shaderModule))
+							    &createInfo
+							    nullptr
+							    &shaderModule))
 			   
 			   (return shaderModule))))
 		      
@@ -1074,10 +1074,10 @@ more structs. this function helps to initialize those structs."
 			"// initialize _surface member"
 			"// must be destroyed before the instance is destroyed"
 			,(vkthrow `(glfwCreateWindowSurface
-				     _instance _window
-				     nullptr &_surface))
+				    _instance _window
+				    nullptr &_surface))
 			)
-		
+		      
 		      (defun createSwapChain ()
 			(declare (values void))
 			(let ((swapChainSupport
@@ -1139,10 +1139,10 @@ more structs. this function helps to initialize those structs."
 				 :oldSwapchain VK_NULL_HANDLE
 				 ))
 			  ,(vkthrow `(vkCreateSwapchainKHR
-				       _device
-				       &createInfo
-				       nullptr
-				       &_swapChain))
+				      _device
+				      &createInfo
+				      nullptr
+				      &_swapChain))
 			  
 			  (do0
 			   "// now get the images, note will be destroyed with the swap chain"
@@ -1184,10 +1184,10 @@ more structs. this function helps to initialize those structs."
 			      :subresourceRange.layerCount 1
 			      ))
 			  ,(vkthrow `(vkCreateImageView
-				   _device
-				   &createInfo
-				   nullptr
-				   (ref (aref _swapChainImageViews i))))
+				      _device
+				      &createInfo
+				      nullptr
+				      (ref (aref _swapChainImageViews i))))
 			  )))
 		     (defun createLogicalDevice ()
 		       (declare (values void))
@@ -1203,7 +1203,7 @@ more structs. this function helps to initialize those structs."
 			   (declare (type "std::vector<VkDeviceQueueCreateInfo>"
 					  queueCreateInfos)
 				    (type "std::set<uint32_t>" uniqueQueueFamilies))
-		     
+			   
 			   (foreach (queueFamily uniqueQueueFamilies)
 				    ,(vk `(VkDeviceQueueCreateInfo
 					   queueCreateInfo
@@ -1231,7 +1231,7 @@ more structs. this function helps to initialize those structs."
 				  #+nolog 0
 				  #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
 			   ,(vkthrow `(vkCreateDevice _physicalDevice &createInfo
-						       nullptr &_device))
+						      nullptr &_device))
 			   (vkGetDeviceQueue _device (indices.graphicsFamily.value)
 					     0 &_graphicsQueue)
 			   #+surface
@@ -1241,7 +1241,7 @@ more structs. this function helps to initialize those structs."
 		     
 		     
 		     (defun pickPhysicalDevice ()
-		 
+		       
 		       (declare (values void))
 		       "// initialize member _physicalDevice"
 		       (let ((deviceCount 0))
@@ -1277,17 +1277,17 @@ more structs. this function helps to initialize those structs."
 		       (declare (values void))
 		       
 		       (do0
-			  (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
-			  )
+			(vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
+			)
 		       
 		       (let ((imageIndex 0)
 			     (result (vkAcquireNextImageKHR
-			  _device
-			  _swapChain
-			  UINT64_MAX ;; disable timeout for image 
-			  (aref _imageAvailableSemaphores _currentFrame)
-			  VK_NULL_HANDLE
-			  &imageIndex)))
+				      _device
+				      _swapChain
+				      UINT64_MAX ;; disable timeout for image 
+				      (aref _imageAvailableSemaphores _currentFrame)
+				      VK_NULL_HANDLE
+				      &imageIndex)))
 			 (declare (type uint32_t imageIndex))
 			 
 			 (when (== VK_ERROR_OUT_OF_DATE_KHR result)
@@ -1304,91 +1304,91 @@ more structs. this function helps to initialize those structs."
 					  signalSemaphores[])
 				    (type VkPipelineStageFlags waitStages[]))
 			   ,(vk
-			   `(VkSubmitInfo submitInfo
-					  :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
-					  :waitSemaphoreCount 1
-					  :pWaitSemaphores waitSemaphores
-					  ;; pipeline has to wait for image before writing color buffer
-					  :pWaitDstStageMask waitStages
-					  :commandBufferCount 1
-					  :pCommandBuffers (ref (aref _commandBuffers imageIndex))
-					  :signalSemaphoreCount 1
-					  :pSignalSemaphores signalSemaphores))
+			     `(VkSubmitInfo submitInfo
+					    :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+					    :waitSemaphoreCount 1
+					    :pWaitSemaphores waitSemaphores
+					    ;; pipeline has to wait for image before writing color buffer
+					    :pWaitDstStageMask waitStages
+					    :commandBufferCount 1
+					    :pCommandBuffers (ref (aref _commandBuffers imageIndex))
+					    :signalSemaphoreCount 1
+					    :pSignalSemaphores signalSemaphores))
 			   (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame)))
 			   ,(vkthrow
 			     `(vkQueueSubmit
-					_graphicsQueue
-					1
-					&submitInfo
+			       _graphicsQueue
+			       1
+			       &submitInfo
 					;VK_NULL_HANDLE ;; fence
-					(aref _inFlightFences _currentFrame)
-					))
+			       (aref _inFlightFences _currentFrame)
+			       ))
 			   
 			   ;; submit result for presentation
 			   (let ((swapChains[] (curly _swapChain))
 				 )
 			     (declare (type VkSwapchainKHR swapChains[]))
-			    ,(vk
-			      `(VkPresentInfoKHR
-				presentInfo
-				:sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
-				;; wait for signal before presentation
-				:waitSemaphoreCount 1
-				:pWaitSemaphores signalSemaphores
-				:swapchainCount 1
-				:pSwapchains swapChains
-				:pImageIndices &imageIndex 
-				;; we could check if presentation was successful
-				:pResults nullptr))
-			    (progn
-			     (let ((result2 (vkQueuePresentKHR _presentQueue &presentInfo)))
-			       (if (or (== VK_SUBOPTIMAL_KHR result2)
-				       (== VK_ERROR_OUT_OF_DATE_KHR result2)
-				       _framebufferResized)
-				   (do0
-				    (setf _framebufferResized false)
-				    (recreateSwapChain))
-				   (unless (== VK_SUCCESS result2)
-				     (throw ("std::runtime_error"
-					     (string "fialed to present swap chain image.")))))))
-			    
-			    ;(vkQueueWaitIdle _presentQueue) 
-			    )
+			     ,(vk
+			       `(VkPresentInfoKHR
+				 presentInfo
+				 :sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
+				 ;; wait for signal before presentation
+				 :waitSemaphoreCount 1
+				 :pWaitSemaphores signalSemaphores
+				 :swapchainCount 1
+				 :pSwapchains swapChains
+				 :pImageIndices &imageIndex 
+				 ;; we could check if presentation was successful
+				 :pResults nullptr))
+			     (progn
+			       (let ((result2 (vkQueuePresentKHR _presentQueue &presentInfo)))
+				 (if (or (== VK_SUBOPTIMAL_KHR result2)
+					 (== VK_ERROR_OUT_OF_DATE_KHR result2)
+					 _framebufferResized)
+				     (do0
+				      (setf _framebufferResized false)
+				      (recreateSwapChain))
+				     (unless (== VK_SUCCESS result2)
+				       (throw ("std::runtime_error"
+					       (string "fialed to present swap chain image.")))))))
+			     
+					;(vkQueueWaitIdle _presentQueue) 
+			     )
 			   
 			   ))
 		       (setf _currentFrame
 			     (%
 			      (+ 1 _currentFrame)
 			      _MAX_FRAMES_IN_FLIGHT)))
-		  
+		     
 		     (defun cleanupSwapChain ()
-			(declare (values void))
+		       (declare (values void))
+		       
+		       #+surface
+		       (do0
 			
-			#+surface
-			(do0
-			 
-			 (foreach (b _swapChainFramebuffers)
-				  (vkDestroyFramebuffer _device b nullptr))
-			 (vkFreeCommandBuffers _device
-					       _commandPool
-					       (static_cast<uint32_t>
-						(_commandBuffers.size))
-					       (_commandBuffers.data))
-			 (vkDestroyPipeline _device _graphicsPipeline nullptr)
-			 (vkDestroyPipelineLayout
-			  _device
-			  _pipelineLayout
-			  nullptr)
-			 (vkDestroyRenderPass
-			  _device
-			  _renderPass
-			  nullptr)
-			 (foreach (view _swapChainImageViews)
-				  (vkDestroyImageView
-				   _device
-				   view
-				   nullptr))
-			 (vkDestroySwapchainKHR _device _swapChain nullptr)))
+			(foreach (b _swapChainFramebuffers)
+				 (vkDestroyFramebuffer _device b nullptr))
+			(vkFreeCommandBuffers _device
+					      _commandPool
+					      (static_cast<uint32_t>
+					       (_commandBuffers.size))
+					      (_commandBuffers.data))
+			(vkDestroyPipeline _device _graphicsPipeline nullptr)
+			(vkDestroyPipelineLayout
+			 _device
+			 _pipelineLayout
+			 nullptr)
+			(vkDestroyRenderPass
+			 _device
+			 _renderPass
+			 nullptr)
+			(foreach (view _swapChainImageViews)
+				 (vkDestroyImageView
+				  _device
+				  view
+				  nullptr))
+			(vkDestroySwapchainKHR _device _swapChain nullptr)))
 		     (defun cleanup ()
 		       (declare (values void))
 		       
