@@ -965,7 +965,7 @@ more structs. this function helps to initialize those structs."
 			   ;; draw the triangle
 			   (vkCmdDrawIndexed
 			    (aref _commandBuffers i)
-			    (static_cast<uint32_t> (indices.size)) ;; count
+			    (static_cast<uint32_t> (g_indices.size)) ;; count
 			    1 ;; no instance rendering
 			    0 ;; offset to first index into buffer
 			    0 ;; offset to add to index

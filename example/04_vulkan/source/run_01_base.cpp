@@ -544,7 +544,7 @@ private:
       vkCmdBindIndexBuffer(_commandBuffers[i], _indexBuffer, 0,
                            VK_INDEX_TYPE_UINT16);
       vkCmdDrawIndexed(_commandBuffers[i],
-                       static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+                       static_cast<uint32_t>(g_indices.size()), 1, 0, 0, 0);
       vkCmdEndRenderPass(_commandBuffers[i]);
       if (!((VK_SUCCESS) == (vkEndCommandBuffer(_commandBuffers[i])))) {
         throw std::runtime_error(
