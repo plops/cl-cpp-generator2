@@ -128,7 +128,7 @@ more structs. this function helps to initialize those structs."
 	    (defun "Vertex::getBindingDescription" ()
 	      (declare (values "VkVertexInputBindingDescription"))
 	      ,(vk
-		`(vkVertexInputBindingDescription
+		`(VkVertexInputBindingDescription
 		  bindingDescription
 		  :binding 0
 		  :stride (sizeof Vertex)
@@ -721,17 +721,19 @@ more structs. this function helps to initialize those structs."
 				     :pSpecializationInfo nullptr)))
 			   (let (("shaderStages[]"
 				  (curly vertShaderStageInfo
-					 fragShaderStageInfo)))
+					 fragShaderStageInfo))
+				 (bindingDescription ("Vertex::getBindingDescription"))
+				 (attributeDescriptions ("Vertex::getAttributeDescriptions")))
 			     (declare (type VkPipelineShaderStageCreateInfo
 					    "shaderStages[]"))
 			     ,(vk
 			       `(VkPipelineVertexInputStateCreateInfo
 				 vertexInputInfo
 				 :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
-				 :vertexBindingDescriptionCount 0
-				 :pVertexBindingDescriptions nullptr
-				 :vertexAttributeDescriptionCount 0
-				 :pVertexAttributeDescriptions nullptr))
+				 :vertexBindingDescriptionCount 1
+				 :pVertexBindingDescriptions &bindingDescription
+				 :vertexAttributeDescriptionCount (static_cast<uint32_t> (attributeDescriptions.size))
+				 :pVertexAttributeDescriptions (attributeDescriptions.data)))
 			     ,(vk
 			       `(VkPipelineInputAssemblyStateCreateInfo
 				 inputAssembly
