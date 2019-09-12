@@ -29,7 +29,7 @@
 	      (mapcar #'string-capitalize
 		      (cl-ppcre:split "-" (format nil "~a" verb)))
 	      suffix))
-    (defun vk-info-stype (verb subject &key (prefix "VK_")
+    (defun vk-info-stype (verb subject &key (prefix "VK_STRUCTURE_TYPE_")
 					(suffix "_INFO"))
       "convert a lisp symbol like allocate command-buffer to VK_COMMAND_BUFFER_ALLOCATE_INFO"
       (format nil "~a~{~a~^_~}_~{~a~^_~}~a"
@@ -722,7 +722,11 @@ more structs. this function helps to initialize those structs."
 				    )
 				  :plural t
 				  )
-
+			 (do0
+			  ,(vkcall `(begin
+				     command-buffer
+				     (:flags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+				     (commandBuffer &info))))
 			 
 			 
 			 (vkFreeCommandBuffers

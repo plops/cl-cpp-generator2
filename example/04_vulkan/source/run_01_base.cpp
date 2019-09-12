@@ -371,11 +371,17 @@ private:
     VkCommandBuffer commandBuffer;
     {
       VkCommandBufferAllocateInfo info = {};
-      info.sType = VK_COMMAND_BUFFER_ALLOCATE_INFO;
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
       info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
       info.commandPool = _commandPool;
       info.commandBufferCount = 1;
       vkAllocateCommandBuffers(_device, &info, &commandBuffer);
+    };
+    {
+      VkCommandBufferBeginInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+      vkBeginCommandBuffer(commandBuffer, &info);
     };
     vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
   }
