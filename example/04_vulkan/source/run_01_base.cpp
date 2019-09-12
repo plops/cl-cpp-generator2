@@ -300,7 +300,7 @@ private:
                           VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties ps;
     vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &ps);
-    for (int i = 0; i < ps.memoryTypeCOunt(); (i) += (1)) {
+    for (int i = 0; i < ps.memoryTypeCount; (i) += (1)) {
       if (((((1 << i) & (typeFilter))) &&
            ((properties) ==
             (((properties) & (ps.memoryTypes[i].propertyFlags)))))) {

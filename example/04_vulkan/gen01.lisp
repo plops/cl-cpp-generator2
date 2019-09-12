@@ -521,7 +521,7 @@ more structs. this function helps to initialize those structs."
 			 (declare (type VkPhysicalDeviceMemoryProperties ps))
 			 (vkGetPhysicalDeviceMemoryProperties _physicalDevice
 							      &ps)
-			 (dotimes (i (ps.memoryTypeCOunt))
+			 (dotimes (i ps.memoryTypeCount)
 			   (when (and (logand (<< 1 i)
 					      typeFilter)
 				      (== properties
