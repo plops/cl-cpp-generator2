@@ -1427,20 +1427,20 @@ more structs. this function helps to initialize those structs."
 			 (declare (values VkShaderModule)
 				  (type "const std::vector<char>&" code))
 			 ;;std::vector<char> fullfills alignment requirements of uint32_t
-			 ,(vk
-			   `(VkShaderModuleCreateInfo
-			     createInfo
-			     :sType VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO
-			     :codeSize (code.size)
-			     :pCode ("reinterpret_cast<const uint32_t*>"
-				     (code.data))))
+			 
 			 (let ((shaderModule))
 			   (declare (type VkShaderModule shaderModule))
-			   ,(vkthrow `(vkCreateShaderModule _device
-							    &createInfo
-							    nullptr
-							    &shaderModule))
-			   
+			   ,(vkcall
+			     `(create
+			       shader-module
+			       (:codeSize (code.size)
+					  :pCode ("reinterpret_cast<const uint32_t*>"
+						  (code.data)))
+			       (_device
+				&info
+				nullptr
+				&shaderModule))
+			     :throw t)
 			   (return shaderModule))))
 		      
 		      (defun createSurface ()

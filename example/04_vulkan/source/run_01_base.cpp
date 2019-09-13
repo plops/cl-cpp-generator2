@@ -885,15 +885,17 @@ private:
     vkDestroyShaderModule(_device, vertShaderModule, nullptr);
   }
   VkShaderModule createShaderModule(const std::vector<char> &code) {
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
     VkShaderModule shaderModule;
-    if (!((VK_SUCCESS) == (vkCreateShaderModule(_device, &createInfo, nullptr,
-                                                &shaderModule)))) {
-      throw std::runtime_error("failed to (vkCreateShaderModule _device "
-                               "&createInfo nullptr &shaderModule)");
+    {
+      VkShaderModuleCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+      info.codeSize = code.size();
+      info.pCode = reinterpret_cast<const uint32_t *>(code.data());
+      if (!((VK_SUCCESS) ==
+            (vkCreateShaderModule(_device, &info, nullptr, &shaderModule)))) {
+        throw std::runtime_error("failed to (vkCreateShaderModule _device "
+                                 "&info nullptr &shaderModule)");
+      };
     };
     return shaderModule;
   };
