@@ -61,7 +61,7 @@ struct UniformBufferObject {
 typedef struct UniformBufferObject UniformBufferObject;
 struct Vertex {
   glm::vec2 pos;
-  glm::vec color;
+  glm::vec3 color;
   static VkVertexInputBindingDescription getBindingDescription();
   static std::array<VkVertexInputAttributeDescription, 2>
   getAttributeDescriptions();
@@ -75,10 +75,10 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
   return bindingDescription;
 }
 std::vector<Vertex> g_vertices = {
-    {{(-5.e-1), (-5.e-1)}, {(1.e+0), (0.0e+0), (0.0e+0)}},
-    {{(5.e-1), (-5.e-1)}, {(0.0e+0), (1.e+0), (0.0e+0)}},
-    {{(5.e-1), (5.e-1)}, {(0.0e+0), (0.0e+0), (1.e+0)}},
-    {{(-5.e-1), (5.e-1)}, {(1.e+0), (1.e+0), (1.e+0)}}};
+    {{(-5.e-1f), (-5.e-1f)}, {(1.e+0f), (0.0e+0f), (0.0e+0f)}},
+    {{(5.e-1f), (-5.e-1f)}, {(0.0e+0f), (1.e+0f), (0.0e+0f)}},
+    {{(5.e-1f), (5.e-1f)}, {(0.0e+0f), (0.0e+0f), (1.e+0f)}},
+    {{(-5.e-1f), (5.e-1f)}, {(1.e+0f), (1.e+0f), (1.e+0f)}}};
 std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0};
 std::array<VkVertexInputAttributeDescription, 2>
 Vertex::getAttributeDescriptions() {
@@ -574,7 +574,7 @@ private:
         throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
                                  "_commandBuffers i) &beginInfo)");
       };
-      VkClearValue clearColor = {(0.0e+0), (0.0e+0), (0.0e+0), (1.e+0)};
+      VkClearValue clearColor = {(0.0e+0f), (0.0e+0f), (0.0e+0f), (1.e+0f)};
       VkRenderPassBeginInfo renderPassInfo = {};
       renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
       renderPassInfo.renderPass = _renderPass;
@@ -708,12 +708,12 @@ private:
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
     VkViewport viewport = {};
-    viewport.x = (0.0e+0);
-    viewport.y = (0.0e+0);
-    viewport.width = (((1.e+0)) * (_swapChainExtent.width));
-    viewport.height = (((1.e+0)) * (_swapChainExtent.height));
-    viewport.minDepth = (0.0e+0);
-    viewport.maxDepth = (1.e+0);
+    viewport.x = (0.0e+0f);
+    viewport.y = (0.0e+0f);
+    viewport.width = (((1.e+0f)) * (_swapChainExtent.width));
+    viewport.height = (((1.e+0f)) * (_swapChainExtent.height));
+    viewport.minDepth = (0.0e+0f);
+    viewport.maxDepth = (1.e+0f);
     VkRect2D scissor = {};
     scissor.offset = {0, 0};
     scissor.extent = _swapChainExtent;
@@ -728,19 +728,19 @@ private:
         VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth = (1.e+0);
+    rasterizer.lineWidth = (1.e+0f);
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = (0.0e+0);
-    rasterizer.depthBiasClamp = (0.0e+0);
-    rasterizer.depthBiasSlopeFactor = (0.0e+0);
+    rasterizer.depthBiasConstantFactor = (0.0e+0f);
+    rasterizer.depthBiasClamp = (0.0e+0f);
+    rasterizer.depthBiasSlopeFactor = (0.0e+0f);
     VkPipelineMultisampleStateCreateInfo multisampling = {};
     multisampling.sType =
         VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    multisampling.minSampleShading = (1.e+0);
+    multisampling.minSampleShading = (1.e+0f);
     multisampling.pSampleMask = nullptr;
     multisampling.alphaToCoverageEnable = VK_FALSE;
     multisampling.alphaToOneEnable = VK_FALSE;
@@ -762,10 +762,10 @@ private:
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = (0.0e+0);
-    colorBlending.blendConstants[1] = (0.0e+0);
-    colorBlending.blendConstants[2] = (0.0e+0);
-    colorBlending.blendConstants[3] = (0.0e+0);
+    colorBlending.blendConstants[0] = (0.0e+0f);
+    colorBlending.blendConstants[1] = (0.0e+0f);
+    colorBlending.blendConstants[2] = (0.0e+0f);
+    colorBlending.blendConstants[3] = (0.0e+0f);
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
@@ -908,7 +908,7 @@ private:
   void createLogicalDevice() {
     // initialize members _device and _graphicsQueue
     auto indices = findQueueFamilies(_physicalDevice, _surface);
-    float queuePriority = (1.e+0);
+    float queuePriority = (1.e+0f);
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
                                               indices.presentFamily.value()};
@@ -1033,14 +1033,16 @@ private:
     float time = std::chrono::duration<float, std::chrono::seconds::period>(
                      ((currentTime) - (startTime)))
                      .count();
+    const auto zAxis = glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f));
+    const auto identityMatrix = glm::mat4((1.e+0f));
+    const auto angularRate = glm::radians((9.e+1f));
+    auto rotationAngle = ((time) * (angularRate));
     UniformBufferObject ubo = {};
-    ubo.model =
-        glm::rotate(glm::mat4((1.e+0)), ((time) * (glm::radians((9.e+1)))),
-                    glm::vec3((0.0e+0), (0.0e+0), (1.e+0)));
+    ubo.model = glm::rotate(identityMatrix, rotationAngle, zAxis);
     ubo.view = glm::perspective(
-        glm::radians((4.5e+1)),
-        ((_swapChainExtent.width) / ((((1.e+0)) * (_swapChainExtent.height)))),
-        (1.0000000149011612e-1), (1.e+1));
+        glm::radians((4.5e+1f)),
+        ((_swapChainExtent.width) / ((((1.e+0f)) * (_swapChainExtent.height)))),
+        (1.e-1f), (1.e+1f));
     ubo.proj[1][1] = (-(ubo.proj[1][1]));
     void *data = 0;
     vkMapMemory(_device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0,

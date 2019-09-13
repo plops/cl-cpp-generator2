@@ -183,6 +183,22 @@ entry return-values contains a list of return values"
 			(car r))))
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
 
+
+(defun print-sufficient-digits-f32 (f)
+  "print a single floating point number as a string with a given nr. of
+  digits. parse it again and increase nr. of digits until the same bit
+  pattern."
+  (let* ((ff (coerce f 'single-float))
+         (s (format nil "~E" ff)))
+    #+nil   (assert (= 0s0 (- ff
+                              (read-from-string s))))
+    (assert (< (abs (- ff
+                       (read-from-string s)))
+               1d-4))
+   (format nil "~af" s)))
+
+
+
 (defun print-sufficient-digits-f64 (f)
   "print a double floating point number as a string with a given nr. of
   digits. parse it again and increase nr. of digits until the same bit
@@ -542,8 +558,11 @@ entry return-values contains a list of return values"
 		 (format nil "~a" code))
 		((numberp code) ;; print constants
 		 (cond ((integerp code) (format str "~a" code))
-		       ((floatp code) 
-			(format str "(~a)" (print-sufficient-digits-f64 code)))))))
+		       ((floatp code)
+			(typecase code
+			  (single-float (format str "(~a)" (print-sufficient-digits-f32 code)))
+			  (double-float (format str "(~a)" (print-sufficient-digits-f64 code))))
+			#+nil (format str "(~a)" (print-sufficient-digits-f64 code)))))))
 	  "")))
   #+nil (progn
    (defparameter *bla*

@@ -207,7 +207,7 @@ more structs. this function helps to initialize those structs."
 	      (proj "glm::mat4"))
 	    (defstruct0 Vertex
 		(pos "glm::vec2")
-	      (color "glm::vec")
+	      (color "glm::vec3")
 	      ;; here static means the function has no receiver object
 	      ;; outside of the class static would limit scope to only
 	      ;; this file (which i don't necessarily want)
@@ -1654,21 +1654,27 @@ more structs. this function helps to initialize those structs."
 				  (type float time)
 				  )
 			 ;; rotate model around z axis
-			 ,(vk
-			   `(UniformBufferObject
-			     ubo
-			     :model ("glm::rotate"
-				     ("glm::mat4" 1s0) ;; identity matrix
-				     (* time ("glm::radians" 90s0))
-				     ("glm::vec3" 0s0 0s0 1s0))
-			     ;; look from above in 45 deg angle
-			     ;; use current extent for correct aspect
-			     :view ("glm::perspective"
-				    ("glm::radians" 45s0)
-				    (/ _swapChainExtent.width
-				       (* 1s0 _swapChainExtent.height))
-				    .1s0
-				    10s0)))
+			 (let ((zAxis ("glm::vec3" 0s0 0s0 1s0))
+			       (identityMatrix ("glm::mat4" 1s0))
+			       (angularRate ("glm::radians" 90s0))
+			       (rotationAngle (* time angularRate)))
+			   (declare (type "const auto" zAxis angularRate
+					  identityMatrix))
+			  ,(vk
+			    `(UniformBufferObject
+			      ubo
+			      :model ("glm::rotate"
+				      identityMatrix
+				      rotationAngle
+				      zAxis)
+			      ;; look from above in 45 deg angle
+			      ;; use current extent for correct aspect
+			      :view ("glm::perspective"
+				     ("glm::radians" 45s0)
+				     (/ _swapChainExtent.width
+					(* 1s0 _swapChainExtent.height))
+				     .1s0
+				     10s0))))
 			 ;; glm was designed for opengl and has
 			 ;; inverted y clip coordinate
 			 (setf (aref ubo.proj 1 1)
