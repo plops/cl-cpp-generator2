@@ -475,6 +475,7 @@ private:
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
     std::vector<VkDescriptorSetLayout> layouts(n, _descriptorSetLayout);
+    _descriptorSets.resize(n);
     {
       VkDescriptorSetAllocateInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

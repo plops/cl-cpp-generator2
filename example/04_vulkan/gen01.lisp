@@ -872,6 +872,7 @@ more structs. this function helps to initialize those structs."
 			      ((layouts n _descriptorSetLayout)))
 			  (declare (type "std::vector<VkDescriptorSetLayout>"
 					 (layouts n _descriptorSetLayout)))
+			  (_descriptorSets.resize n)
 			  ,(vkcall
 			   `(allocate
 			     descriptor-set
