@@ -1147,18 +1147,17 @@ more structs. this function helps to initialize those structs."
 			 (let ((queueFamilyIndices (findQueueFamilies
 						    _physicalDevice
 						    _surface)))
-			   ,(vk
-			     `(VkCommandPoolCreateInfo
-			       poolInfo
-			       :sType VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
-			       ;; cmds for drawing go to graphics queue
+			   ,(vkcall
+			     `(create
+			       command-pool
+			       (;; cmds for drawing go to graphics queue
 			       :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
-			       :flags 0)))
-			 ,(vkthrow `(vkCreateCommandPool _device
-							 &poolInfo
-							 nullptr
-							 &_commandPool))
-			 )
+						 :flags 0)
+			       (_device
+				&info
+				nullptr
+				&_commandPool))
+			     :throw t)))
 		       (defun createFramebuffers ()
 			 (declare (values void))
 			 (_swapChainFramebuffers.resize

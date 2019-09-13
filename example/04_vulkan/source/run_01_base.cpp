@@ -672,14 +672,16 @@ private:
   }
   void createCommandPool() {
     auto queueFamilyIndices = findQueueFamilies(_physicalDevice, _surface);
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-    poolInfo.flags = 0;
-    if (!((VK_SUCCESS) ==
-          (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool)))) {
-      throw std::runtime_error("failed to (vkCreateCommandPool _device "
-                               "&poolInfo nullptr &_commandPool)");
+    {
+      VkCommandPoolCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+      info.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+      info.flags = 0;
+      if (!((VK_SUCCESS) ==
+            (vkCreateCommandPool(_device, &info, nullptr, &_commandPool)))) {
+        throw std::runtime_error("failed to (vkCreateCommandPool _device &info "
+                                 "nullptr &_commandPool)");
+      };
     };
   }
   void createFramebuffers() {
