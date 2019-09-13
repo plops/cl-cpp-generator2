@@ -1593,10 +1593,10 @@ more structs. this function helps to initialize those structs."
 			 (let ((deviceFeatures (curly))
 			       )
 			   (declare (type VkPhysicalDeviceFeatures deviceFeatures))
-			   ,(vk `(VkDeviceCreateInfo
-				  createInfo
-				  :sType VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
-				  :pQueueCreateInfos (queueCreateInfos.data)
+			   ,(vkcall
+			     `(create
+			      device
+			      (:pQueueCreateInfos (queueCreateInfos.data)
 				  :queueCreateInfoCount (static_cast<uint32_t>
 							 (queueCreateInfos.size))
 				  :pEnabledFeatures &deviceFeatures
@@ -1609,9 +1609,12 @@ more structs. this function helps to initialize those structs."
 				  #+nolog 0
 				  :ppEnabledLayerNames
 				  #+nolog nullptr
-				  #-nolog (_validationLayers.data)))
-			   ,(vkthrow `(vkCreateDevice _physicalDevice &createInfo
-						      nullptr &_device))
+				  #-nolog (_validationLayers.data))
+			      (_physicalDevice
+			       &info
+			       nullptr
+			       &_device))
+			     :throw t)
 			   (vkGetDeviceQueue _device (indices.graphicsFamily.value)
 					     0 &_graphicsQueue)
 			   #+surface

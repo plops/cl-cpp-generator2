@@ -1006,22 +1006,23 @@ private:
       queueCreateInfos.push_back(queueCreateInfo);
     };
     VkPhysicalDeviceFeatures deviceFeatures = {};
-    VkDeviceCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = queueCreateInfos.data();
-    createInfo.queueCreateInfoCount =
-        static_cast<uint32_t>(queueCreateInfos.size());
-    createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount =
-        static_cast<uint32_t>(_deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
-    createInfo.enabledLayerCount =
-        static_cast<uint32_t>(_validationLayers.size());
-    createInfo.ppEnabledLayerNames = _validationLayers.data();
-    if (!((VK_SUCCESS) ==
-          (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device)))) {
-      throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
-                               "&createInfo nullptr &_device)");
+    {
+      VkDeviceCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+      info.pQueueCreateInfos = queueCreateInfos.data();
+      info.queueCreateInfoCount =
+          static_cast<uint32_t>(queueCreateInfos.size());
+      info.pEnabledFeatures = &deviceFeatures;
+      info.enabledExtensionCount =
+          static_cast<uint32_t>(_deviceExtensions.size());
+      info.ppEnabledExtensionNames = _deviceExtensions.data();
+      info.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+      info.ppEnabledLayerNames = _validationLayers.data();
+      if (!((VK_SUCCESS) ==
+            (vkCreateDevice(_physicalDevice, &info, nullptr, &_device)))) {
+        throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
+                                 "&info nullptr &_device)");
+      };
     };
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
