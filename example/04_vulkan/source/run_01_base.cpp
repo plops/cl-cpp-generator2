@@ -685,25 +685,28 @@ private:
     };
   }
   void createFramebuffers() {
-    _swapChainFramebuffers.resize(_swapChainImageViews.size());
-    for (int i = 0; i < _swapChainImageViews.size(); (i) += (1)) {
+    auto n = _swapChainImageViews.size();
+    _swapChainFramebuffers.resize(n);
+    for (int i = 0; i < n; (i) += (1)) {
       VkImageView attachments[] = {_swapChainImageViews[i]};
-      VkFramebufferCreateInfo framebufferInfo = {};
-      framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-      framebufferInfo.renderPass = _renderPass;
-      framebufferInfo.attachmentCount = 1;
-      framebufferInfo.pAttachments = attachments;
-      framebufferInfo.width = _swapChainExtent.width;
-      framebufferInfo.height = _swapChainExtent.height;
-      framebufferInfo.layers = 1;
-      if (!((VK_SUCCESS) ==
-            (vkCreateFramebuffer(_device, &framebufferInfo, nullptr,
-                                 &(_swapChainFramebuffers[i]))))) {
-        throw std::runtime_error(
-            "failed to (vkCreateFramebuffer _device &framebufferInfo nullptr   "
-            "         (ref (aref _swapChainFramebuffers i)))");
+      {
+        VkFramebufferCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.renderPass = _renderPass;
+        info.attachmentCount = 1;
+        info.pAttachments = attachments;
+        info.width = _swapChainExtent.width;
+        info.height = _swapChainExtent.height;
+        info.layers = 1;
+        if (!((VK_SUCCESS) ==
+              (vkCreateFramebuffer(_device, &info, nullptr,
+                                   &(_swapChainFramebuffers[i]))))) {
+          throw std::runtime_error(
+              "failed to (vkCreateFramebuffer _device &info nullptr            "
+              "(ref (aref _swapChainFramebuffers i)))");
+        };
       };
-    }
+    };
   }
   void createRenderPass() {
     VkAttachmentDescription colorAttachment = {};

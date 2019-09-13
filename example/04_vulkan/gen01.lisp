@@ -1160,27 +1160,26 @@ more structs. this function helps to initialize those structs."
 			     :throw t)))
 		       (defun createFramebuffers ()
 			 (declare (values void))
-			 (_swapChainFramebuffers.resize
-			  (_swapChainImageViews.size))
-			 (dotimes (i (_swapChainImageViews.size))
-			   (let (("attachments[]" (curly (aref _swapChainImageViews i))))
-			     (declare (type VkImageView "attachments[]"))
-			     ,(vk
-			       `(VkFramebufferCreateInfo
-				 framebufferInfo
-				 :sType VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO
-				 :renderPass _renderPass
-				 :attachmentCount 1
-				 :pAttachments attachments
-				 :width _swapChainExtent.width
-				 :height _swapChainExtent.height
-				 :layers 1))
-			     ,(vkthrow `(vkCreateFramebuffer
-					 _device
-					 &framebufferInfo
-					 nullptr
-					 (ref
-					  (aref _swapChainFramebuffers i)))))))
+			 (let ((n (_swapChainImageViews.size)))
+			   (_swapChainFramebuffers.resize n)
+			   (dotimes (i n)
+			     (let (("attachments[]" (curly (aref _swapChainImageViews i))))
+			       (declare (type VkImageView "attachments[]"))
+			       ,(vkcall
+				 `(create
+				   framebuffer
+				   (:renderPass _renderPass
+				   :attachmentCount 1
+				   :pAttachments attachments
+				   :width _swapChainExtent.width
+				   :height _swapChainExtent.height
+				   :layers 1)
+				   (_device
+				    &info
+				    nullptr
+				    (ref
+				     (aref _swapChainFramebuffers i))))
+				 :throw t)))))
 		       (defun createRenderPass ()
 			 (declare (values void))
 			 ,(vk
@@ -1194,8 +1193,7 @@ more structs. this function helps to initialize those structs."
 			     :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
 			     :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
 			     ;; image to be presented in swap chain
-			     :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-			     ))
+			     :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
 			 ,(vk
 			   `(VkAttachmentReference
 			     colorAttachmentRef
