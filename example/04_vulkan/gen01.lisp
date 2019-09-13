@@ -202,9 +202,15 @@ more structs. this function helps to initialize those structs."
 		   (file.close)
 		   (return buffer)))))
 	    (defstruct0 UniformBufferObject
+		(model "glm::mat4")
+	      (view "glm::mat4")
+	      (proj "glm::mat4"))
+	    #+nil
+	    (defstruct0 UniformBufferObject
 		(model "alignas(16) glm::mat4")
 	      (view "alignas(16) glm::mat4")
 	      (proj "alignas(16) glm::mat4"))
+	    
 	    (defstruct0 Vertex
 		(pos "glm::vec2")
 	      (color "glm::vec3")
@@ -1751,7 +1757,7 @@ more structs. this function helps to initialize those structs."
 				  )
 			 ;; rotate model around z axis
 			 (let ((zAxis ("glm::vec3" 0s0 0s0 1s0))
-			       (identityMatrix ("glm::mat4" 1s0))
+			       ;(identityMatrix ("glm::mat4" 1s0))
 			       (angularRate ("glm::radians" 90s0))
 			       (rotationAngle (* time angularRate)))
 			   (declare (type "const auto" zAxis angularRate
@@ -1760,17 +1766,23 @@ more structs. this function helps to initialize those structs."
 			    `(UniformBufferObject
 			      ubo
 			      :model ("glm::rotate"
-				      identityMatrix
+				      ("glm::mat4" 1s0)
 				      rotationAngle
 				      zAxis)
 			      ;; look from above in 45 deg angle
+			      :view ("glm::lookAt"
+				     ("glm::vec3" 2s0 2s0 2s0)
+				     ("glm::vec3" 0s0 0s0 0s0)
+				     zAxis
+				     )
 			      ;; use current extent for correct aspect
-			      :view ("glm::perspective"
+			      :proj ("glm::perspective"
 				     ("glm::radians" 45s0)
 				     (/ _swapChainExtent.width
 					(* 1s0 _swapChainExtent.height))
 				     .1s0
-				     10s0))))
+				     10s0)
+			      )))
 			 ;; glm was designed for opengl and has
 			 ;; inverted y clip coordinate
 			 (setf (aref ubo.proj 1 1)

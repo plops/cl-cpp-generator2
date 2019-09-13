@@ -54,9 +54,9 @@ std::vector<char> readFile(const std::string &filename) {
   return buffer;
 };
 struct UniformBufferObject {
-  alignas(16) glm::mat4 model;
-  alignas(16) glm::mat4 view;
-  alignas(16) glm::mat4 proj;
+  glm::mat4 model;
+  glm::mat4 view;
+  glm::mat4 proj;
 };
 typedef struct UniformBufferObject UniformBufferObject;
 struct Vertex {
@@ -1096,12 +1096,13 @@ private:
                      ((currentTime) - (startTime)))
                      .count();
     const auto zAxis = glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f));
-    const auto identityMatrix = glm::mat4((1.e+0f));
     const auto angularRate = glm::radians((9.e+1f));
     auto rotationAngle = ((time) * (angularRate));
     UniformBufferObject ubo = {};
-    ubo.model = glm::rotate(identityMatrix, rotationAngle, zAxis);
-    ubo.view = glm::perspective(
+    ubo.model = glm::rotate(glm::mat4((1.e+0f)), rotationAngle, zAxis);
+    ubo.view = glm::lookAt(glm::vec3((2.e+0f), (2.e+0f), (2.e+0f)),
+                           glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)), zAxis);
+    ubo.proj = glm::perspective(
         glm::radians((4.5e+1f)),
         ((_swapChainExtent.width) / ((((1.e+0f)) * (_swapChainExtent.height)))),
         (1.e-1f), (1.e+1f));
