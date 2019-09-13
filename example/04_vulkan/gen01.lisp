@@ -1219,23 +1219,22 @@ more structs. this function helps to initialize those structs."
 			     :dstAccessMask (logior
 					     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
 					     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)))
-			 ,(vk
-			   `(VkRenderPassCreateInfo
-			     renderPassInfo
-			     :sType VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO
-			     :attachmentCount 1
-			     :pAttachments &colorAttachment
-			     :subpassCount 1
-			     :pSubpasses &subpass
-			     ;; wait with writing of the color attachment
-			     :dependencyCount 1
-			     :pDependencies &dependency))
-			 ,(vkthrow `(vkCreateRenderPass
+			 ,(vkcall
+			   `(create
+			     render-pass
+			     (:attachmentCount 1
+					       :pAttachments &colorAttachment
+					       :subpassCount 1
+					       :pSubpasses &subpass
+					       ;; wait with writing of the color attachment
+					       :dependencyCount 1
+					       :pDependencies &dependency)
+			     (
 				     _device
-				     &renderPassInfo
+				     &info
 				     nullptr
 				     &_renderPass))
-			 )
+			   :throw t))
 		       (defun createGraphicsPipeline ()
 			 (declare (values void))
 			 (let ((vertShaderModule (createShaderModule

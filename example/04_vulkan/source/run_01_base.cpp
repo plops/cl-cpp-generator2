@@ -733,18 +733,20 @@ private:
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.dstAccessMask = ((VK_ACCESS_COLOR_ATTACHMENT_READ_BIT) |
                                 (VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT));
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-    if (!((VK_SUCCESS) == (vkCreateRenderPass(_device, &renderPassInfo, nullptr,
-                                              &_renderPass)))) {
-      throw std::runtime_error("failed to (vkCreateRenderPass _device "
-                               "&renderPassInfo nullptr &_renderPass)");
+    {
+      VkRenderPassCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+      info.attachmentCount = 1;
+      info.pAttachments = &colorAttachment;
+      info.subpassCount = 1;
+      info.pSubpasses = &subpass;
+      info.dependencyCount = 1;
+      info.pDependencies = &dependency;
+      if (!((VK_SUCCESS) ==
+            (vkCreateRenderPass(_device, &info, nullptr, &_renderPass)))) {
+        throw std::runtime_error("failed to (vkCreateRenderPass _device &info "
+                                 "nullptr &_renderPass)");
+      };
     };
   }
   void createGraphicsPipeline() {
