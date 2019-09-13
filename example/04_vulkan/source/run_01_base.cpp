@@ -338,16 +338,18 @@ private:
                VkMemoryPropertyFlags properties) {
     VkBuffer buffer;
     VkDeviceMemory bufferMemory;
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    bufferInfo.flags = 0;
-    if (!((VK_SUCCESS) ==
-          (vkCreateBuffer(_device, &bufferInfo, nullptr, &buffer)))) {
-      throw std::runtime_error(
-          "failed to (vkCreateBuffer _device &bufferInfo nullptr &buffer)");
+    {
+      VkBufferCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+      info.size = size;
+      info.usage = usage;
+      info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      info.flags = 0;
+      if (!((VK_SUCCESS) ==
+            (vkCreateBuffer(_device, &info, nullptr, &buffer)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateBuffer _device &info nullptr &buffer)");
+      };
     };
     VkMemoryRequirements memReq;
     vkGetBufferMemoryRequirements(_device, buffer, &memReq);

@@ -51,7 +51,7 @@
 		      (cl-ppcre:split "-" (format nil "~a" subject)))
 	      suffix))
     (defun vkcall (params &key (plural nil) (throw nil))
-      "subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function"
+      "this macro helps to initialize an info object and call the corresponding vulkan function. splitting the command into verb subject and the plural argument seem to be enough automatically generate structure type names function names and the sType for a large subset of vulkan. subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function"
       (destructuring-bind (verb subject info-params args)
 	  params
 	`(progn
@@ -624,26 +624,7 @@ more structs. this function helps to initialize those structs."
 			      nullptr
 			      &_instance)
 			     )
-			   :throw t)
-			 #+nil
-			 (do0
-			  ,(vk `(VkInstanceCreateInfo
-				 createInfo
-				 :sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
-				 :pApplicationInfo &appInfo
-				 :enabledExtensionCount glfwExtensionCount
-				 :ppEnabledExtensionNames glfwExtensions
-				 :enabledLayerCount
-				 #+nolog 0
-				 #-nolog ("static_cast<uint32_t>"
-					  (_validationLayers.size))
-				 :ppEnabledLayerNames
-				 #+nolog nullptr
-				 #-nolog (_validationLayers.data)))
-			  ,(vkthrow `(vkCreateInstance &createInfo
-						       nullptr
-						       &_instance)))
-			 ))
+			   :throw t)))
 		     (defun createBuffer (size usage properties )
 		       ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
 		       (declare (values "std::tuple<VkBuffer,VkDeviceMemory>")
@@ -657,22 +638,25 @@ more structs. this function helps to initialize those structs."
 			 (declare (type VkBuffer  buffer)
 				(type VkDeviceMemory bufferMemory)
 				)
-			,(vk
-			  `(VkBufferCreateInfo
-			    bufferInfo
-			    :sType VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
-			    ;; buffer size in bytes
-			    :size size
-			    :usage usage
-			    ;; only graphics queue is using this buffer
-			    :sharingMode VK_SHARING_MODE_EXCLUSIVE
-			    ;; flags could indicate sparse memory (we
-			    ;; don't use that)
-			    :flags 0))
-			,(vkthrow `(vkCreateBuffer _device
-						   &bufferInfo
-						   nullptr
-						   &buffer))
+			 ,(vkcall
+			   `(create
+			     buffer
+			     (;; buffer size in bytes
+			      :size size
+			      :usage usage
+			      ;; only graphics queue is using this buffer
+			      :sharingMode VK_SHARING_MODE_EXCLUSIVE
+			      ;; flags could indicate sparse memory (we
+			      ;; don't use that)
+			      :flags 0
+			      )
+			     (_device
+						     &info
+						     nullptr
+						     &buffer)
+			     )
+			   :throw t)
+			 
 			(let ((memReq))
 			  (declare (type VkMemoryRequirements memReq))
 			  (vkGetBufferMemoryRequirements _device
