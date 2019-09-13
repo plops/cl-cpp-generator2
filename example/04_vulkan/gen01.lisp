@@ -6,8 +6,8 @@
 
 ;; if nolog is off, then validation layers will be used to check for mistakes
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
-(setf *features* (union *features* '(:surface)))
-(setf *features* (set-difference *features* '(:nolog)))
+(setf *features* (union *features* '(:surface :nolog)))
+;(setf *features* (set-difference *features* '(:nolog)))
 
 
 
@@ -617,7 +617,8 @@ more structs. this function helps to initialize those structs."
 				#+nolog 0
 				#-nolog ("static_cast<uint32_t>"
 					 (_validationLayers.size))
-				#-nolog :ppEnabledLayerNames
+				:ppEnabledLayerNames
+				#+nolog nullptr
 				#-nolog (_validationLayers.data)))
 			 ,(vkthrow `(vkCreateInstance &createInfo
 						      nullptr
@@ -1608,7 +1609,9 @@ more structs. this function helps to initialize those structs."
 				  :enabledLayerCount
 				  #-nolog (static_cast<uint32_t> (_validationLayers.size))
 				  #+nolog 0
-				  #-nolog :ppEnabledLayerNames #-nolog (_validationLayers.data)))
+				  :ppEnabledLayerNames
+				  #+nolog nullptr
+				  #-nolog (_validationLayers.data)))
 			   ,(vkthrow `(vkCreateDevice _physicalDevice &createInfo
 						      nullptr &_device))
 			   (vkGetDeviceQueue _device (indices.graphicsFamily.value)
@@ -1771,7 +1774,7 @@ more structs. this function helps to initialize those structs."
 				      zAxis)
 			      ;; look from above in 45 deg angle
 			      :view ("glm::lookAt"
-				     ("glm::vec3" 2s0 2s0 2s0)
+				     ("glm::vec3" 1s0 1s0 1s0)
 				     ("glm::vec3" 0s0 0s0 0s0)
 				     zAxis
 				     )

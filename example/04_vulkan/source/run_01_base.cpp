@@ -236,8 +236,6 @@ public:
 private:
   GLFWwindow *_window;
   VkInstance _instance;
-  const std::vector<const char *> _validationLayers = {
-      "VK_LAYER_KHRONOS_validation"};
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
@@ -271,25 +269,6 @@ private:
   std::vector<VkDeviceMemory> _uniformBuffersMemory;
   VkDescriptorPool _descriptorPool;
   std::vector<VkDescriptorSet> _descriptorSets;
-  bool checkValidationLayerSupport() {
-    uint32_t layerCount = 0;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-    for (auto &layerName : _validationLayers) {
-      auto layerFound = false;
-      for (auto &layerProperties : availableLayers) {
-        if ((0) == (strcmp(layerName, layerProperties.layerName))) {
-          layerFound = true;
-          break;
-        };
-      };
-      if (!(layerFound)) {
-        return false;
-      };
-    };
-    return true;
-  }
   static void framebufferResizeCallback(GLFWwindow *window, int width,
                                         int height) {
     auto app = reinterpret_cast<HelloTriangleApplication *>(
@@ -306,9 +285,6 @@ private:
   }
   void createInstance() {
     // initialize member _instance
-    if (!(checkValidationLayerSupport())) {
-      throw std::runtime_error("validation layers requested, but unavailable.");
-    };
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Hello Triangle";
@@ -324,9 +300,8 @@ private:
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = glfwExtensionCount;
     createInfo.ppEnabledExtensionNames = glfwExtensions;
-    createInfo.enabledLayerCount =
-        static_cast<uint32_t>(_validationLayers.size());
-    createInfo.ppEnabledLayerNames = _validationLayers.data();
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
     if (!((VK_SUCCESS) ==
           (vkCreateInstance(&createInfo, nullptr, &_instance)))) {
       throw std::runtime_error(
@@ -992,9 +967,8 @@ private:
     createInfo.enabledExtensionCount =
         static_cast<uint32_t>(_deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
-    createInfo.enabledLayerCount =
-        static_cast<uint32_t>(_validationLayers.size());
-    createInfo.ppEnabledLayerNames = _validationLayers.data();
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
     if (!((VK_SUCCESS) ==
           (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device)))) {
       throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
@@ -1100,7 +1074,7 @@ private:
     auto rotationAngle = ((time) * (angularRate));
     UniformBufferObject ubo = {};
     ubo.model = glm::rotate(glm::mat4((1.e+0f)), rotationAngle, zAxis);
-    ubo.view = glm::lookAt(glm::vec3((2.e+0f), (2.e+0f), (2.e+0f)),
+    ubo.view = glm::lookAt(glm::vec3((1.e+0f), (1.e+0f), (1.e+0f)),
                            glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)), zAxis);
     ubo.proj = glm::perspective(
         glm::radians((4.5e+1f)),
