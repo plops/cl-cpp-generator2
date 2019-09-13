@@ -6,8 +6,9 @@
 
 ;; if nolog is off, then validation layers will be used to check for mistakes
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
-(setf *features* (union *features* '(:surface :nolog)))
-;(setf *features* (set-difference *features* '(:nolog)))
+(setf *features* (union *features* '(:surface ;:nolog
+				     )))
+(setf *features* (set-difference *features* '(:nolog)))
 
 
 
@@ -606,23 +607,42 @@ more structs. this function helps to initialize those structs."
 				  (type "const char**" glfwExtensions))
 			 (setf glfwExtensions (glfwGetRequiredInstanceExtensions
 					       &glfwExtensionCount))
-
-			 ,(vk `(VkInstanceCreateInfo
-				createInfo
-				:sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
-				:pApplicationInfo &appInfo
-				:enabledExtensionCount glfwExtensionCount
-				:ppEnabledExtensionNames glfwExtensions
-				:enabledLayerCount
-				#+nolog 0
-				#-nolog ("static_cast<uint32_t>"
-					 (_validationLayers.size))
-				:ppEnabledLayerNames
-				#+nolog nullptr
-				#-nolog (_validationLayers.data)))
-			 ,(vkthrow `(vkCreateInstance &createInfo
-						      nullptr
-						      &_instance))
+			 ,(vkcall
+			   `(create
+			     instance
+			     (:pApplicationInfo &appInfo
+				 :enabledExtensionCount glfwExtensionCount
+				 :ppEnabledExtensionNames glfwExtensions
+				 :enabledLayerCount
+				 #+nolog 0
+				 #-nolog ("static_cast<uint32_t>"
+					  (_validationLayers.size))
+				 :ppEnabledLayerNames
+				 #+nolog nullptr
+				 #-nolog (_validationLayers.data))
+			     (&info
+			      nullptr
+			      &_instance)
+			     )
+			   :throw t)
+			 #+nil
+			 (do0
+			  ,(vk `(VkInstanceCreateInfo
+				 createInfo
+				 :sType VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
+				 :pApplicationInfo &appInfo
+				 :enabledExtensionCount glfwExtensionCount
+				 :ppEnabledExtensionNames glfwExtensions
+				 :enabledLayerCount
+				 #+nolog 0
+				 #-nolog ("static_cast<uint32_t>"
+					  (_validationLayers.size))
+				 :ppEnabledLayerNames
+				 #+nolog nullptr
+				 #-nolog (_validationLayers.data)))
+			  ,(vkthrow `(vkCreateInstance &createInfo
+						       nullptr
+						       &_instance)))
 			 ))
 		     (defun createBuffer (size usage properties )
 		       ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
