@@ -867,6 +867,7 @@ more structs. this function helps to initialize those structs."
 			    (_device &info nullptr &_descriptorSetLayout)
 			    )
 			  :throw t)
+			
 			)
 		      
 		      (defun recreateSwapChain ()
@@ -1244,11 +1245,12 @@ more structs. this function helps to initialize those structs."
 			      `(VkPipelineLayoutCreateInfo
 				pipelineLayoutInfo
 				:sType VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO
-				:setLayoutCount 0
-				:pSetLayouts nullptr
+				:setLayoutCount 1
+				:pSetLayouts &_descriptorSetLayout
 				;; another way of passing dynamic values to shaders
 				:pushConstantRangeCount 0
-				:pPushConstantRanges nullptr))
+				:pPushConstantRanges nullptr
+				))
 			    ,(vkthrow
 			      `(vkCreatePipelineLayout _device
 						       &pipelineLayoutInfo
@@ -1641,6 +1643,10 @@ more structs. this function helps to initialize those structs."
 		       #+surface
 		       (do0
 			(cleanupSwapChain)
+			(vkDestroyDescriptorSetLayout
+			 _device
+			 _descriptorSetLayout
+			 nullptr)
 			(do0 (vkDestroyBuffer _device _vertexBuffer nullptr)
 			     (vkFreeMemory _device _vertexBufferMemory nullptr))
 			(do0 (vkDestroyBuffer _device _indexBuffer nullptr)
