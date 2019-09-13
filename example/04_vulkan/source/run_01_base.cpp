@@ -468,8 +468,42 @@ private:
     createIndexBuffer();
     createUniformBuffers();
     createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
+  }
+  void createDescriptorSets() {
+    auto n = static_cast<uint32_t>(_swapChainImages.size());
+    std::vector<VkDescriptorSetLayout> layouts(n, _descriptorSetLayout);
+    {
+      VkDescriptorSetAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+      info.descriptorPool = _descriptorPool;
+      info.descriptorSetCount = n;
+      info.pSetLayouts = layouts.data();
+      if (!((VK_SUCCESS) == (vkAllocateDescriptorSets(
+                                _device, &info, _descriptorSets.data())))) {
+        throw std::runtime_error("failed to (vkAllocateDescriptorSets _device "
+                                 "&info (_descriptorSets.data))");
+      };
+    };
+    for (int i = 0; i < n; (i) += (1)) {
+      VkDescriptorBufferInfo bufferInfo = {};
+      bufferInfo.buffer = _uniformBuffers[i];
+      bufferInfo.offset = 0;
+      bufferInfo.range = sizeof(UniformBufferObject);
+      VkWriteDescriptorSet descriptorWrite = {};
+      descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      descriptorWrite.dstSet = _descriptorSets[i];
+      descriptorWrite.dstBinding = 0;
+      descriptorWrite.dstArrayElement = 0;
+      descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      descriptorWrite.descriptorCount = 1;
+      descriptorWrite.pBufferInfo = &bufferInfo;
+      descriptorWrite.pImageInfo = nullptr;
+      descriptorWrite.pTexelBufferView = nullptr;
+      vkUpdateDescriptorSets(_device, 1, &descriptorWrite, 0, nullptr);
+    };
   }
   void createDescriptorPool() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
@@ -539,6 +573,8 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
   }
   // shader stuff
@@ -614,6 +650,9 @@ private:
       vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
       vkCmdBindIndexBuffer(_commandBuffers[i], _indexBuffer, 0,
                            VK_INDEX_TYPE_UINT16);
+      vkCmdBindDescriptorSets(_commandBuffers[i],
+                              VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout,
+                              0, 1, &(_descriptorSets[i]), 0, nullptr);
       vkCmdDrawIndexed(_commandBuffers[i],
                        static_cast<uint32_t>(g_indices.size()), 1, 0, 0, 0);
       vkCmdEndRenderPass(_commandBuffers[i]);
@@ -1089,7 +1128,8 @@ private:
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
       vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
       vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
-    };
+    }
+    vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
   }
   void cleanup() {
     cleanupSwapChain();

@@ -860,11 +860,63 @@ more structs. this function helps to initialize those structs."
 			(createIndexBuffer)
 			(createUniformBuffers)
 			(createDescriptorPool)
+			(createDescriptorSets)
 			(createCommandBuffers)
 			(createSyncObjects)))
 		     
 		     #+surface
 		     (do0
+		      (defun createDescriptorSets ()
+			(declare (values void))
+			(let ((n (static_cast<uint32_t> (_swapChainImages.size)))
+			      ((layouts n _descriptorSetLayout)))
+			  (declare (type "std::vector<VkDescriptorSetLayout>"
+					 (layouts n _descriptorSetLayout)))
+			  ,(vkcall
+			   `(allocate
+			     descriptor-set
+			     (:descriptorPool _descriptorPool
+					      :descriptorSetCount n
+					      :pSetLayouts (layouts.data))
+			     (_device
+			      &info
+			      (_descriptorSets.data)))
+			   :throw t
+			   :plural t)
+			  ;; the sets will be automatically freed when
+			  ;; pool is destroyed
+			  (dotimes (i n)
+			    ,(vk
+			      `(VkDescriptorBufferInfo
+				bufferInfo
+				:buffer (aref _uniformBuffers i)
+				:offset 0
+				:range (sizeof UniformBufferObject)))
+			    ,(vk
+			      `(VkWriteDescriptorSet
+				descriptorWrite
+				:sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
+				:dstSet (aref _descriptorSets i)
+				:dstBinding 0
+				:dstArrayElement 0 ;; if multiple
+						   ;; descriptors
+						   ;; should be
+						   ;; updated at once,
+						   ;; start here
+				:descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+				:descriptorCount 1
+				:pBufferInfo &bufferInfo ;; buffer data
+				:pImageInfo nullptr ;; image data
+				:pTexelBufferView nullptr ;; buffer views
+				))
+			    (vkUpdateDescriptorSets
+			     _device
+			     1
+			     &descriptorWrite
+			     0
+			     nullptr ;; copy descriptor sets
+			     ))
+			  ))
 		      (defun createDescriptorPool ()
 			(declare (values void))
 			(let ((n (static_cast<uint32_t> (_swapChainImages.size))))
@@ -949,6 +1001,8 @@ more structs. this function helps to initialize those structs."
 			(createGraphicsPipeline)
 			(createFramebuffers)
 			(createUniformBuffers)
+			(createDescriptorPool)
+			(createDescriptorSets)
 			(createCommandBuffers))
 		      (do0
 		       "// shader stuff"
@@ -1051,6 +1105,16 @@ more structs. this function helps to initialize those structs."
 			      _indexBuffer
 			      0
 			      VK_INDEX_TYPE_UINT16)
+			   (vkCmdBindDescriptorSets
+			    (aref _commandBuffers i)
+			    ;; descriptor could also be bound to compute
+			    VK_PIPELINE_BIND_POINT_GRAPHICS
+			    _pipelineLayout
+			    0
+			    1
+			    (ref (aref _descriptorSets i))
+			    0
+			    nullptr)
 			   ;; draw the triangle
 			   (vkCmdDrawIndexed
 			    (aref _commandBuffers i)
@@ -1764,6 +1828,10 @@ more structs. this function helps to initialize those structs."
 			  (vkFreeMemory _device
 					(aref _uniformBuffersMemory i)
 					nullptr))
+			(vkDestroyDescriptorPool
+			 _device
+			 _descriptorPool
+			 nullptr)
 			))
 		     (defun cleanup ()
 		       (declare (values void))
