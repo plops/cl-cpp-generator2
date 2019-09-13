@@ -1229,11 +1229,10 @@ more structs. this function helps to initialize those structs."
 					       ;; wait with writing of the color attachment
 					       :dependencyCount 1
 					       :pDependencies &dependency)
-			     (
-				     _device
-				     &info
-				     nullptr
-				     &_renderPass))
+			     (_device
+			      &info
+			      nullptr
+			      &_renderPass))
 			   :throw t))
 		       (defun createGraphicsPipeline ()
 			 (declare (values void))
@@ -1374,28 +1373,24 @@ more structs. this function helps to initialize those structs."
 			     
 			     )
 			   (do0
-			    ,(vk
-			      `(VkPipelineLayoutCreateInfo
-				pipelineLayoutInfo
-				:sType VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO
-				:setLayoutCount 1
+			    ,(vkcall
+			      `(create
+				pipeline-layout
+				(:setLayoutCount 1
 				:pSetLayouts &_descriptorSetLayout
 				;; another way of passing dynamic values to shaders
 				:pushConstantRangeCount 0
 				:pPushConstantRanges nullptr
-				))
-			    ,(vkthrow
-			      `(vkCreatePipelineLayout _device
-						       &pipelineLayoutInfo
-						       nullptr
-						       &_pipelineLayout))
-			    )
-
-			   ,(vk
-			     `(VkGraphicsPipelineCreateInfo
-			       pipelineInfo
-			       :sType VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO
-			       :stageCount 2
+				)
+				(_device
+				 &info
+				 nullptr
+				 &_pipelineLayout))
+			      :throw t))
+			   ,(vkcall
+			     `(create
+			       graphics-pipeline
+			       (:stageCount 2
 			       :pStages shaderStages
 			       :pVertexInputState &vertexInputInfo
 			       :pInputAssemblyState &inputAssembly
@@ -1413,23 +1408,21 @@ more structs. this function helps to initialize those structs."
 			       ;; from each other to speed up
 			       ;; switching
 			       :basePipelineHandle VK_NULL_HANDLE
-			       :basePipelineIndex -1))
-			   ,(vkthrow `(vkCreateGraphicsPipelines
-				       _device
-				       VK_NULL_HANDLE ;; pipline cache
-				       1
-				       &pipelineInfo
-				       nullptr
-				       &_graphicsPipeline))
-			   
-			   
+			       :basePipelineIndex -1)
+			       (_device
+				VK_NULL_HANDLE ;; pipline cache
+				1
+				&info
+				nullptr
+				&_graphicsPipeline))
+			     :plural t
+			     :throw t)			   
 			   (vkDestroyShaderModule _device
 						  fragShaderModule
 						  nullptr)
 			   (vkDestroyShaderModule _device
 						  vertShaderModule
-						  nullptr))
-			 )
+						  nullptr)))
 		       (defun createShaderModule (code)
 			 (declare (values VkShaderModule)
 				  (type "const std::vector<char>&" code))
