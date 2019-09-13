@@ -1065,27 +1065,20 @@ more structs. this function helps to initialize those structs."
 			      (_commandBuffers.data)))
 			   :throw t
 			   :plural t)
-			 ,(vk
-			   `(VkCommandBufferAllocateInfo
-			     allocInfo
-			     :sType VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO
-			     ))
-			 ,(vkthrow `(vkAllocateCommandBuffers ))
+			 
 			 
 			 (dotimes (i (_commandBuffers.size))
-			   ,(vk
-			     `(VkCommandBufferBeginInfo
-			       beginInfo
-			       :sType VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
-			       ;; flags can select if exectution is
+			   ,(vkcall
+			     `(begin
+			       command-buffer
+			       (;; flags can select if exectution is
 			       ;; once, inside single renderpass, or
 			       ;; resubmittable
 			       :flags 0 
-			       :pInheritanceInfo nullptr
-			       ))
-			   ,(vkthrow `(vkBeginCommandBuffer
-				       (aref _commandBuffers i)
-				       &beginInfo))
+			       :pInheritanceInfo nullptr)
+			       ((aref _commandBuffers i) &info))
+			     :throw t)
+			   
 			   
 			   (let ((clearColor (curly 0s0 0s0 0s0 1s0)))
 			     (declare (type VkClearValue clearColor))

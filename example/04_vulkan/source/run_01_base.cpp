@@ -628,20 +628,17 @@ private:
                                  "&info (_commandBuffers.data))");
       };
     };
-    VkCommandBufferAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    if (!((VK_SUCCESS) == (vkAllocateCommandBuffers()))) {
-      throw std::runtime_error("failed to (vkAllocateCommandBuffers)");
-    };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
-      VkCommandBufferBeginInfo beginInfo = {};
-      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      beginInfo.flags = 0;
-      beginInfo.pInheritanceInfo = nullptr;
-      if (!((VK_SUCCESS) ==
-            (vkBeginCommandBuffer(_commandBuffers[i], &beginInfo)))) {
-        throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
-                                 "_commandBuffers i) &beginInfo)");
+      {
+        VkCommandBufferBeginInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        info.flags = 0;
+        info.pInheritanceInfo = nullptr;
+        if (!((VK_SUCCESS) ==
+              (vkBeginCommandBuffer(_commandBuffers[i], &info)))) {
+          throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
+                                   "_commandBuffers i) &info)");
+        };
       };
       VkClearValue clearColor = {(0.0e+0f), (0.0e+0f), (0.0e+0f), (1.e+0f)};
       VkRenderPassBeginInfo renderPassInfo = {};
