@@ -1054,16 +1054,23 @@ more structs. this function helps to initialize those structs."
 			 (declare (values void))
 			 (_commandBuffers.resize
 			  (_swapChainFramebuffers.size))
+			 ,(vkcall
+			   `(allocate
+			     command-buffer
+			     (:commandPool _commandPool
+			     :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+			     :commandBufferCount (_commandBuffers.size))
+			     (_device
+			      &info
+			      (_commandBuffers.data)))
+			   :throw t
+			   :plural t)
 			 ,(vk
 			   `(VkCommandBufferAllocateInfo
 			     allocInfo
 			     :sType VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO
-			     :commandPool _commandPool
-			     :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
-			     :commandBufferCount (_commandBuffers.size)))
-			 ,(vkthrow `(vkAllocateCommandBuffers _device
-							      &allocInfo
-							      (_commandBuffers.data)))
+			     ))
+			 ,(vkthrow `(vkAllocateCommandBuffers ))
 			 
 			 (dotimes (i (_commandBuffers.size))
 			   ,(vk

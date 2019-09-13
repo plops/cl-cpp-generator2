@@ -616,15 +616,22 @@ private:
   }
   void createCommandBuffers() {
     _commandBuffers.resize(_swapChainFramebuffers.size());
+    {
+      VkCommandBufferAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      info.commandPool = _commandPool;
+      info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      info.commandBufferCount = _commandBuffers.size();
+      if (!((VK_SUCCESS) == (vkAllocateCommandBuffers(
+                                _device, &info, _commandBuffers.data())))) {
+        throw std::runtime_error("failed to (vkAllocateCommandBuffers _device "
+                                 "&info (_commandBuffers.data))");
+      };
+    };
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = _commandPool;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = _commandBuffers.size();
-    if (!((VK_SUCCESS) == (vkAllocateCommandBuffers(_device, &allocInfo,
-                                                    _commandBuffers.data())))) {
-      throw std::runtime_error("failed to (vkAllocateCommandBuffers _device "
-                               "&allocInfo (_commandBuffers.data))");
+    if (!((VK_SUCCESS) == (vkAllocateCommandBuffers()))) {
+      throw std::runtime_error("failed to (vkAllocateCommandBuffers)");
     };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
       VkCommandBufferBeginInfo beginInfo = {};
