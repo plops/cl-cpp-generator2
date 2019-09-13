@@ -930,27 +930,29 @@ private:
          (swapChainSupport.capabilities.maxImageCount < imageCount))) {
       imageCount = swapChainSupport.capabilities.maxImageCount;
     };
-    VkSwapchainCreateInfoKHR createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = _surface;
-    createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = surfaceFormat.format;
-    createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    createInfo.imageSharingMode = imageSharingMode;
-    createInfo.queueFamilyIndexCount = queueFamilyIndexCount;
-    createInfo.pQueueFamilyIndices = pQueueFamilyIndices;
-    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
-    if (!((VK_SUCCESS) ==
-          (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &_swapChain)))) {
-      throw std::runtime_error("failed to (vkCreateSwapchainKHR _device "
-                               "&createInfo nullptr &_swapChain)");
+    {
+      VkSwapchainCreateInfoKHR info = {};
+      info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+      info.surface = _surface;
+      info.minImageCount = imageCount;
+      info.imageFormat = surfaceFormat.format;
+      info.imageColorSpace = surfaceFormat.colorSpace;
+      info.imageExtent = extent;
+      info.imageArrayLayers = 1;
+      info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+      info.imageSharingMode = imageSharingMode;
+      info.queueFamilyIndexCount = queueFamilyIndexCount;
+      info.pQueueFamilyIndices = pQueueFamilyIndices;
+      info.preTransform = swapChainSupport.capabilities.currentTransform;
+      info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+      info.presentMode = presentMode;
+      info.clipped = VK_TRUE;
+      info.oldSwapchain = VK_NULL_HANDLE;
+      if (!((VK_SUCCESS) ==
+            (vkCreateSwapchainKHR(_device, &info, nullptr, &_swapChain)))) {
+        throw std::runtime_error("failed to (vkCreateSwapchainKHR _device "
+                                 "&info nullptr &_swapChain)");
+      };
     };
     // now get the images, note will be destroyed with the swap chain
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);

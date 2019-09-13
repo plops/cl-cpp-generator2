@@ -50,32 +50,37 @@
 	      (mapcar #'string-capitalize
 		      (cl-ppcre:split "-" (format nil "~a" subject)))
 	      suffix))
-    (defun vkcall (params &key (plural nil) (throw nil))
-      "this macro helps to initialize an info object and call the corresponding vulkan function. splitting the command into verb subject and the plural argument seem to be enough automatically generate structure type names function names and the sType for a large subset of vulkan. subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function"
+    (defun vkcall (params &key (plural nil)  (throw nil) (khr nil))
+      "this macro helps to initialize an info object and call the corresponding vulkan function. splitting the command into verb subject and the plural argument seem to be enough automatically generate structure type names function names and the sType for a large subset of vulkan. subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function. use khr to indicate that KHR should be appended to function and _KHR to the sType constant"
       (destructuring-bind (verb subject info-params args)
 	  params
 	`(progn
 	   ,(vk `(,(vk-info-type
-		    verb subject)
+		    verb subject :suffix (if khr
+					     (format nil "Info~a" khr)
+					     "Info"))
 		   info
 		   :sType ,(vk-info-stype
-			    verb subject)
+			    verb subject :suffix (if khr
+						     (format nil "_INFO_~a" khr)
+						     "_INFO"))
 		   ,@info-params)
 		)
-	   ,(if throw
-		(vkthrow
-		 `(,(vk-info-function verb subject
-				      :suffix
-				      (if plural
-					  "s"
-					  ""))
-		    ,@args))
-		`(,(vk-info-function verb subject
-				     :suffix
-				     (if plural
-					 "s"
-					 ""))
-		   ,@args)))))
+	   ,(let ((suffix (if plural
+			      (if (stringp plural)
+				  plural
+				  "s")
+			      "")))
+	      (if khr
+		  (setf suffix (format nil "~aKHR" suffix)))
+	      (if throw
+			(vkthrow
+			 `(,(vk-info-function verb subject
+					      :suffix suffix)
+			    ,@args))
+			`(,(vk-info-function verb subject
+					     :suffix suffix)
+			   ,@args))))))
     
     )
   
@@ -1449,8 +1454,7 @@ more structs. this function helps to initialize those structs."
 			"// must be destroyed before the instance is destroyed"
 			,(vkthrow `(glfwCreateWindowSurface
 				    _instance _window
-				    nullptr &_surface))
-			)
+				    nullptr &_surface)))
 		      
 		      (defun createSwapChain ()
 			(declare (values void))
@@ -1486,10 +1490,10 @@ more structs. this function helps to initialize those structs."
 				     (< swapChainSupport.capabilities.maxImageCount
 					imageCount))
 			    (setf imageCount swapChainSupport.capabilities.maxImageCount))
-			  ,(vk `(VkSwapchainCreateInfoKHR
-				 createInfo
-				 :sType VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
-				 :surface _surface
+			  ,(vkcall
+			    `(create
+			      swapchain
+			      (:surface _surface
 				 :minImageCount imageCount
 				 :imageFormat surfaceFormat.format
 				 :imageColorSpace surfaceFormat.colorSpace
@@ -1511,12 +1515,22 @@ more structs. this function helps to initialize those structs."
 				 ;; resizing the window might need a new swap
 				 ;; chain, complex topic
 				 :oldSwapchain VK_NULL_HANDLE
+				 )
+			      (_device
+				       &info
+				       nullptr
+				       &_swapChain
 				 ))
-			  ,(vkthrow `(vkCreateSwapchainKHR
-				      _device
-				      &createInfo
-				      nullptr
-				      &_swapChain))
+			    :throw t
+			    :khr "KHR")
+			  #+nil(do0
+			   ,(vk `(VkSwapchainCreateInfoKHR
+				  ))
+			   ,(vkthrow `(vkCreateSwapchainKHR
+				       _device
+				       &createInfo
+				       nullptr
+				       &_swapChain)))
 			  
 			  (do0
 			   "// now get the images, note will be destroyed with the swap chain"
