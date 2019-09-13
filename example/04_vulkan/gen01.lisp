@@ -1621,10 +1621,7 @@ more structs. this function helps to initialize those structs."
 			   (vkGetDeviceQueue _device (indices.presentFamily.value)
 					     0 &_presentQueue))))
 		     
-		     
-		     
 		     (defun pickPhysicalDevice ()
-		       
 		       (declare (values void))
 		       "// initialize member _physicalDevice"
 		       (let ((deviceCount 0))
@@ -1645,24 +1642,20 @@ more structs. this function helps to initialize those structs."
 			   (when (== VK_NULL_HANDLE
 				     _physicalDevice)
 			     (throw ("std::runtime_error"
-				     (string "failed to find a suitable gpu."))))))
-		       )
+				     (string "failed to find a suitable gpu.")))))))
 		     (defun mainLoop ()
 		       (declare (values void))
 		       (while (not (glfwWindowShouldClose _window))
 			 (glfwPollEvents)
 			 #+surface (drawFrame))
-		       
 		       (vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
 		       )
 		     #+surface
 		     (defun drawFrame ()
 		       (declare (values void))
-		       
 		       (do0
 			(vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
 			)
-		       
 		       (let ((imageIndex 0)
 			     (result (vkAcquireNextImageKHR
 				      _device
