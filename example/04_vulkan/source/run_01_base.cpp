@@ -14,7 +14,9 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <chrono>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 ;
@@ -265,6 +267,8 @@ private:
   VkDeviceMemory _vertexBufferMemory;
   VkBuffer _indexBuffer;
   VkDeviceMemory _indexBufferMemory;
+  std::vector<VkBuffer> _uniformBuffers;
+  std::vector<VkDeviceMemory> _uniformBuffersMemory;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -460,8 +464,23 @@ private:
     createCommandPool();
     createVertexBuffer();
     createIndexBuffer();
+    createUniformBuffers();
     createCommandBuffers();
     createSyncObjects();
+  }
+  void createUniformBuffers() {
+    auto bufferSize = sizeof(UniformBufferObject);
+    auto n = _swapChainImages.size();
+    _uniformBuffers.resize(n);
+    _uniformBuffersMemory.resize(n);
+    for (int i = 0; i < n; (i) += (1)) {
+      auto [buf, mem] =
+          createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                       ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
+                        (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
+      _uniformBuffers[i] = buf;
+      _uniformBuffersMemory[i] = mem;
+    };
   }
   void createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding uboLayoutBinding = {};
@@ -497,6 +516,7 @@ private:
     createRenderPass();
     createGraphicsPipeline();
     createFramebuffers();
+    createUniformBuffers();
     createCommandBuffers();
   }
   // shader stuff
@@ -966,6 +986,7 @@ private:
     VkSemaphore signalSemaphores[] = {_renderFinishedSemaphores[_currentFrame]};
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    updateUniformBuffer(imageIndex);
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = 1;
@@ -1006,6 +1027,27 @@ private:
     };
     _currentFrame = ((1) + (_currentFrame)) % _MAX_FRAMES_IN_FLIGHT;
   }
+  void updateUniformBuffer(uint32_t currentImage) {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(
+                     ((currentTime) - (startTime)))
+                     .count();
+    UniformBufferObject ubo = {};
+    ubo.model =
+        glm::rotate(glm::mat4((1.e+0)), ((time) * (glm::radians((9.e+1)))),
+                    glm::vec3((0.0e+0), (0.0e+0), (1.e+0)));
+    ubo.view = glm::perspective(
+        glm::radians((4.5e+1)),
+        ((_swapChainExtent.width) / ((((1.e+0)) * (_swapChainExtent.height)))),
+        (1.0000000149011612e-1), (1.e+1));
+    ubo.proj[1][1] = (-(ubo.proj[1][1]));
+    void *data = 0;
+    vkMapMemory(_device, _uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0,
+                &data);
+    memcpy(data, &ubo, sizeof(ubo));
+    vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
+  }
   void cleanupSwapChain() {
     for (auto &b : _swapChainFramebuffers) {
       vkDestroyFramebuffer(_device, b, nullptr);
@@ -1020,6 +1062,10 @@ private:
       vkDestroyImageView(_device, view, nullptr);
     };
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
+    for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
+      vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
+      vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
+    };
   }
   void cleanup() {
     cleanupSwapChain();

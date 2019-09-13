@@ -150,7 +150,9 @@ more structs. this function helps to initialize those structs."
 	     " "
 	     (include <glm/vec4.hpp>
 		      <glm/mat4x4.hpp>
-		      <glm/glm.hpp>)
+		      <glm/glm.hpp>
+		      <glm/gtc/matrix_transform.hpp>
+		      <chrono>)
 	     " "
 	     )
 	    
@@ -486,7 +488,9 @@ more structs. this function helps to initialize those structs."
 				(_currentFrame 0)
 				(_framebufferResized false)
 				(_vertexBuffer) (_vertexBufferMemory)
-				(_indexBuffer) (_indexBufferMemory))
+				(_indexBuffer) (_indexBufferMemory)
+				(_uniformBuffers)
+				(_uniformBuffersMemory))
 		     #+surface (declare 
 				(type VkQueue 
 				      _presentQueue)
@@ -517,7 +521,11 @@ more structs. this function helps to initialize those structs."
 				      _indexBuffer)
 				(type VkDeviceMemory
 				      _vertexBufferMemory
-				      _indexBufferMemory))
+				      _indexBufferMemory)
+				(type "std::vector<VkBuffer>"
+				      _uniformBuffers)
+				(type "std::vector<VkDeviceMemory>"
+				      _uniformBuffersMemory))
 		     
 
 		     
@@ -844,11 +852,31 @@ more structs. this function helps to initialize those structs."
 			(createCommandPool)
 			(createVertexBuffer)
 			(createIndexBuffer)
+			(createUniformBuffers)
 			(createCommandBuffers)
 			(createSyncObjects)))
 		     
 		     #+surface
 		     (do0
+		      (defun createUniformBuffers ()
+			(declare (values void))
+			(let ((bufferSize (sizeof UniformBufferObject))
+			      (n (_swapChainImages.size)))
+			  (_uniformBuffers.resize n)
+			  (_uniformBuffersMemory.resize n)
+			  (dotimes (i n)
+			    (let (((bracket buf mem)
+				   (createBuffer
+				    bufferSize
+				    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+				    (logior
+				     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				    )))
+			      (setf (aref _uniformBuffers i)
+				    buf
+				    (aref _uniformBuffersMemory i)
+				    mem)))))
 		      (defun createDescriptorSetLayout ()
 			(declare (values void))
 			,(vk
@@ -889,6 +917,7 @@ more structs. this function helps to initialize those structs."
 			(createRenderPass)
 			(createGraphicsPipeline)
 			(createFramebuffers)
+			(createUniformBuffers)
 			(createCommandBuffers))
 		      (do0
 		       "// shader stuff"
@@ -1551,6 +1580,7 @@ more structs. this function helps to initialize those structs."
 			   (declare (type VkSemaphore waitSemaphores[]
 					  signalSemaphores[])
 				    (type VkPipelineStageFlags waitStages[]))
+			   (updateUniformBuffer imageIndex)
 			   ,(vk
 			     `(VkSubmitInfo submitInfo
 					    :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
@@ -1608,7 +1638,59 @@ more structs. this function helps to initialize those structs."
 			     (%
 			      (+ 1 _currentFrame)
 			      _MAX_FRAMES_IN_FLIGHT)))
-		     
+		     (defun updateUniformBuffer (currentImage)
+		       (declare (type uint32_t currentImage)
+				(values void))
+		       (let ((startTime
+
+			      ("std::chrono::high_resolution_clock::now"))
+			     (currentTime
+			      ("std::chrono::high_resolution_clock::now"))
+			     (time (dot ("std::chrono::duration<float,std::chrono::seconds::period>" (- currentTime startTime))
+					(count)))
+			     )
+			 (declare (type "static auto" startTime)
+				  (type auto currentTime)
+				  (type float time)
+				  )
+			 ;; rotate model around z axis
+			 ,(vk
+			   `(UniformBufferObject
+			     ubo
+			     :model ("glm::rotate"
+				     ("glm::mat4" 1s0) ;; identity matrix
+				     (* time ("glm::radians" 90s0))
+				     ("glm::vec3" 0s0 0s0 1s0))
+			     ;; look from above in 45 deg angle
+			     ;; use current extent for correct aspect
+			     :view ("glm::perspective"
+				    ("glm::radians" 45s0)
+				    (/ _swapChainExtent.width
+				       (* 1s0 _swapChainExtent.height))
+				    .1s0
+				    10s0)))
+			 ;; glm was designed for opengl and has
+			 ;; inverted y clip coordinate
+			 (setf (aref ubo.proj 1 1)
+			       (- (aref ubo.proj 1 1)))
+			 (let ((data 0))
+			   (declare (type void* data))
+			   (vkMapMemory _device
+					(aref _uniformBuffersMemory
+					      currentImage)
+					0
+					(sizeof ubo)
+					0
+					&data)
+			   (memcpy data &ubo (sizeof ubo))
+			   (vkUnmapMemory _device
+					  (aref _uniformBuffersMemory
+					      currentImage)))
+			 ;; note: a more efficient way to pass
+			 ;; frequently changing values to shaders are
+			 ;; push constants
+			 )
+		       )
 		     (defun cleanupSwapChain ()
 		       (declare (values void))
 		       
@@ -1636,7 +1718,16 @@ more structs. this function helps to initialize those structs."
 				  _device
 				  view
 				  nullptr))
-			(vkDestroySwapchainKHR _device _swapChain nullptr)))
+			(vkDestroySwapchainKHR _device _swapChain nullptr)
+			;; each swap chain image has a ubo
+			(dotimes (i (_swapChainImages.size))
+			  (vkDestroyBuffer _device
+					   (aref _uniformBuffers i)
+					   nullptr)
+			  (vkFreeMemory _device
+					(aref _uniformBuffersMemory i)
+					nullptr))
+			))
 		     (defun cleanup ()
 		       (declare (values void))
 		       
