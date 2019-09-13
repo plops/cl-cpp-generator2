@@ -1302,7 +1302,7 @@ more structs. this function helps to initialize those structs."
 				 ;; thicker than 1s0 needs wideLines GPU feature
 				 :lineWidth 1s0
 				 :cullMode VK_CULL_MODE_BACK_BIT
-				 :frontFace VK_FRONT_FACE_CLOCKWISE
+				 :frontFace VK_FRONT_FACE_COUNTER_CLOCKWISE
 				 :depthBiasEnable VK_FALSE
 				 :depthBiasConstantFactor 0s0
 				 ;; sometimes used for shadow mapping:
