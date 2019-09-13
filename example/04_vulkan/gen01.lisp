@@ -490,8 +490,10 @@ more structs. this function helps to initialize those structs."
 				(_vertexBuffer) (_vertexBufferMemory)
 				(_indexBuffer) (_indexBufferMemory)
 				(_uniformBuffers)
-				(_uniformBuffersMemory))
-		     #+surface (declare 
+				(_uniformBuffersMemory)
+				(_descriptorPool)
+				(_descriptorSets))
+		     #+surface (declare
 				(type VkQueue 
 				      _presentQueue)
 				
@@ -525,7 +527,11 @@ more structs. this function helps to initialize those structs."
 				(type "std::vector<VkBuffer>"
 				      _uniformBuffers)
 				(type "std::vector<VkDeviceMemory>"
-				      _uniformBuffersMemory))
+				      _uniformBuffersMemory)
+				(type VkDescriptorPool
+				      _descriptorPool)
+				(type "std::vector<VkDescriptorSet>"
+				      _descriptorSets))
 		     
 
 		     
@@ -853,11 +859,36 @@ more structs. this function helps to initialize those structs."
 			(createVertexBuffer)
 			(createIndexBuffer)
 			(createUniformBuffers)
+			(createDescriptorPool)
 			(createCommandBuffers)
 			(createSyncObjects)))
 		     
 		     #+surface
 		     (do0
+		      (defun createDescriptorPool ()
+			(declare (values void))
+			(let ((n (static_cast<uint32_t> (_swapChainImages.size))))
+			 ,(vk
+			   `(VkDescriptorPoolSize
+			     poolSize
+			     :type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+			     :descriptorCount
+			     n
+			     )
+			   )
+			 ,(vkcall
+			   `(create
+			     descriptor-pool
+			     (:poolSizeCount 1
+					     :pPoolSizes &poolSize
+					     :maxSets n
+					     ;; we could allow to free the sets
+					     :flags 0)
+			     (_device
+			      &info
+			      nullptr
+			      &_descriptorPool))
+			   :throw t)))
 		      (defun createUniformBuffers ()
 			(declare (values void))
 			(let ((bufferSize (sizeof UniformBufferObject))

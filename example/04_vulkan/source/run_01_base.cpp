@@ -269,6 +269,8 @@ private:
   VkDeviceMemory _indexBufferMemory;
   std::vector<VkBuffer> _uniformBuffers;
   std::vector<VkDeviceMemory> _uniformBuffersMemory;
+  VkDescriptorPool _descriptorPool;
+  std::vector<VkDescriptorSet> _descriptorSets;
   bool checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -465,8 +467,28 @@ private:
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
+    createDescriptorPool();
     createCommandBuffers();
     createSyncObjects();
+  }
+  void createDescriptorPool() {
+    auto n = static_cast<uint32_t>(_swapChainImages.size());
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = n;
+    {
+      VkDescriptorPoolCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+      info.poolSizeCount = 1;
+      info.pPoolSizes = &poolSize;
+      info.maxSets = n;
+      info.flags = 0;
+      if (!((VK_SUCCESS) == (vkCreateDescriptorPool(_device, &info, nullptr,
+                                                    &_descriptorPool)))) {
+        throw std::runtime_error("failed to (vkCreateDescriptorPool _device "
+                                 "&info nullptr &_descriptorPool)");
+      };
+    };
   }
   void createUniformBuffers() {
     auto bufferSize = sizeof(UniformBufferObject);
