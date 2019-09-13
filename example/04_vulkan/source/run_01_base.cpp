@@ -965,25 +965,28 @@ private:
   void createImageViews() {
     _swapChainImageViews.resize(_swapChainImages.size());
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
-      VkImageViewCreateInfo createInfo = {};
-      createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-      createInfo.image = _swapChainImages[i];
-      createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-      createInfo.format = _swapChainImageFormat;
-      createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-      createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-      createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-      createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-      createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      createInfo.subresourceRange.baseMipLevel = 0;
-      createInfo.subresourceRange.levelCount = 1;
-      createInfo.subresourceRange.baseArrayLayer = 0;
-      createInfo.subresourceRange.layerCount = 1;
-      if (!((VK_SUCCESS) == (vkCreateImageView(_device, &createInfo, nullptr,
-                                               &(_swapChainImageViews[i]))))) {
-        throw std::runtime_error(
-            "failed to (vkCreateImageView _device &createInfo nullptr          "
-            "  (ref (aref _swapChainImageViews i)))");
+      {
+        VkImageViewCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        info.image = _swapChainImages[i];
+        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        info.format = _swapChainImageFormat;
+        info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        info.subresourceRange.baseMipLevel = 0;
+        info.subresourceRange.levelCount = 1;
+        info.subresourceRange.baseArrayLayer = 0;
+        info.subresourceRange.layerCount = 1;
+        if (!((VK_SUCCESS) ==
+              (vkCreateImageView(_device, &info, nullptr,
+                                 &(_swapChainImageViews[i]))))) {
+          throw std::runtime_error(
+              "failed to (vkCreateImageView _device &info nullptr            "
+              "(ref (aref _swapChainImageViews i)))");
+        };
       };
     }
   };

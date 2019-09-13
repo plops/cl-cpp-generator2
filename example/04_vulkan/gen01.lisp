@@ -1517,21 +1517,12 @@ more structs. this function helps to initialize those structs."
 				 :oldSwapchain VK_NULL_HANDLE
 				 )
 			      (_device
-				       &info
-				       nullptr
-				       &_swapChain
-				 ))
+			       &info
+			       nullptr
+			       &_swapChain
+			       ))
 			    :throw t
-			    :khr "KHR")
-			  #+nil(do0
-			   ,(vk `(VkSwapchainCreateInfoKHR
-				  ))
-			   ,(vkthrow `(vkCreateSwapchainKHR
-				       _device
-				       &createInfo
-				       nullptr
-				       &_swapChain)))
-			  
+			    :khr "KHR")			  
 			  (do0
 			   "// now get the images, note will be destroyed with the swap chain"
 			   (vkGetSwapchainImagesKHR _device
@@ -1544,18 +1535,16 @@ more structs. this function helps to initialize those structs."
 						    &imageCount
 						    (_swapChainImages.data))
 			   (setf _swapChainImageFormat surfaceFormat.format
-				 _swapChainExtent extent)
-			   )))
+				 _swapChainExtent extent))))
 		      (defun createImageViews ()
 			(declare (values void))
 			(_swapChainImageViews.resize
 			 (_swapChainImages.size))
 			(dotimes (i (_swapChainImages.size))
-			  ,(vk
-			    `(VkImageViewCreateInfo
-			      createInfo
-			      :sType VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO
-			      :image (aref _swapChainImages i)
+			  ,(vkcall
+			    `(create
+			      image-view
+			      (:image (aref _swapChainImages i)
 			      :viewType VK_IMAGE_VIEW_TYPE_2D
 			      :format _swapChainImageFormat
 			      ;; here we could move color channels around
@@ -1570,13 +1559,14 @@ more structs. this function helps to initialize those structs."
 			      :subresourceRange.levelCount 1
 			      :subresourceRange.baseArrayLayer 0
 			      :subresourceRange.layerCount 1
-			      ))
-			  ,(vkthrow `(vkCreateImageView
-				      _device
-				      &createInfo
-				      nullptr
-				      (ref (aref _swapChainImageViews i))))
-			  )))
+			      )
+			      (_device
+			       &info
+			       nullptr
+			       (ref (aref _swapChainImageViews i)))
+			      
+			      )
+			    :throw t))))
 		     (defun createLogicalDevice ()
 		       (declare (values void))
 		       "// initialize members _device and _graphicsQueue"
