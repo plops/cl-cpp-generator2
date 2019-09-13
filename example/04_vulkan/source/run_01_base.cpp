@@ -353,15 +353,16 @@ private:
     };
     VkMemoryRequirements memReq;
     vkGetBufferMemoryRequirements(_device, buffer, &memReq);
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex =
-        findMemoryType(memReq.memoryTypeBits, properties);
-    if (!((VK_SUCCESS) ==
-          (vkAllocateMemory(_device, &allocInfo, nullptr, &bufferMemory)))) {
-      throw std::runtime_error("failed to (vkAllocateMemory _device &allocInfo "
-                               "nullptr &bufferMemory)");
+    {
+      VkMemoryAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+      info.allocationSize = memReq.size;
+      info.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, properties);
+      if (!((VK_SUCCESS) ==
+            (vkAllocateMemory(_device, &info, nullptr, &bufferMemory)))) {
+        throw std::runtime_error(
+            "failed to (vkAllocateMemory _device &info nullptr &bufferMemory)");
+      };
     };
     vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     return std::make_tuple(buffer, bufferMemory);

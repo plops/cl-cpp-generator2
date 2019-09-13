@@ -662,19 +662,20 @@ more structs. this function helps to initialize those structs."
 			  (vkGetBufferMemoryRequirements _device
 							 buffer
 							 &memReq)
-			  ,(vk
-			    `(VkMemoryAllocateInfo
-			      allocInfo
-			      :sType VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
-			      :allocationSize memReq.size
+			  ,(vkcall
+			    `(allocate
+			      memory
+			      (:allocationSize memReq.size
 			      :memoryTypeIndex (findMemoryType
 						memReq.memoryTypeBits
 						properties
-						)))
-			  ,(vkthrow `(vkAllocateMemory _device
-						       &allocInfo
-						       nullptr
-						       &bufferMemory))
+						))
+			      (_device
+			       &info
+			       nullptr
+			       &bufferMemory))
+			    :throw t)
+			  
 			  (vkBindBufferMemory _device
 					      buffer
 					      bufferMemory
