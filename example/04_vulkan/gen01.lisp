@@ -202,9 +202,9 @@ more structs. this function helps to initialize those structs."
 		   (file.close)
 		   (return buffer)))))
 	    (defstruct0 UniformBufferObject
-		(model "glm::mat4")
-	      (view "glm::mat4")
-	      (proj "glm::mat4"))
+		(model "alignas(16) glm::mat4")
+	      (view "alignas(16) glm::mat4")
+	      (proj "alignas(16) glm::mat4"))
 	    (defstruct0 Vertex
 		(pos "glm::vec2")
 	      (color "glm::vec3")
