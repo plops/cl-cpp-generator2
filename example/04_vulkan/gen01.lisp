@@ -949,6 +949,10 @@ more structs. this function helps to initialize those structs."
 				commandBuffer
 				buffer
 				image
+				;; assuming the layout has already
+				;; been transitioned into a format
+				;; that is optimal for copying pixels
+				;; to
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 				1
 				&region))))
@@ -987,11 +991,42 @@ more structs. this function helps to initialize those structs."
 			      :subresourceRange.layerCount 1
 			      :srcAccessMask 0
 			      :dstAccessMask 0))
+			  (let ((srcStage )
+				(dstStage))
+			    (declare (type VkPipelineStageFlags
+					   srcStage
+					   dstStage))
+			    (if (and
+				(== VK_IMAGE_LAYOUT_UNDEFINED
+				    oldLayout)
+				(== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				    newLayout))
+			       (do0
+				(setf barrier.srcAccessMask 0
+				      barrier.dstAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+				      srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+				      dstStage VK_PIPELINE_STAGE_TRANSFER_BIT
+				      ))
+			       (if (and
+				    (== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+					oldLayout)
+				(== VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				    newLayout))
+				   (do0
+				(setf barrier.srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+				      barrier.dstAccessMask VK_ACCESS_SHADER_READ_BIT
+				      srcStage VK_PIPELINE_STAGE_TRANSFER_BIT
+				      dstStage VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+				      ))
+				   (do0
+				    (throw
+					("std::invalid_argument"
+					 (string "unsupported layout transition.")))))))
 			  (vkCmdPipelineBarrier
 			   commandBuffer
 			   ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
-			   0 ;; stage that should happen before barrier
-			   0 ;; stage that will wait
+			   srcStage ;; stage that should happen before barrier
+			   dstStage ;; stage that will wait
 			   0 ;; per-region
 			   0 nullptr ;; memory barrier
 			   0 nullptr ;; buffer memory barrier
@@ -1134,7 +1169,22 @@ more structs. this function helps to initialize those structs."
 				  )))
 			    (setf _textureImage image
 				  _textureImageMemory
-				  imageMemory)))))
+				  imageMemory)
+			    (transitionImageLayout
+			     _textureImage
+			     VK_FORMAT_R8G8B8A8_UNORM
+			     VK_IMAGE_LAYOUT_UNDEFINED
+			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+			    (copyBufferToImage
+			     stagingBuffer
+			     _textureImage
+			     (static_cast<uint32_t> texWidth)
+			     (static_cast<uint32_t> texHeight))
+			    (transitionImageLayout
+			     _textureImage
+			     VK_FORMAT_R8G8B8A8_UNORM
+			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)))))
 		     
 		     #+surface
 		     (do0
