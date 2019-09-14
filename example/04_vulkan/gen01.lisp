@@ -13,6 +13,12 @@
 
 
 (progn
+  (defun with-single-time-commands (args)
+    (destructuring-bind ((buffer) &rest body) args
+     `(let ((,buffer
+	     (beginSingleTimeCommands)))
+	,@body
+	(endSingleTimeCommands ,buffer))))
   (defun vkthrow (cmd)
     `(unless (== VK_SUCCESS
 		 ,cmd)
@@ -868,61 +874,7 @@ more structs. this function helps to initialize those structs."
 			 (vkCmdCopyBuffer commandBuffer srcBuffer
 					  dstBuffer 1 &copyRegion)
 			 (endSingleTimeCommands commandBuffer)))
-		      #+nil
-		      (defun copyBuffer (srcBuffer
-					dstBuffer
-					size)
-		       (declare (values void)
-				(type VkBuffer srcBuffer dstBuffer)
-				(type VkDeviceSize size))
-		       
-		       
-		       
-		       (let ((commandBuffer))
-			 (declare (type VkCommandBuffer
-					commandBuffer))
-			 ,(vkcall `(allocate
-				    command-buffer
-				    (:level VK_COMMAND_BUFFER_LEVEL_PRIMARY
-					    :commandPool _commandPool
-					    :commandBufferCount 1)
-				    (_device &info &commandBuffer)
-				    )
-				  :plural t
-				  )
-			 (progn
-			  ,(vkcall `(begin
-				     command-buffer
-				     (:flags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
-				     (commandBuffer &info)))
-			  ,(vk
-			    `(VkBufferCopy
-			      copyRegion
-			      :srcOffset 0
-			      :dstOffset 0
-			      :size size))
-			  (vkCmdCopyBuffer commandBuffer srcBuffer
-					   dstBuffer 1 &copyRegion)
-			  (vkEndCommandBuffer commandBuffer)
-			  ,(vk
-			    `(VkSubmitInfo
-			      submitInfo
-			      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
-			      :commandBufferCount 1
-			      :pCommandBuffers &commandBuffer))
-			  (vkQueueSubmit _graphicsQueue
-					 1
-					 &submitInfo
-					 VK_NULL_HANDLE)
-			  (vkQueueWaitIdle _graphicsQueue))
-			 
-			 
-			 
-			 (vkFreeCommandBuffers
-			  _device
-			  _commandPool
-			  1
-			  &commandBuffer)))
+
 		     (defun findMemoryType (typeFilter properties)
 		       (declare (values uint32_t)
 				(type uint32_t typeFilter)
@@ -969,6 +921,84 @@ more structs. this function helps to initialize those structs."
 			(createSyncObjects)))
 
 		     (do0
+		      
+		      (defun copyBufferToImage (buffer
+					      image
+					      width
+					      height)
+			(declare (values void)
+				 (type VkBuffer buffer)
+				 (type VkImage image)
+				 (type uint32_t width height))
+			,(with-single-time-commands
+			     `((commandBuffer)
+			       ,(vk
+				 `(VkBufferImageCopy
+				   region
+				   :bufferOffset 0
+				   :bufferRowLength 0
+				   :bufferImageHeight 0
+				   :imageSubresource.aspectMask
+				   VK_IMAGE_ASPECT_COLOR_BIT
+				   :imageSubresource.mipLevel 0
+				   :imageSubresource.baseArrayLayer 0
+				   :imageSubresource.layerCount 1
+				   :imageOffset (curly 0 0 0)
+				   :imageExtent (curly width height 1)))
+			       (vkCmdCopyBufferToImage
+				commandBuffer
+				buffer
+				image
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				1
+				&region))))
+		      (defun transitionImageLayout (image
+						    format
+						    oldLayout
+						    newLayout)
+			(declare (values void)
+				 (type VkImage image)
+				 (type VkFormat format)
+				 (type VkImageLayout oldLayout newLayout)
+				 )
+			(let ((commandBuffer
+			       (beginSingleTimeCommands)))
+			  ;; use memory barriers in combination with
+			  ;; exclusive sharing mode to transition
+			  ;; image layout
+			  ,(vk
+			    `(VkImageMemoryBarrier
+			      barrier
+			      :sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
+			      ;; old could be undefined if yout dont
+			      ;; care about existing contents
+			      :oldLayout oldLayout
+			      :newLayout newLayout
+			      :srcQueueFamilyIndex
+			      VK_QUEUE_FAMILY_IGNORED
+			      :dstQueueFamilyIndex
+			      VK_QUEUE_FAMILY_IGNORED
+			      :image image
+			      :subresourceRange.aspectMask
+			      VK_IMAGE_ASPECT_COLOR_BIT
+			      :subresourceRange.baseMipLevel 0
+			      :subresourceRange.levelCount 1
+			      :subresourceRange.baseArrayLayer 0
+			      :subresourceRange.layerCount 1
+			      :srcAccessMask 0
+			      :dstAccessMask 0))
+			  (vkCmdPipelineBarrier
+			   commandBuffer
+			   ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
+			   0 ;; stage that should happen before barrier
+			   0 ;; stage that will wait
+			   0 ;; per-region
+			   0 nullptr ;; memory barrier
+			   0 nullptr ;; buffer memory barrier
+			   1 &barrier ;; image memory barrier
+			   )
+			  
+			  (endSingleTimeCommands commandBuffer)))
 		      (defun createImage (width height
 					  format tiling
 					  usage
