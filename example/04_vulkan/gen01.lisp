@@ -496,7 +496,8 @@ more structs. this function helps to initialize those structs."
 
 		(let ((_textureImage)
 		      (_textureImageMemory)
-		      (_textureImageView))
+		      (_textureImageView)
+		      (_textureSampler))
 		  (declare (type
 			    VkImage
 			    _textureImage)
@@ -504,7 +505,8 @@ more structs. this function helps to initialize those structs."
 			    VkDeviceMemory
 			    _textureImageMemory)
 			   (type VkImageView
-				 _textureImageView)))
+				 _textureImageView)
+			   (type VkSampler _textureSampler)))
 		
 		(let #-surface ()
 		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
@@ -1201,19 +1203,27 @@ more structs. this function helps to initialize those structs."
 			,(vkcall
 			  `(create
 			    sampler
-			    :magFilter VK_FILTER_LINEAR
-			    :minFilter VK_FILTER_LINEAR
-			    :addressModeU VK_SAMPLER_ADDRESS_MODE_REPEAT
-			    :addressModeV VK_SAMPLER_ADDRESS_MODE_REPEAT
-			    :addressModeW VK_SAMPLER_ADDRESS_MODE_REPEAT
-			    :anisotropyEnable VK_TRUE
-			    :maxAnisotropy 16
-			    :borderColor VK_BORDER_COLOR_INT_OPAQUE_BLACK
-			    :unnormalizedCoordinates VK_FALSE
-			    :compareEnable VK_FALSE
-			    :compareOp VK_COMPARE_OP_ALWAYS
-			    
-			    )))
+			    (:magFilter VK_FILTER_LINEAR
+					:minFilter VK_FILTER_LINEAR
+					:addressModeU VK_SAMPLER_ADDRESS_MODE_REPEAT
+					:addressModeV VK_SAMPLER_ADDRESS_MODE_REPEAT
+					:addressModeW VK_SAMPLER_ADDRESS_MODE_REPEAT
+					:anisotropyEnable VK_TRUE
+					:maxAnisotropy 16
+					:borderColor VK_BORDER_COLOR_INT_OPAQUE_BLACK
+					:unnormalizedCoordinates VK_FALSE
+					:compareEnable VK_FALSE
+					:compareOp VK_COMPARE_OP_ALWAYS
+					:mipmapMode VK_SAMPLER_MIPMAP_MODE_LINEAR
+					:mipLodBias 0s0
+					:minLod 0s0
+					:maxLod 0s0)
+			    (_device
+			     &info
+			     nullptr
+			     &_textureSampler)
+			    )
+			  :throw t))
 		      (defun createTextureImageView ()
 			(declare (values void))
 			,(vkcall
@@ -1947,6 +1957,7 @@ more structs. this function helps to initialize those structs."
 			 (let ((deviceFeatures (curly))
 			       )
 			   (declare (type VkPhysicalDeviceFeatures deviceFeatures))
+			   (setf deviceFeatures.samplerAnisotropy VK_TRUE)
 			   ,(vkcall
 			     `(create
 			      device
@@ -2204,6 +2215,9 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			(cleanupSwapChain)
 			(do0 ;; tex
+			 (vkDestroySampler _device
+					     _textureSampler
+					     nullptr)
 			 (vkDestroyImageView _device
 					     _textureImageView
 					     nullptr)

@@ -248,6 +248,7 @@ private:
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
   VkImageView _textureImageView;
+  VkSampler _textureSampler;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -481,6 +482,7 @@ private:
     createCommandPool();
     createTextureImage();
     createTextureImageView();
+    createTextureSampler();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -626,6 +628,32 @@ private:
                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
+  }
+  void createTextureSampler() {
+    {
+      VkSamplerCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+      info.magFilter = VK_FILTER_LINEAR;
+      info.minFilter = VK_FILTER_LINEAR;
+      info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+      info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+      info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+      info.anisotropyEnable = VK_TRUE;
+      info.maxAnisotropy = 16;
+      info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+      info.unnormalizedCoordinates = VK_FALSE;
+      info.compareEnable = VK_FALSE;
+      info.compareOp = VK_COMPARE_OP_ALWAYS;
+      info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+      info.mipLodBias = (0.0e+0f);
+      info.minLod = (0.0e+0f);
+      info.maxLod = (0.0e+0f);
+      if (!((VK_SUCCESS) ==
+            (vkCreateSampler(_device, &info, nullptr, &_textureSampler)))) {
+        throw std::runtime_error("failed to (vkCreateSampler _device &info "
+                                 "nullptr &_textureSampler)");
+      };
+    };
   }
   void createTextureImageView() {
     {
@@ -1177,6 +1205,7 @@ private:
       queueCreateInfos.push_back(queueCreateInfo);
     };
     VkPhysicalDeviceFeatures deviceFeatures = {};
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
     {
       VkDeviceCreateInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -1330,6 +1359,7 @@ private:
   }
   void cleanup() {
     cleanupSwapChain();
+    vkDestroySampler(_device, _textureSampler, nullptr);
     vkDestroyImageView(_device, _textureImageView, nullptr);
     vkDestroyImage(_device, _textureImage, nullptr);
     vkFreeMemory(_device, _textureImageMemory, nullptr);
