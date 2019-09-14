@@ -482,6 +482,51 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  std::tuple<VkImage, VkDeviceMemory>
+  createImage(uint32_t width, uint32_t height, VkFormat format,
+              VkImageTiling tiling, VkImageUsageFlags usage,
+              VkMemoryPropertyFlags properties) {
+    VkImage image;
+    VkDeviceMemory imageMemory;
+    {
+      VkImageCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+      info.imageType = VK_IMAGE_TYPE_2D;
+      info.extent.width = static_cast<uint32_t>(texWidth);
+      info.extent.height = static_cast<uint32_t>(texHeight);
+      info.extent.depth = 1;
+      info.mipLevels = 1;
+      info.arrayLayers = 1;
+      info.format = VK_FORMAT_R8G8B8A8_UNORM;
+      info.tiling = VK_IMAGE_TILING_OPTIMAL;
+      info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      info.usage =
+          ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT));
+      info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      info.samples = VK_SAMPLE_COUNT_1_BIT;
+      info.flags = 0;
+      if (!((VK_SUCCESS) == (vkCreateImage(_device, &info, nullptr, &image)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateImage _device &info nullptr &image)");
+      };
+    };
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(_device, image, &memReq);
+    {
+      VkMemoryAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+      info.allocationSize = memReq.size;
+      info.memoryTypeIndex = findMemoryType(
+          memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      if (!((VK_SUCCESS) ==
+            (vkAllocateMemory(_device, &info, nullptr, &imageMemory)))) {
+        throw std::runtime_error(
+            "failed to (vkAllocateMemory _device &info nullptr &imageMemory)");
+      };
+    };
+    vkBindImageMemory(_device, image, imageMemory, 0);
+    return std::make_tuple(image, imageMemory);
+  }
   void createTextureImage() {
     // uses command buffers
     int texWidth = 0;
@@ -502,44 +547,6 @@ private:
     memcpy(data, pixels, static_cast<size_t>(imageSize));
     vkUnmapMemory(_device, stagingBufferMemory);
     stbi_image_free(pixels);
-    {
-      VkImageCreateInfo info = {};
-      info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-      info.imageType = VK_IMAGE_TYPE_2D;
-      info.extent.width = static_cast<uint32_t>(texWidth);
-      info.extent.height = static_cast<uint32_t>(texHeight);
-      info.extent.depth = 1;
-      info.mipLevels = 1;
-      info.arrayLayers = 1;
-      info.format = VK_FORMAT_R8G8B8A8_UNORM;
-      info.tiling = VK_IMAGE_TILING_OPTIMAL;
-      info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-      info.usage =
-          ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT));
-      info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-      info.samples = VK_SAMPLE_COUNT_1_BIT;
-      info.flags = 0;
-      if (!((VK_SUCCESS) ==
-            (vkCreateImage(_device, &info, nullptr, &_textureImage)))) {
-        throw std::runtime_error(
-            "failed to (vkCreateImage _device &info nullptr &_textureImage)");
-      };
-    };
-    VkMemoryRequirements memReq;
-    vkGetImageMemoryRequirements(_device, _textureImage, &memReq);
-    {
-      VkMemoryAllocateInfo info = {};
-      info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-      info.allocationSize = memReq.size;
-      info.memoryTypeIndex = findMemoryType(
-          memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-      if (!((VK_SUCCESS) == (vkAllocateMemory(_device, &info, nullptr,
-                                              &_textureImageMemory)))) {
-        throw std::runtime_error("failed to (vkAllocateMemory _device &info "
-                                 "nullptr &_textureImageMemory)");
-      };
-    };
-    vkBindImageMemory(_device, _textureImage, _textureImageMemory, 0);
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());

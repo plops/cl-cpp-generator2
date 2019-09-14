@@ -905,6 +905,81 @@ more structs. this function helps to initialize those structs."
 			(createSyncObjects)))
 
 		     (do0
+		      (defun createImage (width height
+					  format tiling
+					  usage
+					  properties)
+			(declare (values
+				  "std::tuple<VkImage,VkDeviceMemory>")
+				 (type uint32_t width height)
+				 (type VkFormat format)
+				 (type VkImageTiling tiling)
+				 (type VkImageUsageFlags usage)
+				 (type VkMemoryPropertyFlags properties))
+			(let ((image)
+			      (imageMemory)
+			      )
+			  (declare (type VkImage image)
+				   (type VkDeviceMemory imageMemory))
+			 ,(vkcall
+			   `(create
+			     image
+			     (:imageType
+			      VK_IMAGE_TYPE_2D
+			      :extent.width (static_cast<uint32_t> texWidth)
+			      :extent.height (static_cast<uint32_t> texHeight)
+			      :extent.depth 1
+			      :mipLevels 1
+			      :arrayLayers 1
+			      :format VK_FORMAT_R8G8B8A8_UNORM
+			      ;; if you need direct access, use linear tiling for row major
+			      :tiling VK_IMAGE_TILING_OPTIMAL
+			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+			      :usage
+			      (logior
+			       VK_IMAGE_USAGE_TRANSFER_DST_BIT
+			       VK_IMAGE_USAGE_SAMPLED_BIT)
+			      :sharingMode
+			      VK_SHARING_MODE_EXCLUSIVE
+			      :samples
+			      VK_SAMPLE_COUNT_1_BIT
+			      :flags 0)
+			     (_device
+			      &info
+			      nullptr
+			      &image)
+			     )
+			   :throw t))
+			(let ((memReq))
+			    (declare (type VkMemoryRequirements memReq))
+			    (vkGetImageMemoryRequirements
+			     _device
+			     image
+			     &memReq)
+			    ,(vkcall
+			      `(allocate
+				memory
+				(:allocationSize
+				 memReq.size
+				 :memoryTypeIndex
+				 (findMemoryType
+				  memReq.memoryTypeBits
+				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+				(_device
+				 &info
+				 nullptr
+				 &imageMemory)
+				)
+			      :throw t)
+			    (vkBindImageMemory _device
+					       image
+					       imageMemory
+					       0)
+			    (return ("std::make_tuple"
+				     image
+				     imageMemory)))
+			
+			)
 		      (defun createTextureImage ()
 			(declare (values void))
 			"// uses command buffers "
@@ -953,60 +1028,8 @@ more structs. this function helps to initialize those structs."
 					   stagingBufferMemory)
 			    (stbi_image_free pixels))
 
-			  ,(vkcall
-			    `(create
-			      image
-			      (:imageType
-			       VK_IMAGE_TYPE_2D
-			       :extent.width (static_cast<uint32_t> texWidth)
-			       :extent.height (static_cast<uint32_t> texHeight)
-			       :extent.depth 1
-			       :mipLevels 1
-			       :arrayLayers 1
-			       :format VK_FORMAT_R8G8B8A8_UNORM
-			       ;; if you need direct access, use linear tiling for row major
-			       :tiling VK_IMAGE_TILING_OPTIMAL
-			       :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
-			       :usage
-			       (logior
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT
-				VK_IMAGE_USAGE_SAMPLED_BIT)
-			       :sharingMode
-			       VK_SHARING_MODE_EXCLUSIVE
-			       :samples
-			       VK_SAMPLE_COUNT_1_BIT
-			       :flags 0)
-			      (_device
-			       &info
-			       nullptr
-			       &_textureImage)
-			      )
-			    :throw t)
-			  (let ((memReq))
-			    (declare (type VkMemoryRequirements memReq))
-			    (vkGetImageMemoryRequirements
-			     _device
-			     _textureImage
-			     &memReq)
-			    ,(vkcall
-			      `(allocate
-				memory
-				(:allocationSize
-				 memReq.size
-				 :memoryTypeIndex
-				 (findMemoryType
-				  memReq.memoryTypeBits
-				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
-				(_device
-				 &info
-				 nullptr
-				 &_textureImageMemory)
-				)
-			      :throw t)
-			    (vkBindImageMemory _device
-					       _textureImage
-					       _textureImageMemory
-					       0))
+			  
+			  
 			  )))
 		     
 		     #+surface
