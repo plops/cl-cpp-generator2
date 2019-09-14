@@ -466,7 +466,7 @@ more structs. this function helps to initialize those structs."
 		 (declare (type QueueFamilyIndices indices)
 			  (type VkPhysicalDeviceFeatures
 				supportedFeatures))
-		 (vkGetPhysicalDeviceFeatures _device
+		 (vkGetPhysicalDeviceFeatures device
 					      &supportedFeatures)
 		 (return (and (indices.isComplete)
 			      supportedFeatures.samplerAnisotropy
@@ -1280,9 +1280,10 @@ more structs. this function helps to initialize those structs."
 				:buffer (aref _uniformBuffers i)
 				:offset 0
 				:range (sizeof UniformBufferObject)))
+			    
 			    ,(vk
 			      `(VkWriteDescriptorSet
-				descriptorWrite
+				uboDescriptorWrite
 				:sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
 				:dstSet (aref _descriptorSets i)
 				:dstBinding 0
@@ -1297,38 +1298,77 @@ more structs. this function helps to initialize those structs."
 				:pImageInfo nullptr ;; image data
 				:pTexelBufferView nullptr ;; buffer views
 				))
-			    (vkUpdateDescriptorSets
-			     _device
-			     1
-			     &descriptorWrite
-			     0
-			     nullptr ;; copy descriptor sets
-			     ))
+			    ,(vk
+			      `(VkDescriptorImageInfo
+				imageInfo
+				:imageLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				:imageView _textureImageView
+				:sampler _textureSampler))
+			    ,(vk
+			      `(VkWriteDescriptorSet
+				samplerDescriptorWrite
+				:sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
+				:dstSet (aref _descriptorSets i)
+				:dstBinding 1
+				:dstArrayElement 0
+				:descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+				:descriptorCount 1
+				:pBufferInfo nullptr ;; buffer data
+				:pImageInfo &imageInfo ;; image data
+				:pTexelBufferView nullptr ;; buffer views
+				))
+			    (let ((descriptorWrites (curly
+						     uboDescriptorWrite
+						     samplerDescriptorWrite)))
+			      (declare (type
+					"std::array<VkWriteDescriptorSet,2>"
+					descriptorWrites))
+			     (vkUpdateDescriptorSets
+			      _device
+			      (static_cast<uint32_t>
+			       (descriptorWrites.size))
+			      (descriptorWrites.data)
+			      0
+			      nullptr ;; copy descriptor sets
+			      )))
 			  ))
 		      (defun createDescriptorPool ()
 			(declare (values void))
-			(let ((n (static_cast<uint32_t> (_swapChainImages.size))))
-			 ,(vk
+			(let ((n (static_cast<uint32_t> (_swapChainImages.size)))
+			      )
+			  ,(vk
 			   `(VkDescriptorPoolSize
-			     poolSize
+			     uboPoolSize
 			     :type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 			     :descriptorCount
 			     n
-			     )
-			   )
-			 ,(vkcall
-			   `(create
-			     descriptor-pool
-			     (:poolSizeCount 1
-					     :pPoolSizes &poolSize
-					     :maxSets n
-					     ;; we could allow to free the sets
-					     :flags 0)
-			     (_device
-			      &info
-			      nullptr
-			      &_descriptorPool))
-			   :throw t)))
+			     ))
+			  ,(vk
+			   `(VkDescriptorPoolSize
+			     samplerPoolSize
+			     :type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+			     :descriptorCount
+			     n
+			     ))
+			  (let ((poolSizes (curly uboPoolSize
+						  samplerPoolSize)))
+			    (declare (type
+				      "std::array<VkDescriptorPoolSize,2>"
+				      poolSizes))
+			   ,(vkcall
+			     `(create
+			       descriptor-pool
+			       (:poolSizeCount (static_cast<uint32_t>
+						(poolSizes.size))
+					       :pPoolSizes (poolSizes.data)
+					       :maxSets n
+					       ;; we could allow to free the sets
+					       :flags 0)
+			       (_device
+				&info
+				nullptr
+				&_descriptorPool))
+			     :throw t))))
 		      (defun createUniformBuffers ()
 			(declare (values void))
 			(let ((bufferSize (sizeof UniformBufferObject))
@@ -1352,20 +1392,37 @@ more structs. this function helps to initialize those structs."
 			(declare (values void))
 			,(vk
 			  `(VkDescriptorSetLayoutBinding
+			   samplerLayoutBinding
+			   :binding 1
+			   :descriptorCount 1
+			   :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+			   :pImmutableSamplers nullptr
+			   :stageFlags VK_SHADER_STAGE_FRAGMENT_BIT
+			   ))
+			,(vk
+			  `(VkDescriptorSetLayoutBinding
 			    uboLayoutBinding
 			    :binding 0
 			    :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 			    :descriptorCount 1
 			    :stageFlags VK_SHADER_STAGE_VERTEX_BIT
 			    :pImmutableSamplers nullptr))
-			,(vkcall
-			  `(create
-			    descriptor-set-layout
-			    (:bindingCount 1
-					   :pBindings &uboLayoutBinding)
-			    (_device &info nullptr &_descriptorSetLayout)
-			    )
-			  :throw t)
+
+			(let ((bindings (curly
+					 uboLayoutBinding
+					 samplerLayoutBinding)))
+			  (declare (type
+				    "std::array<VkDescriptorSetLayoutBinding, 2>"
+				    bindings))
+			 ,(vkcall
+			   `(create
+			     descriptor-set-layout
+			     (:bindingCount (static_cast<uint32_t>
+					     (bindings.size))
+					    :pBindings (bindings.data))
+			     (_device &info nullptr &_descriptorSetLayout)
+			     )
+			   :throw t))
 			
 			)
 		      
