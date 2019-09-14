@@ -118,7 +118,10 @@ more structs. this function helps to initialize those structs."
 	    "layout(binding = 0) uniform UniformBufferObject { mat4 model; mat4 view; mat4 proj; } ubo;"
 	    "layout(location = 0) in vec2 inPosition;" ;; if inPosition was dvec3 than next location would need to be 2
 	    "layout(location = 1) in vec3 inColor;"
+	    "layout(location = 2) in vec2 inTexCoord;"
 	    "layout(location = 0) out vec3 fragColor;"
+	    "layout(location = 1) out vec3 fragTexCoord;"
+	    
 	    
 	    (defun main ()
 	      (declare (values void))
@@ -129,7 +132,8 @@ more structs. this function helps to initialize those structs."
 		       (vec4 inPosition
 			   .0
 			   1.))
-		    fragColor inColor))
+		    fragColor inColor
+		    fragTexCoord inTexCoord))
 	    "// vertex shader end "))
 	 (frag-code
 	  `(do0
