@@ -829,7 +829,47 @@ more structs. this function helps to initialize those structs."
 			  :throw nil)
 			(return commandBuffer)
 			)
-		     (defun copyBuffer (srcBuffer
+		      (defun endSingleTimeCommands (commandBuffer)
+			(declare (values void)
+				 (type VkCommandBuffer commandBuffer))
+			(vkEndCommandBuffer commandBuffer)
+			,(vk
+			  `(VkSubmitInfo
+			    submitInfo
+			    :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+			    :commandBufferCount 1
+			    :pCommandBuffers &commandBuffer))
+			(vkQueueSubmit _graphicsQueue
+				       1
+				       &submitInfo
+				       VK_NULL_HANDLE)
+			(vkQueueWaitIdle _graphicsQueue)
+			(vkFreeCommandBuffers
+			 _device
+			 _commandPool
+			 1
+			 &commandBuffer))
+		      (defun copyBuffer (srcBuffer
+					dstBuffer
+					size)
+		       (declare (values void)
+				(type VkBuffer srcBuffer dstBuffer)
+				(type VkDeviceSize size))
+		       
+		       
+		       
+		       (let ((commandBuffer (beginSingleTimeCommands)))
+			 ,(vk
+			   `(VkBufferCopy
+			     copyRegion
+			     :srcOffset 0
+			     :dstOffset 0
+			     :size size))
+			 (vkCmdCopyBuffer commandBuffer srcBuffer
+					  dstBuffer 1 &copyRegion)
+			 (endSingleTimeCommands commandBuffer)))
+		      #+nil
+		      (defun copyBuffer (srcBuffer
 					dstBuffer
 					size)
 		       (declare (values void)
