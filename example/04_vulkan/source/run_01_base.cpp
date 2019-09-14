@@ -30,6 +30,9 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+;
 // code to load binary shader from file
 #include <fstream>
 typedef struct SwapChainSupportDetails SwapChainSupportDetails;

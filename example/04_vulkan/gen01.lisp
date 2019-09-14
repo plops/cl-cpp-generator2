@@ -170,12 +170,21 @@ more structs. this function helps to initialize those structs."
 		     <cstring>
 		     <optional>
 		     <set>)
+
+	    
+
 	    #+surface
 	    (include
 	     ;; UINT32_MAX:
 	     <cstdint> 
 	     <algorithm>
-	     ) 
+	     )
+
+	    (do0
+	     "#define STB_IMAGE_IMPLEMENTATION"
+	     (include "stb_image.h")
+	     " ")
+	    
 	    (do0
 	     "// code to load binary shader from file"
 	     (include <fstream>)
