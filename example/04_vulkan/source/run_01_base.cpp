@@ -415,6 +415,24 @@ private:
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
   }
+  VkCommandBuffer beginSingleTimeCommands() {
+    VkCommandBuffer commandBuffer;
+    {
+      VkCommandBufferAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      info.commandPool = _commandPool;
+      info.commandBufferCount = 1;
+      vkAllocateCommandBuffers(_device, &info, &commandBuffer);
+    };
+    {
+      VkCommandBufferBeginInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+      info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+      vkBeginCommandBuffer(commandBuffer, &info);
+    };
+    return commandBuffer;
+  }
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
     VkCommandBuffer commandBuffer;
     {
@@ -492,16 +510,15 @@ private:
       VkImageCreateInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
       info.imageType = VK_IMAGE_TYPE_2D;
-      info.extent.width = static_cast<uint32_t>(texWidth);
-      info.extent.height = static_cast<uint32_t>(texHeight);
+      info.extent.width = width;
+      info.extent.height = height;
       info.extent.depth = 1;
       info.mipLevels = 1;
       info.arrayLayers = 1;
-      info.format = VK_FORMAT_R8G8B8A8_UNORM;
-      info.tiling = VK_IMAGE_TILING_OPTIMAL;
+      info.format = format;
+      info.tiling = tiling;
       info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-      info.usage =
-          ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT));
+      info.usage = usage;
       info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
       info.samples = VK_SAMPLE_COUNT_1_BIT;
       info.flags = 0;
@@ -516,8 +533,7 @@ private:
       VkMemoryAllocateInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
       info.allocationSize = memReq.size;
-      info.memoryTypeIndex = findMemoryType(
-          memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      info.memoryTypeIndex = findMemoryType(memReq.memoryTypeBits, properties);
       if (!((VK_SUCCESS) ==
             (vkAllocateMemory(_device, &info, nullptr, &imageMemory)))) {
         throw std::runtime_error(
@@ -547,6 +563,12 @@ private:
     memcpy(data, pixels, static_cast<size_t>(imageSize));
     vkUnmapMemory(_device, stagingBufferMemory);
     stbi_image_free(pixels);
+    auto [image, imageMemory] = createImage(
+        texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+        ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT)),
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    _textureImage = image;
+    _textureImageMemory = imageMemory;
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());

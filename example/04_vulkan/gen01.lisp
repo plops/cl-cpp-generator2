@@ -805,6 +805,30 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			(vkDestroyBuffer _device stagingBuffer nullptr)
 			(vkFreeMemory _device stagingBufferMemory nullptr)))
+		      (defun
+			  beginSingleTimeCommands ()
+			(declare (values VkCommandBuffer))
+			(let ((commandBuffer))
+			  (declare (type VkCommandBuffer commandBuffer))
+			 ,(vkcall
+			   `(allocate
+			     command-buffer
+			     (:level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+				     :commandPool _commandPool
+				     :commandBufferCount 1
+				     )
+			     (_device &info &commandBuffer)
+			     )
+			   :throw nil
+			   :plural t))
+			,(vkcall
+			  `(begin
+			    command-buffer
+			    (:flags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+			    (commandBuffer &info))
+			  :throw nil)
+			(return commandBuffer)
+			)
 		     (defun copyBuffer (srcBuffer
 					dstBuffer
 					size)
@@ -926,19 +950,17 @@ more structs. this function helps to initialize those structs."
 			     image
 			     (:imageType
 			      VK_IMAGE_TYPE_2D
-			      :extent.width (static_cast<uint32_t> texWidth)
-			      :extent.height (static_cast<uint32_t> texHeight)
+			      :extent.width width
+			      :extent.height height
 			      :extent.depth 1
 			      :mipLevels 1
 			      :arrayLayers 1
-			      :format VK_FORMAT_R8G8B8A8_UNORM
+			      :format format
 			      ;; if you need direct access, use linear tiling for row major
-			      :tiling VK_IMAGE_TILING_OPTIMAL
+			      :tiling tiling
 			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
-			      :usage
-			      (logior
-			       VK_IMAGE_USAGE_TRANSFER_DST_BIT
-			       VK_IMAGE_USAGE_SAMPLED_BIT)
+			      :usage usage
+			      
 			      :sharingMode
 			      VK_SHARING_MODE_EXCLUSIVE
 			      :samples
@@ -964,7 +986,7 @@ more structs. this function helps to initialize those structs."
 				 :memoryTypeIndex
 				 (findMemoryType
 				  memReq.memoryTypeBits
-				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+				  properties))
 				(_device
 				 &info
 				 nullptr
@@ -1028,9 +1050,21 @@ more structs. this function helps to initialize those structs."
 					   stagingBufferMemory)
 			    (stbi_image_free pixels))
 
-			  
-			  
-			  )))
+			  (let (((bracket image
+					  imageMemory)
+				 (createImage
+				  texWidth
+				  texHeight
+				  VK_FORMAT_R8G8B8A8_UNORM
+				  VK_IMAGE_TILING_OPTIMAL
+				  (logior
+			       VK_IMAGE_USAGE_TRANSFER_DST_BIT
+			       VK_IMAGE_USAGE_SAMPLED_BIT)
+				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+				  )))
+			    (setf _textureImage image
+				  _textureImageMemory
+				  imageMemory)))))
 		     
 		     #+surface
 		     (do0
