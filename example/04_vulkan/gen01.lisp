@@ -235,6 +235,7 @@ more structs. this function helps to initialize those structs."
 	    (defstruct0 Vertex
 		(pos "glm::vec2")
 	      (color "glm::vec3")
+	      (texCoord "glm::vec2")
 	      ;; here static means the function has no receiver object
 	      ;; outside of the class static would limit scope to only
 	      ;; this file (which i don't necessarily want)
@@ -252,17 +253,17 @@ more structs. this function helps to initialize those structs."
 		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
 	      (return bindingDescription))
 	    (let ((g_vertices (curly
-			       (curly (curly  -.5s0 -.5s0) (curly 1s0 0s0 0s0))
-			       (curly (curly  .5s0  -.5s0) (curly 0s0 1s0 0s0))
-			       (curly (curly .5s0  .5s0) (curly 0s0 0s0 1s0))
-			       (curly (curly -.5s0  .5s0) (curly 1s0 1s0 1s0))))
+			       (curly (curly  -.5s0 -.5s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
+			       (curly (curly  .5s0  -.5s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
+			       (curly (curly .5s0  .5s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
+			       (curly (curly -.5s0  .5s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
 		  (g_indices (curly 0 1 2 2 3 0)))
 	      (declare (type "std::vector<Vertex>" g_vertices)
 		       (type "std::vector<uint16_t>" g_indices)))
 	    (defun "Vertex::getAttributeDescriptions" ()
-	      (declare (values "std::array<VkVertexInputAttributeDescription,2>"))
+	      (declare (values "std::array<VkVertexInputAttributeDescription,3>"))
 	      (let ((attributeDescriptions (curly)))
-		(declare (type "std::array<VkVertexInputAttributeDescription,2>"
+		(declare (type "std::array<VkVertexInputAttributeDescription,3>"
 			       attributeDescriptions))
 		,(set-members `((aref attributeDescriptions 0)
 				:binding 0
@@ -274,6 +275,11 @@ more structs. this function helps to initialize those structs."
 				:location 1
 				:format VK_FORMAT_R32G32B32_SFLOAT
 				:offset (offsetof Vertex color)))
+		,(set-members `((aref attributeDescriptions 2)
+				:binding 0
+				:location 2
+				:format VK_FORMAT_R32G32_SFLOAT
+				:offset (offsetof Vertex texCoord)))
 		(return attributeDescriptions)))
 	    
 	    (defstruct0 QueueFamilyIndices 
