@@ -95,6 +95,12 @@ https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/source/
 
 * Documentation
 
+In the domain specific language I try to provide Common Lisp
+conventions as much as possible. The biggest difference is that
+conditional expressions don't return a value. I think this keeps the C
+code simpler and more readable.
+
+
 | defun name lambda-list [declaration*] form*                     | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
 | let ({var \vert (var [init-form])}*) declaration* form*"        | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
 | setf {pair}*                                                    | (setf a 3 b (+ a 3))                                           | a=3; b=a+3;                                              |
