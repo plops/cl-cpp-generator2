@@ -36,7 +36,7 @@ The generated C code is here:
 https://github.com/plops/cl-cpp-generator2/blob/master/example/01_helloworld/source/helloworld.c
 
 For a more complete example look at
-https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/gen01.lisp
+https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/gen01.lisp .
 I use macros in earnest to minimize the boilerplate required in the
 vulkan tutorial.  The generated code is here:
 https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/source/run_01_base.cpp
