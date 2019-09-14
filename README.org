@@ -38,7 +38,59 @@ https://github.com/plops/cl-cpp-generator2/blob/master/example/01_helloworld/sou
 For a more complete example look at
 https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/gen01.lisp .
 I use macros in earnest to minimize the boilerplate required in the
-vulkan tutorial.  The generated code is here:
+vulkan tutorial.  
+
+The Common Lisp function vkcall
+#+BEGIN_EXAMPLE
+vkcall (verb subject <params> <args>)
+#+END_EXAMPLE
+fills an info structure, issues a call to the vulkan library and checks the result:
+#+BEGIN_EXAMPLE
+,(vkcall
+  `(create
+    image
+    (:imageType
+     VK_IMAGE_TYPE_2D
+     :extent.width width
+     :extent.height height
+     :extent.depth 1
+     :mipLevels 1
+     :arrayLayers 1
+     :format format
+     :tiling tiling
+     :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+     :usage usage
+     :sharingMode VK_SHARING_MODE_EXCLUSIVE
+     :samples VK_SAMPLE_COUNT_1_BIT
+     :flags 0)
+    (_device &info nullptr &image))
+  :throw t)
+#+END_EXAMPLE
+
+Here is the expanded code:
+#+BEGIN_EXAMPLE
+      VkImageCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+      info.imageType = VK_IMAGE_TYPE_2D;
+      info.extent.width = width;
+      info.extent.height = height;
+      info.extent.depth = 1;
+      info.mipLevels = 1;
+      info.arrayLayers = 1;
+      info.format = format;
+      info.tiling = tiling;
+      info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      info.usage = usage;
+      info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      info.samples = VK_SAMPLE_COUNT_1_BIT;
+      info.flags = 0;
+      if (!((VK_SUCCESS) == (vkCreateImage(_device, &info, nullptr, &image)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateImage _device &info nullptr &image)");
+      };
+#+END_EXAMPLE
+
+More of the generated code is here:
 https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/source/run_01_base.cpp
 
 * Documentation
