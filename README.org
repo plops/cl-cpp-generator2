@@ -100,6 +100,7 @@ conventions as much as possible. The biggest difference is that
 conditional expressions don't return a value. I think this keeps the C
 code simpler and more readable.
 
+Here is an overview of supported expressions:
 
 | defun name lambda-list [declaration*] form*                     | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
 | let ({var \vert (var [init-form])}*) declaration* form*"        | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
