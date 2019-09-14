@@ -461,9 +461,15 @@ more structs. this function helps to initialize those structs."
 		     (setf swapChainAdequate
 			   (and (not (swapChainSupport.formats.empty))
 				(not (swapChainSupport.presentModes.empty)))))))
-	       (let ((indices (findQueueFamilies device _surface)))
-		 (declare (type QueueFamilyIndices indices))
+	       (let ((indices (findQueueFamilies device _surface))
+		     (supportedFeatures))
+		 (declare (type QueueFamilyIndices indices)
+			  (type VkPhysicalDeviceFeatures
+				supportedFeatures))
+		 (vkGetPhysicalDeviceFeatures _device
+					      &supportedFeatures)
 		 (return (and (indices.isComplete)
+			      supportedFeatures.samplerAnisotropy
 			      #+surface (and 
 					 extensionsSupported
 					 swapChainAdequate)))

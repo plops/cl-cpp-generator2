@@ -225,7 +225,9 @@ bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR _surface,
                          (!(swapChainSupport.presentModes.empty())));
   };
   QueueFamilyIndices indices = findQueueFamilies(device, _surface);
-  return ((indices.isComplete()) &&
+  VkPhysicalDeviceFeatures supportedFeatures;
+  vkGetPhysicalDeviceFeatures(_device, &supportedFeatures);
+  return ((indices.isComplete()) && (supportedFeatures.samplerAnisotropy) &&
           (((extensionsSupported) && (swapChainAdequate))));
 };
 class HelloTriangleApplication {
