@@ -142,12 +142,16 @@ more structs. this function helps to initialize those structs."
 	    " "
 	    "layout(location = 0) out vec4 outColor;"
 	    "layout(location = 0) in vec3 fragColor;"
+
 	    "layout(location = 1) in vec2 fragTexCoord;"
+	    "layout(binding = 1) uniform sampler2D texSampler;"
+	    
 	    
 	    (defun main ()
 	      (declare (values void))
 	      (setf outColor
-		    (vec4 fragTexCoord 0.0 1.0)))))
+		    (texture texSampler fragTexCoord
+			     )))))
 	 (code
 	  `(do0
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
