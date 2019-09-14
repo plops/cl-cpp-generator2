@@ -982,6 +982,31 @@ more structs. this function helps to initialize those structs."
 			       &_textureImage)
 			      )
 			    :throw t)
+			  (let ((memReq))
+			    (declare (type VkMemoryRequirements memReq))
+			    (vkGetImageMemoryRequirements
+			     _device
+			     _textureImage
+			     &memReq)
+			    ,(vkcall
+			      `(allocate
+				memory
+				(:allocationSize
+				 memReq.size
+				 :memoryTypeIndex
+				 (findMemoryType
+				  memReq.memoryTypeBits
+				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
+				(_device
+				 &info
+				 nullptr
+				 &_textureImageMemory)
+				)
+			      :throw t)
+			    (vkBindImageMemory _device
+					       _textureImage
+					       _textureImageMemory
+					       0))
 			  )))
 		     
 		     #+surface

@@ -525,6 +525,21 @@ private:
             "failed to (vkCreateImage _device &info nullptr &_textureImage)");
       };
     };
+    VkMemoryRequirements memReq;
+    vkGetImageMemoryRequirements(_device, _textureImage, &memReq);
+    {
+      VkMemoryAllocateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+      info.allocationSize = memReq.size;
+      info.memoryTypeIndex = findMemoryType(
+          memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      if (!((VK_SUCCESS) == (vkAllocateMemory(_device, &info, nullptr,
+                                              &_textureImageMemory)))) {
+        throw std::runtime_error("failed to (vkAllocateMemory _device &info "
+                                 "nullptr &_textureImageMemory)");
+      };
+    };
+    vkBindImageMemory(_device, _textureImage, _textureImageMemory, 0);
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
