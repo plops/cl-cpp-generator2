@@ -142,7 +142,8 @@ more structs. this function helps to initialize those structs."
 	  `(do0
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Validation_layers"
-	    "/* g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -march=native -O2 -g */"
+	    "/* g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -march=native -O2 -g */ -ftime-report"
+	    "/* clang -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -march=native -O0 -ftime-report */"
 	    " "
 	    (do0 "#define GLFW_INCLUDE_VULKAN"
 		 (include <GLFW/glfw3.h>)
@@ -357,7 +358,8 @@ more structs. this function helps to initialize those structs."
 			  )
 		      (declare (type int width height))
 		      (glfwGetFramebufferSize _window &width &height)
-		      (let ((actualExtent (curly width height))
+		      (let ((actualExtent (curly (static_cast<uint32_t> width)
+						 (static_cast<uint32_t> height)))
 			    )
 			(declare (type VkExtent2D actualExtent))
 
@@ -882,6 +884,8 @@ more structs. this function helps to initialize those structs."
 			(createGraphicsPipeline)
 			(createFramebuffers)
 			(createCommandPool)
+			;; create texture image needs command pools
+			(createTextureImage)
 			(createVertexBuffer)
 			(createIndexBuffer)
 			(createUniformBuffers)
@@ -889,6 +893,33 @@ more structs. this function helps to initialize those structs."
 			(createDescriptorSets)
 			(createCommandBuffers)
 			(createSyncObjects)))
+
+		     (do0
+		      (defun createTextureImage ()
+			(declare (values void))
+			"// uses command buffers "
+			(let ((texWidth 0)
+			      (texHeight 0)
+			      (texChannels 0)
+			      (pixels
+			       (stbi_load
+				(string "texture.jpg")
+				&texWidth
+				&texHeight
+				&texChannels
+				STBI_rgb_alpha))
+			      (imageSize (* texWidth texHeight 4)))
+			  (declare (type int
+					 texWidth
+					 texHeight
+					 texChannels
+					 )
+				   (type VkDeviceSize
+					 imageSize))
+			  (unless pixels
+			    (throw ("std::runtime_error"
+				    (string "failed to load texture image."))))
+			  )))
 		     
 		     #+surface
 		     (do0

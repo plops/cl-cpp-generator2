@@ -161,7 +161,8 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities,
     int width = 0;
     int height = 0;
     glfwGetFramebufferSize(_window, &width, &height);
-    VkExtent2D actualExtent = {width, height};
+    VkExtent2D actualExtent = {static_cast<uint32_t>(width),
+                               static_cast<uint32_t>(height)};
     actualExtent.width = std::max(
         capabilities.minImageExtent.width,
         std::min(capabilities.maxImageExtent.width, actualExtent.width));
@@ -470,6 +471,7 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createTextureImage();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -478,6 +480,18 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  void createTextureImage() {
+    // uses command buffers
+    int texWidth = 0;
+    int texHeight = 0;
+    int texChannels = 0;
+    auto pixels = stbi_load("texture.jpg", &texWidth, &texHeight, &texChannels,
+                            STBI_rgb_alpha);
+    VkDeviceSize imageSize = ((texWidth) * (texHeight) * (4));
+    if (!(pixels)) {
+      throw std::runtime_error("failed to load texture image.");
+    };
+  };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
     std::vector<VkDescriptorSetLayout> layouts(n, _descriptorSetLayout);
