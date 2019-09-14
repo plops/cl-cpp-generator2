@@ -495,13 +495,16 @@ more structs. this function helps to initialize those structs."
 			 )
 
 		(let ((_textureImage)
-		      (_textureImageMemory))
+		      (_textureImageMemory)
+		      (_textureImageView))
 		  (declare (type
 			    VkImage
 			    _textureImage)
 			   (type
 			    VkDeviceMemory
-			    _textureImageMemory)))
+			    _textureImageMemory)
+			   (type VkImageView
+				 _textureImageView)))
 		
 		(let #-surface ()
 		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
@@ -912,6 +915,7 @@ more structs. this function helps to initialize those structs."
 			(createCommandPool)
 			;; create texture image needs command pools
 			(createTextureImage)
+			(createTextureImageView)
 			(createVertexBuffer)
 			(createIndexBuffer)
 			(createUniformBuffers)
@@ -1191,6 +1195,25 @@ more structs. this function helps to initialize those structs."
 			    (vkFreeMemory _device
 					  stagingBufferMemory
 					  nullptr))))
+		      (defun createTextureImageView ()
+			(declare (values void))
+			,(vkcall
+			  `(create
+			    image-view
+			    (:image _textureImage
+				    :viewType VK_IMAGE_VIEW_TYPE_2D
+				    :format VK_FORMAT_R8G8B8A8_UNORM
+				    :subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+				    :subresourceRange.baseMipLevel 0
+				    :subresourceRange.levelCount 1
+				    :subresourceRange.baseArrayLayer 0
+				    :subresourceRange.layerCount 1)
+			    (_device
+			     &info
+			     nullptr
+			     &_textureImageView)
+			    )
+			  :throw t))
 		      )
 		     
 		     #+surface
@@ -2162,6 +2185,9 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			(cleanupSwapChain)
 			(do0 ;; tex
+			 (vkDestroyImageView _device
+					     _textureImageView
+					     nullptr)
 			 (vkDestroyImage _device
 					 _textureImage nullptr)
 			 (vkFreeMemory _device

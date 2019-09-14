@@ -247,6 +247,7 @@ private:
   VkQueue _graphicsQueue;
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
+  VkImageView _textureImageView;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -479,6 +480,7 @@ private:
     createFramebuffers();
     createCommandPool();
     createTextureImage();
+    createTextureImageView();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -624,6 +626,25 @@ private:
                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
+  }
+  void createTextureImageView() {
+    {
+      VkImageViewCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      info.image = _textureImage;
+      info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      info.format = VK_FORMAT_R8G8B8A8_UNORM;
+      info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      info.subresourceRange.baseMipLevel = 0;
+      info.subresourceRange.levelCount = 1;
+      info.subresourceRange.baseArrayLayer = 0;
+      info.subresourceRange.layerCount = 1;
+      if (!((VK_SUCCESS) ==
+            (vkCreateImageView(_device, &info, nullptr, &_textureImageView)))) {
+        throw std::runtime_error("failed to (vkCreateImageView _device &info "
+                                 "nullptr &_textureImageView)");
+      };
+    };
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
@@ -1309,6 +1330,7 @@ private:
   }
   void cleanup() {
     cleanupSwapChain();
+    vkDestroyImageView(_device, _textureImageView, nullptr);
     vkDestroyImage(_device, _textureImage, nullptr);
     vkFreeMemory(_device, _textureImageMemory, nullptr);
     vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
