@@ -142,12 +142,12 @@ more structs. this function helps to initialize those structs."
 	    " "
 	    "layout(location = 0) out vec4 outColor;"
 	    "layout(location = 0) in vec3 fragColor;"
+	    "layout(location = 1) in vec2 fragTexCoord;"
 	    
 	    (defun main ()
 	      (declare (values void))
 	      (setf outColor
-		    (vec4 fragColor
-			  1.)))))
+		    (vec4 fragTexCoord 0.0 1.0)))))
 	 (code
 	  `(do0
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
@@ -245,7 +245,7 @@ more structs. this function helps to initialize those structs."
 	      ;; this file (which i don't necessarily want)
 	      ("getBindingDescription()" "static VkVertexInputBindingDescription")
 	      ("getAttributeDescriptions()"
-	       "static std::array<VkVertexInputAttributeDescription,2>"))
+	       "static std::array<VkVertexInputAttributeDescription,3>"))
 	    (defun "Vertex::getBindingDescription" ()
 	      (declare (values "VkVertexInputBindingDescription"))
 	      ,(vk
