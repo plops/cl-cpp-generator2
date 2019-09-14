@@ -7,10 +7,14 @@
  * -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow
  * -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5
  * -Wswitch-default -Wundef -march=native -O2 -g */
+    -ftime -
+    report
+/* clang -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
+ * -o run_01_base -march=native -O0 -ftime-report */
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-;
+    ;
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
@@ -491,6 +495,15 @@ private:
     if (!(pixels)) {
       throw std::runtime_error("failed to load texture image.");
     };
+    auto [stagingBuffer, stagingBufferMemory] =
+        createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
+                      (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
+    void *data = nullptr;
+    vkMapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
+    memcpy(data, pixels, static_cast<size_t>(imageSize));
+    vkUnmapMemory(_device, stagingBufferMemory);
+    stbi_image_free(pixels);
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());

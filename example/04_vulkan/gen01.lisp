@@ -919,6 +919,29 @@ more structs. this function helps to initialize those structs."
 			  (unless pixels
 			    (throw ("std::runtime_error"
 				    (string "failed to load texture image."))))
+			  (let (((bracket stagingBuffer
+					  stagingBufferMemory)
+				 (createBuffer
+				  imageSize
+				  VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+				  (logior
+				   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+				   )))
+				(data nullptr))
+			    (declare (type void* data))
+			    (vkMapMemory _device
+					 stagingBufferMemory
+					 0
+					 imageSize
+					 0
+					 &data)
+			    (memcpy data pixels
+				    (static_cast<size_t>
+				     imageSize))
+			    (vkUnmapMemory _device
+					   stagingBufferMemory)
+			    (stbi_image_free pixels))
 			  )))
 		     
 		     #+surface
