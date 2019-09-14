@@ -142,8 +142,7 @@ more structs. this function helps to initialize those structs."
 	  `(do0
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code"
 	    "// https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Validation_layers"
-	    "/* g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -march=native -O2 -g */ -ftime-report"
-	    "/* clang -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -march=native -O0 -ftime-report */"
+	    "/* g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan -o run_01_base -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -march=native -O2 -g  -ftime-report */"
 	    " "
 	    (do0 "#define GLFW_INCLUDE_VULKAN"
 		 (include <GLFW/glfw3.h>)
@@ -488,6 +487,16 @@ more structs. this function helps to initialize those structs."
 			 (type VkQueue _graphicsQueue)
 			 
 			 )
+
+		(let ((_textureImage)
+		      (_textureImageMemory))
+		  (declare (type
+			    VkImage
+			    _textureImage)
+			   (type
+			    VkDeviceMemory
+			    _textureImageMemory)))
+		
 		(let #-surface ()
 		     #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 				(_presentQueue)
@@ -515,7 +524,8 @@ more structs. this function helps to initialize those structs."
 				(_uniformBuffers)
 				(_uniformBuffersMemory)
 				(_descriptorPool)
-				(_descriptorSets))
+				(_descriptorSets)
+				)
 		     #+surface (declare
 				(type VkQueue 
 				      _presentQueue)
@@ -942,6 +952,36 @@ more structs. this function helps to initialize those structs."
 			    (vkUnmapMemory _device
 					   stagingBufferMemory)
 			    (stbi_image_free pixels))
+
+			  ,(vkcall
+			    `(create
+			      image
+			      (:imageType
+			       VK_IMAGE_TYPE_2D
+			       :extent.width (static_cast<uint32_t> texWidth)
+			       :extent.height (static_cast<uint32_t> texHeight)
+			       :extent.depth 1
+			       :mipLevels 1
+			       :arrayLayers 1
+			       :format VK_FORMAT_R8G8B8A8_UNORM
+			       ;; if you need direct access, use linear tiling for row major
+			       :tiling VK_IMAGE_TILING_OPTIMAL
+			       :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+			       :usage
+			       (logior
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT
+				VK_IMAGE_USAGE_SAMPLED_BIT)
+			       :sharingMode
+			       VK_SHARING_MODE_EXCLUSIVE
+			       :samples
+			       VK_SAMPLE_COUNT_1_BIT
+			       :flags 0)
+			      (_device
+			       &info
+			       nullptr
+			       &_textureImage)
+			      )
+			    :throw t)
 			  )))
 		     
 		     #+surface

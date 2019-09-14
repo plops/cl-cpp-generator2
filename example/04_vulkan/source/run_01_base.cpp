@@ -6,15 +6,11 @@
  * -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept
  * -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow
  * -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5
- * -Wswitch-default -Wundef -march=native -O2 -g */
-    -ftime -
-    report
-/* clang -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
- * -o run_01_base -march=native -O0 -ftime-report */
+ * -Wswitch-default -Wundef -march=native -O2 -g  -ftime-report */
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-    ;
+;
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
@@ -249,6 +245,8 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  VkImage _textureImage;
+  VkDeviceMemory _textureImageMemory;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -504,6 +502,29 @@ private:
     memcpy(data, pixels, static_cast<size_t>(imageSize));
     vkUnmapMemory(_device, stagingBufferMemory);
     stbi_image_free(pixels);
+    {
+      VkImageCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+      info.imageType = VK_IMAGE_TYPE_2D;
+      info.extent.width = static_cast<uint32_t>(texWidth);
+      info.extent.height = static_cast<uint32_t>(texHeight);
+      info.extent.depth = 1;
+      info.mipLevels = 1;
+      info.arrayLayers = 1;
+      info.format = VK_FORMAT_R8G8B8A8_UNORM;
+      info.tiling = VK_IMAGE_TILING_OPTIMAL;
+      info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      info.usage =
+          ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT));
+      info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      info.samples = VK_SAMPLE_COUNT_1_BIT;
+      info.flags = 0;
+      if (!((VK_SUCCESS) ==
+            (vkCreateImage(_device, &info, nullptr, &_textureImage)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateImage _device &info nullptr &_textureImage)");
+      };
+    };
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
