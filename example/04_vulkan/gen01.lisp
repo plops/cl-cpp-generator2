@@ -916,6 +916,7 @@ more structs. this function helps to initialize those structs."
 			;; create texture image needs command pools
 			(createTextureImage)
 			(createTextureImageView)
+			(createTextureSampler)
 			(createVertexBuffer)
 			(createIndexBuffer)
 			(createUniformBuffers)
@@ -1195,6 +1196,24 @@ more structs. this function helps to initialize those structs."
 			    (vkFreeMemory _device
 					  stagingBufferMemory
 					  nullptr))))
+		      (defun createTextureSampler ()
+			(declare (values void))
+			,(vkcall
+			  `(create
+			    sampler
+			    :magFilter VK_FILTER_LINEAR
+			    :minFilter VK_FILTER_LINEAR
+			    :addressModeU VK_SAMPLER_ADDRESS_MODE_REPEAT
+			    :addressModeV VK_SAMPLER_ADDRESS_MODE_REPEAT
+			    :addressModeW VK_SAMPLER_ADDRESS_MODE_REPEAT
+			    :anisotropyEnable VK_TRUE
+			    :maxAnisotropy 16
+			    :borderColor VK_BORDER_COLOR_INT_OPAQUE_BLACK
+			    :unnormalizedCoordinates VK_FALSE
+			    :compareEnable VK_FALSE
+			    :compareOp VK_COMPARE_OP_ALWAYS
+			    
+			    )))
 		      (defun createTextureImageView ()
 			(declare (values void))
 			,(vkcall
