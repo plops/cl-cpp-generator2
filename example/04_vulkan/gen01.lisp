@@ -700,6 +700,7 @@ more structs. this function helps to initialize those structs."
 			      (&info
 			       nullptr
 			       &_instance)
+			      _instance
 			      )
 			    :throw t)))
 		      (defun createBuffer (size usage properties )
@@ -731,6 +732,7 @@ more structs. this function helps to initialize those structs."
 			       &info
 			       nullptr
 			       &buffer)
+			      buffer
 			      )
 			    :throw t)
 			 
@@ -750,7 +752,8 @@ more structs. this function helps to initialize those structs."
 				(_device
 				 &info
 				 nullptr
-				 &bufferMemory))
+				 &bufferMemory)
+				bufferMemory)
 			      :throw t)
 			  
 			    (vkBindBufferMemory _device
@@ -869,7 +872,7 @@ more structs. this function helps to initialize those structs."
 				      :commandBufferCount 1
 				      )
 			      (_device &info &commandBuffer)
-			      commandBuffer
+			      
 			      )
 			    :throw nil
 			    :plural t))
@@ -1228,6 +1231,7 @@ more structs. this function helps to initialize those structs."
 				&info
 				nullptr
 				&image)
+			       image
 			       )
 			     :throw t))
 			 (let ((memReq))
@@ -1249,6 +1253,7 @@ more structs. this function helps to initialize those structs."
 				&info
 				nullptr
 				&imageMemory)
+			       imageMemory
 			       )
 			     :throw t)
 			   (vkBindImageMemory _device
@@ -1368,6 +1373,7 @@ more structs. this function helps to initialize those structs."
 			      &info
 			      nullptr
 			      &_textureSampler)
+			     _textureSampler
 			     )
 			   :throw t))
 		       (defun createTextureImageView ()
@@ -1396,7 +1402,9 @@ more structs. this function helps to initialize those structs."
 						:pSetLayouts (layouts.data))
 			       (_device
 				&info
-				(_descriptorSets.data)))
+				(_descriptorSets.data))
+			       ;_descriptorSets
+			       )
 			     :throw t
 			     :plural t)
 			   ;; the sets will be automatically freed when
@@ -1495,7 +1503,8 @@ more structs. this function helps to initialize those structs."
 				 (_device
 				  &info
 				  nullptr
-				  &_descriptorPool))
+				  &_descriptorPool)
+				 _descriptorPool)
 			       :throw t))))
 		       (defun createUniformBuffers ()
 			 (declare (values void))
@@ -1549,6 +1558,7 @@ more structs. this function helps to initialize those structs."
 					       (bindings.size))
 					      :pBindings (bindings.data))
 			       (_device &info nullptr &_descriptorSetLayout)
+			       _descriptorSetLayout
 			       )
 			     :throw t))
 			
@@ -1624,7 +1634,9 @@ more structs. this function helps to initialize those structs."
 					    :commandBufferCount (_commandBuffers.size))
 			      (_device
 			       &info
-			       (_commandBuffers.data)))
+			       (_commandBuffers.data))
+			      ;_commandBuffers
+			      )
 			    :throw t
 			    :plural t)
 			 
@@ -1638,7 +1650,8 @@ more structs. this function helps to initialize those structs."
 				 ;; resubmittable
 				 :flags 0 
 				 :pInheritanceInfo nullptr)
-				((aref _commandBuffers i) &info))
+				((aref _commandBuffers i) &info)
+				(aref _commandBuffers i))
 			      :throw t)
 			   
 
@@ -1728,7 +1741,8 @@ more structs. this function helps to initialize those structs."
 				(_device
 				 &info
 				 nullptr
-				 &_commandPool))
+				 &_commandPool)
+				_commandPool)
 			      :throw t)))
 			(defun createFramebuffers ()
 			  (declare (values void))
@@ -1758,7 +1772,8 @@ more structs. this function helps to initialize those structs."
 				     &info
 				     nullptr
 				     (ref
-				      (aref _swapChainFramebuffers i))))
+				      (aref _swapChainFramebuffers i)))
+				    (aref _swapChainFramebuffers i))
 				  :throw t)))))
 			(defun createRenderPass ()
 			  (declare (values void))
@@ -1837,7 +1852,8 @@ more structs. this function helps to initialize those structs."
 				     (_device
 				      &info
 				      nullptr
-				      &_renderPass))
+				      &_renderPass)
+				     _renderPass)
 				   :throw t)))
 			(defun createGraphicsPipeline ()
 			  (declare (values void))
@@ -2005,7 +2021,8 @@ more structs. this function helps to initialize those structs."
 				 (_device
 				  &info
 				  nullptr
-				  &_pipelineLayout))
+				  &_pipelineLayout)
+				 _pipelineLayout)
 			       :throw t))
 			    ,(vkcall
 			      `(create
@@ -2034,7 +2051,8 @@ more structs. this function helps to initialize those structs."
 				 1
 				 &info
 				 nullptr
-				 &_graphicsPipeline))
+				 &_graphicsPipeline)
+				_graphicsPipeline)
 			      :plural t
 			      :throw t)			   
 			    (vkDestroyShaderModule _device
@@ -2059,7 +2077,8 @@ more structs. this function helps to initialize those structs."
 				(_device
 				 &info
 				 nullptr
-				 &shaderModule))
+				 &shaderModule)
+				shaderModule)
 			      :throw t)
 			    (return shaderModule))))
 		      
@@ -2135,7 +2154,8 @@ more structs. this function helps to initialize those structs."
 				&info
 				nullptr
 				&_swapChain
-				))
+				)
+			       _swapChain)
 			     :throw t
 			     :khr "KHR")			  
 			   (do0
@@ -2176,7 +2196,8 @@ more structs. this function helps to initialize those structs."
 			      (_device
 			       &info
 			       nullptr
-			       &imageView))
+			       &imageView)
+			      imageView)
 			    :throw t)
 			  (return imageView)))
 		       (defun createImageViews ()
@@ -2237,7 +2258,8 @@ more structs. this function helps to initialize those structs."
 				(_physicalDevice
 				 &info
 				 nullptr
-				 &_device))
+				 &_device)
+				_physicalDevice)
 			      :throw t)
 			    (vkGetDeviceQueue _device (indices.graphicsFamily.value)
 					      0 &_graphicsQueue)
