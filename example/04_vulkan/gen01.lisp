@@ -2427,7 +2427,7 @@ more structs. this function helps to initialize those structs."
 					nullptr)
 			  )
 
-			 
+			  
 			 (foreach (b _swapChainFramebuffers)
 				  (vkDestroyFramebuffer _device b nullptr))
 			 (vkFreeCommandBuffers _device
