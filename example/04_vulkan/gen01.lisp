@@ -1016,7 +1016,25 @@ more structs. this function helps to initialize those structs."
 				    &err
 				    (string "chalet.obj"))
 			     (throw ("std::runtime_error"
-				     (+ warning err)))))))
+				     (+ warning err))))
+			   (foreach
+			    (shape shapes)
+			    (foreach
+			     (index shape.mesh.indices)
+			     ,(vk
+			       `(Vertex
+				 vertex
+				 :pos (curly
+				       ,@(loop for i below 3 collect
+					      `(aref attrib.vertices
+						     (+ ,i (* 3 index.vertex_index)))))
+				 :texCoord (curly
+				       ,@(loop for i below 2 collect
+					      `(aref attrib.texcoords
+						     (+ ,i (* 2 index.texcoord_index)))))
+				 :color (curly 1s0 1s0 1s0)))
+			     (g_vertices.push_back vertex)
+			     (g_indices.push_back (g_indices.size)))))))
 		      (do0
 		       (defun findSupportedFormat (candidates
 						   tiling

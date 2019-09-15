@@ -520,6 +520,20 @@ private:
                            "chalet.obj"))) {
       throw std::runtime_error(((warning) + (err)));
     };
+    for (auto &shape : shapes) {
+      for (auto &index : shape.mesh.indices) {
+        Vertex vertex = {};
+        vertex.pos = {attrib.vertices[((0) + (((3) * (index.vertex_index))))],
+                      attrib.vertices[((1) + (((3) * (index.vertex_index))))],
+                      attrib.vertices[((2) + (((3) * (index.vertex_index))))]};
+        vertex.texCoord = {
+            attrib.texcoords[((0) + (((2) * (index.texcoord_index))))],
+            attrib.texcoords[((1) + (((2) * (index.texcoord_index))))]};
+        vertex.color = {(1.e+0f), (1.e+0f), (1.e+0f)};
+        g_vertices.push_back(vertex);
+        g_indices.push_back(g_indices.size());
+      };
+    };
   };
   VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
                                VkImageTiling tiling,
