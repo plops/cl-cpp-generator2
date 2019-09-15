@@ -1004,6 +1004,23 @@ more structs. this function helps to initialize those structs."
 				  (== pos other.pos)
 				  (== color other.color)
 				  (== texCoord other.texCoord))))
+		       (do0
+			"template<> struct std::hash<Vertex>"
+			(progn
+			  (defun "operator()" (vertex)
+			    (declare (values size_t)
+				     (type "Vertex const&" vertex))
+			    (return (logxor
+				     ("std::hash<glm::vec3>()"
+				      vertex.pos)
+				     (>> (<< ("std::hash<glm::vec3>()"
+					   vertex.color)
+					     1)
+					 1)
+				     (<< ("std::hash<glm::vec2>()"
+					   vertex.texCoord)
+					     1)))
+			    )))
 		       (defun loadModel ()
 			 (declare (values void))
 			 (let ((attrib)

@@ -517,6 +517,13 @@ private:
     return (((pos) == (other.pos)) && ((color) == (other.color)) &&
             ((texCoord) == (other.texCoord)));
   }
+  template <> struct std::hash<Vertex> {
+    size_t operator()(Vertex const &vertex) {
+      return logxor(std::hash<glm::vec3>()(vertex.pos),
+                    std::hash<glm::vec3>()(vertex.color) << 1 >> 1,
+                    std::hash<glm::vec2>()(vertex.texCoord) << 1);
+    }
+  };
   void loadModel() {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
