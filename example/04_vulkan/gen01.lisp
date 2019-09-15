@@ -218,6 +218,9 @@ more structs. this function helps to initialize those structs."
 	    (do0
 	     "#define TINYOBJLOADER_IMPLEMENTATION"
 	     (include "tiny_obj_loader.h")
+	     (include <unordered_map>) ;; for vertex deduplication
+	     "#define GLM_ENABLE_EXPERIMENTAL"
+	     (include <glm/gtx/hash.hpp>)
 	     " ")
 	    
 	    (do0
@@ -994,6 +997,13 @@ more structs. this function helps to initialize those structs."
 			 (createSyncObjects)))
 
 		      (do0
+		       (defun "Vertex::operator==" (other)
+			 (declare (type "const Vertex&" other)
+				  (values bool))
+			 (return (and
+				  (== pos other.pos)
+				  (== color other.color)
+				  (== texCoord other.texCoord))))
 		       (defun loadModel ()
 			 (declare (values void))
 			 (let ((attrib)
@@ -1017,25 +1027,35 @@ more structs. this function helps to initialize those structs."
 				    (string "chalet.obj"))
 			     (throw ("std::runtime_error"
 				     (+ warning err))))
-			   (foreach
-			    (shape shapes)
+
+			   (let ((uniqueVertices (curly)))
+			     (declare (type "std::unordered_map<Vertex,uint32_t>" uniqueVertices))
+			   
 			    (foreach
-			     (index shape.mesh.indices)
-			     ,(vk
-			       `(Vertex
-				 vertex
-				 :pos (curly
-				       ,@(loop for i below 3 collect
-					      `(aref attrib.vertices
-						     (+ ,i (* 3 index.vertex_index)))))
-				 :texCoord (curly
-					    (aref attrib.texcoords
-						  (+ 0 (* 2 index.texcoord_index)))
-					    (- 1s0 (aref attrib.texcoords
-						   (+ 1 (* 2 index.texcoord_index)))))
-				 :color (curly 1s0 1s0 1s0)))
-			     (g_vertices.push_back vertex)
-			     (g_indices.push_back (g_indices.size)))))))
+			     (shape shapes)
+			     (foreach
+			      (index shape.mesh.indices)
+			      ,(vk
+				`(Vertex
+				  vertex
+				  :pos (curly
+					,@(loop for i below 3 collect
+					       `(aref attrib.vertices
+						      (+ ,i (* 3 index.vertex_index)))))
+				  :texCoord (curly
+					     (aref attrib.texcoords
+						   (+ 0 (* 2 index.texcoord_index)))
+					     (- 1s0 (aref attrib.texcoords
+							  (+ 1 (* 2 index.texcoord_index)))))
+				  :color (curly 1s0 1s0 1s0)))
+			      (when (== 0
+					(uniqueVertices.count vertex))
+				(setf (aref uniqueVertices vertex)
+				      (static_cast<uint32_t>
+				       (g_vertices.size)))
+			       (g_vertices.push_back vertex))
+			      (g_indices.push_back
+			       (aref uniqueVertices vertex))))))))
 		      (do0
 		       (defun findSupportedFormat (candidates
 						   tiling

@@ -36,6 +36,9 @@
 ;
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include <unordered_map>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 ;
 // code to load binary shader from file
 #include <fstream>
@@ -510,6 +513,10 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  bool Vertex::operator==(const Vertex &other) {
+    return (((pos) == (other.pos)) && ((color) == (other.color)) &&
+            ((texCoord) == (other.texCoord)));
+  }
   void loadModel() {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -520,6 +527,7 @@ private:
                            "chalet.obj"))) {
       throw std::runtime_error(((warning) + (err)));
     };
+    std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
     for (auto &shape : shapes) {
       for (auto &index : shape.mesh.indices) {
         Vertex vertex = {};
@@ -531,8 +539,11 @@ private:
             (((1.e+0f)) -
              (attrib.texcoords[((1) + (((2) * (index.texcoord_index))))]))};
         vertex.color = {(1.e+0f), (1.e+0f), (1.e+0f)};
-        g_vertices.push_back(vertex);
-        g_indices.push_back(g_indices.size());
+        if ((0) == (uniqueVertices.count(vertex))) {
+          uniqueVertices[vertex] = static_cast<uint32_t>(g_vertices.size());
+          g_vertices.push_back(vertex);
+        };
+        g_indices.push_back(uniqueVertices[vertex]);
       };
     };
   };
