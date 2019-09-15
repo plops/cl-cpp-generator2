@@ -275,6 +275,9 @@ private:
   VkDeviceMemory _textureImageMemory;
   VkImageView _textureImageView;
   VkSampler _textureSampler;
+  VkImage _depthImage;
+  VkDeviceMemory _depthImageMemory;
+  VkImageView _depthImageView;
   const std::vector<const char *> _deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
   VkQueue _presentQueue;
@@ -506,6 +509,7 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPool();
+    createDepthResources();
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
@@ -517,6 +521,44 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
+                               VkImageTiling tiling,
+                               VkFormatFeatureFlags features) {
+    for (auto &format : candidates) {
+      VkFormatProperties props;
+      vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &props);
+      if ((((VK_IMAGE_TILING_LINEAR) == (tiling)) &&
+           ((features) == (((features) & (props.linearTilingFeatures)))))) {
+        return format;
+      };
+      if ((((VK_IMAGE_TILING_OPTIMAL) == (tiling)) &&
+           ((features) == (((features) & (props.optimalTilingFeatures)))))) {
+        return format;
+      };
+    };
+    throw std::runtime_error("failed to find supported format!");
+  }
+  VkFormat findDepthFormat() {
+    return findSupportedFormat({VK_FORMAT_D32_SFLOAT,
+                                VK_FORMAT_D32_SFLOAT_S8_UINT,
+                                VK_FORMAT_D24_UNORM_S8_UINT},
+                               VK_IMAGE_TILING_OPTIMAL,
+                               VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+  }
+  bool hasStencilComponent(VkFormat format) {
+    return (((VK_FORMAT_D32_SFLOAT_S8_UINT) == (format)) ||
+            ((VK_FORMAT_D24_SFLOAT_S8_UINT) == (format)));
+  }
+  void createDepthResources() {
+    auto depthFormat = findDepthFormat();
+    auto [depthImage, depthImageMemory] = createImage(
+        _swapChainExtent.width, _swapChainExtent.height, depthFormat,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    _depthImage = depthImage;
+    _depthImageMemory = depthImageMemory;
+    _depthImageView = createImageView(_depthImage, depthFormat);
+  };
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
                          uint32_t height) {
     auto commandBuffer = beginSingleTimeCommands();
@@ -1220,32 +1262,34 @@ private:
     _swapChainImageFormat = surfaceFormat.format;
     _swapChainExtent = extent;
   }
+  VkImageView createImageView(VkImage image, VkFormat format,
+                              VkImageAspectFlags aspectFlags) {
+    VkImageView imageView;
+    {
+      VkImageViewCreateInfo info = {};
+      info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      info.image = image;
+      info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      info.format = format;
+      info.subresourceRange.aspectMask = aspectFlags;
+      info.subresourceRange.baseMipLevel = 0;
+      info.subresourceRange.levelCount = 1;
+      info.subresourceRange.baseArrayLayer = 0;
+      info.subresourceRange.layerCount = 1;
+      if (!((VK_SUCCESS) ==
+            (vkCreateImageView(_device, &info, nullptr, &imageView)))) {
+        throw std::runtime_error(
+            "failed to (vkCreateImageView _device &info nullptr &imageView)");
+      };
+    };
+    return imageView;
+  }
   void createImageViews() {
     _swapChainImageViews.resize(_swapChainImages.size());
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
-      {
-        VkImageViewCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        info.image = _swapChainImages[i];
-        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        info.format = _swapChainImageFormat;
-        info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        info.subresourceRange.baseMipLevel = 0;
-        info.subresourceRange.levelCount = 1;
-        info.subresourceRange.baseArrayLayer = 0;
-        info.subresourceRange.layerCount = 1;
-        if (!((VK_SUCCESS) ==
-              (vkCreateImageView(_device, &info, nullptr,
-                                 &(_swapChainImageViews[i]))))) {
-          throw std::runtime_error(
-              "failed to (vkCreateImageView _device &info nullptr            "
-              "(ref (aref _swapChainImageViews i)))");
-        };
-      };
+      _swapChainImageViews[i] =
+          createImageView(_swapChainImages[i], _swapChainImageFormat,
+                          VK_IMAGE_ASPECT_COLOR_BIT);
     }
   };
   void createLogicalDevice() {
