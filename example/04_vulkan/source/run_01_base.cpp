@@ -1,5 +1,6 @@
 // https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Base_code
 // https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Validation_layers
+// https://gpuopen.com/understanding-vulkan-objects/
 /* g++ -std=c++17 run_01_base.cpp  `pkg-config --static --libs glfw3` -lvulkan
  * -o run_01_base -pedantic -Wall -Wextra -Wcast-align -Wcast-qual
  * -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self
@@ -458,14 +459,16 @@ private:
       info.commandPool = _commandPool;
       info.commandBufferCount = 1;
       vkAllocateCommandBuffers(_device, &info, &commandBuffer);
-      std::cout << "allocate command-buffer" << std::endl;
+      std::cout << "allocate command-buffer commandBuffer=" << commandBuffer
+                << std::endl;
     };
     {
       VkCommandBufferBeginInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
       info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
       vkBeginCommandBuffer(commandBuffer, &info);
-      std::cout << "begin command-buffer" << std::endl;
+      std::cout << "begin command-buffer commandBuffer=" << commandBuffer
+                << std::endl;
     };
     return commandBuffer;
   }
@@ -478,6 +481,7 @@ private:
     vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(_graphicsQueue);
     vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+    std::cout << "endSingleTimeCommands " << commandBuffer << std::endl;
   }
   void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
     auto commandBuffer = beginSingleTimeCommands();
