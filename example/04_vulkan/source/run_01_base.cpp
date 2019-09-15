@@ -890,6 +890,7 @@ private:
     };
   }
   void recreateSwapChain() {
+    std::cout << "***** recreateSwapChain" << std::endl;
     int width = 0;
     int height = 0;
     while ((((0) == (width)) || ((0) == (height)))) {
@@ -897,6 +898,7 @@ private:
       glfwWaitEvents();
     };
     vkDeviceWaitIdle(_device);
+    cleanupSwapChain();
     createSwapChain();
     createImageViews();
     createRenderPass();
@@ -1521,7 +1523,7 @@ private:
     vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
   }
   void cleanupSwapChain() {
-    std::cout << "cleanupSwapChain" << std::endl;
+    std::cout << "***** cleanupSwapChain" << std::endl;
     std::cout << "cleanup depth: "
               << " _depthImageView=" << _depthImageView
               << " _depthImage=" << _depthImage
@@ -1566,6 +1568,7 @@ private:
   }
   void cleanup() {
     cleanupSwapChain();
+    std::cout << "***** cleanup" << std::endl;
     std::cout << "tex: "
               << " _textureSampler=" << _textureSampler
               << " _textureImageView=" << _textureImageView

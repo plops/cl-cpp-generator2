@@ -1574,7 +1574,9 @@ more structs. this function helps to initialize those structs."
 		      
 		       (defun recreateSwapChain ()
 			 (declare (values void))
-
+			 (<< "std::cout"
+			    (string "***** recreateSwapChain")
+			    "std::endl")
 			 (let ((width 0)
 			       (height 0))
 			   (declare (type int width height))
@@ -1586,6 +1588,7 @@ more structs. this function helps to initialize those structs."
 			     (glfwWaitEvents)))
 			
 			 (vkDeviceWaitIdle _device) ;; wait for resources to be not in use anymore
+			 (cleanupSwapChain)
 			 (createSwapChain)
 			 (createImageViews)
 			 
@@ -2459,7 +2462,7 @@ more structs. this function helps to initialize those structs."
 		      (defun cleanupSwapChain ()
 			(declare (values void))
 			(<< "std::cout"
-			    (string "cleanupSwapChain")
+			    (string "***** cleanupSwapChain")
 			    "std::endl")
 			#+surface
 			(do0
@@ -2530,10 +2533,13 @@ more structs. this function helps to initialize those structs."
 			 ))
 		      (defun cleanup ()
 			(declare (values void))
-		       
+			
 			#+surface
 			(do0
 			 (cleanupSwapChain)
+			 (<< "std::cout"
+			    (string "***** cleanup")
+			    "std::endl")
 			 (do0 ;; tex
 			  ,(vkprint "tex"
 				    `(_textureSampler
