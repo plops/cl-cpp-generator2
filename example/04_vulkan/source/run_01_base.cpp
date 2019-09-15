@@ -1151,6 +1151,18 @@ private:
     multisampling.pSampleMask = nullptr;
     multisampling.alphaToCoverageEnable = VK_FALSE;
     multisampling.alphaToOneEnable = VK_FALSE;
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+    depthStencil.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = (0.0e+0f);
+    depthStencil.maxDepthBounds = (1.e+0f);
+    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.front = {};
+    depthStencil.back = {};
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask =
         ((VK_COLOR_COMPONENT_R_BIT) | (VK_COLOR_COMPONENT_G_BIT) |
@@ -1196,7 +1208,7 @@ private:
       info.pViewportState = &viewPortState;
       info.pRasterizationState = &rasterizer;
       info.pMultisampleState = &multisampling;
-      info.pDepthStencilState = nullptr;
+      info.pDepthStencilState = &depthStencil;
       info.pColorBlendState = &colorBlending;
       info.pDynamicState = nullptr;
       info.layout = _pipelineLayout;

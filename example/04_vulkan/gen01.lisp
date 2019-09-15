@@ -1630,7 +1630,8 @@ more structs. this function helps to initialize those structs."
 			       :color (curly 0s0 0s0 0s0 1s0)))
 			    ,(vk
 			      `(VkClearValue
-			       clearDepth
+				clearDepth
+				;; depth buffer far=1 by default
 			       :depthStencil (curly 1s0 0)))
 			    (let ((clearValues ("std::array<VkClearValue,2>" (curly clearColor clearDepth)))
 				  )
@@ -1912,6 +1913,21 @@ more structs. this function helps to initialize those structs."
 				  :alphaToCoverageEnable VK_FALSE
 				  :alphaToOneEnable VK_FALSE))
 			      ,(vk
+				`(VkPipelineDepthStencilStateCreateInfo
+				  depthStencil
+				  :sType VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
+				  :depthTestEnable VK_TRUE
+				  ;; use this for transparent objects:
+				  :depthWriteEnable VK_TRUE
+				  ;; lower depth is closer
+				  :depthCompareOp VK_COMPARE_OP_LESS
+				  :depthBoundsTestEnable VK_FALSE
+				  :minDepthBounds 0s0
+				  :maxDepthBounds 1s0
+				  :stencilTestEnable VK_FALSE
+				  :front (curly)
+				  :back (curly)))
+			      ,(vk
 				`(VkPipelineColorBlendAttachmentState
 				  colorBlendAttachment
 				 
@@ -1983,7 +1999,7 @@ more structs. this function helps to initialize those structs."
 					     :pViewportState &viewPortState
 					     :pRasterizationState &rasterizer
 					     :pMultisampleState &multisampling
-					     :pDepthStencilState nullptr
+					     :pDepthStencilState &depthStencil
 					     :pColorBlendState &colorBlending
 					     ;; if we want to change linewidth:
 					     :pDynamicState nullptr
