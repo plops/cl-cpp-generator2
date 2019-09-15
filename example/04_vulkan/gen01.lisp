@@ -1141,10 +1141,23 @@ more structs. this function helps to initialize those structs."
 					    srcStage VK_PIPELINE_STAGE_TRANSFER_BIT
 					    dstStage VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
 					    ))
-				     (do0
-				      (throw
-					  ("std::invalid_argument"
-					   (string "unsupported layout transition.")))))))
+				     (if (and
+				      (== VK_IMAGE_LAYOUT_UNDEFINED
+					  oldLayout)
+				      (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+					  newLayout))
+					 (do0
+					  (setf barrier.srcAccessMask 0
+						barrier.dstAccessMask (logior VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+									      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
+					    srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+					    dstStage VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+					    )
+				       )
+				      (do0
+				       (throw
+					   ("std::invalid_argument"
+					    (string "unsupported layout transition."))))))))
 			   (vkCmdPipelineBarrier
 			    commandBuffer
 			    ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
@@ -1725,6 +1738,18 @@ more structs. this function helps to initialize those structs."
 			      ;; image to be presented in swap chain
 			      :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
 			  ,(vk
+			    `(VkAttachmentDescription
+			      depthAttachment
+			      :format (findDepthFormat)
+			      :samples VK_SAMPLE_COUNT_1_BIT
+			      :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
+			      :storeOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+			      :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+			      :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+			      ;; image to be presented in swap chain
+			      :finalLayout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+			  ,(vk
 			    `(VkAttachmentReference
 			      colorAttachmentRef
 			      ;; we only have one attachment description
@@ -1732,12 +1757,19 @@ more structs. this function helps to initialize those structs."
 			      ;; choose best layout for use case color buffer
 			      :layout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
 			  ,(vk
+			    `(VkAttachmentReference
+			      depthAttachmentRef
+			      :attachment 1
+			      :layout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+			  ,(vk
 			    `(VkSubpassDescription
 			      subpass
 			      :pipelineBindPoint VK_PIPELINE_BIND_POINT_GRAPHICS
 			      :colorAttachmentCount 1
 			      ;; frag shader references this as outColor
-			      :pColorAttachments &colorAttachmentRef))
+			      :pColorAttachments &colorAttachmentRef
+			      :pDepthStencilAttachment &depthAttachmentRef
+			      ))
 			  ,(vk
 			    `(VkSubpassDependency
 			      dependency
@@ -1749,21 +1781,27 @@ more structs. this function helps to initialize those structs."
 			      :dstAccessMask (logior
 					      VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
 					      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)))
-			  ,(vkcall
-			    `(create
-			      render-pass
-			      (:attachmentCount 1
-						:pAttachments &colorAttachment
-						:subpassCount 1
-						:pSubpasses &subpass
-						;; wait with writing of the color attachment
-						:dependencyCount 1
-						:pDependencies &dependency)
-			      (_device
-			       &info
-			       nullptr
-			       &_renderPass))
-			    :throw t))
+			  (let ((attachments ("std::array<VkAttachmentDescription,2>"
+					      (curly colorAttachment
+						     depthAttachment))))
+			    
+			    ,(vkcall
+				   `(create
+				     render-pass
+				     (:attachmentCount 
+				      (static_cast<uint32_t>
+				       (attachments.size))
+				      :pAttachments (attachments.data)
+				      :subpassCount 1
+				      :pSubpasses &subpass
+				      ;; wait with writing of the color attachments
+				      :dependencyCount 1
+				      :pDependencies &dependency)
+				     (_device
+				      &info
+				      nullptr
+				      &_renderPass))
+				   :throw t)))
 			(defun createGraphicsPipeline ()
 			  (declare (values void))
 			  (let ((vertShaderModule (createShaderModule
