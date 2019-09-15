@@ -944,10 +944,11 @@ more structs. this function helps to initialize those structs."
 			 (createRenderPass)
 			 (createDescriptorSetLayout)
 			 (createGraphicsPipeline)
-			 (createFramebuffers)
+			 
 			 (createCommandPool)
 			 ;; create texture image needs command pools
 			 (createDepthResources)
+			 (createFramebuffers)
 			 (createTextureImage)
 			 (createTextureImageView)
 			 (createTextureSampler)
@@ -1622,9 +1623,18 @@ more structs. this function helps to initialize those structs."
 				((aref _commandBuffers i) &info))
 			      :throw t)
 			   
-			   
-			    (let ((clearColor (curly 0s0 0s0 0s0 1s0)))
-			      (declare (type VkClearValue clearColor))
+
+			    ,(vk
+			      `(VkClearValue
+			       clearColor
+			       :color (curly 0s0 0s0 0s0 1s0)))
+			    ,(vk
+			      `(VkClearValue
+			       clearDepth
+			       :depthStencil (curly 1s0 0)))
+			    (let ((clearValues ("std::array<VkClearValue,2>" (curly clearColor clearDepth)))
+				  )
+			      
 			      ,(vk
 				`(VkRenderPassBeginInfo
 				  renderPassInfo
@@ -1633,8 +1643,8 @@ more structs. this function helps to initialize those structs."
 				  :framebuffer (aref _swapChainFramebuffers i)
 				  :renderArea.offset (curly  0 0)
 				  :renderArea.extent _swapChainExtent
-				  :clearValueCount 1
-				  :pClearValues &clearColor
+				  :clearValueCount (clearValues.size)
+				  :pClearValues (clearValues.data)
 				  )))
 			    (vkCmdBeginRenderPass
 			     (aref _commandBuffers i)
@@ -1706,17 +1716,25 @@ more structs. this function helps to initialize those structs."
 			  (let ((n (_swapChainImageViews.size)))
 			    (_swapChainFramebuffers.resize n)
 			    (dotimes (i n)
-			      (let (("attachments[]" (curly (aref _swapChainImageViews i))))
-				(declare (type VkImageView "attachments[]"))
+			      ;; color attachment differs for each
+			      ;; swap chain image, but depth image can
+			      ;; be reused. at any time only one
+			      ;; subpass is running
+			      (let ((attachments ("std::array<VkImageView,2>"
+						  (curly (aref _swapChainImageViews i)
+							 _depthImageView))))
+				
 				,(vkcall
 				  `(create
 				    framebuffer
-				    (:renderPass _renderPass
-						 :attachmentCount 1
-						 :pAttachments attachments
-						 :width _swapChainExtent.width
-						 :height _swapChainExtent.height
-						 :layers 1)
+				    (:renderPass
+				     _renderPass
+				     :attachmentCount (static_cast<uint32_t>
+						       (attachments.size))
+				     :pAttachments (attachments.data)
+				     :width _swapChainExtent.width
+				     :height _swapChainExtent.height
+				     :layers 1)
 				    (_device
 				     &info
 				     nullptr

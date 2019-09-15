@@ -507,9 +507,9 @@ private:
     createRenderPass();
     createDescriptorSetLayout();
     createGraphicsPipeline();
-    createFramebuffers();
     createCommandPool();
     createDepthResources();
+    createFramebuffers();
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
@@ -949,15 +949,19 @@ private:
                                    "_commandBuffers i) &info)");
         };
       };
-      VkClearValue clearColor = {(0.0e+0f), (0.0e+0f), (0.0e+0f), (1.e+0f)};
+      VkClearValue clearColor = {};
+      clearColor.color = {(0.0e+0f), (0.0e+0f), (0.0e+0f), (1.e+0f)};
+      VkClearValue clearDepth = {};
+      clearDepth.depthStencil = {(1.e+0f), 0};
+      auto clearValues = std::array<VkClearValue, 2>({clearColor, clearDepth});
       VkRenderPassBeginInfo renderPassInfo = {};
       renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
       renderPassInfo.renderPass = _renderPass;
       renderPassInfo.framebuffer = _swapChainFramebuffers[i];
       renderPassInfo.renderArea.offset = {0, 0};
       renderPassInfo.renderArea.extent = _swapChainExtent;
-      renderPassInfo.clearValueCount = 1;
-      renderPassInfo.pClearValues = &clearColor;
+      renderPassInfo.clearValueCount = clearValues.size();
+      renderPassInfo.pClearValues = clearValues.data();
       vkCmdBeginRenderPass(_commandBuffers[i], &renderPassInfo,
                            VK_SUBPASS_CONTENTS_INLINE);
       vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -997,13 +1001,14 @@ private:
     auto n = _swapChainImageViews.size();
     _swapChainFramebuffers.resize(n);
     for (int i = 0; i < n; (i) += (1)) {
-      VkImageView attachments[] = {_swapChainImageViews[i]};
+      auto attachments = std::array<VkImageView, 2>(
+          {_swapChainImageViews[i], _depthImageView});
       {
         VkFramebufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.renderPass = _renderPass;
-        info.attachmentCount = 1;
-        info.pAttachments = attachments;
+        info.attachmentCount = static_cast<uint32_t>(attachments.size());
+        info.pAttachments = attachments.data();
         info.width = _swapChainExtent.width;
         info.height = _swapChainExtent.height;
         info.layers = 1;
