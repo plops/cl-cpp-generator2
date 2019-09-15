@@ -882,9 +882,9 @@ private:
     vkDeviceWaitIdle(_device);
     createSwapChain();
     createImageViews();
+    createDepthResources();
     createRenderPass();
     createGraphicsPipeline();
-    createDepthResources();
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();

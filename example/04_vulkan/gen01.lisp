@@ -1520,7 +1520,7 @@ more structs. this function helps to initialize those structs."
 			     :stageFlags VK_SHADER_STAGE_VERTEX_BIT
 			     :pImmutableSamplers nullptr))
 
-			 (let ((bindings (curly
+ 			 (let ((bindings (curly
 					  uboLayoutBinding
 					  samplerLayoutBinding)))
 			   (declare (type
@@ -1554,9 +1554,10 @@ more structs. this function helps to initialize those structs."
 			 (vkDeviceWaitIdle _device) ;; wait for resources to be not in use anymore
 			 (createSwapChain)
 			 (createImageViews)
+			 (createDepthResources)
 			 (createRenderPass)
 			 (createGraphicsPipeline)
-			 (createDepthResources)
+			 
 			 (createFramebuffers)
 			 (createUniformBuffers)
 			 (createDescriptorPool)
