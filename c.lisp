@@ -343,6 +343,8 @@ entry return-values contains a list of return values"
 			  (format nil "(~{(~a)~^ | ~})" (mapcar #'emit args))))
 		(logand (let ((args (cdr code))) ;; py
 			  (format nil "(~{(~a)~^ & ~})" (mapcar #'emit args))))
+		(logxor (let ((args (cdr code))) ;; py
+			  (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
 		(or (let ((args (cdr code)))
 		      (format nil "(~{(~a)~^||~})" (mapcar #'emit args))))
 		(and (let ((args (cdr code)))
