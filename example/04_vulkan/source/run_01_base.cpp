@@ -63,7 +63,7 @@ struct UniformBufferObject {
 };
 typedef struct UniformBufferObject UniformBufferObject;
 struct Vertex {
-  glm::vec2 pos;
+  glm::vec3 pos;
   glm::vec3 color;
   glm::vec2 texCoord;
   static VkVertexInputBindingDescription getBindingDescription();
@@ -78,16 +78,16 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
   bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
   return bindingDescription;
 }
-std::vector<Vertex> g_vertices = {{{(-5.e-1f), (-5.e-1f)},
+std::vector<Vertex> g_vertices = {{{(-5.e-1f), (-5.e-1f), (0.0e+0f)},
                                    {(1.e+0f), (0.0e+0f), (0.0e+0f)},
                                    {(1.e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (-5.e-1f)},
+                                  {{(5.e-1f), (-5.e-1f), (0.0e+0f)},
                                    {(0.0e+0f), (1.e+0f), (0.0e+0f)},
                                    {(0.0e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (5.e-1f)},
+                                  {{(5.e-1f), (5.e-1f), (0.0e+0f)},
                                    {(0.0e+0f), (0.0e+0f), (1.e+0f)},
                                    {(0.0e+0f), (1.e+0f)}},
-                                  {{(-5.e-1f), (5.e-1f)},
+                                  {{(-5.e-1f), (5.e-1f), (0.0e+0f)},
                                    {(1.e+0f), (1.e+0f), (1.e+0f)},
                                    {(1.e+0f), (1.e+0f)}}};
 std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0};
@@ -96,7 +96,7 @@ Vertex::getAttributeDescriptions() {
   std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
   attributeDescriptions[0].binding = 0;
   attributeDescriptions[0].location = 0;
-  attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+  attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
   attributeDescriptions[0].offset = offsetof(Vertex, pos);
   attributeDescriptions[1].binding = 0;
   attributeDescriptions[1].location = 1;

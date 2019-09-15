@@ -116,7 +116,7 @@ more structs. this function helps to initialize those structs."
 	    "#extension GL_ARB_separate_shader_objects : enable"
 	    " "
 	    "layout(binding = 0) uniform UniformBufferObject { mat4 model; mat4 view; mat4 proj; } ubo;"
-	    "layout(location = 0) in vec2 inPosition;" ;; if inPosition was dvec3 than next location would need to be 2
+	    "layout(location = 0) in vec3 inPosition;" ;; if inPosition was dvec3 than next location would need to be 2
 	    "layout(location = 1) in vec3 inColor;"
 	    "layout(location = 2) in vec2 inTexCoord;"
 	    "layout(location = 0) out vec3 fragColor;"
@@ -130,8 +130,7 @@ more structs. this function helps to initialize those structs."
 		       ubo.view
 		       ubo.model
 		       (vec4 inPosition
-			   .0
-			   1.))
+			     1.))
 		    fragColor inColor
 		    fragTexCoord inTexCoord))
 	    "// vertex shader end "))
@@ -241,7 +240,7 @@ more structs. this function helps to initialize those structs."
 	      (proj "alignas(16) glm::mat4"))
 	    
 	    (defstruct0 Vertex
-		(pos "glm::vec2")
+		(pos "glm::vec3")
 	      (color "glm::vec3")
 	      (texCoord "glm::vec2")
 	      ;; here static means the function has no receiver object
@@ -261,10 +260,10 @@ more structs. this function helps to initialize those structs."
 		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
 	      (return bindingDescription))
 	    (let ((g_vertices (curly
-			       (curly (curly  -.5s0 -.5s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
-			       (curly (curly  .5s0  -.5s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
-			       (curly (curly .5s0  .5s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
-			       (curly (curly -.5s0  .5s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
+			       (curly (curly  -.5s0 -.5s0 0s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
+			       (curly (curly  .5s0  -.5s0 0s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
+			       (curly (curly .5s0  .5s0 0s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
+			       (curly (curly -.5s0  .5s0 0s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
 		  (g_indices (curly 0 1 2 2 3 0)))
 	      (declare (type "std::vector<Vertex>" g_vertices)
 		       (type "std::vector<uint16_t>" g_indices)))
@@ -276,7 +275,7 @@ more structs. this function helps to initialize those structs."
 		,(set-members `((aref attributeDescriptions 0)
 				:binding 0
 				:location 0
-				:format VK_FORMAT_R32G32_SFLOAT
+				:format VK_FORMAT_R32G32B32_SFLOAT
 				:offset (offsetof Vertex pos)))
 		,(set-members `((aref attributeDescriptions 1)
 				:binding 0
