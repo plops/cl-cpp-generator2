@@ -1023,7 +1023,12 @@ more structs. this function helps to initialize those structs."
 				 _depthImageView
 				 (createImageView _depthImage
 						  depthFormat
-						  VK_IMAGE_ASPECT_DEPTH_BIT)))))
+						  VK_IMAGE_ASPECT_DEPTH_BIT))
+			   (transitionImageLayout
+			    _depthImage
+			    depthFormat
+			    VK_IMAGE_LAYOUT_UNDEFINED
+			    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))))
 		      
 		      (do0
 		      
@@ -1096,6 +1101,19 @@ more structs. this function helps to initialize those structs."
 			       :subresourceRange.layerCount 1
 			       :srcAccessMask 0
 			       :dstAccessMask 0))
+
+			   (if (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+				   newLayout)
+			       (do0
+				(setf barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_DEPTH_BIT)
+				(when (hasStencilComponent format)
+				  (setf
+				   barrier.subresourceRange.aspectMask (logior barrier.subresourceRange.aspectMask
+									       VK_IMAGE_ASPECT_STENCIL_BIT))))
+			       (do0
+				(setf
+				   barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT)))
+			   
 			   (let ((srcStage )
 				 (dstStage))
 			     (declare (type VkPipelineStageFlags

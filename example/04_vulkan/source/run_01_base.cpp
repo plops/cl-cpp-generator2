@@ -559,6 +559,8 @@ private:
     _depthImageMemory = depthImageMemory;
     _depthImageView =
         createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    transitionImageLayout(_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   };
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
                          uint32_t height) {
@@ -594,6 +596,16 @@ private:
     barrier.subresourceRange.layerCount = 1;
     barrier.srcAccessMask = 0;
     barrier.dstAccessMask = 0;
+    if ((VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) == (newLayout)) {
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+      if (hasStencilComponent(format)) {
+        barrier.subresourceRange.aspectMask =
+            ((barrier.subresourceRange.aspectMask) |
+             (VK_IMAGE_ASPECT_STENCIL_BIT));
+      };
+    } else {
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    }
     VkPipelineStageFlags srcStage;
     VkPipelineStageFlags dstStage;
     if ((((VK_IMAGE_LAYOUT_UNDEFINED) == (oldLayout)) &&
