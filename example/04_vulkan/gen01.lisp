@@ -24,8 +24,16 @@
 		 ,cmd)
        (throw ("std::runtime_error"
 	       (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
-
+  (defun vkprint (msg
+		  rest)
+    `(<< "std::cout"
+	 (string ,(format nil "~a: " msg))
+	 ,@(loop for e in rest appending
+		`((string ,(format nil " ~a=" e))
+		  ,e))
+	 "std::endl"))
   (progn
+    
     (defun vk-info-type (verb subject &key (prefix "Vk")
 					(suffix "Info"))
       "convert two lisp symbols like allocate command-buffer  to vkCommandBufferAllocate"
@@ -2450,11 +2458,19 @@ more structs. this function helps to initialize those structs."
 			)
 		      (defun cleanupSwapChain ()
 			(declare (values void))
-		       
+			(<< "std::cout"
+			    (string "cleanupSwapChain")
+			    "std::endl")
 			#+surface
 			(do0
 			 (do0
 			  ;; depth
+			  
+
+			  ,(vkprint "cleanup depth"
+				     `(_depthImageView
+				       _depthImage
+				       _depthImageMemory))
 			  (vkDestroyImageView _device
 					      _depthImageView
 					      nullptr)
@@ -2468,12 +2484,16 @@ more structs. this function helps to initialize those structs."
 
 			  
 			 (foreach (b _swapChainFramebuffers)
+				  ,(vkprint "framebuffer" `(b))
 				  (vkDestroyFramebuffer _device b nullptr))
 			 (vkFreeCommandBuffers _device
 					       _commandPool
 					       (static_cast<uint32_t>
 						(_commandBuffers.size))
 					       (_commandBuffers.data))
+			 ,(vkprint "pipeline" `(_graphicsPipeline
+						_pipelineLayout
+						_renderPass))
 			 (vkDestroyPipeline _device _graphicsPipeline nullptr)
 			 (vkDestroyPipelineLayout
 			  _device
@@ -2484,19 +2504,25 @@ more structs. this function helps to initialize those structs."
 			  _renderPass
 			  nullptr)
 			 (foreach (view _swapChainImageViews)
+				  ,(vkprint "image-view" `(view))
 				  (vkDestroyImageView
 				   _device
 				   view
 				   nullptr))
+			 ,(vkprint "swapchain" `(_swapChain))
 			 (vkDestroySwapchainKHR _device _swapChain nullptr)
 			 ;; each swap chain image has a ubo
 			 (dotimes (i (_swapChainImages.size))
+			   ,(vkprint "ubo" `((aref _uniformBuffers i)
+					     (aref _uniformBuffersMemory i)
+					     ))
 			   (vkDestroyBuffer _device
 					    (aref _uniformBuffers i)
 					    nullptr)
 			   (vkFreeMemory _device
 					 (aref _uniformBuffersMemory i)
 					 nullptr))
+			 ,(vkprint "descriptor-pool" `(_descriptorPool))
 			 (vkDestroyDescriptorPool
 			  _device
 			  _descriptorPool
@@ -2509,6 +2535,12 @@ more structs. this function helps to initialize those structs."
 			(do0
 			 (cleanupSwapChain)
 			 (do0 ;; tex
+			  ,(vkprint "tex"
+				    `(_textureSampler
+				      _textureImageView
+				      _textureImage
+				      _textureImageMemory
+				      _descriptorSetLayout))
 			  (vkDestroySampler _device
 					    _textureSampler
 					    nullptr)
@@ -2523,12 +2555,22 @@ more structs. this function helps to initialize those structs."
 			  _device
 			  _descriptorSetLayout
 			  nullptr)
+			 ,(vkprint "buffers"
+				   `(_vertexBuffer
+				     _vertexBufferMemory
+				     _indexBuffer
+				     _indexBufferMemory
+				     ))
 			 (do0 (vkDestroyBuffer _device _vertexBuffer nullptr)
 			      (vkFreeMemory _device _vertexBufferMemory nullptr))
 			 (do0 (vkDestroyBuffer _device _indexBuffer nullptr)
 			      (vkFreeMemory _device _indexBufferMemory nullptr))
 			 (dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			   (do0
+			    ,(vkprint "sync"
+				      `((aref _renderFinishedSemaphores i)
+					(aref _imageAvailableSemaphores i)
+					(aref _inFlightFences i)))
 			    (vkDestroySemaphore _device
 						(aref _renderFinishedSemaphores i)
 						nullptr)
@@ -2538,10 +2580,14 @@ more structs. this function helps to initialize those structs."
 			    (vkDestroyFence _device
 					    (aref _inFlightFences i)
 					    nullptr)))
+			 ,(vkprint "cmd-pool"
+				      `(_commandPool))
 			 (vkDestroyCommandPool _device _commandPool nullptr)
 			
 			
 			 )
+			,(vkprint "rest"
+				  `(_device _instance _window))
 			(vkDestroyDevice _device nullptr)
 			#+surface
 			(vkDestroySurfaceKHR _instance _surface nullptr)

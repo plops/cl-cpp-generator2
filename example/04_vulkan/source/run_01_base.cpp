@@ -1521,45 +1521,89 @@ private:
     vkUnmapMemory(_device, _uniformBuffersMemory[currentImage]);
   }
   void cleanupSwapChain() {
+    std::cout << "cleanupSwapChain" << std::endl;
+    std::cout << "cleanup depth: "
+              << " _depthImageView=" << _depthImageView
+              << " _depthImage=" << _depthImage
+              << " _depthImageMemory=" << _depthImageMemory << std::endl;
     vkDestroyImageView(_device, _depthImageView, nullptr);
     vkDestroyImage(_device, _depthImage, nullptr);
     vkFreeMemory(_device, _depthImageMemory, nullptr);
     for (auto &b : _swapChainFramebuffers) {
+      std::cout << "framebuffer: "
+                << " b=" << b << std::endl;
       vkDestroyFramebuffer(_device, b, nullptr);
     };
     vkFreeCommandBuffers(_device, _commandPool,
                          static_cast<uint32_t>(_commandBuffers.size()),
                          _commandBuffers.data());
+    std::cout << "pipeline: "
+              << " _graphicsPipeline=" << _graphicsPipeline
+              << " _pipelineLayout=" << _pipelineLayout
+              << " _renderPass=" << _renderPass << std::endl;
     vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
     vkDestroyRenderPass(_device, _renderPass, nullptr);
     for (auto &view : _swapChainImageViews) {
+      std::cout << "image-view: "
+                << " view=" << view << std::endl;
       vkDestroyImageView(_device, view, nullptr);
     };
+    std::cout << "swapchain: "
+              << " _swapChain=" << _swapChain << std::endl;
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
+      std::cout << "ubo: "
+                << " (aref _uniformBuffers i)=" << _uniformBuffers[i]
+                << " (aref _uniformBuffersMemory i)="
+                << _uniformBuffersMemory[i] << std::endl;
       vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
       vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
     }
+    std::cout << "descriptor-pool: "
+              << " _descriptorPool=" << _descriptorPool << std::endl;
     vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
   }
   void cleanup() {
     cleanupSwapChain();
+    std::cout << "tex: "
+              << " _textureSampler=" << _textureSampler
+              << " _textureImageView=" << _textureImageView
+              << " _textureImage=" << _textureImage
+              << " _textureImageMemory=" << _textureImageMemory
+              << " _descriptorSetLayout=" << _descriptorSetLayout << std::endl;
     vkDestroySampler(_device, _textureSampler, nullptr);
     vkDestroyImageView(_device, _textureImageView, nullptr);
     vkDestroyImage(_device, _textureImage, nullptr);
     vkFreeMemory(_device, _textureImageMemory, nullptr);
     vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+    std::cout << "buffers: "
+              << " _vertexBuffer=" << _vertexBuffer
+              << " _vertexBufferMemory=" << _vertexBufferMemory
+              << " _indexBuffer=" << _indexBuffer
+              << " _indexBufferMemory=" << _indexBufferMemory << std::endl;
     vkDestroyBuffer(_device, _vertexBuffer, nullptr);
     vkFreeMemory(_device, _vertexBufferMemory, nullptr);
     vkDestroyBuffer(_device, _indexBuffer, nullptr);
     vkFreeMemory(_device, _indexBufferMemory, nullptr);
     for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
+      std::cout << "sync: "
+                << " (aref _renderFinishedSemaphores i)="
+                << _renderFinishedSemaphores[i]
+                << " (aref _imageAvailableSemaphores i)="
+                << _imageAvailableSemaphores[i]
+                << " (aref _inFlightFences i)=" << _inFlightFences[i]
+                << std::endl;
       vkDestroySemaphore(_device, _renderFinishedSemaphores[i], nullptr);
       vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
       vkDestroyFence(_device, _inFlightFences[i], nullptr);
     }
+    std::cout << "cmd-pool: "
+              << " _commandPool=" << _commandPool << std::endl;
     vkDestroyCommandPool(_device, _commandPool, nullptr);
+    std::cout << "rest: "
+              << " _device=" << _device << " _instance=" << _instance
+              << " _window=" << _window << std::endl;
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
