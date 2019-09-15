@@ -369,9 +369,11 @@ entry return-values contains a list of return values"
 		(% (destructuring-bind (a b) (cdr code)
 		     (format nil "~a%~a" (emit a) (emit b))))
 		(<< (destructuring-bind (a &rest rest) (cdr code)
-		      (format nil "~a~{<<~a~}" (emit a) (mapcar #'emit rest))))
-		(>> (destructuring-bind (a b) (cdr code)
-		      (format nil "~a>>~a" (emit a) (emit b))))
+		      (format nil "(~a)~{<<(~a)~}" (emit a) (mapcar #'emit rest))))
+		(>> (destructuring-bind (a &rest rest) (cdr code)
+		      (format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
+		#+nil (>> (destructuring-bind (a b) (cdr code)
+		      (format nil "(~a)>>~a" (emit a) (emit b))))
 		(incf (destructuring-bind (a &optional b) (cdr code) ;; py
 			(if b
 			    (format nil "(~a)+=(~a)" (emit a) (emit b))

@@ -273,7 +273,35 @@ more structs. this function helps to initialize those structs."
 	      ;; this file (which i don't necessarily want)
 	      ("getBindingDescription()" "static VkVertexInputBindingDescription")
 	      ("getAttributeDescriptions()"
-	       "static std::array<VkVertexInputAttributeDescription,3>"))
+	       "static std::array<VkVertexInputAttributeDescription,3>")
+	      ("operator==(const Vertex& other) const" bool))
+	    (do0
+			"bool Vertex::operator==(const Vertex& other) const"
+			(progn ;defun "Vertex::operator==" (other)
+			  #+nil(declare (type "const Vertex&" other)
+					(values bool))
+			  (return (and
+				   (== pos other.pos)
+				   (== color other.color)
+				   (== texCoord other.texCoord))))
+			(do0
+			 "template<> struct std::hash<Vertex>"
+			 (progn
+			   "size_t operator()(Vertex const& vertex) const"
+			   (progn ;;defun "operator()" (vertex)
+			     #+nil (declare (values size_t)
+				      (type "Vertex const&" vertex))
+			     (return (logxor
+				      ("std::hash<glm::vec3>()"
+				       vertex.pos)
+				      (>> (<< ("std::hash<glm::vec3>()"
+					       vertex.color)
+					      1)
+					  1)
+				      (<< ("std::hash<glm::vec2>()"
+					   vertex.texCoord)
+					  1)))
+			     ))))
 	    (defun "Vertex::getBindingDescription" ()
 	      (declare (values "VkVertexInputBindingDescription"))
 	      ,(vk
@@ -997,30 +1025,7 @@ more structs. this function helps to initialize those structs."
 			 (createSyncObjects)))
 
 		      (do0
-		       (defun "Vertex::operator==" (other)
-			 (declare (type "const Vertex&" other)
-				  (values bool))
-			 (return (and
-				  (== pos other.pos)
-				  (== color other.color)
-				  (== texCoord other.texCoord))))
-		       (do0
-			"template<> struct std::hash<Vertex>"
-			(progn
-			  (defun "operator()" (vertex)
-			    (declare (values size_t)
-				     (type "Vertex const&" vertex))
-			    (return (logxor
-				     ("std::hash<glm::vec3>()"
-				      vertex.pos)
-				     (>> (<< ("std::hash<glm::vec3>()"
-					   vertex.color)
-					     1)
-					 1)
-				     (<< ("std::hash<glm::vec2>()"
-					   vertex.texCoord)
-					     1)))
-			    )))
+		       
 		       (defun loadModel ()
 			 (declare (values void))
 			 (let ((attrib)
