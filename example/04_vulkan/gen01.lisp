@@ -1556,6 +1556,7 @@ more structs. this function helps to initialize those structs."
 			 (createImageViews)
 			 (createRenderPass)
 			 (createGraphicsPipeline)
+			 (createDepthResources)
 			 (createFramebuffers)
 			 (createUniformBuffers)
 			 (createDescriptorPool)
@@ -2413,7 +2414,20 @@ more structs. this function helps to initialize those structs."
 		       
 			#+surface
 			(do0
-			
+			 (do0
+			  ;; depth
+			  (vkDestroyImageView _device
+					      _depthImageView
+					      nullptr)
+			  (vkDestroyImage _device
+					  _depthImage
+					  nullptr)
+			  (vkFreeMemory _device
+					_depthImageMemory
+					nullptr)
+			  )
+
+			 
 			 (foreach (b _swapChainFramebuffers)
 				  (vkDestroyFramebuffer _device b nullptr))
 			 (vkFreeCommandBuffers _device
