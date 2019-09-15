@@ -79,14 +79,19 @@
 			      "")))
 	      (if khr
 		  (setf suffix (format nil "~aKHR" suffix)))
-	      (if throw
-			(vkthrow
-			 `(,(vk-info-function verb subject
-					      :suffix suffix)
-			    ,@args))
-			`(,(vk-info-function verb subject
-					     :suffix suffix)
-			   ,@args))))))
+	      `(do0
+		
+		,(if throw
+		    (vkthrow
+		     `(,(vk-info-function verb subject
+					  :suffix suffix)
+			,@args))
+		    `(,(vk-info-function verb subject
+					 :suffix suffix)
+		       ,@args))
+		(<< "std::cout"
+		    (string ,(format nil "~a ~a" verb subject))
+		    "std::endl"))))))
     
     )
   
@@ -1554,10 +1559,10 @@ more structs. this function helps to initialize those structs."
 			 (vkDeviceWaitIdle _device) ;; wait for resources to be not in use anymore
 			 (createSwapChain)
 			 (createImageViews)
-			 (createDepthResources)
+			 
 			 (createRenderPass)
 			 (createGraphicsPipeline)
-			 
+			 (createDepthResources)
 			 (createFramebuffers)
 			 (createUniformBuffers)
 			 (createDescriptorPool)

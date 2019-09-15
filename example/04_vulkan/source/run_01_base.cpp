@@ -368,6 +368,7 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateInstance &info nullptr &_instance)");
       };
+      std::cout << "create instance" << std::endl;
     };
   }
   std::tuple<VkBuffer, VkDeviceMemory>
@@ -387,6 +388,7 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateBuffer _device &info nullptr &buffer)");
       };
+      std::cout << "create buffer" << std::endl;
     };
     VkMemoryRequirements memReq;
     vkGetBufferMemoryRequirements(_device, buffer, &memReq);
@@ -400,6 +402,7 @@ private:
         throw std::runtime_error(
             "failed to (vkAllocateMemory _device &info nullptr &bufferMemory)");
       };
+      std::cout << "allocate memory" << std::endl;
     };
     vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     return std::make_tuple(buffer, bufferMemory);
@@ -455,12 +458,14 @@ private:
       info.commandPool = _commandPool;
       info.commandBufferCount = 1;
       vkAllocateCommandBuffers(_device, &info, &commandBuffer);
+      std::cout << "allocate command-buffer" << std::endl;
     };
     {
       VkCommandBufferBeginInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
       info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
       vkBeginCommandBuffer(commandBuffer, &info);
+      std::cout << "begin command-buffer" << std::endl;
     };
     return commandBuffer;
   }
@@ -666,6 +671,7 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateImage _device &info nullptr &image)");
       };
+      std::cout << "create image" << std::endl;
     };
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(_device, image, &memReq);
@@ -679,6 +685,7 @@ private:
         throw std::runtime_error(
             "failed to (vkAllocateMemory _device &info nullptr &imageMemory)");
       };
+      std::cout << "allocate memory" << std::endl;
     };
     vkBindImageMemory(_device, image, imageMemory, 0);
     return std::make_tuple(image, imageMemory);
@@ -745,6 +752,7 @@ private:
         throw std::runtime_error("failed to (vkCreateSampler _device &info "
                                  "nullptr &_textureSampler)");
       };
+      std::cout << "create sampler" << std::endl;
     };
   }
   void createTextureImageView() {
@@ -766,6 +774,7 @@ private:
         throw std::runtime_error("failed to (vkAllocateDescriptorSets _device "
                                  "&info (_descriptorSets.data))");
       };
+      std::cout << "allocate descriptor-set" << std::endl;
     };
     for (int i = 0; i < n; (i) += (1)) {
       VkDescriptorBufferInfo bufferInfo = {};
@@ -826,6 +835,7 @@ private:
         throw std::runtime_error("failed to (vkCreateDescriptorPool _device "
                                  "&info nullptr &_descriptorPool)");
       };
+      std::cout << "create descriptor-pool" << std::endl;
     };
   }
   void createUniformBuffers() {
@@ -870,6 +880,7 @@ private:
             "failed to (vkCreateDescriptorSetLayout _device &info nullptr      "
             "      &_descriptorSetLayout)");
       };
+      std::cout << "create descriptor-set-layout" << std::endl;
     };
   }
   void recreateSwapChain() {
@@ -882,9 +893,9 @@ private:
     vkDeviceWaitIdle(_device);
     createSwapChain();
     createImageViews();
-    createDepthResources();
     createRenderPass();
     createGraphicsPipeline();
+    createDepthResources();
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();
@@ -937,6 +948,7 @@ private:
         throw std::runtime_error("failed to (vkAllocateCommandBuffers _device "
                                  "&info (_commandBuffers.data))");
       };
+      std::cout << "allocate command-buffer" << std::endl;
     };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
       {
@@ -949,6 +961,7 @@ private:
           throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
                                    "_commandBuffers i) &info)");
         };
+        std::cout << "begin command-buffer" << std::endl;
       };
       VkClearValue clearColor = {};
       clearColor.color = {(0.0e+0f), (0.0e+0f), (0.0e+0f), (1.e+0f)};
@@ -996,6 +1009,7 @@ private:
         throw std::runtime_error("failed to (vkCreateCommandPool _device &info "
                                  "nullptr &_commandPool)");
       };
+      std::cout << "create command-pool" << std::endl;
     };
   }
   void createFramebuffers() {
@@ -1020,6 +1034,7 @@ private:
               "failed to (vkCreateFramebuffer _device &info nullptr            "
               "(ref (aref _swapChainFramebuffers i)))");
         };
+        std::cout << "create framebuffer" << std::endl;
       };
     };
   }
@@ -1079,6 +1094,7 @@ private:
         throw std::runtime_error("failed to (vkCreateRenderPass _device &info "
                                  "nullptr &_renderPass)");
       };
+      std::cout << "create render-pass" << std::endl;
     };
   }
   void createGraphicsPipeline() {
@@ -1198,6 +1214,7 @@ private:
         throw std::runtime_error("failed to (vkCreatePipelineLayout _device "
                                  "&info nullptr &_pipelineLayout)");
       };
+      std::cout << "create pipeline-layout" << std::endl;
     };
     {
       VkGraphicsPipelineCreateInfo info = {};
@@ -1224,6 +1241,7 @@ private:
             "failed to (vkCreateGraphicsPipelines _device VK_NULL_HANDLE 1 "
             "&info nullptr            &_graphicsPipeline)");
       };
+      std::cout << "create graphics-pipeline" << std::endl;
     };
     vkDestroyShaderModule(_device, fragShaderModule, nullptr);
     vkDestroyShaderModule(_device, vertShaderModule, nullptr);
@@ -1240,6 +1258,7 @@ private:
         throw std::runtime_error("failed to (vkCreateShaderModule _device "
                                  "&info nullptr &shaderModule)");
       };
+      std::cout << "create shader-module" << std::endl;
     };
     return shaderModule;
   };
@@ -1297,6 +1316,7 @@ private:
         throw std::runtime_error("failed to (vkCreateSwapchainKHR _device "
                                  "&info nullptr &_swapChain)");
       };
+      std::cout << "create swapchain" << std::endl;
     };
     // now get the images, note will be destroyed with the swap chain
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
@@ -1325,6 +1345,7 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateImageView _device &info nullptr &imageView)");
       };
+      std::cout << "create image-view" << std::endl;
     };
     return imageView;
   }
@@ -1370,6 +1391,7 @@ private:
         throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
                                  "&info nullptr &_device)");
       };
+      std::cout << "create device" << std::endl;
     };
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
