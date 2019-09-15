@@ -89,8 +89,20 @@ std::vector<Vertex> g_vertices = {{{(-5.e-1f), (-5.e-1f), (0.0e+0f)},
                                    {(0.0e+0f), (1.e+0f)}},
                                   {{(-5.e-1f), (5.e-1f), (0.0e+0f)},
                                    {(1.e+0f), (1.e+0f), (1.e+0f)},
+                                   {(1.e+0f), (1.e+0f)}},
+                                  {{(-5.e-1f), (-5.e-1f), (-5.e-1f)},
+                                   {(1.e+0f), (0.0e+0f), (0.0e+0f)},
+                                   {(1.e+0f), (0.0e+0f)}},
+                                  {{(5.e-1f), (-5.e-1f), (-5.e-1f)},
+                                   {(0.0e+0f), (1.e+0f), (0.0e+0f)},
+                                   {(0.0e+0f), (0.0e+0f)}},
+                                  {{(5.e-1f), (5.e-1f), (-5.e-1f)},
+                                   {(0.0e+0f), (0.0e+0f), (1.e+0f)},
+                                   {(0.0e+0f), (1.e+0f)}},
+                                  {{(-5.e-1f), (5.e-1f), (-5.e-1f)},
+                                   {(1.e+0f), (1.e+0f), (1.e+0f)},
                                    {(1.e+0f), (1.e+0f)}}};
-std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0};
+std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
 std::array<VkVertexInputAttributeDescription, 3>
 Vertex::getAttributeDescriptions() {
   std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};

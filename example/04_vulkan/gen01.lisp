@@ -263,8 +263,14 @@ more structs. this function helps to initialize those structs."
 			       (curly (curly  -.5s0 -.5s0 0s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
 			       (curly (curly  .5s0  -.5s0 0s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
 			       (curly (curly .5s0  .5s0 0s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
-			       (curly (curly -.5s0  .5s0 0s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
-		  (g_indices (curly 0 1 2 2 3 0)))
+			       (curly (curly -.5s0  .5s0 0s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))
+
+			       (curly (curly  -.5s0 -.5s0 -.5s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
+			       (curly (curly  .5s0  -.5s0 -.5s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
+			       (curly (curly .5s0  .5s00 -.5s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
+			       (curly (curly -.5s0  .5s0 -.5s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
+		  (g_indices (curly 0 1 2 2 3 0
+				    4 5 6 6 7 4)))
 	      (declare (type "std::vector<Vertex>" g_vertices)
 		       (type "std::vector<uint16_t>" g_indices)))
 	    (defun "Vertex::getAttributeDescriptions" ()
