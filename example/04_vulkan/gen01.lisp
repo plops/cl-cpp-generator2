@@ -1004,7 +1004,7 @@ more structs. this function helps to initialize those structs."
 				  (type VkFormat format))
 			 (return (or
 				  (== VK_FORMAT_D32_SFLOAT_S8_UINT format)
-				  (== VK_FORMAT_D24_SFLOAT_S8_UINT format))))
+				  (== VK_FORMAT_D24_UNORM_S8_UINT format))))
 		       (defun createDepthResources ()
 			 (declare (values void))
 			 (let ((depthFormat (findDepthFormat))
@@ -1022,7 +1022,8 @@ more structs. this function helps to initialize those structs."
 				 _depthImageMemory depthImageMemory
 				 _depthImageView
 				 (createImageView _depthImage
-						  depthFormat)))))
+						  depthFormat
+						  VK_IMAGE_ASPECT_DEPTH_BIT)))))
 		      
 		      (do0
 		      
@@ -1323,24 +1324,12 @@ more structs. this function helps to initialize those structs."
 			   :throw t))
 		       (defun createTextureImageView ()
 			 (declare (values void))
-			 ,(vkcall
-			   `(create
-			     image-view
-			     (:image _textureImage
-				     :viewType VK_IMAGE_VIEW_TYPE_2D
-				     :format VK_FORMAT_R8G8B8A8_UNORM
-				     :subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
-				     :subresourceRange.baseMipLevel 0
-				     :subresourceRange.levelCount 1
-				     :subresourceRange.baseArrayLayer 0
-				     :subresourceRange.layerCount 1)
-			     (_device
-			      &info
-			      nullptr
-			      &_textureImageView)
-			     )
-			   :throw t))
-		       )
+			 (setf
+			  _textureImageView
+			  (createImageView _textureImage
+					   VK_FORMAT_R8G8B8A8_UNORM
+					   VK_IMAGE_ASPECT_COLOR_BIT))
+			 ))
 		     
 		      #+surface
 		      (do0

@@ -547,7 +547,7 @@ private:
   }
   bool hasStencilComponent(VkFormat format) {
     return (((VK_FORMAT_D32_SFLOAT_S8_UINT) == (format)) ||
-            ((VK_FORMAT_D24_SFLOAT_S8_UINT) == (format)));
+            ((VK_FORMAT_D24_UNORM_S8_UINT) == (format)));
   }
   void createDepthResources() {
     auto depthFormat = findDepthFormat();
@@ -557,7 +557,8 @@ private:
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _depthImage = depthImage;
     _depthImageMemory = depthImageMemory;
-    _depthImageView = createImageView(_depthImage, depthFormat);
+    _depthImageView =
+        createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
   };
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
                          uint32_t height) {
@@ -724,23 +725,8 @@ private:
     };
   }
   void createTextureImageView() {
-    {
-      VkImageViewCreateInfo info = {};
-      info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-      info.image = _textureImage;
-      info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-      info.format = VK_FORMAT_R8G8B8A8_UNORM;
-      info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      info.subresourceRange.baseMipLevel = 0;
-      info.subresourceRange.levelCount = 1;
-      info.subresourceRange.baseArrayLayer = 0;
-      info.subresourceRange.layerCount = 1;
-      if (!((VK_SUCCESS) ==
-            (vkCreateImageView(_device, &info, nullptr, &_textureImageView)))) {
-        throw std::runtime_error("failed to (vkCreateImageView _device &info "
-                                 "nullptr &_textureImageView)");
-      };
-    };
+    _textureImageView = createImageView(_textureImage, VK_FORMAT_R8G8B8A8_UNORM,
+                                        VK_IMAGE_ASPECT_COLOR_BIT);
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
