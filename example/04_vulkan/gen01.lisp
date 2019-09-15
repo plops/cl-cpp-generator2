@@ -215,6 +215,10 @@ more structs. this function helps to initialize those structs."
 	     "#define STB_IMAGE_IMPLEMENTATION"
 	     (include "stb_image.h")
 	     " ")
+	    (do0
+	     "#define TINYOBJLOADER_IMPLEMENTATION"
+	     (include "tiny_obj_loader.h")
+	     " ")
 	    
 	    (do0
 	     "// code to load binary shader from file"
@@ -277,7 +281,8 @@ more structs. this function helps to initialize those structs."
 		  ;; move to next data after each vertex
 		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
 	      (return bindingDescription))
-	    (let ((g_vertices (curly
+	    
+	    (let ((g_vertices #+nil (curly
 			       (curly (curly  -.5s0 -.5s0 0s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
 			       (curly (curly  .5s0  -.5s0 0s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
 			       (curly (curly .5s0  .5s0 0s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
@@ -287,10 +292,10 @@ more structs. this function helps to initialize those structs."
 			       (curly (curly  .5s0  -.5s0 -.5s0) (curly 0s0 1s0 0s0) (curly 0s0 0s0))
 			       (curly (curly .5s0  .5s00 -.5s0) (curly 0s0 0s0 1s0) (curly 0s0 1s0))
 			       (curly (curly -.5s0  .5s0 -.5s0) (curly 1s0 1s0 1s0) (curly 1s0 1s0))))
-		  (g_indices (curly 0 1 2 2 3 0
+		  (g_indices #+nil (curly 0 1 2 2 3 0
 				    4 5 6 6 7 4)))
 	      (declare (type "std::vector<Vertex>" g_vertices)
-		       (type "std::vector<uint16_t>" g_indices)))
+		       (type "std::vector<uint32_t>" g_indices)))
 	    (defun "Vertex::getAttributeDescriptions" ()
 	      (declare (values "std::array<VkVertexInputAttributeDescription,3>"))
 	      (let ((attributeDescriptions (curly)))
@@ -979,6 +984,7 @@ more structs. this function helps to initialize those structs."
 			 (createTextureImage)
 			 (createTextureImageView)
 			 (createTextureSampler)
+			 (loadModel)
 			 (createVertexBuffer)
 			 (createIndexBuffer)
 			 (createUniformBuffers)
@@ -987,6 +993,30 @@ more structs. this function helps to initialize those structs."
 			 (createCommandBuffers)
 			 (createSyncObjects)))
 
+		      (do0
+		       (defun loadModel ()
+			 (declare (values void))
+			 (let ((attrib)
+			       (shapes)
+			       (materials)
+			       (warning)
+			       (err))
+			   (declare (type "tinyobj::attrib_t" attrib)
+				    (type "std::vector<tinyobj::shape_t>"
+					  shapes)
+				    (type "std::vector<tinyobj::material_t>"
+					  materials)
+				    (type "std::string"
+					  warning err))
+			   (unless ("tinyobj::LoadObj"
+				    &attrib
+				    &shapes
+				    &materials
+				    &warning
+				    &err
+				    (string "chalet.obj"))
+			     (throw ("std::runtime_error"
+				     (+ warning err)))))))
 		      (do0
 		       (defun findSupportedFormat (candidates
 						   tiling
@@ -1281,7 +1311,7 @@ more structs. this function helps to initialize those structs."
 			       (texChannels 0)
 			       (pixels
 				(stbi_load
-				 (string "texture.jpg")
+				 (string "chalet.jpg")
 				 &texWidth
 				 &texHeight
 				 &texChannels
@@ -1713,7 +1743,7 @@ more structs. this function helps to initialize those structs."
 			     (aref _commandBuffers i)
 			     _indexBuffer
 			     0
-			     VK_INDEX_TYPE_UINT16)
+			     VK_INDEX_TYPE_UINT32)
 			    (vkCmdBindDescriptorSets
 			     (aref _commandBuffers i)
 			     ;; descriptor could also be bound to compute

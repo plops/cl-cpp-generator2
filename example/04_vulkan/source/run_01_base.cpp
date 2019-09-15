@@ -34,6 +34,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 ;
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+;
 // code to load binary shader from file
 #include <fstream>
 typedef struct SwapChainSupportDetails SwapChainSupportDetails;
@@ -79,31 +82,8 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
   bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
   return bindingDescription;
 }
-std::vector<Vertex> g_vertices = {{{(-5.e-1f), (-5.e-1f), (0.0e+0f)},
-                                   {(1.e+0f), (0.0e+0f), (0.0e+0f)},
-                                   {(1.e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (-5.e-1f), (0.0e+0f)},
-                                   {(0.0e+0f), (1.e+0f), (0.0e+0f)},
-                                   {(0.0e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (5.e-1f), (0.0e+0f)},
-                                   {(0.0e+0f), (0.0e+0f), (1.e+0f)},
-                                   {(0.0e+0f), (1.e+0f)}},
-                                  {{(-5.e-1f), (5.e-1f), (0.0e+0f)},
-                                   {(1.e+0f), (1.e+0f), (1.e+0f)},
-                                   {(1.e+0f), (1.e+0f)}},
-                                  {{(-5.e-1f), (-5.e-1f), (-5.e-1f)},
-                                   {(1.e+0f), (0.0e+0f), (0.0e+0f)},
-                                   {(1.e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (-5.e-1f), (-5.e-1f)},
-                                   {(0.0e+0f), (1.e+0f), (0.0e+0f)},
-                                   {(0.0e+0f), (0.0e+0f)}},
-                                  {{(5.e-1f), (5.e-1f), (-5.e-1f)},
-                                   {(0.0e+0f), (0.0e+0f), (1.e+0f)},
-                                   {(0.0e+0f), (1.e+0f)}},
-                                  {{(-5.e-1f), (5.e-1f), (-5.e-1f)},
-                                   {(1.e+0f), (1.e+0f), (1.e+0f)},
-                                   {(1.e+0f), (1.e+0f)}}};
-std::vector<uint16_t> g_indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+std::vector<Vertex> g_vertices;
+std::vector<uint32_t> g_indices;
 std::array<VkVertexInputAttributeDescription, 3>
 Vertex::getAttributeDescriptions() {
   std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
@@ -521,6 +501,7 @@ private:
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
+    loadModel();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -529,6 +510,17 @@ private:
     createCommandBuffers();
     createSyncObjects();
   }
+  void loadModel() {
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warning;
+    std::string err;
+    if (!(tinyobj::LoadObj(&attrib, &shapes, &materials, &warning, &err,
+                           "chalet.obj"))) {
+      throw std::runtime_error(((warning) + (err)));
+    };
+  };
   VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
                                VkImageTiling tiling,
                                VkFormatFeatureFlags features) {
@@ -698,7 +690,7 @@ private:
     int texWidth = 0;
     int texHeight = 0;
     int texChannels = 0;
-    auto pixels = stbi_load("texture.jpg", &texWidth, &texHeight, &texChannels,
+    auto pixels = stbi_load("chalet.jpg", &texWidth, &texHeight, &texChannels,
                             STBI_rgb_alpha);
     VkDeviceSize imageSize = ((texWidth) * (texHeight) * (4));
     if (!(pixels)) {
@@ -993,7 +985,7 @@ private:
       VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
       vkCmdBindIndexBuffer(_commandBuffers[i], _indexBuffer, 0,
-                           VK_INDEX_TYPE_UINT16);
+                           VK_INDEX_TYPE_UINT32);
       vkCmdBindDescriptorSets(_commandBuffers[i],
                               VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout,
                               0, 1, &(_descriptorSets[i]), 0, nullptr);
