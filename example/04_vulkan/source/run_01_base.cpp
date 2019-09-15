@@ -528,7 +528,8 @@ private:
                       attrib.vertices[((2) + (((3) * (index.vertex_index))))]};
         vertex.texCoord = {
             attrib.texcoords[((0) + (((2) * (index.texcoord_index))))],
-            attrib.texcoords[((1) + (((2) * (index.texcoord_index))))]};
+            (((1.e+0f)) -
+             (attrib.texcoords[((1) + (((2) * (index.texcoord_index))))]))};
         vertex.color = {(1.e+0f), (1.e+0f), (1.e+0f)};
         g_vertices.push_back(vertex);
         g_indices.push_back(g_indices.size());
@@ -1515,7 +1516,7 @@ private:
     auto rotationAngle = ((time) * (angularRate));
     UniformBufferObject ubo = {};
     ubo.model = glm::rotate(glm::mat4((1.e+0f)), rotationAngle, zAxis);
-    ubo.view = glm::lookAt(glm::vec3((1.e+0f), (1.e+0f), (1.e+0f)),
+    ubo.view = glm::lookAt(glm::vec3((2.e+0f), (2.e+0f), (2.e+0f)),
                            glm::vec3((0.0e+0f), (0.0e+0f), (0.0e+0f)), zAxis);
     ubo.proj = glm::perspective(
         glm::radians((4.5e+1f)),

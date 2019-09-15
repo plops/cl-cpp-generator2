@@ -1029,9 +1029,10 @@ more structs. this function helps to initialize those structs."
 					      `(aref attrib.vertices
 						     (+ ,i (* 3 index.vertex_index)))))
 				 :texCoord (curly
-				       ,@(loop for i below 2 collect
-					      `(aref attrib.texcoords
-						     (+ ,i (* 2 index.texcoord_index)))))
+					    (aref attrib.texcoords
+						  (+ 0 (* 2 index.texcoord_index)))
+					    (- 1s0 (aref attrib.texcoords
+						   (+ 1 (* 2 index.texcoord_index)))))
 				 :color (curly 1s0 1s0 1s0)))
 			     (g_vertices.push_back vertex)
 			     (g_indices.push_back (g_indices.size)))))))
@@ -2473,7 +2474,7 @@ more structs. this function helps to initialize those structs."
 					zAxis)
 				;; look from above in 45 deg angle
 				:view ("glm::lookAt"
-				       ("glm::vec3" 1s0 1s0 1s0)
+				       ("glm::vec3" 2s0 2s0 2s0)
 				       ("glm::vec3" 0s0 0s0 0s0)
 				       zAxis
 				       )
