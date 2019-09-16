@@ -877,13 +877,17 @@ private:
     copyBufferToImage(stagingBuffer, _textureImage,
                       static_cast<uint32_t>(texWidth),
                       static_cast<uint32_t>(texHeight));
-    generateMipmaps(_textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth,
-                    texHeight, _mipLevels);
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
+    generateMipmaps(_textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth,
+                    texHeight, _mipLevels);
   }
   void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth,
                        int32_t texHeight, int32_t mipLevels) {
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" generateMipmaps") << (std::endl);
     VkFormatProperties formatProperties;
     vkGetPhysicalDeviceFormatProperties(_physicalDevice, imageFormat,
                                         &formatProperties);

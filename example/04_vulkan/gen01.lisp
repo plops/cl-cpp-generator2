@@ -1431,7 +1431,7 @@ more structs. this function helps to initialize those structs."
 				      texWidth
 				      texHeight))))))
 
-			   (do0
+			   (do0 ;; print comment with example mip levels
 			    ,(format nil "// ~8a ~8a" "width" "mipLevels")
 			    ,@(loop for i in `(2 4 16 32 128 255 256 257 512 1024) collect
 				   (format nil "// ~8a ~8a"
@@ -1501,22 +1501,30 @@ more structs. this function helps to initialize those structs."
 			     ;; READ_ONLY_OPTIMAL while generating
 			     ;; mipmaps
 
+			     (do0
+			      (vkDestroyBuffer
+			       _device stagingBuffer nullptr)
+			      (vkFreeMemory _device
+					    stagingBufferMemory
+					    nullptr))
 			     (generateMipmaps _textureImage
 					      VK_FORMAT_R8G8B8A8_UNORM
 					      texWidth
 					      texHeight
 					      _mipLevels)
-			     (vkDestroyBuffer
-			      _device stagingBuffer nullptr)
-			     (vkFreeMemory _device
-					   stagingBufferMemory
-					   nullptr))))
+			     )))
 		       (defun generateMipmaps (image imageFormat
 					       texWidth texHeight mipLevels)
 			 (declare (values void)
 				  (type VkImage image)
 				  (type VkFormat imageFormat)
 				  (type int32_t texHeight mipLevels texWidth))
+			 (<< "std::cout"
+			     (dot ("std::chrono::high_resolution_clock::now")
+				  (time_since_epoch)
+				  (count))
+			     (string " generateMipmaps")
+			     "std::endl")
 			 (let ((formatProperties))
 			   (declare (type VkFormatProperties formatProperties))
 			   ;; check if format blit can do linear
