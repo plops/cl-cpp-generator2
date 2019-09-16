@@ -913,7 +913,11 @@ private:
       barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
       barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
       barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-      barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" vkCmdPipelineBarrier ") << (i) << (std::endl);
       vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
                            VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
                            nullptr, 1, &barrier);
@@ -938,13 +942,21 @@ private:
       blit.dstSubresource.mipLevel = i;
       blit.dstSubresource.baseArrayLayer = 0;
       blit.dstSubresource.layerCount = 1;
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" vkCmdBlitImage") << (i) << (std::endl);
       vkCmdBlitImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                      image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
                      VK_FILTER_LINEAR);
       barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
       barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-      barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" vkCmdPipelineBarrier") << (i) << (std::endl);
       vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
                            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
                            0, nullptr, 1, &barrier);

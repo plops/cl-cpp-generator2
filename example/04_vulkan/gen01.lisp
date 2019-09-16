@@ -1556,13 +1556,21 @@ more structs. this function helps to initialize those structs."
 				  (mipHeight texHeight))
 			      (for ((= "int i" 1) (< i mipLevels) (incf i))
 				   (do0
+				    
 				    ,(set-members
 				      `(barrier
 					   :subresourceRange.baseMipLevel (- i 1)
 					   :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 					   :newLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
 					   :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
-					   :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
+					   :dstAccessMask VK_ACCESS_TRANSFER_READ_BIT))
+				    (<< "std::cout"
+					(dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count))
+					(string " vkCmdPipelineBarrier ")
+					i
+					"std::endl")
 				    (vkCmdPipelineBarrier
 				     commandBuffer
 				     VK_PIPELINE_STAGE_TRANSFER_BIT
@@ -1597,6 +1605,13 @@ more structs. this function helps to initialize those structs."
 					 :dstSubresource.baseArrayLayer 0
 					 :dstSubresource.layerCount 1
 					 ))
+				     (<< "std::cout"
+					(dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count))
+					(string " vkCmdBlitImage")
+					i
+					"std::endl")
 				     (vkCmdBlitImage
 				      commandBuffer
 				      image
@@ -1613,9 +1628,16 @@ more structs. this function helps to initialize those structs."
 					   :oldLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
 					   :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 					   :srcAccessMask VK_ACCESS_TRANSFER_READ_BIT
-					   :dstAccessMask VK_ACCESS_TRANSFER_WRITE_BIT))
+					   :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
 				    ;; wait on blit command
 				    ;; transition mip level i-1 to shader_ro
+				    (<< "std::cout"
+					(dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count))
+					(string " vkCmdPipelineBarrier")
+					i
+					"std::endl")
 				    (vkCmdPipelineBarrier
 				     commandBuffer
 				     VK_PIPELINE_STAGE_TRANSFER_BIT
