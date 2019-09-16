@@ -1698,8 +1698,8 @@ more structs. this function helps to initialize those structs."
 			      :compareOp VK_COMPARE_OP_ALWAYS
 			      :mipmapMode VK_SAMPLER_MIPMAP_MODE_LINEAR
 			      :mipLodBias 0s0
-			      :minLod (static_cast<float> _mipLevels)
-			      :maxLod 0s0)
+			      :minLod 0s0
+			      :maxLod (static_cast<float> _mipLevels))
 			     (_device
 			      &info
 			      nullptr
