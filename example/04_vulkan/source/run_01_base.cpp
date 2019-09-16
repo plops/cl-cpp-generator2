@@ -589,15 +589,15 @@ private:
   void createDepthResources() {
     auto depthFormat = findDepthFormat();
     auto [depthImage, depthImageMemory] = createImage(
-        _swapChainExtent.width, _swapChainExtent.height, depthFormat,
+        _swapChainExtent.width, _swapChainExtent.height, 1, depthFormat,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _depthImage = depthImage;
     _depthImageMemory = depthImageMemory;
     _depthImageView =
-        createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        createImageView(_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
     transitionImageLayout(_depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
-                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
   };
   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
                          uint32_t height) {
@@ -617,7 +617,8 @@ private:
     endSingleTimeCommands(commandBuffer);
   }
   void transitionImageLayout(VkImage image, VkFormat format,
-                             VkImageLayout oldLayout, VkImageLayout newLayout) {
+                             VkImageLayout oldLayout, VkImageLayout newLayout,
+                             uint32_t mipLevels) {
     auto commandBuffer = beginSingleTimeCommands();
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -628,7 +629,7 @@ private:
     barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = mipLevels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
     barrier.srcAccessMask = 0;
@@ -678,8 +679,8 @@ private:
     endSingleTimeCommands(commandBuffer);
   }
   std::tuple<VkImage, VkDeviceMemory>
-  createImage(uint32_t width, uint32_t height, VkFormat format,
-              VkImageTiling tiling, VkImageUsageFlags usage,
+  createImage(uint32_t width, uint32_t height, uint32_t mipLevels,
+              VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
               VkMemoryPropertyFlags properties) {
     VkImage image;
     VkDeviceMemory imageMemory;
@@ -690,7 +691,7 @@ private:
       info.extent.width = width;
       info.extent.height = height;
       info.extent.depth = 1;
-      info.mipLevels = 1;
+      info.mipLevels = mipLevels;
       info.arrayLayers = 1;
       info.format = format;
       info.tiling = tiling;
@@ -757,14 +758,15 @@ private:
     vkUnmapMemory(_device, stagingBufferMemory);
     stbi_image_free(pixels);
     auto [image, imageMemory] = createImage(
-        texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+        texWidth, texHeight, _mipLevels, VK_FORMAT_R8G8B8A8_UNORM,
+        VK_IMAGE_TILING_OPTIMAL,
         ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT)),
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _textureImage = image;
     _textureImageMemory = imageMemory;
     transitionImageLayout(_textureImage, VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_UNDEFINED,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _mipLevels);
     copyBufferToImage(stagingBuffer, _textureImage,
                       static_cast<uint32_t>(texWidth),
                       static_cast<uint32_t>(texHeight));
@@ -804,7 +806,7 @@ private:
   }
   void createTextureImageView() {
     _textureImageView = createImageView(_textureImage, VK_FORMAT_R8G8B8A8_UNORM,
-                                        VK_IMAGE_ASPECT_COLOR_BIT);
+                                        VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels);
   };
   void createDescriptorSets() {
     auto n = static_cast<uint32_t>(_swapChainImages.size());
@@ -1386,7 +1388,8 @@ private:
     _swapChainExtent = extent;
   }
   VkImageView createImageView(VkImage image, VkFormat format,
-                              VkImageAspectFlags aspectFlags) {
+                              VkImageAspectFlags aspectFlags,
+                              uint32_t mipLevels) {
     VkImageView imageView;
     {
       VkImageViewCreateInfo info = {};
@@ -1396,7 +1399,7 @@ private:
       info.format = format;
       info.subresourceRange.aspectMask = aspectFlags;
       info.subresourceRange.baseMipLevel = 0;
-      info.subresourceRange.levelCount = 1;
+      info.subresourceRange.levelCount = mipLevels;
       info.subresourceRange.baseArrayLayer = 0;
       info.subresourceRange.layerCount = 1;
       if (!((VK_SUCCESS) ==
@@ -1414,7 +1417,7 @@ private:
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
       _swapChainImageViews[i] =
           createImageView(_swapChainImages[i], _swapChainImageFormat,
-                          VK_IMAGE_ASPECT_COLOR_BIT);
+                          VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
   };
   void createLogicalDevice() {

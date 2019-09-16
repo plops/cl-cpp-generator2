@@ -1134,6 +1134,7 @@ more structs. this function helps to initialize those structs."
 					 depthImageMemory)
 				(createImage _swapChainExtent.width
 					     _swapChainExtent.height
+					     1 ;; mipLevels
 					     depthFormat
 					     VK_IMAGE_TILING_OPTIMAL
 					     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -1145,12 +1146,14 @@ more structs. this function helps to initialize those structs."
 				 _depthImageView
 				 (createImageView _depthImage
 						  depthFormat
-						  VK_IMAGE_ASPECT_DEPTH_BIT))
+						  VK_IMAGE_ASPECT_DEPTH_BIT
+						  1 ;; mipLevels
+						  ))
 			   (transitionImageLayout
 			    _depthImage
 			    depthFormat
 			    VK_IMAGE_LAYOUT_UNDEFINED
-			    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))))
+			    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 1))))
 		      
 		      (do0
 		      
@@ -1191,12 +1194,13 @@ more structs. this function helps to initialize those structs."
 		       (defun transitionImageLayout (image
 						     format
 						     oldLayout
-						     newLayout)
+						     newLayout
+						     mipLevels)
 			 (declare (values void)
 				  (type VkImage image)
 				  (type VkFormat format)
 				  (type VkImageLayout oldLayout newLayout)
-				  )
+				  (type uint32_t mipLevels))
 			 (let ((commandBuffer
 				(beginSingleTimeCommands)))
 			   ;; use memory barriers in combination with
@@ -1218,7 +1222,7 @@ more structs. this function helps to initialize those structs."
 			       :subresourceRange.aspectMask
 			       VK_IMAGE_ASPECT_COLOR_BIT
 			       :subresourceRange.baseMipLevel 0
-			       :subresourceRange.levelCount 1
+			       :subresourceRange.levelCount mipLevels
 			       :subresourceRange.baseArrayLayer 0
 			       :subresourceRange.layerCount 1
 			       :srcAccessMask 0
@@ -1293,12 +1297,13 @@ more structs. this function helps to initialize those structs."
 			  
 			   (endSingleTimeCommands commandBuffer)))
 		       (defun createImage (width height
+					   mipLevels
 					   format tiling
 					   usage
 					   properties)
 			 (declare (values
 				   "std::tuple<VkImage,VkDeviceMemory>")
-				  (type uint32_t width height)
+				  (type uint32_t width height mipLevels)
 				  (type VkFormat format)
 				  (type VkImageTiling tiling)
 				  (type VkImageUsageFlags usage)
@@ -1316,7 +1321,7 @@ more structs. this function helps to initialize those structs."
 				:extent.width width
 				:extent.height height
 				:extent.depth 1
-				:mipLevels 1
+				:mipLevels mipLevels
 				:arrayLayers 1
 				:format format
 				;; if you need direct access, use linear tiling for row major
@@ -1435,6 +1440,7 @@ more structs. this function helps to initialize those structs."
 				  (createImage
 				   texWidth
 				   texHeight
+				   _mipLevels
 				   VK_FORMAT_R8G8B8A8_UNORM
 				   VK_IMAGE_TILING_OPTIMAL
 				   (logior
@@ -1449,7 +1455,8 @@ more structs. this function helps to initialize those structs."
 			      _textureImage
 			      VK_FORMAT_R8G8B8A8_UNORM
 			      VK_IMAGE_LAYOUT_UNDEFINED
-			      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+			      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			      _mipLevels)
 			     (copyBufferToImage
 			      stagingBuffer
 			      _textureImage
@@ -1499,8 +1506,8 @@ more structs. this function helps to initialize those structs."
 			  _textureImageView
 			  (createImageView _textureImage
 					   VK_FORMAT_R8G8B8A8_UNORM
-					   VK_IMAGE_ASPECT_COLOR_BIT))
-			 ))
+					   VK_IMAGE_ASPECT_COLOR_BIT
+					   _mipLevels))))
 		     
 		      #+surface
 		      (do0
@@ -2291,11 +2298,12 @@ more structs. this function helps to initialize those structs."
 						     (_swapChainImages.data))
 			    (setf _swapChainImageFormat surfaceFormat.format
 				  _swapChainExtent extent))))
-		       (defun createImageView (image format aspectFlags)
+		       (defun createImageView (image format aspectFlags mipLevels)
 			 (declare (values VkImageView)
 				  (type VkImage image)
 				  (type VkFormat format)
-				  (type VkImageAspectFlags aspectFlags))
+				  (type VkImageAspectFlags aspectFlags)
+				  (type uint32_t mipLevels))
 			 (let ((imageView))
 			   (declare (type VkImageView imageView))
 			  ,(vkcall
@@ -2309,7 +2317,7 @@ more structs. this function helps to initialize those structs."
 			       ;; multi layer (stereo)
 			       :subresourceRange.aspectMask aspectFlags
 			       :subresourceRange.baseMipLevel 0
-			       :subresourceRange.levelCount 1
+			       :subresourceRange.levelCount mipLevels
 			       :subresourceRange.baseArrayLayer 0
 			       :subresourceRange.layerCount 1
 			       )
@@ -2330,7 +2338,9 @@ more structs. this function helps to initialize those structs."
 			    (createImageView
 			     (aref _swapChainImages i)
 			     _swapChainImageFormat
-			     VK_IMAGE_ASPECT_COLOR_BIT)))))
+			     VK_IMAGE_ASPECT_COLOR_BIT
+			     1 ;; mipLevels
+			     )))))
 		      (defun createLogicalDevice ()
 			(declare (values void))
 			"// initialize members _device and _graphicsQueue"
