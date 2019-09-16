@@ -573,11 +573,14 @@ more structs. this function helps to initialize those structs."
 			 
 			 )
 
-		(let ((_textureImage)
+		(let ((_mipLevels)
+		      (_textureImage)
 		      (_textureImageMemory)
 		      (_textureImageView)
 		      (_textureSampler))
-		  (declare (type
+		  (declare
+		   (type uint32_t mipLevels)
+		   (type
 			    VkImage
 			    _textureImage)
 			   (type
@@ -1388,6 +1391,21 @@ more structs. this function helps to initialize those structs."
 			   (unless pixels
 			     (throw ("std::runtime_error"
 				     (string "failed to load texture image."))))
+			   (setf _mipLevels
+				 (static_cast<uint32_t>
+				  (+ 1
+				   ("std::floor"
+				    ("std::log2"
+				     ("std::max"
+				      texWidth
+				      texHeight))))))
+
+			   (do0
+			    ,(format nil "// ~8a ~8a" "width" "mipLevels")
+			    ,@(loop for i in `(2 4 16 32 128 255 256 257 512 1024) collect
+				   (format nil "// ~8a ~8a"
+					   i (+ 1 (floor (log i 2))))))
+			   
 			   (let (((bracket stagingBuffer
 					   stagingBufferMemory)
 				  (createBuffer

@@ -267,6 +267,7 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  auto _mipLevels;
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
   VkImageView _textureImageView;
@@ -733,6 +734,19 @@ private:
     if (!(pixels)) {
       throw std::runtime_error("failed to load texture image.");
     };
+    _mipLevels = static_cast<uint32_t>(
+        ((1) + (std::floor(std::log2(std::max(texWidth, texHeight))))));
+    // width    mipLevels
+    // 2        2
+    // 4        3
+    // 16       5
+    // 32       6
+    // 128      8
+    // 255      8
+    // 256      9
+    // 257      9
+    // 512      10
+    // 1024     11      ;
     auto [stagingBuffer, stagingBufferMemory] =
         createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) |
