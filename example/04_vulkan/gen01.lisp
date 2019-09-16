@@ -27,7 +27,16 @@
   (defun vkprint (msg
 		  rest)
     `(<< "std::cout"
-	 (string ,(format nil "~a: " msg))
+	 (dot ("std::chrono::high_resolution_clock::now")
+			 (time_since_epoch)
+			 (count))
+	 (string " ")
+	 __FILE__
+	 (string ":")
+	 __LINE__
+	 (string " ")
+	 __func__
+	 (string ,(format nil " ~a: " msg))
 	 ,@(loop for e in rest appending
 		`((string ,(format nil " ~a=" e))
 		  ,e))
@@ -98,13 +107,20 @@
 					 :suffix suffix)
 		       ,@args))
 		(<< "std::cout"
+		    (dot ("std::chrono::high_resolution_clock::now")
+			 (time_since_epoch)
+			 (count))
+		    (string " ")
+		    __FILE__
+		    (string ":")
+		    __LINE__
+		    (string " ")
+		    __func__
 		    ,@(if instance
-			  `((string ,(format nil "~a ~a ~a=" verb subject instance))
+			  `((string ,(format nil " ~a ~a ~a=" verb subject instance))
 			    ,instance)
-			 `((string ,(format nil "~a ~a" verb subject))))
-		    "std::endl"))))))
-    
-    )
+			 `((string ,(format nil " ~a ~a" verb subject))))
+		    "std::endl")))))))
   
   (defun set-members (params)
     "setf on multiple member variables of an instance"

@@ -365,8 +365,12 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateInstance &info nullptr &_instance)");
       };
-      (std::cout) << ("create instance _instance=") << (_instance)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create instance _instance=")
+                  << (_instance) << (std::endl);
     };
   }
   std::tuple<VkBuffer, VkDeviceMemory>
@@ -386,7 +390,12 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateBuffer _device &info nullptr &buffer)");
       };
-      (std::cout) << ("create buffer buffer=") << (buffer) << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create buffer buffer=") << (buffer)
+                  << (std::endl);
     };
     VkMemoryRequirements memReq;
     vkGetBufferMemoryRequirements(_device, buffer, &memReq);
@@ -400,8 +409,12 @@ private:
         throw std::runtime_error(
             "failed to (vkAllocateMemory _device &info nullptr &bufferMemory)");
       };
-      (std::cout) << ("allocate memory bufferMemory=") << (bufferMemory)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" allocate memory bufferMemory=")
+                  << (bufferMemory) << (std::endl);
     };
     vkBindBufferMemory(_device, buffer, bufferMemory, 0);
     return std::make_tuple(buffer, bufferMemory);
@@ -457,15 +470,23 @@ private:
       info.commandPool = _commandPool;
       info.commandBufferCount = 1;
       vkAllocateCommandBuffers(_device, &info, &commandBuffer);
-      (std::cout) << ("allocate command-buffer") << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" allocate command-buffer") << (std::endl);
     };
     {
       VkCommandBufferBeginInfo info = {};
       info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
       info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
       vkBeginCommandBuffer(commandBuffer, &info);
-      (std::cout) << ("begin command-buffer commandBuffer=") << (commandBuffer)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" begin command-buffer commandBuffer=")
+                  << (commandBuffer) << (std::endl);
     };
     return commandBuffer;
   }
@@ -704,7 +725,12 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateImage _device &info nullptr &image)");
       };
-      (std::cout) << ("create image image=") << (image) << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create image image=") << (image)
+                  << (std::endl);
     };
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(_device, image, &memReq);
@@ -718,8 +744,12 @@ private:
         throw std::runtime_error(
             "failed to (vkAllocateMemory _device &info nullptr &imageMemory)");
       };
-      (std::cout) << ("allocate memory imageMemory=") << (imageMemory)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" allocate memory imageMemory=")
+                  << (imageMemory) << (std::endl);
     };
     vkBindImageMemory(_device, image, imageMemory, 0);
     return std::make_tuple(image, imageMemory);
@@ -879,8 +909,12 @@ private:
         throw std::runtime_error("failed to (vkCreateSampler _device &info "
                                  "nullptr &_textureSampler)");
       };
-      (std::cout) << ("create sampler _textureSampler=") << (_textureSampler)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create sampler _textureSampler=")
+                  << (_textureSampler) << (std::endl);
     };
   }
   void createTextureImageView() {
@@ -902,7 +936,11 @@ private:
         throw std::runtime_error("failed to (vkAllocateDescriptorSets _device "
                                  "&info (_descriptorSets.data))");
       };
-      (std::cout) << ("allocate descriptor-set") << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" allocate descriptor-set") << (std::endl);
     };
     for (int i = 0; i < n; (i) += (1)) {
       VkDescriptorBufferInfo bufferInfo = {};
@@ -963,7 +1001,11 @@ private:
         throw std::runtime_error("failed to (vkCreateDescriptorPool _device "
                                  "&info nullptr &_descriptorPool)");
       };
-      (std::cout) << ("create descriptor-pool _descriptorPool=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create descriptor-pool _descriptorPool=")
                   << (_descriptorPool) << (std::endl);
     };
   }
@@ -1009,7 +1051,12 @@ private:
             "failed to (vkCreateDescriptorSetLayout _device &info nullptr      "
             "      &_descriptorSetLayout)");
       };
-      (std::cout) << ("create descriptor-set-layout _descriptorSetLayout=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" create descriptor-set-layout _descriptorSetLayout=")
                   << (_descriptorSetLayout) << (std::endl);
     };
   }
@@ -1080,7 +1127,11 @@ private:
         throw std::runtime_error("failed to (vkAllocateCommandBuffers _device "
                                  "&info (_commandBuffers.data))");
       };
-      (std::cout) << ("allocate command-buffer") << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" allocate command-buffer") << (std::endl);
     };
     for (int i = 0; i < _commandBuffers.size(); (i) += (1)) {
       {
@@ -1093,7 +1144,12 @@ private:
           throw std::runtime_error("failed to (vkBeginCommandBuffer (aref "
                                    "_commandBuffers i) &info)");
         };
-        (std::cout) << ("begin command-buffer (aref _commandBuffers i)=")
+        (std::cout) << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__)
+                    << (" begin command-buffer (aref _commandBuffers i)=")
                     << (_commandBuffers[i]) << (std::endl);
       };
       VkClearValue clearColor = {};
@@ -1142,8 +1198,12 @@ private:
         throw std::runtime_error("failed to (vkCreateCommandPool _device &info "
                                  "nullptr &_commandPool)");
       };
-      (std::cout) << ("create command-pool _commandPool=") << (_commandPool)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create command-pool _commandPool=")
+                  << (_commandPool) << (std::endl);
     };
   }
   void createFramebuffers() {
@@ -1168,7 +1228,12 @@ private:
               "failed to (vkCreateFramebuffer _device &info nullptr            "
               "(ref (aref _swapChainFramebuffers i)))");
         };
-        (std::cout) << ("create framebuffer (aref _swapChainFramebuffers i)=")
+        (std::cout) << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__)
+                    << (" create framebuffer (aref _swapChainFramebuffers i)=")
                     << (_swapChainFramebuffers[i]) << (std::endl);
       };
     };
@@ -1229,8 +1294,12 @@ private:
         throw std::runtime_error("failed to (vkCreateRenderPass _device &info "
                                  "nullptr &_renderPass)");
       };
-      (std::cout) << ("create render-pass _renderPass=") << (_renderPass)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create render-pass _renderPass=")
+                  << (_renderPass) << (std::endl);
     };
   }
   void createGraphicsPipeline() {
@@ -1350,7 +1419,11 @@ private:
         throw std::runtime_error("failed to (vkCreatePipelineLayout _device "
                                  "&info nullptr &_pipelineLayout)");
       };
-      (std::cout) << ("create pipeline-layout _pipelineLayout=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create pipeline-layout _pipelineLayout=")
                   << (_pipelineLayout) << (std::endl);
     };
     {
@@ -1378,7 +1451,12 @@ private:
             "failed to (vkCreateGraphicsPipelines _device VK_NULL_HANDLE 1 "
             "&info nullptr            &_graphicsPipeline)");
       };
-      (std::cout) << ("create graphics-pipeline _graphicsPipeline=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" create graphics-pipeline _graphicsPipeline=")
                   << (_graphicsPipeline) << (std::endl);
     };
     vkDestroyShaderModule(_device, fragShaderModule, nullptr);
@@ -1396,8 +1474,12 @@ private:
         throw std::runtime_error("failed to (vkCreateShaderModule _device "
                                  "&info nullptr &shaderModule)");
       };
-      (std::cout) << ("create shader-module shaderModule=") << (shaderModule)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create shader-module shaderModule=")
+                  << (shaderModule) << (std::endl);
     };
     return shaderModule;
   };
@@ -1455,8 +1537,12 @@ private:
         throw std::runtime_error("failed to (vkCreateSwapchainKHR _device "
                                  "&info nullptr &_swapChain)");
       };
-      (std::cout) << ("create swapchain _swapChain=") << (_swapChain)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create swapchain _swapChain=")
+                  << (_swapChain) << (std::endl);
     };
     // now get the images, note will be destroyed with the swap chain
     vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
@@ -1486,8 +1572,12 @@ private:
         throw std::runtime_error(
             "failed to (vkCreateImageView _device &info nullptr &imageView)");
       };
-      (std::cout) << ("create image-view imageView=") << (imageView)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create image-view imageView=")
+                  << (imageView) << (std::endl);
     };
     return imageView;
   }
@@ -1533,8 +1623,12 @@ private:
         throw std::runtime_error("failed to (vkCreateDevice _physicalDevice "
                                  "&info nullptr &_device)");
       };
-      (std::cout) << ("create device _physicalDevice=") << (_physicalDevice)
-                  << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" create device _physicalDevice=")
+                  << (_physicalDevice) << (std::endl);
     };
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
@@ -1651,7 +1745,11 @@ private:
   }
   void cleanupSwapChain() {
     (std::cout) << ("***** cleanupSwapChain") << (std::endl);
-    (std::cout) << ("cleanup depth: ") << (" _depthImageView=")
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cleanup depth: ") << (" _depthImageView=")
                 << (_depthImageView) << (" _depthImage=") << (_depthImage)
                 << (" _depthImageMemory=") << (_depthImageMemory)
                 << (std::endl);
@@ -1659,13 +1757,22 @@ private:
     vkDestroyImage(_device, _depthImage, nullptr);
     vkFreeMemory(_device, _depthImageMemory, nullptr);
     for (auto &b : _swapChainFramebuffers) {
-      (std::cout) << ("framebuffer: ") << (" b=") << (b) << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" framebuffer: ") << (" b=") << (b)
+                  << (std::endl);
       vkDestroyFramebuffer(_device, b, nullptr);
     };
     vkFreeCommandBuffers(_device, _commandPool,
                          static_cast<uint32_t>(_commandBuffers.size()),
                          _commandBuffers.data());
-    (std::cout) << ("pipeline: ") << (" _graphicsPipeline=")
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" pipeline: ") << (" _graphicsPipeline=")
                 << (_graphicsPipeline) << (" _pipelineLayout=")
                 << (_pipelineLayout) << (" _renderPass=") << (_renderPass)
                 << (std::endl);
@@ -1673,30 +1780,51 @@ private:
     vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
     vkDestroyRenderPass(_device, _renderPass, nullptr);
     for (auto &view : _swapChainImageViews) {
-      (std::cout) << ("image-view: ") << (" view=") << (view) << (std::endl);
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" image-view: ") << (" view=") << (view)
+                  << (std::endl);
       vkDestroyImageView(_device, view, nullptr);
     };
-    (std::cout) << ("swapchain: ") << (" _swapChain=") << (_swapChain)
-                << (std::endl);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" swapchain: ") << (" _swapChain=")
+                << (_swapChain) << (std::endl);
     vkDestroySwapchainKHR(_device, _swapChain, nullptr);
     for (int i = 0; i < _swapChainImages.size(); (i) += (1)) {
-      (std::cout) << ("ubo: ") << (" (aref _uniformBuffers i)=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ubo: ") << (" (aref _uniformBuffers i)=")
                   << (_uniformBuffers[i])
                   << (" (aref _uniformBuffersMemory i)=")
                   << (_uniformBuffersMemory[i]) << (std::endl);
       vkDestroyBuffer(_device, _uniformBuffers[i], nullptr);
       vkFreeMemory(_device, _uniformBuffersMemory[i], nullptr);
     }
-    (std::cout) << ("descriptor-pool: ") << (" _descriptorPool=")
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" descriptor-pool: ") << (" _descriptorPool=")
                 << (_descriptorPool) << (std::endl);
     vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
   }
   void cleanup() {
     cleanupSwapChain();
     (std::cout) << ("***** cleanup") << (std::endl);
-    (std::cout) << ("tex: ") << (" _textureSampler=") << (_textureSampler)
-                << (" _textureImageView=") << (_textureImageView)
-                << (" _textureImage=") << (_textureImage)
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" tex: ") << (" _textureSampler=")
+                << (_textureSampler) << (" _textureImageView=")
+                << (_textureImageView) << (" _textureImage=") << (_textureImage)
                 << (" _textureImageMemory=") << (_textureImageMemory)
                 << (" _descriptorSetLayout=") << (_descriptorSetLayout)
                 << (std::endl);
@@ -1705,9 +1833,13 @@ private:
     vkDestroyImage(_device, _textureImage, nullptr);
     vkFreeMemory(_device, _textureImageMemory, nullptr);
     vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
-    (std::cout) << ("buffers: ") << (" _vertexBuffer=") << (_vertexBuffer)
-                << (" _vertexBufferMemory=") << (_vertexBufferMemory)
-                << (" _indexBuffer=") << (_indexBuffer)
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" buffers: ") << (" _vertexBuffer=")
+                << (_vertexBuffer) << (" _vertexBufferMemory=")
+                << (_vertexBufferMemory) << (" _indexBuffer=") << (_indexBuffer)
                 << (" _indexBufferMemory=") << (_indexBufferMemory)
                 << (std::endl);
     vkDestroyBuffer(_device, _vertexBuffer, nullptr);
@@ -1715,7 +1847,12 @@ private:
     vkDestroyBuffer(_device, _indexBuffer, nullptr);
     vkFreeMemory(_device, _indexBufferMemory, nullptr);
     for (int i = 0; i < _MAX_FRAMES_IN_FLIGHT; (i) += (1)) {
-      (std::cout) << ("sync: ") << (" (aref _renderFinishedSemaphores i)=")
+      (std::cout) << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" sync: ")
+                  << (" (aref _renderFinishedSemaphores i)=")
                   << (_renderFinishedSemaphores[i])
                   << (" (aref _imageAvailableSemaphores i)=")
                   << (_imageAvailableSemaphores[i])
@@ -1725,11 +1862,20 @@ private:
       vkDestroySemaphore(_device, _imageAvailableSemaphores[i], nullptr);
       vkDestroyFence(_device, _inFlightFences[i], nullptr);
     }
-    (std::cout) << ("cmd-pool: ") << (" _commandPool=") << (_commandPool)
-                << (std::endl);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cmd-pool: ") << (" _commandPool=")
+                << (_commandPool) << (std::endl);
     vkDestroyCommandPool(_device, _commandPool, nullptr);
-    (std::cout) << ("rest: ") << (" _device=") << (_device) << (" _instance=")
-                << (_instance) << (" _window=") << (_window) << (std::endl);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" rest: ") << (" _device=") << (_device)
+                << (" _instance=") << (_instance) << (" _window=") << (_window)
+                << (std::endl);
     vkDestroyDevice(_device, nullptr);
     vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, nullptr);
