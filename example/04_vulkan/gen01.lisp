@@ -579,7 +579,7 @@ more structs. this function helps to initialize those structs."
 		      (_textureImageView)
 		      (_textureSampler))
 		  (declare
-		   (type uint32_t mipLevels)
+		   (type uint32_t _mipLevels)
 		   (type
 			    VkImage
 			    _textureImage)
@@ -1445,6 +1445,7 @@ more structs. this function helps to initialize those structs."
 				   VK_IMAGE_TILING_OPTIMAL
 				   (logior
 				    VK_IMAGE_USAGE_TRANSFER_DST_BIT
+				    VK_IMAGE_USAGE_TRANSFER_SRC_BIT ;; for mipLevel computation
 				    VK_IMAGE_USAGE_SAMPLED_BIT)
 				   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 				   )))
@@ -1462,17 +1463,149 @@ more structs. this function helps to initialize those structs."
 			      _textureImage
 			      (static_cast<uint32_t> texWidth)
 			      (static_cast<uint32_t> texHeight))
-			     (transitionImageLayout
+
+			    
+			     #+nil(transitionImageLayout
 			      _textureImage
 			      VK_FORMAT_R8G8B8A8_UNORM
 			      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-			      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+			      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			      )
+			     ;; will be transitioned to
+			     ;; READ_ONLY_OPTIMAL while generating
+			     ;; mipmaps
 
+			     (generateMipmaps _textureImage
+					      texWidth
+					      texHeight
+					      _mipLevels)
 			     (vkDestroyBuffer
 			      _device stagingBuffer nullptr)
 			     (vkFreeMemory _device
 					   stagingBufferMemory
 					   nullptr))))
+		       (defun generateMipmaps (image texWidth texHeight mipLevels)
+			 (declare (values void)
+				  (type VkImage image)
+				  (type int32_t texHeight mipLevels texWidth))
+			 (let ((commandBuffer (beginSingleTimeCommands)))
+			   ,(vk
+			     `(VkImageMemoryBarrier
+			       barrier
+			       :sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
+			       :image image
+			       :srcQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
+			       :dstQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
+			       :subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+			       :subresourceRange.baseArrayLayer 0
+			       :subresourceRange.layerCount 1
+			       :subresourceRange.levelCount 1
+			       ))
+			   (let ((mipWidth texWidth)
+				 (mipHeight texHeight))
+			     (for ((= "int i" 1) (< i mipLevels) (incf i))
+				  (do0
+				   ,(set-members
+				     `(barrier
+					  :subresourceRange.baseMipLevel (- i 1)
+					  :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+					  :newLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+					  :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+					  :dstAccessMask VK_ACCESS_TRANSFER_READ_BIT))
+				   (vkCmdPipelineBarrier
+				    commandBuffer
+				    VK_PIPELINE_STAGE_TRANSFER_BIT
+				    VK_PIPELINE_STAGE_TRANSFER_BIT
+				    0
+				    0 nullptr
+				    0 nullptr
+				    1 &barrier))
+				  (let ((dstOffsetx 1)
+					(dstOffsety 1))
+				    (when (< 1 mipWidth)
+				      (setf dstOffsetx (/ mipWidth 2)))
+				    (when (< 1 mipHeight)
+				      (setf dstOffsety (/ mipHeight 2)))
+				   ,(vk
+				     `(VkImageBlit
+				       blit
+				       :srcOffsets[0] (curly 0 0 0)
+				       :srcOffsets[1] (curly mipWidth
+							    mipHeight
+							    1)
+				       :srcSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+				       :srcSubresource.mipLevel (- i 1)
+				       :srcSubresource.baseArrayLayer 0
+				       :srcSubresource.layerCount 1
+				       :dstOffsets[0] (curly 0 0 0)
+				       :dstOffsets[1] (curly dstOffsetx
+							    dstOffsety
+							    1)
+				       :dstSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+				       :dstSubresource.mipLevel i
+				       :dstSubresource.baseArrayLayer 0
+				       :dstSubresource.layerCount 1
+				       ))
+				   (vkCmdBlitImage
+				    commandBuffer
+				    image
+				    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+				    image
+				    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				    1
+				    &blit
+				    VK_FILTER_LINEAR))
+
+				  (do0
+				   ,(set-members
+				     `(barrier
+					  :oldLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+					  :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+					  :srcAccessMask VK_ACCESS_TRANSFER_READ_BIT
+					  :dstAccessMask VK_ACCESS_TRANSFER_WRITE_BIT))
+				   ;; wait on blit command
+				   ;; transition mip level i-1 to shader_ro
+				   (vkCmdPipelineBarrier
+				    commandBuffer
+				    VK_PIPELINE_STAGE_TRANSFER_BIT
+				    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+				    0
+				    0 nullptr
+				    0 nullptr
+				    1 &barrier))
+
+				  (do0
+				   ;; handle non-square images
+				   ;; ensure mip dimensions never become 0
+				   (when (< 1 mipWidth)
+				     (setf mipWidth (/ mipWidth 2)))
+				   (when (< 1 mipHeight)
+				     (setf mipHeight (/ mipHeight 2))))
+				  
+				  
+				  ))
+
+			   (do0
+			    ;; transition last miplevel because the
+			    ;; last mipmap was never blitted from
+			    ,(set-members
+			      `(barrier
+				   :subresourceRange.baseMipLevel
+				 (- _mipLevels 1)
+				 :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				 :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				 :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+				 :dstAccessMask VK_ACCESS_TRANSFER_READ_BIT))
+			    (vkCmdPipelineBarrier
+			     commandBuffer
+			     VK_PIPELINE_STAGE_TRANSFER_BIT
+			     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+			     0
+			     0 nullptr
+			     0 nullptr
+			     1 &barrier))
+			   
+			   (endSingleTimeCommands commandBuffer)))
 		       (defun createTextureSampler ()
 			 (declare (values void))
 			 ,(vkcall
