@@ -1020,28 +1020,38 @@ more structs. this function helps to initialize those structs."
 			(pickPhysicalDevice)
 			(createLogicalDevice)
 			#+surface
-			(do0
-			 (createSwapChain)
-			 (createImageViews)
-			 (createRenderPass)
-			 (createDescriptorSetLayout)
-			 (createGraphicsPipeline)
+			,(let ((l`(
+				  (createSwapChain)
+				  (createImageViews)
+				  (createRenderPass)
+				  (createDescriptorSetLayout)
+				  (createGraphicsPipeline)
 			 
-			 (createCommandPool)
-			 ;; create texture image needs command pools
-			 (createDepthResources)
-			 (createFramebuffers)
-			 (createTextureImage)
-			 (createTextureImageView)
-			 (createTextureSampler)
-			 (loadModel)
-			 (createVertexBuffer)
-			 (createIndexBuffer)
-			 (createUniformBuffers)
-			 (createDescriptorPool)
-			 (createDescriptorSets)
-			 (createCommandBuffers)
-			 (createSyncObjects)))
+				  (createCommandPool)
+				  ;; create texture image needs command pools
+				  (createDepthResources)
+				  (createFramebuffers)
+				  (createTextureImage)
+				  (createTextureImageView)
+				  (createTextureSampler)
+				  (loadModel)
+				  (createVertexBuffer)
+				  (createIndexBuffer)
+				  (createUniformBuffers)
+				  (createDescriptorPool)
+				  (createDescriptorSets)
+				  (createCommandBuffers)
+				  (createSyncObjects))))
+			   `(do0
+			     ,@(loop for (e) in l collect
+				    `(do0
+				      (<< "std::cout"
+					  (dot ("std::chrono::high_resolution_clock::now")
+					       (time_since_epoch)
+					       (count))
+					  (string ,(format nil " call ~a" e))
+					  "std::endl")
+				      (,e))))))
 
 		      (do0
 		       

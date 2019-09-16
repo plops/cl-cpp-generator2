@@ -529,24 +529,100 @@ private:
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createSwapChain") << (std::endl);
     createSwapChain();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createImageViews") << (std::endl);
     createImageViews();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createRenderPass") << (std::endl);
     createRenderPass();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createDescriptorSetLayout") << (std::endl);
     createDescriptorSetLayout();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createGraphicsPipeline") << (std::endl);
     createGraphicsPipeline();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createCommandPool") << (std::endl);
     createCommandPool();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createDepthResources") << (std::endl);
     createDepthResources();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createFramebuffers") << (std::endl);
     createFramebuffers();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createTextureImage") << (std::endl);
     createTextureImage();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createTextureImageView") << (std::endl);
     createTextureImageView();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createTextureSampler") << (std::endl);
     createTextureSampler();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call loadModel") << (std::endl);
     loadModel();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createVertexBuffer") << (std::endl);
     createVertexBuffer();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createIndexBuffer") << (std::endl);
     createIndexBuffer();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createUniformBuffers") << (std::endl);
     createUniformBuffers();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createDescriptorPool") << (std::endl);
     createDescriptorPool();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createDescriptorSets") << (std::endl);
     createDescriptorSets();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createCommandBuffers") << (std::endl);
     createCommandBuffers();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" call createSyncObjects") << (std::endl);
     createSyncObjects();
   }
   void loadModel() {
