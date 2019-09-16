@@ -771,12 +771,21 @@ private:
     copyBufferToImage(stagingBuffer, _textureImage,
                       static_cast<uint32_t>(texWidth),
                       static_cast<uint32_t>(texHeight));
-    generateMipmaps(_textureImage, texWidth, texHeight, _mipLevels);
+    generateMipmaps(_textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth,
+                    texHeight, _mipLevels);
     vkDestroyBuffer(_device, stagingBuffer, nullptr);
     vkFreeMemory(_device, stagingBufferMemory, nullptr);
   }
-  void generateMipmaps(VkImage image, int32_t texWidth, int32_t texHeight,
-                       int32_t mipLevels) {
+  void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth,
+                       int32_t texHeight, int32_t mipLevels) {
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties(_physicalDevice, imageFormat,
+                                        &formatProperties);
+    if (!(((formatProperties.optimalTilingFeatures) &
+           (VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)))) {
+      throw std::runtime_error(
+          "texture image format does not support linear blitting!");
+    };
     auto commandBuffer = beginSingleTimeCommands();
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1623,7 +1632,7 @@ private:
                      ((currentTime) - (startTime)))
                      .count();
     const auto zAxis = glm::vec3((0.0e+0f), (0.0e+0f), (1.e+0f));
-    const auto angularRate = glm::radians((9.e+1f));
+    const auto angularRate = glm::radians((9.e+0f));
     auto rotationAngle = ((time) * (angularRate));
     UniformBufferObject ubo = {};
     ubo.model = glm::rotate(glm::mat4((1.e+0f)), rotationAngle, zAxis);
