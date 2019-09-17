@@ -2117,9 +2117,11 @@ more structs. this function helps to initialize those structs."
 			      ;; swap chain image, but depth image can
 			      ;; be reused. at any time only one
 			      ;; subpass is running
-			      (let ((attachments ("std::array<VkImageView,2>"
-						  (curly (aref _swapChainImageViews i)
-							 _depthImageView))))
+			      (let ((attachments ("std::array<VkImageView,3>"
+						  (curly _colorImageView
+							 _depthImageView
+							 (aref _swapChainImageViews i)
+							 ))))
 				
 				,(vkcall
 				  `(create
@@ -2145,19 +2147,19 @@ more structs. this function helps to initialize those structs."
 			    `(VkAttachmentDescription
 			      colorAttachment
 			      :format _swapChainImageFormat
-			      :samples VK_SAMPLE_COUNT_1_BIT
+			      :samples _msaaSamples
 			      :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
 			      :storeOp VK_ATTACHMENT_STORE_OP_STORE
 			      :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
 			      :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
 			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
 			      ;; image to be presented in swap chain
-			      :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
+			      :finalLayout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
 			  ,(vk
 			    `(VkAttachmentDescription
 			      depthAttachment
 			      :format (findDepthFormat)
-			      :samples VK_SAMPLE_COUNT_1_BIT
+			      :samples _msaaSamples
 			      :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
 			      :storeOp VK_ATTACHMENT_STORE_OP_DONT_CARE
 			      :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
@@ -2165,6 +2167,18 @@ more structs. this function helps to initialize those structs."
 			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
 			      ;; image to be presented in swap chain
 			      :finalLayout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+			  ,(vk
+			    `(VkAttachmentDescription
+			      colorAttachmentResolve
+			      :format _swapChainImageFormat
+			      :samples VK_SAMPLE_COUNT_1_BIT
+			      :loadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+			      :storeOp VK_ATTACHMENT_STORE_OP_STORE
+			      :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+			      :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+			      :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+			      ;; image to be presented in swap chain
+			      :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
 			  ,(vk
 			    `(VkAttachmentReference
 			      colorAttachmentRef
@@ -2177,6 +2191,12 @@ more structs. this function helps to initialize those structs."
 			      depthAttachmentRef
 			      :attachment 1
 			      :layout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+
+			  ,(vk
+			    `(VkAttachmentReference
+			      colorAttachmentResolveRef
+			      :attachment 2
+			      :layout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
 			  ,(vk
 			    `(VkSubpassDescription
 			      subpass
@@ -2185,7 +2205,7 @@ more structs. this function helps to initialize those structs."
 			      ;; frag shader references this as outColor
 			      :pColorAttachments &colorAttachmentRef
 			      :pDepthStencilAttachment &depthAttachmentRef
-			      ))
+			      :pResolveAttachments &colorAttachmentReloveRef))
 			  ,(vk
 			    `(VkSubpassDependency
 			      dependency
@@ -2197,9 +2217,10 @@ more structs. this function helps to initialize those structs."
 			      :dstAccessMask (logior
 					      VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
 					      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)))
-			  (let ((attachments ("std::array<VkAttachmentDescription,2>"
+			  (let ((attachments ("std::array<VkAttachmentDescription,3>"
 					      (curly colorAttachment
-						     depthAttachment))))
+						     depthAttachment
+						     colorAttachmentResolve))))
 			    
 			    ,(vkcall
 				   `(create
@@ -2305,7 +2326,7 @@ more structs. this function helps to initialize those structs."
 				  multisampling
 				  :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
 				  :sampleShadingEnable VK_FALSE
-				  :rasterizationSamples VK_SAMPLE_COUNT_1_BIT
+				  :rasterizationSamples _msaaSamples
 				  :minSampleShading 1s0
 				  :pSampleMask nullptr
 				  :alphaToCoverageEnable VK_FALSE
@@ -2637,6 +2658,7 @@ more structs. this function helps to initialize those structs."
 		      (do0
 		       ;; for msaa
 		       (defun createColorResources ()
+			 (declare (values void))
 			 (let ((colorFormat))
 			   (declare (type VkFormat colorFormat))
 			   (createImage
