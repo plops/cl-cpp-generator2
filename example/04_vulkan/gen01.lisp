@@ -2205,7 +2205,7 @@ more structs. this function helps to initialize those structs."
 			      ;; frag shader references this as outColor
 			      :pColorAttachments &colorAttachmentRef
 			      :pDepthStencilAttachment &depthAttachmentRef
-			      :pResolveAttachments &colorAttachmentReloveRef))
+			      :pResolveAttachments &colorAttachmentResolveRef))
 			  ,(vk
 			    `(VkSubpassDependency
 			      dependency
@@ -2659,28 +2659,36 @@ more structs. this function helps to initialize those structs."
 		       ;; for msaa
 		       (defun createColorResources ()
 			 (declare (values void))
-			 (let ((colorFormat))
+			 (let ((colorFormat)
+			       ((bracket colorImage
+					 colorImageMemory)
+				(createImage
+				 _swapChainExtent.width
+				 _swapChainExtent.height
+				 1
+				 _msaaSamples
+				 colorFormat
+				 VK_IMAGE_TILING_OPTIMAL
+				 (logior
+				  VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
+				  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+				 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+				 )))
 			   (declare (type VkFormat colorFormat))
-			   (createImage
-			    _swapChainExtent.width
-			    _swapChainExtent.height
-			    1
-			    _msaaSamples
-			    colorFormat
-			    VK_IMAGE_TILING_OPTIMAL
-			    (logior
-			     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
-			     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-			    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			    _colorImage
-			    _colorImageMemory)
+			   (setf _colorImage colorImage
+				 _colorImageMemory colorImageMemory)
 			   (setf _colorImageView
 				 (createImageView
 				  _colorImage
 				  colorFormat
-				  VK_IMAGE_LAYOUT_UNDEFINED
+				  VK_IMAGE_ASPECT_COLOR_BIT
+				  1))
+			   (transitionImageLayout
+			    _colorImage
+			    colorFormat
+			    VK_IMAGE_LAYOUT_UNDEFINED
 				  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-				  1))))
+				  1)))
 		       (defun getMaxUsableSampleCount ()
 			 (declare (values VkSampleCountFlagBits))
 			 (let ((physicalDeviceProperties))
@@ -2696,7 +2704,7 @@ more structs. this function helps to initialize those structs."
 				   physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
 			     (declare (type VkSampleCountFlags counts))
 			     ,@(loop for e in `(64 32 16 8 4 2) collect
-				    `(when (logand counts
+				    `(when (logand count
 						   ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
 				       (return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
 			     (return VK_SAMPLE_COUNT_1_BIT)))))
