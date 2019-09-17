@@ -1761,7 +1761,7 @@ private:
     vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
   }
   void createColorResources() {
-    VkFormat colorFormat;
+    VkFormat colorFormat = _swapChainImageFormat;
     auto [colorImage, colorImageMemory] =
         createImage(_swapChainExtent.width, _swapChainExtent.height, 1,
                     _msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL,

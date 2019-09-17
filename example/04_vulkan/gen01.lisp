@@ -2659,7 +2659,7 @@ more structs. this function helps to initialize those structs."
 		       ;; for msaa
 		       (defun createColorResources ()
 			 (declare (values void))
-			 (let ((colorFormat)
+			 (let ((colorFormat _swapChainImageFormat)
 			       ((bracket colorImage
 					 colorImageMemory)
 				(createImage
