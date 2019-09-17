@@ -1172,7 +1172,7 @@ more structs. this function helps to initialize those structs."
 				(createImage _swapChainExtent.width
 					     _swapChainExtent.height
 					     1 ;; mipLevels
-					     VK_SAMPLE_COUNT_1_BIT
+					     _msaaSamples
 					     depthFormat
 					     VK_IMAGE_TILING_OPTIMAL
 					     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -1946,6 +1946,7 @@ more structs. this function helps to initialize those structs."
 			 
 			 (createRenderPass)
 			 (createGraphicsPipeline)
+			 (createColorResources)
 			 (createDepthResources)
 			 (createFramebuffers)
 			 (createUniformBuffers)
@@ -2867,6 +2868,17 @@ more structs. this function helps to initialize those structs."
 			    "std::endl")
 			#+surface
 			(do0
+			 (do0
+			  ;; msaa
+			  (vkDestroyImageView _device
+					      _colorImageView
+					      nullptr)
+			  (vkDestroyImage _device
+					  _colorImage
+					  nullptr)
+			  (vkFreeMemory _device
+					_colorImageMemory
+					nullptr))
 			 (do0
 			  ;; depth
 			  

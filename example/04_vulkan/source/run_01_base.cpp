@@ -696,7 +696,7 @@ private:
     auto depthFormat = findDepthFormat();
     auto [depthImage, depthImageMemory] =
         createImage(_swapChainExtent.width, _swapChainExtent.height, 1,
-                    VK_SAMPLE_COUNT_1_BIT, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+                    _msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL,
                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _depthImage = depthImage;
@@ -1186,6 +1186,7 @@ private:
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createColorResources();
     createDepthResources();
     createFramebuffers();
     createUniformBuffers();
@@ -1896,6 +1897,9 @@ private:
   }
   void cleanupSwapChain() {
     (std::cout) << ("***** cleanupSwapChain") << (std::endl);
+    vkDestroyImageView(_device, _colorImageView, nullptr);
+    vkDestroyImage(_device, _colorImage, nullptr);
+    vkFreeMemory(_device, _colorImageMemory, nullptr);
     (std::cout) << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
                         .count())
