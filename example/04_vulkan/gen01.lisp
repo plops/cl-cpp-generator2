@@ -2711,7 +2711,7 @@ more structs. this function helps to initialize those structs."
 		      
 		      (defun pickPhysicalDevice ()
 			(declare (values void))
-			"// initialize member _physicalDevice"
+			"// initialize member _physicalDevice" 
 			(let ((deviceCount 0))
 			  (declare (type uint32_t deviceCount))
 			  (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
