@@ -1039,6 +1039,7 @@ more structs. this function helps to initialize those structs."
 			 
 				  (createCommandPool)
 				  ;; create texture image needs command pools
+				  (createColorResources)
 				  (createDepthResources)
 				  (createFramebuffers)
 				  (createTextureImage)
@@ -1171,6 +1172,7 @@ more structs. this function helps to initialize those structs."
 				(createImage _swapChainExtent.width
 					     _swapChainExtent.height
 					     1 ;; mipLevels
+					     VK_SAMPLE_COUNT_1_BIT
 					     depthFormat
 					     VK_IMAGE_TILING_OPTIMAL
 					     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -1316,10 +1318,23 @@ more structs. this function helps to initialize those structs."
 					    dstStage VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
 					    )
 				       )
+				      (if (and
+				      (== VK_IMAGE_LAYOUT_UNDEFINED
+					  oldLayout)
+				      (== VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+					  newLayout))
+					 (do0
+					  (setf barrier.srcAccessMask 0
+						barrier.dstAccessMask (logior VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+									      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+					    srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+					    dstStage VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+					    )
+				       )
 				      (do0
 				       (throw
 					   ("std::invalid_argument"
-					    (string "unsupported layout transition."))))))))
+					    (string "unsupported layout transition.")))))))))
 			   (vkCmdPipelineBarrier
 			    commandBuffer
 			    ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
@@ -1334,12 +1349,14 @@ more structs. this function helps to initialize those structs."
 			   (endSingleTimeCommands commandBuffer)))
 		       (defun createImage (width height
 					   mipLevels
+					   numSamples
 					   format tiling
 					   usage
 					   properties)
 			 (declare (values
 				   "std::tuple<VkImage,VkDeviceMemory>")
 				  (type uint32_t width height mipLevels)
+				  (type VkSampleCountFlagBits numSamples)
 				  (type VkFormat format)
 				  (type VkImageTiling tiling)
 				  (type VkImageUsageFlags usage)
@@ -1367,8 +1384,7 @@ more structs. this function helps to initialize those structs."
 			      
 				:sharingMode
 				VK_SHARING_MODE_EXCLUSIVE
-				:samples
-				VK_SAMPLE_COUNT_1_BIT
+				:samples numSamples
 				:flags 0)
 			       (_device
 				&info
@@ -1477,6 +1493,7 @@ more structs. this function helps to initialize those structs."
 				   texWidth
 				   texHeight
 				   _mipLevels
+				   VK_SAMPLE_COUNT_1_BIT
 				   VK_FORMAT_R8G8B8A8_UNORM
 				   VK_IMAGE_TILING_OPTIMAL
 				   (logior
@@ -2618,6 +2635,29 @@ more structs. this function helps to initialize those structs."
 
 		      (do0
 		       ;; for msaa
+		       (defun createColorResources ()
+			 (let ((colorFormat))
+			   (declare (type VkFormat colorFormat))
+			   (createImage
+			    _swapChainExtent.width
+			    _swapChainExtent.height
+			    1
+			    _msaaSamples
+			    colorFormat
+			    VK_IMAGE_TILING_OPTIMAL
+			    (logior
+			     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
+			     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+			    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			    _colorImage
+			    _colorImageMemory)
+			   (setf _colorImageView
+				 (createImageView
+				  _colorImage
+				  colorFormat
+				  VK_IMAGE_LAYOUT_UNDEFINED
+				  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+				  1))))
 		       (defun getMaxUsableSampleCount ()
 			 (declare (values VkSampleCountFlagBits))
 			 (let ((physicalDeviceProperties))

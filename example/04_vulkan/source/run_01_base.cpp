@@ -268,6 +268,9 @@ private:
   VkDevice _device;
   VkQueue _graphicsQueue;
   VkSampleCountFlagBits _msaaSamples;
+  VkImage _colorImage;
+  VkDeviceMemory _colorImageMemory;
+  VkImageView _colorImageView;
   uint32_t _mipLevels;
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
@@ -563,6 +566,11 @@ private:
     (std::cout) << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
                         .count())
+                << (" call createColorResources") << (std::endl);
+    createColorResources();
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
                 << (" call createDepthResources") << (std::endl);
     createDepthResources();
     (std::cout) << (std::chrono::high_resolution_clock::now()
@@ -686,10 +694,11 @@ private:
   }
   void createDepthResources() {
     auto depthFormat = findDepthFormat();
-    auto [depthImage, depthImageMemory] = createImage(
-        _swapChainExtent.width, _swapChainExtent.height, 1, depthFormat,
-        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    auto [depthImage, depthImageMemory] =
+        createImage(_swapChainExtent.width, _swapChainExtent.height, 1,
+                    VK_SAMPLE_COUNT_1_BIT, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     _depthImage = depthImage;
     _depthImageMemory = depthImageMemory;
     _depthImageView =
@@ -768,7 +777,16 @@ private:
           srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
           dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         } else {
-          throw std::invalid_argument("unsupported layout transition.");
+          if ((((VK_IMAGE_LAYOUT_UNDEFINED) == (oldLayout)) &&
+               ((VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) == (newLayout)))) {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = ((VK_ACCESS_COLOR_ATTACHMENT_READ_BIT) |
+                                     (VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT));
+            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+          } else {
+            throw std::invalid_argument("unsupported layout transition.");
+          }
         }
       }
     };
@@ -778,7 +796,8 @@ private:
   }
   std::tuple<VkImage, VkDeviceMemory>
   createImage(uint32_t width, uint32_t height, uint32_t mipLevels,
-              VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+              VkSampleCountFlagBits numSamples, VkFormat format,
+              VkImageTiling tiling, VkImageUsageFlags usage,
               VkMemoryPropertyFlags properties) {
     VkImage image;
     VkDeviceMemory imageMemory;
@@ -796,7 +815,7 @@ private:
       info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       info.usage = usage;
       info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-      info.samples = VK_SAMPLE_COUNT_1_BIT;
+      info.samples = numSamples;
       info.flags = 0;
       if (!((VK_SUCCESS) == (vkCreateImage(_device, &info, nullptr, &image)))) {
         throw std::runtime_error(
@@ -865,8 +884,8 @@ private:
     vkUnmapMemory(_device, stagingBufferMemory);
     stbi_image_free(pixels);
     auto [image, imageMemory] = createImage(
-        texWidth, texHeight, _mipLevels, VK_FORMAT_R8G8B8A8_UNORM,
-        VK_IMAGE_TILING_OPTIMAL,
+        texWidth, texHeight, _mipLevels, VK_SAMPLE_COUNT_1_BIT,
+        VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
         ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_TRANSFER_SRC_BIT) |
          (VK_IMAGE_USAGE_SAMPLED_BIT)),
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -1726,6 +1745,18 @@ private:
     vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0,
                      &_graphicsQueue);
     vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
+  }
+  nil createColorResources() {
+    VkFormat colorFormat;
+    createImage(_swapChainExtent.width, _swapChainExtent.height, 1,
+                _msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL,
+                ((VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) |
+                 (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)),
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _colorImage,
+                _colorImageMemory);
+    _colorImageView =
+        createImageView(_colorImage, colorFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1);
   }
   VkSampleCountFlagBits getMaxUsableSampleCount() {
     VkPhysicalDeviceProperties physicalDeviceProperties;
