@@ -267,6 +267,7 @@ private:
   VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
   VkDevice _device;
   VkQueue _graphicsQueue;
+  VkSampleCountFlagBits _msaaSamples;
   uint32_t _mipLevels;
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
@@ -1726,6 +1727,32 @@ private:
                      &_graphicsQueue);
     vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &_presentQueue);
   }
+  VkSampleCountFlagBits getMaxUsableSampleCount() {
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+    vkGetPhysicalDeviceProperties(_physicalDevice, &physicalDeviceProperties);
+    auto count =
+        std::min(physicalDeviceProperties.limits.framebufferColorSampleCounts,
+                 physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+    if (((counts) & (VK_SAMPLE_COUNT_64_BIT))) {
+      return VK_SAMPLE_COUNT_64_BIT;
+    };
+    if (((counts) & (VK_SAMPLE_COUNT_32_BIT))) {
+      return VK_SAMPLE_COUNT_32_BIT;
+    };
+    if (((counts) & (VK_SAMPLE_COUNT_16_BIT))) {
+      return VK_SAMPLE_COUNT_16_BIT;
+    };
+    if (((counts) & (VK_SAMPLE_COUNT_8_BIT))) {
+      return VK_SAMPLE_COUNT_8_BIT;
+    };
+    if (((counts) & (VK_SAMPLE_COUNT_4_BIT))) {
+      return VK_SAMPLE_COUNT_4_BIT;
+    };
+    if (((counts) & (VK_SAMPLE_COUNT_2_BIT))) {
+      return VK_SAMPLE_COUNT_2_BIT;
+    };
+    return VK_SAMPLE_COUNT_1_BIT;
+  };
   void pickPhysicalDevice() {
     // initialize member _physicalDevice
     uint32_t deviceCount = 0;
@@ -1738,6 +1765,7 @@ private:
     for (auto &device : devices) {
       if (isDeviceSuitable(device, _surface, _deviceExtensions)) {
         _physicalDevice = device;
+        _msaaSamples = getMaxUsableSampleCount();
         break;
       };
     };

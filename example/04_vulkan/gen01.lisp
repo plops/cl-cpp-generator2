@@ -590,7 +590,15 @@ more structs. this function helps to initialize those structs."
 			 (type VkQueue _graphicsQueue)
 			 
 			 )
-
+		(let ((_msaaSamples)
+		      (_colorImage)
+		      (_colorImageMemory)
+		      (_colorImageView))
+		  (declare (type VkSampleCountFlagBits _msaaSamples)
+			   (type VkImage _colorImage)
+			   (type VkDeviceMemory _colorImageMemory)
+			   (type VkImageView _colorImageView)))
+		
 		(let ((_mipLevels)
 		      (_textureImage)
 		      (_textureImageMemory)
@@ -2607,7 +2615,29 @@ more structs. this function helps to initialize those structs."
 			    #+surface
 			    (vkGetDeviceQueue _device (indices.presentFamily.value)
 					      0 &_presentQueue))))
-		     
+
+		      (do0
+		       ;; for msaa
+		       (defun getMaxUsableSampleCount ()
+			 (declare (values VkSampleCountFlagBits))
+			 (let ((physicalDeviceProperties))
+			   (declare (type
+				     VkPhysicalDeviceProperties
+				     physicalDeviceProperties))
+			   (vkGetPhysicalDeviceProperties
+			    _physicalDevice
+			    &physicalDeviceProperties)
+			   (let ((count
+				  ("std::min"
+				   physicalDeviceProperties.limits.framebufferColorSampleCounts
+				   physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
+			     (declare (type VkSampleCountFlags counts))
+			     ,@(loop for e in `(64 32 16 8 4 2) collect
+				    `(when (logand counts
+						   ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
+				       (return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
+			     (return VK_SAMPLE_COUNT_1_BIT)))))
+		      
 		      (defun pickPhysicalDevice ()
 			(declare (values void))
 			"// initialize member _physicalDevice"
@@ -2624,7 +2654,8 @@ more structs. this function helps to initialize those structs."
 							(devices.data))
 			    (foreach (device devices)
 				     (when (isDeviceSuitable device _surface _deviceExtensions)
-				       (setf _physicalDevice device)
+				       (setf _physicalDevice device
+					     _msaaSamples (getMaxUsableSampleCount))
 				       break))
 			    (when (== VK_NULL_HANDLE
 				      _physicalDevice)
