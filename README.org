@@ -93,6 +93,7 @@ Here is the expanded code:
 More of the generated code is here:
 https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/source/run_01_base.cpp
 
+
 * Documentation
 
 In the domain specific language I try to provide Common Lisp
@@ -132,6 +133,17 @@ Here is an overview of supported expressions:
 |                                                                 |                                                                |                                                          |
 |                                                                 |                                                                |                                                          |
 |                                                                 |                                                                |                                                          |
+
+
+* Generic C
+
+  If you are not programming C++ but use either the Clang or GCC
+  compiler, then you can enable the generic-c feature like so:
+#+BEGIN_EXAMPLE
+(setf *features* (union *features* '(:generic-c)))
+#+END_EXAMPLE 
+ This will declare the types of variables __auto_type if not
+ explicitly specified.
 
 
 * History

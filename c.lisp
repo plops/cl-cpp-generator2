@@ -6,6 +6,8 @@
 	       :alexandria)
 	 (:export
 	  #:write-source)))
+;(setf *features* (union *features* '(:generic-c)))
+;(setf *features* (set-difference *features* '(:generic-c)))
 (in-package :cl-cpp-generator2)
 
 (setf (readtable-case *readtable*) :invert)
@@ -89,7 +91,9 @@ entry return-values contains a list of return values"
   (let* ((type (lookup-type name :env env)))
     (if (listp type)
 	(if (null type)
-	    (format nil "auto ~a"
+	    (format nil "~a ~a"
+		    #+generic-c "__auto_type"
+		    #-generic-c "auto"
 		    (funcall emit name))
 	    (progn
 	      ;; array
@@ -102,7 +106,9 @@ entry return-values contains a list of return values"
 	(format nil "~a ~a"
 		(if type
 		    (funcall emit type)
-		    "auto")
+		    #+generic-c "__auto_type"
+		    #-generic-c "auto"
+		    )
 		(funcall emit name)))))
 
 (defun parse-let (code emit)
