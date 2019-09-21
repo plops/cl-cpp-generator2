@@ -15,8 +15,14 @@
 
 (progn
   (defun define-module (args)
-    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
-    (destructuring-bind (module-name global-parameters))))
+    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
+    (destructuring-bind (module-name global-parameters) args
+      (loop for par in global-parameters do
+	   (destructuring-bind (parameter-name
+				&key (direction 'in)
+				(type 'int)
+				(default nil)) par
+	       )))))
 
 
 (progn
