@@ -13,6 +13,11 @@
 (setf *features* (set-difference *features* '(:nolog)))
 
 
+(progn
+  (defun define-module (args)
+    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
+    (destructuring-bind (module-name global-parameters))))
+
 
 (progn
   ;; make sure to run this code twice during the first time, so that
