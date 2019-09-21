@@ -13,16 +13,7 @@
 (setf *features* (set-difference *features* '(:nolog)))
 
 
-(progn
-  (defun define-module (args)
-    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
-    (destructuring-bind (module-name global-parameters) args
-      (loop for par in global-parameters do
-	   (destructuring-bind (parameter-name
-				&key (direction 'in)
-				(type 'int)
-				(default nil)) par
-	       )))))
+
 
 
 (progn
@@ -32,6 +23,61 @@
   (defparameter *vertex-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/run_01_base.vert"))
   (defparameter *frag-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/run_01_base.frag"))
 
+  (progn
+  (defparameter *module-global-parameters* nil)
+  (defparameter *module* nil)
+  (defun define-module (args)
+    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
+    (destructuring-bind (module-name global-parameters module-code) args
+      (push `(:name ,module-name :code ,module-code)
+	    *module*)
+      (loop for par in global-parameters do
+	   (destructuring-bind (parameter-name
+				&key (direction 'in)
+				(type 'int)
+				(default nil)) par
+	     (push `(:name ,parameter-name :type ,type :default ,default)
+		   *module-global-parameters*))))))
+  (define-module
+      `(main ((g_window :direction 'out :type GLFWwindow* ) )
+	     (do0
+		 (do0 "#define GLFW_INCLUDE_VULKAN"
+		      (include <GLFW/glfw3.h>)
+		      " ")
+	    
+		 (do0
+		  "#define GLM_FORCE_RADIANS"
+		  "#define GLM_FORCE_DEPTH_ZERO_TO_ONE"
+		  " "
+		  (include <glm/vec4.hpp>
+			   <glm/mat4x4.hpp>)
+		  " "
+		  )
+	 
+	    
+		 (defun main ()
+		   (declare (values int))
+		   (glfwInit)
+		   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+		   (setf g_window (glfwCreateWindow 800 600
+						   (string "vulkan window")
+						   NULL NULL))
+		   (let ((extensionCount 0))
+		     (declare (type uint32_t extensionCount))
+		     (vkEnumerateInstanceExtensionProperties
+		      nullptr
+		      &extensionCount
+		      nullptr))
+		   (let ((matrix)
+			 (vec)
+			 (test (* matrix vec)))
+		     (declare (type "glm::mat4" matrix)
+			      (type "glm::vec4" vec))
+		     (while (not (glfwWindowShouldClose g_window))
+		       (glfwPollEvents))
+		     (glfwDestroyWindow g_window)
+		     (glfwTerminate)
+		     (return 0))))))
   (defun with-single-time-commands (args)
     (destructuring-bind ((buffer) &rest body) args
      `(let ((,buffer
