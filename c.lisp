@@ -148,7 +148,9 @@ entry return-values contains a list of return values"
 					;(funcall emit `(paren ,@r))
 			(break "multiple return values unsupported: ~a"
 			       r)
-			(car r)))
+			(if (car r)
+			    (car r)
+			    "void")))
 		  name
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect

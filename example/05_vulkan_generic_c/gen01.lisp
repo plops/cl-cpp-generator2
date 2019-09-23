@@ -27,10 +27,20 @@
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
   (defun define-module (args)
-    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development."
+    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
     (destructuring-bind (module-name global-parameters module-code) args
-      (push `(:name ,module-name :code ,module-code)
-	    *module*)
+      (let ((header ()))
+	(when (cl-ppcre:scan "glfw" (string-downcase (format nil "~a" module-name)))
+	  (push `(do0 "#define GLFW_INCLUDE_VULKAN"
+		      (include <GLFW/glfw3.h>)
+		      " ")
+		header))
+	(when (cl-ppcre:scan "vulkan" (string-downcase (format nil "~a" module-name)))
+	  (push `(do0 (include <vulkan/vulkan.h>)
+		      " ")
+		header))
+	(push `(:name ,module-name :code (do0 ,@header ,module-code))
+	      *module*))
       (loop for par in global-parameters do
 	   (destructuring-bind (parameter-name
 				&key (direction 'in)
@@ -39,7 +49,8 @@
 	     (push `(:name ,parameter-name :type ,type :default ,default)
 		   *module-global-parameters*))))))
   (define-module
-      `(window ((_window :direction 'out :type GLFWwindow* ) )
+      `(glfw_00_window
+	((_window :direction 'out :type GLFWwindow* ) )
 	       (do0
 		(do0 "#define GLFW_INCLUDE_VULKAN"
 		      (include <GLFW/glfw3.h>)
@@ -63,10 +74,11 @@
 		  (glfwTerminate)
 		  ))))
   (define-module
-      `(vulkan_instance
+      `(vulkan_01_instance
 	((_window :direction 'out :type VkInstance) )
 	(do0
 	 (defun cleanupInstance ()
+	   
 	   (vkDestroyInstance _instance nullptr))
 	 (defun createInstance ()
 	   (declare (values void))
@@ -110,7 +122,7 @@
 		 )
 	       :throw t))))))
   (define-module
-      `(vulkan
+      `(vulkan_00_init
 	()
 	(do0
 	 (defun initVulkan ()
