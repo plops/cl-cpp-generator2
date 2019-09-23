@@ -23,6 +23,139 @@
   (defparameter *vertex-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/run_01_base.vert"))
   (defparameter *frag-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/run_01_base.frag"))
 
+
+  (progn
+    (defun with-single-time-commands (args)
+     (destructuring-bind ((buffer) &rest body) args
+       `(let ((,buffer
+	       (beginSingleTimeCommands)))
+	  ,@body
+	  (endSingleTimeCommands ,buffer))))
+    (defun vkthrow (cmd)
+      `(unless (== VK_SUCCESS
+		   ,cmd)
+	 (throw ("std::runtime_error"
+		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
+    (defun vkprint (msg
+		    rest)
+      `(<< "std::cout"
+	   (dot ("std::chrono::high_resolution_clock::now")
+		(time_since_epoch)
+		(count))
+	   (string " ")
+	   __FILE__
+	   (string ":")
+	   __LINE__
+	   (string " ")
+	   __func__
+	   (string ,(format nil " ~a: " msg))
+	   ,@(loop for e in rest appending
+		  `((string ,(format nil " ~a=" e))
+		    ,e))
+	   "std::endl"))
+
+    
+
+    (progn
+      
+      (defun vk-info-type (verb subject &key (prefix "Vk")
+					  (suffix "Info"))
+	"convert two lisp symbols like allocate command-buffer  to vkCommandBufferAllocate"
+	(format nil "~a~{~a~}~{~a~}~a"
+		prefix
+		(mapcar #'string-capitalize
+			(cl-ppcre:split "-" (format nil "~a" subject)))
+		(mapcar #'string-capitalize
+			(cl-ppcre:split "-" (format nil "~a" verb)))
+		suffix))
+      (defun vk-info-stype (verb subject &key (prefix "VK_STRUCTURE_TYPE_")
+					   (suffix "_INFO"))
+	"convert a lisp symbol like allocate command-buffer to VK_COMMAND_BUFFER_ALLOCATE_INFO"
+	(format nil "~a~{~a~^_~}_~{~a~^_~}~a"
+		prefix
+		(mapcar #'string-upcase
+			(cl-ppcre:split "-" (format nil "~a" subject)))
+		(mapcar #'string-upcase
+			(cl-ppcre:split "-" (format nil "~a" verb)))
+		suffix))
+      (defun vk-info-function (verb subject &key  (prefix "vk")
+					      (suffix ""))
+	"convert a lisp symbol like allocate command-buffer to vkAllocateCommandBuffers. use suffix to create plural"
+	(format nil "~a~{~a~}~{~a~}~a"
+		prefix
+		(mapcar #'string-capitalize
+			(cl-ppcre:split "-" (format nil "~a" verb)))
+		(mapcar #'string-capitalize
+			(cl-ppcre:split "-" (format nil "~a" subject)))
+		suffix))
+      (defun vkcall (params &key (plural nil)  (throw nil) (khr nil))
+	"this macro helps to initialize an info object and call the corresponding vulkan function. splitting the command into verb subject and the plural argument seem to be enough automatically generate structure type names function names and the sType for a large subset of vulkan. subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function. use khr to indicate that KHR should be appended to function and _KHR to the sType constant. the optional instance is used to print a relevant instance address in the debug message."
+	(destructuring-bind (verb subject info-params args &optional instance)
+	    params
+	  `(progn
+	     ,(vk `(,(vk-info-type
+		      verb subject :suffix (if khr
+					       (format nil "Info~a" khr)
+					       "Info"))
+		     info
+		     :sType ,(vk-info-stype
+			      verb subject :suffix (if khr
+						       (format nil "_INFO_~a" khr)
+						       "_INFO"))
+		     ,@info-params)
+		  )
+	     ,(let ((suffix (if plural
+				(if (stringp plural)
+				    plural
+				    "s")
+				"")))
+		(if khr
+		    (setf suffix (format nil "~aKHR" suffix)))
+		`(do0
+		  
+		  ,(if throw
+		       (vkthrow
+			`(,(vk-info-function verb subject
+					     :suffix suffix)
+			   ,@args))
+		       `(,(vk-info-function verb subject
+					    :suffix suffix)
+			  ,@args))
+		  (<< "std::cout"
+		      (dot ("std::chrono::high_resolution_clock::now")
+			   (time_since_epoch)
+			   (count))
+		      (string " ")
+		      __FILE__
+		      (string ":")
+		      __LINE__
+		      (string " ")
+		      __func__
+		      ,@(if instance
+			    `((string ,(format nil " ~a ~a ~a=" verb subject instance))
+			      ,instance)
+			    `((string ,(format nil " ~a ~a" verb subject))))
+		      "std::endl"))))))
+      
+      
+      (defun set-members (params)
+	"setf on multiple member variables of an instance"
+	(destructuring-bind (instance &rest args) params
+	  `(setf ,@(loop for i from 0 below (length args) by 2 appending
+			(let ((keyword (elt args i))
+			      (value (elt args (+ i 1))))
+			  `((dot ,instance ,keyword) ,value))))))
+      (defun vk (params)
+	"many vulkan functions get their arguments in the form of one or
+more structs. this function helps to initialize those structs."
+	(destructuring-bind (type var &rest args) params
+	  `(let ((,var (curly)))
+	     (declare (type ,type ,var))
+	     ,@(loop for i from 0 below (length args) by 2 collect
+		    (let ((keyword (elt args i))
+			  (value (elt args (+ i 1))))
+		      `(setf (dot ,var ,keyword) ,value))))))))
+  
   (progn
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
@@ -30,7 +163,7 @@
     "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
     (destructuring-bind (module-name global-parameters module-code) args
       (let ((header ()))
-	(when (cl-ppcre:scan "glfw" (string-downcase (format nil "~a" module-name)))
+	(when (cl-ppcre:scan "vulkan" (string-downcase (format nil "~a" module-name)))
 	  (push `(do0 "#define GLFW_INCLUDE_VULKAN"
 		      (include <GLFW/glfw3.h>)
 		      " ")
@@ -49,12 +182,10 @@
 	     (push `(:name ,parameter-name :type ,type :default ,default)
 		   *module-global-parameters*))))))
   (define-module
-      `(glfw_00_window
+      `(vulkan_00_glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
 	       (do0
-		(do0 "#define GLFW_INCLUDE_VULKAN"
-		      (include <GLFW/glfw3.h>)
-		      " ")
+		
 		(defun initWindow ()
 		  (declare (values void))
 			 (glfwInit)
@@ -74,7 +205,7 @@
 		  (glfwTerminate)
 		  ))))
   (define-module
-      `(vulkan_01_instance
+      `(vulkan_02_instance
 	((_window :direction 'out :type VkInstance) )
 	(do0
 	 (defun cleanupInstance ()
@@ -122,7 +253,7 @@
 		 )
 	       :throw t))))))
   (define-module
-      `(vulkan_00_init
+      `(vulkan_01_init
 	()
 	(do0
 	 (defun initVulkan ()
@@ -225,132 +356,7 @@
 		     (glfwDestroyWindow g_window)
 		     (glfwTerminate)
 		     (return 0))))))
-  (defun with-single-time-commands (args)
-    (destructuring-bind ((buffer) &rest body) args
-     `(let ((,buffer
-	     (beginSingleTimeCommands)))
-	,@body
-	(endSingleTimeCommands ,buffer))))
-  (defun vkthrow (cmd)
-    `(unless (== VK_SUCCESS
-		 ,cmd)
-       (throw ("std::runtime_error"
-	       (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
-  (defun vkprint (msg
-		  rest)
-    `(<< "std::cout"
-	 (dot ("std::chrono::high_resolution_clock::now")
-			 (time_since_epoch)
-			 (count))
-	 (string " ")
-	 __FILE__
-	 (string ":")
-	 __LINE__
-	 (string " ")
-	 __func__
-	 (string ,(format nil " ~a: " msg))
-	 ,@(loop for e in rest appending
-		`((string ,(format nil " ~a=" e))
-		  ,e))
-	 "std::endl"))
-  (progn
-    
-    (defun vk-info-type (verb subject &key (prefix "Vk")
-					(suffix "Info"))
-      "convert two lisp symbols like allocate command-buffer  to vkCommandBufferAllocate"
-      (format nil "~a~{~a~}~{~a~}~a"
-	      prefix
-	      (mapcar #'string-capitalize
-		      (cl-ppcre:split "-" (format nil "~a" subject)))
-	      (mapcar #'string-capitalize
-		      (cl-ppcre:split "-" (format nil "~a" verb)))
-	      suffix))
-    (defun vk-info-stype (verb subject &key (prefix "VK_STRUCTURE_TYPE_")
-					(suffix "_INFO"))
-      "convert a lisp symbol like allocate command-buffer to VK_COMMAND_BUFFER_ALLOCATE_INFO"
-      (format nil "~a~{~a~^_~}_~{~a~^_~}~a"
-	      prefix
-	      (mapcar #'string-upcase
-		      (cl-ppcre:split "-" (format nil "~a" subject)))
-	      (mapcar #'string-upcase
-		      (cl-ppcre:split "-" (format nil "~a" verb)))
-	      suffix))
-    (defun vk-info-function (verb subject &key  (prefix "vk")
-					    (suffix ""))
-      "convert a lisp symbol like allocate command-buffer to vkAllocateCommandBuffers. use suffix to create plural"
-      (format nil "~a~{~a~}~{~a~}~a"
-	      prefix
-	      (mapcar #'string-capitalize
-		      (cl-ppcre:split "-" (format nil "~a" verb)))
-	      (mapcar #'string-capitalize
-		      (cl-ppcre:split "-" (format nil "~a" subject)))
-	      suffix))
-    (defun vkcall (params &key (plural nil)  (throw nil) (khr nil))
-      "this macro helps to initialize an info object and call the corresponding vulkan function. splitting the command into verb subject and the plural argument seem to be enough automatically generate structure type names function names and the sType for a large subset of vulkan. subject is command-buffer, verb is create, info-params is a property list with member settings for the info struct and args a list that will be used in the call to the function. use khr to indicate that KHR should be appended to function and _KHR to the sType constant. the optional instance is used to print a relevant instance address in the debug message."
-      (destructuring-bind (verb subject info-params args &optional instance)
-	  params
-	`(progn
-	   ,(vk `(,(vk-info-type
-		    verb subject :suffix (if khr
-					     (format nil "Info~a" khr)
-					     "Info"))
-		   info
-		   :sType ,(vk-info-stype
-			    verb subject :suffix (if khr
-						     (format nil "_INFO_~a" khr)
-						     "_INFO"))
-		   ,@info-params)
-		)
-	   ,(let ((suffix (if plural
-			      (if (stringp plural)
-				  plural
-				  "s")
-			      "")))
-	      (if khr
-		  (setf suffix (format nil "~aKHR" suffix)))
-	      `(do0
-		
-		,(if throw
-		    (vkthrow
-		     `(,(vk-info-function verb subject
-					  :suffix suffix)
-			,@args))
-		    `(,(vk-info-function verb subject
-					 :suffix suffix)
-		       ,@args))
-		(<< "std::cout"
-		    (dot ("std::chrono::high_resolution_clock::now")
-			 (time_since_epoch)
-			 (count))
-		    (string " ")
-		    __FILE__
-		    (string ":")
-		    __LINE__
-		    (string " ")
-		    __func__
-		    ,@(if instance
-			  `((string ,(format nil " ~a ~a ~a=" verb subject instance))
-			    ,instance)
-			 `((string ,(format nil " ~a ~a" verb subject))))
-		    "std::endl")))))))
   
-  (defun set-members (params)
-    "setf on multiple member variables of an instance"
-    (destructuring-bind (instance &rest args) params
-      `(setf ,@(loop for i from 0 below (length args) by 2 appending
-		    (let ((keyword (elt args i))
-			  (value (elt args (+ i 1))))
-		      `((dot ,instance ,keyword) ,value))))))
-  (defun vk (params)
-    "many vulkan functions get their arguments in the form of one or
-more structs. this function helps to initialize those structs."
-    (destructuring-bind (type var &rest args) params
-      `(let ((,var (curly)))
-	 (declare (type ,type ,var))
-	 ,@(loop for i from 0 below (length args) by 2 collect
-		(let ((keyword (elt args i))
-		      (value (elt args (+ i 1))))
-		  `(setf (dot ,var ,keyword) ,value))))))
   
   (let* ((vertex-code
 	  `(do0
