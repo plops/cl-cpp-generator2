@@ -39,11 +39,126 @@
 	     (push `(:name ,parameter-name :type ,type :default ,default)
 		   *module-global-parameters*))))))
   (define-module
-      `(main ((g_window :direction 'out :type GLFWwindow* ) )
-	     (do0
-		 (do0 "#define GLFW_INCLUDE_VULKAN"
+      `(window ((_window :direction 'out :type GLFWwindow* ) )
+	       (do0
+		(do0 "#define GLFW_INCLUDE_VULKAN"
 		      (include <GLFW/glfw3.h>)
 		      " ")
+		(defun initWindow ()
+		  (declare (values void))
+			 (glfwInit)
+			 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+			 (setf _window (glfwCreateWindow 800 600
+							 (string "vulkan window")
+							 nullptr
+							 nullptr))
+			 ;; store this pointer to the instance for use in the callback
+			 (glfwSetWindowUserPointer _window this)
+			 (glfwSetFramebufferSizeCallback _window
+							 framebufferResizeCallback))
+		(defun cleanupWindow ()
+		  (declare (values void))
+		  (glfwDestroyWindow _window)
+		  (glfwTerminate)
+		  ))))
+  (define-module
+      `(vulkan_instance
+	((_window :direction 'out :type VkInstance) )
+	(do0
+	 (defun cleanupInstance ()
+	   (vkDestroyInstance _instance nullptr))
+	 (defun createInstance ()
+	   (declare (values void))
+	   "// initialize member _instance"
+	   #-nolog ( ;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
+		    unless (checkValidationLayerSupport)
+		    (throw ("std::runtime_error"
+			    (string "validation layers requested, but unavailable."))))
+	   ,(vk `(VkApplicationInfo
+		  appInfo
+		  :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
+		  :pApplicationName (string "Hello Triangle")
+		  :applicationVersion (VK_MAKE_VERSION 1 0 0)
+		  :pEngineName (string "No Engine")
+		  :engineVersion (VK_MAKE_VERSION 1 0 0)
+		  :apiVersion VK_API_VERSION_1_0))
+	   
+	   (let ((glfwExtensionCount  0)
+		 (glfwExtensions))
+	     (declare (type uint32_t glfwExtensionCount)
+		      (type "const char**" glfwExtensions))
+	     (setf glfwExtensions (glfwGetRequiredInstanceExtensions
+				   &glfwExtensionCount))
+	     ,(vkcall
+	       `(create
+		 instance
+		 (:pApplicationInfo &appInfo
+				    :enabledExtensionCount glfwExtensionCount
+				    :ppEnabledExtensionNames glfwExtensions
+				    :enabledLayerCount
+				    #+nolog 0
+				    #-nolog ("static_cast<uint32_t>"
+					     (_validationLayers.size))
+				    :ppEnabledLayerNames
+				    #+nolog nullptr
+				    #-nolog (_validationLayers.data))
+		 (&info
+		  nullptr
+		  &_instance)
+		 _instance
+		 )
+	       :throw t))))))
+  (define-module
+      `(vulkan
+	()
+	(do0
+	 (defun initVulkan ()
+	   (declare (values void))
+	   (createInstance)
+	   #+surface
+	   (do0 "// create window surface because it can influence physical device selection"
+		(createSurface))
+	   (pickPhysicalDevice)
+	   (createLogicalDevice)
+	   #+surface
+	   ,(let ((l`(
+		      (createSwapChain)
+		      (createImageViews)
+		      (createRenderPass)
+		      (createDescriptorSetLayout)
+		      (createGraphicsPipeline)
+			 
+		      (createCommandPool)
+		      ;; create texture image needs command pools
+		      (createColorResources)
+		      (createDepthResources)
+		      (createFramebuffers)
+		      (createTextureImage)
+		      (createTextureImageView)
+		      (createTextureSampler)
+		      (loadModel)
+		      (createVertexBuffer)
+		      (createIndexBuffer)
+		      (createUniformBuffers)
+		      (createDescriptorPool)
+		      (createDescriptorSets)
+		      (createCommandBuffers)
+		      (createSyncObjects))))
+	      `(do0
+		,@(loop for (e) in l collect
+		       `(do0
+			 (<< "std::cout"
+			     (dot ("std::chrono::high_resolution_clock::now")
+				  (time_since_epoch)
+				  (count))
+			     (string ,(format nil " call ~a" e))
+			     "std::endl")
+			 (,e)))))))))
+  (define-module
+      `(main ()
+	     (do0
+	      
 	    
 		 (do0
 		  "#define GLM_FORCE_RADIANS"
@@ -54,7 +169,27 @@
 		  " "
 		  )
 	 
-	    
+		 #+nil (defun main ()
+	      (declare (values int))
+
+	      (let ((app))
+		(declare (type HelloTriangleApplication app))
+		(handler-case
+		    (app.run)
+		  ("const std::exception&" (e)
+		    (<< "std::cerr"
+			(e.what)
+			"std::endl")
+		    (return EXIT_FAILURE)))
+		(return EXIT_SUCCESS))
+	      
+	      )
+		 (defun run ()
+		(declare (values void))
+		(initWindow)
+		(initVulkan)
+		(mainLoop)
+		(cleanup))
 		 (defun main ()
 		   (declare (values int))
 		   (glfwInit)
