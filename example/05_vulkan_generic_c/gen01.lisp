@@ -52,6 +52,9 @@
       `(glfw_00_window
 	((_window :direction 'out :type GLFWwindow* ) )
 	       (do0
+		(do0 "#define GLFW_INCLUDE_VULKAN"
+		      (include <GLFW/glfw3.h>)
+		      " ")
 		(defun initWindow ()
 		  (declare (values void))
 			 (glfwInit)

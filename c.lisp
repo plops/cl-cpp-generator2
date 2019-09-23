@@ -453,11 +453,23 @@ entry return-values contains a list of return values"
 					 (< ,(emit i) ,(emit n))
 					 (incf ,(emit i) ,(emit step)))
 				       ,@body))))
+		#-generic-c
 		(foreach (destructuring-bind ((item collection) &rest body) (cdr code)
 		       (format nil "for (auto& ~a : ~a) ~a"
 			       (emit item)
 			       (emit collection)
 			       (emit `(progn ,@body)))))
+		#+generic-c
+		(foreach
+		 (destructuring-bind ((item collection) &rest body) (cdr code)
+		   (let ((itemidx (format nil "~a_idx" (emit item))))
+		     (format nil
+			     "~a"
+			     (emit
+			      `(dotimes (,itemidx (/ (sizeof ,collection)
+						     (sizeof (deref ,collection))))
+				 (let ((,item (aref ,collection ,itemidx)))
+				   (progn ,@body))))))))
 		(while  ;; while condition {forms}*
 		    (destructuring-bind (condition &rest body) (cdr code)
 		      (format nil "while (~a) ~a"
