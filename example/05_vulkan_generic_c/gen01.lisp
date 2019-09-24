@@ -163,10 +163,10 @@ more structs. this function helps to initialize those structs."
   (defun emit-globals (&key init)
     (let ((l `(
 	       ;; 
-	       (_window GLFWwindow*)   
+	       (_window GLFWwindow* NULL)   
 	       (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-	       #-nolog (_validationLayers[] "const char* const" )
+	       #-nolog (_validationLayers[] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
 	       (_physicalDevice VkPhysicalDevice)
 	       (_device VkDevice)
 	       (_graphicsQueue VkQueue)
@@ -184,51 +184,64 @@ more structs. this function helps to initialize those structs."
 	       ;;
 	       (_presentQueue  VkQueue)
 	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[] "const char* const")
+	       (_deviceExtensions[] "const char* const" (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 	       (_swapChain VkSwapchainKHR)
-	       (_swapChainImages[] VkImage)
+	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
+	       (_swapChainImages[_N_IMAGES] VkImage)
 	       (_swapChainImageFormat VkFormat)
 	       (_swapChainExtent VkExtent2D)
-	       (_swapChainImageViews[] VkImageView)
+	       (_swapChainImageViews[_N_IMAGES] VkImageView)
 	       (_descriptorSetLayout VkDescriptorSetLayout)
 	       (_pipelineLayout VkPipelineLayout)
 	       (_renderPass VkRenderPass)
 	       (_graphicsPipeline VkPipeline)
-	       (_swapChainFramebuffers[] VkFramebuffer)
+	       (_swapChainFramebuffers[_N_IMAGES] VkFramebuffer)
 	       (_commandPool VkCommandPool)
-	       (_commandBuffers[] VkCommandBuffer)
-	       (_imageAvailableSemaphores[] VkSemaphore)
-	       (_renderFinishedSemaphores[] VkSemaphore)
-	       (_MAX_FRAMES_IN_FLIGHT "const int")
+	       (_commandBuffers[_N_IMAGES] VkCommandBuffer)
+	       ;(_MAX_FRAMES_IN_FLIGHT "const int" 2)
+	       (_imageAvailableSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
+	       (_renderFinishedSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
+	       
 	       (_currentFrame size_t)
-	       (_inFlightFences[] VkFence)
+	       (_inFlightFences[_N_IMAGES] VkFence)
 	       (_framebufferResized _Bool)
 	       (_vertexBuffer VkBuffer _indexBuffer)
 	       (_vertexBufferMemory VkDeviceMemory)
 	       (_indexBufferMemory VkDeviceMemory)
-	       (_uniformBuffers[] VkBuffer)
-	       (_uniformBuffersMemory[] VkDeviceMemory)
+	       (_uniformBuffers[_N_IMAGES] VkBuffer)
+	       (_uniformBuffersMemory[_N_IMAGES] VkDeviceMemory)
 	       (_descriptorPool VkDescriptorPool)
-	       (_descriptorSets[] VkDescriptorSet)
+	       (_descriptorSets[_N_IMAGES] VkDescriptorSet)
 	       )))
       `(do0
-       ,@(loop for (name type) in l collect
-	    `(let ((,name))
-	       (declare (type ,(format nil "extern ~a" type) ,name)))))))
+	"enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	,@(loop for e in l collect
+	       (destructuring-bind (name type &optional value) e
+		(if init
+		    `(let ((,name ,value))
+		       (declare (type ,type ,name)))
+		    `(let ((,name))
+		       (declare (type ,(format nil "extern ~a" type) ,name)))))))))
   
   (defun define-module (args)
     "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
     (destructuring-bind (module-name global-parameters module-code) args
       (let ((header ()))
-	(when (cl-ppcre:scan "vulkan" (string-downcase (format nil "~a" module-name)))
-	  (push `(do0 "#define GLFW_INCLUDE_VULKAN"
-		      (include <GLFW/glfw3.h>)
-		      " ")
+	(if (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+	    (push `(do0 "#define GLFW_INCLUDE_VULKAN"
+			(include <GLFW/glfw3.h>
+				)
+			" "
+			(include "globals_init.h")
+			" ")
+		  header)
+	    (push `(do0 "#define GLFW_INCLUDE_VULKAN"
+			(include <GLFW/glfw3.h>)
+			" "
+			(include "globals.h")
+			" ")
 		header))
-	(when (cl-ppcre:scan "vulkan" (string-downcase (format nil "~a" module-name)))
-	  (push `(do0 (include <vulkan/vulkan.h>)
-		      " ")
-		header))
+	
 	(push `(:name ,module-name :code (do0 ,@header ,module-code))
 	      *module*))
       (loop for par in global-parameters do
@@ -238,35 +251,25 @@ more structs. this function helps to initialize those structs."
 				(default nil)) par
 	     (push `(:name ,parameter-name :type ,type :default ,default)
 		   *module-global-parameters*))))))
+
   (define-module
-      `(vulkan_00_glfw_window
-	((_window :direction 'out :type GLFWwindow* ) )
-	       (do0
-		
-		(defun initWindow ()
-		  (declare (values void))
-			 (glfwInit)
-			 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
-			 (setf _window (glfwCreateWindow 800 600
-							 (string "vulkan window")
-							 nullptr
-							 nullptr))
-			 ;; store this pointer to the instance for use in the callback
-			 (glfwSetWindowUserPointer _window this)
-			 (glfwSetFramebufferSizeCallback _window
-							 framebufferResizeCallback))
-		(defun cleanupWindow ()
-		  (declare (values void))
-		  (glfwDestroyWindow _window)
-		  (glfwTerminate)
-		  ))))
+      `(main ()
+	     (do0
+	      (defun run ()
+		(initWindow)
+		(initVulkan)
+		(mainLoop)
+		(cleanup))
+	      
+	      (defun main ()
+		(declare (values int))
+		(run)))))
+  
   (define-module
-      `(vulkan_02_instance
+      `(instance
 	((_window :direction 'out :type VkInstance) )
 	(do0
 	 (defun cleanupInstance ()
-	   
 	   (vkDestroyInstance _instance nullptr))
 	 (defun createInstance ()
 	   (declare (values void))
@@ -309,110 +312,79 @@ more structs. this function helps to initialize those structs."
 		 _instance
 		 )
 	       :throw t))))))
+  
   (define-module
-      `(vulkan_01_init
+      `(init
 	()
 	(do0
 	 (defun initVulkan ()
 	   (declare (values void))
 	   (createInstance)
-	   #+surface
-	   (do0 "// create window surface because it can influence physical device selection"
-		(createSurface))
-	   (pickPhysicalDevice)
-	   (createLogicalDevice)
-	   #+surface
-	   ,(let ((l`(
-		      (createSwapChain)
-		      (createImageViews)
-		      (createRenderPass)
-		      (createDescriptorSetLayout)
-		      (createGraphicsPipeline)
-			 
-		      (createCommandPool)
-		      ;; create texture image needs command pools
-		      (createColorResources)
-		      (createDepthResources)
-		      (createFramebuffers)
-		      (createTextureImage)
-		      (createTextureImageView)
-		      (createTextureSampler)
-		      (loadModel)
-		      (createVertexBuffer)
-		      (createIndexBuffer)
-		      (createUniformBuffers)
-		      (createDescriptorPool)
-		      (createDescriptorSets)
-		      (createCommandBuffers)
-		      (createSyncObjects))))
-	      `(do0
-		,@(loop for (e) in l collect
-		       `(do0
-			 (<< "std::cout"
-			     (dot ("std::chrono::high_resolution_clock::now")
-				  (time_since_epoch)
-				  (count))
-			     (string ,(format nil " call ~a" e))
-			     "std::endl")
-			 (,e)))))))))
+	   #+nil(#+surface
+	    (do0 "// create window surface because it can influence physical device selection"
+		 (createSurface))
+	    (pickPhysicalDevice)
+	    (createLogicalDevice)
+	    #+surface
+	    ,(let ((l`(
+		       (createSwapChain)
+		       (createImageViews)
+		       (createRenderPass)
+		       (createDescriptorSetLayout)
+		       (createGraphicsPipeline)
+		       
+		       (createCommandPool)
+		       ;; create texture image needs command pools
+		       (createColorResources)
+		       (createDepthResources)
+		       (createFramebuffers)
+		       (createTextureImage)
+		       (createTextureImageView)
+		       (createTextureSampler)
+		       (loadModel)
+		       (createVertexBuffer)
+		       (createIndexBuffer)
+		       (createUniformBuffers)
+		       (createDescriptorPool)
+		       (createDescriptorSets)
+		       (createCommandBuffers)
+		       (createSyncObjects))))
+	       `(do0
+		 ,@(loop for (e) in l collect
+			`(do0
+			  (<< "std::cout"
+			      (dot ("std::chrono::high_resolution_clock::now")
+				   (time_since_epoch)
+				   (count))
+			      (string ,(format nil " call ~a" e))
+			      "std::endl")
+			  (,e))))))))))
   (define-module
-      `(main ()
-	     (do0
-	      
-	    
-		 (do0
-		  "#define GLM_FORCE_RADIANS"
-		  "#define GLM_FORCE_DEPTH_ZERO_TO_ONE"
-		  " "
-		  (include <glm/vec4.hpp>
-			   <glm/mat4x4.hpp>)
-		  " "
-		  )
-	 
-		 #+nil (defun main ()
-	      (declare (values int))
-
-	      (let ((app))
-		(declare (type HelloTriangleApplication app))
-		(handler-case
-		    (app.run)
-		  ("const std::exception&" (e)
-		    (<< "std::cerr"
-			(e.what)
-			"std::endl")
-		    (return EXIT_FAILURE)))
-		(return EXIT_SUCCESS))
-	      
-	      )
-		 (defun run ()
-		(declare (values void))
-		(initWindow)
-		(initVulkan)
-		(mainLoop)
-		(cleanup))
-		 (defun main ()
-		   (declare (values int))
-		   (glfwInit)
-		   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-		   (setf g_window (glfwCreateWindow 800 600
-						   (string "vulkan window")
-						   NULL NULL))
-		   (let ((extensionCount 0))
-		     (declare (type uint32_t extensionCount))
-		     (vkEnumerateInstanceExtensionProperties
-		      nullptr
-		      &extensionCount
-		      nullptr))
-		   (let ((matrix)
-			 (vec)
-			 (test (* matrix vec)))
-		     (declare (type "glm::mat4" matrix)
-			      (type "glm::vec4" vec))
-		     (while (not (glfwWindowShouldClose g_window))
-		       (glfwPollEvents))
-		     (glfwDestroyWindow g_window)
-		     (glfwTerminate)
-		     (return 0))))))
+      `(glfw_window
+	((_window :direction 'out :type GLFWwindow* ) )
+	       (do0
+		
+		(defun initWindow ()
+		  (declare (values void))
+			 (glfwInit)
+			 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+			 (setf _window (glfwCreateWindow 800 600
+							 (string "vulkan window")
+							 nullptr
+							 nullptr))
+			 ;; store this pointer to the instance for use in the callback
+			 (glfwSetWindowUserPointer _window this)
+			 (glfwSetFramebufferSizeCallback _window
+							 framebufferResizeCallback))
+		(defun cleanupWindow ()
+		  (declare (values void))
+		  (glfwDestroyWindow _window)
+		  (glfwTerminate)
+		  ))))
+  
+  
+  
   
   
   (let* ((vertex-code
@@ -3316,49 +3288,22 @@ more structs. this function helps to initialize those structs."
 			 (glfwTerminate)
 			 ))))
 	      )
-	    (defun main ()
-	      (declare (values int))
-
-	      (let ((app))
-		(declare (type HelloTriangleApplication app))
-		(handler-case
-		    (app.run)
-		  ("const std::exception&" (e)
-		    (<< "std::cerr"
-			(e.what)
-			"std::endl")
-		    (return EXIT_FAILURE)))
-		(return EXIT_SUCCESS))
-	      
-	      
-	      #+nnil
-	      (let ()
-		(let ((extensionCount 0))
-		  (declare (type uint32_t extensionCount))
-		  (vkEnumerateInstanceExtensionProperties
-		   nullptr
-		   &extensionCount
-		   nullptr))
-		(let ((matrix)
-		      (vec)
-		      (test (* matrix vec)))
-		  (declare (type "glm::mat4" matrix)
-			   (type "glm::vec4" vec))
-		  
-		  (return 0)))))))
+	    )))
     ;(write-source *code-file* code)
-    (loop for e in *module* do
+    (loop for e in (reverse *module*) and i from 0 do
 	 (destructuring-bind (&key name code) e
 	   (write-source (asdf:system-relative-pathname
 			  'cl-cpp-generator2
 			  (format nil
-				  "example/05_vulkan_generic_c/source/~a.c"
-				  name))
+				  "example/05_vulkan_generic_c/source/vulkan_~2,'0d_~a.c"
+				  i name))
 			 code)))
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
 		  (emit-globals))
+    (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals_init.h")
+		  (emit-globals :init t))
     (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)
 							   "-o"
 							   ,(format nil "~a/frag.spv"

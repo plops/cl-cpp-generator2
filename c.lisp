@@ -22,7 +22,7 @@
 	(fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
     (multiple-value-bind (old-code-hash exists) (gethash fn-hash *file-hashes*)
-     (when (or (not exists) ignore-hash (/= code-hash old-code-hash))
+     (when t ;(or (not exists) ignore-hash (/= code-hash old-code-hash))
        ;; store the sxhash of the c source in the hash table
        ;; *file-hashes* with the key formed by the sxhash of the full
        ;; pathname
