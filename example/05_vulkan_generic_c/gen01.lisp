@@ -34,11 +34,14 @@
     (defun vkthrow (cmd)
       `(unless (== VK_SUCCESS
 		   ,cmd)
-	 (throw ("std::runtime_error"
+	 "// throw"
+	 #+nil(
+		    throw ("std::runtime_error"
 		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
     (defun vkprint (msg
 		    rest)
-      `(<< "std::cout"
+      `"// print"
+      #+nil(<< "std::cout"
 	   (dot ("std::chrono::high_resolution_clock::now")
 		(time_since_epoch)
 		(count))
@@ -121,7 +124,7 @@
 		       `(,(vk-info-function verb subject
 					    :suffix suffix)
 			  ,@args))
-		  (<< "std::cout"
+		  #+nil(<< "std::cout"
 		      (dot ("std::chrono::high_resolution_clock::now")
 			   (time_since_epoch)
 			   (count))
@@ -160,13 +163,13 @@ more structs. this function helps to initialize those structs."
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
 
-  (defun emit-globals (&key init)
+  (defun emit-globals ()
     (let ((l `(
 	       ;; 
 	       (_window GLFWwindow* NULL)   
 	       (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-	       #-nolog (_validationLayers[] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
+	       #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
 	       (_physicalDevice VkPhysicalDevice)
 	       (_device VkDevice)
 	       (_graphicsQueue VkQueue)
@@ -184,7 +187,7 @@ more structs. this function helps to initialize those structs."
 	       ;;
 	       (_presentQueue  VkQueue)
 	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[] "const char* const" (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+	       (_deviceExtensions[1] "const char* const" (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 	       (_swapChain VkSwapchainKHR)
 	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
 	       (_swapChainImages[_N_IMAGES] VkImage)
@@ -215,34 +218,33 @@ more structs. this function helps to initialize those structs."
 	       )))
       `(do0
 	"enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
-	,@(loop for e in l collect
-	       (destructuring-bind (name type &optional value) e
-		(if init
-		    `(let ((,name ,value))
-		       (declare (type ,type ,name)))
-		    `(let ((,name))
-		       (declare (type ,(format nil "extern ~a" type) ,name)))))))))
+	(defstruct0 State
+	    ,@(loop for e in l collect
+		   (destructuring-bind (name type &optional value) e
+		     `(,name ,type)))))))
   
   (defun define-module (args)
     "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
     (destructuring-bind (module-name global-parameters module-code) args
       (let ((header ()))
-	(if (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
-	    (push `(do0 "#define GLFW_INCLUDE_VULKAN"
-			(include <GLFW/glfw3.h>
-				)
-			" "
-			(include "globals_init.h")
-			" ")
-		  header)
-	    (push `(do0 "#define GLFW_INCLUDE_VULKAN"
+	
+	(push `(do0
+		(include <stdbool.h>)
+		" "
+		"#define GLFW_INCLUDE_VULKAN"
 			(include <GLFW/glfw3.h>)
 			" "
 			(include "globals.h")
-			" ")
-		header))
+			
+			" "
+			"#define length(a) (sizeof((a))/sizeof(*(a)))")
+		header)
+	(unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+	  (push `(do0 "extern State state;")
+		header)
+	    )
 	
-	(push `(:name ,module-name :code (do0 ,@header ,module-code))
+	(push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
 	      *module*))
       (loop for par in global-parameters do
 	   (destructuring-bind (parameter-name
@@ -255,6 +257,8 @@ more structs. this function helps to initialize those structs."
   (define-module
       `(main ()
 	     (do0
+	      (let ((state))
+		(declare (type State state)))
 	      (defun run ()
 		(initWindow)
 		(initVulkan)
@@ -264,19 +268,46 @@ more structs. this function helps to initialize those structs."
 	      (defun main ()
 		(declare (values int))
 		(run)))))
-  
+  (defun g (arg)
+    `(dot state ,arg))
   (define-module
       `(instance
 	((_window :direction 'out :type VkInstance) )
 	(do0
+	 (include <string.h>)
 	 (defun cleanupInstance ()
-	   (vkDestroyInstance _instance nullptr))
+	   (vkDestroyInstance ,(g `_instance) NULL))
+	 #-nolog (defun checkValidationLayerSupport ()
+				 (declare (values _Bool))
+				 (let ((layerCount 0))
+				   (declare (type uint32_t layerCount))
+				   (vkEnumerateInstanceLayerProperties &layerCount NULL)
+				   (let ((availableLayers[layerCount]))
+				     (declare (type "VkLayerProperties"
+						    availableLayers[layerCount]
+						    ))
+				     (vkEnumerateInstanceLayerProperties
+				      &layerCount
+				      availableLayers)
+
+				     (foreach
+				      (layerName ,(g `_validationLayers))
+				      (let ((layerFound false))
+					(foreach
+					 (layerProperties availableLayers)
+					 (when (== 0 (strcmp layerName layerProperties.layerName))
+					   (setf layerFound true)
+					   break))
+					(unless layerFound
+					  (return false))))
+				     (return true))))
 	 (defun createInstance ()
 	   (declare (values void))
 	   "// initialize member _instance"
 	   #-nolog ( ;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
 		    unless (checkValidationLayerSupport)
-		    (throw ("std::runtime_error"
+		     "// throw"
+		     #+nil(throw ("std::runtime_error"
 			    (string "validation layers requested, but unavailable."))))
 	   ,(vk `(VkApplicationInfo
 		  appInfo
@@ -301,15 +332,14 @@ more structs. this function helps to initialize those structs."
 				    :ppEnabledExtensionNames glfwExtensions
 				    :enabledLayerCount
 				    #+nolog 0
-				    #-nolog ("static_cast<uint32_t>"
-					     (_validationLayers.size))
+				    #-nolog (length ,(g `_validationLayers))
 				    :ppEnabledLayerNames
-				    #+nolog nullptr
-				    #-nolog (_validationLayers.data))
+				    #+nolog NULL
+				    #-nolog ,(g `_validationLayers))
 		 (&info
-		  nullptr
-		  &_instance)
-		 _instance
+		  NULL
+		  (ref ,(g `_instance)))
+		 ,(g `_instance)
 		 )
 	       :throw t))))))
   
@@ -371,8 +401,8 @@ more structs. this function helps to initialize those structs."
 			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
 			 (setf _window (glfwCreateWindow 800 600
 							 (string "vulkan window")
-							 nullptr
-							 nullptr))
+							 NULL
+							 NULL))
 			 ;; store this pointer to the instance for use in the callback
 			 (glfwSetWindowUserPointer _window this)
 			 (glfwSetFramebufferSizeCallback _window
@@ -642,7 +672,7 @@ more structs. this function helps to initialize those structs."
 		 (let ((formatCount 0))
 		   (declare (type uint32_t formatCount))
 		   (vkGetPhysicalDeviceSurfaceFormatsKHR device surface &formatCount
-							 nullptr)
+							 NULL)
 		   (unless (== 0 formatCount)
 		     (details.formats.resize formatCount)
 		     (vkGetPhysicalDeviceSurfaceFormatsKHR
@@ -654,7 +684,7 @@ more structs. this function helps to initialize those structs."
 				  ))
 		   (vkGetPhysicalDeviceSurfacePresentModesKHR
 		    device surface &presentModeCount
-		    nullptr)
+		    NULL)
 		   (unless (== 0 presentModeCount)
 		     (details.presentModes.resize presentModeCount)
 		     (vkGetPhysicalDeviceSurfacePresentModesKHR
@@ -720,7 +750,7 @@ more structs. this function helps to initialize those structs."
 	       (let ((extensionCount 0))
 		 (declare (type uint32_t extensionCount))
 		 (vkEnumerateDeviceExtensionProperties
-		  device nullptr &extensionCount nullptr)
+		  device NULL &extensionCount NULL)
 		 (let (((availableExtensions extensionCount)))
 		   (declare (type
 			     "std::vector<VkExtensionProperties>"
@@ -728,7 +758,7 @@ more structs. this function helps to initialize those structs."
 			     ))
 		   (vkEnumerateDeviceExtensionProperties
 		    device
-		    nullptr
+		    NULL
 		    &extensionCount
 		    (availableExtensions.data))
 		   (let (((requiredExtensions
@@ -753,7 +783,7 @@ more structs. this function helps to initialize those structs."
 		 (declare (type QueueFamilyIndices indices)
 			  (type uint32_t queueFamilyCount))
 		 (vkGetPhysicalDeviceQueueFamilyProperties
-		  device &queueFamilyCount nullptr)
+		  device &queueFamilyCount NULL)
 		 (let (((queueFamilies queueFamilyCount)))
 		   (declare (type "std::vector<VkQueueFamilyProperties>"
 				  (queueFamilies queueFamilyCount)))
@@ -935,29 +965,7 @@ more structs. this function helps to initialize those structs."
 		     
 
 		     
-		       #-nolog (defun checkValidationLayerSupport ()
-				 (declare (values bool))
-				 (let ((layerCount 0))
-				   (declare (type uint32_t layerCount))
-				   (vkEnumerateInstanceLayerProperties &layerCount nullptr)
-				   (let (((availableLayers layerCount)))
-				     (declare (type "std::vector<VkLayerProperties>"
-						    (availableLayers layerCount)))
-				     (vkEnumerateInstanceLayerProperties
-				      &layerCount
-				      (availableLayers.data))
-
-				     (foreach
-				      (layerName _validationLayers)
-				      (let ((layerFound false))
-					(foreach
-					 (layerProperties availableLayers)
-					 (when (== 0 (strcmp layerName layerProperties.layerName))
-					   (setf layerFound true)
-					   break))
-					(unless layerFound
-					  (return false))))
-				     (return true))))
+		       
 		       (defun framebufferResizeCallback (window width height)
 			 (declare (values "static void")
 				  ;; static because glfw doesnt know how to call a member function with a this pointer
@@ -972,8 +980,8 @@ more structs. this function helps to initialize those structs."
 			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
 			 (setf _window (glfwCreateWindow 800 600
 							 (string "vulkan window")
-							 nullptr
-							 nullptr))
+							 NULL
+							 NULL))
 			 ;; store this pointer to the instance for use in the callback
 			 (glfwSetWindowUserPointer _window this)
 			 (glfwSetFramebufferSizeCallback _window
@@ -1011,10 +1019,10 @@ more structs. this function helps to initialize those structs."
 						  #-nolog ("static_cast<uint32_t>"
 							   (_validationLayers.size))
 						  :ppEnabledLayerNames
-						  #+nolog nullptr
+						  #+nolog NULL
 						  #-nolog (_validationLayers.data))
 			       (&info
-				nullptr
+				NULL
 				&_instance)
 			       _instance
 			       )
@@ -1046,7 +1054,7 @@ more structs. this function helps to initialize those structs."
 				)
 			       (_device
 				&info
-				nullptr
+				NULL
 				&buffer)
 			       buffer
 			       )
@@ -1067,7 +1075,7 @@ more structs. this function helps to initialize those structs."
 								    ))
 				 (_device
 				  &info
-				  nullptr
+				  NULL
 				  &bufferMemory)
 				 bufferMemory)
 			       :throw t)
@@ -1128,8 +1136,8 @@ more structs. this function helps to initialize those structs."
 				       bufferSize))
 		       
 			 (do0
-			  (vkDestroyBuffer _device stagingBuffer nullptr)
-			  (vkFreeMemory _device stagingBufferMemory nullptr)))
+			  (vkDestroyBuffer _device stagingBuffer NULL)
+			  (vkFreeMemory _device stagingBufferMemory NULL)))
 		       (defun createIndexBuffer ()
 			 (declare (values void))
 			 (let ((bufferSize (* (sizeof (aref g_indices 0))
@@ -1173,8 +1181,8 @@ more structs. this function helps to initialize those structs."
 				       bufferSize))
 		       
 			 (do0
-			  (vkDestroyBuffer _device stagingBuffer nullptr)
-			  (vkFreeMemory _device stagingBufferMemory nullptr)))
+			  (vkDestroyBuffer _device stagingBuffer NULL)
+			  (vkFreeMemory _device stagingBufferMemory NULL)))
 		       (defun
 			   beginSingleTimeCommands ()
 			 (declare (values VkCommandBuffer))
@@ -1584,8 +1592,8 @@ more structs. this function helps to initialize those structs."
 			     srcStage ;; stage that should happen before barrier
 			     dstStage ;; stage that will wait
 			     0	      ;; per-region
-			     0 nullptr ;; memory barrier
-			     0 nullptr ;; buffer memory barrier
+			     0 NULL ;; memory barrier
+			     0 NULL ;; buffer memory barrier
 			     1 &barrier ;; image memory barrier
 			     )
 			  
@@ -1631,7 +1639,7 @@ more structs. this function helps to initialize those structs."
 				 :flags 0)
 				(_device
 				 &info
-				 nullptr
+				 NULL
 				 &image)
 				image
 				)
@@ -1653,7 +1661,7 @@ more structs. this function helps to initialize those structs."
 				  properties))
 				(_device
 				 &info
-				 nullptr
+				 NULL
 				 &imageMemory)
 				imageMemory
 				)
@@ -1715,7 +1723,7 @@ more structs. this function helps to initialize those structs."
 				     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 				     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 				     )))
-				  (data nullptr))
+				  (data NULL))
 			      (declare (type void* data))
 			      (vkMapMemory _device
 					   stagingBufferMemory
@@ -1773,10 +1781,10 @@ more structs. this function helps to initialize those structs."
 
 			      (do0
 			       (vkDestroyBuffer
-				_device stagingBuffer nullptr)
+				_device stagingBuffer NULL)
 			       (vkFreeMemory _device
 					     stagingBufferMemory
-					     nullptr))
+					     NULL))
 			      (generateMipmaps _textureImage
 					       VK_FORMAT_R8G8B8A8_UNORM
 					       texWidth
@@ -1846,8 +1854,8 @@ more structs. this function helps to initialize those structs."
 				     VK_PIPELINE_STAGE_TRANSFER_BIT
 				     VK_PIPELINE_STAGE_TRANSFER_BIT
 				     0
-				     0 nullptr
-				     0 nullptr
+				     0 NULL
+				     0 NULL
 				     1 &barrier))
 				   (let ((dstOffsetx 1)
 					 (dstOffsety 1))
@@ -1913,8 +1921,8 @@ more structs. this function helps to initialize those structs."
 				     VK_PIPELINE_STAGE_TRANSFER_BIT
 				     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
 				     0
-				     0 nullptr
-				     0 nullptr
+				     0 NULL
+				     0 NULL
 				     1 &barrier))
 
 				   (do0
@@ -1944,8 +1952,8 @@ more structs. this function helps to initialize those structs."
 			      VK_PIPELINE_STAGE_TRANSFER_BIT
 			      VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
 			      0
-			      0 nullptr
-			      0 nullptr
+			      0 NULL
+			      0 NULL
 			      1 &barrier))
 			   
 			    (endSingleTimeCommands commandBuffer)))
@@ -1974,7 +1982,7 @@ more structs. this function helps to initialize those structs."
 			       :maxLod (static_cast<float> _mipLevels))
 			      (_device
 			       &info
-			       nullptr
+			       NULL
 			       &_textureSampler)
 			      _textureSampler
 			      )
@@ -2034,8 +2042,8 @@ more structs. this function helps to initialize those structs."
 				  :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 				  :descriptorCount 1
 				  :pBufferInfo &bufferInfo ;; buffer data
-				  :pImageInfo nullptr ;; image data
-				  :pTexelBufferView nullptr ;; buffer views
+				  :pImageInfo NULL ;; image data
+				  :pTexelBufferView NULL ;; buffer views
 				  ))
 			      ,(vk
 				`(VkDescriptorImageInfo
@@ -2052,9 +2060,9 @@ more structs. this function helps to initialize those structs."
 				  :dstArrayElement 0
 				  :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 				  :descriptorCount 1
-				  :pBufferInfo nullptr  ;; buffer data
+				  :pBufferInfo NULL  ;; buffer data
 				  :pImageInfo &imageInfo ;; image data
-				  :pTexelBufferView nullptr ;; buffer views
+				  :pTexelBufferView NULL ;; buffer views
 				  ))
 			      (let ((descriptorWrites (curly
 						       uboDescriptorWrite
@@ -2068,7 +2076,7 @@ more structs. this function helps to initialize those structs."
 				  (descriptorWrites.size))
 				 (descriptorWrites.data)
 				 0
-				 nullptr ;; copy descriptor sets
+				 NULL ;; copy descriptor sets
 				 )))
 			    ))
 			(defun createDescriptorPool ()
@@ -2105,7 +2113,7 @@ more structs. this function helps to initialize those structs."
 						  :flags 0)
 				  (_device
 				   &info
-				   nullptr
+				   NULL
 				   &_descriptorPool)
 				  _descriptorPool)
 				:throw t))))
@@ -2136,7 +2144,7 @@ more structs. this function helps to initialize those structs."
 			      :binding 1
 			      :descriptorCount 1
 			      :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-			      :pImmutableSamplers nullptr
+			      :pImmutableSamplers NULL
 			      :stageFlags VK_SHADER_STAGE_FRAGMENT_BIT
 			      ))
 			  ,(vk
@@ -2146,7 +2154,7 @@ more structs. this function helps to initialize those structs."
 			      :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 			      :descriptorCount 1
 			      :stageFlags VK_SHADER_STAGE_VERTEX_BIT
-			      :pImmutableSamplers nullptr))
+			      :pImmutableSamplers NULL))
 
  			  (let ((bindings (curly
 					   uboLayoutBinding
@@ -2160,7 +2168,7 @@ more structs. this function helps to initialize those structs."
 				(:bindingCount (static_cast<uint32_t>
 						(bindings.size))
 					       :pBindings (bindings.data))
-				(_device &info nullptr &_descriptorSetLayout)
+				(_device &info NULL &_descriptorSetLayout)
 				_descriptorSetLayout
 				)
 			      :throw t))
@@ -2217,17 +2225,17 @@ more structs. this function helps to initialize those structs."
 			     ,(vkthrow `(vkCreateSemaphore
 					 _device
 					 &semaphoreInfo
-					 nullptr
+					 NULL
 					 (ref (aref _imageAvailableSemaphores i))))
 			     ,(vkthrow `(vkCreateSemaphore
 					 _device
 					 &semaphoreInfo
-					 nullptr
+					 NULL
 					 (ref (aref _renderFinishedSemaphores i))))
 			     ,(vkthrow `(vkCreateFence
 					 _device
 					 &fenceInfo
-					 nullptr
+					 NULL
 					 (ref (aref _inFlightFences i))))))
 			 (defun createCommandBuffers ()
 			   (declare (values void))
@@ -2256,7 +2264,7 @@ more structs. this function helps to initialize those structs."
 				  ;; once, inside single renderpass, or
 				  ;; resubmittable
 				  :flags 0 
-				  :pInheritanceInfo nullptr)
+				  :pInheritanceInfo NULL)
 				 ((aref _commandBuffers i) &info)
 				 (aref _commandBuffers i))
 			       :throw t)
@@ -2319,7 +2327,7 @@ more structs. this function helps to initialize those structs."
 			      1
 			      (ref (aref _descriptorSets i))
 			      0
-			      nullptr)
+			      NULL)
 			     ;; draw the triangle
 			     (vkCmdDrawIndexed
 			      (aref _commandBuffers i)
@@ -2347,7 +2355,7 @@ more structs. this function helps to initialize those structs."
 				  :flags 0)
 				 (_device
 				  &info
-				  nullptr
+				  NULL
 				  &_commandPool)
 				 _commandPool)
 			       :throw t)))
@@ -2379,7 +2387,7 @@ more structs. this function helps to initialize those structs."
 				      :layers 1)
 				     (_device
 				      &info
-				      nullptr
+				      NULL
 				      (ref
 				       (aref _swapChainFramebuffers i)))
 				     (aref _swapChainFramebuffers i))
@@ -2479,7 +2487,7 @@ more structs. this function helps to initialize those structs."
 				  :pDependencies &dependency)
 				 (_device
 				  &info
-				  nullptr
+				  NULL
 				  &_renderPass)
 				 _renderPass)
 			       :throw t)))
@@ -2501,7 +2509,7 @@ more structs. this function helps to initialize those structs."
 				       ;; entrypoint
 				       :pName (string "main")
 				       ;; this would allow specification of constants:
-				       :pSpecializationInfo nullptr)))
+				       :pSpecializationInfo NULL)))
 			     (let (("shaderStages[]"
 				    (curly vertShaderStageInfo
 					   fragShaderStageInfo))
@@ -2571,7 +2579,7 @@ more structs. this function helps to initialize those structs."
 				   :sampleShadingEnable VK_FALSE
 				   :rasterizationSamples _msaaSamples
 				   :minSampleShading 1s0
-				   :pSampleMask nullptr
+				   :pSampleMask NULL
 				   :alphaToCoverageEnable VK_FALSE
 				   :alphaToOneEnable VK_FALSE))
 			       ,(vk
@@ -2644,11 +2652,11 @@ more structs. this function helps to initialize those structs."
 						   :pSetLayouts &_descriptorSetLayout
 						   ;; another way of passing dynamic values to shaders
 						   :pushConstantRangeCount 0
-						   :pPushConstantRanges nullptr
+						   :pPushConstantRanges NULL
 						   )
 				  (_device
 				   &info
-				   nullptr
+				   NULL
 				   &_pipelineLayout)
 				  _pipelineLayout)
 				:throw t))
@@ -2665,7 +2673,7 @@ more structs. this function helps to initialize those structs."
 					      :pDepthStencilState &depthStencil
 					      :pColorBlendState &colorBlending
 					      ;; if we want to change linewidth:
-					      :pDynamicState nullptr
+					      :pDynamicState NULL
 					      :layout _pipelineLayout
 					      :renderPass _renderPass
 					      :subpass 0
@@ -2678,17 +2686,17 @@ more structs. this function helps to initialize those structs."
 				  VK_NULL_HANDLE ;; pipline cache
 				  1
 				  &info
-				  nullptr
+				  NULL
 				  &_graphicsPipeline)
 				 _graphicsPipeline)
 			       :plural t
 			       :throw t)			   
 			     (vkDestroyShaderModule _device
 						    fragShaderModule
-						    nullptr)
+						    NULL)
 			     (vkDestroyShaderModule _device
 						    vertShaderModule
-						    nullptr)))
+						    NULL)))
 			 (defun createShaderModule (code)
 			   (declare (values VkShaderModule)
 				    (type "const std::vector<char>&" code))
@@ -2704,7 +2712,7 @@ more structs. this function helps to initialize those structs."
 						    (code.data)))
 				 (_device
 				  &info
-				  nullptr
+				  NULL
 				  &shaderModule)
 				 shaderModule)
 			       :throw t)
@@ -2716,7 +2724,7 @@ more structs. this function helps to initialize those structs."
 			  "// must be destroyed before the instance is destroyed"
 			  ,(vkthrow `(glfwCreateWindowSurface
 				      _instance _window
-				      nullptr &_surface)))
+				      NULL &_surface)))
 		      
 			(defun createSwapChain ()
 			  (declare (values void))
@@ -2741,7 +2749,7 @@ more structs. this function helps to initialize those structs."
 				;; best performance mode:
 				(imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
 				(queueFamilyIndexCount 0)
-				(pQueueFamilyIndices nullptr))
+				(pQueueFamilyIndices NULL))
 			    (unless (== indices.presentFamily
 					indices.graphicsFamily)
 			      "// this could be improved with ownership stuff"
@@ -2780,7 +2788,7 @@ more structs. this function helps to initialize those structs."
 					  )
 				(_device
 				 &info
-				 nullptr
+				 NULL
 				 &_swapChain
 				 )
 				_swapChain)
@@ -2791,7 +2799,7 @@ more structs. this function helps to initialize those structs."
 			     (vkGetSwapchainImagesKHR _device
 						      _swapChain
 						      &imageCount
-						      nullptr)
+						      NULL)
 			     (_swapChainImages.resize imageCount)
 			     (vkGetSwapchainImagesKHR _device
 						      _swapChain
@@ -2824,7 +2832,7 @@ more structs. this function helps to initialize those structs."
 				 )
 				(_device
 				 &info
-				 nullptr
+				 NULL
 				 &imageView)
 				imageView)
 			      :throw t)
@@ -2884,11 +2892,11 @@ more structs. this function helps to initialize those structs."
 						     #-nolog (static_cast<uint32_t> (_validationLayers.size))
 						     #+nolog 0
 						     :ppEnabledLayerNames
-						     #+nolog nullptr
+						     #+nolog NULL
 						     #-nolog (_validationLayers.data))
 				 (_physicalDevice
 				  &info
-				  nullptr
+				  NULL
 				  &_device)
 				 _physicalDevice)
 			       :throw t)
@@ -2957,7 +2965,7 @@ more structs. this function helps to initialize those structs."
 			 "// initialize member _physicalDevice" 
 			 (let ((deviceCount 0))
 			   (declare (type uint32_t deviceCount))
-			   (vkEnumeratePhysicalDevices _instance &deviceCount nullptr)
+			   (vkEnumeratePhysicalDevices _instance &deviceCount NULL)
 			   (when (== 0 deviceCount)
 			     (throw ("std::runtime_error"
 				     (string "failed to find gpu with vulkan support."))))
@@ -3048,7 +3056,7 @@ more structs. this function helps to initialize those structs."
 				   :pSwapchains swapChains
 				   :pImageIndices &imageIndex 
 				   ;; we could check if presentation was successful
-				   :pResults nullptr))
+				   :pResults NULL))
 			       (progn
 				 (let ((result2 (vkQueuePresentKHR _presentQueue &presentInfo)))
 				   (if (or (== VK_SUBOPTIMAL_KHR result2)
@@ -3145,13 +3153,13 @@ more structs. this function helps to initialize those structs."
 			   ;; msaa
 			   (vkDestroyImageView _device
 					       _colorImageView
-					       nullptr)
+					       NULL)
 			   (vkDestroyImage _device
 					   _colorImage
-					   nullptr)
+					   NULL)
 			   (vkFreeMemory _device
 					 _colorImageMemory
-					 nullptr))
+					 NULL))
 			  (do0
 			   ;; depth
 			  
@@ -3162,19 +3170,19 @@ more structs. this function helps to initialize those structs."
 				       _depthImageMemory))
 			   (vkDestroyImageView _device
 					       _depthImageView
-					       nullptr)
+					       NULL)
 			   (vkDestroyImage _device
 					   _depthImage
-					   nullptr)
+					   NULL)
 			   (vkFreeMemory _device
 					 _depthImageMemory
-					 nullptr)
+					 NULL)
 			   )
 
 			  
 			  (foreach (b _swapChainFramebuffers)
 				   ,(vkprint "framebuffer" `(b))
-				   (vkDestroyFramebuffer _device b nullptr))
+				   (vkDestroyFramebuffer _device b NULL))
 			  (vkFreeCommandBuffers _device
 						_commandPool
 						(static_cast<uint32_t>
@@ -3183,23 +3191,23 @@ more structs. this function helps to initialize those structs."
 			  ,(vkprint "pipeline" `(_graphicsPipeline
 						 _pipelineLayout
 						 _renderPass))
-			  (vkDestroyPipeline _device _graphicsPipeline nullptr)
+			  (vkDestroyPipeline _device _graphicsPipeline NULL)
 			  (vkDestroyPipelineLayout
 			   _device
 			   _pipelineLayout
-			   nullptr)
+			   NULL)
 			  (vkDestroyRenderPass
 			   _device
 			   _renderPass
-			   nullptr)
+			   NULL)
 			  (foreach (view _swapChainImageViews)
 				   ,(vkprint "image-view" `(view))
 				   (vkDestroyImageView
 				    _device
 				    view
-				    nullptr))
+				    NULL))
 			  ,(vkprint "swapchain" `(_swapChain))
-			  (vkDestroySwapchainKHR _device _swapChain nullptr)
+			  (vkDestroySwapchainKHR _device _swapChain NULL)
 			  ;; each swap chain image has a ubo
 			  (dotimes (i (_swapChainImages.size))
 			    ,(vkprint "ubo" `((aref _uniformBuffers i)
@@ -3207,15 +3215,15 @@ more structs. this function helps to initialize those structs."
 					      ))
 			    (vkDestroyBuffer _device
 					     (aref _uniformBuffers i)
-					     nullptr)
+					     NULL)
 			    (vkFreeMemory _device
 					  (aref _uniformBuffersMemory i)
-					  nullptr))
+					  NULL))
 			  ,(vkprint "descriptor-pool" `(_descriptorPool))
 			  (vkDestroyDescriptorPool
 			   _device
 			   _descriptorPool
-			   nullptr)
+			   NULL)
 			  ))
 		       (defun cleanup ()
 			 (declare (values void))
@@ -3235,28 +3243,28 @@ more structs. this function helps to initialize those structs."
 				       _descriptorSetLayout))
 			   (vkDestroySampler _device
 					     _textureSampler
-					     nullptr)
+					     NULL)
 			   (vkDestroyImageView _device
 					       _textureImageView
-					       nullptr)
+					       NULL)
 			   (vkDestroyImage _device
-					   _textureImage nullptr)
+					   _textureImage NULL)
 			   (vkFreeMemory _device
-					 _textureImageMemory nullptr))
+					 _textureImageMemory NULL))
 			  (vkDestroyDescriptorSetLayout
 			   _device
 			   _descriptorSetLayout
-			   nullptr)
+			   NULL)
 			  ,(vkprint "buffers"
 				    `(_vertexBuffer
 				      _vertexBufferMemory
 				      _indexBuffer
 				      _indexBufferMemory
 				      ))
-			  (do0 (vkDestroyBuffer _device _vertexBuffer nullptr)
-			       (vkFreeMemory _device _vertexBufferMemory nullptr))
-			  (do0 (vkDestroyBuffer _device _indexBuffer nullptr)
-			       (vkFreeMemory _device _indexBufferMemory nullptr))
+			  (do0 (vkDestroyBuffer _device _vertexBuffer NULL)
+			       (vkFreeMemory _device _vertexBufferMemory NULL))
+			  (do0 (vkDestroyBuffer _device _indexBuffer NULL)
+			       (vkFreeMemory _device _indexBufferMemory NULL))
 			  (dotimes (i _MAX_FRAMES_IN_FLIGHT)
 			    (do0
 			     ,(vkprint "sync"
@@ -3265,25 +3273,25 @@ more structs. this function helps to initialize those structs."
 					 (aref _inFlightFences i)))
 			     (vkDestroySemaphore _device
 						 (aref _renderFinishedSemaphores i)
-						 nullptr)
+						 NULL)
 			     (vkDestroySemaphore _device
 						 (aref _imageAvailableSemaphores i)
-						 nullptr)
+						 NULL)
 			     (vkDestroyFence _device
 					     (aref _inFlightFences i)
-					     nullptr)))
+					     NULL)))
 			  ,(vkprint "cmd-pool"
 				    `(_commandPool))
-			  (vkDestroyCommandPool _device _commandPool nullptr)
+			  (vkDestroyCommandPool _device _commandPool NULL)
 			
 			
 			  )
 			 ,(vkprint "rest"
 				   `(_device _instance _window))
-			 (vkDestroyDevice _device nullptr)
+			 (vkDestroyDevice _device NULL)
 			 #+surface
-			 (vkDestroySurfaceKHR _instance _surface nullptr)
-			 (vkDestroyInstance _instance nullptr)
+			 (vkDestroySurfaceKHR _instance _surface NULL)
+			 (vkDestroyInstance _instance NULL)
 			 (glfwDestroyWindow _window)
 			 (glfwTerminate)
 			 ))))
@@ -3302,8 +3310,7 @@ more structs. this function helps to initialize those structs."
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
 		  (emit-globals))
-    (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals_init.h")
-		  (emit-globals :init t))
+    
     (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)
 							   "-o"
 							   ,(format nil "~a/frag.spv"
