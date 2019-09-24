@@ -202,7 +202,7 @@ more structs. this function helps to initialize those structs."
 	       (_MAX_FRAMES_IN_FLIGHT "const int")
 	       (_currentFrame size_t)
 	       (_inFlightFences[] VkFence)
-	       (_framebufferResized bool)
+	       (_framebufferResized _Bool)
 	       (_vertexBuffer VkBuffer _indexBuffer)
 	       (_vertexBufferMemory VkDeviceMemory)
 	       (_indexBufferMemory VkDeviceMemory)
