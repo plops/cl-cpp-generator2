@@ -177,54 +177,39 @@ more structs. this function helps to initialize those structs."
      (type VkImageView _colorImageView)
      ;;
      (type uint32_t _mipLevels)
-     (type
-      VkImage
-      _textureImage)
-     (type
-      VkDeviceMemory
-      _textureImageMemory)
-     (type VkImageView
-	   _textureImageView)
+     (type VkImage _textureImage)
+     (type VkDeviceMemory  _textureImageMemory)
+     (type VkImageView _textureImageView)
      (type VkSampler _textureSampler)
      ;;
-     (type VkQueue 
-	   _presentQueue)
-     
+     (type VkQueue  _presentQueue)
      (type VkSurfaceKHR _surface)
-     (type "const std::vector<const char*>"
-	   _deviceExtensions)
+     (type "const char* const" _deviceExtensions[])
      (type VkSwapchainKHR _swapChain)
-     (type "std::vector<VkImage>" _swapChainImages)
+     (type "VkImage" _swapChainImages[])
      (type VkFormat _swapChainImageFormat)
      (type VkExtent2D _swapChainExtent)
-     (type "std::vector<VkImageView>" _swapChainImageViews)
+     (type "VkImageView" _swapChainImageViews[])
      (type VkDescriptorSetLayout _descriptorSetLayout)
      (type VkPipelineLayout _pipelineLayout)
      (type VkRenderPass _renderPass)
      (type VkPipeline _graphicsPipeline)
-     (type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
+     (type "VkFramebuffer" _swapChainFramebuffers[])
      (type VkCommandPool _commandPool)
-     (type "std::vector<VkCommandBuffer>"
-	   _commandBuffers)
-     (type "std::vector<VkSemaphore>" _imageAvailableSemaphores
-	   _renderFinishedSemaphores)
+     (type "VkCommandBuffer" _commandBuffers[])
+     (type "VkSemaphore" _imageAvailableSemaphores[])
+     (type "VkSemaphore" _renderFinishedSemaphores[])
      (type "const int" _MAX_FRAMES_IN_FLIGHT)
      (type size_t _currentFrame)
-     (type "std::vector<VkFence>" _inFlightFences)
+     (type "VkFence" _inFlightFences[])
      (type bool _framebufferResized)
-     (type VkBuffer _vertexBuffer
-	   _indexBuffer)
-     (type VkDeviceMemory
-	   _vertexBufferMemory
-	   _indexBufferMemory)
-     (type "std::vector<VkBuffer>"
-	   _uniformBuffers)
-     (type "std::vector<VkDeviceMemory>"
-	   _uniformBuffersMemory)
-     (type VkDescriptorPool
-	   _descriptorPool)
-     (type "std::vector<VkDescriptorSet>"
-	   _descriptorSets)
+     (type VkBuffer _vertexBuffer _indexBuffer)
+     (type VkDeviceMemory _vertexBufferMemory)
+     (type VkDeviceMemory _indexBufferMemory)
+     (type "VkBuffer" _uniformBuffers[])
+     (type "VkDeviceMemory" _uniformBuffersMemory[])
+     (type VkDescriptorPool _descriptorPool)
+     (type "VkDescriptorSet" _descriptorSets[])
      )
     )
   
