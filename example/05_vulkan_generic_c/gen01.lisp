@@ -159,6 +159,75 @@ more structs. this function helps to initialize those structs."
   (progn
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
+
+  (defun emit-globals (&key init)
+    (
+     ;;
+     (type GLFWwindow* _window)
+     (type VkInstance _instance)
+     #-nolog (type "const _Bool" _enableValidationLayers)
+     #-nolog (type "const const char* const" _validationLayers[])
+     (type VkPhysicalDevice _physicalDevice)
+     (type VkDevice _device)
+     (type VkQueue _graphicsQueue)
+     ;; 
+     (type VkSampleCountFlagBits _msaaSamples)
+     (type VkImage _colorImage)
+     (type VkDeviceMemory _colorImageMemory)
+     (type VkImageView _colorImageView)
+     ;;
+     (type uint32_t _mipLevels)
+     (type
+      VkImage
+      _textureImage)
+     (type
+      VkDeviceMemory
+      _textureImageMemory)
+     (type VkImageView
+	   _textureImageView)
+     (type VkSampler _textureSampler)
+     ;;
+     (type VkQueue 
+	   _presentQueue)
+     
+     (type VkSurfaceKHR _surface)
+     (type "const std::vector<const char*>"
+	   _deviceExtensions)
+     (type VkSwapchainKHR _swapChain)
+     (type "std::vector<VkImage>" _swapChainImages)
+     (type VkFormat _swapChainImageFormat)
+     (type VkExtent2D _swapChainExtent)
+     (type "std::vector<VkImageView>" _swapChainImageViews)
+     (type VkDescriptorSetLayout _descriptorSetLayout)
+     (type VkPipelineLayout _pipelineLayout)
+     (type VkRenderPass _renderPass)
+     (type VkPipeline _graphicsPipeline)
+     (type "std::vector<VkFramebuffer>" _swapChainFramebuffers)
+     (type VkCommandPool _commandPool)
+     (type "std::vector<VkCommandBuffer>"
+	   _commandBuffers)
+     (type "std::vector<VkSemaphore>" _imageAvailableSemaphores
+	   _renderFinishedSemaphores)
+     (type "const int" _MAX_FRAMES_IN_FLIGHT)
+     (type size_t _currentFrame)
+     (type "std::vector<VkFence>" _inFlightFences)
+     (type bool _framebufferResized)
+     (type VkBuffer _vertexBuffer
+	   _indexBuffer)
+     (type VkDeviceMemory
+	   _vertexBufferMemory
+	   _indexBufferMemory)
+     (type "std::vector<VkBuffer>"
+	   _uniformBuffers)
+     (type "std::vector<VkDeviceMemory>"
+	   _uniformBuffersMemory)
+     (type VkDescriptorPool
+	   _descriptorPool)
+     (type "std::vector<VkDescriptorSet>"
+	   _descriptorSets)
+     )
+    )
+  
   (defun define-module (args)
     "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
     (destructuring-bind (module-name global-parameters module-code) args
