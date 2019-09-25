@@ -22,6 +22,7 @@
 ;; gcc -std=c18 -c vulkan_01_instance.c -Wmissing-declarations 2>&1|grep '{'|cut -d '|' -f 2|cut -d '{' -f 1
 ;; void createInstance() 
 
+;;gcc -std=c18 -c source/vulkan_*.c -Wmissing-declarations 2>&1|grep '{'|cut -d '|' -f 2|cut -d '{' -f 1|awk '{print $N";"}' > source/proto.h
 
 (progn
   ;; make sure to run this code twice during the first time, so that
@@ -242,9 +243,10 @@ more structs. this function helps to initialize those structs."
 			(include <GLFW/glfw3.h>)
 			" "
 			(include "globals.h")
-			
+			(include "proto.h")
+			(include "utils.h")
 			" "
-			"#define length(a) (sizeof((a))/sizeof(*(a)))")
+			)
 		header)
 	(unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
 	  (push `(do0 "extern State state;")
@@ -3313,6 +3315,12 @@ more structs. this function helps to initialize those structs."
 				  "example/05_vulkan_generic_c/source/vulkan_~2,'0d_~a.c"
 				  i name))
 			 code)))
+    (write-source (asdf:system-relative-pathname
+			  'cl-cpp-generator2
+			  "example/05_vulkan_generic_c/source/utils.h"
+			  )
+		  `(do0
+		    "#define length(a) (sizeof((a))/sizeof(*(a)))"))
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
@@ -3325,6 +3333,7 @@ more structs. this function helps to initialize those structs."
     (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *vertex-file*)
 							   "-o"
 							   ,(format nil "~a/vert.spv"
-								    (directory-namestring *vertex-file*))))))
+								    (directory-namestring *vertex-file*))))
+    (sb-ext:run-program "/usr/bin/sh" `("gen_proto.sh"))))
  
 
