@@ -33,6 +33,37 @@
 	       (beginSingleTimeCommands)))
 	  ,@body
 	  (endSingleTimeCommands ,buffer))))
+
+
+    (defun vkprint (msg
+		    rest)
+      ;;"{sec}.{nsec} {__FILE__}:{__LINE__} {__func__}"
+      (let* ((m `(string ,(format nil " ~a: " msg)))
+	     (l `(((printf_dec_format tp.tv_sec) tp.tv_sec)
+		  ((string "."))
+		  ((printf_dec_format tp.tv_nsec) tp.tv_nsec)
+		  ((string " "))
+		  ((printf_dec_format __FILE__) __FILE__)
+		  ((string ":"))
+		  ((printf_dec_format __LINE__) __LINE__)
+		  ((string " "))
+		  ((printf_dec_format __func__) __func__)
+		  (,m)
+		  ,@(loop for e in rest appending
+			 `(((string ,(format nil " ~a=" e)))
+			   ((printf_dec_format ,e) ,e)
+			   ))
+		  ((string "\\n")))))
+	`(do0
+	  (let ((tp))
+	    (declare (type "struct timespec" tp))
+	    (clock_gettime CLOCK_REALTIME &tp)
+	   ,@(loop for e in l collect
+		  (destructuring-bind (fmt &optional value) e
+		    (if value
+			`(printf ,fmt ,value)
+			`(puts ,fmt))))))))
+    
     (defun vkthrow (cmd)
       `(unless (== VK_SUCCESS
 		   ,cmd)
@@ -42,44 +73,7 @@
 	 #+nil(
 		    throw ("std::runtime_error"
 		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
-    (defun vkprint (msg
-		    rest)
-      ;;"{__FILE__}:{__LINE__} {__func__}"
-      (let ((m `(string ,(format nil " ~a: " msg))))
-	`(printf #+nil (space
-			(printf_dec_format __FILE__)
-					;(string ":")
-			(printf_dec_format __LINE__)
-					;(string " ")
-			(printf_dec_format __func__)
-					;,m
-			,@(loop for e in rest appending
-			       `(     ;(string ,(format nil " ~a=" e))
-				 (printf_dec_format ,e)
-				 )))
-		 (printf_dec_format __FILE__)
-		 (printf_dec_format __LINE__)
-		 __FILE__
-		 __LINE__
-		 ;__func__
-		 ;,@rest
-		 ))
-      ;;`"// print"
-      #+nil(<< "std::cout"
-	   (dot ("std::chrono::high_resolution_clock::now")
-		(time_since_epoch)
-		(count))
-	   (string " ")
-	   __FILE__
-	   (string ":")
-	   __LINE__
-	   (string " ")
-	   __func__
-	   (string ,(format nil " ~a: " msg))
-	   ,@(loop for e in rest appending
-		  `((string ,(format nil " ~a=" e))
-		    ,e))
-	   "std::endl"))
+    
 
     
 
@@ -270,6 +264,8 @@ more structs. this function helps to initialize those structs."
 			" "
 			(include "globals.h")
 			" "
+			
+			
 			(include "utils.h")
 			" "
 			(include "proto.h")
@@ -3453,14 +3449,17 @@ more structs. this function helps to initialize those structs."
 			  )
 		  `(do0
 		    (include <stdio.h>)
+		    " "
 		    (include <stdbool.h>)
+		    "#define _POSIX_C_SOURCE 199309L"
+		    " "
+		    (include <time.h>)
+		    " "
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
-		    "#define printf_dec_format(x) _Generic((x), char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\")
-"
-		    ;; unsigned long long int: \"%llu\",
-		    ;; , char*: \"%s\", void*: \"%p\"
+		    "#define printf_dec_format(x) _Generic((x), char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
+
 		    (defstruct0 SwapChainSupportDetails
 			(capabilities VkSurfaceCapabilitiesKHR)
 		      (formatsCount int)
