@@ -163,13 +163,13 @@ more structs. this function helps to initialize those structs."
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
 
-  (defun emit-globals ()
+  (defun emit-globals (&key init)
     (let ((l `(
 	       ;; 
 	       (_window GLFWwindow* NULL)   
 	       (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-	       #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
+	       #-nolog (_validationLayers[1] "char*" ((string "VK_LAYER_KHRONOS_validation")))
 	       (_physicalDevice VkPhysicalDevice)
 	       (_device VkDevice)
 	       (_graphicsQueue VkQueue)
@@ -187,7 +187,7 @@ more structs. this function helps to initialize those structs."
 	       ;;
 	       (_presentQueue  VkQueue)
 	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[1] "const char* const" (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+	       (_deviceExtensions[1] "char*" ((string "VK_KHR_SWAPCHAIN_EXTENSION_NAME")))
 	       (_swapChain VkSwapchainKHR)
 	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
 	       (_swapChainImages[_N_IMAGES] VkImage)
@@ -208,7 +208,8 @@ more structs. this function helps to initialize those structs."
 	       (_currentFrame size_t)
 	       (_inFlightFences[_N_IMAGES] VkFence)
 	       (_framebufferResized _Bool)
-	       (_vertexBuffer VkBuffer _indexBuffer)
+	       (_vertexBuffer VkBuffer)
+	       (_indexBuffer VkBuffer)
 	       (_vertexBufferMemory VkDeviceMemory)
 	       (_indexBufferMemory VkDeviceMemory)
 	       (_uniformBuffers[_N_IMAGES] VkBuffer)
@@ -216,12 +217,24 @@ more structs. this function helps to initialize those structs."
 	       (_descriptorPool VkDescriptorPool)
 	       (_descriptorSets[_N_IMAGES] VkDescriptorSet)
 	       )))
-      `(do0
-	"enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
-	(defstruct0 State
-	    ,@(loop for e in l collect
-		   (destructuring-bind (name type &optional value) e
-		     `(,name ,type)))))))
+      (if init
+	  `(do0
+	    ,@(remove-if
+	       #'null
+	       (loop for e in l collect
+		    (destructuring-bind (name type &optional value) e
+		      (when value
+			(if (listp value)
+			    `(do0
+			      ,@(loop for e in value and i from 0 collect
+				     `(setf (dot state (aref ,(elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0) ,i)) ,e)))
+			    `(setf (dot state ,name) ,value)))))))
+	  `(do0
+	       "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	       (defstruct0 State
+		   ,@(loop for e in l collect
+			  (destructuring-bind (name type &optional value) e
+			    `(,name ,type))))))))
   
   (defun define-module (args)
     "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
@@ -276,6 +289,9 @@ more structs. this function helps to initialize those structs."
 	      
 	      (defun main ()
 		(declare (values int))
+		(do0
+		 "// initialize state"
+		 ,(emit-globals :init t))
 		(run)))))
   (defun g (arg)
     `(dot state ,arg))
@@ -359,9 +375,10 @@ more structs. this function helps to initialize those structs."
 	 (defun initVulkan ()
 	   (declare (values void))
 	   (createInstance)
-	   #+nil(#+surface
-	    (do0 "// create window surface because it can influence physical device selection"
+	   (do0 "// create window surface because it can influence physical device selection"
 		 (createSurface))
+	   #+nil (#+surface
+	    
 	    (pickPhysicalDevice)
 	    (createLogicalDevice)
 	    #+surface
