@@ -232,6 +232,10 @@ entry return-values contains a list of return values"
 		 ;; comma {args}*
 		 (let ((args (cdr code)))
 		   (format nil "~{~a~^, ~}" (mapcar #'emit args))))
+		(semicolon
+		 ;; semicolon {args}*
+		 (let ((args (cdr code)))
+		   (format nil "~{~a~^; ~}" (mapcar #'emit args))))
 		(space
 		 ;; space {args}*
 		 (let ((args (cdr code)))

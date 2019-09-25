@@ -46,21 +46,24 @@
 		    rest)
       ;;"{__FILE__}:{__LINE__} {__func__}"
       (let ((m `(string ,(format nil " ~a: " msg))))
-	`(printf (space
-		  (printf_dec_format __FILE__)
-		  ;(string ":")
-		  (printf_dec_format __LINE__)
-		  ;(string " ")
-		  (printf_dec_format __func__)
-		  ;,m
-		  ,@(loop for e in rest appending
-			 `(;(string ,(format nil " ~a=" e))
-			   (printf_dec_format ,e)
-			   )))
-		__FILE__
-		__LINE__
-		__func__
-		,@rest))
+	`(printf #+nil (space
+			(printf_dec_format __FILE__)
+					;(string ":")
+			(printf_dec_format __LINE__)
+					;(string " ")
+			(printf_dec_format __func__)
+					;,m
+			,@(loop for e in rest appending
+			       `(     ;(string ,(format nil " ~a=" e))
+				 (printf_dec_format ,e)
+				 )))
+		 (printf_dec_format __FILE__)
+		 (printf_dec_format __LINE__)
+		 __FILE__
+		 __LINE__
+		 ;__func__
+		 ;,@rest
+		 ))
       ;;`"// print"
       #+nil(<< "std::cout"
 	   (dot ("std::chrono::high_resolution_clock::now")
