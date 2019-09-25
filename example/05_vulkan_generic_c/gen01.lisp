@@ -34,13 +34,31 @@
     (defun vkthrow (cmd)
       `(unless (== VK_SUCCESS
 		   ,cmd)
-	 "// throw"
+	 #+nil "// throw"
+	 (puts
+	  (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd))))
 	 #+nil(
 		    throw ("std::runtime_error"
 		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
     (defun vkprint (msg
 		    rest)
-      `"// print"
+      ;;"{__FILE__}:{__LINE__} {__func__}"
+      (let ((m `(string ,(format nil " ~a: " msg))))
+	`(printf (space
+		  (printf_dec_format __FILE__) (string ":")
+		  (printf_dec_format __LINE__)
+		  (string " ")
+		  (printf_dec_format __func__)
+		  ,m
+		  ,@(loop for e in rest appending
+			 `((string ,(format nil " ~a=" e))
+			   (printf_dec_format ,e)
+			   )))
+		__FILE__
+		__LINE__
+		__func__
+		,@rest))
+      ;;`"// print"
       #+nil(<< "std::cout"
 	   (dot ("std::chrono::high_resolution_clock::now")
 		(time_since_epoch)
@@ -300,7 +318,8 @@ more structs. this function helps to initialize those structs."
 	 (defun cleanupInstance ()
 	   (vkDestroyInstance ,(g `_instance) NULL))
 	 #-nolog (defun checkValidationLayerSupport ()
-				 (declare (values _Bool))
+		   (declare (values _Bool))
+		   
 				 (let ((layerCount 0))
 				   (declare (type uint32_t layerCount))
 				   (vkEnumerateInstanceLayerProperties &layerCount NULL)
@@ -318,6 +337,8 @@ more structs. this function helps to initialize those structs."
 					(foreach
 					 (layerProperties availableLayers)
 					 (when (== 0 (strcmp layerName layerProperties.layerName))
+					   ,(vkprint "look for layer"
+						     `(layerName))
 					   (setf layerFound true)
 					   break))
 					(unless layerFound
@@ -3425,10 +3446,13 @@ more structs. this function helps to initialize those structs."
 			  "example/05_vulkan_generic_c/source/utils.h"
 			  )
 		  `(do0
+		    (include <stdio.h>)
 		    (include <stdbool.h>)
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+		    "#define printf_dec_format(x) _Generic((x), char: \"%c\",     signed char: \"%hhd\",     unsigned char: \"%hhu\",     signed short: \"%hd\",     unsigned short: \"%hu\",     signed int: \"%d\",     unsigned int: \"%u\",     long int: \"%ld\",     unsigned long int: \"%lu\",     long long int: \"%lld\",     unsigned long long int: \"%llu\",     float: \"%f\",     double: \"%f\",     long double: \"%Lf\",     char *: \"%s\",     void *: \"%p\")
+"
 		    (defstruct0 SwapChainSupportDetails
 			(capabilities VkSurfaceCapabilitiesKHR)
 		      (formatsCount int)
