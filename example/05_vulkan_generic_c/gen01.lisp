@@ -169,7 +169,7 @@ more structs. this function helps to initialize those structs."
 	       (_window GLFWwindow* NULL)   
 	       (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-	       #-nolog (_validationLayers[1] "char*" ((string "VK_LAYER_KHRONOS_validation")))
+	       #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
 	       (_physicalDevice VkPhysicalDevice)
 	       (_device VkDevice)
 	       (_graphicsQueue VkQueue)
@@ -187,7 +187,8 @@ more structs. this function helps to initialize those structs."
 	       ;;
 	       (_presentQueue  VkQueue)
 	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[1] "char*" ((string "VK_KHR_SWAPCHAIN_EXTENSION_NAME")))
+	       (_deviceExtensions[1] "const char* const" (curly (string "VK_KHR_SWAPCHAIN_EXTENSION_NAME")
+					      ))
 	       (_swapChain VkSwapchainKHR)
 	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
 	       (_swapChainImages[_N_IMAGES] VkImage)
@@ -218,17 +219,13 @@ more structs. this function helps to initialize those structs."
 	       (_descriptorSets[_N_IMAGES] VkDescriptorSet)
 	       )))
       (if init
-	  `(do0
+	  `(curly
 	    ,@(remove-if
 	       #'null
 	       (loop for e in l collect
 		    (destructuring-bind (name type &optional value) e
 		      (when value
-			(if (listp value)
-			    `(do0
-			      ,@(loop for e in value and i from 0 collect
-				     `(setf (dot state (aref ,(elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0) ,i)) ,e)))
-			    `(setf (dot state ,name) ,value)))))))
+			`(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	  `(do0
 	       "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
 	       (defstruct0 State
@@ -271,7 +268,7 @@ more structs. this function helps to initialize those structs."
   (define-module
       `(main ()
 	     (do0
-	      (let ((state))
+	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
 	      (defun mainLoop ()
 		(while (not (glfwWindowShouldClose ,(g `_window)))
@@ -289,7 +286,7 @@ more structs. this function helps to initialize those structs."
 	      
 	      (defun main ()
 		(declare (values int))
-		(do0
+		#+nil (do0
 		 "// initialize state"
 		 ,(emit-globals :init t))
 		(run)))))
