@@ -466,19 +466,56 @@ more structs. this function helps to initialize those structs."
 	   
 	   )
 	 (do0
-		     (defun "QueueFamilyIndices_isComplete" (q)
-		       (declare (values _Bool)
-				(type QueueFamilyIndices* q))
-		       (return (and
-				(!= -1 q->graphicsFamily)
-			        (!= -1 q->presentFamily))))
-		     (defun "QueueFamilyIndices_make" ()
-		       (declare (values QueueFamilyIndices*))
-		       (let ((q (malloc (sizeof QueueFamilyIndices))))
-			 (declare (type QueueFamilyIndices* q))
-			 (setf q->graphicsFamily -1
-			       q->presentFamily -1)
-			 (return q))))
+	  (defun "QueueFamilyIndices_isComplete" (q)
+	    (declare (values _Bool)
+		     (type QueueFamilyIndices* q))
+	    (return (and
+		     (!= -1 q->graphicsFamily)
+		     (!= -1 q->presentFamily))))
+	  (defun "QueueFamilyIndices_make" ()
+	    (declare (values QueueFamilyIndices*))
+	    (let ((q (malloc (sizeof QueueFamilyIndices))))
+	      (declare (type QueueFamilyIndices* q))
+	      (setf q->graphicsFamily -1
+		    q->presentFamily -1)
+	      (return q)))
+	  (defun "QueueFamilyIndices_destroy" (q)
+	    (declare (type QueueFamilyIndices* q))
+	    (free q))
+	  (defun findQueueFamilies (device)
+	    (declare (type VkPhysicalDevice device)
+		     (values QueueFamilyIndices*))
+	    (let ((indices (QueueFamilyIndices_make))
+		  (queueFamilyCount 0))
+	      (declare ;(type QueueFamilyIndices indices)
+		       (type uint32_t queueFamilyCount))
+	      (vkGetPhysicalDeviceQueueFamilyProperties
+	       device &queueFamilyCount NULL)
+	      (let ((queueFamilies[queueFamilyCount]))
+		(declare (type VkQueueFamilyProperties
+			       queueFamilies[queueFamilyCount]))
+		(vkGetPhysicalDeviceQueueFamilyProperties
+		 device
+		 &queueFamilyCount
+		 queueFamilies)
+		(let ((i 0))
+		  (foreach
+		   (family queueFamilies)
+		   (when (and (< 0 family.queueCount)
+			      (logand family.queueFlags
+				      VK_QUEUE_GRAPHICS_BIT))
+		     (setf indices->graphicsFamily i))
+		   (let ((presentSupport false))
+		     (declare (type VkBool32 presentSupport))
+		     (vkGetPhysicalDeviceSurfaceSupportKHR
+		      device i ,(g `_surface) &presentSupport)
+		     (when (and (< 0 family.queueCount)
+				presentSupport)
+		       (setf indices->presentFamily i))
+		     (when (QueueFamilyIndices_isComplete indices)
+		       break))
+		   (incf i))))
+	      (return indices))))
 	 (do0
 	  
 	  (defun cleanupSwapChainSupport (details)
@@ -540,18 +577,20 @@ more structs. this function helps to initialize those structs."
 			   (and (not (== 0 swapChainSupport.formatsCount))
 				(not (== 0 swapChainSupport.presentModesCount))))
 		     (cleanupSwapChainSupport &swapChainSupport))))
-	       (let ((indices (findQueueFamilies device ,(g `_surface)))
+	       (let ((indices (findQueueFamilies device))
 		     (supportedFeatures))
-		 (declare (type QueueFamilyIndices indices)
+		 (declare ;(type QueueFamilyIndices indices)
 			  (type VkPhysicalDeviceFeatures
 				supportedFeatures))
 		 (vkGetPhysicalDeviceFeatures device
 					      &supportedFeatures)
-		 (return (and (indices.isComplete)
+		 (let ((res (and (QueueFamilyIndices_isComplete indices)
 			      supportedFeatures.samplerAnisotropy
 			      (and 
 			       extensionsSupported
-			       swapChainAdequate)))
+			       swapChainAdequate))))
+		   (QueueFamilyIndices_destroy indices)
+		   (return res))
 		 #+nil (return (indices.isComplete))))
 	 (defun checkDeviceExtensionSupport (device)
 	       (declare (values bool)
@@ -1022,42 +1061,7 @@ more structs. this function helps to initialize those structs."
 	    (do0
 	     
 	     
-	     (defun findQueueFamilies (device _surface )
-	       (declare (type VkPhysicalDevice device)
-			(type VkSurfaceKHR _surface)
-			(values QueueFamilyIndices))
-	       (let ((indices)
-		     (queueFamilyCount 0))
-		 (declare (type QueueFamilyIndices indices)
-			  (type uint32_t queueFamilyCount))
-		 (vkGetPhysicalDeviceQueueFamilyProperties
-		  device &queueFamilyCount NULL)
-		 (let (((queueFamilies queueFamilyCount)))
-		   (declare (type "std::vector<VkQueueFamilyProperties>"
-				  (queueFamilies queueFamilyCount)))
-		   (vkGetPhysicalDeviceQueueFamilyProperties
-		    device
-		    &queueFamilyCount
-		    (queueFamilies.data))
-		   (let ((i 0))
-		     (foreach
-		      (family queueFamilies)
-		      (when (and (< 0 family.queueCount)
-				 (logand family.queueFlags
-					 VK_QUEUE_GRAPHICS_BIT))
-			(setf indices.graphicsFamily i))
-		      #+surface
-		      (let ((presentSupport false))
-			(declare (type VkBool32 presentSupport))
-			(vkGetPhysicalDeviceSurfaceSupportKHR
-			 device i _surface &presentSupport)
-			(when (and (< 0 family.queueCount)
-				   presentSupport)
-			  (setf indices.presentFamily i))
-			(when (indices.isComplete)
-			  break))
-		      (incf i))))
-		 (return indices)))
+	     
 
 	     )
 	    (defclass HelloTriangleApplication ()
