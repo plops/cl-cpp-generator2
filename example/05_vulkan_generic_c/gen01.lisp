@@ -260,11 +260,19 @@ more structs. this function helps to initialize those structs."
 	     (do0
 	      (let ((state))
 		(declare (type State state)))
+	      (defun mainLoop ()
+		(while (not (glfwWindowShouldClose ,(g `_window)))
+		  (glfwPollEvents)
+		  ;#+surface (drawFrame)
+		  )
+		;(vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
+		)
 	      (defun run ()
 		(initWindow)
 		(initVulkan)
 		(mainLoop)
-		(cleanup))
+		;(cleanup)
+		)
 	      
 	      (defun main ()
 		(declare (values int))
@@ -394,28 +402,44 @@ more structs. this function helps to initialize those structs."
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
 	       (do0
-		
+		(defun framebufferResizeCallback (window width height)
+			 (declare (values "static void")
+				  ;; static because glfw doesnt know how to call a member function with a this pointer
+				  (type GLFWwindow* window)
+				  (type int width height))
+			 (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
+			   (setf app->_framebufferResized true)))
 		(defun initWindow ()
 		  (declare (values void))
 			 (glfwInit)
 			 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
 			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
-			 (setf _window (glfwCreateWindow 800 600
-							 (string "vulkan window")
-							 NULL
-							 NULL))
+			 (setf ,(g `_window) (glfwCreateWindow 800 600
+							    (string "vulkan window")
+							    NULL
+							    NULL))
 			 ;; store this pointer to the instance for use in the callback
-			 (glfwSetWindowUserPointer _window this)
-			 (glfwSetFramebufferSizeCallback _window
+			 (glfwSetWindowUserPointer ,(g `_window) (ref state))
+			 (glfwSetFramebufferSizeCallback ,(g `_window)
 							 framebufferResizeCallback))
 		(defun cleanupWindow ()
 		  (declare (values void))
-		  (glfwDestroyWindow _window)
+		  (glfwDestroyWindow ,(g `_window))
 		  (glfwTerminate)
 		  ))))
-  
-  
-  
+  (define-module
+      `(surface
+	()
+	(do0
+	 (defun cleanupSurface ()
+	   (vkDestroySurfaceKHR ,(g `_instance) ,(g `_surface) NULL)
+	   )
+	 (defun createSurface ()
+	   "// initialize _surface member"
+	   "// must be destroyed before the instance is destroyed"
+	   ,(vkthrow `(glfwCreateWindowSurface
+		       ,(g `_instance) ,(g `_window)
+		       NULL (ref ,(g `_surface))))))))
   
   
   (let* ((vertex-code
@@ -967,13 +991,7 @@ more structs. this function helps to initialize those structs."
 
 		     
 		       
-		       (defun framebufferResizeCallback (window width height)
-			 (declare (values "static void")
-				  ;; static because glfw doesnt know how to call a member function with a this pointer
-				  (type GLFWwindow* window)
-				  (type int width height))
-			 (let ((app (reinterpret_cast<HelloTriangleApplication*> (glfwGetWindowUserPointer window))))
-			   (setf app->_framebufferResized true)))
+		       
 		       (defun initWindow ()
 			 (declare (values void))
 			 (glfwInit)
@@ -2719,13 +2737,7 @@ more structs. this function helps to initialize those structs."
 			       :throw t)
 			     (return shaderModule))))
 		      
-			(defun createSurface ()
-			  (declare (values void))
-			  "// initialize _surface member"
-			  "// must be destroyed before the instance is destroyed"
-			  ,(vkthrow `(glfwCreateWindowSurface
-				      _instance _window
-				      NULL &_surface)))
+			
 		      
 			(defun createSwapChain ()
 			  (declare (values void))
@@ -2984,13 +2996,7 @@ more structs. this function helps to initialize those structs."
 				       _physicalDevice)
 			       (throw ("std::runtime_error"
 				       (string "failed to find a suitable gpu.")))))))
-		       (defun mainLoop ()
-			 (declare (values void))
-			 (while (not (glfwWindowShouldClose _window))
-			   (glfwPollEvents)
-			   #+surface (drawFrame))
-			 (vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
-			 )
+		       
 		       #+surface
 		       (defun drawFrame ()
 			 (declare (values void))
