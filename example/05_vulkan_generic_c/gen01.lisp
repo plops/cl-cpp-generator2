@@ -170,7 +170,7 @@ more structs. this function helps to initialize those structs."
 	       (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
 	       #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
-	       (_physicalDevice VkPhysicalDevice)
+	       (_physicalDevice VkPhysicalDevice VK_NULL_HANDLE)
 	       (_device VkDevice)
 	       (_graphicsQueue VkQueue)
 	       ;; 
@@ -286,9 +286,6 @@ more structs. this function helps to initialize those structs."
 	      
 	      (defun main ()
 		(declare (values int))
-		#+nil (do0
-		 "// initialize state"
-		 ,(emit-globals :init t))
 		(run)))))
   (defun g (arg)
     `(dot state ,arg))
@@ -374,10 +371,12 @@ more structs. this function helps to initialize those structs."
 	   (createInstance)
 	   (do0 "// create window surface because it can influence physical device selection"
 		 (createSurface))
-	   #+nil (#+surface
+	   (pickPhysicalDevice)
+	   (createLogicalDevice)
+	   #+nil (
 	    
-	    (pickPhysicalDevice)
-	    (createLogicalDevice)
+		  
+		  
 	    #+surface
 	    ,(let ((l`(
 		       (createSwapChain)
@@ -454,6 +453,90 @@ more structs. this function helps to initialize those structs."
 	   ,(vkthrow `(glfwCreateWindowSurface
 		       ,(g `_instance) ,(g `_window)
 		       NULL (ref ,(g `_surface))))))))
+  (define-module
+      `(device
+	()
+	(do0
+	 (defun cleanupPhysicalDevice ()
+	   (vkDestroyDevice ,(g `_device) NULL)
+	   )
+	 (defun createLogicalDevice ()
+	   "// initialize members _device and _graphicsQueue"
+			 (let ((indices (findQueueFamilies ,(g `_physicalDevice) ,(g `_surface)))
+			       (queuePriority 1s0))
+			   (declare (type float queuePriority))
+			   (let ((queueCreateInfos)
+				 (uniqueQueueFamilies
+				  (curly
+				   (indices.graphicsFamily.value)
+				   #+surface (indices.presentFamily.value))))
+			     (declare (type "std::vector<VkDeviceQueueCreateInfo>"
+					    queueCreateInfos)
+				      (type "std::set<uint32_t>" uniqueQueueFamilies))
+			   
+			     (foreach (queueFamily uniqueQueueFamilies)
+				      ,(vk `(VkDeviceQueueCreateInfo
+					     queueCreateInfo
+					     :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+					     :queueFamilyIndex queueFamily
+					     :queueCount 1
+					     :pQueuePriorities &queuePriority))
+				      (queueCreateInfos.push_back queueCreateInfo)))
+			   (let ((deviceFeatures (curly)))
+			     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
+			     (setf deviceFeatures.samplerAnisotropy VK_TRUE)
+			     ,(vkcall
+			       `(create
+				 device
+				 (:pQueueCreateInfos (queueCreateInfos.data)
+						     :queueCreateInfoCount (static_cast<uint32_t>
+									    (queueCreateInfos.size))
+						     :pEnabledFeatures &deviceFeatures
+						     :enabledExtensionCount 
+						     (length ,(g `_deviceExtensions))
+						     :ppEnabledExtensionNames 
+						     _deviceExtensions
+						     :enabledLayerCount
+						     #-nolog (length ,(g `_validationLayers))
+						     #+nolog 0
+						     :ppEnabledLayerNames
+						     #+nolog NULL
+						     #-nolog ,(g `_validationLayers))
+				 (,(g `_physicalDevice)
+				  &info
+				  NULL
+				  &_device)
+				 ,(g `_physicalDevice))
+			       :throw t)
+			     (vkGetDeviceQueue ,(g `_device) (indices.graphicsFamily.value)
+					       0 (ref ,(g `_graphicsQueue)))
+			     
+			     (vkGetDeviceQueue ,(g `_device) (indices.presentFamily.value)
+					       0 (ref ,(g `_presentQueue))))))
+	 (defun pickPhysicalDevice ()
+	   "// initialize member _physicalDevice" 
+	   (let ((deviceCount 0))
+	     (declare (type uint32_t deviceCount))
+	     (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount NULL)
+	     (when (== 0 deviceCount)
+	       (throw ("std::runtime_error"
+		       (string "failed to find gpu with vulkan support."))))
+	     (let (((devices deviceCount)))
+	       (declare (type "std::vector<VkPhysicalDevice>"
+			      (devices deviceCount)))
+	       (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount
+					   (devices.data))
+	       (foreach (device devices)
+			(when (isDeviceSuitable device ,(g `_surface) ,(g `_deviceExtensions))
+			  (setf ,(g `_physicalDevice) device
+				,(g `_msaaSamples) (getMaxUsableSampleCount))
+			  break))
+	       (when (== VK_NULL_HANDLE
+			 ,(g `_physicalDevice))
+		 "// throw"
+		 #+nil(throw ("std::runtime_error"
+			      (string "failed to find a suitable gpu.")))))))
+	 )))
   
   
   (let* ((vertex-code
@@ -2877,61 +2960,7 @@ more structs. this function helps to initialize those structs."
 			      VK_IMAGE_ASPECT_COLOR_BIT
 			      1 ;; mipLevels
 			      )))))
-		       (defun createLogicalDevice ()
-			 (declare (values void))
-			 "// initialize members _device and _graphicsQueue"
-			 (let ((indices (findQueueFamilies _physicalDevice _surface))
-			       (queuePriority 1s0))
-			   (declare (type float queuePriority))
-			   (let ((queueCreateInfos)
-				 (uniqueQueueFamilies
-				  (curly
-				   (indices.graphicsFamily.value)
-				   #+surface (indices.presentFamily.value))))
-			     (declare (type "std::vector<VkDeviceQueueCreateInfo>"
-					    queueCreateInfos)
-				      (type "std::set<uint32_t>" uniqueQueueFamilies))
-			   
-			     (foreach (queueFamily uniqueQueueFamilies)
-				      ,(vk `(VkDeviceQueueCreateInfo
-					     queueCreateInfo
-					     :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-					     :queueFamilyIndex queueFamily
-					     :queueCount 1
-					     :pQueuePriorities &queuePriority))
-				      (queueCreateInfos.push_back queueCreateInfo)))
-			   (let ((deviceFeatures (curly))
-				 )
-			     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
-			     (setf deviceFeatures.samplerAnisotropy VK_TRUE)
-			     ,(vkcall
-			       `(create
-				 device
-				 (:pQueueCreateInfos (queueCreateInfos.data)
-						     :queueCreateInfoCount (static_cast<uint32_t>
-									    (queueCreateInfos.size))
-						     :pEnabledFeatures &deviceFeatures
-						     :enabledExtensionCount #-surface 0
-						     #+surface (static_cast<uint32_t> (_deviceExtensions.size))
-						     #+surface :ppEnabledExtensionNames 
-						     #+surface (_deviceExtensions.data)
-						     :enabledLayerCount
-						     #-nolog (static_cast<uint32_t> (_validationLayers.size))
-						     #+nolog 0
-						     :ppEnabledLayerNames
-						     #+nolog NULL
-						     #-nolog (_validationLayers.data))
-				 (_physicalDevice
-				  &info
-				  NULL
-				  &_device)
-				 _physicalDevice)
-			       :throw t)
-			     (vkGetDeviceQueue _device (indices.graphicsFamily.value)
-					       0 &_graphicsQueue)
-			     #+surface
-			     (vkGetDeviceQueue _device (indices.presentFamily.value)
-					       0 &_presentQueue))))
+		       
 
 		       (do0
 			;; for msaa
@@ -2987,29 +3016,7 @@ more structs. this function helps to initialize those structs."
 					(return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
 			      (return VK_SAMPLE_COUNT_1_BIT)))))
 		      
-		       (defun pickPhysicalDevice ()
-			 (declare (values void))
-			 "// initialize member _physicalDevice" 
-			 (let ((deviceCount 0))
-			   (declare (type uint32_t deviceCount))
-			   (vkEnumeratePhysicalDevices _instance &deviceCount NULL)
-			   (when (== 0 deviceCount)
-			     (throw ("std::runtime_error"
-				     (string "failed to find gpu with vulkan support."))))
-			   (let (((devices deviceCount)))
-			     (declare (type "std::vector<VkPhysicalDevice>"
-					    (devices deviceCount)))
-			     (vkEnumeratePhysicalDevices _instance &deviceCount
-							 (devices.data))
-			     (foreach (device devices)
-				      (when (isDeviceSuitable device _surface _deviceExtensions)
-					(setf _physicalDevice device
-					      _msaaSamples (getMaxUsableSampleCount))
-					break))
-			     (when (== VK_NULL_HANDLE
-				       _physicalDevice)
-			       (throw ("std::runtime_error"
-				       (string "failed to find a suitable gpu.")))))))
+		       
 		       
 		       #+surface
 		       (defun drawFrame ()
