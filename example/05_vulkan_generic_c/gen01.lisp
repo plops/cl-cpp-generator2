@@ -15,6 +15,8 @@
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
 ;; gcc -std=c18 -c vulkan_01_instance.c -Wmissing-declarations
 
+;; clock_gettime
+;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
 
 (progn
   ;; make sure to run this code twice during the first time, so that
@@ -45,13 +47,14 @@
       ;;"{__FILE__}:{__LINE__} {__func__}"
       (let ((m `(string ,(format nil " ~a: " msg))))
 	`(printf (space
-		  (printf_dec_format __FILE__) (string ":")
+		  (printf_dec_format __FILE__)
+		  ;(string ":")
 		  (printf_dec_format __LINE__)
-		  (string " ")
+		  ;(string " ")
 		  (printf_dec_format __func__)
-		  ,m
+		  ;,m
 		  ,@(loop for e in rest appending
-			 `((string ,(format nil " ~a=" e))
+			 `(;(string ,(format nil " ~a=" e))
 			   (printf_dec_format ,e)
 			   )))
 		__FILE__
@@ -3451,8 +3454,10 @@ more structs. this function helps to initialize those structs."
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
-		    "#define printf_dec_format(x) _Generic((x), char: \"%c\",     signed char: \"%hhd\",     unsigned char: \"%hhu\",     signed short: \"%hd\",     unsigned short: \"%hu\",     signed int: \"%d\",     unsigned int: \"%u\",     long int: \"%ld\",     unsigned long int: \"%lu\",     long long int: \"%lld\",     unsigned long long int: \"%llu\",     float: \"%f\",     double: \"%f\",     long double: \"%Lf\",     char *: \"%s\",     void *: \"%p\")
+		    "#define printf_dec_format(x) _Generic((x), char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\")
 "
+		    ;; unsigned long long int: \"%llu\",
+		    ;; , char*: \"%s\", void*: \"%p\"
 		    (defstruct0 SwapChainSupportDetails
 			(capabilities VkSurfaceCapabilitiesKHR)
 		      (formatsCount int)
