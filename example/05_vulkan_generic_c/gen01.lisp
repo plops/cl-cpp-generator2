@@ -239,14 +239,17 @@ more structs. this function helps to initialize those structs."
       (let ((header ()))
 	
 	(push `(do0
-		(include <stdbool.h>)
+		
 		" "
 		"#define GLFW_INCLUDE_VULKAN"
 			(include <GLFW/glfw3.h>)
 			" "
 			(include "globals.h")
-			(include "proto.h")
+			" "
 			(include "utils.h")
+			" "
+			(include "proto.h")
+			
 			" "
 			)
 		header)
@@ -372,7 +375,7 @@ more structs. this function helps to initialize those structs."
 	   (do0 "// create window surface because it can influence physical device selection"
 		 (createSurface))
 	   (pickPhysicalDevice)
-	   (createLogicalDevice)
+	   ;(createLogicalDevice)
 	   #+nil (
 	    
 		  
@@ -454,72 +457,272 @@ more structs. this function helps to initialize those structs."
 		       ,(g `_instance) ,(g `_window)
 		       NULL (ref ,(g `_surface))))))))
   (define-module
-      `(device
+      `(physical_device
 	()
 	(do0
+	 (include <stdlib.h>)
+	 (include <string.h>)
 	 (defun cleanupPhysicalDevice ()
-	   (vkDestroyDevice ,(g `_device) NULL)
+	   
 	   )
-	 (defun createLogicalDevice ()
-	   "// initialize members _device and _graphicsQueue"
-			 (let ((indices (findQueueFamilies ,(g `_physicalDevice) ,(g `_surface)))
-			       (queuePriority 1s0))
-			   (declare (type float queuePriority))
-			   (let ((queueCreateInfos)
-				 (uniqueQueueFamilies
-				  (curly
-				   (indices.graphicsFamily.value)
-				   #+surface (indices.presentFamily.value))))
-			     (declare (type "std::vector<VkDeviceQueueCreateInfo>"
-					    queueCreateInfos)
-				      (type "std::set<uint32_t>" uniqueQueueFamilies))
-			   
-			     (foreach (queueFamily uniqueQueueFamilies)
-				      ,(vk `(VkDeviceQueueCreateInfo
-					     queueCreateInfo
-					     :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-					     :queueFamilyIndex queueFamily
-					     :queueCount 1
-					     :pQueuePriorities &queuePriority))
-				      (queueCreateInfos.push_back queueCreateInfo)))
-			   (let ((deviceFeatures (curly)))
-			     (declare (type VkPhysicalDeviceFeatures deviceFeatures))
-			     (setf deviceFeatures.samplerAnisotropy VK_TRUE)
-			     ,(vkcall
-			       `(create
-				 device
-				 (:pQueueCreateInfos (queueCreateInfos.data)
-						     :queueCreateInfoCount (static_cast<uint32_t>
-									    (queueCreateInfos.size))
-						     :pEnabledFeatures &deviceFeatures
-						     :enabledExtensionCount 
-						     (length ,(g `_deviceExtensions))
-						     :ppEnabledExtensionNames 
-						     _deviceExtensions
-						     :enabledLayerCount
-						     #-nolog (length ,(g `_validationLayers))
-						     #+nolog 0
-						     :ppEnabledLayerNames
-						     #+nolog NULL
-						     #-nolog ,(g `_validationLayers))
-				 (,(g `_physicalDevice)
-				  &info
-				  NULL
-				  &_device)
-				 ,(g `_physicalDevice))
-			       :throw t)
-			     (vkGetDeviceQueue ,(g `_device) (indices.graphicsFamily.value)
-					       0 (ref ,(g `_graphicsQueue)))
-			     
-			     (vkGetDeviceQueue ,(g `_device) (indices.presentFamily.value)
-					       0 (ref ,(g `_presentQueue))))))
+	 (do0
+		     (defun "QueueFamilyIndices_isComplete" (q)
+		       (declare (values _Bool)
+				(type QueueFamilyIndices* q))
+		       (return (and
+				(!= -1 q->graphicsFamily)
+			        (!= -1 q->presentFamily))))
+		     (defun "QueueFamilyIndices_make" ()
+		       (declare (values QueueFamilyIndices*))
+		       (let ((q (malloc (sizeof QueueFamilyIndices))))
+			 (declare (type QueueFamilyIndices* q))
+			 (setf q->graphicsFamily -1
+			       q->presentFamily -1)
+			 (return q))))
+	 (do0
+	  
+	  (defun cleanupSwapChainSupport (details)
+	    (declare (type SwapChainSupportDetails* details)
+		     )
+	    (free details->formats)
+	    (free details->presentModes)
+	    )
+	      (defun querySwapChainSupport (device )
+		(declare (values SwapChainSupportDetails)
+			 (type VkPhysicalDevice device)
+			 )
+		(let ((details (curly (= ,(format nil ".~a" `formatsCount) 0)
+				      (= ,(format nil ".~a" `presentModesCount) 0)))
+		      (s ,(g `_surface)))
+		  (declare (type SwapChainSupportDetails details))
+		  (vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+		   device
+		   s
+		   &details.capabilities)
+		  
+
+		  (let ((formatCount 0))
+		    (declare (type uint32_t formatCount))
+		    (vkGetPhysicalDeviceSurfaceFormatsKHR device s &formatCount
+							  NULL)
+		    (unless (== 0 formatCount)
+		      (setf details.formatsCount formatCount
+			    details.formats (malloc (* (sizeof VkSurfaceFormatKHR) formatCount)))
+		      
+		      (vkGetPhysicalDeviceSurfaceFormatsKHR
+		       device s &formatCount
+		       details.formats)))
+
+		  (let ((presentModeCount 0))
+		    (declare (type uint32_t presentModeCount))
+		    (vkGetPhysicalDeviceSurfacePresentModesKHR
+		     device s &presentModeCount
+		     NULL)
+		    (unless (== 0 presentModeCount)
+		      
+		      (setf details.presentModesCount presentModeCount
+			    details.presentModes ("(VkPresentModeKHR*)" (malloc (* (sizeof VkPresentModeKHR) presentModeCount))))
+		      (vkGetPhysicalDeviceSurfacePresentModesKHR
+		       device s &presentModeCount
+		       details.presentModes)))
+		  
+		  (return details))))
+	 (defun isDeviceSuitable ( device)
+	       (declare (values _Bool)
+			(type VkPhysicalDevice device))
+	      
+	       (let ((extensionsSupported (checkDeviceExtensionSupport device))
+		     (swapChainAdequate false))
+		 (declare (type bool swapChainAdequate))
+		 (when extensionsSupported
+		   (let ((swapChainSupport (querySwapChainSupport device)))
+		     (setf swapChainAdequate
+			   (and (not (== 0 swapChainSupport.formatsCount))
+				(not (== 0 swapChainSupport.presentModesCount))))
+		     (cleanupSwapChainSupport &swapChainSupport))))
+	       (let ((indices (findQueueFamilies device ,(g `_surface)))
+		     (supportedFeatures))
+		 (declare (type QueueFamilyIndices indices)
+			  (type VkPhysicalDeviceFeatures
+				supportedFeatures))
+		 (vkGetPhysicalDeviceFeatures device
+					      &supportedFeatures)
+		 (return (and (indices.isComplete)
+			      supportedFeatures.samplerAnisotropy
+			      (and 
+			       extensionsSupported
+			       swapChainAdequate)))
+		 #+nil (return (indices.isComplete))))
+	 (defun checkDeviceExtensionSupport (device)
+	       (declare (values bool)
+			(type VkPhysicalDevice device)
+			)
+	       (let ((extensionCount 0))
+		 (declare (type uint32_t extensionCount))
+		 (vkEnumerateDeviceExtensionProperties
+		  device NULL &extensionCount NULL)
+		 (let ((availableExtensions[extensionCount]))
+		   (declare (type
+			     VkExtensionProperties
+			     availableExtensions[extensionCount]
+			     ))
+		   (vkEnumerateDeviceExtensionProperties
+		    device
+		    NULL
+		    &extensionCount
+		    availableExtensions)
+		   (foreach (required ,(g `_deviceExtensions))
+			    (let ((found false))
+			      (declare (type _Bool found))
+			      (foreach (extension availableExtensions)
+				       (when (== 0
+						 (strcmp extension.extensionName
+							 required))
+					 (setf found true)
+					 break))
+			      (unless found
+				(return false))))
+		   (return true))))
+	 (defun getMaxUsableSampleCount ()
+			  (declare (values VkSampleCountFlagBits))
+			  (let ((physicalDeviceProperties))
+			    (declare (type
+				      VkPhysicalDeviceProperties
+				      physicalDeviceProperties))
+			    (vkGetPhysicalDeviceProperties
+			     ,(g `_physicalDevice)
+			     &physicalDeviceProperties)
+			    (let ((count
+				   (min
+				    physicalDeviceProperties.limits.framebufferColorSampleCounts
+				    physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
+			      (declare (type VkSampleCountFlags counts))
+			      ,@(loop for e in `(64 32 16 8 4 2) collect
+				     `(when (logand count
+						    ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
+					(return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
+			      (return VK_SAMPLE_COUNT_1_BIT))))
 	 (defun pickPhysicalDevice ()
 	   "// initialize member _physicalDevice" 
 	   (let ((deviceCount 0))
 	     (declare (type uint32_t deviceCount))
 	     (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount NULL)
 	     (when (== 0 deviceCount)
-	       (throw ("std::runtime_error"
+	       "// throw"
+	       #+nil (throw ("std::runtime_error"
+		       (string "failed to find gpu with vulkan support."))))
+	     (let ((devices[deviceCount]))
+	       (declare (type VkPhysicalDevice
+			      devices[deviceCount]))
+	       (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount
+					   devices)
+	       (foreach (device devices)
+			(when (isDeviceSuitable device)
+			  (setf ,(g `_physicalDevice) device
+				,(g `_msaaSamples) (getMaxUsableSampleCount))
+			  break))
+	       (when (== VK_NULL_HANDLE
+			 ,(g `_physicalDevice))
+		 "// throw"
+		 #+nil(throw ("std::runtime_error"
+			      (string "failed to find a suitable gpu.")))))))
+	 )))
+  #+nil
+  (define-module
+      `(logical_device
+	()
+	(do0
+	 (defun cleanupLogicalDevice ()
+	   (vkDestroyDevice ,(g `_device) NULL)
+	   )
+	 (defun createLogicalDevice ()
+	   "// initialize members _device and _graphicsQueue"
+	   (let ((indices (findQueueFamilies ,(g `_physicalDevice) ,(g `_surface)))
+		 (queuePriority 1s0))
+	     (declare (type float queuePriority))
+	     (let ((queueCreateInfos)
+		   (uniqueQueueFamilies
+		    (curly
+		     (indices.graphicsFamily.value)
+		     #+surface (indices.presentFamily.value))))
+	       (declare (type "std::vector<VkDeviceQueueCreateInfo>"
+			      queueCreateInfos)
+			(type "std::set<uint32_t>" uniqueQueueFamilies))
+	       
+	       (foreach (queueFamily uniqueQueueFamilies)
+			,(vk `(VkDeviceQueueCreateInfo
+			       queueCreateInfo
+			       :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+			       :queueFamilyIndex queueFamily
+			       :queueCount 1
+			       :pQueuePriorities &queuePriority))
+			(queueCreateInfos.push_back queueCreateInfo)))
+	     (let ((deviceFeatures (curly)))
+	       (declare (type VkPhysicalDeviceFeatures deviceFeatures))
+	       (setf deviceFeatures.samplerAnisotropy VK_TRUE)
+	       ,(vkcall
+		 `(create
+		   device
+		   (:pQueueCreateInfos (queueCreateInfos.data)
+				       :queueCreateInfoCount (static_cast<uint32_t>
+							      (queueCreateInfos.size))
+				       :pEnabledFeatures &deviceFeatures
+				       :enabledExtensionCount 
+				       (length ,(g `_deviceExtensions))
+				       :ppEnabledExtensionNames 
+				       _deviceExtensions
+				       :enabledLayerCount
+				       #-nolog (length ,(g `_validationLayers))
+				       #+nolog 0
+				       :ppEnabledLayerNames
+				       #+nolog NULL
+				       #-nolog ,(g `_validationLayers))
+		   (,(g `_physicalDevice)
+		     &info
+		     NULL
+		     &_device)
+		   ,(g `_physicalDevice))
+		 :throw t)
+	       (vkGetDeviceQueue ,(g `_device) (indices.graphicsFamily.value)
+				 0 (ref ,(g `_graphicsQueue)))
+	       
+	       (vkGetDeviceQueue ,(g `_device) (indices.presentFamily.value)
+				 0 (ref ,(g `_presentQueue))))))
+	 (defun isDeviceSuitable ( device)
+	       (declare (values _Bool)
+			(type VkPhysicalDevice device)
+			
+			)
+	       #+surface
+	       (let ((extensionsSupported (checkDeviceExtensionSupport device  ,(g `_deviceExtensions)))
+		     (swapChainAdequate false))
+		 (declare (type bool swapChainAdequate))
+		 (when extensionsSupported
+		   (let ((swapChainSupport (querySwapChainSupport device ,(g `_surface))))
+		     (setf swapChainAdequate
+			   (and (not (swapChainSupport.formats.empty))
+				(not (swapChainSupport.presentModes.empty)))))))
+	       (let ((indices (findQueueFamilies device ,(g `_surface)))
+		     (supportedFeatures))
+		 (declare (type QueueFamilyIndices indices)
+			  (type VkPhysicalDeviceFeatures
+				supportedFeatures))
+		 (vkGetPhysicalDeviceFeatures device
+					      &supportedFeatures)
+		 (return (and (indices.isComplete)
+			      supportedFeatures.samplerAnisotropy
+			      (and 
+			       extensionsSupported
+			       swapChainAdequate)))
+		 #+nil (return (indices.isComplete))))
+	 (defun pickPhysicalDevice ()
+	   "// initialize member _physicalDevice" 
+	   (let ((deviceCount 0))
+	     (declare (type uint32_t deviceCount))
+	     (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount NULL)
+	     (when (== 0 deviceCount)
+	       "// throw"
+	       #+nil (throw ("std::runtime_error"
 		       (string "failed to find gpu with vulkan support."))))
 	     (let (((devices deviceCount)))
 	       (declare (type "std::vector<VkPhysicalDevice>"
@@ -527,7 +730,7 @@ more structs. this function helps to initialize those structs."
 	       (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount
 					   (devices.data))
 	       (foreach (device devices)
-			(when (isDeviceSuitable device ,(g `_surface) ,(g `_deviceExtensions))
+			(when (isDeviceSuitable device)
 			  (setf ,(g `_physicalDevice) device
 				,(g `_msaaSamples) (getMaxUsableSampleCount))
 			  break))
@@ -762,58 +965,10 @@ more structs. this function helps to initialize those structs."
 				:offset (offsetof Vertex texCoord)))
 		(return attributeDescriptions)))
 	    
-	    (defstruct0 QueueFamilyIndices 
-		(graphicsFamily "std::optional<uint32_t>")
-	      #+surface (presentFamily "std::optional<uint32_t>")
-	      ("isComplete()" bool))
-	    (defun "QueueFamilyIndices::isComplete" ()
-	      (declare (values bool))
-	      (return (and
-		       (graphicsFamily.has_value)
-		       #+surface (presentFamily.has_value))))
 
 	    #+surface
 	    (do0
-	     (defstruct0 SwapChainSupportDetails
-		 (capabilities VkSurfaceCapabilitiesKHR)
-	       (formats "std::vector<VkSurfaceFormatKHR>")
-	       (presentModes "std::vector<VkPresentModeKHR>")
-	       )
-	     (defun querySwapChainSupport (device surface)
-	       (declare (values SwapChainSupportDetails)
-			(type VkPhysicalDevice device)
-			(type VkSurfaceKHR surface))
-	       (let ((details))
-		 (declare (type SwapChainSupportDetails details))
-		 (vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-		  device
-		  surface
-		  &details.capabilities)
-		 
-
-		 (let ((formatCount 0))
-		   (declare (type uint32_t formatCount))
-		   (vkGetPhysicalDeviceSurfaceFormatsKHR device surface &formatCount
-							 NULL)
-		   (unless (== 0 formatCount)
-		     (details.formats.resize formatCount)
-		     (vkGetPhysicalDeviceSurfaceFormatsKHR
-		      device surface &formatCount
-		      (details.formats.data))))
-
-		 (let ((presentModeCount 0))
-		   (declare (type uint32_t presentModeCount
-				  ))
-		   (vkGetPhysicalDeviceSurfacePresentModesKHR
-		    device surface &presentModeCount
-		    NULL)
-		   (unless (== 0 presentModeCount)
-		     (details.presentModes.resize presentModeCount)
-		     (vkGetPhysicalDeviceSurfacePresentModesKHR
-		      device surface &presentModeCount
-		      (details.presentModes.data))))
-		 
-		 (return details)))
+	     
 
 	     (defun chooseSwapSurfaceFormat (availableFormats)
 	       (declare (values VkSurfaceFormatKHR)
@@ -865,36 +1020,7 @@ more structs. this function helps to initialize those structs."
 
 	    #+surface
 	    (do0
-	     (defun checkDeviceExtensionSupport (device _deviceExtensions)
-	       (declare (values bool)
-			(type VkPhysicalDevice device)
-			(type "const std::vector<const char*>" _deviceExtensions))
-	       (let ((extensionCount 0))
-		 (declare (type uint32_t extensionCount))
-		 (vkEnumerateDeviceExtensionProperties
-		  device NULL &extensionCount NULL)
-		 (let (((availableExtensions extensionCount)))
-		   (declare (type
-			     "std::vector<VkExtensionProperties>"
-			     (availableExtensions extensionCount)
-			     ))
-		   (vkEnumerateDeviceExtensionProperties
-		    device
-		    NULL
-		    &extensionCount
-		    (availableExtensions.data))
-		   (let (((requiredExtensions
-			   (_deviceExtensions.begin)
-			   (_deviceExtensions.end))))
-		     (declare (type
-			       "std::set<std::string>"
-			       (requiredExtensions
-				(_deviceExtensions.begin)
-				(_deviceExtensions.end))))
-		     (foreach (extension availableExtensions)
-			      (requiredExtensions.erase
-			       extension.extensionName))
-		     (return (requiredExtensions.empty))))))
+	     
 	     
 	     (defun findQueueFamilies (device _surface )
 	       (declare (type VkPhysicalDevice device)
@@ -933,33 +1059,7 @@ more structs. this function helps to initialize those structs."
 		      (incf i))))
 		 (return indices)))
 
-	     (defun isDeviceSuitable ( device _surface  _deviceExtensions)
-	       (declare (values bool)
-			(type VkPhysicalDevice device)
-			(type VkSurfaceKHR _surface)
-			(type "const std::vector<const char*>" _deviceExtensions))
-	       #+surface
-	       (let ((extensionsSupported (checkDeviceExtensionSupport device  _deviceExtensions))
-		     (swapChainAdequate false))
-		 (declare (type bool swapChainAdequate))
-		 (when extensionsSupported
-		   (let ((swapChainSupport (querySwapChainSupport device _surface)))
-		     (setf swapChainAdequate
-			   (and (not (swapChainSupport.formats.empty))
-				(not (swapChainSupport.presentModes.empty)))))))
-	       (let ((indices (findQueueFamilies device _surface))
-		     (supportedFeatures))
-		 (declare (type QueueFamilyIndices indices)
-			  (type VkPhysicalDeviceFeatures
-				supportedFeatures))
-		 (vkGetPhysicalDeviceFeatures device
-					      &supportedFeatures)
-		 (return (and (indices.isComplete)
-			      supportedFeatures.samplerAnisotropy
-			      #+surface (and 
-					 extensionsSupported
-					 swapChainAdequate)))
-		 #+nil (return (indices.isComplete)))))
+	     )
 	    (defclass HelloTriangleApplication ()
 	      "public:"
 	      (defun run ()
@@ -2996,25 +3096,7 @@ more structs. this function helps to initialize those structs."
 			     VK_IMAGE_LAYOUT_UNDEFINED
 			     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 			     1)))
-			(defun getMaxUsableSampleCount ()
-			  (declare (values VkSampleCountFlagBits))
-			  (let ((physicalDeviceProperties))
-			    (declare (type
-				      VkPhysicalDeviceProperties
-				      physicalDeviceProperties))
-			    (vkGetPhysicalDeviceProperties
-			     _physicalDevice
-			     &physicalDeviceProperties)
-			    (let ((count
-				   ("std::min"
-				    physicalDeviceProperties.limits.framebufferColorSampleCounts
-				    physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
-			      (declare (type VkSampleCountFlags counts))
-			      ,@(loop for e in `(64 32 16 8 4 2) collect
-				     `(when (logand count
-						    ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
-					(return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
-			      (return VK_SAMPLE_COUNT_1_BIT)))))
+			)
 		      
 		       
 		       
@@ -3339,7 +3421,25 @@ more structs. this function helps to initialize those structs."
 			  "example/05_vulkan_generic_c/source/utils.h"
 			  )
 		  `(do0
-		    "#define length(a) (sizeof((a))/sizeof(*(a)))"))
+		    (include <stdbool.h>)
+		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
+		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
+		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+		    (defstruct0 SwapChainSupportDetails
+			(capabilities VkSurfaceCapabilitiesKHR)
+		      (formatsCount int)
+		      (formats VkSurfaceFormatKHR*)
+		      (presentModesCount int)
+		      (presentModes VkPresentModeKHR*)
+		      )
+		    "// initialized to -1, i.e. no value"
+		    (defstruct0 QueueFamilyIndices
+			
+			(graphicsFamily int)
+			(presentFamily int)
+			)
+		    
+))
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
