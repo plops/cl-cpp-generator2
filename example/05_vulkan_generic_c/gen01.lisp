@@ -195,7 +195,7 @@ more structs. this function helps to initialize those structs."
 	       ;;
 	       (_presentQueue  VkQueue)
 	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[1] "const char* const" (curly (string "VK_KHR_SWAPCHAIN_EXTENSION_NAME")
+	       (_deviceExtensions[1] "const char* const" (curly "VK_KHR_SWAPCHAIN_EXTENSION_NAME"
 					      ))
 	       (_swapChain VkSwapchainKHR)
 	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
@@ -532,57 +532,49 @@ more structs. this function helps to initialize those structs."
 		   (incf i))))
 	      (return indices))))
 	 (do0
-	  
 	  (defun cleanupSwapChainSupport (details)
-	    (declare (type SwapChainSupportDetails* details)
-		     )
+	    (declare (type SwapChainSupportDetails* details))
 	    (free details->formats)
-	    (free details->presentModes)
-	    )
-	      (defun querySwapChainSupport (device )
-		(declare (values SwapChainSupportDetails)
-			 (type VkPhysicalDevice device)
-			 )
-		(let ((details (curly (= ,(format nil ".~a" `formatsCount) 0)
-				      (= ,(format nil ".~a" `presentModesCount) 0)))
-		      (s ,(g `_surface)))
-		  (declare (type SwapChainSupportDetails details))
-		  (vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-		   device
-		   s
-		   &details.capabilities)
+	    (free details->presentModes))
+	  (defun querySwapChainSupport (device )
+	    (declare (values SwapChainSupportDetails)
+		     (type VkPhysicalDevice device))
+	    (let ((details (curly (= ,(format nil ".~a" `formatsCount) 0)
+				  (= ,(format nil ".~a" `presentModesCount) 0)))
+		  (s ,(g `_surface)))
+	      (declare (type SwapChainSupportDetails details))
+	      (vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+	       device
+	       s
+	       &details.capabilities)
+	      (let ((formatCount 0))
+		(declare (type uint32_t formatCount))
+		(vkGetPhysicalDeviceSurfaceFormatsKHR device s &formatCount
+						      NULL)
+		(unless (== 0 formatCount)
+		  (setf details.formatsCount formatCount
+			details.formats (malloc (* (sizeof VkSurfaceFormatKHR) formatCount)))
 		  
+		  (vkGetPhysicalDeviceSurfaceFormatsKHR
+		   device s &formatCount
+		   details.formats)))
+	      (let ((presentModeCount 0))
+		(declare (type uint32_t presentModeCount))
+		(vkGetPhysicalDeviceSurfacePresentModesKHR
+		 device s &presentModeCount
+		 NULL)
+		(unless (== 0 presentModeCount)
+		  (setf details.presentModesCount presentModeCount
+			details.presentModes ("(VkPresentModeKHR*)" (malloc (* (sizeof VkPresentModeKHR) presentModeCount))))
+		  (vkGetPhysicalDeviceSurfacePresentModesKHR
+		   device s &presentModeCount
+		   details.presentModes)))
+	      (return details))))
 
-		  (let ((formatCount 0))
-		    (declare (type uint32_t formatCount))
-		    (vkGetPhysicalDeviceSurfaceFormatsKHR device s &formatCount
-							  NULL)
-		    (unless (== 0 formatCount)
-		      (setf details.formatsCount formatCount
-			    details.formats (malloc (* (sizeof VkSurfaceFormatKHR) formatCount)))
-		      
-		      (vkGetPhysicalDeviceSurfaceFormatsKHR
-		       device s &formatCount
-		       details.formats)))
-
-		  (let ((presentModeCount 0))
-		    (declare (type uint32_t presentModeCount))
-		    (vkGetPhysicalDeviceSurfacePresentModesKHR
-		     device s &presentModeCount
-		     NULL)
-		    (unless (== 0 presentModeCount)
-		      
-		      (setf details.presentModesCount presentModeCount
-			    details.presentModes ("(VkPresentModeKHR*)" (malloc (* (sizeof VkPresentModeKHR) presentModeCount))))
-		      (vkGetPhysicalDeviceSurfacePresentModesKHR
-		       device s &presentModeCount
-		       details.presentModes)))
-		  
-		  (return details))))
-	 (defun isDeviceSuitable ( device)
-	       (declare (values _Bool)
+	 (defun isDeviceSuitable (device)
+	       (declare (values bool)
 			(type VkPhysicalDevice device))
-	      
+	       
 	       (let ((extensionsSupported (checkDeviceExtensionSupport device))
 		     (swapChainAdequate false))
 		 (declare (type bool swapChainAdequate))
@@ -618,8 +610,7 @@ more structs. this function helps to initialize those structs."
 		 (let ((availableExtensions[extensionCount]))
 		   (declare (type
 			     VkExtensionProperties
-			     availableExtensions[extensionCount]
-			     ))
+			     availableExtensions[extensionCount]))
 		   (vkEnumerateDeviceExtensionProperties
 		    device
 		    NULL
@@ -627,35 +618,43 @@ more structs. this function helps to initialize those structs."
 		    availableExtensions)
 		   (foreach (required ,(g `_deviceExtensions))
 			    (let ((found false))
-			      (declare (type _Bool found))
+			      (declare (type bool found))
+			      ,(vkprint "check for extension" `(required))
 			      (foreach (extension availableExtensions)
+				       ,(vkprint "check for extension" `(required extension))
 				       (when (== 0
 						 (strcmp extension.extensionName
 							 required))
 					 (setf found true)
+					 ,(vkprint "check for extension" `(found))
 					 break))
 			      (unless found
+				,(vkprint "none of the available extensions match the requirements" `(found))
 				(return false))))
 		   (return true))))
 	 (defun getMaxUsableSampleCount ()
-			  (declare (values VkSampleCountFlagBits))
-			  (let ((physicalDeviceProperties))
-			    (declare (type
-				      VkPhysicalDeviceProperties
-				      physicalDeviceProperties))
-			    (vkGetPhysicalDeviceProperties
-			     ,(g `_physicalDevice)
-			     &physicalDeviceProperties)
-			    (let ((count
-				   (min
-				    physicalDeviceProperties.limits.framebufferColorSampleCounts
-				    physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
-			      (declare (type VkSampleCountFlags counts))
-			      ,@(loop for e in `(64 32 16 8 4 2) collect
-				     `(when (logand count
-						    ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
-					(return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
-			      (return VK_SAMPLE_COUNT_1_BIT))))
+	   (declare (values VkSampleCountFlagBits))
+	   (let ((physicalDeviceProperties))
+	     (declare (type
+		       VkPhysicalDeviceProperties
+		       physicalDeviceProperties))
+	     (vkGetPhysicalDeviceProperties
+	      ,(g `_physicalDevice)
+	      &physicalDeviceProperties)
+	     (let ((count
+		    (min
+		     physicalDeviceProperties.limits.framebufferColorSampleCounts
+		     physicalDeviceProperties.limits.framebufferDepthSampleCounts)))
+	       (declare (type VkSampleCountFlags counts
+			      ))
+	       ,(vkprint "min" `(count
+				 physicalDeviceProperties.limits.framebufferColorSampleCounts
+				 physicalDeviceProperties.limits.framebufferDepthSampleCounts))
+	       ,@(loop for e in `(64 32 16 8 4 2) collect
+		      `(when (logand count
+				     ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))
+			 (return ,(format nil "VK_SAMPLE_COUNT_~a_BIT" e))))
+	       (return VK_SAMPLE_COUNT_1_BIT))))
 	 (defun pickPhysicalDevice ()
 	   "// initialize member _physicalDevice" 
 	   (let ((deviceCount 0))
