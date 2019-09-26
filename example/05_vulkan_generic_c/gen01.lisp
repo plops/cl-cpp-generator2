@@ -399,12 +399,13 @@ more structs. this function helps to initialize those structs."
 		      (createRenderPass)
 		      (createDescriptorSetLayout)
 		      (createGraphicsPipeline)
+		      (createCommandPool)
 		      #+nil (
 		       
 		       
 			     
 		       
-		       (createCommandPool)
+		       
 		       ;; create texture image needs command pools
 		       (createColorResources)
 		       (createDepthResources)
@@ -1188,12 +1189,55 @@ more structs. this function helps to initialize those structs."
       `(graphics_pipeline
 	()
 	(do0
+	 (include <stdlib.h>)
+	 (defun readFile (filename)
+	   (declare (type "const char*" filename)
+		    (values "char*"))
+	   (let ((file (fopen filename (string "r"))))
+	     (unless file
+	       ,(vkprint "failed to open file."))
+	     (when file
+	       (fseek file 0L SEEK_END)
+	       (let ((filesize (ftell file))
+		     (buffer ("(char*)" (malloc (+ 1 filesize)))))
+		 (rewind file)
+		 (fread buffer 1 filesize file)
+		 (setf (aref buffer filesize) 0)
+		 (return buffer)))))
+	 
+	 (defun createShaderModule (code)
+	   (declare (values VkShaderModule)
+		    (type "const char*" code)
+		    )
+	   ;;std::vector<char> fullfills alignment requirements of uint32_t
+	   
+	   (let ((shaderModule))
+	     (declare (type VkShaderModule shaderModule))
+	     ,(vkcall
+	       `(create
+		 shader-module
+		 (:codeSize (strlen code)
+			    :pCode ("(const uint32_t*)"
+				    code))
+		 (,(g `_device)
+		  &info
+		  NULL
+		  &shaderModule)
+		 shaderModule)
+	       :throw t)
+	     (return shaderModule)))
+	 
 	 (defun createGraphicsPipeline ()
 	   (declare (values void))
-	   (let ((vertShaderModule (createShaderModule
-				    (readFile (string "vert.spv"))))
+	   (let ((fv (readFile (string "vert.spv")))
+		 (vertShaderModule (createShaderModule
+				    fv))
+		 (ff (readFile (string "frag.spv")))
 		 (fragShaderModule (createShaderModule
-				    (readFile (string "frag.spv")))))
+				    ff)))
+	     (free fv)
+	     (free ff)
+	     
 	     ,@(loop for e in `(frag vert) collect
 				    (vk
 				     `(VkPipelineShaderStageCreateInfo
@@ -1393,8 +1437,28 @@ more structs. this function helps to initialize those structs."
 						    NULL)
 			     (vkDestroyShaderModule _device
 						    vertShaderModule
-						    NULL)))
-	 )))
+						    NULL))))))
+    #+nil (define-module
+      `(command_pool
+	()
+	(do0
+	 (defun createCommandPool ()
+	   (declare (values void))
+	   (let ((queueFamilyIndices (findQueueFamilies
+				      ,(g `_physicalDevice))))
+	     ,(vkcall
+	       `(create
+		 command-pool
+		 (;; cmds for drawing go to graphics queue
+		  :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
+				    :flags 0)
+		 (,(g `_device)
+		  &info
+		  NULL
+		  (ref ,(g `_commandPool)))
+		 ,(g `_commandPool))
+	       :throw t)
+	     (QueueFamilyIndices_destroy queueFamilyIndices))))))
 
    
 
@@ -1498,34 +1562,10 @@ more structs. this function helps to initialize those structs."
 	    (do0
 	     "// code to load binary shader from file"
 	     (include <fstream>)
-
-	     (do0
-	      "typedef struct SwapChainSupportDetails SwapChainSupportDetails;"
-	      "typedef struct QueueFamilyIndices QueueFamilyIndices;"
-	      "std::vector<char> readFile(const std::string&);"
-	      "SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice, VkSurfaceKHR);"
-	      "VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>&);"
-	      "VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>&);"
-	      "VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR&, GLFWwindow*);"
-	      "QueueFamilyIndices findQueueFamilies(VkPhysicalDevice, VkSurfaceKHR);"
-	      )
 	     
 	     
-	     (defun readFile (filename)
-	       (declare (type "const std::string&" filename)
-			(values "std::vector<char>"))
-	       (let ((file ("std::ifstream" filename (logior "std::ios::ate"
-							     "std::ios::binary"))))
-		 (unless (file.is_open)
-		   (throw ("std::runtime_error"
-			   (string "failed to open file."))))
-		 (let ((fileSize (file.tellg))
-		       (buffer ("std::vector<char>" fileSize)))
-		   (file.seekg 0)
-		   (file.read (buffer.data)
-			      fileSize)
-		   (file.close)
-		   (return buffer)))))
+	     
+	     )
 	    (defstruct0 UniformBufferObject
 		(model "glm::mat4")
 	      (view "glm::mat4")
@@ -3015,23 +3055,7 @@ more structs. this function helps to initialize those structs."
 			     ,(vkthrow `(vkEndCommandBuffer
 					 (aref _commandBuffers i)))
 			     ))
-			 (defun createCommandPool ()
-			   (declare (values void))
-			   (let ((queueFamilyIndices (findQueueFamilies
-						      _physicalDevice
-						      _surface)))
-			     ,(vkcall
-			       `(create
-				 command-pool
-				 (;; cmds for drawing go to graphics queue
-				  :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
-				  :flags 0)
-				 (_device
-				  &info
-				  NULL
-				  &_commandPool)
-				 _commandPool)
-			       :throw t)))
+			 
 			 (defun createFramebuffers ()
 			   (declare (values void))
 			   (let ((n (_swapChainImageViews.size)))
@@ -3165,26 +3189,7 @@ more structs. this function helps to initialize those structs."
 				 _renderPass)
 			       :throw t)))
 			 
-			 (defun createShaderModule (code)
-			   (declare (values VkShaderModule)
-				    (type "const std::vector<char>&" code))
-			   ;;std::vector<char> fullfills alignment requirements of uint32_t
-			 
-			   (let ((shaderModule))
-			     (declare (type VkShaderModule shaderModule))
-			     ,(vkcall
-			       `(create
-				 shader-module
-				 (:codeSize (code.size)
-					    :pCode ("reinterpret_cast<const uint32_t*>"
-						    (code.data)))
-				 (_device
-				  &info
-				  NULL
-				  &shaderModule)
-				 shaderModule)
-			       :throw t)
-			     (return shaderModule))))
+			 )
 		      
 			
 		      
