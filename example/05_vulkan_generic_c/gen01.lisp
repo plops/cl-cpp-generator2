@@ -62,7 +62,7 @@
 		  (destructuring-bind (fmt &optional value) e
 		    (if value
 			`(printf ,fmt ,value)
-			`(puts ,fmt))))))))
+			`(printf ,fmt))))))))
     
     (defun vkthrow (cmd)
       `(unless (== VK_SUCCESS
