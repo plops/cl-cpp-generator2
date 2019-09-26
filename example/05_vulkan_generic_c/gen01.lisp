@@ -36,7 +36,7 @@
 
 
     (defun vkprint (msg
-		    rest)
+		    &optional rest)
       ;;"{sec}.{nsec} {__FILE__}:{__LINE__} {__func__}"
       (let* ((m `(string ,(format nil " ~a: " msg)))
 	     (l `(((printf_dec_format tp.tv_sec) tp.tv_sec)
@@ -68,8 +68,8 @@
       `(unless (== VK_SUCCESS
 		   ,cmd)
 	 #+nil "// throw"
-	 (puts
-	  (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd))))
+	 ,(vkprint
+	   (substitute #\Space #\Newline (format nil "failed to ~a" cmd)))
 	 #+nil(
 		    throw ("std::runtime_error"
 		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
@@ -142,6 +142,13 @@
 		       `(,(vk-info-function verb subject
 					    :suffix suffix)
 			  ,@args))
+		  ;,(vkprint (format nil " ~a ~a" verb subject))
+		  ,(vkprint (format nil " ~a ~a ~a=" verb subject instance)
+				`(,instance))
+		  #+nil (if instance
+			    ,(vkprint (format nil " ~a ~a ~a=" verb subject instance)
+				`(,instance))
+		      ,(vkprint (format nil " ~a ~a" verb subject)))
 		  #+nil(<< "std::cout"
 		      (dot ("std::chrono::high_resolution_clock::now")
 			   (time_since_epoch)
@@ -352,8 +359,10 @@ more structs. this function helps to initialize those structs."
 	   #-nolog ( ;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
 		    unless (checkValidationLayerSupport)
 		     "// throw"
+		     ,(vkprint "validation layers requested, but unavailable." `())
 		     #+nil(throw ("std::runtime_error"
-			    (string "validation layers requested, but unavailable."))))
+
+				  )))
 	   ,(vk `(VkApplicationInfo
 		  appInfo
 		  :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
@@ -671,8 +680,9 @@ more structs. this function helps to initialize those structs."
 	     (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount NULL)
 	     (when (== 0 deviceCount)
 	       "// throw"
+	       ,(vkprint "failed to find gpu with vulkan support.")
 	       #+nil (throw ("std::runtime_error"
-		       (string "failed to find gpu with vulkan support."))))
+		       )))
 	     (let ((devices[deviceCount]))
 	       (declare (type VkPhysicalDevice
 			      devices[deviceCount]))
@@ -686,8 +696,9 @@ more structs. this function helps to initialize those structs."
 	       (when (== VK_NULL_HANDLE
 			 ,(g `_physicalDevice))
 		 "// throw"
+		 ,(vkprint "failed to find a suitable gpu." )
 		 #+nil(throw ("std::runtime_error"
-			      (string "failed to find a suitable gpu.")))))))
+			      (string )))))))
 	 )))
   #+nil
   (define-module
@@ -3459,7 +3470,7 @@ more structs. this function helps to initialize those structs."
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
-		    "#define printf_dec_format(x) _Generic((x), char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
+		    "#define printf_dec_format(x) _Generic((x), default: \"%p\", char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
 
 		    (defstruct0 SwapChainSupportDetails
 			(capabilities VkSurfaceCapabilitiesKHR)
