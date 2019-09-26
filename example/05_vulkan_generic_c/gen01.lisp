@@ -793,12 +793,12 @@ more structs. this function helps to initialize those structs."
 			      availableFormats)
 			(type int n))
 	       (dotimes (i n)	    ;foreach (format availableFormats)
-		 (setf format (aref availableFormats i))
-		 (when (and (== VK_FORMAT_B8G8R8A8_UNORM
-				       format.format)
-				   (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-				       format.colorSpace))
-			  (return format)))
+		 (let ((format (aref availableFormats i)))
+		   (when (and (== VK_FORMAT_B8G8R8A8_UNORM
+				  format.format)
+			      (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+				  format.colorSpace))
+		     (return format))))
 	       (return (aref availableFormats 0)))
 	     (defun chooseSwapPresentMode (modes n)
 	       (declare (values VkPresentModeKHR)
