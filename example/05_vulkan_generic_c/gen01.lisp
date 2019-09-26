@@ -236,7 +236,7 @@ more structs. this function helps to initialize those structs."
 		      (when value
 			`(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	  `(do0
-	       "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	    "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
 	       (defstruct0 State
 		   ,@(loop for e in l collect
 			  (destructuring-bind (name type &optional value) e
@@ -392,14 +392,10 @@ more structs. this function helps to initialize those structs."
 		 (createSurface))
 	   (pickPhysicalDevice)
 	   (createLogicalDevice)
-	   #+nil (
-	    
-		  
-		  
-	    #+surface
-	    ,(let ((l`(
-		       (createSwapChain)
-		       (createImageViews)
+	   
+	   ,(let ((l`(
+		      (createSwapChain)
+		      #+nil ((createImageViews)
 		       (createRenderPass)
 		       (createDescriptorSetLayout)
 		       (createGraphicsPipeline)
@@ -419,17 +415,13 @@ more structs. this function helps to initialize those structs."
 		       (createDescriptorPool)
 		       (createDescriptorSets)
 		       (createCommandBuffers)
-		       (createSyncObjects))))
-	       `(do0
-		 ,@(loop for (e) in l collect
-			`(do0
-			  (<< "std::cout"
-			      (dot ("std::chrono::high_resolution_clock::now")
-				   (time_since_epoch)
-				   (count))
-			      (string ,(format nil " call ~a" e))
-			      "std::endl")
-			  (,e))))))))))
+		       (createSyncObjects)))))
+	      `(do0
+		,@(loop for (e) in l collect
+		       `(do0
+			 
+			 ,(vkprint (format nil " call ~a" e))
+			 (,e)))))))))
   (define-module
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
@@ -536,7 +528,9 @@ more structs. this function helps to initialize those structs."
 	  (defun cleanupSwapChainSupport (details)
 	    (declare (type SwapChainSupportDetails* details))
 	    (free details->formats)
-	    (free details->presentModes))
+	    (free details->presentModes)
+	    (setf details->formatsCount 0
+		  details->presentModesCount 0))
 	  (defun querySwapChainSupport (device )
 	    (declare (values SwapChainSupportDetails)
 		     (type VkPhysicalDevice device))
@@ -786,6 +780,154 @@ more structs. this function helps to initialize those structs."
 				   0 (ref ,(g `_presentQueue)))))))
 	 
 	 )))
+
+  (define-module
+      `(swap_chain
+	()
+	(do0
+	 (include <stdlib.h>)
+	 (do0
+	  (defun chooseSwapSurfaceFormat (availableFormats n)
+	       (declare (values VkSurfaceFormatKHR)
+			(type "const VkSurfaceFormatKHR*"
+			      availableFormats)
+			(type int n))
+	       (dotimes (i n)	    ;foreach (format availableFormats)
+		 (setf format (aref availableFormats i))
+		 (when (and (== VK_FORMAT_B8G8R8A8_UNORM
+				       format.format)
+				   (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+				       format.colorSpace))
+			  (return format)))
+	       (return (aref availableFormats 0)))
+	     (defun chooseSwapPresentMode (modes n)
+	       (declare (values VkPresentModeKHR)
+			(type "const VkPresentModeKHR*"
+			      modes)
+			(type int n))
+	       "// prefer triple buffer (if available)"
+	       (dotimes (i n)  ;foreach (mode modes)
+		 (setf mode (aref modes i))
+		 (when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
+			  (return mode)))
+	       (return VK_PRESENT_MODE_FIFO_KHR))
+	     (defun chooseSwapExtent (capabilities)
+	       (declare (values VkExtent2D)
+			(type "const VkSurfaceCapabilitiesKHR*"
+			      capabilities))
+	       (if (!= UINT32_MAX capabilities->currentExtent.width)
+		   (do0
+		    (return capabilities->currentExtent))
+		   (do0
+		    (let ((width 0)
+			  (height 0)
+			  )
+		      (declare (type int width height))
+		      (glfwGetFramebufferSize ,(g `_window) &width &height)
+		      (let ((actualExtent (curly width
+						 height))
+			    )
+			(declare (type VkExtent2D actualExtent))
+
+			,@(loop for e in `(width height) collect
+			       `(setf (dot actualExtent ,e)
+				      (max (dot capabilities->minImageExtent ,e)
+						  (min
+						   (dot capabilities->maxImageExtent ,e)
+						   (dot actualExtent ,e)))))
+			
+			(return actualExtent)))))))
+	 (defun cleanupSwapChain ()
+	   ;(free ,(g `_swapChainImages))
+	   )
+	 (defun createSwapChain ()
+	   (declare (values void))
+	   (let ((swapChainSupport
+		  (querySwapChainSupport ,(g `_physicalDevice)))
+		 (surfaceFormat
+		  (chooseSwapSurfaceFormat
+		   swapChainSupport->formats
+		   swapChainSupport->formatsCount
+		   ))
+		 (presentMode
+		  (chooseSwapPresentMode
+		   swapChainSupport->presentModes
+		   swapChainSupport->presentModesCount))
+		 (extent
+		  (chooseSwapExtent
+		   swapChainSupport->capabilities
+		   ,(g `_window)))
+		 (imageCount
+		  (+ swapChainSupport->capabilities.minImageCount 1))
+		 (indices (findQueueFamilies ,(g `_physicalDevice)))
+		 ((aref queueFamilyIndices) (curly
+					     indices.graphicsFamily
+					     indices.presentFamily))
+		 ;; best performance mode:
+		 (imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
+		 (queueFamilyIndexCount 0)
+		 (pQueueFamilyIndices NULL))
+	     (unless (== indices.presentFamily
+			 indices.graphicsFamily)
+	       "// this could be improved with ownership stuff"
+	       (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
+		     queueFamilyIndexCount 2
+		     pQueueFamilyIndices pQueueFamilyIndices))
+	     (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
+			(< swapChainSupport.capabilities.maxImageCount
+			   imageCount))
+	       (setf imageCount swapChainSupport.capabilities.maxImageCount))
+	     ,(vkcall
+	       `(create
+		 swapchain
+		 (:surface ,(g `_surface)
+			   :minImageCount imageCount
+			   :imageFormat surfaceFormat.format
+			   :imageColorSpace surfaceFormat.colorSpace
+			   :imageExtent extent
+			   :imageArrayLayers 1
+			   :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+			   ;; we could use VK_IMAGE_USAGE_TRANSFER_DST_BIT
+			   ;; if we want to enable post processing
+			   :imageSharingMode imageSharingMode
+			   :queueFamilyIndexCount queueFamilyIndexCount
+			   :pQueueFamilyIndices pQueueFamilyIndices
+			   :preTransform swapChainSupport.capabilities.currentTransform
+			   ;; ignore alpha
+			   :compositeAlpha VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+			   :presentMode presentMode
+			   ;; turning on clipping can help performance
+			   ;; but reading values back may not work
+			   :clipped VK_TRUE
+			   ;; resizing the window might need a new swap
+			   ;; chain, complex topic
+			   :oldSwapchain VK_NULL_HANDLE
+			   )
+		 (_device
+		  &info
+		  NULL
+		  (ref ,(g `_swapChain))
+		  )
+		 ,(g `_swapChain))
+	       :throw t
+	       :khr "KHR")
+	     (cleanupSwapChainSupport swapChainSupport)
+	     (do0
+	      "// now get the images, note will be destroyed with the swap chain"
+	      (vkGetSwapchainImagesKHR ,(g `_device)
+				       ,(g `_swapChain)
+				       &imageCount
+				       NULL)
+	      #+nil (setf ,(g `_swapChainImages) (malloc (* (sizeof (deref ,(g `_swapChainImages)))
+						   imageCount)))
+	      ,(vkprint "create swapChainImages" `(imageCount _N_IMAGES))
+	      (vkGetSwapchainImagesKHR ,(g `_device)
+				       ,(g `_swapChain)
+				       &imageCount
+				       ,(g `_swapChainImages))
+	      (setf ,(g `_swapChainImageFormat) surfaceFormat.format
+		    ,(g `_swapChainExtent) extent))))
+	 )))
   
   
   (let* ((vertex-code
@@ -1012,57 +1154,8 @@ more structs. this function helps to initialize those structs."
 		(return attributeDescriptions)))
 	    
 
-	    #+surface
-	    (do0
-	     
-
-	     (defun chooseSwapSurfaceFormat (availableFormats)
-	       (declare (values VkSurfaceFormatKHR)
-			(type "const std::vector<VkSurfaceFormatKHR>&"
-			      availableFormats))
-	       (foreach (format availableFormats)
-			(when (and (== VK_FORMAT_B8G8R8A8_UNORM
-				       format.format)
-				   (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-				       format.colorSpace))
-			  (return format)))
-	       (return (aref availableFormats 0)))
-	     (defun chooseSwapPresentMode (modes)
-	       (declare (values VkPresentModeKHR)
-			(type "const std::vector<VkPresentModeKHR>&"
-			      modes))
-	       "// prefer triple buffer (if available)"
-	       (foreach (mode modes)
-			(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
-			  (return mode)))
-	       (return VK_PRESENT_MODE_FIFO_KHR))
-	     (defun chooseSwapExtent (capabilities _window)
-	       (declare (values VkExtent2D)
-			(type "const VkSurfaceCapabilitiesKHR&"
-			      capabilities)
-			(type GLFWwindow* _window))
-	       (if (!= UINT32_MAX capabilities.currentExtent.width)
-		   (do0
-		    (return capabilities.currentExtent))
-		   (do0
-		    (let ((width 0)
-			  (height 0)
-			  )
-		      (declare (type int width height))
-		      (glfwGetFramebufferSize _window &width &height)
-		      (let ((actualExtent (curly (static_cast<uint32_t> width)
-						 (static_cast<uint32_t> height)))
-			    )
-			(declare (type VkExtent2D actualExtent))
-
-			,@(loop for e in `(width height) collect
-			       `(setf (dot actualExtent ,e)
-				      ("std::max" (dot capabilities.minImageExtent ,e)
-						  ("std::min"
-						   (dot capabilities.maxImageExtent ,e)
-						   (dot actualExtent ,e)))))
-			
-			(return actualExtent)))))))
+	   
+	    
 
 	    #+surface
 	    (do0
@@ -2947,87 +3040,7 @@ more structs. this function helps to initialize those structs."
 		      
 			
 		      
-			(defun createSwapChain ()
-			  (declare (values void))
-			  (let ((swapChainSupport
-				 (querySwapChainSupport _physicalDevice _surface))
-				(surfaceFormat
-				 (chooseSwapSurfaceFormat
-				  swapChainSupport.formats))
-				(presentMode
-				 (chooseSwapPresentMode
-				  swapChainSupport.presentModes))
-				(extent
-				 (chooseSwapExtent
-				  swapChainSupport.capabilities
-				  _window))
-				(imageCount
-				 (+ swapChainSupport.capabilities.minImageCount 1))
-				(indices (findQueueFamilies _physicalDevice _surface))
-				((aref queueFamilyIndices) (curly
-							    (indices.graphicsFamily.value)
-							    (indices.presentFamily.value)))
-				;; best performance mode:
-				(imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
-				(queueFamilyIndexCount 0)
-				(pQueueFamilyIndices NULL))
-			    (unless (== indices.presentFamily
-					indices.graphicsFamily)
-			      "// this could be improved with ownership stuff"
-			      (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
-				    queueFamilyIndexCount 2
-				    pQueueFamilyIndices pQueueFamilyIndices))
-			    (when (and (< 0 swapChainSupport.capabilities.maxImageCount)
-				       (< swapChainSupport.capabilities.maxImageCount
-					  imageCount))
-			      (setf imageCount swapChainSupport.capabilities.maxImageCount))
-			    ,(vkcall
-			      `(create
-				swapchain
-				(:surface _surface
-					  :minImageCount imageCount
-					  :imageFormat surfaceFormat.format
-					  :imageColorSpace surfaceFormat.colorSpace
-					  :imageExtent extent
-					  :imageArrayLayers 1
-					  :imageUsage VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-					  ;; we could use VK_IMAGE_USAGE_TRANSFER_DST_BIT
-					  ;; if we want to enable post processing
-					  :imageSharingMode imageSharingMode
-					  :queueFamilyIndexCount queueFamilyIndexCount
-					  :pQueueFamilyIndices pQueueFamilyIndices
-					  :preTransform swapChainSupport.capabilities.currentTransform
-					  ;; ignore alpha
-					  :compositeAlpha VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-					  :presentMode presentMode
-					  ;; turning on clipping can help performance
-					  ;; but reading values back may not work
-					  :clipped VK_TRUE
-					  ;; resizing the window might need a new swap
-					  ;; chain, complex topic
-					  :oldSwapchain VK_NULL_HANDLE
-					  )
-				(_device
-				 &info
-				 NULL
-				 &_swapChain
-				 )
-				_swapChain)
-			      :throw t
-			      :khr "KHR")			  
-			    (do0
-			     "// now get the images, note will be destroyed with the swap chain"
-			     (vkGetSwapchainImagesKHR _device
-						      _swapChain
-						      &imageCount
-						      NULL)
-			     (_swapChainImages.resize imageCount)
-			     (vkGetSwapchainImagesKHR _device
-						      _swapChain
-						      &imageCount
-						      (_swapChainImages.data))
-			     (setf _swapChainImageFormat surfaceFormat.format
-				   _swapChainExtent extent))))
+			
 			(defun createImageView (image format aspectFlags mipLevels)
 			  (declare (values VkImageView)
 				   (type VkImage image)
