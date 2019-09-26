@@ -622,7 +622,7 @@ more structs. this function helps to initialize those structs."
 			      (declare (type bool found))
 			      ,(vkprint "check for extension" `(required))
 			      (foreach (extension availableExtensions)
-				       ,(vkprint "check for extension" `(required extension))
+				       ,(vkprint "check for extension" `(required extension.extensionName))
 				       (when (== 0
 						 (strcmp extension.extensionName
 							 required))
@@ -3458,15 +3458,16 @@ more structs. this function helps to initialize those structs."
 		    "#define printf_dec_format(x) _Generic((x), default: \"%p\", char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
 		    ,(format nil "#define type_string(x) _Generic((x), ~{~a: \"~a\"~^,~})"
 			     (loop for e in `(default
-						 char  "unsigned char"
-						 short  "unsigned short"
-						 int  "unsigned int"
-						 "long int" "unsigned long int"
-						 "long long int" "unsigned long long int"
-						 float double "long double"
-						 "const char*"
-						 "void*"
-						 
+						 ,@(loop for h in
+						      `(,@(loop for f in `(char short int "long int" "long long int") appending
+							       `(,f ,(format nil "unsigned ~a" f)))
+							  float double "long double"
+							  "char*"
+							  "void*"
+							  )
+						    appending
+						      `(,h ,(format nil "const ~a" h)))
+						 						 
 						 )
 				appending
 				 `(,e ,e)))
