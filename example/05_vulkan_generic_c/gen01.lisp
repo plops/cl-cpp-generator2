@@ -622,7 +622,7 @@ more structs. this function helps to initialize those structs."
 			      (declare (type bool found))
 			      ,(vkprint "check for extension" `(required))
 			      (foreach (extension availableExtensions)
-				       ,(vkprint "check for extension" `(required extension.extensionName))
+				       ;,(vkprint "check for extension" `(required extension.extensionName))
 				       (when (== 0
 						 (strcmp extension.extensionName
 							 required))
@@ -630,7 +630,7 @@ more structs. this function helps to initialize those structs."
 					 ,(vkprint "check for extension" `(found))
 					 break))
 			      (unless found
-				,(vkprint "none of the available extensions match the requirements" `(found))
+				,(vkprint "not all of the required extensions were found" `(required found))
 				(return false))))
 		   (return true))))
 	 (defun getMaxUsableSampleCount ()
