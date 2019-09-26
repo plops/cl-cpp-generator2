@@ -396,8 +396,9 @@ more structs. this function helps to initialize those structs."
 	   ,(let ((l`(
 		      (createSwapChain)
 		      (createImageViews)
+		      (createRenderPass)
 		      #+nil (
-		       (createRenderPass)
+		       
 		       (createDescriptorSetLayout)
 		       (createGraphicsPipeline)
 		       
@@ -990,7 +991,154 @@ more structs. this function helps to initialize those structs."
 	       ))))
 	 )))
   
-    
+  (define-module
+      `(render_pass
+	()
+	(do0
+	  (defun cleanupRenderPass ()
+	    )
+	  (defun findSupportedFormat (candidates n
+						    tiling
+						    features)
+			  (declare (values VkFormat)
+				   (type VkFormat* candidates)
+				   (type int n)
+				   (type VkImageTiling tiling)
+				   (type VkFormatFeatureFlags features))
+			  (dotimes (i n) ; foreach (format candidates)
+			    (let ((format (aref candidates i))
+				  (props))
+				     (declare (type VkFormatProperties props))
+				     (vkGetPhysicalDeviceFormatProperties ,(g `_physicalDevice)
+									  format &props)
+				     (when (and
+					    (== VK_IMAGE_TILING_LINEAR tiling)
+					    (== features
+						(logand
+						 features
+						 props.linearTilingFeatures)))
+				       (return format))
+				     (when (and
+					    (== VK_IMAGE_TILING_OPTIMAL tiling)
+					    (== features
+						(logand
+						 features
+						 props.optimalTilingFeatures)))
+				       (return format))))
+			  
+			  ,(vkprint "failed to find supported format!")
+			  )
+	  (defun findDepthFormat ()
+	    (declare (values VkFormat))
+	    (let ((candidates[] (curly
+				 VK_FORMAT_D32_SFLOAT
+				 VK_FORMAT_D32_SFLOAT_S8_UINT
+				 VK_FORMAT_D24_UNORM_S8_UINT)))
+	      (declare (type "VkFormat" candidates[]
+			     ))
+	      (return (findSupportedFormat
+		       candidates
+		       (length candidates)
+		       VK_IMAGE_TILING_OPTIMAL
+		       VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))))
+	 (defun createRenderPass ()
+	   ,(vk
+	     `(VkAttachmentDescription
+	       colorAttachment
+	       :format ,(g `_swapChainImageFormat)
+	       :samples ,(g `_msaaSamples)
+	       :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
+	       :storeOp VK_ATTACHMENT_STORE_OP_STORE
+	       :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	       :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+	       :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+	       ;; image to be presented in swap chain
+	       :finalLayout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
+	   ,(vk
+	     `(VkAttachmentDescription
+	       depthAttachment
+	       :format (findDepthFormat)
+	       :samples ,(g `_msaaSamples)
+	       :loadOp VK_ATTACHMENT_LOAD_OP_CLEAR
+	       :storeOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+	       :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	       :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+	       :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+	       ;; image to be presented in swap chain
+	       :finalLayout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+	   ,(vk
+	     `(VkAttachmentDescription
+	       colorAttachmentResolve
+	       :format ,(g `_swapChainImageFormat)
+	       :samples VK_SAMPLE_COUNT_1_BIT
+	       :loadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	       :storeOp VK_ATTACHMENT_STORE_OP_STORE
+	       :stencilLoadOp VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	       :stencilStoreOp VK_ATTACHMENT_STORE_OP_DONT_CARE
+	       :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+	       ;; image to be presented in swap chain
+	       :finalLayout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
+	   ,(vk
+	     `(VkAttachmentReference
+	       colorAttachmentRef
+	       ;; we only have one attachment description
+	       :attachment 0
+	       ;; choose best layout for use case color buffer
+	       :layout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
+	   ,(vk
+	     `(VkAttachmentReference
+	       depthAttachmentRef
+	       :attachment 1
+	       :layout VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL))
+
+	   ,(vk
+	     `(VkAttachmentReference
+	       colorAttachmentResolveRef
+	       :attachment 2
+	       :layout VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL))
+	   ,(vk
+	     `(VkSubpassDescription
+	       subpass
+	       :pipelineBindPoint VK_PIPELINE_BIND_POINT_GRAPHICS
+	       :colorAttachmentCount 1
+	       ;; frag shader references this as outColor
+	       :pColorAttachments &colorAttachmentRef
+	       :pDepthStencilAttachment &depthAttachmentRef
+	       :pResolveAttachments &colorAttachmentResolveRef))
+	   ,(vk
+	     `(VkSubpassDependency
+	       dependency
+	       :srcSubpass VK_SUBPASS_EXTERNAL
+	       :dstSubpass 0
+	       :srcStageMask VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+	       :srcAccessMask 0
+	       :dstStageMask VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+	       :dstAccessMask (logior
+			       VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+			       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)))
+	   (let ((attachments[] (curly colorAttachment
+				       depthAttachment
+				       colorAttachmentResolve)))
+	     (declare (type VkAttachmentDescription attachments[]))
+	     
+	     ,(vkcall
+	       `(create
+		 render-pass
+		 (:attachmentCount 
+		  (length attachments)
+		  :pAttachments attachments
+		  :subpassCount 1
+		  :pSubpasses &subpass
+		  ;; wait with writing of the color attachments
+		  :dependencyCount 1
+		  :pDependencies &dependency)
+		 (,(g `_device)
+		  &info
+		  NULL
+		  (ref ,(g `_renderPass)))
+		 ,(g `_renderPass))
+	       :throw t)))
+	 )))    
   (let* ((vertex-code
 	  `(do0
 	    "#version 450"
@@ -1653,48 +1801,7 @@ more structs. this function helps to initialize those structs."
 			       (return i)))
 			   (throw ("std::runtime_error"
 				   (string "failed to find suitable memory type.")))))
-		       (defun initVulkan ()
-			 (declare (values void))
-			 (createInstance)
-			 #+surface
-			 (do0 "// create window surface because it can influence physical device selection"
-			      (createSurface))
-			 (pickPhysicalDevice)
-			 (createLogicalDevice)
-			 #+surface
-			 ,(let ((l`(
-				    (createSwapChain)
-				    (createImageViews)
-				    (createRenderPass)
-				    (createDescriptorSetLayout)
-				    (createGraphicsPipeline)
-			 
-				    (createCommandPool)
-				    ;; create texture image needs command pools
-				    (createColorResources)
-				    (createDepthResources)
-				    (createFramebuffers)
-				    (createTextureImage)
-				    (createTextureImageView)
-				    (createTextureSampler)
-				    (loadModel)
-				    (createVertexBuffer)
-				    (createIndexBuffer)
-				    (createUniformBuffers)
-				    (createDescriptorPool)
-				    (createDescriptorSets)
-				    (createCommandBuffers)
-				    (createSyncObjects))))
-			    `(do0
-			      ,@(loop for (e) in l collect
-				     `(do0
-				       (<< "std::cout"
-					   (dot ("std::chrono::high_resolution_clock::now")
-						(time_since_epoch)
-						(count))
-					   (string ,(format nil " call ~a" e))
-					   "std::endl")
-				       (,e))))))
+		       
 
 		       (do0
 		       
@@ -1751,45 +1858,8 @@ more structs. this function helps to initialize those structs."
 				(g_indices.push_back
 				 (aref uniqueVertices vertex))))))))
 		       (do0
-			(defun findSupportedFormat (candidates
-						    tiling
-						    features)
-			  (declare (values VkFormat)
-				   (type "const std::vector<VkFormat>&" candidates)
-				   (type VkImageTiling tiling)
-				   (type VkFormatFeatureFlags features))
-			  (foreach (format candidates)
-				   (let ((props))
-				     (declare (type VkFormatProperties props))
-				     (vkGetPhysicalDeviceFormatProperties _physicalDevice
-									  format &props)
-				     (when (and
-					    (== VK_IMAGE_TILING_LINEAR tiling)
-					    (== features
-						(logand
-						 features
-						 props.linearTilingFeatures)))
-				       (return format))
-				     (when (and
-					    (== VK_IMAGE_TILING_OPTIMAL tiling)
-					    (== features
-						(logand
-						 features
-						 props.optimalTilingFeatures)))
-				       (return format))))
-			  (throw ("std::runtime_error"
-				  (string "failed to find supported format!")))
-			 
-			  )
-			(defun findDepthFormat ()
-			  (declare (values VkFormat))
-			  (return (findSupportedFormat
-				   (curly
-				    VK_FORMAT_D32_SFLOAT
-				    VK_FORMAT_D32_SFLOAT_S8_UINT
-				    VK_FORMAT_D24_UNORM_S8_UINT)
-				   VK_IMAGE_TILING_OPTIMAL
-				   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)))
+			
+			
 			(defun hasStencilComponent (format)
 			  (declare (values bool)
 				   (type VkFormat format))
