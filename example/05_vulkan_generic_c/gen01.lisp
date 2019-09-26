@@ -55,7 +55,7 @@
 			   ((string " (%s)") (type_string ,e))
 			   ))
 		  ((string "\\n")))))
-	`(do0
+	`(progn
 	  (let ((tp))
 	    (declare (type "struct timespec" tp))
 	    (clock_gettime CLOCK_REALTIME &tp)
@@ -696,19 +696,51 @@ more structs. this function helps to initialize those structs."
 	   (let ((indices (findQueueFamilies ,(g `_physicalDevice)))
 		 (queuePriority 1s0))
 	     (declare (type float queuePriority))
-	     (let ((queueCreateInfos[2])
-		   (uniqueQueueFamilies[]
-		     (curly
+	     (let ((allQueueFamilies[]
+		    (curly
 		      indices->graphicsFamily
 		      indices->presentFamily))
-		   (info_count 0))
-	       (declare (type VkDeviceQueueCreateInfo
-			      queueCreateInfos[2])
-			(type uint32_t uniqueQueueFamilies[]))
-	       
-	       (foreach (queueFamily uniqueQueueFamilies)
-			,(vkprint "unique queue" `(queueFamily))
-			(unless (== -1 queueFamily)
+		   (qNumber (length allQueueFamilies))
+		   (qSeen[qNumber])
+		   (qSeenCount 0))
+	       (declare (type int allQueueFamilies[])
+			(type "const int" qNumber)
+			(type uint32_t qSeen[qNumber]))
+	       (foreach (q allQueueFamilies)
+			,(vkprint "check if queue is valid and was seen before" `(q))
+			(unless (== -1 q)
+			  (let ((n qSeenCount))
+			    (if (== n 0)
+				(do0
+				 ,(vkprint "first entry" `(n))
+				 (setf (aref qSeen 0) q)
+				 (incf qSeenCount))
+				(do0
+				 (dotimes (i n)
+				   ,(vkprint "loop through all queue indeces that have been seen before" `((aref qSeen i) i n))
+				   (if (== q (aref qSeen i))
+				       (do0 ;; we saw this before
+					,(vkprint "seen before" `(q qSeenCount n))
+					break)
+				       (do0
+					,(vkprint "not seen before" `(q qSeenCount n))
+					(setf (aref qSeen (+ i 1)) q)
+					(incf qSeenCount))))))))
+			)
+	       ,(vkprint "seen" `(qSeenCount) )
+	      (let ((queueCreateInfos[qSeenCount])
+		    (uniqueQueueFamilies[qSeenCount])
+		    (info_count 0))
+		(declare (type VkDeviceQueueCreateInfo
+			       queueCreateInfos[qSeenCount])
+			 (type int uniqueQueueFamilies[qSeenCount]))
+		(dotimes (i qSeenCount)
+		  (let ((q (aref qSeen i)))
+		    ,(vkprint "copy qSeen into uniquQueueFamilies" `(i q qSeenCount))
+		    (setf (aref uniqueQueueFamilies i)
+			  q)))
+		(foreach (queueFamily uniqueQueueFamilies)
+			 ,(vkprint "create unique queue" `(queueFamily info_count))
 			 ,(vk `(VkDeviceQueueCreateInfo
 				queueCreateInfo
 				:sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
@@ -716,7 +748,9 @@ more structs. this function helps to initialize those structs."
 				:queueCount 1
 				:pQueuePriorities &queuePriority))
 			 (setf (aref queueCreateInfos info_count) queueCreateInfo)
-			 (incf info_count))))
+			 (incf info_count)
+			 (progn
+			  ,(vkprint "created unique queue" `(queueFamily info_count queueCreateInfo))))))
 	     (let ((deviceFeatures (curly)))
 	       (declare (type VkPhysicalDeviceFeatures deviceFeatures))
 	       (setf deviceFeatures.samplerAnisotropy VK_TRUE)
@@ -742,11 +776,14 @@ more structs. this function helps to initialize those structs."
 		     (ref ,(g `_device)))
 		   ,(g `_physicalDevice))
 		 :throw t)
-	       (vkGetDeviceQueue ,(g `_device) indices->graphicsFamily
-				 0 (ref ,(g `_graphicsQueue)))
-	       
-	       (vkGetDeviceQueue ,(g `_device) indices->presentFamily
-				 0 (ref ,(g `_presentQueue))))))
+	       (progn
+		 ,(vkprint "create graphics queue" `(indices->graphicsFamily))
+		 (vkGetDeviceQueue ,(g `_device) indices->graphicsFamily
+				   0 (ref ,(g `_graphicsQueue))))
+	       (progn
+		 ,(vkprint "create present queue" `(indices->presentFamily))
+		 (vkGetDeviceQueue ,(g `_device) indices->presentFamily
+				   0 (ref ,(g `_presentQueue)))))))
 	 
 	 )))
   
