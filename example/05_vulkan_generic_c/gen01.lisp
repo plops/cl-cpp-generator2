@@ -3451,8 +3451,9 @@ more structs. this function helps to initialize those structs."
 		    (include <stdio.h>)
 		    " "
 		    (include <stdbool.h>)
-		    "#define _POSIX_C_SOURCE 199309L"
+		    ;;"#define _POSIX_C_SOURCE 199309L"
 		    " "
+		    ;;(include <unistd.h>)
 		    (include <time.h>)
 		    " "
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
