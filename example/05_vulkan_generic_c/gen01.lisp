@@ -397,9 +397,10 @@ more structs. this function helps to initialize those structs."
 		      (createSwapChain)
 		      (createImageViews)
 		      (createRenderPass)
+		      (createDescriptorSetLayout)
 		      #+nil (
 		       
-		       (createDescriptorSetLayout)
+		       
 		       (createGraphicsPipeline)
 		       
 		       (createCommandPool)
@@ -1138,7 +1139,49 @@ more structs. this function helps to initialize those structs."
 		  (ref ,(g `_renderPass)))
 		 ,(g `_renderPass))
 	       :throw t)))
-	 )))    
+	 )))
+  (define-module
+      `(descriptor_set_layout
+	()
+	(do0
+	 (defun createDescriptorSetLayout ()
+	  
+	   ,(vk
+	     `(VkDescriptorSetLayoutBinding
+	       samplerLayoutBinding
+	       :binding 1
+	       :descriptorCount 1
+	       :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	       :pImmutableSamplers NULL
+	       :stageFlags VK_SHADER_STAGE_FRAGMENT_BIT
+	       ))
+	   ,(vk
+	     `(VkDescriptorSetLayoutBinding
+	       uboLayoutBinding
+	       :binding 0
+	       :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	       :descriptorCount 1
+	       :stageFlags VK_SHADER_STAGE_VERTEX_BIT
+	       :pImmutableSamplers NULL))
+
+	   (let ((bindings[] (curly
+			       uboLayoutBinding
+			       samplerLayoutBinding)))
+	     (declare (type
+		       VkDescriptorSetLayoutBinding
+		       bindings[]))
+	     ,(vkcall
+	       `(create
+		 descriptor-set-layout
+		 (:bindingCount (length bindings)
+				:pBindings bindings)
+		 ( ,(g `_device) &info NULL (ref ,(g `_descriptorSetLayout)))
+		 ,(g `_descriptorSetLayout)
+		 )
+	       :throw t))
+	   
+	   ))))
+
   (let* ((vertex-code
 	  `(do0
 	    "#version 450"
@@ -2587,44 +2630,7 @@ more structs. this function helps to initialize those structs."
 				      buf
 				      (aref _uniformBuffersMemory i)
 				      mem)))))
-			(defun createDescriptorSetLayout ()
-			  (declare (values void))
-			  ,(vk
-			    `(VkDescriptorSetLayoutBinding
-			      samplerLayoutBinding
-			      :binding 1
-			      :descriptorCount 1
-			      :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-			      :pImmutableSamplers NULL
-			      :stageFlags VK_SHADER_STAGE_FRAGMENT_BIT
-			      ))
-			  ,(vk
-			    `(VkDescriptorSetLayoutBinding
-			      uboLayoutBinding
-			      :binding 0
-			      :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-			      :descriptorCount 1
-			      :stageFlags VK_SHADER_STAGE_VERTEX_BIT
-			      :pImmutableSamplers NULL))
-
- 			  (let ((bindings (curly
-					   uboLayoutBinding
-					   samplerLayoutBinding)))
-			    (declare (type
-				      "std::array<VkDescriptorSetLayoutBinding, 2>"
-				      bindings))
-			    ,(vkcall
-			      `(create
-				descriptor-set-layout
-				(:bindingCount (static_cast<uint32_t>
-						(bindings.size))
-					       :pBindings (bindings.data))
-				(_device &info NULL &_descriptorSetLayout)
-				_descriptorSetLayout
-				)
-			      :throw t))
 			
-			  )
 		      
 			(defun recreateSwapChain ()
 			  (declare (values void))
