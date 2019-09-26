@@ -142,13 +142,11 @@
 		       `(,(vk-info-function verb subject
 					    :suffix suffix)
 			  ,@args))
-		  ;,(vkprint (format nil " ~a ~a" verb subject))
-		  ,(vkprint (format nil " ~a ~a ~a=" verb subject instance)
-				`(,instance))
-		  #+nil (if instance
-			    ,(vkprint (format nil " ~a ~a ~a=" verb subject instance)
-				`(,instance))
-		      ,(vkprint (format nil " ~a ~a" verb subject)))
+					
+		  ,(if instance
+		      (vkprint (format nil " ~a ~a" verb subject)
+				`(,(emit-c :code instance)))
+		      (vkprint (format nil " ~a ~a" verb subject)))
 		  #+nil(<< "std::cout"
 		      (dot ("std::chrono::high_resolution_clock::now")
 			   (time_since_epoch)
