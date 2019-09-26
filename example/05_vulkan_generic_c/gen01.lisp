@@ -52,9 +52,7 @@
 		  ,@(loop for e in rest appending
 			 `(((string ,(format nil " ~a=" e)))
 			   ((printf_dec_format ,e) ,e)
-			   ((string "("))
-			   ;((string "%s") (__typeof__ ,e))
-			   ((string ")"))
+			   ((string " (%s)") (type_string ,e))
 			   ))
 		  ((string "\\n")))))
 	`(do0
@@ -3458,6 +3456,21 @@ more structs. this function helps to initialize those structs."
 		    "#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
 		    "#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
 		    "#define printf_dec_format(x) _Generic((x), default: \"%p\", char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
+		    ,(format nil "#define type_string(x) _Generic((x), ~{~a: \"~a\"~^,~})"
+			     (loop for e in `(default
+						 char  "unsigned char"
+						 short  "unsigned short"
+						 int  "unsigned int"
+						 "long int" "unsigned long int"
+						 "long long int" "unsigned long long int"
+						 float double "long double"
+						 "const char*"
+						 "void*"
+						 
+						 )
+				appending
+				 `(,e ,e)))
+		    
 
 		    (defstruct0 SwapChainSupportDetails
 			(capabilities VkSurfaceCapabilitiesKHR)
