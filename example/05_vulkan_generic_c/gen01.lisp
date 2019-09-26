@@ -807,9 +807,9 @@ more structs. this function helps to initialize those structs."
 			(type int n))
 	       "// prefer triple buffer (if available)"
 	       (dotimes (i n)  ;foreach (mode modes)
-		 (setf mode (aref modes i))
-		 (when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
-			  (return mode)))
+		 (let ((mode (aref modes i)))
+		   (when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
+		     (return mode))))
 	       (return VK_PRESENT_MODE_FIFO_KHR))
 	     (defun chooseSwapExtent (capabilities)
 	       (declare (values VkExtent2D)
@@ -846,19 +846,19 @@ more structs. this function helps to initialize those structs."
 		  (querySwapChainSupport ,(g `_physicalDevice)))
 		 (surfaceFormat
 		  (chooseSwapSurfaceFormat
-		   swapChainSupport->formats
-		   swapChainSupport->formatsCount
+		   swapChainSupport.formats
+		   swapChainSupport.formatsCount
 		   ))
 		 (presentMode
 		  (chooseSwapPresentMode
-		   swapChainSupport->presentModes
-		   swapChainSupport->presentModesCount))
+		   swapChainSupport.presentModes
+		   swapChainSupport.presentModesCount))
 		 (extent
 		  (chooseSwapExtent
-		   swapChainSupport->capabilities
-		   ,(g `_window)))
+		   swapChainSupport.capabilities
+		   ))
 		 (imageCount
-		  (+ swapChainSupport->capabilities.minImageCount 1))
+		  (+ swapChainSupport.capabilities.minImageCount 1))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
 		 ((aref queueFamilyIndices) (curly
 					     indices.graphicsFamily
@@ -3506,6 +3506,7 @@ more structs. this function helps to initialize those structs."
 							   "-o"
 							   ,(format nil "~a/vert.spv"
 								    (directory-namestring *vertex-file*))))
+    ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
     (sb-ext:run-program "/usr/bin/sh" `("gen_proto.sh"))))
  
 
