@@ -146,22 +146,7 @@
 		  ,(if instance
 		      (vkprint (format nil " ~a ~a" verb subject)
 				`(,(emit-c :code instance)))
-		      (vkprint (format nil " ~a ~a" verb subject)))
-		  #+nil(<< "std::cout"
-		      (dot ("std::chrono::high_resolution_clock::now")
-			   (time_since_epoch)
-			   (count))
-		      (string " ")
-		      __FILE__
-		      (string ":")
-		      __LINE__
-		      (string " ")
-		      __func__
-		      ,@(if instance
-			    `((string ,(format nil " ~a ~a ~a=" verb subject instance))
-			      ,instance)
-			    `((string ,(format nil " ~a ~a" verb subject))))
-		      "std::endl"))))))
+		      (vkprint (format nil " ~a ~a" verb subject))))))))
       
       
       (defun set-members (params)
