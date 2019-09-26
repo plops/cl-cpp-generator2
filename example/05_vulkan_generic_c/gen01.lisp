@@ -777,7 +777,10 @@ more structs. this function helps to initialize those structs."
 	       (progn
 		 ,(vkprint "create present queue" `(indices->presentFamily))
 		 (vkGetDeviceQueue ,(g `_device) indices->presentFamily
-				   0 (ref ,(g `_presentQueue)))))))
+				   0 (ref ,(g `_presentQueue))))
+	       ))
+	   (QueueFamilyIndices_destroy indices)
+	   )
 	 
 	 )))
 
@@ -842,6 +845,7 @@ more structs. this function helps to initialize those structs."
 	   )
 	 (defun createSwapChain ()
 	   (declare (values void))
+	   
 	   (let ((swapChainSupport
 		  (querySwapChainSupport ,(g `_physicalDevice)))
 		 (surfaceFormat
@@ -855,20 +859,22 @@ more structs. this function helps to initialize those structs."
 		   swapChainSupport.presentModesCount))
 		 (extent
 		  (chooseSwapExtent
-		   swapChainSupport.capabilities
+		   &swapChainSupport.capabilities
 		   ))
 		 (imageCount
 		  (+ swapChainSupport.capabilities.minImageCount 1))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
-		 ((aref queueFamilyIndices) (curly
-					     indices.graphicsFamily
-					     indices.presentFamily))
+		 (queueFamilyIndices[] (curly
+					 indices->graphicsFamily
+					 indices->presentFamily))
 		 ;; best performance mode:
 		 (imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
 		 (queueFamilyIndexCount 0)
 		 (pQueueFamilyIndices NULL))
-	     (unless (== indices.presentFamily
-			 indices.graphicsFamily)
+	     (declare (type "__typeof__(indices->graphicsFamily)" queueFamilyIndices[]))
+	     (unless (== indices->presentFamily
+			 indices->
+			 graphicsFamily)
 	       "// this could be improved with ownership stuff"
 	       (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
 		     queueFamilyIndexCount 2
@@ -903,7 +909,7 @@ more structs. this function helps to initialize those structs."
 			   ;; chain, complex topic
 			   :oldSwapchain VK_NULL_HANDLE
 			   )
-		 (_device
+		 (,(g `_device)
 		  &info
 		  NULL
 		  (ref ,(g `_swapChain))
@@ -911,7 +917,7 @@ more structs. this function helps to initialize those structs."
 		 ,(g `_swapChain))
 	       :throw t
 	       :khr "KHR")
-	     (cleanupSwapChainSupport swapChainSupport)
+	     (cleanupSwapChainSupport &swapChainSupport)
 	     (do0
 	      "// now get the images, note will be destroyed with the swap chain"
 	      (vkGetSwapchainImagesKHR ,(g `_device)
@@ -926,7 +932,9 @@ more structs. this function helps to initialize those structs."
 				       &imageCount
 				       ,(g `_swapChainImages))
 	      (setf ,(g `_swapChainImageFormat) surfaceFormat.format
-		    ,(g `_swapChainExtent) extent))))
+		    ,(g `_swapChainExtent) extent)))
+	   (QueueFamilyIndices_destroy indices)
+	   )
 	 )))
   
   
