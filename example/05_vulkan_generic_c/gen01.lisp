@@ -236,7 +236,7 @@ more structs. this function helps to initialize those structs."
 		      (when value
 			`(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	  `(do0
-	    "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	    "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
 	       (defstruct0 State
 		   ,@(loop for e in l collect
 			  (destructuring-bind (name type &optional value) e
@@ -395,7 +395,8 @@ more structs. this function helps to initialize those structs."
 	   
 	   ,(let ((l`(
 		      (createSwapChain)
-		      #+nil ((createImageViews)
+		      (createImageViews)
+		      #+nil (
 		       (createRenderPass)
 		       (createDescriptorSetLayout)
 		       (createGraphicsPipeline)
@@ -873,8 +874,7 @@ more structs. this function helps to initialize those structs."
 		 (pQueueFamilyIndices NULL))
 	     (declare (type "__typeof__(indices->graphicsFamily)" queueFamilyIndices[]))
 	     (unless (== indices->presentFamily
-			 indices->
-			 graphicsFamily)
+			 indices->graphicsFamily)
 	       "// this could be improved with ownership stuff"
 	       (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
 		     queueFamilyIndexCount 2
@@ -936,8 +936,61 @@ more structs. this function helps to initialize those structs."
 	   (QueueFamilyIndices_destroy indices)
 	   )
 	 )))
+
+  (define-module
+      `(image_view
+	()
+	(do0
+	 (defun cleanupImageView ()
+					
+	   )
+	 (defun createImageView (image format aspectFlags mipLevels)
+	   (declare (values VkImageView)
+		    (type VkImage image)
+		    (type VkFormat format)
+		    (type VkImageAspectFlags aspectFlags)
+		    (type uint32_t mipLevels))
+	   (let ((imageView))
+	     (declare (type VkImageView imageView))
+	     ,(vkcall
+	       `(create
+		 image-view
+		 (:image
+		  image
+		  :viewType VK_IMAGE_VIEW_TYPE_2D
+		  :format format
+		  ;; color targets without mipmapping or
+		  ;; multi layer (stereo)
+		  :subresourceRange.aspectMask aspectFlags
+		  :subresourceRange.baseMipLevel 0
+		  :subresourceRange.levelCount mipLevels
+		  :subresourceRange.baseArrayLayer 0
+		  :subresourceRange.layerCount 1
+		  )
+		 (,(g `_device)
+		  &info
+		  NULL
+		  &imageView)
+		 imageView)
+	       :throw t)
+	     (return imageView)))
+	 (defun createImageViews ()
+	   (declare (values void))
+	   #+nil (_swapChainImageViews.resize
+		  (_swapChainImages.size))
+	   (dotimes (i (length ,(g `_swapChainImages)))
+	     ,(vkprint "createImageView" `(i (length ,(g `_swapChainImages))))
+	     (setf
+	      (aref ,(g `_swapChainImageViews) i)
+	      (createImageView
+	       (aref ,(g `_swapChainImages) i)
+	       ,(g `_swapChainImageFormat)
+	       VK_IMAGE_ASPECT_COLOR_BIT
+	       1 ;; mipLevels
+	       ))))
+	 )))
   
-  
+    
   (let* ((vertex-code
 	  `(do0
 	    "#version 450"
@@ -3048,50 +3101,7 @@ more structs. this function helps to initialize those structs."
 		      
 			
 		      
-			
-			(defun createImageView (image format aspectFlags mipLevels)
-			  (declare (values VkImageView)
-				   (type VkImage image)
-				   (type VkFormat format)
-				   (type VkImageAspectFlags aspectFlags)
-				   (type uint32_t mipLevels))
-			  (let ((imageView))
-			    (declare (type VkImageView imageView))
-			    ,(vkcall
-			      `(create
-				image-view
-				(:image
-				 image
-				 :viewType VK_IMAGE_VIEW_TYPE_2D
-				 :format format
-				 ;; color targets without mipmapping or
-				 ;; multi layer (stereo)
-				 :subresourceRange.aspectMask aspectFlags
-				 :subresourceRange.baseMipLevel 0
-				 :subresourceRange.levelCount mipLevels
-				 :subresourceRange.baseArrayLayer 0
-				 :subresourceRange.layerCount 1
-				 )
-				(_device
-				 &info
-				 NULL
-				 &imageView)
-				imageView)
-			      :throw t)
-			    (return imageView)))
-			(defun createImageViews ()
-			  (declare (values void))
-			  (_swapChainImageViews.resize
-			   (_swapChainImages.size))
-			  (dotimes (i (_swapChainImages.size))
-			    (setf
-			     (aref _swapChainImageViews i)
-			     (createImageView
-			      (aref _swapChainImages i)
-			      _swapChainImageFormat
-			      VK_IMAGE_ASPECT_COLOR_BIT
-			      1 ;; mipLevels
-			      )))))
+			)
 		       
 
 		       (do0
