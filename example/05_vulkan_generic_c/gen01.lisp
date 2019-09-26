@@ -52,6 +52,9 @@
 		  ,@(loop for e in rest appending
 			 `(((string ,(format nil " ~a=" e)))
 			   ((printf_dec_format ,e) ,e)
+			   ((string "("))
+			   ;((string "%s") (__typeof__ ,e))
+			   ((string ")"))
 			   ))
 		  ((string "\\n")))))
 	`(do0
@@ -3450,8 +3453,10 @@ more structs. this function helps to initialize those structs."
 		    (include <time.h>)
 		    " "
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
-		    "#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
-		    "#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+		    ;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
+		    ;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+		    "#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
+		    "#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
 		    "#define printf_dec_format(x) _Generic((x), default: \"%p\", char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\")"
 
 		    (defstruct0 SwapChainSupportDetails
