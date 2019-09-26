@@ -93,6 +93,14 @@ Here is the expanded code:
 More of the generated code is here:
 https://github.com/plops/cl-cpp-generator2/blob/master/example/04_vulkan/source/run_01_base.cpp
 
+Even larger complexity is in my attempt to convert this code from C++
+to C. I started this conversion in an attempt to reduce compilation
+time. Looking back I think I might have achieved this goal by
+separating the C++ into multiple cpp files. At least I learned that
+normal C has __auto_type and _Generic. I'm quite proud of vkprint, a
+macro that will generate printf format strings from the types of the
+input arguments. This works only for scalar input types, though. I do
+appreciate C++'s `std::vector` more now.
 
 * Documentation
 

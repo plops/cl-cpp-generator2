@@ -398,10 +398,11 @@ more structs. this function helps to initialize those structs."
 		      (createImageViews)
 		      (createRenderPass)
 		      (createDescriptorSetLayout)
+		      (createGraphicsPipeline)
 		      #+nil (
 		       
 		       
-		       (createGraphicsPipeline)
+			     
 		       
 		       (createCommandPool)
 		       ;; create texture image needs command pools
@@ -1181,6 +1182,221 @@ more structs. this function helps to initialize those structs."
 	       :throw t))
 	   
 	   ))))
+
+
+   (define-module
+      `(graphics_pipeline
+	()
+	(do0
+	 (defun createGraphicsPipeline ()
+	   (declare (values void))
+	   (let ((vertShaderModule (createShaderModule
+				    (readFile (string "vert.spv"))))
+		 (fragShaderModule (createShaderModule
+				    (readFile (string "frag.spv")))))
+	     ,@(loop for e in `(frag vert) collect
+				    (vk
+				     `(VkPipelineShaderStageCreateInfo
+				       ,(format nil "~aShaderStageInfo" e)
+				       :sType VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
+				       :stage ,(case e
+						 (vert 'VK_SHADER_STAGE_VERTEX_BIT)
+						 (frag 'VK_SHADER_STAGE_FRAGMENT_BIT))
+				       :module ,(format nil "~aShaderModule" e)
+				       ;; entrypoint
+				       :pName (string "main")
+				       ;; this would allow specification of constants:
+				       :pSpecializationInfo NULL)))
+			     (let (("shaderStages[]"
+				    (curly vertShaderStageInfo
+					   fragShaderStageInfo))
+				   (bindingDescription ("Vertex::getBindingDescription"))
+				   (attributeDescriptions ("Vertex::getAttributeDescriptions")))
+			       (declare (type VkPipelineShaderStageCreateInfo
+					      "shaderStages[]"))
+			       ,(vk
+				 `(VkPipelineVertexInputStateCreateInfo
+				   vertexInputInfo
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+				   :vertexBindingDescriptionCount 1
+				   :pVertexBindingDescriptions &bindingDescription
+				   :vertexAttributeDescriptionCount (static_cast<uint32_t> (attributeDescriptions.size))
+				   :pVertexAttributeDescriptions (attributeDescriptions.data)))
+			       ,(vk
+				 `(VkPipelineInputAssemblyStateCreateInfo
+				   inputAssembly
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
+				   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+				   ;; this would allow to break up lines
+				   ;; and strips with 0xfff or 0xffffff
+				   :primitiveRestartEnable VK_FALSE))
+			       ,(vk
+				 `(VkViewport
+				   viewport
+				   :x 0s0
+				   :y 0s0
+				   :width (* 1s0 _swapChainExtent.width)
+				   :height (* 1s0 _swapChainExtent.height)
+				   :minDepth 0s0
+				   :maxDepth 1s0))
+			       ,(vk
+				 `(VkRect2D
+				   scissor
+				   :offset (curly 0 0)
+				   :extent _swapChainExtent))
+			       ,(vk
+				 `(VkPipelineViewportStateCreateInfo
+				   viewPortState
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+				   :viewportCount 1
+				   :pViewports &viewport
+				   :scissorCount 1
+				   :pScissors &scissor))
+			       ,(vk
+				 `(VkPipelineRasterizationStateCreateInfo
+				   rasterizer
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
+				 
+				   :depthClampEnable VK_FALSE
+				   ;; _LINE could do wireframe rendering
+				   :polygonMode VK_POLYGON_MODE_FILL
+				   ;; thicker than 1s0 needs wideLines GPU feature
+				   :lineWidth 1s0
+				   :cullMode VK_CULL_MODE_BACK_BIT
+				   :frontFace VK_FRONT_FACE_COUNTER_CLOCKWISE
+				   :depthBiasEnable VK_FALSE
+				   :depthBiasConstantFactor 0s0
+				   ;; sometimes used for shadow mapping:
+				   :depthBiasClamp 0s0
+				   :depthBiasSlopeFactor 0s0))
+			       ,(vk ;; for now disable multisampling
+				 `(VkPipelineMultisampleStateCreateInfo
+				   multisampling
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
+				   :sampleShadingEnable VK_FALSE
+				   :rasterizationSamples _msaaSamples
+				   :minSampleShading 1s0
+				   :pSampleMask NULL
+				   :alphaToCoverageEnable VK_FALSE
+				   :alphaToOneEnable VK_FALSE))
+			       ,(vk
+				 `(VkPipelineDepthStencilStateCreateInfo
+				   depthStencil
+				   :sType VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
+				   :depthTestEnable VK_TRUE
+				   ;; use this for transparent objects:
+				   :depthWriteEnable VK_TRUE
+				   ;; lower depth is closer
+				   :depthCompareOp VK_COMPARE_OP_LESS
+				   :depthBoundsTestEnable VK_FALSE
+				   :minDepthBounds 0s0
+				   :maxDepthBounds 1s0
+				   :stencilTestEnable VK_FALSE
+				   :front (curly)
+				   :back (curly)))
+			       ,(vk
+				 `(VkPipelineColorBlendAttachmentState
+				   colorBlendAttachment
+				 
+				   :colorWriteMask
+				   (logior VK_COLOR_COMPONENT_R_BIT
+					   VK_COLOR_COMPONENT_G_BIT
+					   VK_COLOR_COMPONENT_B_BIT
+					   VK_COLOR_COMPONENT_A_BIT
+					   )
+				   :blendEnable VK_FALSE
+				   :srcColorBlendFactor VK_BLEND_FACTOR_ONE
+				   :dstColorBlendFactor VK_BLEND_FACTOR_ZERO
+				   :colorBlendOp VK_BLEND_OP_ADD
+				   :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
+				   :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
+				   :alphaBlendOp VK_BLEND_OP_ADD))
+			       ,(vk
+				 `(VkPipelineColorBlendStateCreateInfo
+				   colorBlending
+				   :sType
+				   VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
+				   :logicOpEnable VK_FALSE
+				   :logicOp VK_LOGIC_OP_COPY
+				   :attachmentCount 1
+				   :pAttachments &colorBlendAttachment
+				   :blendConstants[0] 0s0
+				   :blendConstants[1] 0s0
+				   :blendConstants[2] 0s0
+				   :blendConstants[3] 0s0))
+			       #+nil (let (("dynamicStates[]"
+					    (curly VK_DYNAMIC_STATE_VIEWPORT
+						   VK_DYNAMIC_STATE_LINE_WIDTH)))
+				       (declare (type VkDynamicState "dynamicStates[]"))
+				       ;; viewport, line width and blend constants
+				       ;; can be changed dynamically
+				     
+				       ,(vk
+					 `(VkPipelineDynamicStateCreateInfo
+					   dynamicState
+					   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
+					   :dynamicStateCount 2
+					   :pDynamicStates dynamicStates)))
+			     
+			     
+			     
+			       )
+			     (do0
+			      ,(vkcall
+				`(create
+				  pipeline-layout
+				  (:setLayoutCount 1
+						   :pSetLayouts &_descriptorSetLayout
+						   ;; another way of passing dynamic values to shaders
+						   :pushConstantRangeCount 0
+						   :pPushConstantRanges NULL
+						   )
+				  (_device
+				   &info
+				   NULL
+				   &_pipelineLayout)
+				  _pipelineLayout)
+				:throw t))
+			     ,(vkcall
+			       `(create
+				 graphics-pipeline
+				 (:stageCount 2
+					      :pStages shaderStages
+					      :pVertexInputState &vertexInputInfo
+					      :pInputAssemblyState &inputAssembly
+					      :pViewportState &viewPortState
+					      :pRasterizationState &rasterizer
+					      :pMultisampleState &multisampling
+					      :pDepthStencilState &depthStencil
+					      :pColorBlendState &colorBlending
+					      ;; if we want to change linewidth:
+					      :pDynamicState NULL
+					      :layout _pipelineLayout
+					      :renderPass _renderPass
+					      :subpass 0
+					      ;; similar pipelines can be derived
+					      ;; from each other to speed up
+					      ;; switching
+					      :basePipelineHandle VK_NULL_HANDLE
+					      :basePipelineIndex -1)
+				 (_device
+				  VK_NULL_HANDLE ;; pipline cache
+				  1
+				  &info
+				  NULL
+				  &_graphicsPipeline)
+				 _graphicsPipeline)
+			       :plural t
+			       :throw t)			   
+			     (vkDestroyShaderModule _device
+						    fragShaderModule
+						    NULL)
+			     (vkDestroyShaderModule _device
+						    vertShaderModule
+						    NULL)))
+	 )))
+
+   
 
   (let* ((vertex-code
 	  `(do0
@@ -2948,212 +3164,7 @@ more structs. this function helps to initialize those structs."
 				  &_renderPass)
 				 _renderPass)
 			       :throw t)))
-			 (defun createGraphicsPipeline ()
-			   (declare (values void))
-			   (let ((vertShaderModule (createShaderModule
-						    (readFile (string "vert.spv"))))
-				 (fragShaderModule (createShaderModule
-						    (readFile (string "frag.spv")))))
-			     ,@(loop for e in `(frag vert) collect
-				    (vk
-				     `(VkPipelineShaderStageCreateInfo
-				       ,(format nil "~aShaderStageInfo" e)
-				       :sType VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
-				       :stage ,(case e
-						 (vert 'VK_SHADER_STAGE_VERTEX_BIT)
-						 (frag 'VK_SHADER_STAGE_FRAGMENT_BIT))
-				       :module ,(format nil "~aShaderModule" e)
-				       ;; entrypoint
-				       :pName (string "main")
-				       ;; this would allow specification of constants:
-				       :pSpecializationInfo NULL)))
-			     (let (("shaderStages[]"
-				    (curly vertShaderStageInfo
-					   fragShaderStageInfo))
-				   (bindingDescription ("Vertex::getBindingDescription"))
-				   (attributeDescriptions ("Vertex::getAttributeDescriptions")))
-			       (declare (type VkPipelineShaderStageCreateInfo
-					      "shaderStages[]"))
-			       ,(vk
-				 `(VkPipelineVertexInputStateCreateInfo
-				   vertexInputInfo
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
-				   :vertexBindingDescriptionCount 1
-				   :pVertexBindingDescriptions &bindingDescription
-				   :vertexAttributeDescriptionCount (static_cast<uint32_t> (attributeDescriptions.size))
-				   :pVertexAttributeDescriptions (attributeDescriptions.data)))
-			       ,(vk
-				 `(VkPipelineInputAssemblyStateCreateInfo
-				   inputAssembly
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-				   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-				   ;; this would allow to break up lines
-				   ;; and strips with 0xfff or 0xffffff
-				   :primitiveRestartEnable VK_FALSE))
-			       ,(vk
-				 `(VkViewport
-				   viewport
-				   :x 0s0
-				   :y 0s0
-				   :width (* 1s0 _swapChainExtent.width)
-				   :height (* 1s0 _swapChainExtent.height)
-				   :minDepth 0s0
-				   :maxDepth 1s0))
-			       ,(vk
-				 `(VkRect2D
-				   scissor
-				   :offset (curly 0 0)
-				   :extent _swapChainExtent))
-			       ,(vk
-				 `(VkPipelineViewportStateCreateInfo
-				   viewPortState
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
-				   :viewportCount 1
-				   :pViewports &viewport
-				   :scissorCount 1
-				   :pScissors &scissor))
-			       ,(vk
-				 `(VkPipelineRasterizationStateCreateInfo
-				   rasterizer
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
-				 
-				   :depthClampEnable VK_FALSE
-				   ;; _LINE could do wireframe rendering
-				   :polygonMode VK_POLYGON_MODE_FILL
-				   ;; thicker than 1s0 needs wideLines GPU feature
-				   :lineWidth 1s0
-				   :cullMode VK_CULL_MODE_BACK_BIT
-				   :frontFace VK_FRONT_FACE_COUNTER_CLOCKWISE
-				   :depthBiasEnable VK_FALSE
-				   :depthBiasConstantFactor 0s0
-				   ;; sometimes used for shadow mapping:
-				   :depthBiasClamp 0s0
-				   :depthBiasSlopeFactor 0s0))
-			       ,(vk ;; for now disable multisampling
-				 `(VkPipelineMultisampleStateCreateInfo
-				   multisampling
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
-				   :sampleShadingEnable VK_FALSE
-				   :rasterizationSamples _msaaSamples
-				   :minSampleShading 1s0
-				   :pSampleMask NULL
-				   :alphaToCoverageEnable VK_FALSE
-				   :alphaToOneEnable VK_FALSE))
-			       ,(vk
-				 `(VkPipelineDepthStencilStateCreateInfo
-				   depthStencil
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
-				   :depthTestEnable VK_TRUE
-				   ;; use this for transparent objects:
-				   :depthWriteEnable VK_TRUE
-				   ;; lower depth is closer
-				   :depthCompareOp VK_COMPARE_OP_LESS
-				   :depthBoundsTestEnable VK_FALSE
-				   :minDepthBounds 0s0
-				   :maxDepthBounds 1s0
-				   :stencilTestEnable VK_FALSE
-				   :front (curly)
-				   :back (curly)))
-			       ,(vk
-				 `(VkPipelineColorBlendAttachmentState
-				   colorBlendAttachment
-				 
-				   :colorWriteMask
-				   (logior VK_COLOR_COMPONENT_R_BIT
-					   VK_COLOR_COMPONENT_G_BIT
-					   VK_COLOR_COMPONENT_B_BIT
-					   VK_COLOR_COMPONENT_A_BIT
-					   )
-				   :blendEnable VK_FALSE
-				   :srcColorBlendFactor VK_BLEND_FACTOR_ONE
-				   :dstColorBlendFactor VK_BLEND_FACTOR_ZERO
-				   :colorBlendOp VK_BLEND_OP_ADD
-				   :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
-				   :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
-				   :alphaBlendOp VK_BLEND_OP_ADD))
-			       ,(vk
-				 `(VkPipelineColorBlendStateCreateInfo
-				   colorBlending
-				   :sType
-				   VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
-				   :logicOpEnable VK_FALSE
-				   :logicOp VK_LOGIC_OP_COPY
-				   :attachmentCount 1
-				   :pAttachments &colorBlendAttachment
-				   :blendConstants[0] 0s0
-				   :blendConstants[1] 0s0
-				   :blendConstants[2] 0s0
-				   :blendConstants[3] 0s0))
-			       #+nil (let (("dynamicStates[]"
-					    (curly VK_DYNAMIC_STATE_VIEWPORT
-						   VK_DYNAMIC_STATE_LINE_WIDTH)))
-				       (declare (type VkDynamicState "dynamicStates[]"))
-				       ;; viewport, line width and blend constants
-				       ;; can be changed dynamically
-				     
-				       ,(vk
-					 `(VkPipelineDynamicStateCreateInfo
-					   dynamicState
-					   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
-					   :dynamicStateCount 2
-					   :pDynamicStates dynamicStates)))
-			     
-			     
-			     
-			       )
-			     (do0
-			      ,(vkcall
-				`(create
-				  pipeline-layout
-				  (:setLayoutCount 1
-						   :pSetLayouts &_descriptorSetLayout
-						   ;; another way of passing dynamic values to shaders
-						   :pushConstantRangeCount 0
-						   :pPushConstantRanges NULL
-						   )
-				  (_device
-				   &info
-				   NULL
-				   &_pipelineLayout)
-				  _pipelineLayout)
-				:throw t))
-			     ,(vkcall
-			       `(create
-				 graphics-pipeline
-				 (:stageCount 2
-					      :pStages shaderStages
-					      :pVertexInputState &vertexInputInfo
-					      :pInputAssemblyState &inputAssembly
-					      :pViewportState &viewPortState
-					      :pRasterizationState &rasterizer
-					      :pMultisampleState &multisampling
-					      :pDepthStencilState &depthStencil
-					      :pColorBlendState &colorBlending
-					      ;; if we want to change linewidth:
-					      :pDynamicState NULL
-					      :layout _pipelineLayout
-					      :renderPass _renderPass
-					      :subpass 0
-					      ;; similar pipelines can be derived
-					      ;; from each other to speed up
-					      ;; switching
-					      :basePipelineHandle VK_NULL_HANDLE
-					      :basePipelineIndex -1)
-				 (_device
-				  VK_NULL_HANDLE ;; pipline cache
-				  1
-				  &info
-				  NULL
-				  &_graphicsPipeline)
-				 _graphicsPipeline)
-			       :plural t
-			       :throw t)			   
-			     (vkDestroyShaderModule _device
-						    fragShaderModule
-						    NULL)
-			     (vkDestroyShaderModule _device
-						    vertShaderModule
-						    NULL)))
+			 
 			 (defun createShaderModule (code)
 			   (declare (values VkShaderModule)
 				    (type "const std::vector<char>&" code))
