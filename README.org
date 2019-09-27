@@ -143,9 +143,9 @@ Here is an overview of supported expressions:
 | foreach item collection                                         | (foreach (a data) ...)                                         | for (auto& a: data) { ...                                |
 | deftype name lambda-list {form}*                                | (deftype csf64 () "complex float")                             | typedef complex float csf64                              |
 | defstruct0 name {slot-description}*                             | (defstruct0 Point (x int) (y int))                             | struct { int x; int y} Point; typedef sruct Point Point; |
-|                                                                 |                                                                |                                                          |
-|                                                                 |                                                                |                                                          |
-|                                                                 |                                                                |                                                          |
+| throw                                                           |                                                                |                                                          |
+| return                                                          |                                                                |                                                          |
+| (uint32_t*) 42                                                  |  (cast uint32_t* 42)                                           |                                                          |
 
 
 * Generic C
