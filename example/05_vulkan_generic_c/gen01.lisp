@@ -8,7 +8,7 @@
 
 ;; if nolog is off, then validation layers will be used to check for mistakes
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
-(setf *features* (union *features* '(:surface ;:nolog
+(setf *features* (union *features* '(:surface ; :nolog
 				     )))
 (setf *features* (set-difference *features* '(:nolog)))
 
@@ -415,11 +415,14 @@ more structs. this function helps to initialize those structs."
 		      (createDepthResources)
 		      (createFramebuffers)
 		      (createTextureImage)
+		      (createTextureImageView)
+		      (createTextureSampler)
+		      (loadModel)
 		      #+nil (
 			     
-		       (createTextureImageView)
-		       (createTextureSampler)
-		       (loadModel)
+			     
+			     
+			     
 		       (createVertexBuffer)
 		       (createIndexBuffer)
 		       (createUniformBuffers)
@@ -2366,6 +2369,116 @@ more structs. this function helps to initialize those structs."
 				texHeight
 				,(g `_mipLevels))
 	       ))))))
+      (define-module
+      `(texture_image_view
+	()
+	(do0
+	 (defun createTextureImageView ()
+	   
+	   (setf
+	    ,(g `_textureImageView)
+	    (createImageView ,(g `_textureImage)
+			     VK_FORMAT_R8G8B8A8_UNORM
+			     VK_IMAGE_ASPECT_COLOR_BIT
+			     ,(g `_mipLevels)))))))
+      (define-module
+      `(texture_sampler
+	()
+	(do0
+	 (defun createTextureSampler ()
+	   
+	   ,(vkcall
+	     `(create
+	       sampler
+	       (:magFilter
+		VK_FILTER_LINEAR
+		:minFilter VK_FILTER_LINEAR
+		:addressModeU VK_SAMPLER_ADDRESS_MODE_REPEAT
+		:addressModeV VK_SAMPLER_ADDRESS_MODE_REPEAT
+		:addressModeW VK_SAMPLER_ADDRESS_MODE_REPEAT
+		:anisotropyEnable VK_TRUE
+		:maxAnisotropy 16
+		:borderColor VK_BORDER_COLOR_INT_OPAQUE_BLACK
+		:unnormalizedCoordinates VK_FALSE
+		:compareEnable VK_FALSE
+		:compareOp VK_COMPARE_OP_ALWAYS
+		:mipmapMode VK_SAMPLER_MIPMAP_MODE_LINEAR
+		:mipLodBias 0s0
+		:minLod
+					;(static_cast<float> (*  _mipLevels 2))
+		0s0
+		:maxLod (cast float ,(g `_mipLevels)))
+	       (,(g `_device)
+		&info
+		NULL
+		(ref ,(g `_textureSampler)))
+	       ,(g `_textureSampler)
+	       )
+	     :throw t)))))
+      #+nil(define-module
+      `(
+	()
+	(do0
+	 (defun loadModel ()
+	   
+	   (let ((attrib)
+		 (shapes)
+		 (materials)
+		 (warning)
+		 (err))
+	     (declare (type "tinyobj::attrib_t" attrib)
+		      (type "std::vector<tinyobj::shape_t>"
+			    shapes)
+		      (type "std::vector<tinyobj::material_t>"
+			    materials)
+		      (type "std::string"
+			    warning err))
+	     (unless ("tinyobj::LoadObj"
+		      &attrib
+		      &shapes
+		      &materials
+		      &warning
+		      &err
+		      (string "chalet.obj"))
+	       (throw ("std::runtime_error"
+		       (+ warning err))))
+
+	     (let ((uniqueVertices (curly)))
+	       (declare (type "std::unordered_map<Vertex,uint32_t>" uniqueVertices))
+	       
+	       (foreach
+		(shape shapes)
+		(foreach
+		 (index shape.mesh.indices)
+		 ,(vk
+		   `(Vertex
+		     vertex
+		     :pos (curly
+			   ,@(loop for i below 3 collect
+				  `(aref attrib.vertices
+					 (+ ,i (* 3 index.vertex_index)))))
+		     :texCoord (curly
+				(aref attrib.texcoords
+				      (+ 0 (* 2 index.texcoord_index)))
+				(- 1s0 (aref attrib.texcoords
+					     (+ 1 (* 2 index.texcoord_index)))))
+		     :color (curly 1s0 1s0 1s0)))
+		 (when (== 0
+			   (uniqueVertices.count vertex))
+		   (setf (aref uniqueVertices vertex)
+			 (static_cast<uint32_t>
+			  (g_vertices.size)))
+		   (g_vertices.push_back vertex))
+		 (g_indices.push_back
+		  (aref uniqueVertices vertex))))))))))
+      #+nil (define-module
+      `(
+	()
+	(do0)))
+      #+nil (define-module
+      `(
+	()
+	(do0)))
       #+nil (define-module
       `(
 	()
@@ -2875,58 +2988,7 @@ more structs. this function helps to initialize those structs."
 
 		       (do0
 		       
-			(defun loadModel ()
-			  (declare (values void))
-			  (let ((attrib)
-				(shapes)
-				(materials)
-				(warning)
-				(err))
-			    (declare (type "tinyobj::attrib_t" attrib)
-				     (type "std::vector<tinyobj::shape_t>"
-					   shapes)
-				     (type "std::vector<tinyobj::material_t>"
-					   materials)
-				     (type "std::string"
-					   warning err))
-			    (unless ("tinyobj::LoadObj"
-				     &attrib
-				     &shapes
-				     &materials
-				     &warning
-				     &err
-				     (string "chalet.obj"))
-			      (throw ("std::runtime_error"
-				      (+ warning err))))
-
-			    (let ((uniqueVertices (curly)))
-			      (declare (type "std::unordered_map<Vertex,uint32_t>" uniqueVertices))
-			   
-			      (foreach
-			       (shape shapes)
-			       (foreach
-				(index shape.mesh.indices)
-				,(vk
-				  `(Vertex
-				    vertex
-				    :pos (curly
-					  ,@(loop for i below 3 collect
-						 `(aref attrib.vertices
-							(+ ,i (* 3 index.vertex_index)))))
-				    :texCoord (curly
-					       (aref attrib.texcoords
-						     (+ 0 (* 2 index.texcoord_index)))
-					       (- 1s0 (aref attrib.texcoords
-							    (+ 1 (* 2 index.texcoord_index)))))
-				    :color (curly 1s0 1s0 1s0)))
-				(when (== 0
-					  (uniqueVertices.count vertex))
-				  (setf (aref uniqueVertices vertex)
-					(static_cast<uint32_t>
-					 (g_vertices.size)))
-				  (g_vertices.push_back vertex))
-				(g_indices.push_back
-				 (aref uniqueVertices vertex))))))))
+			)
 		       
 		      
 		       (do0
@@ -2936,44 +2998,8 @@ more structs. this function helps to initialize those structs."
 			
 			
 			
-			(defun createTextureSampler ()
-			  (declare (values void))
-			  ,(vkcall
-			    `(create
-			      sampler
-			      (:magFilter
-			       VK_FILTER_LINEAR
-			       :minFilter VK_FILTER_LINEAR
-			       :addressModeU VK_SAMPLER_ADDRESS_MODE_REPEAT
-			       :addressModeV VK_SAMPLER_ADDRESS_MODE_REPEAT
-			       :addressModeW VK_SAMPLER_ADDRESS_MODE_REPEAT
-			       :anisotropyEnable VK_TRUE
-			       :maxAnisotropy 16
-			       :borderColor VK_BORDER_COLOR_INT_OPAQUE_BLACK
-			       :unnormalizedCoordinates VK_FALSE
-			       :compareEnable VK_FALSE
-			       :compareOp VK_COMPARE_OP_ALWAYS
-			       :mipmapMode VK_SAMPLER_MIPMAP_MODE_LINEAR
-			       :mipLodBias 0s0
-			       :minLod
-					;(static_cast<float> (/ _mipLevels 2))
-			       0s0
-			       :maxLod (static_cast<float> _mipLevels))
-			      (_device
-			       &info
-			       NULL
-			       &_textureSampler)
-			      _textureSampler
-			      )
-			    :throw t))
-			(defun createTextureImageView ()
-			  (declare (values void))
-			  (setf
-			   _textureImageView
-			   (createImageView _textureImage
-					    VK_FORMAT_R8G8B8A8_UNORM
-					    VK_IMAGE_ASPECT_COLOR_BIT
-					    _mipLevels))))
+			
+			)
 		     
 		       #+surface
 		       (do0
@@ -3775,6 +3801,6 @@ more structs. this function helps to initialize those structs."
 							   ,(format nil "~a/vert.spv"
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
-    (sb-ext:run-program "/usr/bin/sh" `("gen_proto.sh"))))
+    (sb-ext:run-program "/bin/sh" `("gen_proto.sh"))))
  
 
