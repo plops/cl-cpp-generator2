@@ -493,23 +493,25 @@ more structs. this function helps to initialize those structs."
 	      ))
 	  (defun "QueueFamilyIndices_isComplete" (q)
 	    (declare (values _Bool)
-		     (type QueueFamilyIndices* q))
+		     (type QueueFamilyIndices q))
 	    (return (and
-		     (!= -1 q->graphicsFamily)
-		     (!= -1 q->presentFamily))))
+		     (!= -1 q.graphicsFamily)
+		     (!= -1 q.presentFamily))))
 	  (defun "QueueFamilyIndices_make" ()
-	    (declare (values QueueFamilyIndices*))
-	    (let ((q (malloc (sizeof QueueFamilyIndices))))
-	      (declare (type QueueFamilyIndices* q))
-	      (setf q->graphicsFamily -1
-		    q->presentFamily -1)
+	    (declare (values QueueFamilyIndices))
+	    (let ((q ;(malloc (sizeof QueueFamilyIndices))
+		    ))
+	      (declare (type QueueFamilyIndices q))
+	      (setf q.graphicsFamily -1
+		    q.presentFamily -1)
 	      (return q)))
 	  (defun "QueueFamilyIndices_destroy" (q)
 	    (declare (type QueueFamilyIndices* q))
-	    (free q))
+	    (free q)
+	    )
 	  (defun findQueueFamilies (device)
 	    (declare (type VkPhysicalDevice device)
-		     (values QueueFamilyIndices*))
+		     (values QueueFamilyIndices))
 	    (let ((indices (QueueFamilyIndices_make))
 		  (queueFamilyCount 0))
 	      (declare ;(type QueueFamilyIndices indices)
@@ -616,7 +618,7 @@ more structs. this function helps to initialize those structs."
 			      (and 
 			       extensionsSupported
 			       swapChainAdequate))))
-		   (QueueFamilyIndices_destroy indices)
+		   ;(QueueFamilyIndices_destroy indices)
 		   (return res))
 		 #+nil (return (indices.isComplete))))
 	 (defun checkDeviceExtensionSupport (device)
@@ -717,8 +719,8 @@ more structs. this function helps to initialize those structs."
 	     (declare (type float queuePriority))
 	     (let ((allQueueFamilies[]
 		    (curly
-		      indices->graphicsFamily
-		      indices->presentFamily))
+		      indices.graphicsFamily
+		      indices.presentFamily))
 		   (qNumber (length allQueueFamilies))
 		   (qSeen[qNumber])
 		   (qSeenCount 0))
@@ -796,15 +798,15 @@ more structs. this function helps to initialize those structs."
 		   ,(g `_physicalDevice))
 		 :throw t)
 	       (progn
-		 ,(vkprint "create graphics queue" `(indices->graphicsFamily))
-		 (vkGetDeviceQueue ,(g `_device) indices->graphicsFamily
+		 ,(vkprint "create graphics queue" `(indices.graphicsFamily))
+		 (vkGetDeviceQueue ,(g `_device) indices.graphicsFamily
 				   0 (ref ,(g `_graphicsQueue))))
 	       (progn
-		 ,(vkprint "create present queue" `(indices->presentFamily))
-		 (vkGetDeviceQueue ,(g `_device) indices->presentFamily
+		 ,(vkprint "create present queue" `(indices.presentFamily))
+		 (vkGetDeviceQueue ,(g `_device) indices.presentFamily
 				   0 (ref ,(g `_presentQueue))))
 	       ))
-	   (QueueFamilyIndices_destroy indices)
+	   ;(QueueFamilyIndices_destroy indices)
 	   )
 	 
 	 )))
@@ -890,15 +892,15 @@ more structs. this function helps to initialize those structs."
 		  (+ swapChainSupport.capabilities.minImageCount 1))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
 		 (queueFamilyIndices[] (curly
-					 indices->graphicsFamily
-					 indices->presentFamily))
+					 indices.graphicsFamily
+					 indices.presentFamily))
 		 ;; best performance mode:
 		 (imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
 		 (queueFamilyIndexCount 0)
 		 (pQueueFamilyIndices NULL))
-	     (declare (type "__typeof__(indices->graphicsFamily)" queueFamilyIndices[]))
-	     (unless (== indices->presentFamily
-			 indices->graphicsFamily)
+	     (declare (type "__typeof__(indices.graphicsFamily)" queueFamilyIndices[]))
+	     (unless (== indices.presentFamily
+			 indices.graphicsFamily)
 	       "// this could be improved with ownership stuff"
 	       (setf imageSharingMode VK_SHARING_MODE_CONCURRENT
 		     queueFamilyIndexCount 2
@@ -957,7 +959,7 @@ more structs. this function helps to initialize those structs."
 				       ,(g `_swapChainImages))
 	      (setf ,(g `_swapChainImageFormat) surfaceFormat.format
 		    ,(g `_swapChainExtent) extent)))
-	   (QueueFamilyIndices_destroy indices)
+	   ;(QueueFamilyIndices_destroy indices)
 	   )
 	 )))
 
@@ -1560,7 +1562,7 @@ more structs. this function helps to initialize those structs."
 	       `(create
 		 command-pool
 		 (;; cmds for drawing go to graphics queue
-		  :queueFamilyIndex queueFamilyIndices->graphicsFamily
+		  :queueFamilyIndex queueFamilyIndices.graphicsFamily
 				    :flags 0)
 		 (,(g `_device)
 		  &info
@@ -1568,7 +1570,8 @@ more structs. this function helps to initialize those structs."
 		  (ref ,(g `_commandPool)))
 		 ,(g `_commandPool))
 	       :throw t)
-	     (QueueFamilyIndices_destroy queueFamilyIndices))))))
+	     ;(QueueFamilyIndices_destroy queueFamilyIndices)
+	     )))))
 
    
 
