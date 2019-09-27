@@ -406,14 +406,15 @@ more structs. this function helps to initialize those structs."
 		      (createDescriptorSetLayout)
 		      (createGraphicsPipeline)
 		      (createCommandPool)
+		      ;; create texture image needs command pools
+		       (createColorResources)
 		      #+nil (
 		       
 		       
 			     
 		       
 		       
-		       ;; create texture image needs command pools
-		       (createColorResources)
+			     
 		       (createDepthResources)
 		       (createFramebuffers)
 		       (createTextureImage)
@@ -1572,10 +1573,12 @@ more structs. this function helps to initialize those structs."
 			     (vkDestroyShaderModule ,(g `_device)
 						    vertShaderModule
 						    NULL))))))
-    (define-module
+   (define-module
       `(command_pool
 	()
 	(do0
+	 
+	 
 	 (defun createCommandPool ()
 	   (declare (values void))
 	   (let ((queueFamilyIndices (findQueueFamilies
@@ -1595,6 +1598,359 @@ more structs. this function helps to initialize those structs."
 	     ;(QueueFamilyIndices_destroy queueFamilyIndices)
 	     )))))
 
+   (define-module
+      `(color_resource
+	()
+	(do0
+	 #+nil
+	 (defun createImageView (image format aspectFlags mipLevels)
+			 (declare (values VkImageView)
+				  (type VkImage image)
+				  (type VkFormat format)
+				  (type VkImageAspectFlags aspectFlags)
+				  (type uint32_t mipLevels))
+			 (let ((imageView))
+			   (declare (type VkImageView imageView))
+			  ,(vkcall
+			    `(create
+			      image-view
+			      (:image
+			       image
+			       :viewType VK_IMAGE_VIEW_TYPE_2D
+			       :format format
+			       ;; color targets without mipmapping or
+			       ;; multi layer (stereo)
+			       :subresourceRange.aspectMask aspectFlags
+			       :subresourceRange.baseMipLevel 0
+			       :subresourceRange.levelCount mipLevels
+			       :subresourceRange.baseArrayLayer 0
+			       :subresourceRange.layerCount 1
+			       )
+			      (,(g `_device)
+			       &info
+			       NULL
+			       &imageView)
+			      imageView)
+			    :throw t)
+			  (return imageView)))
+	 (defun hasStencilComponent (format)
+			  (declare (values bool)
+				   (type VkFormat format))
+			  (return (or
+				   (== VK_FORMAT_D32_SFLOAT_S8_UINT format)
+				   (== VK_FORMAT_D24_UNORM_S8_UINT format))))
+	 (defun beginSingleTimeCommands ()
+	   (declare (values VkCommandBuffer))
+	   (let ((commandBuffer))
+	     (declare (type VkCommandBuffer commandBuffer))
+	     ,(vkcall
+	       `(allocate
+		 command-buffer
+		 (:level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+			 :commandPool ,(g `_commandPool)
+			 :commandBufferCount 1
+			 )
+		 ( ,(g `_device) &info &commandBuffer)
+		 
+		 )
+	       :throw nil
+	       :plural t))
+	   ,(vkcall
+	     `(begin
+	       command-buffer
+	       (:flags VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+	       (commandBuffer &info)
+	       commandBuffer)
+	     :throw nil)
+	   (return commandBuffer)
+	   )
+	 (defun endSingleTimeCommands (commandBuffer)
+	   (declare (values void)
+		    (type VkCommandBuffer commandBuffer))
+	   (vkEndCommandBuffer commandBuffer)
+	   ,(vk
+	     `(VkSubmitInfo
+	       submitInfo
+	       :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+	       :commandBufferCount 1
+	       :pCommandBuffers &commandBuffer))
+	   (vkQueueSubmit ,(g `_graphicsQueue)
+			  1
+			  &submitInfo
+			  VK_NULL_HANDLE)
+	   (vkQueueWaitIdle ,(g `_graphicsQueue))
+	   (vkFreeCommandBuffers
+	    ,(g `_device)
+	    ,(g `_commandPool)
+	    1
+	    &commandBuffer)
+	   ,(vkprint "endSingleTimeCommands " `(commandBuffer)))
+	 (defun transitionImageLayout (image
+				       format
+				       oldLayout
+				       newLayout
+				       mipLevels)
+	   (declare (values void)
+		    (type VkImage image)
+		    (type VkFormat format)
+		    (type VkImageLayout oldLayout newLayout)
+		    (type uint32_t mipLevels))
+	   (let ((commandBuffer
+		  (beginSingleTimeCommands)))
+	     ;; use memory barriers in combination with
+	     ;; exclusive sharing mode to transition
+	     ;; image layout
+	     ,(vk
+	       `(VkImageMemoryBarrier
+		 barrier
+		 :sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
+		 ;; old could be undefined if yout dont
+		 ;; care about existing contents
+		 :oldLayout oldLayout
+		 :newLayout newLayout
+		 :srcQueueFamilyIndex
+		 VK_QUEUE_FAMILY_IGNORED
+		 :dstQueueFamilyIndex
+		 VK_QUEUE_FAMILY_IGNORED
+		 :image image
+		 :subresourceRange.aspectMask
+		 VK_IMAGE_ASPECT_COLOR_BIT
+		 :subresourceRange.baseMipLevel 0
+		 :subresourceRange.levelCount mipLevels
+		 :subresourceRange.baseArrayLayer 0
+		 :subresourceRange.layerCount 1
+		 :srcAccessMask 0
+		 :dstAccessMask 0))
+
+	     (if (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+		     newLayout)
+		 (do0
+		  (setf barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_DEPTH_BIT)
+		  (when (hasStencilComponent format)
+		    (setf
+		     barrier.subresourceRange.aspectMask (logior barrier.subresourceRange.aspectMask
+								 VK_IMAGE_ASPECT_STENCIL_BIT))))
+		 (do0
+		  (setf
+		   barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT)))
+	     
+	     (let ((srcStage )
+		   (dstStage))
+	       (declare (type VkPipelineStageFlags
+			      srcStage
+			      dstStage))
+	       (if (and
+		    (== VK_IMAGE_LAYOUT_UNDEFINED
+			oldLayout)
+		    (== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			newLayout))
+		   (do0
+		    (setf barrier.srcAccessMask 0
+			  barrier.dstAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+			  srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+			  dstStage VK_PIPELINE_STAGE_TRANSFER_BIT
+			  ))
+		   (if (and
+			(== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			    oldLayout)
+			(== VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			    newLayout))
+		       (do0
+			(setf barrier.srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+			      barrier.dstAccessMask VK_ACCESS_SHADER_READ_BIT
+			      srcStage VK_PIPELINE_STAGE_TRANSFER_BIT
+			      dstStage VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+			      ))
+		       (if (and
+			    (== VK_IMAGE_LAYOUT_UNDEFINED
+				oldLayout)
+			    (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+				newLayout))
+			   (do0
+			    (setf barrier.srcAccessMask 0
+				  barrier.dstAccessMask (logior VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+								VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
+				  srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+				  dstStage VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+				  )
+			    )
+			   (if (and
+				(== VK_IMAGE_LAYOUT_UNDEFINED
+				    oldLayout)
+				(== VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+				    newLayout))
+			       (do0
+				(setf barrier.srcAccessMask 0
+				      barrier.dstAccessMask (logior VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+								    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+				      srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+				      dstStage VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+				      )
+				)
+			       (do0
+				,(vkprint "unsupported layout transition.")
+				#+nil (throw
+				    ("std::invalid_argument"
+				     (string )))))))))
+	     (vkCmdPipelineBarrier
+	      commandBuffer
+	      ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
+	      srcStage ;; stage that should happen before barrier
+	      dstStage ;; stage that will wait
+	      0	;; per-region
+	      0 NULL	;; memory barrier
+	      0 NULL	;; buffer memory barrier
+	      1 &barrier ;; image memory barrier
+	      )
+	     
+	     (endSingleTimeCommands commandBuffer)))
+	 
+	 (defun findMemoryType (typeFilter properties)
+			 (declare (values uint32_t)
+				  (type uint32_t typeFilter)
+				  (type VkMemoryPropertyFlags properties))
+			 (let ((ps))
+			   (declare (type VkPhysicalDeviceMemoryProperties ps))
+			   (vkGetPhysicalDeviceMemoryProperties ,(g `_physicalDevice)
+								&ps)
+			   (dotimes (i ps.memoryTypeCount)
+			     (when (and (logand (<< 1 i)
+						typeFilter)
+					(== properties
+					    (logand properties
+						    (dot (aref ps.memoryTypes i)
+							 propertyFlags))))
+			       (return i)))
+			   ,(vkprint  "failed to find suitable memory type.")))
+	 ,(emit-utils :code
+		      `(defstruct0 Tuple_Image_DeviceMemory
+			   (image VkImage)
+			 (memory VkDeviceMemory)))
+	 (defun makeTuple_Image_DeviceMemory (image memory)
+	   (declare (values Tuple_Image_DeviceMemory)
+		    (type VkImage image)
+		    (type VkDeviceMemory memory))
+	   (let ((tup (curly image memory)))
+	     (declare (type Tuple_Image_DeviceMemory tup))
+	     (return tup)))
+	 (defun createImage (width height
+					    mipLevels
+					    numSamples
+					    format tiling
+					    usage
+					    properties)
+			  (declare (values
+				    Tuple_Image_DeviceMemory
+					;"std::tuple<VkImage,VkDeviceMemory>"
+				    )
+				   (type uint32_t width height mipLevels)
+				   (type VkSampleCountFlagBits numSamples)
+				   (type VkFormat format)
+				   (type VkImageTiling tiling)
+				   (type VkImageUsageFlags usage)
+				   (type VkMemoryPropertyFlags properties))
+			  (let ((image)
+				(imageMemory)
+				)
+			    (declare (type VkImage image)
+				     (type VkDeviceMemory imageMemory))
+			    ,(vkcall
+			      `(create
+				image
+				(:imageType
+				 VK_IMAGE_TYPE_2D
+				 :extent.width width
+				 :extent.height height
+				 :extent.depth 1
+				 :mipLevels mipLevels
+				 :arrayLayers 1
+				 :format format
+				 ;; if you need direct access, use linear tiling for row major
+				 :tiling tiling
+				 :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+				 :usage usage
+			      
+				 :sharingMode
+				 VK_SHARING_MODE_EXCLUSIVE
+				 :samples numSamples
+				 :flags 0)
+				( ,(g `_device)
+				 &info
+				 NULL
+				 &image)
+				image
+				)
+			      :throw t))
+			  (let ((memReq))
+			    (declare (type VkMemoryRequirements memReq))
+			    (vkGetImageMemoryRequirements
+			     ,(g `_device)
+			     image
+			     &memReq)
+			    ,(vkcall
+			      `(allocate
+				memory
+				(:allocationSize
+				 memReq.size
+				 :memoryTypeIndex
+				 (findMemoryType
+				  memReq.memoryTypeBits
+				  properties))
+				( ,(g `_device)
+				 &info
+				 NULL
+				 &imageMemory)
+				imageMemory
+				)
+			      :throw t)
+			    (vkBindImageMemory ,(g `_device)
+					       image
+					       imageMemory
+					       0)
+			    (return (makeTuple_Image_DeviceMemory  ;"std::make_tuple"
+				     image
+				     imageMemory)))
+			
+			  )
+	 (defun createColorResources ()
+	   ;; for msaa
+	   (let ((colorFormat ,(g `_swapChainImageFormat))
+		 (colorTuple #+nil (bracket colorImage
+					    colorImageMemory)
+		  (createImage
+		   ,(g `_swapChainExtent.width)
+		   ,(g `_swapChainExtent.height)
+		   1
+		   ,(g `_msaaSamples)
+		   colorFormat
+		   VK_IMAGE_TILING_OPTIMAL
+		   (logior
+		    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
+		    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+		   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		   )))
+	     (declare (type VkFormat colorFormat))
+	     (setf ,(g `_colorImage) colorTuple.image ;colorImage
+		   ,(g `_colorImageMemory) colorTuple.memory ;colorImageMemory
+		   )
+	     (setf ,(g `_colorImageView)
+		   (createImageView
+		    ,(g `_colorImage)
+		    colorFormat
+		    VK_IMAGE_ASPECT_COLOR_BIT
+		    1))
+	     (transitionImageLayout
+	      ,(g `_colorImage)
+	      colorFormat
+	      VK_IMAGE_LAYOUT_UNDEFINED
+	      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	      1))))))
+   #+nil (define-module
+      `(
+	()
+	(do0)))
+
+   
    
 
   (let* ((vertex-code
@@ -1756,8 +2112,8 @@ more structs. this function helps to initialize those structs."
 		    (_device)
 		    (_graphicsQueue)
 		    )
-		(declare (type GLFWwindow* _window)
-			 (type VkInstance _instance)
+		(declare (type GLFWwindow* ,(g `_window))
+			 (type VkInstance ,(g `_instance))
 			 #-nolog (type "const bool" _enableValidationLayers)
 			 #-nolog (type "const std::vector<const char*>" _validationLayers)
 			 (type VkPhysicalDevice _physicalDevice)
@@ -2150,24 +2506,7 @@ more structs. this function helps to initialize those structs."
 					    dstBuffer 1 &copyRegion)
 			   (endSingleTimeCommands commandBuffer)))
 
-		       (defun findMemoryType (typeFilter properties)
-			 (declare (values uint32_t)
-				  (type uint32_t typeFilter)
-				  (type VkMemoryPropertyFlags properties))
-			 (let ((ps))
-			   (declare (type VkPhysicalDeviceMemoryProperties ps))
-			   (vkGetPhysicalDeviceMemoryProperties _physicalDevice
-								&ps)
-			   (dotimes (i ps.memoryTypeCount)
-			     (when (and (logand (<< 1 i)
-						typeFilter)
-					(== properties
-					    (logand properties
-						    (dot (aref ps.memoryTypes i)
-							 propertyFlags))))
-			       (return i)))
-			   (throw ("std::runtime_error"
-				   (string "failed to find suitable memory type.")))))
+		       
 		       
 
 		       (do0
@@ -2227,12 +2566,7 @@ more structs. this function helps to initialize those structs."
 		       (do0
 			
 			
-			(defun hasStencilComponent (format)
-			  (declare (values bool)
-				   (type VkFormat format))
-			  (return (or
-				   (== VK_FORMAT_D32_SFLOAT_S8_UINT format)
-				   (== VK_FORMAT_D24_UNORM_S8_UINT format))))
+			
 			(defun createDepthResources ()
 			  (declare (values void))
 			  (let ((depthFormat (findDepthFormat))
@@ -2298,201 +2632,8 @@ more structs. this function helps to initialize those structs."
 				  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 				  1
 				  &region))))
-			(defun transitionImageLayout (image
-						      format
-						      oldLayout
-						      newLayout
-						      mipLevels)
-			  (declare (values void)
-				   (type VkImage image)
-				   (type VkFormat format)
-				   (type VkImageLayout oldLayout newLayout)
-				   (type uint32_t mipLevels))
-			  (let ((commandBuffer
-				 (beginSingleTimeCommands)))
-			    ;; use memory barriers in combination with
-			    ;; exclusive sharing mode to transition
-			    ;; image layout
-			    ,(vk
-			      `(VkImageMemoryBarrier
-				barrier
-				:sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
-				;; old could be undefined if yout dont
-				;; care about existing contents
-				:oldLayout oldLayout
-				:newLayout newLayout
-				:srcQueueFamilyIndex
-				VK_QUEUE_FAMILY_IGNORED
-				:dstQueueFamilyIndex
-				VK_QUEUE_FAMILY_IGNORED
-				:image image
-				:subresourceRange.aspectMask
-				VK_IMAGE_ASPECT_COLOR_BIT
-				:subresourceRange.baseMipLevel 0
-				:subresourceRange.levelCount mipLevels
-				:subresourceRange.baseArrayLayer 0
-				:subresourceRange.layerCount 1
-				:srcAccessMask 0
-				:dstAccessMask 0))
-
-			    (if (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-				    newLayout)
-				(do0
-				 (setf barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_DEPTH_BIT)
-				 (when (hasStencilComponent format)
-				   (setf
-				    barrier.subresourceRange.aspectMask (logior barrier.subresourceRange.aspectMask
-										VK_IMAGE_ASPECT_STENCIL_BIT))))
-				(do0
-				 (setf
-				  barrier.subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT)))
-			   
-			    (let ((srcStage )
-				  (dstStage))
-			      (declare (type VkPipelineStageFlags
-					     srcStage
-					     dstStage))
-			      (if (and
-				   (== VK_IMAGE_LAYOUT_UNDEFINED
-				       oldLayout)
-				   (== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				       newLayout))
-				  (do0
-				   (setf barrier.srcAccessMask 0
-					 barrier.dstAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
-					 srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-					 dstStage VK_PIPELINE_STAGE_TRANSFER_BIT
-					 ))
-				  (if (and
-				       (== VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-					   oldLayout)
-				       (== VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-					   newLayout))
-				      (do0
-				       (setf barrier.srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
-					     barrier.dstAccessMask VK_ACCESS_SHADER_READ_BIT
-					     srcStage VK_PIPELINE_STAGE_TRANSFER_BIT
-					     dstStage VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-					     ))
-				      (if (and
-					   (== VK_IMAGE_LAYOUT_UNDEFINED
-					       oldLayout)
-					   (== VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-					       newLayout))
-					  (do0
-					   (setf barrier.srcAccessMask 0
-						 barrier.dstAccessMask (logior VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
-									       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
-						 srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-						 dstStage VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-						 )
-					   )
-					  (if (and
-					       (== VK_IMAGE_LAYOUT_UNDEFINED
-						   oldLayout)
-					       (== VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-						   newLayout))
-					      (do0
-					       (setf barrier.srcAccessMask 0
-						     barrier.dstAccessMask (logior VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-										   VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-						     srcStage VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-						     dstStage VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-						     )
-					       )
-					      (do0
-					       (throw
-						   ("std::invalid_argument"
-						    (string "unsupported layout transition.")))))))))
-			    (vkCmdPipelineBarrier
-			     commandBuffer
-			     ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
-			     srcStage ;; stage that should happen before barrier
-			     dstStage ;; stage that will wait
-			     0	      ;; per-region
-			     0 NULL ;; memory barrier
-			     0 NULL ;; buffer memory barrier
-			     1 &barrier ;; image memory barrier
-			     )
-			  
-			    (endSingleTimeCommands commandBuffer)))
-			(defun createImage (width height
-					    mipLevels
-					    numSamples
-					    format tiling
-					    usage
-					    properties)
-			  (declare (values
-				    "std::tuple<VkImage,VkDeviceMemory>")
-				   (type uint32_t width height mipLevels)
-				   (type VkSampleCountFlagBits numSamples)
-				   (type VkFormat format)
-				   (type VkImageTiling tiling)
-				   (type VkImageUsageFlags usage)
-				   (type VkMemoryPropertyFlags properties))
-			  (let ((image)
-				(imageMemory)
-				)
-			    (declare (type VkImage image)
-				     (type VkDeviceMemory imageMemory))
-			    ,(vkcall
-			      `(create
-				image
-				(:imageType
-				 VK_IMAGE_TYPE_2D
-				 :extent.width width
-				 :extent.height height
-				 :extent.depth 1
-				 :mipLevels mipLevels
-				 :arrayLayers 1
-				 :format format
-				 ;; if you need direct access, use linear tiling for row major
-				 :tiling tiling
-				 :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
-				 :usage usage
-			      
-				 :sharingMode
-				 VK_SHARING_MODE_EXCLUSIVE
-				 :samples numSamples
-				 :flags 0)
-				(_device
-				 &info
-				 NULL
-				 &image)
-				image
-				)
-			      :throw t))
-			  (let ((memReq))
-			    (declare (type VkMemoryRequirements memReq))
-			    (vkGetImageMemoryRequirements
-			     _device
-			     image
-			     &memReq)
-			    ,(vkcall
-			      `(allocate
-				memory
-				(:allocationSize
-				 memReq.size
-				 :memoryTypeIndex
-				 (findMemoryType
-				  memReq.memoryTypeBits
-				  properties))
-				(_device
-				 &info
-				 NULL
-				 &imageMemory)
-				imageMemory
-				)
-			      :throw t)
-			    (vkBindImageMemory _device
-					       image
-					       imageMemory
-					       0)
-			    (return ("std::make_tuple"
-				     image
-				     imageMemory)))
 			
-			  )
+			
 			(defun createTextureImage ()
 			  (declare (values void))
 			  "// uses command buffers "
@@ -3265,39 +3406,8 @@ more structs. this function helps to initialize those structs."
 		       
 
 		       (do0
-			;; for msaa
-			(defun createColorResources ()
-			  (declare (values void))
-			  (let ((colorFormat _swapChainImageFormat)
-				((bracket colorImage
-					  colorImageMemory)
-				 (createImage
-				  _swapChainExtent.width
-				  _swapChainExtent.height
-				  1
-				  _msaaSamples
-				  colorFormat
-				  VK_IMAGE_TILING_OPTIMAL
-				  (logior
-				   VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
-				   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-				  )))
-			    (declare (type VkFormat colorFormat))
-			    (setf _colorImage colorImage
-				  _colorImageMemory colorImageMemory)
-			    (setf _colorImageView
-				  (createImageView
-				   _colorImage
-				   colorFormat
-				   VK_IMAGE_ASPECT_COLOR_BIT
-				   1))
-			    (transitionImageLayout
-			     _colorImage
-			     colorFormat
-			     VK_IMAGE_LAYOUT_UNDEFINED
-			     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-			     1)))
+			
+			
 			)
 		      
 		       
