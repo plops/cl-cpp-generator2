@@ -2415,10 +2415,59 @@ more structs. this function helps to initialize those structs."
 	       ,(g `_textureSampler)
 	       )
 	     :throw t)))))
-      #+nil(define-module
-      `(
+      (define-module
+      `(load_object
 	()
 	(do0
+	 "#define TINYOBJ_LOADER_C_IMPLEMENTATION"
+	 (include "tinyobj_loader_c.h")
+	 (include <fcntl.h>
+		  <sys/mman.h>
+		  <sys/stat.h>
+		  <sys/types.h>)
+	 ,(emit-utils
+	   :code
+	   `(defstruct0 mmapPair
+		(n int)
+		(data char*)
+		))
+	 (defun munmapPair (pair)
+	   (declare (type mmapPair pair)
+		    )
+	   (munmap pair.data pair.n))
+	 (defun mmapFile (filename)
+	   (declare (type char* filename)
+		    (values mmapPair))
+	   (let ((f (fopen filename (string "r"))))
+	     (unless f
+	       ,(vkprint "can't open file" `(filename)))
+	     (fseek f 0 SEEK_END)
+	     (let ((filesize (ftell f)))
+	       (fclose f)))
+	   (let ((fd (open filename O_RDONLY))
+		 (sb))
+	     (declare (type "struct stat" sb))
+	     (when (== -1 fd)
+	       ,(vkprint "can't open file for mmap" `(filename)))
+	     (when (== -1 (fstat fd &sb))
+	       ,(vkprint "can't fstat file" `(filename)))
+	     (unless (S_ISREG sb.st_mode)
+	       ,(vkprint "not a file" `(filename sb.st_mode)))
+	     (let ((p (mmap 0 filesize
+			    PROT_READ
+			    MAP_SHARED
+			    fd
+			    0)))
+	       (if (== MAP_FAILED p)
+		   ,(vkprint "mmap failed" `(filename)))
+	       (if (== -1 (close fd))
+		   ,(vkprint "close failed" `(filename)))
+	       (let ((map (cast mmapPair
+				(curly filesize
+				       p))))
+		 (return map)))
+	     )
+	   )
 	 (defun loadModel ()
 	   
 	   (let ((attrib)
