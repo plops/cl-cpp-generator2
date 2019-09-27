@@ -1273,24 +1273,24 @@ more structs. this function helps to initialize those structs."
 	   `(do0
 	    
 	    (defstruct0 VertexInputAttributeDescription3
-		(descriptions[3] VkVertexInputAttributeDescription)
+		(data[3] VkVertexInputAttributeDescription)
 	      )))
 	  (defun "Vertex_getAttributeDescriptions" ()
 	    (declare (values "VertexInputAttributeDescription3"))
 	    (let ((attributeDescriptions (curly)))
 	      (declare (type "VertexInputAttributeDescription3"
 			     attributeDescriptions))
-	      ,(set-members `((aref attributeDescriptions 0)
+	      ,(set-members `((aref attributeDescriptions.data 0)
 			      :binding 0
 			      :location 0
 			      :format VK_FORMAT_R32G32B32_SFLOAT
 			      :offset (offsetof Vertex pos)))
-	      ,(set-members `((aref attributeDescriptions 1)
+	      ,(set-members `((aref attributeDescriptions.data 1)
 			      :binding 0
 			      :location 1
 			      :format VK_FORMAT_R32G32B32_SFLOAT
 			      :offset (offsetof Vertex color)))
-	      ,(set-members `((aref attributeDescriptions 2)
+	      ,(set-members `((aref attributeDescriptions.data 2)
 			      :binding 0
 			      :location 2
 			      :format VK_FORMAT_R32G32_SFLOAT
@@ -1372,8 +1372,8 @@ more structs. this function helps to initialize those structs."
 				   :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
 				   :vertexBindingDescriptionCount 1
 				   :pVertexBindingDescriptions &bindingDescription
-				   :vertexAttributeDescriptionCount (static_cast<uint32_t> (attributeDescriptions.size))
-				   :pVertexAttributeDescriptions (attributeDescriptions.data)))
+				   :vertexAttributeDescriptionCount (length attributeDescriptions.data)
+				   :pVertexAttributeDescriptions attributeDescriptions.data))
 			       ,(vk
 				 `(VkPipelineInputAssemblyStateCreateInfo
 				   inputAssembly
@@ -1387,15 +1387,16 @@ more structs. this function helps to initialize those structs."
 				   viewport
 				   :x 0s0
 				   :y 0s0
-				   :width (* 1s0 _swapChainExtent.width)
-				   :height (* 1s0 _swapChainExtent.height)
+				   :width (* 1s0 ,(g `_swapChainExtent.width))
+				   :height (* 1s0 ,(g `_swapChainExtent.height))
 				   :minDepth 0s0
 				   :maxDepth 1s0))
 			       ,(vk
 				 `(VkRect2D
 				   scissor
-				   :offset (curly 0 0)
-				   :extent _swapChainExtent))
+				   :offset "(__typeof__(scissor.offset)){0,0}" ;(curly 0 0)
+				   
+				   :extent ,(g `_swapChainExtent)))
 			       ,(vk
 				 `(VkPipelineViewportStateCreateInfo
 				   viewPortState
@@ -1426,7 +1427,7 @@ more structs. this function helps to initialize those structs."
 				   multisampling
 				   :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
 				   :sampleShadingEnable VK_FALSE
-				   :rasterizationSamples _msaaSamples
+				   :rasterizationSamples ,(g `_msaaSamples)
 				   :minSampleShading 1s0
 				   :pSampleMask NULL
 				   :alphaToCoverageEnable VK_FALSE
@@ -1444,8 +1445,9 @@ more structs. this function helps to initialize those structs."
 				   :minDepthBounds 0s0
 				   :maxDepthBounds 1s0
 				   :stencilTestEnable VK_FALSE
-				   :front (curly)
-				   :back (curly)))
+				   :front "(__typeof__(depthStencil.front)){}" ;(curly)
+				   :back "(__typeof__(depthStencil.back)){}" ;(curly)
+				   ))
 			       ,(vk
 				 `(VkPipelineColorBlendAttachmentState
 				   colorBlendAttachment
@@ -1498,16 +1500,16 @@ more structs. this function helps to initialize those structs."
 				`(create
 				  pipeline-layout
 				  (:setLayoutCount 1
-						   :pSetLayouts &_descriptorSetLayout
+						   :pSetLayouts (ref ,(g `_descriptorSetLayout))
 						   ;; another way of passing dynamic values to shaders
 						   :pushConstantRangeCount 0
 						   :pPushConstantRanges NULL
 						   )
-				  (_device
+				  (,(g `_device)
 				   &info
 				   NULL
-				   &_pipelineLayout)
-				  _pipelineLayout)
+				   (ref ,(g `_pipelineLayout)))
+				  ,(g `_pipelineLayout))
 				:throw t))
 			     ,(vkcall
 			       `(create
@@ -1523,30 +1525,30 @@ more structs. this function helps to initialize those structs."
 					      :pColorBlendState &colorBlending
 					      ;; if we want to change linewidth:
 					      :pDynamicState NULL
-					      :layout _pipelineLayout
-					      :renderPass _renderPass
+					      :layout ,(g `_pipelineLayout)
+					      :renderPass ,(g `_renderPass)
 					      :subpass 0
 					      ;; similar pipelines can be derived
 					      ;; from each other to speed up
 					      ;; switching
 					      :basePipelineHandle VK_NULL_HANDLE
 					      :basePipelineIndex -1)
-				 (_device
+				 (,(g `_device)
 				  VK_NULL_HANDLE ;; pipline cache
 				  1
 				  &info
 				  NULL
-				  &_graphicsPipeline)
-				 _graphicsPipeline)
+				  (ref ,(g `_graphicsPipeline)))
+				 ,(g `_graphicsPipeline))
 			       :plural t
 			       :throw t)			   
-			     (vkDestroyShaderModule _device
+			     (vkDestroyShaderModule ,(g `_device)
 						    fragShaderModule
 						    NULL)
-			     (vkDestroyShaderModule _device
+			     (vkDestroyShaderModule ,(g `_device)
 						    vertShaderModule
 						    NULL))))))
-    #+nil (define-module
+    (define-module
       `(command_pool
 	()
 	(do0
@@ -1558,7 +1560,7 @@ more structs. this function helps to initialize those structs."
 	       `(create
 		 command-pool
 		 (;; cmds for drawing go to graphics queue
-		  :queueFamilyIndex (queueFamilyIndices.graphicsFamily.value)
+		  :queueFamilyIndex queueFamilyIndices->graphicsFamily
 				    :flags 0)
 		 (,(g `_device)
 		  &info
