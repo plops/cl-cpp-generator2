@@ -1298,36 +1298,58 @@ more structs. this function helps to initialize those structs."
 			      :format VK_FORMAT_R32G32_SFLOAT
 			      :offset (offsetof Vertex texCoord)))
 	      (return attributeDescriptions))))
-	 
+	 ,(emit-utils :code
+		      `(defstruct0 Array_u8
+			   (size int)
+			 (data[] uint8_t*))
+		      
+		      )
+	 (defun makeArray_u8 (n)
+	   (declare (type int n)
+		    (values Array_u8*))
+	   (let ((a (malloc (+ (sizeof Array_u8)
+			       (* n (sizeof uint8_t))))))
+	     (declare (type Array_u8* a))
+	     (setf a->size n)
+	     (return a)))
+	 (defun destroyArray_u8 (a)
+	   (declare (type Array_u8* a))
+	   (free a))
 	 (defun readFile (filename)
 	   (declare (type "const char*" filename)
-		    (values "char*"))
+		    (values Array_u8* ;"char*"
+			    ))
 	   (let ((file (fopen filename (string "r"))))
 	     (unless file
 	       ,(vkprint "failed to open file."))
 	     (when file
 	       (fseek file 0L SEEK_END)
 	       (let ((filesize (ftell file))
-		     (buffer ("(char*)" (malloc (+ 1 filesize)))))
+		     (buffer (makeArray_u8 filesize) ;("(char*)" (malloc (+ 1 filesize)))
+		       ))
 		 (rewind file)
-		 (fread buffer 1 filesize file)
-		 (setf (aref buffer filesize) 0)
+		 (let ((read_status (fread buffer->data 1 filesize file)))
+		   ;(setf (aref buffer filesize) 0)
+		   ,(vkprint "readFile" `(read_status filename filesize file)))
 		 (return buffer)))))
 	 
 	 (defun createShaderModule (code)
 	   (declare (values VkShaderModule)
-		    (type "const char*" code)
+		    (type "const Array_u8*" code)
 		    )
 	   ;;std::vector<char> fullfills alignment requirements of uint32_t
 	   
-	   (let ((shaderModule))
+	   (let ((shaderModule)
+		 (codeSize code->size)
+		 (pCode  ("(const uint32_t*)"
+				    code->data)))
 	     (declare (type VkShaderModule shaderModule))
+	     ,(vkprint "createShader" `(codeSize pCode))
 	     ,(vkcall
 	       `(create
 		 shader-module
-		 (:codeSize (strlen code)
-			    :pCode ("(const uint32_t*)"
-				    code))
+		 (:codeSize codeSize
+			    :pCode pCode)
 		 (,(g `_device)
 		  &info
 		  NULL
@@ -1344,8 +1366,8 @@ more structs. this function helps to initialize those structs."
 		 (ff (readFile (string "frag.spv")))
 		 (fragShaderModule (createShaderModule
 				    ff)))
-	     (free fv)
-	     (free ff)
+	     (destroyArray_u8 fv)
+	     (destroyArray_u8 ff)
 	     
 	     ,@(loop for e in `(frag vert)
 		  collect
