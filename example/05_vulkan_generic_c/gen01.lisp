@@ -2424,7 +2424,8 @@ more structs. this function helps to initialize those structs."
 	 (include <fcntl.h>
 		  <sys/mman.h>
 		  <sys/stat.h>
-		  <sys/types.h>)
+		  <sys/types.h>
+		  <unistd.h>)
 	 ,(emit-utils
 	   :code
 	   `(defstruct0 mmapPair
@@ -2468,6 +2469,34 @@ more structs. this function helps to initialize those structs."
 		 (return map)))
 	     )
 	   )
+
+	 (defun loadModel ()
+	   (let ((map (mmapFile (string "chalet.obj")))
+		 (attrib)
+		 (shapes NULL)
+		 (num_shapes)
+		 (materials NULL)
+		 (num_materials)
+		 (res (tinyobj_parse_obj
+		       &attrib
+		       &shapes
+		       &num_shapes
+		       &materials
+		       &num_materials
+		       map.data
+		       map.n
+		       TINYOBJ_FLAG_TRIANGULATE)))
+	     (declare (type tinyobj_attrib_t attrib)
+		      (type tinyobj_shape_t* shapes)
+		      (type tinyobj_material_t* materials)
+		      (type size_t num_shapes
+			    num_materials))
+	     (unless (== TINYOBJ_SUCCESS res)
+	       ,(vkprint "tinyobj failed to open" `(res)))
+	     ,(vkprint "tinyobj opened" `(num_shapes
+					  num_materials))
+	     ))
+	 #+nil
 	 (defun loadModel ()
 	   
 	   (let ((attrib)
