@@ -531,14 +531,14 @@ more structs. this function helps to initialize those structs."
 		   (when (and (< 0 family.queueCount)
 			      (logand family.queueFlags
 				      VK_QUEUE_GRAPHICS_BIT))
-		     (setf indices->graphicsFamily i))
+		     (setf indices.graphicsFamily i))
 		   (let ((presentSupport false))
 		     (declare (type VkBool32 presentSupport))
 		     (vkGetPhysicalDeviceSurfaceSupportKHR
 		      device i ,(g `_surface) &presentSupport)
 		     (when (and (< 0 family.queueCount)
 				presentSupport)
-		       (setf indices->presentFamily i))
+		       (setf indices.presentFamily i))
 		     (when (QueueFamilyIndices_isComplete indices)
 		       break))
 		   (incf i))))
