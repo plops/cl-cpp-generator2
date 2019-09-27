@@ -329,6 +329,10 @@ entry return-values contains a list of return values"
 		(defun (parse-defun code #'emit))
 		(return (format nil "return ~a" (emit (car (cdr code)))))
 		(throw (format nil "throw ~a" (emit (car (cdr code)))))
+		(cast (destructuring-bind (type value) (cdr code)
+			(format nil "(~a) ~a"
+				(emit type)
+				(emit value))))
 		
 		(let (parse-let code #'emit))
 		(setf 

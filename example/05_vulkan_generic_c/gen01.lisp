@@ -413,6 +413,7 @@ more structs. this function helps to initialize those structs."
 		      ;; create texture image needs command pools
 		       (createColorResources)
 		      (createDepthResources)
+		      (createFramebuffers)
 		      #+nil (
 		       
 		       
@@ -421,7 +422,7 @@ more structs. this function helps to initialize those structs."
 		       
 			     
 		       
-		       (createFramebuffers)
+		       
 		       (createTextureImage)
 		       (createTextureImageView)
 		       (createTextureSampler)
@@ -1951,7 +1952,52 @@ more structs. this function helps to initialize those structs."
 	      depthFormat
 	      VK_IMAGE_LAYOUT_UNDEFINED
 	      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 1))))))
-   #+nil (define-module
+   (define-module
+      `(framebuffer
+	()
+	(do0
+	 ,(emit-utils :code
+		      `(defstruct0 Triple_FrambufferViews
+			   (image VkImageView)
+			 (depth VkImageView)
+			 (swap VkImageView)))
+	 (defun createFramebuffers ()
+			   (declare (values void))
+			   (let ((n (length ,(g `_swapChainImageViews))))
+			     ;(_swapChainFramebuffers.resize n)
+			     (dotimes (i n)
+			       ;; color attachment differs for each
+			       ;; swap chain image, but depth image can
+			       ;; be reused. at any time only one
+			       ;; subpass is running
+			       (let ((attachments (cast Triple_FrambufferViews
+						   (curly ,(g `_colorImageView)
+							  ,(g `_depthImageView)
+							  (aref ,(g `_swapChainImageViews) i)
+							  ))))
+				
+				 ,(vkcall
+				   `(create
+				     framebuffer
+				     (:renderPass
+				      ,(g `_renderPass)
+				      :attachmentCount 3
+				      :pAttachments (cast VkImageView* &attachments) ;; FIXME: perhaps use flex array
+				      :width ,(g `_swapChainExtent.width)
+				      :height ,(g `_swapChainExtent.height)
+				      :layers 1)
+				     ( ,(g `_device)
+				      &info
+				      NULL
+				      (ref
+				       (aref ,(g `_swapChainFramebuffers) i)))
+				     (aref ,(g `_swapChainFramebuffers) i))
+				   :throw t))))))))
+      #+nil (define-module
+      `(
+	()
+	(do0)))
+         #+nil (define-module
       `(
 	()
 	(do0)))
@@ -3238,39 +3284,7 @@ more structs. this function helps to initialize those structs."
 					 (aref _commandBuffers i)))
 			     ))
 			 
-			 (defun createFramebuffers ()
-			   (declare (values void))
-			   (let ((n (_swapChainImageViews.size)))
-			     (_swapChainFramebuffers.resize n)
-			     (dotimes (i n)
-			       ;; color attachment differs for each
-			       ;; swap chain image, but depth image can
-			       ;; be reused. at any time only one
-			       ;; subpass is running
-			       (let ((attachments ("std::array<VkImageView,3>"
-						   (curly _colorImageView
-							  _depthImageView
-							  (aref _swapChainImageViews i)
-							  ))))
-				
-				 ,(vkcall
-				   `(create
-				     framebuffer
-				     (:renderPass
-				      _renderPass
-				      :attachmentCount (static_cast<uint32_t>
-							(attachments.size))
-				      :pAttachments (attachments.data)
-				      :width _swapChainExtent.width
-				      :height _swapChainExtent.height
-				      :layers 1)
-				     (_device
-				      &info
-				      NULL
-				      (ref
-				       (aref _swapChainFramebuffers i)))
-				     (aref _swapChainFramebuffers i))
-				   :throw t)))))
+			 
 			 (defun createRenderPass ()
 			   (declare (values void))
 			   ,(vk
