@@ -232,6 +232,10 @@ more structs. this function helps to initialize those structs."
 	       (_uniformBuffersMemory[_N_IMAGES] VkDeviceMemory)
 	       (_descriptorPool VkDescriptorPool)
 	       (_descriptorSets[_N_IMAGES] VkDescriptorSet)
+
+	       (_depthImage VkImage)
+	       (_depthImageMemory VkDeviceMemory)
+	       (_depthImageView VkImageView)
 	       )))
       (if init
 	  `(curly
@@ -408,6 +412,7 @@ more structs. this function helps to initialize those structs."
 		      (createCommandPool)
 		      ;; create texture image needs command pools
 		       (createColorResources)
+		      (createDepthResources)
 		      #+nil (
 		       
 		       
@@ -415,7 +420,7 @@ more structs. this function helps to initialize those structs."
 		       
 		       
 			     
-		       (createDepthResources)
+		       
 		       (createFramebuffers)
 		       (createTextureImage)
 		       (createTextureImageView)
@@ -1915,6 +1920,37 @@ more structs. this function helps to initialize those structs."
 	      VK_IMAGE_LAYOUT_UNDEFINED
 	      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	      1))))))
+   (define-module
+      `(depth_resources
+	()
+	(do0
+	 (defun createDepthResources ()
+	   (declare (values void))
+	   (let ((depthFormat (findDepthFormat))
+		 (depthTuple 
+		  (createImage ,(g `_swapChainExtent.width)
+			       ,(g `_swapChainExtent.height)
+			       1 ;; mipLevels
+			       ,(g `_msaaSamples)
+			       depthFormat
+			       VK_IMAGE_TILING_OPTIMAL
+			       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+			       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			       
+			       )))
+	     (setf ,(g `_depthImage) depthTuple.image
+		   ,(g `_depthImageMemory) depthTuple.memory
+		   ,(g `_depthImageView)
+		   (createImageView ,(g `_depthImage)
+				    depthFormat
+				    VK_IMAGE_ASPECT_DEPTH_BIT
+				    1 ;; mipLevels
+				    ))
+	     (transitionImageLayout
+	      ,(g `_depthImage)
+	      depthFormat
+	      VK_IMAGE_LAYOUT_UNDEFINED
+	      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 1))))))
    #+nil (define-module
       `(
 	()
@@ -2119,9 +2155,7 @@ more structs. this function helps to initialize those structs."
 		(let ((_depthImage)
 		      (_depthImageMemory)
 		      (_depthImageView))
-		  (declare (type VkImage _depthImage)
-			   (type VkDeviceMemory _depthImageMemory)
-			   (type VkImageView _depthImageView))
+		  
 		  (let #-surface ()
 		       #+surface ((_deviceExtensions (curly VK_KHR_SWAPCHAIN_EXTENSION_NAME))
 				  (_presentQueue)
@@ -2533,38 +2567,7 @@ more structs. this function helps to initialize those structs."
 				  (g_vertices.push_back vertex))
 				(g_indices.push_back
 				 (aref uniqueVertices vertex))))))))
-		       (do0
-			
-			
-			
-			(defun createDepthResources ()
-			  (declare (values void))
-			  (let ((depthFormat (findDepthFormat))
-				((bracket depthImage
-					  depthImageMemory)
-				 (createImage _swapChainExtent.width
-					      _swapChainExtent.height
-					      1 ;; mipLevels
-					      _msaaSamples
-					      depthFormat
-					      VK_IMAGE_TILING_OPTIMAL
-					      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-					      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-					     
-					      )))
-			    (setf _depthImage depthImage
-				  _depthImageMemory depthImageMemory
-				  _depthImageView
-				  (createImageView _depthImage
-						   depthFormat
-						   VK_IMAGE_ASPECT_DEPTH_BIT
-						   1 ;; mipLevels
-						   ))
-			    (transitionImageLayout
-			     _depthImage
-			     depthFormat
-			     VK_IMAGE_LAYOUT_UNDEFINED
-			     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 1))))
+		       
 		      
 		       (do0
 		      
