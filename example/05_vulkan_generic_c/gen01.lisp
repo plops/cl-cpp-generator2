@@ -15,8 +15,8 @@
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
 ;; gcc -std=c18 -c vulkan_01_instance.c -Wmissing-declarations
 
-;; clock_gettime
-;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+;; git clone https://github.com/recp/cglm
+;; 
 
 (progn
   ;; make sure to run this code twice during the first time, so that
@@ -58,6 +58,7 @@
 	`(progn
 	  (let ((tp))
 	    (declare (type "struct timespec" tp))
+	    ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
 	    (clock_gettime CLOCK_REALTIME &tp)
 	   ,@(loop for e in l collect
 		  (destructuring-bind (fmt &optional value) e
@@ -167,7 +168,12 @@ more structs. this function helps to initialize those structs."
 		    (let ((keyword (elt args i))
 			  (value (elt args (+ i 1))))
 		      `(setf (dot ,var ,keyword) ,value))))))))
-  
+  (progn
+    ;; collect code that will be emitted in utils.h
+    (defparameter *utils-code* nil)
+    (defun emit-utils (&key code)
+      (push code *utils-code*)
+      " "))
   (progn
   (defparameter *module-global-parameters* nil)
   (defparameter *module* nil)
@@ -479,6 +485,12 @@ more structs. this function helps to initialize those structs."
 	   
 	   )
 	 (do0
+	  ,(emit-utils :code
+	    `(defstruct0 QueueFamilyIndices
+		;;"// initialized to -1, i.e. no value"
+		(graphicsFamily int)
+	      (presentFamily int)
+	      ))
 	  (defun "QueueFamilyIndices_isComplete" (q)
 	    (declare (values _Bool)
 		     (type QueueFamilyIndices* q))
@@ -530,6 +542,14 @@ more structs. this function helps to initialize those structs."
 		   (incf i))))
 	      (return indices))))
 	 (do0
+	  ,(emit-utils :code
+	    `(defstruct0 SwapChainSupportDetails
+		(capabilities VkSurfaceCapabilitiesKHR)
+	      (formatsCount int)
+	      (formats VkSurfaceFormatKHR*)
+	      (presentModesCount int)
+	      (presentModes VkPresentModeKHR*)
+	      ))
 	  (defun cleanupSwapChainSupport (details)
 	    (declare (type SwapChainSupportDetails* details))
 	    (free details->formats)
@@ -1189,7 +1209,94 @@ more structs. this function helps to initialize those structs."
       `(graphics_pipeline
 	()
 	(do0
-	 (include <stdlib.h>)
+	 (include <stdlib.h>
+		  
+		  <string.h>)
+	 ,(emit-utils :code
+	   `(do0
+	    (include <cglm/cglm.h>)
+	    (defstruct0 Vertex
+		(pos vec3)
+	      (color vec3)
+	      (texCoord vec2)
+					;(_binding VkVertexInputBindingDescription)
+					;(_bindingp uint8_t)
+	      )))
+	 #+nil (do0
+	  "bool Vertex::operator==(const Vertex& other) const"
+	  (progn		   ;defun "Vertex::operator==" (other)
+	    #+nil(declare (type "const Vertex&" other)
+			  (values bool))
+	    (return (and
+		     (== pos other.pos)
+		     (== color other.color)
+		     (== texCoord other.texCoord))))
+	  (do0
+	   "template<> struct std::hash<Vertex>"
+	   (progn
+	     "size_t operator()(Vertex const& vertex) const"
+	     (progn ;;defun "operator()" (vertex)
+	       #+nil (declare (values size_t)
+			      (type "Vertex const&" vertex))
+	       (return (logxor
+			("std::hash<glm::vec3>()"
+			 vertex.pos)
+			(>> (<< ("std::hash<glm::vec3>()"
+				 vertex.color)
+				1)
+			    1)
+			(<< ("std::hash<glm::vec2>()"
+			     vertex.texCoord)
+			    1)))
+	       ))))
+	 (defun "Vertex_getBindingDescription" (;vertex
+						)
+	   (declare (values "VkVertexInputBindingDescription")
+		    ;(type Vertex* vertex)
+		    )
+	   (do0 ;if vertex->_bindingp
+	       #+nil(do0
+		(return vertex->_binding))
+	       (do0
+		,(vk
+		  `(VkVertexInputBindingDescription
+		    bindingDescription
+		    :binding 0
+		    :stride (sizeof Vertex)
+		    ;; move to next data after each vertex
+		    :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
+		;(setf vertex->_binding bindingDescription)
+		(return bindingDescription))))
+
+	 (do0
+	  ,(emit-utils :code
+	   `(do0
+	    
+	    (defstruct0 VertexInputAttributeDescription3
+		(descriptions[3] VkVertexInputAttributeDescription)
+	      )))
+	  (defun "Vertex_getAttributeDescriptions" ()
+	    (declare (values "VertexInputAttributeDescription3"))
+	    (let ((attributeDescriptions (curly)))
+	      (declare (type "VertexInputAttributeDescription3"
+			     attributeDescriptions))
+	      ,(set-members `((aref attributeDescriptions 0)
+			      :binding 0
+			      :location 0
+			      :format VK_FORMAT_R32G32B32_SFLOAT
+			      :offset (offsetof Vertex pos)))
+	      ,(set-members `((aref attributeDescriptions 1)
+			      :binding 0
+			      :location 1
+			      :format VK_FORMAT_R32G32B32_SFLOAT
+			      :offset (offsetof Vertex color)))
+	      ,(set-members `((aref attributeDescriptions 2)
+			      :binding 0
+			      :location 2
+			      :format VK_FORMAT_R32G32_SFLOAT
+			      :offset (offsetof Vertex texCoord)))
+	      (return attributeDescriptions))))
+	 
 	 (defun readFile (filename)
 	   (declare (type "const char*" filename)
 		    (values "char*"))
@@ -1238,24 +1345,25 @@ more structs. this function helps to initialize those structs."
 	     (free fv)
 	     (free ff)
 	     
-	     ,@(loop for e in `(frag vert) collect
-				    (vk
-				     `(VkPipelineShaderStageCreateInfo
-				       ,(format nil "~aShaderStageInfo" e)
-				       :sType VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
-				       :stage ,(case e
-						 (vert 'VK_SHADER_STAGE_VERTEX_BIT)
-						 (frag 'VK_SHADER_STAGE_FRAGMENT_BIT))
-				       :module ,(format nil "~aShaderModule" e)
-				       ;; entrypoint
-				       :pName (string "main")
-				       ;; this would allow specification of constants:
-				       :pSpecializationInfo NULL)))
+	     ,@(loop for e in `(frag vert)
+		  collect
+		    (vk
+		     `(VkPipelineShaderStageCreateInfo
+		       ,(format nil "~aShaderStageInfo" e)
+		       :sType VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
+		       :stage ,(case e
+				 (vert 'VK_SHADER_STAGE_VERTEX_BIT)
+				 (frag 'VK_SHADER_STAGE_FRAGMENT_BIT))
+		       :module ,(format nil "~aShaderModule" e)
+		       ;; entrypoint
+		       :pName (string "main")
+		       ;; this would allow specification of constants:
+		       :pSpecializationInfo NULL)))
 			     (let (("shaderStages[]"
 				    (curly vertShaderStageInfo
 					   fragShaderStageInfo))
-				   (bindingDescription ("Vertex::getBindingDescription"))
-				   (attributeDescriptions ("Vertex::getAttributeDescriptions")))
+				   (bindingDescription ("Vertex_getBindingDescription"))
+				   (attributeDescriptions ("Vertex_getAttributeDescriptions")))
 			       (declare (type VkPipelineShaderStageCreateInfo
 					      "shaderStages[]"))
 			       ,(vk
@@ -1576,54 +1684,7 @@ more structs. this function helps to initialize those structs."
 	      (view "alignas(16) glm::mat4")
 	      (proj "alignas(16) glm::mat4"))
 	    
-	    (defstruct0 Vertex
-		(pos "glm::vec3")
-	      (color "glm::vec3")
-	      (texCoord "glm::vec2")
-	      ;; here static means the function has no receiver object
-	      ;; outside of the class static would limit scope to only
-	      ;; this file (which i don't necessarily want)
-	      ("getBindingDescription()" "static VkVertexInputBindingDescription")
-	      ("getAttributeDescriptions()"
-	       "static std::array<VkVertexInputAttributeDescription,3>")
-	      ("operator==(const Vertex& other) const" bool))
-	    (do0
-	     "bool Vertex::operator==(const Vertex& other) const"
-	     (progn		   ;defun "Vertex::operator==" (other)
-	       #+nil(declare (type "const Vertex&" other)
-			     (values bool))
-	       (return (and
-			(== pos other.pos)
-			(== color other.color)
-			(== texCoord other.texCoord))))
-	     (do0
-	      "template<> struct std::hash<Vertex>"
-	      (progn
-		"size_t operator()(Vertex const& vertex) const"
-		(progn ;;defun "operator()" (vertex)
-		  #+nil (declare (values size_t)
-				 (type "Vertex const&" vertex))
-		  (return (logxor
-			   ("std::hash<glm::vec3>()"
-			    vertex.pos)
-			   (>> (<< ("std::hash<glm::vec3>()"
-				    vertex.color)
-				   1)
-			       1)
-			   (<< ("std::hash<glm::vec2>()"
-				vertex.texCoord)
-			       1)))
-		  ))))
-	    (defun "Vertex::getBindingDescription" ()
-	      (declare (values "VkVertexInputBindingDescription"))
-	      ,(vk
-		`(VkVertexInputBindingDescription
-		  bindingDescription
-		  :binding 0
-		  :stride (sizeof Vertex)
-		  ;; move to next data after each vertex
-		  :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
-	      (return bindingDescription))
+	    
 	    
 	    (let ((g_vertices #+nil (curly
 				     (curly (curly  -.5s0 -.5s0 0s0) (curly 1s0 0s0 0s0) (curly 1s0 0s0))
@@ -1639,27 +1700,7 @@ more structs. this function helps to initialize those structs."
 					  4 5 6 6 7 4)))
 	      (declare (type "std::vector<Vertex>" g_vertices)
 		       (type "std::vector<uint32_t>" g_indices)))
-	    (defun "Vertex::getAttributeDescriptions" ()
-	      (declare (values "std::array<VkVertexInputAttributeDescription,3>"))
-	      (let ((attributeDescriptions (curly)))
-		(declare (type "std::array<VkVertexInputAttributeDescription,3>"
-			       attributeDescriptions))
-		,(set-members `((aref attributeDescriptions 0)
-				:binding 0
-				:location 0
-				:format VK_FORMAT_R32G32B32_SFLOAT
-				:offset (offsetof Vertex pos)))
-		,(set-members `((aref attributeDescriptions 1)
-				:binding 0
-				:location 1
-				:format VK_FORMAT_R32G32B32_SFLOAT
-				:offset (offsetof Vertex color)))
-		,(set-members `((aref attributeDescriptions 2)
-				:binding 0
-				:location 2
-				:format VK_FORMAT_R32G32_SFLOAT
-				:offset (offsetof Vertex texCoord)))
-		(return attributeDescriptions)))
+	    
 	    
 
 	   
@@ -3563,6 +3604,8 @@ more structs. this function helps to initialize those structs."
 		    ;;(include <unistd.h>)
 		    (include <time.h>)
 		    " "
+		    ,@(loop for e in *utils-code* collect
+			   e)
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 		    ;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 		    ;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
@@ -3588,19 +3631,9 @@ more structs. this function helps to initialize those structs."
 				 `(,e ,e)))
 		    
 
-		    (defstruct0 SwapChainSupportDetails
-			(capabilities VkSurfaceCapabilitiesKHR)
-		      (formatsCount int)
-		      (formats VkSurfaceFormatKHR*)
-		      (presentModesCount int)
-		      (presentModes VkPresentModeKHR*)
-		      )
-		    "// initialized to -1, i.e. no value"
-		    (defstruct0 QueueFamilyIndices
-			
-			(graphicsFamily int)
-			(presentFamily int)
-			)
+		    
+		    
+		    
 		    
 ))
     (write-source *vertex-file* vertex-code)
