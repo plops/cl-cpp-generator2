@@ -414,16 +414,9 @@ more structs. this function helps to initialize those structs."
 		       (createColorResources)
 		      (createDepthResources)
 		      (createFramebuffers)
+		      (createTextureImage)
 		      #+nil (
-		       
-		       
 			     
-		       
-		       
-			     
-		       
-		       
-		       (createTextureImage)
 		       (createTextureImageView)
 		       (createTextureSampler)
 		       (loadModel)
@@ -1993,11 +1986,391 @@ more structs. this function helps to initialize those structs."
 				       (aref ,(g `_swapChainFramebuffers) i)))
 				     (aref ,(g `_swapChainFramebuffers) i))
 				   :throw t))))))))
+      (define-module
+      `(texture_image
+	()
+	(do0
+	 (include <string.h>)
+	 (do0
+	     "#define STB_IMAGE_IMPLEMENTATION"
+	     (include "stb_image.h")
+	     " "
+	     (include <math.h>)
+	     " ")
+	 ,(emit-utils :code
+		      `(defstruct0 Tuple_Buffer_DeviceMemory
+			   (buffer VkBuffer)
+			 (memory VkDeviceMemory)))
+	 (defun createBuffer (size usage properties )
+			 ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
+			 (declare (values Tuple_Buffer_DeviceMemory ;"std::tuple<VkBuffer,VkDeviceMemory>"
+					  )
+				  (type VkDeviceSize size)
+				  (type VkBufferUsageFlags usage)
+				  (type VkMemoryPropertyFlags properties)
+				  )
+			 (let ((buffer)
+			       (bufferMemory)
+			       )
+			   (declare (type VkBuffer  buffer)
+				    (type VkDeviceMemory bufferMemory)
+				    )
+			   ,(vkcall
+			     `(create
+			       buffer
+			       (;; buffer size in bytes
+				:size size
+				:usage usage
+				;; only graphics queue is using this buffer
+				:sharingMode VK_SHARING_MODE_EXCLUSIVE
+				;; flags could indicate sparse memory (we
+				;; don't use that)
+				:flags 0
+				)
+			       ( ,(g `_device)
+				&info
+				NULL
+				&buffer)
+			       buffer
+			       )
+			     :throw t)
+			 
+			   (let ((memReq))
+			     (declare (type VkMemoryRequirements memReq))
+			     (vkGetBufferMemoryRequirements ,(g `_device)
+							    buffer
+							    &memReq)
+			     ,(vkcall
+			       `(allocate
+				 memory
+				 (:allocationSize memReq.size
+						  :memoryTypeIndex (findMemoryType
+								    memReq.memoryTypeBits
+								    properties
+								    ))
+				 ( ,(g `_device)
+				  &info
+				  NULL
+				  &bufferMemory)
+				 bufferMemory)
+			       :throw t)
+			  
+			     (vkBindBufferMemory ,(g `_device)
+						 buffer
+						 bufferMemory
+						 0)
+			     (return (cast Tuple_Buffer_DeviceMemory
+					   (curly
+					    buffer
+					    bufferMemory))))))
+	 (defun generateMipmaps (image imageFormat
+				 texWidth texHeight mipLevels)
+	   (declare (values void)
+		    (type VkImage image)
+		    (type VkFormat imageFormat)
+		    (type int32_t texHeight mipLevels texWidth))
+
+	   ,(vkprint "generateMipmaps")
+	   
+	   (let ((formatProperties))
+	     (declare (type VkFormatProperties formatProperties))
+	     ;; check if format blit can do linear
+	     (vkGetPhysicalDeviceFormatProperties
+	      ,(g `_physicalDevice)
+	      imageFormat
+	      &formatProperties)
+	     (unless
+		 (logand formatProperties.optimalTilingFeatures
+			 VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
+	       ,(vkprint "texture image format does not support linear blitting!")
+	       #+nil (throw ("std::runtime_error"
+		       (string ))))
+	     )
+
+	   (let ((commandBuffer (beginSingleTimeCommands)))
+	     ,(vk
+	       `(VkImageMemoryBarrier
+		 barrier
+		 :sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
+		 :image image
+		 :srcQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
+		 :dstQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
+		 :subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+		 :subresourceRange.baseArrayLayer 0
+		 :subresourceRange.layerCount 1
+		 :subresourceRange.levelCount 1
+		 ))
+	     (let ((mipWidth texWidth)
+		   (mipHeight texHeight))
+	       (for ((= "int i" 1) (< i mipLevels) (incf i))
+		    (do0
+		     
+		     ,(set-members
+		       `(barrier
+			    :subresourceRange.baseMipLevel (- i 1)
+			    :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			    :newLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+			    :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+			    :dstAccessMask VK_ACCESS_TRANSFER_READ_BIT))
+		     ,(vkprint " vkCmdPipelineBarrier " `(i))
+		     
+		     (vkCmdPipelineBarrier
+		      commandBuffer
+		      VK_PIPELINE_STAGE_TRANSFER_BIT
+		      VK_PIPELINE_STAGE_TRANSFER_BIT
+		      0
+		      0 NULL
+		      0 NULL
+		      1 &barrier))
+		    (let ((dstOffsetx 1)
+			  (dstOffsety 1))
+		      (when (< 1 mipWidth)
+			(setf dstOffsetx (/ mipWidth 2)))
+		      (when (< 1 mipHeight)
+			(setf dstOffsety (/ mipHeight 2)))
+		      ,(vk
+			`(VkImageBlit
+			  blit
+			  :srcOffsets[0] (cast (__typeof__ *blit.srcOffsets)
+					       (curly 0 0 0))
+			  :srcOffsets[1] (cast (__typeof__ *blit.srcOffsets)
+					       (curly mipWidth
+						 mipHeight
+						 1))
+			  :srcSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+			  :srcSubresource.mipLevel (- i 1)
+			  :srcSubresource.baseArrayLayer 0
+			  :srcSubresource.layerCount 1
+			  :dstOffsets[0] (cast (__typeof__ *blit.dstOffsets)
+					       (curly 0 0 0))
+			  :dstOffsets[1] (cast (__typeof__ *blit.dstOffsets)
+					       (curly dstOffsetx
+						 dstOffsety
+						 1))
+			  :dstSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
+			  :dstSubresource.mipLevel i
+			  :dstSubresource.baseArrayLayer 0
+			  :dstSubresource.layerCount 1
+			  ))
+		      ,(vkprint " vkCmdBlitImage" `(i))
+		      
+		      (vkCmdBlitImage
+		       commandBuffer
+		       image
+		       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+		       image
+		       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		       1
+		       &blit
+		       VK_FILTER_LINEAR))
+
+		    (do0
+		     ,(set-members
+		       `(barrier
+			    :oldLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+			    :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			    :srcAccessMask VK_ACCESS_TRANSFER_READ_BIT
+			    :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
+		     ;; wait on blit command
+		     ;; transition mip level i-1 to shader_ro
+		     ,(vkprint " vkCmdPipelineBarrier" `(i))
+		     
+		     (vkCmdPipelineBarrier
+		      commandBuffer
+		      VK_PIPELINE_STAGE_TRANSFER_BIT
+		      VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+		      0
+		      0 NULL
+		      0 NULL
+		      1 &barrier))
+
+		    (do0
+		     ;; handle non-square images
+		     ;; ensure mip dimensions never become 0
+		     (when (< 1 mipWidth)
+		       (setf mipWidth (/ mipWidth 2)))
+		     (when (< 1 mipHeight)
+		       (setf mipHeight (/ mipHeight 2))))
+		    
+		    
+		    ))
+
+	     (do0
+	      ;; transition last miplevel because the
+	      ;; last mipmap was never blitted from
+	      ,(set-members
+		`(barrier
+		     :subresourceRange.baseMipLevel
+		   (- ,(g `_mipLevels) 1)
+		   :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		   :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+		   :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
+		   :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
+	      (vkCmdPipelineBarrier
+	       commandBuffer
+	       VK_PIPELINE_STAGE_TRANSFER_BIT
+	       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+	       0
+	       0 NULL
+	       0 NULL
+	       1 &barrier))
+	     
+	     (endSingleTimeCommands commandBuffer)))
+	 (defun copyBufferToImage (buffer
+				   image
+				   width
+				   height)
+	   (declare (values void)
+		    (type VkBuffer buffer)
+		    (type VkImage image)
+		    (type uint32_t width height))
+	   ,(with-single-time-commands
+		`((commandBuffer)
+		  ,(vk
+		    `(VkBufferImageCopy
+		      region
+		      :bufferOffset 0
+		      :bufferRowLength 0
+		      :bufferImageHeight 0
+		      :imageSubresource.aspectMask
+		      VK_IMAGE_ASPECT_COLOR_BIT
+		      :imageSubresource.mipLevel 0
+		      :imageSubresource.baseArrayLayer 0
+		      :imageSubresource.layerCount 1
+		      :imageOffset (cast (__typeof__ region.imageOffset)
+					 (curly 0 0 0))
+		      :imageExtent (cast (__typeof__ region.imageExtent) (curly width height 1))))
+		  (vkCmdCopyBufferToImage
+		   commandBuffer
+		   buffer
+		   image
+		   ;; assuming the layout has already
+		   ;; been transitioned into a format
+		   ;; that is optimal for copying pixels
+		   ;; to
+		   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		   1
+		   &region))))
+	 (defun createTextureImage ()
+	   (declare (values void))
+	   "// uses command buffers "
+	   (let ((texWidth 0)
+		 (texHeight 0)
+		 (texChannels 0)
+		 (texFilename (string "chalet.jpg"))
+		 (pixels
+		  (stbi_load
+		   texFilename
+		   &texWidth
+		   &texHeight
+		   &texChannels
+		   STBI_rgb_alpha))
+		 (imageSize (* texWidth texHeight 4)))
+	     (declare (type int
+			    texWidth
+			    texHeight
+			    texChannels
+			    )
+		      (type VkDeviceSize
+			    imageSize))
+	     (unless pixels
+	       ,(vkprint "failed to load texture image." `(texFilename))
+	       #+nil (throw ("std::runtime_error"
+		       (string ))))
+	     (setf ,(g `_mipLevels)
+		   (cast uint32_t
+		    (+ 1
+		       (floor
+			(log2
+			 (max
+			  texWidth
+			  texHeight))))))
+
+	     (do0 ;; print comment with example mip levels
+	      ,(format nil "// ~8a ~8a" "width" "mipLevels")
+	      ,@(loop for i in `(2 4 16 32 128 255 256 257 512 1024) collect
+		     (format nil "// ~8a ~8a"
+			     i (+ 1 (floor (log i 2))))))
+	     
+	     (let ((stagingBufferTuple #+nil (bracket stagingBuffer
+			     stagingBufferMemory)
+		    (createBuffer
+		     imageSize
+		     VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+		     (logior
+		      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+		      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		      )))
+		   (data NULL))
+	       (declare (type void* data))
+	       (vkMapMemory ,(g `_device)
+			    stagingBufferTuple.memory
+			    0
+			    imageSize
+			    0
+			    &data)
+	       (memcpy data pixels
+		       imageSize)
+	       (vkUnmapMemory ,(g `_device)
+			      stagingBufferTuple.memory)
+	       (stbi_image_free pixels))
+
+	     (let ((imageTuple
+		    (createImage
+		     texWidth
+		     texHeight
+		     ,(g `_mipLevels)
+		     VK_SAMPLE_COUNT_1_BIT
+		     VK_FORMAT_R8G8B8A8_UNORM
+		     VK_IMAGE_TILING_OPTIMAL
+		     (logior
+		      VK_IMAGE_USAGE_TRANSFER_DST_BIT
+		      VK_IMAGE_USAGE_TRANSFER_SRC_BIT ;; for mipLevel computation
+		      VK_IMAGE_USAGE_SAMPLED_BIT)
+		     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		     )))
+	       (setf ,(g `_textureImage) imageTuple.image
+		     ,(g `_textureImageMemory) imageTuple.memory)
+	       (transitionImageLayout
+		,(g `_textureImage)
+		VK_FORMAT_R8G8B8A8_UNORM
+		VK_IMAGE_LAYOUT_UNDEFINED
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		,(g `_mipLevels))
+	       (copyBufferToImage
+		stagingBufferTuple.buffer
+		,(g `_textureImage)
+		texWidth
+		texHeight)
+
+	       
+	       #+nil(transitionImageLayout
+		     ,(g `_textureImage)
+		     VK_FORMAT_R8G8B8A8_UNORM
+		     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+		     )
+	       ;; will be transitioned to
+	       ;; READ_ONLY_OPTIMAL while generating
+	       ;; mipmaps
+
+	       (do0
+		(vkDestroyBuffer
+		 ,(g `_device) stagingBufferTuple.buffer NULL)
+		(vkFreeMemory ,(g `_device)
+			      stagingBufferTuple.memory
+			      NULL))
+	       (generateMipmaps ,(g `_textureImage)
+				VK_FORMAT_R8G8B8A8_UNORM
+				texWidth
+				texHeight
+				,(g `_mipLevels))
+	       ))))))
       #+nil (define-module
       `(
 	()
 	(do0)))
-         #+nil (define-module
+      #+nil (define-module
       `(
 	()
 	(do0)))
@@ -2166,8 +2539,8 @@ more structs. this function helps to initialize those structs."
 		    )
 		(declare (type GLFWwindow* ,(g `_window))
 			 (type VkInstance ,(g `_instance))
-			 #-nolog (type "const bool" _enableValidationLayers)
-			 #-nolog (type "const std::vector<const char*>" _validationLayers)
+			 #-nolog (type "const bool" ,(g `_enableValidationLayers))
+			 #-nolog (type "const std::vector<const char*>" ,(g `_validationLayers))
 			 (type VkPhysicalDevice _physicalDevice)
 			 (type VkDevice _device)
 			 (type VkQueue _graphicsQueue)
@@ -2329,66 +2702,7 @@ more structs. this function helps to initialize those structs."
 			       _instance
 			       )
 			     :throw t)))
-		       (defun createBuffer (size usage properties )
-			 ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
-			 (declare (values "std::tuple<VkBuffer,VkDeviceMemory>")
-				  (type VkDeviceSize size)
-				  (type VkBufferUsageFlags usage)
-				  (type VkMemoryPropertyFlags properties)
-				  )
-			 (let ((buffer)
-			       (bufferMemory)
-			       )
-			   (declare (type VkBuffer  buffer)
-				    (type VkDeviceMemory bufferMemory)
-				    )
-			   ,(vkcall
-			     `(create
-			       buffer
-			       (;; buffer size in bytes
-				:size size
-				:usage usage
-				;; only graphics queue is using this buffer
-				:sharingMode VK_SHARING_MODE_EXCLUSIVE
-				;; flags could indicate sparse memory (we
-				;; don't use that)
-				:flags 0
-				)
-			       (_device
-				&info
-				NULL
-				&buffer)
-			       buffer
-			       )
-			     :throw t)
-			 
-			   (let ((memReq))
-			     (declare (type VkMemoryRequirements memReq))
-			     (vkGetBufferMemoryRequirements _device
-							    buffer
-							    &memReq)
-			     ,(vkcall
-			       `(allocate
-				 memory
-				 (:allocationSize memReq.size
-						  :memoryTypeIndex (findMemoryType
-								    memReq.memoryTypeBits
-								    properties
-								    ))
-				 (_device
-				  &info
-				  NULL
-				  &bufferMemory)
-				 bufferMemory)
-			       :throw t)
-			  
-			     (vkBindBufferMemory _device
-						 buffer
-						 bufferMemory
-						 0)
-			     (return ("std::make_tuple"
-				      buffer
-				      bufferMemory)))))
+		       
 		       (defun createVertexBuffer ()
 			 (declare (values void))
 			 (let ((bufferSize (* (sizeof (aref g_vertices 0))
@@ -2617,324 +2931,11 @@ more structs. this function helps to initialize those structs."
 		      
 		       (do0
 		      
-			(defun copyBufferToImage (buffer
-						  image
-						  width
-						  height)
-			  (declare (values void)
-				   (type VkBuffer buffer)
-				   (type VkImage image)
-				   (type uint32_t width height))
-			  ,(with-single-time-commands
-			       `((commandBuffer)
-				 ,(vk
-				   `(VkBufferImageCopy
-				     region
-				     :bufferOffset 0
-				     :bufferRowLength 0
-				     :bufferImageHeight 0
-				     :imageSubresource.aspectMask
-				     VK_IMAGE_ASPECT_COLOR_BIT
-				     :imageSubresource.mipLevel 0
-				     :imageSubresource.baseArrayLayer 0
-				     :imageSubresource.layerCount 1
-				     :imageOffset (curly 0 0 0)
-				     :imageExtent (curly width height 1)))
-				 (vkCmdCopyBufferToImage
-				  commandBuffer
-				  buffer
-				  image
-				  ;; assuming the layout has already
-				  ;; been transitioned into a format
-				  ;; that is optimal for copying pixels
-				  ;; to
-				  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				  1
-				  &region))))
 			
 			
-			(defun createTextureImage ()
-			  (declare (values void))
-			  "// uses command buffers "
-			  (let ((texWidth 0)
-				(texHeight 0)
-				(texChannels 0)
-				(pixels
-				 (stbi_load
-				  (string "chalet.jpg")
-				  &texWidth
-				  &texHeight
-				  &texChannels
-				  STBI_rgb_alpha))
-				(imageSize (* texWidth texHeight 4)))
-			    (declare (type int
-					   texWidth
-					   texHeight
-					   texChannels
-					   )
-				     (type VkDeviceSize
-					   imageSize))
-			    (unless pixels
-			      (throw ("std::runtime_error"
-				      (string "failed to load texture image."))))
-			    (setf _mipLevels
-				  (static_cast<uint32_t>
-				   (+ 1
-				      ("std::floor"
-				       ("std::log2"
-					("std::max"
-					 texWidth
-					 texHeight))))))
-
-			    (do0 ;; print comment with example mip levels
-			     ,(format nil "// ~8a ~8a" "width" "mipLevels")
-			     ,@(loop for i in `(2 4 16 32 128 255 256 257 512 1024) collect
-				    (format nil "// ~8a ~8a"
-					    i (+ 1 (floor (log i 2))))))
-			   
-			    (let (((bracket stagingBuffer
-					    stagingBufferMemory)
-				   (createBuffer
-				    imageSize
-				    VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-				    (logior
-				     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-				     )))
-				  (data NULL))
-			      (declare (type void* data))
-			      (vkMapMemory _device
-					   stagingBufferMemory
-					   0
-					   imageSize
-					   0
-					   &data)
-			      (memcpy data pixels
-				      (static_cast<size_t>
-				       imageSize))
-			      (vkUnmapMemory _device
-					     stagingBufferMemory)
-			      (stbi_image_free pixels))
-
-			    (let (((bracket image
-					    imageMemory)
-				   (createImage
-				    texWidth
-				    texHeight
-				    _mipLevels
-				    VK_SAMPLE_COUNT_1_BIT
-				    VK_FORMAT_R8G8B8A8_UNORM
-				    VK_IMAGE_TILING_OPTIMAL
-				    (logior
-				     VK_IMAGE_USAGE_TRANSFER_DST_BIT
-				     VK_IMAGE_USAGE_TRANSFER_SRC_BIT ;; for mipLevel computation
-				     VK_IMAGE_USAGE_SAMPLED_BIT)
-				    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-				    )))
-			      (setf _textureImage image
-				    _textureImageMemory
-				    imageMemory)
-			      (transitionImageLayout
-			       _textureImage
-			       VK_FORMAT_R8G8B8A8_UNORM
-			       VK_IMAGE_LAYOUT_UNDEFINED
-			       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-			       _mipLevels)
-			      (copyBufferToImage
-			       stagingBuffer
-			       _textureImage
-			       (static_cast<uint32_t> texWidth)
-			       (static_cast<uint32_t> texHeight))
-
-			    
-			      #+nil(transitionImageLayout
-				    _textureImage
-				    VK_FORMAT_R8G8B8A8_UNORM
-				    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-				    )
-			      ;; will be transitioned to
-			      ;; READ_ONLY_OPTIMAL while generating
-			      ;; mipmaps
-
-			      (do0
-			       (vkDestroyBuffer
-				_device stagingBuffer NULL)
-			       (vkFreeMemory _device
-					     stagingBufferMemory
-					     NULL))
-			      (generateMipmaps _textureImage
-					       VK_FORMAT_R8G8B8A8_UNORM
-					       texWidth
-					       texHeight
-					       _mipLevels)
-			      )))
-			(defun generateMipmaps (image imageFormat
-						texWidth texHeight mipLevels)
-			  (declare (values void)
-				   (type VkImage image)
-				   (type VkFormat imageFormat)
-				   (type int32_t texHeight mipLevels texWidth))
-			  (<< "std::cout"
-			      (dot ("std::chrono::high_resolution_clock::now")
-				   (time_since_epoch)
-				   (count))
-			      (string " generateMipmaps")
-			      "std::endl")
-			  (let ((formatProperties))
-			    (declare (type VkFormatProperties formatProperties))
-			    ;; check if format blit can do linear
-			    (vkGetPhysicalDeviceFormatProperties
-			     _physicalDevice
-			     imageFormat
-			     &formatProperties)
-			    (unless
-				(logand formatProperties.optimalTilingFeatures
-					VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
-			      (throw ("std::runtime_error"
-				      (string "texture image format does not support linear blitting!"))))
-			    )
-
-			  (let ((commandBuffer (beginSingleTimeCommands)))
-			    ,(vk
-			      `(VkImageMemoryBarrier
-				barrier
-				:sType VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER
-				:image image
-				:srcQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
-				:dstQueueFamilyIndex VK_QUEUE_FAMILY_IGNORED
-				:subresourceRange.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
-				:subresourceRange.baseArrayLayer 0
-				:subresourceRange.layerCount 1
-				:subresourceRange.levelCount 1
-				))
-			    (let ((mipWidth texWidth)
-				  (mipHeight texHeight))
-			      (for ((= "int i" 1) (< i mipLevels) (incf i))
-				   (do0
-				    
-				    ,(set-members
-				      `(barrier
-					   :subresourceRange.baseMipLevel (- i 1)
-					   :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-					   :newLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-					   :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
-					   :dstAccessMask VK_ACCESS_TRANSFER_READ_BIT))
-				    (<< "std::cout"
-					(dot ("std::chrono::high_resolution_clock::now")
-					     (time_since_epoch)
-					     (count))
-					(string " vkCmdPipelineBarrier ")
-					i
-					"std::endl")
-				    (vkCmdPipelineBarrier
-				     commandBuffer
-				     VK_PIPELINE_STAGE_TRANSFER_BIT
-				     VK_PIPELINE_STAGE_TRANSFER_BIT
-				     0
-				     0 NULL
-				     0 NULL
-				     1 &barrier))
-				   (let ((dstOffsetx 1)
-					 (dstOffsety 1))
-				     (when (< 1 mipWidth)
-				       (setf dstOffsetx (/ mipWidth 2)))
-				     (when (< 1 mipHeight)
-				       (setf dstOffsety (/ mipHeight 2)))
-				     ,(vk
-				       `(VkImageBlit
-					 blit
-					 :srcOffsets[0] (curly 0 0 0)
-					 :srcOffsets[1] (curly mipWidth
-							       mipHeight
-							       1)
-					 :srcSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
-					 :srcSubresource.mipLevel (- i 1)
-					 :srcSubresource.baseArrayLayer 0
-					 :srcSubresource.layerCount 1
-					 :dstOffsets[0] (curly 0 0 0)
-					 :dstOffsets[1] (curly dstOffsetx
-							       dstOffsety
-							       1)
-					 :dstSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
-					 :dstSubresource.mipLevel i
-					 :dstSubresource.baseArrayLayer 0
-					 :dstSubresource.layerCount 1
-					 ))
-				     (<< "std::cout"
-					 (dot ("std::chrono::high_resolution_clock::now")
-					      (time_since_epoch)
-					      (count))
-					 (string " vkCmdBlitImage")
-					 i
-					 "std::endl")
-				     (vkCmdBlitImage
-				      commandBuffer
-				      image
-				      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-				      image
-				      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				      1
-				      &blit
-				      VK_FILTER_LINEAR))
-
-				   (do0
-				    ,(set-members
-				      `(barrier
-					   :oldLayout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-					   :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-					   :srcAccessMask VK_ACCESS_TRANSFER_READ_BIT
-					   :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
-				    ;; wait on blit command
-				    ;; transition mip level i-1 to shader_ro
-				    (<< "std::cout"
-					(dot ("std::chrono::high_resolution_clock::now")
-					     (time_since_epoch)
-					     (count))
-					(string " vkCmdPipelineBarrier")
-					i
-					"std::endl")
-				    (vkCmdPipelineBarrier
-				     commandBuffer
-				     VK_PIPELINE_STAGE_TRANSFER_BIT
-				     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-				     0
-				     0 NULL
-				     0 NULL
-				     1 &barrier))
-
-				   (do0
-				    ;; handle non-square images
-				    ;; ensure mip dimensions never become 0
-				    (when (< 1 mipWidth)
-				      (setf mipWidth (/ mipWidth 2)))
-				    (when (< 1 mipHeight)
-				      (setf mipHeight (/ mipHeight 2))))
-				  
-				  
-				   ))
-
-			    (do0
-			     ;; transition last miplevel because the
-			     ;; last mipmap was never blitted from
-			     ,(set-members
-			       `(barrier
-				    :subresourceRange.baseMipLevel
-				  (- _mipLevels 1)
-				  :oldLayout VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				  :newLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-				  :srcAccessMask VK_ACCESS_TRANSFER_WRITE_BIT
-				  :dstAccessMask VK_ACCESS_SHADER_READ_BIT))
-			     (vkCmdPipelineBarrier
-			      commandBuffer
-			      VK_PIPELINE_STAGE_TRANSFER_BIT
-			      VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-			      0
-			      0 NULL
-			      0 NULL
-			      1 &barrier))
-			   
-			    (endSingleTimeCommands commandBuffer)))
+			
+			
+			
 			(defun createTextureSampler ()
 			  (declare (values void))
 			  ,(vkcall
