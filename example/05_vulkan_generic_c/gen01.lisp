@@ -1602,37 +1602,7 @@ more structs. this function helps to initialize those structs."
       `(color_resource
 	()
 	(do0
-	 #+nil
-	 (defun createImageView (image format aspectFlags mipLevels)
-			 (declare (values VkImageView)
-				  (type VkImage image)
-				  (type VkFormat format)
-				  (type VkImageAspectFlags aspectFlags)
-				  (type uint32_t mipLevels))
-			 (let ((imageView))
-			   (declare (type VkImageView imageView))
-			  ,(vkcall
-			    `(create
-			      image-view
-			      (:image
-			       image
-			       :viewType VK_IMAGE_VIEW_TYPE_2D
-			       :format format
-			       ;; color targets without mipmapping or
-			       ;; multi layer (stereo)
-			       :subresourceRange.aspectMask aspectFlags
-			       :subresourceRange.baseMipLevel 0
-			       :subresourceRange.levelCount mipLevels
-			       :subresourceRange.baseArrayLayer 0
-			       :subresourceRange.layerCount 1
-			       )
-			      (,(g `_device)
-			       &info
-			       NULL
-			       &imageView)
-			      imageView)
-			    :throw t)
-			  (return imageView)))
+
 	 (defun hasStencilComponent (format)
 			  (declare (values bool)
 				   (type VkFormat format))
