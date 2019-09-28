@@ -28,11 +28,11 @@
 
   (progn
     (defun with-single-time-commands (args)
-     (destructuring-bind ((buffer) &rest body) args
-       `(let ((,buffer
-	       (beginSingleTimeCommands)))
-	  ,@body
-	  (endSingleTimeCommands ,buffer))))
+      (destructuring-bind ((buffer) &rest body) args
+	`(let ((,buffer
+		(beginSingleTimeCommands)))
+	   ,@body
+	   (endSingleTimeCommands ,buffer))))
 
 
     (defun vkprint (msg
@@ -56,15 +56,15 @@
 			   ))
 		  ((string "\\n")))))
 	`(progn
-	  (let ((tp))
-	    (declare (type "struct timespec" tp))
-	    ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
-	    (clock_gettime CLOCK_REALTIME &tp)
-	   ,@(loop for e in l collect
-		  (destructuring-bind (fmt &optional value) e
-		    (if value
-			`(printf ,fmt ,value)
-			`(printf ,fmt))))))))
+	   (let ((tp))
+	     (declare (type "struct timespec" tp))
+	     ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+	     (clock_gettime CLOCK_REALTIME &tp)
+	     ,@(loop for e in l collect
+		    (destructuring-bind (fmt &optional value) e
+		      (if value
+			  `(printf ,fmt ,value)
+			  `(printf ,fmt))))))))
     
     (defun vkthrow (cmd)
       `(unless (== VK_SUCCESS
@@ -73,8 +73,8 @@
 	 ,(vkprint
 	   (substitute #\Space #\Newline (format nil "failed to ~a" cmd)))
 	 #+nil(
-		    throw ("std::runtime_error"
-		 (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
+	       throw ("std::runtime_error"
+		      (string ,(substitute #\Space #\Newline (format nil "failed to ~a" cmd)))))))
     
 
     
@@ -146,9 +146,9 @@
 			  ,@args))
 					
 		  ,(if instance
-		      (vkprint (format nil " ~a ~a" verb subject)
+		       (vkprint (format nil " ~a ~a" verb subject)
 				`(,(emit-c :code instance)))
-		      (vkprint (format nil " ~a ~a" verb subject))))))))
+		       (vkprint (format nil " ~a ~a" verb subject))))))))
       
       
       (defun set-members (params)
@@ -175,119 +175,119 @@ more structs. this function helps to initialize those structs."
       (push code *utils-code*)
       " "))
   (progn
-  (defparameter *module-global-parameters* nil)
-  (defparameter *module* nil)
+    (defparameter *module-global-parameters* nil)
+    (defparameter *module* nil)
 
-  (defun emit-globals (&key init)
-    (let ((l `(
-	       ;; 
-	       (_window GLFWwindow* NULL)   
-	       (_instance VkInstance)
+    (defun emit-globals (&key init)
+      (let ((l `(
+		 ;; 
+		 (_window GLFWwindow* NULL)   
+		 (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-	       #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
-	       (_physicalDevice VkPhysicalDevice VK_NULL_HANDLE)
-	       (_device VkDevice)
-	       (_graphicsQueue VkQueue)
-	       ;; 
-	       (_msaaSamples VkSampleCountFlagBits)
-	       (_colorImage VkImage)
-	       (_colorImageMemory VkDeviceMemory)
-	       (_colorImageView VkImageView)
-	       ;;
-	       (_mipLevels uint32_t)
-	       (_textureImage VkImage)
-	       (_textureImageMemory  VkDeviceMemory)
-	       (_textureImageView VkImageView)
-	       (_textureSampler VkSampler)
-	       ;;
-	       (_presentQueue  VkQueue)
-	       (_surface VkSurfaceKHR)
-	       (_deviceExtensions[1] "const char* const" (curly "VK_KHR_SWAPCHAIN_EXTENSION_NAME"
-					      ))
-	       (_swapChain VkSwapchainKHR)
-	       ;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
-	       (_swapChainImages[_N_IMAGES] VkImage)
-	       (_swapChainImageFormat VkFormat)
-	       (_swapChainExtent VkExtent2D)
-	       (_swapChainImageViews[_N_IMAGES] VkImageView)
-	       (_descriptorSetLayout VkDescriptorSetLayout)
-	       (_pipelineLayout VkPipelineLayout)
-	       (_renderPass VkRenderPass)
-	       (_graphicsPipeline VkPipeline)
-	       (_swapChainFramebuffers[_N_IMAGES] VkFramebuffer)
-	       (_commandPool VkCommandPool)
-	       (_commandBuffers[_N_IMAGES] VkCommandBuffer)
-	       ;(_MAX_FRAMES_IN_FLIGHT "const int" 2)
-	       (_imageAvailableSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
-	       (_renderFinishedSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
+		 #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
+		 (_physicalDevice VkPhysicalDevice VK_NULL_HANDLE)
+		 (_device VkDevice)
+		 (_graphicsQueue VkQueue)
+		 ;; 
+		 (_msaaSamples VkSampleCountFlagBits)
+		 (_colorImage VkImage)
+		 (_colorImageMemory VkDeviceMemory)
+		 (_colorImageView VkImageView)
+		 ;;
+		 (_mipLevels uint32_t)
+		 (_textureImage VkImage)
+		 (_textureImageMemory  VkDeviceMemory)
+		 (_textureImageView VkImageView)
+		 (_textureSampler VkSampler)
+		 ;;
+		 (_presentQueue  VkQueue)
+		 (_surface VkSurfaceKHR)
+		 (_deviceExtensions[1] "const char* const" (curly "VK_KHR_SWAPCHAIN_EXTENSION_NAME"
+								  ))
+		 (_swapChain VkSwapchainKHR)
+					;(_N_IMAGES "const int" 4) ;; swapChainSupport.capabilities.maxImageCount
+		 (_swapChainImages[_N_IMAGES] VkImage)
+		 (_swapChainImageFormat VkFormat)
+		 (_swapChainExtent VkExtent2D)
+		 (_swapChainImageViews[_N_IMAGES] VkImageView)
+		 (_descriptorSetLayout VkDescriptorSetLayout)
+		 (_pipelineLayout VkPipelineLayout)
+		 (_renderPass VkRenderPass)
+		 (_graphicsPipeline VkPipeline)
+		 (_swapChainFramebuffers[_N_IMAGES] VkFramebuffer)
+		 (_commandPool VkCommandPool)
+		 (_commandBuffers[_N_IMAGES] VkCommandBuffer)
+					;(_MAX_FRAMES_IN_FLIGHT "const int" 2)
+		 (_imageAvailableSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
+		 (_renderFinishedSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
 	       
-	       (_currentFrame size_t)
-	       (_inFlightFences[_N_IMAGES] VkFence)
-	       (_framebufferResized _Bool)
-	       (_vertexBuffer VkBuffer)
-	       (_indexBuffer VkBuffer)
-	       (_vertexBufferMemory VkDeviceMemory)
-	       (_indexBufferMemory VkDeviceMemory)
-	       (_uniformBuffers[_N_IMAGES] VkBuffer)
-	       (_uniformBuffersMemory[_N_IMAGES] VkDeviceMemory)
-	       (_descriptorPool VkDescriptorPool)
-	       (_descriptorSets[_N_IMAGES] VkDescriptorSet)
+		 (_currentFrame size_t)
+		 (_inFlightFences[_N_IMAGES] VkFence)
+		 (_framebufferResized _Bool)
+		 (_vertexBuffer VkBuffer)
+		 (_indexBuffer VkBuffer)
+		 (_vertexBufferMemory VkDeviceMemory)
+		 (_indexBufferMemory VkDeviceMemory)
+		 (_uniformBuffers[_N_IMAGES] VkBuffer)
+		 (_uniformBuffersMemory[_N_IMAGES] VkDeviceMemory)
+		 (_descriptorPool VkDescriptorPool)
+		 (_descriptorSets[_N_IMAGES] VkDescriptorSet)
 
-	       (_depthImage VkImage)
-	       (_depthImageMemory VkDeviceMemory)
-	       (_depthImageView VkImageView)
-	       )))
-      (if init
-	  `(curly
-	    ,@(remove-if
-	       #'null
-	       (loop for e in l collect
-		    (destructuring-bind (name type &optional value) e
-		      (when value
-			`(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
-	  `(do0
-	    "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
-	       (defstruct0 State
-		   ,@(loop for e in l collect
-			  (destructuring-bind (name type &optional value) e
-			    `(,name ,type))))))))
+		 (_depthImage VkImage)
+		 (_depthImageMemory VkDeviceMemory)
+		 (_depthImageView VkImageView)
+		 )))
+	(if init
+	    `(curly
+	      ,@(remove-if
+		 #'null
+		 (loop for e in l collect
+		      (destructuring-bind (name type &optional value) e
+			(when value
+			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
+	    `(do0
+	      "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
+	      (defstruct0 State
+		  ,@(loop for e in l collect
+			 (destructuring-bind (name type &optional value) e
+			   `(,name ,type))))))))
   
-  (defun define-module (args)
-    "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
-    (destructuring-bind (module-name global-parameters module-code) args
-      (let ((header ()))
+    (defun define-module (args)
+      "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
+      (destructuring-bind (module-name global-parameters module-code) args
+	(let ((header ()))
 	
-	(push `(do0
+	  (push `(do0
 		
-		" "
-		"#define GLFW_INCLUDE_VULKAN"
-			(include <GLFW/glfw3.h>)
-			" "
-			(include "globals.h")
-			" "
+		  " "
+		  "#define GLFW_INCLUDE_VULKAN"
+		  (include <GLFW/glfw3.h>)
+		  " "
+		  (include "globals.h")
+		  " "
 			
 			
-			(include "utils.h")
-			" "
-			(include "proto.h")
+		  (include "utils.h")
+		  " "
+		  (include "proto.h")
 			
-			" "
-			)
+		  " "
+		  )
 		header)
-	(unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
-	  (push `(do0 "extern State state;")
-		header)
+	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+	    (push `(do0 "extern State state;")
+		  header)
 	    )
 	
-	(push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
-	      *module*))
-      (loop for par in global-parameters do
-	   (destructuring-bind (parameter-name
-				&key (direction 'in)
-				(type 'int)
-				(default nil)) par
-	     (push `(:name ,parameter-name :type ,type :default ,default)
-		   *module-global-parameters*))))))
+	  (push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
+		*module*))
+	(loop for par in global-parameters do
+	     (destructuring-bind (parameter-name
+				  &key (direction 'in)
+				  (type 'int)
+				  (default nil)) par
+	       (push `(:name ,parameter-name :type ,type :default ,default)
+		     *module-global-parameters*))))))
   (defun g (arg)
     `(dot state ,arg))
   (define-module
@@ -298,15 +298,15 @@ more structs. this function helps to initialize those structs."
 	      (defun mainLoop ()
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
-		  ;#+surface (drawFrame)
+					;#+surface (drawFrame)
 		  )
-		;(vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
+					;(vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
 		)
 	      (defun run ()
 		(initWindow)
 		(initVulkan)
 		(mainLoop)
-		;(cleanup)
+					;(cleanup)
 		)
 	      
 	      (defun main ()
@@ -323,40 +323,40 @@ more structs. this function helps to initialize those structs."
 	 #-nolog (defun checkValidationLayerSupport ()
 		   (declare (values _Bool))
 		   
-				 (let ((layerCount 0))
-				   (declare (type uint32_t layerCount))
-				   (vkEnumerateInstanceLayerProperties &layerCount NULL)
-				   (let ((availableLayers[layerCount]))
-				     (declare (type "VkLayerProperties"
-						    availableLayers[layerCount]
-						    ))
-				     (vkEnumerateInstanceLayerProperties
-				      &layerCount
-				      availableLayers)
+		   (let ((layerCount 0))
+		     (declare (type uint32_t layerCount))
+		     (vkEnumerateInstanceLayerProperties &layerCount NULL)
+		     (let ((availableLayers[layerCount]))
+		       (declare (type "VkLayerProperties"
+				      availableLayers[layerCount]
+				      ))
+		       (vkEnumerateInstanceLayerProperties
+			&layerCount
+			availableLayers)
 
-				     (foreach
-				      (layerName ,(g `_validationLayers))
-				      (let ((layerFound false))
-					(foreach
-					 (layerProperties availableLayers)
-					 (when (== 0 (strcmp layerName layerProperties.layerName))
-					   ,(vkprint "look for layer"
-						     `(layerName))
-					   (setf layerFound true)
-					   break))
-					(unless layerFound
-					  (return false))))
-				     (return true))))
+		       (foreach
+			(layerName ,(g `_validationLayers))
+			(let ((layerFound false))
+			  (foreach
+			   (layerProperties availableLayers)
+			   (when (== 0 (strcmp layerName layerProperties.layerName))
+			     ,(vkprint "look for layer"
+				       `(layerName))
+			     (setf layerFound true)
+			     break))
+			  (unless layerFound
+			    (return false))))
+		       (return true))))
 	 (defun createInstance ()
 	   (declare (values void))
 	   "// initialize member _instance"
 	   #-nolog ( ;when (and _enableValidationLayers  (not (checkValidationLayerSupport)))
 		    unless (checkValidationLayerSupport)
-		     "// throw"
-		     ,(vkprint "validation layers requested, but unavailable." `())
-		     #+nil(throw ("std::runtime_error"
+		    "// throw"
+		    ,(vkprint "validation layers requested, but unavailable." `())
+		    #+nil(throw ("std::runtime_error"
 
-				  )))
+				 )))
 	   ,(vk `(VkApplicationInfo
 		  appInfo
 		  :sType VK_STRUCTURE_TYPE_APPLICATION_INFO
@@ -399,7 +399,7 @@ more structs. this function helps to initialize those structs."
 	   (declare (values void))
 	   (createInstance)
 	   (do0 "// create window surface because it can influence physical device selection"
-		 (createSurface))
+		(createSurface))
 	   (pickPhysicalDevice)
 	   (createLogicalDevice)
 	   
@@ -411,7 +411,7 @@ more structs. this function helps to initialize those structs."
 		      (createGraphicsPipeline)
 		      (createCommandPool)
 		      ;; create texture image needs command pools
-		       (createColorResources)
+		      (createColorResources)
 		      (createDepthResources)
 		      (createFramebuffers)
 		      (createTextureImage)
@@ -423,13 +423,13 @@ more structs. this function helps to initialize those structs."
 			     
 			     
 			     
-		       (createVertexBuffer)
-		       (createIndexBuffer)
-		       (createUniformBuffers)
-		       (createDescriptorPool)
-		       (createDescriptorSets)
-		       (createCommandBuffers)
-		       (createSyncObjects)))))
+			     (createVertexBuffer)
+			     (createIndexBuffer)
+			     (createUniformBuffers)
+			     (createDescriptorPool)
+			     (createDescriptorSets)
+			     (createCommandBuffers)
+			     (createSyncObjects)))))
 	      `(do0
 		,@(loop for (e) in l collect
 		       `(do0
@@ -439,32 +439,32 @@ more structs. this function helps to initialize those structs."
   (define-module
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
-	       (do0
-		(defun framebufferResizeCallback (window width height)
-			 (declare (values "static void")
-				  ;; static because glfw doesnt know how to call a member function with a this pointer
-				  (type GLFWwindow* window)
-				  (type int width height))
-			 (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
-			   (setf app->_framebufferResized true)))
-		(defun initWindow ()
-		  (declare (values void))
-			 (glfwInit)
-			 (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-			 (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
-			 (setf ,(g `_window) (glfwCreateWindow 800 600
-							    (string "vulkan window")
-							    NULL
-							    NULL))
-			 ;; store this pointer to the instance for use in the callback
-			 (glfwSetWindowUserPointer ,(g `_window) (ref state))
-			 (glfwSetFramebufferSizeCallback ,(g `_window)
-							 framebufferResizeCallback))
-		(defun cleanupWindow ()
-		  (declare (values void))
-		  (glfwDestroyWindow ,(g `_window))
-		  (glfwTerminate)
-		  ))))
+	(do0
+	 (defun framebufferResizeCallback (window width height)
+	   (declare (values "static void")
+		    ;; static because glfw doesnt know how to call a member function with a this pointer
+		    (type GLFWwindow* window)
+		    (type int width height))
+	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
+	     (setf app->_framebufferResized true)))
+	 (defun initWindow ()
+	   (declare (values void))
+	   (glfwInit)
+	   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
+	   (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+	   (setf ,(g `_window) (glfwCreateWindow 800 600
+						 (string "vulkan window")
+						 NULL
+						 NULL))
+	   ;; store this pointer to the instance for use in the callback
+	   (glfwSetWindowUserPointer ,(g `_window) (ref state))
+	   (glfwSetFramebufferSizeCallback ,(g `_window)
+					   framebufferResizeCallback))
+	 (defun cleanupWindow ()
+	   (declare (values void))
+	   (glfwDestroyWindow ,(g `_window))
+	   (glfwTerminate)
+	   ))))
   (define-module
       `(surface
 	()
@@ -489,11 +489,11 @@ more structs. this function helps to initialize those structs."
 	   )
 	 (do0
 	  ,(emit-utils :code
-	    `(defstruct0 QueueFamilyIndices
-		;;"// initialized to -1, i.e. no value"
-		(graphicsFamily int)
-	      (presentFamily int)
-	      ))
+		       `(defstruct0 QueueFamilyIndices
+			    ;;"// initialized to -1, i.e. no value"
+			    (graphicsFamily int)
+			  (presentFamily int)
+			  ))
 	  (defun "QueueFamilyIndices_isComplete" (q)
 	    (declare (values _Bool)
 		     (type QueueFamilyIndices q))
@@ -502,8 +502,8 @@ more structs. this function helps to initialize those structs."
 		     (!= -1 q.presentFamily))))
 	  (defun "QueueFamilyIndices_make" ()
 	    (declare (values QueueFamilyIndices))
-	    (let ((q ;(malloc (sizeof QueueFamilyIndices))
-		    ))
+	    (let ((q		 ;(malloc (sizeof QueueFamilyIndices))
+		   ))
 	      (declare (type QueueFamilyIndices q))
 	      (setf q.graphicsFamily -1
 		    q.presentFamily -1)
@@ -517,8 +517,8 @@ more structs. this function helps to initialize those structs."
 		     (values QueueFamilyIndices))
 	    (let ((indices (QueueFamilyIndices_make))
 		  (queueFamilyCount 0))
-	      (declare ;(type QueueFamilyIndices indices)
-		       (type uint32_t queueFamilyCount))
+	      (declare		    ;(type QueueFamilyIndices indices)
+	       (type uint32_t queueFamilyCount))
 	      (vkGetPhysicalDeviceQueueFamilyProperties
 	       device &queueFamilyCount NULL)
 	      (let ((queueFamilies[queueFamilyCount]))
@@ -548,13 +548,13 @@ more structs. this function helps to initialize those structs."
 	      (return indices))))
 	 (do0
 	  ,(emit-utils :code
-	    `(defstruct0 SwapChainSupportDetails
-		(capabilities VkSurfaceCapabilitiesKHR)
-	      (formatsCount int)
-	      (formats VkSurfaceFormatKHR*)
-	      (presentModesCount int)
-	      (presentModes VkPresentModeKHR*)
-	      ))
+		       `(defstruct0 SwapChainSupportDetails
+			    (capabilities VkSurfaceCapabilitiesKHR)
+			  (formatsCount int)
+			  (formats VkSurfaceFormatKHR*)
+			  (presentModesCount int)
+			  (presentModes VkPresentModeKHR*)
+			  ))
 	  (defun cleanupSwapChainSupport (details)
 	    (declare (type SwapChainSupportDetails* details))
 	    (free details->formats)
@@ -597,66 +597,66 @@ more structs. this function helps to initialize those structs."
 	      (return details))))
 
 	 (defun isDeviceSuitable (device)
-	       (declare (values bool)
-			(type VkPhysicalDevice device))
+	   (declare (values bool)
+		    (type VkPhysicalDevice device))
 	       
-	       (let ((extensionsSupported (checkDeviceExtensionSupport device))
-		     (swapChainAdequate false))
-		 (declare (type bool swapChainAdequate))
-		 (when extensionsSupported
-		   (let ((swapChainSupport (querySwapChainSupport device)))
-		     (setf swapChainAdequate
-			   (and (not (== 0 swapChainSupport.formatsCount))
-				(not (== 0 swapChainSupport.presentModesCount))))
-		     (cleanupSwapChainSupport &swapChainSupport))))
-	       (let ((indices (findQueueFamilies device))
-		     (supportedFeatures))
-		 (declare ;(type QueueFamilyIndices indices)
-			  (type VkPhysicalDeviceFeatures
-				supportedFeatures))
-		 (vkGetPhysicalDeviceFeatures device
-					      &supportedFeatures)
-		 (let ((res (and (QueueFamilyIndices_isComplete indices)
-			      supportedFeatures.samplerAnisotropy
-			      (and 
-			       extensionsSupported
-			       swapChainAdequate))))
-		   ;(QueueFamilyIndices_destroy indices)
-		   (return res))
-		 #+nil (return (indices.isComplete))))
+	   (let ((extensionsSupported (checkDeviceExtensionSupport device))
+		 (swapChainAdequate false))
+	     (declare (type bool swapChainAdequate))
+	     (when extensionsSupported
+	       (let ((swapChainSupport (querySwapChainSupport device)))
+		 (setf swapChainAdequate
+		       (and (not (== 0 swapChainSupport.formatsCount))
+			    (not (== 0 swapChainSupport.presentModesCount))))
+		 (cleanupSwapChainSupport &swapChainSupport))))
+	   (let ((indices (findQueueFamilies device))
+		 (supportedFeatures))
+	     (declare		    ;(type QueueFamilyIndices indices)
+	      (type VkPhysicalDeviceFeatures
+		    supportedFeatures))
+	     (vkGetPhysicalDeviceFeatures device
+					  &supportedFeatures)
+	     (let ((res (and (QueueFamilyIndices_isComplete indices)
+			     supportedFeatures.samplerAnisotropy
+			     (and 
+			      extensionsSupported
+			      swapChainAdequate))))
+					;(QueueFamilyIndices_destroy indices)
+	       (return res))
+	     #+nil (return (indices.isComplete))))
 	 (defun checkDeviceExtensionSupport (device)
-	       (declare (values bool)
-			(type VkPhysicalDevice device)
-			)
-	       (let ((extensionCount 0))
-		 (declare (type uint32_t extensionCount))
-		 (vkEnumerateDeviceExtensionProperties
-		  device NULL &extensionCount NULL)
-		 (let ((availableExtensions[extensionCount]))
-		   (declare (type
-			     VkExtensionProperties
-			     availableExtensions[extensionCount]))
-		   (vkEnumerateDeviceExtensionProperties
-		    device
-		    NULL
-		    &extensionCount
-		    availableExtensions)
-		   (foreach (required ,(g `_deviceExtensions))
-			    (let ((found false))
-			      (declare (type bool found))
-			      ,(vkprint "check for extension" `(required))
-			      (foreach (extension availableExtensions)
-				       ;,(vkprint "check for extension" `(required extension.extensionName))
-				       (when (== 0
-						 (strcmp extension.extensionName
-							 required))
-					 (setf found true)
-					 ,(vkprint "check for extension" `(found))
-					 break))
-			      (unless found
-				,(vkprint "not all of the required extensions were found" `(required found))
-				(return false))))
-		   (return true))))
+	   (declare (values bool)
+		    (type VkPhysicalDevice device)
+		    )
+	   (let ((extensionCount 0))
+	     (declare (type uint32_t extensionCount))
+	     (vkEnumerateDeviceExtensionProperties
+	      device NULL &extensionCount NULL)
+	     (let ((availableExtensions[extensionCount]))
+	       (declare (type
+			 VkExtensionProperties
+			 availableExtensions[extensionCount]))
+	       (vkEnumerateDeviceExtensionProperties
+		device
+		NULL
+		&extensionCount
+		availableExtensions)
+	       (foreach (required ,(g `_deviceExtensions))
+			(let ((found false))
+			  (declare (type bool found))
+			  ,(vkprint "check for extension" `(required))
+			  (foreach (extension availableExtensions)
+					;,(vkprint "check for extension" `(required extension.extensionName))
+				   (when (== 0
+					     (strcmp extension.extensionName
+						     required))
+				     (setf found true)
+				     ,(vkprint "check for extension" `(found))
+				     break))
+			  (unless found
+			    ,(vkprint "not all of the required extensions were found" `(required found))
+			    (return false))))
+	       (return true))))
 	 (defun getMaxUsableSampleCount ()
 	   (declare (values VkSampleCountFlagBits))
 	   (let ((physicalDeviceProperties))
@@ -689,7 +689,7 @@ more structs. this function helps to initialize those structs."
 	       "// throw"
 	       ,(vkprint "failed to find gpu with vulkan support.")
 	       #+nil (throw ("std::runtime_error"
-		       )))
+			     )))
 	     (let ((devices[deviceCount]))
 	       (declare (type VkPhysicalDevice
 			      devices[deviceCount]))
@@ -722,8 +722,8 @@ more structs. this function helps to initialize those structs."
 	     (declare (type float queuePriority))
 	     (let ((allQueueFamilies[]
 		    (curly
-		      indices.graphicsFamily
-		      indices.presentFamily))
+		     indices.graphicsFamily
+		     indices.presentFamily))
 		   (qNumber (length allQueueFamilies))
 		   (qSeen[qNumber])
 		   (qSeenCount 0))
@@ -752,29 +752,29 @@ more structs. this function helps to initialize those structs."
 					(incf qSeenCount))))))))
 			)
 	       ,(vkprint "seen" `(qSeenCount) )
-	      (let ((queueCreateInfos[qSeenCount])
-		    (uniqueQueueFamilies[qSeenCount])
-		    (info_count 0))
-		(declare (type VkDeviceQueueCreateInfo
-			       queueCreateInfos[qSeenCount])
-			 (type int uniqueQueueFamilies[qSeenCount]))
-		(dotimes (i qSeenCount)
-		  (let ((q (aref qSeen i)))
-		    ,(vkprint "copy qSeen into uniquQueueFamilies" `(i q qSeenCount))
-		    (setf (aref uniqueQueueFamilies i)
-			  q)))
-		(foreach (queueFamily uniqueQueueFamilies)
-			 ,(vkprint "create unique queue" `(queueFamily info_count))
-			 ,(vk `(VkDeviceQueueCreateInfo
-				queueCreateInfo
-				:sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-				:queueFamilyIndex queueFamily
-				:queueCount 1
-				:pQueuePriorities &queuePriority))
-			 (setf (aref queueCreateInfos info_count) queueCreateInfo)
-			 (incf info_count)
-			 (progn
-			  ,(vkprint "created unique queue" `(queueFamily info_count queueCreateInfo))))))
+	       (let ((queueCreateInfos[qSeenCount])
+		     (uniqueQueueFamilies[qSeenCount])
+		     (info_count 0))
+		 (declare (type VkDeviceQueueCreateInfo
+				queueCreateInfos[qSeenCount])
+			  (type int uniqueQueueFamilies[qSeenCount]))
+		 (dotimes (i qSeenCount)
+		   (let ((q (aref qSeen i)))
+		     ,(vkprint "copy qSeen into uniquQueueFamilies" `(i q qSeenCount))
+		     (setf (aref uniqueQueueFamilies i)
+			   q)))
+		 (foreach (queueFamily uniqueQueueFamilies)
+			  ,(vkprint "create unique queue" `(queueFamily info_count))
+			  ,(vk `(VkDeviceQueueCreateInfo
+				 queueCreateInfo
+				 :sType VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+				 :queueFamilyIndex queueFamily
+				 :queueCount 1
+				 :pQueuePriorities &queuePriority))
+			  (setf (aref queueCreateInfos info_count) queueCreateInfo)
+			  (incf info_count)
+			  (progn
+			    ,(vkprint "created unique queue" `(queueFamily info_count queueCreateInfo))))))
 	     (let ((deviceFeatures (curly)))
 	       (declare (type VkPhysicalDeviceFeatures deviceFeatures))
 	       (setf deviceFeatures.samplerAnisotropy VK_TRUE)
@@ -809,7 +809,7 @@ more structs. this function helps to initialize those structs."
 		 (vkGetDeviceQueue ,(g `_device) indices.presentFamily
 				   0 (ref ,(g `_presentQueue))))
 	       ))
-	   ;(QueueFamilyIndices_destroy indices)
+					;(QueueFamilyIndices_destroy indices)
 	   )
 	 
 	 )))
@@ -821,57 +821,57 @@ more structs. this function helps to initialize those structs."
 	 (include <stdlib.h>)
 	 (do0
 	  (defun chooseSwapSurfaceFormat (availableFormats n)
-	       (declare (values VkSurfaceFormatKHR)
-			(type "const VkSurfaceFormatKHR*"
-			      availableFormats)
-			(type int n))
-	       (dotimes (i n)	    ;foreach (format availableFormats)
-		 (let ((format (aref availableFormats i)))
-		   (when (and (== VK_FORMAT_B8G8R8A8_UNORM
-				  format.format)
-			      (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-				  format.colorSpace))
-		     (return format))))
-	       (return (aref availableFormats 0)))
-	     (defun chooseSwapPresentMode (modes n)
-	       (declare (values VkPresentModeKHR)
-			(type "const VkPresentModeKHR*"
-			      modes)
-			(type int n))
-	       "// prefer triple buffer (if available)"
-	       (dotimes (i n)  ;foreach (mode modes)
-		 (let ((mode (aref modes i)))
-		   (when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
-		     (return mode))))
-	       (return VK_PRESENT_MODE_FIFO_KHR))
-	     (defun chooseSwapExtent (capabilities)
-	       (declare (values VkExtent2D)
-			(type "const VkSurfaceCapabilitiesKHR*"
-			      capabilities))
-	       (if (!= UINT32_MAX capabilities->currentExtent.width)
-		   (do0
-		    (return capabilities->currentExtent))
-		   (do0
-		    (let ((width 0)
-			  (height 0)
-			  )
-		      (declare (type int width height))
-		      (glfwGetFramebufferSize ,(g `_window) &width &height)
-		      (let ((actualExtent (curly width
-						 height))
-			    )
-			(declare (type VkExtent2D actualExtent))
+	    (declare (values VkSurfaceFormatKHR)
+		     (type "const VkSurfaceFormatKHR*"
+			   availableFormats)
+		     (type int n))
+	    (dotimes (i n)	    ;foreach (format availableFormats)
+	      (let ((format (aref availableFormats i)))
+		(when (and (== VK_FORMAT_B8G8R8A8_UNORM
+			       format.format)
+			   (== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+			       format.colorSpace))
+		  (return format))))
+	    (return (aref availableFormats 0)))
+	  (defun chooseSwapPresentMode (modes n)
+	    (declare (values VkPresentModeKHR)
+		     (type "const VkPresentModeKHR*"
+			   modes)
+		     (type int n))
+	    "// prefer triple buffer (if available)"
+	    (dotimes (i n)		;foreach (mode modes)
+	      (let ((mode (aref modes i)))
+		(when (== VK_PRESENT_MODE_MAILBOX_KHR mode)
+		  (return mode))))
+	    (return VK_PRESENT_MODE_FIFO_KHR))
+	  (defun chooseSwapExtent (capabilities)
+	    (declare (values VkExtent2D)
+		     (type "const VkSurfaceCapabilitiesKHR*"
+			   capabilities))
+	    (if (!= UINT32_MAX capabilities->currentExtent.width)
+		(do0
+		 (return capabilities->currentExtent))
+		(do0
+		 (let ((width 0)
+		       (height 0)
+		       )
+		   (declare (type int width height))
+		   (glfwGetFramebufferSize ,(g `_window) &width &height)
+		   (let ((actualExtent (curly width
+					      height))
+			 )
+		     (declare (type VkExtent2D actualExtent))
 
-			,@(loop for e in `(width height) collect
-			       `(setf (dot actualExtent ,e)
-				      (max (dot capabilities->minImageExtent ,e)
-						  (min
-						   (dot capabilities->maxImageExtent ,e)
-						   (dot actualExtent ,e)))))
+		     ,@(loop for e in `(width height) collect
+			    `(setf (dot actualExtent ,e)
+				   (max (dot capabilities->minImageExtent ,e)
+					(min
+					 (dot capabilities->maxImageExtent ,e)
+					 (dot actualExtent ,e)))))
 			
-			(return actualExtent)))))))
+		     (return actualExtent)))))))
 	 (defun cleanupSwapChain ()
-	   ;(free ,(g `_swapChainImages))
+					;(free ,(g `_swapChainImages))
 	   )
 	 (defun createSwapChain ()
 	   (declare (values void))
@@ -895,8 +895,8 @@ more structs. this function helps to initialize those structs."
 		  (+ swapChainSupport.capabilities.minImageCount 1))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
 		 (queueFamilyIndices[] (curly
-					 indices.graphicsFamily
-					 indices.presentFamily))
+					indices.graphicsFamily
+					indices.presentFamily))
 		 ;; best performance mode:
 		 (imageSharingMode VK_SHARING_MODE_EXCLUSIVE)
 		 (queueFamilyIndexCount 0)
@@ -939,10 +939,10 @@ more structs. this function helps to initialize those structs."
 			   :oldSwapchain VK_NULL_HANDLE
 			   )
 		 (,(g `_device)
-		  &info
-		  NULL
-		  (ref ,(g `_swapChain))
-		  )
+		   &info
+		   NULL
+		   (ref ,(g `_swapChain))
+		   )
 		 ,(g `_swapChain))
 	       :throw t
 	       :khr "KHR")
@@ -954,7 +954,7 @@ more structs. this function helps to initialize those structs."
 				       &imageCount
 				       NULL)
 	      #+nil (setf ,(g `_swapChainImages) (malloc (* (sizeof (deref ,(g `_swapChainImages)))
-						   imageCount)))
+							    imageCount)))
 	      ,(vkprint "create swapChainImages" `(imageCount _N_IMAGES))
 	      (vkGetSwapchainImagesKHR ,(g `_device)
 				       ,(g `_swapChain)
@@ -962,7 +962,7 @@ more structs. this function helps to initialize those structs."
 				       ,(g `_swapChainImages))
 	      (setf ,(g `_swapChainImageFormat) surfaceFormat.format
 		    ,(g `_swapChainExtent) extent)))
-	   ;(QueueFamilyIndices_destroy indices)
+					;(QueueFamilyIndices_destroy indices)
 	   )
 	 )))
 
@@ -997,9 +997,9 @@ more structs. this function helps to initialize those structs."
 		  :subresourceRange.layerCount 1
 		  )
 		 (,(g `_device)
-		  &info
-		  NULL
-		  &imageView)
+		   &info
+		   NULL
+		   &imageView)
 		 imageView)
 	       :throw t)
 	     (return imageView)))
@@ -1023,52 +1023,52 @@ more structs. this function helps to initialize those structs."
       `(render_pass
 	()
 	(do0
-	  (defun cleanupRenderPass ()
-	    )
-	  (defun findSupportedFormat (candidates n
-						    tiling
-						    features)
-			  (declare (values VkFormat)
-				   (type VkFormat* candidates)
-				   (type int n)
-				   (type VkImageTiling tiling)
-				   (type VkFormatFeatureFlags features))
-			  (dotimes (i n) ; foreach (format candidates)
-			    (let ((format (aref candidates i))
-				  (props))
-				     (declare (type VkFormatProperties props))
-				     (vkGetPhysicalDeviceFormatProperties ,(g `_physicalDevice)
-									  format &props)
-				     (when (and
-					    (== VK_IMAGE_TILING_LINEAR tiling)
-					    (== features
-						(logand
-						 features
-						 props.linearTilingFeatures)))
-				       (return format))
-				     (when (and
-					    (== VK_IMAGE_TILING_OPTIMAL tiling)
-					    (== features
-						(logand
-						 features
-						 props.optimalTilingFeatures)))
-				       (return format))))
+	 (defun cleanupRenderPass ()
+	   )
+	 (defun findSupportedFormat (candidates n
+				     tiling
+				     features)
+	   (declare (values VkFormat)
+		    (type VkFormat* candidates)
+		    (type int n)
+		    (type VkImageTiling tiling)
+		    (type VkFormatFeatureFlags features))
+	   (dotimes (i n)		; foreach (format candidates)
+	     (let ((format (aref candidates i))
+		   (props))
+	       (declare (type VkFormatProperties props))
+	       (vkGetPhysicalDeviceFormatProperties ,(g `_physicalDevice)
+						    format &props)
+	       (when (and
+		      (== VK_IMAGE_TILING_LINEAR tiling)
+		      (== features
+			  (logand
+			   features
+			   props.linearTilingFeatures)))
+		 (return format))
+	       (when (and
+		      (== VK_IMAGE_TILING_OPTIMAL tiling)
+		      (== features
+			  (logand
+			   features
+			   props.optimalTilingFeatures)))
+		 (return format))))
 			  
-			  ,(vkprint "failed to find supported format!")
-			  )
-	  (defun findDepthFormat ()
-	    (declare (values VkFormat))
-	    (let ((candidates[] (curly
-				 VK_FORMAT_D32_SFLOAT
-				 VK_FORMAT_D32_SFLOAT_S8_UINT
-				 VK_FORMAT_D24_UNORM_S8_UINT)))
-	      (declare (type "VkFormat" candidates[]
-			     ))
-	      (return (findSupportedFormat
-		       candidates
-		       (length candidates)
-		       VK_IMAGE_TILING_OPTIMAL
-		       VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))))
+	   ,(vkprint "failed to find supported format!")
+	   )
+	 (defun findDepthFormat ()
+	   (declare (values VkFormat))
+	   (let ((candidates[] (curly
+				VK_FORMAT_D32_SFLOAT
+				VK_FORMAT_D32_SFLOAT_S8_UINT
+				VK_FORMAT_D24_UNORM_S8_UINT)))
+	     (declare (type "VkFormat" candidates[]
+			    ))
+	     (return (findSupportedFormat
+		      candidates
+		      (length candidates)
+		      VK_IMAGE_TILING_OPTIMAL
+		      VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))))
 	 (defun createRenderPass ()
 	   ,(vk
 	     `(VkAttachmentDescription
@@ -1161,9 +1161,9 @@ more structs. this function helps to initialize those structs."
 		  :dependencyCount 1
 		  :pDependencies &dependency)
 		 (,(g `_device)
-		  &info
-		  NULL
-		  (ref ,(g `_renderPass)))
+		   &info
+		   NULL
+		   (ref ,(g `_renderPass)))
 		 ,(g `_renderPass))
 	       :throw t)))
 	 )))
@@ -1192,8 +1192,8 @@ more structs. this function helps to initialize those structs."
 	       :pImmutableSamplers NULL))
 
 	   (let ((bindings[] (curly
-			       uboLayoutBinding
-			       samplerLayoutBinding)))
+			      uboLayoutBinding
+			      samplerLayoutBinding)))
 	     (declare (type
 		       VkDescriptorSetLayoutBinding
 		       bindings[]))
@@ -1210,7 +1210,7 @@ more structs. this function helps to initialize those structs."
 	   ))))
 
 
-   (define-module
+  (define-module
       `(graphics_pipeline
 	()
 	(do0
@@ -1218,68 +1218,68 @@ more structs. this function helps to initialize those structs."
 		  
 		  <string.h>)
 	 ,(emit-utils :code
-	   `(do0
-	    (include <cglm/cglm.h>)
-	    (defstruct0 Vertex
-		(pos vec3)
-	      (color vec3)
-	      (texCoord vec2)
+		      `(do0
+			(include <cglm/cglm.h>)
+			(defstruct0 Vertex
+			    (pos vec3)
+			  (color vec3)
+			  (texCoord vec2)
 					;(_binding VkVertexInputBindingDescription)
 					;(_bindingp uint8_t)
-	      )))
+			  )))
 	 #+nil (do0
-	  "bool Vertex::operator==(const Vertex& other) const"
-	  (progn		   ;defun "Vertex::operator==" (other)
-	    #+nil(declare (type "const Vertex&" other)
-			  (values bool))
-	    (return (and
-		     (== pos other.pos)
-		     (== color other.color)
-		     (== texCoord other.texCoord))))
-	  (do0
-	   "template<> struct std::hash<Vertex>"
-	   (progn
-	     "size_t operator()(Vertex const& vertex) const"
-	     (progn ;;defun "operator()" (vertex)
-	       #+nil (declare (values size_t)
-			      (type "Vertex const&" vertex))
-	       (return (logxor
-			("std::hash<glm::vec3>()"
-			 vertex.pos)
-			(>> (<< ("std::hash<glm::vec3>()"
-				 vertex.color)
-				1)
-			    1)
-			(<< ("std::hash<glm::vec2>()"
-			     vertex.texCoord)
-			    1)))
-	       ))))
-	 (defun "Vertex_getBindingDescription" (;vertex
+		"bool Vertex::operator==(const Vertex& other) const"
+		(progn		   ;defun "Vertex::operator==" (other)
+		  #+nil(declare (type "const Vertex&" other)
+				(values bool))
+		  (return (and
+			   (== pos other.pos)
+			   (== color other.color)
+			   (== texCoord other.texCoord))))
+		(do0
+		 "template<> struct std::hash<Vertex>"
+		 (progn
+		   "size_t operator()(Vertex const& vertex) const"
+		   (progn ;;defun "operator()" (vertex)
+		     #+nil (declare (values size_t)
+				    (type "Vertex const&" vertex))
+		     (return (logxor
+			      ("std::hash<glm::vec3>()"
+			       vertex.pos)
+			      (>> (<< ("std::hash<glm::vec3>()"
+				       vertex.color)
+				      1)
+				  1)
+			      (<< ("std::hash<glm::vec2>()"
+				   vertex.texCoord)
+				  1)))
+		     ))))
+	 (defun "Vertex_getBindingDescription" ( ;vertex
 						)
 	   (declare (values "VkVertexInputBindingDescription")
-		    ;(type Vertex* vertex)
+					;(type Vertex* vertex)
 		    )
-	   (do0 ;if vertex->_bindingp
-	       #+nil(do0
-		(return vertex->_binding))
-	       (do0
-		,(vk
-		  `(VkVertexInputBindingDescription
-		    bindingDescription
-		    :binding 0
-		    :stride (sizeof Vertex)
-		    ;; move to next data after each vertex
-		    :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
-		;(setf vertex->_binding bindingDescription)
-		(return bindingDescription))))
+	   (do0				;if vertex->_bindingp
+	    #+nil(do0
+		  (return vertex->_binding))
+	    (do0
+	     ,(vk
+	       `(VkVertexInputBindingDescription
+		 bindingDescription
+		 :binding 0
+		 :stride (sizeof Vertex)
+		 ;; move to next data after each vertex
+		 :inputRate VK_VERTEX_INPUT_RATE_VERTEX))
+					;(setf vertex->_binding bindingDescription)
+	     (return bindingDescription))))
 
 	 (do0
 	  ,(emit-utils :code
-	   `(do0
+		       `(do0
 	    
-	    (defstruct0 VertexInputAttributeDescription3
-		(data[3] VkVertexInputAttributeDescription)
-	      )))
+			 (defstruct0 VertexInputAttributeDescription3
+			     (data[3] VkVertexInputAttributeDescription)
+			   )))
 	  (defun "Vertex_getAttributeDescriptions" ()
 	    (declare (values "VertexInputAttributeDescription3"))
 	    (let ((attributeDescriptions (curly)))
@@ -1320,7 +1320,7 @@ more structs. this function helps to initialize those structs."
 	   (free a))
 	 (defun readFile (filename)
 	   (declare (type "const char*" filename)
-		    (values Array_u8* ;"char*"
+		    (values Array_u8*	;"char*"
 			    ))
 	   (let ((file (fopen filename (string "r"))))
 	     (unless file
@@ -1332,7 +1332,7 @@ more structs. this function helps to initialize those structs."
 		       ))
 		 (rewind file)
 		 (let ((read_status (fread buffer->data 1 filesize file)))
-		   ;(setf (aref buffer filesize) 0)
+					;(setf (aref buffer filesize) 0)
 		   ,(vkprint "readFile" `(read_status filename filesize file)))
 		 (return buffer)))))
 	 
@@ -1345,7 +1345,7 @@ more structs. this function helps to initialize those structs."
 	   (let ((shaderModule)
 		 (codeSize code->size)
 		 (pCode  ("(const uint32_t*)"
-				    code->data)))
+			  code->data)))
 	     (declare (type VkShaderModule shaderModule))
 	     ,(vkprint "createShader" `(codeSize pCode))
 	     ,(vkcall
@@ -1354,9 +1354,9 @@ more structs. this function helps to initialize those structs."
 		 (:codeSize codeSize
 			    :pCode pCode)
 		 (,(g `_device)
-		  &info
-		  NULL
-		  &shaderModule)
+		   &info
+		   NULL
+		   &shaderModule)
 		 shaderModule)
 	       :throw t)
 	     (return shaderModule)))
@@ -1386,196 +1386,196 @@ more structs. this function helps to initialize those structs."
 		       :pName (string "main")
 		       ;; this would allow specification of constants:
 		       :pSpecializationInfo NULL)))
-			     (let (("shaderStages[]"
-				    (curly vertShaderStageInfo
-					   fragShaderStageInfo))
-				   (bindingDescription ("Vertex_getBindingDescription"))
-				   (attributeDescriptions ("Vertex_getAttributeDescriptions")))
-			       (declare (type VkPipelineShaderStageCreateInfo
-					      "shaderStages[]"))
-			       ,(vk
-				 `(VkPipelineVertexInputStateCreateInfo
-				   vertexInputInfo
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
-				   :vertexBindingDescriptionCount 1
-				   :pVertexBindingDescriptions &bindingDescription
-				   :vertexAttributeDescriptionCount (length attributeDescriptions.data)
-				   :pVertexAttributeDescriptions attributeDescriptions.data))
-			       ,(vk
-				 `(VkPipelineInputAssemblyStateCreateInfo
-				   inputAssembly
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-				   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-				   ;; this would allow to break up lines
-				   ;; and strips with 0xfff or 0xffffff
-				   :primitiveRestartEnable VK_FALSE))
-			       ,(vk
-				 `(VkViewport
-				   viewport
-				   :x 0s0
-				   :y 0s0
-				   :width (* 1s0 ,(g `_swapChainExtent.width))
-				   :height (* 1s0 ,(g `_swapChainExtent.height))
-				   :minDepth 0s0
-				   :maxDepth 1s0))
-			       ,(vk
-				 `(VkRect2D
-				   scissor
-				   :offset "(__typeof__(scissor.offset)){0,0}" ;(curly 0 0)
+	     (let (("shaderStages[]"
+		    (curly vertShaderStageInfo
+			   fragShaderStageInfo))
+		   (bindingDescription ("Vertex_getBindingDescription"))
+		   (attributeDescriptions ("Vertex_getAttributeDescriptions")))
+	       (declare (type VkPipelineShaderStageCreateInfo
+			      "shaderStages[]"))
+	       ,(vk
+		 `(VkPipelineVertexInputStateCreateInfo
+		   vertexInputInfo
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+		   :vertexBindingDescriptionCount 1
+		   :pVertexBindingDescriptions &bindingDescription
+		   :vertexAttributeDescriptionCount (length attributeDescriptions.data)
+		   :pVertexAttributeDescriptions attributeDescriptions.data))
+	       ,(vk
+		 `(VkPipelineInputAssemblyStateCreateInfo
+		   inputAssembly
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
+		   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+		   ;; this would allow to break up lines
+		   ;; and strips with 0xfff or 0xffffff
+		   :primitiveRestartEnable VK_FALSE))
+	       ,(vk
+		 `(VkViewport
+		   viewport
+		   :x 0s0
+		   :y 0s0
+		   :width (* 1s0 ,(g `_swapChainExtent.width))
+		   :height (* 1s0 ,(g `_swapChainExtent.height))
+		   :minDepth 0s0
+		   :maxDepth 1s0))
+	       ,(vk
+		 `(VkRect2D
+		   scissor
+		   :offset "(__typeof__(scissor.offset)){0,0}" ;(curly 0 0)
 				   
-				   :extent ,(g `_swapChainExtent)))
-			       ,(vk
-				 `(VkPipelineViewportStateCreateInfo
-				   viewPortState
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
-				   :viewportCount 1
-				   :pViewports &viewport
-				   :scissorCount 1
-				   :pScissors &scissor))
-			       ,(vk
-				 `(VkPipelineRasterizationStateCreateInfo
-				   rasterizer
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
+		   :extent ,(g `_swapChainExtent)))
+	       ,(vk
+		 `(VkPipelineViewportStateCreateInfo
+		   viewPortState
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+		   :viewportCount 1
+		   :pViewports &viewport
+		   :scissorCount 1
+		   :pScissors &scissor))
+	       ,(vk
+		 `(VkPipelineRasterizationStateCreateInfo
+		   rasterizer
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
 				 
-				   :depthClampEnable VK_FALSE
-				   ;; _LINE could do wireframe rendering
-				   :polygonMode VK_POLYGON_MODE_FILL
-				   ;; thicker than 1s0 needs wideLines GPU feature
-				   :lineWidth 1s0
-				   :cullMode VK_CULL_MODE_BACK_BIT
-				   :frontFace VK_FRONT_FACE_COUNTER_CLOCKWISE
-				   :depthBiasEnable VK_FALSE
-				   :depthBiasConstantFactor 0s0
-				   ;; sometimes used for shadow mapping:
-				   :depthBiasClamp 0s0
-				   :depthBiasSlopeFactor 0s0))
-			       ,(vk ;; for now disable multisampling
-				 `(VkPipelineMultisampleStateCreateInfo
-				   multisampling
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
-				   :sampleShadingEnable VK_FALSE
-				   :rasterizationSamples ,(g `_msaaSamples)
-				   :minSampleShading 1s0
-				   :pSampleMask NULL
-				   :alphaToCoverageEnable VK_FALSE
-				   :alphaToOneEnable VK_FALSE))
-			       ,(vk
-				 `(VkPipelineDepthStencilStateCreateInfo
-				   depthStencil
-				   :sType VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
-				   :depthTestEnable VK_TRUE
-				   ;; use this for transparent objects:
-				   :depthWriteEnable VK_TRUE
-				   ;; lower depth is closer
-				   :depthCompareOp VK_COMPARE_OP_LESS
-				   :depthBoundsTestEnable VK_FALSE
-				   :minDepthBounds 0s0
-				   :maxDepthBounds 1s0
-				   :stencilTestEnable VK_FALSE
-				   :front "(__typeof__(depthStencil.front)){}" ;(curly)
-				   :back "(__typeof__(depthStencil.back)){}" ;(curly)
-				   ))
-			       ,(vk
-				 `(VkPipelineColorBlendAttachmentState
-				   colorBlendAttachment
+		   :depthClampEnable VK_FALSE
+		   ;; _LINE could do wireframe rendering
+		   :polygonMode VK_POLYGON_MODE_FILL
+		   ;; thicker than 1s0 needs wideLines GPU feature
+		   :lineWidth 1s0
+		   :cullMode VK_CULL_MODE_BACK_BIT
+		   :frontFace VK_FRONT_FACE_COUNTER_CLOCKWISE
+		   :depthBiasEnable VK_FALSE
+		   :depthBiasConstantFactor 0s0
+		   ;; sometimes used for shadow mapping:
+		   :depthBiasClamp 0s0
+		   :depthBiasSlopeFactor 0s0))
+	       ,(vk ;; for now disable multisampling
+		 `(VkPipelineMultisampleStateCreateInfo
+		   multisampling
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
+		   :sampleShadingEnable VK_FALSE
+		   :rasterizationSamples ,(g `_msaaSamples)
+		   :minSampleShading 1s0
+		   :pSampleMask NULL
+		   :alphaToCoverageEnable VK_FALSE
+		   :alphaToOneEnable VK_FALSE))
+	       ,(vk
+		 `(VkPipelineDepthStencilStateCreateInfo
+		   depthStencil
+		   :sType VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
+		   :depthTestEnable VK_TRUE
+		   ;; use this for transparent objects:
+		   :depthWriteEnable VK_TRUE
+		   ;; lower depth is closer
+		   :depthCompareOp VK_COMPARE_OP_LESS
+		   :depthBoundsTestEnable VK_FALSE
+		   :minDepthBounds 0s0
+		   :maxDepthBounds 1s0
+		   :stencilTestEnable VK_FALSE
+		   :front "(__typeof__(depthStencil.front)){}" ;(curly)
+		   :back "(__typeof__(depthStencil.back)){}" ;(curly)
+		   ))
+	       ,(vk
+		 `(VkPipelineColorBlendAttachmentState
+		   colorBlendAttachment
 				 
-				   :colorWriteMask
-				   (logior VK_COLOR_COMPONENT_R_BIT
-					   VK_COLOR_COMPONENT_G_BIT
-					   VK_COLOR_COMPONENT_B_BIT
-					   VK_COLOR_COMPONENT_A_BIT
-					   )
-				   :blendEnable VK_FALSE
-				   :srcColorBlendFactor VK_BLEND_FACTOR_ONE
-				   :dstColorBlendFactor VK_BLEND_FACTOR_ZERO
-				   :colorBlendOp VK_BLEND_OP_ADD
-				   :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
-				   :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
-				   :alphaBlendOp VK_BLEND_OP_ADD))
-			       ,(vk
-				 `(VkPipelineColorBlendStateCreateInfo
-				   colorBlending
-				   :sType
-				   VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
-				   :logicOpEnable VK_FALSE
-				   :logicOp VK_LOGIC_OP_COPY
-				   :attachmentCount 1
-				   :pAttachments &colorBlendAttachment
-				   :blendConstants[0] 0s0
-				   :blendConstants[1] 0s0
-				   :blendConstants[2] 0s0
-				   :blendConstants[3] 0s0))
-			       #+nil (let (("dynamicStates[]"
-					    (curly VK_DYNAMIC_STATE_VIEWPORT
-						   VK_DYNAMIC_STATE_LINE_WIDTH)))
-				       (declare (type VkDynamicState "dynamicStates[]"))
-				       ;; viewport, line width and blend constants
-				       ;; can be changed dynamically
+		   :colorWriteMask
+		   (logior VK_COLOR_COMPONENT_R_BIT
+			   VK_COLOR_COMPONENT_G_BIT
+			   VK_COLOR_COMPONENT_B_BIT
+			   VK_COLOR_COMPONENT_A_BIT
+			   )
+		   :blendEnable VK_FALSE
+		   :srcColorBlendFactor VK_BLEND_FACTOR_ONE
+		   :dstColorBlendFactor VK_BLEND_FACTOR_ZERO
+		   :colorBlendOp VK_BLEND_OP_ADD
+		   :srcAlphaBlendFactor VK_BLEND_FACTOR_ONE
+		   :dstAlphaBlendFactor VK_BLEND_FACTOR_ZERO
+		   :alphaBlendOp VK_BLEND_OP_ADD))
+	       ,(vk
+		 `(VkPipelineColorBlendStateCreateInfo
+		   colorBlending
+		   :sType
+		   VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
+		   :logicOpEnable VK_FALSE
+		   :logicOp VK_LOGIC_OP_COPY
+		   :attachmentCount 1
+		   :pAttachments &colorBlendAttachment
+		   :blendConstants[0] 0s0
+		   :blendConstants[1] 0s0
+		   :blendConstants[2] 0s0
+		   :blendConstants[3] 0s0))
+	       #+nil (let (("dynamicStates[]"
+			    (curly VK_DYNAMIC_STATE_VIEWPORT
+				   VK_DYNAMIC_STATE_LINE_WIDTH)))
+		       (declare (type VkDynamicState "dynamicStates[]"))
+		       ;; viewport, line width and blend constants
+		       ;; can be changed dynamically
 				     
-				       ,(vk
-					 `(VkPipelineDynamicStateCreateInfo
-					   dynamicState
-					   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
-					   :dynamicStateCount 2
-					   :pDynamicStates dynamicStates)))
+		       ,(vk
+			 `(VkPipelineDynamicStateCreateInfo
+			   dynamicState
+			   :sType VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO
+			   :dynamicStateCount 2
+			   :pDynamicStates dynamicStates)))
 			     
 			     
 			     
-			       )
-			     (do0
-			      ,(vkcall
-				`(create
-				  pipeline-layout
-				  (:setLayoutCount 1
-						   :pSetLayouts (ref ,(g `_descriptorSetLayout))
-						   ;; another way of passing dynamic values to shaders
-						   :pushConstantRangeCount 0
-						   :pPushConstantRanges NULL
-						   )
-				  (,(g `_device)
-				   &info
-				   NULL
-				   (ref ,(g `_pipelineLayout)))
-				  ,(g `_pipelineLayout))
-				:throw t))
-			     ,(vkcall
-			       `(create
-				 graphics-pipeline
-				 (:stageCount 2
-					      :pStages shaderStages
-					      :pVertexInputState &vertexInputInfo
-					      :pInputAssemblyState &inputAssembly
-					      :pViewportState &viewPortState
-					      :pRasterizationState &rasterizer
-					      :pMultisampleState &multisampling
-					      :pDepthStencilState &depthStencil
-					      :pColorBlendState &colorBlending
-					      ;; if we want to change linewidth:
-					      :pDynamicState NULL
-					      :layout ,(g `_pipelineLayout)
-					      :renderPass ,(g `_renderPass)
-					      :subpass 0
-					      ;; similar pipelines can be derived
-					      ;; from each other to speed up
-					      ;; switching
-					      :basePipelineHandle VK_NULL_HANDLE
-					      :basePipelineIndex -1)
-				 (,(g `_device)
-				  VK_NULL_HANDLE ;; pipline cache
-				  1
-				  &info
-				  NULL
-				  (ref ,(g `_graphicsPipeline)))
-				 ,(g `_graphicsPipeline))
-			       :plural t
-			       :throw t)			   
-			     (vkDestroyShaderModule ,(g `_device)
-						    fragShaderModule
-						    NULL)
-			     (vkDestroyShaderModule ,(g `_device)
-						    vertShaderModule
-						    NULL))))))
-   (define-module
+	       )
+	     (do0
+	      ,(vkcall
+		`(create
+		  pipeline-layout
+		  (:setLayoutCount 1
+				   :pSetLayouts (ref ,(g `_descriptorSetLayout))
+				   ;; another way of passing dynamic values to shaders
+				   :pushConstantRangeCount 0
+				   :pPushConstantRanges NULL
+				   )
+		  (,(g `_device)
+		    &info
+		    NULL
+		    (ref ,(g `_pipelineLayout)))
+		  ,(g `_pipelineLayout))
+		:throw t))
+	     ,(vkcall
+	       `(create
+		 graphics-pipeline
+		 (:stageCount 2
+			      :pStages shaderStages
+			      :pVertexInputState &vertexInputInfo
+			      :pInputAssemblyState &inputAssembly
+			      :pViewportState &viewPortState
+			      :pRasterizationState &rasterizer
+			      :pMultisampleState &multisampling
+			      :pDepthStencilState &depthStencil
+			      :pColorBlendState &colorBlending
+			      ;; if we want to change linewidth:
+			      :pDynamicState NULL
+			      :layout ,(g `_pipelineLayout)
+			      :renderPass ,(g `_renderPass)
+			      :subpass 0
+			      ;; similar pipelines can be derived
+			      ;; from each other to speed up
+			      ;; switching
+			      :basePipelineHandle VK_NULL_HANDLE
+			      :basePipelineIndex -1)
+		 (,(g `_device)
+		   VK_NULL_HANDLE ;; pipline cache
+		   1
+		   &info
+		   NULL
+		   (ref ,(g `_graphicsPipeline)))
+		 ,(g `_graphicsPipeline))
+	       :plural t
+	       :throw t)			   
+	     (vkDestroyShaderModule ,(g `_device)
+				    fragShaderModule
+				    NULL)
+	     (vkDestroyShaderModule ,(g `_device)
+				    vertShaderModule
+				    NULL))))))
+  (define-module
       `(command_pool
 	()
 	(do0
@@ -1590,27 +1590,27 @@ more structs. this function helps to initialize those structs."
 		 command-pool
 		 (;; cmds for drawing go to graphics queue
 		  :queueFamilyIndex queueFamilyIndices.graphicsFamily
-				    :flags 0)
+		  :flags 0)
 		 (,(g `_device)
-		  &info
-		  NULL
-		  (ref ,(g `_commandPool)))
+		   &info
+		   NULL
+		   (ref ,(g `_commandPool)))
 		 ,(g `_commandPool))
 	       :throw t)
-	     ;(QueueFamilyIndices_destroy queueFamilyIndices)
+					;(QueueFamilyIndices_destroy queueFamilyIndices)
 	     )))))
 
-   (define-module
+  (define-module
       `(color_resource
 	()
 	(do0
 
 	 (defun hasStencilComponent (format)
-			  (declare (values bool)
-				   (type VkFormat format))
-			  (return (or
-				   (== VK_FORMAT_D32_SFLOAT_S8_UINT format)
-				   (== VK_FORMAT_D24_UNORM_S8_UINT format))))
+	   (declare (values bool)
+		    (type VkFormat format))
+	   (return (or
+		    (== VK_FORMAT_D32_SFLOAT_S8_UINT format)
+		    (== VK_FORMAT_D24_UNORM_S8_UINT format))))
 	 (defun beginSingleTimeCommands ()
 	   (declare (values VkCommandBuffer))
 	   (let ((commandBuffer))
@@ -1762,38 +1762,38 @@ more structs. this function helps to initialize those structs."
 			       (do0
 				,(vkprint "unsupported layout transition.")
 				#+nil (throw
-				    ("std::invalid_argument"
-				     (string )))))))))
+					  ("std::invalid_argument"
+					   (string )))))))))
 	     (vkCmdPipelineBarrier
 	      commandBuffer
 	      ;; https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#synchronization-access-types-supported
-	      srcStage ;; stage that should happen before barrier
-	      dstStage ;; stage that will wait
-	      0	;; per-region
-	      0 NULL	;; memory barrier
-	      0 NULL	;; buffer memory barrier
+	      srcStage	 ;; stage that should happen before barrier
+	      dstStage	 ;; stage that will wait
+	      0		 ;; per-region
+	      0 NULL	 ;; memory barrier
+	      0 NULL	 ;; buffer memory barrier
 	      1 &barrier ;; image memory barrier
 	      )
 	     
 	     (endSingleTimeCommands commandBuffer)))
 	 
 	 (defun findMemoryType (typeFilter properties)
-			 (declare (values uint32_t)
-				  (type uint32_t typeFilter)
-				  (type VkMemoryPropertyFlags properties))
-			 (let ((ps))
-			   (declare (type VkPhysicalDeviceMemoryProperties ps))
-			   (vkGetPhysicalDeviceMemoryProperties ,(g `_physicalDevice)
-								&ps)
-			   (dotimes (i ps.memoryTypeCount)
-			     (when (and (logand (<< 1 i)
-						typeFilter)
-					(== properties
-					    (logand properties
-						    (dot (aref ps.memoryTypes i)
-							 propertyFlags))))
-			       (return i)))
-			   ,(vkprint  "failed to find suitable memory type.")))
+	   (declare (values uint32_t)
+		    (type uint32_t typeFilter)
+		    (type VkMemoryPropertyFlags properties))
+	   (let ((ps))
+	     (declare (type VkPhysicalDeviceMemoryProperties ps))
+	     (vkGetPhysicalDeviceMemoryProperties ,(g `_physicalDevice)
+						  &ps)
+	     (dotimes (i ps.memoryTypeCount)
+	       (when (and (logand (<< 1 i)
+				  typeFilter)
+			  (== properties
+			      (logand properties
+				      (dot (aref ps.memoryTypes i)
+					   propertyFlags))))
+		 (return i)))
+	     ,(vkprint  "failed to find suitable memory type.")))
 	 ,(emit-utils :code
 		      `(defstruct0 Tuple_Image_DeviceMemory
 			   (image VkImage)
@@ -1806,101 +1806,101 @@ more structs. this function helps to initialize those structs."
 	     (declare (type Tuple_Image_DeviceMemory tup))
 	     (return tup)))
 	 (defun createImage (width height
-					    mipLevels
-					    numSamples
-					    format tiling
-					    usage
-					    properties)
-			  (declare (values
-				    Tuple_Image_DeviceMemory
+			     mipLevels
+			     numSamples
+			     format tiling
+			     usage
+			     properties)
+	   (declare (values
+		     Tuple_Image_DeviceMemory
 					;"std::tuple<VkImage,VkDeviceMemory>"
-				    )
-				   (type uint32_t width height mipLevels)
-				   (type VkSampleCountFlagBits numSamples)
-				   (type VkFormat format)
-				   (type VkImageTiling tiling)
-				   (type VkImageUsageFlags usage)
-				   (type VkMemoryPropertyFlags properties))
-			  (let ((image)
-				(imageMemory)
-				)
-			    (declare (type VkImage image)
-				     (type VkDeviceMemory imageMemory))
-			    ,(vkcall
-			      `(create
-				image
-				(:imageType
-				 VK_IMAGE_TYPE_2D
-				 :extent.width width
-				 :extent.height height
-				 :extent.depth 1
-				 :mipLevels mipLevels
-				 :arrayLayers 1
-				 :format format
-				 ;; if you need direct access, use linear tiling for row major
-				 :tiling tiling
-				 :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
-				 :usage usage
+		     )
+		    (type uint32_t width height mipLevels)
+		    (type VkSampleCountFlagBits numSamples)
+		    (type VkFormat format)
+		    (type VkImageTiling tiling)
+		    (type VkImageUsageFlags usage)
+		    (type VkMemoryPropertyFlags properties))
+	   (let ((image)
+		 (imageMemory)
+		 )
+	     (declare (type VkImage image)
+		      (type VkDeviceMemory imageMemory))
+	     ,(vkcall
+	       `(create
+		 image
+		 (:imageType
+		  VK_IMAGE_TYPE_2D
+		  :extent.width width
+		  :extent.height height
+		  :extent.depth 1
+		  :mipLevels mipLevels
+		  :arrayLayers 1
+		  :format format
+		  ;; if you need direct access, use linear tiling for row major
+		  :tiling tiling
+		  :initialLayout VK_IMAGE_LAYOUT_UNDEFINED
+		  :usage usage
 			      
-				 :sharingMode
-				 VK_SHARING_MODE_EXCLUSIVE
-				 :samples numSamples
-				 :flags 0)
-				( ,(g `_device)
-				 &info
-				 NULL
-				 &image)
+		  :sharingMode
+		  VK_SHARING_MODE_EXCLUSIVE
+		  :samples numSamples
+		  :flags 0)
+		 ( ,(g `_device)
+		    &info
+		    NULL
+		    &image)
+		 image
+		 )
+	       :throw t))
+	   (let ((memReq))
+	     (declare (type VkMemoryRequirements memReq))
+	     (vkGetImageMemoryRequirements
+	      ,(g `_device)
+	      image
+	      &memReq)
+	     ,(vkcall
+	       `(allocate
+		 memory
+		 (:allocationSize
+		  memReq.size
+		  :memoryTypeIndex
+		  (findMemoryType
+		   memReq.memoryTypeBits
+		   properties))
+		 ( ,(g `_device)
+		    &info
+		    NULL
+		    &imageMemory)
+		 imageMemory
+		 )
+	       :throw t)
+	     (vkBindImageMemory ,(g `_device)
 				image
-				)
-			      :throw t))
-			  (let ((memReq))
-			    (declare (type VkMemoryRequirements memReq))
-			    (vkGetImageMemoryRequirements
-			     ,(g `_device)
-			     image
-			     &memReq)
-			    ,(vkcall
-			      `(allocate
-				memory
-				(:allocationSize
-				 memReq.size
-				 :memoryTypeIndex
-				 (findMemoryType
-				  memReq.memoryTypeBits
-				  properties))
-				( ,(g `_device)
-				 &info
-				 NULL
-				 &imageMemory)
 				imageMemory
-				)
-			      :throw t)
-			    (vkBindImageMemory ,(g `_device)
-					       image
-					       imageMemory
-					       0)
-			    (return (makeTuple_Image_DeviceMemory  ;"std::make_tuple"
-				     image
-				     imageMemory)))
+				0)
+	     (return (makeTuple_Image_DeviceMemory ;"std::make_tuple"
+		      image
+		      imageMemory)))
 			
-			  )
+	   )
 	 (defun createColorResources ()
 	   ;; for msaa
 	   (let ((colorFormat ,(g `_swapChainImageFormat))
 		 (colorTuple #+nil (bracket colorImage
 					    colorImageMemory)
-		  (createImage
-		   ,(g `_swapChainExtent.width)
-		   ,(g `_swapChainExtent.height)
-		   1
-		   ,(g `_msaaSamples)
-		   colorFormat
-		   VK_IMAGE_TILING_OPTIMAL
-		   (logior
-		    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
-		    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-		   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		   )))
+			     (createImage
+			      ,(g `_swapChainExtent.width)
+			      ,(g `_swapChainExtent.height)
+			      1
+			      ,(g `_msaaSamples)
+			      colorFormat
+			      VK_IMAGE_TILING_OPTIMAL
+			      (logior
+			       VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT
+			       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+			      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			      )))
 	     (declare (type VkFormat colorFormat))
 	     (setf ,(g `_colorImage) colorTuple.image ;colorImage
 		   ,(g `_colorImageMemory) colorTuple.memory ;colorImageMemory
@@ -1917,7 +1917,7 @@ more structs. this function helps to initialize those structs."
 	      VK_IMAGE_LAYOUT_UNDEFINED
 	      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	      1))))))
-   (define-module
+  (define-module
       `(depth_resources
 	()
 	(do0
@@ -1948,7 +1948,7 @@ more structs. this function helps to initialize those structs."
 	      depthFormat
 	      VK_IMAGE_LAYOUT_UNDEFINED
 	      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 1))))))
-   (define-module
+  (define-module
       `(framebuffer
 	()
 	(do0
@@ -1958,114 +1958,114 @@ more structs. this function helps to initialize those structs."
 			 (depth VkImageView)
 			 (swap VkImageView)))
 	 (defun createFramebuffers ()
-			   (declare (values void))
-			   (let ((n (length ,(g `_swapChainImageViews))))
-			     ;(_swapChainFramebuffers.resize n)
-			     (dotimes (i n)
-			       ;; color attachment differs for each
-			       ;; swap chain image, but depth image can
-			       ;; be reused. at any time only one
-			       ;; subpass is running
-			       (let ((attachments (cast Triple_FrambufferViews
-						   (curly ,(g `_colorImageView)
-							  ,(g `_depthImageView)
-							  (aref ,(g `_swapChainImageViews) i)
-							  ))))
+	   (declare (values void))
+	   (let ((n (length ,(g `_swapChainImageViews))))
+					;(_swapChainFramebuffers.resize n)
+	     (dotimes (i n)
+	       ;; color attachment differs for each
+	       ;; swap chain image, but depth image can
+	       ;; be reused. at any time only one
+	       ;; subpass is running
+	       (let ((attachments (cast Triple_FrambufferViews
+					(curly ,(g `_colorImageView)
+					       ,(g `_depthImageView)
+					       (aref ,(g `_swapChainImageViews) i)
+					       ))))
 				
-				 ,(vkcall
-				   `(create
-				     framebuffer
-				     (:renderPass
-				      ,(g `_renderPass)
-				      :attachmentCount 3
-				      :pAttachments (cast VkImageView* &attachments) ;; FIXME: perhaps use flex array
-				      :width ,(g `_swapChainExtent.width)
-				      :height ,(g `_swapChainExtent.height)
-				      :layers 1)
-				     ( ,(g `_device)
-				      &info
-				      NULL
-				      (ref
-				       (aref ,(g `_swapChainFramebuffers) i)))
-				     (aref ,(g `_swapChainFramebuffers) i))
-				   :throw t))))))))
-      (define-module
+		 ,(vkcall
+		   `(create
+		     framebuffer
+		     (:renderPass
+		      ,(g `_renderPass)
+		      :attachmentCount 3
+		      :pAttachments (cast VkImageView* &attachments) ;; FIXME: perhaps use flex array
+		      :width ,(g `_swapChainExtent.width)
+		      :height ,(g `_swapChainExtent.height)
+		      :layers 1)
+		     ( ,(g `_device)
+			&info
+			NULL
+			(ref
+			 (aref ,(g `_swapChainFramebuffers) i)))
+		     (aref ,(g `_swapChainFramebuffers) i))
+		   :throw t))))))))
+  (define-module
       `(texture_image
 	()
 	(do0
 	 (include <string.h>)
 	 (do0
-	     "#define STB_IMAGE_IMPLEMENTATION"
-	     (include "stb_image.h")
-	     " "
-	     (include <math.h>)
-	     " ")
+	  "#define STB_IMAGE_IMPLEMENTATION"
+	  (include "stb_image.h")
+	  " "
+	  (include <math.h>)
+	  " ")
 	 ,(emit-utils :code
 		      `(defstruct0 Tuple_Buffer_DeviceMemory
 			   (buffer VkBuffer)
 			 (memory VkDeviceMemory)))
 	 (defun createBuffer (size usage properties )
-			 ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
-			 (declare (values Tuple_Buffer_DeviceMemory ;"std::tuple<VkBuffer,VkDeviceMemory>"
-					  )
-				  (type VkDeviceSize size)
-				  (type VkBufferUsageFlags usage)
-				  (type VkMemoryPropertyFlags properties)
-				  )
-			 (let ((buffer)
-			       (bufferMemory)
-			       )
-			   (declare (type VkBuffer  buffer)
-				    (type VkDeviceMemory bufferMemory)
-				    )
-			   ,(vkcall
-			     `(create
-			       buffer
-			       (;; buffer size in bytes
-				:size size
-				:usage usage
-				;; only graphics queue is using this buffer
-				:sharingMode VK_SHARING_MODE_EXCLUSIVE
-				;; flags could indicate sparse memory (we
-				;; don't use that)
-				:flags 0
-				)
-			       ( ,(g `_device)
-				&info
-				NULL
-				&buffer)
-			       buffer
-			       )
-			     :throw t)
+	   ;; https://www.fluentcpp.com/2018/06/19/3-simple-c17-features-that-will-make-your-code-simpler/
+	   (declare (values Tuple_Buffer_DeviceMemory ;"std::tuple<VkBuffer,VkDeviceMemory>"
+			    )
+		    (type VkDeviceSize size)
+		    (type VkBufferUsageFlags usage)
+		    (type VkMemoryPropertyFlags properties)
+		    )
+	   (let ((buffer)
+		 (bufferMemory)
+		 )
+	     (declare (type VkBuffer  buffer)
+		      (type VkDeviceMemory bufferMemory)
+		      )
+	     ,(vkcall
+	       `(create
+		 buffer
+		 (;; buffer size in bytes
+		  :size size
+		  :usage usage
+		  ;; only graphics queue is using this buffer
+		  :sharingMode VK_SHARING_MODE_EXCLUSIVE
+		  ;; flags could indicate sparse memory (we
+		  ;; don't use that)
+		  :flags 0
+		  )
+		 ( ,(g `_device)
+		    &info
+		    NULL
+		    &buffer)
+		 buffer
+		 )
+	       :throw t)
 			 
-			   (let ((memReq))
-			     (declare (type VkMemoryRequirements memReq))
-			     (vkGetBufferMemoryRequirements ,(g `_device)
-							    buffer
-							    &memReq)
-			     ,(vkcall
-			       `(allocate
-				 memory
-				 (:allocationSize memReq.size
-						  :memoryTypeIndex (findMemoryType
-								    memReq.memoryTypeBits
-								    properties
-								    ))
-				 ( ,(g `_device)
-				  &info
-				  NULL
-				  &bufferMemory)
-				 bufferMemory)
-			       :throw t)
+	     (let ((memReq))
+	       (declare (type VkMemoryRequirements memReq))
+	       (vkGetBufferMemoryRequirements ,(g `_device)
+					      buffer
+					      &memReq)
+	       ,(vkcall
+		 `(allocate
+		   memory
+		   (:allocationSize memReq.size
+				    :memoryTypeIndex (findMemoryType
+						      memReq.memoryTypeBits
+						      properties
+						      ))
+		   ( ,(g `_device)
+		      &info
+		      NULL
+		      &bufferMemory)
+		   bufferMemory)
+		 :throw t)
 			  
-			     (vkBindBufferMemory ,(g `_device)
-						 buffer
-						 bufferMemory
-						 0)
-			     (return (cast Tuple_Buffer_DeviceMemory
-					   (curly
-					    buffer
-					    bufferMemory))))))
+	       (vkBindBufferMemory ,(g `_device)
+				   buffer
+				   bufferMemory
+				   0)
+	       (return (cast Tuple_Buffer_DeviceMemory
+			     (curly
+			      buffer
+			      bufferMemory))))))
 	 (defun generateMipmaps (image imageFormat
 				 texWidth texHeight mipLevels)
 	   (declare (values void)
@@ -2087,7 +2087,7 @@ more structs. this function helps to initialize those structs."
 			 VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
 	       ,(vkprint "texture image format does not support linear blitting!")
 	       #+nil (throw ("std::runtime_error"
-		       (string ))))
+			     (string ))))
 	     )
 
 	   (let ((commandBuffer (beginSingleTimeCommands)))
@@ -2138,8 +2138,8 @@ more structs. this function helps to initialize those structs."
 					       (curly 0 0 0))
 			  :srcOffsets[1] (cast (__typeof__ *blit.srcOffsets)
 					       (curly mipWidth
-						 mipHeight
-						 1))
+						      mipHeight
+						      1))
 			  :srcSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
 			  :srcSubresource.mipLevel (- i 1)
 			  :srcSubresource.baseArrayLayer 0
@@ -2148,8 +2148,8 @@ more structs. this function helps to initialize those structs."
 					       (curly 0 0 0))
 			  :dstOffsets[1] (cast (__typeof__ *blit.dstOffsets)
 					       (curly dstOffsetx
-						 dstOffsety
-						 1))
+						      dstOffsety
+						      1))
 			  :dstSubresource.aspectMask VK_IMAGE_ASPECT_COLOR_BIT
 			  :dstSubresource.mipLevel i
 			  :dstSubresource.baseArrayLayer 0
@@ -2279,15 +2279,15 @@ more structs. this function helps to initialize those structs."
 	     (unless pixels
 	       ,(vkprint "failed to load texture image." `(texFilename))
 	       #+nil (throw ("std::runtime_error"
-		       (string ))))
+			     (string ))))
 	     (setf ,(g `_mipLevels)
 		   (cast uint32_t
-		    (+ 1
-		       (floor
-			(log2
-			 (max
-			  texWidth
-			  texHeight))))))
+			 (+ 1
+			    (floor
+			     (log2
+			      (max
+			       texWidth
+			       texHeight))))))
 
 	     (do0 ;; print comment with example mip levels
 	      ,(format nil "// ~8a ~8a" "width" "mipLevels")
@@ -2296,14 +2296,14 @@ more structs. this function helps to initialize those structs."
 			     i (+ 1 (floor (log i 2))))))
 	     
 	     (let ((stagingBufferTuple #+nil (bracket stagingBuffer
-			     stagingBufferMemory)
-		    (createBuffer
-		     imageSize
-		     VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-		     (logior
-		      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-		      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		      )))
+						      stagingBufferMemory)
+				       (createBuffer
+					imageSize
+					VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+					(logior
+					 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+					 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+					 )))
 		   (data NULL))
 	       (declare (type void* data))
 	       (vkMapMemory ,(g `_device)
@@ -2369,7 +2369,7 @@ more structs. this function helps to initialize those structs."
 				texHeight
 				,(g `_mipLevels))
 	       ))))))
-      (define-module
+  (define-module
       `(texture_image_view
 	()
 	(do0
@@ -2381,7 +2381,7 @@ more structs. this function helps to initialize those structs."
 			     VK_FORMAT_R8G8B8A8_UNORM
 			     VK_IMAGE_ASPECT_COLOR_BIT
 			     ,(g `_mipLevels)))))))
-      (define-module
+  (define-module
       `(texture_sampler
 	()
 	(do0
@@ -2409,13 +2409,13 @@ more structs. this function helps to initialize those structs."
 		0s0
 		:maxLod (cast float ,(g `_mipLevels)))
 	       (,(g `_device)
-		&info
-		NULL
-		(ref ,(g `_textureSampler)))
+		 &info
+		 NULL
+		 (ref ,(g `_textureSampler)))
 	       ,(g `_textureSampler)
 	       )
 	     :throw t)))))
-      (define-module
+  (define-module
       `(load_object
 	()
 	(do0
@@ -2430,8 +2430,8 @@ more structs. this function helps to initialize those structs."
 	   :code
 	   `(defstruct0 mmapPair
 		(n int)
-		(data char*)
-		))
+	      (data char*)
+	      ))
 	 (defun munmapFile (pair)
 	   (declare (type mmapPair pair)
 		    )
@@ -2471,6 +2471,20 @@ more structs. this function helps to initialize those structs."
 	   )
 
 	 (defun loadModel ()
+	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
+	   ;; obj file that i use contains lists of vertex positions
+	   ;; v -0.587606 0.129110 0.826194
+	   ;; v -0.586717 0.122363 0.824548
+
+	   ;; texture coordinates
+	   ;; vt 0.6716 0.5600
+	   ;; vt 0.6724 0.5607
+
+	   ;; and a list of triangles with corresponding vertex index
+	   ;; and texture coordinate index
+	   ;; f 1/f 1/1 2/2 3/3
+	   ;; f 4/4 5/5 6/6
+
 	   (let ((map (mmapFile (string "chalet.obj")))
 		 (attrib)
 		 (shapes NULL)
@@ -2499,27 +2513,27 @@ more structs. this function helps to initialize those structs."
 	     (let ((num_triangles attrib.num_face_num_verts)
 		   (stride (cast "const int" 3))
 		   (face_offset (cast "const int" 0)))
-	      (dotimes (i num_triangles)
-		(let ((vert (aref attrib.face_num_verts i)))
-		  (dotimes (f (cast int (/ vert 3)))
-		    (let (,@(loop for k below 3 collect
-				 `(,(format nil "idx~a" k)
-				    (aref attrib.faces
-					  (+ face_offset
-					     (* 3 f)
-					     ,k))))
-			  (v[3][3]))
-		      (declare (type float v[3][3]))
-		      (dotimes (k 3)
-			(let (,@(loop for j below 3 collect
-				     `(,(format nil "f~a" j)
-					,(format nil "idx~a.v_idx" j))))
-			  ,@(loop for j below 3 collect
-				 `(setf (aref v ,j k)
-					(aref attrib.vertices
+	       (dotimes (i num_triangles)
+		 (let ((vert (aref attrib.face_num_verts i)))
+		   (dotimes (f (cast int (/ vert 3)))
+		     (let (,@(loop for k below 3 collect
+				  `(,(format nil "idx~a" k)
+				     (aref attrib.faces
+					   (+ face_offset
+					      (* 3 f)
+					      ,k))))
+			   (v[3][3]))
+		       (declare (type float v[3][3]))
+		       (dotimes (k 3)
+			 (let (,@(loop for j below 3 collect
+				      `(,(format nil "f~a" j)
+					 ,(format nil "idx~a.v_idx" j))))
+			   ,@(loop for j below 3 collect
+				  `(setf (aref v ,j k)
+					 (aref attrib.vertices
 					       (+ k (* 3 f0)))))
-			  )))))
-		))
+			   )))))
+		 ))
 	     (munmapFile map)))
 	 #+nil
 	 (defun loadModel ()
@@ -2574,22 +2588,22 @@ more structs. this function helps to initialize those structs."
 		   (g_vertices.push_back vertex))
 		 (g_indices.push_back
 		  (aref uniqueVertices vertex))))))))))
-      #+nil (define-module
-      `(
-	()
-	(do0)))
-      #+nil (define-module
-      `(
-	()
-	(do0)))
-      #+nil (define-module
-      `(
-	()
-	(do0)))
-      #+nil (define-module
-      `(
-	()
-	(do0)))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
 
    
    
@@ -2935,7 +2949,7 @@ more structs. this function helps to initialize those structs."
 			   (let ((data))
 			     (declare (type void* data))
 			     (vkMapMemory _device stagingBufferMemory
-					  0	    ;; offset
+					  0	     ;; offset
 					  bufferSize ;; size
 					  0	     ;; flags
 					  &data)
@@ -2986,7 +3000,7 @@ more structs. this function helps to initialize those structs."
 			   (let ((data))
 			     (declare (type void* data))
 			     (vkMapMemory _device stagingBufferMemory
-					  0	    ;; offset
+					  0	     ;; offset
 					  bufferSize ;; size
 					  0	     ;; flags
 					  &data)
@@ -3150,7 +3164,7 @@ more structs. this function helps to initialize those structs."
 				  :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 				  :descriptorCount 1
 				  :pBufferInfo &bufferInfo ;; buffer data
-				  :pImageInfo NULL ;; image data
+				  :pImageInfo NULL	 ;; image data
 				  :pTexelBufferView NULL ;; buffer views
 				  ))
 			      ,(vk
@@ -3168,7 +3182,7 @@ more structs. this function helps to initialize those structs."
 				  :dstArrayElement 0
 				  :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 				  :descriptorCount 1
-				  :pBufferInfo NULL  ;; buffer data
+				  :pBufferInfo NULL ;; buffer data
 				  :pImageInfo &imageInfo ;; image data
 				  :pTexelBufferView NULL ;; buffer views
 				  ))
@@ -3836,7 +3850,7 @@ more structs. this function helps to initialize those structs."
 			 ))))
 	      )
 	    )))
-    ;(write-source *code-file* code)
+					;(write-source *code-file* code)
     (loop for e in (reverse *module*) and i from 0 do
 	 (destructuring-bind (&key name code) e
 	   (write-source (asdf:system-relative-pathname
@@ -3846,9 +3860,9 @@ more structs. this function helps to initialize those structs."
 				  i name))
 			 code)))
     (write-source (asdf:system-relative-pathname
-			  'cl-cpp-generator2
-			  "example/05_vulkan_generic_c/source/utils.h"
-			  )
+		   'cl-cpp-generator2
+		   "example/05_vulkan_generic_c/source/utils.h"
+		   )
 		  `(do0
 		    (include <stdio.h>)
 		    " "
@@ -3859,10 +3873,10 @@ more structs. this function helps to initialize those structs."
 		    (include <time.h>)
 		    " "
 		    ,@(loop for e in *utils-code* collect
-			   e)
+			 e)
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
-		    ;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
-		    ;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
+					;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
 		    "#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
 		    "#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
 		    "#define printf_dec_format(x) _Generic((x), default: \"%p\", char: \"%c\", signed char: \"%hhd\", unsigned char: \"%hhu\", signed short: \"%hd\", unsigned short: \"%hu\", signed int: \"%d\", unsigned int: \"%u\", long int: \"%ld\", unsigned long int: \"%lu\", long long int: \"%lld\", float: \"%f\", double: \"%f\", long double: \"%Lf\", char*: \"%s\", const char*: \"%s\", unsigned long long int: \"%llu\",void*: \"%p\",bool:\"%d\")"
@@ -3872,24 +3886,24 @@ more structs. this function helps to initialize those structs."
 						 ,@(loop for h in
 							`(bool
 							  ,@(loop for f in `(char short int "long int" "long long int") appending
-							       `(,f ,(format nil "unsigned ~a" f)))
+								 `(,f ,(format nil "unsigned ~a" f)))
 							  float double "long double"
 							  "char*"
 							  "void*"
 							  )
-						    appending
-						      `(,h ,(format nil "const ~a" h)))
+						      appending
+							`(,h ,(format nil "const ~a" h)))
 						 						 
 						 )
 				appending
-				 `(,e ,e)))
+				  `(,e ,e)))
 		    
 
 		    
 		    
 		    
 		    
-))
+		    ))
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
