@@ -2432,7 +2432,7 @@ more structs. this function helps to initialize those structs."
 		(n int)
 		(data char*)
 		))
-	 (defun munmapPair (pair)
+	 (defun munmapFile (pair)
 	   (declare (type mmapPair pair)
 		    )
 	   (munmap pair.data pair.n))
@@ -2494,8 +2494,33 @@ more structs. this function helps to initialize those structs."
 	     (unless (== TINYOBJ_SUCCESS res)
 	       ,(vkprint "tinyobj failed to open" `(res)))
 	     ,(vkprint "tinyobj opened" `(num_shapes
-					  num_materials))
-	     ))
+					  num_materials
+					  attrib.num_face_num_verts))
+	     (let ((num_triangles attrib.num_face_num_verts)
+		   (stride (cast "const int" 3))
+		   (face_offset (cast "const int" 0)))
+	      (dotimes (i num_triangles)
+		(let ((vert (aref attrib.face_num_verts i)))
+		  (dotimes (f (cast int (/ vert 3)))
+		    (let (,@(loop for k below 3 collect
+				 `(,(format nil "idx~a" k)
+				    (aref attrib.faces
+					  (+ face_offset
+					     (* 3 f)
+					     ,k))))
+			  (v[3][3]))
+		      (declare (type float v[3][3]))
+		      (dotimes (k 3)
+			(let (,@(loop for j below 3 collect
+				     `(,(format nil "f~a" j)
+					,(format nil "idx~a.v_idx" j))))
+			  ,@(loop for j below 3 collect
+				 `(setf (aref v ,j k)
+					(aref attrib.vertices
+					       (+ k (* 3 f0)))))
+			  )))))
+		))
+	     (munmapFile map)))
 	 #+nil
 	 (defun loadModel ()
 	   
