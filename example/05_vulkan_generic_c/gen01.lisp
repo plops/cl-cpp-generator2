@@ -236,6 +236,11 @@ more structs. this function helps to initialize those structs."
 		 (_depthImage VkImage)
 		 (_depthImageMemory VkDeviceMemory)
 		 (_depthImageView VkImageView)
+
+		 (_vertices Vertex*)
+		 (_num_vertices int)
+		 (_indices uint32_t*)
+		 (_num_indices int)
 		 )))
 	(if init
 	    `(curly
@@ -1850,8 +1855,7 @@ more structs. this function helps to initialize those structs."
 		    &info
 		    NULL
 		    &image)
-		 image
-		 )
+		 image)
 	       :throw t))
 	   (let ((memReq))
 	     (declare (type VkMemoryRequirements memReq))
@@ -2510,7 +2514,15 @@ more structs. this function helps to initialize those structs."
 	     ,(vkprint "tinyobj opened" `(num_shapes
 					  num_materials
 					  attrib.num_face_num_verts))
+	     (setf
+	      ,(g `_num_vertices) attrib.num_vertices
+	      ,(g `_vertices) (malloc (* (sizeof *_vertices)
+					 ,(g `_num_vertices)))
+	      ,(g `_num_indices) attrib.num_vertices
+	      ,(g `_indices) (malloc (* (sizeof *_indices)
+					attrib.num_vertices)))
 	     (let ((num_triangles attrib.num_face_num_verts)
+		   (num_texcoords attrib.num_texcoords)
 		   (stride (cast "const int" 3))
 		   (face_offset (cast "const int" 0)))
 	       (dotimes (i num_triangles)
@@ -2522,17 +2534,35 @@ more structs. this function helps to initialize those structs."
 					   (+ face_offset
 					      (* 3 f)
 					      ,k))))
-			   (v[3][3]))
-		       (declare (type float v[3][3]))
+			   (v[3][3])
+			    (vt[3][2]))
+		       
+		       (declare (type float v[3][3] vt[3][2]))
+		      
 		       (dotimes (k 3)
 			 (let (,@(loop for j below 3 collect
 				      `(,(format nil "f~a" j)
-					 ,(format nil "idx~a.v_idx" j))))
+					 ,(format nil "idx~a.v_idx" j)))
+			      )
 			   ,@(loop for j below 3 collect
 				  `(setf (aref v ,j k)
 					 (aref attrib.vertices
-					       (+ k (* 3 f0)))))
-			   )))))
+					       (+ k (* 3 f)))))
+			   ))
+		       (dotimes (k 2)
+			 (let (,@(loop for j below 3 collect
+				      `(,(format nil "f~a" j)
+					 ,(format nil "idx~a.vt_idx" j)))
+			      )
+			   ,@(loop for j below 3 collect
+				  `(setf (aref vt ,j k)
+					 (aref attrib.texcoords
+					       (+ k (* 2 f)))))
+			   ))
+		       
+		       )
+		     ))
+		 (incf face_offset (aref attrib.face_num_verts i))
 		 ))
 	     (munmapFile map)))
 	 #+nil
