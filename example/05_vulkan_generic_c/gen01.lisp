@@ -3256,88 +3256,88 @@ more structs. this function helps to initialize those structs."
 			  (createCommandBuffers))
 	       (defun drawFrame ()
 		 ,(vkprint "drawFrame")
-			 (do0
-			  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
-			  )
-			 (let ((imageIndex 0)
-			       (result (vkAcquireNextImageKHR
-					,(g `_device)
-					,(g `_swapChain)
-					UINT64_MAX ;; disable timeout for image 
-					(aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))
-					VK_NULL_HANDLE
-					&imageIndex)))
-			   (declare (type uint32_t imageIndex))
-			 
-			   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
-			     (recreateSwapChain)
-			     (return))
-			   (unless (or (== VK_SUCCESS result)
-				       (== VK_SUBOPTIMAL_KHR result))
-			     ,(vkprint "failed to acquire swap chain image."))
-			   (let ((waitSemaphores[] (curly (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
-				 (signalSemaphores[] (curly (aref ,(g `_renderFinishedSemaphores) ,(g `_currentFrame))))
-				 (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
-			     (declare (type VkSemaphore waitSemaphores[]
-					    signalSemaphores[])
-				      (type VkPipelineStageFlags waitStages[]))
-			     (updateUniformBuffer imageIndex)
-			     ,(vk
-			       `(VkSubmitInfo submitInfo
-					      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
-					      :waitSemaphoreCount 1
-					      :pWaitSemaphores waitSemaphores
-					      ;; pipeline has to wait for image before writing color buffer
-					      :pWaitDstStageMask waitStages
-					      :commandBufferCount 1
-					      :pCommandBuffers (ref (aref ,(g `_commandBuffers) imageIndex))
-					      :signalSemaphoreCount 1
-					      :pSignalSemaphores signalSemaphores))
-			     (vkResetFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame))))
-			     ,(vkthrow
-			       `(vkQueueSubmit
-				 ,(g `_graphicsQueue)
-				 1
-				 &submitInfo
+		 (do0
+		  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
+		  )
+		 (let ((imageIndex 0)
+		       (result (vkAcquireNextImageKHR
+				,(g `_device)
+				,(g `_swapChain)
+				UINT64_MAX ;; disable timeout for image 
+				(aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))
+				VK_NULL_HANDLE
+				&imageIndex)))
+		   (declare (type uint32_t imageIndex))
+		   
+		   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
+		     (recreateSwapChain)
+		     (return))
+		   (unless (or (== VK_SUCCESS result)
+			       (== VK_SUBOPTIMAL_KHR result))
+		     ,(vkprint "failed to acquire swap chain image."))
+		   (let ((waitSemaphores[] (curly (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
+			 (signalSemaphores[] (curly (aref ,(g `_renderFinishedSemaphores) ,(g `_currentFrame))))
+			 (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
+		     (declare (type VkSemaphore waitSemaphores[]
+				    signalSemaphores[])
+			      (type VkPipelineStageFlags waitStages[]))
+		     (updateUniformBuffer imageIndex)
+		     ,(vk
+		       `(VkSubmitInfo submitInfo
+				      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+				      :waitSemaphoreCount 1
+				      :pWaitSemaphores waitSemaphores
+				      ;; pipeline has to wait for image before writing color buffer
+				      :pWaitDstStageMask waitStages
+				      :commandBufferCount 1
+				      :pCommandBuffers (ref (aref ,(g `_commandBuffers) imageIndex))
+				      :signalSemaphoreCount 1
+				      :pSignalSemaphores signalSemaphores))
+		     (vkResetFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame))))
+		     ,(vkthrow
+		       `(vkQueueSubmit
+			 ,(g `_graphicsQueue)
+			 1
+			 &submitInfo
 					;VK_NULL_HANDLE ;; fence
-				 (aref ,(g `_inFlightFences) ,(g `_currentFrame))
-				 ))
-			   
-			     ;; submit result for presentation
-			     (let ((swapChains[] (curly ,(g `_swapChain)))
-				   )
-			       (declare (type VkSwapchainKHR swapChains[]))
-			       ,(vk
-				 `(VkPresentInfoKHR
-				   presentInfo
-				   :sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
-				   ;; wait for signal before presentation
-				   :waitSemaphoreCount 1
-				   :pWaitSemaphores signalSemaphores
-				   :swapchainCount 1
-				   :pSwapchains swapChains
-				   :pImageIndices &imageIndex 
-				   ;; we could check if presentation was successful
-				   :pResults NULL))
-			       (progn
-				 (let ((result2 (vkQueuePresentKHR ,(g `_presentQueue) &presentInfo)))
-				   (if (or (== VK_SUBOPTIMAL_KHR result2)
-					   (== VK_ERROR_OUT_OF_DATE_KHR result2)
-					   ,(g `_framebufferResized))
-				       (do0
-					(setf ,(g `_framebufferResized) false)
-					(recreateSwapChain))
-				       (unless (== VK_SUCCESS result2)
-					 ,(vkprint "failed to present swap chain image.")))))
-			     
+			 (aref ,(g `_inFlightFences) ,(g `_currentFrame))
+			 ))
+		     
+		     ;; submit result for presentation
+		     (let ((swapChains[] (curly ,(g `_swapChain)))
+			   )
+		       (declare (type VkSwapchainKHR swapChains[]))
+		       ,(vk
+			 `(VkPresentInfoKHR
+			   presentInfo
+			   :sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
+			   ;; wait for signal before presentation
+			   :waitSemaphoreCount 1
+			   :pWaitSemaphores signalSemaphores
+			   :swapchainCount 1
+			   :pSwapchains swapChains
+			   :pImageIndices &imageIndex 
+			   ;; we could check if presentation was successful
+			   :pResults NULL))
+		       (progn
+			 (let ((result2 (vkQueuePresentKHR ,(g `_presentQueue) &presentInfo)))
+			   (if (or (== VK_SUBOPTIMAL_KHR result2)
+				   (== VK_ERROR_OUT_OF_DATE_KHR result2)
+				   ,(g `_framebufferResized))
+			       (do0
+				(setf ,(g `_framebufferResized) false)
+				(recreateSwapChain))
+			       (unless (== VK_SUCCESS result2)
+				 ,(vkprint "failed to present swap chain image.")))))
+		       
 					;(vkQueueWaitIdle ,_presentQueue) 
-			       )
-			   
-			     ))
-			 (setf ,(g `_currentFrame)
-			       (%
-				(+ 1 ,(g `_currentFrame))
-				_MAX_FRAMES_IN_FLIGHT))))))
+		       )
+		     
+		     ))
+		 (setf ,(g `_currentFrame)
+		       (%
+			(+ 1 ,(g `_currentFrame))
+			_MAX_FRAMES_IN_FLIGHT))))))
    (define-module
 	    `(cleanup
 	      ()
