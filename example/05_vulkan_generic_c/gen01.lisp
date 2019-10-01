@@ -2749,7 +2749,7 @@ more structs. this function helps to initialize those structs."
 	       (defun createVertexBuffer ()
 			 (declare (values void))
 			 (let ((bufferSize (* (sizeof (aref ,(g `_vertices) 0))
-					      (length ,(g `_vertices))))
+					      ,(g `_num_vertices)))
 			       (stagingBuffer
 				(createBuffer
 				 bufferSize
