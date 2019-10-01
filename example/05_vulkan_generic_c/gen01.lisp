@@ -299,6 +299,7 @@ more structs. this function helps to initialize those structs."
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
 	      (defun mainLoop ()
+		,(vkprint "mainLoop")
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
 		  #+surface (drawFrame)
@@ -309,7 +310,7 @@ more structs. this function helps to initialize those structs."
 		(initWindow)
 		(initVulkan)
 		(mainLoop)
-					;(cleanup)
+		(cleanup)
 		)
 	      
 	      (defun main ()
@@ -3341,6 +3342,7 @@ more structs. this function helps to initialize those structs."
 	      ()
 	      (do0
 	       (defun cleanupSwapChain ()
+		 ,(vkprint "cleanupSwapChain")
 		 (do0
 		  (do0
 		   ;; msaa
@@ -3422,6 +3424,7 @@ more structs. this function helps to initialize those structs."
 		 
 		 (do0
 		  (cleanupSwapChain)
+		  ,(vkprint "cleanup")
 		  
 		  (do0 ;; tex
 		   ,(vkprint "tex"
