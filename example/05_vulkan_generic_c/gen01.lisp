@@ -268,11 +268,9 @@ more structs. this function helps to initialize those structs."
 		  "#define GLFW_INCLUDE_VULKAN"
 		  (include <GLFW/glfw3.h>)
 		  " "
-		  (include "globals.h")
-		  " "
-			
-			
 		  (include "utils.h")
+		  " "
+		  (include "globals.h")
 		  " "
 		  (include "proto.h")
 			
@@ -1220,7 +1218,6 @@ more structs. this function helps to initialize those structs."
 	()
 	(do0
 	 (include <stdlib.h>
-		  
 		  <string.h>)
 	 ,(emit-utils :code
 		      `(do0
@@ -2511,54 +2508,115 @@ more structs. this function helps to initialize those structs."
 			    num_materials))
 	     (unless (== TINYOBJ_SUCCESS res)
 	       ,(vkprint "tinyobj failed to open" `(res)))
-	     ,(vkprint "tinyobj opened" `(num_shapes
+	     #+nil,(vkprint "tinyobj opened" `(num_shapes
 					  num_materials
 					  attrib.num_face_num_verts))
+	     ,(vkprint "model" `(num_shapes
+				 num_materials
+				 attrib.num_face_num_verts
+				 attrib.num_vertices
+				 attrib.num_texcoords
+				 attrib.num_faces
+				 attrib.num_normals))
+	     #+nil
 	     (setf
-	      ,(g `_num_vertices) attrib.num_vertices
-	      ,(g `_vertices) (malloc (* (sizeof *_vertices)
+	      ,(g `_num_vertices) (* 3 attrib.num_triangles)
+	      ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
 					 ,(g `_num_vertices)))
-	      ,(g `_num_indices) attrib.num_vertices
-	      ,(g `_indices) (malloc (* (sizeof *_indices)
-					attrib.num_vertices)))
+	      ,(g `_num_indices) (* 3 attrib.num_triangles)
+	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
+					,(g `_num_indices))))
+	     
+	     #+nil
 	     (let ((num_triangles attrib.num_face_num_verts)
 		   (num_texcoords attrib.num_texcoords)
 		   (stride (cast "const int" 3))
 		   (face_offset (cast "const int" 0)))
 	       (dotimes (i num_triangles)
+		 ;; vert is the number of vertices in the face, for my
+		 ;; model this is always 3
 		 (let ((vert (aref attrib.face_num_verts i)))
 		   (dotimes (f (cast int (/ vert 3)))
-		     (let (,@(loop for k below 3 collect
+		     ;; for my model f is always 0. i guess this is the face index
+		     
+		     ;; i=499998 (int) vert=3 (int) f=0 (int) face_offset=1499994 (int)
+		     ;; i=499999 (int) vert=3 (int) f=0 (int) face_offset=1499997 (int)
+
+		     (let (#+nil,@(loop for k below 3 collect
 				  `(,(format nil "idx~a" k)
 				     (aref attrib.faces
 					   (+ face_offset
 					      (* 3 f)
 					      ,k))))
-			   (v[3][3])
-			    (vt[3][2]))
+			   ;(v[3][3])
+			   ;(vt[3][2])
+			   )
 		       
-		       (declare (type float v[3][3] vt[3][2]))
-		      
-		       (dotimes (k 3)
-			 (let (,@(loop for j below 3 collect
-				      `(,(format nil "f~a" j)
-					 ,(format nil "idx~a.v_idx" j)))
-			      )
-			   ,@(loop for j below 3 collect
-				  `(setf (aref v ,j k)
-					 (aref attrib.vertices
-					       (+ k (* 3 f)))))
-			   ))
-		       (dotimes (k 2)
-			 (let (,@(loop for j below 3 collect
-				      `(,(format nil "f~a" j)
-					 ,(format nil "idx~a.vt_idx" j)))
-			      )
-			   ,@(loop for j below 3 collect
-				  `(setf (aref vt ,j k)
-					 (aref attrib.texcoords
-					       (+ k (* 2 f)))))
-			   ))
+					;(declare (type float v[3][3] vt[3][2]))
+		       (setf (aref ,(g `_vertices
+				       )
+				   (* 3 i))
+				(cast
+				 Vertex
+				 (curly
+				  (curly
+				   (aref attrib.vertices (* 3 (aref attrib.faces
+								    (+ face_offset
+								       (* 3 f)
+								       0))))
+				   (aref attrib.vertices (* 3 (aref attrib.faces
+								    (+ face_offset
+								       (* 3 f)
+								       1))))
+				   (aref attrib.vertices (* 3 (aref attrib.faces
+								    (+ face_offset
+								       (* 3 f)
+								       2)))))
+				  (curly 1s0 1s0 1s0 1s0)
+				  (curly
+				   (aref attrib.tex_coords (* 3 (aref attrib.faces
+								      (+ face_offset
+									 (* 3 f)
+									 0))))
+				   (aref attrib.tex_coords (* 3 (aref attrib.faces
+								      (+ face_offset
+									 (* 3 f)
+									 1))))))
+				 
+				 )
+
+
+				,@(loop for j below 3 appending
+				       `((aref ,(g `_indices) (+ ,j (* 3 i)))
+					 (aref attrib.faces
+					       (+ face_offset
+						  (* 3 f)
+						  ,j)))))
+		       #+nil (do0
+			(dotimes (k 3)
+			  (let (,@(loop for j below 3 collect
+				       `(,(format nil "f~a" j)
+					  ,(format nil "idx~a.v_idx" j)))
+				)
+			    #+nil ,(vkprint "in obj" `(i vert f face_offset k idx0.v_idx idx1.v_idx idx2.v_idx
+							 idx0.vt_idx
+							 idx1.vt_idx
+							 idx2.vt_idx))
+			    ,@(loop for j below 3 collect
+				   `(setf (aref v ,j k)
+					  (aref attrib.vertices
+						(+ k (* 3 f)))))
+			    ))
+			(dotimes (k 2)
+			  (let (,@(loop for j below 3 collect
+				       `(,(format nil "f~a" j)
+					  ,(format nil "idx~a.vt_idx" j)))
+				)
+			    ,@(loop for j below 3 collect
+				   `(setf (aref vt ,j k)
+					  (aref attrib.texcoords
+						(+ k (* 2 f)))))
+			    )))
 		       
 		       )
 		     ))
@@ -3132,21 +3190,7 @@ more structs. this function helps to initialize those structs."
 
 		       
 		       
-
-		       (do0
 		       
-			)
-		       
-		      
-		       (do0
-		      
-			
-			
-			
-			
-			
-			
-			)
 		     
 		       #+surface
 		       (do0

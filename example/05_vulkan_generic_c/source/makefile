@@ -14,4 +14,4 @@ vulkan_demo: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm *.c *.o *.h *.spv *.frag *.vert vulkan_demo
+	rm *.c *.o vulkan*.h globals.h utils.h *.spv *.frag *.vert vulkan_demo
