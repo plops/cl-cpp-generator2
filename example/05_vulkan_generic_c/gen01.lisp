@@ -423,6 +423,7 @@ more structs. this function helps to initialize those structs."
 		      (loadModel)
 		      (createVertexBuffer)
 		      (createIndexBuffer)
+		      (createUniformBuffers)
 		      #+nil (
 			     
 			     
@@ -430,7 +431,7 @@ more structs. this function helps to initialize those structs."
 			     
 			     
 			     
-			     (createUniformBuffers)
+			     
 			     (createDescriptorPool)
 			     (createDescriptorSets)
 			     (createCommandBuffers)
@@ -1223,7 +1224,7 @@ more structs. this function helps to initialize those structs."
 		  <string.h>)
 	 ,(emit-utils :code
 		      `(do0
-			(include <cglm/cglm.h>)
+			
 			(defstruct0 Vertex
 			    (pos vec3)
 			  (color vec3)
@@ -2842,6 +2843,45 @@ more structs. this function helps to initialize those structs."
 			 (do0
 			  (vkDestroyBuffer ,(g `_device) stagingBuffer.buffer NULL)
 			  (vkFreeMemory ,(g `_device) stagingBuffer.memory NULL))))))
+  (define-module
+	    `(uniform_buffers
+	      ()
+	      (do0
+	       ,(emit-utils :code
+		 `(do0
+		   (defstruct0 UniformBufferObject
+		       ;; 32 needed for avx
+		       ;; "alignas(16) mat4"
+		       (model "mat4")
+		     (view "mat4")
+		     (proj "mat4"))))
+	       (defun createUniformBuffers ()
+			  (declare (values void))
+			  (let ((bufferSize (sizeof UniformBufferObject))
+				(n (length ,(g `_swapChainImages))))
+			    ;(_uniformBuffers.resize n)
+			    ;(_uniformBuffersMemory.resize n)
+			    (dotimes (i n)
+			      (let ((uniformBuffer
+				     (createBuffer
+				      bufferSize
+				      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+				      (logior
+				       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				      )))
+				(setf (aref ,(g `_uniformBuffers) i)
+				      uniformBuffer.buffer
+				      (aref ,(g `_uniformBuffersMemory) i)
+				      uniformBuffer.memory))))))))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
   #+nil (define-module
 	    `(
 	      ()
@@ -2958,6 +2998,7 @@ more structs. this function helps to initialize those structs."
 	     
 	     
 	     )
+	    #+nil
 	    (defstruct0 UniformBufferObject
 		(model "glm::mat4")
 	      (view "glm::mat4")
@@ -3359,25 +3400,7 @@ more structs. this function helps to initialize those structs."
 				   &_descriptorPool)
 				  _descriptorPool)
 				:throw t))))
-			(defun createUniformBuffers ()
-			  (declare (values void))
-			  (let ((bufferSize (sizeof UniformBufferObject))
-				(n (_swapChainImages.size)))
-			    (_uniformBuffers.resize n)
-			    (_uniformBuffersMemory.resize n)
-			    (dotimes (i n)
-			      (let (((bracket buf mem)
-				     (createBuffer
-				      bufferSize
-				      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
-				      (logior
-				       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-				      )))
-				(setf (aref _uniformBuffers i)
-				      buf
-				      (aref _uniformBuffersMemory i)
-				      mem)))))
+			
 			
 		      
 			(defun recreateSwapChain ()
@@ -3991,6 +4014,9 @@ more structs. this function helps to initialize those structs."
 		    " "
 		    ;;(include <unistd.h>)
 		    (include <time.h>)
+
+		    " "
+		    (include <cglm/cglm.h>)
 		    " "
 		    ,@(loop for e in *utils-code* collect
 			 e)
