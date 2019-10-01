@@ -3044,7 +3044,8 @@ more structs. this function helps to initialize those structs."
 		       clearDepth
 		       ;; depth buffer far=1 by default
 		       :depthStencil (cast (__typeof__ clearDepth.depthStencil) (curly 1s0 0))))
-		   (let ((clearValues (cast "VkClearValue[]" (curly clearColor clearDepth))))
+		   (let ((clearValues[] (curly clearColor clearDepth)))
+		     (declare (type VkClearValue clearValues[]))
 			      
 		     ,(vk
 		       `(VkRenderPassBeginInfo
