@@ -426,11 +426,12 @@ more structs. this function helps to initialize those structs."
 		      (createUniformBuffers)
 		      (createDescriptorPool)
 		      (createDescriptorSets)
+		      (createCommandBuffers)
 		      #+nil (
 			     			     
 			     
 			     
-			     (createCommandBuffers)
+			     
 			     (createSyncObjects)))))
 	      `(do0
 		,@(loop for (e) in l collect
@@ -2998,6 +2999,118 @@ more structs. this function helps to initialize those structs."
 				 NULL ;; copy descriptor sets
 				 )))
 			    )))))
+  (define-module
+	    `(command_buffers
+	      ()
+	      (do0
+	       (defun createCommandBuffers ()
+		 #+nil(_commandBuffers.resize
+		  (_swapChainFramebuffers.size))
+		 ,(vkcall
+		   `(allocate
+		     command-buffer
+		     (:commandPool ,(g `_commandPool)
+				   :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
+				   :commandBufferCount (length ,(g `_commandBuffers)))
+		     (,(g `_device)
+		      &info
+		      ,(g `_commandBuffers))
+					;_commandBuffers
+		     )
+		   :throw t
+		   :plural t)
+			 
+			 
+		 (dotimes (i (length ,(g `_commandBuffers)))
+		   ,(vkcall
+		     `(begin
+		       command-buffer
+		       (;; flags can select if exectution is
+			;; once, inside single renderpass, or
+			;; resubmittable
+			:flags 0 
+			:pInheritanceInfo NULL)
+		       ((aref ,(g `_commandBuffers) i) &info)
+		       (aref ,(g `_commandBuffers) i))
+		     :throw t)
+			   
+
+		   ,(vk
+		     `(VkClearValue
+		       clearColor
+		       :color (cast (__typeof__ clearColor.color)  (curly 0s0 0s0 0s0 1s0))))
+		   ,(vk
+		     `(VkClearValue
+		       clearDepth
+		       ;; depth buffer far=1 by default
+		       :depthStencil (cast (__typeof__ clearDepth.depthStencil) (curly 1s0 0))))
+		   (let ((clearValues (cast "VkClearValue[]" (curly clearColor clearDepth))))
+			      
+		     ,(vk
+		       `(VkRenderPassBeginInfo
+			 renderPassInfo
+			 :sType VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
+			 :renderPass ,(g `_renderPass)
+			 :framebuffer (aref ,(g `_swapChainFramebuffers) i)
+			 :renderArea.offset (cast (__typeof__ renderPassInfo.renderArea.offset) (curly  0 0))
+			 :renderArea.extent ,(g `_swapChainExtent)
+			 :clearValueCount (length clearValues)
+			 :pClearValues clearValues
+			 )))
+		   (vkCmdBeginRenderPass
+		    (aref ,(g `_commandBuffers) i)
+		    &renderPassInfo
+		    ;; dont use secondary command buffers
+		    VK_SUBPASS_CONTENTS_INLINE)
+		   (vkCmdBindPipeline
+		    (aref ,(g `_commandBuffers) i)
+		    VK_PIPELINE_BIND_POINT_GRAPHICS ,(g `_graphicsPipeline))
+		   (let ((vertexBuffers[] (curly ,(g `_vertexBuffer)))
+			 (offsets[] (curly 0))
+			 )
+		     (declare (type VkBuffer vertexBuffers[])
+			      (type VkDeviceSize offsets[]))
+		     (vkCmdBindVertexBuffers
+		      (aref ,(g `_commandBuffers) i)
+		      0
+		      1
+		      vertexBuffers
+		      offsets
+		      ))
+		   (vkCmdBindIndexBuffer
+		    (aref ,(g `_commandBuffers) i)
+		    ,(g `_indexBuffer)
+		    0
+		    VK_INDEX_TYPE_UINT32)
+		   (vkCmdBindDescriptorSets
+		    (aref ,(g `_commandBuffers) i)
+		    ;; descriptor could also be bound to compute
+		    VK_PIPELINE_BIND_POINT_GRAPHICS
+		    ,(g `_pipelineLayout)
+		    0
+		    1
+		    (ref (aref ,(g `_descriptorSets) i))
+		    0
+		    NULL)
+		   ;; draw the triangle
+		   (vkCmdDrawIndexed
+		    (aref ,(g `_commandBuffers) i)
+		    ,(g `_num_indices
+			) ;; count
+		    1		;; no instance rendering
+		    0		;; offset to first index into buffer
+		    0		;; offset to add to index
+		    0		;; firstInstance
+		    )
+		   (vkCmdEndRenderPass
+		    (aref ,(g `_commandBuffers) i))
+		   ,(vkthrow `(vkEndCommandBuffer
+			       (aref ,(g `_commandBuffers) i)))
+		   )))))
+  #+nil (define-module
+	    `(
+	      ()
+	      (do0)))
   #+nil (define-module
 	    `(
 	      ()
@@ -3464,111 +3577,7 @@ more structs. this function helps to initialize those structs."
 					 &fenceInfo
 					 NULL
 					 (ref (aref _inFlightFences i))))))
-			 (defun createCommandBuffers ()
-			   (declare (values void))
-			   (_commandBuffers.resize
-			    (_swapChainFramebuffers.size))
-			   ,(vkcall
-			     `(allocate
-			       command-buffer
-			       (:commandPool _commandPool
-					     :level VK_COMMAND_BUFFER_LEVEL_PRIMARY
-					     :commandBufferCount (_commandBuffers.size))
-			       (_device
-				&info
-				(_commandBuffers.data))
-					;_commandBuffers
-			       )
-			     :throw t
-			     :plural t)
 			 
-			 
-			   (dotimes (i (_commandBuffers.size))
-			     ,(vkcall
-			       `(begin
-				 command-buffer
-				 (;; flags can select if exectution is
-				  ;; once, inside single renderpass, or
-				  ;; resubmittable
-				  :flags 0 
-				  :pInheritanceInfo NULL)
-				 ((aref _commandBuffers i) &info)
-				 (aref _commandBuffers i))
-			       :throw t)
-			   
-
-			     ,(vk
-			       `(VkClearValue
-				 clearColor
-				 :color (curly 0s0 0s0 0s0 1s0)))
-			     ,(vk
-			       `(VkClearValue
-				 clearDepth
-				 ;; depth buffer far=1 by default
-				 :depthStencil (curly 1s0 0)))
-			     (let ((clearValues ("std::array<VkClearValue,2>" (curly clearColor clearDepth)))
-				   )
-			      
-			       ,(vk
-				 `(VkRenderPassBeginInfo
-				   renderPassInfo
-				   :sType VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
-				   :renderPass _renderPass
-				   :framebuffer (aref _swapChainFramebuffers i)
-				   :renderArea.offset (curly  0 0)
-				   :renderArea.extent _swapChainExtent
-				   :clearValueCount (clearValues.size)
-				   :pClearValues (clearValues.data)
-				   )))
-			     (vkCmdBeginRenderPass
-			      (aref _commandBuffers i)
-			      &renderPassInfo
-			      ;; dont use secondary command buffers
-			      VK_SUBPASS_CONTENTS_INLINE)
-			     (vkCmdBindPipeline
-			      (aref _commandBuffers i)
-			      VK_PIPELINE_BIND_POINT_GRAPHICS _graphicsPipeline)
-			     (let ((vertexBuffers[] (curly _vertexBuffer))
-				   (offsets[] (curly 0))
-				   )
-			       (declare (type VkBuffer vertexBuffers[])
-					(type VkDeviceSize offsets[]))
-			       (vkCmdBindVertexBuffers
-				(aref _commandBuffers i)
-				0
-				1
-				vertexBuffers
-				offsets
-				))
-			     (vkCmdBindIndexBuffer
-			      (aref _commandBuffers i)
-			      _indexBuffer
-			      0
-			      VK_INDEX_TYPE_UINT32)
-			     (vkCmdBindDescriptorSets
-			      (aref _commandBuffers i)
-			      ;; descriptor could also be bound to compute
-			      VK_PIPELINE_BIND_POINT_GRAPHICS
-			      _pipelineLayout
-			      0
-			      1
-			      (ref (aref _descriptorSets i))
-			      0
-			      NULL)
-			     ;; draw the triangle
-			     (vkCmdDrawIndexed
-			      (aref _commandBuffers i)
-			      (static_cast<uint32_t> (g_indices.size)) ;; count
-			      1 ;; no instance rendering
-			      0 ;; offset to first index into buffer
-			      0 ;; offset to add to index
-			      0 ;; firstInstance
-			      )
-			     (vkCmdEndRenderPass
-			      (aref _commandBuffers i))
-			     ,(vkthrow `(vkEndCommandBuffer
-					 (aref _commandBuffers i)))
-			     ))
 			 
 			 
 			 (defun createRenderPass ()
