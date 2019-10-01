@@ -2917,8 +2917,12 @@ more structs. this function helps to initialize those structs."
 	       (defun createDescriptorSets ()
 			  (declare (values void))
 			  (let ((n (length ,(g `_swapChainImages)))
-				(layouts[] (curly ,(g `_descriptorSetLayout))))
-			    (declare (type VkDescriptorSetLayout layouts[]))
+				(layouts[] (curly ,(g `_descriptorSetLayout)
+						   ,(g `_descriptorSetLayout)
+						   ,(g `_descriptorSetLayout)
+						   ,(g `_descriptorSetLayout))))
+			    (declare (type VkDescriptorSetLayout layouts[])
+				     (type "const int" n))
 			    ;(_descriptorSets.resize n)
 			    ,(vkcall
 			      `(allocate
@@ -4065,7 +4069,7 @@ more structs. this function helps to initialize those structs."
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
-    (sb-ext:run-program "/usr/bin/make" `("-j4" "proto2.h"))
+    (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j4" "proto2.h"))
 
     ))
  
