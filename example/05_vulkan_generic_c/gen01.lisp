@@ -424,15 +424,10 @@ more structs. this function helps to initialize those structs."
 		      (createVertexBuffer)
 		      (createIndexBuffer)
 		      (createUniformBuffers)
+		      (createDescriptorPool)
 		      #+nil (
+			     			     
 			     
-			     
-			     
-			     
-			     
-			     
-			     
-			     (createDescriptorPool)
 			     (createDescriptorSets)
 			     (createCommandBuffers)
 			     (createSyncObjects)))))
@@ -2874,10 +2869,46 @@ more structs. this function helps to initialize those structs."
 				      uniformBuffer.buffer
 				      (aref ,(g `_uniformBuffersMemory) i)
 				      uniformBuffer.memory))))))))
-  #+nil (define-module
-	    `(
+ (define-module
+	    `(descriptor_pool
 	      ()
-	      (do0)))
+	      (do0
+	       (defun createDescriptorPool ()
+			  (declare (values void))
+			  (let ((n (length ,(g `_swapChainImages)))
+				)
+			    ,(vk
+			      `(VkDescriptorPoolSize
+				uboPoolSize
+				:type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+				:descriptorCount
+				n
+				))
+			    ,(vk
+			      `(VkDescriptorPoolSize
+				samplerPoolSize
+				:type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+				:descriptorCount
+				n
+				))
+			    (let ((poolSizes[] (curly uboPoolSize
+						       samplerPoolSize)))
+			      (declare (type
+					VkDescriptorPoolSize poolSizes[]))
+			      ,(vkcall
+				`(create
+				  descriptor-pool
+				  (:poolSizeCount (length poolSizes)
+						  :pPoolSizes poolSizes
+						  :maxSets n
+						  ;; we could allow to free the sets
+						  :flags 0)
+				  (,(g `_device)
+				   &info
+				   NULL
+				   (ref ,(g `_descriptorPool)))
+				  ,(g `_descriptorPool))
+				:throw t)))))))
   #+nil (define-module
 	    `(
 	      ()
@@ -3362,44 +3393,7 @@ more structs. this function helps to initialize those structs."
 				 NULL ;; copy descriptor sets
 				 )))
 			    ))
-			(defun createDescriptorPool ()
-			  (declare (values void))
-			  (let ((n (static_cast<uint32_t> (_swapChainImages.size)))
-				)
-			    ,(vk
-			      `(VkDescriptorPoolSize
-				uboPoolSize
-				:type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-				:descriptorCount
-				n
-				))
-			    ,(vk
-			      `(VkDescriptorPoolSize
-				samplerPoolSize
-				:type VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-				:descriptorCount
-				n
-				))
-			    (let ((poolSizes (curly uboPoolSize
-						    samplerPoolSize)))
-			      (declare (type
-					"std::array<VkDescriptorPoolSize,2>"
-					poolSizes))
-			      ,(vkcall
-				`(create
-				  descriptor-pool
-				  (:poolSizeCount (static_cast<uint32_t>
-						   (poolSizes.size))
-						  :pPoolSizes (poolSizes.data)
-						  :maxSets n
-						  ;; we could allow to free the sets
-						  :flags 0)
-				  (_device
-				   &info
-				   NULL
-				   &_descriptorPool)
-				  _descriptorPool)
-				:throw t))))
+			
 			
 			
 		      
