@@ -302,8 +302,9 @@ more structs. this function helps to initialize those structs."
 		,(vkprint "mainLoop")
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
-		  #+surface (drawFrame)
+		  (drawFrame)
 		  )
+		,(vkprint "wait for gpu before cleanup")
 		(vkDeviceWaitIdle ,(g `_device)) ;; wait for gpu before cleanup
 		)
 	      (defun run ()
@@ -3254,7 +3255,7 @@ more structs. this function helps to initialize those structs."
 			  (createDescriptorSets)
 			  (createCommandBuffers))
 	       (defun drawFrame ()
-			 (declare (values void))
+		 ,(vkprint "drawFrame")
 			 (do0
 			  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
 			  )
