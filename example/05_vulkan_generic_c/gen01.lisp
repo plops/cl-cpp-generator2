@@ -301,9 +301,9 @@ more structs. this function helps to initialize those structs."
 	      (defun mainLoop ()
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
-					;#+surface (drawFrame)
+		  #+surface (drawFrame)
 		  )
-					;(vkDeviceWaitIdle _device) ;; wait for gpu before cleanup
+		(vkDeviceWaitIdle ,(g `_device)) ;; wait for gpu before cleanup
 		)
 	      (defun run ()
 		(initWindow)
@@ -3138,11 +3138,205 @@ more structs. this function helps to initialize those structs."
 					 &fenceInfo
 					 NULL
 					 (ref (aref ,(g `_inFlightFences) i)))))))))
-  #+nil (define-module
-	    `(
+   (define-module
+	    `(draw_frame
 	      ()
-	      (do0)))
-  #+nil (define-module
+	      (do0
+	       (include <string.h>)
+	       (defun now ()
+		 (declare (values double))
+		 (let ((tp))
+		  (declare (type "struct timespec" tp))
+		  ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+		  (clock_gettime CLOCK_REALTIME &tp)
+		  (return (+ (* 1e6 tp.tv_sec)
+			     tp.tv_nsec))))
+	       
+	       (defun updateUniformBuffer (currentImage)
+			 (declare (type uint32_t currentImage)
+				  (values void))
+			 (let ((startTime (now))
+			       (currentTime (now))
+			       (time (- currentTime startTime)
+				 )
+			       )
+			   (declare (type "auto double" startTime)
+				    (type float time)
+				    )
+			   ;; rotate model around z axis
+			   (let ((zAxis (cast vec3 (curly 0s0 0s0 1s0)))
+				 (eye (cast vec3 (curly 2s0 2s0 2s0)))
+				 (center (cast vec3 (curly 0s0 0s0 0s0)))
+				 (angularRate (glm_rad 9s0))
+				 (rotationAngle (* time angularRate))
+				 (identity)
+				 (model)
+				 (look)
+				 (projection))
+			     (declare ;(type zAxis angularRate)
+				      (type mat4 identity model look projection))
+			     (do0
+			      (glm_mat4_identity identity)
+			      (glm_rotate_z identity rotationAngle model))
+
+			     (do0
+			      (glm_lookat ;; eye center up
+			       eye center zAxis look))
+
+			     (do0
+			      (glm_perspective ;; fovy aspect near far
+			       (glm_rad 45s0)
+			       (/ ,(g `_swapChainExtent.width)
+					   (* 1s0 ,(g `_swapChainExtent.height)))
+			       .1s0
+			       10s0
+			       projection))
+			     ,(vk
+			       `(UniformBufferObject
+				 ubo
+				 ;:model model
+				 ;; look from above in 45 deg angle
+				 ;:view look
+				 ;; use current extent for correct aspect
+				 ;:proj projection
+				 )))
+			   ;; glm was designed for opengl and has
+			   ;; inverted y clip coordinate
+			   (glm_mat4_copy model ubo.model)
+			   (glm_mat4_copy look ubo.view)
+			   (glm_mat4_copy projection ubo.proj)
+			   (setf (aref ubo.proj 1 1)
+				 (- (aref ubo.proj 1 1)))
+			   (let ((data 0))
+			     (declare (type void* data))
+			     (vkMapMemory ,(g `_device)
+					  (aref ,(g `_uniformBuffersMemory)
+						currentImage)
+					  0
+					  (sizeof ubo)
+					  0
+					  &data)
+			     (memcpy data &ubo (sizeof ubo))
+			     (vkUnmapMemory ,(g `_device)
+					    (aref ,(g `_uniformBuffersMemory)
+						  currentImage)))
+			   ;; note: a more efficient way to pass
+			   ;; frequently changing values to shaders are
+			   ;; push constants
+			   )
+			 )
+	       (defun recreateSwapChain ()
+			  
+			  
+			  (let ((width 0)
+				(height 0))
+			    (declare (type int width height))
+			    (while (or (== 0 width)
+				       (== 0 height))
+			      (glfwGetFramebufferSize ,(g `_window)
+						      &width
+						      &height)
+			      (glfwWaitEvents)))
+			
+			  (vkDeviceWaitIdle ,(g `_device)) ;; wait for resources to be not in use anymore
+			  (cleanupSwapChain)
+			  (createSwapChain)
+			  (createImageViews)
+			 
+			  (createRenderPass)
+			  (createGraphicsPipeline)
+			  (createColorResources)
+			  (createDepthResources)
+			  (createFramebuffers)
+			  (createUniformBuffers)
+			  (createDescriptorPool)
+			  (createDescriptorSets)
+			  (createCommandBuffers))
+	       (defun drawFrame ()
+			 (declare (values void))
+			 (do0
+			  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
+			  )
+			 (let ((imageIndex 0)
+			       (result (vkAcquireNextImageKHR
+					,(g `_device)
+					,(g `_swapChain)
+					UINT64_MAX ;; disable timeout for image 
+					(aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))
+					VK_NULL_HANDLE
+					&imageIndex)))
+			   (declare (type uint32_t imageIndex))
+			 
+			   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
+			     (recreateSwapChain)
+			     (return))
+			   (unless (or (== VK_SUCCESS result)
+				       (== VK_SUBOPTIMAL_KHR result))
+			     ,(vkprint "failed to acquire swap chain image."))
+			   (let ((waitSemaphores[] (curly (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
+				 (signalSemaphores[] (curly (aref ,(g `_renderFinishedSemaphores) ,(g `_currentFrame))))
+				 (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
+			     (declare (type VkSemaphore waitSemaphores[]
+					    signalSemaphores[])
+				      (type VkPipelineStageFlags waitStages[]))
+			     (updateUniformBuffer imageIndex)
+			     ,(vk
+			       `(VkSubmitInfo submitInfo
+					      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
+					      :waitSemaphoreCount 1
+					      :pWaitSemaphores waitSemaphores
+					      ;; pipeline has to wait for image before writing color buffer
+					      :pWaitDstStageMask waitStages
+					      :commandBufferCount 1
+					      :pCommandBuffers (ref (aref ,(g `_commandBuffers) imageIndex))
+					      :signalSemaphoreCount 1
+					      :pSignalSemaphores signalSemaphores))
+			     (vkResetFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame))))
+			     ,(vkthrow
+			       `(vkQueueSubmit
+				 ,(g `_graphicsQueue)
+				 1
+				 &submitInfo
+					;VK_NULL_HANDLE ;; fence
+				 (aref ,(g `_inFlightFences) ,(g `_currentFrame))
+				 ))
+			   
+			     ;; submit result for presentation
+			     (let ((swapChains[] (curly ,(g `_swapChain)))
+				   )
+			       (declare (type VkSwapchainKHR swapChains[]))
+			       ,(vk
+				 `(VkPresentInfoKHR
+				   presentInfo
+				   :sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
+				   ;; wait for signal before presentation
+				   :waitSemaphoreCount 1
+				   :pWaitSemaphores signalSemaphores
+				   :swapchainCount 1
+				   :pSwapchains swapChains
+				   :pImageIndices &imageIndex 
+				   ;; we could check if presentation was successful
+				   :pResults NULL))
+			       (progn
+				 (let ((result2 (vkQueuePresentKHR ,(g `_presentQueue) &presentInfo)))
+				   (if (or (== VK_SUBOPTIMAL_KHR result2)
+					   (== VK_ERROR_OUT_OF_DATE_KHR result2)
+					   ,(g `_framebufferResized))
+				       (do0
+					(setf ,(g `_framebufferResized) false)
+					(recreateSwapChain))
+				       (unless (== VK_SUCCESS result2)
+					 ,(vkprint "failed to present swap chain image.")))))
+			     
+					;(vkQueueWaitIdle ,_presentQueue) 
+			       )
+			   
+			     ))
+			 (setf ,(g `_currentFrame)
+			       (%
+				(+ 1 ,(g `_currentFrame))
+				_MAX_FRAMES_IN_FLIGHT))))))
+   #+nil (define-module
 	    `(
 	      ()
 	      (do0)))
@@ -3542,35 +3736,7 @@ more structs. this function helps to initialize those structs."
 			
 			
 		      
-			(defun recreateSwapChain ()
-			  (declare (values void))
-			  (<< "std::cout"
-			      (string "***** recreateSwapChain")
-			      "std::endl")
-			  (let ((width 0)
-				(height 0))
-			    (declare (type int width height))
-			    (while (or (== 0 width)
-				       (== 0 height))
-			      (glfwGetFramebufferSize _window
-						      &width
-						      &height)
-			      (glfwWaitEvents)))
 			
-			  (vkDeviceWaitIdle _device) ;; wait for resources to be not in use anymore
-			  (cleanupSwapChain)
-			  (createSwapChain)
-			  (createImageViews)
-			 
-			  (createRenderPass)
-			  (createGraphicsPipeline)
-			  (createColorResources)
-			  (createDepthResources)
-			  (createFramebuffers)
-			  (createUniformBuffers)
-			  (createDescriptorPool)
-			  (createDescriptorSets)
-			  (createCommandBuffers))
 			(do0
 			 "// shader stuff"
 			 
@@ -3692,157 +3858,8 @@ more structs. this function helps to initialize those structs."
 		       
 		       
 		       #+surface
-		       (defun drawFrame ()
-			 (declare (values void))
-			 (do0
-			  (vkWaitForFences _device 1 (ref (aref _inFlightFences _currentFrame))  VK_TRUE UINT64_MAX)
-			  )
-			 (let ((imageIndex 0)
-			       (result (vkAcquireNextImageKHR
-					_device
-					_swapChain
-					UINT64_MAX ;; disable timeout for image 
-					(aref _imageAvailableSemaphores _currentFrame)
-					VK_NULL_HANDLE
-					&imageIndex)))
-			   (declare (type uint32_t imageIndex))
-			 
-			   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
-			     (recreateSwapChain)
-			     (return))
-			   (unless (or (== VK_SUCCESS result)
-				       (== VK_SUBOPTIMAL_KHR result))
-			     (throw ("std::runtime_error"
-				     (string "failed to acquire swap chain image."))))
-			   (let ((waitSemaphores[] (curly (aref _imageAvailableSemaphores _currentFrame)))
-				 (signalSemaphores[] (curly (aref _renderFinishedSemaphores _currentFrame)))
-				 (waitStages[] (curly VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)))
-			     (declare (type VkSemaphore waitSemaphores[]
-					    signalSemaphores[])
-				      (type VkPipelineStageFlags waitStages[]))
-			     (updateUniformBuffer imageIndex)
-			     ,(vk
-			       `(VkSubmitInfo submitInfo
-					      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
-					      :waitSemaphoreCount 1
-					      :pWaitSemaphores waitSemaphores
-					      ;; pipeline has to wait for image before writing color buffer
-					      :pWaitDstStageMask waitStages
-					      :commandBufferCount 1
-					      :pCommandBuffers (ref (aref _commandBuffers imageIndex))
-					      :signalSemaphoreCount 1
-					      :pSignalSemaphores signalSemaphores))
-			     (vkResetFences _device 1 (ref (aref _inFlightFences _currentFrame)))
-			     ,(vkthrow
-			       `(vkQueueSubmit
-				 _graphicsQueue
-				 1
-				 &submitInfo
-					;VK_NULL_HANDLE ;; fence
-				 (aref _inFlightFences _currentFrame)
-				 ))
-			   
-			     ;; submit result for presentation
-			     (let ((swapChains[] (curly _swapChain))
-				   )
-			       (declare (type VkSwapchainKHR swapChains[]))
-			       ,(vk
-				 `(VkPresentInfoKHR
-				   presentInfo
-				   :sType VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
-				   ;; wait for signal before presentation
-				   :waitSemaphoreCount 1
-				   :pWaitSemaphores signalSemaphores
-				   :swapchainCount 1
-				   :pSwapchains swapChains
-				   :pImageIndices &imageIndex 
-				   ;; we could check if presentation was successful
-				   :pResults NULL))
-			       (progn
-				 (let ((result2 (vkQueuePresentKHR _presentQueue &presentInfo)))
-				   (if (or (== VK_SUBOPTIMAL_KHR result2)
-					   (== VK_ERROR_OUT_OF_DATE_KHR result2)
-					   _framebufferResized)
-				       (do0
-					(setf _framebufferResized false)
-					(recreateSwapChain))
-				       (unless (== VK_SUCCESS result2)
-					 (throw ("std::runtime_error"
-						 (string "fialed to present swap chain image.")))))))
-			     
-					;(vkQueueWaitIdle _presentQueue) 
-			       )
-			   
-			     ))
-			 (setf _currentFrame
-			       (%
-				(+ 1 _currentFrame)
-				_MAX_FRAMES_IN_FLIGHT)))
-		       (defun updateUniformBuffer (currentImage)
-			 (declare (type uint32_t currentImage)
-				  (values void))
-			 (let ((startTime
-
-				("std::chrono::high_resolution_clock::now"))
-			       (currentTime
-				("std::chrono::high_resolution_clock::now"))
-			       (time (dot ("std::chrono::duration<float,std::chrono::seconds::period>" (- currentTime startTime))
-					  (count)))
-			       )
-			   (declare (type "static auto" startTime)
-				    (type auto currentTime)
-				    (type float time)
-				    )
-			   ;; rotate model around z axis
-			   (let ((zAxis ("glm::vec3" 0s0 0s0 1s0))
-					;(identityMatrix ("glm::mat4" 1s0))
-				 (angularRate ("glm::radians" 9s0))
-				 (rotationAngle (* time angularRate)))
-			     (declare (type "const auto" zAxis angularRate
-					    identityMatrix))
-			     ,(vk
-			       `(UniformBufferObject
-				 ubo
-				 :model ("glm::rotate"
-					 ("glm::mat4" 1s0)
-					 rotationAngle
-					 zAxis)
-				 ;; look from above in 45 deg angle
-				 :view ("glm::lookAt"
-					("glm::vec3" 2s0 2s0 2s0)
-					("glm::vec3" 0s0 0s0 0s0)
-					zAxis
-					)
-				 ;; use current extent for correct aspect
-				 :proj ("glm::perspective"
-					("glm::radians" 45s0)
-					(/ _swapChainExtent.width
-					   (* 1s0 _swapChainExtent.height))
-					.1s0
-					10s0)
-				 )))
-			   ;; glm was designed for opengl and has
-			   ;; inverted y clip coordinate
-			   (setf (aref ubo.proj 1 1)
-				 (- (aref ubo.proj 1 1)))
-			   (let ((data 0))
-			     (declare (type void* data))
-			     (vkMapMemory _device
-					  (aref _uniformBuffersMemory
-						currentImage)
-					  0
-					  (sizeof ubo)
-					  0
-					  &data)
-			     (memcpy data &ubo (sizeof ubo))
-			     (vkUnmapMemory _device
-					    (aref _uniformBuffersMemory
-						  currentImage)))
-			   ;; note: a more efficient way to pass
-			   ;; frequently changing values to shaders are
-			   ;; push constants
-			   )
-			 )
+		       
+		       
 		       (defun cleanupSwapChain ()
 			 (declare (values void))
 			 (<< "std::cout"
