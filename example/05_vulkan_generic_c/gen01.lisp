@@ -272,7 +272,7 @@ more structs. this function helps to initialize those structs."
 		  " "
 		  (include "globals.h")
 		  " "
-		  (include "proto.h")
+		  (include "proto2.h")
 			
 		  " "
 		  )
@@ -425,10 +425,11 @@ more structs. this function helps to initialize those structs."
 		      (createIndexBuffer)
 		      (createUniformBuffers)
 		      (createDescriptorPool)
+		      (createDescriptorSets)
 		      #+nil (
 			     			     
 			     
-			     (createDescriptorSets)
+			     
 			     (createCommandBuffers)
 			     (createSyncObjects)))))
 	      `(do0
@@ -2909,10 +2910,90 @@ more structs. this function helps to initialize those structs."
 				   (ref ,(g `_descriptorPool)))
 				  ,(g `_descriptorPool))
 				:throw t)))))))
-  #+nil (define-module
-	    `(
+  (define-module
+	    `(descriptor_sets
 	      ()
-	      (do0)))
+	      (do0
+	       (defun createDescriptorSets ()
+			  (declare (values void))
+			  (let ((n (length ,(g `_swapChainImages)))
+				(layouts[] (curly ,(g `_descriptorSetLayout))))
+			    (declare (type VkDescriptorSetLayout layouts[]))
+			    ;(_descriptorSets.resize n)
+			    ,(vkcall
+			      `(allocate
+				descriptor-set
+				(:descriptorPool ,(g `_descriptorPool)
+						 :descriptorSetCount n
+						 :pSetLayouts layouts)
+				(,(g `_device)
+				 &info
+				 ,(g `_descriptorSets))
+					;_descriptorSets
+				)
+			      :throw t
+			      :plural t)
+			    ;; the sets will be automatically freed when
+			    ;; pool is destroyed
+			    (dotimes (i n)
+			      ,(vk
+				`(VkDescriptorBufferInfo
+				  bufferInfo
+				  :buffer (aref ,(g `_uniformBuffers) i)
+				  :offset 0
+				  :range (sizeof UniformBufferObject)))
+			    
+			      ,(vk
+				`(VkWriteDescriptorSet
+				  uboDescriptorWrite
+				  :sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
+				  :dstSet (aref ,(g `_descriptorSets) i)
+				  :dstBinding 0
+				  :dstArrayElement 0 ;; if multiple
+				  ;; descriptors
+				  ;; should be
+				  ;; updated at once,
+				  ;; start here
+				  :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+				  :descriptorCount 1
+				  :pBufferInfo &bufferInfo ;; buffer data
+				  :pImageInfo NULL	 ;; image data
+				  :pTexelBufferView NULL ;; buffer views
+				  ))
+			      ,(vk
+				`(VkDescriptorImageInfo
+				  imageInfo
+				  :imageLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				  :imageView ,(g `_textureImageView)
+				  :sampler ,(g `_textureSampler)))
+			      ,(vk
+				`(VkWriteDescriptorSet
+				  samplerDescriptorWrite
+				  :sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
+				  :dstSet (aref ,(g `_descriptorSets) i)
+				  :dstBinding 1
+				  :dstArrayElement 0
+				  :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+				  :descriptorCount 1
+				  :pBufferInfo NULL ;; buffer data
+				  :pImageInfo &imageInfo ;; image data
+				  :pTexelBufferView NULL ;; buffer views
+				  ))
+			      (let ((descriptorWrites[]
+				      (curly
+				       uboDescriptorWrite
+				       samplerDescriptorWrite)))
+				(declare (type
+					  VkWriteDescriptorSet
+					  descriptorWrites[]))
+				(vkUpdateDescriptorSets
+				 ,(g `_device)
+				 (length descriptorWrites)
+				 descriptorWrites
+				 0
+				 NULL ;; copy descriptor sets
+				 )))
+			    )))))
   #+nil (define-module
 	    `(
 	      ()
@@ -3312,87 +3393,7 @@ more structs. this function helps to initialize those structs."
 		     
 		       #+surface
 		       (do0
-			(defun createDescriptorSets ()
-			  (declare (values void))
-			  (let ((n (static_cast<uint32_t> (_swapChainImages.size)))
-				((layouts n _descriptorSetLayout)))
-			    (declare (type "std::vector<VkDescriptorSetLayout>"
-					   (layouts n _descriptorSetLayout)))
-			    (_descriptorSets.resize n)
-			    ,(vkcall
-			      `(allocate
-				descriptor-set
-				(:descriptorPool _descriptorPool
-						 :descriptorSetCount n
-						 :pSetLayouts (layouts.data))
-				(_device
-				 &info
-				 (_descriptorSets.data))
-					;_descriptorSets
-				)
-			      :throw t
-			      :plural t)
-			    ;; the sets will be automatically freed when
-			    ;; pool is destroyed
-			    (dotimes (i n)
-			      ,(vk
-				`(VkDescriptorBufferInfo
-				  bufferInfo
-				  :buffer (aref _uniformBuffers i)
-				  :offset 0
-				  :range (sizeof UniformBufferObject)))
-			    
-			      ,(vk
-				`(VkWriteDescriptorSet
-				  uboDescriptorWrite
-				  :sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
-				  :dstSet (aref _descriptorSets i)
-				  :dstBinding 0
-				  :dstArrayElement 0 ;; if multiple
-				  ;; descriptors
-				  ;; should be
-				  ;; updated at once,
-				  ;; start here
-				  :descriptorType VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-				  :descriptorCount 1
-				  :pBufferInfo &bufferInfo ;; buffer data
-				  :pImageInfo NULL	 ;; image data
-				  :pTexelBufferView NULL ;; buffer views
-				  ))
-			      ,(vk
-				`(VkDescriptorImageInfo
-				  imageInfo
-				  :imageLayout VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-				  :imageView _textureImageView
-				  :sampler _textureSampler))
-			      ,(vk
-				`(VkWriteDescriptorSet
-				  samplerDescriptorWrite
-				  :sType VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET
-				  :dstSet (aref _descriptorSets i)
-				  :dstBinding 1
-				  :dstArrayElement 0
-				  :descriptorType VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-				  :descriptorCount 1
-				  :pBufferInfo NULL ;; buffer data
-				  :pImageInfo &imageInfo ;; image data
-				  :pTexelBufferView NULL ;; buffer views
-				  ))
-			      (let ((descriptorWrites (curly
-						       uboDescriptorWrite
-						       samplerDescriptorWrite)))
-				(declare (type
-					  "std::array<VkWriteDescriptorSet,2>"
-					  descriptorWrites))
-				(vkUpdateDescriptorSets
-				 _device
-				 (static_cast<uint32_t>
-				  (descriptorWrites.size))
-				 (descriptorWrites.data)
-				 0
-				 NULL ;; copy descriptor sets
-				 )))
-			    ))
+			
 			
 			
 			
@@ -3988,6 +3989,10 @@ more structs. this function helps to initialize those structs."
 	      )
 	    )))
 					;(write-source *code-file* code)
+    ;; we need an empty proto2.h. it has to be written before all c files so that make proto will work
+    (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/proto2.h")
+		  `(do0)  (user-homedir-pathname) t)
+
     (loop for e in (reverse *module*) and i from 0 do
 	 (destructuring-bind (&key name code) e
 	   (write-source (asdf:system-relative-pathname
@@ -4049,6 +4054,7 @@ more structs. this function helps to initialize those structs."
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
 		  (emit-globals))
     
+    
     (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)
 							   "-o"
 							   ,(format nil "~a/frag.spv"
@@ -4058,6 +4064,7 @@ more structs. this function helps to initialize those structs."
 							   ,(format nil "~a/vert.spv"
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
-    (sb-ext:run-program "/bin/sh" `("gen_proto.sh"))))
+    ;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
+    ))
  
 
