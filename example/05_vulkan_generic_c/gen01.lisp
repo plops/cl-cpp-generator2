@@ -421,12 +421,13 @@ more structs. this function helps to initialize those structs."
 		      (createTextureImageView)
 		      (createTextureSampler)
 		      (loadModel)
+		      (createVertexBuffer)
 		      #+nil (
 			     
 			     
 			     
 			     
-			     (createVertexBuffer)
+			     
 			     (createIndexBuffer)
 			     (createUniformBuffers)
 			     (createDescriptorPool)
@@ -2721,10 +2722,78 @@ more structs. this function helps to initialize those structs."
 		   (g_vertices.push_back vertex))
 		 (g_indices.push_back
 		  (aref uniqueVertices vertex))))))))))
-  #+nil (define-module
-	    `(
+  (define-module
+	    `(vertex_buffer
 	      ()
-	      (do0)))
+	      (do0
+	       (include <string.h>)
+	       (defun copyBuffer (srcBuffer
+					  dstBuffer
+					  size)
+			 (declare (values void)
+				  (type VkBuffer srcBuffer dstBuffer)
+				  (type VkDeviceSize size))
+		       
+		       
+		       
+			 (let ((commandBuffer (beginSingleTimeCommands)))
+			   ,(vk
+			     `(VkBufferCopy
+			       copyRegion
+			       :srcOffset 0
+			       :dstOffset 0
+			       :size size))
+			   (vkCmdCopyBuffer commandBuffer srcBuffer
+					    dstBuffer 1 &copyRegion)
+			   (endSingleTimeCommands commandBuffer)))
+	       (defun createVertexBuffer ()
+			 (declare (values void))
+			 (let ((bufferSize (* (sizeof (aref ,(g `_vertices) 0))
+					      (length ,(g `_vertices))))
+			       (stagingBuffer
+				(createBuffer
+				 bufferSize
+				 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+				 (logior
+				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+			 			
+			   (let ((data))
+			     (declare (type void* data))
+			     (vkMapMemory ,(g `_device) stagingBuffer.memory
+					  0	     ;; offset
+					  bufferSize ;; size
+					  0	     ;; flags
+					  &data)
+			     (memcpy data
+				     ,(g `_vertices)
+				     bufferSize)
+			     ;; without coherent bit, the changed memory
+			     ;; might not immediatly be visible.
+			     ;; alternatively: vkFlushMappedMemoryRanges
+			     ;; or vkInvalidateMappedMemoryRanges; the
+			     ;; memory transfer is defined to be
+			     ;; complete as of the next call to
+			     ;; vkQueueSubmit
+			     (vkUnmapMemory ,(g `_device) stagingBuffer.memory)))
+
+			 (let  ((vertexBuffer
+				 (createBuffer
+				  bufferSize
+				  (logior
+				   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+				   ;; can be a data transfer destination
+				   VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
+			   (setf ,(g `_vertexBuffer) vertexBuffer.buffer
+				 ,(g `_vertexBufferMemory) vertexBuffer.memory)
+			   (copyBuffer stagingBuffer.buffer
+				       ,(g `_vertexBuffer)
+				       bufferSize))
+		       
+			 (do0
+			  (vkDestroyBuffer ,(g `_device) stagingBuffer.buffer NULL)
+			  (vkFreeMemory ,(g `_device) stagingBuffer.memory NULL))))))
   #+nil (define-module
 	    `(
 	      ()
@@ -3066,57 +3135,7 @@ more structs. this function helps to initialize those structs."
 			       )
 			     :throw t)))
 		       
-		       (defun createVertexBuffer ()
-			 (declare (values void))
-			 (let ((bufferSize (* (sizeof (aref g_vertices 0))
-					      (g_vertices.size)))
-			       ((bracket stagingBuffer
-					 stagingBufferMemory)
-				(createBuffer
-				 bufferSize
-				 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-				 (logior
-				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
-			 			
-			   (let ((data))
-			     (declare (type void* data))
-			     (vkMapMemory _device stagingBufferMemory
-					  0	     ;; offset
-					  bufferSize ;; size
-					  0	     ;; flags
-					  &data)
-			     (memcpy data
-				     (g_vertices.data)
-				     bufferSize)
-			     ;; without coherent bit, the changed memory
-			     ;; might not immediatly be visible.
-			     ;; alternatively: vkFlushMappedMemoryRanges
-			     ;; or vkInvalidateMappedMemoryRanges; the
-			     ;; memory transfer is defined to be
-			     ;; complete as of the next call to
-			     ;; vkQueueSubmit
-			     (vkUnmapMemory _device stagingBufferMemory)))
-
-			 (let  (((bracket
-				  vertexBuffer
-				  vertexBufferMemory)
-				 (createBuffer
-				  bufferSize
-				  (logior
-				   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-				   ;; can be a data transfer destination
-				   VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
-			   (setf _vertexBuffer vertexBuffer
-				 _vertexBufferMemory vertexBufferMemory)
-			   (copyBuffer stagingBuffer
-				       _vertexBuffer
-				       bufferSize))
 		       
-			 (do0
-			  (vkDestroyBuffer _device stagingBuffer NULL)
-			  (vkFreeMemory _device stagingBufferMemory NULL)))
 		       (defun createIndexBuffer ()
 			 (declare (values void))
 			 (let ((bufferSize (* (sizeof (aref g_indices 0))
@@ -3213,25 +3232,7 @@ more structs. this function helps to initialize those structs."
 			  (string "endSingleTimeCommands ")
 			  commandBuffer
 			  "std::endl"))
-		       (defun copyBuffer (srcBuffer
-					  dstBuffer
-					  size)
-			 (declare (values void)
-				  (type VkBuffer srcBuffer dstBuffer)
-				  (type VkDeviceSize size))
 		       
-		       
-		       
-			 (let ((commandBuffer (beginSingleTimeCommands)))
-			   ,(vk
-			     `(VkBufferCopy
-			       copyRegion
-			       :srcOffset 0
-			       :dstOffset 0
-			       :size size))
-			   (vkCmdCopyBuffer commandBuffer srcBuffer
-					    dstBuffer 1 &copyRegion)
-			   (endSingleTimeCommands commandBuffer)))
 
 		       
 		       
