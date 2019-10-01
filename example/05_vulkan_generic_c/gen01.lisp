@@ -4064,7 +4064,9 @@ more structs. this function helps to initialize those structs."
 							   ,(format nil "~a/vert.spv"
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
-    ;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
+					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
+    (sb-ext:run-program "/usr/bin/make" `("-j4" "proto2.h"))
+
     ))
  
 
