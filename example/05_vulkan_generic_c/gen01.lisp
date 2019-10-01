@@ -868,7 +868,7 @@ more structs. this function helps to initialize those structs."
 					 (dot actualExtent ,e)))))
 			
 		     (return actualExtent)))))))
-	 (defun cleanupSwapChain ()
+	 #+nil(defun cleanupSwapChain ()
 					;(free ,(g `_swapChainImages))
 	   )
 	 (defun createSwapChain ()
@@ -3336,10 +3336,154 @@ more structs. this function helps to initialize those structs."
 			       (%
 				(+ 1 ,(g `_currentFrame))
 				_MAX_FRAMES_IN_FLIGHT))))))
-   #+nil (define-module
-	    `(
+   (define-module
+	    `(cleanup
 	      ()
-	      (do0)))
+	      (do0
+	       (defun cleanupSwapChain ()
+		 (do0
+		  (do0
+		   ;; msaa
+		   (vkDestroyImageView ,(g `_device)
+				       ,(g `_colorImageView)
+				       NULL)
+		   (vkDestroyImage ,(g `_device)
+				   ,(g `_colorImage)
+				   NULL)
+		   (vkFreeMemory ,(g `_device)
+				 ,(g `_colorImageMemory)
+				 NULL))
+		  (do0
+		   ;; depth
+		   
+
+		   ,(vkprint "cleanup depth"
+			     `( ,(g `_depthImageView)
+			       ,(g `_depthImage)
+			       ,(g `_depthImageMemory)))
+		   (vkDestroyImageView ,(g `_device)
+				       ,(g `_depthImageView)
+				       NULL)
+		   (vkDestroyImage ,(g `_device)
+				   ,(g `_depthImage)
+				   NULL)
+		   (vkFreeMemory ,(g `_device)
+				 ,(g `_depthImageMemory)
+				 NULL)
+		   )
+
+		  
+		  (foreach (b ,(g `_swapChainFramebuffers))
+			   ,(vkprint "framebuffer" `(b))
+			   (vkDestroyFramebuffer ,(g `_device) b NULL))
+		  (vkFreeCommandBuffers ,(g `_device)
+					,(g `_commandPool)
+					(length ,(g `_commandBuffers))
+					,(g `_commandBuffers))
+		  ,(vkprint "pipeline" `( ,(g `_graphicsPipeline)
+					 ,(g `_pipelineLayout)
+					 ,(g `_renderPass)))
+		  (vkDestroyPipeline ,(g `_device) ,(g `_graphicsPipeline) NULL)
+		  (vkDestroyPipelineLayout
+		   ,(g `_device)
+		   ,(g `_pipelineLayout)
+		   NULL)
+		  (vkDestroyRenderPass
+		   ,(g `_device)
+		   ,(g `_renderPass)
+		   NULL)
+		  (foreach (view ,(g `_swapChainImageViews))
+			   ,(vkprint "image-view" `(view))
+			   (vkDestroyImageView
+			    ,(g `_device)
+			    view
+			    NULL))
+		  ,(vkprint "swapchain" `( ,(g `_swapChain)))
+		  (vkDestroySwapchainKHR ,(g `_device) ,(g `_swapChain) NULL)
+		  ;; each swap chain image has a ubo
+		  (dotimes (i (length ,(g `_swapChainImages)))
+		    ,(vkprint "ubo" `((aref ,(g `_uniformBuffers) i)
+				      (aref ,(g `_uniformBuffersMemory) i)
+				      ))
+		    (vkDestroyBuffer ,(g `_device)
+				     (aref ,(g `_uniformBuffers) i)
+				     NULL)
+		    (vkFreeMemory ,(g `_device)
+				  (aref ,(g `_uniformBuffersMemory) i)
+				  NULL))
+		  ,(vkprint "descriptor-pool" `( ,(g `_descriptorPool)))
+		  (vkDestroyDescriptorPool
+		   ,(g `_device)
+		   ,(g `_descriptorPool)
+		   NULL)
+		  ))
+	       (defun cleanup ()
+		 (declare (values void))
+		 
+		 (do0
+		  (cleanupSwapChain)
+		  
+		  (do0 ;; tex
+		   ,(vkprint "tex"
+			     `( ,(g `_textureSampler)
+			       ,(g `_textureImageView)
+			       ,(g `_textureImage)
+			       ,(g `_textureImageMemory)
+			       ,(g `_descriptorSetLayout)))
+		   (vkDestroySampler ,(g `_device)
+				     ,(g `_textureSampler)
+				     NULL)
+		   (vkDestroyImageView ,(g `_device)
+				       ,(g `_textureImageView)
+				       NULL)
+		   (vkDestroyImage ,(g `_device)
+				   ,(g `_textureImage) NULL)
+		   (vkFreeMemory ,(g `_device)
+				 ,(g `_textureImageMemory) NULL))
+		  (vkDestroyDescriptorSetLayout
+		   ,(g `_device)
+		   ,(g `_descriptorSetLayout)
+		   NULL)
+		  ,(vkprint "buffers"
+			    `(,(g `_vertexBuffer)
+			      ,(g `_vertexBufferMemory)
+			      ,(g `_indexBuffer)
+			      ,(g `_indexBufferMemory)
+			      ))
+		  (do0 (vkDestroyBuffer ,(g `_device) ,(g `_vertexBuffer) NULL)
+		       (vkFreeMemory ,(g `_device) ,(g `_vertexBufferMemory) NULL))
+		  (do0 (vkDestroyBuffer ,(g `_device) ,(g `_indexBuffer) NULL)
+		       (vkFreeMemory ,(g `_device) ,(g `_indexBufferMemory) NULL))
+		  (dotimes (i _MAX_FRAMES_IN_FLIGHT)
+		    (do0
+		     ,(vkprint "sync"
+			       `((aref ,(g `_renderFinishedSemaphores) i)
+				 (aref ,(g `_imageAvailableSemaphores) i)
+				 (aref ,(g `_inFlightFences) i)))
+		     (vkDestroySemaphore ,(g `_device)
+					 (aref ,(g `_renderFinishedSemaphores) i)
+					 NULL)
+		     (vkDestroySemaphore ,(g `_device)
+					 (aref ,(g `_imageAvailableSemaphores) i)
+					 NULL)
+		     (vkDestroyFence ,(g `_device)
+				     (aref ,(g `_inFlightFences) i)
+				     NULL)))
+		  ,(vkprint "cmd-pool"
+			    `(,(g `_commandPool)))
+		  (vkDestroyCommandPool ,(g `_device) ,(g `_commandPool) NULL)
+		  
+		  
+		  )
+		 ,(vkprint "rest"
+			   `( ,(g `_device) ,(g `_instance) ,(g `_window)))
+		 (vkDestroyDevice ,(g `_device) NULL)
+		 #+surface
+		 (vkDestroySurfaceKHR ,(g `_instance) ,(g `_surface) NULL)
+		 (vkDestroyInstance ,(g `_instance) NULL)
+		 (glfwDestroyWindow ,(g `_window))
+		 (glfwTerminate)
+		 ))))
 
    
    
@@ -3658,8 +3802,7 @@ more structs. this function helps to initialize those structs."
 						  :ppEnabledExtensionNames glfwExtensions
 						  :enabledLayerCount
 						  #+nolog 0
-						  #-nolog ("static_cast<uint32_t>"
-							   (_validationLayers.size))
+						  #-nolog (length _validationLayers)
 						  :ppEnabledLayerNames
 						  #+nolog NULL
 						  #-nolog (_validationLayers.data))
@@ -3857,162 +4000,9 @@ more structs. this function helps to initialize those structs."
 		      
 		       
 		       
-		       #+surface
 		       
 		       
-		       (defun cleanupSwapChain ()
-			 (declare (values void))
-			 (<< "std::cout"
-			     (string "***** cleanupSwapChain")
-			     "std::endl")
-			 #+surface
-			 (do0
-			  (do0
-			   ;; msaa
-			   (vkDestroyImageView _device
-					       _colorImageView
-					       NULL)
-			   (vkDestroyImage _device
-					   _colorImage
-					   NULL)
-			   (vkFreeMemory _device
-					 _colorImageMemory
-					 NULL))
-			  (do0
-			   ;; depth
-			  
-
-			   ,(vkprint "cleanup depth"
-				     `(_depthImageView
-				       _depthImage
-				       _depthImageMemory))
-			   (vkDestroyImageView _device
-					       _depthImageView
-					       NULL)
-			   (vkDestroyImage _device
-					   _depthImage
-					   NULL)
-			   (vkFreeMemory _device
-					 _depthImageMemory
-					 NULL)
-			   )
-
-			  
-			  (foreach (b _swapChainFramebuffers)
-				   ,(vkprint "framebuffer" `(b))
-				   (vkDestroyFramebuffer _device b NULL))
-			  (vkFreeCommandBuffers _device
-						_commandPool
-						(static_cast<uint32_t>
-						 (_commandBuffers.size))
-						(_commandBuffers.data))
-			  ,(vkprint "pipeline" `(_graphicsPipeline
-						 _pipelineLayout
-						 _renderPass))
-			  (vkDestroyPipeline _device _graphicsPipeline NULL)
-			  (vkDestroyPipelineLayout
-			   _device
-			   _pipelineLayout
-			   NULL)
-			  (vkDestroyRenderPass
-			   _device
-			   _renderPass
-			   NULL)
-			  (foreach (view _swapChainImageViews)
-				   ,(vkprint "image-view" `(view))
-				   (vkDestroyImageView
-				    _device
-				    view
-				    NULL))
-			  ,(vkprint "swapchain" `(_swapChain))
-			  (vkDestroySwapchainKHR _device _swapChain NULL)
-			  ;; each swap chain image has a ubo
-			  (dotimes (i (_swapChainImages.size))
-			    ,(vkprint "ubo" `((aref _uniformBuffers i)
-					      (aref _uniformBuffersMemory i)
-					      ))
-			    (vkDestroyBuffer _device
-					     (aref _uniformBuffers i)
-					     NULL)
-			    (vkFreeMemory _device
-					  (aref _uniformBuffersMemory i)
-					  NULL))
-			  ,(vkprint "descriptor-pool" `(_descriptorPool))
-			  (vkDestroyDescriptorPool
-			   _device
-			   _descriptorPool
-			   NULL)
-			  ))
-		       (defun cleanup ()
-			 (declare (values void))
-			
-			 #+surface
-			 (do0
-			  (cleanupSwapChain)
-			  (<< "std::cout"
-			      (string "***** cleanup")
-			      "std::endl")
-			  (do0 ;; tex
-			   ,(vkprint "tex"
-				     `(_textureSampler
-				       _textureImageView
-				       _textureImage
-				       _textureImageMemory
-				       _descriptorSetLayout))
-			   (vkDestroySampler _device
-					     _textureSampler
-					     NULL)
-			   (vkDestroyImageView _device
-					       _textureImageView
-					       NULL)
-			   (vkDestroyImage _device
-					   _textureImage NULL)
-			   (vkFreeMemory _device
-					 _textureImageMemory NULL))
-			  (vkDestroyDescriptorSetLayout
-			   _device
-			   _descriptorSetLayout
-			   NULL)
-			  ,(vkprint "buffers"
-				    `(_vertexBuffer
-				      _vertexBufferMemory
-				      _indexBuffer
-				      _indexBufferMemory
-				      ))
-			  (do0 (vkDestroyBuffer _device _vertexBuffer NULL)
-			       (vkFreeMemory _device _vertexBufferMemory NULL))
-			  (do0 (vkDestroyBuffer _device _indexBuffer NULL)
-			       (vkFreeMemory _device _indexBufferMemory NULL))
-			  (dotimes (i _MAX_FRAMES_IN_FLIGHT)
-			    (do0
-			     ,(vkprint "sync"
-				       `((aref _renderFinishedSemaphores i)
-					 (aref _imageAvailableSemaphores i)
-					 (aref _inFlightFences i)))
-			     (vkDestroySemaphore _device
-						 (aref _renderFinishedSemaphores i)
-						 NULL)
-			     (vkDestroySemaphore _device
-						 (aref _imageAvailableSemaphores i)
-						 NULL)
-			     (vkDestroyFence _device
-					     (aref _inFlightFences i)
-					     NULL)))
-			  ,(vkprint "cmd-pool"
-				    `(_commandPool))
-			  (vkDestroyCommandPool _device _commandPool NULL)
-			
-			
-			  )
-			 ,(vkprint "rest"
-				   `(_device _instance _window))
-			 (vkDestroyDevice _device NULL)
-			 #+surface
-			 (vkDestroySurfaceKHR _instance _surface NULL)
-			 (vkDestroyInstance _instance NULL)
-			 (glfwDestroyWindow _window)
-			 (glfwTerminate)
-			 ))))
+		       )))
 	      )
 	    )))
 					;(write-source *code-file* code)
