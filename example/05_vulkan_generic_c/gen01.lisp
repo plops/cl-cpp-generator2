@@ -2511,6 +2511,14 @@ more structs. this function helps to initialize those structs."
 	     #+nil,(vkprint "tinyobj opened" `(num_shapes
 					  num_materials
 					  attrib.num_face_num_verts))
+	     ;; num_shapes=                       1 (unsigned long int)
+	     ;; num_materials=                    0 (unsigned long int)
+	     ;; attrib.num_face_num_verts=   500000 (unsigned int)
+	     ;; attrib.num_vertices=         234246 (unsigned int)
+	     ;; attrib.num_texcoords=        265645 (unsigned int)
+	     ;; attrib.num_faces=           1500000 (unsigned int)
+	     ;; attrib.num_normals=               0 (unsigned int)
+
 	     ,(vkprint "model" `(num_shapes
 				 num_materials
 				 attrib.num_face_num_verts
