@@ -427,12 +427,7 @@ more structs. this function helps to initialize those structs."
 		      (createDescriptorPool)
 		      (createDescriptorSets)
 		      (createCommandBuffers)
-		      #+nil (
-			     			     
-			     
-			     
-			     
-			     (createSyncObjects)))))
+		      (createSyncObjects))))
 	      `(do0
 		,@(loop for (e) in l collect
 		       `(do0
@@ -3108,10 +3103,41 @@ more structs. this function helps to initialize those structs."
 		   ,(vkthrow `(vkEndCommandBuffer
 			       (aref ,(g `_commandBuffers) i)))
 		   )))))
-  #+nil (define-module
-	    `(
+ (define-module
+	    `(sync_objects
 	      ()
-	      (do0)))
+	      (do0
+	       (defun createSyncObjects ()
+		 (declare (values void))
+		 ;(_imageAvailableSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
+		 ;(_renderFinishedSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
+		 ;(_inFlightFences.resize _MAX_FRAMES_IN_FLIGHT)
+		 ,(vk
+		   `(VkSemaphoreCreateInfo
+		     semaphoreInfo
+		     :sType VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO))
+			   ,(vk
+			     `(VkFenceCreateInfo
+			       fenceInfo
+			       :sType VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+			       :flags VK_FENCE_CREATE_SIGNALED_BIT)
+			     )
+			   (dotimes (i _MAX_FRAMES_IN_FLIGHT)
+			     ,(vkthrow `(vkCreateSemaphore
+					 ,(g `_device)
+					 &semaphoreInfo
+					 NULL
+					 (ref (aref ,(g `_imageAvailableSemaphores) i))))
+			     ,(vkthrow `(vkCreateSemaphore
+					 ,(g `_device)
+					 &semaphoreInfo
+					 NULL
+					 (ref (aref ,(g `_renderFinishedSemaphores) i))))
+			     ,(vkthrow `(vkCreateFence
+					 ,(g `_device)
+					 &fenceInfo
+					 NULL
+					 (ref (aref ,(g `_inFlightFences) i)))))))))
   #+nil (define-module
 	    `(
 	      ()
@@ -3547,37 +3573,7 @@ more structs. this function helps to initialize those structs."
 			  (createCommandBuffers))
 			(do0
 			 "// shader stuff"
-			 (defun createSyncObjects ()
-			   (declare (values void))
-			   (_imageAvailableSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
-			   (_renderFinishedSemaphores.resize _MAX_FRAMES_IN_FLIGHT)
-			   (_inFlightFences.resize _MAX_FRAMES_IN_FLIGHT)
-			   ,(vk
-			     `(VkSemaphoreCreateInfo
-			       semaphoreInfo
-			       :sType VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO))
-			   ,(vk
-			     `(VkFenceCreateInfo
-			       fenceInfo
-			       :sType VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
-			       :flags VK_FENCE_CREATE_SIGNALED_BIT)
-			     )
-			   (dotimes (i _MAX_FRAMES_IN_FLIGHT)
-			     ,(vkthrow `(vkCreateSemaphore
-					 _device
-					 &semaphoreInfo
-					 NULL
-					 (ref (aref _imageAvailableSemaphores i))))
-			     ,(vkthrow `(vkCreateSemaphore
-					 _device
-					 &semaphoreInfo
-					 NULL
-					 (ref (aref _renderFinishedSemaphores i))))
-			     ,(vkthrow `(vkCreateFence
-					 _device
-					 &fenceInfo
-					 NULL
-					 (ref (aref _inFlightFences i))))))
+			 
 			 
 			 
 			 
