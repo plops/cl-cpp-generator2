@@ -222,7 +222,7 @@ more structs. this function helps to initialize those structs."
 		 (_renderFinishedSemaphores[_MAX_FRAMES_IN_FLIGHT] VkSemaphore)
 	       
 		 (_currentFrame size_t)
-		 (_inFlightFences[_N_IMAGES] VkFence)
+		 (_inFlightFences[_MAX_FRAMES_IN_FLIGHT] VkFence)
 		 (_framebufferResized _Bool)
 		 (_vertexBuffer VkBuffer)
 		 (_indexBuffer VkBuffer)
@@ -251,7 +251,7 @@ more structs. this function helps to initialize those structs."
 			(when value
 			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	    `(do0
-	      "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
+	      "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
 	      (defstruct0 State
 		  ,@(loop for e in l collect
 			 (destructuring-bind (name type &optional value) e
@@ -3235,11 +3235,14 @@ more structs. this function helps to initialize those structs."
 			    (declare (type int width height))
 			    (while (or (== 0 width)
 				       (== 0 height))
+			      
 			      (glfwGetFramebufferSize ,(g `_window)
 						      &width
 						      &height)
+			      ,(vkprint "get frame buffer size" `(width height))
 			      (glfwWaitEvents)))
-			
+
+			  ,(vkprint "wait idle")
 			  (vkDeviceWaitIdle ,(g `_device)) ;; wait for resources to be not in use anymore
 			  (cleanupSwapChain)
 			  (createSwapChain)
@@ -3253,9 +3256,12 @@ more structs. this function helps to initialize those structs."
 			  (createUniformBuffers)
 			  (createDescriptorPool)
 			  (createDescriptorSets)
-			  (createCommandBuffers))
+			  (createCommandBuffers)
+			  ,(vkprint "swap chain has been recreated.")
+			  )
 	       (defun drawFrame ()
-		 ,(vkprint "drawFrame")
+		 ,(vkprint "wait for fences" `((aref ,(g `_inFlightFences) ,(g `_currentFrame))
+					       ,(g `_currentFrame)))
 		 (do0
 		  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
 		  )
@@ -3281,6 +3287,7 @@ more structs. this function helps to initialize those structs."
 		     (declare (type VkSemaphore waitSemaphores[]
 				    signalSemaphores[])
 			      (type VkPipelineStageFlags waitStages[]))
+		     ,(vkprint "updateUniformBuffer" `(imageIndex))
 		     (updateUniformBuffer imageIndex)
 		     ,(vk
 		       `(VkSubmitInfo submitInfo

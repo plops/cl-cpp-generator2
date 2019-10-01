@@ -11,7 +11,7 @@ PROTOS:=$(patsubst %, proto_%, $(HFILES))
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 all: vulkan_demo
-vulkan_demo: $(OBJ)
+vulkan_demo: $(OBJ) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 clean:
