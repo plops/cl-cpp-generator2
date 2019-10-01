@@ -2528,25 +2528,47 @@ more structs. this function helps to initialize those structs."
 				 attrib.num_normals))
 	     ;; float attrib.vertices[3*num_vertices]
 	     ;; float attrib.texcoords[3*num_texcoords]
+	     ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
 	     ;; vertex_index_t  attrib.faces[num_faces]
 
 	     (setf
-	      ,(g `_num_vertices) attrib.num_faces
+	      ,(g `_num_vertices) (cast int (/ attrib.num_faces 3))
 	      ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
 					 ,(g `_num_vertices)))
-	      ,(g `_num_indices) attrib.num_faces
+	      ,(g `_num_indices) (cast int (/ attrib.num_faces 3))
 	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
 					,(g `_num_indices))))
 	     
-	     (dotimes (face_idx num_faces)
-	       (setf face (aref attrib.faces face_idx)
-		     v_idx face.v_idx
-		     vt_idx face.vt_idx
-		     vertex (aref attrib.vertices v_idx)
-		     texcoord (aref attrib.texcoords vt_idx)
-		     (aref ,(g `_vertices) face_idx) vertex
-		     (aref ,(g `_indices) face_idx) face_idx
-		     ))
+	     (dotimes (face_idx (cast int (/ attrib.num_faces 3)))
+	       ;; i'm not sure what i am doing. i hope that each entry
+	       ;; in faces corresponds to a vertex with a 3 vertex
+	       ;; coordinates and 2 texture coordinates. i will
+	       ;; collect them into my data structure with possibly
+	       ;; many duplicate vertices.
+	       (let (,@(loop for i below 3 appending
+			    (let ((face (format nil "face~a" i))
+				  (v_idx (format nil "v_idx~a" i))
+				  (vt_idx (format nil "vt_idx~a" i))
+				  (vertex (format nil "vertex~a" i))
+				  (texcoord (format nil "texcoord~a" i)))
+			     `((,face (aref attrib.faces (+ ,i (* 3 face_idx))))
+			       (,v_idx (dot ,face v_idx))
+			       (,vt_idx (dot ,face vt_idx))
+			       (,vertex (aref attrib.vertices ,v_idx))
+			       (,texcoord (aref attrib.texcoords ,vt_idx))
+			       
+			       )))
+		     #+nil (defstruct0 Vertex
+				 (pos vec3)
+			       (color vec3)
+			       (texCoord vec2))
+		       (vertex (cast Vertex
+				     (curly
+				      (curly vertex0 vertex1 vertex2)
+				      (curly 1s0 1s0 1s0)
+				      (curly texcoord0 texcoord1)))))
+		 (setf (aref ,(g `_vertices) face_idx) vertex
+			      (aref ,(g `_indices) face_idx) face_idx)))
 	     
 	     
 	     
