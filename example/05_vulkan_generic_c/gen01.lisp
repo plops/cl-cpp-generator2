@@ -2513,7 +2513,7 @@ more structs. this function helps to initialize those structs."
 					  attrib.num_face_num_verts))
 	     ;; num_shapes=                       1 (unsigned long int)
 	     ;; num_materials=                    0 (unsigned long int)
-	     ;; attrib.num_face_num_verts=   500000 (unsigned int)
+	     ;; attrib.num_face_num_verts=   500000 (unsigned int)   ;; i think  this is the number of vertices belonging to each face. here each face has 3 vertices 
 	     ;; attrib.num_vertices=         234246 (unsigned int)
 	     ;; attrib.num_texcoords=        265645 (unsigned int)
 	     ;; attrib.num_faces=           1500000 (unsigned int)
@@ -2526,14 +2526,29 @@ more structs. this function helps to initialize those structs."
 				 attrib.num_texcoords
 				 attrib.num_faces
 				 attrib.num_normals))
-	     #+nil
+	     ;; float attrib.vertices[3*num_vertices]
+	     ;; float attrib.texcoords[3*num_texcoords]
+	     ;; vertex_index_t  attrib.faces[num_faces]
+
 	     (setf
-	      ,(g `_num_vertices) (* 3 attrib.num_triangles)
+	      ,(g `_num_vertices) attrib.num_faces
 	      ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
 					 ,(g `_num_vertices)))
-	      ,(g `_num_indices) (* 3 attrib.num_triangles)
+	      ,(g `_num_indices) attrib.num_faces
 	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
 					,(g `_num_indices))))
+	     
+	     (dotimes (face_idx num_faces)
+	       (setf face (aref attrib.faces face_idx)
+		     v_idx face.v_idx
+		     vt_idx face.vt_idx
+		     vertex (aref attrib.vertices v_idx)
+		     texcoord (aref attrib.texcoords vt_idx)
+		     (aref ,(g `_vertices) face_idx) vertex
+		     (aref ,(g `_indices) face_idx) face_idx
+		     ))
+	     
+	     
 	     
 	     #+nil
 	     (let ((num_triangles attrib.num_face_num_verts)
