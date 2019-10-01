@@ -422,13 +422,14 @@ more structs. this function helps to initialize those structs."
 		      (createTextureSampler)
 		      (loadModel)
 		      (createVertexBuffer)
+		      (createIndexBuffer)
 		      #+nil (
 			     
 			     
 			     
 			     
 			     
-			     (createIndexBuffer)
+			     
 			     (createUniformBuffers)
 			     (createDescriptorPool)
 			     (createDescriptorSets)
@@ -2794,10 +2795,53 @@ more structs. this function helps to initialize those structs."
 			 (do0
 			  (vkDestroyBuffer ,(g `_device) stagingBuffer.buffer NULL)
 			  (vkFreeMemory ,(g `_device) stagingBuffer.memory NULL))))))
-  #+nil (define-module
-	    `(
+  (define-module
+	    `(index_buffer
 	      ()
-	      (do0)))
+	      (do0
+	       (include <string.h>)
+	       (defun createIndexBuffer ()
+			 (declare (values void))
+			 (let ((bufferSize (* (sizeof (aref ,(g `_indices) 0))
+					      ,(g `_num_indices)))
+			       (stagingBuffer
+				(createBuffer
+				 bufferSize
+				 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+				 (logior
+				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
+			 			
+			   (let ((data))
+			     (declare (type void* data))
+			     (vkMapMemory ,(g `_device) stagingBuffer.memory
+					  0	     ;; offset
+					  bufferSize ;; size
+					  0	     ;; flags
+					  &data)
+			     (memcpy data
+				     ,(g `_indices)
+				     bufferSize)
+			  
+			     (vkUnmapMemory ,(g `_device) stagingBuffer.memory)))
+
+			 (let  ((indexBuffer
+				 (createBuffer
+				  bufferSize
+				  (logior
+				   VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+				   ;; can be a data transfer destination
+				   VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
+			   (setf ,(g `_indexBuffer) indexBuffer.buffer
+				 ,(g `_indexBufferMemory) indexBuffer.memory)
+			   (copyBuffer stagingBuffer.buffer
+				       ,(g `_indexBuffer)
+				       bufferSize))
+		       
+			 (do0
+			  (vkDestroyBuffer ,(g `_device) stagingBuffer.buffer NULL)
+			  (vkFreeMemory ,(g `_device) stagingBuffer.memory NULL))))))
   #+nil (define-module
 	    `(
 	      ()
@@ -3136,51 +3180,7 @@ more structs. this function helps to initialize those structs."
 			     :throw t)))
 		       
 		       
-		       (defun createIndexBuffer ()
-			 (declare (values void))
-			 (let ((bufferSize (* (sizeof (aref g_indices 0))
-					      (g_indices.size)))
-			       ((bracket stagingBuffer
-					 stagingBufferMemory)
-				(createBuffer
-				 bufferSize
-				 VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-				 (logior
-				  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))))
-			 			
-			   (let ((data))
-			     (declare (type void* data))
-			     (vkMapMemory _device stagingBufferMemory
-					  0	     ;; offset
-					  bufferSize ;; size
-					  0	     ;; flags
-					  &data)
-			     (memcpy data
-				     (g_indices.data)
-				     bufferSize)
-			  
-			     (vkUnmapMemory _device stagingBufferMemory)))
-
-			 (let  (((bracket
-				  indexBuffer
-				  indexBufferMemory)
-				 (createBuffer
-				  bufferSize
-				  (logior
-				   VK_BUFFER_USAGE_INDEX_BUFFER_BIT
-				   ;; can be a data transfer destination
-				   VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-				  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)))
-			   (setf _indexBuffer indexBuffer
-				 _indexBufferMemory indexBufferMemory)
-			   (copyBuffer stagingBuffer
-				       _indexBuffer
-				       bufferSize))
 		       
-			 (do0
-			  (vkDestroyBuffer _device stagingBuffer NULL)
-			  (vkFreeMemory _device stagingBufferMemory NULL)))
 		       (defun
 			   beginSingleTimeCommands ()
 			 (declare (values VkCommandBuffer))
