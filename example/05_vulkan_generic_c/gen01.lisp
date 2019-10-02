@@ -2476,9 +2476,8 @@ more structs. this function helps to initialize those structs."
 		  <sys/stat.h>
 		  <sys/types.h>
 		  <unistd.h>
-		  "map.h")
+		  )
 
-	 "typedef map_t(Vertex) v_map_t;"
 	 
 	 ,(emit-utils
 	   :code
@@ -2616,26 +2615,23 @@ more structs. this function helps to initialize those structs."
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
 
-	      (let ((m))
-		(declare (type v_map_t m))
-		(map_init &m)
-	       (dotimes (i attrib.num_faces)
-		 (let (,@(loop for j below 3 collect
-			      `(,(format nil "v~a" j)
-				 (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
-								       v_idx))))))
-		       ,@(loop for j below 2 collect
-			      `(,(format nil "t~a" j)
-				 (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
-									vt_idx))))))
-			 (vertex (cast Vertex
-				       (curly
-					(curly v0 v1 v2)
-					(curly 1s0 1s0 1s0)
-					(curly t0 (- t1))))))
-		   (map_set &m vertex vertex)
-		   (setf (aref ,(g `_vertices) i) vertex
-			 (aref ,(g `_indices) i) i))))
+	      (dotimes (i attrib.num_faces)
+		(let (,@(loop for j below 3 collect
+			     `(,(format nil "v~a" j)
+				(aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
+								      v_idx))))))
+		      ,@(loop for j below 2 collect
+			     `(,(format nil "t~a" j)
+				(aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
+								       vt_idx))))))
+			(vertex (cast Vertex
+				      (curly
+				       (curly v0 v1 v2)
+				       (curly 1s0 1s0 1s0)
+				       (curly t0 (- t1))))))
+		  
+		  (setf (aref ,(g `_vertices) i) vertex
+			(aref ,(g `_indices) i) i)))
 	      
 	      
 	  

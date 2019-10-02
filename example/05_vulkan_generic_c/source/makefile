@@ -11,10 +11,10 @@ PROTOS:=$(patsubst %, proto_%, $(HFILES))
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 all: vulkan_demo
-vulkan_demo: $(OBJ) map.o
+vulkan_demo: $(OBJ) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-vulkan_demo_small: vulkan_00_main.c vulkan_01_instance.c vulkan_02_init.c vulkan_03_glfw_window.c vulkan_04_surface.c vulkan_05_physical_device.c vulkan_06_logical_device.c vulkan_07_swap_chain.c vulkan_08_image_view.c vulkan_09_render_pass.c vulkan_10_descriptor_set_layout.c vulkan_11_graphics_pipeline.c vulkan_12_command_pool.c vulkan_13_color_resource.c vulkan_14_depth_resources.c vulkan_15_framebuffer.c  vulkan_17_texture_image_view.c vulkan_18_texture_sampler.c  vulkan_20_vertex_buffer.c vulkan_21_index_buffer.c vulkan_22_uniform_buffers.c vulkan_23_descriptor_pool.c vulkan_24_descriptor_sets.c vulkan_25_command_buffers.c vulkan_26_sync_objects.c vulkan_27_draw_frame.c vulkan_28_cleanup.c vulkan_16_texture_image.c vulkan_19_load_object.c map.c
+vulkan_demo_small: vulkan_00_main.c vulkan_01_instance.c vulkan_02_init.c vulkan_03_glfw_window.c vulkan_04_surface.c vulkan_05_physical_device.c vulkan_06_logical_device.c vulkan_07_swap_chain.c vulkan_08_image_view.c vulkan_09_render_pass.c vulkan_10_descriptor_set_layout.c vulkan_11_graphics_pipeline.c vulkan_12_command_pool.c vulkan_13_color_resource.c vulkan_14_depth_resources.c vulkan_15_framebuffer.c  vulkan_17_texture_image_view.c vulkan_18_texture_sampler.c  vulkan_20_vertex_buffer.c vulkan_21_index_buffer.c vulkan_22_uniform_buffers.c vulkan_23_descriptor_pool.c vulkan_24_descriptor_sets.c vulkan_25_command_buffers.c vulkan_26_sync_objects.c vulkan_27_draw_frame.c vulkan_28_cleanup.c vulkan_16_texture_image.c vulkan_19_load_object.c 
 	$(CC) -march=native -ffast-math -std=gnu18 -Os `pkg-config --cflags cglm` -lvulkan -lm `pkg-config --static --libs glfw3` -o $@ $^
 
 genclean:
