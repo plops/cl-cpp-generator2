@@ -66,7 +66,7 @@ touch vulkan*.c
 make -j4 vulkan_demo
 #+END_EXAMPLE
 In this case you don't have to regenerate the c files from lisp.
-
+ 
 Note that the files that load the texture and the model contain a
 pragma that will force level 3 optimized (-O3) compilation.
 
