@@ -2559,6 +2559,33 @@ more structs. this function helps to initialize those structs."
 			(hash_i64 uy)
 			(hash_i64 uz)
 			))))
+
+	 ,(emit-utils :code `(do0
+			      (defstruct0 Hashmap_int
+				  (n_bins int)
+				(n_entries int)
+				(data int*))))
+	 (defun hashmap_int_make (n)
+	   (declare (values Hashmap_int)
+		    (type int n))
+	   (let ((n_bytes_hashmap (* (sizeof int) n)))
+	     ,(vkprint "malloc" `(n_bytes_hashmap))
+	     (let ((hm)
+		   (data (calloc n_bytes_hashmap 1)))
+	       (declare (type int* data)
+			(type Hashmap_int hm))
+	       (setf hm.b_bins n
+		     hm.n_entries 0
+		     hm.data data)
+	       (return hm))))
+
+	 (defun hashmap_int_free (h)
+	   (declare (type Hashmap_int* h))
+	   ,(vkprint "free hashmap" `(h->b_bins
+				      h->n_entries))
+	   (free h->data))
+	 
+	 (defun hashmap_index )
 	 
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
@@ -2644,12 +2671,12 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((n_bytes_hashmap (* (sizeof uint64_t)
+	      (let ((n_bytes_hashmap (* (sizeof int)
 					attrib.num_faces)))
 		,(vkprint "malloc" `(n_bytes_hashmap))
-	       (let ((hashmap (calloc n_bytes_hashmap 1)))
+		(let ((hashmap (calloc n_bytes_hashmap 1)))
 		 (declare (type uint64_t* hashmap))
-		 ,(vkprint "hashmap" `((aref hashmap 0)))
+		 ,(vkprint "hashmap empty" `((aref hashmap 0)))
 		 (dotimes (i attrib.num_faces)
 		   (let (,@(loop for j below 3 collect
 				`(,(format nil "v~a" j)
