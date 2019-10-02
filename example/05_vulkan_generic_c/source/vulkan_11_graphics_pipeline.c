@@ -38,7 +38,26 @@ VertexInputAttributeDescription3 Vertex_getAttributeDescriptions (){
 };
  
 Array_u8* makeArray_u8 (int n){
-            Array_u8* a  = malloc(((sizeof(Array_u8))+(((n)*(sizeof(uint8_t))))));
+            __auto_type n_bytes_Array_u8  = ((sizeof(Array_u8))+(((n)*(sizeof(uint8_t)))));
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" malloc: ");
+        printf(" n_bytes_Array_u8=");
+        printf(printf_dec_format(n_bytes_Array_u8), n_bytes_Array_u8);
+        printf(" (%s)", type_string(n_bytes_Array_u8));
+        printf("\n");
+};
+        Array_u8* a  = malloc(n_bytes_Array_u8);
         a->size=n;
     return a;
 }

@@ -579,8 +579,10 @@ more structs. this function helps to initialize those structs."
 		(vkGetPhysicalDeviceSurfaceFormatsKHR device s &formatCount
 						      NULL)
 		(unless (== 0 formatCount)
-		  (setf details.formatsCount formatCount
-			details.formats (malloc (* (sizeof VkSurfaceFormatKHR) formatCount)))
+		  (let ((n_bytes_details_format (* (sizeof VkSurfaceFormatKHR) formatCount)))
+		    ,(vkprint "malloc" `(n_bytes_details_format))
+		   (setf details.formatsCount formatCount
+			 details.formats (malloc n_bytes_details_format)))
 		  
 		  (vkGetPhysicalDeviceSurfaceFormatsKHR
 		   device s &formatCount
@@ -591,8 +593,10 @@ more structs. this function helps to initialize those structs."
 		 device s &presentModeCount
 		 NULL)
 		(unless (== 0 presentModeCount)
-		  (setf details.presentModesCount presentModeCount
-			details.presentModes ("(VkPresentModeKHR*)" (malloc (* (sizeof VkPresentModeKHR) presentModeCount))))
+		  (let ((n_bytes_presentModeCount (* (sizeof VkPresentModeKHR) presentModeCount)))
+		    ,(vkprint "malloc" `(n_bytes_presentModeCount))
+		    (setf details.presentModesCount presentModeCount
+			  details.presentModes ("(VkPresentModeKHR*)" (malloc n_bytes_presentModeCount))))
 		  (vkGetPhysicalDeviceSurfacePresentModesKHR
 		   device s &presentModeCount
 		   details.presentModes)))
@@ -1321,11 +1325,13 @@ more structs. this function helps to initialize those structs."
 	 (defun makeArray_u8 (n)
 	   (declare (type int n)
 		    (values Array_u8*))
-	   (let ((a (malloc (+ (sizeof Array_u8)
-			       (* n (sizeof uint8_t))))))
-	     (declare (type Array_u8* a))
-	     (setf a->size n)
-	     (return a)))
+	   (let ((n_bytes_Array_u8 (+ (sizeof Array_u8)
+				      (* n (sizeof uint8_t)))))
+	     ,(vkprint "malloc" `(n_bytes_Array_u8))
+	    (let ((a (malloc n_bytes_Array_u8)))
+	      (declare (type Array_u8* a))
+	      (setf a->size n)
+	      (return a))))
 	 (defun destroyArray_u8 (a)
 	   (declare (type Array_u8* a))
 	   (free a))

@@ -66,15 +66,53 @@ SwapChainSupportDetails querySwapChainSupport (VkPhysicalDevice device){
         uint32_t formatCount  = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(device, s, &formatCount, NULL);
     if ( !((0)==(formatCount)) ) {
-                                details.formatsCount=formatCount;
-        details.formats=malloc(((sizeof(VkSurfaceFormatKHR))*(formatCount)));
+                                __auto_type n_bytes_details_format  = ((sizeof(VkSurfaceFormatKHR))*(formatCount));
+        {
+                                    struct timespec tp ;
+            clock_gettime(CLOCK_REALTIME, &tp);
+            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+            printf(".");
+            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+            printf(" ");
+            printf(printf_dec_format(__FILE__), __FILE__);
+            printf(":");
+            printf(printf_dec_format(__LINE__), __LINE__);
+            printf(" ");
+            printf(printf_dec_format(__func__), __func__);
+            printf(" malloc: ");
+            printf(" n_bytes_details_format=");
+            printf(printf_dec_format(n_bytes_details_format), n_bytes_details_format);
+            printf(" (%s)", type_string(n_bytes_details_format));
+            printf("\n");
+};
+                details.formatsCount=formatCount;
+        details.formats=malloc(n_bytes_details_format);
         vkGetPhysicalDeviceSurfaceFormatsKHR(device, s, &formatCount, details.formats);
 };
         uint32_t presentModeCount  = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, s, &presentModeCount, NULL);
     if ( !((0)==(presentModeCount)) ) {
-                                details.presentModesCount=presentModeCount;
-        details.presentModes=(VkPresentModeKHR*)(malloc(((sizeof(VkPresentModeKHR))*(presentModeCount))));
+                                __auto_type n_bytes_presentModeCount  = ((sizeof(VkPresentModeKHR))*(presentModeCount));
+        {
+                                    struct timespec tp ;
+            clock_gettime(CLOCK_REALTIME, &tp);
+            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+            printf(".");
+            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+            printf(" ");
+            printf(printf_dec_format(__FILE__), __FILE__);
+            printf(":");
+            printf(printf_dec_format(__LINE__), __LINE__);
+            printf(" ");
+            printf(printf_dec_format(__func__), __func__);
+            printf(" malloc: ");
+            printf(" n_bytes_presentModeCount=");
+            printf(printf_dec_format(n_bytes_presentModeCount), n_bytes_presentModeCount);
+            printf(" (%s)", type_string(n_bytes_presentModeCount));
+            printf("\n");
+};
+                details.presentModesCount=presentModeCount;
+        details.presentModes=(VkPresentModeKHR*)(malloc(n_bytes_presentModeCount));
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, s, &presentModeCount, details.presentModes);
 };
     return details;
