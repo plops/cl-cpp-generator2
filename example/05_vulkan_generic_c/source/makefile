@@ -14,8 +14,11 @@ all: vulkan_demo
 vulkan_demo: $(OBJ) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-clean:
+genclean:
 	rm *.c *.o vulkan*.h proto_*.h globals.h utils.h proto2.h *.spv *.frag *.vert vulkan_demo
+
+clean:
+	rm *.o vulkan*.h proto_*.h proto2.h vulkan_demo
 
 proto2.h: $(PROTOS)
 	cat $^ >> $@

@@ -80,7 +80,7 @@ void createImageViews (){
             printf(" i=");
             printf(printf_dec_format(i), i);
             printf(" (%s)", type_string(i));
-            printf(" (length (dot state _swapChainImages))=");
+            printf(" length(state._swapChainImages)=");
             printf(printf_dec_format(length(state._swapChainImages)), length(state._swapChainImages));
             printf(" (%s)", type_string(length(state._swapChainImages)));
             printf("\n");

@@ -79,7 +79,7 @@ void createLogicalDevice (){
                             printf(" ");
                             printf(printf_dec_format(__func__), __func__);
                             printf(" loop through all queue indeces that have been seen before: ");
-                            printf(" (aref qSeen i)=");
+                            printf(" qSeen[i]=");
                             printf(printf_dec_format(qSeen[i]), qSeen[i]);
                             printf(" (%s)", type_string(qSeen[i]));
                             printf(" i=");

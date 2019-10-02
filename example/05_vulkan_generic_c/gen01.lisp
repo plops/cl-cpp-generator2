@@ -50,7 +50,7 @@
 		  ((printf_dec_format __func__) __func__)
 		  (,m)
 		  ,@(loop for e in rest appending
-			 `(((string ,(format nil " ~a=" e)))
+			 `(((string ,(format nil " ~a=" (emit-c :code e))))
 			   ((printf_dec_format ,e) ,e)
 			   ((string " (%s)") (type_string ,e))
 			   ))
@@ -251,7 +251,7 @@ more structs. this function helps to initialize those structs."
 			(when value
 			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	    `(do0
-	      "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	      "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
 	      (defstruct0 State
 		  ,@(loop for e in l collect
 			 (destructuring-bind (name type &optional value) e
@@ -3265,6 +3265,7 @@ more structs. this function helps to initialize those structs."
 		 (do0
 		  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
 		  )
+		 ,(vkprint "acquire next image" `(,(g `_swapChain) (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
 		 (let ((imageIndex 0)
 		       (result (vkAcquireNextImageKHR
 				,(g `_device)
@@ -3274,7 +3275,7 @@ more structs. this function helps to initialize those structs."
 				VK_NULL_HANDLE
 				&imageIndex)))
 		   (declare (type uint32_t imageIndex))
-		   
+		   ,(vkprint "next image is" `(imageIndex))
 		   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
 		     (recreateSwapChain)
 		     (return))
@@ -3341,10 +3342,13 @@ more structs. this function helps to initialize those structs."
 		       )
 		     
 		     ))
-		 (setf ,(g `_currentFrame)
-		       (%
-			(+ 1 ,(g `_currentFrame))
-			_MAX_FRAMES_IN_FLIGHT))))))
+		 (do0
+		  ,(vkprint "next frame from" `(,(g `_currentFrame)))
+		  (setf ,(g `_currentFrame)
+			(%
+			 (+ 1 ,(g `_currentFrame))
+			 _MAX_FRAMES_IN_FLIGHT))
+		  ,(vkprint "next frame is" `(,(g `_currentFrame))))))))
    (define-module
 	    `(cleanup
 	      ()
