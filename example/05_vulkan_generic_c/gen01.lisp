@@ -2552,14 +2552,14 @@ more structs. this function helps to initialize those structs."
 	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
 					,(g `_num_indices))))
 
-	     (dotimes (j ,(g `_num_vertices))
-	       (let (,@(loop for i below 3 appending
+	     (for ((= "int  j" 0) (< j ,(g `_num_vertices)) (incf j 3))
+		  (let (,@(loop for i below 3 appending
 			    (let ((face (format nil "face~a" i))
 				  (v_idx (format nil "v_idx~a" i))
 				  (vt_idx (format nil "vt_idx~a" i))
 				  (vertex (format nil "vertex~a" i))
 				  (texcoord (format nil "texcoord~a" i)))
-			     `((,vertex (aref attrib.vertices (+ ,i (* 3 j))))
+			     `((,vertex (aref attrib.vertices (+ ,i j)))
 			       
 			       
 			       )))

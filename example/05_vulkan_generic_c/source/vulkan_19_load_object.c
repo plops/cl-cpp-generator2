@@ -222,10 +222,10 @@ void loadModel (){
     state._vertices=malloc(((sizeof(*(state._vertices)))*(state._num_vertices)));
     state._num_indices=(int) ((attrib.num_faces)/(3));
     state._indices=malloc(((sizeof(*(state._indices)))*(state._num_indices)));
-    for (int j = 0;j<state._num_vertices;(j)+=(1)) {
-                        __auto_type vertex0  = attrib.vertices[((0)+(((3)*(j))))];
-        __auto_type vertex1  = attrib.vertices[((1)+(((3)*(j))))];
-        __auto_type vertex2  = attrib.vertices[((2)+(((3)*(j))))];
+    for (int  j=0;j<state._num_vertices;(j)+=(3)) {
+                        __auto_type vertex0  = attrib.vertices[((0)+(j))];
+        __auto_type vertex1  = attrib.vertices[((1)+(j))];
+        __auto_type vertex2  = attrib.vertices[((2)+(j))];
         __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {(0.0e+0f), (0.0e+0f)}};
                 state._vertices[j]=vertex;
         state._indices[j]=j;
