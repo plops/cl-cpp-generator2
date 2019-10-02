@@ -2620,7 +2620,7 @@ more structs. this function helps to initialize those structs."
 									   vt_idx))))
 				     (aref attrib.texcoords (+ 1 (* 2 (dot (aref (dot attrib faces) i)
 									   vt_idx)))))))))
-	      (dotimes (i 500000)
+	      (dotimes (i 1500000)
 		(let (,@(loop for j below 3 collect
 			     `(,(format nil "v~a" j)
 			       (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)

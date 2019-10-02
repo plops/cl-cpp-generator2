@@ -239,7 +239,7 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-    for (int i = 0;i<500000;(i)+=(1)) {
+    for (int i = 0;i<1500000;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v2  = attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))];
