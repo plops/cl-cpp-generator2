@@ -2444,6 +2444,9 @@ more structs. this function helps to initialize those structs."
       `(load_object
 	()
 	(do0
+	 "#pragma GCC optimize (\"O3\")"
+	 " "
+	 
 	 "#define TINYOBJ_LOADER_C_IMPLEMENTATION"
 	 (include "tinyobj_loader_c.h")
 	 (include <fcntl.h>
@@ -2502,8 +2505,6 @@ more structs. this function helps to initialize those structs."
 	    ,(g `_num_indices) 0
 	    ))
 
-	 "#pragma GCC optimize (\"O3\")"
-	 " "
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
 	   ;; obj file that i use contains lists of vertex positions

@@ -9,6 +9,8 @@
 #include "proto2.h"
  ;
 extern State state;
+#pragma GCC optimize ("O3")
+ 
 #define TINYOBJ_LOADER_C_IMPLEMENTATION
 #include "tinyobj_loader_c.h"
 #include <fcntl.h>
@@ -142,8 +144,6 @@ void cleanupModel (){
             state._num_vertices=0;
     state._num_indices=0;
 }
-#pragma GCC optimize ("O3")
- 
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
