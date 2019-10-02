@@ -18,6 +18,8 @@ extern State state;
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "map.h"
+typedef map_t(Vertex) v_map_t;
  
 void munmapFile (mmapPair pair){
         munmap(pair.data, pair.n);
@@ -239,7 +241,9 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-    for (int i = 0;i<1500000;(i)+=(1)) {
+        v_map_t m ;
+    map_init(&m);
+    for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v2  = attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))];
@@ -248,7 +252,7 @@ void loadModel (){
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
                 state._vertices[i]=vertex;
         state._indices[i]=i;
-}
+};
     munmapFile(map);
         // cleanup
     tinyobj_attrib_free(&attrib);
