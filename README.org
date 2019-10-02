@@ -177,7 +177,13 @@ Here is an overview of supported expressions:
 
 * History
 
-This is the tenth in a series of code generators.
+This is the tenth in a series of code generators. I started using
+c-mera but didn't like its complexity and slowness. I used
+cl-cpp-generator quite a bit to create propietary code at different
+jobs. In an effort to publish this work I collected links to many
+other Lisp related code generation projects in it's README. The talk
+was not accepted but I am very grateful for the reviewers'
+comments. Their suggestions went into cl-cpp-generator2.
 
 - https://github.com/plops/cl-cpp-generator I tried this generator
   with C/C++/ISPC/OpenCL/Cuda. It was my first attempt. The largest
