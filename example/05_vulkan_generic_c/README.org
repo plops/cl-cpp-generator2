@@ -70,3 +70,50 @@ In this case you don't have to regenerate the c files from lisp.
 Note that the files that load the texture and the model contain a
 pragma that will force level 3 optimized (-O3) compilation.
 
+* Printing
+
+The lisp macro vkprint allows to print the name of c variable, their
+value and the type. It constructs the format string for many scalar
+objects using the _Generic construct that was introduced to C11.
+
+Here is an example:
+#+BEGIN_EXAMPLE
+(defun generateMipmaps (image imageFormat texWidth texHeight mipLevels)
+  (declare (values void)
+           (type VkImage image)
+	   (type VkFormat imageFormat)
+	   (type int32_t texHeight mipLevels texWidth))
+  (dotimes (i n)
+    ,(vkprint " vkCmdPipelineBarrier " `(i))))
+#+END_EXAMPLE
+
+vkprint expands to this c code:
+#+BEGIN_EXAMPLE
+ {
+     __auto_type current_time  = now();
+     printf("%6.6f", ((current_time)-(state._start_time)));
+     printf(" ");
+     printf(printf_dec_format(__FILE__), __FILE__);
+     printf(":");
+     printf(printf_dec_format(__LINE__), __LINE__);
+     printf(" ");
+     printf(printf_dec_format(__func__), __func__);
+     printf("  vkCmdPipelineBarrier : ");
+     printf(" i=");
+     printf(printf_dec_format(i), i);
+     printf(" (%s)", type_string(i));
+     printf("\n");
+ };
+#+END_EXAMPLE
+
+What is nice about this is that the C preprocessor macro
+printf_dec_format can provide a format string for most (scalar)
+variables. However, I think the C code gets quite unreadable because
+there are too many lines.
+
+I will now try to create a variadic C preprocessor macro that
+condenses the print statement into a call like this:
+
+#+BEGIN_EXAMPLE
+print(" vkCmdPipelineBarrier ",i)
+#+END_EXAMPLE
