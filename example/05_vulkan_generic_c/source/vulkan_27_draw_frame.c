@@ -38,8 +38,65 @@ void updateUniformBuffer (uint32_t currentImage){
     glm_mat4_copy(projection, ubo.proj);
         ubo.proj[1][1]=(-(ubo.proj[1][1]));
         void* data  = 0;
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" start map memory: ");
+        printf(" state._uniformBuffersMemory[currentImage]=");
+        printf(printf_dec_format(state._uniformBuffersMemory[currentImage]), state._uniformBuffersMemory[currentImage]);
+        printf(" (%s)", type_string(state._uniformBuffersMemory[currentImage]));
+        printf("\n");
+};
     vkMapMemory(state._device, state._uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" mapped memory: ");
+        printf(" data=");
+        printf(printf_dec_format(data), data);
+        printf(" (%s)", type_string(data));
+        printf(" sizeof(ubo)=");
+        printf(printf_dec_format(sizeof(ubo)), sizeof(ubo));
+        printf(" (%s)", type_string(sizeof(ubo)));
+        printf("\n");
+};
     memcpy(data, &ubo, sizeof(ubo));
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" unmap memory: ");
+        printf(" state._uniformBuffersMemory[currentImage]=");
+        printf(printf_dec_format(state._uniformBuffersMemory[currentImage]), state._uniformBuffersMemory[currentImage]);
+        printf(" (%s)", type_string(state._uniformBuffersMemory[currentImage]));
+        printf("\n");
+};
     vkUnmapMemory(state._device, state._uniformBuffersMemory[currentImage]);
 }
 void recreateSwapChain (){
@@ -221,6 +278,21 @@ void drawFrame (){
         printf("\n");
 };
     updateUniformBuffer(imageIndex);
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" submit info: ");
+        printf("\n");
+};
         VkSubmitInfo submitInfo  = {};
         submitInfo.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.waitSemaphoreCount=1;

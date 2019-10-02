@@ -3211,6 +3211,8 @@ more structs. this function helps to initialize those structs."
 				 (- (aref ubo.proj 1 1)))
 			   (let ((data 0))
 			     (declare (type void* data))
+			     ,(vkprint "start map memory" `((aref ,(g `_uniformBuffersMemory)
+						  currentImage)))
 			     (vkMapMemory ,(g `_device)
 					  (aref ,(g `_uniformBuffersMemory)
 						currentImage)
@@ -3218,7 +3220,10 @@ more structs. this function helps to initialize those structs."
 					  (sizeof ubo)
 					  0
 					  &data)
+			     ,(vkprint "mapped memory" `(data (sizeof ubo)))
 			     (memcpy data &ubo (sizeof ubo))
+			     ,(vkprint "unmap memory" `((aref ,(g `_uniformBuffersMemory)
+						  currentImage)))
 			     (vkUnmapMemory ,(g `_device)
 					    (aref ,(g `_uniformBuffersMemory)
 						  currentImage)))
@@ -3290,6 +3295,7 @@ more structs. this function helps to initialize those structs."
 			      (type VkPipelineStageFlags waitStages[]))
 		     ,(vkprint "updateUniformBuffer" `(imageIndex))
 		     (updateUniformBuffer imageIndex)
+		     ,(vkprint "submit info")
 		     ,(vk
 		       `(VkSubmitInfo submitInfo
 				      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
