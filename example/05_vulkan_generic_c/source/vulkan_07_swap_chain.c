@@ -10,6 +10,7 @@
  ;
 extern State state;
 #include <stdlib.h>
+#include <assert.h>
 VkSurfaceFormatKHR chooseSwapSurfaceFormat (const VkSurfaceFormatKHR* availableFormats, int n){
         for (int i = 0;i<n;(i)+=(1)) {
                         __auto_type format  = availableFormats[i];
@@ -47,12 +48,41 @@ void createSwapChain (){
     __auto_type surfaceFormat  = chooseSwapSurfaceFormat(swapChainSupport.formats, swapChainSupport.formatsCount);
     __auto_type presentMode  = chooseSwapPresentMode(swapChainSupport.presentModes, swapChainSupport.presentModesCount);
     __auto_type extent  = chooseSwapExtent(&swapChainSupport.capabilities);
-    __auto_type imageCount  = ((swapChainSupport.capabilities.minImageCount)+(1));
+    __auto_type imageCount_  = ((swapChainSupport.capabilities.minImageCount)+(1));
+    __auto_type imageCount  = max(max(imageCount_, _N_IMAGES), swapChainSupport.capabilities.maxImageCount);
     __auto_type indices  = findQueueFamilies(state._physicalDevice);
     __typeof__(indices.graphicsFamily) queueFamilyIndices[]  = {indices.graphicsFamily, indices.presentFamily};
     __auto_type imageSharingMode  = VK_SHARING_MODE_EXCLUSIVE;
     __auto_type queueFamilyIndexCount  = 0;
     __auto_type pQueueFamilyIndices  = NULL;
+    assert((imageCount)<=(swapChainSupport.capabilities.maxImageCount));
+    {
+                        struct timespec tp ;
+        clock_gettime(CLOCK_REALTIME, &tp);
+        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
+        printf(".");
+        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" create swap chain: ");
+        printf(" imageCount_=");
+        printf(printf_dec_format(imageCount_), imageCount_);
+        printf(" (%s)", type_string(imageCount_));
+        printf(" imageCount=");
+        printf(printf_dec_format(imageCount), imageCount);
+        printf(" (%s)", type_string(imageCount));
+        printf(" swapChainSupport.capabilities.minImageCount=");
+        printf(printf_dec_format(swapChainSupport.capabilities.minImageCount), swapChainSupport.capabilities.minImageCount);
+        printf(" (%s)", type_string(swapChainSupport.capabilities.minImageCount));
+        printf(" swapChainSupport.capabilities.maxImageCount=");
+        printf(printf_dec_format(swapChainSupport.capabilities.maxImageCount), swapChainSupport.capabilities.maxImageCount);
+        printf(" (%s)", type_string(swapChainSupport.capabilities.maxImageCount));
+        printf("\n");
+};
     if ( !((indices.presentFamily)==(indices.graphicsFamily)) ) {
                         // this could be improved with ownership stuff
                 imageSharingMode=VK_SHARING_MODE_CONCURRENT;

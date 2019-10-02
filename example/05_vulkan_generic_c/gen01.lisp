@@ -818,7 +818,9 @@ more structs. this function helps to initialize those structs."
       `(swap_chain
 	()
 	(do0
-	 (include <stdlib.h>)
+	 (include <stdlib.h>
+		  <assert.h>)
+	 
 	 (do0
 	  (defun chooseSwapSurfaceFormat (availableFormats n)
 	    (declare (values VkSurfaceFormatKHR)
@@ -891,8 +893,12 @@ more structs. this function helps to initialize those structs."
 		  (chooseSwapExtent
 		   &swapChainSupport.capabilities
 		   ))
-		 (imageCount
+		 (imageCount_
 		  (+ swapChainSupport.capabilities.minImageCount 1))
+		 (imageCount (max
+			      (max imageCount_
+				   _N_IMAGES)
+			      swapChainSupport.capabilities.maxImageCount))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
 		 (queueFamilyIndices[] (curly
 					indices.graphicsFamily
@@ -902,6 +908,10 @@ more structs. this function helps to initialize those structs."
 		 (queueFamilyIndexCount 0)
 		 (pQueueFamilyIndices NULL))
 	     (declare (type "__typeof__(indices.graphicsFamily)" queueFamilyIndices[]))
+	     (assert (<= imageCount swapChainSupport.capabilities.maxImageCount))
+	     ,(vkprint "create swap chain" `(imageCount_ imageCount
+							 swapChainSupport.capabilities.minImageCount
+							 swapChainSupport.capabilities.maxImageCount))
 	     (unless (== indices.presentFamily
 			 indices.graphicsFamily)
 	       "// this could be improved with ownership stuff"
@@ -2850,24 +2860,29 @@ more structs. this function helps to initialize those structs."
 		     (view "mat4")
 		     (proj "mat4"))))
 	       (defun createUniformBuffers ()
-			  (declare (values void))
-			  (let ((bufferSize (sizeof UniformBufferObject))
-				(n (length ,(g `_swapChainImages))))
-			    ;(_uniformBuffers.resize n)
-			    ;(_uniformBuffersMemory.resize n)
-			    (dotimes (i n)
-			      (let ((uniformBuffer
-				     (createBuffer
-				      bufferSize
-				      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
-				      (logior
-				       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-				      )))
-				(setf (aref ,(g `_uniformBuffers) i)
-				      uniformBuffer.buffer
-				      (aref ,(g `_uniformBuffersMemory) i)
-				      uniformBuffer.memory))))))))
+		 
+		 (let ((bufferSize (sizeof UniformBufferObject))
+		       (n (length ,(g `_swapChainImages))))
+					;(_uniformBuffers.resize n)
+					;(_uniformBuffersMemory.resize n)
+		   ,(vkprint "create uniform buffers" `(bufferSize
+							(length ,(g `_swapChainImages))
+							(length ,(g `_uniformBuffers))
+							(length ,(g `_uniformBuffersMemory))
+							))
+		   (dotimes (i n)
+		     (let ((uniformBuffer
+			    (createBuffer
+			     bufferSize
+			     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+			     (logior
+			      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+			     )))
+		       (setf (aref ,(g `_uniformBuffers) i)
+			     uniformBuffer.buffer
+			     (aref ,(g `_uniformBuffersMemory) i)
+			     uniformBuffer.memory))))))))
  (define-module
 	    `(descriptor_pool
 	      ()
