@@ -2633,7 +2633,7 @@ more structs. this function helps to initialize those structs."
 					 (curly
 					  (curly v0 v1 v2)
 					  (curly 1s0 1s0 1s0)
-					  (curly t0 t1)))))
+					  (curly t0 (* -1 t1))))))
 		  (setf (aref ,(g `_vertices) i) vertex
 			   (aref ,(g `_indices) i) i)))
 	      
