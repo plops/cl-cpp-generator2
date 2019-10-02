@@ -2602,25 +2602,42 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-
-	      ,@(loop for e in `(vertices texcoords) collect
-		     `(dotimes (i 30)
-			,(vkprint (format nil "~a" e) `(i (aref (dot attrib ,e) i)))))
-	      ,@(loop for e in `(v_idx) collect
-		     `(dotimes (i 20)
-			,(vkprint (format nil "~a" e)
-				  `(i
-				    (aref attrib.vertices (+ 0 (* 3 (dot (aref (dot attrib faces) i)
-									 v_idx))))
-				    (aref attrib.vertices (+ 1 (* 3 (dot (aref (dot attrib faces) i)
-									 v_idx))))
-				    (aref attrib.vertices (+ 2 (* 3 (dot (aref (dot attrib faces) i)
-									 v_idx))))
-				    (aref attrib.texcoords (+ 0 (* 2 (dot (aref (dot attrib faces) i)
-									  vt_idx))))
-				    (aref attrib.texcoords (+ 1 (* 2 (dot (aref (dot attrib faces) i)
-									  vt_idx))))))))
+	      #+nil(do0
+	       ,@(loop for e in `(vertices texcoords) collect
+		      `(dotimes (i 30)
+			 ,(vkprint (format nil "~a" e) `(i (aref (dot attrib ,e) i)))))
+	       ,@(loop for e in `(v_idx) collect
+		      `(dotimes (i 20)
+			 ,(vkprint (format nil "~a" e)
+				   `(i
+				     (aref attrib.vertices (+ 0 (* 3 (dot (aref (dot attrib faces) i)
+									  v_idx))))
+				     (aref attrib.vertices (+ 1 (* 3 (dot (aref (dot attrib faces) i)
+									  v_idx))))
+				     (aref attrib.vertices (+ 2 (* 3 (dot (aref (dot attrib faces) i)
+									  v_idx))))
+				     (aref attrib.texcoords (+ 0 (* 2 (dot (aref (dot attrib faces) i)
+									   vt_idx))))
+				     (aref attrib.texcoords (+ 1 (* 2 (dot (aref (dot attrib faces) i)
+									   vt_idx)))))))))
+	      (dotimes (i 100000)
+		(let (,@(loop for j below 3 collect
+			     `(,(format nil "v~a" j)
+			       (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
+								     v_idx))))))
+		      ,@(loop for j below 2 collect
+			     `(,(format nil "t~a" j)
+			       (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
+								      v_idx))))))
+			(vertex (cast Vertex
+					 (curly
+					  (curly v0 v1 v2)
+					  (curly 1s0 1s0 1s0)
+					  (curly t0 t1)))))
+		  (setf (aref ,(g `_vertices) i) vertex
+			   (aref ,(g `_indices) i) i)))
 	      
+	      #+nil
 	      (for ((= "int  j" 0) (< j (/ ,(g `_num_vertices) 9)) (incf j ))
 		   (let (,@(loop for i below 3 appending
 				(let ((face (format nil "face~a" i))

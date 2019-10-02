@@ -239,87 +239,15 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-    for (int i = 0;i<30;(i)+=(1)) {
-                {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" vertices: ");
-            printf(" i=");
-            printf(printf_dec_format(i), i);
-            printf(" (%s)", type_string(i));
-            printf(" attrib.vertices[i]=");
-            printf(printf_dec_format(attrib.vertices[i]), attrib.vertices[i]);
-            printf(" (%s)", type_string(attrib.vertices[i]));
-            printf("\n");
-};
-}
-    for (int i = 0;i<30;(i)+=(1)) {
-                {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" texcoords: ");
-            printf(" i=");
-            printf(printf_dec_format(i), i);
-            printf(" (%s)", type_string(i));
-            printf(" attrib.texcoords[i]=");
-            printf(printf_dec_format(attrib.texcoords[i]), attrib.texcoords[i]);
-            printf(" (%s)", type_string(attrib.texcoords[i]));
-            printf("\n");
-};
-}
-    for (int i = 0;i<20;(i)+=(1)) {
-                {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" v_idx: ");
-            printf(" i=");
-            printf(printf_dec_format(i), i);
-            printf(" (%s)", type_string(i));
-            printf(" attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))]=");
-            printf(printf_dec_format(attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))]), attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))]);
-            printf(" (%s)", type_string(attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))]));
-            printf(" attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))]=");
-            printf(printf_dec_format(attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))]), attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))]);
-            printf(" (%s)", type_string(attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))]));
-            printf(" attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))]=");
-            printf(printf_dec_format(attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))]), attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))]);
-            printf(" (%s)", type_string(attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))]));
-            printf(" attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))]=");
-            printf(printf_dec_format(attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))]), attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))]);
-            printf(" (%s)", type_string(attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))]));
-            printf(" attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))]=");
-            printf(printf_dec_format(attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))]), attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))]);
-            printf(" (%s)", type_string(attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))]));
-            printf("\n");
-};
-}
-    for (int  j=0;j<((state._num_vertices)/(9));(j)++) {
-                        __auto_type vertex0  = attrib.vertices[((0)+(((9)*(j))))];
-        __auto_type vertex1  = attrib.vertices[((1)+(((9)*(j))))];
-        __auto_type vertex2  = attrib.vertices[((2)+(((9)*(j))))];
-        __auto_type texcoord0  = attrib.texcoords[((0)+(((2)*(3)*(j))))];
-        __auto_type texcoord1  = attrib.texcoords[((1)+(((2)*(3)*(j))))];
-        __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), vertex2}, {texcoord0, texcoord1}};
-                state._vertices[j]=vertex;
-        state._indices[j]=j;
+    for (int i = 0;i<100000;(i)+=(1)) {
+                        __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
+        __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
+        __auto_type v2  = attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))];
+        __auto_type t0  = attrib.texcoords[((0)+(((2)*(attrib.faces[i].v_idx))))];
+        __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].v_idx))))];
+        __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, t1}};
+                state._vertices[i]=vertex;
+        state._indices[i]=i;
 }
     munmapFile(map);
         // cleanup
