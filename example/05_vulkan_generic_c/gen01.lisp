@@ -2604,18 +2604,22 @@ more structs. this function helps to initialize those structs."
 		  ,(g `_indices) (malloc n_bytes_indices))))
 
 	      ,@(loop for e in `(vertices texcoords) collect
-		     `(dotimes (i 10)
+		     `(dotimes (i 30)
 			,(vkprint (format nil "~a" e) `(i (aref (dot attrib ,e) i)))))
 	      ,@(loop for e in `(v_idx) collect
-		     `(dotimes (i 60)
-			(unless (== (dot (aref (dot attrib faces) i)
-					 v_idx)
-				    (dot (aref (dot attrib faces) i)
-					 vt_idx))
-			 ,(vkprint (format nil "~a" e) `(i (dot (aref (dot attrib faces) i)
-								v_idx)
-							   (dot (aref (dot attrib faces) i)
-								vt_idx))))))
+		     `(dotimes (i 20)
+			,(vkprint (format nil "~a" e)
+				  `(i
+				    (aref attrib.vertices (+ 0 (* 3 (dot (aref (dot attrib faces) i)
+									 v_idx))))
+				    (aref attrib.vertices (+ 1 (* 3 (dot (aref (dot attrib faces) i)
+									 v_idx))))
+				    (aref attrib.vertices (+ 2 (* 3 (dot (aref (dot attrib faces) i)
+									 v_idx))))
+				    (aref attrib.texcoords (+ 0 (* 2 (dot (aref (dot attrib faces) i)
+									  vt_idx))))
+				    (aref attrib.texcoords (+ 1 (* 2 (dot (aref (dot attrib faces) i)
+									  vt_idx))))))))
 	      
 	      (for ((= "int  j" 0) (< j (/ ,(g `_num_vertices) 9)) (incf j ))
 		   (let (,@(loop for i below 3 appending
