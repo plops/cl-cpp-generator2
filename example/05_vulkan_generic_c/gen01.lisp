@@ -2559,13 +2559,27 @@ more structs. this function helps to initialize those structs."
 	      ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
 	      ;; vertex_index_t  attrib.faces[num_faces]
 
-	      (setf
-	       ,(g `_num_vertices) (cast int (/ attrib.num_faces 3))
-	       ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
-					  ,(g `_num_vertices)))
-	       ,(g `_num_indices) (cast int (/ attrib.num_faces 3))
-	       ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
-					 ,(g `_num_indices))))
+
+	      (do0
+	       (setf
+		  ,(g `_num_vertices) (cast int (/ attrib.num_faces 3))
+		  )
+	       (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))
+					  ,(g `_num_vertices))))
+		 ,(vkprint "malloc" `(n_bytes_vertices))
+		 (setf
+		  
+		  ,(g `_vertices) (malloc n_bytes_vertices)
+		  )))
+	      (do0
+	       (setf
+		,(g `_num_indices) (cast int (/ attrib.num_faces 3))
+		)
+	       (let ((n_bytes_indices (* (sizeof (deref ,(g `_indices)))
+					    ,(g `_num_indices))))
+		 ,(vkprint "malloc" `(n_bytes_indices))
+		 (setf
+		  ,(g `_indices) (malloc n_bytes_indices))))
 
 	      (for ((= "int  j" 0) (< j ,(g `_num_vertices)) (incf j 3))
 		   (let (,@(loop for i below 3 appending
