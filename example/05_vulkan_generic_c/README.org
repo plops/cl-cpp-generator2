@@ -10,7 +10,29 @@ The goal of this code is to have a fast prototyping platform. I want
 to experiment with visualizations. I might want to get this running on
 Android.
 
+* Dependencies
+
+This project requires two header-only libraries. stbi_load to load
+texture images and tinyobj_loader_c for geometry. Run
+source/get_libs.sh it will download the two required headers, one
+texture and one file with geometry.
+
 * Building
+
+I assume that you have quicklisp installed. Add the cl-cpp-generator2
+package in your home directory like this:
+#+BEGIN_EXAMPLE
+cd ~
+mkdir stage
+git clone https://github.com/plops/cl-cpp-generator2
+ln -s ~/stage/cl-cpp-generator2 ~/quicklisp/local-projects.
+#+END_EXAMPLE
+
+Open gen01.lisp in emacs/slime and call the s-expressions in
+sequence. I use eval-in-repl and C-return but you can also use
+C-M-x. The idea is to modify the last huge s-expression and press C-c
+C-c to regenerate all necessary c files.
+
 
 Currently 29 C files are being generated. Once they exist the commands
 #+BEGIN_EXAMPLE

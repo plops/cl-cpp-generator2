@@ -9,11 +9,22 @@ Common Lisp style operator names (incf, logior, and) and implicit
 function calls.
 
 * Installation
-You should install cl-cpp-generator2 like this:
+
+
+I assume that you have quicklisp installed. Add the cl-cpp-generator2
+package in your home directory like this:
 #+BEGIN_EXAMPLE
-cd ~/quicklisp/local-projects
+cd ~
+mkdir stage
 git clone https://github.com/plops/cl-cpp-generator2
+ln -s ~/stage/cl-cpp-generator2 ~/quicklisp/local-projects.
 #+END_EXAMPLE
+
+Open gen01.lisp in emacs/slime and call the s-expressions in
+sequence. I use eval-in-repl and C-return but you can also use
+C-M-x. The idea is to modify the last huge s-expression and press C-c
+C-c to regenerate all necessary c files.
+
 
 * Example
 Here is a simple hello world example:
