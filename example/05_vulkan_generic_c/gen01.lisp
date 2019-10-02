@@ -2611,7 +2611,7 @@ more structs. this function helps to initialize those structs."
 		      ,@(loop for j below 2 collect
 			     `(,(format nil "t~a" j)
 			       (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
-								      v_idx))))))
+								      vt_idx))))))
 			(vertex (cast Vertex
 					 (curly
 					  (curly v0 v1 v2)

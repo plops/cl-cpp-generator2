@@ -243,8 +243,8 @@ void loadModel (){
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v2  = attrib.vertices[((2)+(((3)*(attrib.faces[i].v_idx))))];
-        __auto_type t0  = attrib.texcoords[((0)+(((2)*(attrib.faces[i].v_idx))))];
-        __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].v_idx))))];
+        __auto_type t0  = attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))];
+        __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
                 state._vertices[i]=vertex;
         state._indices[i]=i;
