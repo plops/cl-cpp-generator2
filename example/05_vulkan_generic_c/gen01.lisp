@@ -2579,7 +2579,7 @@ more structs. this function helps to initialize those structs."
 	       ;; i'm not sure what i am doing. i hope that each entry
 	       ;; in faces corresponds to a vertex with a 3 vertex
 	       ;; coordinates and 2 texture coordinates. i will
-	       ;; collect them into my data structure with possibly
+	       ;; collect them into my data structure with possibly 
 	       ;; many duplicate vertices.
 		    (let (,@(loop for i below 3 appending
 			    (let ((face (format nil "face~a" i))
