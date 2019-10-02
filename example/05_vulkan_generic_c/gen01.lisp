@@ -251,7 +251,7 @@ more structs. this function helps to initialize those structs."
 			(when value
 			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	    `(do0
-	      "enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};"
+	      "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
 	      (defstruct0 State
 		  ,@(loop for e in l collect
 			 (destructuring-bind (name type &optional value) e
@@ -895,10 +895,8 @@ more structs. this function helps to initialize those structs."
 		   ))
 		 (imageCount_
 		  (+ swapChainSupport.capabilities.minImageCount 1))
-		 (imageCount (max
-			      (max imageCount_
-				   _N_IMAGES)
-			      swapChainSupport.capabilities.maxImageCount))
+		 (imageCount (max imageCount_
+				  _N_IMAGES))
 		 (indices (findQueueFamilies ,(g `_physicalDevice)))
 		 (queueFamilyIndices[] (curly
 					indices.graphicsFamily
@@ -908,10 +906,12 @@ more structs. this function helps to initialize those structs."
 		 (queueFamilyIndexCount 0)
 		 (pQueueFamilyIndices NULL))
 	     (declare (type "__typeof__(indices.graphicsFamily)" queueFamilyIndices[]))
-	     (assert (<= imageCount swapChainSupport.capabilities.maxImageCount))
+	     
 	     ,(vkprint "create swap chain" `(imageCount_ imageCount
 							 swapChainSupport.capabilities.minImageCount
 							 swapChainSupport.capabilities.maxImageCount))
+	     (unless (== 0 swapChainSupport.capabilities.maxImageCount)
+	       (assert (<= imageCount swapChainSupport.capabilities.maxImageCount)))
 	     (unless (== indices.presentFamily
 			 indices.graphicsFamily)
 	       "// this could be improved with ownership stuff"

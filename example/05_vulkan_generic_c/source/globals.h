@@ -1,4 +1,4 @@
-enum {_N_IMAGES=2,_MAX_FRAMES_IN_FLIGHT=2};
+enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};
 struct State {
         GLFWwindow* _window;
         VkInstance _instance;

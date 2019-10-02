@@ -49,13 +49,12 @@ void createSwapChain (){
     __auto_type presentMode  = chooseSwapPresentMode(swapChainSupport.presentModes, swapChainSupport.presentModesCount);
     __auto_type extent  = chooseSwapExtent(&swapChainSupport.capabilities);
     __auto_type imageCount_  = ((swapChainSupport.capabilities.minImageCount)+(1));
-    __auto_type imageCount  = max(max(imageCount_, _N_IMAGES), swapChainSupport.capabilities.maxImageCount);
+    __auto_type imageCount  = max(imageCount_, _N_IMAGES);
     __auto_type indices  = findQueueFamilies(state._physicalDevice);
     __typeof__(indices.graphicsFamily) queueFamilyIndices[]  = {indices.graphicsFamily, indices.presentFamily};
     __auto_type imageSharingMode  = VK_SHARING_MODE_EXCLUSIVE;
     __auto_type queueFamilyIndexCount  = 0;
     __auto_type pQueueFamilyIndices  = NULL;
-    assert((imageCount)<=(swapChainSupport.capabilities.maxImageCount));
     {
                         struct timespec tp ;
         clock_gettime(CLOCK_REALTIME, &tp);
@@ -82,6 +81,9 @@ void createSwapChain (){
         printf(printf_dec_format(swapChainSupport.capabilities.maxImageCount), swapChainSupport.capabilities.maxImageCount);
         printf(" (%s)", type_string(swapChainSupport.capabilities.maxImageCount));
         printf("\n");
+};
+    if ( !((0)==(swapChainSupport.capabilities.maxImageCount)) ) {
+                        assert((imageCount)<=(swapChainSupport.capabilities.maxImageCount));
 };
     if ( !((indices.presentFamily)==(indices.graphicsFamily)) ) {
                         // this could be improved with ownership stuff
