@@ -123,6 +123,23 @@ the footprint of the debug printf's in the C code could be
 substantially reduced. I don't consider this important enough to spend
 time on.
 
+* FAQ
+
+** There is no such language as c/C++. (https://news.ycombinator.com/item?id=20195740 )
+
+Compared to Lisp, C and C++ syntax looks very similar to me. This code
+generator is deliberately kept extremely unsophisticated. It will not
+hold your hand helping you to generate correct semantics. I just want
+to convert s-expressions into strings that will compile in a C
+compiler or a C++ compiler.
+
+** Why doesn't this library generate LLVM? 
+
+I'm interested to experiment with Cuda, OpenCL and Vulkan. Also some
+Microcontrollers (Arduino, Altera Nios in FPGA, TI C28x DSP) I worked
+with have C compilers.
+
+
 * Documentation
 
 In the domain specific language I try to provide Common Lisp
