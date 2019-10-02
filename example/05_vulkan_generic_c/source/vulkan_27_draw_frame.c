@@ -16,9 +16,12 @@ double now (){
     return (((((1.e+6f))*(tp.tv_sec)))+(tp.tv_nsec));
 }
 void updateUniformBuffer (uint32_t currentImage){
-            auto double startTime  = now();
-    __auto_type currentTime  = now();
-    float time  = ((currentTime)-(startTime));
+            static double startTime ;
+    if ( ((0.0e+0))==(startTime) ) {
+                                startTime=now();
+};
+        double currentTime  = now();
+    double time  = ((currentTime)-(startTime));
         __auto_type zAxis  = (vec3) {(0.0e+0f), (0.0e+0f), (1.e+0f)};
     __auto_type eye  = (vec3) {(2.e+0f), (2.e+0f), (2.e+0f)};
     __auto_type center  = (vec3) {(0.0e+0f), (0.0e+0f), (0.0e+0f)};

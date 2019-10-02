@@ -3120,81 +3120,88 @@ more structs. this function helps to initialize those structs."
 	       
 	       (defun updateUniformBuffer (currentImage)
 			 (declare (type uint32_t currentImage)
-				  (values void))
-			 (let ((startTime (now))
-			       (currentTime (now))
-			       (time (- currentTime startTime)
-				 )
-			       )
-			   (declare (type "auto double" startTime)
-				    (type float time)
+				  (values void)
+				  )
+			 (let ((startTime))
+			   (declare (type "static double" startTime)
 				    )
-			   ;; rotate model around z axis
-			   (let ((zAxis (cast vec3 (curly 0s0 0s0 1s0)))
-				 (eye (cast vec3 (curly 2s0 2s0 2s0)))
-				 (center (cast vec3 (curly 0s0 0s0 0s0)))
-				 (angularRate (glm_rad 9s0))
-				 (rotationAngle (cast float (* time angularRate)))
-				 (identity)
-				 (model)
-				 (look)
-				 (projection))
-			     (declare ;(type zAxis angularRate)
-				      (type mat4 identity model look projection))
-			     (do0
-			      (glm_mat4_identity identity)
-			      (glm_rotate_z identity rotationAngle model))
-			     ,(vkprint "rotate" `(rotationAngle time))
-			     (do0
-			      (glm_lookat ;; eye center up
-			       eye center zAxis look))
+			   (when (== 0d0 startTime)
+			     (setf startTime (now)))
+			  (let (
+				(currentTime (now))
+				(time (- currentTime startTime)
+				  )
+				)
+			    (declare 
+				     (type double currentTime)
+				     (type double time)
+				     )
+			    ;; rotate model around z axis
+			    (let ((zAxis (cast vec3 (curly 0s0 0s0 1s0)))
+				  (eye (cast vec3 (curly 2s0 2s0 2s0)))
+				  (center (cast vec3 (curly 0s0 0s0 0s0)))
+				  (angularRate (glm_rad 9s0))
+				  (rotationAngle (cast float (* time angularRate)))
+				  (identity)
+				  (model)
+				  (look)
+				  (projection))
+			      (declare	;(type zAxis angularRate)
+			       (type mat4 identity model look projection))
+			      (do0
+			       (glm_mat4_identity identity)
+			       (glm_rotate_z identity rotationAngle model))
+			      ,(vkprint "rotate" `(rotationAngle time))
+			      (do0
+			       (glm_lookat ;; eye center up
+				eye center zAxis look))
 
-			     (do0
-			      (glm_perspective ;; fovy aspect near far
-			       (glm_rad 45s0)
-			       (/ ,(g `_swapChainExtent.width)
-					   (* 1s0 ,(g `_swapChainExtent.height)))
-			       .1s0
-			       10s0
-			       projection))
-			     ,(vk
-			       `(UniformBufferObject
-				 ubo
-				 ;:model model
-				 ;; look from above in 45 deg angle
-				 ;:view look
-				 ;; use current extent for correct aspect
-				 ;:proj projection
-				 )))
-			   ;; glm was designed for opengl and has
-			   ;; inverted y clip coordinate
-			   (glm_mat4_copy model ubo.model)
-			   (glm_mat4_copy look ubo.view)
-			   (glm_mat4_copy projection ubo.proj)
-			   (setf (aref ubo.proj 1 1)
-				 (- (aref ubo.proj 1 1)))
-			   (let ((data 0))
-			     (declare (type void* data))
-			     ,(vkprint "start map memory" `((aref ,(g `_uniformBuffersMemory)
-						  currentImage)))
-			     (vkMapMemory ,(g `_device)
-					  (aref ,(g `_uniformBuffersMemory)
-						currentImage)
-					  0
-					  (sizeof ubo)
-					  0
-					  &data)
-			     ,(vkprint "mapped memory" `(data (sizeof ubo)))
-			     (memcpy data &ubo (sizeof ubo))
-			     ,(vkprint "unmap memory" `((aref ,(g `_uniformBuffersMemory)
-						  currentImage)))
-			     (vkUnmapMemory ,(g `_device)
-					    (aref ,(g `_uniformBuffersMemory)
-						  currentImage)))
-			   ;; note: a more efficient way to pass
-			   ;; frequently changing values to shaders are
-			   ;; push constants
-			   )
+			      (do0
+			       (glm_perspective ;; fovy aspect near far
+				(glm_rad 45s0)
+				(/ ,(g `_swapChainExtent.width)
+				   (* 1s0 ,(g `_swapChainExtent.height)))
+				.1s0
+				10s0
+				projection))
+			      ,(vk
+				`(UniformBufferObject
+				  ubo
+					;:model model
+				  ;; look from above in 45 deg angle
+					;:view look
+				  ;; use current extent for correct aspect
+					;:proj projection
+				  )))
+			    ;; glm was designed for opengl and has
+			    ;; inverted y clip coordinate
+			    (glm_mat4_copy model ubo.model)
+			    (glm_mat4_copy look ubo.view)
+			    (glm_mat4_copy projection ubo.proj)
+			    (setf (aref ubo.proj 1 1)
+				  (- (aref ubo.proj 1 1)))
+			    (let ((data 0))
+			      (declare (type void* data))
+			      ,(vkprint "start map memory" `((aref ,(g `_uniformBuffersMemory)
+								   currentImage)))
+			      (vkMapMemory ,(g `_device)
+					   (aref ,(g `_uniformBuffersMemory)
+						 currentImage)
+					   0
+					   (sizeof ubo)
+					   0
+					   &data)
+			      ,(vkprint "mapped memory" `(data (sizeof ubo)))
+			      (memcpy data &ubo (sizeof ubo))
+			      ,(vkprint "unmap memory" `((aref ,(g `_uniformBuffersMemory)
+							       currentImage)))
+			      (vkUnmapMemory ,(g `_device)
+					     (aref ,(g `_uniformBuffersMemory)
+						   currentImage)))
+			    ;; note: a more efficient way to pass
+			    ;; frequently changing values to shaders are
+			    ;; push constants
+			    ))
 			 )
 	       (defun recreateSwapChain ()
 			  
