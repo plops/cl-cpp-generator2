@@ -20,6 +20,10 @@ git clone https://github.com/plops/cl-cpp-generator2
 ln -s ~/stage/cl-cpp-generator2 ~/quicklisp/local-projects.
 #+END_EXAMPLE
 
+I always have my files in ~/stage. This might be necessary to run the
+examples. Ideally it should run from any folder but I have no idea how
+to test this properly.
+
 Open gen01.lisp in emacs/slime and call the s-expressions in
 sequence. I use eval-in-repl and C-return but you can also use
 C-M-x. The idea is to modify the last huge s-expression and press C-c
