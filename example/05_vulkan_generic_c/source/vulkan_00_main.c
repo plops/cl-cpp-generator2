@@ -11,11 +11,8 @@
 State state  = {._window=NULL, ._validationLayers={"VK_LAYER_KHRONOS_validation"}, ._physicalDevice=VK_NULL_HANDLE, ._deviceExtensions={VK_KHR_SWAPCHAIN_EXTENSION_NAME}};
 void mainLoop (){
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -30,11 +27,8 @@ void mainLoop (){
                 drawFrame();
 }
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -53,5 +47,6 @@ void run (){
         cleanup();
 }
 int main (){
+            state._start_time=now();
         run();
 };

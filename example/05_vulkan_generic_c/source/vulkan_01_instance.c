@@ -27,11 +27,8 @@ _Bool checkValidationLayerSupport (){
                 {
                                         if ( (0)==(strcmp(layerName, layerProperties.layerName)) ) {
                                                                         {
-                                                                                    struct timespec tp ;
-                            clock_gettime(CLOCK_REALTIME, &tp);
-                            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                            printf(".");
-                            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                                    __auto_type current_time  = now();
+                            printf("%6.6f", ((current_time)-(state._start_time)));
                             printf(" ");
                             printf(printf_dec_format(__FILE__), __FILE__);
                             printf(":");
@@ -61,11 +58,8 @@ void createInstance (){
         if ( !(checkValidationLayerSupport()) ) {
                         // throw
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -96,11 +90,8 @@ void createInstance (){
                 info.ppEnabledLayerNames=state._validationLayers;
                         if ( !((VK_SUCCESS)==(vkCreateInstance(&info, NULL, &(state._instance)))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -112,11 +103,8 @@ void createInstance (){
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");

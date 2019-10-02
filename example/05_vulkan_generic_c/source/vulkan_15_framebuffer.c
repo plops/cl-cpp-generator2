@@ -25,11 +25,8 @@ void createFramebuffers (){
                         info.layers=1;
                                     if ( !((VK_SUCCESS)==(vkCreateFramebuffer(state._device, &info, NULL, &(state._swapChainFramebuffers[i])))) ) {
                                                 {
-                                                            struct timespec tp ;
-                    clock_gettime(CLOCK_REALTIME, &tp);
-                    printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                    printf(".");
-                    printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
                     printf(" ");
                     printf(printf_dec_format(__FILE__), __FILE__);
                     printf(":");
@@ -41,11 +38,8 @@ void createFramebuffers (){
 };
 };
             {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");

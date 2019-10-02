@@ -1,5 +1,6 @@
 enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};
 struct State {
+        double _start_time;
         GLFWwindow* _window;
         VkInstance _instance;
         const char* const _validationLayers[1];

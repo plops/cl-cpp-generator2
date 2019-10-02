@@ -22,11 +22,8 @@ VkCommandBuffer beginSingleTimeCommands (){
                 info.commandBufferCount=1;
                         vkAllocateCommandBuffers(state._device, &info, &commandBuffer);
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -43,11 +40,8 @@ VkCommandBuffer beginSingleTimeCommands (){
                 info.flags=VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
                         vkBeginCommandBuffer(commandBuffer, &info);
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -73,11 +67,8 @@ void endSingleTimeCommands (VkCommandBuffer commandBuffer){
         vkQueueWaitIdle(state._graphicsQueue);
         vkFreeCommandBuffers(state._device, state._commandPool, 1, &commandBuffer);
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -142,11 +133,8 @@ void transitionImageLayout (VkImage image, VkFormat format, VkImageLayout oldLay
                     dstStage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 } else {
                                                             {
-                                                                        struct timespec tp ;
-                        clock_gettime(CLOCK_REALTIME, &tp);
-                        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                        printf(".");
-                        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                        __auto_type current_time  = now();
+                        printf("%6.6f", ((current_time)-(state._start_time)));
                         printf(" ");
                         printf(printf_dec_format(__FILE__), __FILE__);
                         printf(":");
@@ -172,11 +160,8 @@ uint32_t findMemoryType (uint32_t typeFilter, VkMemoryPropertyFlags properties){
 };
 }
     {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -213,11 +198,8 @@ Tuple_Image_DeviceMemory createImage (uint32_t width, uint32_t height, uint32_t 
                 info.flags=0;
                         if ( !((VK_SUCCESS)==(vkCreateImage(state._device, &info, NULL, &image))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -229,11 +211,8 @@ Tuple_Image_DeviceMemory createImage (uint32_t width, uint32_t height, uint32_t 
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -256,11 +235,8 @@ Tuple_Image_DeviceMemory createImage (uint32_t width, uint32_t height, uint32_t 
                 info.memoryTypeIndex=findMemoryType(memReq.memoryTypeBits, properties);
                         if ( !((VK_SUCCESS)==(vkAllocateMemory(state._device, &info, NULL, &imageMemory))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -272,11 +248,8 @@ Tuple_Image_DeviceMemory createImage (uint32_t width, uint32_t height, uint32_t 
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");

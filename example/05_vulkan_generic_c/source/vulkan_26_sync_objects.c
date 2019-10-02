@@ -18,11 +18,8 @@ void createSyncObjects (){
         for (int i = 0;i<_MAX_FRAMES_IN_FLIGHT;(i)+=(1)) {
                 if ( !((VK_SUCCESS)==(vkCreateSemaphore(state._device, &semaphoreInfo, NULL, &(state._imageAvailableSemaphores[i])))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -35,11 +32,8 @@ void createSyncObjects (){
 };
                 if ( !((VK_SUCCESS)==(vkCreateSemaphore(state._device, &semaphoreInfo, NULL, &(state._renderFinishedSemaphores[i])))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -52,11 +46,8 @@ void createSyncObjects (){
 };
                 if ( !((VK_SUCCESS)==(vkCreateFence(state._device, &fenceInfo, NULL, &(state._inFlightFences[i])))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");

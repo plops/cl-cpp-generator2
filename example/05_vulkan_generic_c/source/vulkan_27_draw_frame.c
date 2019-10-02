@@ -51,11 +51,8 @@ void recreateSwapChain (){
     while ((((0)==(width))||((0)==(height)))) {
                 glfwGetFramebufferSize(state._window, &width, &height);
                 {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -74,11 +71,8 @@ void recreateSwapChain (){
                 glfwWaitEvents();
 };
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -102,11 +96,8 @@ void recreateSwapChain (){
         createDescriptorSets();
         createCommandBuffers();
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -127,11 +118,8 @@ void drawFrame (){
 };
     if ( !((((VK_SUCCESS)==(result))||((VK_SUBOPTIMAL_KHR)==(result)))) ) {
                         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -158,11 +146,8 @@ void drawFrame (){
     vkResetFences(state._device, 1, &(state._inFlightFences[state._currentFrame]));
     if ( !((VK_SUCCESS)==(vkQueueSubmit(state._graphicsQueue, 1, &submitInfo, state._inFlightFences[state._currentFrame]))) ) {
                         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -190,11 +175,8 @@ void drawFrame (){
 } else {
                         if ( !((VK_SUCCESS)==(result2)) ) {
                                                 {
-                                                            struct timespec tp ;
-                    clock_gettime(CLOCK_REALTIME, &tp);
-                    printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                    printf(".");
-                    printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
                     printf(" ");
                     printf(printf_dec_format(__FILE__), __FILE__);
                     printf(":");

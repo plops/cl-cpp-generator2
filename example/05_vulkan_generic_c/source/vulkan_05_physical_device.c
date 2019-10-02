@@ -68,11 +68,8 @@ SwapChainSupportDetails querySwapChainSupport (VkPhysicalDevice device){
     if ( !((0)==(formatCount)) ) {
                                 __auto_type n_bytes_details_format  = ((sizeof(VkSurfaceFormatKHR))*(formatCount));
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -94,11 +91,8 @@ SwapChainSupportDetails querySwapChainSupport (VkPhysicalDevice device){
     if ( !((0)==(presentModeCount)) ) {
                                 __auto_type n_bytes_presentModeCount  = ((sizeof(VkPresentModeKHR))*(presentModeCount));
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -141,11 +135,8 @@ bool checkDeviceExtensionSupport (VkPhysicalDevice device){
         {
                                     bool found  = false;
             {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -164,11 +155,8 @@ bool checkDeviceExtensionSupport (VkPhysicalDevice device){
                                         if ( (0)==(strcmp(extension.extensionName, required)) ) {
                                                                                                 found=true;
                         {
-                                                                                    struct timespec tp ;
-                            clock_gettime(CLOCK_REALTIME, &tp);
-                            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                            printf(".");
-                            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                                    __auto_type current_time  = now();
+                            printf("%6.6f", ((current_time)-(state._start_time)));
                             printf(" ");
                             printf(printf_dec_format(__FILE__), __FILE__);
                             printf(":");
@@ -187,11 +175,8 @@ bool checkDeviceExtensionSupport (VkPhysicalDevice device){
 };
             if ( !(found) ) {
                                                 {
-                                                            struct timespec tp ;
-                    clock_gettime(CLOCK_REALTIME, &tp);
-                    printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                    printf(".");
-                    printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
                     printf(" ");
                     printf(printf_dec_format(__FILE__), __FILE__);
                     printf(":");
@@ -218,11 +203,8 @@ VkSampleCountFlagBits getMaxUsableSampleCount (){
     vkGetPhysicalDeviceProperties(state._physicalDevice, &physicalDeviceProperties);
         __auto_type count  = min(physicalDeviceProperties.limits.framebufferColorSampleCounts, physicalDeviceProperties.limits.framebufferDepthSampleCounts);
     {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -268,11 +250,8 @@ void pickPhysicalDevice (){
     if ( (0)==(deviceCount) ) {
                         // throw
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -298,11 +277,8 @@ void pickPhysicalDevice (){
     if ( (VK_NULL_HANDLE)==(state._physicalDevice) ) {
                         // throw
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");

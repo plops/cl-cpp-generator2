@@ -28,11 +28,8 @@ Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags us
                 info.flags=0;
                         if ( !((VK_SUCCESS)==(vkCreateBuffer(state._device, &info, NULL, &buffer))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -44,11 +41,8 @@ Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags us
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -71,11 +65,8 @@ Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags us
                 info.memoryTypeIndex=findMemoryType(memReq.memoryTypeBits, properties);
                         if ( !((VK_SUCCESS)==(vkAllocateMemory(state._device, &info, NULL, &bufferMemory))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -87,11 +78,8 @@ Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags us
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -110,11 +98,8 @@ Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags us
 }
 void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, int32_t mipLevels){
         {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -128,11 +113,8 @@ void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int
     vkGetPhysicalDeviceFormatProperties(state._physicalDevice, imageFormat, &formatProperties);
     if ( !(((formatProperties.optimalTilingFeatures) & (VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))) ) {
                         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -162,11 +144,8 @@ void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int
         barrier.srcAccessMask=VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask=VK_ACCESS_TRANSFER_READ_BIT;
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -202,11 +181,8 @@ void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int
                 blit.dstSubresource.baseArrayLayer=0;
                 blit.dstSubresource.layerCount=1;
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -225,11 +201,8 @@ void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int
         barrier.srcAccessMask=VK_ACCESS_TRANSFER_READ_BIT;
         barrier.dstAccessMask=VK_ACCESS_SHADER_READ_BIT;
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -283,11 +256,8 @@ void createTextureImage (){
     VkDeviceSize imageSize  = ((texWidth)*(texHeight)*(4));
     if ( !(pixels) ) {
                         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");

@@ -24,11 +24,8 @@ void createLogicalDevice (){
                         __auto_type q  = allQueueFamilies[q_idx];
         {
                         {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -45,11 +42,8 @@ void createLogicalDevice (){
                                                                 __auto_type n  = qSeenCount;
                 if ( (n)==(0) ) {
                                                             {
-                                                                        struct timespec tp ;
-                        clock_gettime(CLOCK_REALTIME, &tp);
-                        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                        printf(".");
-                        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                        __auto_type current_time  = now();
+                        printf("%6.6f", ((current_time)-(state._start_time)));
                         printf(" ");
                         printf(printf_dec_format(__FILE__), __FILE__);
                         printf(":");
@@ -67,11 +61,8 @@ void createLogicalDevice (){
 } else {
                                                             for (int i = 0;i<n;(i)+=(1)) {
                                                 {
-                                                                                    struct timespec tp ;
-                            clock_gettime(CLOCK_REALTIME, &tp);
-                            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                            printf(".");
-                            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                                    __auto_type current_time  = now();
+                            printf("%6.6f", ((current_time)-(state._start_time)));
                             printf(" ");
                             printf(printf_dec_format(__FILE__), __FILE__);
                             printf(":");
@@ -92,11 +83,8 @@ void createLogicalDevice (){
 };
                                                 if ( (q)==(qSeen[i]) ) {
                                                                                     {
-                                                                                                struct timespec tp ;
-                                clock_gettime(CLOCK_REALTIME, &tp);
-                                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                                printf(".");
-                                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                                                __auto_type current_time  = now();
+                                printf("%6.6f", ((current_time)-(state._start_time)));
                                 printf(" ");
                                 printf(printf_dec_format(__FILE__), __FILE__);
                                 printf(":");
@@ -118,11 +106,8 @@ void createLogicalDevice (){
                             break;
 } else {
                                                                                     {
-                                                                                                struct timespec tp ;
-                                clock_gettime(CLOCK_REALTIME, &tp);
-                                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                                printf(".");
-                                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                                                                __auto_type current_time  = now();
+                                printf("%6.6f", ((current_time)-(state._start_time)));
                                 printf(" ");
                                 printf(printf_dec_format(__FILE__), __FILE__);
                                 printf(":");
@@ -150,11 +135,8 @@ void createLogicalDevice (){
 };
 };
     {
-                        struct timespec tp ;
-        clock_gettime(CLOCK_REALTIME, &tp);
-        printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-        printf(".");
-        printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
         printf(" ");
         printf(printf_dec_format(__FILE__), __FILE__);
         printf(":");
@@ -173,11 +155,8 @@ void createLogicalDevice (){
     for (int i = 0;i<qSeenCount;(i)+=(1)) {
                         __auto_type q  = qSeen[i];
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -202,11 +181,8 @@ void createLogicalDevice (){
                         __auto_type queueFamily  = uniqueQueueFamilies[queueFamily_idx];
         {
                         {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -231,11 +207,8 @@ void createLogicalDevice (){
                         (info_count)++;
                         {
                                 {
-                                                            struct timespec tp ;
-                    clock_gettime(CLOCK_REALTIME, &tp);
-                    printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                    printf(".");
-                    printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
                     printf(" ");
                     printf(printf_dec_format(__FILE__), __FILE__);
                     printf(":");
@@ -271,11 +244,8 @@ void createLogicalDevice (){
                 info.ppEnabledLayerNames=state._validationLayers;
                         if ( !((VK_SUCCESS)==(vkCreateDevice(state._physicalDevice, &info, NULL, &(state._device)))) ) {
                                     {
-                                                struct timespec tp ;
-                clock_gettime(CLOCK_REALTIME, &tp);
-                printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-                printf(".");
-                printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
                 printf(" ");
                 printf(printf_dec_format(__FILE__), __FILE__);
                 printf(":");
@@ -287,11 +257,8 @@ void createLogicalDevice (){
 };
 };
         {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -307,11 +274,8 @@ void createLogicalDevice (){
 };
     {
                 {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");
@@ -328,11 +292,8 @@ void createLogicalDevice (){
 };
     {
                 {
-                                    struct timespec tp ;
-            clock_gettime(CLOCK_REALTIME, &tp);
-            printf(printf_dec_format(tp.tv_sec), tp.tv_sec);
-            printf(".");
-            printf(printf_dec_format(tp.tv_nsec), tp.tv_nsec);
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
             printf(" ");
             printf(printf_dec_format(__FILE__), __FILE__);
             printf(":");

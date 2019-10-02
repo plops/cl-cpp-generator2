@@ -15,10 +15,10 @@ vulkan_demo: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 genclean:
-	rm *.c *.o vulkan*.h proto_*.h globals.h utils.h proto2.h *.spv *.frag *.vert vulkan_demo
+	rm *.c *.o vulkan*.h proto_*.h globals.h utils.h proto2.h *.spv *.frag *.vert vulkan_demo *.s
 
 clean:
-	rm *.o vulkan*.h proto_*.h proto2.h vulkan_demo
+	rm *.o vulkan*.h proto_*.h proto2.h vulkan_demo *.s
 
 proto2.h: $(PROTOS)
 	cat $^ >> $@

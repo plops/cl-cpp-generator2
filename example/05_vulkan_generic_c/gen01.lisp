@@ -41,9 +41,10 @@
 		    &optional rest)
       ;;"{sec}.{nsec} {__FILE__}:{__LINE__} {__func__}"
       (let* ((m `(string ,(format nil " ~a: " msg)))
-	     (l `(((printf_dec_format tp.tv_sec) tp.tv_sec)
-		  ((string "."))
-		  ((printf_dec_format tp.tv_nsec) tp.tv_nsec)
+	     (l `(((string "%6.6f") (- current_time ,(g `_start_time)))
+					;((printf_dec_format tp.tv_sec) tp.tv_sec)
+					;((string "."))
+					;((printf_dec_format tp.tv_nsec) tp.tv_nsec)
 		  ((string " "))
 		  ((printf_dec_format __FILE__) __FILE__)
 		  ((string ":"))
@@ -58,10 +59,11 @@
 			   ))
 		  ((string "\\n")))))
 	`(progn
-	   (let ((tp))
-	     (declare (type "struct timespec" tp))
+	   (let (;(tp)
+		 (current_time (now)))
+	     ;(declare (type "struct timespec" tp))
 	     ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
-	     (clock_gettime CLOCK_REALTIME &tp)
+	     ;(clock_gettime CLOCK_REALTIME &tp)
 	     ,@(loop for e in l collect
 		    (destructuring-bind (fmt &optional value) e
 		      (if value
@@ -182,6 +184,7 @@ more structs. this function helps to initialize those structs."
 
     (defun emit-globals (&key init)
       (let ((l `(
+		 (_start_time double)
 		 ;; 
 		 (_window GLFWwindow* NULL)   
 		 (_instance VkInstance)
@@ -302,6 +305,7 @@ more structs. this function helps to initialize those structs."
 		(declare (type State state)))
 	      (defun mainLoop ()
 		,(vkprint "mainLoop")
+		
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
 		  (drawFrame)
@@ -318,6 +322,7 @@ more structs. this function helps to initialize those structs."
 	      
 	      (defun main ()
 		(declare (values int))
+		(setf ,(g `_start_time) (now))
 		(run)))))
   
   (define-module
