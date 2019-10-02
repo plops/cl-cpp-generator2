@@ -10,9 +10,9 @@
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
 ;; if nolog-frame is off then draw frame prints lots of stuff
 (setf *features* (union *features* '(:surface  :nolog-frame
-				     :nolog
+				     ;:nolog
 				     )))
-(setf *features* (set-difference *features* '(;:nolog ;:nolog-frame
+(setf *features* (set-difference *features* '(:nolog ;:nolog-frame
 					      )))
 
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
