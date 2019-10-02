@@ -2550,10 +2550,10 @@ more structs. this function helps to initialize those structs."
 	   (declare (values uint64_t)
 		    (type Vertex* v))
 	   (let (
-		 ,@(loop for e in `(x y z) appending
+		 ,@(loop for e in `(x y z) and i from 0 appending
 			(let ((d (format nil "d~a" e))
 			      (u (format nil "u~a" e)))
-			  `((,d (cast double (-> v pos ,e)))
+			  `((,d (cast double (aref v->pos ,i)))
 			    (,u (deref (cast uint64_t* (ref ,d))))))))
 	     (return (+ (hash_i64 ux)
 			(hash_i64 uy)
@@ -2644,27 +2644,30 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap[attrib.num_faces]))
-		(declare (type uint64_t hashmap[attrib.num_faces])
-			 )
-		,(vkprint "hashmap" `((aref hashmap 0)))
-		(dotimes (i attrib.num_faces)
-			(let (,@(loop for j below 3 collect
-				     `(,(format nil "v~a" j)
-					(aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
-									      v_idx))))))
-			      ,@(loop for j below 2 collect
-				     `(,(format nil "t~a" j)
-					(aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
-									       vt_idx))))))
-				(vertex (cast Vertex
-					      (curly
-					       (curly v0 v1 v2)
-					       (curly 1s0 1s0 1s0)
-					       (curly t0 (- t1))))))
+	      (let ((n_bytes_hashmap (* (sizeof uint64_t)
+					attrib.num_faces)))
+		,(vkprint "malloc" `(n_bytes_hashmap))
+	       (let ((hashmap (calloc n_bytes_hashmap 1)))
+		 (declare (type uint64_t* hashmap))
+		 ,(vkprint "hashmap" `((aref hashmap 0)))
+		 (dotimes (i attrib.num_faces)
+		   (let (,@(loop for j below 3 collect
+				`(,(format nil "v~a" j)
+				   (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
+									 v_idx))))))
+			 ,@(loop for j below 2 collect
+				`(,(format nil "t~a" j)
+				   (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
+									  vt_idx))))))
+			   (vertex (cast Vertex
+					 (curly
+					  (curly v0 v1 v2)
+					  (curly 1s0 1s0 1s0)
+					  (curly t0 (- t1))))))
 		  
-			  (setf (aref ,(g `_vertices) i) vertex
-				(aref ,(g `_indices) i) i))))
+		     (setf (aref ,(g `_vertices) i) vertex
+			   (aref ,(g `_indices) i) i)))
+		 (free hashmap)))
 	      
 	      
 	  

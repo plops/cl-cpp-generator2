@@ -156,11 +156,11 @@ uint64_t hash_i64 (uint64_t u){
     return v;
 }
 uint64_t hash_Vertex (Vertex* v){
-            __auto_type dx  = (double) v->pos->x;
+            __auto_type dx  = (double) v->pos[0];
     __auto_type ux  = *((uint64_t*) &(dx));
-    __auto_type dy  = (double) v->pos->y;
+    __auto_type dy  = (double) v->pos[1];
     __auto_type uy  = *((uint64_t*) &(dy));
-    __auto_type dz  = (double) v->pos->z;
+    __auto_type dz  = (double) v->pos[2];
     __auto_type uz  = *((uint64_t*) &(dz));
     return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz)));
 }
@@ -259,7 +259,23 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        uint64_t hashmap[attrib.num_faces] ;
+        __auto_type n_bytes_hashmap  = ((sizeof(uint64_t))*(attrib.num_faces));
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" malloc: ");
+        printf(" n_bytes_hashmap=");
+        printf(printf_dec_format(n_bytes_hashmap), n_bytes_hashmap);
+        printf(" (%s)", type_string(n_bytes_hashmap));
+        printf("\n");
+};
+        uint64_t* hashmap  = calloc(n_bytes_hashmap, 1);
     {
                         __auto_type current_time  = now();
         printf("%6.6f", ((current_time)-(state._start_time)));
@@ -284,7 +300,8 @@ void loadModel (){
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
                 state._vertices[i]=vertex;
         state._indices[i]=i;
-};
+}
+    free(hashmap);
     munmapFile(map);
         // cleanup
     tinyobj_attrib_free(&attrib);
