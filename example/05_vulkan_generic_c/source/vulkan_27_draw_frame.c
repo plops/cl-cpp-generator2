@@ -13,7 +13,7 @@ extern State state;
 double now (){
             struct timespec tp ;
     clock_gettime(CLOCK_REALTIME, &tp);
-    return (((((1.e+6f))*(tp.tv_sec)))+(tp.tv_nsec));
+    return (((double) tp.tv_sec)+((((9.999999999999999e-7))*(tp.tv_nsec))));
 }
 void updateUniformBuffer (uint32_t currentImage){
             static double startTime ;
@@ -52,6 +52,12 @@ void updateUniformBuffer (uint32_t currentImage){
         printf(" time=");
         printf(printf_dec_format(time), time);
         printf(" (%s)", type_string(time));
+        printf(" startTime=");
+        printf(printf_dec_format(startTime), startTime);
+        printf(" (%s)", type_string(startTime));
+        printf(" currentTime=");
+        printf(printf_dec_format(currentTime), currentTime);
+        printf(" (%s)", type_string(currentTime));
         printf("\n");
 };
         glm_lookat(eye, center, zAxis, look);

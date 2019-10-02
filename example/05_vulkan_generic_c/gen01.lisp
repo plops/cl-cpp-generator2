@@ -3115,8 +3115,8 @@ more structs. this function helps to initialize those structs."
 		  (declare (type "struct timespec" tp))
 		  ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
 		  (clock_gettime CLOCK_REALTIME &tp)
-		  (return (+ (* 1e6 tp.tv_sec)
-			     tp.tv_nsec))))
+		  (return (+ (cast double tp.tv_sec)
+			     (* 1d-6 tp.tv_nsec)))))
 	       
 	       (defun updateUniformBuffer (currentImage)
 			 (declare (type uint32_t currentImage)
@@ -3151,7 +3151,7 @@ more structs. this function helps to initialize those structs."
 			      (do0
 			       (glm_mat4_identity identity)
 			       (glm_rotate_z identity rotationAngle model))
-			      ,(vkprint "rotate" `(rotationAngle time))
+			      ,(vkprint "rotate" `(rotationAngle time startTime currentTime))
 			      (do0
 			       (glm_lookat ;; eye center up
 				eye center zAxis look))
