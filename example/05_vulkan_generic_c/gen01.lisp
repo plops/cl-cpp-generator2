@@ -2549,9 +2549,16 @@ more structs. this function helps to initialize those structs."
 	 (defun hash_Vertex (v)
 	   (declare (values uint64_t)
 		    (type Vertex* v))
-	   (return (+ (hash_i64 Vertex->pos.x)
-		      (hash_i64 Vertex->pos.y)
-		      (hash_i64 Vertex->pos.z))))
+	   (let (
+		 ,@(loop for e in `(x y z) appending
+			(let ((d (format nil "d~a" e))
+			      (u (format nil "u~a" e)))
+			  `((,d (cast double (-> v pos ,e)))
+			    (,u (deref (cast uint64_t* (ref ,d))))))))
+	     (return (+ (hash_i64 ux)
+			(hash_i64 uy)
+			(hash_i64 uz)
+			))))
 	 
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the

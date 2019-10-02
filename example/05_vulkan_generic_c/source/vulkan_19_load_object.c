@@ -156,7 +156,13 @@ uint64_t hash_i64 (uint64_t u){
     return v;
 }
 uint64_t hash_Vertex (Vertex* v){
-        return ((hash_i64(Vertex->pos.x))+(hash_i64(Vertex->pos.y))+(hash_i64(Vertex->pos.z)));
+            __auto_type dx  = (double) v->pos->x;
+    __auto_type ux  = *((uint64_t*) &(dx));
+    __auto_type dy  = (double) v->pos->y;
+    __auto_type uy  = *((uint64_t*) &(dy));
+    __auto_type dz  = (double) v->pos->z;
+    __auto_type uz  = *((uint64_t*) &(dz));
+    return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz)));
 }
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");

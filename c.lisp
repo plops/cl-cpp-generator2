@@ -427,6 +427,8 @@ entry return-values contains a list of return values"
 		      (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
 		(dot (let ((args (cdr code)))
 		       (format nil "~{~a~^.~}" (mapcar #'emit args))))
+		(-> (let ((args (cdr code)))
+		       (format nil "~{~a~^->~}" (mapcar #'emit args))))
 		
 		(lambda (parse-lambda code #'emit))
 		
