@@ -2593,7 +2593,7 @@ more structs. this function helps to initialize those structs."
 
 	      (do0
 	       (setf
-		  ,(g `_num_vertices) 1500000 ;(cast int (/ attrib.num_faces 3))
+		  ,(g `_num_vertices) attrib.num_faces
 		  )
 	       (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))
 					  ,(g `_num_vertices))))
@@ -2604,7 +2604,7 @@ more structs. this function helps to initialize those structs."
 		  )))
 	      (do0
 	       (setf
-		,(g `_num_indices) 1500000 ;(cast int (/ attrib.num_faces 3))
+		,(g `_num_indices) attrib.num_faces
 		)
 	       (let ((n_bytes_indices (* (sizeof (deref ,(g `_indices)))
 					    ,(g `_num_indices))))

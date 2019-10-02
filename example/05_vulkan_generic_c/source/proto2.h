@@ -53,6 +53,8 @@
  void createColorResources ();
  void createDepthResources ();
  void createFramebuffers ();
+ STBIDEF void   stbi_hdr_to_ldr_gamma(float gamma) ;
+ STBIDEF void   stbi_hdr_to_ldr_scale(float scale) ;
  Tuple_Buffer_DeviceMemory createBuffer (VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
  void generateMipmaps (VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, int32_t mipLevels);
  void copyBufferToImage (VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
