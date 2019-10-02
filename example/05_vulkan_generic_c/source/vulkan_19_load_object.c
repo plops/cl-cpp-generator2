@@ -222,25 +222,13 @@ void loadModel (){
     state._vertices=malloc(((sizeof(*(state._vertices)))*(state._num_vertices)));
     state._num_indices=(int) ((attrib.num_faces)/(3));
     state._indices=malloc(((sizeof(*(state._indices)))*(state._num_indices)));
-    for (int face_idx = 0;face_idx<1000;(face_idx)+=(1)) {
-                        __auto_type face0  = attrib.faces[((0)+(((3)*(face_idx))))];
-        __auto_type v_idx0  = face0.v_idx;
-        __auto_type vt_idx0  = face0.vt_idx;
-        __auto_type vertex0  = attrib.vertices[v_idx0];
-        __auto_type texcoord0  = attrib.texcoords[vt_idx0];
-        __auto_type face1  = attrib.faces[((1)+(((3)*(face_idx))))];
-        __auto_type v_idx1  = face1.v_idx;
-        __auto_type vt_idx1  = face1.vt_idx;
-        __auto_type vertex1  = attrib.vertices[v_idx1];
-        __auto_type texcoord1  = attrib.texcoords[vt_idx1];
-        __auto_type face2  = attrib.faces[((2)+(((3)*(face_idx))))];
-        __auto_type v_idx2  = face2.v_idx;
-        __auto_type vt_idx2  = face2.vt_idx;
-        __auto_type vertex2  = attrib.vertices[v_idx2];
-        __auto_type texcoord2  = attrib.texcoords[vt_idx2];
-        __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {texcoord0, texcoord1}};
-                state._vertices[face_idx]=vertex;
-        state._indices[face_idx]=face_idx;
+    for (int j = 0;j<state._num_vertices;(j)+=(1)) {
+                        __auto_type vertex0  = attrib.vertices[((0)+(((3)*(j))))];
+        __auto_type vertex1  = attrib.vertices[((1)+(((3)*(j))))];
+        __auto_type vertex2  = attrib.vertices[((2)+(((3)*(j))))];
+        __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {(0.0e+0f), (0.0e+0f)}};
+                state._vertices[j]=vertex;
+        state._indices[j]=j;
 }
     munmapFile(map);
 };

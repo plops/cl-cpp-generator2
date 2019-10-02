@@ -1416,7 +1416,11 @@ more structs. this function helps to initialize those structs."
 		 `(VkPipelineInputAssemblyStateCreateInfo
 		   inputAssembly
 		   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-		   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+		   :topology ;VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+
+
+
+		   VK_PRIMITIVE_TOPOLOGY_POINT_LIST
 		   ;; this would allow to break up lines
 		   ;; and strips with 0xfff or 0xffffff
 		   :primitiveRestartEnable VK_FALSE))
@@ -2547,21 +2551,43 @@ more structs. this function helps to initialize those structs."
 	      ,(g `_num_indices) (cast int (/ attrib.num_faces 3))
 	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
 					,(g `_num_indices))))
-	     
-	     (dotimes (face_idx 1000 ; (cast int (/ attrib.num_faces 3))
-		       )
-	       ;; i'm not sure what i am doing. i hope that each entry
-	       ;; in faces corresponds to a vertex with a 3 vertex
-	       ;; coordinates and 2 texture coordinates. i will
-	       ;; collect them into my data structure with possibly
-	       ;; many duplicate vertices.
+
+	     (dotimes (j ,(g `_num_vertices))
 	       (let (,@(loop for i below 3 appending
 			    (let ((face (format nil "face~a" i))
 				  (v_idx (format nil "v_idx~a" i))
 				  (vt_idx (format nil "vt_idx~a" i))
 				  (vertex (format nil "vertex~a" i))
 				  (texcoord (format nil "texcoord~a" i)))
-			     `((,face (aref attrib.faces (+ ,i (* 3 face_idx))))
+			     `((,vertex (aref attrib.vertices (+ ,i (* 3 j))))
+			       
+			       
+			       )))
+		     #+nil (defstruct0 Vertex
+				 (pos vec3)
+			       (color vec3)
+			       (texCoord vec2))
+		       (vertex (cast Vertex
+				     (curly
+				      (curly vertex0 vertex1 vertex2)
+				      (curly 1s0 1s0 1s0)
+				      (curly 0s0 0s0)))))
+		 (setf (aref ,(g `_vertices) j) vertex
+			      (aref ,(g `_indices) j) j)))
+	     #+nil(dotimes (face_idx (cast int (/ attrib.num_faces 9))
+		       )
+	       ;; i'm not sure what i am doing. i hope that each entry
+	       ;; in faces corresponds to a vertex with a 3 vertex
+	       ;; coordinates and 2 texture coordinates. i will
+	       ;; collect them into my data structure with possibly
+	       ;; many duplicate vertices.
+		    (let (,@(loop for i below 3 appending
+			    (let ((face (format nil "face~a" i))
+				  (v_idx (format nil "v_idx~a" i))
+				  (vt_idx (format nil "vt_idx~a" i))
+				  (vertex (format nil "vertex~a" i))
+				  (texcoord (format nil "texcoord~a" i)))
+			     `((,face (aref attrib.faces (+ ,i (* 3 3 face_idx))))
 			       (,v_idx (dot ,face v_idx))
 			       (,vt_idx (dot ,face vt_idx))
 			       (,vertex (aref attrib.vertices ,v_idx))
