@@ -13,7 +13,7 @@ extern State state;
 double now (){
             struct timespec tp ;
     clock_gettime(CLOCK_REALTIME, &tp);
-    return (((double) tp.tv_sec)+((((9.999999999999999e-7))*(tp.tv_nsec))));
+    return (((double) tp.tv_sec)+((((1.e-9))*(tp.tv_nsec))));
 }
 void updateUniformBuffer (uint32_t currentImage){
             static double startTime ;

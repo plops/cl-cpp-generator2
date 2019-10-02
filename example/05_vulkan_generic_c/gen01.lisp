@@ -3116,7 +3116,7 @@ more structs. this function helps to initialize those structs."
 		  ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
 		  (clock_gettime CLOCK_REALTIME &tp)
 		  (return (+ (cast double tp.tv_sec)
-			     (* 1d-6 tp.tv_nsec)))))
+			     (* 1d-9 tp.tv_nsec)))))
 	       
 	       (defun updateUniformBuffer (currentImage)
 			 (declare (type uint32_t currentImage)
