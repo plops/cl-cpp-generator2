@@ -18,8 +18,6 @@ extern State state;
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "map.h"
-typedef map_t(Vertex) v_map_t;
  
 void munmapFile (mmapPair pair){
         munmap(pair.data, pair.n);
@@ -146,6 +144,20 @@ void cleanupModel (){
             state._num_vertices=0;
     state._num_indices=0;
 }
+uint64_t hash_i64 (uint64_t u){
+            uint64_t v  = ((((u)*(3935559000370003845LL)))+(2691343689449507681LL));
+    (v)^=((v)>>(21));
+    (v)^=((v)<<(37));
+    (v)^=((v)>>(4));
+    v*=(4768777513237032717LL);
+    (v)^=((v)<<(20));
+    (v)^=((v)>>(41));
+    (v)^=((v)<<(5));
+    return v;
+}
+uint64_t hash_Vertex (Vertex* v){
+        return ((hash_i64(Vertex->pos.x))+(hash_i64(Vertex->pos.y))+(hash_i64(Vertex->pos.z)));
+}
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
@@ -241,8 +253,22 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        v_map_t m ;
-    map_init(&m);
+        uint64_t hashmap[attrib.num_faces] ;
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" hashmap: ");
+        printf(" hashmap[0]=");
+        printf(printf_dec_format(hashmap[0]), hashmap[0]);
+        printf(" (%s)", type_string(hashmap[0]));
+        printf("\n");
+};
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
