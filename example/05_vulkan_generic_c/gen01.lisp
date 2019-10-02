@@ -2500,7 +2500,10 @@ more structs. this function helps to initialize those structs."
 	   (setf
 	    ,(g `_num_vertices) 0
 	    ,(g `_num_indices) 0
-	      ))
+	    ))
+
+	 "#pragma GCC optimize (\"O3\")"
+	 " "
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
 	   ;; obj file that i use contains lists of vertex positions

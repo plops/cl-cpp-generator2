@@ -142,6 +142,8 @@ void cleanupModel (){
             state._num_vertices=0;
     state._num_indices=0;
 }
+#pragma GCC optimize ("O3")
+ 
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
