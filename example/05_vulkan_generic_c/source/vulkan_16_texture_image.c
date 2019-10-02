@@ -9,6 +9,8 @@
 #include "proto2.h"
  ;
 extern State state;
+#pragma GCC optimize ("O3")
+ 
 #include <string.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

@@ -2018,6 +2018,9 @@ more structs. this function helps to initialize those structs."
       `(texture_image
 	()
 	(do0
+	 "#pragma GCC optimize (\"O3\")"
+	 " "
+	 
 	 (include <string.h>)
 	 (do0
 	  "#define STB_IMAGE_IMPLEMENTATION"
