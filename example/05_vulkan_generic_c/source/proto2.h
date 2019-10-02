@@ -60,6 +60,7 @@
  char *dynamic_fgets(char **buf, size_t *size, FILE *file) ;
  void munmapFile (mmapPair pair);
  mmapPair mmapFile (char* filename);
+ void cleanupModel ();
  void loadModel ();
  void copyBuffer (VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
  void createVertexBuffer ();

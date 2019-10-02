@@ -355,4 +355,5 @@ void cleanup (){
         vkDestroyInstance(state._instance, NULL);
         glfwDestroyWindow(state._window);
         glfwTerminate();
+        cleanupModel();
 };

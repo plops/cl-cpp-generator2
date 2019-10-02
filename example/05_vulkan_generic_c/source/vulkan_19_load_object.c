@@ -154,6 +154,12 @@ mmapPair mmapFile (char* filename){
         __auto_type map  = (mmapPair) {filesize, p};
     return map;
 }
+void cleanupModel (){
+        free(state._vertices);
+        free(state._indices);
+            state._num_vertices=0;
+    state._num_indices=0;
+}
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
@@ -161,7 +167,8 @@ void loadModel (){
     size_t num_shapes ;
     tinyobj_material_t* materials  = NULL;
     size_t num_materials ;
-    __auto_type res  = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, map.data, map.n, TINYOBJ_FLAG_TRIANGULATE);
+    tinyobj_attrib_init(&attrib);
+        __auto_type res  = tinyobj_parse_obj(&attrib, &shapes, &num_shapes, &materials, &num_materials, map.data, map.n, TINYOBJ_FLAG_TRIANGULATE);
     if ( !((TINYOBJ_SUCCESS)==(res)) ) {
                         {
                                     struct timespec tp ;
@@ -231,4 +238,12 @@ void loadModel (){
         state._indices[j]=j;
 }
     munmapFile(map);
+        // cleanup
+    tinyobj_attrib_free(&attrib);
+    if ( shapes ) {
+                        tinyobj_shapes_free(shapes, num_shapes);
+};
+    if ( materials ) {
+                        tinyobj_materials_free(materials, num_materials);
+};
 };

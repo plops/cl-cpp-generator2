@@ -2483,7 +2483,13 @@ more structs. this function helps to initialize those structs."
 		 (return map)))
 	     )
 	   )
-
+	 (defun cleanupModel ()
+	   (free ,(g `_vertices) )
+	   (free ,(g `_indices) )
+	   (setf
+	    ,(g `_num_vertices) 0
+	    ,(g `_num_indices) 0
+	      ))
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
 	   ;; obj file that i use contains lists of vertex positions
@@ -2498,212 +2504,223 @@ more structs. this function helps to initialize those structs."
 	   ;; and texture coordinate index
 	   ;; f 1/f 1/1 2/2 3/3
 	   ;; f 4/4 5/5 6/6
-
 	   (let ((map (mmapFile (string "chalet.obj")))
-		 (attrib)
-		 (shapes NULL)
-		 (num_shapes)
-		 (materials NULL)
-		 (num_materials)
-		 (res (tinyobj_parse_obj
-		       &attrib
-		       &shapes
-		       &num_shapes
-		       &materials
-		       &num_materials
-		       map.data
-		       map.n
-		       TINYOBJ_FLAG_TRIANGULATE)))
+		  (attrib)
+		  (shapes NULL)
+		  (num_shapes)
+		  (materials NULL)
+		  (num_materials)
+
+		 )
 	     (declare (type tinyobj_attrib_t attrib)
-		      (type tinyobj_shape_t* shapes)
-		      (type tinyobj_material_t* materials)
-		      (type size_t num_shapes
-			    num_materials))
-	     (unless (== TINYOBJ_SUCCESS res)
-	       ,(vkprint "tinyobj failed to open" `(res)))
-	     #+nil,(vkprint "tinyobj opened" `(num_shapes
-					  num_materials
-					  attrib.num_face_num_verts))
-	     ;; num_shapes=                       1 (unsigned long int)
-	     ;; num_materials=                    0 (unsigned long int)
-	     ;; attrib.num_face_num_verts=   500000 (unsigned int)   ;; i think  this is the number of vertices belonging to each face. here each face has 3 vertices 
-	     ;; attrib.num_vertices=         234246 (unsigned int)
-	     ;; attrib.num_texcoords=        265645 (unsigned int)
-	     ;; attrib.num_faces=           1500000 (unsigned int)
-	     ;; attrib.num_normals=               0 (unsigned int)
+		       (type tinyobj_shape_t* shapes)
+		       (type tinyobj_material_t* materials)
+		       (type size_t num_shapes
+			     num_materials))
+	     (tinyobj_attrib_init &attrib)
+	    (let  ((res (tinyobj_parse_obj
+			&attrib
+			&shapes
+			&num_shapes
+			&materials
+			&num_materials
+			map.data
+			map.n
+			TINYOBJ_FLAG_TRIANGULATE)))
+		
+	      (unless (== TINYOBJ_SUCCESS res)
+		,(vkprint "tinyobj failed to open" `(res)))
+	      #+nil,(vkprint "tinyobj opened" `(num_shapes
+						num_materials
+						attrib.num_face_num_verts))
+	      ;; num_shapes=                       1 (unsigned long int)
+	      ;; num_materials=                    0 (unsigned long int)
+	      ;; attrib.num_face_num_verts=   500000 (unsigned int)   ;; i think  this is the number of vertices belonging to each face. here each face has 3 vertices 
+	      ;; attrib.num_vertices=         234246 (unsigned int)
+	      ;; attrib.num_texcoords=        265645 (unsigned int)
+	      ;; attrib.num_faces=           1500000 (unsigned int)
+	      ;; attrib.num_normals=               0 (unsigned int)
 
-	     ,(vkprint "model" `(num_shapes
-				 num_materials
-				 attrib.num_face_num_verts
-				 attrib.num_vertices
-				 attrib.num_texcoords
-				 attrib.num_faces
-				 attrib.num_normals))
-	     ;; float attrib.vertices[3*num_vertices]
-	     ;; float attrib.texcoords[3*num_texcoords]
-	     ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
-	     ;; vertex_index_t  attrib.faces[num_faces]
+	      ,(vkprint "model" `(num_shapes
+				  num_materials
+				  attrib.num_face_num_verts
+				  attrib.num_vertices
+				  attrib.num_texcoords
+				  attrib.num_faces
+				  attrib.num_normals))
+	      ;; float attrib.vertices[3*num_vertices]
+	      ;; float attrib.texcoords[3*num_texcoords]
+	      ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
+	      ;; vertex_index_t  attrib.faces[num_faces]
 
-	     (setf
-	      ,(g `_num_vertices) (cast int (/ attrib.num_faces 3))
-	      ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
-					 ,(g `_num_vertices)))
-	      ,(g `_num_indices) (cast int (/ attrib.num_faces 3))
-	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
-					,(g `_num_indices))))
+	      (setf
+	       ,(g `_num_vertices) (cast int (/ attrib.num_faces 3))
+	       ,(g `_vertices) (malloc (* (sizeof (deref ,(g `_vertices)))
+					  ,(g `_num_vertices)))
+	       ,(g `_num_indices) (cast int (/ attrib.num_faces 3))
+	       ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
+					 ,(g `_num_indices))))
 
-	     (for ((= "int  j" 0) (< j ,(g `_num_vertices)) (incf j 3))
-		  (let (,@(loop for i below 3 appending
-			    (let ((face (format nil "face~a" i))
-				  (v_idx (format nil "v_idx~a" i))
-				  (vt_idx (format nil "vt_idx~a" i))
-				  (vertex (format nil "vertex~a" i))
-				  (texcoord (format nil "texcoord~a" i)))
-			     `((,vertex (aref attrib.vertices (+ ,i j)))
+	      (for ((= "int  j" 0) (< j ,(g `_num_vertices)) (incf j 3))
+		   (let (,@(loop for i below 3 appending
+				(let ((face (format nil "face~a" i))
+				      (v_idx (format nil "v_idx~a" i))
+				      (vt_idx (format nil "vt_idx~a" i))
+				      (vertex (format nil "vertex~a" i))
+				      (texcoord (format nil "texcoord~a" i)))
+				  `((,vertex (aref attrib.vertices (+ ,i j)))
 			       
 			       
-			       )))
-		     #+nil (defstruct0 Vertex
+				    )))
+			 #+nil (defstruct0 Vertex
 				 (pos vec3)
-			       (color vec3)
-			       (texCoord vec2))
-		       (vertex (cast Vertex
-				     (curly
-				      (curly vertex0 vertex1 vertex2)
-				      (curly 1s0 1s0 1s0)
-				      (curly 0s0 0s0)))))
-		 (setf (aref ,(g `_vertices) j) vertex
-			      (aref ,(g `_indices) j) j)))
-	     #+nil(dotimes (face_idx (cast int (/ attrib.num_faces 9))
-		       )
-	       ;; i'm not sure what i am doing. i hope that each entry
-	       ;; in faces corresponds to a vertex with a 3 vertex
-	       ;; coordinates and 2 texture coordinates. i will
-	       ;; collect them into my data structure with possibly 
-	       ;; many duplicate vertices.
-		    (let (,@(loop for i below 3 appending
-			    (let ((face (format nil "face~a" i))
-				  (v_idx (format nil "v_idx~a" i))
-				  (vt_idx (format nil "vt_idx~a" i))
-				  (vertex (format nil "vertex~a" i))
-				  (texcoord (format nil "texcoord~a" i)))
-			     `((,face (aref attrib.faces (+ ,i (* 3 3 face_idx))))
-			       (,v_idx (dot ,face v_idx))
-			       (,vt_idx (dot ,face vt_idx))
-			       (,vertex (aref attrib.vertices ,v_idx))
-			       (,texcoord (aref attrib.texcoords ,vt_idx))
+				 (color vec3)
+				 (texCoord vec2))
+			   (vertex (cast Vertex
+					 (curly
+					  (curly vertex0 vertex1 vertex2)
+					  (curly 1s0 1s0 1s0)
+					  (curly 0s0 0s0)))))
+		     (setf (aref ,(g `_vertices) j) vertex
+			   (aref ,(g `_indices) j) j)))
+	      #+nil(dotimes (face_idx (cast int (/ attrib.num_faces 9))
+			     )
+		     ;; i'm not sure what i am doing. i hope that each entry
+		     ;; in faces corresponds to a vertex with a 3 vertex
+		     ;; coordinates and 2 texture coordinates. i will
+		     ;; collect them into my data structure with possibly 
+		     ;; many duplicate vertices.
+		     (let (,@(loop for i below 3 appending
+				  (let ((face (format nil "face~a" i))
+					(v_idx (format nil "v_idx~a" i))
+					(vt_idx (format nil "vt_idx~a" i))
+					(vertex (format nil "vertex~a" i))
+					(texcoord (format nil "texcoord~a" i)))
+				    `((,face (aref attrib.faces (+ ,i (* 3 3 face_idx))))
+				      (,v_idx (dot ,face v_idx))
+				      (,vt_idx (dot ,face vt_idx))
+				      (,vertex (aref attrib.vertices ,v_idx))
+				      (,texcoord (aref attrib.texcoords ,vt_idx))
 			       
-			       )))
-		     #+nil (defstruct0 Vertex
-				 (pos vec3)
-			       (color vec3)
-			       (texCoord vec2))
-		       (vertex (cast Vertex
-				     (curly
-				      (curly vertex0 vertex1 vertex2)
-				      (curly 1s0 1s0 1s0)
-				      (curly texcoord0 texcoord1)))))
-		 (setf (aref ,(g `_vertices) face_idx) vertex
-			      (aref ,(g `_indices) face_idx) face_idx)))
+				      )))
+			   #+nil (defstruct0 Vertex
+				   (pos vec3)
+				   (color vec3)
+				   (texCoord vec2))
+			     (vertex (cast Vertex
+					   (curly
+					    (curly vertex0 vertex1 vertex2)
+					    (curly 1s0 1s0 1s0)
+					    (curly texcoord0 texcoord1)))))
+		       (setf (aref ,(g `_vertices) face_idx) vertex
+			     (aref ,(g `_indices) face_idx) face_idx)))
 	     
 	     
 	     
-	     #+nil
-	     (let ((num_triangles attrib.num_face_num_verts)
-		   (num_texcoords attrib.num_texcoords)
-		   (stride (cast "const int" 3))
-		   (face_offset (cast "const int" 0)))
-	       (dotimes (i num_triangles)
-		 ;; vert is the number of vertices in the face, for my
-		 ;; model this is always 3
-		 (let ((vert (aref attrib.face_num_verts i)))
-		   (dotimes (f (cast int (/ vert 3)))
-		     ;; for my model f is always 0. i guess this is the face index
+	      #+nil
+	      (let ((num_triangles attrib.num_face_num_verts)
+		    (num_texcoords attrib.num_texcoords)
+		    (stride (cast "const int" 3))
+		    (face_offset (cast "const int" 0)))
+		(dotimes (i num_triangles)
+		  ;; vert is the number of vertices in the face, for my
+		  ;; model this is always 3
+		  (let ((vert (aref attrib.face_num_verts i)))
+		    (dotimes (f (cast int (/ vert 3)))
+		      ;; for my model f is always 0. i guess this is the face index
 		     
-		     ;; i=499998 (int) vert=3 (int) f=0 (int) face_offset=1499994 (int)
-		     ;; i=499999 (int) vert=3 (int) f=0 (int) face_offset=1499997 (int)
+		      ;; i=499998 (int) vert=3 (int) f=0 (int) face_offset=1499994 (int)
+		      ;; i=499999 (int) vert=3 (int) f=0 (int) face_offset=1499997 (int)
 
-		     (let (#+nil,@(loop for k below 3 collect
-				  `(,(format nil "idx~a" k)
-				     (aref attrib.faces
-					   (+ face_offset
-					      (* 3 f)
-					      ,k))))
-			   ;(v[3][3])
-			   ;(vt[3][2])
-			   )
+		      (let (#+nil,@(loop for k below 3 collect
+					`(,(format nil "idx~a" k)
+					   (aref attrib.faces
+						 (+ face_offset
+						    (* 3 f)
+						    ,k))))
+					;(v[3][3])
+					;(vt[3][2])
+				 )
 		       
 					;(declare (type float v[3][3] vt[3][2]))
-		       (setf (aref ,(g `_vertices
-				       )
-				   (* 3 i))
-				(cast
-				 Vertex
-				 (curly
-				  (curly
-				   (aref attrib.vertices (* 3 (aref attrib.faces
+			(setf (aref ,(g `_vertices
+					)
+				    (* 3 i))
+			      (cast
+			       Vertex
+			       (curly
+				(curly
+				 (aref attrib.vertices (* 3 (aref attrib.faces
+								  (+ face_offset
+								     (* 3 f)
+								     0))))
+				 (aref attrib.vertices (* 3 (aref attrib.faces
+								  (+ face_offset
+								     (* 3 f)
+								     1))))
+				 (aref attrib.vertices (* 3 (aref attrib.faces
+								  (+ face_offset
+								     (* 3 f)
+								     2)))))
+				(curly 1s0 1s0 1s0 1s0)
+				(curly
+				 (aref attrib.tex_coords (* 3 (aref attrib.faces
 								    (+ face_offset
 								       (* 3 f)
 								       0))))
-				   (aref attrib.vertices (* 3 (aref attrib.faces
+				 (aref attrib.tex_coords (* 3 (aref attrib.faces
 								    (+ face_offset
 								       (* 3 f)
-								       1))))
-				   (aref attrib.vertices (* 3 (aref attrib.faces
-								    (+ face_offset
-								       (* 3 f)
-								       2)))))
-				  (curly 1s0 1s0 1s0 1s0)
-				  (curly
-				   (aref attrib.tex_coords (* 3 (aref attrib.faces
-								      (+ face_offset
-									 (* 3 f)
-									 0))))
-				   (aref attrib.tex_coords (* 3 (aref attrib.faces
-								      (+ face_offset
-									 (* 3 f)
-									 1))))))
+								       1))))))
 				 
-				 )
+			       )
 
 
-				,@(loop for j below 3 appending
-				       `((aref ,(g `_indices) (+ ,j (* 3 i)))
-					 (aref attrib.faces
-					       (+ face_offset
-						  (* 3 f)
-						  ,j)))))
-		       #+nil (do0
-			(dotimes (k 3)
-			  (let (,@(loop for j below 3 collect
-				       `(,(format nil "f~a" j)
-					  ,(format nil "idx~a.v_idx" j)))
-				)
-			    #+nil ,(vkprint "in obj" `(i vert f face_offset k idx0.v_idx idx1.v_idx idx2.v_idx
-							 idx0.vt_idx
-							 idx1.vt_idx
-							 idx2.vt_idx))
-			    ,@(loop for j below 3 collect
-				   `(setf (aref v ,j k)
-					  (aref attrib.vertices
-						(+ k (* 3 f)))))
-			    ))
-			(dotimes (k 2)
-			  (let (,@(loop for j below 3 collect
-				       `(,(format nil "f~a" j)
-					  ,(format nil "idx~a.vt_idx" j)))
-				)
-			    ,@(loop for j below 3 collect
-				   `(setf (aref vt ,j k)
-					  (aref attrib.texcoords
-						(+ k (* 2 f)))))
-			    )))
+			      ,@(loop for j below 3 appending
+				     `((aref ,(g `_indices) (+ ,j (* 3 i)))
+				       (aref attrib.faces
+					     (+ face_offset
+						(* 3 f)
+						,j)))))
+			#+nil (do0
+			       (dotimes (k 3)
+				 (let (,@(loop for j below 3 collect
+					      `(,(format nil "f~a" j)
+						 ,(format nil "idx~a.v_idx" j)))
+				       )
+				   #+nil ,(vkprint "in obj" `(i vert f face_offset k idx0.v_idx idx1.v_idx idx2.v_idx
+								idx0.vt_idx
+								idx1.vt_idx
+								idx2.vt_idx))
+				   ,@(loop for j below 3 collect
+					  `(setf (aref v ,j k)
+						 (aref attrib.vertices
+						       (+ k (* 3 f)))))
+				   ))
+			       (dotimes (k 2)
+				 (let (,@(loop for j below 3 collect
+					      `(,(format nil "f~a" j)
+						 ,(format nil "idx~a.vt_idx" j)))
+				       )
+				   ,@(loop for j below 3 collect
+					  `(setf (aref vt ,j k)
+						 (aref attrib.texcoords
+						       (+ k (* 2 f)))))
+				   )))
 		       
-		       )
-		     ))
-		 (incf face_offset (aref attrib.face_num_verts i))
-		 ))
-	     (munmapFile map)))
+			)
+		      ))
+		  (incf face_offset (aref attrib.face_num_verts i))
+		  ))
+	      (munmapFile map))
+	    (do0
+	     "// cleanup"
+	     (tinyobj_attrib_free &attrib)
+	     (when shapes
+	       (tinyobj_shapes_free shapes num_shapes))
+	     (when materials
+	       (tinyobj_materials_free materials num_materials)))
+	    ))
 	 )))
   (define-module
 	    `(vertex_buffer
@@ -3498,11 +3515,13 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "rest"
 			   `( ,(g `_device) ,(g `_instance) ,(g `_window)))
 		 (vkDestroyDevice ,(g `_device) NULL)
+		 
 		 #+surface
 		 (vkDestroySurfaceKHR ,(g `_instance) ,(g `_surface) NULL)
 		 (vkDestroyInstance ,(g `_instance) NULL)
 		 (glfwDestroyWindow ,(g `_window))
 		 (glfwTerminate)
+		 (cleanupModel)
 		 ))))
 
    
