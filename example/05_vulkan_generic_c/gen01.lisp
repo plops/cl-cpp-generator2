@@ -1428,11 +1428,11 @@ more structs. this function helps to initialize those structs."
 		 `(VkPipelineInputAssemblyStateCreateInfo
 		   inputAssembly
 		   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-		   :topology ;VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+		   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 
 
 
-		   VK_PRIMITIVE_TOPOLOGY_POINT_LIST
+		   ;VK_PRIMITIVE_TOPOLOGY_POINT_LIST
 		   ;VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 		   ;; this would allow to break up lines
 		   ;; and strips with 0xfff or 0xffffff
@@ -2603,6 +2603,14 @@ more structs. this function helps to initialize those structs."
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
 
+	      ,@(loop for e in `(vertices texcoords) collect
+		     `(dotimes (i 10)
+			,(vkprint (format nil "~a" e) `((aref (dot attrib ,e) i)))))
+	      ,@(loop for e in `(v_idx vt_idx) collect
+		     `(dotimes (i 10)
+			,(vkprint (format nil "~a" e) `((dot (aref (dot attrib faces) i)
+							     ,e)))))
+	      
 	      (for ((= "int  j" 0) (< j (/ ,(g `_num_vertices) 9)) (incf j ))
 		   (let (,@(loop for i below 3 appending
 				(let ((face (format nil "face~a" i))
