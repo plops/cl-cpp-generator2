@@ -239,11 +239,13 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-    for (int  j=0;j<state._num_vertices;(j)+=(3)) {
-                        __auto_type vertex0  = attrib.vertices[((0)+(j))];
-        __auto_type vertex1  = attrib.vertices[((1)+(j))];
-        __auto_type vertex2  = attrib.vertices[((2)+(j))];
-        __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {(0.0e+0f), (0.0e+0f)}};
+    for (int  j=0;j<((state._num_vertices)/(9));(j)++) {
+                        __auto_type vertex0  = attrib.vertices[((0)+(((9)*(j))))];
+        __auto_type vertex1  = attrib.vertices[((1)+(((9)*(j))))];
+        __auto_type vertex2  = attrib.vertices[((2)+(((9)*(j))))];
+        __auto_type texcoord0  = attrib.texcoords[((0)+(((2)*(3)*(j))))];
+        __auto_type texcoord1  = attrib.texcoords[((1)+(((2)*(3)*(j))))];
+        __auto_type vertex  = (Vertex) {{vertex0, vertex1, vertex2}, {(1.e+0f), (1.e+0f), vertex2}, {texcoord0, texcoord1}};
                 state._vertices[j]=vertex;
         state._indices[j]=j;
 }

@@ -1433,6 +1433,7 @@ more structs. this function helps to initialize those structs."
 
 
 		   VK_PRIMITIVE_TOPOLOGY_POINT_LIST
+		   ;VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 		   ;; this would allow to break up lines
 		   ;; and strips with 0xfff or 0xffffff
 		   :primitiveRestartEnable VK_FALSE))
@@ -2286,6 +2287,7 @@ more structs. this function helps to initialize those structs."
 	 (defun createTextureImage ()
 	   (declare (values void))
 	   "// uses command buffers "
+	   ,(vkprint "start loading texture")
 	   (let ((texWidth 0)
 		 (texHeight 0)
 		 (texChannels 0)
@@ -2305,6 +2307,7 @@ more structs. this function helps to initialize those structs."
 			    )
 		      (type VkDeviceSize
 			    imageSize))
+	     
 	     (unless pixels
 	       ,(vkprint "failed to load texture image." `(texFilename))
 	       #+nil (throw ("std::runtime_error"
@@ -2317,7 +2320,7 @@ more structs. this function helps to initialize those structs."
 			      (max
 			       texWidth
 			       texHeight))))))
-
+	     ,(vkprint "loaded texture" `(texWidth texHeight texChannels texFilename ,(g `_mipLevels)))
 	     (do0 ;; print comment with example mip levels
 	      ,(format nil "// ~8a ~8a" "width" "mipLevels")
 	      ,@(loop for i in `(2 4 16 32 128 255 256 257 512 1024) collect
@@ -2335,18 +2338,21 @@ more structs. this function helps to initialize those structs."
 					 )))
 		   (data NULL))
 	       (declare (type void* data))
+	       ,(vkprint "map staging")
 	       (vkMapMemory ,(g `_device)
 			    stagingBufferTuple.memory
 			    0
 			    imageSize
 			    0
 			    &data)
+	       ,(vkprint "copy pixels")
 	       (memcpy data pixels
 		       imageSize)
+	       ,(vkprint "unmap staging")
 	       (vkUnmapMemory ,(g `_device)
 			      stagingBufferTuple.memory)
 	       (stbi_image_free pixels))
-
+	     ,(vkprint "create image")
 	     (let ((imageTuple
 		    (createImage
 		     texWidth
@@ -2363,6 +2369,7 @@ more structs. this function helps to initialize those structs."
 		     )))
 	       (setf ,(g `_textureImage) imageTuple.image
 		     ,(g `_textureImageMemory) imageTuple.memory)
+	       ,(vkprint "transition image layout")
 	       (transitionImageLayout
 		,(g `_textureImage)
 		VK_FORMAT_R8G8B8A8_UNORM
@@ -2385,18 +2392,20 @@ more structs. this function helps to initialize those structs."
 	       ;; will be transitioned to
 	       ;; READ_ONLY_OPTIMAL while generating
 	       ;; mipmaps
-
+	       ,(vkprint "destroy staging")
 	       (do0
 		(vkDestroyBuffer
 		 ,(g `_device) stagingBufferTuple.buffer NULL)
 		(vkFreeMemory ,(g `_device)
 			      stagingBufferTuple.memory
 			      NULL))
+	       ,(vkprint "start mip maps")
 	       (generateMipmaps ,(g `_textureImage)
 				VK_FORMAT_R8G8B8A8_UNORM
 				texWidth
 				texHeight
 				,(g `_mipLevels))
+	       ,(vkprint "finished mip maps")
 	       ))))))
   (define-module
       `(texture_image_view
@@ -2594,14 +2603,24 @@ more structs. this function helps to initialize those structs."
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
 
-	      (for ((= "int  j" 0) (< j ,(g `_num_vertices)) (incf j 3))
+	      (for ((= "int  j" 0) (< j (/ ,(g `_num_vertices) 9)) (incf j ))
 		   (let (,@(loop for i below 3 appending
 				(let ((face (format nil "face~a" i))
 				      (v_idx (format nil "v_idx~a" i))
 				      (vt_idx (format nil "vt_idx~a" i))
 				      (vertex (format nil "vertex~a" i))
 				      (texcoord (format nil "texcoord~a" i)))
-				  `((,vertex (aref attrib.vertices (+ ,i j)))
+				  `((,vertex (aref attrib.vertices (+ ,i (* 9 j))))
+			       
+			       
+				    )))
+			 ,@(loop for i below 2 appending
+				(let ((face (format nil "face~a" i))
+				      (v_idx (format nil "v_idx~a" i))
+				      (vt_idx (format nil "vt_idx~a" i))
+				      (vertex (format nil "vertex~a" i))
+				      (texcoord (format nil "texcoord~a" i)))
+				  `((,texcoord (aref attrib.texcoords (+ ,i (* 2 3 j))))
 			       
 			       
 				    )))
@@ -2612,8 +2631,8 @@ more structs. this function helps to initialize those structs."
 			   (vertex (cast Vertex
 					 (curly
 					  (curly vertex0 vertex1 vertex2)
-					  (curly 1s0 1s0 1s0)
-					  (curly 0s0 0s0)))))
+					  (curly 1s0 1s0 vertex2)
+					  (curly texcoord0 texcoord1)))))
 		     (setf (aref ,(g `_vertices) j) vertex
 			   (aref ,(g `_indices) j) j)))
 	      #+nil(dotimes (face_idx (cast int (/ attrib.num_faces 9))

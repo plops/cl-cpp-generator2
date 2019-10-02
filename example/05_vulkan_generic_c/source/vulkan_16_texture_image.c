@@ -250,6 +250,18 @@ void copyBufferToImage (VkBuffer buffer, VkImage image, uint32_t width, uint32_t
 }
 void createTextureImage (){
         // uses command buffers 
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" start loading texture: ");
+        printf("\n");
+};
             int texWidth  = 0;
     int texHeight  = 0;
     int texChannels  = 0;
@@ -274,6 +286,33 @@ void createTextureImage (){
 };
 };
         state._mipLevels=(uint32_t) ((1)+(floor(log2(max(texWidth, texHeight)))));
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" loaded texture: ");
+        printf(" texWidth=");
+        printf(printf_dec_format(texWidth), texWidth);
+        printf(" (%s)", type_string(texWidth));
+        printf(" texHeight=");
+        printf(printf_dec_format(texHeight), texHeight);
+        printf(" (%s)", type_string(texHeight));
+        printf(" texChannels=");
+        printf(printf_dec_format(texChannels), texChannels);
+        printf(" (%s)", type_string(texChannels));
+        printf(" texFilename=");
+        printf(printf_dec_format(texFilename), texFilename);
+        printf(" (%s)", type_string(texFilename));
+        printf(" state._mipLevels=");
+        printf(printf_dec_format(state._mipLevels), state._mipLevels);
+        printf(" (%s)", type_string(state._mipLevels));
+        printf("\n");
+};
         // width    mipLevels
     // 2        2       
     // 4        3       
@@ -287,16 +326,112 @@ void createTextureImage (){
     // 1024     11      ;
         __auto_type stagingBufferTuple  = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, ((VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) | (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
     void* data  = NULL;
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" map staging: ");
+        printf("\n");
+};
     vkMapMemory(state._device, stagingBufferTuple.memory, 0, imageSize, 0, &data);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" copy pixels: ");
+        printf("\n");
+};
     memcpy(data, pixels, imageSize);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" unmap staging: ");
+        printf("\n");
+};
     vkUnmapMemory(state._device, stagingBufferTuple.memory);
     stbi_image_free(pixels);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" create image: ");
+        printf("\n");
+};
         __auto_type imageTuple  = createImage(texWidth, texHeight, state._mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, ((VK_IMAGE_USAGE_TRANSFER_DST_BIT) | (VK_IMAGE_USAGE_TRANSFER_SRC_BIT) | (VK_IMAGE_USAGE_SAMPLED_BIT)), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         state._textureImage=imageTuple.image;
     state._textureImageMemory=imageTuple.memory;
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" transition image layout: ");
+        printf("\n");
+};
     transitionImageLayout(state._textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, state._mipLevels);
     copyBufferToImage(stagingBufferTuple.buffer, state._textureImage, texWidth, texHeight);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" destroy staging: ");
+        printf("\n");
+};
         vkDestroyBuffer(state._device, stagingBufferTuple.buffer, NULL);
     vkFreeMemory(state._device, stagingBufferTuple.memory, NULL);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" start mip maps: ");
+        printf("\n");
+};
     generateMipmaps(state._textureImage, VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, state._mipLevels);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" finished mip maps: ");
+        printf("\n");
+};
 };
