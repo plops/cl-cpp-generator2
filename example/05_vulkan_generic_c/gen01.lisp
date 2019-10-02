@@ -2546,7 +2546,8 @@ more structs. this function helps to initialize those structs."
 	      ,(g `_indices) (malloc (* (sizeof (deref ,(g `_indices)))
 					,(g `_num_indices))))
 	     
-	     (dotimes (face_idx (cast int (/ attrib.num_faces 3)))
+	     (dotimes (face_idx 1000 ; (cast int (/ attrib.num_faces 3))
+		       )
 	       ;; i'm not sure what i am doing. i hope that each entry
 	       ;; in faces corresponds to a vertex with a 3 vertex
 	       ;; coordinates and 2 texture coordinates. i will
@@ -2675,59 +2676,7 @@ more structs. this function helps to initialize those structs."
 		 (incf face_offset (aref attrib.face_num_verts i))
 		 ))
 	     (munmapFile map)))
-	 #+nil
-	 (defun loadModel ()
-	   
-	   (let ((attrib)
-		 (shapes)
-		 (materials)
-		 (warning)
-		 (err))
-	     (declare (type "tinyobj::attrib_t" attrib)
-		      (type "std::vector<tinyobj::shape_t>"
-			    shapes)
-		      (type "std::vector<tinyobj::material_t>"
-			    materials)
-		      (type "std::string"
-			    warning err))
-	     (unless ("tinyobj::LoadObj"
-		      &attrib
-		      &shapes
-		      &materials
-		      &warning
-		      &err
-		      (string "chalet.obj"))
-	       (throw ("std::runtime_error"
-		       (+ warning err))))
-
-	     (let ((uniqueVertices (curly)))
-	       (declare (type "std::unordered_map<Vertex,uint32_t>" uniqueVertices))
-	       
-	       (foreach
-		(shape shapes)
-		(foreach
-		 (index shape.mesh.indices)
-		 ,(vk
-		   `(Vertex
-		     vertex
-		     :pos (curly
-			   ,@(loop for i below 3 collect
-				  `(aref attrib.vertices
-					 (+ ,i (* 3 index.vertex_index)))))
-		     :texCoord (curly
-				(aref attrib.texcoords
-				      (+ 0 (* 2 index.texcoord_index)))
-				(- 1s0 (aref attrib.texcoords
-					     (+ 1 (* 2 index.texcoord_index)))))
-		     :color (curly 1s0 1s0 1s0)))
-		 (when (== 0
-			   (uniqueVertices.count vertex))
-		   (setf (aref uniqueVertices vertex)
-			 (static_cast<uint32_t>
-			  (g_vertices.size)))
-		   (g_vertices.push_back vertex))
-		 (g_indices.push_back
-		  (aref uniqueVertices vertex))))))))))
+	 )))
   (define-module
 	    `(vertex_buffer
 	      ()

@@ -7,7 +7,7 @@ CFILES:=$(shell ls | grep .c$)
 OBJ:=$(CFILES:%.c=%.o)
 HFILES:=$(CFILES:%.c=%.h)
 PROTOS:=$(patsubst %, proto_%, $(HFILES))
-%.o: %.c proto2.h
+%.o: %.c #proto2.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 all: vulkan_demo

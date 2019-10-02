@@ -222,7 +222,7 @@ void loadModel (){
     state._vertices=malloc(((sizeof(*(state._vertices)))*(state._num_vertices)));
     state._num_indices=(int) ((attrib.num_faces)/(3));
     state._indices=malloc(((sizeof(*(state._indices)))*(state._num_indices)));
-    for (int face_idx = 0;face_idx<(int) ((attrib.num_faces)/(3));(face_idx)+=(1)) {
+    for (int face_idx = 0;face_idx<1000;(face_idx)+=(1)) {
                         __auto_type face0  = attrib.faces[((0)+(((3)*(face_idx))))];
         __auto_type v_idx0  = face0.v_idx;
         __auto_type vt_idx0  = face0.vt_idx;
