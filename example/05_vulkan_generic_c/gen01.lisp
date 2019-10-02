@@ -3134,7 +3134,7 @@ more structs. this function helps to initialize those structs."
 				 (eye (cast vec3 (curly 2s0 2s0 2s0)))
 				 (center (cast vec3 (curly 0s0 0s0 0s0)))
 				 (angularRate (glm_rad 9s0))
-				 (rotationAngle (* time angularRate))
+				 (rotationAngle (cast float (* time angularRate)))
 				 (identity)
 				 (model)
 				 (look)
@@ -3144,7 +3144,7 @@ more structs. this function helps to initialize those structs."
 			     (do0
 			      (glm_mat4_identity identity)
 			      (glm_rotate_z identity rotationAngle model))
-
+			     ,(vkprint "rotate" `(rotationAngle time))
 			     (do0
 			      (glm_lookat ;; eye center up
 			       eye center zAxis look))
