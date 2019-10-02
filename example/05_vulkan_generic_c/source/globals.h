@@ -3,7 +3,6 @@ struct State {
         double _start_time;
         GLFWwindow* _window;
         VkInstance _instance;
-        const char* const _validationLayers[1];
         VkPhysicalDevice _physicalDevice;
         VkDevice _device;
         VkQueue _graphicsQueue;
