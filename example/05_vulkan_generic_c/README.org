@@ -117,3 +117,6 @@ condenses the print statement into a call like this:
 #+BEGIN_EXAMPLE
 print(" vkCmdPipelineBarrier ",i)
 #+END_EXAMPLE
+
+Okay. The C preprocessor may allow this but I'm not going to bother:
+https://stackoverflow.com/questions/1872220/is-it-possible-to-iterate-over-arguments-in-variadic-macros
