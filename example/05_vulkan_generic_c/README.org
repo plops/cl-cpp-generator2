@@ -1,0 +1,38 @@
+* Intro
+
+This example is based on the Vulkan C++ example in ../04 ...
+
+However, here I tried to limit myself to C18 with GNU extensions.  I
+also split the code into multiple files in order to speed up iterative
+development.
+
+Currently 29 C files are being generated. Once they exist the commands
+#+BEGIN_EXAMPLE
+rm proto2.h; touch proto2.h; touch *.c; make proto2.h
+#+END_EXAMPLE
+will collect all function definitions in these files and store them in proto2.h.
+
+The make file and gen01.lisp is written so that files that have not
+changed will not be fed unneccessarily through the compiler. This
+works most of the time during development but may fail if a header or
+the makefile has been edited.
+
+In this case it is best to call
+#+BEGIN_EXAMPLE
+make genclean
+#+END_EXAMPLE
+This will remove all generated c files. After this run the gen01.lisp
+code block twice in order to generate the c files again (and also
+proto2.h).
+
+
+If you just want to change the CFLAGS in the makefile, it may be
+sufficient to recompile all object files. You can enforce this with
+#+BEGIN_EXAMPLE
+make clean
+make vulkan_demo
+#+END_EXAMPLE
+In this case you don't have to regenerate the c files from lisp.
+
+Note that the files that load the texture and the model contain a
+pragma that will force level 3 optimized (-O3) compilation.
