@@ -2026,6 +2026,9 @@ more structs. this function helps to initialize those structs."
 	 (include <string.h>)
 	 (do0
 	  "#define STB_IMAGE_IMPLEMENTATION"
+	  " "
+	  "#define STBI_ONLY_JPEG"
+	  " "
 	  (include "stb_image.h")
 	  " "
 	  (include <math.h>)
