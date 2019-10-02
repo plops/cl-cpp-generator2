@@ -1,3 +1,7 @@
+#ifndef UTILS_H
+ 
+#define UTILS_H
+ 
 #include <stdio.h>
  
 #include <stdbool.h>
@@ -66,3 +70,7 @@ typedef struct QueueFamilyIndices QueueFamilyIndices;
 #define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })
 #define printf_dec_format(x) _Generic((x), default: "%p", char: "%c", signed char: "%hhd", unsigned char: "%hhu", signed short: "%hd", unsigned short: "%hu", signed int: "%d", unsigned int: "%u", long int: "%ld", unsigned long int: "%lu", long long int: "%lld", float: "%f", double: "%f", long double: "%Lf", char*: "%s", const char*: "%s", unsigned long long int: "%llu",void*: "%p",bool:"%d")
 #define type_string(x) _Generic((x), default: "default",bool: "bool",const bool: "const bool",char: "char",const char: "const char",unsigned char: "unsigned char",const unsigned char: "const unsigned char",short: "short",const short: "const short",unsigned short: "unsigned short",const unsigned short: "const unsigned short",int: "int",const int: "const int",unsigned int: "unsigned int",const unsigned int: "const unsigned int",long int: "long int",const long int: "const long int",unsigned long int: "unsigned long int",const unsigned long int: "const unsigned long int",long long int: "long long int",const long long int: "const long long int",unsigned long long int: "unsigned long long int",const unsigned long long int: "const unsigned long long int",float: "float",const float: "const float",double: "double",const double: "const double",long double: "long double",const long double: "const long double",char*: "char*",const char*: "const char*",void*: "void*",const void*: "const void*")
+ ;
+ 
+#endif
+ 

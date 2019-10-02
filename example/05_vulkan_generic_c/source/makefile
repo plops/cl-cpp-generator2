@@ -24,7 +24,10 @@ clean:
 	rm *.o vulkan*.h proto_*.h proto2.h vulkan_demo *.s
 
 proto2.h: $(PROTOS)
+	echo '#ifndef PROTO2_H' > $@
+	echo '#define PROTO2_H' >> $@
 	cat $^ >> $@
+	echo '#endif' >> $@
 
 proto_%.h: %.c
 	sh ./gen_proto2.sh $<

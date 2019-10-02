@@ -3503,7 +3503,14 @@ more structs. this function helps to initialize those structs."
 		   'cl-cpp-generator2
 		   "example/05_vulkan_generic_c/source/utils.h"
 		   )
+
 		  `(do0
+		    "#ifndef UTILS_H"
+		    " "
+		    "#define UTILS_H"
+		    " "
+		    
+		    (do0
 		    (include <stdio.h>)
 		    " "
 		    (include <stdbool.h>)
@@ -3544,13 +3551,27 @@ more structs. this function helps to initialize those structs."
 
 		    
 		    
+		    " "
 		    
-		    
-		    ))
+		    )
+		    " "
+		    "#endif"
+		    " ")
+		  )
     (write-source *vertex-file* vertex-code)
     (write-source *frag-file* frag-code)
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 "example/05_vulkan_generic_c/source/globals.h")
-		  (emit-globals))
+		  `(do0
+		    "#ifndef GLOBALS_H"
+		    " "
+		    "#define GLOBALS_H"
+		    " "
+		    
+		    
+		    ,(emit-globals)
+		    " "
+		    "#endif"
+		    " "))
     
     
     (sb-ext:run-program "/usr/bin/glslangValidator" `("-V" ,(format nil "~a" *frag-file*)
@@ -3563,8 +3584,6 @@ more structs. this function helps to initialize those structs."
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
-    (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j4" "proto2.h"))
-
-    ))
+    (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j4" "proto2.h"))))
  
 

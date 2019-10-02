@@ -59,7 +59,11 @@ If you just want to change the CFLAGS in the makefile, it may be
 sufficient to recompile all object files. You can enforce this with
 #+BEGIN_EXAMPLE
 make clean
-make vulkan_demo
+rm proto2.h proto*.h
+touch proto2.h # we need an empty proto2.h stub so that  gcc doesnt complain about missing file 
+make -j4 proto2.h
+touch vulkan*.c
+make -j4 vulkan_demo
 #+END_EXAMPLE
 In this case you don't have to regenerate the c files from lisp.
 
