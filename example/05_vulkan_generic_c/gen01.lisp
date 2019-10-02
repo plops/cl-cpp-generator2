@@ -2605,11 +2605,13 @@ more structs. this function helps to initialize those structs."
 
 	      ,@(loop for e in `(vertices texcoords) collect
 		     `(dotimes (i 10)
-			,(vkprint (format nil "~a" e) `((aref (dot attrib ,e) i)))))
+			,(vkprint (format nil "~a" e) `(i (aref (dot attrib ,e) i)))))
 	      ,@(loop for e in `(v_idx vt_idx) collect
-		     `(dotimes (i 10)
-			,(vkprint (format nil "~a" e) `((dot (aref (dot attrib faces) i)
-							     ,e)))))
+		     `(dotimes (i 30)
+			(unless (== i (dot (aref (dot attrib faces) i)
+								,e))
+			 ,(vkprint (format nil "~a" e) `(i (dot (aref (dot attrib faces) i)
+								,e))))))
 	      
 	      (for ((= "int  j" 0) (< j (/ ,(g `_num_vertices) 9)) (incf j ))
 		   (let (,@(loop for i below 3 appending

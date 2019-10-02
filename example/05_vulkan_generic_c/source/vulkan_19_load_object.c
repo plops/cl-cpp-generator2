@@ -250,6 +250,9 @@ void loadModel (){
             printf(" ");
             printf(printf_dec_format(__func__), __func__);
             printf(" vertices: ");
+            printf(" i=");
+            printf(printf_dec_format(i), i);
+            printf(" (%s)", type_string(i));
             printf(" attrib.vertices[i]=");
             printf(printf_dec_format(attrib.vertices[i]), attrib.vertices[i]);
             printf(" (%s)", type_string(attrib.vertices[i]));
@@ -267,44 +270,57 @@ void loadModel (){
             printf(" ");
             printf(printf_dec_format(__func__), __func__);
             printf(" texcoords: ");
+            printf(" i=");
+            printf(printf_dec_format(i), i);
+            printf(" (%s)", type_string(i));
             printf(" attrib.texcoords[i]=");
             printf(printf_dec_format(attrib.texcoords[i]), attrib.texcoords[i]);
             printf(" (%s)", type_string(attrib.texcoords[i]));
             printf("\n");
 };
 }
-    for (int i = 0;i<10;(i)+=(1)) {
-                {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" v_idx: ");
-            printf(" attrib.faces[i].v_idx=");
-            printf(printf_dec_format(attrib.faces[i].v_idx), attrib.faces[i].v_idx);
-            printf(" (%s)", type_string(attrib.faces[i].v_idx));
-            printf("\n");
+    for (int i = 0;i<30;(i)+=(1)) {
+                if ( !((i)==(attrib.faces[i].v_idx)) ) {
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" v_idx: ");
+                printf(" i=");
+                printf(printf_dec_format(i), i);
+                printf(" (%s)", type_string(i));
+                printf(" attrib.faces[i].v_idx=");
+                printf(printf_dec_format(attrib.faces[i].v_idx), attrib.faces[i].v_idx);
+                printf(" (%s)", type_string(attrib.faces[i].v_idx));
+                printf("\n");
+};
 };
 }
-    for (int i = 0;i<10;(i)+=(1)) {
-                {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" vt_idx: ");
-            printf(" attrib.faces[i].vt_idx=");
-            printf(printf_dec_format(attrib.faces[i].vt_idx), attrib.faces[i].vt_idx);
-            printf(" (%s)", type_string(attrib.faces[i].vt_idx));
-            printf("\n");
+    for (int i = 0;i<30;(i)+=(1)) {
+                if ( !((i)==(attrib.faces[i].vt_idx)) ) {
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" vt_idx: ");
+                printf(" i=");
+                printf(printf_dec_format(i), i);
+                printf(" (%s)", type_string(i));
+                printf(" attrib.faces[i].vt_idx=");
+                printf(printf_dec_format(attrib.faces[i].vt_idx), attrib.faces[i].vt_idx);
+                printf(" (%s)", type_string(attrib.faces[i].vt_idx));
+                printf("\n");
+};
 };
 }
     for (int  j=0;j<((state._num_vertices)/(9));(j)++) {
