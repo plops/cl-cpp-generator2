@@ -6,11 +6,18 @@ However, here I tried to limit myself to C18 with GNU extensions.  I
 also split the code into multiple files in order to speed up iterative
 development.
 
+The goal of this code is to have a fast prototyping platform. I want
+to experiment with visualizations. I might want to get this running on
+Android.
+
+* Building
+
 Currently 29 C files are being generated. Once they exist the commands
 #+BEGIN_EXAMPLE
 rm proto2.h; touch proto2.h; touch *.c; make proto2.h
 #+END_EXAMPLE
-will collect all function definitions in these files and store them in proto2.h.
+will collect all function definitions in these files and store them in
+proto2.h.
 
 The make file and gen01.lisp is written so that files that have not
 changed will not be fed unneccessarily through the compiler. This
@@ -36,3 +43,4 @@ In this case you don't have to regenerate the c files from lisp.
 
 Note that the files that load the texture and the model contain a
 pragma that will force level 3 optimized (-O3) compilation.
+
