@@ -8,9 +8,11 @@
 
 ;; if nolog is off, then validation layers will be used to check for mistakes
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
-(setf *features* (union *features* '(:surface ; :nolog
+;; if nolog-frame is off then draw frame prints lots of stuff
+(setf *features* (union *features* '(:surface  :nolog-frame
 				     )))
-(setf *features* (set-difference *features* '(:nolog)))
+(setf *features* (set-difference *features* '(:nolog ;:nolog-frame
+					      )))
 
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
 ;; gcc -std=c18 -c vulkan_01_instance.c -Wmissing-declarations
@@ -3151,7 +3153,7 @@ more structs. this function helps to initialize those structs."
 			      (do0
 			       (glm_mat4_identity identity)
 			       (glm_rotate_z identity rotationAngle model))
-			      ,(vkprint "rotate" `(rotationAngle time startTime currentTime))
+			      #-nolog-frame ,(vkprint "rotate" `(rotationAngle time startTime currentTime))
 			      (do0
 			       (glm_lookat ;; eye center up
 				eye center zAxis look))
@@ -3182,7 +3184,7 @@ more structs. this function helps to initialize those structs."
 				  (- (aref ubo.proj 1 1)))
 			    (let ((data 0))
 			      (declare (type void* data))
-			      ,(vkprint "start map memory" `((aref ,(g `_uniformBuffersMemory)
+			      #-nolog-frame ,(vkprint "start map memory" `((aref ,(g `_uniformBuffersMemory)
 								   currentImage)))
 			      (vkMapMemory ,(g `_device)
 					   (aref ,(g `_uniformBuffersMemory)
@@ -3191,9 +3193,9 @@ more structs. this function helps to initialize those structs."
 					   (sizeof ubo)
 					   0
 					   &data)
-			      ,(vkprint "mapped memory" `(data (sizeof ubo)))
+			      #-nolog-frame ,(vkprint "mapped memory" `(data (sizeof ubo)))
 			      (memcpy data &ubo (sizeof ubo))
-			      ,(vkprint "unmap memory" `((aref ,(g `_uniformBuffersMemory)
+			      #-nolog-frame ,(vkprint "unmap memory" `((aref ,(g `_uniformBuffersMemory)
 							       currentImage)))
 			      (vkUnmapMemory ,(g `_device)
 					     (aref ,(g `_uniformBuffersMemory)
@@ -3236,12 +3238,12 @@ more structs. this function helps to initialize those structs."
 			  ,(vkprint "swap chain has been recreated.")
 			  )
 	       (defun drawFrame ()
-		 ,(vkprint "wait for fences" `((aref ,(g `_inFlightFences) ,(g `_currentFrame))
+		 #-nolog-frame ,(vkprint "wait for fences" `((aref ,(g `_inFlightFences) ,(g `_currentFrame))
 					       ,(g `_currentFrame)))
 		 (do0
 		  (vkWaitForFences ,(g `_device) 1 (ref (aref ,(g `_inFlightFences) ,(g `_currentFrame)))  VK_TRUE UINT64_MAX)
 		  )
-		 ,(vkprint "acquire next image" `(,(g `_swapChain) (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
+		 #-nolog-frame ,(vkprint "acquire next image" `(,(g `_swapChain) (aref ,(g `_imageAvailableSemaphores) ,(g `_currentFrame))))
 		 (let ((imageIndex 0)
 		       (result (vkAcquireNextImageKHR
 				,(g `_device)
@@ -3251,7 +3253,7 @@ more structs. this function helps to initialize those structs."
 				VK_NULL_HANDLE
 				&imageIndex)))
 		   (declare (type uint32_t imageIndex))
-		   ,(vkprint "next image is" `(imageIndex))
+		   #-nolog-frame ,(vkprint "next image is" `(imageIndex))
 		   (when (== VK_ERROR_OUT_OF_DATE_KHR result)
 		     (recreateSwapChain)
 		     (return))
@@ -3264,9 +3266,9 @@ more structs. this function helps to initialize those structs."
 		     (declare (type VkSemaphore waitSemaphores[]
 				    signalSemaphores[])
 			      (type VkPipelineStageFlags waitStages[]))
-		     ,(vkprint "updateUniformBuffer" `(imageIndex))
+		     #-nolog-frame ,(vkprint "updateUniformBuffer" `(imageIndex))
 		     (updateUniformBuffer imageIndex)
-		     ,(vkprint "submit info")
+		     #-nolog-frame ,(vkprint "submit info")
 		     ,(vk
 		       `(VkSubmitInfo submitInfo
 				      :sType VK_STRUCTURE_TYPE_SUBMIT_INFO
@@ -3320,12 +3322,12 @@ more structs. this function helps to initialize those structs."
 		     
 		     ))
 		 (do0
-		  ,(vkprint "next frame from" `(,(g `_currentFrame)))
+		  #-nolog-frame ,(vkprint "next frame from" `(,(g `_currentFrame)))
 		  (setf ,(g `_currentFrame)
 			(%
 			 (+ 1 ,(g `_currentFrame))
 			 _MAX_FRAMES_IN_FLIGHT))
-		  ,(vkprint "next frame is" `(,(g `_currentFrame))))))))
+		  #-nolog-frame ,(vkprint "next frame is" `(,(g `_currentFrame))))))))
    (define-module
 	    `(cleanup
 	      ()
