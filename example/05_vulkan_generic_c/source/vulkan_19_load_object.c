@@ -203,7 +203,7 @@ void loadModel (){
         printf(" (%s)", type_string(attrib.num_normals));
         printf("\n");
 };
-            state._num_vertices=(int) ((attrib.num_faces)/(3));
+            state._num_vertices=1500000;
         __auto_type n_bytes_vertices  = ((sizeof(*(state._vertices)))*(state._num_vertices));
     {
                         __auto_type current_time  = now();
@@ -221,7 +221,7 @@ void loadModel (){
         printf("\n");
 };
         state._vertices=malloc(n_bytes_vertices);
-            state._num_indices=(int) ((attrib.num_faces)/(3));
+            state._num_indices=1500000;
         __auto_type n_bytes_indices  = ((sizeof(*(state._indices)))*(state._num_indices));
     {
                         __auto_type current_time  = now();
