@@ -2813,6 +2813,7 @@ more structs. this function helps to initialize those structs."
 					  bufferSize ;; size
 					  0	     ;; flags
 					  &data)
+			     ,(vkprint "copy vertex buffer" `(bufferSize ,(g `_num_vertices)))
 			     (memcpy data
 				     ,(g `_vertices)
 				     bufferSize)
