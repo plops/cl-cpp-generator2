@@ -2867,6 +2867,7 @@ more structs. this function helps to initialize those structs."
 					  bufferSize ;; size
 					  0	     ;; flags
 					  &data)
+			     ,(vkprint "copy index buffer" `(bufferSize ,(g `_num_indices)))
 			     (memcpy data
 				     ,(g `_indices)
 				     bufferSize)
