@@ -2732,7 +2732,7 @@ more structs. this function helps to initialize those structs."
 					 (curly 1s0 1s0 1s0)
 					 (curly t0 (- t1)))))
 			  (key (hash_Vertex &vertex)))
-		    (if (== true (hashmap_int_set &hashmap key i))
+		    (if (== true (hashmap_int_set &hashmap key count))
 			(do0
 			 ;,(vkprint "not found" `(key i count))
 			 (setf (aref ,(g `_vertices) count) vertex

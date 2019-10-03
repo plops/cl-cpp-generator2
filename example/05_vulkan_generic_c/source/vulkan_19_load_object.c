@@ -345,7 +345,7 @@ void loadModel (){
         __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
         __auto_type key  = hash_Vertex(&vertex);
-        if ( (true)==(hashmap_int_set(&hashmap, key, i)) ) {
+        if ( (true)==(hashmap_int_set(&hashmap, key, count)) ) {
                                                 state._vertices[count]=vertex;
             state._indices[i]=count;
             (count)++;
