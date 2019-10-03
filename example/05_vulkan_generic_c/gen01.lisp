@@ -2579,8 +2579,9 @@ more structs. this function helps to initialize those structs."
 		   (data (malloc n_bytes_hashmap)))
 	       (declare (type int* data)
 			(type Hashmap_int hm))
-	       (dotimes (i hm.n_bins)
+	       (dotimes (i n)
 		 (setf (aref data i) -1))
+	       ;,(vkprint "clear hashmap" `((aref data 0)))
 	       (setf hm.n_bins n
 		     hm.n_entries 0
 		     hm.data data)
@@ -2704,8 +2705,9 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make attrib.num_faces)))
-		
+	      (let ((hashmap (hashmap_int_make attrib.num_faces))
+		    (count 0))
+		"// hashmap for vertex deduplication"
 		(dotimes (i attrib.num_faces)
 		  (let (,@(loop for j below 3 collect
 			       `(,(format nil "v~a" j)
@@ -2721,11 +2723,18 @@ more structs. this function helps to initialize those structs."
 					 (curly 1s0 1s0 1s0)
 					 (curly t0 (- t1)))))
 			  (key (hash_Vertex &vertex)))
-		    (if (hashmap_int_set &hashmap key i)
-			(do0 (setf (aref ,(g `_vertices) i) vertex
-				   (aref ,(g `_indices) i) i))
-			(do0 (let ((p (hashmap_int_get &hashmap key)))
-			       (setf (aref ,(g `_indices) i) p.value))))))
+		    (if (== true (hashmap_int_set &hashmap key i))
+			(do0
+			 ,(vkprint "not found" `(key i count))
+			 (setf (aref ,(g `_vertices) count) vertex
+				   (aref ,(g `_indices) count) count)
+			     (incf count))
+			(do0
+			 
+			 (let ((p (hashmap_int_get &hashmap key)))
+			   ,(vkprint "found" `(key i count p.value))
+			   (setf (aref ,(g `_indices) count) p.value))))
+		    ))
 		(hashmap_int_free &hashmap))
 	      
 	      

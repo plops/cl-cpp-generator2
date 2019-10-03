@@ -185,7 +185,7 @@ Hashmap_int hashmap_int_make (int n){
 };
         Hashmap_int hm ;
     int* data  = malloc(n_bytes_hashmap);
-    for (int i = 0;i<hm.n_bins;(i)+=(1)) {
+    for (int i = 0;i<n;(i)+=(1)) {
                         data[i]=-1;
 }
         hm.n_bins=n;
@@ -330,6 +330,8 @@ void loadModel (){
 };
         state._indices=malloc(n_bytes_indices);
         __auto_type hashmap  = hashmap_int_make(attrib.num_faces);
+    __auto_type count  = 0;
+    // hashmap for vertex deduplication
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
@@ -338,12 +340,58 @@ void loadModel (){
         __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
         __auto_type key  = hash_Vertex(&vertex);
-        if ( hashmap_int_set(&hashmap, key, i) ) {
-                                                state._vertices[i]=vertex;
-            state._indices[i]=i;
+        if ( (true)==(hashmap_int_set(&hashmap, key, i)) ) {
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" not found: ");
+                printf(" key=");
+                printf(printf_dec_format(key), key);
+                printf(" (%s)", type_string(key));
+                printf(" i=");
+                printf(printf_dec_format(i), i);
+                printf(" (%s)", type_string(i));
+                printf(" count=");
+                printf(printf_dec_format(count), count);
+                printf(" (%s)", type_string(count));
+                printf("\n");
+};
+                        state._vertices[count]=vertex;
+            state._indices[count]=count;
+            (count)++;
 } else {
                                                 __auto_type p  = hashmap_int_get(&hashmap, key);
-                        state._indices[i]=p.value;
+            {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" found: ");
+                printf(" key=");
+                printf(printf_dec_format(key), key);
+                printf(" (%s)", type_string(key));
+                printf(" i=");
+                printf(printf_dec_format(i), i);
+                printf(" (%s)", type_string(i));
+                printf(" count=");
+                printf(printf_dec_format(count), count);
+                printf(" (%s)", type_string(count));
+                printf(" p.value=");
+                printf(printf_dec_format(p.value), p.value);
+                printf(" (%s)", type_string(p.value));
+                printf("\n");
+};
+                        state._indices[count]=p.value;
 };
 }
     hashmap_int_free(&hashmap);
