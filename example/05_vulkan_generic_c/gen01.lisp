@@ -2725,16 +2725,17 @@ more structs. this function helps to initialize those structs."
 			  (key (hash_Vertex &vertex)))
 		    (if (== true (hashmap_int_set &hashmap key i))
 			(do0
-			 ,(vkprint "not found" `(key i count))
+			 ;,(vkprint "not found" `(key i count))
 			 (setf (aref ,(g `_vertices) count) vertex
-				   (aref ,(g `_indices) count) count)
-			     (incf count))
+			       (aref ,(g `_indices) count) count)
+			 (incf count))
 			(do0
 			 
 			 (let ((p (hashmap_int_get &hashmap key)))
-			   ,(vkprint "found" `(key i count p.value))
+			   ;,(vkprint "    found" `(key i count p.value))
 			   (setf (aref ,(g `_indices) count) p.value))))
 		    ))
+		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count))
 		(hashmap_int_free &hashmap))
 	      
 	      
