@@ -162,7 +162,11 @@ uint64_t hash_Vertex (Vertex* v){
     __auto_type uy  = *((uint64_t*) &(dy));
     __auto_type dz  = (double) v->pos[2];
     __auto_type uz  = *((uint64_t*) &(dz));
-    return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz)));
+    __auto_type vtdu  = (double) v->texCoord[0];
+    __auto_type vtuu  = *((uint64_t*) &(vtdu));
+    __auto_type vtdv  = (double) v->texCoord[1];
+    __auto_type vtuv  = *((uint64_t*) &(vtdv));
+    return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz))+(hash_i64(vtuu))+(hash_i64(vtuv)));
 }
  
 Hashmap_int hashmap_int_make (int n){

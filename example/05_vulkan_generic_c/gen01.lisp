@@ -2554,10 +2554,18 @@ more structs. this function helps to initialize those structs."
 			(let ((d (format nil "d~a" e))
 			      (u (format nil "u~a" e)))
 			  `((,d (cast double (aref v->pos ,i)))
-			    (,u (deref (cast uint64_t* (ref ,d))))))))
+			    (,u (deref (cast uint64_t* (ref ,d)))))))
+
+		 ,@(loop for e in `(u v) and i from 0 appending
+			(let ((vtd (format nil "vtd~a" e))
+			      (vtu (format nil "vtu~a" e)))
+			  `((,vtd (cast double (aref v->texCoord ,i)))
+			    (,vtu (deref (cast uint64_t* (ref ,vtd))))))))
 	     (return (+ (hash_i64 ux)
 			(hash_i64 uy)
 			(hash_i64 uz)
+			(hash_i64 vtuu)
+			(hash_i64 vtuv)
 			))))
 
 	 ,(emit-utils :code `(do0
