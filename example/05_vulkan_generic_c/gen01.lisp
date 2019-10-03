@@ -1,5 +1,6 @@
 (setf *features* (union *features* '(:generic-c)))
 
+
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "cl-ppcre"))
@@ -1428,11 +1429,11 @@ more structs. this function helps to initialize those structs."
 		 `(VkPipelineInputAssemblyStateCreateInfo
 		   inputAssembly
 		   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-		   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+		   :topology ;VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 
 
 
-		   ;VK_PRIMITIVE_TOPOLOGY_POINT_LIST
+		   VK_PRIMITIVE_TOPOLOGY_POINT_LIST
 		   ;VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 		   ;; this would allow to break up lines
 		   ;; and strips with 0xfff or 0xffffff
