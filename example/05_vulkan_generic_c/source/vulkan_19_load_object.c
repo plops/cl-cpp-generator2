@@ -164,6 +164,76 @@ uint64_t hash_Vertex (Vertex* v){
     __auto_type uz  = *((uint64_t*) &(dz));
     return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz)));
 }
+ 
+Hashmap_int hashmap_int_make (int n){
+        // initialize hash map with -1
+            __auto_type n_bytes_hashmap  = ((sizeof(int))*(n));
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" malloc: ");
+        printf(" n_bytes_hashmap=");
+        printf(printf_dec_format(n_bytes_hashmap), n_bytes_hashmap);
+        printf(" (%s)", type_string(n_bytes_hashmap));
+        printf("\n");
+};
+        Hashmap_int hm ;
+    int* data  = malloc(n_bytes_hashmap);
+    for (int i = 0;i<hm.n_bins;(i)+=(1)) {
+                        data[i]=-1;
+}
+        hm.n_bins=n;
+    hm.n_entries=0;
+    hm.data=data;
+    return hm;
+}
+void hashmap_int_free (Hashmap_int* h){
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" free hashmap: ");
+        printf(" h->n_bins=");
+        printf(printf_dec_format(h->n_bins), h->n_bins);
+        printf(" (%s)", type_string(h->n_bins));
+        printf(" h->n_entries=");
+        printf(printf_dec_format(h->n_entries), h->n_entries);
+        printf(" (%s)", type_string(h->n_entries));
+        printf("\n");
+};
+        free(h->data);
+}
+Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key){
+        // return key, value and pointer to value in data array
+        // if empty value is -1
+            __auto_type limit_key  = key%h->n_bins;
+    __auto_type value  = h->data[limit_key];
+    __auto_type valuep  = &(h->data[limit_key]);
+        __auto_type p  = (Hashmap_int_pair) {key, value, valuep};
+    return p;
+}
+bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
+        // returns true if hashmap bin was empty (value -1)
+        // returns false if hashmap already contains a value different from -1
+            __auto_type p  = hashmap_int_get(h, key);
+    if ( (-1)==(p.value) ) {
+                                *(p.valuep)=newvalue;
+        return true;
+} else {
+                        return false;
+};
+}
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
@@ -259,38 +329,7 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        __auto_type n_bytes_hashmap  = ((sizeof(uint64_t))*(attrib.num_faces));
-    {
-                        __auto_type current_time  = now();
-        printf("%6.6f", ((current_time)-(state._start_time)));
-        printf(" ");
-        printf(printf_dec_format(__FILE__), __FILE__);
-        printf(":");
-        printf(printf_dec_format(__LINE__), __LINE__);
-        printf(" ");
-        printf(printf_dec_format(__func__), __func__);
-        printf(" malloc: ");
-        printf(" n_bytes_hashmap=");
-        printf(printf_dec_format(n_bytes_hashmap), n_bytes_hashmap);
-        printf(" (%s)", type_string(n_bytes_hashmap));
-        printf("\n");
-};
-        uint64_t* hashmap  = calloc(n_bytes_hashmap, 1);
-    {
-                        __auto_type current_time  = now();
-        printf("%6.6f", ((current_time)-(state._start_time)));
-        printf(" ");
-        printf(printf_dec_format(__FILE__), __FILE__);
-        printf(":");
-        printf(printf_dec_format(__LINE__), __LINE__);
-        printf(" ");
-        printf(printf_dec_format(__func__), __func__);
-        printf(" hashmap: ");
-        printf(" hashmap[0]=");
-        printf(printf_dec_format(hashmap[0]), hashmap[0]);
-        printf(" (%s)", type_string(hashmap[0]));
-        printf("\n");
-};
+        __auto_type hashmap  = hashmap_int_make(attrib.num_faces);
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
         __auto_type v1  = attrib.vertices[((1)+(((3)*(attrib.faces[i].v_idx))))];
@@ -298,10 +337,16 @@ void loadModel (){
         __auto_type t0  = attrib.texcoords[((0)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
-                state._vertices[i]=vertex;
-        state._indices[i]=i;
+        __auto_type key  = hash_Vertex(&vertex);
+        if ( hashmap_int_set(&hashmap, key, i) ) {
+                                                state._vertices[i]=vertex;
+            state._indices[i]=i;
+} else {
+                                                __auto_type p  = hashmap_int_get(&hashmap, key);
+                        state._indices[i]=p.value;
+};
 }
-    free(hashmap);
+    hashmap_int_free(&hashmap);
     munmapFile(map);
         // cleanup
     tinyobj_attrib_free(&attrib);

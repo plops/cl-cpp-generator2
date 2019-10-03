@@ -16,6 +16,18 @@ struct UniformBufferObject {
         mat4 proj;
 };
 typedef struct UniformBufferObject UniformBufferObject;
+struct Hashmap_int {
+        int n_bins;
+        int n_entries;
+        int* data;
+};
+typedef struct Hashmap_int Hashmap_int;
+struct Hashmap_int_pair {
+        int key;
+        int value;
+        int* valuep;
+};
+typedef struct Hashmap_int_pair Hashmap_int_pair;
 struct mmapPair {
         int n;
         char* data;

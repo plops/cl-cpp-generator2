@@ -2564,28 +2564,61 @@ more structs. this function helps to initialize those structs."
 			      (defstruct0 Hashmap_int
 				  (n_bins int)
 				(n_entries int)
-				(data int*))))
+				(data int*))
+			      (defstruct0 Hashmap_int_pair
+				  (key int)
+				(value int)
+				(valuep int*))))
 	 (defun hashmap_int_make (n)
 	   (declare (values Hashmap_int)
 		    (type int n))
+	   "// initialize hash map with -1"
 	   (let ((n_bytes_hashmap (* (sizeof int) n)))
 	     ,(vkprint "malloc" `(n_bytes_hashmap))
 	     (let ((hm)
-		   (data (calloc n_bytes_hashmap 1)))
+		   (data (malloc n_bytes_hashmap)))
 	       (declare (type int* data)
 			(type Hashmap_int hm))
-	       (setf hm.b_bins n
+	       (dotimes (i hm.n_bins)
+		 (setf (aref data i) -1))
+	       (setf hm.n_bins n
 		     hm.n_entries 0
 		     hm.data data)
 	       (return hm))))
 
 	 (defun hashmap_int_free (h)
 	   (declare (type Hashmap_int* h))
-	   ,(vkprint "free hashmap" `(h->b_bins
+	   
+	   ,(vkprint "free hashmap" `(h->n_bins
 				      h->n_entries))
 	   (free h->data))
 	 
-	 (defun hashmap_index )
+	 (defun hashmap_int_get (h key)
+	   (declare (type Hashmap_int* h)
+		    (type uint64_t key)
+		    (values Hashmap_int_pair))
+	   "// return key, value and pointer to value in data array"
+	   "// if empty value is -1"
+	   (let ((limit_key (% key h->n_bins))
+		 (value (aref h->data limit_key))
+		 (valuep (ref (aref h->data limit_key))))
+	     (let ((p (cast Hashmap_int_pair (curly key value valuep))))
+	       (return p))))
+
+	 (defun hashmap_int_set (h key newvalue)
+	   (declare (type Hashmap_int* h)
+		    (type int newvalue)
+		    (type uint64_t key)
+		    (values bool))
+	   "// returns true if hashmap bin was empty (value -1)"
+	   "// returns false if hashmap already contains a value different from -1"
+	   (let ((p (hashmap_int_get h key)))
+	     (if (== -1 p.value)
+		 (do0
+		  (setf (deref p.valuep) newvalue)
+		  (return true))
+		 (do0
+		  (return false)))))
 	 
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
@@ -2671,30 +2704,29 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((n_bytes_hashmap (* (sizeof int)
-					attrib.num_faces)))
-		,(vkprint "malloc" `(n_bytes_hashmap))
-		(let ((hashmap (calloc n_bytes_hashmap 1)))
-		 (declare (type uint64_t* hashmap))
-		 ,(vkprint "hashmap empty" `((aref hashmap 0)))
-		 (dotimes (i attrib.num_faces)
-		   (let (,@(loop for j below 3 collect
-				`(,(format nil "v~a" j)
-				   (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
-									 v_idx))))))
-			 ,@(loop for j below 2 collect
-				`(,(format nil "t~a" j)
-				   (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
-									  vt_idx))))))
-			   (vertex (cast Vertex
-					 (curly
-					  (curly v0 v1 v2)
-					  (curly 1s0 1s0 1s0)
-					  (curly t0 (- t1))))))
-		  
-		     (setf (aref ,(g `_vertices) i) vertex
-			   (aref ,(g `_indices) i) i)))
-		 (free hashmap)))
+	      (let ((hashmap (hashmap_int_make attrib.num_faces)))
+		
+		(dotimes (i attrib.num_faces)
+		  (let (,@(loop for j below 3 collect
+			       `(,(format nil "v~a" j)
+				  (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
+									v_idx))))))
+			,@(loop for j below 2 collect
+			       `(,(format nil "t~a" j)
+				  (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
+									 vt_idx))))))
+			  (vertex (cast Vertex
+					(curly
+					 (curly v0 v1 v2)
+					 (curly 1s0 1s0 1s0)
+					 (curly t0 (- t1)))))
+			  (key (hash_Vertex &vertex)))
+		    (if (hashmap_int_set &hashmap key i)
+			(do0 (setf (aref ,(g `_vertices) i) vertex
+				   (aref ,(g `_indices) i) i))
+			(do0 (let ((p (hashmap_int_get &hashmap key)))
+			       (setf (aref ,(g `_indices) i) p.value))))))
+		(hashmap_int_free &hashmap))
 	      
 	      
 	  

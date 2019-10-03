@@ -65,6 +65,10 @@
  void cleanupModel ();
  uint64_t hash_i64 (uint64_t u);
  uint64_t hash_Vertex (Vertex* v);
+ Hashmap_int hashmap_int_make (int n);
+ void hashmap_int_free (Hashmap_int* h);
+ Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key);
+ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue);
  void loadModel ();
  void copyBuffer (VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
  void createVertexBuffer ();
