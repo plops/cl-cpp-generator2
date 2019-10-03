@@ -2745,7 +2745,18 @@ more structs. this function helps to initialize those structs."
 			   (setf (aref ,(g `_indices) count) p.value))))
 		    ))
 		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count))
-		(hashmap_int_free &hashmap))
+		(hashmap_int_free &hashmap)
+		(progn
+		  (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_vertices))))))
+		   ,(vkprint "realloc vertices" `(count n_bytes_realloc))
+		   (setf ,(g `_vertices) (realloc ,(g `_vertices) n_bytes_realloc)
+			 ,(g `_num_vertices) count)))
+
+		(progn (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_indices))))))
+		   ,(vkprint "realloc indices" `(count n_bytes_realloc))
+		   (setf ,(g `_indices) (realloc ,(g `_indices) n_bytes_realloc)
+			 ,(g `_num_indices) count)))
+		)
 	      
 	      
 	  
