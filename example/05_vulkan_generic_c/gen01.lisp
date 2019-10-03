@@ -2736,13 +2736,13 @@ more structs. this function helps to initialize those structs."
 			(do0
 			 ;,(vkprint "not found" `(key i count))
 			 (setf (aref ,(g `_vertices) count) vertex
-			       (aref ,(g `_indices) count) count)
+			       (aref ,(g `_indices) i) count)
 			 (incf count))
 			(do0
 			 
 			 (let ((p (hashmap_int_get &hashmap key)))
 			   ;,(vkprint "    found" `(key i count p.value))
-			   (setf (aref ,(g `_indices) count) p.value))))
+			   (setf (aref ,(g `_indices) i) p.value))))
 		    ))
 		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count))
 		(hashmap_int_free &hashmap)
@@ -2752,6 +2752,7 @@ more structs. this function helps to initialize those structs."
 		   (setf ,(g `_vertices) (realloc ,(g `_vertices) n_bytes_realloc)
 			 ,(g `_num_vertices) count)))
 
+		#+nil
 		(progn (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_indices))))))
 		   ,(vkprint "realloc indices" `(count n_bytes_realloc))
 		   (setf ,(g `_indices) (realloc ,(g `_indices) n_bytes_realloc)

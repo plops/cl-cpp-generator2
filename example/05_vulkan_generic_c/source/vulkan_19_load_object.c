@@ -347,11 +347,11 @@ void loadModel (){
         __auto_type key  = hash_Vertex(&vertex);
         if ( (true)==(hashmap_int_set(&hashmap, key, i)) ) {
                                                 state._vertices[count]=vertex;
-            state._indices[count]=count;
+            state._indices[i]=count;
             (count)++;
 } else {
                                                 __auto_type p  = hashmap_int_get(&hashmap, key);
-                        state._indices[count]=p.value;
+                        state._indices[i]=p.value;
 };
 }
     {
@@ -398,29 +398,6 @@ void loadModel (){
 };
                 state._vertices=realloc(state._vertices, n_bytes_realloc);
         state._num_vertices=count;
-};
-    {
-                        __auto_type n_bytes_realloc  = ((count)*(sizeof(*(state._indices))));
-        {
-                                    __auto_type current_time  = now();
-            printf("%6.6f", ((current_time)-(state._start_time)));
-            printf(" ");
-            printf(printf_dec_format(__FILE__), __FILE__);
-            printf(":");
-            printf(printf_dec_format(__LINE__), __LINE__);
-            printf(" ");
-            printf(printf_dec_format(__func__), __func__);
-            printf(" realloc indices: ");
-            printf(" count=");
-            printf(printf_dec_format(count), count);
-            printf(" (%s)", type_string(count));
-            printf(" n_bytes_realloc=");
-            printf(printf_dec_format(n_bytes_realloc), n_bytes_realloc);
-            printf(" (%s)", type_string(n_bytes_realloc));
-            printf("\n");
-};
-                state._indices=realloc(state._indices, n_bytes_realloc);
-        state._num_indices=count;
 };
     munmapFile(map);
         // cleanup
