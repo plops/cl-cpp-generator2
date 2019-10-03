@@ -229,6 +229,7 @@ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
             __auto_type p  = hashmap_int_get(h, key);
     if ( (-1)==(p.value) ) {
                                 *(p.valuep)=newvalue;
+        (h->n_entries)++;
         return true;
 } else {
                         return false;

@@ -2617,6 +2617,7 @@ more structs. this function helps to initialize those structs."
 	     (if (== -1 p.value)
 		 (do0
 		  (setf (deref p.valuep) newvalue)
+		  (incf h->n_entries)
 		  (return true))
 		 (do0
 		  (return false)))))
