@@ -77,6 +77,7 @@
  Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key);
  bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue);
  bool equalp_Vertex (Vertex* a, Vertex* b);
+ int next_power_of_two (int n);
  void loadModel ();
  void copyBuffer (VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
  void createVertexBuffer ();

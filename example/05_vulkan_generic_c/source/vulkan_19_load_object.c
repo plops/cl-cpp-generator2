@@ -296,7 +296,14 @@ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
 };
 }
 bool equalp_Vertex (Vertex* a, Vertex* b){
-        return (((a->pos)==(b->pos))&&((a->color)==(b->color))&&((a->texCoord)==(b->texCoord)));
+        return (((a->pos[0])==(b->pos[0]))&&((a->pos[1])==(b->pos[1]))&&((a->pos[2])==(b->pos[2]))&&((a->texCoord[0])==(b->texCoord[0]))&&((a->texCoord[1])==(b->texCoord[1]))&&((a->color[0])==(b->color[0]))&&((a->color[1])==(b->color[1]))&&((a->color[2])==(b->color[2])));
+}
+int next_power_of_two (int n){
+            __auto_type power  = 1;
+    while (power<n) {
+                power*=(2);
+}
+    return power;
 }
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
@@ -393,7 +400,7 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        __auto_type hashmap  = hashmap_int_make(attrib.num_faces);
+        __auto_type hashmap  = hashmap_int_make(((8)*(next_power_of_two(attrib.num_faces))));
     __auto_type count_unique  = 0;
     // hashmap for vertex deduplication
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
@@ -445,12 +452,12 @@ void loadModel (){
                     printf(" ((vertex.color[2])-(vertex0.color[2]))=");
                     printf(printf_dec_format(((vertex.color[2])-(vertex0.color[2]))), ((vertex.color[2])-(vertex0.color[2])));
                     printf(" (%s)", type_string(((vertex.color[2])-(vertex0.color[2]))));
-                    printf(" p.value=");
-                    printf(printf_dec_format(p.value), p.value);
-                    printf(" (%s)", type_string(p.value));
-                    printf(" count_unique=");
-                    printf(printf_dec_format(count_unique), count_unique);
-                    printf(" (%s)", type_string(count_unique));
+                    printf(" hash_Vertex(&vertex)=");
+                    printf(printf_dec_format(hash_Vertex(&vertex)), hash_Vertex(&vertex));
+                    printf(" (%s)", type_string(hash_Vertex(&vertex)));
+                    printf(" hash_Vertex(&vertex0)=");
+                    printf(printf_dec_format(hash_Vertex(&vertex0)), hash_Vertex(&vertex0));
+                    printf(" (%s)", type_string(hash_Vertex(&vertex0)));
                     printf("\n");
 };
 };

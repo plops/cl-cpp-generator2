@@ -2728,9 +2728,23 @@ more structs. this function helps to initialize those structs."
 	 (defun equalp_Vertex (a b)
 	   (declare (values bool)
 		    (type Vertex* a b))
-	   (return (and (== a->pos b->pos)
-			(== a->color b->color)
-			(== a->texCoord b->texCoord))))
+	   (return (and ,@(loop for i below 3 collect
+			       `(== (aref a->pos ,i)
+				   (aref b->pos ,i)))
+			,@(loop for i below 2 collect
+			       `(== (aref a->texCoord ,i)
+				   (aref b->texCoord ,i)))
+			,@(loop for i below 3 collect
+			       `(== (aref a->color ,i)
+				    (aref b->color ,i)))
+			)))
+	 (defun next_power_of_two (n)
+	   (declare (values int)
+		    (type int n))
+	   (let ((power 1))
+	     (while (< power n)
+	       (*= power 2))
+	     (return power)))
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
 	   ;; obj file that i use contains lists of vertex positions
@@ -2816,7 +2830,8 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make attrib.num_faces))
+	      (let ((hashmap (hashmap_int_make (* 8 (next_power_of_two attrib.num_faces))
+			      ))
 		    (count_unique 0))
 		"// hashmap for vertex deduplication"
 		(dotimes (i attrib.num_faces)
@@ -2855,7 +2870,8 @@ more structs. this function helps to initialize those structs."
 						       ,@(loop for i below 3 collect
 							    `(- (aref vertex.color ,i)
 								(aref vertex0.color ,i)))
-						     p.value count_unique
+						       (hash_Vertex &vertex)
+						       (hash_Vertex &vertex0)
 								 ))))))
 		    (do0
 			 
