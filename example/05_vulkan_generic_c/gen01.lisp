@@ -1429,11 +1429,11 @@ more structs. this function helps to initialize those structs."
 		 `(VkPipelineInputAssemblyStateCreateInfo
 		   inputAssembly
 		   :sType VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
-		   :topology ;VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+		   :topology VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 
 
 
-		   VK_PRIMITIVE_TOPOLOGY_POINT_LIST
+		   ;VK_PRIMITIVE_TOPOLOGY_POINT_LIST
 		   ;VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 		   ;; this would allow to break up lines
 		   ;; and strips with 0xfff or 0xffffff
@@ -2547,26 +2547,47 @@ more structs. this function helps to initialize those structs."
 	     (^= v (<< v 5))
 	     (return v)))
 
+	 (defun hash_combine (seed hash)
+	   (declare (values uint64_t)
+		    (type uint64_t seed hash))
+	   "// from glm/gtx/hash.inl"
+	   (incf hash
+		 (+ "0x9e3779b9"
+		    (<< seed 6)
+		    (>> seed 2)))
+	   (return (^ seed hash)))
+
+	 (defun hash_array_f32 (a n)
+	   (declare (values uint64_t)
+		    (type float* a)
+		    (type int n))
+	   (let ((seed 0))
+	     (declare (type uint64_t seed))
+	     (dotimes (i n)
+	       (setf seed (hash_combine seed (hash_f32 (aref a i))))
+	       )
+	     (return seed)))
+	 
+	 (defun hash_f32 (f)
+	   (declare (values uint64_t)
+		    (type float f))
+	   "// convert float to 64 bit double and consider the double as a 64bit uint to compute hash"
+	   (let ((d (cast double f))
+		 (u (deref (cast uint64_t* &d))))
+	     (return (hash_i64 u))))
+
 	 (defun hash_Vertex (v)
 	   (declare (values uint64_t)
 		    (type Vertex* v))
-	   (let (
-		 ,@(loop for e in `(x y z) and i from 0 appending
-			(let ((d (format nil "d~a" e))
-			      (u (format nil "u~a" e)))
-			  `((,d (cast double (aref v->pos ,i)))
-			    (,u (deref (cast uint64_t* (ref ,d)))))))
-
-		 ,@(loop for e in `(u v) and i from 0 appending
-			(let ((vtd (format nil "vtd~a" e))
-			      (vtu (format nil "vtu~a" e)))
-			  `((,vtd (cast double (aref v->texCoord ,i)))
-			    (,vtu (deref (cast uint64_t* (ref ,vtd))))))))
-	     (return (+ (hash_i64 ux)
-			(hash_i64 uy)
-			(hash_i64 uz)
-			(hash_i64 vtuu)
-			(hash_i64 vtuv)
+	   (let ((pos (hash_array_f32 v->pos (length v->pos)))
+		 ;(col (hash_array_f32 v->color (length v->color)))
+		 (tex (hash_array_f32 v->texCoord (length v->texCoord)))
+		 )
+	     "// http://en.cppreference.com/w/cpp/utility/hash Discussion"
+	     "// consecutive identical hashes can delete each other"
+	     (return (^ pos
+			;(>> (<< col 1) 1)
+			(<< tex 1)
 			))))
 
 	 ,(emit-utils :code `(do0
@@ -2697,6 +2718,7 @@ more structs. this function helps to initialize those structs."
 
 	      (do0
 	       (setf
+		   ;attrib.num_faces 100
 		  ,(g `_num_vertices) attrib.num_faces
 		  )
 	       (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))

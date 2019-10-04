@@ -155,18 +155,30 @@ uint64_t hash_i64 (uint64_t u){
     (v)^=((v)<<(5));
     return v;
 }
+uint64_t hash_combine (uint64_t seed, uint64_t hash){
+        // from glm/gtx/hash.inl
+        (hash)+=(((0x9e3779b9)+((seed)<<(6))+((seed)>>(2))));
+        return ((seed)^(hash));
+}
+uint64_t hash_array_f32 (float* a, int n){
+            uint64_t seed  = 0;
+    for (int i = 0;i<n;(i)+=(1)) {
+                        seed=hash_combine(seed, hash_f32(a[i]));
+}
+    return seed;
+}
+uint64_t hash_f32 (float f){
+        // convert float to 64 bit double and consider the double as a 64bit uint to compute hash
+            __auto_type d  = (double) f;
+    __auto_type u  = *((uint64_t*) &d);
+    return hash_i64(u);
+}
 uint64_t hash_Vertex (Vertex* v){
-            __auto_type dx  = (double) v->pos[0];
-    __auto_type ux  = *((uint64_t*) &(dx));
-    __auto_type dy  = (double) v->pos[1];
-    __auto_type uy  = *((uint64_t*) &(dy));
-    __auto_type dz  = (double) v->pos[2];
-    __auto_type uz  = *((uint64_t*) &(dz));
-    __auto_type vtdu  = (double) v->texCoord[0];
-    __auto_type vtuu  = *((uint64_t*) &(vtdu));
-    __auto_type vtdv  = (double) v->texCoord[1];
-    __auto_type vtuv  = *((uint64_t*) &(vtdv));
-    return ((hash_i64(ux))+(hash_i64(uy))+(hash_i64(uz))+(hash_i64(vtuu))+(hash_i64(vtuv)));
+            __auto_type pos  = hash_array_f32(v->pos, length(v->pos));
+    __auto_type tex  = hash_array_f32(v->texCoord, length(v->texCoord));
+    // http://en.cppreference.com/w/cpp/utility/hash Discussion
+    // consecutive identical hashes can delete each other
+    return ((pos)^((tex)<<(1)));
 }
  
 Hashmap_int hashmap_int_make (int n){

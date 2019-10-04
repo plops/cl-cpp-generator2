@@ -64,6 +64,9 @@
  mmapPair mmapFile (char* filename);
  void cleanupModel ();
  uint64_t hash_i64 (uint64_t u);
+ uint64_t hash_combine (uint64_t seed, uint64_t hash);
+ uint64_t hash_array_f32 (float* a, int n);
+ uint64_t hash_f32 (float f);
  uint64_t hash_Vertex (Vertex* v);
  Hashmap_int hashmap_int_make (int n);
  void hashmap_int_free (Hashmap_int* h);
