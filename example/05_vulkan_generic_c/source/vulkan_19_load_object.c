@@ -400,7 +400,7 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        __auto_type hashmap  = hashmap_int_make(((8)*(next_power_of_two(attrib.num_faces))));
+        __auto_type hashmap  = hashmap_int_make(((512)*(next_power_of_two(attrib.num_faces))));
     __auto_type count_unique  = 0;
     // hashmap for vertex deduplication
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {

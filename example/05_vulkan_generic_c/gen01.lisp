@@ -2830,7 +2830,7 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make (* 8 (next_power_of_two attrib.num_faces))
+	      (let ((hashmap (hashmap_int_make (* 512 (next_power_of_two attrib.num_faces))
 			      ))
 		    (count_unique 0))
 		"// hashmap for vertex deduplication"
