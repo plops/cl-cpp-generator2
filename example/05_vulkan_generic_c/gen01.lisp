@@ -2725,7 +2725,12 @@ more structs. this function helps to initialize those structs."
 		  (return true))
 		 (do0
 		  (return false)))))
-	 
+	 (defun equalp_Vertex (a b)
+	   (declare (values bool)
+		    (type Vertex* a b))
+	   (return (and (== a->pos b->pos)
+			(== a->color b->color)
+			(== a->texCoord b->texCoord))))
 	 (defun loadModel ()
 	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
 	   ;; obj file that i use contains lists of vertex positions
@@ -2812,7 +2817,7 @@ more structs. this function helps to initialize those structs."
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
 	      (let ((hashmap (hashmap_int_make attrib.num_faces))
-		    (count 0))
+		    (count_unique 0))
 		"// hashmap for vertex deduplication"
 		(dotimes (i attrib.num_faces)
 		  (let (,@(loop for j below 3 collect
@@ -2829,25 +2834,44 @@ more structs. this function helps to initialize those structs."
 					 (curly 1s0 1s0 1s0)
 					 (curly t0 (- t1)))))
 			  (key (hash_Vertex &vertex)))
-		    (if (== true (hashmap_int_set &hashmap key count))
+		    (if (== true (hashmap_int_set &hashmap key count_unique))
 			(do0
-			 ;,(vkprint "not found" `(key i count))
-			 (setf (aref ,(g `_vertices) count) vertex
-			       (aref ,(g `_indices) i) count)
-			 (incf count))
+			 ;,(vkprint "not found" `(key i count_unique))
+			 (setf (aref ,(g `_vertices) count_unique) vertex
+			       ;(aref ,(g `_indices) i) count_unique
+			       )
+			 (incf count_unique))
 			(do0
+			 (let ((p (hashmap_int_get &hashmap key))
+			       (vertex0 (aref ,(g `_vertices) p.value)))
+			   (unless (equalp_Vertex (ref vertex0)
+						  &vertex)
+			     ,(vkprint "collision" `(,@(loop for i below 3 collect
+							    `(- (aref vertex.pos ,i)
+								(aref vertex0.pos ,i)))
+						       ,@(loop for i below 2 collect
+							    `(- (aref vertex.texCoord ,i)
+								(aref vertex0.texCoord ,i)))
+						       ,@(loop for i below 3 collect
+							    `(- (aref vertex.color ,i)
+								(aref vertex0.color ,i)))
+						     p.value count_unique
+								 ))))))
+		    (do0
 			 
 			 (let ((p (hashmap_int_get &hashmap key)))
-			   ;,(vkprint "    found" `(key i count p.value))
-			   (setf (aref ,(g `_indices) i) p.value))))
+					;,(vkprint "    found" `(key i count p.value))
+			   (when (== -1 p.value)
+			     ,(vkprint "key not found" `(key i count_unique p.value)))
+			   (setf (aref ,(g `_indices) i) p.value)))
 		    ))
-		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count))
+		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count_unique))
 		(hashmap_int_free &hashmap)
 		(progn
-		  (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_vertices))))))
-		   ,(vkprint "realloc vertices" `(count n_bytes_realloc))
+		  (let ((n_bytes_realloc (* count_unique (sizeof (deref ,(g `_vertices))))))
+		   ,(vkprint "realloc vertices" `(count_unique n_bytes_realloc))
 		   (setf ,(g `_vertices) (realloc ,(g `_vertices) n_bytes_realloc)
-			 ,(g `_num_vertices) count)))
+			 ,(g `_num_vertices) count_unique)))
 
 		#+nil
 		(progn (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_indices))))))

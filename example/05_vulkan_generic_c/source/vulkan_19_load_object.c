@@ -295,6 +295,9 @@ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
                         return false;
 };
 }
+bool equalp_Vertex (Vertex* a, Vertex* b){
+        return (((a->pos)==(b->pos))&&((a->color)==(b->color))&&((a->texCoord)==(b->texCoord)));
+}
 void loadModel (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
@@ -391,7 +394,7 @@ void loadModel (){
 };
         state._indices=malloc(n_bytes_indices);
         __auto_type hashmap  = hashmap_int_make(attrib.num_faces);
-    __auto_type count  = 0;
+    __auto_type count_unique  = 0;
     // hashmap for vertex deduplication
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
                         __auto_type v0  = attrib.vertices[((0)+(((3)*(attrib.faces[i].v_idx))))];
@@ -401,14 +404,85 @@ void loadModel (){
         __auto_type t1  = attrib.texcoords[((1)+(((2)*(attrib.faces[i].vt_idx))))];
         __auto_type vertex  = (Vertex) {{v0, v1, v2}, {(1.e+0f), (1.e+0f), (1.e+0f)}, {t0, (-(t1))}};
         __auto_type key  = hash_Vertex(&vertex);
-        if ( (true)==(hashmap_int_set(&hashmap, key, count)) ) {
-                                                state._vertices[count]=vertex;
-            state._indices[i]=count;
-            (count)++;
+        if ( (true)==(hashmap_int_set(&hashmap, key, count_unique)) ) {
+                                                state._vertices[count_unique]=vertex;
+            (count_unique)++;
 } else {
                                                 __auto_type p  = hashmap_int_get(&hashmap, key);
-                        state._indices[i]=p.value;
+            __auto_type vertex0  = state._vertices[p.value];
+            if ( !(equalp_Vertex(&(vertex0), &vertex)) ) {
+                                                {
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
+                    printf(" ");
+                    printf(printf_dec_format(__FILE__), __FILE__);
+                    printf(":");
+                    printf(printf_dec_format(__LINE__), __LINE__);
+                    printf(" ");
+                    printf(printf_dec_format(__func__), __func__);
+                    printf(" collision: ");
+                    printf(" ((vertex.pos[0])-(vertex0.pos[0]))=");
+                    printf(printf_dec_format(((vertex.pos[0])-(vertex0.pos[0]))), ((vertex.pos[0])-(vertex0.pos[0])));
+                    printf(" (%s)", type_string(((vertex.pos[0])-(vertex0.pos[0]))));
+                    printf(" ((vertex.pos[1])-(vertex0.pos[1]))=");
+                    printf(printf_dec_format(((vertex.pos[1])-(vertex0.pos[1]))), ((vertex.pos[1])-(vertex0.pos[1])));
+                    printf(" (%s)", type_string(((vertex.pos[1])-(vertex0.pos[1]))));
+                    printf(" ((vertex.pos[2])-(vertex0.pos[2]))=");
+                    printf(printf_dec_format(((vertex.pos[2])-(vertex0.pos[2]))), ((vertex.pos[2])-(vertex0.pos[2])));
+                    printf(" (%s)", type_string(((vertex.pos[2])-(vertex0.pos[2]))));
+                    printf(" ((vertex.texCoord[0])-(vertex0.texCoord[0]))=");
+                    printf(printf_dec_format(((vertex.texCoord[0])-(vertex0.texCoord[0]))), ((vertex.texCoord[0])-(vertex0.texCoord[0])));
+                    printf(" (%s)", type_string(((vertex.texCoord[0])-(vertex0.texCoord[0]))));
+                    printf(" ((vertex.texCoord[1])-(vertex0.texCoord[1]))=");
+                    printf(printf_dec_format(((vertex.texCoord[1])-(vertex0.texCoord[1]))), ((vertex.texCoord[1])-(vertex0.texCoord[1])));
+                    printf(" (%s)", type_string(((vertex.texCoord[1])-(vertex0.texCoord[1]))));
+                    printf(" ((vertex.color[0])-(vertex0.color[0]))=");
+                    printf(printf_dec_format(((vertex.color[0])-(vertex0.color[0]))), ((vertex.color[0])-(vertex0.color[0])));
+                    printf(" (%s)", type_string(((vertex.color[0])-(vertex0.color[0]))));
+                    printf(" ((vertex.color[1])-(vertex0.color[1]))=");
+                    printf(printf_dec_format(((vertex.color[1])-(vertex0.color[1]))), ((vertex.color[1])-(vertex0.color[1])));
+                    printf(" (%s)", type_string(((vertex.color[1])-(vertex0.color[1]))));
+                    printf(" ((vertex.color[2])-(vertex0.color[2]))=");
+                    printf(printf_dec_format(((vertex.color[2])-(vertex0.color[2]))), ((vertex.color[2])-(vertex0.color[2])));
+                    printf(" (%s)", type_string(((vertex.color[2])-(vertex0.color[2]))));
+                    printf(" p.value=");
+                    printf(printf_dec_format(p.value), p.value);
+                    printf(" (%s)", type_string(p.value));
+                    printf(" count_unique=");
+                    printf(printf_dec_format(count_unique), count_unique);
+                    printf(" (%s)", type_string(count_unique));
+                    printf("\n");
 };
+};
+}
+                        __auto_type p  = hashmap_int_get(&hashmap, key);
+        if ( (-1)==(p.value) ) {
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" key not found: ");
+                printf(" key=");
+                printf(printf_dec_format(key), key);
+                printf(" (%s)", type_string(key));
+                printf(" i=");
+                printf(printf_dec_format(i), i);
+                printf(" (%s)", type_string(i));
+                printf(" count_unique=");
+                printf(printf_dec_format(count_unique), count_unique);
+                printf(" (%s)", type_string(count_unique));
+                printf(" p.value=");
+                printf(printf_dec_format(p.value), p.value);
+                printf(" (%s)", type_string(p.value));
+                printf("\n");
+};
+};
+                state._indices[i]=p.value;
 }
     {
                         __auto_type current_time  = now();
@@ -426,14 +500,14 @@ void loadModel (){
         printf(" hashmap.n_entries=");
         printf(printf_dec_format(hashmap.n_entries), hashmap.n_entries);
         printf(" (%s)", type_string(hashmap.n_entries));
-        printf(" count=");
-        printf(printf_dec_format(count), count);
-        printf(" (%s)", type_string(count));
+        printf(" count_unique=");
+        printf(printf_dec_format(count_unique), count_unique);
+        printf(" (%s)", type_string(count_unique));
         printf("\n");
 };
     hashmap_int_free(&hashmap);
     {
-                        __auto_type n_bytes_realloc  = ((count)*(sizeof(*(state._vertices))));
+                        __auto_type n_bytes_realloc  = ((count_unique)*(sizeof(*(state._vertices))));
         {
                                     __auto_type current_time  = now();
             printf("%6.6f", ((current_time)-(state._start_time)));
@@ -444,16 +518,16 @@ void loadModel (){
             printf(" ");
             printf(printf_dec_format(__func__), __func__);
             printf(" realloc vertices: ");
-            printf(" count=");
-            printf(printf_dec_format(count), count);
-            printf(" (%s)", type_string(count));
+            printf(" count_unique=");
+            printf(printf_dec_format(count_unique), count_unique);
+            printf(" (%s)", type_string(count_unique));
             printf(" n_bytes_realloc=");
             printf(printf_dec_format(n_bytes_realloc), n_bytes_realloc);
             printf(" (%s)", type_string(n_bytes_realloc));
             printf("\n");
 };
                 state._vertices=realloc(state._vertices, n_bytes_realloc);
-        state._num_vertices=count;
+        state._num_vertices=count_unique;
 };
     munmapFile(map);
         // cleanup
