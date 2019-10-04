@@ -175,10 +175,11 @@ uint64_t hash_f32 (float f){
 }
 uint64_t hash_Vertex (Vertex* v){
             __auto_type pos  = hash_array_f32(v->pos, length(v->pos));
+    __auto_type col  = hash_array_f32(v->color, length(v->color));
     __auto_type tex  = hash_array_f32(v->texCoord, length(v->texCoord));
     // http://en.cppreference.com/w/cpp/utility/hash Discussion
     // consecutive identical hashes can delete each other
-    return ((pos)^((tex)<<(1)));
+    return ((pos)^(((col)<<(1))>>(1))^((tex)<<(1)));
 }
  
 Hashmap_int hashmap_int_make (int n){

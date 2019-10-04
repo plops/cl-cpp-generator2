@@ -2580,13 +2580,13 @@ more structs. this function helps to initialize those structs."
 	   (declare (values uint64_t)
 		    (type Vertex* v))
 	   (let ((pos (hash_array_f32 v->pos (length v->pos)))
-		 ;(col (hash_array_f32 v->color (length v->color)))
+		 (col (hash_array_f32 v->color (length v->color)))
 		 (tex (hash_array_f32 v->texCoord (length v->texCoord)))
 		 )
 	     "// http://en.cppreference.com/w/cpp/utility/hash Discussion"
 	     "// consecutive identical hashes can delete each other"
 	     (return (^ pos
-			;(>> (<< col 1) 1)
+			(>> (<< col 1) 1)
 			(<< tex 1)
 			))))
 
