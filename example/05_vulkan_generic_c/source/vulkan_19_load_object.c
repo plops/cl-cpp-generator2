@@ -176,7 +176,7 @@ uint64_t load_bytes (const char* p, int n){
         // 1<=n<8
             uint64_t result  = 0;
     for (int i=((n)-(1));(0)<=(i);(i)--) {
-                        result=(((result)<<(8))+((unsigned char) p[n]));
+                        result=(((result)<<(8))+((unsigned char) p[i]));
 }
     return result;
 }

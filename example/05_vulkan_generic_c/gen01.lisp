@@ -2590,7 +2590,7 @@ more structs. this function helps to initialize those structs."
 		  (setf result
 			(+ (<< result 8)
 			   (cast "unsigned char"
-				 (aref p n)))))
+				 (aref p i)))))
 	     (return result)))
 	 (defun shift_mix (v)
 	   (declare (values uint64_t)
