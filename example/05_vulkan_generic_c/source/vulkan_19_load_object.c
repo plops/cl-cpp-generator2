@@ -145,11 +145,11 @@ void cleanupModel (){
     state._num_indices=0;
 }
 uint64_t hash_i64 (uint64_t u){
-            uint64_t v  = ((((u)*(3935559000370003845LL)))+(2691343689449507681LL));
+            uint64_t v  = ((((u)*(3935559000370003845UL)))+(2691343689449507681UL));
     (v)^=((v)>>(21));
     (v)^=((v)<<(37));
     (v)^=((v)>>(4));
-    v*=(4768777513237032717LL);
+    v*=(4768777513237032717UL);
     (v)^=((v)<<(20));
     (v)^=((v)>>(41));
     (v)^=((v)<<(5));
@@ -167,8 +167,48 @@ uint64_t hash_array_f32 (float* a, int n){
 }
     return seed;
 }
+uint64_t load_bytes (const char* p, int n){
+        // 1<=n<8
+            uint64_t result  = 0;
+    for (int i(((n)-(1)));(0)<=(i);(i)--) {
+                        result=(((result)<<(8))+((unsigned char) p[n]));
+}
+    return result;
+}
+uint64_t shift_mix (uint64_t v){
+        return ((v)^((v)>>(47)));
+}
+uint64_t hash_bytes (const void* ptr, uint64_t length){
+        // /usr/include/c++/9.1.0/bits/hash_bytes.h 
+        // https://github.com/Alexpux/GCC/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/hash_bytes.cc
+        // Murmur hash for 64-bit size_t
+        // https://stackoverflow.com/questions/11899616/murmurhash-what-is-it
+            const uint64_t seed  = 0xc70f6907UL;
+    const uint64_t mul  = (((0xc6a4a793UL)<<(32UL))+(0x5bd1e995UL()));
+    __auto_type buf  = (const void*) ptr;
+    const int len_aligned  = &(len, ~0x7);
+    __auto_type end  = ((buf)+(len_aligned));
+    uint64_t hash  = ((seed)^(((len)*(mul))));
+    for (const char* p(buf);(p)!=(end);(p)+=(8)) {
+                        const uint64_t data  = ((shift_mix(((unaligned_load(p))*(mul))))*(mul));
+        (hash)^=(data);
+        hash*=(mul);
+}
+    if ( !((0)==(&(len, 0x7))) ) {
+                                const uint64_t data  = load_bytes(end, &(len, 0x7));
+        (hash)^=(data);
+        hash*=(mul);
+};
+        hash=((shift_mix(hash))*(mul));
+    hash=shift_mix(hash);
+    return hash;
+}
 uint64_t hash_f32 (float f){
         // convert float to 64 bit double and consider the double as a 64bit uint to compute hash
+        // /usr/include/c++/9.1.0/bits/functional_hash.h
+        if ( (f)==((0.0e+0f)) ) {
+                        return 0;
+};
             __auto_type d  = (double) f;
     __auto_type u  = *((uint64_t*) &d);
     return hash_i64(u);

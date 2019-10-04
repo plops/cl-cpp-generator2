@@ -2535,13 +2535,13 @@ more structs. this function helps to initialize those structs."
 	   (declare (values uint64_t)
 		    (type uint64_t u))
 	   ;; from numerical recipes
-	   (let ((v (+ (* u 3935559000370003845LL)
-		       2691343689449507681LL)))
+	   (let ((v (+ (* u 3935559000370003845UL)
+		       2691343689449507681UL)))
 	     (declare (type uint64_t v))
 	     (^= v (>> v 21))
 	     (^= v (<< v 37))
 	     (^= v (>> v 4))
-	     (*= v 4768777513237032717LL)
+	     (*= v 4768777513237032717UL)
 	     (^= v (<< v 20))
 	     (^= v (>> v 41))
 	     (^= v (<< v 5))
@@ -2567,11 +2567,74 @@ more structs. this function helps to initialize those structs."
 	       (setf seed (hash_combine seed (hash_f32 (aref a i))))
 	       )
 	     (return seed)))
+
+	 (defun load_bytes (p n)
+	   (declare (values uint64_t)
+		    (type "const char*" p)
+		    (type int n))
+	   "// 1<=n<8"
+	   (let ((result 0))
+	     (declare (type uint64_t result))
+	     (for (("int i" (- n 1))
+		   (<= 0 i)
+		   (decf i))
+		  (setf result
+			(+ (<< result 8)
+			   (cast "unsigned char"
+				 (aref p n)))))
+	     (return result)))
+	 (defun shift_mix (v)
+	   (declare (values uint64_t)
+		    (type uint64_t v))
+	   (return (^ v (>> v 47))))
+	 
+	 (defun hash_bytes (ptr length ;seed
+			    )
+	   
+	   (declare (type "const void*" ptr)
+		    (type uint64_t length)
+		    (values uint64_t))
+	   "// /usr/include/c++/9.1.0/bits/hash_bytes.h "
+
+	   "// https://github.com/Alexpux/GCC/blob/master/libstdc%2B%2B-v3/libsupc%2B%2B/hash_bytes.cc"
+	   "// Murmur hash for 64-bit size_t"
+	   "// https://stackoverflow.com/questions/11899616/murmurhash-what-is-it"
+	   (let ((seed 0xc70f6907UL)
+		 (mul (+ (<< 0xc6a4a793UL 32UL)
+			 (0x5bd1e995UL)))
+		 (buf (cast "const void*" ptr))
+		 (len_aligned (& len ~0x7))
+		 (end (+ buf len_aligned))
+		 (hash (^ seed (* len mul))))
+	     (declare (type "const uint64_t" mul seed)
+		      (type "const int" len_aligned)
+		      (type uint64_t hash))
+	     (for (("const char* p" buf)
+		   (!= p end)
+		   (incf p 8))
+		  (let ((data (* (shift_mix
+				  (* (unaligned_load p)
+				     mul))
+				 mul)))
+		    (declare (type "const uint64_t" data))
+		    (^= hash data)
+		    (*= hash mul)))
+	     (unless (== 0 (& len 0x7))
+	       (let ((data (load_bytes end (& len 0x7))))
+		 (declare (type "const uint64_t" data))
+		 (^= hash data)
+		 (*= hash mul)))
+	     (setf hash (* (shift_mix hash) mul)
+		   hash (shift_mix hash))
+	     (return hash)))
 	 
 	 (defun hash_f32 (f)
 	   (declare (values uint64_t)
 		    (type float f))
 	   "// convert float to 64 bit double and consider the double as a 64bit uint to compute hash"
+	   "// /usr/include/c++/9.1.0/bits/functional_hash.h"
+	   (when (== f 0s0) ;; .0 and -.0 hash to zero
+	     (return 0))
 	   (let ((d (cast double f))
 		 (u (deref (cast uint64_t* &d))))
 	     (return (hash_i64 u))))
