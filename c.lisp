@@ -359,6 +359,8 @@ entry return-values contains a list of return values"
 		     (format nil "(~{(~a)~^*~})" (mapcar #'emit args))))
 		(^ (let ((args (cdr code)))
 		     (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
+		(& (let ((args (cdr code)))
+		     (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
 		(/ (let ((args (cdr code)))
 		     (if (eq 1 (length args))
 			 (format nil "(1.0/(~a))" (emit (car args))) ;; py

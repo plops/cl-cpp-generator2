@@ -66,9 +66,10 @@
  uint64_t hash_i64 (uint64_t u);
  uint64_t hash_combine (uint64_t seed, uint64_t hash);
  uint64_t hash_array_f32 (float* a, int n);
+ uint64_t unaligned_load (const char* p);
  uint64_t load_bytes (const char* p, int n);
  uint64_t shift_mix (uint64_t v);
- uint64_t hash_bytes (const void* ptr, uint64_t length);
+ uint64_t hash_bytes (const void* ptr, uint64_t len);
  uint64_t hash_f32 (float f);
  uint64_t hash_Vertex (Vertex* v);
  Hashmap_int hashmap_int_make (int n);

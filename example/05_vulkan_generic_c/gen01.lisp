@@ -2568,6 +2568,15 @@ more structs. this function helps to initialize those structs."
 	       )
 	     (return seed)))
 
+	 (defun unaligned_load (p)
+	   (declare (values uint64_t)
+		    (type "const char*" p))
+	   (let ((result))
+	     (declare (type uint64_t result))
+	     (__builtin_memcpy &result
+			       p
+			       (sizeof result))
+	     (return result)))
 	 (defun load_bytes (p n)
 	   (declare (values uint64_t)
 		    (type "const char*" p)
@@ -2575,7 +2584,7 @@ more structs. this function helps to initialize those structs."
 	   "// 1<=n<8"
 	   (let ((result 0))
 	     (declare (type uint64_t result))
-	     (for (("int i" (- n 1))
+	     (for ((= "int i" (- n 1))
 		   (<= 0 i)
 		   (decf i))
 		  (setf result
@@ -2588,11 +2597,11 @@ more structs. this function helps to initialize those structs."
 		    (type uint64_t v))
 	   (return (^ v (>> v 47))))
 	 
-	 (defun hash_bytes (ptr length ;seed
+	 (defun hash_bytes (ptr len ;seed
 			    )
 	   
 	   (declare (type "const void*" ptr)
-		    (type uint64_t length)
+		    (type uint64_t len)
 		    (values uint64_t))
 	   "// /usr/include/c++/9.1.0/bits/hash_bytes.h "
 
@@ -2601,7 +2610,7 @@ more structs. this function helps to initialize those structs."
 	   "// https://stackoverflow.com/questions/11899616/murmurhash-what-is-it"
 	   (let ((seed 0xc70f6907UL)
 		 (mul (+ (<< 0xc6a4a793UL 32UL)
-			 (0x5bd1e995UL)))
+			 0x5bd1e995UL))
 		 (buf (cast "const void*" ptr))
 		 (len_aligned (& len ~0x7))
 		 (end (+ buf len_aligned))
@@ -2609,7 +2618,7 @@ more structs. this function helps to initialize those structs."
 	     (declare (type "const uint64_t" mul seed)
 		      (type "const int" len_aligned)
 		      (type uint64_t hash))
-	     (for (("const char* p" buf)
+	     (for ((= "const char* p" buf)
 		   (!= p end)
 		   (incf p 8))
 		  (let ((data (* (shift_mix
@@ -2635,6 +2644,8 @@ more structs. this function helps to initialize those structs."
 	   "// /usr/include/c++/9.1.0/bits/functional_hash.h"
 	   (when (== f 0s0) ;; .0 and -.0 hash to zero
 	     (return 0))
+	   (return (hash_bytes &f (sizeof f)))
+	   #+nil
 	   (let ((d (cast double f))
 		 (u (deref (cast uint64_t* &d))))
 	     (return (hash_i64 u))))
