@@ -2733,7 +2733,7 @@ more structs. this function helps to initialize those structs."
 		    
 		    (if (== p.value.hash key)
 			(do0 ;; entry has same hash as search key
-			 ,(vkprint "found entry with same hash" `(p.value.hash key bin p.value.count p.value.value))
+			 ;,(vkprint "found entry with same hash" `(p.value.hash key bin p.value.count p.value.value))
 			 (return p)
 			 )
 			(do0 ;; entry is different, try next bin
@@ -2770,7 +2770,7 @@ more structs. this function helps to initialize those structs."
 		       ;,(vkprint "bin exists with different hash")
 		       ))
 		  (do0 ;; hashmap has no entries here
-		   ,(vkprint "empty" `(bin key newvalue))
+		   ;,(vkprint "empty" `(bin key newvalue))
 		   (let ((dat p.valuep))
 			 (setf dat->value newvalue
 			       dat->hash key)

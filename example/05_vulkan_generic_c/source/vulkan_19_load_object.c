@@ -298,34 +298,7 @@ Hashmap_int_pair hashmap_int_search (Hashmap_int* h, uint64_t key){
                         __auto_type p  = hashmap_int_get(h, key, bin);
         if ( 0<p.value.count ) {
                                     if ( (p.value.hash)==(key) ) {
-                                                {
-                                                            __auto_type current_time  = now();
-                    printf("%6.6f", ((current_time)-(state._start_time)));
-                    printf(" ");
-                    printf(printf_dec_format(__FILE__), __FILE__);
-                    printf(":");
-                    printf(printf_dec_format(__LINE__), __LINE__);
-                    printf(" ");
-                    printf(printf_dec_format(__func__), __func__);
-                    printf(" found entry with same hash: ");
-                    printf(" p.value.hash=");
-                    printf(printf_dec_format(p.value.hash), p.value.hash);
-                    printf(" (%s)", type_string(p.value.hash));
-                    printf(" key=");
-                    printf(printf_dec_format(key), key);
-                    printf(" (%s)", type_string(key));
-                    printf(" bin=");
-                    printf(printf_dec_format(bin), bin);
-                    printf(" (%s)", type_string(bin));
-                    printf(" p.value.count=");
-                    printf(printf_dec_format(p.value.count), p.value.count);
-                    printf(" (%s)", type_string(p.value.count));
-                    printf(" p.value.value=");
-                    printf(printf_dec_format(p.value.value), p.value.value);
-                    printf(" (%s)", type_string(p.value.value));
-                    printf("\n");
-};
-                return p;
+                                                return p;
 } else {
                                 ;
 };
@@ -377,28 +350,7 @@ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
                                 ;
 }
 } else {
-                                    {
-                                                __auto_type current_time  = now();
-                printf("%6.6f", ((current_time)-(state._start_time)));
-                printf(" ");
-                printf(printf_dec_format(__FILE__), __FILE__);
-                printf(":");
-                printf(printf_dec_format(__LINE__), __LINE__);
-                printf(" ");
-                printf(printf_dec_format(__func__), __func__);
-                printf(" empty: ");
-                printf(" bin=");
-                printf(printf_dec_format(bin), bin);
-                printf(" (%s)", type_string(bin));
-                printf(" key=");
-                printf(printf_dec_format(key), key);
-                printf(" (%s)", type_string(key));
-                printf(" newvalue=");
-                printf(printf_dec_format(newvalue), newvalue);
-                printf(" (%s)", type_string(newvalue));
-                printf("\n");
-};
-                        __auto_type dat  = p.valuep;
+                                                __auto_type dat  = p.valuep;
                         dat->value=newvalue;
             dat->hash=key;
             (dat->count)++;
