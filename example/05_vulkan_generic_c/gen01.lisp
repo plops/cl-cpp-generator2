@@ -454,13 +454,14 @@ more structs. this function helps to initialize those structs."
 		    ;; static because glfw doesnt know how to call a member function with a this pointer
 		    (type GLFWwindow* window)
 		    (type int width height))
+	   ,(vkprint "resize" `(width height))
 	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
 	     (setf app->_framebufferResized true)))
 	 (defun initWindow ()
 	   (declare (values void))
 	   (glfwInit)
 	   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-	   (glfwWindowHint GLFW_RESIZABLE GLFW_FALSE)
+	   (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
 	   (setf ,(g `_window) (glfwCreateWindow 800 600
 						 (string "vulkan window")
 						 NULL
