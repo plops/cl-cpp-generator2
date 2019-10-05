@@ -269,10 +269,28 @@ void pickPhysicalDevice (){
         {
                         if ( isDeviceSuitable(device) ) {
                                                                 state._physicalDevice=device;
-                state._msaaSamples=getMaxUsableSampleCount();
+                state._msaaSamples=2;
                 break;
 };
 };
+};
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" device: ");
+        printf(" state._msaaSamples=");
+        printf(printf_dec_format(state._msaaSamples), state._msaaSamples);
+        printf(" (%s)", type_string(state._msaaSamples));
+        printf(" state._physicalDevice=");
+        printf(printf_dec_format(state._physicalDevice), state._physicalDevice);
+        printf(" (%s)", type_string(state._physicalDevice));
+        printf("\n");
 };
     if ( (VK_NULL_HANDLE)==(state._physicalDevice) ) {
                         // throw

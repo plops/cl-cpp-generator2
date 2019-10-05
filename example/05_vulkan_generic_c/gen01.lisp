@@ -712,8 +712,11 @@ more structs. this function helps to initialize those structs."
 	       (foreach (device devices)
 			(when (isDeviceSuitable device)
 			  (setf ,(g `_physicalDevice) device
-				,(g `_msaaSamples) (getMaxUsableSampleCount))
+				,(g `_msaaSamples) 2 ;(getMaxUsableSampleCount)
+				)
 			  break))
+	       ,(vkprint "device" `(,(g `_msaaSamples)
+				     ,(g `_physicalDevice)))
 	       (when (== VK_NULL_HANDLE
 			 ,(g `_physicalDevice))
 		 "// throw"
