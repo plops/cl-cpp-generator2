@@ -2749,28 +2749,29 @@ more structs. this function helps to initialize those structs."
 		    (type uint64_t key)
 		    (values bool))
 	   "// returns true if hashmap bin was empty (value -1)"
+	   "// return false if the vertex has been stored elsewhere"
 	   "// returns false if hashmap and all bins already contains a values with different hashes"
 	   (dotimes (bin h->bins)
 	    (let ((p (hashmap_int_get h key bin)))
 	      (if (< 0 p.value.count)
 		  (if (== p.value.hash key)
 		      (do0 ;; found entry with same hash
-		       (let ((dat (deref p.valuep)))
-			 (setf dat.value newvalue
-			       dat.hash key)
-			 (incf dat.count)
-			 (incf h->n_entries)
-			 (return true)))
+		       (let ((dat p.valuep))
+			 (setf dat->value newvalue
+			       dat->hash key)
+			 (incf dat->count)
+			 ;(incf h->n_entries)
+			 (return false)))
 		      (do0 ;; this bin already has an entry with different hash
 		       ;; go to next bin
-		       ,(vkprint "bin exists with different hash")
+		       ;,(vkprint "bin exists with different hash")
 		       ))
 		  (do0 ;; hashmap has no entries here
 					;,(vkprint "empty")
-		   (let ((dat (deref p.valuep)))
-			 (setf dat.value newvalue
-			       dat.hash key)
-			 (incf dat.count)
+		   (let ((dat p.valuep))
+			 (setf dat->value newvalue
+			       dat->hash key)
+			 (incf dat->count)
 			 (incf h->n_entries)
 			 (return true))
 		   ))))
@@ -2899,7 +2900,7 @@ more structs. this function helps to initialize those structs."
 			       )
 			 (incf count_unique))
 			(do0
-			 (let ((p (hashmap_int_search &hashmap key))
+			 #+nil(let ((p (hashmap_int_search &hashmap key))
 			       (vertex0 (aref ,(g `_vertices) p.value.value)))
 			   (unless (equalp_Vertex (ref vertex0)
 						  &vertex)
@@ -2921,9 +2922,10 @@ more structs. this function helps to initialize those structs."
 					;,(vkprint "    found" `(key i count p.value))
 			   (if (== 0 p.value.count)
 			       (do0
-				;;,(vkprint "key not found" `(key i count_unique p.value))
+				;,(vkprint "key not found" `(key i count_unique p.value))
 				)
 			       (do0
+				;,(vkprint "key found" `(key i count_unique p.value))
 				(setf (aref ,(g `_indices) i) p.value.value)))))
 		    ))
 		,(vkprint "hashmap finished" `(hashmap.n hashmap.bins hashmap.n_entries count_unique))

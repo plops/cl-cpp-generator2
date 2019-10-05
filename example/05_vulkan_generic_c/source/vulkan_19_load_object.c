@@ -325,36 +325,25 @@ Hashmap_int_pair hashmap_int_search (Hashmap_int* h, uint64_t key){
 }
 bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
         // returns true if hashmap bin was empty (value -1)
+        // return false if the vertex has been stored elsewhere
         // returns false if hashmap and all bins already contains a values with different hashes
         for (int bin = 0;bin<h->bins;(bin)+=(1)) {
                         __auto_type p  = hashmap_int_get(h, key, bin);
         if ( 0<p.value.count ) {
                         if ( (p.value.hash)==(key) ) {
-                                                                __auto_type dat  = *(p.valuep);
-                                dat.value=newvalue;
-                dat.hash=key;
-                (dat.count)++;
-                (h->n_entries)++;
-                return true;
+                                                                __auto_type dat  = p.valuep;
+                                dat->value=newvalue;
+                dat->hash=key;
+                (dat->count)++;
+                return false;
 } else {
-                                                {
-                                                            __auto_type current_time  = now();
-                    printf("%6.6f", ((current_time)-(state._start_time)));
-                    printf(" ");
-                    printf(printf_dec_format(__FILE__), __FILE__);
-                    printf(":");
-                    printf(printf_dec_format(__LINE__), __LINE__);
-                    printf(" ");
-                    printf(printf_dec_format(__func__), __func__);
-                    printf(" bin exists with different hash: ");
-                    printf("\n");
-};
+                                ;
 }
 } else {
-                                                __auto_type dat  = *(p.valuep);
-                        dat.value=newvalue;
-            dat.hash=key;
-            (dat.count)++;
+                                                __auto_type dat  = p.valuep;
+                        dat->value=newvalue;
+            dat->hash=key;
+            (dat->count)++;
             (h->n_entries)++;
             return true;
 };
@@ -497,52 +486,7 @@ void loadModel (){
             state._indices[i]=count_unique;
             (count_unique)++;
 } else {
-                                                __auto_type p  = hashmap_int_search(&hashmap, key);
-            __auto_type vertex0  = state._vertices[p.value.value];
-            if ( !(equalp_Vertex(&(vertex0), &vertex)) ) {
-                                                {
-                                                            __auto_type current_time  = now();
-                    printf("%6.6f", ((current_time)-(state._start_time)));
-                    printf(" ");
-                    printf(printf_dec_format(__FILE__), __FILE__);
-                    printf(":");
-                    printf(printf_dec_format(__LINE__), __LINE__);
-                    printf(" ");
-                    printf(printf_dec_format(__func__), __func__);
-                    printf(" collision: ");
-                    printf(" ((vertex.pos[0])-(vertex0.pos[0]))=");
-                    printf(printf_dec_format(((vertex.pos[0])-(vertex0.pos[0]))), ((vertex.pos[0])-(vertex0.pos[0])));
-                    printf(" (%s)", type_string(((vertex.pos[0])-(vertex0.pos[0]))));
-                    printf(" ((vertex.pos[1])-(vertex0.pos[1]))=");
-                    printf(printf_dec_format(((vertex.pos[1])-(vertex0.pos[1]))), ((vertex.pos[1])-(vertex0.pos[1])));
-                    printf(" (%s)", type_string(((vertex.pos[1])-(vertex0.pos[1]))));
-                    printf(" ((vertex.pos[2])-(vertex0.pos[2]))=");
-                    printf(printf_dec_format(((vertex.pos[2])-(vertex0.pos[2]))), ((vertex.pos[2])-(vertex0.pos[2])));
-                    printf(" (%s)", type_string(((vertex.pos[2])-(vertex0.pos[2]))));
-                    printf(" ((vertex.texCoord[0])-(vertex0.texCoord[0]))=");
-                    printf(printf_dec_format(((vertex.texCoord[0])-(vertex0.texCoord[0]))), ((vertex.texCoord[0])-(vertex0.texCoord[0])));
-                    printf(" (%s)", type_string(((vertex.texCoord[0])-(vertex0.texCoord[0]))));
-                    printf(" ((vertex.texCoord[1])-(vertex0.texCoord[1]))=");
-                    printf(printf_dec_format(((vertex.texCoord[1])-(vertex0.texCoord[1]))), ((vertex.texCoord[1])-(vertex0.texCoord[1])));
-                    printf(" (%s)", type_string(((vertex.texCoord[1])-(vertex0.texCoord[1]))));
-                    printf(" ((vertex.color[0])-(vertex0.color[0]))=");
-                    printf(printf_dec_format(((vertex.color[0])-(vertex0.color[0]))), ((vertex.color[0])-(vertex0.color[0])));
-                    printf(" (%s)", type_string(((vertex.color[0])-(vertex0.color[0]))));
-                    printf(" ((vertex.color[1])-(vertex0.color[1]))=");
-                    printf(printf_dec_format(((vertex.color[1])-(vertex0.color[1]))), ((vertex.color[1])-(vertex0.color[1])));
-                    printf(" (%s)", type_string(((vertex.color[1])-(vertex0.color[1]))));
-                    printf(" ((vertex.color[2])-(vertex0.color[2]))=");
-                    printf(printf_dec_format(((vertex.color[2])-(vertex0.color[2]))), ((vertex.color[2])-(vertex0.color[2])));
-                    printf(" (%s)", type_string(((vertex.color[2])-(vertex0.color[2]))));
-                    printf(" hash_Vertex(&vertex)=");
-                    printf(printf_dec_format(hash_Vertex(&vertex)), hash_Vertex(&vertex));
-                    printf(" (%s)", type_string(hash_Vertex(&vertex)));
-                    printf(" hash_Vertex(&vertex0)=");
-                    printf(printf_dec_format(hash_Vertex(&vertex0)), hash_Vertex(&vertex0));
-                    printf(" (%s)", type_string(hash_Vertex(&vertex0)));
-                    printf("\n");
-};
-};
+                        ;
 }
                         __auto_type p  = hashmap_int_search(&hashmap, key);
         if ( (0)==(p.value.count) ) {
