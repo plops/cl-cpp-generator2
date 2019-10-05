@@ -2749,7 +2749,7 @@ more structs. this function helps to initialize those structs."
 		    (type uint64_t key)
 		    (values bool))
 	   "// returns true if hashmap bin was empty (value -1)"
-	   "// returns false if hashmap already contains a value different from -1"
+	   "// returns false if hashmap and all bins already contains a values with different hashes"
 	   (dotimes (bin h->bins)
 	    (let ((p (hashmap_int_get h key bin)))
 	      (if (< 0 p.value.count)
@@ -2763,11 +2763,19 @@ more structs. this function helps to initialize those structs."
 			 (return true)))
 		      (do0 ;; this bin already has an entry with different hash
 		       ;; go to next bin
-		       
+		       ,(vkprint "bin exists with different hash")
 		       ))
 		  (do0 ;; hashmap has no entries here
-		   (return false)))))
-	   ,(vkprint "hashmap collision" `(key)))
+					;,(vkprint "empty")
+		   (let ((dat (deref p.valuep)))
+			 (setf dat.value newvalue
+			       dat.hash key)
+			 (incf dat.count)
+			 (incf h->n_entries)
+			 (return true))
+		   ))))
+	   ,(vkprint "hashmap collision" `(key))
+	   (return false))
 	 (defun equalp_Vertex (a b)
 	   (declare (values bool)
 		    (type Vertex* a b))
@@ -2853,28 +2861,19 @@ more structs. this function helps to initialize those structs."
 
 
 	      (do0
-	       (setf
-		   ;attrib.num_faces 100
-		  ,(g `_num_vertices) attrib.num_faces
-		  )
+	       (setf ,(g `_num_vertices) attrib.num_faces)
 	       (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))
 					  ,(g `_num_vertices))))
 		 ,(vkprint "malloc" `(n_bytes_vertices))
-		 (setf
-		  
-		  ,(g `_vertices) (malloc n_bytes_vertices)
-		  )))
+		 (setf ,(g `_vertices) (malloc n_bytes_vertices))))
 	      (do0
-	       (setf
-		,(g `_num_indices) attrib.num_faces
-		)
+	       (setf ,(g `_num_indices) attrib.num_faces)
 	       (let ((n_bytes_indices (* (sizeof (deref ,(g `_indices)))
 					    ,(g `_num_indices))))
 		 ,(vkprint "malloc" `(n_bytes_indices))
-		 (setf
-		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make (next_power_of_two attrib.num_faces) 8
-			      ))
+		 (setf ,(g `_indices) (malloc n_bytes_indices))))
+	      (let ((hashmap (hashmap_int_make attrib.num_faces
+					       8))
 		    (count_unique 0))
 		"// hashmap for vertex deduplication"
 		(dotimes (i attrib.num_faces)
@@ -2896,13 +2895,13 @@ more structs. this function helps to initialize those structs."
 			(do0 ;; no previous occurance of key exists in hashmap
 			 ;,(vkprint "not found" `(key i count_unique))
 			 (setf (aref ,(g `_vertices) count_unique) vertex
-			       ;(aref ,(g `_indices) i) count_unique
+			       (aref ,(g `_indices) i) count_unique
 			       )
 			 (incf count_unique))
 			(do0
 			 (let ((p (hashmap_int_search &hashmap key))
 			       (vertex0 (aref ,(g `_vertices) p.value.value)))
-			   #+nil(unless (equalp_Vertex (ref vertex0)
+			   (unless (equalp_Vertex (ref vertex0)
 						  &vertex)
 			     ,(vkprint "collision" `(,@(loop for i below 3 collect
 							    `(- (aref vertex.pos ,i)
