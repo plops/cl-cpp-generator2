@@ -298,12 +298,51 @@ Hashmap_int_pair hashmap_int_search (Hashmap_int* h, uint64_t key){
                         __auto_type p  = hashmap_int_get(h, key, bin);
         if ( 0<p.value.count ) {
                                     if ( (p.value.hash)==(key) ) {
-                                                return p;
+                                                {
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
+                    printf(" ");
+                    printf(printf_dec_format(__FILE__), __FILE__);
+                    printf(":");
+                    printf(printf_dec_format(__LINE__), __LINE__);
+                    printf(" ");
+                    printf(printf_dec_format(__func__), __func__);
+                    printf(" found entry with same hash: ");
+                    printf(" p.value.hash=");
+                    printf(printf_dec_format(p.value.hash), p.value.hash);
+                    printf(" (%s)", type_string(p.value.hash));
+                    printf(" key=");
+                    printf(printf_dec_format(key), key);
+                    printf(" (%s)", type_string(key));
+                    printf(" bin=");
+                    printf(printf_dec_format(bin), bin);
+                    printf(" (%s)", type_string(bin));
+                    printf(" p.value.count=");
+                    printf(printf_dec_format(p.value.count), p.value.count);
+                    printf(" (%s)", type_string(p.value.count));
+                    printf(" p.value.value=");
+                    printf(printf_dec_format(p.value.value), p.value.value);
+                    printf(" (%s)", type_string(p.value.value));
+                    printf("\n");
+};
+                return p;
 } else {
                                 ;
 };
 } else {
-                                    return (Hashmap_int_pair) {key, p.value, p.valuep};
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" no entry: ");
+                printf("\n");
+};
+            return (Hashmap_int_pair) {key, p.value, p.valuep};
 };
 }
         {
@@ -332,15 +371,34 @@ bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
         if ( 0<p.value.count ) {
                         if ( (p.value.hash)==(key) ) {
                                                                 __auto_type dat  = p.valuep;
-                                dat->value=newvalue;
-                dat->hash=key;
                 (dat->count)++;
                 return false;
 } else {
                                 ;
 }
 } else {
-                                                __auto_type dat  = p.valuep;
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" empty: ");
+                printf(" bin=");
+                printf(printf_dec_format(bin), bin);
+                printf(" (%s)", type_string(bin));
+                printf(" key=");
+                printf(printf_dec_format(key), key);
+                printf(" (%s)", type_string(key));
+                printf(" newvalue=");
+                printf(printf_dec_format(newvalue), newvalue);
+                printf(" (%s)", type_string(newvalue));
+                printf("\n");
+};
+                        __auto_type dat  = p.valuep;
                         dat->value=newvalue;
             dat->hash=key;
             (dat->count)++;
@@ -486,13 +544,81 @@ void loadModel (){
             state._indices[i]=count_unique;
             (count_unique)++;
 } else {
-                        ;
-}
-                        __auto_type p  = hashmap_int_search(&hashmap, key);
-        if ( (0)==(p.value.count) ) {
-                        ;
+                                                __auto_type p  = hashmap_int_search(&hashmap, key);
+            if ( (0)==(p.value.count) ) {
+                                                {
+                                                            __auto_type current_time  = now();
+                    printf("%6.6f", ((current_time)-(state._start_time)));
+                    printf(" ");
+                    printf(printf_dec_format(__FILE__), __FILE__);
+                    printf(":");
+                    printf(printf_dec_format(__LINE__), __LINE__);
+                    printf(" ");
+                    printf(printf_dec_format(__func__), __func__);
+                    printf(" key not found: ");
+                    printf(" key=");
+                    printf(printf_dec_format(key), key);
+                    printf(" (%s)", type_string(key));
+                    printf(" i=");
+                    printf(printf_dec_format(i), i);
+                    printf(" (%s)", type_string(i));
+                    printf(" count_unique=");
+                    printf(printf_dec_format(count_unique), count_unique);
+                    printf(" (%s)", type_string(count_unique));
+                    printf(" p.value=");
+                    printf(printf_dec_format(p.value), p.value);
+                    printf(" (%s)", type_string(p.value));
+                    printf("\n");
+};
 } else {
-                                                state._indices[i]=p.value.value;
+                                                                state._indices[i]=p.value.value;
+                                __auto_type p  = hashmap_int_search(&hashmap, key);
+                __auto_type vertex0  = state._vertices[p.value.value];
+                if ( !(equalp_Vertex(&(vertex0), &vertex)) ) {
+                                                            {
+                                                                        __auto_type current_time  = now();
+                        printf("%6.6f", ((current_time)-(state._start_time)));
+                        printf(" ");
+                        printf(printf_dec_format(__FILE__), __FILE__);
+                        printf(":");
+                        printf(printf_dec_format(__LINE__), __LINE__);
+                        printf(" ");
+                        printf(printf_dec_format(__func__), __func__);
+                        printf(" collision: ");
+                        printf(" ((vertex.pos[0])-(vertex0.pos[0]))=");
+                        printf(printf_dec_format(((vertex.pos[0])-(vertex0.pos[0]))), ((vertex.pos[0])-(vertex0.pos[0])));
+                        printf(" (%s)", type_string(((vertex.pos[0])-(vertex0.pos[0]))));
+                        printf(" ((vertex.pos[1])-(vertex0.pos[1]))=");
+                        printf(printf_dec_format(((vertex.pos[1])-(vertex0.pos[1]))), ((vertex.pos[1])-(vertex0.pos[1])));
+                        printf(" (%s)", type_string(((vertex.pos[1])-(vertex0.pos[1]))));
+                        printf(" ((vertex.pos[2])-(vertex0.pos[2]))=");
+                        printf(printf_dec_format(((vertex.pos[2])-(vertex0.pos[2]))), ((vertex.pos[2])-(vertex0.pos[2])));
+                        printf(" (%s)", type_string(((vertex.pos[2])-(vertex0.pos[2]))));
+                        printf(" ((vertex.texCoord[0])-(vertex0.texCoord[0]))=");
+                        printf(printf_dec_format(((vertex.texCoord[0])-(vertex0.texCoord[0]))), ((vertex.texCoord[0])-(vertex0.texCoord[0])));
+                        printf(" (%s)", type_string(((vertex.texCoord[0])-(vertex0.texCoord[0]))));
+                        printf(" ((vertex.texCoord[1])-(vertex0.texCoord[1]))=");
+                        printf(printf_dec_format(((vertex.texCoord[1])-(vertex0.texCoord[1]))), ((vertex.texCoord[1])-(vertex0.texCoord[1])));
+                        printf(" (%s)", type_string(((vertex.texCoord[1])-(vertex0.texCoord[1]))));
+                        printf(" ((vertex.color[0])-(vertex0.color[0]))=");
+                        printf(printf_dec_format(((vertex.color[0])-(vertex0.color[0]))), ((vertex.color[0])-(vertex0.color[0])));
+                        printf(" (%s)", type_string(((vertex.color[0])-(vertex0.color[0]))));
+                        printf(" ((vertex.color[1])-(vertex0.color[1]))=");
+                        printf(printf_dec_format(((vertex.color[1])-(vertex0.color[1]))), ((vertex.color[1])-(vertex0.color[1])));
+                        printf(" (%s)", type_string(((vertex.color[1])-(vertex0.color[1]))));
+                        printf(" ((vertex.color[2])-(vertex0.color[2]))=");
+                        printf(printf_dec_format(((vertex.color[2])-(vertex0.color[2]))), ((vertex.color[2])-(vertex0.color[2])));
+                        printf(" (%s)", type_string(((vertex.color[2])-(vertex0.color[2]))));
+                        printf(" hash_Vertex(&vertex)=");
+                        printf(printf_dec_format(hash_Vertex(&vertex)), hash_Vertex(&vertex));
+                        printf(" (%s)", type_string(hash_Vertex(&vertex)));
+                        printf(" hash_Vertex(&vertex0)=");
+                        printf(printf_dec_format(hash_Vertex(&vertex0)), hash_Vertex(&vertex0));
+                        printf(" (%s)", type_string(hash_Vertex(&vertex0)));
+                        printf("\n");
+};
+};
+};
 };
 }
     {

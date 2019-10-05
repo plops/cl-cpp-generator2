@@ -2730,13 +2730,16 @@ more structs. this function helps to initialize those structs."
 	     (let ((p (hashmap_int_get h key bin)))
 	       (if (< 0 p.value.count)
 		   (do0 ;; found an entry
+		    
 		    (if (== p.value.hash key)
 			(do0 ;; entry has same hash as search key
+			 ,(vkprint "found entry with same hash" `(p.value.hash key bin p.value.count p.value.value))
 			 (return p)
 			 )
 			(do0 ;; entry is different, try next bin
 			 )))
 		   (do0 ;; no entry
+		    ,(vkprint "no entry")
 		    (return (cast Hashmap_int_pair (curly key p.value p.valuep)))
 		    ))))
 	   ,(vkprint "bin full" `(key))
@@ -2757,7 +2760,7 @@ more structs. this function helps to initialize those structs."
 		  (if (== p.value.hash key)
 		      (do0 ;; found entry with same hash
 		       (let ((dat p.valuep))
-			 (setf dat->value newvalue
+			 #+nil (setf dat->value newvalue
 			       dat->hash key)
 			 (incf dat->count)
 			 ;(incf h->n_entries)
@@ -2767,7 +2770,7 @@ more structs. this function helps to initialize those structs."
 		       ;,(vkprint "bin exists with different hash")
 		       ))
 		  (do0 ;; hashmap has no entries here
-					;,(vkprint "empty")
+		   ,(vkprint "empty" `(bin key newvalue))
 		   (let ((dat p.valuep))
 			 (setf dat->value newvalue
 			       dat->hash key)
@@ -2900,22 +2903,34 @@ more structs. this function helps to initialize those structs."
 			       )
 			 (incf count_unique))
 			(do0
-			 #+nil(let ((p (hashmap_int_search &hashmap key))
-			       (vertex0 (aref ,(g `_vertices) p.value.value)))
-			   (unless (equalp_Vertex (ref vertex0)
-						  &vertex)
-			     ,(vkprint "collision" `(,@(loop for i below 3 collect
-							    `(- (aref vertex.pos ,i)
-								(aref vertex0.pos ,i)))
-						       ,@(loop for i below 2 collect
-							    `(- (aref vertex.texCoord ,i)
-								(aref vertex0.texCoord ,i)))
-						       ,@(loop for i below 3 collect
-							    `(- (aref vertex.color ,i)
-								(aref vertex0.color ,i)))
-						       (hash_Vertex &vertex)
-						       (hash_Vertex &vertex0)
-								 ))))))
+			 (let ((p (hashmap_int_search &hashmap key)))
+					;,(vkprint "    found" `(key i count p.value))
+			   (if (== 0 p.value.count)
+			       (do0
+				,(vkprint "key not found" `(key i count_unique p.value))
+				)
+			       (do0
+					;,(vkprint "key found" `(key i count_unique p.value))
+				(setf (aref ,(g `_indices) i) p.value.value)
+				(let ((p (hashmap_int_search &hashmap key))
+				      (vertex0 (aref ,(g `_vertices) p.value.value)))
+				  (unless (equalp_Vertex (ref vertex0)
+						     &vertex)
+				      
+				      ,(vkprint "collision" `(,@(loop for i below 3 collect
+								     `(- (aref vertex.pos ,i)
+									 (aref vertex0.pos ,i)))
+								,@(loop for i below 2 collect
+								       `(- (aref vertex.texCoord ,i)
+									   (aref vertex0.texCoord ,i)))
+								,@(loop for i below 3 collect
+								       `(- (aref vertex.color ,i)
+									   (aref vertex0.color ,i)))
+								(hash_Vertex &vertex)
+								(hash_Vertex &vertex0)
+								)))))))
+			 ))
+		    #+nil
 		    (do0
 			 
 			 (let ((p (hashmap_int_search &hashmap key)))
