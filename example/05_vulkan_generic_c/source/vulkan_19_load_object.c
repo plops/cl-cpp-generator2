@@ -225,9 +225,9 @@ uint64_t hash_Vertex (Vertex* v){
     return ((pos)^(((col)<<(1))>>(1))^((tex)<<(1)));
 }
  
-Hashmap_int hashmap_int_make (int n){
+Hashmap_int hashmap_int_make (int n, int bins){
         // initialize hash map with -1
-            __auto_type n_bytes_hashmap  = ((sizeof(int))*(n));
+            __auto_type n_bytes_hashmap  = ((sizeof(Hashmap_int_data))*(n)*(bins));
     {
                         __auto_type current_time  = now();
         printf("%6.6f", ((current_time)-(state._start_time)));
@@ -241,14 +241,18 @@ Hashmap_int hashmap_int_make (int n){
         printf(" n_bytes_hashmap=");
         printf(printf_dec_format(n_bytes_hashmap), n_bytes_hashmap);
         printf(" (%s)", type_string(n_bytes_hashmap));
+        printf(" n=");
+        printf(printf_dec_format(n), n);
+        printf(" (%s)", type_string(n));
+        printf(" bins=");
+        printf(printf_dec_format(bins), bins);
+        printf(" (%s)", type_string(bins));
         printf("\n");
 };
         Hashmap_int hm ;
-    int* data  = malloc(n_bytes_hashmap);
-    for (int i = 0;i<n;(i)+=(1)) {
-                        data[i]=-1;
-}
-        hm.n_bins=n;
+    Hashmap_int_data* data  = calloc(n_bytes_hashmap, 1);
+        hm.n=n;
+    hm.bins=bins;
     hm.n_entries=0;
     hm.data=data;
     return hm;
@@ -264,35 +268,95 @@ void hashmap_int_free (Hashmap_int* h){
         printf(" ");
         printf(printf_dec_format(__func__), __func__);
         printf(" free hashmap: ");
-        printf(" h->n_bins=");
-        printf(printf_dec_format(h->n_bins), h->n_bins);
-        printf(" (%s)", type_string(h->n_bins));
+        printf(" h->n=");
+        printf(printf_dec_format(h->n), h->n);
+        printf(" (%s)", type_string(h->n));
+        printf(" h->bins=");
+        printf(printf_dec_format(h->bins), h->bins);
+        printf(" (%s)", type_string(h->bins));
         printf(" h->n_entries=");
         printf(printf_dec_format(h->n_entries), h->n_entries);
         printf(" (%s)", type_string(h->n_entries));
         printf("\n");
 };
         free(h->data);
+            h->data=NULL;
 }
-Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key){
+Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key, int bin){
         // return key, value and pointer to value in data array
-        // if empty value is -1
-            __auto_type limit_key  = key%h->n_bins;
-    __auto_type value  = h->data[limit_key];
-    __auto_type valuep  = &(h->data[limit_key]);
+        // empty entry will have value.count==0
+        assert(bin<h->bins);
+            __auto_type limit_key  = key%h->n;
+    __auto_type idx  = ((bin)+(((h->bins)*(limit_key))));
+    __auto_type value  = h->data[idx];
+    __auto_type valuep  = &(h->data[idx]);
         __auto_type p  = (Hashmap_int_pair) {key, value, valuep};
     return p;
+}
+Hashmap_int_pair hashmap_int_search (Hashmap_int* h, uint64_t key){
+        for (int bin = 0;bin<h->bins;(bin)+=(1)) {
+                        __auto_type p  = hashmap_int_get(h, key, bin);
+        if ( 0<p.value.count ) {
+                                    if ( (p.value.hash)==(key) ) {
+                                                return p;
+} else {
+                                ;
+};
+} else {
+                                    return (Hashmap_int_pair) {key, p.value, p.valuep};
+};
+}
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" bin full: ");
+        printf(" key=");
+        printf(printf_dec_format(key), key);
+        printf(" (%s)", type_string(key));
+        printf("\n");
+};
+        return (Hashmap_int_pair) {key, (Hashmap_int_data) {0, 0, 0}, NULL};
 }
 bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue){
         // returns true if hashmap bin was empty (value -1)
         // returns false if hashmap already contains a value different from -1
-            __auto_type p  = hashmap_int_get(h, key);
-    if ( (-1)==(p.value) ) {
-                                *(p.valuep)=newvalue;
-        (h->n_entries)++;
-        return true;
+        for (int bin = 0;bin<h->bins;(bin)+=(1)) {
+                        __auto_type p  = hashmap_int_get(h, key, bin);
+        if ( 0<p.value.count ) {
+                        if ( (p.value.hash)==(key) ) {
+                                                                __auto_type dat  = *(p.valuep);
+                                dat.value=newvalue;
+                dat.hash=key;
+                (dat.count)++;
+                (h->n_entries)++;
+                return true;
 } else {
-                        return false;
+                                ;
+}
+} else {
+                                    return false;
+};
+}
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" hashmap collision: ");
+        printf(" key=");
+        printf(printf_dec_format(key), key);
+        printf(" (%s)", type_string(key));
+        printf("\n");
 };
 }
 bool equalp_Vertex (Vertex* a, Vertex* b){
@@ -400,7 +464,7 @@ void loadModel (){
         printf("\n");
 };
         state._indices=malloc(n_bytes_indices);
-        __auto_type hashmap  = hashmap_int_make(((512)*(next_power_of_two(attrib.num_faces))));
+        __auto_type hashmap  = hashmap_int_make(next_power_of_two(attrib.num_faces), 8);
     __auto_type count_unique  = 0;
     // hashmap for vertex deduplication
     for (int i = 0;i<attrib.num_faces;(i)+=(1)) {
@@ -415,81 +479,15 @@ void loadModel (){
                                                 state._vertices[count_unique]=vertex;
             (count_unique)++;
 } else {
-                                                __auto_type p  = hashmap_int_get(&hashmap, key);
-            __auto_type vertex0  = state._vertices[p.value];
-            if ( !(equalp_Vertex(&(vertex0), &vertex)) ) {
-                                                {
-                                                            __auto_type current_time  = now();
-                    printf("%6.6f", ((current_time)-(state._start_time)));
-                    printf(" ");
-                    printf(printf_dec_format(__FILE__), __FILE__);
-                    printf(":");
-                    printf(printf_dec_format(__LINE__), __LINE__);
-                    printf(" ");
-                    printf(printf_dec_format(__func__), __func__);
-                    printf(" collision: ");
-                    printf(" ((vertex.pos[0])-(vertex0.pos[0]))=");
-                    printf(printf_dec_format(((vertex.pos[0])-(vertex0.pos[0]))), ((vertex.pos[0])-(vertex0.pos[0])));
-                    printf(" (%s)", type_string(((vertex.pos[0])-(vertex0.pos[0]))));
-                    printf(" ((vertex.pos[1])-(vertex0.pos[1]))=");
-                    printf(printf_dec_format(((vertex.pos[1])-(vertex0.pos[1]))), ((vertex.pos[1])-(vertex0.pos[1])));
-                    printf(" (%s)", type_string(((vertex.pos[1])-(vertex0.pos[1]))));
-                    printf(" ((vertex.pos[2])-(vertex0.pos[2]))=");
-                    printf(printf_dec_format(((vertex.pos[2])-(vertex0.pos[2]))), ((vertex.pos[2])-(vertex0.pos[2])));
-                    printf(" (%s)", type_string(((vertex.pos[2])-(vertex0.pos[2]))));
-                    printf(" ((vertex.texCoord[0])-(vertex0.texCoord[0]))=");
-                    printf(printf_dec_format(((vertex.texCoord[0])-(vertex0.texCoord[0]))), ((vertex.texCoord[0])-(vertex0.texCoord[0])));
-                    printf(" (%s)", type_string(((vertex.texCoord[0])-(vertex0.texCoord[0]))));
-                    printf(" ((vertex.texCoord[1])-(vertex0.texCoord[1]))=");
-                    printf(printf_dec_format(((vertex.texCoord[1])-(vertex0.texCoord[1]))), ((vertex.texCoord[1])-(vertex0.texCoord[1])));
-                    printf(" (%s)", type_string(((vertex.texCoord[1])-(vertex0.texCoord[1]))));
-                    printf(" ((vertex.color[0])-(vertex0.color[0]))=");
-                    printf(printf_dec_format(((vertex.color[0])-(vertex0.color[0]))), ((vertex.color[0])-(vertex0.color[0])));
-                    printf(" (%s)", type_string(((vertex.color[0])-(vertex0.color[0]))));
-                    printf(" ((vertex.color[1])-(vertex0.color[1]))=");
-                    printf(printf_dec_format(((vertex.color[1])-(vertex0.color[1]))), ((vertex.color[1])-(vertex0.color[1])));
-                    printf(" (%s)", type_string(((vertex.color[1])-(vertex0.color[1]))));
-                    printf(" ((vertex.color[2])-(vertex0.color[2]))=");
-                    printf(printf_dec_format(((vertex.color[2])-(vertex0.color[2]))), ((vertex.color[2])-(vertex0.color[2])));
-                    printf(" (%s)", type_string(((vertex.color[2])-(vertex0.color[2]))));
-                    printf(" hash_Vertex(&vertex)=");
-                    printf(printf_dec_format(hash_Vertex(&vertex)), hash_Vertex(&vertex));
-                    printf(" (%s)", type_string(hash_Vertex(&vertex)));
-                    printf(" hash_Vertex(&vertex0)=");
-                    printf(printf_dec_format(hash_Vertex(&vertex0)), hash_Vertex(&vertex0));
-                    printf(" (%s)", type_string(hash_Vertex(&vertex0)));
-                    printf("\n");
-};
-};
+                                                __auto_type p  = hashmap_int_search(&hashmap, key);
+            __auto_type vertex0  = state._vertices[p.value.value];
 }
-                        __auto_type p  = hashmap_int_get(&hashmap, key);
-        if ( (-1)==(p.value) ) {
-                                    {
-                                                __auto_type current_time  = now();
-                printf("%6.6f", ((current_time)-(state._start_time)));
-                printf(" ");
-                printf(printf_dec_format(__FILE__), __FILE__);
-                printf(":");
-                printf(printf_dec_format(__LINE__), __LINE__);
-                printf(" ");
-                printf(printf_dec_format(__func__), __func__);
-                printf(" key not found: ");
-                printf(" key=");
-                printf(printf_dec_format(key), key);
-                printf(" (%s)", type_string(key));
-                printf(" i=");
-                printf(printf_dec_format(i), i);
-                printf(" (%s)", type_string(i));
-                printf(" count_unique=");
-                printf(printf_dec_format(count_unique), count_unique);
-                printf(" (%s)", type_string(count_unique));
-                printf(" p.value=");
-                printf(printf_dec_format(p.value), p.value);
-                printf(" (%s)", type_string(p.value));
-                printf("\n");
+                        __auto_type p  = hashmap_int_search(&hashmap, key);
+        if ( (0)==(p.value.count) ) {
+                        ;
+} else {
+                                                state._indices[i]=p.value.value;
 };
-};
-                state._indices[i]=p.value;
 }
     {
                         __auto_type current_time  = now();
@@ -501,9 +499,12 @@ void loadModel (){
         printf(" ");
         printf(printf_dec_format(__func__), __func__);
         printf(" hashmap finished: ");
-        printf(" hashmap.n_bins=");
-        printf(printf_dec_format(hashmap.n_bins), hashmap.n_bins);
-        printf(" (%s)", type_string(hashmap.n_bins));
+        printf(" hashmap.n=");
+        printf(printf_dec_format(hashmap.n), hashmap.n);
+        printf(" (%s)", type_string(hashmap.n));
+        printf(" hashmap.bins=");
+        printf(printf_dec_format(hashmap.bins), hashmap.bins);
+        printf(" (%s)", type_string(hashmap.bins));
         printf(" hashmap.n_entries=");
         printf(printf_dec_format(hashmap.n_entries), hashmap.n_entries);
         printf(" (%s)", type_string(hashmap.n_entries));

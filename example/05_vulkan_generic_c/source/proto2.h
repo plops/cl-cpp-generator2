@@ -72,9 +72,10 @@
  uint64_t hash_bytes (const void* ptr, uint64_t len);
  uint64_t hash_f32 (float f);
  uint64_t hash_Vertex (Vertex* v);
- Hashmap_int hashmap_int_make (int n);
+ Hashmap_int hashmap_int_make (int n, int bins);
  void hashmap_int_free (Hashmap_int* h);
- Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key);
+ Hashmap_int_pair hashmap_int_get (Hashmap_int* h, uint64_t key, int bin);
+ Hashmap_int_pair hashmap_int_search (Hashmap_int* h, uint64_t key);
  bool hashmap_int_set (Hashmap_int* h, uint64_t key, int newvalue);
  bool equalp_Vertex (Vertex* a, Vertex* b);
  int next_power_of_two (int n);

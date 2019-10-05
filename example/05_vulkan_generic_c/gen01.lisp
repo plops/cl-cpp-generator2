@@ -2665,28 +2665,35 @@ more structs. this function helps to initialize those structs."
 			))))
 
 	 ,(emit-utils :code `(do0
+			      (defstruct0 Hashmap_int_data
+				  (value int)
+				(count int)
+				(hash uint64_t))
 			      (defstruct0 Hashmap_int
-				  (n_bins int)
+				  (n int)
+				(bins int)
 				(n_entries int)
-				(data int*))
+				(data Hashmap_int_data*))
 			      (defstruct0 Hashmap_int_pair
 				  (key int)
-				(value int)
-				(valuep int*))))
-	 (defun hashmap_int_make (n)
+				(value Hashmap_int_data)
+				(valuep Hashmap_int_data*))))
+	 (defun hashmap_int_make (n bins)
 	   (declare (values Hashmap_int)
-		    (type int n))
+		    (type int n bins))
 	   "// initialize hash map with -1"
-	   (let ((n_bytes_hashmap (* (sizeof int) n)))
-	     ,(vkprint "malloc" `(n_bytes_hashmap))
+	   (let ((n_bytes_hashmap (* (sizeof Hashmap_int_data) n bins)))
+	     ,(vkprint "malloc" `(n_bytes_hashmap n bins))
 	     (let ((hm)
-		   (data (malloc n_bytes_hashmap)))
-	       (declare (type int* data)
+		   (data (calloc n_bytes_hashmap 1)))
+	       (declare (type Hashmap_int_data* data)
 			(type Hashmap_int hm))
-	       (dotimes (i n)
-		 (setf (aref data i) -1))
+	       
+	       #+nil (dotimes (i n)
+		 (setf (dot (aref data i)) -1))
 	       ;,(vkprint "clear hashmap" `((aref data 0)))
-	       (setf hm.n_bins n
+	       (setf hm.n n
+		     hm.bins bins
 		     hm.n_entries 0
 		     hm.data data)
 	       (return hm))))
@@ -2694,21 +2701,47 @@ more structs. this function helps to initialize those structs."
 	 (defun hashmap_int_free (h)
 	   (declare (type Hashmap_int* h))
 	   
-	   ,(vkprint "free hashmap" `(h->n_bins
+	   ,(vkprint "free hashmap" `(h->n
+				      h->bins
 				      h->n_entries))
-	   (free h->data))
+	   (free h->data)
+	   (setf h->data NULL))
 	 
-	 (defun hashmap_int_get (h key)
+	 (defun hashmap_int_get (h key bin)
+	   (declare (type Hashmap_int* h)
+		    (type uint64_t key)
+		    (type int bin)
+		    (values Hashmap_int_pair))
+	   "// return key, value and pointer to value in data array"
+	   "// empty entry will have value.count==0"
+	   (assert (< bin h->bins))
+	   (let ((limit_key (% key h->n))
+		 (idx (+ bin (* h->bins limit_key)))
+		 (value (aref h->data idx))
+		 (valuep (ref (aref h->data idx))))
+	     (let ((p (cast Hashmap_int_pair (curly key  value valuep))))
+	       (return p))))
+
+	 (defun hashmap_int_search (h key)
 	   (declare (type Hashmap_int* h)
 		    (type uint64_t key)
 		    (values Hashmap_int_pair))
-	   "// return key, value and pointer to value in data array"
-	   "// if empty value is -1"
-	   (let ((limit_key (% key h->n_bins))
-		 (value (aref h->data limit_key))
-		 (valuep (ref (aref h->data limit_key))))
-	     (let ((p (cast Hashmap_int_pair (curly key value valuep))))
-	       (return p))))
+	   (dotimes (bin h->bins)
+	     (let ((p (hashmap_int_get h key bin)))
+	       (if (< 0 p.value.count)
+		   (do0 ;; found an entry
+		    (if (== p.value.hash key)
+			(do0 ;; entry has same hash as search key
+			 (return p)
+			 )
+			(do0 ;; entry is different, try next bin
+			 )))
+		   (do0 ;; no entry
+		    (return (cast Hashmap_int_pair (curly key p.value p.valuep)))
+		    ))))
+	   ,(vkprint "bin full" `(key))
+	   (return (cast Hashmap_int_pair (curly key (cast Hashmap_int_data
+							   (curly 0 0 0)) NULL))))
 
 	 (defun hashmap_int_set (h key newvalue)
 	   (declare (type Hashmap_int* h)
@@ -2717,14 +2750,24 @@ more structs. this function helps to initialize those structs."
 		    (values bool))
 	   "// returns true if hashmap bin was empty (value -1)"
 	   "// returns false if hashmap already contains a value different from -1"
-	   (let ((p (hashmap_int_get h key)))
-	     (if (== -1 p.value)
-		 (do0
-		  (setf (deref p.valuep) newvalue)
-		  (incf h->n_entries)
-		  (return true))
-		 (do0
-		  (return false)))))
+	   (dotimes (bin h->bins)
+	    (let ((p (hashmap_int_get h key bin)))
+	      (if (< 0 p.value.count)
+		  (if (== p.value.hash key)
+		      (do0 ;; found entry with same hash
+		       (let ((dat (deref p.valuep)))
+			 (setf dat.value newvalue
+			       dat.hash key)
+			 (incf dat.count)
+			 (incf h->n_entries)
+			 (return true)))
+		      (do0 ;; this bin already has an entry with different hash
+		       ;; go to next bin
+		       
+		       ))
+		  (do0 ;; hashmap has no entries here
+		   (return false)))))
+	   ,(vkprint "hashmap collision" `(key)))
 	 (defun equalp_Vertex (a b)
 	   (declare (values bool)
 		    (type Vertex* a b))
@@ -2830,7 +2873,7 @@ more structs. this function helps to initialize those structs."
 		 ,(vkprint "malloc" `(n_bytes_indices))
 		 (setf
 		  ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make (* 512 (next_power_of_two attrib.num_faces))
+	      (let ((hashmap (hashmap_int_make (next_power_of_two attrib.num_faces) 8
 			      ))
 		    (count_unique 0))
 		"// hashmap for vertex deduplication"
@@ -2850,16 +2893,16 @@ more structs. this function helps to initialize those structs."
 					 (curly t0 (- t1)))))
 			  (key (hash_Vertex &vertex)))
 		    (if (== true (hashmap_int_set &hashmap key count_unique))
-			(do0
+			(do0 ;; no previous occurance of key exists in hashmap
 			 ;,(vkprint "not found" `(key i count_unique))
 			 (setf (aref ,(g `_vertices) count_unique) vertex
 			       ;(aref ,(g `_indices) i) count_unique
 			       )
 			 (incf count_unique))
 			(do0
-			 (let ((p (hashmap_int_get &hashmap key))
-			       (vertex0 (aref ,(g `_vertices) p.value)))
-			   (unless (equalp_Vertex (ref vertex0)
+			 (let ((p (hashmap_int_search &hashmap key))
+			       (vertex0 (aref ,(g `_vertices) p.value.value)))
+			   #+nil(unless (equalp_Vertex (ref vertex0)
 						  &vertex)
 			     ,(vkprint "collision" `(,@(loop for i below 3 collect
 							    `(- (aref vertex.pos ,i)
@@ -2875,13 +2918,16 @@ more structs. this function helps to initialize those structs."
 								 ))))))
 		    (do0
 			 
-			 (let ((p (hashmap_int_get &hashmap key)))
+			 (let ((p (hashmap_int_search &hashmap key)))
 					;,(vkprint "    found" `(key i count p.value))
-			   (when (== -1 p.value)
-			     ,(vkprint "key not found" `(key i count_unique p.value)))
-			   (setf (aref ,(g `_indices) i) p.value)))
+			   (if (== 0 p.value.count)
+			       (do0
+				;;,(vkprint "key not found" `(key i count_unique p.value))
+				)
+			       (do0
+				(setf (aref ,(g `_indices) i) p.value.value)))))
 		    ))
-		,(vkprint "hashmap finished" `(hashmap.n_bins hashmap.n_entries count_unique))
+		,(vkprint "hashmap finished" `(hashmap.n hashmap.bins hashmap.n_entries count_unique))
 		(hashmap_int_free &hashmap)
 		(progn
 		  (let ((n_bytes_realloc (* count_unique (sizeof (deref ,(g `_vertices))))))
