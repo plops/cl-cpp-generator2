@@ -2804,175 +2804,231 @@ more structs. this function helps to initialize those structs."
 	     (while (< power n)
 	       (*= power 2))
 	     (return power)))
-	 (defun loadModel ()
-	   ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
-	   ;; obj file that i use contains lists of vertex positions
-	   ;; v -0.587606 0.129110 0.826194
-	   ;; v -0.586717 0.122363 0.824548
 
-	   ;; texture coordinates
-	   ;; vt 0.6716 0.5600
-	   ;; vt 0.6724 0.5607
+	 ,(let ((number-vertices 265645)
+	       (number-indices 1500000)
+	       (cache-filename `(string "chalet.cache")))
+	  `(do0
+	    ,(emit-utils :code `(do0
+				 (defstruct0 Geometry_store
+				     (header uint64_t)
+				   (version uint64_t)
+				   (date uint64_t)
+				   (_num_vertices int)
+				   (_num_indices int)
+				   ((aref _vertices ,number-vertices) Vertex)
+				   ((aref _indices ,number-indices) uint32_t ))))
+	    (defun saveCachedModel ()
+	      (let ((storage (cast Geometry_store (curly 0xaddbeef00d
+				      0x1
+				      20191006
+				      ,number-vertices
+				      ,number-indices
+				      ))))
+		,@(loop for e in `(_vertices _indices)
+			 collect
+		       `(memcpy (dot storage ,e) ,(g e) (sizeof (dot storage ,e))))
+		(let ((fn ,cache-filename)
+		      (f (fopen fn (string "wb"))))
+		  (unless (== NULL f)
+		    (let ((nwritten (fwrite (ref storage)
+					    (sizeof storage)
+					    1
+					    f)))
+		      (fclose f)
+		      (when (< nwritten 1)
+			,(vkprint "write cache failed" `(nwritten))
+			(return))
+		      ,(vkprint "write cache" `(fn nwritten))))
+		  )))
+	    (defun loadCachedModel ()
+	      (declare (values bool))
+	      (let ((fn ,cache-filename))
+		(unless (== -1 (access fn F_OK))
+		  "// file exists"
+		  (let ((map (mmapFile fn))
+			(storage (cast Geometry_store* map.data)))
+		    ,@(loop for e in `(_num_vertices _num_indices _vertices _indices)
+			 collect
+			   `(setf ,(g e) (-> storage ,e)))
+		    ;;(munmapFile map)
+		    (return true)
+		    ))
+		(return false)))
+	    (defun loadModel ()
+	      (unless (loadCachedModel)
+		(loadModel_from_obj)
+		(saveCachedModel)))
+	    
+	    (defun loadModel_from_obj ()
+	      ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the
+	      ;; obj file that i use contains lists of vertex positions
+	      ;; v -0.587606 0.129110 0.826194
+	      ;; v -0.586717 0.122363 0.824548
 
-	   ;; and a list of triangles with corresponding vertex index
-	   ;; and texture coordinate index
-	   ;; f 1/f 1/1 2/2 3/3
-	   ;; f 4/4 5/5 6/6
-	   (let ((map (mmapFile (string "chalet.obj")))
-		  (attrib)
-		  (shapes NULL)
-		  (num_shapes)
-		  (materials NULL)
-		  (num_materials)
+	      ;; texture coordinates
+	      ;; vt 0.6716 0.5600
+	      ;; vt 0.6724 0.5607
 
-		 )
-	     (declare (type tinyobj_attrib_t attrib)
-		       (type tinyobj_shape_t* shapes)
-		       (type tinyobj_material_t* materials)
-		       (type size_t num_shapes
-			     num_materials))
-	     (tinyobj_attrib_init &attrib)
-	    (let  ((res (tinyobj_parse_obj
-			&attrib
-			&shapes
-			&num_shapes
-			&materials
-			&num_materials
-			map.data
-			map.n
-			TINYOBJ_FLAG_TRIANGULATE)))
+	      ;; and a list of triangles with corresponding vertex index
+	      ;; and texture coordinate index
+	      ;; f 1/f 1/1 2/2 3/3
+	      ;; f 4/4 5/5 6/6
+	      (let ((map (mmapFile (string "chalet.obj")))
+		    (attrib)
+		    (shapes NULL)
+		    (num_shapes)
+		    (materials NULL)
+		    (num_materials)
+
+		    )
+		(declare (type tinyobj_attrib_t attrib)
+			 (type tinyobj_shape_t* shapes)
+			 (type tinyobj_material_t* materials)
+			 (type size_t num_shapes
+			       num_materials))
+		(tinyobj_attrib_init &attrib)
+		(let  ((res (tinyobj_parse_obj
+			     &attrib
+			     &shapes
+			     &num_shapes
+			     &materials
+			     &num_materials
+			     map.data
+			     map.n
+			     TINYOBJ_FLAG_TRIANGULATE)))
 		
-	      (unless (== TINYOBJ_SUCCESS res)
-		,(vkprint "tinyobj failed to open" `(res)))
-	      #+nil,(vkprint "tinyobj opened" `(num_shapes
-						num_materials
-						attrib.num_face_num_verts))
-	      ;; num_shapes=                       1 (unsigned long int)
-	      ;; num_materials=                    0 (unsigned long int)
-	      ;; attrib.num_face_num_verts=   500000 (unsigned int)   ;; i think  this is the number of vertices belonging to each face. here each face has 3 vertices 
-	      ;; attrib.num_vertices=         234246 (unsigned int)
-	      ;; attrib.num_texcoords=        265645 (unsigned int)
-	      ;; attrib.num_faces=           1500000 (unsigned int)
-	      ;; attrib.num_normals=               0 (unsigned int)
+		  (unless (== TINYOBJ_SUCCESS res)
+		    ,(vkprint "tinyobj failed to open" `(res)))
+		  #+nil,(vkprint "tinyobj opened" `(num_shapes
+						    num_materials
+						    attrib.num_face_num_verts))
+		  ;; num_shapes=                       1 (unsigned long int)
+		  ;; num_materials=                    0 (unsigned long int)
+		  ;; attrib.num_face_num_verts=   500000 (unsigned int)   ;; i think  this is the number of vertices belonging to each face. here each face has 3 vertices 
+		  ;; attrib.num_vertices=         234246 (unsigned int)
+		  ;; attrib.num_texcoords=        265645 (unsigned int)
+		  ;; attrib.num_faces=           1500000 (unsigned int)
+		  ;; attrib.num_normals=               0 (unsigned int)
 
-	      ,(vkprint "model" `(num_shapes
-				  num_materials
-				  attrib.num_face_num_verts
-				  attrib.num_vertices
-				  attrib.num_texcoords
-				  attrib.num_faces
-				  attrib.num_normals))
-	      ;; float attrib.vertices[3*num_vertices]
-	      ;; float attrib.texcoords[3*num_texcoords]
-	      ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
-	      ;; vertex_index_t  attrib.faces[num_faces]
+		  ,(vkprint "model" `(num_shapes
+				      num_materials
+				      attrib.num_face_num_verts
+				      attrib.num_vertices
+				      attrib.num_texcoords
+				      attrib.num_faces
+				      attrib.num_normals))
+		  ;; float attrib.vertices[3*num_vertices]
+		  ;; float attrib.texcoords[3*num_texcoords]
+		  ;; struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t
+		  ;; vertex_index_t  attrib.faces[num_faces]
 
 
-	      (do0
-	       (setf ,(g `_num_vertices) attrib.num_faces)
-	       (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))
-					  ,(g `_num_vertices))))
-		 ,(vkprint "malloc" `(n_bytes_vertices))
-		 (setf ,(g `_vertices) (malloc n_bytes_vertices))))
-	      (do0
-	       (setf ,(g `_num_indices) attrib.num_faces)
-	       (let ((n_bytes_indices (* (sizeof (deref ,(g `_indices)))
-					    ,(g `_num_indices))))
-		 ,(vkprint "malloc" `(n_bytes_indices))
-		 (setf ,(g `_indices) (malloc n_bytes_indices))))
-	      (let ((hashmap (hashmap_int_make attrib.num_faces
-					       8))
-		    (count_unique 0))
-		"// hashmap for vertex deduplication"
-		(dotimes (i attrib.num_faces)
-		  (let (,@(loop for j below 3 collect
-			       `(,(format nil "v~a" j)
-				  (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
-									v_idx))))))
-			,@(loop for j below 2 collect
-			       `(,(format nil "t~a" j)
-				  (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
-									 vt_idx))))))
-			  (vertex (cast Vertex
-					(curly
-					 (curly v0 v1 v2)
-					 (curly 1s0 1s0 1s0)
-					 (curly t0 (- t1)))))
-			  (key (hash_Vertex &vertex)))
-		    (if (== true (hashmap_int_set &hashmap key count_unique))
-			(do0 ;; no previous occurance of key exists in hashmap
-			 ;,(vkprint "not found" `(key i count_unique))
-			 (setf (aref ,(g `_vertices) count_unique) vertex
-			       (aref ,(g `_indices) i) count_unique
-			       )
-			 (incf count_unique))
+		  (do0
+		   (setf ,(g `_num_vertices) attrib.num_faces)
+		   (let ((n_bytes_vertices (* (sizeof (deref ,(g `_vertices)))
+					      ,(g `_num_vertices))))
+		     ,(vkprint "malloc" `(n_bytes_vertices))
+		     (setf ,(g `_vertices) (malloc n_bytes_vertices))))
+		  (do0
+		   (setf ,(g `_num_indices) attrib.num_faces)
+		   (let ((n_bytes_indices (* (sizeof (deref ,(g `_indices)))
+					     ,(g `_num_indices))))
+		     ,(vkprint "malloc" `(n_bytes_indices))
+		     (setf ,(g `_indices) (malloc n_bytes_indices))))
+		  (let ((hashmap (hashmap_int_make attrib.num_faces
+						   8))
+			(count_unique 0))
+		    "// hashmap for vertex deduplication"
+		    (dotimes (i attrib.num_faces)
+		      (let (,@(loop for j below 3 collect
+				   `(,(format nil "v~a" j)
+				      (aref attrib.vertices (+ ,j (* 3 (dot (aref (dot attrib faces) i)
+									    v_idx))))))
+			    ,@(loop for j below 2 collect
+				   `(,(format nil "t~a" j)
+				      (aref attrib.texcoords (+ ,j (* 2 (dot (aref (dot attrib faces) i)
+									     vt_idx))))))
+			      (vertex (cast Vertex
+					    (curly
+					     (curly v0 v1 v2)
+					     (curly 1s0 1s0 1s0)
+					     (curly t0 (- t1)))))
+			      (key (hash_Vertex &vertex)))
+			(if (== true (hashmap_int_set &hashmap key count_unique))
+			    (do0 ;; no previous occurance of key exists in hashmap
+					;,(vkprint "not found" `(key i count_unique))
+			     (setf (aref ,(g `_vertices) count_unique) vertex
+				   (aref ,(g `_indices) i) count_unique
+				   )
+			     (incf count_unique))
+			    (do0
+			     (let ((p (hashmap_int_search &hashmap key)))
+					;,(vkprint "    found" `(key i count p.value))
+			       (if (== 0 p.value.count)
+				   (do0
+				    ,(vkprint "key not found" `(key i count_unique p.value))
+				    )
+				   (do0
+					;,(vkprint "key found" `(key i count_unique p.value))
+				    (setf (aref ,(g `_indices) i) p.value.value)
+				    (let ((p (hashmap_int_search &hashmap key))
+					  (vertex0 (aref ,(g `_vertices) p.value.value)))
+				      (unless (equalp_Vertex (ref vertex0)
+							     &vertex)
+				      
+					,(vkprint "collision" `(,@(loop for i below 3 collect
+								       `(- (aref vertex.pos ,i)
+									   (aref vertex0.pos ,i)))
+								  ,@(loop for i below 2 collect
+									 `(- (aref vertex.texCoord ,i)
+									     (aref vertex0.texCoord ,i)))
+								  ,@(loop for i below 3 collect
+									 `(- (aref vertex.color ,i)
+									     (aref vertex0.color ,i)))
+								  (hash_Vertex &vertex)
+								  (hash_Vertex &vertex0)
+								  )))))))
+			     ))
+			#+nil
 			(do0
+		       
 			 (let ((p (hashmap_int_search &hashmap key)))
 					;,(vkprint "    found" `(key i count p.value))
 			   (if (== 0 p.value.count)
 			       (do0
-				,(vkprint "key not found" `(key i count_unique p.value))
+					;,(vkprint "key not found" `(key i count_unique p.value))
 				)
 			       (do0
 					;,(vkprint "key found" `(key i count_unique p.value))
-				(setf (aref ,(g `_indices) i) p.value.value)
-				(let ((p (hashmap_int_search &hashmap key))
-				      (vertex0 (aref ,(g `_vertices) p.value.value)))
-				  (unless (equalp_Vertex (ref vertex0)
-						     &vertex)
-				      
-				      ,(vkprint "collision" `(,@(loop for i below 3 collect
-								     `(- (aref vertex.pos ,i)
-									 (aref vertex0.pos ,i)))
-								,@(loop for i below 2 collect
-								       `(- (aref vertex.texCoord ,i)
-									   (aref vertex0.texCoord ,i)))
-								,@(loop for i below 3 collect
-								       `(- (aref vertex.color ,i)
-									   (aref vertex0.color ,i)))
-								(hash_Vertex &vertex)
-								(hash_Vertex &vertex0)
-								)))))))
-			 ))
-		    #+nil
-		    (do0
-			 
-			 (let ((p (hashmap_int_search &hashmap key)))
-					;,(vkprint "    found" `(key i count p.value))
-			   (if (== 0 p.value.count)
-			       (do0
-				;,(vkprint "key not found" `(key i count_unique p.value))
-				)
-			       (do0
-				;,(vkprint "key found" `(key i count_unique p.value))
 				(setf (aref ,(g `_indices) i) p.value.value)))))
-		    ))
-		,(vkprint "hashmap finished" `(hashmap.n hashmap.bins hashmap.n_entries count_unique))
-		(hashmap_int_free &hashmap)
-		(progn
-		  (let ((n_bytes_realloc (* count_unique (sizeof (deref ,(g `_vertices))))))
-		   ,(vkprint "realloc vertices" `(count_unique n_bytes_realloc))
-		   (setf ,(g `_vertices) (realloc ,(g `_vertices) n_bytes_realloc)
-			 ,(g `_num_vertices) count_unique)))
+			))
+		    ,(vkprint "hashmap finished" `(hashmap.n hashmap.bins hashmap.n_entries count_unique))
+		    (hashmap_int_free &hashmap)
+		    (progn
+		      (let ((n_bytes_realloc (* count_unique (sizeof (deref ,(g `_vertices))))))
+			,(vkprint "realloc vertices" `(count_unique n_bytes_realloc))
+			(setf ,(g `_vertices) (realloc ,(g `_vertices) n_bytes_realloc)
+			      ,(g `_num_vertices) count_unique)))
 
-		#+nil
-		(progn (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_indices))))))
-		   ,(vkprint "realloc indices" `(count n_bytes_realloc))
-		   (setf ,(g `_indices) (realloc ,(g `_indices) n_bytes_realloc)
-			 ,(g `_num_indices) count)))
-		)
-	      
-	      
-	  
-	      (munmapFile map))
-	    (do0
-	     "// cleanup"
-	     (tinyobj_attrib_free &attrib)
-	     (when shapes
-	       (tinyobj_shapes_free shapes num_shapes))
-	     (when materials
-	       (tinyobj_materials_free materials num_materials)))
-	    ))
+		    #+nil
+		    (progn (let ((n_bytes_realloc (* count (sizeof (deref ,(g `_indices))))))
+			     ,(vkprint "realloc indices" `(count n_bytes_realloc))
+			     (setf ,(g `_indices) (realloc ,(g `_indices) n_bytes_realloc)
+				   ,(g `_num_indices) count)))
+		    )
+		
+		
+		
+		  (munmapFile map))
+		(do0
+		 "// cleanup"
+		 (tinyobj_attrib_free &attrib)
+		 (when shapes
+		   (tinyobj_shapes_free shapes num_shapes))
+		 (when materials
+		   (tinyobj_materials_free materials num_materials)))
+		))))
 	 )))
   (define-module
 	    `(vertex_buffer
@@ -3867,7 +3923,7 @@ more structs. this function helps to initialize those structs."
 		    " "
 		    (include <cglm/cglm.h>)
 		    " "
-		    ,@(loop for e in *utils-code* collect
+		    ,@(loop for e in (reverse *utils-code*) collect
 			 e)
 		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
 					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"

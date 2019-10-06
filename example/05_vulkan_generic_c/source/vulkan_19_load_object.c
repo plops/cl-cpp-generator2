@@ -385,7 +385,75 @@ int next_power_of_two (int n){
 }
     return power;
 }
+ 
+void saveCachedModel (){
+            __auto_type storage  = (Geometry_store) {0xaddbeef00d, 0x1, 20191006, 265645, 1500000};
+    memcpy(storage._vertices, state._vertices, sizeof(storage._vertices));
+    memcpy(storage._indices, state._indices, sizeof(storage._indices));
+        __auto_type fn  = "chalet.cache";
+    __auto_type f  = fopen(fn, "wb");
+    if ( !((NULL)==(f)) ) {
+                                __auto_type nwritten  = fwrite(&(storage), sizeof(storage), 1, f);
+        fclose(f);
+        if ( nwritten<1 ) {
+                                    {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" write cache failed: ");
+                printf(" nwritten=");
+                printf(printf_dec_format(nwritten), nwritten);
+                printf(" (%s)", type_string(nwritten));
+                printf("\n");
+};
+            return ;
+};
+        {
+                                    __auto_type current_time  = now();
+            printf("%6.6f", ((current_time)-(state._start_time)));
+            printf(" ");
+            printf(printf_dec_format(__FILE__), __FILE__);
+            printf(":");
+            printf(printf_dec_format(__LINE__), __LINE__);
+            printf(" ");
+            printf(printf_dec_format(__func__), __func__);
+            printf(" write cache: ");
+            printf(" fn=");
+            printf(printf_dec_format(fn), fn);
+            printf(" (%s)", type_string(fn));
+            printf(" nwritten=");
+            printf(printf_dec_format(nwritten), nwritten);
+            printf(" (%s)", type_string(nwritten));
+            printf("\n");
+};
+};
+}
+bool loadCachedModel (){
+            __auto_type fn  = "chalet.cache";
+    if ( !((-1)==(access(fn, F_OK))) ) {
+                        // file exists
+                __auto_type map  = mmapFile(fn);
+        __auto_type storage  = (Geometry_store*) map.data;
+                state._num_vertices=storage->_num_vertices;
+                state._num_indices=storage->_num_indices;
+                state._vertices=storage->_vertices;
+                state._indices=storage->_indices;
+        return true;
+};
+    return false;
+}
 void loadModel (){
+        if ( !(loadCachedModel()) ) {
+                        loadModel_from_obj();
+        saveCachedModel();
+};
+}
+void loadModel_from_obj (){
             __auto_type map  = mmapFile("chalet.obj");
     tinyobj_attrib_t attrib ;
     tinyobj_shape_t* shapes  = NULL;

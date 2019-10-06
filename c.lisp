@@ -537,7 +537,7 @@ entry return-values contains a list of return values"
 					     `(progn
 						,@(loop for desc in slot-descriptions collect
 						       (destructuring-bind (slot-name &optional type value) desc
-							 (format nil "~a ~a;" type slot-name)))))
+							 (format nil "~a ~a;" (emit type) (emit slot-name))))))
 					    
 					   )
 				   (deftype ,name () (struct ,name)))))))
