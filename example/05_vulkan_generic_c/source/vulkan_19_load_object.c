@@ -387,15 +387,15 @@ int next_power_of_two (int n){
 }
  
 void saveCachedModel (){
-            __auto_type storage  = (Geometry_store) {0xaddbeef00d, 0x1, 20191006, 265645, 1500000};
-    memcpy(storage._vertices, state._vertices, sizeof(storage._vertices));
-    memcpy(storage._indices, state._indices, sizeof(storage._indices));
+            __auto_type storage  = (Geometry_store_head) {0xaddbeef00d, 0x1, 20191006, 265645, 1500000};
         __auto_type fn  = "chalet.cache";
     __auto_type f  = fopen(fn, "wb");
     if ( !((NULL)==(f)) ) {
-                                __auto_type nwritten  = fwrite(&(storage), sizeof(storage), 1, f);
+                                __auto_type nwritten0  = fwrite(&(storage), sizeof(storage), 1, f);
+        __auto_type nwritten1  = fwrite(state._vertices, ((state._num_vertices)*(sizeof(*(state._vertices)))), 1, f);
+        __auto_type nwritten2  = fwrite(state._indices, ((state._num_indices)*(sizeof(*(state._indices)))), 1, f);
         fclose(f);
-        if ( nwritten<1 ) {
+        if ( ((nwritten0<1)||(nwritten1<1)||(nwritten2<1)) ) {
                                     {
                                                 __auto_type current_time  = now();
                 printf("%6.6f", ((current_time)-(state._start_time)));
@@ -406,9 +406,15 @@ void saveCachedModel (){
                 printf(" ");
                 printf(printf_dec_format(__func__), __func__);
                 printf(" write cache failed: ");
-                printf(" nwritten=");
-                printf(printf_dec_format(nwritten), nwritten);
-                printf(" (%s)", type_string(nwritten));
+                printf(" nwritten0=");
+                printf(printf_dec_format(nwritten0), nwritten0);
+                printf(" (%s)", type_string(nwritten0));
+                printf(" nwritten1=");
+                printf(printf_dec_format(nwritten1), nwritten1);
+                printf(" (%s)", type_string(nwritten1));
+                printf(" nwritten2=");
+                printf(printf_dec_format(nwritten2), nwritten2);
+                printf(" (%s)", type_string(nwritten2));
                 printf("\n");
 };
             return ;
@@ -426,9 +432,15 @@ void saveCachedModel (){
             printf(" fn=");
             printf(printf_dec_format(fn), fn);
             printf(" (%s)", type_string(fn));
-            printf(" nwritten=");
-            printf(printf_dec_format(nwritten), nwritten);
-            printf(" (%s)", type_string(nwritten));
+            printf(" nwritten0=");
+            printf(printf_dec_format(nwritten0), nwritten0);
+            printf(" (%s)", type_string(nwritten0));
+            printf(" nwritten1=");
+            printf(printf_dec_format(nwritten1), nwritten1);
+            printf(" (%s)", type_string(nwritten1));
+            printf(" nwritten2=");
+            printf(printf_dec_format(nwritten2), nwritten2);
+            printf(" (%s)", type_string(nwritten2));
             printf("\n");
 };
 };

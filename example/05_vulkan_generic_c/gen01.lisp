@@ -2810,6 +2810,13 @@ more structs. this function helps to initialize those structs."
 	       (cache-filename `(string "chalet.cache")))
 	  `(do0
 	    ,(emit-utils :code `(do0
+				 (defstruct0 Geometry_store_head
+				     (header uint64_t)
+				   (version uint64_t)
+				   (date uint64_t)
+				   (_num_vertices int)
+				   (_num_indices int)
+				   )
 				 (defstruct0 Geometry_store
 				     (header uint64_t)
 				   (version uint64_t)
@@ -2819,27 +2826,39 @@ more structs. this function helps to initialize those structs."
 				   ((aref _vertices ,number-vertices) Vertex)
 				   ((aref _indices ,number-indices) uint32_t ))))
 	    (defun saveCachedModel ()
-	      (let ((storage (cast Geometry_store (curly 0xaddbeef00d
+	      (let ((storage (cast Geometry_store_head (curly 0xaddbeef00d
 				      0x1
 				      20191006
 				      ,number-vertices
 				      ,number-indices
 				      ))))
-		,@(loop for e in `(_vertices _indices)
+		#+nil ,@(loop for e in `(_vertices _indices)
 			 collect
 		       `(memcpy (dot storage ,e) ,(g e) (sizeof (dot storage ,e))))
 		(let ((fn ,cache-filename)
 		      (f (fopen fn (string "wb"))))
 		  (unless (== NULL f)
-		    (let ((nwritten (fwrite (ref storage)
+		    (let ((nwritten0 (fwrite (ref storage)
 					    (sizeof storage)
 					    1
-					    f)))
+					    f))
+			  (nwritten1 (fwrite ,(g `_vertices)
+					     (*  ,(g `_num_vertices)
+						 (sizeof (deref ,(g `_vertices))))
+					     1
+					     f))
+			  (nwritten2 (fwrite ,(g `_indices)
+					     (*  ,(g `_num_indices)
+						 (sizeof (deref ,(g `_indices))))
+					     1
+					     f)))
 		      (fclose f)
-		      (when (< nwritten 1)
-			,(vkprint "write cache failed" `(nwritten))
+		      (when (or (< nwritten0 1)
+				(< nwritten1 1)
+				(< nwritten2 1))
+			,(vkprint "write cache failed" `(nwritten0  nwritten1 nwritten2))
 			(return))
-		      ,(vkprint "write cache" `(fn nwritten))))
+		      ,(vkprint "write cache" `(fn nwritten0  nwritten1 nwritten2))))
 		  )))
 	    (defun loadCachedModel ()
 	      (declare (values bool))

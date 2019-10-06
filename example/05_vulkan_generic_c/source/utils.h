@@ -78,6 +78,14 @@ struct Hashmap_int_pair {
         Hashmap_int_data* valuep;
 };
 typedef struct Hashmap_int_pair Hashmap_int_pair;
+struct Geometry_store_head {
+        uint64_t header;
+        uint64_t version;
+        uint64_t date;
+        int _num_vertices;
+        int _num_indices;
+};
+typedef struct Geometry_store_head Geometry_store_head;
 struct Geometry_store {
         uint64_t header;
         uint64_t version;
