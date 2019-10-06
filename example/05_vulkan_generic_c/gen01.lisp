@@ -2875,9 +2875,12 @@ more structs. this function helps to initialize those structs."
 		    ))
 		(return false)))
 	    (defun loadModel ()
+	      ,(vkprint "start")
 	      (unless (loadCachedModel)
 		(loadModel_from_obj)
-		(saveCachedModel)))
+		(saveCachedModel)
+		)
+	      ,(vkprint "end"))
 	    
 	    (defun loadModel_from_obj ()
 	      ;; https://en.wikipedia.org/wiki/Wavefront_.obj_file the

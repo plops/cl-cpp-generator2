@@ -460,9 +460,33 @@ bool loadCachedModel (){
     return false;
 }
 void loadModel (){
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" start: ");
+        printf("\n");
+};
         if ( !(loadCachedModel()) ) {
                         loadModel_from_obj();
         saveCachedModel();
+};
+        {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" end: ");
+        printf("\n");
 };
 }
 void loadModel_from_obj (){
