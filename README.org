@@ -281,3 +281,5 @@ comments. Their suggestions went into cl-cpp-generator2.
 - https://www.youtube.com/watch?v=RBA_q9iVhls prefetching
 - https://www.youtube.com/watch?v=UNvCuYQCXAI google benchmark
 - https://www.youtube.com/watch?v=9ULGJwRu0Q0 cache associativity
+
+- how to compile programs that run on most modern linux distributions (>2011): https://casualhacking.io/blog/2018/12/25/create-highly-portable-elf-binaries-using-the-build-anywhere-toolchain
