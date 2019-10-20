@@ -11,9 +11,9 @@
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
 ;; if nolog-frame is off then draw frame prints lots of stuff
 (setf *features* (union *features* '(:surface  :nolog-frame
-				     :nolog
+				     ;:nolog
 				     )))
-(setf *features* (set-difference *features* '(;:nolog ;:nolog-frame
+(setf *features* (set-difference *features* '(:nolog ;:nolog-frame
 					      )))
 
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
@@ -406,7 +406,18 @@ more structs. this function helps to initialize those structs."
 		  (ref ,(g `_instance)))
 		 ,(g `_instance)
 		 )
-	       :throw t))))))
+	       :throw t)
+	     
+	     ,(vkprint "after create instance" `(
+						  (length ,(g `_validationLayers))
+						 glfwExtensionCount
+						 ))
+	     
+	     (dotimes (i (length ,(g `_validationLayers)))
+	       ,(vkprint "after create instance" `(i (aref ,(g `_validationLayers) i))))
+
+	     (dotimes (i glfwExtensionCount)
+	      ,(vkprint "after create instance" `(i (aref glfwExtensions i)))))))))
   
   (define-module
       `(init
@@ -821,6 +832,8 @@ more structs. this function helps to initialize those structs."
 		     (ref ,(g `_device)))
 		   ,(g `_physicalDevice))
 		 :throw t)
+	       ,(vkprint "after create device " `(,(g `_validationLayers)
+					 (length ,(g `_validationLayers))))
 	       (progn
 		 ,(vkprint "create graphics queue" `(indices.graphicsFamily))
 		 (vkGetDeviceQueue ,(g `_device) indices.graphicsFamily

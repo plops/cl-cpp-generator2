@@ -240,8 +240,8 @@ void createLogicalDevice (){
                 info.pEnabledFeatures=&deviceFeatures;
                 info.enabledExtensionCount=length(state._deviceExtensions);
                 info.ppEnabledExtensionNames=state._deviceExtensions;
-                info.enabledLayerCount=0;
-                info.ppEnabledLayerNames=NULL;
+                info.enabledLayerCount=length(state._validationLayers);
+                info.ppEnabledLayerNames=state._validationLayers;
                         if ( !((VK_SUCCESS)==(vkCreateDevice(state._physicalDevice, &info, NULL, &(state._device)))) ) {
                                     {
                                                 __auto_type current_time  = now();
@@ -271,6 +271,24 @@ void createLogicalDevice (){
             printf(" (%s)", type_string(state._physicalDevice));
             printf("\n");
 };
+};
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" after create device : ");
+        printf(" state._validationLayers=");
+        printf(printf_dec_format(state._validationLayers), state._validationLayers);
+        printf(" (%s)", type_string(state._validationLayers));
+        printf(" length(state._validationLayers)=");
+        printf(printf_dec_format(length(state._validationLayers)), length(state._validationLayers));
+        printf(" (%s)", type_string(length(state._validationLayers)));
+        printf("\n");
 };
     {
                 {
