@@ -25,6 +25,9 @@
 ;; to find cglm
 ;; export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 
+;; https://devblogs.nvidia.com/vulkan-dos-donts/
+;; vulkan layers and tools
+
 (progn
   ;; make sure to run this code twice during the first time, so that
   ;; the functions are defined
@@ -194,7 +197,8 @@ more structs. this function helps to initialize those structs."
 		 (_window GLFWwindow* NULL)   
 		 (_instance VkInstance)
 					;#-nolog (_enableValidationLayers "const _Bool" )
-		 #-nolog (_validationLayers[1] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")))
+		 #-nolog (_validationLayers[2] "const char* const" (curly (string "VK_LAYER_KHRONOS_validation")
+									  (string "VK_LAYER_LUNARG_api_dump")))
 		 (_physicalDevice VkPhysicalDevice VK_NULL_HANDLE)
 		 (_device VkDevice)
 		 (_graphicsQueue VkQueue)
