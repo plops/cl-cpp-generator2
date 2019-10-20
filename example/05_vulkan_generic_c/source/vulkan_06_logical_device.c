@@ -240,8 +240,8 @@ void createLogicalDevice (){
                 info.pEnabledFeatures=&deviceFeatures;
                 info.enabledExtensionCount=length(state._deviceExtensions);
                 info.ppEnabledExtensionNames=state._deviceExtensions;
-                info.enabledLayerCount=length(state._validationLayers);
-                info.ppEnabledLayerNames=state._validationLayers;
+                info.enabledLayerCount=0;
+                info.ppEnabledLayerNames=NULL;
                         if ( !((VK_SUCCESS)==(vkCreateDevice(state._physicalDevice, &info, NULL, &(state._device)))) ) {
                                     {
                                                 __auto_type current_time  = now();

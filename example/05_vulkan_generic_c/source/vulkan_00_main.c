@@ -8,7 +8,7 @@
  
 #include "proto2.h"
  ;
-State state  = {._window=NULL, ._validationLayers={"VK_LAYER_KHRONOS_validation"}, ._physicalDevice=VK_NULL_HANDLE, ._deviceExtensions={VK_KHR_SWAPCHAIN_EXTENSION_NAME}};
+State state  = {._window=NULL, ._physicalDevice=VK_NULL_HANDLE, ._deviceExtensions={VK_KHR_SWAPCHAIN_EXTENSION_NAME}};
 void mainLoop (){
         {
                         __auto_type current_time  = now();

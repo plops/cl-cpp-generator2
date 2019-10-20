@@ -11,9 +11,9 @@
 ;; if surface is on, then a window surface is created; otherwise only off-screen render
 ;; if nolog-frame is off then draw frame prints lots of stuff
 (setf *features* (union *features* '(:surface  :nolog-frame
-				     ;:nolog
+				     :nolog
 				     )))
-(setf *features* (set-difference *features* '(:nolog ;:nolog-frame
+(setf *features* (set-difference *features* '(;:nolog ;:nolog-frame
 					      )))
 
 ;; gcc -std=c18 -c vulkan_00_main.c -Wmissing-declarations
@@ -21,6 +21,9 @@
 
 ;; git clone https://github.com/recp/cglm
 ;; 
+
+;; to find cglm
+;; export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 
 (progn
   ;; make sure to run this code twice during the first time, so that
@@ -699,6 +702,7 @@ more structs. this function helps to initialize those structs."
 	   (let ((deviceCount 0))
 	     (declare (type uint32_t deviceCount))
 	     (vkEnumeratePhysicalDevices ,(g `_instance) &deviceCount NULL)
+	     ,(vkprint "enumerate physical devices" `(deviceCount))
 	     (when (== 0 deviceCount)
 	       "// throw"
 	       ,(vkprint "failed to find gpu with vulkan support.")
@@ -712,7 +716,7 @@ more structs. this function helps to initialize those structs."
 	       (foreach (device devices)
 			(when (isDeviceSuitable device)
 			  (setf ,(g `_physicalDevice) device
-				,(g `_msaaSamples) 2 ;(getMaxUsableSampleCount)
+				,(g `_msaaSamples) (getMaxUsableSampleCount)
 				)
 			  break))
 	       ,(vkprint "device" `(,(g `_msaaSamples)
@@ -4007,6 +4011,6 @@ more structs. this function helps to initialize those structs."
 								    (directory-namestring *vertex-file*))))
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
-    (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j4" "proto2.h"))))
+    (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
  
 

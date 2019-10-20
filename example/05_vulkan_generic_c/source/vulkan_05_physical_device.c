@@ -247,6 +247,21 @@ void pickPhysicalDevice (){
         // initialize member _physicalDevice
             uint32_t deviceCount  = 0;
     vkEnumeratePhysicalDevices(state._instance, &deviceCount, NULL);
+    {
+                        __auto_type current_time  = now();
+        printf("%6.6f", ((current_time)-(state._start_time)));
+        printf(" ");
+        printf(printf_dec_format(__FILE__), __FILE__);
+        printf(":");
+        printf(printf_dec_format(__LINE__), __LINE__);
+        printf(" ");
+        printf(printf_dec_format(__func__), __func__);
+        printf(" enumerate physical devices: ");
+        printf(" deviceCount=");
+        printf(printf_dec_format(deviceCount), deviceCount);
+        printf(" (%s)", type_string(deviceCount));
+        printf("\n");
+};
     if ( (0)==(deviceCount) ) {
                         // throw
         {
@@ -269,7 +284,7 @@ void pickPhysicalDevice (){
         {
                         if ( isDeviceSuitable(device) ) {
                                                                 state._physicalDevice=device;
-                state._msaaSamples=2;
+                state._msaaSamples=getMaxUsableSampleCount();
                 break;
 };
 };
