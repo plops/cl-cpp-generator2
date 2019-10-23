@@ -1,9 +1,6 @@
 #ifndef PROTO2_H
 #define PROTO2_H
- void mainLoop ();
- void run ();
  void cleanupInstance ();
- _Bool checkValidationLayerSupport ();
  void createInstance ();
  void initVulkan ();
  void initWindow ();
