@@ -21,6 +21,21 @@ _Bool checkValidationLayerSupport (){
     for (int layerName_idx = 0;layerName_idx<((sizeof(state._validationLayers))/(sizeof(*(state._validationLayers))));(layerName_idx)+=(1)) {
                         __auto_type layerName  = state._validationLayers[layerName_idx];
         {
+                        {
+                                                __auto_type current_time  = now();
+                printf("%6.6f", ((current_time)-(state._start_time)));
+                printf(" ");
+                printf(printf_dec_format(__FILE__), __FILE__);
+                printf(":");
+                printf(printf_dec_format(__LINE__), __LINE__);
+                printf(" ");
+                printf(printf_dec_format(__func__), __func__);
+                printf(" checkval: ");
+                printf(" layerName=");
+                printf(printf_dec_format(layerName), layerName);
+                printf(" (%s)", type_string(layerName));
+                printf("\n");
+};
                                     __auto_type layerFound  = false;
             for (int layerProperties_idx = 0;layerProperties_idx<((sizeof(availableLayers))/(sizeof(*(availableLayers))));(layerProperties_idx)+=(1)) {
                                                 __auto_type layerProperties  = availableLayers[layerProperties_idx];
