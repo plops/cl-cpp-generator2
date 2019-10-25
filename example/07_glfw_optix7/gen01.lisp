@@ -17,7 +17,8 @@
 
 
 ;; https://github.com/nvpro-samples/optix_advanced_samples/blob/master/src/optixIntroduction/optixIntro_01/src/main.cpp
-
+;; https://cdn.statically.io/gh/vurtun/nuklear/master/doc/nuklear.html#nuklear/example
+;; https://github.com/vurtun/nuklear/issues/226
 (progn
   (progn
     (defun vkprint (msg
