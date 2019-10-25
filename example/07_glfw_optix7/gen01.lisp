@@ -250,6 +250,7 @@
 	      (defun uploadAtlas (image w h)
 		(declare (type "const void*" image)
 			 (type int w h))
+		,(vkprint "")
 		(glGenTextures 1 (ref ,(g `_fontTex)))
 		(glBindTexture GL_TEXTURE_2D ,(g `_fontTex))
 		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
@@ -353,12 +354,44 @@
 			  (unless cmd->elem_count
 			    continue)
 			  (glBindTexture GL_TEXTURE_2D (cast GLuint cmd->texture.id))
-			  #+nil (glScissor (+ cmd->clip_rect.x
-					))
-			  
-			  ))
-		   )))
+
+			  ;; fixme: store size when window size changes
+			  (let ((width)
+				(height)
+				(display_width)
+				(display_height))
+			    (declare (type int width height display_width display_height))
+			    (glfwGetWindowSize ,(g `_window) &width &height)
+			    (glfwGetFramebufferSize ,(g `_window) &display_width &display_height)
+			    (let ((fb_scale_x (/ (cast float display_width)
+						 width))
+				  (fb_scale_y (/ (cast float display_height)
+						 height)))
+			      (glScissor (cast GLint (* cmd->clip_rect.x fb_scale_x))
+					 (cast GLint (- height (* fb_scale_y (+ cmd->clip_rect.y cmd->clip_rect.h))))
+					 (cast GLint (* cmd->clip_rect.w fb_scale_x))
+					 (cast GLint (* cmd->clip_rect.h fb_scale_y)))
+			      (glDrawElements GL_TRIANGLES
+					      cmd->elem_count
+					      GL_UNSIGNED_SHORT
+					      offset)
+			      (incf offset cmd->elem_count)))
+			  (do0
+			   (nk_clear &ctx)
+			   (nk_buffer_free &vbuf)
+			   (nk_buffer_free &ebuf)))
+			,@(loop for e in `(vertex_array texture_coord_array color_array) collect
+			       `(glDisableClientState ,(string-upcase (format nil "GL_~a" e))))
+			,@(loop for e in `(cull_face depth_test scissor_test blend texture_2d) collect
+			       `(glDisable ,(string-upcase (format nil "GL_~a" e))))
+			(glBindTexture GL_TEXTURE_2D 0)
+			(glMatrixMode GL_MODELVIEW)
+			(glPopMatrix)
+			(glMatrixMode GL_PROJECTION)
+			(glPopMatrix)
+			(glPopAttrib)))))
 	      (defun initDraw ()
+		,(vkprint "")
 		(do0
 		 (nk_font_atlas_init_default &atlas)
 		 (nk_font_atlas_begin &atlas)
@@ -376,7 +409,8 @@
 		(nk_init_default &ctx &font->handle)
 		(glEnable GL_TEXTURE_2D)
 		
-		(glClearColor 1 0 0 1)
+		(glClearColor 0 0 0 1)
+		
 		)
 	      (defun cleanupDraw ()
 		(nk_font_atlas_clear &atlas)
@@ -418,6 +452,17 @@
 					  ))
 		   )
 		 (nk_input_end &ctx))
+
+		(do0
+		 (when (nk_begin &ctx (string "demo") (nk_rect 50 50 230 250)
+				 (logior NK_WINDOW_BORDER
+					 NK_WINDOW_MOVABLE
+					 NK_WINDOW_SCALABLE
+					 NK_WINDOW_MINIMIZABLE
+					 NK_WINDOW_TITLE))
+		   (when (nk_button_label &ctx (string "button"))
+		     (printf (string "button pressed\\n"))))
+		 (nk_end &ctx))
 		(glClear GL_COLOR_BUFFER_BIT)
 		#+nil
 		(do0 (when (nk_begin &ctx (string "show")
@@ -433,9 +478,12 @@
 		   (when (nk_option_label &ctx (string "hard") (== op HARD))
 		     (setf op HARD)))
 		     (nk_end &ctx))
+		(nkDraw)
+		
 		(glfwSwapBuffers ,(g `_window))
 					;(nk_clear &ctx)
-		(nk_input_begin &ctx)
+		
+	
 		))))
 
     
