@@ -161,7 +161,8 @@
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (now))
-		(run)))))
+		(run)
+		(cleanupWindow)))))
     (define-module
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
