@@ -351,7 +351,10 @@
 			"nk_draw_foreach(cmd,&ctx,&cmds)"
 			(progn
 			  (unless cmd->elem_count
-			    "continue")
+			    continue)
+			  (glBindTexture GL_TEXTURE_2D (cast GLuint cmd->texture.id))
+			  #+nil (glScissor (+ cmd->clip_rect.x
+					))
 			  
 			  ))
 		   )))
