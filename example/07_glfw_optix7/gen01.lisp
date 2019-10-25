@@ -227,6 +227,7 @@
 	     (do0
 	      "#define NK_IMPLEMENTATION"
 	      "#define NK_PRIVATE"
+	      "#define NK_INCLUDE_STANDARD_IO"
 	      "#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT"
 	      "#define NK_INCLUDE_DEFAULT_ALLOCATOR"
 	      "#define NK_INCLUDE_FONT_BAKING"
@@ -395,7 +396,8 @@
 		(do0
 		 (nk_font_atlas_init_default &atlas)
 		 (nk_font_atlas_begin &atlas)
-		 (nk_font_atlas_add_default &atlas 13s0 NULL)
+					; (nk_font_atlas_add_default &atlas 13s0 NULL)
+		 (nk_font_atlas_add_from_file &atlas (string "ProggyClean.ttf") 12 0)
 		 (let ((w)
 		       (h)
 		       (image)
