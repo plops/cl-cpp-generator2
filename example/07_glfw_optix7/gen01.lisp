@@ -1,3 +1,5 @@
+;; current state: i'm trying to get nuklear gui running, no optix yet
+
 (setf *features* (union *features* '(:generic-c)))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
