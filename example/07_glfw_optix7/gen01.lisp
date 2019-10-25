@@ -19,6 +19,7 @@
 
 
 ;; https://github.com/nvpro-samples/optix_advanced_samples/blob/master/src/optixIntroduction/optixIntro_01/src/main.cpp
+;; https://github.com/vurtun/nuklear/blob/master/demo/glfw_opengl2/nuklear_glfw_gl2.h
 ;; https://cdn.statically.io/gh/vurtun/nuklear/master/doc/nuklear.html#nuklear/example
 ;; https://github.com/vurtun/nuklear/issues/226
 ;; https://github.com/vurtun/nuklear/blob/master/example/file_browser.c
@@ -65,6 +66,7 @@
 			(let ((keyword (elt args i))
 			      (value (elt args (+ i 1))))
 			  `((dot ,instance ,keyword) ,value))))))
+      
       ))
   (progn
     ;; collect code that will be emitted in utils.h
@@ -153,6 +155,7 @@
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
 		  (drawFrame)
+		  
 		  )
 		
 		)
@@ -223,20 +226,26 @@
       `(draw ()
 	     (do0
 	      "#define NK_IMPLEMENTATION"
+	      "#define NK_PRIVATE"
+	      "#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT"
 	      "#define NK_INCLUDE_DEFAULT_ALLOCATOR"
 	      "#define NK_INCLUDE_FONT_BAKING"
 	      "#define NK_INCLUDE_DEFAULT_FONT"
+	      "#define NK_INCLUDE_FIXED_TYPES"
+					;"#define NK_GLFW_GL2_IMPLEMENTATION"
 	      (include "nuklear.h")
 	      "enum {EASY, HARD};"
 	      (let ((ctx)
 		    (atlas)
 		    (font)
 		    (null)
+		    (cmds)
 		    (op EASY))
 		(declare (type "struct nk_context" ctx)
 			 (type "struct nk_font_atlas" atlas)
 			 (type "struct nk_font*" font)
 			 (type "struct nk_draw_null_texture" null)
+			 (type "struct nk_buffer" cmds)
 			 (type int op)))
 	      (defun uploadAtlas (image w h)
 		(declare (type "const void*" image)
@@ -246,6 +255,106 @@
 		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
 		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
 		(glTexImage2D GL_TEXTURE_2D 0 GL_RGBA w h 0 GL_RGBA GL_UNSIGNED_BYTE image))
+	      (defstruct0 nk_glfw_vertex
+		  (position[2] float)
+		(uv[2] float)
+		(col[4] nk_byte))
+	      (defun nkDraw ()
+		(glPushAttrib (logior GL_ENABLE_BIT
+				      GL_COLOR_BUFFER_BIT
+				      GL_TRANSFORM_BIT))
+		,@(loop for e in `((cull_face nil)
+				   (depth_test nil)
+				   (scissor_test t)
+				   (blend t)
+				   (texture_2d t)) collect
+		       (destructuring-bind (name on) e
+			 (let ((cname (string-upcase (format nil "gl_~A" name))))
+			   (if on
+			       `(glEnable ,cname)
+			       `(glDisable ,cname)))))
+		(glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
+
+		(do0
+		 #+nil (when ,(g `_framebufferResized)
+		   (setf ,(g `_framebufferResized) false))
+		  (let ((width 0)
+			(height 0))
+		    (declare (type int width height))
+		    (while (or (== 0 width)
+			       (== 0 height))
+		      (glfwGetFramebufferSize ,(g `_window)
+					      &width
+					      &height)
+					;,(vkprint "get frame buffer size" `(width height))
+		      (glViewport 0 0 width height)
+		      (do0 (glMatrixMode GL_PROJECTION)
+			   (glPushMatrix)
+			   (glLoadIdentity)
+			   (glOrtho 0s0 width height 0s0 -1s0 1s0))
+		      (do0 (glMatrixMode GL_MODELVIEW)
+			   (glPushMatrix)
+			   (glLoadIdentity))
+		      
+		      )))
+		,@(loop for e in `(vertex_array texture_coord_array color_array) collect
+		       `(glEnableClientState ,(string-upcase (format nil "gl_~a" e))))
+
+		(do0
+		 (let ((vs (sizeof "struct nk_glfw_vertex"))
+		       (vp (offsetof "struct nk_glfw_vertex" position))
+		       (vt (offsetof "struct nk_glfw_vertex" uv))
+		       (vc (offsetof "struct nk_glfw_vertex" col))
+		       (cmd)
+		       (offset NULL)
+		       (vbuf)
+		       (ebuf)
+		       (vertex_layout[] (curly ,@(loop for e in `((position FLOAT)
+								  (uv FLOAT texcoord)
+								  (col R8G8B8A8 color)) collect
+						      (destructuring-bind (nk-name type &optional (name nk-name)) e
+							`(curly ,(string-upcase (format nil "NK_VERTEX_~a" name))
+								,(string-upcase (format nil "NK_FORMAT_~a" type))
+								(NK_OFFSETOF "struct nk_glfw_vertex" ,nk-name))))
+					       (curly NK_VERTEX_LAYOUT_END)))
+		       (config))
+		   (declare (type "const struct nk_draw_command*" cmd)
+			    (type "const nk_draw_index*" offset)
+			    (type "const struct nk_buffer" vbuf ebuf)
+			    (type "const nk_convert_config" config)
+			    (type "static const struct nk_draw_vertex_layout_element" vertex_layout[])
+			    (type "struct nk_convert_config" config))
+		   (NK_MEMSET &config 0 (sizeof config))
+		   ,(set-members `(config
+				   :vertex_layout vertex_layout
+				   :vertex_size (sizeof "struct nk_glfw_vertex")
+				   :vertex_alignment (NK_ALIGNOF "struct nk_glfw_vertex")
+				   :null null
+				   :circle_segment_count 22
+				   :curve_segment_count 22
+				   :arc_segment_count 22
+				   :global_alpha 1s0
+				   :shape_AA NK_ANTI_ALIASING_ON
+				   :line_AA NK_ANTI_ALIASING_ON))
+		   (do0 "// convert shapes to vertices"
+		    (nk_buffer_init_default &vbuf)
+		    (nk_buffer_init_default &ebuf)
+		    (nk_convert &ctx &cmds &vbuf &ebuf &config))
+		   (do0 "// setup vertex buffer pointer"
+			(let ((vertices (nk_buffer_memory_const &vbuf)))
+			  (glVertexPointer 2 GL_FLOAT vs (cast "const void*" (+ (cast "const nk_byte*" vertices) vp)))
+			  (glTexCoordPointer 2 GL_FLOAT vs (cast "const void*" (+ (cast "const nk_byte*" vertices) vt)))
+			  (glColorPointer 4 GL_UNSIGNED_BYTE vs (cast "const void*" (+ (cast "const nk_byte*" vertices) vc)))))
+		   (do0 "// execute each draw command"
+			(setf offset (cast "const nk_draw_index*" (nk_buffer_memory_const &ebuf)))
+					;(nk_draw_foreach cmd &ctx &cmds)
+			"nk_draw_foreach(cmd,&ctx,&cmds)"
+			(progn
+			  (unless cmd->elem_count
+			    "continue")
+			  
+			  ))
+		   )))
 	      (defun initDraw ()
 		(do0
 		 (nk_font_atlas_init_default &atlas)
