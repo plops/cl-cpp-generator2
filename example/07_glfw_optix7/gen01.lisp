@@ -19,6 +19,7 @@
 ;; https://github.com/nvpro-samples/optix_advanced_samples/blob/master/src/optixIntroduction/optixIntro_01/src/main.cpp
 ;; https://cdn.statically.io/gh/vurtun/nuklear/master/doc/nuklear.html#nuklear/example
 ;; https://github.com/vurtun/nuklear/issues/226
+;; https://github.com/vurtun/nuklear/blob/master/example/file_browser.c
 (progn
   (progn
     (defun vkprint (msg
@@ -79,6 +80,7 @@
 		 ;; 
 		 (_window GLFWwindow* NULL)
 		 (_framebufferResized _Bool)
+		 (_fontTex GLuint)
 		 )))
 	(if init
 	    `(curly
@@ -163,6 +165,7 @@
 		(declare (values int))
 		(setf ,(g `_start_time) (now))
 		(run)
+		(cleanupDraw)
 		(cleanupWindow)))))
     (define-module
       `(glfw_window
@@ -217,11 +220,108 @@
     (define-module
       `(draw ()
 	     (do0
+	      "#define NK_IMPLEMENTATION"
+	      "#define NK_INCLUDE_DEFAULT_ALLOCATOR"
+	      "#define NK_INCLUDE_FONT_BAKING"
+	      "#define NK_INCLUDE_DEFAULT_FONT"
+	      (include "nuklear.h")
+	      "enum {EASY, HARD};"
+	      (let ((ctx)
+		    (atlas)
+		    (font)
+		    (null)
+		    (op EASY))
+		(declare (type "struct nk_context" ctx)
+			 (type "struct nk_font_atlas" atlas)
+			 (type "struct nk_font*" font)
+			 (type "struct nk_draw_null_texture" null)
+			 (type int op)))
+	      (defun uploadAtlas (image w h)
+		(declare (type "const void*" image)
+			 (type int w h))
+		(glGenTextures 1 (ref ,(g `_fontTex)))
+		(glBindTexture GL_TEXTURE_2D ,(g `_fontTex))
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+		(glTexImage2D GL_TEXTURE_2D 0 GL_RGBA w h 0 GL_RGBA GL_UNSIGNED_BYTE image))
 	      (defun initDraw ()
-		(glClearColor 1 0 0 1))
+		(do0
+		 (nk_font_atlas_init_default &atlas)
+		 (nk_font_atlas_begin &atlas)
+		 (nk_font_atlas_add_default &atlas 13s0 NULL)
+		 (let ((w)
+		       (h)
+		       (image)
+		       )
+		   (declare (type int h w)
+			    (type "const void*" image)
+			    )
+		   (setf image (nk_font_atlas_bake &atlas &w &h NK_FONT_ATLAS_RGBA32))
+		   (uploadAtlas image w h)
+		   (nk_font_atlas_end &atlas (nk_handle_id ,(g `_fontTex))  &null)))
+		(nk_init_default &ctx &font->handle)
+		(glEnable GL_TEXTURE_2D)
+		
+		(glClearColor 1 0 0 1)
+		)
+	      (defun cleanupDraw ()
+		(nk_font_atlas_clear &atlas)
+		(nk_free &ctx)
+		(glDeleteTextures 1 (ref ,(g `_fontTex))))
 	      (defun drawFrame ()
+		(do0
+		 "// poll event is called before"
+		 ,@(loop for e in `((DEL DELETE)
+				    (ENTER)
+				    (TAB)
+				    (BACKSPACE)
+				    (LEFT)
+				    (RIGHT)
+				    (UP)
+				    (DOWN)) collect
+			(destructuring-bind (key &optional (glfwkey key)) e
+			  `(nk_input_key &ctx ,(string-upcase (format nil "NK_KEY_~a" key))
+					 (== GLFW_PRESS
+					     (glfwGetKey ,(g `_window)
+						      ,(string-upcase (format nil "GLFW_KEY_~a" glfwkey))))
+					 )))
+		 (let ((x)
+		       (y))
+		   (declare (type double x y))
+		   (glfwGetCursorPos ,(g `_window) &x &y)
+		   (nk_input_motion &ctx (cast int x)
+				    (cast int y))
+		   ,@(loop for key in `(
+				      LEFT
+				      RIGHT
+				      MIDDLE) collect
+			`(nk_input_button &ctx ,(string-upcase (format nil "NK_BUTTON_~a" key))
+					  (cast int x)
+					  (cast int y)
+					  (== GLFW_PRESS
+					      (glfwGetMouseButton ,(g `_window)
+								  ,(string-upcase (format nil "GLFW_MOUSE_BUTTON_~a" key))))
+					  ))
+		   )
+		 (nk_input_end &ctx))
 		(glClear GL_COLOR_BUFFER_BIT)
+		#+nil
+		(do0 (when (nk_begin &ctx (string "show")
+				 (nk_rect 50 50 220 220)
+				 (logior NK_WINDOW_BORDER
+					 NK_WINDOW_MOVABLE
+					 NK_WINDOW_CLOSABLE))
+		   (nk_layout_row_static &ctx 30 80 1)
+		   (when (nk_button_label &ctx (string "button")))
+		   (nk_layout_row_dynamic &ctx 30 2)
+		   (when (nk_option_label &ctx (string "easy") (== op EASY))
+		     (setf op EASY))
+		   (when (nk_option_label &ctx (string "hard") (== op HARD))
+		     (setf op HARD)))
+		     (nk_end &ctx))
 		(glfwSwapBuffers ,(g `_window))
+					;(nk_clear &ctx)
+		(nk_input_begin &ctx)
 		))))
 
     
