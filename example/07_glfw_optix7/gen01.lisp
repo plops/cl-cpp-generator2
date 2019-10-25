@@ -202,10 +202,12 @@
 						    NULL
 						    NULL))
 	      ;; store this pointer to the instance for use in the callback
-	      (glfwSetWindowUserPointer ,(g `_window) (ref state))
 	      (glfwSetKeyCallback ,(g `_window) keyCallback)
+	      (glfwSetWindowUserPointer ,(g `_window) (ref state))
 	      (glfwSetFramebufferSizeCallback ,(g `_window)
-					      framebufferResizeCallback))))
+					      framebufferResizeCallback)
+	      (glfwMakeContextCurrent ,(g `_window))
+	      )))
 	 (defun cleanupWindow ()
 	   (declare (values void))
 	   (glfwDestroyWindow ,(g `_window))
@@ -215,7 +217,7 @@
       `(draw ()
 	     (do0
 	      (defun initDraw ()
-		(glClearColor 0 0 0 0))
+		(glClearColor 1 0 0 1))
 	      (defun drawFrame ()
 		(glClear GL_COLOR_BUFFER_BIT)
 		(glfwSwapBuffers ,(g `_window))
