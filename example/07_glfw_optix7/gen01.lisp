@@ -76,7 +76,8 @@
       (let ((l `(
 		 (_start_time double)
 		 ;; 
-		 (_window GLFWwindow* NULL)   
+		 (_window GLFWwindow* NULL)
+		 (_framebufferResized _Bool)
 		 )))
 	(if init
 	    `(curly
@@ -94,7 +95,7 @@
 			   `(,name ,type))))))))
   
     (defun define-module (args)
-      "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
+      
       (destructuring-bind (module-name global-parameters module-code) args
 	(let ((header ()))
 	
@@ -133,21 +134,27 @@
 	     (do0
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
+	      (defun now ()
+		 (declare (values double))
+		 (let ((tp))
+		  (declare (type "struct timespec" tp))
+		  ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+		  (clock_gettime CLOCK_REALTIME &tp)
+		  (return (+ (cast double tp.tv_sec)
+			     (* 1d-9 tp.tv_nsec)))))
 	      (defun mainLoop ()
 		,(vkprint "mainLoop")
 		
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
-		  (drawFrame)
+		  ;(drawFrame)
 		  )
-		,(vkprint "wait for gpu before cleanup")
-		(vkDeviceWaitIdle ,(g `_device)) ;; wait for gpu before cleanup
+		
 		)
 	      (defun run ()
 		(initWindow)
-		(initVulkan)
 		(mainLoop)
-		(cleanup)
+		;(cleanup)
 		)
 	      
 	      (defun main ()
@@ -172,7 +179,7 @@
 	   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
 	   (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
 	   (setf ,(g `_window) (glfwCreateWindow 800 600
-						 (string "vulkan window")
+						 (string "optix window")
 						 NULL
 						 NULL))
 	   ;; store this pointer to the instance for use in the callback
@@ -195,7 +202,7 @@
 	   (write-source (asdf:system-relative-pathname
 			  'cl-cpp-generator2
 			  (format nil
-				  "example/07_glfw_optix7/source/vulkan_~2,'0d_~a.c"
+				  "example/07_glfw_optix7/source/optix_~2,'0d_~a.c"
 				  i name))
 			 code)))
     (write-source (asdf:system-relative-pathname
