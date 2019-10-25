@@ -147,12 +147,13 @@
 		
 		(while (not (glfwWindowShouldClose ,(g `_window)))
 		  (glfwPollEvents)
-		  ;(drawFrame)
+		  (drawFrame)
 		  )
 		
 		)
 	      (defun run ()
 		(initWindow)
+		(initDraw)
 		(mainLoop)
 		;(cleanup)
 		)
@@ -165,6 +166,18 @@
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
 	(do0
+	 (defun keyCallback (window key scancode action mods)
+	   (declare (type GLFWwindow* window)
+		    (type int key scancode action mods))
+	   (when (and (or (== key GLFW_KEY_ESCAPE)
+			  (== key GLFW_KEY_Q))
+		      (== action GLFW_PRESS))
+	     (glfwSetWindowShouldClose window GLFW_TRUE))
+	   )
+	 (defun errorCallback (err description)
+	   (declare (type int err)
+		    (type "const char*" description))
+	   ,(vkprint "error" `(err description)))
 	 (defun framebufferResizeCallback (window width height)
 	   (declare (values "static void")
 		    ;; static because glfw doesnt know how to call a member function with a this pointer
@@ -175,22 +188,37 @@
 	     (setf app->_framebufferResized true)))
 	 (defun initWindow ()
 	   (declare (values void))
-	   (glfwInit)
-	   (glfwWindowHint GLFW_CLIENT_API GLFW_NO_API)
-	   (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
-	   (setf ,(g `_window) (glfwCreateWindow 800 600
-						 (string "optix window")
-						 NULL
-						 NULL))
-	   ;; store this pointer to the instance for use in the callback
-	   (glfwSetWindowUserPointer ,(g `_window) (ref state))
-	   (glfwSetFramebufferSizeCallback ,(g `_window)
-					   framebufferResizeCallback))
+	   (when (glfwInit)
+	     (do0
+	      (glfwSetErrorCallback errorCallback)
+	      
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 2)
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
+	      
+	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
+	      (setf ,(g `_window) (glfwCreateWindow 800 600
+						    (string "optix window")
+						    NULL
+						    NULL))
+	      ;; store this pointer to the instance for use in the callback
+	      (glfwSetWindowUserPointer ,(g `_window) (ref state))
+	      (glfwSetKeyCallback ,(g `_window) keyCallback)
+	      (glfwSetFramebufferSizeCallback ,(g `_window)
+					      framebufferResizeCallback))))
 	 (defun cleanupWindow ()
 	   (declare (values void))
 	   (glfwDestroyWindow ,(g `_window))
 	   (glfwTerminate)
 	   ))))
+    (define-module
+      `(draw ()
+	     (do0
+	      (defun initDraw ()
+		(glClearColor 0 0 0 0))
+	      (defun drawFrame ()
+		(glClear GL_COLOR_BUFFER_BIT)
+		(glfwSwapBuffers ,(g `_window))
+		))))
 
     
     ;; we need an empty proto2.h. it has to be written before all c files so that make proto will work
