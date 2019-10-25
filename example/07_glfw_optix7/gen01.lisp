@@ -407,7 +407,9 @@
 			    )
 		   (setf image (nk_font_atlas_bake &atlas &w &h NK_FONT_ATLAS_RGBA32))
 		   (uploadAtlas image w h)
-		   (nk_font_atlas_end &atlas (nk_handle_id ,(g `_fontTex))  &null)))
+		   (nk_font_atlas_end &atlas (nk_handle_id ,(g `_fontTex))  &null)
+		   (when atlas.default_font
+		     (nk_style_set_font &ctx &atlas.default_font->handle))))
 		(nk_init_default &ctx &font->handle)
 		(glEnable GL_TEXTURE_2D)
 		
