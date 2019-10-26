@@ -1,4 +1,6 @@
 ;; current state: i'm trying to get nuklear gui running, no optix yet
+;; this code might never contain optix maybe i just play around with nuklear
+;; also i want to use old opengl style so that it works on old gpus with mesa in linux
 
 (setf *features* (union *features* '(:generic-c)))
 
