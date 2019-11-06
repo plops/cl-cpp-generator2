@@ -229,375 +229,382 @@ entry return-values contains a list of return values"
 	     (emit-c :code code :level (+ dl level))))
       (if code
 	  (if (listp code)
-	      (case (car code)
-		(comma
-		 ;; comma {args}*
-		 (let ((args (cdr code)))
-		   (format nil "~{~a~^, ~}" (mapcar #'emit args))))
-		(semicolon
-		 ;; semicolon {args}*
-		 (let ((args (cdr code)))
-		   (format nil "~{~a~^; ~}" (mapcar #'emit args))))
-		(space
-		 ;; space {args}*
-		 (let ((args (cdr code)))
-		   (format nil "~{~a~^ ~}" (mapcar #'emit args))))
-		(paren
-		 ;; paren {args}*
-		 (let ((args (cdr code)))
-		   (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
-		(bracket
-		 ;; bracket {args}*
-		 (let ((args (cdr code)))
-		   (format nil "[~{~a~^, ~}]" (mapcar #'emit args))))
-		(curly
-		 ;; curly {args}*
-		 (let ((args (cdr code)))
-		   (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
-		(indent
-		 ;; indent form
-		 (format nil "~{~a~}~a"
-			 ;; print indentation characters
-			 (loop for i below level collect "    ")
-			 (emit (cadr code))))
-		(do0 (with-output-to-string (s)
-		       ;; do0 {form}*
-		       ;; write each form into a newline, keep current indentation level
-		       (format s "~{~&~a~}"
-			       (mapcar
-				 #'(lambda (x)
-				     (let ((b (emit `(indent ,x) 0)))
-				       (format nil "~a~a"
-					       b
-					       ;; don't add semicolon if there is already one
-					       ;; or if x contains a string
-					       ;; or if x is an s-expression with a c thing that doesn't end with semicolon
-					       (if (or (eq #\; (aref b (- (length b) 1)))
-						       (and (typep x 'string))
-						       (and (listp x)
-							    (member (car x) `(defun if for include dotimes while case))))
-						   ""
-						   ";"))))
-				 (cdr code)))
-		       #+nil
-		       (let ((a (emit (cadr code))))
-			 (format s "~&~a~a~{~&~a~}"
-				a
-				(if (eq #\; (aref a (- (length a) 1)))
-				    ""
-				    ";")
-				(mapcar
-				 #'(lambda (x)
-				     (let ((b (emit `(indent ,x) 0)))
-				       (format nil "~a~a"
-					       b
-					       (if (eq #\; (aref b (- (length b) 1)))
-						   ""
-						   ";"))))
-				 (cddr code))))))
-		(include (let ((args (cdr code)))
-			   ;; include {name}*
-			   ;; (include <stdio.h>)   => #include <stdio.h>
-			   ;; (include interface.h) => #include "interface.h"
-			   (with-output-to-string (s)
-			     (loop for e in args do
-				;; emit string if first character is not <
-				  (format s "~&#include ~a"
-					  (emit (if (eq #\< (aref (format nil "~a" e) 0))
-						    e
-						    `(string ,e))))))))
-		(progn (with-output-to-string (s)
-			 ;; progn {form}*
-			 ;; like do but surrounds forms with braces.
-			 (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
-		(do (with-output-to-string (s)
-		      ;; do {form}*
-		      ;; print each form on a new line with one more indentation.
-		      (format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
-		(defclass
-		      ;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
-		      ;; class TA : public Faculty, public Student { ... } 
-		      (destructuring-bind (name parents &rest body) (cdr code)
-			(format nil "class ~a ~@[: ~a~] ~a"
-				(emit name)
-				(when parents
-				 (emit `(comma ,parents)))
-				(emit `(progn ,@body))
-				)))
- 		(protected (format nil "protected ~a" (emit (cadr code))))
-		(public (format nil "public ~a" (emit (cadr code))))
-		(defun (parse-defun code #'emit))
-		(return (format nil "return ~a" (emit (car (cdr code)))))
-		(throw (format nil "throw ~a" (emit (car (cdr code)))))
-		(cast (destructuring-bind (type value) (cdr code)
-			(format nil "(~a) ~a"
-				(emit type)
-				(emit value))))
-		
-		(let (parse-let code #'emit))
-		(setf 
-		 (let ((args (cdr code)))
-		   ;; "setf {pair}*"
-		   (format nil "~a"
-			   (emit
-			    `(do0 
-			      ,@(loop for i below (length args) by 2 collect
-				     (let ((a (elt args i))
-					   (b (elt args (+ 1 i))))
-				       `(= ,a ,b))))))))
-		(not (format nil "!(~a)" (emit (car (cdr code)))))
-		(deref (format nil "*(~a)" (emit (car (cdr code)))))
-		(ref (format nil "&(~a)" (emit (car (cdr code)))))
-		(+ (let ((args (cdr code)))
-		     ;; + {summands}*
-		     (format nil "(~{(~a)~^+~})" (mapcar #'emit args))))
-		(- (let ((args (cdr code)))
-		     (if (eq 1 (length args))
-			 (format nil "(-(~a))" (emit (car args))) ;; py
-			 (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
-		(* (let ((args (cdr code)))
-		     (format nil "(~{(~a)~^*~})" (mapcar #'emit args))))
-		(^ (let ((args (cdr code)))
-		     (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
-		(& (let ((args (cdr code)))
-		     (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
-		(/ (let ((args (cdr code)))
-		     (if (eq 1 (length args))
-			 (format nil "(1.0/(~a))" (emit (car args))) ;; py
-			 (format nil "(~{(~a)~^/~})" (mapcar #'emit args)))))
-		
-		(logior (let ((args (cdr code))) ;; py
-			  (format nil "(~{(~a)~^ | ~})" (mapcar #'emit args))))
-		(logand (let ((args (cdr code))) ;; py
-			  (format nil "(~{(~a)~^ & ~})" (mapcar #'emit args))))
-		(logxor (let ((args (cdr code))) ;; py
-			  (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
-		(or (let ((args (cdr code)))
-		      (format nil "(~{(~a)~^||~})" (mapcar #'emit args))))
-		(and (let ((args (cdr code)))
-		       (format nil "(~{(~a)~^&&~})" (mapcar #'emit args))))
-		(= (destructuring-bind (a b) (cdr code)
-		     ;; = pair
-		     (format nil "~a=~a" (emit a) (emit b))))
-		(/= (destructuring-bind (a b) (cdr code)
-		      (format nil "~a/=(~a)" (emit a) (emit b))))
-		(*= (destructuring-bind (a b) (cdr code)
-		      (format nil "~a*=(~a)" (emit a) (emit b))))
-		(^= (destructuring-bind (a b) (cdr code)
-		      (format nil "(~a)^=(~a)" (emit a) (emit b))))
-		(<= (destructuring-bind (a b) (cdr code)
-		      (format nil "(~a)<=(~a)" (emit a) (emit b))))
-		(!= (destructuring-bind (a b) (cdr code)
-		      (format nil "(~a)!=(~a)" (emit a) (emit b))))
-		(== (destructuring-bind (a b) (cdr code)
-		      (format nil "(~a)==(~a)" (emit a) (emit b))))
-		(< (destructuring-bind (a b) (cdr code)
-		     (format nil "~a<~a" (emit a) (emit b))))
-		(% (destructuring-bind (a b) (cdr code)
-		     (format nil "~a%~a" (emit a) (emit b))))
-		(<< (destructuring-bind (a &rest rest) (cdr code)
-		      (format nil "(~a)~{<<(~a)~}" (emit a) (mapcar #'emit rest))))
-		(>> (destructuring-bind (a &rest rest) (cdr code)
-		      (format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
-		#+nil (>> (destructuring-bind (a b) (cdr code)
-		      (format nil "(~a)>>~a" (emit a) (emit b))))
-		(incf (destructuring-bind (a &optional b) (cdr code) ;; py
-			(if b
-			    (format nil "(~a)+=(~a)" (emit a) (emit b))
-			    (format nil "(~a)++" (emit a)))))
-		(decf (destructuring-bind (a &optional b) (cdr code)
-			(if b
-			    (format nil "(~a)-=(~a)" (emit a) (emit b))
-			    (format nil "(~a)--" (emit a)))))
-		(string (format nil "\"~a\"" (cadr code)))
-		(char (format nil "'~a'" (cadr code)))
-		
-		(if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
-		      (with-output-to-string (s)
-			(format s "if ( ~a ) ~a"
-				(emit condition)
-				(emit `(progn ,true-statement)))
-			(when false-statement
-			  (format s " else ~a"
-				  (emit `(progn ,false-statement)))))))
-		(when (destructuring-bind (condition &rest forms) (cdr code)
-			(emit `(if ,condition
-				   (do0
-				    ,@forms)))))
-		(unless (destructuring-bind (condition &rest forms) (cdr code)
-			  (emit `(if (not ,condition)
+	      (progn
+		(case (car code)
+		  (comma
+		   ;; comma {args}*
+		   (let ((args (cdr code)))
+		     (format nil "~{~a~^, ~}" (mapcar #'emit args))))
+		  (semicolon
+		   ;; semicolon {args}*
+		   (let ((args (cdr code)))
+		     (format nil "~{~a~^; ~}" (mapcar #'emit args))))
+		  (space
+		   ;; space {args}*
+		   (let ((args (cdr code)))
+		     (format nil "~{~a~^ ~}" (mapcar #'emit args))))
+		  (paren
+		   ;; paren {args}*
+		   (let ((args (cdr code)))
+		     (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
+		  (bracket
+		   ;; bracket {args}*
+		   (let ((args (cdr code)))
+		     (format nil "[~{~a~^, ~}]" (mapcar #'emit args))))
+		  (curly
+		   ;; curly {args}*
+		   (let ((args (cdr code)))
+		     (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
+		  (indent
+		   ;; indent form
+		   (format nil "~{~a~}~a"
+			   ;; print indentation characters
+			   (loop for i below level collect "    ")
+			   (emit (cadr code))))
+		  (do0 (with-output-to-string (s)
+			 ;; do0 {form}*
+			 ;; write each form into a newline, keep current indentation level
+			 (format s "~{~&~a~}"
+				 (mapcar
+				  #'(lambda (x)
+				      (let ((b (emit `(indent ,x) 0)))
+					(format nil "~a~a"
+						b
+						;; don't add semicolon if there is already one
+						;; or if x contains a string
+						;; or if x is an s-expression with a c thing that doesn't end with semicolon
+						(if (or (eq #\; (aref b (- (length b) 1)))
+							(and (typep x 'string))
+							(and (listp x)
+							     (member (car x) `(defun if for include dotimes while case))))
+						    ""
+						    ";"))))
+				  (cdr code)))
+			 #+nil
+			 (let ((a (emit (cadr code))))
+			   (format s "~&~a~a~{~&~a~}"
+				   a
+				   (if (eq #\; (aref a (- (length a) 1)))
+				       ""
+				       ";")
+				   (mapcar
+				    #'(lambda (x)
+					(let ((b (emit `(indent ,x) 0)))
+					  (format nil "~a~a"
+						  b
+						  (if (eq #\; (aref b (- (length b) 1)))
+						      ""
+						      ";"))))
+				    (cddr code))))))
+		  (include (let ((args (cdr code)))
+			     ;; include {name}*
+			     ;; (include <stdio.h>)   => #include <stdio.h>
+			     ;; (include interface.h) => #include "interface.h"
+			     (with-output-to-string (s)
+			       (loop for e in args do
+				  ;; emit string if first character is not <
+				    (format s "~&#include ~a"
+					    (emit (if (eq #\< (aref (format nil "~a" e) 0))
+						      e
+						      `(string ,e))))))))
+		  (progn (with-output-to-string (s)
+			   ;; progn {form}*
+			   ;; like do but surrounds forms with braces.
+			   (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
+		  (do (with-output-to-string (s)
+			;; do {form}*
+			;; print each form on a new line with one more indentation.
+			(format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
+		  (defclass
+			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
+			;; class TA : public Faculty, public Student { ... } 
+			(destructuring-bind (name parents &rest body) (cdr code)
+			  (format nil "class ~a ~@[: ~a~] ~a"
+				  (emit name)
+				  (when parents
+				    (emit `(comma ,parents)))
+				  (emit `(progn ,@body))
+				  )))
+		  (protected (format nil "protected ~a" (emit (cadr code))))
+		  (public (format nil "public ~a" (emit (cadr code))))
+		  (defun (parse-defun code #'emit))
+		  (return (format nil "return ~a" (emit (car (cdr code)))))
+		  (throw (format nil "throw ~a" (emit (car (cdr code)))))
+		  (cast (destructuring-bind (type value) (cdr code)
+			  (format nil "(~a) ~a"
+				  (emit type)
+				  (emit value))))
+		  
+		  (let (parse-let code #'emit))
+		  (setf 
+		   (let ((args (cdr code)))
+		     ;; "setf {pair}*"
+		     (format nil "~a"
+			     (emit
+			      `(do0 
+				,@(loop for i below (length args) by 2 collect
+				       (let ((a (elt args i))
+					     (b (elt args (+ 1 i))))
+					 `(= ,a ,b))))))))
+		  (not (format nil "!(~a)" (emit (car (cdr code)))))
+		  (deref (format nil "*(~a)" (emit (car (cdr code)))))
+		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
+		  (+ (let ((args (cdr code)))
+		       ;; + {summands}*
+		       (format nil "(~{(~a)~^+~})" (mapcar #'emit args))))
+		  (- (let ((args (cdr code)))
+		       (if (eq 1 (length args))
+			   (format nil "(-(~a))" (emit (car args))) ;; py
+			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
+		  (* (let ((args (cdr code)))
+		       (format nil "(~{(~a)~^*~})" (mapcar #'emit args))))
+		  (^ (let ((args (cdr code)))
+		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
+		  (& (let ((args (cdr code)))
+		       (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
+		  (/ (let ((args (cdr code)))
+		       (if (eq 1 (length args))
+			   (format nil "(1.0/(~a))" (emit (car args))) ;; py
+			   (format nil "(~{(~a)~^/~})" (mapcar #'emit args)))))
+		  
+		  (logior (let ((args (cdr code))) ;; py
+			    (format nil "(~{(~a)~^ | ~})" (mapcar #'emit args))))
+		  (logand (let ((args (cdr code))) ;; py
+			    (format nil "(~{(~a)~^ & ~})" (mapcar #'emit args))))
+		  (logxor (let ((args (cdr code))) ;; py
+			    (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
+		  (or (let ((args (cdr code)))
+			(format nil "(~{(~a)~^||~})" (mapcar #'emit args))))
+		  (and (let ((args (cdr code)))
+			 (format nil "(~{(~a)~^&&~})" (mapcar #'emit args))))
+		  (= (destructuring-bind (a b) (cdr code)
+		       ;; = pair
+		       (format nil "~a=~a" (emit a) (emit b))))
+		  (/= (destructuring-bind (a b) (cdr code)
+			(format nil "~a/=(~a)" (emit a) (emit b))))
+		  (*= (destructuring-bind (a b) (cdr code)
+			(format nil "~a*=(~a)" (emit a) (emit b))))
+		  (^= (destructuring-bind (a b) (cdr code)
+			(format nil "(~a)^=(~a)" (emit a) (emit b))))
+		  (<= (destructuring-bind (a b) (cdr code)
+			(format nil "(~a)<=(~a)" (emit a) (emit b))))
+		  (!= (destructuring-bind (a b) (cdr code)
+			(format nil "(~a)!=(~a)" (emit a) (emit b))))
+		  (== (destructuring-bind (a b) (cdr code)
+			(format nil "(~a)==(~a)" (emit a) (emit b))))
+		  (< (destructuring-bind (a b) (cdr code)
+		       (format nil "~a<~a" (emit a) (emit b))))
+		  (% (destructuring-bind (a b) (cdr code)
+		       (format nil "~a%~a" (emit a) (emit b))))
+		  (<< (destructuring-bind (a &rest rest) (cdr code)
+			(format nil "(~a)~{<<(~a)~}" (emit a) (mapcar #'emit rest))))
+		  (>> (destructuring-bind (a &rest rest) (cdr code)
+			(format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
+		  #+nil (>> (destructuring-bind (a b) (cdr code)
+			      (format nil "(~a)>>~a" (emit a) (emit b))))
+		  (incf (destructuring-bind (a &optional b) (cdr code) ;; py
+			  (if b
+			      (format nil "(~a)+=(~a)" (emit a) (emit b))
+			      (format nil "(~a)++" (emit a)))))
+		  (decf (destructuring-bind (a &optional b) (cdr code)
+			  (if b
+			      (format nil "(~a)-=(~a)" (emit a) (emit b))
+			      (format nil "(~a)--" (emit a)))))
+		  (string (format nil "\"~a\"" (cadr code)))
+		  (char (format nil "'~a'" (cadr code)))
+		  
+		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
+			(with-output-to-string (s)
+			  (format s "if ( ~a ) ~a"
+				  (emit condition)
+				  (emit `(progn ,true-statement)))
+			  (when false-statement
+			    (format s " else ~a"
+				    (emit `(progn ,false-statement)))))))
+		  (when (destructuring-bind (condition &rest forms) (cdr code)
+			  (emit `(if ,condition
 				     (do0
 				      ,@forms)))))
-		(aref (destructuring-bind (name &rest indices) (cdr code)
-		      (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
-		(dot (let ((args (cdr code)))
-		       (format nil "~{~a~^.~}" (mapcar #'emit args))))
-		(-> (let ((args (cdr code)))
-		       (format nil "~{~a~^->~}" (mapcar #'emit args))))
-		
-		(lambda (parse-lambda code #'emit))
-		
-		(case
-		    ;; case keyform {normal-clause}* [otherwise-clause]
-		    ;; normal-clause::= (keys form*) 
-		    ;; otherwise-clause::= (t form*) 
-		    
-		    (destructuring-bind (keyform &rest clauses)
-			(cdr code)
-		      (format
-		       nil "switch(~a) ~a"
-		       (emit keyform)
-			     (emit
-			      `(progn
-				 ,@(loop for c in clauses collect
-					(destructuring-bind (key &rest forms) c
-					  (if (eq key t)
-					      (format nil "default: ~a"
-						      (emit
-						       `(do0
-							 ,@(mapcar #'emit
-								   forms))))
-					      (format nil "~a: ~a"
-						      (emit key)
-						      (emit
-						       `(do0
-							 ,@(mapcar #'emit
-								   forms))))))))))))
-		(for (destructuring-bind ((start end iter) &rest body) (cdr code)
-		       (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
-			       (emit start)
-			       (emit end)
-			       (emit iter)
-			       (emit `(progn ,@body)))))
-		(dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			   (emit `(for (,(format nil "int ~a = 0" (emit i))
-					 (< ,(emit i) ,(emit n))
-					 (incf ,(emit i) ,(emit step)))
-				       ,@body))))
-		#-generic-c
-		(foreach (destructuring-bind ((item collection) &rest body) (cdr code)
-		       (format nil "for (auto& ~a : ~a) ~a"
-			       (emit item)
-			       (emit collection)
-			       (emit `(progn ,@body)))))
-		#+generic-c
-		(foreach
-		 (destructuring-bind ((item collection) &rest body) (cdr code)
-		   (let ((itemidx (format nil "~a_idx" (emit item))))
-		     (format nil
-			     "~a"
-			     (emit
-			      `(dotimes (,itemidx (/ (sizeof ,collection)
-						     (sizeof (deref ,collection))))
-				 (let ((,item (aref ,collection ,itemidx)))
-				   (progn ,@body))))))))
-		(while  ;; while condition {forms}*
-		    (destructuring-bind (condition &rest body) (cdr code)
-		      (format nil "while (~a) ~a"
-			      (emit condition)
-			      (emit `(progn ,@body)))))
-		(deftype
-		    ;; deftype name lambda-list {form}*
-		    ;; only the first form of the body is used, lambda list is ignored
-		    (destructuring-bind (name lambda-list &rest body) (cdr code)
-		      (declare (ignore lambda-list))
-		      (format nil "typedef ~a ~a" (emit (car body)) name)))
-		(struct (format nil "struct ~a" (emit (car (cdr code)))))
-		(defstruct0
-		 ;; defstruct without init-form
-		 ;; defstruct name {slot-description}*
-		 ;; slot-description::= slot-name | (slot-name [slot-type])
-		 
-		 ;; a slot-name without type can be used to create a
-		 ;; composed type with a struct embedding
-		 
-		 ;; i think i should use this pattern that works in C
-		 ;; and in C++. Typedef isn't strictly necessary in
-		 ;; C++, execept if you overload the struct name with
-		 ;; a function:
-		 
-		 ;; struct 
-		 ;; { 
-		 ;;    char name[50]; 
-		 ;;    char street[100]; 
-		 ;;    char city[50]; 
-		 ;;    char state[20]; 
-		 ;;    int pin; 
-		 ;; } Address;
-		 ;; typedef struct Address Address;
-		 ;; int Address(int b){ ...}
-		 
-		 ;; https://stackoverflow.com/questions/1675351/typedef-struct-vs-struct-definitions
-		 (destructuring-bind (name &rest slot-descriptions) (cdr code)
-		   (format nil "~a"
-			   (emit `(do0
-				   ,(format nil "struct ~a ~a;"
-					    name
-					    (emit
-					     `(progn
-						,@(loop for desc in slot-descriptions collect
-						       (destructuring-bind (slot-name &optional type value) desc
-							 (format nil "~a ~a;" (emit type) (emit slot-name))))))
-					    
-					   )
-				   (deftype ,name () (struct ,name)))))))
-		(handler-case
-		    ;; handler-case expression [[{error-clause}*]]
+		  (unless (destructuring-bind (condition &rest forms) (cdr code)
+			    (emit `(if (not ,condition)
+				       (do0
+					,@forms)))))
+		  
+		  (dot (let ((args (cdr code)))
+			 (format nil "~{~a~^.~}" (mapcar #'emit args))))
+		  
+
+		  (aref (destructuring-bind (name &rest indices) (cdr code)
+			  (format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
+			  (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
+		  
+		  (-> (let ((args (cdr code)))
+			(format nil "~{~a~^->~}" (mapcar #'emit args))))
+		  
+		  (lambda (parse-lambda code #'emit))
+		  
+		  (case
+		      ;; case keyform {normal-clause}* [otherwise-clause]
+		      ;; normal-clause::= (keys form*) 
+		      ;; otherwise-clause::= (t form*) 
+		      
+		      (destructuring-bind (keyform &rest clauses)
+			  (cdr code)
+			(format
+			 nil "switch(~a) ~a"
+			 (emit keyform)
+			 (emit
+			  `(progn
+			     ,@(loop for c in clauses collect
+				    (destructuring-bind (key &rest forms) c
+				      (if (eq key t)
+					  (format nil "default: ~a"
+						  (emit
+						   `(do0
+						     ,@(mapcar #'emit
+							       forms))))
+					  (format nil "~a: ~a"
+						  (emit key)
+						  (emit
+						   `(do0
+						     ,@(mapcar #'emit
+							       forms))))))))))))
+		  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
+			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
+				 (emit start)
+				 (emit end)
+				 (emit iter)
+				 (emit `(progn ,@body)))))
+		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
+			     (emit `(for (,(format nil "int ~a = 0" (emit i))
+					   (< ,(emit i) ,(emit n))
+					   (incf ,(emit i) ,(emit step)))
+					 ,@body))))
+		  #-generic-c
+		  (foreach (destructuring-bind ((item collection) &rest body) (cdr code)
+			     (format nil "for (auto& ~a : ~a) ~a"
+				     (emit item)
+				     (emit collection)
+				     (emit `(progn ,@body)))))
+		  #+generic-c
+		  (foreach
+		   (destructuring-bind ((item collection) &rest body) (cdr code)
+		     (let ((itemidx (format nil "~a_idx" (emit item))))
+		       (format nil
+			       "~a"
+			       (emit
+				`(dotimes (,itemidx (/ (sizeof ,collection)
+						       (sizeof (deref ,collection))))
+				   (let ((,item (aref ,collection ,itemidx)))
+				     (progn ,@body))))))))
+		  (while  ;; while condition {forms}*
+		      (destructuring-bind (condition &rest body) (cdr code)
+			(format nil "while (~a) ~a"
+				(emit condition)
+				(emit `(progn ,@body)))))
+		  (deftype
+		      ;; deftype name lambda-list {form}*
+		      ;; only the first form of the body is used, lambda list is ignored
+		      (destructuring-bind (name lambda-list &rest body) (cdr code)
+			(declare (ignore lambda-list))
+			(format nil "typedef ~a ~a" (emit (car body)) name)))
+		  (struct (format nil "struct ~a" (emit (car (cdr code)))))
+		  (defstruct0
+		   ;; defstruct without init-form
+		   ;; defstruct name {slot-description}*
+		   ;; slot-description::= slot-name | (slot-name [slot-type])
+		   
+		   ;; a slot-name without type can be used to create a
+		   ;; composed type with a struct embedding
+		   
+		   ;; i think i should use this pattern that works in C
+		   ;; and in C++. Typedef isn't strictly necessary in
+		   ;; C++, execept if you overload the struct name with
+		   ;; a function:
+		   
+		   ;; struct 
+		   ;; { 
+		   ;;    char name[50]; 
+		   ;;    char street[100]; 
+		   ;;    char city[50]; 
+		   ;;    char state[20]; 
+		   ;;    int pin; 
+		   ;; } Address;
+		   ;; typedef struct Address Address;
+		   ;; int Address(int b){ ...}
+		   
+		   ;; https://stackoverflow.com/questions/1675351/typedef-struct-vs-struct-definitions
+		   (destructuring-bind (name &rest slot-descriptions) (cdr code)
+		     (format nil "~a"
+			     (emit `(do0
+				     ,(format nil "struct ~a ~a;"
+					      name
+					      (emit
+					       `(progn
+						  ,@(loop for desc in slot-descriptions collect
+							 (destructuring-bind (slot-name &optional type value) desc
+							   (format nil "~a ~a;" (emit type) (emit slot-name))))))
+					      
+					      )
+				     (deftype ,name () (struct ,name)))))))
+		  (handler-case
+		      ;; handler-case expression [[{error-clause}*]]
 		    ;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
-		    ;; error-clause::= (typespec ([var]) form*)
-		    ;; if typespec is t, catch any kind of exception
+		      ;; error-clause::= (typespec ([var]) form*)
+		      ;; if typespec is t, catch any kind of exception
 
-		    ;; (handler-case (progn forma formb)
-		    ;;   (typespec1 (var1) form1)
-		    ;;   (typespec2 (var2) form2))
+		      ;; (handler-case (progn forma formb)
+		      ;;   (typespec1 (var1) form1)
+		      ;;   (typespec2 (var2) form2))
 
-		    ;; a clause such as:
-		    ;; (typespec (var) (declare (ignore var)) form)
-		    ;; can be written as (typespec () form)
-		    
+		      ;; a clause such as:
+		      ;; (typespec (var) (declare (ignore var)) form)
+		      ;; can be written as (typespec () form)
+		      
 
-		    
-		    ;; try {
-		    ;;   // code here
-		    ;; }
-		    ;; catch (int param) { cout << "int exception"; }
-		    ;; catch (char param) { cout << "char exception"; }
-		    ;; catch (...) { cout << "default exception"; }
-		    
-		    (destructuring-bind (expr &rest clauses) (cdr code)
-		      (with-output-to-string (s)
-			(format s "try ~a"
-				(if (eq 'progn (car expr))
-				    (emit expr)
-				    (emit `(progn ,expr))))
-			(loop for clause in clauses do
-			     (destructuring-bind (typespec (var) &rest forms) clause
-			       (format s "catch (~a) ~a"
-				       (if (and (eq 't typespec)
-						(null var))
-					   (format nil "...")
-					   (format nil "~a ~a" typespec var))
-				       (emit `(progn ,@forms))))))))
-		(t (destructuring-bind (name &rest args) code
+		      
+		      ;; try {
+		      ;;   // code here
+		      ;; }
+		      ;; catch (int param) { cout << "int exception"; }
+		      ;; catch (char param) { cout << "char exception"; }
+		      ;; catch (...) { cout << "default exception"; }
+		      
+		      (destructuring-bind (expr &rest clauses) (cdr code)
+			(with-output-to-string (s)
+			  (format s "try ~a"
+				  (if (eq 'progn (car expr))
+				      (emit expr)
+				      (emit `(progn ,expr))))
+			  (loop for clause in clauses do
+			       (destructuring-bind (typespec (var) &rest forms) clause
+				 (format s "catch (~a) ~a"
+					 (if (and (eq 't typespec)
+						  (null var))
+					     (format nil "...")
+					     (format nil "~a ~a" typespec var))
+					 (emit `(progn ,@forms))))))))
+		  (t (destructuring-bind (name &rest args) code
 
-		     (if (listp name)
-			 ;; lambda call and similar complex constructs
-			 (format nil "(~a)(~a)"
-				 (emit name)
-				 (if args
-				     (emit `(paren ,@args))
-				     ""))
-			 ;; function call
-			 
-			 
-			 (progn	;if
-			   #+nil(and
-				 (= 1 (length args))
-				 (eq (aref (format nil "~a" (car args)) 0) #\.))
-			   #+nil (format nil "~a~a" name
-					 (emit args))
-			   (format nil "~a~a" name
-				   (emit `(paren ,@args))))))))
+		       (if (listp name)
+			   ;; lambda call and similar complex constructs
+			   (format nil "(~a)(~a)"
+				   (emit name)
+				   (if args
+				       (emit `(paren ,@args))
+				       ""))
+			   ;; function call
+			   
+			   
+			   (progn	;if
+			     
+			     #+nil(and
+				   (= 1 (length args))
+				   (eq (aref (format nil "~a" (car args)) 0) #\.))
+			     #+nil (format nil "~a~a" name
+					   (emit args))
+			     (format nil "~a~a" name
+				     (emit `(paren ,@args)))))))))
 	      (cond
 		((or (symbolp code)
 		     (stringp code)) ;; print variable
