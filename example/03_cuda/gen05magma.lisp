@@ -61,8 +61,10 @@
 		    (m (static_cast<magma_int_t> 1024))
 		    (a ))
 		(declare (type float* a))
-		,(e `(magma_queue_create dev &queue) :void t)
-		,(e `(cudaMallocManaged &a (* m (sizeof float))))
+		,(e `(magma_queue_create dev &queue) :void t
+		    :data `(dev))
+		,(e `(cudaMallocManaged &a (* m (sizeof float)))
+		    :data `(m a))
 		(dotimes (j m)
 		  ;,(e `(sinf (static_cast<float> j)))
 		  (setf (aref a j) (sin (static_cast<float> j))))
