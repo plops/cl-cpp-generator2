@@ -5,15 +5,15 @@
 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/05magma_isamax.cpp"))
-  (defun e (msg &key data)
+  (defun e (msg &key (void nil) data)
     (let ((res (gensym (string "res"))))
      (progn			       ; destructuring-bind (msg) cmds
-       `(if
-	 ,(format nil "constexpr(std::is_same<decltype(~a),void>::value)?~a:\"void\""
+       `(do0 
+	 #+nil ,(format nil "constexpr(std::is_same<decltype(~a),void>::value)?~a:\"void\""
 		  (emit-c :code msg)
 		  (emit-c :code msg))
 	 
-	 (let ((,res ,msg))
+	 (let ((,res ,(if void `(string "void") msg)))
 	   ;; static_assert(!std::is_same<decltype(test_maxi()), void>::value, "void"); 
 	   (<< "std::cout"
 	       (- (dot ("std::chrono::high_resolution_clock::now")
@@ -25,7 +25,7 @@
 	       (string ":")
 	       __LINE__
 	       (string " ")
-	       __func__
+	       __PRETTY_FUNCTION__
 	       (string ,(format nil " ~a: => " (emit-c :code msg)))
 	       ,res
 	       (string " ")
@@ -61,7 +61,7 @@
 		    (m (static_cast<magma_int_t> 1024))
 		    (a ))
 		(declare (type float* a))
-		,(e `(magma_queue_create dev &queue))
+		,(e `(magma_queue_create dev &queue) :void t)
 		,(e `(cudaMallocManaged &a (* m (sizeof float))))
 		(dotimes (j m)
 		  ;,(e `(sinf (static_cast<float> j)))
@@ -71,7 +71,7 @@
 		
 		(do0
 		 ,(e `(magma_free a))
-		 ,(e `(magma_queue_destroy queue))
+		 ,(e `(magma_queue_destroy queue ) :void t)
 		 ,(e `(magma_finalize)))
 		(return 0))))))
     (write-source *code-file* code)))

@@ -14,33 +14,21 @@ int main (int argc, char** argv){
     auto dev  = static_cast<magma_int_t>(0);
     auto m  = static_cast<magma_int_t>(1024);
     float* a ;
-    if ( constexpr(std::is_same<decltype(magma_queue_create(dev, &queue)),void>::value)?magma_queue_create(dev, &queue):"void" ) {
-                        auto RES612  = magma_queue_create(dev, &queue);
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" magma_queue_create(dev, &queue): => ")<<(RES612)<<(" ")<<(std::endl);
-}
-    if ( constexpr(std::is_same<decltype(cudaMallocManaged(&a, ((m)*(sizeof(float))))),void>::value)?cudaMallocManaged(&a, ((m)*(sizeof(float)))):"void" ) {
-                        auto RES613  = cudaMallocManaged(&a, ((m)*(sizeof(float))));
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" cudaMallocManaged(&a, ((m)*(sizeof(float)))): => ")<<(RES613)<<(" ")<<(std::endl);
-}
+            auto RES648  = "void";
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" magma_queue_create(dev, &queue): => ")<<(RES648)<<(" ")<<(std::endl);
+            auto RES649  = cudaMallocManaged(&a, ((m)*(sizeof(float))));
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" cudaMallocManaged(&a, ((m)*(sizeof(float)))): => ")<<(RES649)<<(" ")<<(std::endl);
     for (int j = 0;j<m;(j)+=(1)) {
                         a[j]=sin(static_cast<float>(j));
 }
         auto i  = magma_isamax(m, a, 1, queue);
-    if ( constexpr(std::is_same<decltype(cudaDeviceSynchronize()),void>::value)?cudaDeviceSynchronize():"void" ) {
-                        auto RES614  = cudaDeviceSynchronize();
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" cudaDeviceSynchronize(): => ")<<(RES614)<<(" ")<<(std::endl);
-};
-        if ( constexpr(std::is_same<decltype(magma_free(a)),void>::value)?magma_free(a):"void" ) {
-                        auto RES615  = magma_free(a);
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" magma_free(a): => ")<<(RES615)<<(" ")<<(std::endl);
-}
-    if ( constexpr(std::is_same<decltype(magma_queue_destroy(queue)),void>::value)?magma_queue_destroy(queue):"void" ) {
-                        auto RES616  = magma_queue_destroy(queue);
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" magma_queue_destroy(queue): => ")<<(RES616)<<(" ")<<(std::endl);
-}
-    if ( constexpr(std::is_same<decltype(magma_finalize()),void>::value)?magma_finalize():"void" ) {
-                        auto RES617  = magma_finalize();
-        (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" magma_finalize(): => ")<<(RES617)<<(" ")<<(std::endl);
-};
+            auto RES650  = cudaDeviceSynchronize();
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" cudaDeviceSynchronize(): => ")<<(RES650)<<(" ")<<(std::endl);
+                auto RES651  = magma_free(a);
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" magma_free(a): => ")<<(RES651)<<(" ")<<(std::endl);
+            auto RES652  = "void";
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" magma_queue_destroy(queue): => ")<<(RES652)<<(" ")<<(std::endl);
+            auto RES653  = magma_finalize();
+    (std::cout)<<(((std::chrono::high_resolution_clock::now().time_since_epoch().count())-(g_start)))<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__PRETTY_FUNCTION__)<<(" magma_finalize(): => ")<<(RES653)<<(" ")<<(std::endl);
     return 0;
 }
