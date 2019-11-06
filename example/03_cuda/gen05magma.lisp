@@ -5,26 +5,34 @@
 
 (progn
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/05magma_isamax.cpp"))
-  (defun e (msg)
-    (progn ;destructuring-bind (msg) cmds
-      `(do0
-	(<< "std::cout"
-            (- (dot ("std::chrono::high_resolution_clock::now")
-                  (time_since_epoch)
-                  (count))
-	       g_start)
-            (string " ")
-            __FILE__
-            (string ":")
-            __LINE__
-            (string " ")
-            __func__
-            (string ,(format nil " ~a: " (emit-c :code msg)))
-	    ,@(loop for e in (cdr msg) appending
-                   `((string ,(format nil " ~a=" (emit-c :code e)))
-                     ,e))
-            "std::endl")
-	,msg)))
+  (defun e (msg &key data)
+    (let ((res (gensym (string "res"))))
+     (progn			       ; destructuring-bind (msg) cmds
+       `(if
+	 ,(format nil "constexpr(std::is_same<decltype(~a),void>::value)?~a:\"void\""
+		  (emit-c :code msg)
+		  (emit-c :code msg))
+	 
+	 (let ((,res ,msg))
+	   ;; static_assert(!std::is_same<decltype(test_maxi()), void>::value, "void"); 
+	   (<< "std::cout"
+	       (- (dot ("std::chrono::high_resolution_clock::now")
+		       (time_since_epoch)
+		       (count))
+		  g_start)
+	       (string " ")
+	       __FILE__
+	       (string ":")
+	       __LINE__
+	       (string " ")
+	       __func__
+	       (string ,(format nil " ~a: => " (emit-c :code msg)))
+	       ,res
+	       (string " ")
+	       ,@(loop for e in data appending
+		      `((string ,(format nil " ~a=" (emit-c :code e)))
+			,e))
+	       "std::endl"))))))
   (let* ((code
 	  `(do0
 	    "// https://developer.nvidia.com/sites/default/files/akamai/cuda/files/Misc/mygpu.pdf magma by example"
@@ -56,10 +64,11 @@
 		,(e `(magma_queue_create dev &queue))
 		,(e `(cudaMallocManaged &a (* m (sizeof float))))
 		(dotimes (j m)
-		  ,(e `(sinf (static_cast<float> j)))
+		  ;,(e `(sinf (static_cast<float> j)))
 		  (setf (aref a j) (sin (static_cast<float> j))))
 		(let ((i (magma_isamax m a 1 queue)))
 		  ,(e `(cudaDeviceSynchronize)))
+		
 		(do0
 		 ,(e `(magma_free a))
 		 ,(e `(magma_queue_destroy queue))
