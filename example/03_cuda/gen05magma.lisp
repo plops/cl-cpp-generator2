@@ -9,9 +9,10 @@
     (progn ;destructuring-bind (msg) cmds
       `(do0
 	(<< "std::cout"
-            (dot ("std::chrono::high_resolution_clock::now")
-                 (time_since_epoch)
-                 (count))
+            (- (dot ("std::chrono::high_resolution_clock::now")
+                  (time_since_epoch)
+                  (count))
+	       g_start)
             (string " ")
             __FILE__
             (string ":")
@@ -19,8 +20,8 @@
             (string " ")
             __func__
             (string ,(format nil " ~a: " (emit-c :code msg)))
-            #+nil ,@(loop for e in rest appending
-                   `((string ,(format nil " ~a=" e))
+	    ,@(loop for e in (cdr msg) appending
+                   `((string ,(format nil " ~a=" (emit-c :code e)))
                      ,e))
             "std::endl")
 	,msg)))
@@ -43,8 +44,11 @@
 	      (declare (values int)
 		       (type int argc)
 		       (type char** argv))
+	      (let ((g_start (dot ("std::chrono::high_resolution_clock::now")
+				  (time_since_epoch)
+				  (count)))))
 	      (magma_init)
-	      (let ((queue (cast magma_queue_t NULL))
+	      (let ((queue (static_cast<magma_queue_t> NULL))
 		    (dev (static_cast<magma_int_t> 0))
 		    (m (static_cast<magma_int_t> 1024))
 		    (a ))
@@ -53,7 +57,7 @@
 		,(e `(cudaMallocManaged &a (* m (sizeof float))))
 		(dotimes (j m)
 		  ,(e `(sinf (static_cast<float> j)))
-		  (setf (aref a j) (sinf (static_cast<float> j))))
+		  (setf (aref a j) (sin (static_cast<float> j))))
 		(let ((i (magma_isamax m a 1 queue)))
 		  ,(e `(cudaDeviceSynchronize)))
 		(do0
