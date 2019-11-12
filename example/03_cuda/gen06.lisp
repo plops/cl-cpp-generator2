@@ -11,31 +11,43 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/06interop.cu"))
   (let* ((code
 	  `(do0
-	    "// nvcc -o 06interop 06interop.cu -lglfw -lGL"
+	    "// nvcc -o 06interop 06interop.cu -lglfw -lGL -march=native --std=c++14 -O3 -g"
 	    "// note that nvcc requires gcc 8"
-	    "// nvprof 06interpo"
-	    (include <GLFW/glfw3.h>)
+	    "// nvprof 06interop"
+	    (include <GLFW/glfw3.h>
+		     <cassert>
+		     <cstdio>
+		     <iostream>)
+
 	    (defun key_callback (window key scancode action mods)
 	      (declare (type GLFWwindow* window)
                       (type int key scancode action mods))
              (when (and (or (== key GLFW_KEY_ESCAPE)
                             (== key GLFW_KEY_Q))
                         (== action GLFW_PRESS))
-               (glfwSetWindowShouldClose window GLFW_TRUE))
+               (glfwSetWindowShouldClose window GLFW_TRUE)))
+	    (defun error_callback (err description)
+             (declare (type int err)
+                      (type "const char*" description)
+                      )
+             (fprintf stderr (string "Error: %s\\n")
+                      description))
 
-	      
-	      )
+	    "using namespace std;"
 	    (defun main ()
 	      (declare (values int))
-	      (unless (glfwInit)
+	      (<< cout (string "bla") endl)
+	      (when (glfwInit)
+		
+		(glfwSetErrorCallback error_callback)
 
 		(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 2)
 		(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 
 		(let ((window (glfwCreateWindow 640 480 (string "cuda interop")
 						NULL NULL)))
-		  (unless window
-		    (exit -1))
+
+		  (assert window)
 		  (glfwSetKeyCallback window key_callback)
 		  (glfwMakeContextCurrent window)
                       
@@ -59,16 +71,7 @@
                         (glClear GL_COLOR_BUFFER_BIT)
                         
                         (glfwSwapBuffers window)))
-		   (glfwDestroyWindow window)
-		   )
-		)
-
+		   (glfwDestroyWindow window)))
 	      
-	      (glfwTerminate)
-	      )
-
-
-	    )
-	   )
-	 )
+	      (glfwTerminate)))))
     (write-source *code-file* code)))
