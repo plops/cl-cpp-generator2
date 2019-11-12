@@ -47,7 +47,7 @@
 	       (t_a float)
 	       (t_g float))
 	     (do0
-	      "enum {TX=32, TY=32,RAD=1};"
+	      "enum {TX=32, TY=32,RAD=1, ITERS_PER_RENDER=50};"
 	      (defun divUp (a b)
 		(declare (type int a b)
 			 (values int))
@@ -222,7 +222,23 @@
 			       (gridSize (divUp w TX)
 					 (divUp h TY))))
 		("tempKernel<<<gridSize,blockSize,smSz>>>" d_out d_temp w h bc)))
-	    
+
+	    (do0
+	     (let ((g_cuda_pbo_resource ("static_cast<struct cudaGraphicsResource*>" 0))
+		   ))
+	     (defun render (d_temp w h bc)
+	       (declare (type int w h)
+			(type BC bc)
+			(type float* d_temp ))
+	       (cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0)
+	       (let ((d_out (static_cast<uchar4*> 0)))
+		 (cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
+						       nullptr
+						       g_cuda_pbo_resource)
+		 (dotimes (i ITERS_PER_RENDER)
+		  (kernelLauncher d_out d_temp w h bc))
+		 (cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0))
+	       ))
 	    (defun main ()
 	      (declare (values int))
 	      (<< cout (string "bla") endl)
@@ -274,7 +290,8 @@
 		     (glfwPollEvents)
                       (let ((time (glfwGetTime)))
                         (glClear GL_COLOR_BUFFER_BIT)
-                        (kernelLauncher d_out d_temp width height bc)
+					;(kernelLauncher d_out d_temp width height bc)
+			(render d_temp width height bc)
                         (glfwSwapBuffers window)))
 		   (glfwDestroyWindow window)))
 	      

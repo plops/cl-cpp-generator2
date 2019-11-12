@@ -29,7 +29,7 @@ struct BC {
   float t_g;
 };
 typedef struct BC BC;
-enum { TX = 32, TY = 32, RAD = 1 };
+enum { TX = 32, TY = 32, RAD = 1, ITERS_PER_RENDER = 50 };
 int divUp(int a, int b) { return ((((a) + (b) + (-1))) / (b)); }
 __device__ unsigned char clip(int n) {
   if (255 < n) {
@@ -133,6 +133,17 @@ void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
                (((TY) + (((2) * (RAD))))));
   tempKernel<<<gridSize, blockSize, smSz>>>(d_out, d_temp, w, h, bc);
 }
+auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
+void render(float *d_temp, int w, int h, BC bc) {
+  cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
+  auto d_out = static_cast<uchar4 *>(0);
+  cudaGraphicsResourceGetMappedPointer(reinterpret_cast<void **>(&d_out),
+                                       nullptr, g_cuda_pbo_resource);
+  for (int i = 0; i < ITERS_PER_RENDER; (i) += (1)) {
+    kernelLauncher(d_out, d_temp, w, h, bc);
+  }
+  cudaGraphicsUnmapResources(1, &g_cuda_pbo_resource, 0);
+};
 int main() {
   (cout) << ("bla") << (endl);
   if (glfwInit()) {
@@ -164,7 +175,7 @@ int main() {
       glfwPollEvents();
       auto time = glfwGetTime();
       glClear(GL_COLOR_BUFFER_BIT);
-      kernelLauncher(d_out, d_temp, width, height, bc);
+      render(d_temp, width, height, bc);
       glfwSwapBuffers(window);
     }
     glfwDestroyWindow(window);
