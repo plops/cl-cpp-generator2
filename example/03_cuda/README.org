@@ -1,1 +1,13 @@
-https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/
+* Contents
+
+| file       | comment                          |
+| gen        | tensor cores (not working)       |
+| gen02      | vector add                       |
+| gen03      | matrix mul with global memory    |
+| gen04      | tiled matrix mul                 |
+| gen05magma | magma linear algebra library     |
+| gen06      | opengl interop, heat propagation |
+
+* References
+- https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/
+- managed mmap https://stackoverflow.com/questions/53751480/combining-mmap-and-uvm-features
