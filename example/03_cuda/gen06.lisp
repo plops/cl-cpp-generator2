@@ -53,7 +53,15 @@
                      (glHint GL_LINE_SMOOTH GL_NICEST)
                      )
 
-		  )
+		   (while (not (glfwWindowShouldClose window))
+		     (glfwPollEvents)
+                      (let ((time (glfwGetTime)))
+                        (glClear GL_COLOR_BUFFER_BIT)
+                        
+                        (glfwSwapBuffers window))))))
+
+
+		  (glfwDestroyWindow window))
 		(glfwTerminate))
 	      ))))
     (write-source *code-file* code)))
