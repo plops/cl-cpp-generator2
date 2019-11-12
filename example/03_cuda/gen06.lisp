@@ -114,7 +114,7 @@
 			  (glEnable GL_LINE_SMOOTH)
 			  (glHint GL_LINE_SMOOTH GL_NICEST))
 		     (do0
-		      (let ((d_temp  (static_cast<float*> 0))
+		      (let ((d_temp  (static_cast<float*> 0)) 
 			    (bc (cast BC (curly
 					  (/ width 2)
 					  (/ height 2)
