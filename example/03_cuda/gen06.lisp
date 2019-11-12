@@ -120,10 +120,59 @@
 		(declare (type "extern __shared__ float" s_in[]))
 		(when (or (<= w col)
 			  (<= h row))
-		  (return)
-		  )
-		(setf (aref d_temp (+ col (* row w)))
-		      bc.t_a)))
+		  (return))
+		(let ((idx (flatten col row w h))
+		      (s_w (+ blockDim.x (* 2 RAD)))
+		      (s_h (+ blockDim.y (* 2 RAD)))
+		      (s_col (+ threadIdx.x RAD))
+		      (s_row (+ threadIdx.y RAD))
+		      (s_idx (flatten s_col s_row s_w s_h)))
+		  ,@(loop for (e f) in `((x 0)
+					 (y 0)
+					 (z 0)
+					 (w 255))
+			 collect
+			 `(setf (dot (aref d_out idx)
+				     ,e) ,f))
+		  (do0
+		   (setf (aref s_in s_idx)
+			 (aref d_temp idx))
+		   (when (< threadIdx.x RAD)
+		     (setf (aref s_in (flatten (- s_col RAD)
+					       s_row
+					       s_w
+					       s_h))
+			   (aref d_temp (flatten (- col RAD)
+						 row
+						 w
+						 h)))
+		     (setf (aref s_in (flatten (+ s_col RAD)
+					       s_row
+					       s_w
+					       s_h))
+			   (aref d_temp (flatten (+ col RAD)
+						 row
+						 w
+						 h))))
+		   (when (< threadIdx.y RAD)
+		     (setf (aref s_in (flatten s_col
+					       (- s_row RAD)
+					       s_w
+					       s_h))
+			   (aref d_temp (flatten col
+						 (- row RAD)
+						 w
+						 h)))
+		     (setf (aref s_in (flatten s_col
+					       (+ s_row blockDim.y)
+					       s_w
+					       s_h))
+			   (aref d_temp (flatten col
+						 (+ row blockDim.y)
+						 w
+						 h)))))
+		  )))
+	    
 	    (defun kernelLauncher (d_out d_temp w h bc)
 	      (declare (type float* d_temp)
 		       (type uchar4* d_out)
