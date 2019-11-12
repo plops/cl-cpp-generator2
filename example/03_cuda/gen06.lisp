@@ -36,17 +36,18 @@
                       description))
 
 	    "using namespace std;"
+	    (do0
+	     "struct uchar4;"
+	     (defstruct0 BC
+		 (x int)
+	       (y int)
+	       (rad float)
+	       (chamfer int)
+	       (t_s float)
+	       (t_a float)
+	       (t_g float))
 
-	    (defstruct0 BC
-		(x int)
-	      (y int)
-	      (rad float)
-	      (chamfer int)
-	      (t_s float)
-	      (t_a float)
-	      (t_g float))
-
-	    "enum {TX=32, TY=32};"
+	     "enum {TX=32, TY=32};")
 	    (defun divUp (a b)
 	      (declare (type int a b)
 		       (values int))
@@ -82,6 +83,43 @@
 			       (gridSize (divUp w TX)
 					 (divUp h TY))))
 		("resetKernel<<<gridSize,blockSize>>>" d_temp w h bc)))
+	    (defun tempKernel (d_out d_temp w h bc)
+	      (declare (type float* d_temp)
+		       (type uchar4* d_out)
+		       (type int w h)
+		       (type BC bc)
+		       (values "__global__ void"))
+	      (let ((s_in[])
+		    (col (+ (* blockIdx.x
+			       blockDim.x)
+			    threadIdx.x))
+		    (row (+ (* blockIdx.y
+			       blockDim.y)
+			    threadIdx.y)))
+		(declare (type "extern __shared__ float" s_in[]))
+		(when (or (<= w col)
+			  (<= h row))
+		  (return)
+		  )
+		(setf (aref d_temp (+ col (* row w)))
+		      bc.t_a)))
+	    (defun kernelLauncher (d_out d_temp w h bc)
+	      (declare (type float* d_temp)
+		       (type uchar4* d_out)
+		       (type int w h)
+		       (type BC bc))
+	      (let (((blockSize TX TY) )
+		    ((gridSize (divUp w TX)
+			       (divUp h TY)))
+		    (RAD 1)
+		    (smSz (* (sizeof float)
+			     (+ TX (* 2 RAD))
+			     (+ TY (* 2 RAD)))))
+		(declare (type "const dim3"
+			       (blockSize TX TY)
+			       (gridSize (divUp w TX)
+					 (divUp h TY))))
+		("tempKernel<<<gridSize,blockSize,smSz>>>" d_out d_temp w h bc)))
 	    
 	    (defun main ()
 	      (declare (values int))
@@ -114,7 +152,8 @@
 			  (glEnable GL_LINE_SMOOTH)
 			  (glHint GL_LINE_SMOOTH GL_NICEST))
 		     (do0
-		      (let ((d_temp  (static_cast<float*> 0)) 
+		      (let ((d_temp  (static_cast<float*> 0))
+			    (d_out (static_cast<uchar4*> 0))
 			    (bc (cast BC (curly
 					  (/ width 2)
 					  (/ height 2)
@@ -133,7 +172,7 @@
 		     (glfwPollEvents)
                       (let ((time (glfwGetTime)))
                         (glClear GL_COLOR_BUFFER_BIT)
-                        
+                        (kernelLauncher d_out d_temp width height bc)
                         (glfwSwapBuffers window)))
 		   (glfwDestroyWindow window)))
 	      

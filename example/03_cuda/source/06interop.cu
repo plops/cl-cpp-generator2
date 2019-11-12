@@ -18,6 +18,7 @@ void error_callback(int err, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
 }
 using namespace std;
+struct uchar4;
 struct BC {
   int x;
   int y;
@@ -43,6 +44,23 @@ void resetTemperature(float *d_temp, int w, int h, BC bc) {
   const dim3 gridSize(divUp(w, TX), divUp(h, TY));
   resetKernel<<<gridSize, blockSize>>>(d_temp, w, h, bc);
 }
+__global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
+  extern __shared__ float s_in[];
+  auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
+  auto row = ((((blockIdx.y) * (blockDim.y))) + (threadIdx.y));
+  if ((((w) <= (col)) || ((h) <= (row)))) {
+    return;
+  };
+  d_temp[((col) + (((row) * (w))))] = bc.t_a;
+}
+void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
+  const dim3 blockSize(TX, TY);
+  const dim3 gridSize(divUp(w, TX), divUp(h, TY));
+  auto RAD = 1;
+  auto smSz = ((sizeof(float)) * (((TX) + (((2) * (RAD))))) *
+               (((TY) + (((2) * (RAD))))));
+  tempKernel<<<gridSize, blockSize, smSz>>>(d_out, d_temp, w, h, bc);
+}
 int main() {
   (cout) << ("bla") << (endl);
   if (glfwInit()) {
@@ -60,6 +78,7 @@ int main() {
     glfwSwapInterval(1);
     glClearColor(0, 0, 0, 0);
     auto d_temp = static_cast<float *>(0);
+    auto d_out = static_cast<uchar4 *>(0);
     auto bc = (BC){((width) / (2)),
                    ((height) / (2)),
                    ((width) / ((1.e+1f))),
@@ -73,6 +92,7 @@ int main() {
       glfwPollEvents();
       auto time = glfwGetTime();
       glClear(GL_COLOR_BUFFER_BIT);
+      kernelLauncher(d_out, d_temp, width, height, bc);
       glfwSwapBuffers(window);
     }
     glfwDestroyWindow(window);
