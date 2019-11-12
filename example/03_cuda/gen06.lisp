@@ -47,10 +47,10 @@
                        (glViewport 0 0 width height))
                      (glfwSwapInterval 1)
                      (glClearColor 0 0 0 0)
-                     (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
-                     (glEnable GL_BLEND)
-                     (glEnable GL_LINE_SMOOTH)
-                     (glHint GL_LINE_SMOOTH GL_NICEST)
+                     #+nil (do0 (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
+			  (glEnable GL_BLEND)
+			  (glEnable GL_LINE_SMOOTH)
+			  (glHint GL_LINE_SMOOTH GL_NICEST))
                      )
 
 		   (while (not (glfwWindowShouldClose window))
@@ -58,11 +58,17 @@
                       (let ((time (glfwGetTime)))
                         (glClear GL_COLOR_BUFFER_BIT)
                         
-                        (glfwSwapBuffers window))))))
+                        (glfwSwapBuffers window)))
+		   (glfwDestroyWindow window)
+		   )
+		)
+
+	      
+	      (glfwTerminate)
+	      )
 
 
-		  (glfwDestroyWindow window))
-		(glfwTerminate))
-	      ))))
+	    )
+	   )
+	 )
     (write-source *code-file* code)))
- 

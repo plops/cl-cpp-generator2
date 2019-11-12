@@ -35,7 +35,8 @@
 	 (write-sequence code-str s))
        (sb-ext:run-program "/usr/bin/clang-format"
 			   (list "-i"  (namestring fn)
-				 "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"))))))
+				 ;"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
+				 ))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
 ;; http://clhs.lisp.se/Body/d_type.htm
