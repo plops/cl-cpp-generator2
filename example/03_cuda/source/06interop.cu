@@ -1,6 +1,6 @@
 // nvcc -o 06interop 06interop.cu -lglfw -lGL -march=native --std=c++14 -O3 -g
-// note that nvcc requires gcc 8
-// nvprof 06interop
+// libglad.a note that nvcc requires gcc 8 nvprof 06interop
+#include "glad.h"
 #include <GLFW/glfw3.h>
 #include <cassert>
 #include <cstdio>
@@ -144,16 +144,33 @@ void render(float *d_temp, int w, int h, BC bc) {
   }
   cudaGraphicsUnmapResources(1, &g_cuda_pbo_resource, 0);
 };
+void draw_texture(int w, int h) {
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
+  glEnable(GL_TEXTURE_2D);
+  glBegin(GL_QUADS);
+  glTexCoord2f(0, 0);
+  glVertex2f((-1.e+0f), (-1.e+0f));
+  glTexCoord2f(0, 1);
+  glVertex2f((-1.e+0f), (1.e+0f));
+  glTexCoord2f(1, 1);
+  glVertex2f((1.e+0f), (1.e+0f));
+  glTexCoord2f(1, 0);
+  glVertex2f((1.e+0f), (-1.e+0f));
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+}
 int main() {
   (cout) << ("bla") << (endl);
   if (glfwInit()) {
     glfwSetErrorCallback(error_callback);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     auto window = glfwCreateWindow(640, 480, "cuda interop", NULL, NULL);
     assert(window);
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
+    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
     int width;
     int height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -171,11 +188,24 @@ int main() {
                    (0.0e+0f)};
     cudaMalloc(&d_temp, ((width) * (height) * (sizeof(*d_temp))));
     resetTemperature(d_temp, width, height, bc);
+    GLuint pbo = 0;
+    GLuint tex = 0;
+    glGenBuffers(1, &pbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER,
+                 ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
+                 GL_STREAM_DRAW);
+    glGenTextures(GL_TEXTURE_2D, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
+                                 cudaGraphicsMapFlagsWriteDiscard);
     while (!(glfwWindowShouldClose(window))) {
       glfwPollEvents();
       auto time = glfwGetTime();
       glClear(GL_COLOR_BUFFER_BIT);
       render(d_temp, width, height, bc);
+      draw_texture(width, height);
       glfwSwapBuffers(window);
     }
     glfwDestroyWindow(window);
