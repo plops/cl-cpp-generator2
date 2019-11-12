@@ -99,6 +99,32 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
     s_in[flatten(s_col, ((s_row) + (blockDim.y)), s_w, s_h)] =
         d_temp[flatten(col, ((row) + (blockDim.y)), w, h)];
   };
+  auto dSq = ((((((col) - (bc.x))) * (((col) - (bc.x))))) +
+              (((((row) - (bc.y))) * (((row) - (bc.y))))));
+  if (dSq < ((bc.rad) * (bc.rad))) {
+    d_temp[idx] = bc.t_s;
+    return;
+  };
+  if ((((0) == (col)) || ((((w) - (1))) == (col)) || ((0) == (row)) ||
+       (((col) + (row)) < bc.chamfer) ||
+       (((w) - (bc.chamfer)) < ((col) - (row))))) {
+    d_temp[idx] = bc.t_a;
+    return;
+  };
+  if ((((h) - (1))) == (row)) {
+    d_temp[idx] = bc.t_g;
+    return;
+  };
+  __syncthreads();
+  auto temp =
+      (((2.5e-1f)) * (((s_in[flatten(((s_col) - (1)), s_row, s_w, s_h)]) +
+                       (s_in[flatten(((s_col) + (1)), s_row, s_w, s_h)]) +
+                       (s_in[flatten(s_col, ((s_row) - (1)), s_w, s_h)]) +
+                       (s_in[flatten(s_col, ((s_row) + (1)), s_w, s_h)]))));
+  d_temp[idx] = temp;
+  auto intensity = clip((int)temp);
+  d_out[idx].x = intensity;
+  d_out[idx].z = ((255) - (intensity));
 }
 void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   const dim3 blockSize(TX, TY);
