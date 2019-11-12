@@ -29,8 +29,33 @@ struct BC {
   float t_g;
 };
 typedef struct BC BC;
-enum { TX = 32, TY = 32 };
+enum { TX = 32, TY = 32, RAD = 1 };
 int divUp(int a, int b) { return ((((a) + (b) + (-1))) / (b)); }
+__device__ unsigned char clip(int n) {
+  if (255 < n) {
+    return 255;
+  } else {
+    if (n < 0) {
+      return 0;
+    } else {
+      return n;
+    }
+  }
+}
+__device__ int idxClip(int n, int ma) {
+  if (((ma) - (1)) < n) {
+    return ((ma) - (1));
+  } else {
+    if (n < 0) {
+      return 0;
+    } else {
+      return n;
+    }
+  }
+}
+__device__ int flatten(int col, int row, int w, int h) {
+  return ((idxClip(col, w)) + (((w) * (idxClip(row, h)))));
+};
 __global__ void resetKernel(float *d_temp, int w, int h, BC bc) {
   auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
   auto row = ((((blockIdx.y) * (blockDim.y))) + (threadIdx.y));
@@ -56,7 +81,6 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
 void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   const dim3 blockSize(TX, TY);
   const dim3 gridSize(divUp(w, TX), divUp(h, TY));
-  auto RAD = 1;
   auto smSz = ((sizeof(float)) * (((TX) + (((2) * (RAD))))) *
                (((TY) + (((2) * (RAD))))));
   tempKernel<<<gridSize, blockSize, smSz>>>(d_out, d_temp, w, h, bc);
