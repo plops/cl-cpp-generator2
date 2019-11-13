@@ -28,7 +28,7 @@ struct BC {
   int height;
 };
 typedef struct BC BC;
-enum { TX = 32, TY = 32, RAD = 1, ITERS_PER_RENDER = 1 };
+enum { TX = 16, TY = 16, RAD = 1, ITERS_PER_RENDER = 100 };
 int divUp(int a, int b) { return ((((a) + (b) + (-1))) / (b)); }
 __device__ unsigned char clip(int n) {
   if (255 < n) {

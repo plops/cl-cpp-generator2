@@ -119,7 +119,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	       (width int)
 	       (height int))
 	     (do0
-	      "enum {TX=32, TY=32,RAD=1, ITERS_PER_RENDER=1};"
+	      "enum {TX=16, TY=16,RAD=1, ITERS_PER_RENDER=100};"
 	      (defun divUp (a b)
 		(declare (type int a b)
 			 (values int))
