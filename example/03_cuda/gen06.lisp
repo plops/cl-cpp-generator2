@@ -369,8 +369,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 						    (* width height (sizeof GLubyte) 4)
 						    0 GL_STREAM_DRAW) `(width height (/ (* width height (sizeof GLubyte) 4)
 											(* 1024 1024s0))))
-		      #+nil (do0
-		       ,(vkprint `(glad_glGenTextures GL_TEXTURE_2D &tex) `(tex))
+		      
+		      (do0
+		       ,(vkprint `(glad_glGenTextures 1 &tex) `(tex))
 		       ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
 		       ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
 		      ,(vkprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
