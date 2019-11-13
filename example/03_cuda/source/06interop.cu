@@ -30,7 +30,7 @@ struct BC {
   int height;
 };
 typedef struct BC BC;
-enum { TX = 16, TY = 16, RAD = 1, ITERS_PER_RENDER = 100 };
+enum { TX = 16, TY = 16, RAD = 1, ITERS_PER_RENDER = 1000 };
 int divUp(int a, int b) { return ((((a) + (b) + (-1))) / (b)); }
 __device__ unsigned char clip(int n) {
   if (255 < n) {
@@ -163,7 +163,7 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   auto s_row = ((threadIdx.y) + (RAD));
   auto s_idx = flatten(s_col, s_row, s_w, s_h);
   d_out[idx].x = 0;
-  d_out[idx].y = 0;
+  d_out[idx].y = 128;
   d_out[idx].z = 0;
   d_out[idx].w = 255;
   s_in[s_idx] = d_temp[idx];
@@ -186,8 +186,7 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
     return;
   };
   if ((((0) == (col)) || ((((w) - (1))) == (col)) || ((0) == (row)) ||
-       (((col) + (row)) < bc.chamfer) ||
-       (((w) - (bc.chamfer)) < ((col) - (row))))) {
+       (((col) + (row)) < bc.chamfer))) {
     d_temp[idx] = bc.t_a;
     return;
   };
