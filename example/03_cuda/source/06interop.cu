@@ -161,6 +161,8 @@ void draw_texture(int w, int h) {
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
+void _post_call_callback_default(const char *name, void *funcptr, int len_args,
+                                 a...) {}
 int main() {
   (cout) << ("bla") << (endl);
   if (glfwInit()) {
