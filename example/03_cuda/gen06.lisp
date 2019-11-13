@@ -345,19 +345,31 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	      (glEnable GL_TEXTURE_2D)
 	      (do0 (glBegin GL_TRIANGLE_FAN ;QUADS
 			    )
+		   (progn
+		     (let ((gl_error_code (glGetError))
+			  (gl_error_string (gluErrorString gl_error_code)))
+		      ,(vkprint `() `(0 gl_error_code gl_error_string))))
 		   ,@(loop for (e f) in `((0 0) 
 					  (0 1)
 					  (1 1)
 					  (1 0))
+			  and count from 0
 			collect
 			  `(do0
-			    (glTexCoord2f ,e ,f)
-			    (glVertex2f ,(* 2 (- e .5s0))
-					,(* 2 (- f .5s0)))))
+			    
+			    (glad_glTexCoord2f ,e ,f)
+			    (progn (let ((gl_error_code (glGetError))
+				   (gl_error_string (gluErrorString gl_error_code)))
+			       ,(vkprint `() `(,(+ 10 count) gl_error_code gl_error_string))))
+			    (glad_glVertex2f ,(* 2 (- e .5s0))
+					     ,(* 2 (- f .5s0)))
+			    (progn (let ((gl_error_code (glGetError))
+				   (gl_error_string (gluErrorString gl_error_code)))
+			       ,(vkprint `() `(,(+ 20 count) gl_error_code gl_error_string))))))
 		   (glad_glEnd))
 	      (let ((gl_error_code (glGetError))
 		    (gl_error_string (gluErrorString gl_error_code)))
-		,(vkprint `() `(gl_error_code gl_error_string)))
+		,(vkprint `() `(30 gl_error_code gl_error_string)))
 	      (glDisable GL_TEXTURE_2D))
 
 	    (defun main ()

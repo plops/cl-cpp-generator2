@@ -208,14 +208,131 @@ void draw_texture(int w, int h) {
                nullptr);
   glEnable(GL_TEXTURE_2D);
   glBegin(GL_TRIANGLE_FAN);
-  glTexCoord2f(0, 0);
-  glVertex2f((-1.e+0f), (-1.e+0f));
-  glTexCoord2f(0, 1);
-  glVertex2f((-1.e+0f), (1.e+0f));
-  glTexCoord2f(1, 1);
-  glVertex2f((1.e+0f), (1.e+0f));
-  glTexCoord2f(1, 0);
-  glVertex2f((1.e+0f), (-1.e+0f));
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 0=") << (0) << (" gl_error_code=")
+                << (gl_error_code) << (" gl_error_string=") << (gl_error_string)
+                << (std::endl);
+  };
+  glad_glTexCoord2f(0, 0);
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 10=") << (10)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glVertex2f((-1.e+0f), (-1.e+0f));
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 20=") << (20)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glTexCoord2f(0, 1);
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 11=") << (11)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glVertex2f((-1.e+0f), (1.e+0f));
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 21=") << (21)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glTexCoord2f(1, 1);
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 12=") << (12)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glVertex2f((1.e+0f), (1.e+0f));
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 22=") << (22)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glTexCoord2f(1, 0);
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 13=") << (13)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
+  glad_glVertex2f((1.e+0f), (-1.e+0f));
+  {
+    auto gl_error_code = glGetError();
+    auto gl_error_string = gluErrorString(gl_error_code);
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" 23=") << (23)
+                << (" gl_error_code=") << (gl_error_code)
+                << (" gl_error_string=") << (gl_error_string) << (std::endl);
+  };
   glad_glEnd();
   auto gl_error_code = glGetError();
   auto gl_error_string = gluErrorString(gl_error_code);
@@ -225,8 +342,9 @@ void draw_texture(int w, int h) {
                         .count()) -
                    (g_start)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << ("  ") << (" gl_error_code=") << (gl_error_code)
-              << (" gl_error_string=") << (gl_error_string) << (std::endl);
+              << (__func__) << ("  ") << (" 30=") << (30) << (" gl_error_code=")
+              << (gl_error_code) << (" gl_error_string=") << (gl_error_string)
+              << (std::endl);
   glDisable(GL_TEXTURE_2D);
 }
 int main() {
