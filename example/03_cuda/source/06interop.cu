@@ -153,38 +153,54 @@ auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
 void render(float *d_temp, int w, int h, BC bc) {
   {
     auto r = cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) => ")
-                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
-                << (std::endl);
+    if (!((cudaSuccess) == (r))) {
+      (std::cout)
+          << (((std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count()) -
+               (g_start)))
+          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+          << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) => ")
+          << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
+          << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource) << (std::endl);
+    };
     assert((cudaSuccess) == (r));
   };
   auto d_out = static_cast<uchar4 *>(0);
   {
     auto r = cudaGraphicsResourceGetMappedPointer(
         reinterpret_cast<void **>(&d_out), nullptr, g_cuda_pbo_resource);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<"
-                    "void**>(&d_out), nullptr, g_cuda_pbo_resource) => ")
-                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (std::endl);
+    if (!((cudaSuccess) == (r))) {
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (g_start)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<"
+                      "void**>(&d_out), nullptr, g_cuda_pbo_resource) => ")
+                  << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
+                  << (std::endl);
+    };
     assert((cudaSuccess) == (r));
   };
   for (int i = 0; i < ITERS_PER_RENDER; (i) += (1)) {
     kernelLauncher(d_out, d_temp, w, h, bc);
   }
-  cudaGraphicsUnmapResources(1, &g_cuda_pbo_resource, 0);
+  {
+    auto r = cudaGraphicsUnmapResources(1, &g_cuda_pbo_resource, 0);
+    if (!((cudaSuccess) == (r))) {
+      (std::cout)
+          << (((std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count()) -
+               (g_start)))
+          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+          << (" cudaGraphicsUnmapResources(1, &g_cuda_pbo_resource, 0) => ")
+          << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (std::endl);
+    };
+    assert((cudaSuccess) == (r));
+  };
 };
 void draw_texture(int w, int h) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,

@@ -52,6 +52,32 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		  "std::endl"))
 	      (assert (== cudaSuccess r))
 	  )
+      )
+    (defun cuprint_ (call &optional rest)
+      `(progn (let ((r ,call))
+		(unless (== cudaSuccess r)
+		 (<< "std::cout"
+		     (- (dot ("std::chrono::high_resolution_clock::now")
+			     (time_since_epoch)
+			     (count))
+			g_start)
+		     (string " ")
+		     __FILE__
+		     (string ":")
+		     __LINE__
+		     (string " ")
+		     __func__
+		     (string ,(format nil " ~a => " (emit-c :code call)))
+		     r
+		     (string " '")
+		     (cudaGetErrorString r)
+		     (string "' ")
+		     ,@(loop for e in rest appending
+			    `((string ,(format nil " ~a=" (emit-c :code e)))
+			      ,e))
+		     "std::endl"))
+		(assert (== cudaSuccess r)))
+	  )
     )
 
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/06interop.cu"))
@@ -292,9 +318,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	       (declare (type int w h)
 			(type BC bc)
 			(type float* d_temp ))
-	       ,(cuprint `(cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0) `(g_cuda_pbo_resource))
+	       ,(cuprint_ `(cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0) `(g_cuda_pbo_resource))
 	       (let ((d_out (static_cast<uchar4*> 0)))
-		 ,(cuprint `(cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
+		 ,(cuprint_ `(cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
 								nullptr
 								g_cuda_pbo_resource))
 		 #+nil (let ((r ))
@@ -303,7 +329,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		 
 		 (dotimes (i ITERS_PER_RENDER)
 		   (kernelLauncher d_out d_temp w h bc))
-		 (cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0))
+		 ,(cuprint_ `(cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0)))
 	       ))
 
 	    (defun draw_texture (w h)
