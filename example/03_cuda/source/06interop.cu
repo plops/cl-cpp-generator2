@@ -12,11 +12,21 @@
 #include <cuda_gl_interop.h>
 #include <cuda_runtime.h>
 #include <iostream>
+auto g_start = static_cast<typeof(
+    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
   if ((((((key) == (GLFW_KEY_ESCAPE)) || ((key) == (GLFW_KEY_Q)))) &&
        ((action) == (GLFW_PRESS)))) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" glfwSetWindowShouldClose(window, GLFW_TRUE) ")
+                << (std::endl);
   };
 }
 void error_callback(int err, const char *description) {
@@ -139,8 +149,6 @@ void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   tempKernel<<<gridSize, blockSize, smSz>>>(d_out, d_temp, w, h, bc);
 }
 auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
-auto g_start = static_cast<typeof(
-    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
 void render(float *d_temp, int w, int h, BC bc) {
   cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
   (std::cout) << (((std::chrono::high_resolution_clock::now()
@@ -314,32 +322,6 @@ int main() {
         << (((((width) * (height) * (sizeof(GLubyte)) * (4))) /
              (((1024) * ((1.024e+3f))))))
         << (std::endl);
-    glad_glGenTextures(GL_TEXTURE_2D, &tex);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glGenTextures(GL_TEXTURE_2D, &tex) ")
-                << (" tex=") << (tex) << (std::endl);
-    glad_glBindTexture(GL_TEXTURE_2D, tex);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glBindTexture(GL_TEXTURE_2D, tex) ")
-                << (std::endl);
-    glad_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" glad_glTexParameteri(GL_TEXTURE_2D, "
-                    "GL_TEXTURE_MIN_FILTER, GL_NEAREST) ")
-                << (std::endl);
     cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
                                  cudaGraphicsMapFlagsWriteDiscard);
     (std::cout) << (((std::chrono::high_resolution_clock::now()

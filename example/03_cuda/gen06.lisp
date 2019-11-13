@@ -49,6 +49,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		     <cuda_runtime.h>
 		     <cuda_gl_interop.h>
 		     <chrono>)
+	    
+	    (let ((g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+										       (time_since_epoch)
+										       (count)))))
+			     0))))
 
 	    (defun key_callback (window key scancode action mods)
 	      (declare (type GLFWwindow* window)
@@ -56,7 +61,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
              (when (and (or (== key GLFW_KEY_ESCAPE)
                             (== key GLFW_KEY_Q))
                         (== action GLFW_PRESS)) 
-               (glfwSetWindowShouldClose window GLFW_TRUE)))
+               ,(vkprint `(glfwSetWindowShouldClose window GLFW_TRUE))))
 	    (defun error_callback (err description)
              (declare (type int err)
                       (type "const char*" description)
@@ -254,10 +259,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 
 	    (do0
 	     (let ((g_cuda_pbo_resource ("static_cast<struct cudaGraphicsResource*>" 0))
-		   (g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
-										       (time_since_epoch)
-										       (count)))))
-			     0))))
+		   ))
 	     (defun render (d_temp w h bc)
 	       (declare (type int w h)
 			(type BC bc)
@@ -367,9 +369,10 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 						    (* width height (sizeof GLubyte) 4)
 						    0 GL_STREAM_DRAW) `(width height (/ (* width height (sizeof GLubyte) 4)
 											(* 1024 1024s0))))
-		      ,(vkprint `(glad_glGenTextures GL_TEXTURE_2D &tex) `(tex))
-		      ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
-		      ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST))
+		      #+nil (do0
+		       ,(vkprint `(glad_glGenTextures GL_TEXTURE_2D &tex) `(tex))
+		       ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
+		       ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
 		      ,(vkprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
 						      pbo
 						      cudaGraphicsMapFlagsWriteDiscard))
