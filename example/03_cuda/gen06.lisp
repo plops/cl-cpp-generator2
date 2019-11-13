@@ -381,7 +381,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 					212s0
 					70s0
 					0s0))))
-		      ,(vkprint `(cudaMalloc &d_temp (* width height (sizeof float)))
+		      ,(cuprint `(cudaMalloc &d_temp (* width height (sizeof float)))
 				`(width height (/ (* width height (sizeof float))
 						  (* 1024 1024s0))))
 		      (resetTemperature d_temp width height bc)))
@@ -400,9 +400,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		       ,(vkprint `(glad_glGenTextures 1 &tex) `(tex))
 		       ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
 		       ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
-		      ,(vkprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
+		      ,(cuprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
 						      pbo
-						      cudaGraphicsMapFlagsWriteDiscard))
+						      cudaGraphicsMapFlagsWriteDiscard)
+				`(g_cuda_pbo_resource
+				  pbo))
 		      
 
 		      (while (not (glfwWindowShouldClose window))

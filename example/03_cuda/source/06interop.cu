@@ -298,19 +298,33 @@ int main() {
                    (2.12e+2f),
                    (7.e+1f),
                    (0.0e+0f)};
-    cudaMalloc(&d_temp, ((width) * (height) * (sizeof(float))));
-    (std::cout)
-        << (((std::chrono::high_resolution_clock::now()
-                  .time_since_epoch()
-                  .count()) -
-             (g_start)))
-        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-        << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) ")
-        << (" width=") << (width) << (" height=") << (height)
-        << (" ((((width)*(height)*(sizeof(float))))/(((1024)*((1.024e+3f)))))=")
-        << (((((width) * (height) * (sizeof(float)))) /
-             (((1024) * ((1.024e+3f))))))
-        << (std::endl);
+    {
+      auto r = cudaMalloc(&d_temp, ((width) * (height) * (sizeof(float))));
+      if (!((cudaSuccess) == (r))) {
+        ;
+        (std::cout) << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (g_start)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << ("  ") << (" r=") << (r)
+                    << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                    << (std::endl);
+      };
+      (std::cout)
+          << (((std::chrono::high_resolution_clock::now()
+                    .time_since_epoch()
+                    .count()) -
+               (g_start)))
+          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+          << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) ")
+          << (" width=") << (width) << (" height=") << (height)
+          << (" ((((width)*(height)*(sizeof(float))))/"
+              "(((1024)*((1.024e+3f)))))=")
+          << (((((width) * (height) * (sizeof(float)))) /
+               (((1024) * ((1.024e+3f))))))
+          << (std::endl);
+    };
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
     GLuint tex = 0;
@@ -374,17 +388,31 @@ int main() {
                 << (" glad_glTexParameteri(GL_TEXTURE_2D, "
                     "GL_TEXTURE_MIN_FILTER, GL_NEAREST) ")
                 << (std::endl);
-    cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
-                                 cudaGraphicsMapFlagsWriteDiscard);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo, "
-                    "cudaGraphicsMapFlagsWriteDiscard) ")
-                << (std::endl);
+    {
+      auto r = cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
+                                            cudaGraphicsMapFlagsWriteDiscard);
+      if (!((cudaSuccess) == (r))) {
+        ;
+        (std::cout) << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (g_start)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << ("  ") << (" r=") << (r)
+                    << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                    << (std::endl);
+      };
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (g_start)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, "
+                      "pbo, cudaGraphicsMapFlagsWriteDiscard) ")
+                  << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
+                  << (" pbo=") << (pbo) << (std::endl);
+    };
     while (!(glfwWindowShouldClose(window))) {
       glfwPollEvents();
       auto time = glfwGetTime();
