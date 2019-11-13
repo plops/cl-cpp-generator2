@@ -98,7 +98,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		     <cstdio>
 		     <iostream>
 		     <cuda_runtime.h>
-		     
+		     <GL/glu.h>
 		     <chrono>)
 
 	    " "
@@ -343,7 +343,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			    GL_UNSIGNED_BYTE
 			    nullptr)
 	      (glEnable GL_TEXTURE_2D)
-	      (do0 (glBegin GL_QUADS)
+	      (do0 (glBegin GL_TRIANGLE_FAN ;QUADS
+			    )
 		   ,@(loop for (e f) in `((0 0) 
 					  (0 1)
 					  (1 1)
@@ -353,7 +354,10 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			    (glTexCoord2f ,e ,f)
 			    (glVertex2f ,(* 2 (- e .5s0))
 					,(* 2 (- f .5s0)))))
-		   (glEnd))
+		   (glad_glEnd))
+	      (let ((gl_error_code (glGetError))
+		    (gl_error_string (gluErrorString gl_error_code)))
+		,(vkprint `() `(gl_error_code gl_error_string)))
 	      (glDisable GL_TEXTURE_2D))
 
 	    (defun main ()

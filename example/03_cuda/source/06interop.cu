@@ -5,6 +5,7 @@
 // nvcc requires gcc 8 nvprof 06interop
 #include <glad/glad.h>
 
+#include <GL/glu.h>
 #include <GLFW/glfw3.h>
 #include <cassert>
 #include <chrono>
@@ -206,7 +207,7 @@ void draw_texture(int w, int h) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
   glEnable(GL_TEXTURE_2D);
-  glBegin(GL_QUADS);
+  glBegin(GL_TRIANGLE_FAN);
   glTexCoord2f(0, 0);
   glVertex2f((-1.e+0f), (-1.e+0f));
   glTexCoord2f(0, 1);
@@ -215,7 +216,17 @@ void draw_texture(int w, int h) {
   glVertex2f((1.e+0f), (1.e+0f));
   glTexCoord2f(1, 0);
   glVertex2f((1.e+0f), (-1.e+0f));
-  glEnd();
+  glad_glEnd();
+  auto gl_error_code = glGetError();
+  auto gl_error_string = gluErrorString(gl_error_code);
+  ;
+  (std::cout) << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (g_start)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << ("  ") << (" gl_error_code=") << (gl_error_code)
+              << (" gl_error_string=") << (gl_error_string) << (std::endl);
   glDisable(GL_TEXTURE_2D);
 }
 int main() {

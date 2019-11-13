@@ -1,5 +1,5 @@
 CC=/opt/cuda/bin/nvcc
-LDFLAGS=-lglfw -lGL -ldl
+LDFLAGS=-lglfw -lGL -ldl -lGLU
 CFLAGS=-IGL/include --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb #-Xcompiler=-fsanitize=address
 
 all: 03matmul 04matmul 06interop
