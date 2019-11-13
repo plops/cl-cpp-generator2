@@ -89,7 +89,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	    "// note that nvcc requires gcc 8"
 	    "// nvprof 06interop"
 	    "// https://github.com/myurtoglu/cudaforengineers/tree/master/heat_2d"
-	    "// 2019 duane storti cuda for engineers p. 90"
+	    "// 2019 duane storti cuda for engineers p. 90" 
 					;"#define GLAD_DEBUG"
 	    (include <glad/glad.h>)
 	    " "
