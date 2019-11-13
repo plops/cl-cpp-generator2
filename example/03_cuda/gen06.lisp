@@ -30,24 +30,25 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
       )
     (defun cuprint (call &optional rest)
       `(progn (let ((r ,call))
-	      (unless (== cudaSuccess r)
-		,(vkprint `() `(r (cudaGetErrorString r)))))
-	    (<< "std::cout"
-	      (- (dot ("std::chrono::high_resolution_clock::now")
-		    (time_since_epoch)
-		    (count))
-		 g_start)
-	      (string " ")
-	      __FILE__
-	      (string ":")
-	      __LINE__
-	      (string " ")
-	      __func__
-	      (string ,(format nil " ~a " (emit-c :code call)))
-	      ,@(loop for e in rest appending
-		     `((string ,(format nil " ~a=" (emit-c :code e)))
-		       ,e))
-	      "std::endl")
+		(unless (== cudaSuccess r)
+		  ,(vkprint `() `(r (cudaGetErrorString r)))))
+	      (<< "std::cout"
+		  (- (dot ("std::chrono::high_resolution_clock::now")
+			  (time_since_epoch)
+			  (count))
+		     g_start)
+		  (string " ")
+		  __FILE__
+		  (string ":")
+		  __LINE__
+		  (string " ")
+		  __func__
+		  (string ,(format nil " ~a " (emit-c :code call)))
+		  ,@(loop for e in rest appending
+			 `((string ,(format nil " ~a=" (emit-c :code e)))
+			   ,e))
+		  "std::endl")
+	      (assert (== cudaSuccess r))
 	  )
     )
 
@@ -69,8 +70,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		     <cstdio>
 		     <iostream>
 		     <cuda_runtime.h>
-		     <cuda_gl_interop.h>
+		     
 		     <chrono>)
+
+	    " "
+	    (include <cuda_gl_interop.h>)
 	    
 	    (let ((g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
 										       (time_since_epoch)
@@ -402,7 +406,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		       ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
 		      ,(cuprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
 						      pbo
-						      cudaGraphicsMapFlagsWriteDiscard)
+						      cudaGraphicsMapFlagsWriteDiscard
+						      ;; cuda will not read from here and discards all contents by overwriting it
+						      )
 				`(g_cuda_pbo_resource
 				  pbo))
 		      

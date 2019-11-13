@@ -9,9 +9,10 @@
 #include <cassert>
 #include <chrono>
 #include <cstdio>
-#include <cuda_gl_interop.h>
 #include <cuda_runtime.h>
 #include <iostream>
+
+#include <cuda_gl_interop.h>
 auto g_start = static_cast<typeof(
     std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -172,6 +173,7 @@ void render(float *d_temp, int w, int h, BC bc) {
                 << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) ")
                 << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
                 << (std::endl);
+    assert((cudaSuccess) == (r));
   };
   auto d_out = static_cast<uchar4 *>(0);
   {
@@ -197,6 +199,7 @@ void render(float *d_temp, int w, int h, BC bc) {
                 << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<"
                     "void**>(&d_out), nullptr, g_cuda_pbo_resource) ")
                 << (std::endl);
+    assert((cudaSuccess) == (r));
   };
   for (int i = 0; i < ITERS_PER_RENDER; (i) += (1)) {
     kernelLauncher(d_out, d_temp, w, h, bc);
@@ -324,6 +327,7 @@ int main() {
           << (((((width) * (height) * (sizeof(float)))) /
                (((1024) * ((1.024e+3f))))))
           << (std::endl);
+      assert((cudaSuccess) == (r));
     };
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
@@ -412,6 +416,7 @@ int main() {
                       "pbo, cudaGraphicsMapFlagsWriteDiscard) ")
                   << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
                   << (" pbo=") << (pbo) << (std::endl);
+      assert((cudaSuccess) == (r));
     };
     while (!(glfwWindowShouldClose(window))) {
       glfwPollEvents();
