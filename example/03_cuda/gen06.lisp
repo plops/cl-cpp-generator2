@@ -1,4 +1,4 @@
-(eval-when (:compile-toplevel :execute :load-toplevel)
+s(eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2"))
 
 (in-package :cl-cpp-generator2)
@@ -8,6 +8,22 @@
 ;; http://www.findinglisp.com/blog/2004/06/basic-automaton-macro.html
 
 (progn
+    (defun vkprint (call)
+    `(do0 (<< "std::cout"
+	      (dot ("std::chrono::high_resolution_clock::now")
+		   (time_since_epoch)
+		   (count))
+	      (string " ")
+	      __FILE__
+	      (string ":")
+	      __LINE__
+	      (string " ")
+	      __func__
+	      (string ,(format nil " ~a " (emit-c :code call)))
+	      "std::endl")
+	  ,call)
+    )
+
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/06interop.cu"))
   (let* ((code
 	  `(do0
@@ -26,7 +42,8 @@
 		     <cstdio>
 		     <iostream>
 		     <cuda_runtime.h>
-		     <cuda_gl_interop.h>)
+		     <cuda_gl_interop.h>
+		     <chrono>)
 
 	    (defun key_callback (window key scancode action mods)
 	      (declare (type GLFWwindow* window)
@@ -243,7 +260,7 @@
 						       nullptr
 						       g_cuda_pbo_resource)
 		 (dotimes (i ITERS_PER_RENDER)
-		  (kernelLauncher d_out d_temp w h bc))
+		   (kernelLauncher d_out d_temp w h bc))
 		 (cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0))
 	       ))
 
@@ -284,12 +301,10 @@
 		      name))))
 	    (defun main ()
 	      (declare (values int))
-	      (<< cout (string "bla") endl)
 	      (when (glfwInit)
+		,(vkprint `(glfwSetErrorCallback error_callback))
 		
-		(glfwSetErrorCallback error_callback)
-
-		(do0
+		#+nil (do0
 		 (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 4)
 		 (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
 
@@ -297,28 +312,28 @@
 						NULL NULL)))
 
 		  (assert window)
-		  (glfwSetKeyCallback window key_callback)
-		  (glfwMakeContextCurrent window)
+		  ,(vkprint `(glfwSetKeyCallback window key_callback))
+		  ,(vkprint `(glfwMakeContextCurrent window))
 		  (assert (gladLoadGL))
 		  (<< cout (string "GL version " ) GLVersion.major
 		      (string " ") GLVersion.minor endl)
-		  (gladLoadGLLoader (reinterpret_cast<GLADloadproc> glfwGetProcAddress))
+		  ,(vkprint `(gladLoadGLLoader (reinterpret_cast<GLADloadproc> glfwGetProcAddress)))
 		  ;(glad_set_post_callback _post_call_callback_default)
 		  (do0
                    (let ((width)
                          (height))
                      (declare (type int width height))
-                     (glfwGetFramebufferSize window &width &height)
-                     (glViewport 0 0 width height))
-                   (glfwSwapInterval 1)
-                   (glClearColor 0 0 0 0)
+                     ,(vkprint `(glfwGetFramebufferSize window &width &height))
+                     (glad_glViewport 0 0 width height))
+                   ,(vkprint `(glfwSwapInterval 1))
+                   (glad_glClearColor 0 0 0 0)
                    #+nil (do0 (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
 			      (glEnable GL_BLEND)
 			      (glEnable GL_LINE_SMOOTH)
 			      (glHint GL_LINE_SMOOTH GL_NICEST))
 		   (do0
 		    (let ((d_temp  (static_cast<float*> 0))
-			  (d_out (static_cast<uchar4*> 0))
+			  ;(d_out (static_cast<uchar4*> 0))
 			  (bc (cast BC (curly
 					(/ width 2)
 					(/ height 2)
@@ -327,19 +342,19 @@
 					212s0
 					70s0
 					0s0))))
-		      (cudaMalloc &d_temp (* width height (sizeof *d_temp)))
+		     ,(vkprint `(cudaMalloc &d_temp (* width height (sizeof *d_temp))))
 		      (resetTemperature d_temp width height bc)))
 		   (do0
 		    (let ((pbo 0)
 			  (tex 0))
 		      (declare (type GLuint pbo tex))
-		      (glGenBuffers 1 &pbo)
-		      (glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo)
-		      (glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
+		      (glad_glGenBuffers 1 &pbo)
+		      (glad_glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo)
+		      (glad_glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
 				    0 GL_STREAM_DRAW)
-		      (glGenTextures GL_TEXTURE_2D &tex)
-		      (glBindTexture GL_TEXTURE_2D tex)
-		      (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
+		      (glad_glGenTextures GL_TEXTURE_2D &tex)
+		      (glad_glBindTexture GL_TEXTURE_2D tex)
+		      (glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
 		      (cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
 						    pbo
 						    cudaGraphicsMapFlagsWriteDiscard)
@@ -355,8 +370,8 @@
 			  (glfwSwapBuffers window)))
 		      (when pbo
 			(cudaGraphicsUnregisterResource g_cuda_pbo_resource)
-			(glDeleteBuffers 1 &pbo)
-			(glDeleteTextures 1 &tex))
+			(glad_glDeleteBuffers 1 &pbo)
+			(glad_glDeleteTextures 1 &tex))
 		      (glfwDestroyWindow window))))))
 	      (do0
 	       

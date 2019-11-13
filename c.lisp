@@ -436,7 +436,7 @@ entry return-values contains a list of return values"
 		  
 
 		  (aref (destructuring-bind (name &rest indices) (cdr code)
-			  (format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
+			  ;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
 			  (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
 		  
 		  (-> (let ((args (cdr code)))

@@ -7,6 +7,7 @@
 
 #include <GLFW/glfw3.h>
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <cuda_gl_interop.h>
 #include <cuda_runtime.h>
@@ -165,27 +166,61 @@ void draw_texture(int w, int h) {
   glDisable(GL_TEXTURE_2D);
 }
 int main() {
-  (cout) << ("bla") << (endl);
   if (glfwInit()) {
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" glfwSetErrorCallback(error_callback) ")
+                << (std::endl);
     glfwSetErrorCallback(error_callback);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     auto window = glfwCreateWindow(640, 480, "cuda interop", NULL, NULL);
     assert(window);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" glfwSetKeyCallback(window, key_callback) ")
+                << (std::endl);
     glfwSetKeyCallback(window, key_callback);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" glfwMakeContextCurrent(window) ")
+                << (std::endl);
     glfwMakeContextCurrent(window);
     assert(gladLoadGL());
     (cout) << ("GL version ") << (GLVersion.major) << (" ") << (GLVersion.minor)
            << (endl);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" gladLoadGLLoader(reinterpret_cast<GLADloadproc>("
+                    "glfwGetProcAddress)) ")
+                << (std::endl);
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
     int width;
     int height;
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" glfwGetFramebufferSize(window, &width, &height) ")
+                << (std::endl);
     glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
+    glad_glViewport(0, 0, width, height);
+    (std::cout) << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" glfwSwapInterval(1) ") << (std::endl);
     glfwSwapInterval(1);
-    glClearColor(0, 0, 0, 0);
+    glad_glClearColor(0, 0, 0, 0);
     auto d_temp = static_cast<float *>(0);
-    auto d_out = static_cast<uchar4 *>(0);
     auto bc = (BC){((width) / (2)),
                    ((height) / (2)),
                    ((width) / ((1.e+1f))),
@@ -193,18 +228,25 @@ int main() {
                    (2.12e+2f),
                    (7.e+1f),
                    (0.0e+0f)};
+    (std::cout)
+        << (std::chrono::high_resolution_clock::now()
+                .time_since_epoch()
+                .count())
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(*d_temp)))) ")
+        << (std::endl);
     cudaMalloc(&d_temp, ((width) * (height) * (sizeof(*d_temp))));
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
     GLuint tex = 0;
-    glGenBuffers(1, &pbo);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                 ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
-                 GL_STREAM_DRAW);
-    glGenTextures(GL_TEXTURE_2D, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glad_glGenBuffers(1, &pbo);
+    glad_glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glad_glBufferData(GL_PIXEL_UNPACK_BUFFER,
+                      ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
+                      GL_STREAM_DRAW);
+    glad_glGenTextures(GL_TEXTURE_2D, &tex);
+    glad_glBindTexture(GL_TEXTURE_2D, tex);
+    glad_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
                                  cudaGraphicsMapFlagsWriteDiscard);
     while (!(glfwWindowShouldClose(window))) {
@@ -217,8 +259,8 @@ int main() {
     }
     if (pbo) {
       cudaGraphicsUnregisterResource(g_cuda_pbo_resource);
-      glDeleteBuffers(1, &pbo);
-      glDeleteTextures(1, &tex);
+      glad_glDeleteBuffers(1, &pbo);
+      glad_glDeleteTextures(1, &tex);
     };
     glfwDestroyWindow(window);
   };
