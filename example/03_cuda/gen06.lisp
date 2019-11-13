@@ -9,7 +9,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 
 (progn
     (defun vkprint (call &optional rest)
-    `(do0 (<< "std::cout"
+      `(do0 ,call
+	    (<< "std::cout"
 	      (- (dot ("std::chrono::high_resolution_clock::now")
 		    (time_since_epoch)
 		    (count))
@@ -25,7 +26,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		     `((string ,(format nil " ~a=" (emit-c :code e)))
 		       ,e))
 	      "std::endl")
-	  ,call)
+	  )
     )
 
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/06interop.cu"))
@@ -322,7 +323,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 						NULL NULL)))
 
 		  (assert window)
-		  ,(vkprint `(glfwSetKeyCallback window key_callback))
+		  ,(vkprint `(glfwSetKeyCallback window key_callback) `(window))
 		  ,(vkprint `(glfwMakeContextCurrent window))
 		  (assert (gladLoadGL))
 		  (<< cout (string "GL version " ) GLVersion.major
@@ -333,8 +334,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
                    (let ((width)
                          (height))
                      (declare (type int width height))
-                     ,(vkprint `(glfwGetFramebufferSize window &width &height))
-                     (glad_glViewport 0 0 width height))
+                     ,(vkprint `(glfwGetFramebufferSize window &width &height) `(width height))
+                     ,(vkprint `(glad_glViewport 0 0 width height)))
                    ,(vkprint `(glfwSwapInterval 1))
                    (glad_glClearColor 0 0 0 0)
                    #+nil (do0 (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
