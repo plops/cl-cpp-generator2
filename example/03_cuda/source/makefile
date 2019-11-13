@@ -4,12 +4,15 @@ CFLAGS=-IGL/include  --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggd
 
 all: 03matmul 04matmul 06interop
 
-06interop: 06interop.cu GL/src/glad.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ GL/src/glad.c $< 
+GL/src/glad.o: GL/src/glad.c
+	gcc -O3 -ggdb -march=native -ffast-math -c -o GL/src/glad.o -IGL/include   GL/src/glad.c
+
+06interop: 06interop.cu GL/src/glad.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ GL/src/glad.o $< 
 
 
 %: %.cu
 	$(CC) -o $@ $< 
 
 clean:
-	rm 03matmul 04matmul 06interop
+	rm 03matmul 04matmul 06interop  GL/src/glad.o

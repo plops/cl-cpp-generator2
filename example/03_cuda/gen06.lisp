@@ -8,7 +8,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 ;; http://www.findinglisp.com/blog/2004/06/basic-automaton-macro.html
 
 (progn
-    (defun vkprint (call)
+    (defun vkprint (call &optional rest)
     `(do0 (<< "std::cout"
 	      (- (dot ("std::chrono::high_resolution_clock::now")
 		    (time_since_epoch)
@@ -21,6 +21,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	      (string " ")
 	      __func__
 	      (string ,(format nil " ~a " (emit-c :code call)))
+	      ,@(loop for e in rest appending
+		     `((string ,(format nil " ~a=" (emit-c :code e)))
+		       ,e))
 	      "std::endl")
 	  ,call)
     )
@@ -258,11 +261,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	       (declare (type int w h)
 			(type BC bc)
 			(type float* d_temp ))
-	       (cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0)
+	       ,(vkprint `(cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0) `(g_cuda_pbo_resource))
 	       (let ((d_out (static_cast<uchar4*> 0)))
-		 (cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
-						       nullptr
-						       g_cuda_pbo_resource)
+		 ,(vkprint `(cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
+								  nullptr
+								  g_cuda_pbo_resource))
 		 (dotimes (i ITERS_PER_RENDER)
 		   (kernelLauncher d_out d_temp w h bc))
 		 (cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0))
@@ -349,22 +352,22 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 					212s0
 					70s0
 					0s0))))
-		     ,(vkprint `(cudaMalloc &d_temp (* width height (sizeof *d_temp))))
+		     ,(vkprint `(cudaMalloc &d_temp (* width height (sizeof float))))
 		      (resetTemperature d_temp width height bc)))
 		   (do0
 		    (let ((pbo 0)
 			  (tex 0))
 		      (declare (type GLuint pbo tex))
-		      (glad_glGenBuffers 1 &pbo)
-		      (glad_glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo)
-		      (glad_glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
-				    0 GL_STREAM_DRAW)
-		      (glad_glGenTextures GL_TEXTURE_2D &tex)
-		      (glad_glBindTexture GL_TEXTURE_2D tex)
-		      (glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
-		      (cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
-						    pbo
-						    cudaGraphicsMapFlagsWriteDiscard)
+		      ,(vkprint `(glad_glGenBuffers 1 &pbo) `(pbo))
+		      ,(vkprint `(glad_glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo))
+		      ,(vkprint `(glad_glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
+					   0 GL_STREAM_DRAW))
+		      ,(vkprint `(glad_glGenTextures GL_TEXTURE_2D &tex) `(tex))
+		      ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
+		      ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST))
+		      ,(vkprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
+						      pbo
+						      cudaGraphicsMapFlagsWriteDiscard))
 		      
 
 		      (while (not (glfwWindowShouldClose window))
@@ -376,11 +379,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			  (draw_texture width height)
 			  (glfwSwapBuffers window)))
 		      (when pbo
-			(cudaGraphicsUnregisterResource g_cuda_pbo_resource)
-			(glad_glDeleteBuffers 1 &pbo)
-			(glad_glDeleteTextures 1 &tex))
-		      (glfwDestroyWindow window))))))
+			,(vkprint `(cudaGraphicsUnregisterResource g_cuda_pbo_resource))
+			,(vkprint `(glad_glDeleteBuffers 1 &pbo))
+			,(vkprint `(glad_glDeleteTextures 1 &tex)))
+		      ,(vkprint `(glfwDestroyWindow window)))))))
 	      (do0
 	       
-	       (glfwTerminate))))))
+	       ,(vkprint `(glfwTerminate)))))))
     (write-source *code-file* code)))
