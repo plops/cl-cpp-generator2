@@ -30,9 +30,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
       )
     (defun cuprint (call &optional rest)
       `(progn (let ((r ,call))
-		(unless (== cudaSuccess r)
-		  ,(vkprint `() `(r (cudaGetErrorString r)))))
-	      (<< "std::cout"
+		(<< "std::cout"
 		  (- (dot ("std::chrono::high_resolution_clock::now")
 			  (time_since_epoch)
 			  (count))
@@ -43,11 +41,15 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		  __LINE__
 		  (string " ")
 		  __func__
-		  (string ,(format nil " ~a " (emit-c :code call)))
+		  (string ,(format nil " ~a => " (emit-c :code call)))
+		  r
+		  (string " '")
+		  (cudaGetErrorString r)
+		  (string "' ")
 		  ,@(loop for e in rest appending
 			 `((string ,(format nil " ~a=" (emit-c :code e)))
 			   ,e))
-		  "std::endl")
+		  "std::endl"))
 	      (assert (== cudaSuccess r))
 	  )
     )
@@ -344,6 +346,18 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	      (setf g_start (dot ("std::chrono::high_resolution_clock::now")
 										       (time_since_epoch)
 										       (count)))
+
+	      (do0
+					;cudaSetDevice(0);
+					;cudaDeviceSynchronize();
+					;cudaThreadSynchronize();
+	       (let ((n_cuda 0))
+		 ,(cuprint `(cudaGetDeviceCount &n_cuda) `(n_cuda)))
+	       ,(cuprint `(cudaSetDevice 0))
+	       ;,(cuprint `(cudaDeviceSynchronize))
+	       ;,(cuprint `(cudaThreadSynchronize))
+	       )
+	      
 	      (when (glfwInit)
 		,(vkprint `(glfwSetErrorCallback error_callback))
 		

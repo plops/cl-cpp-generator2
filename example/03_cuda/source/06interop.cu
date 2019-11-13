@@ -153,24 +153,14 @@ auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
 void render(float *d_temp, int w, int h, BC bc) {
   {
     auto r = cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
-    if (!((cudaSuccess) == (r))) {
-      ;
-      (std::cout) << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (g_start)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << ("  ") << (" r=") << (r)
-                  << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
-                  << (std::endl);
-    };
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
-                << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) ")
+                << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) => ")
+                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
                 << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
                 << (std::endl);
     assert((cudaSuccess) == (r));
@@ -179,17 +169,6 @@ void render(float *d_temp, int w, int h, BC bc) {
   {
     auto r = cudaGraphicsResourceGetMappedPointer(
         reinterpret_cast<void **>(&d_out), nullptr, g_cuda_pbo_resource);
-    if (!((cudaSuccess) == (r))) {
-      ;
-      (std::cout) << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (g_start)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << ("  ") << (" r=") << (r)
-                  << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
-                  << (std::endl);
-    };
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
@@ -197,7 +176,8 @@ void render(float *d_temp, int w, int h, BC bc) {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
                 << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<"
-                    "void**>(&d_out), nullptr, g_cuda_pbo_resource) ")
+                    "void**>(&d_out), nullptr, g_cuda_pbo_resource) => ")
+                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
                 << (std::endl);
     assert((cudaSuccess) == (r));
   };
@@ -225,6 +205,30 @@ void draw_texture(int w, int h) {
 int main() {
   g_start =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  auto n_cuda = 0;
+  {
+    auto r = cudaGetDeviceCount(&n_cuda);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cudaGetDeviceCount(&n_cuda) => ") << (r)
+                << (" '") << (cudaGetErrorString(r)) << ("' ") << (" n_cuda=")
+                << (n_cuda) << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
+  {
+    auto r = cudaSetDevice(0);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cudaSetDevice(0) => ") << (r) << (" '")
+                << (cudaGetErrorString(r)) << ("' ") << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
   if (glfwInit()) {
     glfwSetErrorCallback(error_callback);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
@@ -303,25 +307,15 @@ int main() {
                    (0.0e+0f)};
     {
       auto r = cudaMalloc(&d_temp, ((width) * (height) * (sizeof(float))));
-      if (!((cudaSuccess) == (r))) {
-        ;
-        (std::cout) << (((std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count()) -
-                         (g_start)))
-                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                    << (__func__) << ("  ") << (" r=") << (r)
-                    << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
-                    << (std::endl);
-      };
       (std::cout)
           << (((std::chrono::high_resolution_clock::now()
                     .time_since_epoch()
                     .count()) -
                (g_start)))
           << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-          << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) ")
-          << (" width=") << (width) << (" height=") << (height)
+          << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) => ")
+          << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" width=")
+          << (width) << (" height=") << (height)
           << (" ((((width)*(height)*(sizeof(float))))/"
               "(((1024)*((1.024e+3f)))))=")
           << (((((width) * (height) * (sizeof(float)))) /
@@ -395,17 +389,6 @@ int main() {
     {
       auto r = cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
                                             cudaGraphicsMapFlagsWriteDiscard);
-      if (!((cudaSuccess) == (r))) {
-        ;
-        (std::cout) << (((std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count()) -
-                         (g_start)))
-                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                    << (__func__) << ("  ") << (" r=") << (r)
-                    << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
-                    << (std::endl);
-      };
       (std::cout) << (((std::chrono::high_resolution_clock::now()
                             .time_since_epoch()
                             .count()) -
@@ -413,7 +396,8 @@ int main() {
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__)
                   << (" cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, "
-                      "pbo, cudaGraphicsMapFlagsWriteDiscard) ")
+                      "pbo, cudaGraphicsMapFlagsWriteDiscard) => ")
+                  << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
                   << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
                   << (" pbo=") << (pbo) << (std::endl);
       assert((cudaSuccess) == (r));
