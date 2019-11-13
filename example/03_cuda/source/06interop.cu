@@ -3,6 +3,8 @@
 // nvcc -o 06interop GL/src/glad.c 06interop.cu -IGL/include -lglfw -lGL
 // --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb -ldl note that
 // nvcc requires gcc 8 nvprof 06interop
+// https://github.com/myurtoglu/cudaforengineers/tree/master/heat_2d
+// 2019 duane storti cuda for engineers p. 90
 #include <glad/glad.h>
 
 #include <GL/glu.h>
