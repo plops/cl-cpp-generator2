@@ -161,17 +161,19 @@ void render(float *d_temp, int w, int h, BC bc) {
               << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
               << (std::endl);
   auto d_out = static_cast<uchar4 *>(0);
-  cudaGraphicsResourceGetMappedPointer(reinterpret_cast<void **>(&d_out),
-                                       nullptr, g_cuda_pbo_resource);
-  (std::cout) << (((std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count()) -
-                   (g_start)))
-              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__)
-              << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<void*"
-                  "*>(&d_out), nullptr, g_cuda_pbo_resource) ")
-              << (std::endl);
+  auto r = cudaGraphicsResourceGetMappedPointer(
+      reinterpret_cast<void **>(&d_out), nullptr, g_cuda_pbo_resource);
+  if (!((cudaSuccess) == (r))) {
+    ;
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << ("  ") << (" r=") << (r)
+                << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                << (std::endl);
+  };
   for (int i = 0; i < ITERS_PER_RENDER; (i) += (1)) {
     kernelLauncher(d_out, d_temp, w, h, bc);
   }
@@ -394,6 +396,13 @@ int main() {
                   << (__func__) << (" glad_glDeleteTextures(1, &tex) ")
                   << (std::endl);
     };
+    cudaFree(d_temp);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cudaFree(d_temp) ") << (std::endl);
     glfwDestroyWindow(window);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()

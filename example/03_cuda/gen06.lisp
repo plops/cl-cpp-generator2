@@ -266,9 +266,12 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			(type float* d_temp ))
 	       ,(vkprint `(cudaGraphicsMapResources 1 &g_cuda_pbo_resource 0) `(g_cuda_pbo_resource))
 	       (let ((d_out (static_cast<uchar4*> 0)))
-		 ,(vkprint `(cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
-								  nullptr
-								  g_cuda_pbo_resource))
+		 (let ((r (cudaGraphicsResourceGetMappedPointer (reinterpret_cast<void**> &d_out)
+								nullptr
+								g_cuda_pbo_resource)))
+		   (unless (== cudaSuccess r)
+		     ,(vkprint `() `(r (cudaGetErrorString r)))))
+		 
 		 (dotimes (i ITERS_PER_RENDER)
 		   (kernelLauncher d_out d_temp w h bc))
 		 (cudaGraphicsUnmapResources 1 &g_cuda_pbo_resource 0))
@@ -391,6 +394,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			,(vkprint `(cudaGraphicsUnregisterResource g_cuda_pbo_resource))
 			,(vkprint `(glad_glDeleteBuffers 1 &pbo))
 			,(vkprint `(glad_glDeleteTextures 1 &tex)))
+		      ,(vkprint `(cudaFree d_temp))
 		      ,(vkprint `(glfwDestroyWindow window)))))))
 	      (do0
 	       
