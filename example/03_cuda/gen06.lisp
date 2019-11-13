@@ -12,10 +12,15 @@
   (let* ((code
 	  `(do0
 	    ;; -Xcompiler=-fsanitize=address
-	    "// nvcc -o 06interop 06interop.cu -lglfw -lGL --std=c++14 -O3 -g libglad.a -Xcompiler=-march=native -Xcompiler=-ggdb"
+	    "// glad --generator=c-debug --spec=gl --out-path=GL --extensions=GL_EXT_framebuffer_multisample,GL_EXT_texture_filter_anisotropic"
+	    "// nvcc -o 06interop GL/src/glad.c 06interop.cu -IGL/include -lglfw -lGL --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb -ldl"
 	    "// note that nvcc requires gcc 8"
 	    "// nvprof 06interop"
-	    (include "glad.h"
+					;"#define GLAD_DEBUG"
+	    (include <glad/glad.h>)
+	    " "
+	    
+	    (include  
 		     <GLFW/glfw3.h>
 		     <cassert>
 		     <cstdio>
@@ -265,11 +270,18 @@
 					,(* 2 (- f .5s0)))))
 		   (glEnd))
 	      (glDisable GL_TEXTURE_2D))
-	    (defun _post_call_callback_default (name funcptr len_args a...)
+	    #+nil (defun _post_call_callback_default (name funcptr len_args a...)
 	      (declare (type "const char*" name)
 		       (type void* funcptr)
 		       (type int len_args)
-		       (type " " a...)))
+		       (type " " a...))
+	      (let ((error_code (glad_glGetError)))
+		(unless (== GL_NO_ERROR
+			    error_code)
+		  (<< cerr (string "glad error: ")
+		      error_code
+		      (string " ")
+		      name))))
 	    (defun main ()
 	      (declare (values int))
 	      (<< cout (string "bla") endl)
@@ -291,6 +303,7 @@
 		  (<< cout (string "GL version " ) GLVersion.major
 		      (string " ") GLVersion.minor endl)
 		  (gladLoadGLLoader (reinterpret_cast<GLADloadproc> glfwGetProcAddress))
+		  ;(glad_set_post_callback _post_call_callback_default)
 		  (do0
                    (let ((width)
                          (height))

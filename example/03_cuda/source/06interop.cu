@@ -1,7 +1,10 @@
-// nvcc -o 06interop 06interop.cu -lglfw -lGL --std=c++14 -O3 -g libglad.a
-// -Xcompiler=-march=native -Xcompiler=-ggdb note that nvcc requires gcc 8
-// nvprof 06interop
-#include "glad.h"
+// glad --generator=c-debug --spec=gl --out-path=GL
+// --extensions=GL_EXT_framebuffer_multisample,GL_EXT_texture_filter_anisotropic
+// nvcc -o 06interop GL/src/glad.c 06interop.cu -IGL/include -lglfw -lGL
+// --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb -ldl note that
+// nvcc requires gcc 8 nvprof 06interop
+#include <glad/glad.h>
+
 #include <GLFW/glfw3.h>
 #include <cassert>
 #include <cstdio>
@@ -161,8 +164,6 @@ void draw_texture(int w, int h) {
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
-void _post_call_callback_default(const char *name, void *funcptr, int len_args,
-                                 a...) {}
 int main() {
   (cout) << ("bla") << (endl);
   if (glfwInit()) {
