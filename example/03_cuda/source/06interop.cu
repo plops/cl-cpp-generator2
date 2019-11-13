@@ -1,5 +1,6 @@
-// nvcc -o 06interop 06interop.cu -lglfw -lGL -march=native --std=c++14 -O3 -g
-// libglad.a note that nvcc requires gcc 8 nvprof 06interop
+// nvcc -o 06interop 06interop.cu -lglfw -lGL --std=c++14 -O3 -g libglad.a
+// -Xcompiler=-march=native -Xcompiler=-ggdb note that nvcc requires gcc 8
+// nvprof 06interop
 #include "glad.h"
 #include <GLFW/glfw3.h>
 #include <cassert>
@@ -170,6 +171,9 @@ int main() {
     assert(window);
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
+    assert(gladLoadGL());
+    (cout) << ("GL version ") << (GLVersion.major) << (" ") << (GLVersion.minor)
+           << (endl);
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
     int width;
     int height;
@@ -208,6 +212,11 @@ int main() {
       draw_texture(width, height);
       glfwSwapBuffers(window);
     }
+    if (pbo) {
+      cudaGraphicsUnregisterResource(g_cuda_pbo_resource);
+      glDeleteBuffers(1, &pbo);
+      glDeleteTextures(1, &tex);
+    };
     glfwDestroyWindow(window);
   };
   glfwTerminate();

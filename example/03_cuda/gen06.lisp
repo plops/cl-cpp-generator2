@@ -11,7 +11,8 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 "example/03_cuda/source/06interop.cu"))
   (let* ((code
 	  `(do0
-	    "// nvcc -o 06interop 06interop.cu -lglfw -lGL -march=native --std=c++14 -O3 -g libglad.a"
+	    ;; -Xcompiler=-fsanitize=address
+	    "// nvcc -o 06interop 06interop.cu -lglfw -lGL --std=c++14 -O3 -g libglad.a -Xcompiler=-march=native -Xcompiler=-ggdb"
 	    "// note that nvcc requires gcc 8"
 	    "// nvprof 06interop"
 	    (include "glad.h"
@@ -281,6 +282,9 @@
 		  (assert window)
 		  (glfwSetKeyCallback window key_callback)
 		  (glfwMakeContextCurrent window)
+		  (assert (gladLoadGL))
+		  (<< cout (string "GL version " ) GLVersion.major
+		      (string " ") GLVersion.minor endl)
 		  (gladLoadGLLoader (reinterpret_cast<GLADloadproc> glfwGetProcAddress))
 		  (do0
                    (let ((width)
@@ -310,28 +314,33 @@
 		   (do0
 		    (let ((pbo 0)
 			  (tex 0))
-		      (declare (type GLuint pbo tex)))
-		    (glGenBuffers 1 &pbo)
-		    (glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo)
-		    (glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
-				  0 GL_STREAM_DRAW)
-		    (glGenTextures GL_TEXTURE_2D &tex)
-		    (glBindTexture GL_TEXTURE_2D tex)
-		    (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
-		    (cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
-						  pbo
-						  cudaGraphicsMapFlagsWriteDiscard))
-                   )
+		      (declare (type GLuint pbo tex))
+		      (glGenBuffers 1 &pbo)
+		      (glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo)
+		      (glBufferData GL_PIXEL_UNPACK_BUFFER (* width height (sizeof GLubyte) 4)
+				    0 GL_STREAM_DRAW)
+		      (glGenTextures GL_TEXTURE_2D &tex)
+		      (glBindTexture GL_TEXTURE_2D tex)
+		      (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
+		      (cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
+						    pbo
+						    cudaGraphicsMapFlagsWriteDiscard)
+		      
 
-		  (while (not (glfwWindowShouldClose window))
-		     (glfwPollEvents)
-                      (let ((time (glfwGetTime)))
-                        (glClear GL_COLOR_BUFFER_BIT)
+		      (while (not (glfwWindowShouldClose window))
+			(glfwPollEvents)
+			(let ((time (glfwGetTime)))
+			  (glClear GL_COLOR_BUFFER_BIT)
 					;(kernelLauncher d_out d_temp width height bc)
-			(render d_temp width height bc)
-			(draw_texture width height)
-                        (glfwSwapBuffers window)))
-		   (glfwDestroyWindow window)))
-	      
-	      (glfwTerminate)))))
+			  (render d_temp width height bc)
+			  (draw_texture width height)
+			  (glfwSwapBuffers window)))
+		      (when pbo
+			(cudaGraphicsUnregisterResource g_cuda_pbo_resource)
+			(glDeleteBuffers 1 &pbo)
+			(glDeleteTextures 1 &tex))
+		      (glfwDestroyWindow window))))))
+	      (do0
+	       
+	       (glfwTerminate))))))
     (write-source *code-file* code)))
