@@ -24,9 +24,11 @@ struct BC {
   float t_a;
   float t_g;
   float *d_temp;
+  int width;
+  int height;
 };
 typedef struct BC BC;
-enum { TX = 32, TY = 32, RAD = 1, ITERS_PER_RENDER = 50 };
+enum { TX = 32, TY = 32, RAD = 1, ITERS_PER_RENDER = 1 };
 int divUp(int a, int b) { return ((((a) + (b) + (-1))) / (b)); }
 __device__ unsigned char clip(int n) {
   if (255 < n) {
@@ -55,6 +57,19 @@ __device__ int flatten(int col, int row, int w, int h) {
 };
 auto g_start = static_cast<typeof(
     std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
+__global__ void resetKernel(float *d_temp, int w, int h, BC bc) {
+  auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
+  auto row = ((((blockIdx.y) * (blockDim.y))) + (threadIdx.y));
+  if ((((w) <= (col)) || ((h) <= (row)))) {
+    return;
+  };
+  d_temp[((col) + (((row) * (w))))] = bc.t_a;
+}
+void resetTemperature(float *d_temp, int w, int h, BC bc) {
+  const dim3 blockSize(TX, TY);
+  const dim3 gridSize(divUp(w, TX), divUp(h, TY));
+  resetKernel<<<gridSize, blockSize>>>(d_temp, w, h, bc);
+}
 void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
   auto bc = static_cast<BC *>(glfwGetWindowUserPointer(window));
@@ -70,6 +85,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action,
                 << (__func__)
                 << (" glfwSetWindowShouldClose(window, GLFW_TRUE) ")
                 << (std::endl);
+  };
+  if ((((((key) == (GLFW_KEY_M)))) && ((action) == (GLFW_PRESS)))) {
+    resetTemperature(bc->d_temp, bc->width, bc->height, *bc);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (g_start)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" resetTemperature(bc->d_temp, bc->width, bc->height, *bc) ")
+        << (std::endl);
   };
   if ((((key) == (GLFW_KEY_1)) &&
        ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
@@ -121,19 +147,6 @@ void error_callback(int err, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
 }
 using namespace std;
-__global__ void resetKernel(float *d_temp, int w, int h, BC bc) {
-  auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
-  auto row = ((((blockIdx.y) * (blockDim.y))) + (threadIdx.y));
-  if ((((w) <= (col)) || ((h) <= (row)))) {
-    return;
-  };
-  d_temp[((col) + (((row) * (w))))] = bc.t_a;
-}
-void resetTemperature(float *d_temp, int w, int h, BC bc) {
-  const dim3 blockSize(TX, TY);
-  const dim3 gridSize(divUp(w, TX), divUp(h, TY));
-  resetKernel<<<gridSize, blockSize>>>(d_temp, w, h, bc);
-}
 __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   extern __shared__ float s_in[];
   auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
@@ -394,7 +407,9 @@ int main() {
                    (2.12e+2f),
                    (7.e+1f),
                    (0.0e+0f),
-                   d_temp};
+                   d_temp,
+                   width,
+                   height};
     glfwSetWindowUserPointer(window, static_cast<void *>(&bc));
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
