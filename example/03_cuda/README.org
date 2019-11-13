@@ -7,6 +7,8 @@
 | gen04      | tiled matrix mul                 |
 | gen05magma | magma linear algebra library     |
 | gen06      | opengl interop, heat propagation |
+| gen07      | prefix sum pattern               |
+
 
 * References
 - https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/

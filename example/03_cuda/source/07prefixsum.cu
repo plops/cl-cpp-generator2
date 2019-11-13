@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cuda_runtime.h>
 #include <iostream>
+auto g_start = static_cast<typeof(
+    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
 int main() {
   g_start =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();

@@ -89,7 +89,10 @@
 	     <cuda_runtime.h>
 	     <chrono>)
 	    
-
+	    (let ((g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+										       (time_since_epoch)
+										       (count)))))
+			     0))))
 	    
 	    (defun main ()
 	      (declare (values int))
