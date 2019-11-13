@@ -186,7 +186,8 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
     return;
   };
   if ((((0) == (col)) || ((((w) - (1))) == (col)) || ((0) == (row)) ||
-       (((col) + (row)) < bc.chamfer))) {
+       (((col) + (row)) < bc.chamfer) ||
+       (w < ((bc.chamfer) + (((col) - (row))))))) {
     d_temp[idx] = bc.t_a;
     return;
   };

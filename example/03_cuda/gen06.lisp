@@ -310,9 +310,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			     (== 0 row)
 			     (< (+ col row)
 				bc.chamfer)
-			     #+nil (< 
-			      (- w bc.chamfer)
-			      (- col row)
+			     (< w
+			      
+			      (+ bc.chamfer (- col row))
 			      ))
 		     (setf (aref d_temp idx)
 			   bc.t_a)
