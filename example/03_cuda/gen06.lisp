@@ -355,18 +355,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 					,(* 2 (- f .5s0)))))
 		   (glEnd))
 	      (glDisable GL_TEXTURE_2D))
-	    #+nil (defun _post_call_callback_default (name funcptr len_args a...)
-	      (declare (type "const char*" name)
-		       (type void* funcptr)
-		       (type int len_args)
-		       (type " " a...))
-	      (let ((error_code (glad_glGetError)))
-		(unless (== GL_NO_ERROR
-			    error_code)
-		  (<< cerr (string "glad error: ")
-		      error_code
-		      (string " ")
-		      name))))
+
 	    (defun main ()
 	      (declare (values int))
 	      (setf g_start (dot ("std::chrono::high_resolution_clock::now")
@@ -401,15 +390,14 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		  (<< cout (string "GL version " ) GLVersion.major
 		      (string " ") GLVersion.minor endl)
 		  ,(vkprint `(gladLoadGLLoader (reinterpret_cast<GLADloadproc> glfwGetProcAddress)))
-		  ;(glad_set_post_callback _post_call_callback_default)
 		  (do0
                    (let ((width)
                          (height))
                      (declare (type int width height))
                      ,(vkprint `(glfwGetFramebufferSize window &width &height) `(width height))
-                     ,(vkprint `(glad_glViewport 0 0 width height)))
+                     ,(vkprint `(glViewport 0 0 width height)))
                    ,(vkprint `(glfwSwapInterval 1))
-                   (glad_glClearColor 0 0 0 0)
+                   ,(vkprint `(glClearColor 0 0 0 0))
                    #+nil (do0 (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)
 			      (glEnable GL_BLEND)
 			      (glEnable GL_LINE_SMOOTH)
@@ -433,17 +421,17 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		    (let ((pbo 0)
 			  (tex 0))
 		      (declare (type GLuint pbo tex))
-		      ,(vkprint `(glad_glGenBuffers 1 &pbo) `(pbo))
-		      ,(vkprint `(glad_glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo) `(pbo))
-		      ,(vkprint `(glad_glBufferData GL_PIXEL_UNPACK_BUFFER
+		      ,(vkprint `(glGenBuffers 1 &pbo) `(pbo))
+		      ,(vkprint `(glBindBuffer GL_PIXEL_UNPACK_BUFFER pbo) `(pbo))
+		      ,(vkprint `(glBufferData GL_PIXEL_UNPACK_BUFFER
 						    (* width height (sizeof GLubyte) 4)
 						    0 GL_STREAM_DRAW) `(width height (/ (* width height (sizeof GLubyte) 4)
 											(* 1024 1024s0))))
 		      
 		      (do0
-		       ,(vkprint `(glad_glGenTextures 1 &tex) `(tex))
-		       ,(vkprint `(glad_glBindTexture GL_TEXTURE_2D tex))
-		       ,(vkprint `(glad_glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
+		       ,(vkprint `(glGenTextures 1 &tex) `(tex))
+		       ,(vkprint `(glBindTexture GL_TEXTURE_2D tex))
+		       ,(vkprint `(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
 		      ,(cuprint `(cudaGraphicsGLRegisterBuffer &g_cuda_pbo_resource
 						      pbo
 						      cudaGraphicsMapFlagsWriteDiscard
@@ -463,8 +451,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			  (glfwSwapBuffers window)))
 		      (when pbo
 			,(vkprint `(cudaGraphicsUnregisterResource g_cuda_pbo_resource))
-			,(vkprint `(glad_glDeleteBuffers 1 &pbo))
-			,(vkprint `(glad_glDeleteTextures 1 &tex)))
+			,(vkprint `(glDeleteBuffers 1 &pbo))
+			,(vkprint `(glDeleteTextures 1 &tex)))
 		      ,(vkprint `(cudaFree d_temp))
 		      ,(vkprint `(glfwDestroyWindow window)))))))
 	      (do0

@@ -297,13 +297,13 @@ int main() {
                 << (" glfwGetFramebufferSize(window, &width, &height) ")
                 << (" width=") << (width) << (" height=") << (height)
                 << (std::endl);
-    glad_glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glViewport(0, 0, width, height) ")
+                << (__func__) << (" glViewport(0, 0, width, height) ")
                 << (std::endl);
     glfwSwapInterval(1);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
@@ -312,7 +312,13 @@ int main() {
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glfwSwapInterval(1) ") << (std::endl);
-    glad_glClearColor(0, 0, 0, 0);
+    glClearColor(0, 0, 0, 0);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" glClearColor(0, 0, 0, 0) ") << (std::endl);
     auto d_temp = static_cast<float *>(0);
     auto bc = (BC){((width) / (2)),
                    ((height) / (2)),
@@ -342,33 +348,32 @@ int main() {
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
     GLuint tex = 0;
-    glad_glGenBuffers(1, &pbo);
+    glGenBuffers(1, &pbo);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glGenBuffers(1, &pbo) ") << (" pbo=")
+                << (__func__) << (" glGenBuffers(1, &pbo) ") << (" pbo=")
                 << (pbo) << (std::endl);
-    glad_glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" glad_glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo) ")
+                << (__func__) << (" glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo) ")
                 << (" pbo=") << (pbo) << (std::endl);
-    glad_glBufferData(GL_PIXEL_UNPACK_BUFFER,
-                      ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
-                      GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER,
+                 ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
+                 GL_STREAM_DRAW);
     (std::cout)
         << (((std::chrono::high_resolution_clock::now()
                   .time_since_epoch()
                   .count()) -
              (g_start)))
         << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-        << (" glad_glBufferData(GL_PIXEL_UNPACK_BUFFER, "
+        << (" glBufferData(GL_PIXEL_UNPACK_BUFFER, "
             "((width)*(height)*(sizeof(GLubyte))*(4)), 0, GL_STREAM_DRAW) ")
         << (" width=") << (width) << (" height=") << (height)
         << (" ((((width)*(height)*(sizeof(GLubyte))*(4)))/"
@@ -376,31 +381,31 @@ int main() {
         << (((((width) * (height) * (sizeof(GLubyte)) * (4))) /
              (((1024) * ((1.024e+3f))))))
         << (std::endl);
-    glad_glGenTextures(1, &tex);
+    glGenTextures(1, &tex);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glGenTextures(1, &tex) ") << (" tex=")
+                << (__func__) << (" glGenTextures(1, &tex) ") << (" tex=")
                 << (tex) << (std::endl);
-    glad_glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" glad_glBindTexture(GL_TEXTURE_2D, tex) ")
+                << (__func__) << (" glBindTexture(GL_TEXTURE_2D, tex) ")
                 << (std::endl);
-    glad_glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
-                << (" glad_glTexParameteri(GL_TEXTURE_2D, "
-                    "GL_TEXTURE_MIN_FILTER, GL_NEAREST) ")
+                << (" glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, "
+                    "GL_NEAREST) ")
                 << (std::endl);
     {
       auto r = cudaGraphicsGLRegisterBuffer(&g_cuda_pbo_resource, pbo,
@@ -436,21 +441,21 @@ int main() {
                   << (__func__)
                   << (" cudaGraphicsUnregisterResource(g_cuda_pbo_resource) ")
                   << (std::endl);
-      glad_glDeleteBuffers(1, &pbo);
+      glDeleteBuffers(1, &pbo);
       (std::cout) << (((std::chrono::high_resolution_clock::now()
                             .time_since_epoch()
                             .count()) -
                        (g_start)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << (" glad_glDeleteBuffers(1, &pbo) ")
+                  << (__func__) << (" glDeleteBuffers(1, &pbo) ")
                   << (std::endl);
-      glad_glDeleteTextures(1, &tex);
+      glDeleteTextures(1, &tex);
       (std::cout) << (((std::chrono::high_resolution_clock::now()
                             .time_since_epoch()
                             .count()) -
                        (g_start)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << (" glad_glDeleteTextures(1, &tex) ")
+                  << (__func__) << (" glDeleteTextures(1, &tex) ")
                   << (std::endl);
     };
     cudaFree(d_temp);
