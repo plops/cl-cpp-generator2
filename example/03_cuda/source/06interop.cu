@@ -139,6 +139,8 @@ void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   tempKernel<<<gridSize, blockSize, smSz>>>(d_out, d_temp, w, h, bc);
 }
 auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
+auto g_start = static_cast<typeof(
+    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
 void render(float *d_temp, int w, int h, BC bc) {
   cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
   auto d_out = static_cast<uchar4 *>(0);
@@ -166,26 +168,31 @@ void draw_texture(int w, int h) {
   glDisable(GL_TEXTURE_2D);
 }
 int main() {
+  g_start =
+      std::chrono::high_resolution_clock::now().time_since_epoch().count();
   if (glfwInit()) {
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glfwSetErrorCallback(error_callback) ")
                 << (std::endl);
     glfwSetErrorCallback(error_callback);
     auto window = glfwCreateWindow(640, 480, "cuda interop", NULL, NULL);
     assert(window);
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glfwSetKeyCallback(window, key_callback) ")
                 << (std::endl);
     glfwSetKeyCallback(window, key_callback);
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glfwMakeContextCurrent(window) ")
                 << (std::endl);
@@ -193,9 +200,10 @@ int main() {
     assert(gladLoadGL());
     (cout) << ("GL version ") << (GLVersion.major) << (" ") << (GLVersion.minor)
            << (endl);
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
                 << (" gladLoadGLLoader(reinterpret_cast<GLADloadproc>("
@@ -204,18 +212,20 @@ int main() {
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
     int width;
     int height;
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
                 << (" glfwGetFramebufferSize(window, &width, &height) ")
                 << (std::endl);
     glfwGetFramebufferSize(window, &width, &height);
     glad_glViewport(0, 0, width, height);
-    (std::cout) << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glfwSwapInterval(1) ") << (std::endl);
     glfwSwapInterval(1);
@@ -229,9 +239,10 @@ int main() {
                    (7.e+1f),
                    (0.0e+0f)};
     (std::cout)
-        << (std::chrono::high_resolution_clock::now()
-                .time_since_epoch()
-                .count())
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (g_start)))
         << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
         << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(*d_temp)))) ")
         << (std::endl);
