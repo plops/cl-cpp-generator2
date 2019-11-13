@@ -14,27 +14,6 @@
 #include <iostream>
 
 #include <cuda_gl_interop.h>
-auto g_start = static_cast<typeof(
-    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
-void key_callback(GLFWwindow *window, int key, int scancode, int action,
-                  int mods) {
-  if ((((((key) == (GLFW_KEY_ESCAPE)) || ((key) == (GLFW_KEY_Q)))) &&
-       ((action) == (GLFW_PRESS)))) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" glfwSetWindowShouldClose(window, GLFW_TRUE) ")
-                << (std::endl);
-  };
-}
-void error_callback(int err, const char *description) {
-  fprintf(stderr, "Error: %s\n", description);
-}
-using namespace std;
 struct uchar4;
 struct BC {
   int x;
@@ -44,6 +23,7 @@ struct BC {
   float t_s;
   float t_a;
   float t_g;
+  float *d_temp;
 };
 typedef struct BC BC;
 enum { TX = 32, TY = 32, RAD = 1, ITERS_PER_RENDER = 50 };
@@ -73,6 +53,74 @@ __device__ int idxClip(int n, int ma) {
 __device__ int flatten(int col, int row, int w, int h) {
   return ((idxClip(col, w)) + (((w) * (idxClip(row, h)))));
 };
+auto g_start = static_cast<typeof(
+    std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
+void key_callback(GLFWwindow *window, int key, int scancode, int action,
+                  int mods) {
+  auto bc = static_cast<BC *>(glfwGetWindowUserPointer(window));
+  auto DT = (1.e+0f);
+  if ((((((key) == (GLFW_KEY_ESCAPE)) || ((key) == (GLFW_KEY_Q)))) &&
+       ((action) == (GLFW_PRESS)))) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" glfwSetWindowShouldClose(window, GLFW_TRUE) ")
+                << (std::endl);
+  };
+  if ((((key) == (GLFW_KEY_1)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_s) += (DT);
+  };
+  if ((((key) == (GLFW_KEY_2)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_s) -= (DT);
+  };
+  if ((((key) == (GLFW_KEY_3)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_a) += (DT);
+  };
+  if ((((key) == (GLFW_KEY_4)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_a) -= (DT);
+  };
+  if ((((key) == (GLFW_KEY_5)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_g) += (DT);
+  };
+  if ((((key) == (GLFW_KEY_6)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->t_g) -= (DT);
+  };
+  if ((((key) == (GLFW_KEY_7)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->chamfer) += (1);
+  };
+  if ((((key) == (GLFW_KEY_8)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->chamfer) -= (1);
+  };
+  if ((((key) == (GLFW_KEY_9)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->rad) += ((2.e+0f));
+  };
+  if ((((key) == (GLFW_KEY_0)) &&
+       ((((action) == (GLFW_PRESS)) || ((action) == (GLFW_REPEAT)))))) {
+    (bc->rad) -= ((2.e+0f));
+  };
+  char s[1024];
+  snprintf(s, 1023,
+           "cuda pipe=%.2g air=%.2g ground=%.2g chamfer=%d radius=%.2g",
+           bc->t_s, bc->t_a, bc->t_g, bc->chamfer, bc->rad);
+  glfwSetWindowTitle(window, s);
+}
+void error_callback(int err, const char *description) {
+  fprintf(stderr, "Error: %s\n", description);
+}
+using namespace std;
 __global__ void resetKernel(float *d_temp, int w, int h, BC bc) {
   auto col = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
   auto row = ((((blockIdx.y) * (blockDim.y))) + (threadIdx.y));
@@ -207,144 +255,16 @@ void draw_texture(int w, int h) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
   glEnable(GL_TEXTURE_2D);
-  glBegin(GL_TRIANGLE_FAN);
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 0=") << (0) << (" gl_error_code=")
-                << (gl_error_code) << (" gl_error_string=") << (gl_error_string)
-                << (std::endl);
-  };
-  glad_glTexCoord2f(0, 0);
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 10=") << (10)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glVertex2f((-1.e+0f), (-1.e+0f));
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 20=") << (20)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glTexCoord2f(0, 1);
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 11=") << (11)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glVertex2f((-1.e+0f), (1.e+0f));
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 21=") << (21)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glTexCoord2f(1, 1);
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 12=") << (12)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glVertex2f((1.e+0f), (1.e+0f));
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 22=") << (22)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glTexCoord2f(1, 0);
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 13=") << (13)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glVertex2f((1.e+0f), (-1.e+0f));
-  {
-    auto gl_error_code = glGetError();
-    auto gl_error_string = gluErrorString(gl_error_code);
-    ;
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" 23=") << (23)
-                << (" gl_error_code=") << (gl_error_code)
-                << (" gl_error_string=") << (gl_error_string) << (std::endl);
-  };
-  glad_glEnd();
-  auto gl_error_code = glGetError();
-  auto gl_error_string = gluErrorString(gl_error_code);
-  ;
-  (std::cout) << (((std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count()) -
-                   (g_start)))
-              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << ("  ") << (" 30=") << (30) << (" gl_error_code=")
-              << (gl_error_code) << (" gl_error_string=") << (gl_error_string)
-              << (std::endl);
+  glBegin(GL_QUADS);
+  glTexCoord2f(0, 0);
+  glVertex2f((-1.e+0f), (-1.e+0f));
+  glTexCoord2f(0, 1);
+  glVertex2f((-1.e+0f), (1.e+0f));
+  glTexCoord2f(1, 1);
+  glVertex2f((1.e+0f), (1.e+0f));
+  glTexCoord2f(1, 0);
+  glVertex2f((1.e+0f), (-1.e+0f));
+  glEnd();
   glDisable(GL_TEXTURE_2D);
 }
 int main() {
@@ -449,13 +369,6 @@ int main() {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" glClearColor(0, 0, 0, 0) ") << (std::endl);
     auto d_temp = static_cast<float *>(0);
-    auto bc = (BC){((width) / (2)),
-                   ((height) / (2)),
-                   ((width) / ((1.e+1f))),
-                   150,
-                   (2.12e+2f),
-                   (7.e+1f),
-                   (0.0e+0f)};
     {
       auto r = cudaMalloc(&d_temp, ((width) * (height) * (sizeof(float))));
       (std::cout)
@@ -474,6 +387,15 @@ int main() {
           << (std::endl);
       assert((cudaSuccess) == (r));
     };
+    auto bc = (BC){((width) / (2)),
+                   ((height) / (2)),
+                   ((width) / ((1.e+1f))),
+                   150,
+                   (2.12e+2f),
+                   (7.e+1f),
+                   (0.0e+0f),
+                   d_temp};
+    glfwSetWindowUserPointer(window, static_cast<void *>(&bc));
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
     GLuint tex = 0;

@@ -103,27 +103,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 
 	    " "
 	    (include <cuda_gl_interop.h>)
-	    
-	    (let ((g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
-										       (time_since_epoch)
-										       (count)))))
-			     0))))
 
-	    (defun key_callback (window key scancode action mods)
-	      (declare (type GLFWwindow* window)
-                      (type int key scancode action mods))
-             (when (and (or (== key GLFW_KEY_ESCAPE)
-                            (== key GLFW_KEY_Q))
-                        (== action GLFW_PRESS)) 
-               ,(vkprint `(glfwSetWindowShouldClose window GLFW_TRUE))))
-	    (defun error_callback (err description)
-             (declare (type int err)
-                      (type "const char*" description)
-                      )
-             (fprintf stderr (string "Error: %s\\n")
-                      description))
 
-	    "using namespace std;"
 	    (do0
 	     "struct uchar4;"
 	     (defstruct0 BC
@@ -133,7 +114,8 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 	       (chamfer int)
 	       (t_s float)
 	       (t_a float)
-	       (t_g float))
+	       (t_g float)
+	       (d_temp float*))
 	     (do0
 	      "enum {TX=32, TY=32,RAD=1, ITERS_PER_RENDER=50};"
 	      (defun divUp (a b)
@@ -162,6 +144,54 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			 (values "__device__ int"))
 		(return (+ (idxClip col w)
 			   (* w (idxClip row h)))))))
+	    
+	    (let ((g_start (,(format nil "static_cast<~a>" (emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+										       (time_since_epoch)
+										       (count)))))
+			     0))))
+
+	    (defun key_callback (window key scancode action mods)
+	      (declare (type GLFWwindow* window)
+		       (type int key scancode action mods))
+	      (let ((bc (static_cast<BC*> (glfwGetWindowUserPointer window)))
+		    (DT 1s0)))
+	      (when (and (or (== key GLFW_KEY_ESCAPE)
+			     (== key GLFW_KEY_Q))
+			 (== action GLFW_PRESS)) 
+		,(vkprint `(glfwSetWindowShouldClose window GLFW_TRUE)))
+	      ,@(loop for e in `((t_s 1 2 DT)
+				 (t_a 3 4 DT)
+				 (t_g 5 6 DT)
+				 (chamfer 7 8 1)
+				 (rad 9 0 2s0)
+				 ) collect
+		     (destructuring-bind (var up down delta) e
+		      `(do0
+			,@(loop for f in `(up-dir down-dir) collect 
+			       `(when (and (== key ,(format nil "GLFW_KEY_~a" (case f
+										(up-dir up)
+										(down-dir down))))
+					   (or (== action GLFW_PRESS)
+					        (== action GLFW_REPEAT)))
+				  (,(case f
+				      (up-dir 'incf)
+				      (down-dir 'decf)) (-> bc ,var) ,delta))))))
+	      (let ((s[1024]))
+		(declare (type "char" s[1024]))
+		(snprintf s 1023 (string "cuda pipe=%.2g air=%.2g ground=%.2g chamfer=%d radius=%.2g")
+			  ,@(loop for e in `(t_s t_a t_g chamfer rad) collect
+				 `(-> bc ,e))
+			  )
+	       (glfwSetWindowTitle window s)))
+	    (defun error_callback (err description)
+             (declare (type int err)
+                      (type "const char*" description)
+                      )
+             (fprintf stderr (string "Error: %s\\n")
+                      description))
+
+	    "using namespace std;"
+	    
 
 	    (defun resetKernel (d_temp w h bc)
 	      (declare (type float* d_temp)
@@ -343,9 +373,9 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			    GL_UNSIGNED_BYTE
 			    nullptr)
 	      (glEnable GL_TEXTURE_2D)
-	      (do0 (glBegin GL_TRIANGLE_FAN ;QUADS
+	      (do0 (glBegin GL_QUADS
 			    )
-		   (progn
+		   #+nil (progn
 		     (let ((gl_error_code (glGetError))
 			  (gl_error_string (gluErrorString gl_error_code)))
 		      ,(vkprint `() `(0 gl_error_code gl_error_string))))
@@ -357,17 +387,17 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			collect
 			  `(do0
 			    
-			    (glad_glTexCoord2f ,e ,f)
-			    (progn (let ((gl_error_code (glGetError))
+			    (glTexCoord2f ,e ,f)
+			    #+nil (progn (let ((gl_error_code (glGetError))
 				   (gl_error_string (gluErrorString gl_error_code)))
 			       ,(vkprint `() `(,(+ 10 count) gl_error_code gl_error_string))))
-			    (glad_glVertex2f ,(* 2 (- e .5s0))
+			    (glVertex2f ,(* 2 (- e .5s0))
 					     ,(* 2 (- f .5s0)))
-			    (progn (let ((gl_error_code (glGetError))
+			    #+nil (progn (let ((gl_error_code (glGetError))
 				   (gl_error_string (gluErrorString gl_error_code)))
 			       ,(vkprint `() `(,(+ 20 count) gl_error_code gl_error_string))))))
-		   (glad_glEnd))
-	      (let ((gl_error_code (glGetError))
+		   (glEnd))
+	      #+nil (let ((gl_error_code (glGetError))
 		    (gl_error_string (gluErrorString gl_error_code)))
 		,(vkprint `() `(30 gl_error_code gl_error_string)))
 	      (glDisable GL_TEXTURE_2D))
@@ -421,18 +451,21 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 		   (do0
 		    (let ((d_temp  (static_cast<float*> 0))
 			  ;(d_out (static_cast<uchar4*> 0))
-			  (bc (cast BC (curly
-					(/ width 2)
-					(/ height 2)
-					(/ width 10s0)
-					150
-					212s0
-					70s0
-					0s0))))
+			  )
 		      ,(cuprint `(cudaMalloc &d_temp (* width height (sizeof float)))
 				`(width height (/ (* width height (sizeof float))
 						  (* 1024 1024s0))))
-		      (resetTemperature d_temp width height bc)))
+		      (let ((bc (cast BC (curly
+					  (/ width 2)
+					  (/ height 2)
+					  (/ width 10s0)
+					  150
+					  212s0
+					  70s0
+					  0s0
+					  d_temp))))
+			(glfwSetWindowUserPointer window (static_cast<void*> &bc))
+		       (resetTemperature d_temp width height bc))))
 		   (do0
 		    (let ((pbo 0)
 			  (tex 0))
