@@ -150,28 +150,52 @@ void kernelLauncher(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
 }
 auto g_cuda_pbo_resource = static_cast<struct cudaGraphicsResource *>(0);
 void render(float *d_temp, int w, int h, BC bc) {
-  cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
-  (std::cout) << (((std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count()) -
-                   (g_start)))
-              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__)
-              << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) ")
-              << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
-              << (std::endl);
-  auto d_out = static_cast<uchar4 *>(0);
-  auto r = cudaGraphicsResourceGetMappedPointer(
-      reinterpret_cast<void **>(&d_out), nullptr, g_cuda_pbo_resource);
-  if (!((cudaSuccess) == (r))) {
-    ;
+  {
+    auto r = cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0);
+    if (!((cudaSuccess) == (r))) {
+      ;
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (g_start)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << ("  ") << (" r=") << (r)
+                  << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                  << (std::endl);
+    };
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (g_start)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << ("  ") << (" r=") << (r)
-                << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                << (__func__)
+                << (" cudaGraphicsMapResources(1, &g_cuda_pbo_resource, 0) ")
+                << (" g_cuda_pbo_resource=") << (g_cuda_pbo_resource)
+                << (std::endl);
+  };
+  auto d_out = static_cast<uchar4 *>(0);
+  {
+    auto r = cudaGraphicsResourceGetMappedPointer(
+        reinterpret_cast<void **>(&d_out), nullptr, g_cuda_pbo_resource);
+    if (!((cudaSuccess) == (r))) {
+      ;
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (g_start)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << ("  ") << (" r=") << (r)
+                  << (" cudaGetErrorString(r)=") << (cudaGetErrorString(r))
+                  << (std::endl);
+    };
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (g_start)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" cudaGraphicsResourceGetMappedPointer(reinterpret_cast<"
+                    "void**>(&d_out), nullptr, g_cuda_pbo_resource) ")
                 << (std::endl);
   };
   for (int i = 0; i < ITERS_PER_RENDER; (i) += (1)) {
