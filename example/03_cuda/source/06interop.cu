@@ -170,8 +170,8 @@ __global__ void tempKernel(uchar4 *d_out, float *d_temp, int w, int h, BC bc) {
   if (threadIdx.x < RAD) {
     s_in[flatten(((s_col) - (RAD)), s_row, s_w, s_h)] =
         d_temp[flatten(((col) - (RAD)), row, w, h)];
-    s_in[flatten(((s_col) + (RAD)), s_row, s_w, s_h)] =
-        d_temp[flatten(((col) + (RAD)), row, w, h)];
+    s_in[flatten(((s_col) + (blockDim.x)), s_row, s_w, s_h)] =
+        d_temp[flatten(((col) + (blockDim.x)), row, w, h)];
   };
   if (threadIdx.y < RAD) {
     s_in[flatten(s_col, ((s_row) - (RAD)), s_w, s_h)] =

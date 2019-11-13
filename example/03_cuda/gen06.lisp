@@ -272,11 +272,11 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 						 row
 						 w
 						 h)))
-		     (setf (aref s_in (flatten (+ s_col RAD)
+		     (setf (aref s_in (flatten (+ s_col blockDim.x)
 					       s_row
 					       s_w
 					       s_h))
-			   (aref d_temp (flatten (+ col RAD)
+			   (aref d_temp (flatten (+ col blockDim.x)
 						 row
 						 w
 						 h))))
