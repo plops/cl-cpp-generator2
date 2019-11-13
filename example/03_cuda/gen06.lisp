@@ -311,7 +311,7 @@ s(eval-when (:compile-toplevel :execute :load-toplevel)
 			     (< (+ col row)
 				bc.chamfer)
 			     (< w
-			      
+			      ;; FIXME: something is wrong with this chamfer
 			      (+ bc.chamfer (- col row))
 			      ))
 		     (setf (aref d_temp idx)
