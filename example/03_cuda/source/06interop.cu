@@ -265,14 +265,18 @@ int main() {
                    (7.e+1f),
                    (0.0e+0f)};
     cudaMalloc(&d_temp, ((width) * (height) * (sizeof(float))));
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (g_start)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) ")
-                << (std::endl);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (g_start)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cudaMalloc(&d_temp, ((width)*(height)*(sizeof(float)))) ")
+        << (" width=") << (width) << (" height=") << (height)
+        << (" ((((width)*(height)*(sizeof(float))))/(((1024)*((1.024e+3f)))))=")
+        << (((((width) * (height) * (sizeof(float)))) /
+             (((1024) * ((1.024e+3f))))))
+        << (std::endl);
     resetTemperature(d_temp, width, height, bc);
     GLuint pbo = 0;
     GLuint tex = 0;
@@ -292,7 +296,7 @@ int main() {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
                 << (" glad_glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo) ")
-                << (std::endl);
+                << (" pbo=") << (pbo) << (std::endl);
     glad_glBufferData(GL_PIXEL_UNPACK_BUFFER,
                       ((width) * (height) * (sizeof(GLubyte)) * (4)), 0,
                       GL_STREAM_DRAW);
@@ -304,6 +308,11 @@ int main() {
         << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
         << (" glad_glBufferData(GL_PIXEL_UNPACK_BUFFER, "
             "((width)*(height)*(sizeof(GLubyte))*(4)), 0, GL_STREAM_DRAW) ")
+        << (" width=") << (width) << (" height=") << (height)
+        << (" ((((width)*(height)*(sizeof(GLubyte))*(4)))/"
+            "(((1024)*((1.024e+3f)))))=")
+        << (((((width) * (height) * (sizeof(GLubyte)) * (4))) /
+             (((1024) * ((1.024e+3f))))))
         << (std::endl);
     glad_glGenTextures(GL_TEXTURE_2D, &tex);
     (std::cout) << (((std::chrono::high_resolution_clock::now()
