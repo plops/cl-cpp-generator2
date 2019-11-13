@@ -33,7 +33,7 @@
                       (type int key scancode action mods))
              (when (and (or (== key GLFW_KEY_ESCAPE)
                             (== key GLFW_KEY_Q))
-                        (== action GLFW_PRESS))
+                        (== action GLFW_PRESS)) 
                (glfwSetWindowShouldClose window GLFW_TRUE)))
 	    (defun error_callback (err description)
              (declare (type int err)
