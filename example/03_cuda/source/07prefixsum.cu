@@ -15,6 +15,15 @@ void sequential_scan(float *x, float *y, int n) {
     y[i] = accum;
   };
 }
+enum { SECTION_SIZE = 1024 };
+void kogge_stone_scan_kernel(float *x, float *y, in n) {
+  __shared__ float XY[SECTION_SIZE];
+  auto i = ((threadIdx.x) + (((blockDim.x) * (blockIdx.x))));
+  if (i < n) {
+    XY[threadIdx.x] = x[i];
+  };
+  y[i] = XY[threadIdx.x];
+};
 int main() {
   g_start =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();

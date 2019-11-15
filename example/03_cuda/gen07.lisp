@@ -106,10 +106,21 @@
 		     (incf accum (aref x i))
 		     (setf (aref y i) accum))))
 
-	    (defun kogge_stone_scan_kernel (x y n)
-	      (declare (type float* x y)
-		       (type in n))
-	      )
+	    (do0
+	     "enum{SECTION_SIZE=1024};"
+	     (defun kogge_stone_scan_kernel (x y n)
+	       (declare (type float* x y)
+			(type in n))
+	       (let ((XY[SECTION_SIZE])
+		     (i (+ threadIdx.x (* blockDim.x
+					  blockIdx.x))))
+		 (declare (type "__shared__ float" XY[SECTION_SIZE]))
+		 (when (< i n)
+		   (setf (aref XY threadIdx.x)
+			 (aref x i)))
+		 ;; iterative scan
+		 (setf (aref y i) (aref XY threadIdx.x))
+		 )))
 	    
 	    (defun main ()
 	      (declare (values int))
