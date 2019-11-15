@@ -108,9 +108,10 @@
 
 	    (do0
 	     "enum{SECTION_SIZE=1024};"
-	     (defun kogge_stone_scan_kernel (x y n)
+	     (defun kogge_stone_scan_kernel (x y n) ;; inclusive scan
 	       (declare (type float* x y)
-			(type in n))
+			(type int n)
+			(values "__global__ void"))
 	       (let ((XY[SECTION_SIZE])
 		     (i (+ threadIdx.x (* blockDim.x
 					  blockIdx.x))))
@@ -119,6 +120,13 @@
 		   (setf (aref XY threadIdx.x)
 			 (aref x i)))
 		 ;; iterative scan
+		 (for ((= "int stride" 1)
+		       (< stride blockDim.x)
+		       (= stride (* 2 stride)))
+		      (__syncthreads)
+		      (when (<= stride threadIdx.x)
+			(incf (aref XY threadIdx.x)
+			      (aref XY (- threadIdx.x stride)))))
 		 (setf (aref y i) (aref XY threadIdx.x))
 		 )))
 	    
@@ -132,5 +140,19 @@
 	       (let ((n_cuda 0))
 		 ,(cuprint `(cudaGetDeviceCount &n_cuda) `(n_cuda)))
 	       ,(cuprint `(cudaSetDevice 0)))
-	      (return 0)))))
+	      ,(let* ((l `(3 1 7 0 4 1 6 3))
+		      (x-name (format nil "x[~a]" (length l)))
+		      (y-name (format nil "y[~a]" (length l))))
+		 `(let ((,x-name (curly ,@l))
+			(,y-name))
+		    (declare (type float ,x-name ,y-name))
+		    (sequential_scan x y (/ (sizeof x)
+					    (sizeof *x)))
+		    (dotimes (i (/ (sizeof x)
+				   (sizeof *x)))
+		      (<< "std::cout"
+			  (aref y i)
+			  "std::endl"))))
+	      (return 0)
+	      ))))
     (write-source *code-file* code)))

@@ -16,12 +16,18 @@ void sequential_scan(float *x, float *y, int n) {
   };
 }
 enum { SECTION_SIZE = 1024 };
-void kogge_stone_scan_kernel(float *x, float *y, in n) {
+__global__ void kogge_stone_scan_kernel(float *x, float *y, int n) {
   __shared__ float XY[SECTION_SIZE];
   auto i = ((threadIdx.x) + (((blockDim.x) * (blockIdx.x))));
   if (i < n) {
     XY[threadIdx.x] = x[i];
   };
+  for (int stride = 1; stride < blockDim.x; stride = ((2) * (stride))) {
+    __syncthreads();
+    if ((stride) <= (threadIdx.x)) {
+      (XY[threadIdx.x]) += (XY[((threadIdx.x) - (stride))]);
+    };
+  }
   y[i] = XY[threadIdx.x];
 };
 int main() {
@@ -50,6 +56,12 @@ int main() {
                 << (__func__) << (" cudaSetDevice(0) => ") << (r) << (" '")
                 << (cudaGetErrorString(r)) << ("' ") << (std::endl);
     assert((cudaSuccess) == (r));
+  };
+  float x[8] = {3, 1, 7, 0, 4, 1, 6, 3};
+  float y[8];
+  sequential_scan(x, y, ((sizeof(x)) / (sizeof(*x))));
+  for (int i = 0; i < ((sizeof(x)) / (sizeof(*x))); (i) += (1)) {
+    (std::cout) << (y[i]) << (std::endl);
   };
   return 0;
 }
