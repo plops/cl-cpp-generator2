@@ -7,6 +7,14 @@
 #include <iostream>
 auto g_start = static_cast<typeof(
     std::chrono::high_resolution_clock::now().time_since_epoch().count())>(0);
+void sequential_scan(float *x, float *y, int n) {
+  auto accum = x[0];
+  y[0] = accum;
+  for (int i = 1; i < n; (i)++) {
+    (accum) += (x[i]);
+    y[i] = accum;
+  };
+}
 int main() {
   g_start =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();

@@ -93,6 +93,23 @@
 										       (time_since_epoch)
 										       (count)))))
 			     0))))
+
+
+	    (defun sequential_scan (x y n)
+	      (declare (type float* x y)
+		       (type int n))
+	      (let ((accum (aref x 0)))
+		(setf (aref y 0) accum)
+		(for ((= "int i" 1)
+		      (< i n)
+		      (incf i))
+		     (incf accum (aref x i))
+		     (setf (aref y i) accum))))
+
+	    (defun kogge_stone_scan_kernel (x y n)
+	      (declare (type float* x y)
+		       (type in n))
+	      )
 	    
 	    (defun main ()
 	      (declare (values int))
