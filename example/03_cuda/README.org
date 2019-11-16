@@ -13,3 +13,4 @@
 * References
 - https://ulhpc-tutorials.readthedocs.io/en/latest/cuda/
 - managed mmap https://stackoverflow.com/questions/53751480/combining-mmap-and-uvm-features
+- https://gist.github.com/diorahman/648478c2c5c24d819f0f

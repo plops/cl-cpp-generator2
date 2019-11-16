@@ -107,7 +107,7 @@
 		     (setf (aref y i) accum))))
 
 	    (do0
-	     "enum{SECTION_SIZE=1024};"
+	     "enum{SECTION_SIZE=8};"
 	     (defun kogge_stone_scan_kernel (x y n) ;; inclusive scan
 	       (declare (type float* x y)
 			(type int n)

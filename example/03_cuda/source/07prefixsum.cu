@@ -15,7 +15,7 @@ void sequential_scan(float *x, float *y, int n) {
     y[i] = accum;
   };
 }
-enum { SECTION_SIZE = 1024 };
+enum { SECTION_SIZE = 8 };
 __global__ void kogge_stone_scan_kernel(float *x, float *y, int n) {
   __shared__ float XY[SECTION_SIZE];
   auto i = ((threadIdx.x) + (((blockDim.x) * (blockIdx.x))));
