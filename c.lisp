@@ -24,19 +24,22 @@
     (multiple-value-bind (old-code-hash exists) (gethash fn-hash *file-hashes*)
       (when (or (not exists) ignore-hash (/= code-hash old-code-hash)
 		(not (probe-file fn)))
-       ;; store the sxhash of the c source in the hash table
-       ;; *file-hashes* with the key formed by the sxhash of the full
-       ;; pathname
-       (setf (gethash fn-hash *file-hashes*) code-hash)
-       (with-open-file (s fn
-			  :direction :output
-			  :if-exists :supersede
-			  :if-does-not-exist :create)
-	 (write-sequence code-str s))
-       (sb-ext:run-program "/usr/bin/clang-format"
-			   (list "-i"  (namestring fn)
-				 ;"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
-				 ))))))
+	;; store the sxhash of the c source in the hash table
+	;; *file-hashes* with the key formed by the sxhash of the full
+	;; pathname
+	(setf (gethash fn-hash *file-hashes*) code-hash)
+	(with-open-file (s fn
+			   :direction :output
+			   :if-exists :supersede
+			   :if-does-not-exist :create)
+	  (write-sequence code-str s))
+	;; https://travisdowns.github.io/blog/2019/11/19/toupper.html
+	;; header reordering can affect compilation performance
+	;; FIXME: figure out how to prevent that
+	(sb-ext:run-program "/usr/bin/clang-format"
+			    (list "-i"  (namestring fn)
+					;"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
+				  ))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
 ;; http://clhs.lisp.se/Body/d_type.htm
