@@ -159,24 +159,24 @@
    
 
   (progn
-    ;; we need an empty proto2.h. it has to be written before all c files so that make proto will work
-    (write-source (asdf:system-relative-pathname 'cl-cpp-generator2
+    (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
 								  *source-dir*))
-		  `(do0)  (user-homedir-pathname) t)
-
-    (loop for e in (reverse *module*) and i from 0 do
-	 (destructuring-bind (&key name code) e
-	   (emit-c :code code :hook-defun 
-			   #'(lambda (str)
-			       (format t "HOOKS ~a~%" str)))
-	   
-	   (write-source (asdf:system-relative-pathname
-			  'cl-cpp-generator2
-			  (format nil
-				  "~a/copernicus_~2,'0d_~a.cpp"
-				  *source-dir* i name))
-			 code)))
+		       :direction :output
+		       :if-exists :supersede
+		       :if-does-not-exist :create)
+      (loop for e in (reverse *module*) and i from 0 do
+	   (destructuring-bind (&key name code) e  
+	     (emit-c :code code :hook-defun 
+		     #'(lambda (str)
+			 (format s "~a~%" str)))
+	     
+	     (write-source (asdf:system-relative-pathname
+			    'cl-cpp-generator2
+			    (format nil
+				    "~a/copernicus_~2,'0d_~a.cpp"
+				    *source-dir* i name))
+			   code))))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
