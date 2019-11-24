@@ -24,5 +24,5 @@ proto2.h: $(PROTOS)
 	cat $^ >> $@
 	echo '#endif' >> $@
 
-proto_%.h: %.c
+proto_%.h: %.cpp
 	sh ./gen_proto2.sh $<

@@ -52,6 +52,10 @@
 		 (_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
                                                                                        (time_since_epoch)
                                                                                        (count)))))
+		 ,@(loop for e in *module-global-parameters* collect
+			(destructuring-bind (&key name type default)
+			    e
+			  `(,name ,type)))
 		 )))
 	(if init
 	    `(curly
