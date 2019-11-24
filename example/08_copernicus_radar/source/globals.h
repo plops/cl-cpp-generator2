@@ -2,9 +2,10 @@
 
 #define GLOBALS_H
 
-enum { _N_IMAGES = 4, _MAX_FRAMES_IN_FLIGHT = 2 };
+#include <chrono>
 struct State {
-  double _start_time;
+  typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      _start_time;
 };
 typedef struct State State;
 

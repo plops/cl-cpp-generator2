@@ -26,10 +26,32 @@
   (progn
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
+    (defun vkprint (call &optional rest)
+      `(do0 ,call
+            (<< "std::cout"
+              (- (dot ("std::chrono::high_resolution_clock::now")
+                    (time_since_epoch)
+                    (count))
+                 ,(g `_start))
+              (string " ")
+              __FILE__
+              (string ":")
+              __LINE__
+              (string " ")
+              __func__
+              (string ,(format nil " ~a " (emit-c :code call)))
+              ,@(loop for e in rest appending
+                     `((string ,(format nil " ~a=" (emit-c :code e)))
+                       ,e))
+              "std::endl")
+          )
+      )
 
     (defun emit-globals (&key init)
       (let ((l `(
-		 (_start_time double)
+		 (_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+                                                                                       (time_since_epoch)
+                                                                                       (count)))))
 		 )))
 	(if init
 	    `(curly
@@ -40,7 +62,7 @@
 			(when value
 			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	    `(do0
-	      "enum {_N_IMAGES=4,_MAX_FRAMES_IN_FLIGHT=2};"
+	      (include <chrono>)
 	      (defstruct0 State
 		  ,@(loop for e in l collect
 			 (destructuring-bind (name type &optional value) e
@@ -53,9 +75,6 @@
 	
 	  (push `(do0
 		
-		  " "
-		  "#define GLFW_INCLUDE_VULKAN"
-		  (include <GLFW/glfw3.h>)
 		  " "
 		  (include "utils.h")
 		  " "
@@ -90,19 +109,49 @@
 	      
 	      (defun main ()
 		(declare (values int))
-		(setf ,(g `_start_time) (now))
-		(run)))))
+		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count)))
+		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
+		))))
   (define-module
       `(mmap
-	((_window :direction 'out :type VkInstance) )
+	((_mmap_data :direction 'out :type void*)
+	 (_mmap_filesize :direction 'out :type size_t))
 	(do0
-	 (defun init ()
+	 (include <sys/mman.h>
+		  <sys/stat.h>
+		  <sys/types.h>
+		  <fcntl.h>
+		  <cstdio>
+		  <cassert>)
+	 (defun get_filesize (filename)
+	   (declare (type "const char*" filename)
+		    (values size_t))
+	   (let ((st))
+	     (declare (type "struct stat" st))
+	     (stat filename &st)
+	     (return st.st_size)))
+	 (defun destroy_mmap ()
+	   (let ((rc (munmap ,(g `_mmap_data)
+			     ,(g `_mmap_filesize))))
+	     (assert (== 0 rc))))
+	 (defun init_mmap (filename)
+	   (declare (type "const char*" filename)
+		    )
+	   (let ((filesize (get_filesize filename))
+		 (fd (open filename O_RDONLY 0)))
+	     (assert (!= -1 fd))
+	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
+	       (assert (!= MAP_FAILED data))
+	       
+	       (setf ,(g `_mmap_filesize) filesize
+		     ,(g `_mmap_data) data)))
 	   ))))
      
    
 
-  (let* ()
-					;(write-source *code-file* code)
+  (progn
     ;; we need an empty proto2.h. it has to be written before all c files so that make proto will work
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
