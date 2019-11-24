@@ -1,0 +1,1 @@
+g++ -std=gnu++1z -O0 -S $1 -Wmissing-declarations 2>&1|grep "warning: no previous declaration for.*-Wmissing-declarations" -A1|grep '{'|cut -d '|' -f 2|cut -d '{' -f 1|awk '{print $N";"}' |grep -v "STBIDEF"> "proto_"`basename $1 .c`".h"
