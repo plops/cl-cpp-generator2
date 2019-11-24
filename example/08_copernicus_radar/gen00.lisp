@@ -167,6 +167,8 @@
 
     (loop for e in (reverse *module*) and i from 0 do
 	 (destructuring-bind (&key name code) e
+	   (emit-c :code code :hook-defun #'(lambda (str)
+					      (format t "HOOKS ~a~%" str)))
 	   (write-source (asdf:system-relative-pathname
 			  'cl-cpp-generator2
 			  (format nil

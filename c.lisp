@@ -137,7 +137,7 @@ entry return-values contains a list of return values"
 					     (variable-declaration :name decl :env env :emit emit))))
 			  ,@body)))))))
 
-(defun parse-defun (code emit)
+(defun parse-defun (code emit &key header-only)
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env) (consume-declare body) ;; py
@@ -148,7 +148,7 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~a ~a ~a"
+	  (format s "~a ~a ~a~:[;~;~]"
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 					;(funcall emit `(paren ,@r))
@@ -166,9 +166,10 @@ entry return-values contains a list of return values"
 						       type
 						       (break "can't find type for ~a in defun"
 							      p)))
-						 p
-						 )))))
-	  (format s "~a" (funcall emit `(progn ,@body))))))))
+						 p))))
+		  header-only)
+	  (unless header-only
+	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-lambda (code emit)
   ;;  lambda lambda-list [declaration*] form*
@@ -227,7 +228,8 @@ entry return-values contains a list of return values"
    (substitute #\e #\d s)))
 			  
 (progn
-  (defun emit-c (&key code (str nil)  (level 0))
+  (defun emit-c (&key code (str nil)  (level 0) hook-defun)
+    "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
     (flet ((emit (code &optional (dl 0))
 	     "change the indentation level. this is used in do"
 	     (emit-c :code code :level (+ dl level))))
@@ -331,7 +333,11 @@ entry return-values contains a list of return values"
 				  )))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
-		  (defun (parse-defun code #'emit))
+		  (defun
+		      (prog1
+			  (parse-defun code #'emit)
+			(when hook-defun
+			  (funcall hook-defun (parse-defun code #'emit :header-only t)))))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (throw (format nil "throw ~a" (emit (car (cdr code)))))
 		  (cast (destructuring-bind (type value) (cdr code)

@@ -8,7 +8,8 @@
 #include <chrono>
 #include <iostream>
 State state = {};
-int main() {
+int main();
+{
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   init_mmap(
