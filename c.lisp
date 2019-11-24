@@ -228,11 +228,11 @@ entry return-values contains a list of return values"
    (substitute #\e #\d s)))
 			  
 (progn
-  (defun emit-c (&key code (str nil)  (level 0) hook-defun)
+  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
     (flet ((emit (code &optional (dl 0))
 	     "change the indentation level. this is used in do"
-	     (emit-c :code code :level (+ dl level))))
+	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun)))
       (if code
 	  (if (listp code)
 	      (progn
@@ -337,6 +337,7 @@ entry return-values contains a list of return values"
 		      (prog1
 			  (parse-defun code #'emit)
 			(when hook-defun
+			  (format t "CALLING HOOKS: ~a~%" hook-defun)
 			  (funcall hook-defun (parse-defun code #'emit :header-only t)))))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (throw (format nil "throw ~a" (emit (car (cdr code)))))
