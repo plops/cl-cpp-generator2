@@ -2,8 +2,8 @@ CXX=g++
 LDFLAGS=
 CXXFLAGS=-march=native -ffast-math -std=gnu++1z -O0 -ggdb -fsanitize=address  #`pkg-config --cflags cglm`  
 CFILES:=$(shell ls | grep .cpp$)
-OBJ:=$(CFILES:%.c=%.o)
-HFILES:=$(CFILES:%.c=%.h)
+OBJ:=$(CFILES:%.cpp=%.o)
+HFILES:=$(CFILES:%.cpp=%.h)
 PROTOS:=$(patsubst %, proto_%, $(HFILES))
 %.o: %.cpp #proto2.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)

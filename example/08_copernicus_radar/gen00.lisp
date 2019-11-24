@@ -32,7 +32,7 @@
               (- (dot ("std::chrono::high_resolution_clock::now")
                     (time_since_epoch)
                     (count))
-                 ,(g `_start))
+                 ,(g `_start_time))
               (string " ")
               __FILE__
               (string ":")
@@ -108,6 +108,8 @@
   (define-module
       `(main ()
 	     (do0
+	      (include <iostream>
+		       <chrono>)
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
 	      
@@ -116,6 +118,7 @@
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
+		;(vkprint "main" )
 		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
 		))))
   (define-module
@@ -186,11 +189,11 @@
 		    " "
 		    ,@(loop for e in (reverse *utils-code*) collect
 			 e)
-		    "#define length(a) (sizeof((a))/sizeof(*(a)))"
+		    ;"#define length(a) (sizeof((a))/sizeof(*(a)))"
 					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
 					;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
-		    "#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
-		    "#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
+		    ;"#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
+		    ;"#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
 		    		    
 		    " "
 		    
