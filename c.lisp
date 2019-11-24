@@ -148,7 +148,7 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~a ~a ~a~:[;~;~]"
+	  (format s "~a ~a ~a~:[~;;~]"
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 					;(funcall emit `(paren ,@r))
@@ -337,7 +337,6 @@ entry return-values contains a list of return values"
 		      (prog1
 			  (parse-defun code #'emit)
 			(when hook-defun
-			  (format t "CALLING HOOKS: ~a~%" hook-defun)
 			  (funcall hook-defun (parse-defun code #'emit :header-only t)))))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (throw (format nil "throw ~a" (emit (car (cdr code)))))
