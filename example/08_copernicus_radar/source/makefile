@@ -13,16 +13,8 @@ copernicus: $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 genclean:
-	rm *.cpp *.o proto_*.h globals.h utils.h proto2.h copernicus *.s
+	rm *.cpp *.o globals.h utils.h proto2.h copernicus *.s
 
 clean:
-	rm *.o proto_*.h copernicus *.s
+	rm *.o copernicus *.s
 
-proto2.h: $(PROTOS)
-	echo '#ifndef PROTO2_H' > $@
-	echo '#define PROTO2_H' >> $@
-	cat $^ >> $@
-	echo '#endif' >> $@
-
-proto_%.h: %.cpp
-	sh ./gen_proto2.sh $<
