@@ -180,7 +180,7 @@ Here is an overview of supported expressions:
 | return                                                          |                                                                |                                                          |
 | (uint32_t*) 42                                                  |  (cast uint32_t* 42)                                           |                                                          |
 
-* Collect function declarations
+** Collect function declarations
 
 Sometimes it can be necessary to emit function declarations into a
 header file.  For this emit-c provides the argument hook-defun. See
@@ -209,9 +209,19 @@ of different modules.
 				      code))))
 #+END_EXAMPLE
 
+Code modules are collected in the variable *module*. They consist of a name and their code:
+
+#+BEGIN_EXAMPLE
+#<cons {1018004A17}>
+--------------------
+A proper list:
+0: (:name mmap :code ..)
+1: (:name main :code ..)
+#+END_EXAMPLE
 
 
-* Generic C
+
+** Generic C
 
   If you are not programming C++ but use either the Clang or GCC
   compiler, then you can enable the generic-c feature like so:
