@@ -5,7 +5,7 @@
 
 (in-package :cl-cpp-generator2)
 
-
+;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
 
 (progn
   ;; make sure to run this code twice during the first time, so that
