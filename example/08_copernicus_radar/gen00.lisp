@@ -120,6 +120,7 @@
 					     (count)))
 		;(vkprint "main" )
 		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
+		(destroy_mmap)
 		))))
   (define-module
       `(mmap
