@@ -337,7 +337,7 @@
 	   ,(logout "collect" `(,(g `_mmap_data)))
 	   (let ((offset 0))
 	     (declare (type size_t offset))
-	     (dotimes (i 10)
+	     (while (< offset ,(g `_mmap_filesize)) ;dotimes (i 2000)
 	       (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		     (data_length ,(space-packet-slot-get 'data-length `p)
 		       )

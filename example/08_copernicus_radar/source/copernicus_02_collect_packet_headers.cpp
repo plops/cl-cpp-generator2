@@ -20,7 +20,7 @@ void init_collect_packet_headers() {
               << (__func__) << (" ") << ("collect") << (" ")
               << (" state._mmap_data=") << (state._mmap_data) << (std::endl);
   size_t offset = 0;
-  for (int i = 0; i < 10; (i) += (1)) {
+  while (offset < state._mmap_filesize) {
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
     auto data_length = ((((1) * (p[5]))) + (((256) * (((0xFF) & (p[4]))))));
     auto sync_marker =
