@@ -23,6 +23,9 @@ void init_collect_packet_headers() {
   for (int i = 0; i < 10; (i) += (1)) {
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
     auto data_length = ((((1) * (p[5]))) + (((256) * (((0xFF) & (p[4]))))));
+    auto sync_marker =
+        ((((1) * (p[15]))) + (((256) * (p[14]))) + (((65536) * (p[13]))) +
+         (((16777216) * (((0xFF) & (p[12]))))));
     std::array<uint8_t, 62 + 6> data_chunk;
     memcpy(data_chunk.data(), p, ((62) + (6)));
     (std::cout) << (((std::chrono::high_resolution_clock::now()
@@ -32,7 +35,7 @@ void init_collect_packet_headers() {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("len") << (" ") << (" offset=")
                 << (offset) << (" data_length=") << (data_length)
-                << (std::endl);
+                << (" sync_marker=") << (sync_marker) << (std::endl);
     state._header_offset.push_back(offset);
     state._header_data.push_back(data_chunk);
     (offset) += (((6) + (1) + (data_length)));
