@@ -341,14 +341,15 @@
 	       (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		     (data_length ,(space-packet-slot-get 'data-length `p)
 		       )
-		     (sync_marker ,(space-packet-slot-get 'sync-marker `p))
+		     ;(sync_marker ,(space-packet-slot-get 'sync-marker `p))
 		     (data_chunk)
 		     )
 		 (declare (type "std::array<uint8_t,62+6>" data_chunk))
 		 (memcpy (data_chunk.data)
 			 p
 			 (+ 62 6))
-		 ,(logout "len" `(offset data_length sync_marker))
+		 ,(logout "len" `(offset data_length ;sync_marker
+					 ))
 		 
 		 (dot ,(g `_header_offset)
 		      (push_back offset))
