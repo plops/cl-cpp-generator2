@@ -422,7 +422,8 @@ entry return-values contains a list of return values"
 			      (format nil "(~a)--" (emit a)))))
 		  (string (format nil "\"~a\"" (cadr code)))
 		  (char (format nil "'~a'" (cadr code)))
-		  
+		  (hex (destructuring-bind (number) (cdr code)
+			 (format nil "0x~x" number)))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"

@@ -15,7 +15,137 @@
   (defparameter *code-file* (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames #P"run_01_base.c"
 											       *source-dir*)))
   
-  
+  (progn
+    (defun next-power-of-two (n)
+      (let ((i 1))
+	(loop while (< i n) do
+	     (setf i (* i 2)))
+	i))
+
+    (defparameter *space-packet* ;; byte-order big-endion
+      `(
+	;; start of packet primary header
+	(packet-version-number 0 :bits 3)
+	(packet-type 0 :bits 1)
+	(secondary-header-flag 0 :bits 1)
+	(application-process-id-process-id 0 :bits 7)
+	(application-process-id-packet-category 0 :bits 4) 
+	(sequence-flags 0 :bits 2)
+	(sequence-count 0 :bits 14) ;; 0 at start of measurement, wraps after 16383
+	(data-length 0 :bits 16) ;; (number of octets in packet data field)
+	;; - 1, includes 62 octets of secondary
+	;; header and the user data field of
+	;; variable length start of packet data
+	;; field datation service p. 15
+	(coarse-time 0 :bits 32)
+	(fine-time 0 :bits 16)
+	;; fixed ancillary data service
+	(sync-marker #x352EF853
+		     :bits 32)
+	(data-take-id 0 :bits 32)
+	(ecc-number 0 :bits 8)
+	(ignore-0 0 :bits 1)
+	(test-mode 0 :bits 3)
+	(rx-channel-id 0 :bits 4)
+	(instrument-configuration-id 0 :bits 32)
+	;; sub-commutation ancillary data service
+	(sub-commutated-index 0 :bits 8) ;; 1..64 slowly fills datastructure
+	;; on p23,24,25 0 indicates invalid data word consistent set only
+	;; after contiguous sequence 1..22 (pvt), 23..41 (attitude) or
+	;; 42..64 (temperatures)
+	(sub-commutated-data 0 :bits 16) 
+	;; counters service
+	(space-packet-count 0 :bits 32) ;; from beginning of data take
+	(pri-count 0 :bits 32)
+	;; radar configuration support service
+	(error-flag 0 :bits 1)
+	(ignore-1 0 :bits 2)
+	(baq-mode 0 :bits 5)
+	(baq-block-length 0 :bits 8)
+	(ignore-2 0 :bits 8)
+	(range-decimation 0 :bits 8)
+	(rx-gain 0 :bits 8)
+	;;(tx-ramp-rate 0 :bits 16)
+	(tx-ramp-rate-polarity 0 :bits 1)
+	(tx-ramp-rate-magnitude 0 :bits 15)
+	(tx-pulse-start-frequency-polarity 0 :bits 1)
+	(tx-pulse-start-frequency-magnitude 0 :bits 15)
+	(tx-pulse-length 0 :bits 24)
+	(ignore-3 0 :bits 3)
+	(rank 0 :bits 5)
+	(pulse-repetition-interval 0 :bits 24)
+	(sampling-window-start-time 0 :bits 24)
+	(sampling-window-length 0 :bits 24)
+	;;(sab-ssb-message 0 :bits 24)
+	(sab-ssb-calibration-p 0 :bits 1)
+	(sab-ssb-polarisation 0 :bits 3)
+	(sab-ssb-temp-comp 0 :bits 2)
+	(sab-ssb-ignore-0 0 :bits 2)
+	(sab-ssb-elevation-beam-address 0 :bits 4) ;; if calibration-p=1 sastest caltype
+	(sab-ssb-ignore-1 0 :bits 2)
+	(sab-ssb-azimuth-beam-address 0 :bits 10)
+	;;(ses-ssb-message 0 :bits 24)
+	(ses-ssb-cal-mode 0 :bits 2)
+	(ses-ssb-ignore-0 0 :bits 1)
+	(ses-ssb-tx-pulse-number 0 :bits 5)
+	(ses-ssb-signal-type 0 :bits 4)
+	(ses-ssb-ignore-1 0 :bits 3)
+	(ses-ssb-swap 0 :bits 1)
+	(ses-ssb-swath-number 0 :bits 8)
+	;; radar sample count service
+	(number-of-quads 0 :bits 16)
+	(ignore-4 0 :bits 8)
+	))
+
+    ;;(defparameter slot-idx (position 'data-length *space-packet* :key #'first))
+    (defun space-packet-slot-get (slot-name data8)
+      (let* ((slot-idx (position slot-name *space-packet* :key #'first))
+	     (preceding-slots (subseq *space-packet* 0 slot-idx))
+	     (sum-preceding-bits (reduce #'+
+					 (mapcar #'(lambda (x)
+						     (destructuring-bind (name_ default-value &key bits) x
+						       bits))
+						 preceding-slots)))
+	     )
+	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8) 
+	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
+	    
+	    (format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
+	    (if (<= bits 8)
+		(let ((mask 0))
+		  
+		  (declare (type (unsigned-byte 8) mask))
+		  (setf (ldb (byte bits (- 8 (+ bits preceding-bits))) mask) #xff)
+		  (values
+		   `(>> (&
+			 (hex ,mask)
+			 (aref ,data8 (+ 1 ,preceding-octets)))
+			(- 8 (+ ,bits ,preceding-bits)))
+		   'uint8_t
+		   ))
+		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
+		  (let ((firstmask 0)
+			(lastmask 0))
+		    (setf (ldb (byte (- 8 preceding-bits) 0) firstmask) #xff
+			  (ldb (byte rest-bits (- 8 rest-bits)) lastmask) #xff)
+		    (values
+		     (if (= lastmask 0)
+			 `(+ 
+			   ,@(loop for byte from (- bytes 1) downto 1 collect
+				  `(* ,(expt 256 (- bytes byte 1))
+				      (aref ,data8 ,(+ preceding-octets 0 byte))))
+			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0)))))
+			 `(+ (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
+				 ,(- 8 rest-bits))
+			     ,@(loop for byte from (- bytes 1) downto 1 collect
+				    `(* ,(expt 256 (- bytes byte))
+					(aref ,data8 ,(+ preceding-octets 0 byte))))
+			     (* ,(expt 256 bytes) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
+		     (format nil "uint~a_t" (next-power-of-two bits))))
+		  ))))))
+
+
+    )
   
   (progn
     ;; collect code that will be emitted in utils.h
@@ -156,9 +286,23 @@
 	       (setf ,(g `_mmap_filesize) filesize
 		     ,(g `_mmap_data) data)))
 	   ))))
+
+  (define-module
+      `(collect_packet_headers
+	((_header_data :direction 'out :type void*)
+	 )
+	(do0
+	 (defstruct0 space_packet_header_info_t
+	   (head "std::array<unsigned char, 62+6>")
+	   (offset size_t))
+	 (defun destroy_collect_packet_headers ()
+	 )
+	 (defun init_collect_packet_headers ()
+	   (let ((data_length ,(space-packet-slot-get 'data-length (g `_mmap_data)))))
+	   ))))
      
    
-
+  
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
