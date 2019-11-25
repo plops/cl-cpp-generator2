@@ -24,11 +24,8 @@ void init_collect_packet_headers() {
               << (" state._mmap_data=") << (state._mmap_data) << (std::endl);
   auto offset = 0;
   for (int i = 0; i < 10; (i) += (1)) {
-    auto data_length =
-        ((((1) *
-           (((offset) + (static_cast<uint8_t *>(state._mmap_data)))[5]))) +
-         (((256) * (((0xFF) & (((offset) + (static_cast<uint8_t *>(
-                                               state._mmap_data)))[4]))))));
+    auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+    auto data_length = ((((1) * (p[5]))) + (((256) * (((0xFF) & (p[4]))))));
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
