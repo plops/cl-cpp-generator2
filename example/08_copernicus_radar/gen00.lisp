@@ -176,7 +176,7 @@
               "std::endl")
           )
       )
-    (defun logout (msg &optional rest)
+    (defun logprint (msg &optional rest)
       `(<< "std::cout"
 	   (- (dot ("std::chrono::high_resolution_clock::now")
 		   (time_since_epoch)
@@ -297,20 +297,20 @@
 	   (let ((rc (munmap ,(g `_mmap_data)
 			     ,(g `_mmap_filesize))))  
 	     (unless (== 0 rc)
-	       ,(logout "fail munmap" `(rc)))
+	       ,(logprint "fail munmap" `(rc)))
 	     (assert (== 0 rc))))
 	 (defun init_mmap (filename)
 	   (declare (type "const char*" filename)
 		    )
 	   (let ((filesize (get_filesize filename))
 		 (fd (open filename O_RDONLY 0)))
-	     ,(logout "size" `(filesize filename))
+	     ,(logprint "size" `(filesize filename))
 	     (when (== -1 fd)
-	       ,(logout "fail open" `(fd filename)))
+	       ,(logprint "fail open" `(fd filename)))
 	     (assert (!= -1 fd))
 	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
 	       (when (== MAP_FAILED data)
-		 ,(logout "fail mmap"`( data)))
+		 ,(logprint "fail mmap"`( data)))
 	       (assert (!= MAP_FAILED data))
 	       
 	       (setf ,(g `_mmap_filesize) filesize
@@ -334,7 +334,7 @@
 	 (defun destroy_collect_packet_headers ()
 	 )
 	 (defun init_collect_packet_headers ()
-	   ,(logout "collect" `(,(g `_mmap_data)))
+	   ,(logprint "collect" `(,(g `_mmap_data)))
 	   (let ((offset 0))
 	     (declare (type size_t offset))
 	     (while (< offset ,(g `_mmap_filesize)) ;dotimes (i 2000)
@@ -348,7 +348,7 @@
 		 (memcpy (data_chunk.data)
 			 p
 			 (+ 62 6))
-		 ,(logout "len" `(offset data_length ;sync_marker
+		 ,(logprint "len" `(offset data_length ;sync_marker
 					 ))
 		 
 		 (dot ,(g `_header_offset)
@@ -356,6 +356,16 @@
 		 (dot ,(g `_header_data)
 		      (push_back data_chunk))
 		 (incf offset (+ 6 1 data_length)))))
+	   ))))
+
+  (define-module
+      `(process_packet_headers
+	()
+	(do0
+	 
+	 
+	 (defun init_process_packet_headers ()
+	   
 	   ))))
      
    
