@@ -326,7 +326,8 @@
 	(do0
 	 (include <array>
 		  <iostream>
-		  <vector>)
+		  <vector>
+		  <cstring>)
 	 #+nil (defstruct0 space_packet_header_info_t
 	   (head "std::array<uint8_t, 62+6>")
 	   (offset size_t))
@@ -339,10 +340,18 @@
 	     (dotimes (i 10)
 	       (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		     (data_length ,(space-packet-slot-get 'data-length `p))
-		     ) 
+		     (data_chunk)
+		     )
+		 (declare (type "std::array<uint8_t,62+6>" data_chunk))
+		 (memcpy (data_chunk.data)
+			 p
+			 (+ 62 6))
 		 ,(logout "len" `(offset data_length))
-		 #+nil (dot ,(g `_header_offset)
+		 
+		 (dot ,(g `_header_offset)
 		      (push_back offset))
+		 (dot ,(g `_header_data)
+		      (push_back data_chunk))
 		 (incf offset (+ 6 1 data_length)))))
 	   ))))
      
