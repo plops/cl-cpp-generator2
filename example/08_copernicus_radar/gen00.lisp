@@ -331,7 +331,12 @@
 	 )
 	 (defun init_collect_packet_headers ()
 	   ,(logout "collect" `(,(g `_mmap_data)))
-	   (let ((data_length ,(space-packet-slot-get 'data-length `(static_cast<uint8_t*> ,(g `_mmap_data))))))
+	   (let ((offset 0)
+		 )
+	     (dotimes (i 10)
+	       (let ((data_length ,(space-packet-slot-get 'data-length `(+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))) 
+		 ,(logout "len" `(offset data_length))
+		 (incf offset (+ 6 1 data_length)))))
 	   ))))
      
    
