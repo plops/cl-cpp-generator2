@@ -295,7 +295,7 @@
 	     (return st.st_size)))
 	 (defun destroy_mmap ()
 	   (let ((rc (munmap ,(g `_mmap_data)
-			     ,(g `_mmap_filesize)))) 
+			     ,(g `_mmap_filesize))))  
 	     (unless (== 0 rc)
 	       ,(logout "fail munmap" `(rc)))
 	     (assert (== 0 rc))))
