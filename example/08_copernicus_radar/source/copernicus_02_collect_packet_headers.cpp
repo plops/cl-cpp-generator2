@@ -25,14 +25,6 @@ void init_collect_packet_headers() {
     auto data_length = ((((1) * (p[5]))) + (((256) * (((0xFF) & (p[4]))))));
     std::array<uint8_t, 62 + 6> data_chunk;
     memcpy(data_chunk.data(), p, ((62) + (6)));
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (state._start_time)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("len") << (" ") << (" offset=")
-                << (offset) << (" data_length=") << (data_length)
-                << (std::endl);
     state._header_offset.push_back(offset);
     state._header_data.push_back(data_chunk);
     (offset) += (((6) + (1) + (data_length)));

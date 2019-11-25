@@ -272,6 +272,7 @@
 		;(vkprint "main" )
 		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
 		(init_collect_packet_headers)
+		(init_process_packet_headers)
 		(destroy_mmap)
 		))))
   (define-module
@@ -348,7 +349,7 @@
 		 (memcpy (data_chunk.data)
 			 p
 			 (+ 62 6))
-		 ,(logprint "len" `(offset data_length ;sync_marker
+		 #+nil ,(logprint "len" `(offset data_length ;sync_marker
 					 ))
 		 
 		 (dot ,(g `_header_offset)
@@ -365,7 +366,11 @@
 	 
 	 
 	 (defun init_process_packet_headers ()
-	   
+	   (foreach (e ,(g `_header_data))
+		    (let ((p (e.data))
+			  (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
+			  (fine_time ,(space-packet-slot-get 'fine-time 'p)))
+		     ,(logprint "header" `(coarse_time fine_time))))
 	   ))))
      
    
