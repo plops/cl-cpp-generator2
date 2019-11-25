@@ -176,6 +176,24 @@
               "std::endl")
           )
       )
+    (defun logout (&optional rest)
+      `(<< "std::cout"
+	   (- (dot ("std::chrono::high_resolution_clock::now")
+		   (time_since_epoch)
+		   (count))
+	      ,(g `_start_time))
+	   (string " ")
+	   __FILE__
+	   (string ":")
+	   __LINE__
+	   (string " ")
+	   __func__
+	   ,@(loop for e in rest appending
+		  `((string ,(format nil " ~a=" (emit-c :code e)))
+		    ,e))
+	   "std::endl")
+      
+      )
 
     (defun emit-globals (&key init)
       (let ((l `(
@@ -250,6 +268,7 @@
 					     (count)))
 		;(vkprint "main" )
 		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
+		(init_collect_packet_headers)
 		(destroy_mmap)
 		))))
   (define-module
@@ -262,7 +281,8 @@
 		  <sys/types.h>
 		  <fcntl.h>
 		  <cstdio>
-		  <cassert>)
+		  <cassert>
+		  <iostream>)
 	 (defun get_filesize (filename)
 	   (declare (type "const char*" filename)
 		    (values size_t))
@@ -273,14 +293,20 @@
 	 (defun destroy_mmap ()
 	   (let ((rc (munmap ,(g `_mmap_data)
 			     ,(g `_mmap_filesize))))
+	     (unless (== 0 rc)
+	       ,(logout `("munmap" rc)))
 	     (assert (== 0 rc))))
 	 (defun init_mmap (filename)
 	   (declare (type "const char*" filename)
 		    )
 	   (let ((filesize (get_filesize filename))
 		 (fd (open filename O_RDONLY 0)))
+	     (when (== -1 fd)
+	       ,(logout `("open" fd)))
 	     (assert (!= -1 fd))
 	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
+	       (when (== MAP_FAILED data)
+		 ,(logout `("mmap" data)))
 	       (assert (!= MAP_FAILED data))
 	       
 	       (setf ,(g `_mmap_filesize) filesize
@@ -292,13 +318,16 @@
 	((_header_data :direction 'out :type void*)
 	 )
 	(do0
+	 (include <array>
+		  <iostream>)
 	 (defstruct0 space_packet_header_info_t
-	   (head "std::array<unsigned char, 62+6>")
+	   (head "std::array<uint8_t, 62+6>")
 	   (offset size_t))
 	 (defun destroy_collect_packet_headers ()
 	 )
 	 (defun init_collect_packet_headers ()
-	   (let ((data_length ,(space-packet-slot-get 'data-length (g `_mmap_data)))))
+	   ,(logout `(,(g `_mmap_data)))
+	   (let ((data_length ,(space-packet-slot-get 'data-length `(static_cast<uint8_t*> ,(g `_mmap_data))))))
 	   ))))
      
    
