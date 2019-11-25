@@ -20,8 +20,8 @@ void init_collect_packet_headers() {
                         .count()) -
                    (state._start_time)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << (" state._mmap_data=") << (state._mmap_data)
-              << (std::endl);
+              << (__func__) << (" ") << ("collect") << (" ")
+              << (" state._mmap_data=") << (state._mmap_data) << (std::endl);
   auto data_length =
       ((((1) * (static_cast<uint8_t *>(state._mmap_data)[5]))) +
        (((256) * (((0xFF) & (static_cast<uint8_t *>(state._mmap_data)[4]))))));

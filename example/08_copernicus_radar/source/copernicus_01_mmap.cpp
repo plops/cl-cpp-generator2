@@ -26,22 +26,29 @@ void destroy_mmap() {
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" munmap=") << (munmap) << (" rc=") << (rc)
-                << (std::endl);
+                << (__func__) << (" ") << ("fail munmap") << (" ") << (" rc=")
+                << (rc) << (std::endl);
   };
   assert((0) == (rc));
 }
 void init_mmap(const char *filename) {
   auto filesize = get_filesize(filename);
   auto fd = open(filename, O_RDONLY, 0);
+  (std::cout) << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("size") << (" ") << (" filesize=")
+              << (filesize) << (" filename=") << (filename) << (std::endl);
   if ((-1) == (fd)) {
     (std::cout) << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" open=") << (open) << (" fd=") << (fd)
-                << (std::endl);
+                << (__func__) << (" ") << ("fail open") << (" ") << (" fd=")
+                << (fd) << (" filename=") << (filename) << (std::endl);
   };
   assert((-1) != (fd));
   auto data = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -51,8 +58,8 @@ void init_mmap(const char *filename) {
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" mmap=") << (mmap) << (" data=") << (data)
-                << (std::endl);
+                << (__func__) << (" ") << ("fail mmap") << (" ") << (" data=")
+                << (data) << (std::endl);
   };
   assert((MAP_FAILED) != (data));
   state._mmap_filesize = filesize;

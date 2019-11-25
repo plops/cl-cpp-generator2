@@ -176,7 +176,7 @@
               "std::endl")
           )
       )
-    (defun logout (&optional rest)
+    (defun logout (msg &optional rest)
       `(<< "std::cout"
 	   (- (dot ("std::chrono::high_resolution_clock::now")
 		   (time_since_epoch)
@@ -188,6 +188,9 @@
 	   __LINE__
 	   (string " ")
 	   __func__
+	   (string " ")
+	   (string ,msg)
+	   (string " ")
 	   ,@(loop for e in rest appending
 		  `((string ,(format nil " ~a=" (emit-c :code e)))
 		    ,e))
@@ -294,19 +297,20 @@
 	   (let ((rc (munmap ,(g `_mmap_data)
 			     ,(g `_mmap_filesize))))
 	     (unless (== 0 rc)
-	       ,(logout `("munmap" rc)))
+	       ,(logout "fail munmap" `(rc)))
 	     (assert (== 0 rc))))
 	 (defun init_mmap (filename)
 	   (declare (type "const char*" filename)
 		    )
 	   (let ((filesize (get_filesize filename))
 		 (fd (open filename O_RDONLY 0)))
+	     ,(logout "size" `(filesize filename))
 	     (when (== -1 fd)
-	       ,(logout `("open" fd)))
+	       ,(logout "fail open" `(fd filename)))
 	     (assert (!= -1 fd))
 	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
 	       (when (== MAP_FAILED data)
-		 ,(logout `("mmap" data)))
+		 ,(logout "fail mmap"`( data)))
 	       (assert (!= MAP_FAILED data))
 	       
 	       (setf ,(g `_mmap_filesize) filesize
@@ -326,7 +330,7 @@
 	 (defun destroy_collect_packet_headers ()
 	 )
 	 (defun init_collect_packet_headers ()
-	   ,(logout `(,(g `_mmap_data)))
+	   ,(logout "collect" `(,(g `_mmap_data)))
 	   (let ((data_length ,(space-packet-slot-get 'data-length `(static_cast<uint8_t*> ,(g `_mmap_data))))))
 	   ))))
      
