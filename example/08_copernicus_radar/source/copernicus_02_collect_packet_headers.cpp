@@ -12,12 +12,14 @@ extern State state;
 #include <vector>
 void destroy_collect_packet_headers() {}
 void init_collect_packet_headers() {
-  (std::cout) << (((std::chrono::high_resolution_clock::now()
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
                         .count()) -
                    (state._start_time)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << (" ") << ("collect") << (" ")
+              << (__func__) << (" ") << ("collect") << (" ") << (std::setw(8))
               << (" state._mmap_data=") << (state._mmap_data) << (std::endl);
   size_t offset = 0;
   while (offset < state._mmap_filesize) {

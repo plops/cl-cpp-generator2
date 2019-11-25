@@ -177,24 +177,29 @@
           )
       )
     (defun logprint (msg &optional rest)
-      `(<< "std::cout"
-	   (- (dot ("std::chrono::high_resolution_clock::now")
-		   (time_since_epoch)
-		   (count))
-	      ,(g `_start_time))
-	   (string " ")
-	   __FILE__
-	   (string ":")
-	   __LINE__
-	   (string " ")
-	   __func__
-	   (string " ")
-	   (string ,msg)
-	   (string " ")
-	   ,@(loop for e in rest appending
-		  `((string ,(format nil " ~a=" (emit-c :code e)))
-		    ,e))
-	   "std::endl")
+      `(do0
+	("std::setprecision" 3)
+	(<< "std::cout"
+	    ("std::setw" 10)
+	       (- (dot ("std::chrono::high_resolution_clock::now")
+		       (time_since_epoch)
+		       (count))
+		  ,(g `_start_time))
+	       (string " ")
+	       __FILE__
+	       (string ":")
+	       __LINE__
+	       (string " ")
+	       __func__
+	       (string " ")
+	       (string ,msg)
+	       (string " ")
+	       ,@(loop for e in rest appending
+		      `(("std::setw" 8)
+					;("std::width" 8)
+			(string ,(format nil " ~a=" (emit-c :code e)))
+			,e))
+	       "std::endl"))
       
       )
 
@@ -257,7 +262,7 @@
   (defun g (arg)
     `(dot state ,arg))
   (define-module
-      `(main ()
+      `(main ((_filename :direction 'out :type "char const *"))
 	     (do0
 	      (include <iostream>
 		       <chrono>)
@@ -269,10 +274,13 @@
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
-		;(vkprint "main" )
-		(init_mmap (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
+					;(vkprint "main" )
+		(setf ,(g `_filename)
+		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
+		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers)
-		(init_process_packet_headers)
+		;(init_process_packet_headers)
+		(init_decode_packet 0)
 		(destroy_mmap)
 		))))
   (define-module
@@ -366,11 +374,43 @@
 	 
 	 
 	 (defun init_process_packet_headers ()
-	   (foreach (e ,(g `_header_data))
-		    (let ((p (e.data))
-			  (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
-			  (fine_time ,(space-packet-slot-get 'fine-time 'p)))
-		     ,(logprint "header" `(coarse_time fine_time))))
+	   (let ((p0 (dot (aref ,(g `_header_data) 0)
+			  (data)))
+		 (coarse_time0 ,(space-packet-slot-get 'coarse-time 'p0))
+		 (fine_time0 (* ,(expt 2d0 -16) (+ .5 ,(space-packet-slot-get 'fine-time 'p0))))
+		 (time0 (+ coarse_time0 fine_time0)))
+	    (foreach (e ,(g `_header_data))
+		     (let ((p (e.data))
+			   (fref 37.53472224)
+			   (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
+			   (fine_time (* ,(expt 2d0 -16) (+ .5 ,(space-packet-slot-get 'fine-time 'p))))
+			   (time (- (+ coarse_time
+				       fine_time)
+				    time0))
+			   (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'p)
+				    fref))
+			   (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+			   (count ,(space-packet-slot-get 'space-packet-count 'p))
+			   (pri_count ,(space-packet-slot-get 'pri-count 'p))
+			   (pri (/ ,(space-packet-slot-get 'pulse-repetition-interval 'p)
+				   fref))
+			   (rank ,(space-packet-slot-get 'rank 'p))
+			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
+			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
+		       ,(logprint "" `(time swst swath count pri_count rank pri azi ele)))))
+	   ))))
+
+  (define-module
+      `(decode_packet
+	()
+	(do0
+	 (defun init_decode_packet (packet_idx)
+	   (declare (type int packet_idx))
+	   (let ((header (dot (aref ,(g `_header_data) packet_idx)
+			      (data)))
+		 (offset (aref ,(g `_header_offset) packet_idx))
+		 (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
+		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))))
 	   ))))
      
    
@@ -406,7 +446,8 @@
 		    " "
 		    (include <vector>
 			     <array>
-			     <iostream>)
+			     <iostream>
+			     <iomanip>)
 		    " "
 		    (do0
 		     

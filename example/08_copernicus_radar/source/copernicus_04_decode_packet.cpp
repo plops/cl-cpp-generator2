@@ -11,4 +11,5 @@ void init_decode_packet(int packet_idx) {
   auto offset = state._header_offset[packet_idx];
   auto number_of_quads =
       ((((1) * (header[66]))) + (((256) * (((0xFF) & (header[65]))))));
+  auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
 };

@@ -7,19 +7,56 @@
 ;
 extern State state;
 void init_process_packet_headers() {
+  auto p0 = state._header_data[0].data();
+  auto coarse_time0 =
+      ((((1) * (p0[9]))) + (((256) * (p0[8]))) + (((65536) * (p0[7]))) +
+       (((16777216) * (((0xFF) & (p0[6]))))));
+  auto fine_time0 =
+      (((1.52587890625e-5)) *
+       ((((5.e-1f)) +
+         (((((1) * (p0[11]))) + (((256) * (((0xFF) & (p0[10]))))))))));
+  auto time0 = ((coarse_time0) + (fine_time0));
   for (auto &e : state._header_data) {
     auto p = e.data();
+    auto fref = (3.7534723e+1f);
     auto coarse_time =
         ((((1) * (p[9]))) + (((256) * (p[8]))) + (((65536) * (p[7]))) +
          (((16777216) * (((0xFF) & (p[6]))))));
-    auto fine_time = ((((1) * (p[11]))) + (((256) * (((0xFF) & (p[10]))))));
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
+    auto fine_time =
+        (((1.52587890625e-5)) *
+         ((((5.e-1f)) +
+           (((((1) * (p[11]))) + (((256) * (((0xFF) & (p[10]))))))))));
+    auto time = ((((coarse_time) + (fine_time))) - (time0));
+    auto swst = ((((((1) * (p[55]))) + (((256) * (p[54]))) +
+                   (((65536) * (((0xFF) & (p[53]))))))) /
+                 (fref));
+    auto azi = ((((1) * (p[61]))) + (((256) * (((0x3) & (p[60]))))));
+    auto count =
+        ((((1) * (p[32]))) + (((256) * (p[31]))) + (((65536) * (p[30]))) +
+         (((16777216) * (((0xFF) & (p[29]))))));
+    auto pri_count =
+        ((((1) * (p[36]))) + (((256) * (p[35]))) + (((65536) * (p[34]))) +
+         (((16777216) * (((0xFF) & (p[33]))))));
+    auto pri = ((((((1) * (p[52]))) + (((256) * (p[51]))) +
+                  (((65536) * (((0xFF) & (p[50]))))))) /
+                (fref));
+    auto rank = (((0x1F) & (p[((1) + (49))]))) >> (((8) - (((5) + (3)))));
+    auto swath = (((0xFF) & (p[((1) + (64))]))) >> (((8) - (((8) + (0)))));
+    auto ele = (((0xF0) & (p[((1) + (60))]))) >> (((8) - (((4) + (0)))));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
                           .time_since_epoch()
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("header") << (" ")
-                << (" coarse_time=") << (coarse_time) << (" fine_time=")
-                << (fine_time) << (std::endl);
+                << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
+                << (" time=") << (time) << (std::setw(8)) << (" swst=")
+                << (swst) << (std::setw(8)) << (" swath=") << (swath)
+                << (std::setw(8)) << (" count=") << (count) << (std::setw(8))
+                << (" pri_count=") << (pri_count) << (std::setw(8))
+                << (" rank=") << (rank) << (std::setw(8)) << (" pri=") << (pri)
+                << (std::setw(8)) << (" azi=") << (azi) << (std::setw(8))
+                << (" ele=") << (ele) << (std::endl);
   };
 };

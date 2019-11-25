@@ -10,6 +10,7 @@ struct State {
   std::vector<std::array<uint8_t, 62 + 6>> _header_data;
   size_t _mmap_filesize;
   void *_mmap_data;
+  char const *_filename;
 };
 typedef struct State State;
 
