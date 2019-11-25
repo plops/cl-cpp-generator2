@@ -319,24 +319,30 @@
 
   (define-module
       `(collect_packet_headers
-	((_header_data :direction 'out :type void*)
+	(;(_header_data :direction 'out :type void*)
+	 (_header_data :direction 'out :type "std::vector<std::array<uint8_t,62+6>>")
+	 (_header_offset :direction 'out :type "std::vector<size_t>")
 	 )
 	(do0
 	 (include <array>
-		  <iostream>)
-	 (defstruct0 space_packet_header_info_t
+		  <iostream>
+		  <vector>)
+	 #+nil (defstruct0 space_packet_header_info_t
 	   (head "std::array<uint8_t, 62+6>")
 	   (offset size_t))
 	 (defun destroy_collect_packet_headers ()
 	 )
 	 (defun init_collect_packet_headers ()
 	   ,(logout "collect" `(,(g `_mmap_data)))
-	   (let ((offset 0)
-		 )
+	   (let ((offset 0))
+	     (declare (type size_t offset))
 	     (dotimes (i 10)
 	       (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-		     (data_length ,(space-packet-slot-get 'data-length `p))) 
+		     (data_length ,(space-packet-slot-get 'data-length `p))
+		     ) 
 		 ,(logout "len" `(offset data_length))
+		 #+nil (dot ,(g `_header_offset)
+		      (push_back offset))
 		 (incf offset (+ 6 1 data_length)))))
 	   ))))
      
@@ -371,7 +377,10 @@
 		    " "
 		    "#define UTILS_H"
 		    " "
-		    
+		    (include <vector>
+			     <array>
+			     <iostream>)
+		    " "
 		    (do0
 		     
 		    " "
