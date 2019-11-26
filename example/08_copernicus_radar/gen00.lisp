@@ -394,12 +394,12 @@
 			   (pri (/ ,(space-packet-slot-get 'pulse-repetition-interval 'p)
 				   fref))
 			   (rank ,(space-packet-slot-get 'rank 'p))
-			   (rank2 (static_cast<int> (aref p 49)))
+			   (rank2 (static_cast<int> (aref p (+ 49))))
 			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
-			   (sync2 (+ ,@(loop for j below 3 collect
-					    `(* ,(expt 256 j) (static_cast<int> (aref p (+ 6 12 ,j)))))))
-			   (baqmod2 (and #x1F (>> (aref p (+ 6 37)) 3)))
+			   (sync2 (+ ,@(loop for j below 4  collect
+					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
+			   (baqmod2 (logand #x1F (>> (aref p (+ 6 37)) 3)))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
