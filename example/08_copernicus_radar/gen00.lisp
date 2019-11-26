@@ -428,10 +428,14 @@
 	      (when (< 7 seq_state->current_bit_count)
 		(setf seq_state->current_bit_count 0)
 		(incf seq_state->data))
-	      (return res))
-	    
-	    ))
-	 
+	      (return res))))
+	 (defun get_brc (s)
+	   (declare (type sequential_bit_t* s)
+		    (values int))
+	   "// note: evaluation order is crucial"
+	   (return (+ ,@(loop for j below 3 collect
+			     `(* ,(expt 2 (- 2 j))
+				 (get_sequential_bit s))))))
 	 (defun init_decode_packet (packet_idx)
 	   (declare (type int packet_idx))
 	   (let ((header (dot (aref ,(g `_header_data) packet_idx)
@@ -443,11 +447,14 @@
 	     (let ((decoded_symbols 0)
 		   (number_of_baq_blocks (/ (* 2 number_of_quads)
 					    256))
-		  )
+		   (s))
+	       (declare (type sequential_bit_t s))
+	       (init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
+							   62 6))
 	       (for ((= "int block" 0)
 		     (< decoded_symbols number_of_quads)
 		     ())
-		    (let ((brc 0))))
+		    (let ((brc (get_brc &s)))))
 	       ))
 	   ))))
      
