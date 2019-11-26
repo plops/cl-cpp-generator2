@@ -404,13 +404,51 @@
       `(decode_packet
 	()
 	(do0
+	 (do0
+	  ,(emit-utils :code
+		       `(defstruct0 sequential_bit_t
+					;(user_data_position size_t)
+			  (current_bit_count size_t)
+					;(current_byte size_t)
+			  (data uint8_t*)
+			  ))
+	  (defun init_sequential_bit_function (seq_state byte_pos)
+	    (declare (type sequential_bit_t* seq_state)
+		     (type size_t byte_pos))
+	    (setf seq_state->data (ref (aref (static_cast<uint8_t*> ,(g `_mmap_data))
+					     byte_pos))
+		  seq_state->current_bit_count 0))
+	  (defun get_sequential_bit (seq_state)
+	    (declare (type sequential_bit_t* seq_state)
+		     (values "inline bool"))
+	    (let ((current_byte (deref seq_state->data))
+		  (res (static_cast<bool>
+			(and (>> current_byte seq_state->current_bit_count)
+			     1))))
+	      (when (< 7 seq_state->current_bit_count)
+		(setf seq_state->current_bit_count 0)
+		(incf seq_state->data))
+	      (return res))
+	    
+	    ))
+	 
 	 (defun init_decode_packet (packet_idx)
 	   (declare (type int packet_idx))
 	   (let ((header (dot (aref ,(g `_header_data) packet_idx)
 			      (data)))
 		 (offset (aref ,(g `_header_offset) packet_idx))
 		 (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
-		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))))
+		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))
+
+	     (let ((decoded_symbols 0)
+		   (number_of_baq_blocks (/ (* 2 number_of_quads)
+					    256))
+		  )
+	       (for ((= "int block" 0)
+		     (< decoded_symbols number_of_quads)
+		     ())
+		    (let ((brc 0))))
+	       ))
 	   ))))
      
    
