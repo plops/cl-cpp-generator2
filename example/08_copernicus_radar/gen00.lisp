@@ -1,13 +1,11 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-  (ql:quickload "cl-ppcre")
-  )
+  (ql:quickload "cl-ppcre"))
 
 (in-package :cl-cpp-generator2)
 
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
-892270675
-60
+
 (progn
   ;; make sure to run this code twice during the first time, so that
   ;; the functions are defined
@@ -396,6 +394,7 @@
 			   (pri (/ ,(space-packet-slot-get 'pulse-repetition-interval 'p)
 				   fref))
 			   (rank ,(space-packet-slot-get 'rank 'p))
+			   (rank2 (static_cast<int> (aref p 49)))
 			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 			   (sync2 (+ ,@(loop for j below 3 collect
@@ -404,7 +403,7 @@
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-		       ,(logprint "" `(time swst swath count pri_count rank pri baqmod sync2 sync_marker baqmod2 tstmod azi ele)))))
+		       ,(logprint "" `(time "std::hex" swst swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele)))))
 	   ))))
 
   (define-module

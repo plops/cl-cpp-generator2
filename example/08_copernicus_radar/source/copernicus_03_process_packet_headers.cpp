@@ -41,6 +41,7 @@ void init_process_packet_headers() {
                   (((65536) * (((0xFF) & (p[50]))))))) /
                 (fref));
     auto rank = (((0x1F) & (p[((1) + (49))]))) >> (((8) - (((5) + (3)))));
+    auto rank2 = static_cast<int>(p[49]);
     auto baqmod = (((0x1F) & (p[((1) + (37))]))) >> (((8) - (((5) + (3)))));
     auto sync_marker =
         ((((1) * (p[15]))) + (((256) * (p[14]))) + (((65536) * (p[13]))) +
@@ -60,14 +61,16 @@ void init_process_packet_headers() {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" time=") << (time) << (std::setw(8)) << (" swst=")
-                << (swst) << (std::setw(8)) << (" swath=") << (swath)
-                << (std::setw(8)) << (" count=") << (count) << (std::setw(8))
-                << (" pri_count=") << (pri_count) << (std::setw(8))
-                << (" rank=") << (rank) << (std::setw(8)) << (" pri=") << (pri)
-                << (std::setw(8)) << (" baqmod=") << (baqmod) << (std::setw(8))
-                << (" sync2=") << (sync2) << (std::setw(8)) << (" sync_marker=")
-                << (sync_marker) << (std::setw(8)) << (" baqmod2=") << (baqmod2)
+                << (" time=") << (time) << (std::setw(8)) << (" std::hex=")
+                << (std::hex) << (std::setw(8)) << (" swst=") << (swst)
+                << (std::setw(8)) << (" swath=") << (swath) << (std::setw(8))
+                << (" count=") << (count) << (std::setw(8)) << (" pri_count=")
+                << (pri_count) << (std::setw(8)) << (" rank=") << (rank)
+                << (std::setw(8)) << (" rank2=") << (rank2) << (std::setw(8))
+                << (" pri=") << (pri) << (std::setw(8)) << (" baqmod=")
+                << (baqmod) << (std::setw(8)) << (" sync2=") << (sync2)
+                << (std::setw(8)) << (" sync_marker=") << (sync_marker)
+                << (std::setw(8)) << (" baqmod2=") << (baqmod2)
                 << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
                 << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
                 << (std::endl);
