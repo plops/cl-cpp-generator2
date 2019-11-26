@@ -41,6 +41,8 @@ void init_process_packet_headers() {
                   (((65536) * (((0xFF) & (p[50]))))))) /
                 (fref));
     auto rank = (((0x1F) & (p[((1) + (49))]))) >> (((8) - (((5) + (3)))));
+    auto baqmod = (((0x1F) & (p[((1) + (37))]))) >> (((8) - (((5) + (3)))));
+    auto tstmod = (((0x70) & (p[((1) + (21))]))) >> (((8) - (((3) + (1)))));
     auto swath = (((0xFF) & (p[((1) + (64))]))) >> (((8) - (((8) + (0)))));
     auto ele = (((0xF0) & (p[((1) + (60))]))) >> (((8) - (((4) + (0)))));
     std::setprecision(3);
@@ -56,7 +58,8 @@ void init_process_packet_headers() {
                 << (std::setw(8)) << (" count=") << (count) << (std::setw(8))
                 << (" pri_count=") << (pri_count) << (std::setw(8))
                 << (" rank=") << (rank) << (std::setw(8)) << (" pri=") << (pri)
-                << (std::setw(8)) << (" azi=") << (azi) << (std::setw(8))
-                << (" ele=") << (ele) << (std::endl);
+                << (std::setw(8)) << (" baqmod=") << (baqmod) << (std::setw(8))
+                << (" tstmod=") << (tstmod) << (std::setw(8)) << (" azi=")
+                << (azi) << (std::setw(8)) << (" ele=") << (ele) << (std::endl);
   };
 };

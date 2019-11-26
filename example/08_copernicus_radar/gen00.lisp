@@ -279,7 +279,7 @@
 		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191030T055015_20191030T055047_029684_0361B3_78C6.SAFE/s1a-iw-raw-s-vv-20191030t055015-20191030t055047-029684-0361b3.dat"))
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers)
-		;(init_process_packet_headers)
+		(init_process_packet_headers)
 		(init_decode_packet 0)
 		(destroy_mmap)
 		))))
@@ -395,9 +395,11 @@
 			   (pri (/ ,(space-packet-slot-get 'pulse-repetition-interval 'p)
 				   fref))
 			   (rank ,(space-packet-slot-get 'rank 'p))
+			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-		       ,(logprint "" `(time swst swath count pri_count rank pri azi ele)))))
+		       ,(logprint "" `(time swst swath count pri_count rank pri baqmod tstmod azi ele)))))
 	   ))))
 
   (define-module
@@ -429,9 +431,9 @@
 		(setf seq_state->current_bit_count 0)
 		(incf seq_state->data))
 	      (return res))))
-	 (defun get_brc (s)
+	 (defun get_bit_rate_code (s)
 	   (declare (type sequential_bit_t* s)
-		    (values int))
+		    (values "inline int"))
 	   "// note: evaluation order is crucial"
 	   (return (+ ,@(loop for j below 3 collect
 			     `(* ,(expt 2 (- 2 j))
@@ -442,8 +444,9 @@
 			      (data)))
 		 (offset (aref ,(g `_header_offset) packet_idx))
 		 (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
-		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))
-
+		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+		 (baqmod ,(space-packet-slot-get 'baq-mode `header)))
+	     ,(logprint "" `(packet_idx baqmod))
 	     (let ((decoded_symbols 0)
 		   (number_of_baq_blocks (/ (* 2 number_of_quads)
 					    256))
@@ -454,7 +457,8 @@
 	       (for ((= "int block" 0)
 		     (< decoded_symbols number_of_quads)
 		     ())
-		    (let ((brc (get_brc &s)))))
+		    (let ((brc (get_bit_rate_code &s)))
+		      ,(logprint "" `(brc))))
 	       ))
 	   ))))
      
