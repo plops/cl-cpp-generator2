@@ -42,6 +42,13 @@ void init_process_packet_headers() {
                 (fref));
     auto rank = (((0x1F) & (p[((1) + (49))]))) >> (((8) - (((5) + (3)))));
     auto baqmod = (((0x1F) & (p[((1) + (37))]))) >> (((8) - (((5) + (3)))));
+    auto sync_marker =
+        ((((1) * (p[15]))) + (((256) * (p[14]))) + (((65536) * (p[13]))) +
+         (((16777216) * (((0xFF) & (p[12]))))));
+    auto sync2 = ((((1) * (static_cast<int>(p[((6) + (12) + (0))])))) +
+                  (((256) * (static_cast<int>(p[((6) + (12) + (1))])))) +
+                  (((65536) * (static_cast<int>(p[((6) + (12) + (2))])))));
+    auto baqmod2 = ((31) && ((p[((6) + (37))]) >> (3)));
     auto tstmod = (((0x70) & (p[((1) + (21))]))) >> (((8) - (((3) + (1)))));
     auto swath = (((0xFF) & (p[((1) + (64))]))) >> (((8) - (((8) + (0)))));
     auto ele = (((0xF0) & (p[((1) + (60))]))) >> (((8) - (((4) + (0)))));
@@ -59,7 +66,10 @@ void init_process_packet_headers() {
                 << (" pri_count=") << (pri_count) << (std::setw(8))
                 << (" rank=") << (rank) << (std::setw(8)) << (" pri=") << (pri)
                 << (std::setw(8)) << (" baqmod=") << (baqmod) << (std::setw(8))
-                << (" tstmod=") << (tstmod) << (std::setw(8)) << (" azi=")
-                << (azi) << (std::setw(8)) << (" ele=") << (ele) << (std::endl);
+                << (" sync2=") << (sync2) << (std::setw(8)) << (" sync_marker=")
+                << (sync_marker) << (std::setw(8)) << (" baqmod2=") << (baqmod2)
+                << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
+                << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
+                << (std::endl);
   };
 };

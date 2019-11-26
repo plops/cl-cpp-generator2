@@ -6,7 +6,8 @@
 (in-package :cl-cpp-generator2)
 
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
-
+892270675
+60
 (progn
   ;; make sure to run this code twice during the first time, so that
   ;; the functions are defined
@@ -396,10 +397,14 @@
 				   fref))
 			   (rank ,(space-packet-slot-get 'rank 'p))
 			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+			   (sync2 (+ ,@(loop for j below 3 collect
+					    `(* ,(expt 256 j) (static_cast<int> (aref p (+ 6 12 ,j)))))))
+			   (baqmod2 (and #x1F (>> (aref p (+ 6 37)) 3)))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-		       ,(logprint "" `(time swst swath count pri_count rank pri baqmod tstmod azi ele)))))
+		       ,(logprint "" `(time swst swath count pri_count rank pri baqmod sync2 sync_marker baqmod2 tstmod azi ele)))))
 	   ))))
 
   (define-module
