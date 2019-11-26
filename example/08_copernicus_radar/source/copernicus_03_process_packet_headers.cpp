@@ -52,9 +52,11 @@ void init_process_packet_headers() {
          (((256) * (((255) & (static_cast<int>(p[((12) + (2))])))))) +
          (((1) * (((255) & (static_cast<int>(p[((12) + (3))])))))));
     auto baqmod2 = ((31) & ((p[37]) >> (3)));
-    auto tstmod = ((0x70) & ((p[21]) >> (1)));
+    auto tstmod = ((0x7) & ((p[21]) >> (1)));
+    auto rx = ((0xF) & ((p[21]) >> (4)));
+    auto pol = ((0x7) & ((p[59]) >> (1)));
     auto swath = ((0xFF) & ((p[64]) >> (0)));
-    auto ele = ((0xF0) & ((p[60]) >> (0)));
+    auto ele = ((0xF) & ((p[60]) >> (0)));
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -74,6 +76,7 @@ void init_process_packet_headers() {
                 << (sync_marker) << (std::setw(8)) << (" baqmod2=") << (baqmod2)
                 << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
                 << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
-                << (std::endl);
+                << (std::setw(8)) << (" rx=") << (rx) << (std::setw(8))
+                << (" pol=") << (pol) << (std::endl);
   };
 };

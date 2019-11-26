@@ -114,7 +114,8 @@
 		(let ((mask 0))
 		  
 		  (declare (type (unsigned-byte 8) mask))
-		  (setf (ldb (byte bits (- 8 (+ bits preceding-bits))) mask) #xff)
+		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
+				   ) mask) #xff)
 		  (values
 		   #+nil `(>> (&
 			 (hex ,mask)
@@ -408,10 +409,13 @@
 					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
 			   (baqmod2 (logand #x1F (>> (aref p 37) 3)))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
+			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
+			   (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
 		       ,(logprint "" `(time; "std::hex"
 				       swst swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
+				       rx pol
 				       )))))
 	   ))))
 
@@ -550,4 +554,3 @@
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
  
-
