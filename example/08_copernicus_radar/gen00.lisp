@@ -399,7 +399,7 @@
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 			   (sync2 (+ ,@(loop for j below 4  collect
 					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
-			   (baqmod2 (logand #x1F (>> (aref p (+ 6 37)) 3)))
+			   (baqmod2 (logand #x1F (>> (aref p 37) 3)))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
