@@ -141,7 +141,8 @@
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
 				  `(* ,(expt 256 (- bytes byte 1))
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
-			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0)))))
+			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (>> (aref ,data8 ,(+ preceding-octets 0))
+									      ,preceding-bits))))
 			 `(+ (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
 				 ,(- 8 rest-bits))
 			     ,@(loop for byte from (- bytes 1) downto 1 collect
