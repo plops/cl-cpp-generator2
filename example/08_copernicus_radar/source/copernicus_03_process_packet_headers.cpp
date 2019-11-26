@@ -40,9 +40,9 @@ void init_process_packet_headers() {
     auto pri = ((((((1) * (p[52]))) + (((256) * (p[51]))) +
                   (((65536) * (((0xFF) & (p[50]))))))) /
                 (fref));
-    auto rank = (((0x1F) & (p[((1) + (49))]))) >> (((8) - (((5) + (3)))));
+    auto rank = ((0x1F) & ((p[49]) >> (3)));
     auto rank2 = static_cast<int>(p[((49))]);
-    auto baqmod = (((0x1F) & (p[((1) + (37))]))) >> (((8) - (((5) + (3)))));
+    auto baqmod = ((0x1F) & ((p[37]) >> (3)));
     auto sync_marker =
         ((((1) * (p[15]))) + (((256) * (p[14]))) + (((65536) * (p[13]))) +
          (((16777216) * (((0xFF) & (p[12]))))));
@@ -52,9 +52,9 @@ void init_process_packet_headers() {
          (((256) * (((255) & (static_cast<int>(p[((12) + (2))])))))) +
          (((1) * (((255) & (static_cast<int>(p[((12) + (3))])))))));
     auto baqmod2 = ((31) & ((p[37]) >> (3)));
-    auto tstmod = (((0x70) & (p[((1) + (21))]))) >> (((8) - (((3) + (1)))));
-    auto swath = (((0xFF) & (p[((1) + (64))]))) >> (((8) - (((8) + (0)))));
-    auto ele = (((0xF0) & (p[((1) + (60))]))) >> (((8) - (((4) + (0)))));
+    auto tstmod = ((0x70) & ((p[21]) >> (1)));
+    auto swath = ((0xFF) & ((p[64]) >> (0)));
+    auto ele = ((0xF0) & ((p[60]) >> (0)));
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()

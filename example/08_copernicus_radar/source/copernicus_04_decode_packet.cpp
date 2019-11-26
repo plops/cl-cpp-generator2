@@ -34,7 +34,7 @@ void init_decode_packet(int packet_idx) {
   auto number_of_quads =
       ((((1) * (header[66]))) + (((256) * (((0xFF) & (header[65]))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  auto baqmod = (((0x1F) & (header[((1) + (37))]))) >> (((8) - (((5) + (3)))));
+  auto baqmod = ((0x1F) & ((header[37]) >> (3)));
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()
