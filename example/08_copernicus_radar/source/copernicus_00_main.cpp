@@ -17,7 +17,6 @@ int main() {
       "SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
-  init_process_packet_headers();
   init_decode_packet(0);
   destroy_mmap();
 };
