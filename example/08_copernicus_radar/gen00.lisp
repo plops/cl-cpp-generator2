@@ -411,12 +411,13 @@
 			   (baqmod2 (logand #x1F (>> (aref p 37) 3)))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
+			   (ecc ,(space-packet-slot-get 'ecc-number 'p))
 			   (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
 		       ,(logprint "" `(time; "std::hex"
 				       swst swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
-				       rx pol
+				       rx pol ecc
 				       )))))
 	   ))))
 

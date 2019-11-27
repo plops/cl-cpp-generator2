@@ -54,6 +54,7 @@ void init_process_packet_headers() {
     auto baqmod2 = ((31) & ((p[37]) >> (3)));
     auto tstmod = ((0x7) & ((p[21]) >> (1)));
     auto rx = ((0xF) & ((p[21]) >> (4)));
+    auto ecc = ((0xFF) & ((p[20]) >> (0)));
     auto pol = ((0x7) & ((p[59]) >> (1)));
     auto swath = ((0xFF) & ((p[64]) >> (0)));
     auto ele = ((0xF) & ((p[60]) >> (0)));
@@ -77,6 +78,7 @@ void init_process_packet_headers() {
                 << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
                 << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
                 << (std::setw(8)) << (" rx=") << (rx) << (std::setw(8))
-                << (" pol=") << (pol) << (std::endl);
+                << (" pol=") << (pol) << (std::setw(8)) << (" ecc=") << (ecc)
+                << (std::endl);
   };
 };
