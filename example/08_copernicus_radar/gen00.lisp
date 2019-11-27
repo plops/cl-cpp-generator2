@@ -300,7 +300,7 @@
 		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"))
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
-		;(init_process_packet_headers)
+		(init_process_packet_headers)
 		(init_decode_packet 0)
 		(destroy_mmap)
 		))))
@@ -404,9 +404,10 @@
 		     (let ((p (e.data))
 			   (fref 37.53472224)
 			   (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
-			   (fine_time (* ,(expt 2d0 -16) (+ .5 ,(space-packet-slot-get 'fine-time 'p))))
+			   (fine_time ,(space-packet-slot-get 'fine-time 'p))
+			   (ftime (* ,(expt 2d0 -16) (+ .5 fine_time)))
 			   (time (- (+ coarse_time
-				       fine_time)
+				       ftime)
 				    time0))
 			   (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'p)
 				    fref))
@@ -421,7 +422,8 @@
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 			   (sync2 (+ ,@(loop for j below 4  collect
 					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
-			   (baqmod2 (logand #x1F (>> (aref p 37) 3)))
+			   (baqmod2 (static_cast<int> (aref p 37))  ;(logand #x1F (>> (aref p 37) 3))
+			     )
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
 			   (ecc ,(space-packet-slot-get 'ecc-number 'p))
@@ -429,8 +431,8 @@
 			   (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-		       ,(logprint "" `(time; "std::hex"
-				       swst swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
+		       ,(logprint "" `(time "std::hex"
+				       swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
 				       rx pol ecc signal_type
 				       )))))
 	   ))))

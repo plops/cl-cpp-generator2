@@ -23,10 +23,9 @@ void init_process_packet_headers() {
         ((((1) * (p[9]))) + (((256) * (p[8]))) + (((65536) * (p[7]))) +
          (((16777216) * (((0xFF) & ((p[6]) >> (0)))))));
     auto fine_time =
-        (((1.52587890625e-5)) *
-         ((((5.e-1f)) +
-           (((((1) * (p[11]))) + (((256) * (((0xFF) & ((p[10]) >> (0)))))))))));
-    auto time = ((((coarse_time) + (fine_time))) - (time0));
+        ((((1) * (p[11]))) + (((256) * (((0xFF) & ((p[10]) >> (0)))))));
+    auto ftime = (((1.52587890625e-5)) * ((((5.e-1f)) + (fine_time))));
+    auto time = ((((coarse_time) + (ftime))) - (time0));
     auto swst = ((((((1) * (p[55]))) + (((256) * (p[54]))) +
                    (((65536) * (((0xFF) & ((p[53]) >> (0)))))))) /
                  (fref));
@@ -51,7 +50,7 @@ void init_process_packet_headers() {
          (((65536) * (((255) & (static_cast<int>(p[((12) + (1))])))))) +
          (((256) * (((255) & (static_cast<int>(p[((12) + (2))])))))) +
          (((1) * (((255) & (static_cast<int>(p[((12) + (3))])))))));
-    auto baqmod2 = ((31) & ((p[37]) >> (3)));
+    auto baqmod2 = static_cast<int>(p[37]);
     auto tstmod = ((0x7) & ((p[21]) >> (1)));
     auto rx = ((0xF) & ((p[21]) >> (4)));
     auto ecc = ((0xFF) & ((p[20]) >> (0)));
@@ -67,15 +66,18 @@ void init_process_packet_headers() {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" time=") << (time) << (std::setw(8)) << (" swst=")
-                << (swst) << (std::setw(8)) << (" swath=") << (swath)
-                << (std::setw(8)) << (" count=") << (count) << (std::setw(8))
-                << (" pri_count=") << (pri_count) << (std::setw(8))
-                << (" rank=") << (rank) << (std::setw(8)) << (" rank2=")
-                << (rank2) << (std::setw(8)) << (" pri=") << (pri)
-                << (std::setw(8)) << (" baqmod=") << (baqmod) << (std::setw(8))
-                << (" sync2=") << (sync2) << (std::setw(8)) << (" sync_marker=")
-                << (sync_marker) << (std::setw(8)) << (" baqmod2=") << (baqmod2)
+                << (" time=") << (time) << (std::setw(8)) << (" std::hex=")
+                << (std::hex) << (std::setw(8)) << (" swst=") << (swst)
+                << (std::setw(8)) << (" coarse_time=") << (coarse_time)
+                << (std::setw(8)) << (" fine_time=") << (fine_time)
+                << (std::setw(8)) << (" swath=") << (swath) << (std::setw(8))
+                << (" count=") << (count) << (std::setw(8)) << (" pri_count=")
+                << (pri_count) << (std::setw(8)) << (" rank=") << (rank)
+                << (std::setw(8)) << (" rank2=") << (rank2) << (std::setw(8))
+                << (" pri=") << (pri) << (std::setw(8)) << (" baqmod=")
+                << (baqmod) << (std::setw(8)) << (" sync2=") << (sync2)
+                << (std::setw(8)) << (" sync_marker=") << (sync_marker)
+                << (std::setw(8)) << (" baqmod2=") << (baqmod2)
                 << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
                 << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
                 << (std::setw(8)) << (" rx=") << (rx) << (std::setw(8))
