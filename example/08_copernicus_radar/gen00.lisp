@@ -87,7 +87,7 @@
 	(ses-ssb-cal-mode 0 :bits 2)
 	(ses-ssb-ignore-0 0 :bits 1)
 	(ses-ssb-tx-pulse-number 0 :bits 5)
-	(ses-ssb-signal-type 0 :bits 4)
+	(ses-ssb-signal-type 0 :bits 4) ;; 0 echo, 1 noise, 8 txcal, 9 rxcal
 	(ses-ssb-ignore-1 0 :bits 3)
 	(ses-ssb-swap 0 :bits 1)
 	(ses-ssb-swath-number 0 :bits 8)
@@ -413,11 +413,12 @@
 			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
 			   (ecc ,(space-packet-slot-get 'ecc-number 'p))
 			   (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
+			   (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
 		       ,(logprint "" `(time; "std::hex"
 				       swst swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
-				       rx pol ecc
+				       rx pol ecc signal_type
 				       )))))
 	   ))))
 
@@ -457,6 +458,10 @@
 	   (return (+ ,@(loop for j below 3 collect
 			     `(* ,(expt 2 (- 2 j))
 				 (get_sequential_bit s))))))
+	 (defun decode_symbol (s)
+	   (declare (type sequential_bit_t* s)
+		    (values "inline float"))
+	   )
 	 (defun init_decode_packet (packet_idx)
 	   (declare (type int packet_idx))
 	   (let ((header (dot (aref ,(g `_header_data) packet_idx)
@@ -469,15 +474,29 @@
 	     (let ((decoded_symbols 0)
 		   (number_of_baq_blocks (/ (* 2 number_of_quads)
 					    256))
-		   (s))
-	       (declare (type sequential_bit_t s))
+		   (s)
+		   (decoded_symbols_a))
+	       (declare (type sequential_bit_t s)
+			(type "std::array<float,number_of_quads>" decoded_symbols_a))
 	       (init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
 							   62 6))
 	       (for ((= "int block" 0)
 		     (< decoded_symbols number_of_quads)
 		     ())
 		    (let ((brc (get_bit_rate_code &s)))
-		      ,(logprint "" `(brc))))
+		      ,(logprint "" `(brc))
+		      (for ((= "int i" 0)
+			    (and (< i 128)
+				 (< decoded_symbols
+				    number_of_quads))
+			    (incf i))
+			   (let ((symbols_sign 1s0)
+				 (symbol (decode_symbol s)))
+			     (when (get_sequential_bit s)
+			       (setf symbol_sign -1s0))
+			     (setf (aref decoded_symbols_a decoded_symbols)
+				   (* symbol_sign )))
+			   (incf decoded_symbols))))
 	       ))
 	   ))))
      

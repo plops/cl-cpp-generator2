@@ -8,4 +8,5 @@ void init_process_packet_headers ();
 void init_sequential_bit_function (sequential_bit_t* seq_state, size_t byte_pos);
 inline bool get_sequential_bit (sequential_bit_t* seq_state);
 inline int get_bit_rate_code (sequential_bit_t* s);
+inline float decode_symbol (sequential_bit_t* s);
 void init_decode_packet (int packet_idx);

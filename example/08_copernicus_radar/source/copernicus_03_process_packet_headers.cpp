@@ -56,6 +56,7 @@ void init_process_packet_headers() {
     auto rx = ((0xF) & ((p[21]) >> (4)));
     auto ecc = ((0xFF) & ((p[20]) >> (0)));
     auto pol = ((0x7) & ((p[59]) >> (1)));
+    auto signal_type = ((0xF) & ((p[63]) >> (0)));
     auto swath = ((0xFF) & ((p[64]) >> (0)));
     auto ele = ((0xF) & ((p[60]) >> (0)));
     std::setprecision(3);
@@ -79,6 +80,7 @@ void init_process_packet_headers() {
                 << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
                 << (std::setw(8)) << (" rx=") << (rx) << (std::setw(8))
                 << (" pol=") << (pol) << (std::setw(8)) << (" ecc=") << (ecc)
+                << (std::setw(8)) << (" signal_type=") << (signal_type)
                 << (std::endl);
   };
 };
