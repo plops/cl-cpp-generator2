@@ -106,28 +106,40 @@
 						       bits))
 						 preceding-slots)))
 	     )
-	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8) 
+	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8)
 	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
 	    
-	    ;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
+					;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
 	    (if (<= bits 8)
-		(let ((mask 0))
+		(let ((mask 0)
+		      (following-bits (- 8 (+ preceding-bits bits))))
 		  
 		  (declare (type (unsigned-byte 8) mask))
 		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
 				   ) mask) #xff)
 		  (values
 		   #+nil `(>> (&
-			 (hex ,mask)
-			 (aref ,data8 (+ 1 ,preceding-octets)))
+			       (hex ,mask)
+			       (aref ,data8 (+ 1 ,preceding-octets)))
 			      (- 8 (+ ,bits ,preceding-bits)))
-		   `(&
-			 (hex ,mask)
+		   #+nil `(&
+		     (hex ,mask)
+		     
+		     (>> (reverse_bit (aref ,data8 ,preceding-octets))
+			 ,preceding-bits
 			 
-			 (>> (reverse_bit (aref ,data8 ,preceding-octets))
-			     ,preceding-bits
-			     
-			     ))
+			 ))
+		   #+nil (setf follow ,following-bits
+			   preceding ,preceding-bits
+			   bits ,bits
+			   )
+		   `(& 
+		     (hex ,mask)
+		     
+		     (>> (aref ,data8 ,preceding-octets)
+			 ,following-bits
+			 
+			 ))
 		   'uint8_t
 		   ))
 		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
@@ -508,11 +520,10 @@
 	    
 	    "// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv"
 	    "// b = ((b * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;"
-	    (return (logand (hex #xFF)
-			    (>> (* (logand (* b "0x80200802ULL")
-					   "0x0884422110ULL")
-				   "0x0101010101ULL")
-				32))))
+	    (return (>> (* (logand (* b "0x80200802ULL")
+				   "0x0884422110ULL")
+			   "0x0101010101ULL")
+			32)))
 	  (defun init_sequential_bit_function (seq_state byte_pos)
 	    (declare (type sequential_bit_t* seq_state)
 		     (type size_t byte_pos))
@@ -665,3 +676,5 @@
  
 16329
 2150
+65
+12

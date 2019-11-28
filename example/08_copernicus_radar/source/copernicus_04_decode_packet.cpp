@@ -10,9 +10,9 @@ extern State state;
 uint8_t reverse_bit(uint8_t b) {
   // http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
   // b = ((b * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
-  return ((0xFF) & ((((((((b) * (0x80200802ULL))) & (0x0884422110ULL))) *
-                      (0x0101010101ULL))) >>
-                    (32)));
+  return (((((((b) * (0x80200802ULL))) & (0x0884422110ULL))) *
+           (0x0101010101ULL))) >>
+         (32);
 }
 void init_sequential_bit_function(sequential_bit_t *seq_state,
                                   size_t byte_pos) {
@@ -206,7 +206,7 @@ void init_decode_packet(int packet_idx) {
       ((((1) * (header[66]))) +
        (((256) * (((0xFF) & ((reverse_bit(header[65])) >> (0)))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  auto baqmod = ((0x1F) & ((reverse_bit(header[37])) >> (3)));
+  auto baqmod = ((0x1F) & ((header[37]) >> (0)));
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()

@@ -45,10 +45,10 @@ void init_process_packet_headers() {
     auto pri = ((((((1) * (p[52]))) + (((256) * (p[51]))) +
                   (((65536) * (((0xFF) & ((reverse_bit(p[50])) >> (0)))))))) /
                 (fref));
-    auto rank = ((0x1F) & ((reverse_bit(p[49])) >> (3)));
+    auto rank = ((0x1F) & ((p[49]) >> (0)));
     auto rank2 = static_cast<int>(p[((49))]);
-    auto baqmod = ((0x1F) & ((reverse_bit(p[37])) >> (3)));
-    auto baq_n = ((0xFF) & ((reverse_bit(p[38])) >> (0)));
+    auto baqmod = ((0x1F) & ((p[37]) >> (0)));
+    auto baq_n = ((0xFF) & ((p[38]) >> (0)));
     auto sync_marker =
         ((((1) * (p[15]))) + (((256) * (p[14]))) + (((65536) * (p[13]))) +
          (((16777216) * (((0xFF) & ((reverse_bit(p[12])) >> (0)))))));
@@ -58,47 +58,47 @@ void init_process_packet_headers() {
          (((256) * (((255) & (static_cast<int>(p[((12) + (2))])))))) +
          (((1) * (((255) & (static_cast<int>(p[((12) + (3))])))))));
     auto baqmod2 = static_cast<int>(p[37]);
-    auto err = ((0x1) & ((reverse_bit(p[37])) >> (0)));
-    auto tstmod = ((0x7) & ((reverse_bit(p[21])) >> (1)));
-    auto rx = ((0xF) & ((reverse_bit(p[21])) >> (4)));
-    auto ecc = ((0xFF) & ((reverse_bit(p[20])) >> (0)));
-    auto pol = ((0x7) & ((reverse_bit(p[59])) >> (1)));
-    auto signal_type = ((0xF) & ((reverse_bit(p[63])) >> (0)));
-    auto swath = ((0xFF) & ((reverse_bit(p[64])) >> (0)));
-    auto ele = ((0xF) & ((reverse_bit(p[60])) >> (0)));
+    auto err = ((0x1) & ((p[37]) >> (7)));
+    auto tstmod = ((0x7) & ((p[21]) >> (4)));
+    auto rx = ((0xF) & ((p[21]) >> (0)));
+    auto ecc = ((0xFF) & ((p[20]) >> (0)));
+    auto pol = ((0x7) & ((p[59]) >> (4)));
+    auto signal_type = ((0xF) & ((p[63]) >> (4)));
+    auto swath = ((0xFF) & ((p[64]) >> (0)));
+    auto ele = ((0xF) & ((p[60]) >> (4)));
     {
-      auto v = static_cast<int>(((0x7) & ((reverse_bit(p[0])) >> (0))));
+      auto v = static_cast<int>(((0x7) & ((p[0]) >> (5))));
       (std::cout) << (std::setw(42)) << ("packet-version-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[0])) >> (3))));
+      auto v = static_cast<int>(((0x1) & ((p[0]) >> (4))));
       (std::cout) << (std::setw(42)) << ("packet-type ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[0])) >> (4))));
+      auto v = static_cast<int>(((0x1) & ((p[0]) >> (3))));
       (std::cout) << (std::setw(42)) << ("secondary-header-flag ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7F) & ((reverse_bit(p[0])) >> (5))));
+      auto v = static_cast<int>(((0x7F) & ((p[0]) >> (-4))));
       (std::cout) << (std::setw(42)) << ("application-process-id-process-id ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((reverse_bit(p[1])) >> (4))));
+      auto v = static_cast<int>(((0xF) & ((p[1]) >> (0))));
       (std::cout) << (std::setw(42))
                   << ("application-process-id-packet-category ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[2])) >> (0))));
+      auto v = static_cast<int>(((0x3) & ((p[2]) >> (6))));
       (std::cout) << (std::setw(42)) << ("sequence-flags ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
@@ -152,25 +152,25 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[20])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[20]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ecc-number ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[21])) >> (0))));
+      auto v = static_cast<int>(((0x1) & ((p[21]) >> (7))));
       (std::cout) << (std::setw(42)) << ("ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((reverse_bit(p[21])) >> (1))));
+      auto v = static_cast<int>(((0x7) & ((p[21]) >> (4))));
       (std::cout) << (std::setw(42)) << ("test-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((reverse_bit(p[21])) >> (4))));
+      auto v = static_cast<int>(((0xF) & ((p[21]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-channel-id ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
@@ -184,7 +184,7 @@ void init_process_packet_headers() {
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[26])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[26]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sub-commutated-index ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
@@ -214,49 +214,49 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[37])) >> (0))));
+      auto v = static_cast<int>(((0x1) & ((p[37]) >> (7))));
       (std::cout) << (std::setw(42)) << ("error-flag ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[37])) >> (1))));
+      auto v = static_cast<int>(((0x3) & ((p[37]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((reverse_bit(p[37])) >> (3))));
+      auto v = static_cast<int>(((0x1F) & ((p[37]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[38])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[38]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-block-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[39])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[39]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-2 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[40])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[40]) >> (0))));
       (std::cout) << (std::setw(42)) << ("range-decimation ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[41])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[41]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-gain ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[42])) >> (0))));
+      auto v = static_cast<int>(((0x1) & ((p[42]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-ramp-rate-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
@@ -270,7 +270,7 @@ void init_process_packet_headers() {
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[44])) >> (0))));
+      auto v = static_cast<int>(((0x1) & ((p[44]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-start-frequency-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
@@ -292,13 +292,13 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((reverse_bit(p[49])) >> (0))));
+      auto v = static_cast<int>(((0x7) & ((p[49]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-3 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((reverse_bit(p[49])) >> (3))));
+      auto v = static_cast<int>(((0x1F) & ((p[49]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rank ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
@@ -328,37 +328,37 @@ void init_process_packet_headers() {
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[59])) >> (0))));
+      auto v = static_cast<int>(((0x1) & ((p[59]) >> (7))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-calibration-p ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((reverse_bit(p[59])) >> (1))));
+      auto v = static_cast<int>(((0x7) & ((p[59]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-polarisation ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[59])) >> (4))));
+      auto v = static_cast<int>(((0x3) & ((p[59]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-temp-comp ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[59])) >> (6))));
+      auto v = static_cast<int>(((0x3) & ((p[59]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((reverse_bit(p[60])) >> (0))));
+      auto v = static_cast<int>(((0xF) & ((p[60]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-elevation-beam-address ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[60])) >> (4))));
+      auto v = static_cast<int>(((0x3) & ((p[60]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
@@ -372,43 +372,43 @@ void init_process_packet_headers() {
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((reverse_bit(p[62])) >> (0))));
+      auto v = static_cast<int>(((0x3) & ((p[62]) >> (6))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-cal-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[62])) >> (2))));
+      auto v = static_cast<int>(((0x1) & ((p[62]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((reverse_bit(p[62])) >> (3))));
+      auto v = static_cast<int>(((0x1F) & ((p[62]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-tx-pulse-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((reverse_bit(p[63])) >> (0))));
+      auto v = static_cast<int>(((0xF) & ((p[63]) >> (4))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-signal-type ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((reverse_bit(p[63])) >> (4))));
+      auto v = static_cast<int>(((0x7) & ((p[63]) >> (1))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((reverse_bit(p[63])) >> (7))));
+      auto v = static_cast<int>(((0x1) & ((p[63]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swap ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[64])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[64]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swath-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
@@ -422,7 +422,7 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((reverse_bit(p[67])) >> (0))));
+      auto v = static_cast<int>(((0xFF) & ((p[67]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-4 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
