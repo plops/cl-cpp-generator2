@@ -411,13 +411,15 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     for (int i = 0; i < ((6) + (62)); (i) += (1)) {
-      (std::cout) << (std::hex) << (std::setw(2)) << (static_cast<int>(p[i]))
+      (std::cout) << ("\033[") << (std::dec) << (((30) + (i % ((47) - (30)))))
+                  << (";") << (((30) + (((2) * (i)) % ((47) - (30))))) << ("m")
+                  << (std::hex) << (std::setw(2)) << (static_cast<int>(p[i]))
                   << (" ");
       if ((3) == (i % 4)) {
         (std::cout) << (std::endl);
       };
     }
-    (std::cout) << (std::endl) << (std::flush);
+    (std::cout) << ("\033[0m") << (std::endl) << (std::flush);
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
