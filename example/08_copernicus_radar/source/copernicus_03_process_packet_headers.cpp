@@ -410,6 +410,14 @@ void init_process_packet_headers() {
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
+    for (int i = 0; i < ((6) + (62)); (i) += (1)) {
+      (std::cout) << (std::hex) << (std::setw(2)) << (static_cast<int>(p[i]))
+                  << (" ");
+      if ((3) == (i % 4)) {
+        (std::cout) << (std::endl);
+      };
+    }
+    (std::cout) << (std::endl) << (std::flush);
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -437,7 +445,7 @@ void init_process_packet_headers() {
                 << (" pol=") << (pol) << (std::setw(8)) << (" ecc=") << (ecc)
                 << (std::setw(8)) << (" signal_type=") << (signal_type)
                 << (std::endl);
-    usleep(32000);
+    usleep(16000);
     (std::cout) << ("\033[2J\033[1;1H") << (std::flush);
   };
 };

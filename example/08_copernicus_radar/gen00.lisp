@@ -455,13 +455,20 @@
 					    v
 					    "std::endl"
 					    )))))
-		       
+
+		       (do0 (dotimes (i (+ 6 62))
+			      (<< "std::cout" "std::hex" ("std::setw" 2)
+				  (static_cast<int> (aref p i))
+				  (string " "))
+			      (when (== 3 (% i 4))
+				(<< "std::cout" "std::endl")))
+			    (<< "std::cout"  "std::endl" "std::flush"))
 		      
 		       ,(logprint "" `(time "std::hex" err
 					    swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
 					    rx pol ecc signal_type
 					    ))
-		       (usleep 32000)
+		       (usleep 16000)
 		       (<< "std::cout"
 			   (string "\\033[2J\\033[1;1H")
 			   "std::flush")
