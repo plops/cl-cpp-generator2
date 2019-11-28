@@ -359,7 +359,8 @@
 	 (include <array>
 		  <iostream>
 		  <vector>
-		  <cstring>)
+		  <cstring>
+		  )
 	 #+nil (defstruct0 space_packet_header_info_t
 	   (head "std::array<uint8_t, 62+6>")
 	   (offset size_t))
@@ -394,7 +395,7 @@
       `(process_packet_headers
 	()
 	(do0
-	 
+	 (include <unistd.h>)
 	 
 	 (defun init_process_packet_headers ()
 	   (let ((p0 (dot (aref ,(g `_header_data) 0)
@@ -455,10 +456,16 @@
 					    "std::endl"
 					    )))))
 		       
+		      
 		       ,(logprint "" `(time "std::hex" err
-				       swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
-				       rx pol ecc signal_type
-				       )))))
+					    swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
+					    rx pol ecc signal_type
+					    ))
+		       (usleep 32000)
+		       (<< "std::cout"
+			   (string "\\033[2J\\033[1;1H")
+			   "std::flush")
+		       )))
 	   ))))
 
   (define-module

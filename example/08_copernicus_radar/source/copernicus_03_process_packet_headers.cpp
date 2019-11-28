@@ -6,6 +6,7 @@
 #include "proto2.h"
 ;
 extern State state;
+#include <unistd.h>
 void init_process_packet_headers() {
   auto p0 = state._header_data[0].data();
   auto coarse_time0 =
@@ -436,5 +437,7 @@ void init_process_packet_headers() {
                 << (" pol=") << (pol) << (std::setw(8)) << (" ecc=") << (ecc)
                 << (std::setw(8)) << (" signal_type=") << (signal_type)
                 << (std::endl);
+    usleep(32000);
+    (std::cout) << ("\033[2J\033[1;1H") << (std::flush);
   };
 };
