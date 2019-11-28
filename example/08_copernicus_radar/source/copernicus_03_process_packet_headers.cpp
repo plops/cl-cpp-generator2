@@ -418,7 +418,14 @@ void init_process_packet_headers() {
       (std::cout) << ("\033[") << (std::dec)
                   << (((30) + (((((7) + (6) + (62))) - (i)) % ((37) - (30)))))
                   << (";") << (((40) + (i % ((47) - (40))))) << ("m")
-                  << (std::hex) << (std::setw(2)) << (static_cast<int>(p[i]))
+                  << (static_cast<int>(((1) & ((p[i]) >> (0)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (1)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (2)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (3)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (4)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (5)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (6)))))
+                  << (static_cast<int>(((1) & ((p[i]) >> (7))))) << ("\033[0m")
                   << (" ");
       if ((3) == (i % 4)) {
         (std::cout) << (std::endl);

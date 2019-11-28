@@ -468,8 +468,11 @@
 				  (string ";")
 				  (+ 40 (% i (- 47 40)))
 				  (string "m")
-				  "std::hex" ("std::setw" 2)
-				  (static_cast<int> (aref p i))
+				  ;"std::hex" ("std::setw" 2)
+					;(static_cast<int> (aref p i))
+				  ,@(loop for j below 8 collect
+					 `(static_cast<int> (logand 1 (>> (aref p i) ,j))))
+				  (string "\\033[0m")
 				  (string " "))
 			      (when (== 3 (% i 4))
 				(<< "std::cout" "std::endl")))
