@@ -402,9 +402,13 @@
 			  (data)))
 		 (coarse_time0 ,(space-packet-slot-get 'coarse-time 'p0))
 		 (fine_time0 (* ,(expt 2d0 -16) (+ .5 ,(space-packet-slot-get 'fine-time 'p0))))
-		 (time0 (+ coarse_time0 fine_time0)))
-	    (foreach (e ,(g `_header_data))
-		     (let ((p (e.data))
+		 (time0 (+ coarse_time0 fine_time0))
+		 (packet_idx 0))
+	     (foreach (e ,(g `_header_data))
+		      (let ((offset (aref ,(g `_header_offset) packet_idx))
+			      (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))
+			  (incf packet_idx))
+		     (let (;(p (e.data))
 			   (fref 37.53472224)
 			   (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
 			   (fine_time ,(space-packet-slot-get 'fine-time 'p))
@@ -457,11 +461,12 @@
 					    )))))
 
 		       (do0 (dotimes (i (+ 6 62))
+			      "// https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal"
 			      (<< "std::cout" (string "\\033[")
 				  "std::dec"
-				  (+ 30 (% i (- 47 30)))
+				  (+ 30 (% (- (+ 7 6 62) i ) (- 37 30)))
 				  (string ";")
-				  (+ 30 (% (* 2 i) (- 47 30)))
+				  (+ 40 (% i (- 47 40)))
 				  (string "m")
 				  "std::hex" ("std::setw" 2)
 				  (static_cast<int> (aref p i))
@@ -526,8 +531,10 @@
 	 (defun decode_symbol (s)
 	   (declare (type sequential_bit_t* s)
 		    (values "inline float"))
-	   (return 0s0)
-	   )
+	   (return 0s0))
+
+
+	 
 	 (defun init_decode_packet (packet_idx)
 	   (declare (type int packet_idx))
 	   (let ((header (dot (aref ,(g `_header_data) packet_idx)

@@ -17,8 +17,11 @@ void init_process_packet_headers() {
        ((((5.e-1f)) +
          (((((1) * (p0[11]))) + (((256) * (((0xFF) & ((p0[10]) >> (0)))))))))));
   auto time0 = ((coarse_time0) + (fine_time0));
+  auto packet_idx = 0;
   for (auto &e : state._header_data) {
-    auto p = e.data();
+    auto offset = state._header_offset[packet_idx];
+    auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+    (packet_idx)++;
     auto fref = (3.7534723e+1f);
     auto coarse_time =
         ((((1) * (p[9]))) + (((256) * (p[8]))) + (((65536) * (p[7]))) +
@@ -411,8 +414,10 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     for (int i = 0; i < ((6) + (62)); (i) += (1)) {
-      (std::cout) << ("\033[") << (std::dec) << (((30) + (i % ((47) - (30)))))
-                  << (";") << (((30) + (((2) * (i)) % ((47) - (30))))) << ("m")
+      // https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
+      (std::cout) << ("\033[") << (std::dec)
+                  << (((30) + (((((7) + (6) + (62))) - (i)) % ((37) - (30)))))
+                  << (";") << (((40) + (i % ((47) - (40))))) << ("m")
                   << (std::hex) << (std::setw(2)) << (static_cast<int>(p[i]))
                   << (" ");
       if ((3) == (i % 4)) {
