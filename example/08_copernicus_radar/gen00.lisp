@@ -297,7 +297,9 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"))
+		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vv-20181106t135244-20181106t135316-024468-02aeb9.dat"
+			      ;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"
+			      ))
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
 		(init_process_packet_headers)
@@ -419,11 +421,13 @@
 			   (rank ,(space-packet-slot-get 'rank 'p))
 			   (rank2 (static_cast<int> (aref p (+ 49))))
 			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+			    (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 			   (sync2 (+ ,@(loop for j below 4  collect
 					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
 			   (baqmod2 (static_cast<int> (aref p 37))  ;(logand #x1F (>> (aref p 37) 3))
 			     )
+			   (err ,(space-packet-slot-get 'error-flag 'p))
 			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
 			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
 			   (ecc ,(space-packet-slot-get 'ecc-number 'p))
@@ -431,8 +435,28 @@
 			   (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-		       ,(logprint "" `(time "std::hex"
-				       swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod sync2 sync_marker baqmod2 tstmod azi ele
+
+		       ,@(loop for e in *space-packet* collect
+			      (destructuring-bind (name_ default-value &key bits) e
+				
+				`(progn
+				   (let ((v (static_cast<int> ,(space-packet-slot-get name_ 'p))))
+				     (<<
+				      "std::cout"
+				      ("std::setw" 42 )
+				      (string ,(format nil "~a " name_))
+				      ("std::setw" 12)
+				      "std::dec"
+					    v
+					    
+					    ("std::setw" 12)
+					    "std::hex"
+					    v
+					    "std::endl"
+					    )))))
+		       
+		       ,(logprint "" `(time "std::hex" err
+				       swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
 				       rx pol ecc signal_type
 				       )))))
 	   ))))
