@@ -124,7 +124,7 @@
 		   `(&
 			 (hex ,mask)
 			 
-			 (>> (aref ,data8 ,preceding-octets)
+			 (>> (reverse_bit (aref ,data8 ,preceding-octets))
 			     ,preceding-bits
 			     
 			     ))
@@ -141,9 +141,10 @@
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
 				  `(* ,(expt 256 (- bytes byte 1))
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
-			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (>> (aref ,data8 ,(+ preceding-octets 0))
+			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (>> (reverse_bit
+									       (aref ,data8 ,(+ preceding-octets 0)))
 									      ,preceding-bits))))
-			 `(+ (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
+			 `(+ (>> (& (hex ,lastmask) (reverse_bit (aref ,data8 ,(+ preceding-octets 0 bytes))))
 				 ,(- 8 rest-bits))
 			     ,@(loop for byte from (- bytes 1) downto 1 collect
 				    `(* ,(expt 256 (- bytes byte))
@@ -501,6 +502,17 @@
 					;(current_byte size_t)
 			  (data uint8_t*)
 			  ))
+	  (defun reverse_bit (b)
+	    (declare (type uint8_t b)
+		     (values uint8_t))
+	    
+	    "// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv"
+	    "// b = ((b * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;"
+	    (return (logand (hex #xFF)
+			    (>> (* (logand (* b "0x80200802ULL")
+					   "0x0884422110ULL")
+				   "0x0101010101ULL")
+				32))))
 	  (defun init_sequential_bit_function (seq_state byte_pos)
 	    (declare (type sequential_bit_t* seq_state)
 		     (type size_t byte_pos))
@@ -651,3 +663,5 @@
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
  
+16329
+2150
