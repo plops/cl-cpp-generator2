@@ -121,7 +121,7 @@
 				   ) mask) #xff)
 		  (values
 		   `(&
-		   #-nil  (string ,(format nil "single ~{~a,~}"
+		   #+nil  (string ,(format nil "single ~{~a,~}"
 				      (list mask following-bits bits preceding-bits)))
 		     (hex ,mask)
 		     (>> (aref ,data8 ,preceding-octets)
@@ -134,7 +134,7 @@
 			 (lastmask 0)
 			 (following-bits (- 8 rest-bits))
 			 (first-bits (- 8 preceding-bits))
-			 (last-bits (- bits first-bits)))
+			 (last-bits (mod (- bits first-bits) 8)))
 		    (assert (<= 1 first-bits 8))
 		    (assert (<= 0 last-bits 8))
 		    #+nil
@@ -145,8 +145,9 @@
 		    (values
 		     (if (= lastmask 0)
 			 `(+
-			   #-nil  (string ,(format nil "nolast firstmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d"
-						   firstmask  following-bits rest-bits bits preceding-bits bytes)
+			   #+nil  (string ,(format nil "nolast firstmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+						   firstmask  following-bits rest-bits bits preceding-bits bytes
+						   first-bits last-bits)
 					  )
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
 				  `(* (hex ,(expt 256 (- bytes byte 1)))
@@ -154,8 +155,8 @@
 			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))
 							       )))
 			 `(+
-			   #-nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d"
-						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes))
+			   #+nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes first-bits last-bits))
 			   (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
 			       ,following-bits)
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
