@@ -121,7 +121,7 @@
 				   ) mask) #xff)
 		  (values
 		   `(&
-		   #-nil  (string ,(format nil "single mask=~x following-bits=~d bits=~d preceding-bits=~d"
+		   #+nil  (string ,(format nil "single mask=~x following-bits=~d bits=~d preceding-bits=~d"
 				      mask following-bits bits preceding-bits))
 		     (hex ,mask)
 		     (>> (aref ,data8 ,preceding-octets)
@@ -145,7 +145,7 @@
 		    (values
 		     (if (= lastmask 0)
 			 `(+
-			   #-nil  (string ,(format nil "nolast firstmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+			   #+nil  (string ,(format nil "nolast firstmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
 						   firstmask  following-bits rest-bits bits preceding-bits bytes
 						   first-bits last-bits)
 					  )
@@ -155,7 +155,7 @@
 			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))
 							       )))
 			 `(+
-			   #-nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+			   #+nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
 						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes first-bits last-bits))
 			   (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
 			       ,following-bits)
@@ -674,8 +674,3 @@
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
- 
-16329
-2150
-65
-12
