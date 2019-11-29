@@ -108,12 +108,14 @@
 	     )
 	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8)
 	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
-	    
+	    (assert (<= 0 preceding-bits 7))
+	    (assert (<= 0 preceding-octets))
 	    ;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
 	    (if (<= (+ preceding-bits bits) 8)
 		(let ((mask 0)
 		      (following-bits (- 8 (+ preceding-bits bits))))
 		  (declare (type (unsigned-byte 8) mask))
+		  (assert (<= 0 following-bits 8))
 
 		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
 				   ) mask) #xff)
@@ -126,12 +128,15 @@
 			 ,following-bits))
 		   'uint8_t
 		   ))
+		
 		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
 		  (let* ((firstmask 0)
 			 (lastmask 0)
 			 (following-bits (- 8 rest-bits))
 			 (first-bits (- 8 preceding-bits))
 			 (last-bits (- bits first-bits)))
+		    (assert (<= 1 first-bits 8))
+		    (assert (<= 0 last-bits 8))
 		    #+nil
 		    (break "following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
 			   following-bits rest-bits bits preceding-bits bytes first-bits last-bits)
