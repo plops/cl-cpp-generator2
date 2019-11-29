@@ -195,10 +195,10 @@ inline float decode_symbol(sequential_bit_t *s) { return (0.0e+0f); }
 void init_decode_packet(int packet_idx) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
-  auto number_of_quads = (("nolast firstmask=FF following-bits=8 rest-bits=0 "
-                           "bits=16 preceding-bits=0 bytes=2") +
-                          (((0x1) * (header[66]))) +
-                          (((0x100) * (((0xFF) & ((header[65]) >> (8)))))));
+  auto number_of_quads =
+      (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+        "preceding-bits=0 bytes=2") +
+       (((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
   auto baqmod = (("single 31,0,5,3,") & (0x1F) & ((header[37]) >> (0)));
   std::setprecision(3);

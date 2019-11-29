@@ -142,8 +142,8 @@
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
 				  `(* (hex ,(expt 256 (- bytes byte 1)))
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
-			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (>> (aref ,data8 ,(+ preceding-octets 0))
-										,following-bits))))
+			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))
+							       )))
 			 `(+
 			   #-nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d"
 						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes))
