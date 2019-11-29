@@ -10,11 +10,15 @@ extern State state;
 void init_process_packet_headers() {
   auto p0 = state._header_data[0].data();
   auto coarse_time0 =
-      ((((0x1) * (p0[9]))) + (((0x100) * (p0[8]))) + (((0x10000) * (p0[7]))) +
+      (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+        "preceding-bits=0 bytes=4") +
+       (((0x1) * (p0[9]))) + (((0x100) * (p0[8]))) + (((0x10000) * (p0[7]))) +
        (((0x1000000) * (((0xFF) & ((p0[6]) >> (8)))))));
   auto fine_time0 =
       (((1.52587890625e-5)) *
-       ((((5.e-1f)) + (((((0x1) * (p0[11]))) +
+       ((((5.e-1f)) + ((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                         "bits=16 preceding-bits=0 bytes=2") +
+                        (((0x1) * (p0[11]))) +
                         (((0x100) * (((0xFF) & ((p0[10]) >> (8)))))))))));
   auto time0 = ((coarse_time0) + (fine_time0));
   auto packet_idx = 0;
@@ -24,32 +28,48 @@ void init_process_packet_headers() {
     (packet_idx)++;
     auto fref = (3.7534723e+1f);
     auto coarse_time =
-        ((((0x1) * (p[9]))) + (((0x100) * (p[8]))) + (((0x10000) * (p[7]))) +
+        (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+          "preceding-bits=0 bytes=4") +
+         (((0x1) * (p[9]))) + (((0x100) * (p[8]))) + (((0x10000) * (p[7]))) +
          (((0x1000000) * (((0xFF) & ((p[6]) >> (8)))))));
     auto fine_time =
-        ((((0x1) * (p[11]))) + (((0x100) * (((0xFF) & ((p[10]) >> (8)))))));
+        (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+          "preceding-bits=0 bytes=2") +
+         (((0x1) * (p[11]))) + (((0x100) * (((0xFF) & ((p[10]) >> (8)))))));
     auto ftime = (((1.52587890625e-5)) * ((((5.e-1f)) + (fine_time))));
     auto time = ((((coarse_time) + (ftime))) - (time0));
-    auto swst = ((((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
+    auto swst = (((("nolast firstmask=FF following-bits=8 rest-bits=0 bits=24 "
+                    "preceding-bits=0 bytes=3") +
+                   (((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                    (((0x10000) * (((0xFF) & ((p[53]) >> (8)))))))) /
                  (fref));
     auto azi =
-        ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & ((p[60]) >> (8)))))));
+        (("nolast firstmask=3 following-bits=8 rest-bits=0 bits=10 "
+          "preceding-bits=6 bytes=2") +
+         (((0x1) * (p[61]))) + (((0x100) * (((0x3) & ((p[60]) >> (8)))))));
     auto count =
-        ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) + (((0x10000) * (p[30]))) +
+        (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+          "preceding-bits=0 bytes=4") +
+         (((0x1) * (p[32]))) + (((0x100) * (p[31]))) + (((0x10000) * (p[30]))) +
          (((0x1000000) * (((0xFF) & ((p[29]) >> (8)))))));
     auto pri_count =
-        ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) + (((0x10000) * (p[34]))) +
+        (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+          "preceding-bits=0 bytes=4") +
+         (((0x1) * (p[36]))) + (((0x100) * (p[35]))) + (((0x10000) * (p[34]))) +
          (((0x1000000) * (((0xFF) & ((p[33]) >> (8)))))));
-    auto pri = ((((((0x1) * (p[52]))) + (((0x100) * (p[51]))) +
+    auto pri = (((("nolast firstmask=FF following-bits=8 rest-bits=0 bits=24 "
+                   "preceding-bits=0 bytes=3") +
+                  (((0x1) * (p[52]))) + (((0x100) * (p[51]))) +
                   (((0x10000) * (((0xFF) & ((p[50]) >> (8)))))))) /
                 (fref));
-    auto rank = ((0x1F) & ((p[49]) >> (0)));
+    auto rank = (("single 31,0,5,3,") & (0x1F) & ((p[49]) >> (0)));
     auto rank2 = static_cast<int>(p[((49))]);
-    auto baqmod = ((0x1F) & ((p[37]) >> (0)));
-    auto baq_n = ((0xFF) & ((p[38]) >> (0)));
+    auto baqmod = (("single 31,0,5,3,") & (0x1F) & ((p[37]) >> (0)));
+    auto baq_n = (("single 255,0,8,0,") & (0xFF) & ((p[38]) >> (0)));
     auto sync_marker =
-        ((((0x1) * (p[15]))) + (((0x100) * (p[14]))) + (((0x10000) * (p[13]))) +
+        (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+          "preceding-bits=0 bytes=4") +
+         (((0x1) * (p[15]))) + (((0x100) * (p[14]))) + (((0x10000) * (p[13]))) +
          (((0x1000000) * (((0xFF) & ((p[12]) >> (8)))))));
     auto sync2 =
         ((((16777216) * (((255) & (static_cast<int>(p[((12) + (0))])))))) +
@@ -57,69 +77,82 @@ void init_process_packet_headers() {
          (((256) * (((255) & (static_cast<int>(p[((12) + (2))])))))) +
          (((1) * (((255) & (static_cast<int>(p[((12) + (3))])))))));
     auto baqmod2 = static_cast<int>(p[37]);
-    auto err = ((0x1) & ((p[37]) >> (7)));
-    auto tstmod = ((0x7) & ((p[21]) >> (4)));
-    auto rx = ((0xF) & ((p[21]) >> (0)));
-    auto ecc = ((0xFF) & ((p[20]) >> (0)));
-    auto pol = ((0x7) & ((p[59]) >> (4)));
-    auto signal_type = ((0xF) & ((p[63]) >> (4)));
-    auto swath = ((0xFF) & ((p[64]) >> (0)));
-    auto ele = ((0xF) & ((p[60]) >> (4)));
+    auto err = (("single 1,7,1,0,") & (0x1) & ((p[37]) >> (7)));
+    auto tstmod = (("single 7,4,3,1,") & (0x7) & ((p[21]) >> (4)));
+    auto rx = (("single 15,0,4,4,") & (0xF) & ((p[21]) >> (0)));
+    auto ecc = (("single 255,0,8,0,") & (0xFF) & ((p[20]) >> (0)));
+    auto pol = (("single 7,4,3,1,") & (0x7) & ((p[59]) >> (4)));
+    auto signal_type = (("single 15,4,4,0,") & (0xF) & ((p[63]) >> (4)));
+    auto swath = (("single 255,0,8,0,") & (0xFF) & ((p[64]) >> (0)));
+    auto ele = (("single 15,4,4,0,") & (0xF) & ((p[60]) >> (4)));
     {
-      auto v = static_cast<int>(((0x7) & ((p[0]) >> (5))));
+      auto v =
+          static_cast<int>((("single 7,5,3,0,") & (0x7) & ((p[0]) >> (5))));
       (std::cout) << (std::setw(42)) << ("packet-version-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[0]) >> (4))));
+      auto v =
+          static_cast<int>((("single 1,4,1,3,") & (0x1) & ((p[0]) >> (4))));
       (std::cout) << (std::setw(42)) << ("packet-type ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[0]) >> (3))));
+      auto v =
+          static_cast<int>((("single 1,3,1,4,") & (0x1) & ((p[0]) >> (3))));
       (std::cout) << (std::setw(42)) << ("secondary-header-flag ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          (((((0xF0) & (p[1]))) >> (4)) + (((0x100) * (((0x7) & (p[0])))))));
+          (("both firstmask=7 lastmask=F0 following-bits=4 rest-bits=4 bits=7 "
+            "preceding-bits=5 bytes=1") +
+           ((((0xF0) & (p[1]))) >> (4)) + (((0x100) * (((0x7) & (p[0])))))));
       (std::cout) << (std::setw(42)) << ("application-process-id-process-id ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((p[1]) >> (0))));
+      auto v =
+          static_cast<int>((("single 15,0,4,4,") & (0xF) & ((p[1]) >> (0))));
       (std::cout) << (std::setw(42))
                   << ("application-process-id-packet-category ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[2]) >> (6))));
+      auto v =
+          static_cast<int>((("single 3,6,2,0,") & (0x3) & ((p[2]) >> (6))));
       (std::cout) << (std::setw(42)) << ("sequence-flags ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[3]))) + (((0x100) * (((0x3F) & ((p[2]) >> (8))))))));
+          (("nolast firstmask=3F following-bits=8 rest-bits=0 bits=14 "
+            "preceding-bits=2 bytes=2") +
+           (((0x1) * (p[3]))) + (((0x100) * (((0x3F) & ((p[2]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sequence-count ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[5]))) + (((0x100) * (((0xFF) & ((p[4]) >> (8))))))));
+          (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+            "preceding-bits=0 bytes=2") +
+           (((0x1) * (p[5]))) + (((0x100) * (((0xFF) & ((p[4]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("data-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[9]))) + (((0x100) * (p[8]))) + (((0x10000) * (p[7]))) +
+          (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=32 "
+            "preceding-bits=0 bytes=4") +
+           (((0x1) * (p[9]))) + (((0x100) * (p[8]))) + (((0x10000) * (p[7]))) +
            (((0x1000000) * (((0xFF) & ((p[6]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("coarse-time ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
@@ -127,14 +160,18 @@ void init_process_packet_headers() {
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[11]))) + (((0x100) * (((0xFF) & ((p[10]) >> (8))))))));
+          (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+            "preceding-bits=0 bytes=2") +
+           (((0x1) * (p[11]))) + (((0x100) * (((0xFF) & ((p[10]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("fine-time ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=32 preceding-bits=0 bytes=4") +
+                            (((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
                             (((0x10000) * (p[13]))) +
                             (((0x1000000) * (((0xFF) & ((p[12]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sync-marker ") << (std::setw(12))
@@ -143,7 +180,9 @@ void init_process_packet_headers() {
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[19]))) + (((0x100) * (p[18]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=32 preceding-bits=0 bytes=4") +
+                            (((0x1) * (p[19]))) + (((0x100) * (p[18]))) +
                             (((0x10000) * (p[17]))) +
                             (((0x1000000) * (((0xFF) & ((p[16]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("data-take-id ") << (std::setw(12))
@@ -151,32 +190,38 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[20]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[20]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ecc-number ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[21]) >> (7))));
+      auto v =
+          static_cast<int>((("single 1,7,1,0,") & (0x1) & ((p[21]) >> (7))));
       (std::cout) << (std::setw(42)) << ("ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((p[21]) >> (4))));
+      auto v =
+          static_cast<int>((("single 7,4,3,1,") & (0x7) & ((p[21]) >> (4))));
       (std::cout) << (std::setw(42)) << ("test-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((p[21]) >> (0))));
+      auto v =
+          static_cast<int>((("single 15,0,4,4,") & (0xF) & ((p[21]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-channel-id ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[25]))) + (((0x100) * (p[24]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=32 preceding-bits=0 bytes=4") +
+                            (((0x1) * (p[25]))) + (((0x100) * (p[24]))) +
                             (((0x10000) * (p[23]))) +
                             (((0x1000000) * (((0xFF) & ((p[22]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("instrument-configuration-id ")
@@ -184,21 +229,26 @@ void init_process_packet_headers() {
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[26]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[26]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sub-commutated-index ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[28]))) + (((0x100) * (((0xFF) & ((p[27]) >> (8))))))));
+          (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+            "preceding-bits=0 bytes=2") +
+           (((0x1) * (p[28]))) + (((0x100) * (((0xFF) & ((p[27]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sub-commutated-data ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=32 preceding-bits=0 bytes=4") +
+                            (((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
                             (((0x10000) * (p[30]))) +
                             (((0x1000000) * (((0xFF) & ((p[29]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("space-packet-count ")
@@ -207,7 +257,9 @@ void init_process_packet_headers() {
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=32 preceding-bits=0 bytes=4") +
+                            (((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
                             (((0x10000) * (p[34]))) +
                             (((0x1000000) * (((0xFF) & ((p[33]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("pri-count ") << (std::setw(12))
@@ -215,96 +267,115 @@ void init_process_packet_headers() {
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[37]) >> (7))));
+      auto v =
+          static_cast<int>((("single 1,7,1,0,") & (0x1) & ((p[37]) >> (7))));
       (std::cout) << (std::setw(42)) << ("error-flag ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[37]) >> (5))));
+      auto v =
+          static_cast<int>((("single 3,5,2,1,") & (0x3) & ((p[37]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((p[37]) >> (0))));
+      auto v =
+          static_cast<int>((("single 31,0,5,3,") & (0x1F) & ((p[37]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[38]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[38]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-block-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[39]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[39]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-2 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[40]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[40]) >> (0))));
       (std::cout) << (std::setw(42)) << ("range-decimation ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[41]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[41]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-gain ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[42]) >> (7))));
+      auto v =
+          static_cast<int>((("single 1,7,1,0,") & (0x1) & ((p[42]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-ramp-rate-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[43]))) + (((0x100) * (((0x7F) & ((p[42]) >> (8))))))));
+          (("nolast firstmask=7F following-bits=8 rest-bits=0 bits=15 "
+            "preceding-bits=1 bytes=2") +
+           (((0x1) * (p[43]))) + (((0x100) * (((0x7F) & ((p[42]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("tx-ramp-rate-magnitude ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[44]) >> (7))));
+      auto v =
+          static_cast<int>((("single 1,7,1,0,") & (0x1) & ((p[44]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-start-frequency-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[45]))) + (((0x100) * (((0x7F) & ((p[44]) >> (8))))))));
+          (("nolast firstmask=7F following-bits=8 rest-bits=0 bits=15 "
+            "preceding-bits=1 bytes=2") +
+           (((0x1) * (p[45]))) + (((0x100) * (((0x7F) & ((p[44]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-start-frequency-magnitude ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=24 preceding-bits=0 bytes=3") +
+                            (((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
                             (((0x10000) * (((0xFF) & ((p[46]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((p[49]) >> (5))));
+      auto v =
+          static_cast<int>((("single 7,5,3,0,") & (0x7) & ((p[49]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-3 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((p[49]) >> (0))));
+      auto v =
+          static_cast<int>((("single 31,0,5,3,") & (0x1F) & ((p[49]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rank ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[52]))) + (((0x100) * (p[51]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=24 preceding-bits=0 bytes=3") +
+                            (((0x1) * (p[52]))) + (((0x100) * (p[51]))) +
                             (((0x10000) * (((0xFF) & ((p[50]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("pulse-repetition-interval ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
@@ -312,7 +383,9 @@ void init_process_packet_headers() {
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=24 preceding-bits=0 bytes=3") +
+                            (((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                             (((0x10000) * (((0xFF) & ((p[53]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sampling-window-start-time ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
@@ -320,106 +393,126 @@ void init_process_packet_headers() {
     };
     {
       auto v =
-          static_cast<int>(((((0x1) * (p[58]))) + (((0x100) * (p[57]))) +
+          static_cast<int>((("nolast firstmask=FF following-bits=8 rest-bits=0 "
+                             "bits=24 preceding-bits=0 bytes=3") +
+                            (((0x1) * (p[58]))) + (((0x100) * (p[57]))) +
                             (((0x10000) * (((0xFF) & ((p[56]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sampling-window-length ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[59]) >> (7))));
+      auto v =
+          static_cast<int>((("single 1,7,1,0,") & (0x1) & ((p[59]) >> (7))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-calibration-p ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((p[59]) >> (4))));
+      auto v =
+          static_cast<int>((("single 7,4,3,1,") & (0x7) & ((p[59]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-polarisation ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[59]) >> (2))));
+      auto v =
+          static_cast<int>((("single 3,2,2,4,") & (0x3) & ((p[59]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-temp-comp ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[59]) >> (0))));
+      auto v =
+          static_cast<int>((("single 3,0,2,6,") & (0x3) & ((p[59]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((p[60]) >> (4))));
+      auto v =
+          static_cast<int>((("single 15,4,4,0,") & (0xF) & ((p[60]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-elevation-beam-address ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[60]) >> (2))));
+      auto v =
+          static_cast<int>((("single 3,2,2,4,") & (0x3) & ((p[60]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & ((p[60]) >> (8))))))));
+          (("nolast firstmask=3 following-bits=8 rest-bits=0 bits=10 "
+            "preceding-bits=6 bytes=2") +
+           (((0x1) * (p[61]))) + (((0x100) * (((0x3) & ((p[60]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-azimuth-beam-address ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x3) & ((p[62]) >> (6))));
+      auto v =
+          static_cast<int>((("single 3,6,2,0,") & (0x3) & ((p[62]) >> (6))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-cal-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[62]) >> (5))));
+      auto v =
+          static_cast<int>((("single 1,5,1,2,") & (0x1) & ((p[62]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1F) & ((p[62]) >> (0))));
+      auto v =
+          static_cast<int>((("single 31,0,5,3,") & (0x1F) & ((p[62]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-tx-pulse-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xF) & ((p[63]) >> (4))));
+      auto v =
+          static_cast<int>((("single 15,4,4,0,") & (0xF) & ((p[63]) >> (4))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-signal-type ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x7) & ((p[63]) >> (1))));
+      auto v =
+          static_cast<int>((("single 7,1,3,4,") & (0x7) & ((p[63]) >> (1))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0x1) & ((p[63]) >> (0))));
+      auto v =
+          static_cast<int>((("single 1,0,1,7,") & (0x1) & ((p[63]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swap ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[64]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[64]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swath-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (std::endl);
     };
     {
       auto v = static_cast<int>(
-          ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & ((p[65]) >> (8))))))));
+          (("nolast firstmask=FF following-bits=8 rest-bits=0 bits=16 "
+            "preceding-bits=0 bytes=2") +
+           (((0x1) * (p[66]))) + (((0x100) * (((0xFF) & ((p[65]) >> (8))))))));
       (std::cout) << (std::setw(42)) << ("number-of-quads ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
     };
     {
-      auto v = static_cast<int>(((0xFF) & ((p[67]) >> (0))));
+      auto v =
+          static_cast<int>((("single 255,0,8,0,") & (0xFF) & ((p[67]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-4 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
                   << (std::endl);
