@@ -127,12 +127,16 @@
 		   'uint8_t
 		   ))
 		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
-		  (let ((firstmask 0)
-			(lastmask 0)
-			(following-bits (- 8 rest-bits))
-			)
-		    (setf (ldb (byte (- 8 preceding-bits) 0) firstmask) #xff
-			  (ldb (byte rest-bits (- 8 rest-bits)) lastmask) #xff)
+		  (let* ((firstmask 0)
+			 (lastmask 0)
+			 (following-bits (- 8 rest-bits))
+			 (first-bits (- 8 preceding-bits))
+			 (last-bits (- bits first-bits)))
+		    #+nil
+		    (break "following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+			   following-bits rest-bits bits preceding-bits bytes first-bits last-bits)
+		    (setf (ldb (byte first-bits 0) firstmask) #xff
+			  (ldb (byte last-bits (- 8 last-bits)) lastmask) #xff)
 		    (values
 		     (if (= lastmask 0)
 			 `(+
@@ -148,11 +152,11 @@
 			   #-nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d"
 						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes))
 			   (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
-				 ,following-bits)
-			     ,@(loop for byte from (- bytes 1) downto 1 collect
-				    `(* (hex ,(expt 256 (- bytes byte)))
-					(aref ,data8 ,(+ preceding-octets 0 byte))))
-			     (* (hex ,(expt 256 bytes)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
+			       ,following-bits)
+			   ,@(loop for byte from (- bytes 1) downto 1 collect
+				  `(* (hex ,(expt 256 (- bytes byte)))
+				      (aref ,data8 ,(+ preceding-octets 0 byte))))
+			   (* (hex ,(expt 256 bytes)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
 		     (format nil "uint~a_t" (next-power-of-two bits))))
 		  ))))))
 
