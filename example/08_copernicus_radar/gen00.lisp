@@ -110,7 +110,7 @@
 	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
 	    
 	    ;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
-	    (if (<= bits 8)
+	    (if (<= (+ preceding-bits bits) 8)
 		(let ((mask 0)
 		      (following-bits (- 8 (+ preceding-bits bits))))
 		  (declare (type (unsigned-byte 8) mask))
@@ -119,7 +119,7 @@
 				   ) mask) #xff)
 		  (values
 		   `(&
-		     (string ,(format nil "single ~{~a,~}"
+		   #+nil  (string ,(format nil "single ~{~a,~}"
 				      (list mask following-bits bits preceding-bits)))
 		     (hex ,mask)
 		     (>> (aref ,data8 ,preceding-octets)
