@@ -109,59 +109,56 @@
 	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8)
 	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
 	    
-					;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
+	    ;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
 	    (if (<= bits 8)
 		(let ((mask 0)
 		      (following-bits (- 8 (+ preceding-bits bits))))
-		  
 		  (declare (type (unsigned-byte 8) mask))
+
 		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
 				   ) mask) #xff)
 		  (values
-		   #+nil `(>> (&
-			       (hex ,mask)
-			       (aref ,data8 (+ 1 ,preceding-octets)))
-			      (- 8 (+ ,bits ,preceding-bits)))
-		   #+nil `(&
+		   `(&
+		     (string ,(format nil "single ~{~a,~}"
+				      (list mask following-bits bits preceding-bits)))
 		     (hex ,mask)
-		     
-		     (>> (reverse_bit (aref ,data8 ,preceding-octets))
-			 ,preceding-bits
-			 
-			 ))
-		   #+nil (setf follow ,following-bits
-			   preceding ,preceding-bits
-			   bits ,bits
-			   )
-		   `(& 
-		     (hex ,mask)
-		     
 		     (>> (aref ,data8 ,preceding-octets)
-			 ,following-bits
-			 
-			 ))
+			 ,following-bits))
 		   'uint8_t
 		   ))
 		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
 		  (let ((firstmask 0)
-			(lastmask 0))
+			(lastmask 0)
+			(following-bits (- 8 rest-bits))
+			)
 		    (setf (ldb (byte (- 8 preceding-bits) 0) firstmask) #xff
 			  (ldb (byte rest-bits (- 8 rest-bits)) lastmask) #xff)
 		    (values
 		     (if (= lastmask 0)
-			 `(+ 
+			 `(+
+			 #+nil  (string ,(format nil "nolast ~{~a=~a,~}"
+					    (loop for e in `(firstmask lastmask following-bits rest-bits bits preceding-bits)
+					       collect
+						 `(,(format nil "~a" e) ,e))))
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
-				  `(* ,(expt 256 (- bytes byte 1))
+				  `(* (hex ,(expt 256 (- bytes byte 1)))
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
-			   (* ,(expt 256 (- bytes 1)) (& (hex ,firstmask) (>> (reverse_bit
-									       (aref ,data8 ,(+ preceding-octets 0)))
-									      ,preceding-bits))))
-			 `(+ (>> (& (hex ,lastmask) (reverse_bit (aref ,data8 ,(+ preceding-octets 0 bytes))))
-				 ,(- 8 rest-bits))
+			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (>> (aref ,data8 ,(+ preceding-octets 0))
+										,following-bits))))
+			 `(+
+			  #+nil  (string ,(format nil "both ~{~a=~a,~}"
+					    (loop for e in
+						 (list firstmask lastmask following-bits rest-bits bits preceding-bits)
+						 and f in 
+						 `(firstmask lastmask following-bits rest-bits bits preceding-bits)
+					       collect
+						 `(,(format nil "~a" f) ,e))))
+			   (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
+				 ,following-bits)
 			     ,@(loop for byte from (- bytes 1) downto 1 collect
-				    `(* ,(expt 256 (- bytes byte))
+				    `(* (hex ,(expt 256 (- bytes byte)))
 					(aref ,data8 ,(+ preceding-octets 0 byte))))
-			     (* ,(expt 256 bytes) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
+			     (* (hex ,(expt 256 bytes)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
 		     (format nil "uint~a_t" (next-power-of-two bits))))
 		  ))))))
 
@@ -514,7 +511,7 @@
 					;(current_byte size_t)
 			  (data uint8_t*)
 			  ))
-	  (defun reverse_bit (b)
+	  #+nil (defun reverse_bit (b)
 	    (declare (type uint8_t b)
 		     (values uint8_t))
 	    

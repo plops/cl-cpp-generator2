@@ -7,13 +7,6 @@
 ;
 extern State state;
 
-uint8_t reverse_bit(uint8_t b) {
-  // http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64BitsDiv
-  // b = ((b * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
-  return (((((((b) * (0x80200802ULL))) & (0x0884422110ULL))) *
-           (0x0101010101ULL))) >>
-         (32);
-}
 void init_sequential_bit_function(sequential_bit_t *seq_state,
                                   size_t byte_pos) {
   seq_state->data = &(static_cast<uint8_t *>(state._mmap_data)[byte_pos]);
@@ -202,11 +195,10 @@ inline float decode_symbol(sequential_bit_t *s) { return (0.0e+0f); }
 void init_decode_packet(int packet_idx) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
-  auto number_of_quads =
-      ((((1) * (header[66]))) +
-       (((256) * (((0xFF) & ((reverse_bit(header[65])) >> (0)))))));
+  auto number_of_quads = ((((0x1) * (header[66]))) +
+                          (((0x100) * (((0xFF) & ((header[65]) >> (8)))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  auto baqmod = ((0x1F) & ((header[37]) >> (0)));
+  auto baqmod = (("single 31,0,5,3,") & (0x1F) & ((header[37]) >> (0)));
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()
