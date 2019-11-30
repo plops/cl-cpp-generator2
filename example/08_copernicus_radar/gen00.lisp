@@ -626,6 +626,9 @@
 			      (setf (aref decoded_symbols_a decoded_symbols)
 				    (* symbol_sign symbol)))
 			    (incf decoded_symbols)))))
+	       ;; consume padding bits until next 16bit word boundary
+	       
+	       
 	       ))
 	   ))))
      
