@@ -130,7 +130,7 @@ void init_process_packet_headers() {
     };
     {
       auto v = static_cast<int>(
-          (((((0xF0) & (p[1]))) >> (4)) + (((0x100) * (((0x7) & (p[0])))))));
+          (((((0xF0) & (p[1]))) >> (4)) + (((0x10) * (((0x7) & (p[0])))))));
       (std::cout) << (std::setw(42)) << ("application-process-id-process-id ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
                   << (std::hex) << (v) << (" ")

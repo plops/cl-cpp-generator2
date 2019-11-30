@@ -163,7 +163,8 @@
 			   ,@(loop for byte from (- bytes 1) downto 1 collect
 				  `(* (hex ,(expt 256 (- bytes byte)))
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
-			   (* (hex ,(expt 256 bytes)) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
+			   (* (hex ,(expt 2 (1- preceding-bits))	;,(expt 256 bytes)
+			       ) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
 		     (format nil "uint~a_t" (next-power-of-two bits))))
 		  ))))))
 
