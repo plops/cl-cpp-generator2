@@ -6,6 +6,8 @@
 
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
 
+
+
 (progn
   ;; make sure to run this code twice during the first time, so that
   ;; the functions are defined
@@ -474,11 +476,12 @@
 					    "std::hex"
 					    v
 					    (string " ")
-					    ,@(loop for j from 15 downto 8 collect
-						   `(static_cast<int> (logand 1 (>> v ,j))))
-					    (string " ")
-					    ,@(loop for j from 7 downto 0 collect
-						   `(static_cast<int> (logand 1 (>> v ,j))))
+					    
+					    ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
+							     bits)))
+						 (loop for j from (1- bits) downto 0 collect
+						      `(static_cast<int> (logand 1 (>> v ,j)))))
+					       
 					    "std::endl"
 					    )))))
 
