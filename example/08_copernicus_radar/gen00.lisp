@@ -550,7 +550,8 @@
 	    (let ((current_byte (deref seq_state->data))
 		  (res (static_cast<bool>
 			(logand (>> current_byte seq_state->current_bit_count)
-			     1))))
+				1))))
+	      (incf seq_state->current_bit_count)
 	      (when (< 7 seq_state->current_bit_count)
 		(setf seq_state->current_bit_count 0)
 		(incf seq_state->data))
