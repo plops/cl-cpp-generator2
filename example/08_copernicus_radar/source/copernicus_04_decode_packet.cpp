@@ -213,7 +213,8 @@ void init_decode_packet(int packet_idx) {
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
               << (" packet_idx=") << (packet_idx) << (std::setw(8))
-              << (" baq_mode=") << (baq_mode) << (std::endl);
+              << (" baq_mode=") << (baq_mode) << (std::setw(8))
+              << (" baq_block_length=") << (baq_block_length) << (std::endl);
   auto decoded_symbols = 0;
   auto number_of_baq_blocks = ((((2) * (number_of_quads))) / (256));
   sequential_bit_t s;
@@ -222,6 +223,8 @@ void init_decode_packet(int packet_idx) {
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
   for (int block = 0; decoded_symbols < number_of_quads;) {
     auto brc = get_bit_rate_code(&s);
+    assert((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+            ((3) == (brc)) || ((4) == (brc))));
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -230,8 +233,7 @@ void init_decode_packet(int packet_idx) {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" brc=") << (brc) << (std::setw(8))
-                << (" baq_block_length=") << (baq_block_length) << (std::endl);
+                << (" brc=") << (brc) << (std::endl);
     for (int i = 0;
          ((i < baq_block_length) && (decoded_symbols < number_of_quads));
          (i)++) {

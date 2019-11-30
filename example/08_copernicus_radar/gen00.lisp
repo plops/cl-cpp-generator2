@@ -587,7 +587,7 @@
 		 )
 	     (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 				`(== ,e baq_mode))))
-	     ,(logprint "" `(packet_idx baq_mode))
+	     ,(logprint "" `(packet_idx baq_mode baq_block_length))
 	     (let ((decoded_symbols 0)
 		   (number_of_baq_blocks (/ (* 2 number_of_quads)
 					    256))
@@ -601,7 +601,9 @@
 		     (< decoded_symbols number_of_quads)
 		     ())
 		    (let ((brc (get_bit_rate_code &s)))
-		      ,(logprint "" `(brc baq_block_length))
+		      (assert (or ,@(loop for e in `(0 1 2 3 4) collect
+				`(== ,e brc))))
+		      ,(logprint "" `(brc))
 		      (for ((= "int i" 0)
 			    (and (< i baq_block_length)
 				 (< decoded_symbols
