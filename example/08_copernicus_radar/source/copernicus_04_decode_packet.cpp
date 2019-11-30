@@ -193,7 +193,6 @@ inline int decode_huffman_brc4(sequential_bit_t *s) {
     }
   }
 }
-inline float decode_symbol(sequential_bit_t *s) { return (0.0e+0f); }
 void init_decode_packet(int packet_idx) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
@@ -238,11 +237,12 @@ void init_decode_packet(int packet_idx) {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
                 << (" brc=") << (brc) << (std::endl);
+    auto decoder = decoder_jump_table[brc];
     for (int i = 0;
          ((i < baq_block_length) && (decoded_symbols < number_of_quads));
          (i)++) {
       auto symbol_sign = (1.e+0f);
-      auto symbol = decode_symbol(&s);
+      auto symbol = decoder(&s);
       if (get_sequential_bit(&s)) {
         symbol_sign = (-1.e+0f);
       };

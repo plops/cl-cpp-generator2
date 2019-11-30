@@ -571,7 +571,7 @@
 	 ,(gen-huffman-decoder 'brc3 '((0 1) (2 (3 (4 (5 (6 (7 (8 (9))))))))))
 	 ,(gen-huffman-decoder 'brc4 '((0 (1 2)) ((3 4) ((5 6) (7 (8 (9 ((10 11) ((12 13) (14 15))))))))))
 
-	 (defun decode_symbol (s)
+	 #+nil (defun decode_symbol (s)
 	   (declare (type sequential_bit_t* s)
 		    (values "inline float"))
 	   (return 0s0))
@@ -610,18 +610,20 @@
 		      (assert (or ,@(loop for e in `(0 1 2 3 4) collect
 				`(== ,e brc))))
 		      ,(logprint "" `(brc))
-		      (for ((= "int i" 0)
-			    (and (< i baq_block_length)
-				 (< decoded_symbols
-				    number_of_quads))
-			    (incf i))
-			   (let ((symbol_sign 1s0)
-				 (symbol (decode_symbol &s)))
-			     (when (get_sequential_bit &s)
-			       (setf symbol_sign -1s0))
-			     (setf (aref decoded_symbols_a decoded_symbols)
-				   (* symbol_sign symbol)))
-			   (incf decoded_symbols))))
+
+		      (let ((decoder (aref decoder_jump_table brc)))
+		       (for ((= "int i" 0)
+			     (and (< i baq_block_length)
+				  (< decoded_symbols
+				     number_of_quads))
+			     (incf i))
+			    (let ((symbol_sign 1s0)
+				  (symbol (decoder &s)))
+			      (when (get_sequential_bit &s)
+				(setf symbol_sign -1s0))
+			      (setf (aref decoded_symbols_a decoded_symbols)
+				    (* symbol_sign symbol)))
+			    (incf decoded_symbols)))))
 	       ))
 	   ))))
      
