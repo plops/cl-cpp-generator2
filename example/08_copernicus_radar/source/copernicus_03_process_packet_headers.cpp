@@ -67,53 +67,177 @@ void init_process_packet_headers() {
       auto v = static_cast<int>(((0x7) & ((p[0]) >> (5))));
       (std::cout) << (std::setw(42)) << ("packet-version-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[0]) >> (4))));
       (std::cout) << (std::setw(42)) << ("packet-type ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[0]) >> (3))));
       (std::cout) << (std::setw(42)) << ("secondary-header-flag ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           (((((0xF0) & (p[1]))) >> (4)) + (((0x100) * (((0x7) & (p[0])))))));
       (std::cout) << (std::setw(42)) << ("application-process-id-process-id ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xF) & ((p[1]) >> (0))));
       (std::cout) << (std::setw(42))
                   << ("application-process-id-packet-category ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[2]) >> (6))));
       (std::cout) << (std::setw(42)) << ("sequence-flags ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[3]))) + (((0x100) * (((0x3F) & (p[2])))))));
       (std::cout) << (std::setw(42)) << ("sequence-count ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[5]))) + (((0x100) * (((0xFF) & (p[4])))))));
       (std::cout) << (std::setw(42)) << ("data-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[9]))) + (((0x100) * (p[8]))) +
@@ -121,14 +245,44 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[6])))))));
       (std::cout) << (std::setw(42)) << ("coarse-time ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[11]))) + (((0x100) * (((0xFF) & (p[10])))))));
       (std::cout) << (std::setw(42)) << ("fine-time ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
@@ -136,7 +290,22 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[12])))))));
       (std::cout) << (std::setw(42)) << ("sync-marker ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[19]))) + (((0x100) * (p[18]))) +
@@ -144,31 +313,106 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[16])))))));
       (std::cout) << (std::setw(42)) << ("data-take-id ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[20]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ecc-number ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[21]) >> (7))));
       (std::cout) << (std::setw(42)) << ("ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x7) & ((p[21]) >> (4))));
       (std::cout) << (std::setw(42)) << ("test-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xF) & ((p[21]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-channel-id ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[25]))) + (((0x100) * (p[24]))) +
@@ -176,20 +420,68 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[22])))))));
       (std::cout) << (std::setw(42)) << ("instrument-configuration-id ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[26]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sub-commutated-index ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[28]))) + (((0x100) * (((0xFF) & (p[27])))))));
       (std::cout) << (std::setw(42)) << ("sub-commutated-data ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
@@ -197,7 +489,23 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[29])))))));
       (std::cout) << (std::setw(42)) << ("space-packet-count ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
@@ -205,213 +513,738 @@ void init_process_packet_headers() {
                                  (((0x1000000) * (((0xFF) & (p[33])))))));
       (std::cout) << (std::setw(42)) << ("pri-count ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[37]) >> (7))));
       (std::cout) << (std::setw(42)) << ("error-flag ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[37]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1F) & ((p[37]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[38]) >> (0))));
       (std::cout) << (std::setw(42)) << ("baq-block-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[39]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-2 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[40]) >> (0))));
       (std::cout) << (std::setw(42)) << ("range-decimation ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[41]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rx-gain ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[42]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-ramp-rate-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[43]))) + (((0x100) * (((0x7F) & (p[42])))))));
       (std::cout) << (std::setw(42)) << ("tx-ramp-rate-magnitude ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[44]) >> (7))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-start-frequency-polarity ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[45]))) + (((0x100) * (((0x7F) & (p[44])))))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-start-frequency-magnitude ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
                                  (((0x10000) * (((0xFF) & (p[46])))))));
       (std::cout) << (std::setw(42)) << ("tx-pulse-length ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x7) & ((p[49]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ignore-3 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1F) & ((p[49]) >> (0))));
       (std::cout) << (std::setw(42)) << ("rank ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[52]))) + (((0x100) * (p[51]))) +
                                  (((0x10000) * (((0xFF) & (p[50])))))));
       (std::cout) << (std::setw(42)) << ("pulse-repetition-interval ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                  (((0x10000) * (((0xFF) & (p[53])))))));
       (std::cout) << (std::setw(42)) << ("sampling-window-start-time ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((((0x1) * (p[58]))) + (((0x100) * (p[57]))) +
                                  (((0x10000) * (((0xFF) & (p[56])))))));
       (std::cout) << (std::setw(42)) << ("sampling-window-length ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[59]) >> (7))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-calibration-p ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x7) & ((p[59]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-polarisation ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[59]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-temp-comp ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[59]) >> (0))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xF) & ((p[60]) >> (4))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-elevation-beam-address ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[60]) >> (2))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & (p[60])))))));
       (std::cout) << (std::setw(42)) << ("sab-ssb-azimuth-beam-address ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x3) & ((p[62]) >> (6))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-cal-mode ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[62]) >> (5))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-0 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1F) & ((p[62]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-tx-pulse-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xF) & ((p[63]) >> (4))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-signal-type ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x7) & ((p[63]) >> (1))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-ignore-1 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0x1) & ((p[63]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swap ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[64]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ses-ssb-swath-number ")
                   << (std::setw(12)) << (std::dec) << (v) << (std::setw(12))
-                  << (std::hex) << (v) << (std::endl);
+                  << (std::hex) << (v) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65])))))));
       (std::cout) << (std::setw(42)) << ("number-of-quads ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     {
       auto v = static_cast<int>(((0xFF) & ((p[67]) >> (0))));
       (std::cout) << (std::setw(42)) << ("ignore-4 ") << (std::setw(12))
                   << (std::dec) << (v) << (std::setw(12)) << (std::hex) << (v)
-                  << (std::endl);
+                  << (" ") << (static_cast<int>(((1) & ((v) >> (15)))))
+                  << (static_cast<int>(((1) & ((v) >> (14)))))
+                  << (static_cast<int>(((1) & ((v) >> (13)))))
+                  << (static_cast<int>(((1) & ((v) >> (12)))))
+                  << (static_cast<int>(((1) & ((v) >> (11)))))
+                  << (static_cast<int>(((1) & ((v) >> (10)))))
+                  << (static_cast<int>(((1) & ((v) >> (9)))))
+                  << (static_cast<int>(((1) & ((v) >> (8))))) << (" ")
+                  << (static_cast<int>(((1) & ((v) >> (7)))))
+                  << (static_cast<int>(((1) & ((v) >> (6)))))
+                  << (static_cast<int>(((1) & ((v) >> (5)))))
+                  << (static_cast<int>(((1) & ((v) >> (4)))))
+                  << (static_cast<int>(((1) & ((v) >> (3)))))
+                  << (static_cast<int>(((1) & ((v) >> (2)))))
+                  << (static_cast<int>(((1) & ((v) >> (1)))))
+                  << (static_cast<int>(((1) & ((v) >> (0))))) << (std::endl);
     };
     for (int i = 0; i < ((6) + (62)); (i) += (1)) {
       // https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal

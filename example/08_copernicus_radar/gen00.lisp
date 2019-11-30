@@ -472,6 +472,12 @@
 					    ("std::setw" 12)
 					    "std::hex"
 					    v
+					    (string " ")
+					    ,@(loop for j from 15 downto 8 collect
+						   `(static_cast<int> (logand 1 (>> v ,j))))
+					    (string " ")
+					    ,@(loop for j from 7 downto 0 collect
+						   `(static_cast<int> (logand 1 (>> v ,j))))
 					    "std::endl"
 					    )))))
 
