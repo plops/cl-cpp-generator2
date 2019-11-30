@@ -120,6 +120,7 @@
 		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
 				   ) mask) #xff)
 		  (values
+		   
 		   `(&
 		   #+nil  (string ,(format nil "single mask=~x following-bits=~d bits=~d preceding-bits=~d"
 				      mask following-bits bits preceding-bits))
@@ -476,6 +477,7 @@
 
 		       (do0 (dotimes (i (+ 6 62))
 			      "// https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal"
+			      "// dump binary"
 			      (<< "std::cout" (string "\\033[")
 				  "std::dec"
 				  (+ 30 (% (- (+ 7 6 62) i ) (- 37 30)))
@@ -484,7 +486,7 @@
 				  (string "m")
 				  ;"std::hex" ("std::setw" 2)
 					;(static_cast<int> (aref p i))
-				  ,@(loop for j below 8 collect
+				  ,@(loop for j from 7 downto 0 collect
 					 `(static_cast<int> (logand 1 (>> (aref p i) ,j))))
 				  (string "\\033[0m")
 				  (string " "))
@@ -674,3 +676,5 @@
     ;; we need to force clang-format to always have the return type in the same line as the function: PenaltyReturnTypeOnItsOwnLine
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
+
+(ash #b0011000 -4)
