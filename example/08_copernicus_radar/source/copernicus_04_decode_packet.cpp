@@ -6,6 +6,7 @@
 #include "proto2.h"
 ;
 extern State state;
+#include <cassert>
 
 void init_sequential_bit_function(sequential_bit_t *seq_state,
                                   size_t byte_pos) {
@@ -197,8 +198,12 @@ void init_decode_packet(int packet_idx) {
   auto offset = state._header_offset[packet_idx];
   auto number_of_quads =
       ((((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
+  auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
+  auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  auto baqmod = ((0x1F) & ((header[37]) >> (0)));
+  assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
+          ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
+          ((14) == (baq_mode))));
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()
@@ -208,7 +213,7 @@ void init_decode_packet(int packet_idx) {
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
               << (" packet_idx=") << (packet_idx) << (std::setw(8))
-              << (" baqmod=") << (baqmod) << (std::endl);
+              << (" baq_mode=") << (baq_mode) << (std::endl);
   auto decoded_symbols = 0;
   auto number_of_baq_blocks = ((((2) * (number_of_quads))) / (256));
   sequential_bit_t s;
@@ -225,8 +230,11 @@ void init_decode_packet(int packet_idx) {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" brc=") << (brc) << (std::endl);
-    for (int i = 0; ((i < 128) && (decoded_symbols < number_of_quads)); (i)++) {
+                << (" brc=") << (brc) << (std::setw(8))
+                << (" baq_block_length=") << (baq_block_length) << (std::endl);
+    for (int i = 0;
+         ((i < baq_block_length) && (decoded_symbols < number_of_quads));
+         (i)++) {
       auto symbol_sign = (1.e+0f);
       auto symbol = decode_symbol(&s);
       if (get_sequential_bit(&s)) {

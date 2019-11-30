@@ -315,12 +315,12 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vv-20181106t135244-20181106t135316-024468-02aeb9.dat"
+		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"
 			      ;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"
 			      )) 
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
-		(init_process_packet_headers)
+		;(init_process_packet_headers)
 		(init_decode_packet 0)
 		(destroy_mmap)
 		))))
@@ -504,7 +504,7 @@
 				(<< "std::cout" "std::endl")))
 			    (<< "std::cout" (string "\\033[0m") "std::endl" "std::flush"))
 		      
-		       ,(logprint "" `(time "std::hex" err
+		       #+nil ,(logprint "" `(time "std::hex" err
 					    swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
 					    rx pol ecc signal_type
 					    ))
@@ -520,6 +520,7 @@
 	()
 	(do0
 	 (do0
+	  (include <cassert>)
 	  ,(emit-utils :code
 		       `(defstruct0 sequential_bit_t
 					;(user_data_position size_t)
@@ -580,9 +581,13 @@
 			      (data)))
 		 (offset (aref ,(g `_header_offset) packet_idx))
 		 (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
+		 (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
+		 (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-		 (baqmod ,(space-packet-slot-get 'baq-mode `header)))
-	     ,(logprint "" `(packet_idx baqmod))
+		 )
+	     (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
+				`(== ,e baq_mode))))
+	     ,(logprint "" `(packet_idx baq_mode))
 	     (let ((decoded_symbols 0)
 		   (number_of_baq_blocks (/ (* 2 number_of_quads)
 					    256))
@@ -596,9 +601,9 @@
 		     (< decoded_symbols number_of_quads)
 		     ())
 		    (let ((brc (get_bit_rate_code &s)))
-		      ,(logprint "" `(brc))
+		      ,(logprint "" `(brc baq_block_length))
 		      (for ((= "int i" 0)
-			    (and (< i 128)
+			    (and (< i baq_block_length)
 				 (< decoded_symbols
 				    number_of_quads))
 			    (incf i))
@@ -687,4 +692,3 @@
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
 
-(ash #b0011000 -4)

@@ -951,33 +951,6 @@ void init_process_packet_headers() {
       };
     }
     (std::cout) << ("\033[0m") << (std::endl) << (std::flush);
-    std::setprecision(3);
-    (std::cout) << (std::setw(10))
-                << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (state._start_time)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" time=") << (time) << (std::setw(8)) << (" std::hex=")
-                << (std::hex) << (std::setw(8)) << (" err=") << (err)
-                << (std::setw(8)) << (" swst=") << (swst) << (std::setw(8))
-                << (" coarse_time=") << (coarse_time) << (std::setw(8))
-                << (" fine_time=") << (fine_time) << (std::setw(8))
-                << (" swath=") << (swath) << (std::setw(8)) << (" count=")
-                << (count) << (std::setw(8)) << (" pri_count=") << (pri_count)
-                << (std::setw(8)) << (" rank=") << (rank) << (std::setw(8))
-                << (" rank2=") << (rank2) << (std::setw(8)) << (" pri=")
-                << (pri) << (std::setw(8)) << (" baqmod=") << (baqmod)
-                << (std::setw(8)) << (" baq_n=") << (baq_n) << (std::setw(8))
-                << (" sync2=") << (sync2) << (std::setw(8)) << (" sync_marker=")
-                << (sync_marker) << (std::setw(8)) << (" baqmod2=") << (baqmod2)
-                << (std::setw(8)) << (" tstmod=") << (tstmod) << (std::setw(8))
-                << (" azi=") << (azi) << (std::setw(8)) << (" ele=") << (ele)
-                << (std::setw(8)) << (" rx=") << (rx) << (std::setw(8))
-                << (" pol=") << (pol) << (std::setw(8)) << (" ecc=") << (ecc)
-                << (std::setw(8)) << (" signal_type=") << (signal_type)
-                << (std::endl);
     usleep(16000);
     (std::cout) << ("\033[2J\033[1;1H") << (std::flush);
   };
