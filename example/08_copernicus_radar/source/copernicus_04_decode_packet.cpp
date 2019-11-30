@@ -202,6 +202,9 @@ void init_decode_packet(int packet_idx) {
   auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  int (*decoder_jump_table[5])(sequential_bit_t *) = {
+      decode_huffman_brc0, decode_huffman_brc1, decode_huffman_brc2,
+      decode_huffman_brc3, decode_huffman_brc4};
   assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
           ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
           ((14) == (baq_mode))));
