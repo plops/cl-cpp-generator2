@@ -563,6 +563,8 @@
 	   (return (+ ,@(loop for j below 3 collect
 			     `(* (hex ,(expt 2 (- 2 j)))
 				 (get_sequential_bit s))))))
+
+	 ;; decode_huffman_brc<n> n=0..4
 	 ,(gen-huffman-decoder 'brc0 '(0 (1 (2 (3))))) ;; page 71 in space packet protocol data unit
 	 ,(gen-huffman-decoder 'brc1 '(0 (1 (2 (3 (4))))))
 	 ,(gen-huffman-decoder 'brc2 '(0 (1 (2 (3 (4 (5 (6))))))))
@@ -585,7 +587,10 @@
 		 (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
 		 (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+		 (decoder_jump_table[] (list ,@(loop for i below 5 collect
+					   (format nil "decode_huffman_brc~a" i))))
 		 )
+	     (declare (type "stat int (* const[]) (sequential_bit_t*)" decoder_jump_table[])])
 	     (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 				`(== ,e baq_mode))))
 	     ,(logprint "" `(packet_idx baq_mode baq_block_length))
