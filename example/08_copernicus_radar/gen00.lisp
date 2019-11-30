@@ -549,7 +549,7 @@
 		     (values "inline bool"))
 	    (let ((current_byte (deref seq_state->data))
 		  (res (static_cast<bool>
-			(and (>> current_byte seq_state->current_bit_count)
+			(logand (>> current_byte seq_state->current_bit_count)
 			     1))))
 	      (when (< 7 seq_state->current_bit_count)
 		(setf seq_state->current_bit_count 0)
@@ -560,7 +560,7 @@
 		    (values "inline int"))
 	   "// note: evaluation order is crucial"
 	   (return (+ ,@(loop for j below 3 collect
-			     `(* ,(expt 2 (- 2 j))
+			     `(* (hex ,(expt 2 (- 2 j)))
 				 (get_sequential_bit s))))))
 	 ,(gen-huffman-decoder 'brc0 '(0 (1 (2 (3))))) ;; page 71 in space packet protocol data unit
 	 ,(gen-huffman-decoder 'brc1 '(0 (1 (2 (3 (4))))))

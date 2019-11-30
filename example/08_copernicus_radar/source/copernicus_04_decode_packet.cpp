@@ -16,7 +16,7 @@ void init_sequential_bit_function(sequential_bit_t *seq_state,
 inline bool get_sequential_bit(sequential_bit_t *seq_state) {
   auto current_byte = *(seq_state->data);
   auto res = static_cast<bool>(
-      (((current_byte) >> (seq_state->current_bit_count)) && (1)));
+      (((current_byte) >> (seq_state->current_bit_count)) & (1)));
   if (7 < seq_state->current_bit_count) {
     seq_state->current_bit_count = 0;
     (seq_state->data)++;
@@ -25,9 +25,9 @@ inline bool get_sequential_bit(sequential_bit_t *seq_state) {
 };
 inline int get_bit_rate_code(sequential_bit_t *s) {
   // note: evaluation order is crucial
-  return ((((4) * (get_sequential_bit(s)))) +
-          (((2) * (get_sequential_bit(s)))) +
-          (((1) * (get_sequential_bit(s)))));
+  return ((((0x4) * (get_sequential_bit(s)))) +
+          (((0x2) * (get_sequential_bit(s)))) +
+          (((0x1) * (get_sequential_bit(s)))));
 }
 inline int decode_huffman_brc0(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
