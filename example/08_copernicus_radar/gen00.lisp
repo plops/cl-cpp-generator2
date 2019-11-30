@@ -613,7 +613,9 @@
 
 		      (let ((decoder (aref decoder_jump_table brc)))
 		       (for ((= "int i" 0)
-			     (and (< i baq_block_length)
+			     (and (< i
+				     (/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
+				     )
 				  (< decoded_symbols
 				     number_of_quads))
 			     (incf i))
