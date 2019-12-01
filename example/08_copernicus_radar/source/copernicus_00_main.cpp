@@ -17,5 +17,7 @@ int main() {
   init_mmap(state._filename);
   init_collect_packet_headers();
   init_decode_packet(0);
+  init_decode_packet(1);
+  init_decode_packet(2);
   destroy_mmap();
 };

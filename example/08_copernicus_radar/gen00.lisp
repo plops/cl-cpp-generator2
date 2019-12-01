@@ -324,6 +324,8 @@
 		(init_collect_packet_headers) 
 		;(init_process_packet_headers)
 		(init_decode_packet 0)
+		(init_decode_packet 1)
+		(init_decode_packet 2)
 		(destroy_mmap)
 		))))
   (define-module
@@ -710,7 +712,7 @@
 		      (type ,(format nil "std::array<uint8_t,~d>"
 				     (round (/ 65536 256)))
 			    thidxs))
-	     #+nil (do0
+	     #-nil (do0
 	      (assert (<= number_of_baq_blocks 256))
 	      (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 				 `(== ,e baq_mode))))
