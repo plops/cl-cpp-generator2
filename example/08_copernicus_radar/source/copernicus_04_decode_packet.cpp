@@ -16,7 +16,7 @@ void init_sequential_bit_function(sequential_bit_t *seq_state,
 inline bool get_sequential_bit(sequential_bit_t *seq_state) {
   auto current_byte = *(seq_state->data);
   auto res = static_cast<bool>(
-      (((current_byte) >> (seq_state->current_bit_count)) & (1)));
+      (((current_byte) >> (((7) - (seq_state->current_bit_count)))) & (1)));
   (seq_state->current_bit_count)++;
   if (7 < seq_state->current_bit_count) {
     seq_state->current_bit_count = 0;

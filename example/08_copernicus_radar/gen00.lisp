@@ -7,7 +7,8 @@
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
 
 
-
+;;  S1A_EW_GRDM_1SDH_20191130T152919_20191130T153018_030142_0371AB_6678
+;;  S1A_EW_RAW__0SDH_20191130T152915_20191130T153018_030142_0371AB_8C38
 (progn
   ;; make sure to run this code twice during the first time, so that
   ;; the functions are defined
@@ -550,7 +551,7 @@
 		     (values "inline bool"))
 	    (let ((current_byte (deref seq_state->data))
 		  (res (static_cast<bool>
-			(logand (>> current_byte seq_state->current_bit_count)
+			(logand (>> current_byte (- 7 seq_state->current_bit_count))
 				1))))
 	      (incf seq_state->current_bit_count)
 	      (when (< 7 seq_state->current_bit_count)
