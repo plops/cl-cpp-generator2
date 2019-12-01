@@ -825,12 +825,12 @@
 					       break)))))
 			      (consume_padding_bits &s)))))
 	       (dotimes (block number_of_baq_blocks)
-		,@(loop for e in `(ie io) collect
-		       (let ((sym (format nil "decoded_~a_symbols" e))
-			     (sym-a (format nil "decoded_~a_symbols_a" e)))
-			 `(let ((brc (aref brcs block))
-				(thidx (aref thidxs block)))
-			    (case brc
+		 (let ((brc (aref brcs block))
+				  (thidx (aref thidxs block)))
+		  ,@(loop for e in `(ie io) collect
+			 (let (	;(sym (format nil "decoded_~a_symbols" e))
+			       (sym-a (format nil "decoded_~a_symbols_a" e)))
+			   `(case brc
 			      ,@(loop for brc-value below 5 collect
 				     `(,(format nil "case ~a" brc-value)
 					(progn
@@ -849,10 +849,11 @@
 					     `(if (<= thidx ,th)
 						  ,@(loop for thidx-choice in `(simple normal) collect
 							 `(do0
-							   (dotimes (i ,sym)
-							     (let ((scode (aref ,sym-a i))
+							   (dotimes (i 128)
+							     (let ((pos (+ i (* 128 block)))
+								   (scode (aref ,sym-a pos))
 								   (mcode (static_cast<int> (fabsf scode)))
-								   (symbol_sign (/ scode mcode)))
+								   (symbol_sign (copysignf 1s0 scode)))
 							       (do0
 								,(format nil "// decode ~a p.75" e)
 								,(let ((th-mcode (case brc-value
@@ -877,9 +878,10 @@
 												     "table_nrl~a"
 												     brc-value)
 											    mcode)
-										      (aref table_sf thidx))))))))))))))
-					  break)))))
-			 )))
+										      (aref table_sf thidx)))))))
+								(setf (aref ,sym-a pos) v))))))))
+					  break))))
+			   ))))
 
 	       ))))))
        
