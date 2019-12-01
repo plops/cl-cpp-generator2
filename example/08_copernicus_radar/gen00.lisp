@@ -753,67 +753,75 @@
 							,(logprint "error: out of range" `(brc)) 
 							(assert 0))
 						      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
-					      
-					       (do0 ;let ((decoder (aref decoder_jump_table brc)))
-						 (for ((= "int i" 0)
-						       (and (< i
-							       128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
-							       )
-							    (< ,sym
-							       number_of_quads
-							       ))
-						       (incf i))
-						      (let ((sign_bit (get_sequential_bit &s))
-							    (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
-							    (symbol_sign 1s0)
-							    )
-							
-							(when sign_bit
-							  (setf symbol_sign -1s0))
-							(do0
-							 #+nil (let ((bit s.current_bit_count)
-								      (byte (static_cast<int>
-									     (-  s.data
-										 (static_cast<uint8_t*> ,(g `_mmap_data))
-										 ))))
-								  ,(logprint "" `(v ,sym i byte bit
-										    block)))
-							  ,(if (member e `(qe qo))
-							       `(do0
-								 ,(format nil "// decode ~a p.75" e)
-								 ,(let ((th (case brc-value
-									      (0 3)
-									      (1 3)
-									      (2 5)
-									      (3 6)
-									      (4 8)))
-									(th-mcode (case brc-value
-										    (0 3)
-										    (1 4)
-										    (2 6)
-										    (3 9)
-										    (4 15))))
-								    `(let ((v 0s0))
-								       (if (<= thidx ,th)
-										(if (< mcode ,th-mcode)
-										    (setf v (* symbol_sign mcode))
-										    (setf v (* symbol_sign
-											       (aref
-												,(format nil "table_b~a"
-													 brc-value)
-												thidx))))
-										(setf v (* symbol_sign
-											   (aref ,(format nil
-													  "table_nrl~a"
-													  brc-value)
-												 mcode)
-											   (aref table_sf thidx)))))))
-							       `(let ((v (* symbol_sign mcode)))
-								 "// in ie and io we don't have thidx yet"))
-							 
-							  (setf (aref ,sym-a ,sym)
-								v)))
-						      (incf ,sym)))
+					       ,(let ((th (case brc-value
+								    (0 3)
+								    (1 3)
+								    (2 5)
+								    (3 6)
+								    (4 8))))
+						  `(,@(if (member e `(ie io))
+							  `(do0)
+							  `(if (<= thidx ,th)))
+						      ,@(loop for thidx-choice in (if (member e `(ie io))
+										      `(thidx-unknown)
+										      `(simple normal)) collect
+							     `(do0
+							       (for ((= "int i" 0)
+								     (and (< i
+									     128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
+									     )
+									  (< ,sym
+									     number_of_quads
+									     ))
+								     (incf i))
+								    (let ((sign_bit (get_sequential_bit &s))
+									  (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
+									  (symbol_sign 1s0)
+									  )
+								      
+								      (when sign_bit
+									(setf symbol_sign -1s0))
+								      (do0
+								       #+nil (let ((bit s.current_bit_count)
+										   (byte (static_cast<int>
+											  (-  s.data
+											      (static_cast<uint8_t*> ,(g `_mmap_data))
+											      ))))
+									       ,(logprint "" `(v ,sym i byte bit
+												 block)))
+								       ,(if (member e `(qe qo))
+									    `(do0
+									      ,(format nil "// decode ~a p.75" e)
+									      ,(let ((th )
+										     (th-mcode (case brc-value
+												 (0 3)
+												 (1 4)
+												 (2 6)
+												 (3 9)
+												 (4 15))))
+										 `(let ((v 0s0))
+										    ,(case thidx-choice
+										       (simple
+											`(if (< mcode ,th-mcode)
+											    (setf v (* symbol_sign mcode))
+											    (setf v (* symbol_sign
+												       (aref
+													,(format nil "table_b~a"
+														 brc-value)
+													thidx)))))
+										       (normal
+											`(setf v (* symbol_sign
+												   (aref ,(format nil
+														  "table_nrl~a"
+														  brc-value)
+													 mcode)
+												   (aref table_sf thidx))))))))
+									    `(let ((v (* symbol_sign mcode)))
+									       "// in ie and io we don't have thidx yet"))
+								       
+								       (setf (aref ,sym-a ,sym)
+									     v)))
+								    (incf ,sym))))))
 					       break)))))
 			      (consume_padding_bits &s)))))))))))
        
