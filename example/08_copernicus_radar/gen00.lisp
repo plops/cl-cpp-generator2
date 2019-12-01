@@ -734,15 +734,18 @@
 				      (ie
 				       `(let ((brc (get_bit_rate_code &s)))
 					  (setf (aref brcs block) brc)))
+				      (io
+				       `(let ((brc (aref brcs block)))))
 				      (qe
 				       `(let ((thidx (get_threshold_index &s))
 					      (brc (aref brcs block)))
 					  (setf (aref thidxs block) thidx)))
-				      (t
-				       `(let ((brc (aref brcs block))))))
+				      (qo
+				       `(let ((brc (aref brcs block))
+					      (thidx (aref thidxs block))))))
 				   (case brc
 				    ,@(loop for brc-value below 5 collect
-					   `(,brc-value
+					   `(,(format nil "case ~a" brc-value)
 					      (progn
 					       #+nil (do0
 						      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
@@ -762,7 +765,9 @@
 						       (incf i))
 						      (let ((sign_bit (get_sequential_bit &s))
 							    (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
-							    (symbol_sign 1s0))
+							    (symbol_sign 1s0)
+							    (v 0s0))
+							(declare (type float v))
 							(when sign_bit
 							  (setf symbol_sign -1s0))
 							(do0
