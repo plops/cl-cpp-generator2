@@ -635,6 +635,20 @@
 		  `(let ((,table (curly ,@l)))
 		     (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
 
+	 (do0
+	  "// table 5.2-2 normalized reconstruction levels"
+	  ,@(loop for l in `((.3637 1.0915 1.8208 2.6406)
+			     (.3042  .9127 1.5216 2.1313 2.8426)
+			     (.2305  .6916 1.1528 1.6140 2.0754 2.5369 3.1191)
+			     (.1702  .5107  .8511 1.1916 1.5321 1.8726 2.2131 2.5536 2.8942 3.3744)
+			     (.1130  .3389  .5649  .7908 1.0167 1.2428 1.4687 1.6947 1.9206 2.1466 2.3725 2.5985
+				     2.8244 3.0504 3.2764 3.6623))
+	       and brc from 0 collect
+		 (let ((table (format nil "table_nrl~a" brc)))
+		  `(let ((,table (curly ,@l)))
+		     (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
+	 
+	 
 
 	 
 	 (defun init_decode_packet (packet_idx)
