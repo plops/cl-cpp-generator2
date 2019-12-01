@@ -702,12 +702,12 @@
 							       ))
 						       (incf i))
 						      (let ((sign_bit (get_sequential_bit &s))
-							    (symbol (decoder &s))
+							    (mcode (decoder &s))
 							    (symbol_sign 1s0))
 							(when sign_bit
 							  (setf symbol_sign -1s0))
-							(let ((v (* symbol_sign symbol)))
-							  #+nil (let ((bit s.current_bit_count)
+							(do0
+							 #+nil (let ((bit s.current_bit_count)
 								      (byte (static_cast<int>
 									     (-  s.data
 										 (static_cast<uint8_t*> ,(g `_mmap_data))
@@ -716,10 +716,35 @@
 										    block)))
 							  ,(if (member e `(qe qo))
 							       `(do0
-								 "// decode p.75"
-								 (let ((a 3)))
-								 )
-							       "// in ie and io we don't have thidx yet")
+								 ,(format nil "// decode ~a p.75" e)
+								 ,(let ((th (case brc-value
+									      (0 3)
+									      (1 3)
+									      (2 5)
+									      (3 6)
+									      (4 8)))
+									(th-mcode (case brc-value
+										    (0 3)
+										    (1 4)
+										    (2 6)
+										    (3 9)
+										    (4 15))))
+								   `(if (<= thidx ,th)
+									(if (< mcode ,th-mcode)
+									    (setf v (* symbol_sign mcode))
+									    (setf v (* symbol_sign
+										       (aref
+											,(format nil "table_b~a"
+												 brc-value)
+											thidx))))
+									(setf v (* symbol_sign
+										   (aref ,(format nil
+												  "table_nrl~a"
+												  brc-value)
+											 mcode)
+										   (aref table_sf thidx))))))
+							       `(let ((v (* symbol_sign mcode)))
+								 "// in ie and io we don't have thidx yet"))
 							 
 							  (setf (aref ,sym-a ,sym)
 								v)))
