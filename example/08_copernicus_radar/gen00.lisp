@@ -681,48 +681,50 @@
 					  (setf (aref thidxs block) thidx)))
 				      (t
 				       `(let ((brc (aref brcs block))))))
-				   ,@(loop for brc-value below 5 collect
-					  `(when (== ,brc-value brc)
-					     (do0
-					      #+nil (do0
-						     (unless (or ,@(loop for e in `(0 1 2 3 4) collect
-									`(== ,e brc)))
-						       ,(logprint "error: out of range" `(brc))
-						       (assert 0))
-						     ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
+				   (case brc
+				    ,@(loop for brc-value below 5 collect
+					   `(,brc-value
+					      (progn
+					       #+nil (do0
+						      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+									 `(== ,e brc)))
+							,(logprint "error: out of range" `(brc))
+							(assert 0))
+						      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
 					      
-					      (let ((decoder (aref decoder_jump_table brc)))
-						(for ((= "int i" 0)
-						      (and (< i
-							      128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
-							      )
-							   (< ,sym
-							      number_of_quads
-							      ))
-						      (incf i))
-						     (let ((sign_bit (get_sequential_bit &s))
-							   (symbol (decoder &s))
-							   (symbol_sign 1s0))
-						       (when sign_bit
-							 (setf symbol_sign -1s0))
-						       (let ((v (* symbol_sign symbol)))
-							 #+nil (let ((bit s.current_bit_count)
-								     (byte (static_cast<int>
-									    (-  s.data
-										(static_cast<uint8_t*> ,(g `_mmap_data))
-										))))
-								 ,(logprint "" `(v ,sym i byte bit
-										   block)))
-							 ,(if (member e `(qe qo))
-							      (do0
-							       "// decode p.75"
-							       
+					       (let ((decoder (aref decoder_jump_table brc)))
+						 (for ((= "int i" 0)
+						       (and (< i
+							       128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
 							       )
-							      "// in ie and io we don't have thidx yet")
+							    (< ,sym
+							       number_of_quads
+							       ))
+						       (incf i))
+						      (let ((sign_bit (get_sequential_bit &s))
+							    (symbol (decoder &s))
+							    (symbol_sign 1s0))
+							(when sign_bit
+							  (setf symbol_sign -1s0))
+							(let ((v (* symbol_sign symbol)))
+							  #+nil (let ((bit s.current_bit_count)
+								      (byte (static_cast<int>
+									     (-  s.data
+										 (static_cast<uint8_t*> ,(g `_mmap_data))
+										 ))))
+								  ,(logprint "" `(v ,sym i byte bit
+										    block)))
+							  ,(if (member e `(qe qo))
+							       `(do0
+								 "// decode p.75"
+								 (let ((a 3)))
+								 )
+							       "// in ie and io we don't have thidx yet")
 							 
-							 (setf (aref ,sym-a ,sym)
-							       v)))
-						     (incf ,sym)))))))
+							  (setf (aref ,sym-a ,sym)
+								v)))
+						      (incf ,sym)))
+					       break)))))
 			      (consume_padding_bits &s)))))))))))
        
   (progn

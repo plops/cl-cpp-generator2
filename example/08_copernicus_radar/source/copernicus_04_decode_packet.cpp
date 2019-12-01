@@ -239,19 +239,93 @@ void init_decode_packet(int packet_idx) {
   for (int block = 0; decoded_ie_symbols < number_of_quads; (block)++) {
     auto brc = get_bit_rate_code(&s);
     brcs[block] = brc;
-    auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
-         (i)++) {
-      auto sign_bit = get_sequential_bit(&s);
-      auto symbol = decoder(&s);
-      auto symbol_sign = (1.e+0f);
-      if (sign_bit) {
-        symbol_sign = (-1.e+0f);
-      };
-      auto v = ((symbol_sign) * (symbol));
-      decoded_ie_symbols_a[decoded_ie_symbols] = v;
-      (decoded_ie_symbols)++;
-    };
+    switch (brc) {
+      0 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
+        };
+        break;
+      }
+      1 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
+        };
+        break;
+      }
+      2 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
+        };
+        break;
+      }
+      3 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
+        };
+        break;
+      }
+      4 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
+        };
+        break;
+      }
+    }
   }
   consume_padding_bits(&s);
   auto decoded_io_symbols = 0;
@@ -259,19 +333,93 @@ void init_decode_packet(int packet_idx) {
   // parse io data
   for (int block = 0; decoded_io_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];
-    auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
-         (i)++) {
-      auto sign_bit = get_sequential_bit(&s);
-      auto symbol = decoder(&s);
-      auto symbol_sign = (1.e+0f);
-      if (sign_bit) {
-        symbol_sign = (-1.e+0f);
-      };
-      auto v = ((symbol_sign) * (symbol));
-      decoded_io_symbols_a[decoded_io_symbols] = v;
-      (decoded_io_symbols)++;
-    };
+    switch (brc) {
+      0 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
+        };
+        break;
+      }
+      1 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
+        };
+        break;
+      }
+      2 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
+        };
+        break;
+      }
+      3 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
+        };
+        break;
+      }
+      4 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // in ie and io we don't have thidx yet
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
+        };
+        break;
+      }
+    }
   }
   consume_padding_bits(&s);
   auto decoded_qe_symbols = 0;
@@ -281,19 +429,98 @@ void init_decode_packet(int packet_idx) {
     auto thidx = get_threshold_index(&s);
     auto brc = brcs[block];
     thidxs[block] = thidx;
-    auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
-         (i)++) {
-      auto sign_bit = get_sequential_bit(&s);
-      auto symbol = decoder(&s);
-      auto symbol_sign = (1.e+0f);
-      if (sign_bit) {
-        symbol_sign = (-1.e+0f);
-      };
-      auto v = ((symbol_sign) * (symbol));
-      decoded_qe_symbols_a[decoded_qe_symbols] = v;
-      (decoded_qe_symbols)++;
-    };
+    switch (brc) {
+      0 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qe_symbols_a[decoded_qe_symbols] = v;
+          (decoded_qe_symbols)++;
+        };
+        break;
+      }
+      1 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qe_symbols_a[decoded_qe_symbols] = v;
+          (decoded_qe_symbols)++;
+        };
+        break;
+      }
+      2 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qe_symbols_a[decoded_qe_symbols] = v;
+          (decoded_qe_symbols)++;
+        };
+        break;
+      }
+      3 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qe_symbols_a[decoded_qe_symbols] = v;
+          (decoded_qe_symbols)++;
+        };
+        break;
+      }
+      4 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qe_symbols_a[decoded_qe_symbols] = v;
+          (decoded_qe_symbols)++;
+        };
+        break;
+      }
+    }
   }
   consume_padding_bits(&s);
   auto decoded_qo_symbols = 0;
@@ -301,19 +528,98 @@ void init_decode_packet(int packet_idx) {
   // parse qo data
   for (int block = 0; decoded_qo_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];
-    auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
-         (i)++) {
-      auto sign_bit = get_sequential_bit(&s);
-      auto symbol = decoder(&s);
-      auto symbol_sign = (1.e+0f);
-      if (sign_bit) {
-        symbol_sign = (-1.e+0f);
-      };
-      auto v = ((symbol_sign) * (symbol));
-      decoded_qo_symbols_a[decoded_qo_symbols] = v;
-      (decoded_qo_symbols)++;
-    };
+    switch (brc) {
+      0 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qo_symbols_a[decoded_qo_symbols] = v;
+          (decoded_qo_symbols)++;
+        };
+        break;
+      }
+      1 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qo_symbols_a[decoded_qo_symbols] = v;
+          (decoded_qo_symbols)++;
+        };
+        break;
+      }
+      2 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qo_symbols_a[decoded_qo_symbols] = v;
+          (decoded_qo_symbols)++;
+        };
+        break;
+      }
+      3 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qo_symbols_a[decoded_qo_symbols] = v;
+          (decoded_qo_symbols)++;
+        };
+        break;
+      }
+      4 : {
+        auto decoder = decoder_jump_table[brc];
+        for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto symbol = decoder(&s);
+          auto symbol_sign = (1.e+0f);
+          if (sign_bit) {
+            symbol_sign = (-1.e+0f);
+          };
+          auto v = ((symbol_sign) * (symbol));
+          // decode p.75
+          auto a = 3;
+          decoded_qo_symbols_a[decoded_qo_symbols] = v;
+          (decoded_qo_symbols)++;
+        };
+        break;
+      }
+    }
   }
   consume_padding_bits(&s);
 };
