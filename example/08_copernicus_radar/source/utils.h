@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+#include <complex>
 struct sequential_bit_t {
   size_t current_bit_count;
   uint8_t *data;

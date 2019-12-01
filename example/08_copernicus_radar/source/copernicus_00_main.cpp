@@ -16,8 +16,7 @@ int main() {
       "s1a-ew-raw-s-hv-20191130t152915-20191130t153018-030142-0371ab.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
-  init_decode_packet(0);
-  init_decode_packet(1);
-  init_decode_packet(2);
+  std::array<std::complex<float>, 65535> output;
+  auto n = init_decode_packet(0, output);
   destroy_mmap();
 };

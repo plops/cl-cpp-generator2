@@ -305,7 +305,8 @@
       `(main ((_filename :direction 'out :type "char const *"))
 	     (do0
 	      (include <iostream>
-		       <chrono>)
+		       <chrono>
+		       )
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
 	      
@@ -322,10 +323,12 @@
 			      )) 
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
-		;(init_process_packet_headers)
-		(init_decode_packet 0)
-		(init_decode_packet 1)
-		(init_decode_packet 2)
+					;(init_process_packet_headers)
+		(let ((output)
+		      (n (init_decode_packet 0 output)))
+		  (declare (type "std::array<std::complex<float>,65535>" output)))
+		;(init_decode_packet 1)
+		;(init_decode_packet 2)
 		(destroy_mmap)
 		))))
   (define-module
@@ -527,12 +530,14 @@
 	  (include <cassert>
 		   <cmath>)
 	  ,(emit-utils :code
-		       `(defstruct0 sequential_bit_t
+		       `(do0
+			 (include <complex>)
+			 (defstruct0 sequential_bit_t
 					;(user_data_position size_t)
-			  (current_bit_count size_t)
+			     (current_bit_count size_t)
 					;(current_byte size_t)
-			  (data uint8_t*)
-			  ))
+			   (data uint8_t*)
+			   )))
 	  #+nil (defun reverse_bit (b)
 	    (declare (type uint8_t b)
 		     (values uint8_t))
@@ -686,8 +691,10 @@
 
 
 	 
-	 (defun init_decode_packet (packet_idx)
-	   (declare (type int packet_idx))
+	 (defun init_decode_packet (packet_idx output)
+	   (declare (type int packet_idx)
+		    (type "std::array<std::complex<float>,65535>&" output)
+		    (values int))
 	   (let ((header (dot (aref ,(g `_header_data) packet_idx)
 			      (data)))
 		 (offset (aref ,(g `_header_offset) packet_idx))
@@ -885,7 +892,17 @@
 					  break))))
 			   ))))
 
-	       ))))))
+	       (dotimes (i decoded_ie_symbols)
+		   (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
+			(dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
+		   (do0 (dot (aref output (+ 1 (* 2 i))) (real (aref decoded_io_symbols_a i)))
+			(dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
+	       
+	       (let ((n (+ decoded_ie_symbols
+			   decoded_io_symbols)))
+		 (return n)
+
+		 )))))))
        
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2

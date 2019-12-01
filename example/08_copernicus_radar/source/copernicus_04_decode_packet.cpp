@@ -308,7 +308,8 @@ const std::array<float, 256> table_sf = {
     (2.4346e+2f),     (2.4471001e+2f),  (2.4597e+2f),     (2.4722e+2f),
     (2.4847001e+2f),  (2.4972999e+2f),  (2.5098e+2f),     (2.5223e+2f),
     (2.5349e+2f),     (2.5474e+2f),     (2.5599e+2f),     (2.5599e+2f)};
-void init_decode_packet(int packet_idx) {
+int init_decode_packet(int packet_idx,
+                       std::array<std::complex<float>, 65535> &output) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
   auto number_of_quads =
@@ -1224,5 +1225,13 @@ void init_decode_packet(int packet_idx) {
       break;
     }
     };
-  };
+  }
+  for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+    output[((2) * (i))].real(decoded_ie_symbols_a[i]);
+    output[((2) * (i))].imag(decoded_qe_symbols_a[i]);
+    output[((1) + (((2) * (i))))].real(decoded_io_symbols_a[i]);
+    output[((1) + (((2) * (i))))].imag(decoded_qo_symbols_a[i]);
+  }
+  auto n = ((decoded_ie_symbols) + (decoded_io_symbols));
+  return n;
 };
