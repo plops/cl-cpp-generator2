@@ -626,6 +626,9 @@
 		 (offset (aref ,(g `_header_offset) packet_idx))
 		 (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
 		 (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
+		 
+		 (number_of_baq_blocks (+ 1 (/ (* 2 number_of_quads)
+					     256)))
 		 (brcs)
 		 (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
@@ -636,61 +639,67 @@
 		      (type ,(format nil "std::array<uint8_t,~d>"
 				     (round (/ 65536 256)))
 			    brcs))
-	     ;(brcs.reserve number_of_baq_blocks)
-	     (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
-				`(== ,e baq_mode))))
-	     ,(logprint "" `(packet_idx baq_mode baq_block_length))
+	     #+nil (do0
+	      (assert (<= number_of_baq_blocks 256))
+	      (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
+				 `(== ,e baq_mode))))
+	      ,(logprint "" `(packet_idx baq_mode baq_block_length)))
 	     (let ((decoded_symbols 0)
-		   (number_of_baq_blocks (+ 1 (/ (* 2 number_of_quads)
-					     256)))
+		   
 		   (s)
 		   (decoded_symbols_a))
 	       (declare (type sequential_bit_t s)
 			(type "std::array<float,65535>" decoded_symbols_a))
 	       (init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
 							   62 6))
-	       (for ((= "int block" 0)
-		     (< decoded_symbols number_of_quads)
-		     (incf block))
-		    (let ((brc (get_bit_rate_code &s)))
-		      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
-					 `(== ,e brc)))
-			,(logprint "error: out of range" `(brc))
-			(assert 0))
-		      ,(logprint "" `(brc block number_of_baq_blocks))
-
-		      (let ((decoder (aref decoder_jump_table brc)))
-		       (for ((= "int i" 0)
-			     (and (< i
-				     128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
+	       ,@(loop for e in `(ie io ;qe qo
 				     )
-				  (< decoded_symbols
-				     number_of_quads
-				     ))
-			     (incf i))
-			    (let ((sign_bit (get_sequential_bit &s))
-				  (symbol (decoder &s))
-				  (symbol_sign 1s0))
-			      (when sign_bit
-				(setf symbol_sign -1s0))
-			      (let ((v (* symbol_sign symbol)))
-				#+nil (let ((bit s.current_bit_count)
-				      (byte (static_cast<int>
-					     (-  s.data
-						 (static_cast<uint8_t*> ,(g `_mmap_data))
-						 ))))
-				  ,(logprint "" `(v decoded_symbols i byte bit
-						    block)))
-			       (setf (aref decoded_symbols_a decoded_symbols)
-				     v)))
-			    (incf decoded_symbols)))))
-
-	       (consume_padding_bits &s)
-	       ))
-	   ))))
-     
-   
-  
+		    collect
+		      `(do0
+			,(format nil "// parse ~a data" e)
+			(for ((= "int block" 0)
+			      (< decoded_symbols number_of_quads)
+			      (incf block))
+			     ,(case e
+				(ie
+				 `(let ((brc (get_bit_rate_code &s)))
+				    (setf (aref brcs block) brc)))
+				(t
+				 `(let ((brc (aref brcs block))))))
+			     #+nil(do0
+				   (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+						      `(== ,e brc)))
+				     ,(logprint "error: out of range" `(brc))
+				     (assert 0))
+				   ,(logprint "" `(brc block number_of_baq_blocks)))
+			    
+			     (let ((decoder (aref decoder_jump_table brc)))
+			       (for ((= "int i" 0)
+				     (and (< i
+					     128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
+					     )
+					  (< decoded_symbols
+					     number_of_quads
+					     ))
+				     (incf i))
+				    (let ((sign_bit (get_sequential_bit &s))
+					  (symbol (decoder &s))
+					  (symbol_sign 1s0))
+				      (when sign_bit
+					(setf symbol_sign -1s0))
+				      (let ((v (* symbol_sign symbol)))
+					#+nil (let ((bit s.current_bit_count)
+						    (byte (static_cast<int>
+							   (-  s.data
+							       (static_cast<uint8_t*> ,(g `_mmap_data))
+							       ))))
+						,(logprint "" `(v decoded_symbols i byte bit
+								  block)))
+					(setf (aref decoded_symbols_a decoded_symbols)
+					      v)))
+				    (incf decoded_symbols))))
+			(consume_padding_bits &s)))))))))
+       
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
