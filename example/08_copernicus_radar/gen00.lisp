@@ -562,13 +562,15 @@
 		    (values "inline int"))
 	   "// note: evaluation order is crucial"
 	   (return (+ ,@(loop for j below 3 collect
-			     `(* (hex ,(expt 2 (- 2 j)))
+			     `(* (hex ,(expt 2 (- 2 j)
+					     ))
 				 (get_sequential_bit s))))))
 	 (defun consume_padding_bits (s)
 	   (declare (type sequential_bit_t* s)
 		    (values "inline void"))
 	   (let ((pad (- 16
 			 (% s->current_bit_count 16))))
+	     ,(logprint "" `(pad))
 	     (dotimes (i pad)
 	       (assert (== 0
 			(get_sequential_bit s))))))
@@ -616,8 +618,10 @@
 		     (< decoded_symbols number_of_quads)
 		     ())
 		    (let ((brc (get_bit_rate_code &s)))
-		      (assert (or ,@(loop for e in `(0 1 2 3 4) collect
-				`(== ,e brc))))
+		      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+					 `(== ,e brc)))
+			,(logprint "error: out of range" `(brc))
+			(assert 0))
 		      ,(logprint "" `(brc))
 
 		      (let ((decoder (aref decoder_jump_table brc)))
@@ -632,8 +636,15 @@
 				  (symbol (decoder &s)))
 			      (when (get_sequential_bit &s)
 				(setf symbol_sign -1s0))
-			      (setf (aref decoded_symbols_a decoded_symbols)
-				    (* symbol_sign symbol)))
+			      (let ((v (* symbol_sign symbol)))
+				(let ((bit s.current_bit_count)
+				      (byte (static_cast<int>
+						    (- (static_cast<uint8_t*> ,(g `_mmap_data))
+						       s.data))))
+				  ,(logprint "" `(v byte bit
+						    )))
+			       (setf (aref decoded_symbols_a decoded_symbols)
+				     v)))
 			    (incf decoded_symbols)))))
 
 	       (consume_padding_bits &s)
