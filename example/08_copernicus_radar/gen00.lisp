@@ -602,6 +602,7 @@
 	   (declare (type sequential_bit_t* s)
 		    (values "inline float"))
 	   (return 0s0))
+	 
 
 
 	 
@@ -648,9 +649,10 @@
 				  (< decoded_symbols
 				     number_of_quads))
 			     (incf i))
-			    (let ((symbol_sign 1s0)
-				  (symbol (decoder &s)))
-			      (when (get_sequential_bit &s)
+			    (let ((sign_bit (get_sequential_bit &s))
+				  (symbol (decoder &s))
+				  (symbol_sign 1s0))
+			      (when sign_bit
 				(setf symbol_sign -1s0))
 			      (let ((v (* symbol_sign symbol)))
 				(let ((bit s.current_bit_count)

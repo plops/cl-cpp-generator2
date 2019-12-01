@@ -265,9 +265,10 @@ void init_decode_packet(int packet_idx) {
                 << (" brc=") << (brc) << (std::endl);
     auto decoder = decoder_jump_table[brc];
     for (int i = 0; ((i < 128) && (decoded_symbols < number_of_quads)); (i)++) {
-      auto symbol_sign = (1.e+0f);
+      auto sign_bit = get_sequential_bit(&s);
       auto symbol = decoder(&s);
-      if (get_sequential_bit(&s)) {
+      auto symbol_sign = (1.e+0f);
+      if (sign_bit) {
         symbol_sign = (-1.e+0f);
       };
       auto v = ((symbol_sign) * (symbol));
