@@ -219,17 +219,42 @@ void init_decode_packet(int packet_idx) {
   int (*decoder_jump_table[5])(sequential_bit_t *) = {
       decode_huffman_brc0, decode_huffman_brc1, decode_huffman_brc2,
       decode_huffman_brc3, decode_huffman_brc4};
-  auto decoded_symbols = 0;
   sequential_bit_t s;
-  std::array<float, 65535> decoded_symbols_a;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
+  auto decoded_ie_symbols = 0;
+  std::array<float, 65535> decoded_ie_symbols_a;
   // parse ie data
-  for (int block = 0; decoded_symbols < number_of_quads; (block)++) {
+  for (int block = 0; decoded_ie_symbols < number_of_quads; (block)++) {
     auto brc = get_bit_rate_code(&s);
     brcs[block] = brc;
+    if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+           ((3) == (brc)) || ((4) == (brc))))) {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error: out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      assert(0);
+    };
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
+                << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                << (number_of_baq_blocks) << (std::endl);
     auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_symbols < number_of_quads)); (i)++) {
+    for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
+         (i)++) {
       auto sign_bit = get_sequential_bit(&s);
       auto symbol = decoder(&s);
       auto symbol_sign = (1.e+0f);
@@ -237,16 +262,43 @@ void init_decode_packet(int packet_idx) {
         symbol_sign = (-1.e+0f);
       };
       auto v = ((symbol_sign) * (symbol));
-      decoded_symbols_a[decoded_symbols] = v;
-      (decoded_symbols)++;
+      decoded_ie_symbols_a[decoded_ie_symbols] = v;
+      (decoded_ie_symbols)++;
     };
   }
   consume_padding_bits(&s);
+  auto decoded_io_symbols = 0;
+  std::array<float, 65535> decoded_io_symbols_a;
   // parse io data
-  for (int block = 0; decoded_symbols < number_of_quads; (block)++) {
+  for (int block = 0; decoded_io_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];
+    if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+           ((3) == (brc)) || ((4) == (brc))))) {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error: out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      assert(0);
+    };
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
+                << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                << (number_of_baq_blocks) << (std::endl);
     auto decoder = decoder_jump_table[brc];
-    for (int i = 0; ((i < 128) && (decoded_symbols < number_of_quads)); (i)++) {
+    for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
+         (i)++) {
       auto sign_bit = get_sequential_bit(&s);
       auto symbol = decoder(&s);
       auto symbol_sign = (1.e+0f);
@@ -254,8 +306,8 @@ void init_decode_packet(int packet_idx) {
         symbol_sign = (-1.e+0f);
       };
       auto v = ((symbol_sign) * (symbol));
-      decoded_symbols_a[decoded_symbols] = v;
-      (decoded_symbols)++;
+      decoded_io_symbols_a[decoded_io_symbols] = v;
+      (decoded_io_symbols)++;
     };
   }
   consume_padding_bits(&s);
