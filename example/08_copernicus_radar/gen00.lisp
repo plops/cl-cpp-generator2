@@ -616,7 +616,7 @@
 							   62 6))
 	       (for ((= "int block" 0)
 		     (< decoded_symbols number_of_quads)
-		     ())
+		     (incf block))
 		    (let ((brc (get_bit_rate_code &s)))
 		      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 					 `(== ,e brc)))
@@ -627,7 +627,7 @@
 		      (let ((decoder (aref decoder_jump_table brc)))
 		       (for ((= "int i" 0)
 			     (and (< i
-				     (/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
+				     128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
 				     )
 				  (< decoded_symbols
 				     number_of_quads))
@@ -639,10 +639,11 @@
 			      (let ((v (* symbol_sign symbol)))
 				(let ((bit s.current_bit_count)
 				      (byte (static_cast<int>
-						    (- (static_cast<uint8_t*> ,(g `_mmap_data))
-						       s.data))))
-				  ,(logprint "" `(v byte bit
-						    )))
+					     (-  s.data
+						 (static_cast<uint8_t*> ,(g `_mmap_data))
+						 ))))
+				  ,(logprint "" `(v decoded_symbols i byte bit
+						    block)))
 			       (setf (aref decoded_symbols_a decoded_symbols)
 				     v)))
 			    (incf decoded_symbols)))))
