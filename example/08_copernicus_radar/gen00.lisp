@@ -635,6 +635,7 @@
 			      (setf (aref decoded_symbols_a decoded_symbols)
 				    (* symbol_sign symbol)))
 			    (incf decoded_symbols)))))
+
 	       (consume_padding_bits &s)
 	       ))
 	   ))))
