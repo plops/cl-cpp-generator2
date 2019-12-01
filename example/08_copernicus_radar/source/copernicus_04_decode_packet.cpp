@@ -334,7 +334,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -351,7 +350,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -368,7 +366,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -385,7 +382,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -402,7 +398,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -428,7 +423,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -445,7 +439,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -462,7 +455,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -479,7 +471,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -496,7 +487,6 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
@@ -524,11 +514,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qe p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (3)) {
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
@@ -549,11 +539,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qe p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (3)) {
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
@@ -574,11 +564,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qe p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (5)) {
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
@@ -599,11 +589,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qe p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (6)) {
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
@@ -624,11 +614,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qe p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (8)) {
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
@@ -659,11 +649,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qo p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (3)) {
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
@@ -684,11 +674,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qo p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (3)) {
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
@@ -709,11 +699,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qo p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (5)) {
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
@@ -734,11 +724,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qo p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (6)) {
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
@@ -759,11 +749,11 @@ void init_decode_packet(int packet_idx) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
         auto symbol_sign = (1.e+0f);
-        float v = (0.0e+0f);
         if (sign_bit) {
           symbol_sign = (-1.e+0f);
         };
         // decode qo p.75
+        auto v = (0.0e+0f);
         if ((thidx) <= (8)) {
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));

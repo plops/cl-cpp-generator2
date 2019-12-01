@@ -766,8 +766,8 @@
 						      (let ((sign_bit (get_sequential_bit &s))
 							    (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
 							    (symbol_sign 1s0)
-							    (v 0s0))
-							(declare (type float v))
+							    )
+							
 							(when sign_bit
 							  (setf symbol_sign -1s0))
 							(do0
@@ -793,20 +793,21 @@
 										    (2 6)
 										    (3 9)
 										    (4 15))))
-								   `(if (<= thidx ,th)
-									(if (< mcode ,th-mcode)
-									    (setf v (* symbol_sign mcode))
-									    (setf v (* symbol_sign
-										       (aref
-											,(format nil "table_b~a"
-												 brc-value)
-											thidx))))
-									(setf v (* symbol_sign
-										   (aref ,(format nil
-												  "table_nrl~a"
-												  brc-value)
-											 mcode)
-										   (aref table_sf thidx))))))
+								    `(let ((v 0s0))
+								       (if (<= thidx ,th)
+										(if (< mcode ,th-mcode)
+										    (setf v (* symbol_sign mcode))
+										    (setf v (* symbol_sign
+											       (aref
+												,(format nil "table_b~a"
+													 brc-value)
+												thidx))))
+										(setf v (* symbol_sign
+											   (aref ,(format nil
+													  "table_nrl~a"
+													  brc-value)
+												 mcode)
+											   (aref table_sf thidx)))))))
 							       `(let ((v (* symbol_sign mcode)))
 								 "// in ie and io we don't have thidx yet"))
 							 
