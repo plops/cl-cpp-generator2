@@ -664,8 +664,7 @@
 			)
 	       (init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
 							   62 6))
-	       ,@(loop for e in `(ie io qe ;qo
-				     )
+	       ,@(loop for e in `(ie io qe qo)
 		    collect
 		      (let ((sym (format nil "decoded_~a_symbols" e))
 			    (sym-a (format nil "decoded_~a_symbols_a" e)))
@@ -688,12 +687,12 @@
 				   (t
 				    `(let ((brc (aref brcs block))))))
 				
-				#+nil(do0
+				#-nil(do0
 				      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 							 `(== ,e brc)))
 					,(logprint "error: out of range" `(brc))
 					(assert 0))
-				      ,(logprint "" `(brc block number_of_baq_blocks)))
+				      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
 			    
 				(let ((decoder (aref decoder_jump_table brc)))
 				  (for ((= "int i" 0)
