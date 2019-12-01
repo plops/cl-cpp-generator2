@@ -562,13 +562,28 @@
 	   (declare (type sequential_bit_t* s)
 		    (values "inline int"))
 	   "// note: evaluation order is crucial"
+	   #+nil(let ((a (get_sequential_bit s))
+		 (b (get_sequential_bit s))
+		 (c (get_sequential_bit s)))
+	     
+		  
+		  )
+	   #+nil (<<
+	    "std::cout"
+	    ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
+			     bits)))
+		 (loop for j from (1- bits) downto 0 collect
+		      `(static_cast<int> (logand 1 (>> v ,j)))))
+	       "std::endl")
+	   
 	   (return (+ ,@(loop for j below 3 collect
-			     `(* (hex ,(expt 2 (- 2 j)
-					     ))
+			     `(* (hex ,(expt 2 (- 2 j)))
 				 (get_sequential_bit s))))))
 	 (defun consume_padding_bits (s)
 	   (declare (type sequential_bit_t* s)
 		    (values "inline void"))
+	   ;; fixme: mod on current_bit_count is not working
+	   ;; check for odd/even byte instead
 	   (let ((pad (- 16
 			 (% s->current_bit_count 16))))
 	     ,(logprint "" `(pad))
