@@ -522,7 +522,8 @@
 	()
 	(do0
 	 (do0
-	  (include <cassert>)
+	  (include <cassert>
+		   <cmath>)
 	  ,(emit-utils :code
 		       `(defstruct0 sequential_bit_t
 					;(user_data_position size_t)
@@ -792,8 +793,7 @@
 								       ,(if (member e `(qe qo))
 									    `(do0
 									      ,(format nil "// decode ~a p.75" e)
-									      ,(let ((th )
-										     (th-mcode (case brc-value
+									      ,(let ((th-mcode (case brc-value
 												 (0 3)
 												 (1 4)
 												 (2 6)
@@ -817,13 +817,71 @@
 													 mcode)
 												   (aref table_sf thidx))))))))
 									    `(let ((v (* symbol_sign mcode)))
-									       "// in ie and io we don't have thidx yet"))
+									       "// in ie and io we don't have thidx yet, will be processed later"))
 								       
 								       (setf (aref ,sym-a ,sym)
 									     v)))
 								    (incf ,sym))))))
 					       break)))))
-			      (consume_padding_bits &s)))))))))))
+			      (consume_padding_bits &s)))))
+	       (dotimes (block number_of_baq_blocks)
+		,@(loop for e in `(ie io) collect
+		       (let ((sym (format nil "decoded_~a_symbols" e))
+			     (sym-a (format nil "decoded_~a_symbols_a" e)))
+			 `(let ((brc (aref brcs block))
+				(thidx (aref thidxs block)))
+			    (case brc
+			      ,@(loop for brc-value below 5 collect
+				     `(,(format nil "case ~a" brc-value)
+					(progn
+					  #+nil (do0
+						 (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+								    `(== ,e brc)))
+						   ,(logprint "error: out of range" `(brc)) 
+						   (assert 0))
+						 ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
+					  ,(let ((th (case brc-value
+						       (0 3)
+						       (1 3)
+						       (2 5)
+						       (3 6)
+						       (4 8))))
+					     `(if (<= thidx ,th)
+						  ,@(loop for thidx-choice in `(simple normal) collect
+							 `(do0
+							   (dotimes (i ,sym)
+							     (let ((scode (aref ,sym-a i))
+								   (mcode (static_cast<int> (fabsf scode)))
+								   (symbol_sign (/ scode mcode)))
+							       (do0
+								,(format nil "// decode ~a p.75" e)
+								,(let ((th-mcode (case brc-value
+										   (0 3)
+										   (1 4)
+										   (2 6)
+										   (3 9)
+										   (4 15))))
+								   `(let ((v 0s0))
+								      ,(case thidx-choice
+									 (simple
+									  `(if (< mcode ,th-mcode)
+									       (setf v (* symbol_sign mcode))
+									       (setf v (* symbol_sign
+											  (aref
+											   ,(format nil "table_b~a"
+												    brc-value)
+											   thidx)))))
+									 (normal
+									  `(setf v (* symbol_sign
+										      (aref ,(format nil
+												     "table_nrl~a"
+												     brc-value)
+											    mcode)
+										      (aref table_sf thidx))))))))))))))
+					  break)))))
+			 )))
+
+	       ))))))
        
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2

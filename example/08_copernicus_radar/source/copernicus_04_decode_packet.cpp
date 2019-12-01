@@ -7,6 +7,7 @@
 ;
 extern State state;
 #include <cassert>
+#include <cmath>
 
 void init_sequential_bit_function(sequential_bit_t *seq_state,
                                   size_t byte_pos) {
@@ -338,7 +339,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
@@ -354,7 +355,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
@@ -370,7 +371,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
@@ -386,7 +387,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
@@ -402,7 +403,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
@@ -427,7 +428,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
@@ -443,7 +444,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
@@ -459,7 +460,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
@@ -475,7 +476,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
@@ -491,7 +492,7 @@ void init_decode_packet(int packet_idx) {
           symbol_sign = (-1.e+0f);
         };
         auto v = ((symbol_sign) * (mcode));
-        // in ie and io we don't have thidx yet;
+        // in ie and io we don't have thidx yet, will be processed later;
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
@@ -901,4 +902,274 @@ void init_decode_packet(int packet_idx) {
     }
   }
   consume_padding_bits(&s);
+  for (int block = 0; block < number_of_baq_blocks; (block) += (1)) {
+    auto brc = brcs[block];
+    auto thidx = thidxs[block];
+    switch (brc) {
+    case 0: {
+      if ((thidx) <= (3)) {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          if (mcode < 3) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b0[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 1: {
+      if ((thidx) <= (3)) {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          if (mcode < 4) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b1[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 2: {
+      if ((thidx) <= (5)) {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          if (mcode < 6) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b2[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 3: {
+      if ((thidx) <= (6)) {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          if (mcode < 9) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b3[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 4: {
+      if ((thidx) <= (8)) {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          if (mcode < 15) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b4[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+          auto scode = decoded_ie_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode ie p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    };
+    auto brc = brcs[block];
+    auto thidx = thidxs[block];
+    switch (brc) {
+    case 0: {
+      if ((thidx) <= (3)) {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          if (mcode < 3) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b0[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 1: {
+      if ((thidx) <= (3)) {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          if (mcode < 4) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b1[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 2: {
+      if ((thidx) <= (5)) {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          if (mcode < 6) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b2[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 3: {
+      if ((thidx) <= (6)) {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          if (mcode < 9) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b3[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    case 4: {
+      if ((thidx) <= (8)) {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          if (mcode < 15) {
+            v = ((symbol_sign) * (mcode));
+          } else {
+            v = ((symbol_sign) * (table_b4[thidx]));
+          };
+        };
+      } else {
+        for (int i = 0; i < decoded_io_symbols; (i) += (1)) {
+          auto scode = decoded_io_symbols_a[i];
+          auto mcode = static_cast<int>(fabsf(scode));
+          auto symbol_sign = ((scode) / (mcode));
+          // decode io p.75
+          auto v = (0.0e+0f);
+          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+        };
+      }
+      break;
+    }
+    };
+  };
 };
