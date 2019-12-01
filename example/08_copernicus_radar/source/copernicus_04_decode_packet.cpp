@@ -216,6 +216,15 @@ inline int decode_huffman_brc4(sequential_bit_t *s) {
     }
   }
 }
+// table 5.2-1 simple reconstruction parameter values B
+const std::array<float, 4> table_b0 = {3, 3, (3.16e+0f), (3.53e+0f)};
+const std::array<float, 4> table_b1 = {4, 4, (4.08e+0f), (4.3699998e+0f)};
+const std::array<float, 6> table_b2 = {6,          6,         6,
+                                       (6.15e+0f), (6.5e+0f), (6.88e+0f)};
+const std::array<float, 7> table_b3 = {9,          9,         9,         9,
+                                       (9.36e+0f), (9.5e+0f), (1.01e+1f)};
+const std::array<float, 9> table_b4 = {
+    15, 15, 15, 15, 15, 15, (1.522e+1f), (1.55e+1f), (1.6049999e+1f)};
 void init_decode_packet(int packet_idx) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
