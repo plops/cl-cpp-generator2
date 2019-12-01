@@ -31,18 +31,16 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
           (((0x1) * (get_sequential_bit(s)))));
 }
 inline void consume_padding_bits(sequential_bit_t *s) {
-  auto pad = ((16) - (s->current_bit_count % 16));
-  std::setprecision(3);
-  (std::cout) << (std::setw(10))
-              << (((std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count()) -
-                   (state._start_time)))
-              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-              << (" pad=") << (pad) << (std::endl);
-  for (int i = 0; i < pad; (i) += (1)) {
-    assert((0) == (get_sequential_bit(s)));
+  auto byte_offset = static_cast<int>(
+      ((s->data) - (static_cast<uint8_t *>(state._mmap_data))));
+  // make sure we are at first bit of an even byte in the next read
+  s->current_bit_count = 0;
+  if ((0) == (byte_offset % 2)) {
+    // we are in an even byte
+    (s->data) += (2);
+  } else {
+    // we are in an odd byte
+    (s->data) += (1);
   };
 }
 inline int decode_huffman_brc0(sequential_bit_t *s) {
@@ -262,7 +260,9 @@ void init_decode_packet(int packet_idx) {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                << (" brc=") << (brc) << (std::endl);
+                << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                << (number_of_baq_blocks) << (std::endl);
     auto decoder = decoder_jump_table[brc];
     for (int i = 0; ((i < 128) && (decoded_symbols < number_of_quads)); (i)++) {
       auto sign_bit = get_sequential_bit(&s);
@@ -272,22 +272,6 @@ void init_decode_packet(int packet_idx) {
         symbol_sign = (-1.e+0f);
       };
       auto v = ((symbol_sign) * (symbol));
-      auto bit = s.current_bit_count;
-      auto byte = static_cast<int>(
-          ((s.data) - (static_cast<uint8_t *>(state._mmap_data))));
-      std::setprecision(3);
-      (std::cout) << (std::setw(10))
-                  << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (state._start_time)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
-                  << (" v=") << (v) << (std::setw(8)) << (" decoded_symbols=")
-                  << (decoded_symbols) << (std::setw(8)) << (" i=") << (i)
-                  << (std::setw(8)) << (" byte=") << (byte) << (std::setw(8))
-                  << (" bit=") << (bit) << (std::setw(8)) << (" block=")
-                  << (block) << (std::endl);
       decoded_symbols_a[decoded_symbols] = v;
       (decoded_symbols)++;
     };

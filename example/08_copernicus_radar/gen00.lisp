@@ -584,6 +584,19 @@
 		    (values "inline void"))
 	   ;; fixme: mod on current_bit_count is not working
 	   ;; check for odd/even byte instead
+	   (let ((byte_offset (static_cast<int> (- s->data
+						   (static_cast<uint8_t*> ,(g `_mmap_data))))))
+	     "// make sure we are at first bit of an even byte in the next read"
+	     (setf s->current_bit_count 0)
+	     (if (== 0 (% byte_offset 2))
+		 (do0
+		  "// we are in an even byte"
+		  (incf s->data 2)
+		  )
+		 (do0
+		  "// we are in an odd byte"
+		  (incf s->data 1))))
+	   #+nil
 	   (let ((pad (- 16
 			 (% s->current_bit_count 16))))
 	     ,(logprint "" `(pad))
@@ -639,7 +652,7 @@
 					 `(== ,e brc)))
 			,(logprint "error: out of range" `(brc))
 			(assert 0))
-		      ,(logprint "" `(brc))
+		      ,(logprint "" `(brc block number_of_baq_blocks))
 
 		      (let ((decoder (aref decoder_jump_table brc)))
 		       (for ((= "int i" 0)
@@ -647,7 +660,8 @@
 				     128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
 				     )
 				  (< decoded_symbols
-				     number_of_quads))
+				     number_of_quads
+				     ))
 			     (incf i))
 			    (let ((sign_bit (get_sequential_bit &s))
 				  (symbol (decoder &s))
@@ -655,7 +669,7 @@
 			      (when sign_bit
 				(setf symbol_sign -1s0))
 			      (let ((v (* symbol_sign symbol)))
-				(let ((bit s.current_bit_count)
+				#+nil (let ((bit s.current_bit_count)
 				      (byte (static_cast<int>
 					     (-  s.data
 						 (static_cast<uint8_t*> ,(g `_mmap_data))
