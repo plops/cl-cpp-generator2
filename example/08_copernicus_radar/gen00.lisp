@@ -622,6 +622,24 @@
 		    (values "inline float"))
 	   (return 0s0))
 	 
+	 
+	 (do0
+	  "// table 5.2-1 simple reconstruction parameter values B"
+	  ;; fast axis brc
+	  ;; slow axis thidx
+	  ,@(let ((l '((3.0 4.0 6.0 9.0 15.0)
+		       (3.0 4.0 6.0 9.0 15.0)
+		       (3.16 4.08 6.0 9.0 15.0)
+		       (3.53 4.37 6.15 9.0 15.0)
+		       (0.0 0.0 6.5 9.36 15.0)
+		       (0.0 0.0 6.88 9.5 15.0)
+		       (0.0 0.0 0.0 10.1 15.22)
+		       (0.0 0.0 0.0 0.0 15.5)
+		       (0.0 0.0 0.0 0.0 16.05)))
+		  (l-transposed ))
+
+	      
+	      (loop for e in `(let (())))))
 
 
 	 
@@ -826,3 +844,17 @@
 					;(sb-ext:run-program "/bin/sh" `("gen_proto.sh"))
     #+nil (sb-ext:run-program "/usr/bin/make" `("-C" "source" "-j12" "proto2.h"))))
 
+(defun transpose-lists (list-of-lists)
+  (apply #'mapcar #'list list-of-lists))
+
+(let ((l '((3.0 4.0 6.0 9.0 15.0)
+		       (3.0 4.0 6.0 9.0 15.0)
+		       (3.16 4.08 6.0 9.0 15.0)
+		       (3.53 4.37 6.15 9.0 15.0)
+		       (0.0 0.0 6.5 9.36 15.0)
+		       (0.0 0.0 6.88 9.5 15.0)
+		       (0.0 0.0 0.0 10.1 15.22)
+		       (0.0 0.0 0.0 0.0 15.5)
+		       (0.0 0.0 0.0 0.0 16.05)))
+      )
+  (transpose-lists l))
