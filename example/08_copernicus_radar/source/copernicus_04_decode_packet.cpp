@@ -212,6 +212,7 @@ void init_decode_packet(int packet_idx) {
   auto number_of_quads =
       ((((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
   auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
+  std::array<uint8_t, 256> brcs;
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
   int (*decoder_jump_table[5])(sequential_bit_t *) = {
@@ -232,7 +233,7 @@ void init_decode_packet(int packet_idx) {
               << (" baq_mode=") << (baq_mode) << (std::setw(8))
               << (" baq_block_length=") << (baq_block_length) << (std::endl);
   auto decoded_symbols = 0;
-  auto number_of_baq_blocks = ((((2) * (number_of_quads))) / (256));
+  auto number_of_baq_blocks = ((1) + (((((2) * (number_of_quads))) / (256))));
   sequential_bit_t s;
   std::array<float, 65535> decoded_symbols_a;
   init_sequential_bit_function(
