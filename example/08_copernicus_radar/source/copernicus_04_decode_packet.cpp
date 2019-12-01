@@ -30,6 +30,12 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
           (((0x2) * (get_sequential_bit(s)))) +
           (((0x1) * (get_sequential_bit(s)))));
 }
+inline void consume_padding_bits(sequential_bit_t *s) {
+  auto pad = ((16) - (s->current_bit_count % 16));
+  for (int i = 0; i < pad; (i) += (1)) {
+    assert((0) == (get_sequential_bit(s)));
+  };
+}
 inline int decode_huffman_brc0(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
@@ -249,5 +255,6 @@ void init_decode_packet(int packet_idx) {
       decoded_symbols_a[decoded_symbols] = ((symbol_sign) * (symbol));
       (decoded_symbols)++;
     };
-  };
+  }
+  consume_padding_bits(&s);
 };

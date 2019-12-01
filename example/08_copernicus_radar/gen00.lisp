@@ -315,7 +315,8 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string "/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"
+		      (string "/home/martin/Downloads/s1a-ew-raw-s-hv-20191130t152915-20191130t153018-030142-0371ab.dat"
+			      ;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"
 			      ;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"
 			      )) 
 		(init_mmap ,(g `_filename))
@@ -563,6 +564,14 @@
 	   (return (+ ,@(loop for j below 3 collect
 			     `(* (hex ,(expt 2 (- 2 j)))
 				 (get_sequential_bit s))))))
+	 (defun consume_padding_bits (s)
+	   (declare (type sequential_bit_t* s)
+		    (values "inline void"))
+	   (let ((pad (- 16
+			 (% s->current_bit_count 16))))
+	     (dotimes (i pad)
+	       (assert (== 0
+			(get_sequential_bit s))))))
 
 	 ;; decode_huffman_brc<n> n=0..4
 	 ,(gen-huffman-decoder 'brc0 '(0 (1 (2 (3))))) ;; page 71 in space packet protocol data unit
@@ -626,6 +635,7 @@
 			      (setf (aref decoded_symbols_a decoded_symbols)
 				    (* symbol_sign symbol)))
 			    (incf decoded_symbols)))))
+	       (consume_padding_bits &s)
 	       ))
 	   ))))
      
