@@ -750,7 +750,7 @@
 					       #+nil (do0
 						      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 									 `(== ,e brc)))
-							,(logprint "error: out of range" `(brc))
+							,(logprint "error: out of range" `(brc)) 
 							(assert 0))
 						      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
 					      
