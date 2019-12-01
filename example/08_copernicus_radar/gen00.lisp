@@ -639,10 +639,11 @@
 		 (thidxs)
 		 (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-		 ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
-										   (format nil "decode_huffman_brc~a" i))))
+		 
+		 #+nil ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
+										    (format nil "decode_huffman_brc~a" i))))
 		 )
-	     (declare (type "int" "(*decoder_jump_table[5])(sequential_bit_t*)")
+	     (declare #+nil (type "int" "(*decoder_jump_table[5])(sequential_bit_t*)")
 
 		      (type ,(format nil "std::array<uint8_t,~d>"
 				     (round (/ 65536 256)))
@@ -692,7 +693,7 @@
 							(assert 0))
 						      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
 					      
-					       (let ((decoder (aref decoder_jump_table brc)))
+					       (do0 ;let ((decoder (aref decoder_jump_table brc)))
 						 (for ((= "int i" 0)
 						       (and (< i
 							       128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
@@ -702,7 +703,7 @@
 							       ))
 						       (incf i))
 						      (let ((sign_bit (get_sequential_bit &s))
-							    (mcode (decoder &s))
+							    (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
 							    (symbol_sign 1s0))
 							(when sign_bit
 							  (setf symbol_sign -1s0))

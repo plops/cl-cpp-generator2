@@ -227,9 +227,6 @@ void init_decode_packet(int packet_idx) {
   std::array<uint8_t, 256> thidxs;
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  int (*decoder_jump_table[5])(sequential_bit_t *) = {
-      decode_huffman_brc0, decode_huffman_brc1, decode_huffman_brc2,
-      decode_huffman_brc3, decode_huffman_brc4};
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
@@ -241,11 +238,10 @@ void init_decode_packet(int packet_idx) {
     brcs[block] = brc;
     switch (brc) {
       0 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc0(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -258,11 +254,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       1 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc1(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -275,11 +270,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       2 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc2(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -292,11 +286,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       3 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc3(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -309,11 +302,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       4 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc4(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -335,11 +327,10 @@ void init_decode_packet(int packet_idx) {
     auto brc = brcs[block];
     switch (brc) {
       0 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc0(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -352,11 +343,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       1 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc1(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -369,11 +359,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       2 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc2(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -386,11 +375,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       3 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc3(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -403,11 +391,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       4 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc4(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -431,11 +418,10 @@ void init_decode_packet(int packet_idx) {
     thidxs[block] = thidx;
     switch (brc) {
       0 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc0(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -456,11 +442,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       1 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc1(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -481,11 +466,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       2 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc2(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -506,11 +490,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       3 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc3(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -531,11 +514,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       4 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc4(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -565,11 +547,10 @@ void init_decode_packet(int packet_idx) {
     auto brc = brcs[block];
     switch (brc) {
       0 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc0(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -590,11 +571,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       1 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc1(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -615,11 +595,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       2 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc2(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -640,11 +619,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       3 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc3(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
@@ -665,11 +643,10 @@ void init_decode_packet(int packet_idx) {
         break;
       }
       4 : {
-        auto decoder = decoder_jump_table[brc];
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decoder(&s);
+          auto mcode = decode_huffman_brc4(&s);
           auto symbol_sign = (1.e+0f);
           if (sign_bit) {
             symbol_sign = (-1.e+0f);
