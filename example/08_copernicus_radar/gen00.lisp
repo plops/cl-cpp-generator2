@@ -558,6 +558,13 @@
 		(setf seq_state->current_bit_count 0)
 		(incf seq_state->data))
 	      (return res))))
+	 (defun get_threshold_index (s)
+	   (declare (type sequential_bit_t* s)
+		    (values "inline int"))
+	   (return (+ ,@(loop for j below 8 collect
+			     `(* (hex ,(expt 2 (- 7 j)))
+				 (get_sequential_bit s)))))
+	   )
 	 (defun get_bit_rate_code (s)
 	   (declare (type sequential_bit_t* s)
 		    (values "inline int"))
@@ -630,15 +637,20 @@
 		 (number_of_baq_blocks (+ 1 (/ (* 2 number_of_quads)
 					     256)))
 		 (brcs)
+		 (thidxs)
 		 (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		 (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		 ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
 										   (format nil "decode_huffman_brc~a" i))))
 		 )
 	     (declare (type "int" "(*decoder_jump_table[5])(sequential_bit_t*)")
+
 		      (type ,(format nil "std::array<uint8_t,~d>"
 				     (round (/ 65536 256)))
-			    brcs))
+			    brcs)
+		      (type ,(format nil "std::array<uint8_t,~d>"
+				     (round (/ 65536 256)))
+			    thidxs))
 	     #+nil (do0
 	      (assert (<= number_of_baq_blocks 256))
 	      (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
@@ -652,7 +664,7 @@
 			)
 	       (init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
 							   62 6))
-	       ,@(loop for e in `(ie io ;qe qo
+	       ,@(loop for e in `(ie io qe ;qo
 				     )
 		    collect
 		      (let ((sym (format nil "decoded_~a_symbols" e))
@@ -669,9 +681,14 @@
 				   (ie
 				    `(let ((brc (get_bit_rate_code &s)))
 				       (setf (aref brcs block) brc)))
+				   (qe
+				    `(let ((thidx (get_threshold_index &s))
+					   (brc (aref brcs block)))
+				       (setf (aref thidxs block) thidx)))
 				   (t
 				    `(let ((brc (aref brcs block))))))
-				#-nil(do0
+				
+				#+nil(do0
 				      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 							 `(== ,e brc)))
 					,(logprint "error: out of range" `(brc))
