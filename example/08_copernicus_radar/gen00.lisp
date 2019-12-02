@@ -878,17 +878,17 @@
 											`(if (< mcode ,th-mcode)
 											    (setf v (* symbol_sign mcode))
 											    (setf v (* symbol_sign
-												       (aref
+												       (dot
 													,(format nil "table_b~a"
 														 brc-value)
-													thidx)))))
+													(at thidx))))))
 										       (normal
 											`(setf v (* symbol_sign
-												   (aref ,(format nil
+												   (dot ,(format nil
 														  "table_nrl~a"
 														  brc-value)
-													 mcode)
-												   (aref table_sf thidx))))))))
+													(at mcode))
+												   (dot table_sf (at thidx)))))))))
 									    `(let ((v (* symbol_sign mcode)))
 									       "// in ie and io we don't have thidx yet, will be processed later"))
 								       
@@ -942,17 +942,17 @@
 									  `(if (< mcode ,th-mcode)
 									       (setf v (* symbol_sign mcode))
 									       (setf v (* symbol_sign
-											  (aref
+											  (dot
 											   ,(format nil "table_b~a"
 												    brc-value)
-											   thidx)))))
+											   (at thidx))))))
 									 (normal
 									  `(setf v (* symbol_sign
-										      (aref ,(format nil
+										      (dot ,(format nil
 												     "table_nrl~a"
 												     brc-value)
-											    mcode)
-										      (aref table_sf thidx)))))))
+											   (at mcode))
+										      (dot table_sf (at thidx))))))))
 								(setf (aref ,sym-a pos) v))))))))
 					  break))))
 			   ))))

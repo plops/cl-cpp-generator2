@@ -683,7 +683,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0[thidx]));
+            v = ((symbol_sign) * (table_b0.at(thidx)));
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
@@ -699,7 +699,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qe p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
@@ -734,7 +734,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1[thidx]));
+            v = ((symbol_sign) * (table_b1.at(thidx)));
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
@@ -750,7 +750,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qe p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
@@ -785,7 +785,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2[thidx]));
+            v = ((symbol_sign) * (table_b2.at(thidx)));
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
@@ -801,7 +801,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qe p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
@@ -836,7 +836,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3[thidx]));
+            v = ((symbol_sign) * (table_b3.at(thidx)));
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
@@ -852,7 +852,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qe p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
@@ -887,7 +887,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4[thidx]));
+            v = ((symbol_sign) * (table_b4.at(thidx)));
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
@@ -903,7 +903,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qe p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
@@ -948,7 +948,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0[thidx]));
+            v = ((symbol_sign) * (table_b0.at(thidx)));
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
@@ -964,7 +964,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qo p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
@@ -999,7 +999,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1[thidx]));
+            v = ((symbol_sign) * (table_b1.at(thidx)));
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
@@ -1015,7 +1015,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qo p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
@@ -1050,7 +1050,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2[thidx]));
+            v = ((symbol_sign) * (table_b2.at(thidx)));
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
@@ -1066,7 +1066,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qo p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
@@ -1101,7 +1101,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3[thidx]));
+            v = ((symbol_sign) * (table_b3.at(thidx)));
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
@@ -1117,7 +1117,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qo p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
@@ -1152,7 +1152,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4[thidx]));
+            v = ((symbol_sign) * (table_b4.at(thidx)));
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
@@ -1168,7 +1168,7 @@ int init_decode_packet(int packet_idx,
           };
           // decode qo p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
@@ -1207,7 +1207,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0[thidx]));
+            v = ((symbol_sign) * (table_b0.at(thidx)));
           };
           decoded_ie_symbols_a[pos] = v;
         };
@@ -1219,7 +1219,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode ie p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
@@ -1250,7 +1250,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1[thidx]));
+            v = ((symbol_sign) * (table_b1.at(thidx)));
           };
           decoded_ie_symbols_a[pos] = v;
         };
@@ -1262,7 +1262,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode ie p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
@@ -1293,7 +1293,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2[thidx]));
+            v = ((symbol_sign) * (table_b2.at(thidx)));
           };
           decoded_ie_symbols_a[pos] = v;
         };
@@ -1305,7 +1305,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode ie p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
@@ -1336,7 +1336,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3[thidx]));
+            v = ((symbol_sign) * (table_b3.at(thidx)));
           };
           decoded_ie_symbols_a[pos] = v;
         };
@@ -1348,7 +1348,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode ie p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
@@ -1379,7 +1379,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4[thidx]));
+            v = ((symbol_sign) * (table_b4.at(thidx)));
           };
           decoded_ie_symbols_a[pos] = v;
         };
@@ -1391,7 +1391,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode ie p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
@@ -1424,7 +1424,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0[thidx]));
+            v = ((symbol_sign) * (table_b0.at(thidx)));
           };
           decoded_io_symbols_a[pos] = v;
         };
@@ -1436,7 +1436,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode io p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl0[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
@@ -1467,7 +1467,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1[thidx]));
+            v = ((symbol_sign) * (table_b1.at(thidx)));
           };
           decoded_io_symbols_a[pos] = v;
         };
@@ -1479,7 +1479,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode io p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl1[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
@@ -1510,7 +1510,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2[thidx]));
+            v = ((symbol_sign) * (table_b2.at(thidx)));
           };
           decoded_io_symbols_a[pos] = v;
         };
@@ -1522,7 +1522,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode io p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl2[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
@@ -1553,7 +1553,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3[thidx]));
+            v = ((symbol_sign) * (table_b3.at(thidx)));
           };
           decoded_io_symbols_a[pos] = v;
         };
@@ -1565,7 +1565,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode io p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl3[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
@@ -1596,7 +1596,7 @@ int init_decode_packet(int packet_idx,
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4[thidx]));
+            v = ((symbol_sign) * (table_b4.at(thidx)));
           };
           decoded_io_symbols_a[pos] = v;
         };
@@ -1608,7 +1608,7 @@ int init_decode_packet(int packet_idx,
           auto symbol_sign = copysignf((1.e+0f), scode);
           // decode io p.75
           auto v = (0.0e+0f);
-          v = ((symbol_sign) * (table_nrl4[mcode]) * (table_sf[thidx]));
+          v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
