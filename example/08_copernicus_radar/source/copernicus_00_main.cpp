@@ -28,7 +28,15 @@ int main() {
     (map_ele[ele]) += (number_of_quads);
     (packet_idx)++;
   };
+  auto ma = (-1.e+0f);
+  auto ma_ele = -1;
   for (auto &elevation : map_ele) {
+    auto number_of_Mquads = ((elevation.second) / ((1.e+6f)));
+    auto elevation_beam_address = elevation.first;
+    if (ma < number_of_Mquads) {
+      ma = number_of_Mquads;
+      ma_ele = elevation_beam_address;
+    };
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -37,9 +45,20 @@ int main() {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("map_ele") << (" ") << (std::setw(8))
-                << (" elevation.first=") << (elevation.first) << (std::setw(8))
-                << (" elevation.second=") << (elevation.second) << (std::endl);
+                << (" elevation_beam_address=") << (elevation_beam_address)
+                << (std::setw(8)) << (" number_of_Mquads=")
+                << (number_of_Mquads) << (std::endl);
   };
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("largest ele") << (" ")
+              << (std::setw(8)) << (" ma_ele=") << (ma_ele) << (std::setw(8))
+              << (" ma=") << (ma) << (std::endl);
   std::array<std::complex<float>, 65535> output;
   auto n = init_decode_packet(0, output);
   destroy_mmap();
