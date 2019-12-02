@@ -356,9 +356,11 @@
 		      (foreach (e ,(g `_header_data))
 			       (let ((offset (aref ,(g `_header_offset) packet_idx))
 				     (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				     (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				     (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
 				     (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
-				 (incf (aref map_azi azi) number_of_quads)
+				 (when (== ele ma_ele)
+				  (incf (aref map_azi azi) number_of_quads))
 				 (incf packet_idx)))
 		      (foreach (azi map_azi)
 			       (let ((number_of_Mquads (/ azi.second 1e6))
@@ -367,9 +369,26 @@
 				 ,(logprint "map_azi" `(azi_beam_address number_of_Mquads))))
 		      ))
 		   ))
-		(let ((output)
-		      (n (init_decode_packet 0 output)))
-		  (declare (type "std::array<std::complex<float>,65535>" output)))
+
+
+		(progn
+		     (let ((map_azi)
+			   (packet_idx 0))
+		      (declare (type "std::unordered_map<int,int>" map_azi))
+		      (foreach (e ,(g `_header_data))
+			       (let ((offset (aref ,(g `_header_offset) packet_idx))
+				     (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				     (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				     (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
+				 (when (== ele ma_ele)
+				   (let ((output)
+					 (n (init_decode_packet packet_idx output)))
+				     (declare (type "std::array<std::complex<float>,65535>" output))))
+				 (incf packet_idx)))
+		      
+		      ))
+		
+		
 		;(init_decode_packet 1)
 		;(init_decode_packet 2)
 		(destroy_mmap)
