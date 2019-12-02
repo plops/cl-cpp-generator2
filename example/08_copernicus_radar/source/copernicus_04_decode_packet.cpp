@@ -346,6 +346,19 @@ int init_decode_packet(int packet_idx,
     brcs[block] = brc;
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -362,6 +375,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -378,6 +404,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -394,6 +433,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -410,6 +462,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -435,6 +500,19 @@ int init_decode_packet(int packet_idx,
     auto brc = brcs[block];
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -451,6 +529,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -467,6 +558,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -483,6 +587,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -499,6 +616,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -526,6 +656,19 @@ int init_decode_packet(int packet_idx,
     thidxs[block] = thidx;
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -564,6 +707,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -602,6 +758,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (5)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -640,6 +809,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (6)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -678,6 +860,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (8)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -726,6 +921,19 @@ int init_decode_packet(int packet_idx,
     auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -764,6 +972,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -802,6 +1023,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (5)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -840,6 +1074,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (6)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -878,6 +1125,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (8)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -923,6 +1183,19 @@ int init_decode_packet(int packet_idx,
     auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -953,6 +1226,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -983,6 +1269,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (5)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1013,6 +1312,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (6)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1043,6 +1355,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (8)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1075,6 +1400,19 @@ int init_decode_packet(int packet_idx,
     }
     switch (brc) {
     case 0: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1105,6 +1443,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 1: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (3)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1135,6 +1486,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 2: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (5)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1165,6 +1529,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 3: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (6)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
@@ -1195,6 +1572,19 @@ int init_decode_packet(int packet_idx,
       break;
     }
     case 4: {
+      if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+             ((3) == (brc)) || ((4) == (brc))))) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("error: out of range") << (" ")
+                    << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+        assert(0);
+      };
       if ((thidx) <= (8)) {
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));

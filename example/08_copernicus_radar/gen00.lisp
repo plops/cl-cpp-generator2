@@ -4,6 +4,14 @@
 
 (in-package :cl-cpp-generator2)
 
+;; switches
+;; :safety .. enable extra asserts in the code
+
+(setf *features* (union *features* '(:safety)))
+(setf *features* (set-difference *features* '(;:safety
+					      )))
+
+
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
 
 
@@ -774,7 +782,7 @@
 		      (type ,(format nil "std::array<uint8_t,~d>"
 				     (round (/ 65536 256)))
 			    thidxs))
-	     #-nil (do0
+	     #+safety (do0
 	      (assert (<= number_of_baq_blocks 256))
 	      (assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 				 `(== ,e baq_mode))))
@@ -812,12 +820,13 @@
 				    ,@(loop for brc-value below 5 collect
 					   `(,(format nil "case ~a" brc-value)
 					      (progn
-					       #+nil (do0
+					       #+safety (do0
 						      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 									 `(== ,e brc)))
 							,(logprint "error: out of range" `(brc)) 
 							(assert 0))
-						      ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
+						      ;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
+						      )
 					       ,(let ((th (case brc-value
 								    (0 3)
 								    (1 3)
@@ -898,12 +907,13 @@
 			      ,@(loop for brc-value below 5 collect
 				     `(,(format nil "case ~a" brc-value)
 					(progn
-					  #+nil (do0
-						 (unless (or ,@(loop for e in `(0 1 2 3 4) collect
-								    `(== ,e brc)))
-						   ,(logprint "error: out of range" `(brc)) 
-						   (assert 0))
-						 ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks)))
+					  #+safety (do0
+						    (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+								       `(== ,e brc)))
+						      ,(logprint "error: out of range" `(brc)) 
+						      (assert 0))
+						    ;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
+						    )
 					  ,(let ((th (case brc-value
 						       (0 3)
 						       (1 3)
