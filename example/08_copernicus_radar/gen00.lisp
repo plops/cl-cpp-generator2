@@ -335,10 +335,11 @@
 				(p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 				(ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				(number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
-			    (setf (aref map_ele ele) packet_idx)
+			    (incf (aref map_ele ele) number_of_quads)
 			    (incf packet_idx)))
 		 (foreach (elevation map_ele)
-			  ,(logprint "map_ele"`(elevation.first)))
+			  ,(logprint "map_ele" `(elevation.first elevation.second
+								 )))
 		 )
 		(let ((output)
 		      (n (init_decode_packet 0 output)))
