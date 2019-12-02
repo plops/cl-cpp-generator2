@@ -92,7 +92,6 @@ int main() {
     };
   };
   {
-    std::unordered_map<int, int> map_azi;
     auto packet_idx = 0;
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
@@ -100,10 +99,8 @@ int main() {
       auto ele = ((0xF) & ((p[60]) >> (4)));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
-      if ((ele) == (ma_ele)) {
-        std::array<std::complex<float>, 65535> output;
-        auto n = init_decode_packet(packet_idx, output);
-      };
+      std::array<std::complex<float>, 65535> output;
+      auto n = init_decode_packet(packet_idx, output);
       (packet_idx)++;
     };
   };
