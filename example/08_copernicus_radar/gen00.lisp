@@ -306,6 +306,7 @@
 	     (do0
 	      (include <iostream>
 		       <chrono>
+		       <unordered_map>
 		       )
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
@@ -324,6 +325,21 @@
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
 					;(init_process_packet_headers)
+
+
+		(let ((packet_idx 0)
+		      (map_ele))
+		  (declare (type "std::unordered_map<int,int>" map_ele))
+		 (foreach (e ,(g `_header_data))
+			  (let ((offset (aref ,(g `_header_offset) packet_idx))
+				(p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				(ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				(number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
+			    (setf (aref map_ele ele) packet_idx)
+			    (incf packet_idx)))
+		 (foreach (elevation map_ele)
+			  ,(logprint "map_ele"`(elevation.first)))
+		 )
 		(let ((output)
 		      (n (init_decode_packet 0 output)))
 		  (declare (type "std::array<std::complex<float>,65535>" output)))
@@ -465,7 +481,7 @@
 			   (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
 			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
-
+		       
 		       ,@(loop for e in *space-packet* collect
 			      (destructuring-bind (name_ default-value &key bits) e
 				
@@ -900,9 +916,7 @@
 	       
 	       (let ((n (+ decoded_ie_symbols
 			   decoded_io_symbols)))
-		 (return n)
-
-		 )))))))
+		 (return n))))))))
        
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
