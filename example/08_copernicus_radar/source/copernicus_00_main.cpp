@@ -63,6 +63,8 @@ int main() {
   {
     std::unordered_map<int, int> map_azi;
     auto packet_idx = 0;
+    auto mi_data_delay = 10000000;
+    auto ma_data_delay = -1;
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
@@ -70,11 +72,30 @@ int main() {
       auto azi = ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & (p[60]))))));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
+      auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
+                                  (((0x10000) * (((0xFF) & (p[53]))))))));
       if ((ele) == (ma_ele)) {
+        if (data_delay < mi_data_delay) {
+          mi_data_delay = data_delay;
+        };
+        if (ma_data_delay < data_delay) {
+          ma_data_delay = data_delay;
+        };
         (map_azi[azi]) += (number_of_quads);
       };
       (packet_idx)++;
     };
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("data_delay") << (" ")
+                << (std::setw(8)) << (" mi_data_delay=") << (mi_data_delay)
+                << (std::setw(8)) << (" ma_data_delay=") << (ma_data_delay)
+                << (std::endl);
     for (auto &azi : map_azi) {
       auto number_of_Mquads = ((azi.second) / ((1.e+6f)));
       auto azi_beam_address = azi.first;
