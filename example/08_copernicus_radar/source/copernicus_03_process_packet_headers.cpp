@@ -23,15 +23,15 @@ void init_process_packet_headers() {
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
     (packet_idx)++;
     auto fref = (3.7534723e+1f);
+    auto swst = ((((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
+                   (((0x10000) * (((0xFF) & (p[53]))))))) /
+                 (fref));
     auto coarse_time =
         ((((0x1) * (p[9]))) + (((0x100) * (p[8]))) + (((0x10000) * (p[7]))) +
          (((0x1000000) * (((0xFF) & (p[6]))))));
     auto fine_time = ((((0x1) * (p[11]))) + (((0x100) * (((0xFF) & (p[10]))))));
     auto ftime = (((1.52587890625e-5)) * ((((5.e-1f)) + (fine_time))));
     auto time = ((((coarse_time) + (ftime))) - (time0));
-    auto swst = ((((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
-                   (((0x10000) * (((0xFF) & (p[53]))))))) /
-                 (fref));
     auto azi = ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & (p[60]))))));
     auto count =
         ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) + (((0x10000) * (p[30]))) +

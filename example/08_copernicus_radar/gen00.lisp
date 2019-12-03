@@ -395,12 +395,14 @@
 				   (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				   (pri_count ,(space-packet-slot-get 'pri-count 'p)))
 			       (assert (== sync_marker (hex #x352EF853)))
-			       ,(logprint "iter" `(space_packet_count pri_count))
+			       #+nil ,(logprint "iter" `(space_packet_count pri_count))
 			       (handler-case
 				(when (== ele ma_ele)
 				  (let ((output)
 					(n (init_decode_packet packet_idx output)))
-				    (declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))))
+				    (declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
+				    (unless (== n (* 2 number_of_quads))
+				      ,(logprint "unexpected number of quads" `(n number_of_quads)))))
 				 ("std::out_of_range" (e)
 				     ,(logprint "exception" `(packet_idx))))
 			       (incf packet_idx)))))
@@ -514,14 +516,15 @@
 			  (incf packet_idx))
 		     (let (;(p (e.data))
 			   (fref 37.53472224)
+			   (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'p)
+				    fref))
 			   (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
 			   (fine_time ,(space-packet-slot-get 'fine-time 'p))
 			   (ftime (* ,(expt 2d0 -16) (+ .5 fine_time)))
 			   (time (- (+ coarse_time
 				       ftime)
 				    time0))
-			   (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'p)
-				    fref))
+			   
 			   (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
 			   (count ,(space-packet-slot-get 'space-packet-count 'p))
 			   (pri_count ,(space-packet-slot-get 'pri-count 'p))
@@ -787,6 +790,10 @@
 		  (brcs)
 		  (thidxs)
 		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
+		  (fref 37.53472224)
+		  (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'header)
+			   fref))
+			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		  
 		  #+nil ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
@@ -804,7 +811,9 @@
 			(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 					   `(== ,e baq_mode))))
-			,(logprint "" `(packet_idx baq_mode baq_block_length number_of_quads)))
+			,(logprint "" `(packet_idx baq_mode ;baq_block_length
+						   swst
+						   number_of_quads)))
 	      (let ((s))
 		(declare (type sequential_bit_t s))
 		(init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
