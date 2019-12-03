@@ -122,6 +122,10 @@ int main() {
                   << (std::endl);
     };
   };
+  std::vector<
+      std::vector<std::complex, ma_data_delay + ma_data_end - mi_data_delay>,
+      ele_number_of_echoes>
+      sar_image;
   {
     auto packet_idx = 0;
     for (auto &e : state._header_data) {

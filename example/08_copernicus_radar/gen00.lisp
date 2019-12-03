@@ -399,28 +399,31 @@
 				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
 
 
-		(progn
-		  (let ((packet_idx 0))
-		    (foreach (e ,(g `_header_data))
-			     (let ((offset (aref ,(g `_header_offset) packet_idx))
-				   (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-				   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
-				   (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
-				   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
-				   (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
-				   (pri_count ,(space-packet-slot-get 'pri-count 'p)))
-			       (assert (== sync_marker (hex #x352EF853)))
-			       #+nil ,(logprint "iter" `(space_packet_count pri_count))
-			       (handler-case
-				(when (== ele ma_ele)
-				  (let ((output)
-					(n (init_decode_packet packet_idx mi_data_delay output)))
-				    (declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
-				    (unless (== n (* 2 number_of_quads))
-				      ,(logprint "unexpected number of quads" `(n number_of_quads)))))
-				 ("std::out_of_range" (e)
-				     ,(logprint "exception" `(packet_idx))))
-			       (incf packet_idx)))))
+		(let ((sar_image))
+		  (declare (type "std::vector<std::vector<std::complex,ma_data_delay+ma_data_end-mi_data_delay>,ele_number_of_echoes>"
+				 sar_image))
+		 (progn
+		   (let ((packet_idx 0))
+		     (foreach (e ,(g `_header_data))
+			      (let ((offset (aref ,(g `_header_offset) packet_idx))
+				    (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				    (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				    (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				    (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+				    (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
+				    (pri_count ,(space-packet-slot-get 'pri-count 'p)))
+				(assert (== sync_marker (hex #x352EF853)))
+				#+nil ,(logprint "iter" `(space_packet_count pri_count))
+				(handler-case
+				    (when (== ele ma_ele)
+				      (let ((output)
+					    (n (init_decode_packet packet_idx mi_data_delay output)))
+					(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
+					(unless (== n (* 2 number_of_quads))
+					  ,(logprint "unexpected number of quads" `(n number_of_quads)))))
+				  ("std::out_of_range" (e)
+				    ,(logprint "exception" `(packet_idx))))
+				(incf packet_idx))))))
 
 		
 		;(init_decode_packet 1)
