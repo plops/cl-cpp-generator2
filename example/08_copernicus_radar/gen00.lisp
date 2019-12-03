@@ -793,6 +793,8 @@
 		  (fref 37.53472224)
 		  (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'header)
 			   fref))
+		  (delta_t_suppressed (/ 320d0 (* 8 fref)))
+		  (data_delay_us (+ swst delta_t_suppressed))
 			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		  
@@ -812,7 +814,7 @@
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 					   `(== ,e baq_mode))))
 			,(logprint "" `(packet_idx baq_mode ;baq_block_length
-						   swst
+						   data_delay_us
 						   number_of_quads)))
 	      (let ((s))
 		(declare (type sequential_bit_t s))

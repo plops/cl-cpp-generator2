@@ -323,6 +323,8 @@ int init_decode_packet(
   auto swst = ((((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                  (((0x10000) * (((0xFF) & (header[53]))))))) /
                (fref));
+  auto delta_t_suppressed = (((3.2e+2)) / (((8) * (fref))));
+  auto data_delay_us = ((swst) + (delta_t_suppressed));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
   assert((number_of_baq_blocks) <= (256));
   assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
@@ -337,9 +339,9 @@ int init_decode_packet(
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
               << (" packet_idx=") << (packet_idx) << (std::setw(8))
-              << (" baq_mode=") << (baq_mode) << (std::setw(8)) << (" swst=")
-              << (swst) << (std::setw(8)) << (" number_of_quads=")
-              << (number_of_quads) << (std::endl);
+              << (" baq_mode=") << (baq_mode) << (std::setw(8))
+              << (" data_delay_us=") << (data_delay_us) << (std::setw(8))
+              << (" number_of_quads=") << (number_of_quads) << (std::endl);
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
