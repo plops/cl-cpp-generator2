@@ -60,12 +60,13 @@ int main() {
               << (__func__) << (" ") << ("largest ele") << (" ")
               << (std::setw(8)) << (" ma_ele=") << (ma_ele) << (std::setw(8))
               << (" ma=") << (ma) << (std::endl);
+  auto mi_data_delay = 10000000;
+  auto ma_data_delay = -1;
+  auto ma_data_end = -1;
+  auto ele_number_echoes = 0;
   {
     std::unordered_map<int, int> map_azi;
     auto packet_idx = 0;
-    auto mi_data_delay = 10000000;
-    auto ma_data_delay = -1;
-    auto ma_data_end = -1;
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
@@ -76,6 +77,7 @@ int main() {
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
       if ((ele) == (ma_ele)) {
+        (ele_number_echoes)++;
         if (data_delay < mi_data_delay) {
           mi_data_delay = data_delay;
         };
@@ -101,7 +103,8 @@ int main() {
                 << (std::setw(8)) << (" mi_data_delay=") << (mi_data_delay)
                 << (std::setw(8)) << (" ma_data_delay=") << (ma_data_delay)
                 << (std::setw(8)) << (" ma_data_end=") << (ma_data_end)
-                << (std::endl);
+                << (std::setw(8)) << (" ele_number_echoes=")
+                << (ele_number_echoes) << (std::endl);
     for (auto &azi : map_azi) {
       auto number_of_Mquads = ((azi.second) / ((1.e+6f)));
       auto azi_beam_address = azi.first;
@@ -140,7 +143,7 @@ int main() {
       try {
         if ((ele) == (ma_ele)) {
           std::array<std::complex<float>, MAX_NUMBER_QUADS> output;
-          auto n = init_decode_packet(packet_idx, output);
+          auto n = init_decode_packet(packet_idx, mi_data_delay, output);
           if (!((n) == (((2) * (number_of_quads))))) {
             std::setprecision(3);
             (std::cout) << (std::setw(10))

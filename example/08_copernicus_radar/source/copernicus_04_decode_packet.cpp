@@ -309,7 +309,14 @@ const std::array<float, 256> table_sf = {
     (2.4847001e+2f),  (2.4972999e+2f),  (2.5098e+2f),     (2.5223e+2f),
     (2.5349e+2f),     (2.5474e+2f),     (2.5599e+2f),     (2.5599e+2f)};
 int init_decode_packet(
-    int packet_idx, std::array<std::complex<float>, MAX_NUMBER_QUADS> &output) {
+    int packet_idx, int mi_data_delay,
+    std::array<std::complex<float>, MAX_NUMBER_QUADS> &output) {
+  // packet_idx .. index of space packet 0 ..
+  // mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest
+  // delay in samples between tx pulse start and data acquisition and will be
+  // used to compute a sample offset in output so that all echos of one sar
+  // image are aligned to the same time offset output .. array of complex
+  // numbers return value: number of complex data samples written
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
   auto number_of_quads =
@@ -328,7 +335,12 @@ int init_decode_packet(
   auto data_delay =
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
+  auto data_offset = ((data_delay) - (mi_data_delay));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  if ((-1) == (mi_data_delay)) {
+    data_offset = 0;
+  };
+  assert((((-1) == (mi_data_delay)) || ((mi_data_delay) <= (data_delay))));
   assert((number_of_baq_blocks) <= (256));
   assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
           ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
@@ -1628,10 +1640,12 @@ int init_decode_packet(
     };
   }
   for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
-    output[((2) * (i))].real(decoded_ie_symbols_a[i]);
-    output[((2) * (i))].imag(decoded_qe_symbols_a[i]);
-    output[((1) + (((2) * (i))))].real(decoded_io_symbols_a[i]);
-    output[((1) + (((2) * (i))))].imag(decoded_qo_symbols_a[i]);
+    output[((data_offset) + (((2) * (i))))].real(decoded_ie_symbols_a[i]);
+    output[((data_offset) + (((2) * (i))))].imag(decoded_qe_symbols_a[i]);
+    output[((data_offset) + (((1) + (((2) * (i))))))].real(
+        decoded_io_symbols_a[i]);
+    output[((data_offset) + (((1) + (((2) * (i))))))].imag(
+        decoded_qo_symbols_a[i]);
   }
   auto n = ((decoded_ie_symbols) + (decoded_io_symbols));
   return n;

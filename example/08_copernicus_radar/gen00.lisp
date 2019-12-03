@@ -365,36 +365,38 @@
 				,(logprint "map_ele" `(elevation_beam_address number_of_Mquads))))
 		     ,(logprint "largest ele" `(ma_ele ma)))
 
-		   (progn
-		     (let ((map_azi)
-			   (packet_idx 0)
-			   (mi_data_delay 10000000)
-			   (ma_data_delay -1)
-			   (ma_data_end -1))
-		       (declare (type "std::unordered_map<int,int>" map_azi))
-		       (foreach (e ,(g `_header_data))
-				(let ((offset (aref ,(g `_header_offset) packet_idx))
-				      (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-				      (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
-				      (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
-				      (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
-				      (data_delay (+ ,(/ 320 8)
-						     ,(space-packet-slot-get 'sampling-window-start-time 'p))))
-				  (when (== ele ma_ele)
-				    (when (< data_delay mi_data_delay)
-				      (setf mi_data_delay data_delay))
-				    (when (< ma_data_delay data_delay )
-				      (setf ma_data_delay data_delay))
-				    (let ((v (+ data_delay (* 2 number_of_quads))))
-				     (when (< ma_data_end v)
-				       (setf ma_data_end v)))
-				    (incf (aref map_azi azi) number_of_quads))
-				  (incf packet_idx)))
-		       ,(logprint "data_delay" `(mi_data_delay ma_data_delay ma_data_end))
-		       (foreach (azi map_azi)
-				(let ((number_of_Mquads (/ azi.second 1e6))
-				      (azi_beam_address azi.first))
-				  ,(logprint "map_azi" `(azi_beam_address number_of_Mquads))))))))
+		   (let ((mi_data_delay 10000000)
+			 (ma_data_delay -1)
+			 (ma_data_end -1)
+			 (ele_number_echoes 0))
+		    (progn
+		      (let ((map_azi)
+			    (packet_idx 0))
+			(declare (type "std::unordered_map<int,int>" map_azi))
+			(foreach (e ,(g `_header_data))
+				 (let ((offset (aref ,(g `_header_offset) packet_idx))
+				       (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				       (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				       (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+				       (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				       (data_delay (+ ,(/ 320 8)
+						      ,(space-packet-slot-get 'sampling-window-start-time 'p))))
+				   (when (== ele ma_ele)
+				     (incf ele_number_echoes)
+				     (when (< data_delay mi_data_delay)
+				       (setf mi_data_delay data_delay))
+				     (when (< ma_data_delay data_delay )
+				       (setf ma_data_delay data_delay))
+				     (let ((v (+ data_delay (* 2 number_of_quads))))
+				       (when (< ma_data_end v)
+					 (setf ma_data_end v)))
+				     (incf (aref map_azi azi) number_of_quads))
+				   (incf packet_idx)))
+			,(logprint "data_delay" `(mi_data_delay ma_data_delay ma_data_end ele_number_echoes))
+			(foreach (azi map_azi)
+				 (let ((number_of_Mquads (/ azi.second 1e6))
+				       (azi_beam_address azi.first))
+				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
 
 
 		(progn
@@ -412,7 +414,7 @@
 			       (handler-case
 				(when (== ele ma_ele)
 				  (let ((output)
-					(n (init_decode_packet packet_idx output)))
+					(n (init_decode_packet packet_idx mi_data_delay output)))
 				    (declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
 				    (unless (== n (* 2 number_of_quads))
 				      ,(logprint "unexpected number of quads" `(n number_of_quads)))))
@@ -788,10 +790,16 @@
 	  
 
 	  
-	  (defun init_decode_packet (packet_idx output)
-	    (declare (type int packet_idx)
+	  (defun init_decode_packet (packet_idx mi_data_delay output)
+	    (declare (type int packet_idx mi_data_delay)
 		     (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>&" output)
 		     (values int))
+
+	    "// packet_idx .. index of space packet 0 .."
+	    "// mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest delay in samples between tx pulse start and data acquisition and will be used to compute a sample offset in output so that all echos of one sar image are aligned to the same time offset"
+	    "// output .. array of complex numbers"
+	    "// return value: number of complex data samples written"
+	    
 	    (let ((header (dot (aref ,(g `_header_data) packet_idx)
 			       (data)))
 		  (offset (aref ,(g `_header_offset) packet_idx))
@@ -810,6 +818,7 @@
 		  (data_delay_us (+ swst delta_t_suppressed))
 		  (data_delay (+ ,(/ 320 8)
 				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
+		  (data_offset (- data_delay mi_data_delay))
 			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		  
@@ -824,7 +833,12 @@
 		       (type ,(format nil "std::array<uint8_t,~d>"
 				      (round (/ max-number-quads 256)))
 			     thidxs))
+
+	      (when (== -1 mi_data_delay)
+		(setf data_offset 0))
 	      #+safety (do0
+			(assert (or (== -1 mi_data_delay)
+				    (<= mi_data_delay data_delay)))
 			(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 					   `(== ,e baq_mode))))
@@ -1003,10 +1017,10 @@
 			     ))))
 
 		(dotimes (i decoded_ie_symbols)
-		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
-		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
-		  (do0 (dot (aref output (+ 1 (* 2 i))) (real (aref decoded_io_symbols_a i)))
-		       (dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
+		  (do0 (dot (aref output (+ data_offset (* 2 i))) (real (aref decoded_ie_symbols_a i)))
+		       (dot (aref output (+ data_offset (* 2 i))) (imag (aref decoded_qe_symbols_a i))))
+		  (do0 (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (real (aref decoded_io_symbols_a i)))
+		       (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (imag (aref decoded_qo_symbols_a i)))))
 		
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
