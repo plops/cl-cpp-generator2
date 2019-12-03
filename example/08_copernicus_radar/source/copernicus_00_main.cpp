@@ -106,7 +106,7 @@ int main() {
       assert((sync_marker) == (0x352EF853));
       try {
         if ((ele) == (ma_ele)) {
-          std::array<std::complex<float>, 65535> output;
+          std::array<std::complex<float>, MAX_NUMBER_QUADS> output;
           auto n = init_decode_packet(packet_idx, output);
         };
       } catch (std::out_of_range e) {

@@ -308,16 +308,16 @@ const std::array<float, 256> table_sf = {
     (2.4346e+2f),     (2.4471001e+2f),  (2.4597e+2f),     (2.4722e+2f),
     (2.4847001e+2f),  (2.4972999e+2f),  (2.5098e+2f),     (2.5223e+2f),
     (2.5349e+2f),     (2.5474e+2f),     (2.5599e+2f),     (2.5599e+2f)};
-int init_decode_packet(int packet_idx,
-                       std::array<std::complex<float>, 65535> &output) {
+int init_decode_packet(
+    int packet_idx, std::array<std::complex<float>, MAX_NUMBER_QUADS> &output) {
   auto header = state._header_data[packet_idx].data();
   auto offset = state._header_offset[packet_idx];
   auto number_of_quads =
       ((((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
   auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
   auto number_of_baq_blocks = ((1) + (((((2) * (number_of_quads))) / (256))));
-  std::array<uint8_t, 256> brcs;
-  std::array<uint8_t, 256> thidxs;
+  std::array<uint8_t, 205> brcs;
+  std::array<uint8_t, 205> thidxs;
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
   assert((number_of_baq_blocks) <= (256));
@@ -334,12 +334,13 @@ int init_decode_packet(int packet_idx,
               << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
               << (" packet_idx=") << (packet_idx) << (std::setw(8))
               << (" baq_mode=") << (baq_mode) << (std::setw(8))
-              << (" baq_block_length=") << (baq_block_length) << (std::endl);
+              << (" baq_block_length=") << (baq_block_length) << (std::setw(8))
+              << (" number_of_quads=") << (number_of_quads) << (std::endl);
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
   auto decoded_ie_symbols = 0;
-  std::array<float, 65535> decoded_ie_symbols_a;
+  std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
   // parse ie data
   for (int block = 0; decoded_ie_symbols < number_of_quads; (block)++) {
     auto brc = get_bit_rate_code(&s);
@@ -494,7 +495,7 @@ int init_decode_packet(int packet_idx,
   }
   consume_padding_bits(&s);
   auto decoded_io_symbols = 0;
-  std::array<float, 65535> decoded_io_symbols_a;
+  std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
   // parse io data
   for (int block = 0; decoded_io_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];
@@ -648,7 +649,7 @@ int init_decode_packet(int packet_idx,
   }
   consume_padding_bits(&s);
   auto decoded_qe_symbols = 0;
-  std::array<float, 65535> decoded_qe_symbols_a;
+  std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
   // parse qe data
   for (int block = 0; decoded_qe_symbols < number_of_quads; (block)++) {
     auto thidx = get_threshold_index(&s);
@@ -914,7 +915,7 @@ int init_decode_packet(int packet_idx,
   }
   consume_padding_bits(&s);
   auto decoded_qo_symbols = 0;
-  std::array<float, 65535> decoded_qo_symbols_a;
+  std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
   // parse qo data
   for (int block = 0; decoded_qo_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];

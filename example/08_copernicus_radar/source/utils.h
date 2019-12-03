@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <complex>
+enum { MAX_NUMBER_QUADS = 52378 }; // page 55
 struct sequential_bit_t {
   size_t current_bit_count;
   uint8_t *data;
