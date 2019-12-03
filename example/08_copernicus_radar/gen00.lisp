@@ -795,6 +795,8 @@
 			   fref))
 		  (delta_t_suppressed (/ 320d0 (* 8 fref)))
 		  (data_delay_us (+ swst delta_t_suppressed))
+		  (data_delay (+ ,(/ 320 8)
+				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
 			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		  
@@ -815,6 +817,7 @@
 					   `(== ,e baq_mode))))
 			,(logprint "" `(packet_idx baq_mode ;baq_block_length
 						   data_delay_us
+						   data_delay
 						   number_of_quads)))
 	      (let ((s))
 		(declare (type sequential_bit_t s))

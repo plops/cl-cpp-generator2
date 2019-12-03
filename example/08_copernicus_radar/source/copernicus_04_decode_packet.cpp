@@ -325,6 +325,9 @@ int init_decode_packet(
                (fref));
   auto delta_t_suppressed = (((3.2e+2)) / (((8) * (fref))));
   auto data_delay_us = ((swst) + (delta_t_suppressed));
+  auto data_delay =
+      ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
+                (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
   assert((number_of_baq_blocks) <= (256));
   assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
@@ -341,6 +344,7 @@ int init_decode_packet(
               << (" packet_idx=") << (packet_idx) << (std::setw(8))
               << (" baq_mode=") << (baq_mode) << (std::setw(8))
               << (" data_delay_us=") << (data_delay_us) << (std::setw(8))
+              << (" data_delay=") << (data_delay) << (std::setw(8))
               << (" number_of_quads=") << (number_of_quads) << (std::endl);
   sequential_bit_t s;
   init_sequential_bit_function(
