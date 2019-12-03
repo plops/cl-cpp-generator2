@@ -6,9 +6,12 @@
 
 ;; switches
 ;; :safety .. enable extra asserts in the code
+;; :nolog  .. suppress all logging output (also makes code more readable)
 
-(setf *features* (union *features* '(:safety)))
+(setf *features* (union *features* '(:safety ;:nolog
+				     )))
 (setf *features* (set-difference *features* '(;:safety
+					      :nolog
 					      )))
 
 
@@ -192,47 +195,51 @@
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
     (defun vkprint (call &optional rest)
-      `(do0 ,call
-            (<< "std::cout"
-              (- (dot ("std::chrono::high_resolution_clock::now")
-                    (time_since_epoch)
-                    (count))
-                 ,(g `_start_time))
-              (string " ")
-              __FILE__
-              (string ":")
-              __LINE__
-              (string " ")
-              __func__
-              (string ,(format nil " ~a " (emit-c :code call)))
-              ,@(loop for e in rest appending
-                     `((string ,(format nil " ~a=" (emit-c :code e)))
-                       ,e))
-              "std::endl")))
+      `(do0 #-nolog
+	    (do0
+	     ,call
+	     (<< "std::cout"
+		 (- (dot ("std::chrono::high_resolution_clock::now")
+			 (time_since_epoch)
+			 (count))
+		    ,(g `_start_time))
+		 (string " ")
+		 __FILE__
+		 (string ":")
+		 __LINE__
+		 (string " ")
+		 __func__
+		 (string ,(format nil " ~a " (emit-c :code call)))
+		 ,@(loop for e in rest appending
+			`((string ,(format nil " ~a=" (emit-c :code e)))
+			  ,e))
+		 "std::endl"))))
     (defun logprint (msg &optional rest)
       `(do0
-	("std::setprecision" 3)
-	(<< "std::cout"
-	    ("std::setw" 10)
-	       (- (dot ("std::chrono::high_resolution_clock::now")
-		       (time_since_epoch)
-		       (count))
-		  ,(g `_start_time))
-	       (string " ")
-	       __FILE__
-	       (string ":")
-	       __LINE__
-	       (string " ")
-	       __func__
-	       (string " ")
-	       (string ,msg)
-	       (string " ")
-	       ,@(loop for e in rest appending
-		      `(("std::setw" 8)
+	#-nolog
+	(do0
+	 ("std::setprecision" 3)
+	 (<< "std::cout"
+	     ("std::setw" 10)
+	     (- (dot ("std::chrono::high_resolution_clock::now")
+		     (time_since_epoch)
+		     (count))
+		,(g `_start_time))
+	     (string " ")
+	     __FILE__
+	     (string ":")
+	     __LINE__
+	     (string " ")
+	     __func__
+	     (string " ")
+	     (string ,msg)
+	     (string " ")
+	     ,@(loop for e in rest appending
+		    `(("std::setw" 8)
 					;("std::width" 8)
-			(string ,(format nil " ~a=" (emit-c :code e)))
-			,e))
-	       "std::endl")))
+		      (string ,(format nil " ~a=" (emit-c :code e)))
+		      ,e))
+	     "std::endl"))))
 
     (defun gen-huffman-decoder (name huffman-tree)
       (labels ((frob (tree)
@@ -314,6 +321,7 @@
 	     (do0
 	      (include <iostream>
 		       <chrono>
+		       <cassert>
 		       <unordered_map>
 		       )
 	      (let ((state ,(emit-globals :init t)))
@@ -382,13 +390,18 @@
 			     (let ((offset (aref ,(g `_header_offset) packet_idx))
 				   (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 				   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
-				   (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
-			       (do0 ;when (== ele ma_ele)
-				 (let ((output)
-				       (n (init_decode_packet packet_idx output)))
-				   (declare (type "std::array<std::complex<float>,65535>" output))))
+				   (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				   (sync_marker ,(space-packet-slot-get 'sync-marker 'p)))
+			       (assert (== sync_marker (hex #x352EF853)))
+			       (handler-case
+				(when (== ele ma_ele)
+				  (let ((output)
+					(n (init_decode_packet packet_idx output)))
+				    (declare (type "std::array<std::complex<float>,65535>" output))))
+				 ("std::out_of_range" (e)
+				     ,(logprint "exception" `(packet_idx))))
 			       (incf packet_idx)))))
-		
+
 		
 		;(init_decode_packet 1)
 		;(init_decode_packet 2)

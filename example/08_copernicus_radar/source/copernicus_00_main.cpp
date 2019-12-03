@@ -5,6 +5,7 @@
 
 #include "proto2.h"
 ;
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <unordered_map>
@@ -99,8 +100,27 @@ int main() {
       auto ele = ((0xF) & ((p[60]) >> (4)));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
-      std::array<std::complex<float>, 65535> output;
-      auto n = init_decode_packet(packet_idx, output);
+      auto sync_marker =
+          ((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
+           (((0x10000) * (p[13]))) + (((0x1000000) * (((0xFF) & (p[12]))))));
+      assert((sync_marker) == (0x352EF853));
+      try {
+        if ((ele) == (ma_ele)) {
+          std::array<std::complex<float>, 65535> output;
+          auto n = init_decode_packet(packet_idx, output);
+        };
+      } catch (std::out_of_range e) {
+        std::setprecision(3);
+        (std::cout) << (std::setw(10))
+                    << (((std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count()) -
+                         (state._start_time)))
+                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                    << (__func__) << (" ") << ("exception") << (" ")
+                    << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                    << (std::endl);
+      };
       (packet_idx)++;
     };
   };
