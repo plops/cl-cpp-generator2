@@ -391,8 +391,11 @@
 				   (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 				   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				   (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
-				   (sync_marker ,(space-packet-slot-get 'sync-marker 'p)))
+				   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+				   (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
+				   (pri_count ,(space-packet-slot-get 'pri-count 'p)))
 			       (assert (== sync_marker (hex #x352EF853)))
+			       ,(logprint "iter" `(space_packet_count pri_count))
 			       (handler-case
 				(when (== ele ma_ele)
 				  (let ((output)

@@ -103,7 +103,24 @@ int main() {
       auto sync_marker =
           ((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
            (((0x10000) * (p[13]))) + (((0x1000000) * (((0xFF) & (p[12]))))));
+      auto space_packet_count =
+          ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
+           (((0x10000) * (p[30]))) + (((0x1000000) * (((0xFF) & (p[29]))))));
+      auto pri_count =
+          ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
+           (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       assert((sync_marker) == (0x352EF853));
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("iter") << (" ") << (std::setw(8))
+                  << (" space_packet_count=") << (space_packet_count)
+                  << (std::setw(8)) << (" pri_count=") << (pri_count)
+                  << (std::endl);
       try {
         if ((ele) == (ma_ele)) {
           std::array<std::complex<float>, MAX_NUMBER_QUADS> output;
