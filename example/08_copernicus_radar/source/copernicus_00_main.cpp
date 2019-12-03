@@ -65,6 +65,7 @@ int main() {
     auto packet_idx = 0;
     auto mi_data_delay = 10000000;
     auto ma_data_delay = -1;
+    auto ma_data_end = -1;
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
@@ -81,6 +82,10 @@ int main() {
         if (ma_data_delay < data_delay) {
           ma_data_delay = data_delay;
         };
+        auto v = ((data_delay) + (((2) * (number_of_quads))));
+        if (ma_data_end < v) {
+          ma_data_end = v;
+        };
         (map_azi[azi]) += (number_of_quads);
       };
       (packet_idx)++;
@@ -95,6 +100,7 @@ int main() {
                 << (__func__) << (" ") << ("data_delay") << (" ")
                 << (std::setw(8)) << (" mi_data_delay=") << (mi_data_delay)
                 << (std::setw(8)) << (" ma_data_delay=") << (ma_data_delay)
+                << (std::setw(8)) << (" ma_data_end=") << (ma_data_end)
                 << (std::endl);
     for (auto &azi : map_azi) {
       auto number_of_Mquads = ((azi.second) / ((1.e+6f)));
