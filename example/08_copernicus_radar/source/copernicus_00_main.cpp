@@ -131,7 +131,7 @@ int main() {
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("start big allocation") << (" ")
               << (std::endl);
-  auto n0 = ((ma_data_delay) + (ma_data_end) + ((-(mi_data_delay))));
+  auto n0 = ((ma_data_end) + (((ma_data_delay) - (mi_data_delay))));
   auto sar_image = new std::complex<float>[((n0) * (ele_number_echoes))];
   std::setprecision(3);
   (std::cout) << (std::setw(10))
@@ -161,11 +161,14 @@ int main() {
       auto pri_count =
           ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
+      auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
+                                  (((0x10000) * (((0xFF) & (p[53]))))))));
       assert((sync_marker) == (0x352EF853));
       try {
         if ((ele) == (ma_ele)) {
-          std::array<std::complex<float>, MAX_NUMBER_QUADS> output;
-          auto n = init_decode_packet(packet_idx, mi_data_delay, output);
+          auto n = init_decode_packet(
+              packet_idx, ((sar_image) + (((((data_delay) - (mi_data_delay))) +
+                                           (((n0) * (ele_count)))))));
           if (!((n) == (((2) * (number_of_quads))))) {
             std::setprecision(3);
             (std::cout) << (std::setw(10))
@@ -179,9 +182,6 @@ int main() {
                         << (std::setw(8)) << (" number_of_quads=")
                         << (number_of_quads) << (std::endl);
           };
-          for (int i = 0; i < n; (i) += (1)) {
-            sar_image[((i) + (((n0) * (ele_count))))] = output[i];
-          }
           (ele_count)++;
         };
       } catch (std::out_of_range e) {

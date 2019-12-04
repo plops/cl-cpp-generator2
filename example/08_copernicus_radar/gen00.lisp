@@ -365,9 +365,11 @@
 				,(logprint "map_ele" `(elevation_beam_address number_of_Mquads))))
 		     ,(logprint "largest ele" `(ma_ele ma)))
 
-		   (let ((mi_data_delay 10000000)
-			 (ma_data_delay -1)
-			 (ma_data_end -1)
+		   (let ((mi_data_delay 10000000) ;; minimum number of samples before data is stored
+			 (ma_data_delay -1) ;; maximum number of samples before data is stored
+			 (ma_data_end -1) ;; maximum number of samples
+			 ;; earliest echos are ma_data_delay-mi_data_delay samples earlier than the latest
+			 ;; at most we may need to store ma_data_delay - mi_data_delay + ma_data_end samples
 			 (ele_number_echoes 0))
 		    (progn
 		      (let ((map_azi)
@@ -400,7 +402,7 @@
 
 		(do0
 		 ,(logprint "start big allocation" `())
-		 (let ((n0 (+ ma_data_delay ma_data_end (- mi_data_delay)))
+		 (let ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
 		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
 		   (progn
@@ -413,18 +415,25 @@
 				      (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
 				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
-				      (pri_count ,(space-packet-slot-get 'pri-count 'p)))
+				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
+				      (data_delay (+ ,(/ 320 8)
+						     ,(space-packet-slot-get 'sampling-window-start-time 'p
+									     ))))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
 				  (handler-case
 				      (when (== ele ma_ele)
-					(let ((output)
-					      (n (init_decode_packet packet_idx mi_data_delay output)))
-					  (declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
+					(let (;(output)
+					      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
+						 (init_decode_packet packet_idx
+								     ;; data_delay is at least mi_data_delay and at most ma_data_delay
+								     ;; create an offset in [0.. ma_data_delay-mi_data_delay)
+								     (+ sar_image (+ (- data_delay mi_data_delay) (* n0 ele_count))))))
+					  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
 					  (unless (== n (* 2 number_of_quads))
 					    ,(logprint "unexpected number of quads" `(n number_of_quads)))
 					  (do0
-					   (dotimes (i n)
+					   #+nil (dotimes (i n)
 					     (setf (aref sar_image (+ i (* n0 ele_count)))
 						   (aref output i))
 					     )
@@ -803,9 +812,13 @@
 	  
 
 	  
-	  (defun init_decode_packet (packet_idx mi_data_delay output)
-	    (declare (type int packet_idx mi_data_delay)
-		     (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>&" output)
+	  (defun init_decode_packet (packet_idx ; mi_data_delay
+				     output
+				     )
+	    (declare (type int packet_idx ;mi_data_delay
+			   )
+		     #+nil (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>&" output)
+		     (type "std::complex<float>*" output)
 		     (values int))
 
 	    "// packet_idx .. index of space packet 0 .."
@@ -831,7 +844,7 @@
 		  (data_delay_us (+ swst delta_t_suppressed))
 		  (data_delay (+ ,(/ 320 8)
 				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
-		  (data_offset (- data_delay mi_data_delay))
+		  #+nil (data_offset (- data_delay mi_data_delay))
 			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 		  
@@ -847,10 +860,10 @@
 				      (round (/ max-number-quads 256)))
 			     thidxs))
 
-	      (when (== -1 mi_data_delay)
+	      #+nil (when (== -1 mi_data_delay)
 		(setf data_offset 0))
 	      #+safety (do0
-			(assert (or (== -1 mi_data_delay)
+			#+nil (assert (or (== -1 mi_data_delay)
 				    (<= mi_data_delay data_delay)))
 			(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
@@ -1029,11 +1042,17 @@
 					    break))))
 			     ))))
 
+		#+nil
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (+ data_offset (* 2 i))) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (+ data_offset (* 2 i))) (imag (aref decoded_qe_symbols_a i))))
 		  (do0 (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (real (aref decoded_io_symbols_a i)))
 		       (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (imag (aref decoded_qo_symbols_a i)))))
+		(dotimes (i decoded_ie_symbols)
+		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
+		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
+		  (do0 (dot (aref output (+ 1 (* 2 i))) (real (aref decoded_io_symbols_a i)))
+		       (dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
 		
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
