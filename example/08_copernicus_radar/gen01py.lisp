@@ -11,6 +11,14 @@
   
   (let* ((code
 	 `(do0
+	   #-nil(do0
+                  (imports (matplotlib))
+                  ;(matplotlib.use (string "Agg"))
+                  (imports ((plt matplotlib.pyplot)))
+                  (plt.ion)
+                  (setf font (dict ((string size) (string 5))))
+                  (matplotlib.rc (string "font") **font)
+                  )
 
 	   
 	   (do0 "# %% imports"
@@ -20,19 +28,26 @@
 					;docopt
 			  pathlib
 			  (np numpy)
-			  serial
+			  ;serial
 			  (pd pandas)
 					;(xr xarray)
 					;(xrp xarray.plot)
 					;skimage.restoration
 					;(u astropy.units)
 					; EP_SerialIO
-			  scipy.ndimage
-			  scipy.optimize
+			  ;scipy.ndimage
+			  ;scipy.optimize
 					;nfft
-			  sklearn
-			  sklearn.linear_model
-			  itertools
-			  datetime
-			  ))))))
+			  ;sklearn
+			  ;sklearn.linear_model
+			  ;itertools
+			  ;datetime
+			  ))
+		(setf s (np.memmap (string "/dev/shm/o_15283_17078.cf")
+				   :dtype np.float32 ;complex64
+				   :mode (string "r")
+				   :shape (tuple 2000 ;15283
+						 17078
+						 )))
+		))))
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
