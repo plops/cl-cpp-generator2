@@ -422,7 +422,8 @@
 					  ,(logprint "unexpected number of quads" `(n number_of_quads)))))
 				  ("std::out_of_range" (e)
 				    ,(logprint "exception" `(packet_idx))))
-				(incf packet_idx))))))
+				(incf packet_idx)))))
+		  (delete sar_image))
 
 		
 		;(init_decode_packet 1)

@@ -261,6 +261,10 @@ entry return-values contains a list of return values"
 		   ;; curly {args}*
 		   (let ((args (cdr code)))
 		     (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
+		  (new
+		   ;; new arg
+		   (let ((arg (cadr code)))
+		     (format nil "new ~a" (emit arg))))
 		  (indent
 		   ;; indent form
 		   (format nil "~{~a~}~a"

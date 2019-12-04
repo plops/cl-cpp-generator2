@@ -123,7 +123,7 @@ int main() {
     };
   };
   auto n0 = ((ma_data_delay) + (ma_data_end) + ((-(mi_data_delay))));
-  auto sar_image = new (std::complex<float>[((n0) * (ele_number_echoes))]);
+  auto sar_image = new std::complex<float>[((n0) * (ele_number_echoes))];
   {
     auto packet_idx = 0;
     for (auto &e : state._header_data) {
@@ -175,5 +175,6 @@ int main() {
       (packet_idx)++;
     };
   };
+  delete (sar_image);
   destroy_mmap();
 };
