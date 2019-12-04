@@ -323,6 +323,8 @@
 		       <chrono>
 		       <cassert>
 		       <unordered_map>
+		       <string>
+		       <fstream>
 		       )
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
@@ -440,7 +442,20 @@
 					   (incf ele_count))))
 				    ("std::out_of_range" (e)
 				      ,(logprint "exception" `(packet_idx))))
-				  (incf packet_idx)))))
+				  (incf packet_idx)))
+		       (let ((fn (+ ("std::string" (string "/dev/shm/o_"))
+				("std::to_string" n0)
+				("std::string" (string "_"))
+				("std::to_string" ele_count)
+				("std::string" (string ".cf"))))
+			     (file ("std::ofstream" fn "std::ofstream::binary"))
+			     (nbytes (* n0
+					ele_number_echoes
+					(sizeof "std::complex<float>"))))
+			 ,(logprint "store" '(nbytes))
+			 (file.write ("reinterpret_cast<const char*>" sar_image) nbytes)
+			 ,(logprint "store finished" '()))))
+		   
 		   (delete[] sar_image)
 		   ))
 

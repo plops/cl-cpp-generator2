@@ -7,7 +7,9 @@
 ;
 #include <cassert>
 #include <chrono>
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <unordered_map>
 State state = {};
 int main() {
@@ -198,6 +200,30 @@ int main() {
       };
       (packet_idx)++;
     };
+    auto fn = ((std::string("/dev/shm/o_")) + (std::to_string(n0)) +
+               (std::string("_")) + (std::to_string(ele_count)) +
+               (std::string(".cf")));
+    auto file = std::ofstream(fn, std::ofstream::binary);
+    auto nbytes = ((n0) * (ele_number_echoes) * (sizeof(std::complex<float>)));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("store") << (" ") << (std::setw(8))
+                << (" nbytes=") << (nbytes) << (std::endl);
+    file.write(reinterpret_cast<const char *>(sar_image), nbytes);
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("store finished") << (" ")
+                << (std::endl);
   };
   delete[](sar_image);
   destroy_mmap();
