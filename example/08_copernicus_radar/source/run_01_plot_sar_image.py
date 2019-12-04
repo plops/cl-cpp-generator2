@@ -9,4 +9,4 @@ import time
 import pathlib
 import numpy as np
 import pandas as pd
-s=np.memmap("/dev/shm/o_15283_17078.cf", dtype=np.float32, mode="r", shape=(2000,17078,))
+s=np.memmap("./o_15283_17078.cf", dtype=np.float32, mode="r", shape=(15283,17078,))

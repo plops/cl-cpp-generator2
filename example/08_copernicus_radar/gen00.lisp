@@ -443,7 +443,7 @@
 				    ("std::out_of_range" (e)
 				      ,(logprint "exception" `(packet_idx))))
 				  (incf packet_idx)))
-		       (let ((fn (+ ("std::string" (string "/dev/shm/o_"))
+		       (let ((fn (+ ("std::string" (string "./o_"))
 				("std::to_string" n0)
 				("std::string" (string "_"))
 				("std::to_string" ele_count)

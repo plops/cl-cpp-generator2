@@ -200,9 +200,9 @@ int main() {
       };
       (packet_idx)++;
     };
-    auto fn = ((std::string("/dev/shm/o_")) + (std::to_string(n0)) +
-               (std::string("_")) + (std::to_string(ele_count)) +
-               (std::string(".cf")));
+    auto fn =
+        ((std::string("./o_")) + (std::to_string(n0)) + (std::string("_")) +
+         (std::to_string(ele_count)) + (std::string(".cf")));
     auto file = std::ofstream(fn, std::ofstream::binary);
     auto nbytes = ((n0) * (ele_number_echoes) * (sizeof(std::complex<float>)));
     std::setprecision(3);

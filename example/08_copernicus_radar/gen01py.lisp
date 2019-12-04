@@ -43,10 +43,10 @@
 			  ;itertools
 			  ;datetime
 			  ))
-		(setf s (np.memmap (string "/dev/shm/o_15283_17078.cf")
+		(setf s (np.memmap (string "./o_15283_17078.cf")
 				   :dtype np.float32 ;complex64
 				   :mode (string "r")
-				   :shape (tuple 2000 ;15283
+				   :shape (tuple 15283
 						 17078
 						 )))
 		))))
