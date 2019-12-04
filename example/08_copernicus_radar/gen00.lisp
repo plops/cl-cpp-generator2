@@ -399,10 +399,9 @@
 				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
 
 
-		(let ((sar_image))
-		  (declare (type "std::vector<std::vector<std::complex,ma_data_delay+ma_data_end-mi_data_delay>,ele_number_of_echoes>"
-				 sar_image))
-		 (progn
+		(let ((n0 (+ ma_data_delay ma_data_end (- mi_data_delay)))
+		      (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
+		  (progn
 		   (let ((packet_idx 0))
 		     (foreach (e ,(g `_header_data))
 			      (let ((offset (aref ,(g `_header_offset) packet_idx))
