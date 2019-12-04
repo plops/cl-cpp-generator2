@@ -122,8 +122,27 @@ int main() {
                   << (std::endl);
     };
   };
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("start big allocation") << (" ")
+              << (std::endl);
   auto n0 = ((ma_data_delay) + (ma_data_end) + ((-(mi_data_delay))));
   auto sar_image = new std::complex<float>[((n0) * (ele_number_echoes))];
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("end big allocation") << (" ")
+              << (std::setw(8)) << (" (((1.e-6f))*(n0)*(ele_number_echoes))=")
+              << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
   {
     auto packet_idx = 0;
     auto ele_count = 0;
