@@ -402,7 +402,8 @@
 		(let ((n0 (+ ma_data_delay ma_data_end (- mi_data_delay)))
 		      (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		  (progn
-		   (let ((packet_idx 0))
+		    (let ((packet_idx 0)
+			  (ele_count 0))
 		     (foreach (e ,(g `_header_data))
 			      (let ((offset (aref ,(g `_header_offset) packet_idx))
 				    (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
@@ -419,11 +420,18 @@
 					    (n (init_decode_packet packet_idx mi_data_delay output)))
 					(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
 					(unless (== n (* 2 number_of_quads))
-					  ,(logprint "unexpected number of quads" `(n number_of_quads)))))
+					  ,(logprint "unexpected number of quads" `(n number_of_quads)))
+					(do0
+					 (dotimes (i n)
+					   (setf (aref sar_image (+ i (* n0 ele_count)))
+						 (aref output i))
+					   )
+					 (incf ele_count))))
 				  ("std::out_of_range" (e)
 				    ,(logprint "exception" `(packet_idx))))
 				(incf packet_idx)))))
-		  (delete sar_image))
+		  (delete[] sar_image)
+		  )
 
 		
 		;(init_decode_packet 1)

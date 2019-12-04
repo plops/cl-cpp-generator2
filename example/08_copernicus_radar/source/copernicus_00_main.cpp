@@ -126,6 +126,7 @@ int main() {
   auto sar_image = new std::complex<float>[((n0) * (ele_number_echoes))];
   {
     auto packet_idx = 0;
+    auto ele_count = 0;
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
@@ -159,6 +160,10 @@ int main() {
                         << (std::setw(8)) << (" number_of_quads=")
                         << (number_of_quads) << (std::endl);
           };
+          for (int i = 0; i < n; (i) += (1)) {
+            sar_image[((i) + (((n0) * (ele_count))))] = output[i];
+          }
+          (ele_count)++;
         };
       } catch (std::out_of_range e) {
         std::setprecision(3);
@@ -175,6 +180,6 @@ int main() {
       (packet_idx)++;
     };
   };
-  delete (sar_image);
+  delete[](sar_image);
   destroy_mmap();
 };
