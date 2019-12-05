@@ -163,6 +163,7 @@ int main() {
       auto pri_count =
           ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
+      auto rank = ((0x1F) & ((p[49]) >> (0)));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
       auto txprr_p = ((0x1) & ((p[42]) >> (7)));
@@ -197,17 +198,25 @@ int main() {
                         << (std::setw(8)) << (" number_of_quads=")
                         << (number_of_quads) << (std::endl);
           };
-          std::setprecision(3);
-          (std::cout) << (std::setw(10))
-                      << (((std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count()) -
-                           (state._start_time)))
-                      << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                      << (__func__) << (" ") << ("tx") << (" ")
-                      << (std::setw(8)) << (" txprr=") << (txprr)
-                      << (std::setw(8)) << (" txpsf=") << (txpsf)
-                      << (std::setw(8)) << (" txpl=") << (txpl) << (std::endl);
+          {
+            std::ofstream outfile;
+            outfile.open("./o_range.csv", std::ios_base::app);
+            if ((0) == (outfile.tellp())) {
+              (outfile) << ("ele_count,") << (ele_count) << ("ele,") << (ele)
+                        << ("number_of_quads,") << (number_of_quads)
+                        << ("space_packet_count,") << (space_packet_count)
+                        << ("pri_count,") << (pri_count) << ("rank,") << (rank)
+                        << ("data_delay,") << (data_delay) << ("txprr,")
+                        << (txprr) << ("txpsf,") << (txpsf) << ("txpl,")
+                        << (txpl) << (std::endl);
+            };
+            (outfile) << (ele_count) << (",") << (ele) << (",")
+                      << (number_of_quads) << (",") << (space_packet_count)
+                      << (",") << (pri_count) << (",") << (rank) << (",")
+                      << (data_delay) << (",") << (txprr) << (",") << (txpsf)
+                      << (",") << (txpl) << (",") << (std::endl);
+            outfile.close();
+          };
           (ele_count)++;
         };
       } catch (std::out_of_range e) {

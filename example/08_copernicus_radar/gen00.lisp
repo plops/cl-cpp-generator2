@@ -240,6 +240,26 @@
 		      (string ,(format nil " ~a=" (emit-c :code e)))
 		      ,e))
 	     "std::endl"))))
+    (defun csvprint (filename &optional rest)
+      `(do0
+	(progn
+	  (let ((outfile))
+	    (declare (type "std::ofstream" outfile))
+	    (outfile.open (string ,filename)
+			  "std::ios_base::app")
+	    (when (== 0 (outfile.tellp))
+	      (<< outfile
+		  ,@(loop for e in rest appending
+			 `((string ,(format nil "~a," (emit-c :code e)))
+			   ,e))
+		  "std::endl"))
+	    (<< outfile
+		,@(loop for e in rest appending
+		       `(,e
+			 (string ",")))
+		"std::endl")
+	    (outfile.close)
+	    ))))
 
     (defun gen-huffman-decoder (name huffman-tree)
       (labels ((frob (tree)
@@ -418,6 +438,7 @@
 				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
+				      (rank ,(space-packet-slot-get 'rank 'p))
 				      (data_delay (+ ,(/ 320 8)
 						     ,(space-packet-slot-get 'sampling-window-start-time 'p
 									     )))
@@ -453,7 +474,18 @@
 					  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
 					  (unless (== n (* 2 number_of_quads))
 					    ,(logprint "unexpected number of quads" `(n number_of_quads)))
-					  ,(logprint "tx" `(txprr txpsf txpl))
+					;,(logprint "tx" `(txprr txpsf txpl))
+					  ,(csvprint "./o_range.csv"
+						     `(ele_count
+						       ele
+						       number_of_quads
+						       space_packet_count
+						       pri_count
+						       rank
+						       data_delay
+						       txprr
+						       txpsf
+						       txpl))
 					  (do0
 					   #+nil (dotimes (i n)
 					     (setf (aref sar_image (+ i (* n0 ele_count)))
