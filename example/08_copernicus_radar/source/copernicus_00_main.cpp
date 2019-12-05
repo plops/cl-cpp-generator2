@@ -180,7 +180,7 @@ int main() {
                     (pow((-1.e+0f), txprr_p)) * (txprr_m));
       auto txpsf =
           ((((txprr) / (((fref) * (4))))) +
-           (((fref) * (16384) * (pow((-1.e+0f), txpsf_p)) * (txpsf_m))));
+           (((((fref) / (16384))) * (pow((-1.e+0f), txpsf_p)) * (txpsf_m))));
       auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
       try {

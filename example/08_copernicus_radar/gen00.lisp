@@ -462,8 +462,8 @@
 						txprr_m))
 				      
 				      (txpsf (+ (/ txprr (* fref 4)) ;; MHz
-						(* fref
-						   ,(expt 2 14)
+						(* (/ fref
+						      ,(expt 2 14))
 						   (pow -1.0 txpsf_p)
 						   txpsf_m)))
 				      

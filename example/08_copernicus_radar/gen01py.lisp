@@ -46,6 +46,7 @@
 			  ))
 		(setf df (pd.read_csv (string "./o_range.csv")))
 		(setf fref 37.53472224
+		      
 		      row (aref df.iloc 0)
 		      txprr row.txprr
 		      txprr_ row.txprr_
@@ -55,8 +56,9 @@
 		      ns (np.arange txpl_) #+nil (- 
 			    (/ txpl_ 2))
 		      xs (/ ns fref)
-		      ys (np.exp (* 2j np.pi (+ (* txpsf xs)
-						(* .5 txprr xs xs))))
+		      arg (+ (* txpsf xs)
+						(* .5 txprr xs xs))
+		      ys (np.exp (* 2j np.pi arg))
 		      )
 		(plt.plot xs ys)
 		
