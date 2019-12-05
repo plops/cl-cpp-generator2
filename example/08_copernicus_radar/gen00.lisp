@@ -429,16 +429,16 @@
 					   collect
 					     `(,e ,(space-packet-slot-get f 'p)))
 				      (fref 37.53472224)
-				      (txprr (* (/ (* fref fref)
+				      (txprr (* (/ (* fref fref) ;; MHZ/us
 						   ,(expt 2 21))
 						(pow -1.0 txprr_p)
 						txprr_m))
-				      (txpsf (+ (/ txprr (* fref 4))
+				      (txpsf (+ (/ txprr (* fref 4)) ;; MHz
 						(* fref
 						   ,(expt 2 14)
 						   (pow -1.0 txpsf_p)
 						   txpsf_m)))
-				      (txpl (/ (static_cast<double> txpl_)
+				      (txpl (/ (static_cast<double> txpl_) ;; us
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
