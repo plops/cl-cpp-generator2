@@ -246,12 +246,13 @@
 	  (let ((outfile))
 	    (declare (type "std::ofstream" outfile))
 	    (outfile.open (string ,filename)
-			  "std::ios_base::app")
+			  (logior "std::ios_base::out"
+				  "std::ios_base::app"))
 	    (when (== 0 (outfile.tellp))
 	      (<< outfile
 		  ,@(loop for e in rest appending
 			 `((string ,(format nil "~a," (emit-c :code e)))
-			   ,e))
+			   ))
 		  "std::endl"))
 	    (<< outfile
 		,@(loop for e in rest appending
@@ -341,6 +342,7 @@
 	     (do0
 	      (include <iostream>
 		       <chrono>
+		       <cstdio>
 		       <cassert>
 		       <unordered_map>
 		       <string>
@@ -427,6 +429,7 @@
 		 (let ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
 		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
+		   (remove (string  "./o_range.csv"))
 		   (progn
 		     (let ((packet_idx 0)
 			   (ele_count 0))

@@ -7,6 +7,7 @@
 ;
 #include <cassert>
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -145,6 +146,7 @@ int main() {
               << (__func__) << (" ") << ("end big allocation") << (" ")
               << (std::setw(8)) << (" (((1.e-6f))*(n0)*(ele_number_echoes))=")
               << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
+  remove("./o_range.csv");
   {
     auto packet_idx = 0;
     auto ele_count = 0;
@@ -200,15 +202,13 @@ int main() {
           };
           {
             std::ofstream outfile;
-            outfile.open("./o_range.csv", std::ios_base::app);
+            outfile.open("./o_range.csv",
+                         ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
-              (outfile) << ("ele_count,") << (ele_count) << ("ele,") << (ele)
-                        << ("number_of_quads,") << (number_of_quads)
-                        << ("space_packet_count,") << (space_packet_count)
-                        << ("pri_count,") << (pri_count) << ("rank,") << (rank)
-                        << ("data_delay,") << (data_delay) << ("txprr,")
-                        << (txprr) << ("txpsf,") << (txpsf) << ("txpl,")
-                        << (txpl) << (std::endl);
+              (outfile) << ("ele_count,") << ("ele,") << ("number_of_quads,")
+                        << ("space_packet_count,") << ("pri_count,")
+                        << ("rank,") << ("data_delay,") << ("txprr,")
+                        << ("txpsf,") << ("txpl,") << (std::endl);
             };
             (outfile) << (ele_count) << (",") << (ele) << (",")
                       << (number_of_quads) << (",") << (space_packet_count)
