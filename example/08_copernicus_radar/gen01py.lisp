@@ -49,7 +49,7 @@
 				    )
 		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
-		(setf fref 37.53472224
+		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)
 		      txprr row.txprr
@@ -78,12 +78,27 @@
 						 )))
 
 		(do0
-		 (setf ys0 (np.zeros 15283 :dtype np.complex64)
-		       (aref ys0 (slice 0 (len ys))) ys)
+		 (setf ys0 (np.zeros (tuple 5000 15283) :dtype np.complex64)
+		       )
+		 (for (idx (range (aref ys0.shape 0)))
+		  (setf fref 37.53472224
+			row (aref df.iloc idx)
+			txprr row.txprr
+			txprr_ row.txprr_
+			txpsf row.txpsf
+			txpl row.txpl
+			txpl_ row.txpl_
+			ns (np.arange txpl_) #+nil (- 
+						    (/ txpl_ 2))
+			xs (/ ns fref)
+			arg (+ (* txpsf xs)
+			       (* .5 txprr xs xs))
+			ys (np.exp (* -2j np.pi arg))
+			(aref ys0 idx (slice 0 (len ns))) ys))
 		 (setf k0 (np.fft.fft s #+nil (dot s ;(aref s 0 ":")
 					   (astype np.complex128))
 				      :axis 1))
-		 (setf kp (np.fft.fft ys0))
+		 (setf kp (np.fft.fft ys0 :axis 1))
 					
 		 (plt.imshow (np.log (+ .001 (np.real (np.fft.ifft (* k0 kp))))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
