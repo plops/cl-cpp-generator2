@@ -165,6 +165,12 @@ int main() {
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
+      auto txpl_p = ((0x1) & ((p[42]) >> (7)));
+      auto txpl_m = ((((0x1) * (p[43]))) + (((0x100) * (((0x7F) & (p[42]))))));
+      auto txpsf_p = ((0x1) & ((p[44]) >> (7)));
+      auto txpsf_m = ((((0x1) * (p[45]))) + (((0x100) * (((0x7F) & (p[44]))))));
+      auto txpl_ = ((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
+                    (((0x10000) * (((0xFF) & (p[46]))))));
       assert((sync_marker) == (0x352EF853));
       try {
         if ((ele) == (ma_ele)) {
@@ -200,9 +206,9 @@ int main() {
       };
       (packet_idx)++;
     };
-    auto fn =
-        ((std::string("./o_")) + (std::to_string(n0)) + (std::string("_")) +
-         (std::to_string(ele_count)) + (std::string(".cf")));
+    auto fn = ((std::string("./o_range")) + (std::to_string(n0)) +
+               (std::string("_echoes")) + (std::to_string(ele_number_echoes)) +
+               (std::string(".cf")));
     auto file = std::ofstream(fn, std::ofstream::binary);
     auto nbytes = ((n0) * (ele_number_echoes) * (sizeof(std::complex<float>)));
     std::setprecision(3);

@@ -420,7 +420,14 @@
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (data_delay (+ ,(/ 320 8)
 						     ,(space-packet-slot-get 'sampling-window-start-time 'p
-									     ))))
+									     )))
+				      ,@(loop for (e f) in `((txpl_p tx-ramp-rate-polarity)
+							     (txpl_m tx-ramp-rate-magnitude)
+							     (txpsf_p tx-pulse-start-frequency-polarity)
+							     (txpsf_m tx-pulse-start-frequency-magnitude)
+							     (txpl_ tx-pulse-length))
+					   collect
+					     `(,e ,(space-packet-slot-get f 'p))))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
 				  (handler-case
@@ -443,10 +450,10 @@
 				    ("std::out_of_range" (e)
 				      ,(logprint "exception" `(packet_idx))))
 				  (incf packet_idx)))
-		       (let ((fn (+ ("std::string" (string "./o_"))
+		       (let ((fn (+ ("std::string" (string "./o_range"))
 				("std::to_string" n0)
-				("std::string" (string "_"))
-				("std::to_string" ele_count)
+				("std::string" (string "_echoes"))
+				("std::to_string" ele_number_echoes)
 				("std::string" (string ".cf"))))
 			     (file ("std::ofstream" fn "std::ofstream::binary"))
 			     (nbytes (* n0

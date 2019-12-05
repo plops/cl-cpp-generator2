@@ -28,6 +28,7 @@
 					;docopt
 			  pathlib
 			  (np numpy)
+			  numpy.fft
 			  ;serial
 			  (pd pandas)
 					;(xr xarray)
@@ -43,11 +44,17 @@
 			  ;itertools
 			  ;datetime
 			  ))
-		(setf s (np.memmap (string "./o_15283_17078.cf")
-				   :dtype np.float32 ;complex64
+		(setf s (np.memmap (next (dot (pathlib.Path (string "./"))
+					      (glob (string "o*.cf"))))
+				   :dtype np.complex64
 				   :mode (string "r")
-				   :shape (tuple 15283
-						 17078
+				   :shape (tuple 22778
+						 15283
 						 )))
+		#+nil (plt.imshow
+		 (np.angle s))
+		(do0
+		 (setf k (np.fft.fft (s.astype np.complex128) :axis 1))
+		 (plt.imshow (np.log (+ .001 (np.abs k)))))
 		))))
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
