@@ -42,8 +42,12 @@
 			  ;sklearn
 			  ;sklearn.linear_model
 			  ;itertools
-			  ;datetime
+					;datetime
+			  (et xml.etree.ElementTree)
 			  ))
+		(setf xmlfn (string "/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
+				    )
+		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
 		(setf fref 37.53472224
 		      

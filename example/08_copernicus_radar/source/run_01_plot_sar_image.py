@@ -10,6 +10,9 @@ import pathlib
 import numpy as np
 import numpy.fft
 import pandas as pd
+import xml.etree.ElementTree as et
+xmlfn="/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
+xm=et.parse(xmlfn)
 df=pd.read_csv("./o_range.csv")
 fref=(3.7534721374511715e+1)
 row=df.iloc[0]
