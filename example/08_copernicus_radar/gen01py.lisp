@@ -60,8 +60,11 @@
 						(* .5 txprr xs xs))
 		      ys (np.exp (* 2j np.pi arg))
 		      )
+		#+nil
 		(plt.plot xs ys)
-		
+		#+nil(do0
+		 (setf kp (np.fft.fft (ys.astype np.complex128)))
+		 (plt.plot (np.log (+ .001 (np.abs kp)))))
 		(setf s (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o*.cf"))))
 				   :dtype np.complex64
@@ -69,6 +72,14 @@
 				   :shape (tuple 22778
 						 15283
 						 )))
+
+		(do0
+		 (setf ys0 (np.zeros 15283 :dtype np.complex128)
+		       (aref ys0 (slice 0 (len ys))) ys)
+		 (setf k0 (np.fft.fft (dot (aref s 0 ":") (astype np.complex128))))
+		 (setf kp (np.fft.fft (ys0.astype np.complex128)))
+		 (plt.plot (np.fft.ifft (* k0 kp)))
+		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
 		#+nil
