@@ -250,14 +250,16 @@
 				  "std::ios_base::app"))
 	    (when (== 0 (outfile.tellp))
 	      (<< outfile
-		  ,@(loop for e in rest appending
-			 `((string ,(format nil "~a," (emit-c :code e)))
-			   ))
+		  (string ,(format nil "~{~a~^,~}" (mapcar #'(lambda (x) (emit-c :code x))
+						    rest)))
 		  "std::endl"))
 	    (<< outfile
-		,@(loop for e in rest appending
-		       `(,e
-			 (string ",")))
+		,@(loop for e in rest and i downfrom (1- (length rest))
+		     appending
+		       (if (eq i 0)
+			   `(,e)
+			   `(,e
+			       (string ","))))
 		"std::endl")
 	    (outfile.close)
 	    ))))

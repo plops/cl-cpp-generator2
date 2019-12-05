@@ -205,16 +205,15 @@ int main() {
             outfile.open("./o_range.csv",
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
-              (outfile) << ("ele_count,") << ("ele,") << ("number_of_quads,")
-                        << ("space_packet_count,") << ("pri_count,")
-                        << ("rank,") << ("data_delay,") << ("txprr,")
-                        << ("txpsf,") << ("txpl,") << (std::endl);
+              (outfile) << ("ele_count,ele,number_of_quads,space_packet_count,"
+                            "pri_count,rank,data_delay,txprr,txpsf,txpl")
+                        << (std::endl);
             };
             (outfile) << (ele_count) << (",") << (ele) << (",")
                       << (number_of_quads) << (",") << (space_packet_count)
                       << (",") << (pri_count) << (",") << (rank) << (",")
                       << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                      << (",") << (txpl) << (",") << (std::endl);
+                      << (",") << (txpl) << (std::endl);
             outfile.close();
           };
           (ele_count)++;
