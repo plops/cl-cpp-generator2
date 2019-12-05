@@ -58,7 +58,7 @@
 		      xs (/ ns fref)
 		      arg (+ (* txpsf xs)
 						(* .5 txprr xs xs))
-		      ys (np.exp (* 2j np.pi arg))
+		      ys (np.exp (* -2j np.pi arg))
 		      )
 		#+nil
 		(plt.plot xs ys)
@@ -69,16 +69,19 @@
 					      (glob (string "o*.cf"))))
 				   :dtype np.complex64
 				   :mode (string "r")
-				   :shape (tuple 22778
+				   :shape (tuple 5000 ; 22778
 						 15283
 						 )))
 
 		(do0
-		 (setf ys0 (np.zeros 15283 :dtype np.complex128)
+		 (setf ys0 (np.zeros 15283 :dtype np.complex64)
 		       (aref ys0 (slice 0 (len ys))) ys)
-		 (setf k0 (np.fft.fft (dot (aref s 0 ":") (astype np.complex128))))
-		 (setf kp (np.fft.fft (ys0.astype np.complex128)))
-		 (plt.plot (np.fft.ifft (* k0 kp)))
+		 (setf k0 (np.fft.fft s #+nil (dot s ;(aref s 0 ":")
+					   (astype np.complex128))
+				      :axis 1))
+		 (setf kp (np.fft.fft ys0))
+					
+		 (plt.imshow (np.log (+ .001 (np.real (np.fft.ifft (* k0 kp))))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
