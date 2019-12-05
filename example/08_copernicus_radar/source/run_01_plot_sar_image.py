@@ -10,6 +10,16 @@ import pathlib
 import numpy as np
 import numpy.fft
 import pandas as pd
+df=pd.read_csv("./o_range.csv")
+fref=(3.7534721374511715e+1)
+row=df.iloc[0]
+txprr=row.txprr
+txprr_=row.txprr_
+txpsf=row.txpsf
+txpl=row.txpl
+txpl_=row.txpl_
+ns=np.arange(txpl_)
+xs=((ns)/(fref))
+ys=np.exp(((2j)*(np.pi)*(((((txpsf)*(xs)))+((((5.e-1))*(txprr)*(xs)*(xs)))))))
+plt.plot(xs, ys)
 s=np.memmap(next(pathlib.Path("./").glob("o*.cf")), dtype=np.complex64, mode="r", shape=(22778,15283,))
-k=np.fft.fft(s.astype(np.complex128), axis=1)
-plt.imshow(np.log((((1.0000000474974513e-3))+(np.abs(k)))))

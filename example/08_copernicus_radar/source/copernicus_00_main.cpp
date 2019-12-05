@@ -175,6 +175,7 @@ int main() {
       auto txpl_ = ((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
                     (((0x10000) * (((0xFF) & (p[46]))))));
       auto fref = (3.7534723e+1f);
+      auto txprr_ = ((pow(-1, txprr_p)) * (txprr_m));
       auto txprr = ((((((fref) * (fref))) / (2097152))) *
                     (pow((-1.e+0f), txprr_p)) * (txprr_m));
       auto txpsf =
@@ -205,15 +206,17 @@ int main() {
             outfile.open("./o_range.csv",
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
-              (outfile) << ("ele_count,ele,number_of_quads,space_packet_count,"
-                            "pri_count,rank,data_delay,txprr,txpsf,txpl")
-                        << (std::endl);
+              (outfile)
+                  << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
+                      "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                  << (std::endl);
             };
             (outfile) << (ele_count) << (",") << (ele) << (",")
                       << (number_of_quads) << (",") << (space_packet_count)
                       << (",") << (pri_count) << (",") << (rank) << (",")
                       << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                      << (",") << (txpl) << (std::endl);
+                      << (",") << (txpl) << (",") << (txprr_) << (",")
+                      << (txpl_) << (std::endl);
             outfile.close();
           };
           (ele_count)++;

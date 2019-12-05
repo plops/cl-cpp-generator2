@@ -44,6 +44,22 @@
 			  ;itertools
 			  ;datetime
 			  ))
+		(setf df (pd.read_csv (string "./o_range.csv")))
+		(setf fref 37.53472224
+		      row (aref df.iloc 0)
+		      txprr row.txprr
+		      txprr_ row.txprr_
+		      txpsf row.txpsf
+		      txpl row.txpl
+		      txpl_ row.txpl_
+		      ns (np.arange txpl_) #+nil (- 
+			    (/ txpl_ 2))
+		      xs (/ ns fref)
+		      ys (np.exp (* 2j np.pi (+ (* txpsf xs)
+						(* .5 txprr xs xs))))
+		      )
+		(plt.plot xs ys)
+		
 		(setf s (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o*.cf"))))
 				   :dtype np.complex64
@@ -52,7 +68,8 @@
 						 15283
 						 )))
 		#+nil (plt.imshow
-		 (np.angle s))
+		       (np.angle s))
+		#+nil
 		(do0
 		 (setf k (np.fft.fft (s.astype np.complex128) :axis 1))
 		 (plt.imshow (np.log (+ .001 (np.abs k)))))

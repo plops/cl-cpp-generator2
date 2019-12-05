@@ -455,15 +455,18 @@
 					   collect
 					     `(,e ,(space-packet-slot-get f 'p)))
 				      (fref 37.53472224)
+				      (txprr_ (* (pow -1 txprr_p) txprr_m))
 				      (txprr (* (/ (* fref fref) ;; MHZ/us
 						   ,(expt 2 21))
 						(pow -1.0 txprr_p)
 						txprr_m))
+				      
 				      (txpsf (+ (/ txprr (* fref 4)) ;; MHz
 						(* fref
 						   ,(expt 2 14)
 						   (pow -1.0 txpsf_p)
 						   txpsf_m)))
+				      
 				      (txpl (/ (static_cast<double> txpl_) ;; us
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
@@ -490,7 +493,9 @@
 						       data_delay
 						       txprr
 						       txpsf
-						       txpl))
+						       txpl
+						       txprr_
+						       txpl_))
 					  (do0
 					   #+nil (dotimes (i n)
 					     (setf (aref sar_image (+ i (* n0 ele_count)))
