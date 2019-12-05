@@ -421,13 +421,25 @@
 				      (data_delay (+ ,(/ 320 8)
 						     ,(space-packet-slot-get 'sampling-window-start-time 'p
 									     )))
-				      ,@(loop for (e f) in `((txpl_p tx-ramp-rate-polarity)
-							     (txpl_m tx-ramp-rate-magnitude)
+				      ,@(loop for (e f) in `((txprr_p tx-ramp-rate-polarity)
+							     (txprr_m tx-ramp-rate-magnitude)
 							     (txpsf_p tx-pulse-start-frequency-polarity)
 							     (txpsf_m tx-pulse-start-frequency-magnitude)
 							     (txpl_ tx-pulse-length))
 					   collect
-					     `(,e ,(space-packet-slot-get f 'p))))
+					     `(,e ,(space-packet-slot-get f 'p)))
+				      (fref 37.53472224)
+				      (txprr (* (/ (* fref fref)
+						   ,(expt 2 21))
+						(pow -1.0 txprr_p)
+						txprr_m))
+				      (txpsf (+ (/ txprr (* fref 4))
+						(* fref
+						   ,(expt 2 14)
+						   (pow -1.0 txpsf_p)
+						   txpsf_m)))
+				      (txpl (/ (static_cast<double> txpl_)
+					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
 				  (handler-case
@@ -441,6 +453,7 @@
 					  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
 					  (unless (== n (* 2 number_of_quads))
 					    ,(logprint "unexpected number of quads" `(n number_of_quads)))
+					  ,(logprint "tx" `(txprr txpsf txpl))
 					  (do0
 					   #+nil (dotimes (i n)
 					     (setf (aref sar_image (+ i (* n0 ele_count)))

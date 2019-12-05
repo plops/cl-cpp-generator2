@@ -165,12 +165,19 @@ int main() {
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
-      auto txpl_p = ((0x1) & ((p[42]) >> (7)));
-      auto txpl_m = ((((0x1) * (p[43]))) + (((0x100) * (((0x7F) & (p[42]))))));
+      auto txprr_p = ((0x1) & ((p[42]) >> (7)));
+      auto txprr_m = ((((0x1) * (p[43]))) + (((0x100) * (((0x7F) & (p[42]))))));
       auto txpsf_p = ((0x1) & ((p[44]) >> (7)));
       auto txpsf_m = ((((0x1) * (p[45]))) + (((0x100) * (((0x7F) & (p[44]))))));
       auto txpl_ = ((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
                     (((0x10000) * (((0xFF) & (p[46]))))));
+      auto fref = (3.7534723e+1f);
+      auto txprr = ((((((fref) * (fref))) / (2097152))) *
+                    (pow((-1.e+0f), txprr_p)) * (txprr_m));
+      auto txpsf =
+          ((((txprr) / (((fref) * (4))))) +
+           (((fref) * (16384) * (pow((-1.e+0f), txpsf_p)) * (txpsf_m))));
+      auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
       try {
         if ((ele) == (ma_ele)) {
@@ -190,6 +197,17 @@ int main() {
                         << (std::setw(8)) << (" number_of_quads=")
                         << (number_of_quads) << (std::endl);
           };
+          std::setprecision(3);
+          (std::cout) << (std::setw(10))
+                      << (((std::chrono::high_resolution_clock::now()
+                                .time_since_epoch()
+                                .count()) -
+                           (state._start_time)))
+                      << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("tx") << (" ")
+                      << (std::setw(8)) << (" txprr=") << (txprr)
+                      << (std::setw(8)) << (" txpsf=") << (txpsf)
+                      << (std::setw(8)) << (" txpl=") << (txpl) << (std::endl);
           (ele_count)++;
         };
       } catch (std::out_of_range e) {
