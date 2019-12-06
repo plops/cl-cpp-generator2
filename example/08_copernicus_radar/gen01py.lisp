@@ -45,7 +45,7 @@
 					;datetime
 			  (et xml.etree.ElementTree)
 			  ))
-		(setf xmlfn (string "/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
+		#+nil (setf xmlfn (string "/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
 				    )
 		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
@@ -73,11 +73,13 @@
 					      (glob (string "o*.cf"))))
 				   :dtype np.complex64
 				   :mode (string "r")
-				   :shape (tuple 7000 ; 22778
-						 15283
-						 )))
+				   :shape #+nil (tuple 7000 ; 22778
+						       15283 ;; range
+						       )
+				   (tuple 16516
+					  24223)))
 
-		(do0
+		#+nil (do0
 		 (setf ys0 (np.empty_like s)
 		       )
 		 (for (idx (range (aref ys0.shape 0)))
@@ -105,6 +107,8 @@
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
+		(plt.imshow
+		      (np.log (+ .01 (np.abs s))))
 		#+nil
 		(do0
 		 (setf k (np.fft.fft (s.astype np.complex128) :axis 1))
