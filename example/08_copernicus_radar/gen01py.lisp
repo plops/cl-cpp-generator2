@@ -79,12 +79,19 @@
 				   (tuple 16516
 					  24223)))
 
-		#+nil (do0
-		 (setf ys0 (np.empty_like s)
-		       )
+		(do0
+		 (setf skip 8000)
+		 (setf spart (aref s (slice skip) ":"))
+		 (del s)
+		 (setf 
+		       ys0 #+nil (np.zeroidxs (tuple (- 16516 8000) 24223)
+				    :dtype np.complex64)
+		       
+		       (np.empty_like spart))
+		 
 		 (for (idx (range (aref ys0.shape 0)))
 		  (setf fref 37.53472224
-			row (aref df.iloc idx)
+			row (aref df.iloc (+ skip idx))
 			txprr row.txprr
 			txprr_ row.txprr_
 			txpsf row.txpsf
@@ -97,7 +104,7 @@
 			       (* .5 txprr xs xs))
 			ys (np.exp (* -2j np.pi arg))
 			(aref ys0 idx (slice 0 (len ns))) ys))
-		 (setf k0 (np.fft.fft s #+nil (dot s ;(aref s 0 ":")
+		 (setf k0 (np.fft.fft spart #+nil (dot s ;(aref s 0 ":")
 					   (astype np.complex128))
 				      :axis 1))
 		 (setf kp (np.fft.fft ys0 :axis 1))
@@ -107,8 +114,8 @@
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
-		(plt.imshow
-		      (np.log (+ .01 (np.abs s))))
+		#+nil (plt.imshow
+		      (np.log (+ .01 (np.abs (aref s "8000:" ":")))))
 		#+nil
 		(do0
 		 (setf k (np.fft.fft (s.astype np.complex128) :axis 1))
