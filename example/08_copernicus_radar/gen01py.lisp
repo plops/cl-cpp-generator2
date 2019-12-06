@@ -73,12 +73,12 @@
 					      (glob (string "o*.cf"))))
 				   :dtype np.complex64
 				   :mode (string "r")
-				   :shape (tuple 5000 ; 22778
+				   :shape (tuple 7000 ; 22778
 						 15283
 						 )))
 
 		(do0
-		 (setf ys0 (np.zeros (tuple 5000 15283) :dtype np.complex64)
+		 (setf ys0 (np.empty_like s)
 		       )
 		 (for (idx (range (aref ys0.shape 0)))
 		  (setf fref 37.53472224
@@ -99,8 +99,9 @@
 					   (astype np.complex128))
 				      :axis 1))
 		 (setf kp (np.fft.fft ys0 :axis 1))
+		 (setf img (np.fft.ifft (* k0 kp)))
 					
-		 (plt.imshow (np.log (+ .001 (np.real (np.fft.ifft (* k0 kp))))))
+		 (plt.imshow (np.log (+ .001 (np.abs img))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
