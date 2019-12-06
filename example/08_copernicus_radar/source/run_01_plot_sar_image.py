@@ -14,10 +14,10 @@ import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
 s=np.memmap(next(pathlib.Path("./").glob("o*.cf")), dtype=np.complex64, mode="r", shape=(16516,24223,))
 skip=8000
-spart=s[skip,:]
+spart=s[skip::,:]
 del(s)
-ys0=np.empty_like(spart)
-for idx in range(ys0.shape[0]):
+ys0=np.zeros((1,24223,), dtype=np.complex64)
+for idx in [0]:
     fref=(3.7534721374511715e+1)
     row=df.iloc[((skip)+(idx))]
     txprr=row.txprr
@@ -32,5 +32,9 @@ for idx in range(ys0.shape[0]):
     ys0[idx,0:len(ns)]=ys
 k0=np.fft.fft(spart, axis=1)
 kp=np.fft.fft(ys0, axis=1)
-img=np.fft.ifft(((k0)*(kp)))
+a=((k0)*(kp))
+del(kp)
+del(k0)
+img=np.fft.ifft(a)
+del(a)
 plt.imshow(np.log((((1.0000000474974513e-3))+(np.abs(img)))))
