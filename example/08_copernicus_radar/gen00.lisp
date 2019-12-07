@@ -513,7 +513,7 @@
 						   (aref output i))
 					     )
 					   (incf ele_count))))
-				    #+safety ("std::out_of_range" (e)
+				      #+safety ("std::out_of_range" (e)
 								  ,(logprint "exception" `(packet_idx))
 								  (assert 0)))
 				  (incf packet_idx)))
@@ -1068,24 +1068,40 @@
 										  `(let ((v 0s0))
 										     ,(case thidx-choice
 											(simple
-											 `(if (< mcode ,th-mcode)
-											      (setf v (* symbol_sign mcode))
-											      (if (== mcode ,th-mcode)
-												  (setf v (* symbol_sign
-													     (dot
-													      ,(format nil "table_b~a"
-														       brc-value)
-													      (at thidx))))
-												  (do0
-												   ,(logprint "mcode too large" `(mcode))
-												   (assert 0)))))
+											 `(handler-case
+											     (do0
+											      (if (< mcode ,th-mcode)
+												   (setf v (* symbol_sign mcode))
+												   (if (== mcode ,th-mcode)
+												       (setf v (* symbol_sign
+														  (dot
+														   ,(format nil "table_b~a"
+															    brc-value)
+														   (at thidx))))
+												       (do0
+													,(logprint "mcode too large" `(mcode))
+													(assert 0)))))
+											   ("std::out_of_range" (e)
+											     ,(logprint
+											       (format nil "exception simple brc=~a"
+												       brc-value)
+													`(thidx packet_idx))
+											     (assert 0))
+											   ))
 											(normal
-											 `(setf v (* symbol_sign
-												     (dot ,(format nil
-														   "table_nrl~a"
-														   brc-value)
-													  (at mcode))
-												     (dot table_sf (at thidx)))))))))
+											 `(handler-case
+											  (do0 (setf v (* symbol_sign
+													  (dot ,(format nil
+															"table_nrl~a"
+															brc-value)
+													       (at mcode))
+													  (dot table_sf (at thidx)))))
+											   ("std::out_of_range" (e)
+											     ,(logprint
+											       (format nil "exception normal nrl or sf brc=~a"
+												       brc-value)
+													`(thidx packet_idx))
+											     (assert 0))))))))
 									     `(let ((v (* symbol_sign mcode)))
 										"// in ie and io we don't have thidx yet, will be processed later"))
 									
@@ -1148,24 +1164,40 @@
 								      `(let ((v 0s0))
 									 ,(case thidx-choice
 									    (simple
-									     `(if (< mcode ,th-mcode)
-										  (setf v (* symbol_sign mcode))
-										  (if (== mcode ,th-mcode)
-										      (setf v (* symbol_sign
-												 (dot
-												  ,(format nil "table_b~a"
-													   brc-value)
-												  (at thidx))))
-										      (do0
-										       #-nolog ,(logprint "mcode too large" `(mcode))
-										       (assert 0)))))
+									     `
+									     (handler-case
+									      (do0 (if (< mcode ,th-mcode)
+										       (setf v (* symbol_sign mcode))
+										       (if (== mcode ,th-mcode)
+											   (setf v (* symbol_sign
+												      (dot
+												       ,(format nil "table_b~a"
+														brc-value)
+												       (at thidx))))
+											   (do0
+											    #-nolog ,(logprint "mcode too large" `(mcode))
+											    (assert 0)))))
+									       ("std::out_of_range" (e)
+											     ,(logprint
+											       (format nil "exception simple block=~a brc=~a"
+												       e brc-value)
+											       `((static_cast<int> thidx) mcode packet_idx))
+											     (assert 0))))
 									    (normal
-									     `(setf v (* symbol_sign
-											 (dot ,(format nil
-												       "table_nrl~a"
-												       brc-value)
-											      (at mcode))
-											 (dot table_sf (at thidx))))))))
+									     `
+									     (handler-case
+									      (do0 (setf v (* symbol_sign
+											      (dot ,(format nil
+													    "table_nrl~a"
+													    brc-value)
+												   (at mcode))
+											      (dot table_sf (at thidx)))))
+									       ("std::out_of_range" (e)
+											     ,(logprint
+											       (format nil "exception normal nrl or sf block=~a brc=~a"
+												       e brc-value)
+											       `((static_cast<int> thidx) mcode packet_idx))
+											     (assert 0)))))))
 								   (setf (aref ,sym-a pos) v))))))))
 					     break)))
 				 #+safety
