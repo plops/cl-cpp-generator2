@@ -513,7 +513,8 @@
 					     )
 					   (incf ele_count))))
 				    #+safety ("std::out_of_range" (e)
-				      ,(logprint "exception" `(packet_idx))))
+								  ,(logprint "exception" `(packet_idx))
+								  (assert 0)))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
 				("std::to_string" n0)
@@ -1088,7 +1089,8 @@
 				    #+safety
 				    (t (progn
 					 #-nolog ,(logprint "error brc out of range" `(brc))
-					 (throw ("std::out_of_range" (string "brc")))
+					 (assert 0)
+					;(throw ("std::out_of_range" (string "brc")))
 					 break))))
 			     (consume_padding_bits &s)))))
 		(dotimes (block number_of_baq_blocks)
@@ -1108,6 +1110,7 @@
 							(assert 0))
 					;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
 						      )
+					    ,(format nil "// decode ~a p.74 reconstruction law middle choice" e)
 					    ,(let ((th (case brc-value
 							 (0 3)
 							 (1 3)
@@ -1117,13 +1120,14 @@
 					       `(if (<= thidx ,th)
 						    ,@(loop for thidx-choice in `(simple normal) collect
 							   `(do0
+							     ,(format nil "// decode ~a p.74 reconstruction law ~a" e thidx-choice)
 							     (dotimes (i 128)
 							       (let ((pos (+ i (* 128 block)))
 								     (scode (aref ,sym-a pos))
 								     (mcode (static_cast<int> (fabsf scode)))
 								     (symbol_sign (copysignf 1s0 scode)))
 								 (do0
-								  ,(format nil "// decode ~a p.75" e)
+								  ,(format nil "// decode ~a p.74 reconstruction law right side" e)
 								  ,(let ((th-mcode (case brc-value
 										     (0 3)
 										     (1 4)
@@ -1135,11 +1139,15 @@
 									   (simple
 									    `(if (< mcode ,th-mcode)
 										 (setf v (* symbol_sign mcode))
-										 (setf v (* symbol_sign
-											    (dot
-											     ,(format nil "table_b~a"
-												      brc-value)
-											     (at thidx))))))
+										 (if (== mcode ,th-mcode)
+										     (setf v (* symbol_sign
+												(dot
+												 ,(format nil "table_b~a"
+													  brc-value)
+												 (at thidx))))
+										     (do0
+										      #-nolog ,(logprint "mcode too large" `(mcode))
+										      (assert 0)))))
 									   (normal
 									    `(setf v (* symbol_sign
 											(dot ,(format nil
@@ -1148,7 +1156,12 @@
 											     (at mcode))
 											(dot table_sf (at thidx))))))))
 								  (setf (aref ,sym-a pos) v))))))))
-					    break))))
+					    break)))
+				#+safety
+				(t (progn
+				     ,(logprint "unknown brc" `((static_cast<int> brc)))
+				     (assert 0)
+				     break)))
 			     ))))
 
 		#+nil

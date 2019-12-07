@@ -594,7 +594,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("error brc out of range") << (" ")
                   << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
-      throw std::out_of_range("brc");
+      assert(0);
       break;
     }
     }
@@ -821,7 +821,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("error brc out of range") << (" ")
                   << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
-      throw std::out_of_range("brc");
+      assert(0);
       break;
     }
     }
@@ -1165,7 +1165,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("error brc out of range") << (" ")
                   << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
-      throw std::out_of_range("brc");
+      assert(0);
       break;
     }
     }
@@ -1508,7 +1508,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("error brc out of range") << (" ")
                   << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
-      throw std::out_of_range("brc");
+      assert(0);
       break;
     }
     }
@@ -1532,28 +1532,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode ie p.74 reconstruction law middle choice
       if ((thidx) <= (3)) {
+        // decode ie p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0.at(thidx)));
+            if ((mcode) == (3)) {
+              v = ((symbol_sign) * (table_b0.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
+        // decode ie p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
@@ -1575,28 +1592,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode ie p.74 reconstruction law middle choice
       if ((thidx) <= (3)) {
+        // decode ie p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1.at(thidx)));
+            if ((mcode) == (4)) {
+              v = ((symbol_sign) * (table_b1.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
+        // decode ie p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
@@ -1618,28 +1652,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode ie p.74 reconstruction law middle choice
       if ((thidx) <= (5)) {
+        // decode ie p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2.at(thidx)));
+            if ((mcode) == (6)) {
+              v = ((symbol_sign) * (table_b2.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
+        // decode ie p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
@@ -1661,28 +1712,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode ie p.74 reconstruction law middle choice
       if ((thidx) <= (6)) {
+        // decode ie p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3.at(thidx)));
+            if ((mcode) == (9)) {
+              v = ((symbol_sign) * (table_b3.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
+        // decode ie p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
@@ -1704,33 +1772,64 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode ie p.74 reconstruction law middle choice
       if ((thidx) <= (8)) {
+        // decode ie p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4.at(thidx)));
+            if ((mcode) == (15)) {
+              v = ((symbol_sign) * (table_b4.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
+        // decode ie p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode ie p.75
+          // decode ie p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_ie_symbols_a[pos] = v;
         };
       }
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("unknown brc") << (" ")
+                  << (std::setw(8)) << (" static_cast<int>(brc)=")
+                  << (static_cast<int>(brc)) << (std::endl);
+      assert(0);
       break;
     }
     }
@@ -1749,28 +1848,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode io p.74 reconstruction law middle choice
       if ((thidx) <= (3)) {
+        // decode io p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0.at(thidx)));
+            if ((mcode) == (3)) {
+              v = ((symbol_sign) * (table_b0.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_io_symbols_a[pos] = v;
         };
       } else {
+        // decode io p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
@@ -1792,28 +1908,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode io p.74 reconstruction law middle choice
       if ((thidx) <= (3)) {
+        // decode io p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1.at(thidx)));
+            if ((mcode) == (4)) {
+              v = ((symbol_sign) * (table_b1.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_io_symbols_a[pos] = v;
         };
       } else {
+        // decode io p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
@@ -1835,28 +1968,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode io p.74 reconstruction law middle choice
       if ((thidx) <= (5)) {
+        // decode io p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2.at(thidx)));
+            if ((mcode) == (6)) {
+              v = ((symbol_sign) * (table_b2.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_io_symbols_a[pos] = v;
         };
       } else {
+        // decode io p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
@@ -1878,28 +2028,45 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode io p.74 reconstruction law middle choice
       if ((thidx) <= (6)) {
+        // decode io p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3.at(thidx)));
+            if ((mcode) == (9)) {
+              v = ((symbol_sign) * (table_b3.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_io_symbols_a[pos] = v;
         };
       } else {
+        // decode io p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
@@ -1921,33 +2088,64 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      // decode io p.74 reconstruction law middle choice
       if ((thidx) <= (8)) {
+        // decode io p.74 reconstruction law simple
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4.at(thidx)));
+            if ((mcode) == (15)) {
+              v = ((symbol_sign) * (table_b4.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_io_symbols_a[pos] = v;
         };
       } else {
+        // decode io p.74 reconstruction law normal
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
           auto symbol_sign = copysignf((1.e+0f), scode);
-          // decode io p.75
+          // decode io p.74 reconstruction law right side
           auto v = (0.0e+0f);
           v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           decoded_io_symbols_a[pos] = v;
         };
       }
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("unknown brc") << (" ")
+                  << (std::setw(8)) << (" static_cast<int>(brc)=")
+                  << (static_cast<int>(brc)) << (std::endl);
+      assert(0);
       break;
     }
     };

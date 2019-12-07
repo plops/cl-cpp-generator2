@@ -232,6 +232,7 @@ int main() {
                     << (__func__) << (" ") << ("exception") << (" ")
                     << (std::setw(8)) << (" packet_idx=") << (packet_idx)
                     << (std::endl);
+        assert(0);
       };
       (packet_idx)++;
     };
