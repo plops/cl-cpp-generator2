@@ -12,13 +12,13 @@
 
 (setf *features* (union *features* '(:safety
 					;:nolog
-				     ;:log-brc
-				     ;:log-consume
+					:log-brc
+				     :log-consume
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
-					      :log-brc
-					      :log-consume
+					      ;:log-brc
+					      ;:log-consume
 					      )))
 
 
@@ -937,8 +937,8 @@
 		  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
 		  (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
 		  
-		  (number_of_baq_blocks (+ 1 (/ (* 2 number_of_quads)
-						256)))
+		  (number_of_baq_blocks (static_cast<int> (round (ceil (/ (* 2.0 number_of_quads)
+							 256)))))
 		  (brcs)
 		  (thidxs)
 		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
@@ -973,10 +973,11 @@
 			(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 					   `(== ,e baq_mode))))
-			#+log-brc ,(logprint "" `(packet_idx baq_mode ;baq_block_length
+			#+log-brc ,(logprint "" `(packet_idx baq_mode baq_block_length
 						   data_delay_us
 						   data_delay
-						   number_of_quads)))
+						   number_of_quads
+						   )))
 	      (let ((s))
 		(declare (type sequential_bit_t s))
 		(init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
