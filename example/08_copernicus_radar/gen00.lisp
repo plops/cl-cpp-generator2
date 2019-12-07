@@ -1100,78 +1100,80 @@
 					;(throw ("std::out_of_range" (string "brc")))
 					 break))))
 			     (consume_padding_bits &s)))))
-		(dotimes (block number_of_baq_blocks)
-		  (let ((brc (aref brcs block))
-			(thidx (aref thidxs block)))
-		    ,@(loop for e in `(ie io) collect
-			   (let ( ;(sym (format nil "decoded_~a_symbols" e))
-				 (sym-a (format nil "decoded_~a_symbols_a" e)))
-			     `(case brc
-				,@(loop for brc-value below 5 collect
-				       `(,(format nil "case ~a" brc-value)
-					  (progn
-					    #+safety (do0
-						      #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
-									 `(== ,e brc)))
-							,(logprint "error: out of range" `(brc)) 
-							(assert 0))
-					,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
-						      )
-					    ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
-						     brc-value)
-					    ,(let ((th (case brc-value
-							 (0 3)
-							 (1 3)
-							 (2 5)
-							 (3 6)
-							 (4 8))))
-					       `(if (<= thidx ,th)
-						    ,@(loop for thidx-choice in `(simple normal) collect
-							   `(do0
-							     ,(format nil "// decode ~a p.74 reconstruction law ~a brc=~a"
-								      e thidx-choice brc-value)
-							     (dotimes (i 128)
-							       (let ((pos (+ i (* 128 block)))
-								     (scode (aref ,sym-a pos))
-								     (mcode (static_cast<int> (fabsf scode)))
-								     (symbol_sign (copysignf 1s0 scode)))
-								 (do0
-								  ,(format nil "// decode ~a p.74 reconstruction law right side" e)
-								  ,(let ((th-mcode (case brc-value
-										     (0 3)
-										     (1 4)
-										     (2 6)
-										     (3 9)
-										     (4 15))))
-								     `(let ((v 0s0))
-									,(case thidx-choice
-									   (simple
-									    `(if (< mcode ,th-mcode)
-										 (setf v (* symbol_sign mcode))
-										 (if (== mcode ,th-mcode)
-										     (setf v (* symbol_sign
-												(dot
-												 ,(format nil "table_b~a"
-													  brc-value)
-												 (at thidx))))
-										     (do0
-										      #-nolog ,(logprint "mcode too large" `(mcode))
-										      (assert 0)))))
-									   (normal
-									    `(setf v (* symbol_sign
-											(dot ,(format nil
-												      "table_nrl~a"
-												      brc-value)
-											     (at mcode))
-											(dot table_sf (at thidx))))))))
-								  (setf (aref ,sym-a pos) v))))))))
-					    break)))
-				#+safety
-				(t (progn
-				     ,(logprint "unknown brc" `((static_cast<int> brc)))
-				     (assert 0)
-				     break)))
-			     ))))
+		,(logprint "decode ie and io blocks" `(number_of_baq_blocks))
+		,@(loop for e in `(ie io) collect
+		 `(dotimes (block number_of_baq_blocks)
+		   (let ((brc (aref brcs block))
+			 (thidx (aref thidxs block)))
+		     (do0
+			    ,(let ( ;(sym (format nil "decoded_~a_symbols" e))
+				  (sym-a (format nil "decoded_~a_symbols_a" e)))
+			      `(case brc
+				 ,@(loop for brc-value below 5 collect
+					`(,(format nil "case ~a" brc-value)
+					   (progn
+					     #+safety (do0
+						       #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+										`(== ,e brc)))
+							       ,(logprint "error: out of range" `(brc)) 
+							       (assert 0))
+						       ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks))
+						       )
+					     ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
+						      brc-value)
+					     ,(let ((th (case brc-value
+							  (0 3)
+							  (1 3)
+							  (2 5)
+							  (3 6)
+							  (4 8))))
+						`(if (<= thidx ,th)
+						     ,@(loop for thidx-choice in `(simple normal) collect
+							    `(do0
+							      ,(format nil "// decode ~a p.74 reconstruction law ~a brc=~a"
+								       e thidx-choice brc-value)
+							      (dotimes (i 128)
+								(let ((pos (+ i (* 128 block)))
+								      (scode (aref ,sym-a pos))
+								      (mcode (static_cast<int> (fabsf scode)))
+								      (symbol_sign (copysignf 1s0 scode)))
+								  (do0
+								   ,(format nil "// decode ~a p.74 reconstruction law right side" e)
+								   ,(let ((th-mcode (case brc-value
+										      (0 3)
+										      (1 4)
+										      (2 6)
+										      (3 9)
+										      (4 15))))
+								      `(let ((v 0s0))
+									 ,(case thidx-choice
+									    (simple
+									     `(if (< mcode ,th-mcode)
+										  (setf v (* symbol_sign mcode))
+										  (if (== mcode ,th-mcode)
+										      (setf v (* symbol_sign
+												 (dot
+												  ,(format nil "table_b~a"
+													   brc-value)
+												  (at thidx))))
+										      (do0
+										       #-nolog ,(logprint "mcode too large" `(mcode))
+										       (assert 0)))))
+									    (normal
+									     `(setf v (* symbol_sign
+											 (dot ,(format nil
+												       "table_nrl~a"
+												       brc-value)
+											      (at mcode))
+											 (dot table_sf (at thidx))))))))
+								   (setf (aref ,sym-a pos) v))))))))
+					     break)))
+				 #+safety
+				 (t (progn
+				      ,(logprint "unknown brc" `((static_cast<int> brc)))
+				      (assert 0)
+				      break)))
+			      )))))
 
 		#+nil
 		(dotimes (i decoded_ie_symbols)

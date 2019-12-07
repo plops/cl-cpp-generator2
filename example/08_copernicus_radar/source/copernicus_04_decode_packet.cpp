@@ -1461,6 +1461,16 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     }
   }
   consume_padding_bits(&s);
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("decode ie and io blocks") << (" ")
+              << (std::setw(8)) << (" number_of_baq_blocks=")
+              << (number_of_baq_blocks) << (std::endl);
   for (int block = 0; block < number_of_baq_blocks; (block) += (1)) {
     auto brc = brcs[block];
     auto thidx = thidxs[block];
@@ -1474,9 +1484,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode ie p.74 reconstruction law middle choice brc=0
       if ((thidx) <= (3)) {
         // decode ie p.74 reconstruction law simple brc=0
@@ -1532,9 +1543,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode ie p.74 reconstruction law middle choice brc=1
       if ((thidx) <= (3)) {
         // decode ie p.74 reconstruction law simple brc=1
@@ -1590,9 +1602,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode ie p.74 reconstruction law middle choice brc=2
       if ((thidx) <= (5)) {
         // decode ie p.74 reconstruction law simple brc=2
@@ -1648,9 +1661,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode ie p.74 reconstruction law middle choice brc=3
       if ((thidx) <= (6)) {
         // decode ie p.74 reconstruction law simple brc=3
@@ -1706,9 +1720,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode ie p.74 reconstruction law middle choice brc=4
       if ((thidx) <= (8)) {
         // decode ie p.74 reconstruction law simple brc=4
@@ -1769,7 +1784,11 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
       assert(0);
       break;
     }
-    }
+    };
+  }
+  for (int block = 0; block < number_of_baq_blocks; (block) += (1)) {
+    auto brc = brcs[block];
+    auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
       std::setprecision(3);
@@ -1780,9 +1799,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode io p.74 reconstruction law middle choice brc=0
       if ((thidx) <= (3)) {
         // decode io p.74 reconstruction law simple brc=0
@@ -1838,9 +1858,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode io p.74 reconstruction law middle choice brc=1
       if ((thidx) <= (3)) {
         // decode io p.74 reconstruction law simple brc=1
@@ -1896,9 +1917,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode io p.74 reconstruction law middle choice brc=2
       if ((thidx) <= (5)) {
         // decode io p.74 reconstruction law simple brc=2
@@ -1954,9 +1976,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode io p.74 reconstruction law middle choice brc=3
       if ((thidx) <= (6)) {
         // decode io p.74 reconstruction law simple brc=3
@@ -2012,9 +2035,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                        (state._start_time)))
                   << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                   << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
-                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
-                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
-                  << (number_of_baq_blocks) << (std::endl);
+                  << (" static_cast<int>(brc)=") << (static_cast<int>(brc))
+                  << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
+                  << (" number_of_baq_blocks=") << (number_of_baq_blocks)
+                  << (std::endl);
       // decode io p.74 reconstruction law middle choice brc=4
       if ((thidx) <= (8)) {
         // decode io p.74 reconstruction law simple brc=4
