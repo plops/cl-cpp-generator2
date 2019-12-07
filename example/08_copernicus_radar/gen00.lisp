@@ -360,7 +360,7 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string  "/home/martin/Downloads/s1a-s3-raw-s-hh-20191205t213545-20191205t213610-030218-037447.dat"
+		      (string  "/home/martin/Downloads/s1b-iw-raw-s-hh-20191204t083206-20191204t083239-019212-024466.dat"
 					; "/home/martin/Downloads/s1a-s3-raw-s-hh-20191203t000055-20191203t000115-030176-0372c8.dat" ;; stripmap with 2 islands
 					; "/home/martin/Downloads/s1a-ew-raw-s-hv-20191130t152915-20191130t153018-030142-0371ab.dat"
 					;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"

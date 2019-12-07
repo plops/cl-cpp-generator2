@@ -76,8 +76,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 15000
-					  25572)))
+				   (tuple 5000
+					  30213)))
 
 		(do0
 		 (setf skip 0)
