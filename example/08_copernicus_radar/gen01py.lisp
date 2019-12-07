@@ -37,7 +37,8 @@
 					;(u astropy.units)
 					; EP_SerialIO
 			  ;scipy.ndimage
-			  ;scipy.optimize
+					;scipy.optimize
+			  scipy.signal
 					;nfft
 			  ;sklearn
 			  ;sklearn.linear_model
@@ -76,9 +77,11 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 6000
-					  30199)))
-
+				   (tuple 24766
+					  24601)))
+		(setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
+		      a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
+		(del a2)
 		#+nil (do0
 		 (setf skip 0)
 		 ;(setf spart (aref s (slice skip ":") ":"))
@@ -125,12 +128,13 @@
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
-		#+nil(do0
+		#-nil(do0
 		      
 		      (setf fig (plt.figure)
 			    ax (fig.add_subplot (string "111")))
 		      (ax.imshow
-		       (np.log (+ .01 (np.abs  s))))
+		       a3 #+nil (np.log (+ .01 a3 ;(np.abs  s)
+				  )))
 		      (ax.set_aspect (string "auto")))
 		#+nil (plt.imshow (np.real s))
 		#+nil
