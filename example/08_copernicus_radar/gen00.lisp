@@ -384,9 +384,9 @@
 			      (incf (aref map_ele ele) number_of_quads)
 			      (incf packet_idx)))
 		   (let ((ma -1s0)
-			 (ma_ele 6; -1
+			 (ma_ele -1
 			   ))
-		     #+nil (foreach (elevation map_ele)
+		     #-nil (foreach (elevation map_ele)
 			      (let ((number_of_Mquads (/ elevation.second 1e6))
 				    (elevation_beam_address elevation.first))
 				(when (< ma number_of_Mquads)
@@ -791,10 +791,12 @@
 			(loop for j from (1- bits) downto 0 collect
 			     `(static_cast<int> (logand 1 (>> v ,j)))))
 		   "std::endl")
-	    
-	    (return (+ ,@(loop for j below 3 collect
-			      `(* (hex ,(expt 2 (- 2 j)))
-				  (get_sequential_bit s))))))
+	    (let ((brc (+ ,@(loop for j below 3 collect
+			       `(* (hex ,(expt 2 (- 2 j)))
+				   (get_sequential_bit s))))))
+	      #+safety
+	      (assert (or ,@(loop for e below 5 collect `(== ,e brc))))
+	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
 		     (values "inline void"))

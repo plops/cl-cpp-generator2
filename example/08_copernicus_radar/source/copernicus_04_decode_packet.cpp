@@ -37,9 +37,12 @@ inline int get_threshold_index(sequential_bit_t *s) {
 }
 inline int get_bit_rate_code(sequential_bit_t *s) {
   // note: evaluation order is crucial
-  return ((((0x4) * (get_sequential_bit(s)))) +
-          (((0x2) * (get_sequential_bit(s)))) +
-          (((0x1) * (get_sequential_bit(s)))));
+  auto brc = ((((0x4) * (get_sequential_bit(s)))) +
+              (((0x2) * (get_sequential_bit(s)))) +
+              (((0x1) * (get_sequential_bit(s)))));
+  assert((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
+          ((3) == (brc)) || ((4) == (brc))));
+  return brc;
 }
 inline void consume_padding_bits(sequential_bit_t *s) {
   auto byte_offset = static_cast<int>(
