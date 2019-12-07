@@ -164,55 +164,42 @@ int main() {
            (((((fref) / (16384))) * (pow((-1.e+0f), txpsf_p)) * (txpsf_m))));
       auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
-      try {
-        if ((ele) == (ma_ele)) {
-          auto n = init_decode_packet(
-              packet_idx, ((sar_image) + (((((data_delay) - (mi_data_delay))) +
-                                           (((n0) * (ele_count)))))));
-          if (!((n) == (((2) * (number_of_quads))))) {
-            std::setprecision(3);
-            (std::cout) << (std::setw(10))
-                        << (((std::chrono::high_resolution_clock::now()
-                                  .time_since_epoch()
-                                  .count()) -
-                             (state._start_time)))
-                        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("unexpected number of quads")
-                        << (" ") << (std::setw(8)) << (" n=") << (n)
-                        << (std::setw(8)) << (" number_of_quads=")
-                        << (number_of_quads) << (std::endl);
-          };
-          {
-            std::ofstream outfile;
-            outfile.open("./o_range.csv",
-                         ((std::ios_base::out) | (std::ios_base::app)));
-            if ((0) == (outfile.tellp())) {
-              (outfile)
-                  << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
-                      "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
-                  << (std::endl);
-            };
-            (outfile) << (ele_count) << (",") << (ele) << (",")
-                      << (number_of_quads) << (",") << (space_packet_count)
-                      << (",") << (pri_count) << (",") << (rank) << (",")
-                      << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                      << (",") << (txpl) << (",") << (txprr_) << (",")
-                      << (txpl_) << (std::endl);
-            outfile.close();
-          };
-          (ele_count)++;
+      if ((ele) == (ma_ele)) {
+        auto n = init_decode_packet(
+            packet_idx, ((sar_image) + (((((data_delay) - (mi_data_delay))) +
+                                         (((n0) * (ele_count)))))));
+        if (!((n) == (((2) * (number_of_quads))))) {
+          std::setprecision(3);
+          (std::cout) << (std::setw(10))
+                      << (((std::chrono::high_resolution_clock::now()
+                                .time_since_epoch()
+                                .count()) -
+                           (state._start_time)))
+                      << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("unexpected number of quads")
+                      << (" ") << (std::setw(8)) << (" n=") << (n)
+                      << (std::setw(8)) << (" number_of_quads=")
+                      << (number_of_quads) << (std::endl);
         };
-      } catch (std::out_of_range e) {
-        std::setprecision(3);
-        (std::cout) << (std::setw(10))
-                    << (((std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count()) -
-                         (state._start_time)))
-                    << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                    << (__func__) << (" ") << ("exception") << (" ")
-                    << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+        {
+          std::ofstream outfile;
+          outfile.open("./o_range.csv",
+                       ((std::ios_base::out) | (std::ios_base::app)));
+          if ((0) == (outfile.tellp())) {
+            (outfile)
+                << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
+                    "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                << (std::endl);
+          };
+          (outfile) << (ele_count) << (",") << (ele) << (",")
+                    << (number_of_quads) << (",") << (space_packet_count)
+                    << (",") << (pri_count) << (",") << (rank) << (",")
+                    << (data_delay) << (",") << (txprr) << (",") << (txpsf)
+                    << (",") << (txpl) << (",") << (txprr_) << (",") << (txpl_)
                     << (std::endl);
+          outfile.close();
+        };
+        (ele_count)++;
       };
       (packet_idx)++;
     };

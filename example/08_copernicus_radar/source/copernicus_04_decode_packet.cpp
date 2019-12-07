@@ -375,6 +375,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -404,6 +416,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -433,6 +457,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -462,6 +498,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -491,6 +539,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("ie") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -504,6 +564,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
         decoded_ie_symbols_a[decoded_ie_symbols] = v;
         (decoded_ie_symbols)++;
       };
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error brc out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      throw std::out_of_range("brc");
       break;
     }
     }
@@ -529,6 +602,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -558,6 +643,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -587,6 +684,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -616,6 +725,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -645,6 +766,18 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("io") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8)) << (" 1=") << (1)
+                  << (std::endl);
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -658,6 +791,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
         decoded_io_symbols_a[decoded_io_symbols] = v;
         (decoded_io_symbols)++;
       };
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error brc out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      throw std::out_of_range("brc");
       break;
     }
     }
@@ -685,6 +831,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qe") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -736,6 +895,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qe") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -787,6 +959,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qe") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (5)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -838,6 +1023,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qe") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (6)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -889,6 +1087,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qe") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (8)) {
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
@@ -924,6 +1135,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           (decoded_qe_symbols)++;
         };
       }
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error brc out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      throw std::out_of_range("brc");
       break;
     }
     }
@@ -950,6 +1174,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qo") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -1001,6 +1238,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qo") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (3)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -1052,6 +1302,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qo") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (5)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -1103,6 +1366,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qo") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (6)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -1154,6 +1430,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("qo") << (" ") << (std::setw(8))
+                  << (" brc=") << (brc) << (std::setw(8)) << (" block=")
+                  << (block) << (std::setw(8)) << (" number_of_baq_blocks=")
+                  << (number_of_baq_blocks) << (std::setw(8))
+                  << (" static_cast<int>(thidx)=") << (static_cast<int>(thidx))
+                  << (std::endl);
       if ((thidx) <= (8)) {
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
@@ -1189,6 +1478,19 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           (decoded_qo_symbols)++;
         };
       }
+      break;
+    }
+    default: {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("error brc out of range") << (" ")
+                  << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
+      throw std::out_of_range("brc");
       break;
     }
     }

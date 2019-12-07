@@ -8,7 +8,8 @@
 ;; :safety .. enable extra asserts in the code
 ;; :nolog  .. suppress all logging output (also makes code more readable)
 
-(setf *features* (union *features* '(:safety ;:nolog
+(setf *features* (union *features* '(:safety
+				     ;:nolog
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
@@ -368,7 +369,7 @@
 			      )) 
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
-					;(init_process_packet_headers)
+		;(init_process_packet_headers)
 
 
 		(do0
@@ -474,7 +475,7 @@
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
-				  (handler-case
+				  (do0 ;handler-case
 				      (when (== ele ma_ele)
 					(let (;(output)
 					      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
@@ -505,7 +506,7 @@
 						   (aref output i))
 					     )
 					   (incf ele_count))))
-				    ("std::out_of_range" (e)
+				   #+nil ("std::out_of_range" (e)
 				      ,(logprint "exception" `(packet_idx))))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
@@ -990,7 +991,10 @@
 									     `(== ,e brc)))
 							    ,(logprint "error: out of range" `(brc)) 
 							    (assert 0))
-					;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
+					
+							  ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks ,(if (member e `(qe qo))
+															       `(static_cast<int> thidx)
+															       1)))
 							  )
 						,(let ((th (case brc-value
 							     (0 3)
@@ -1060,7 +1064,12 @@
 									(setf (aref ,sym-a ,sym)
 									      v)))
 								     (incf ,sym))))))
-						break)))))
+						break)))
+				    #+safety
+				    (t (progn
+					 #-nolog ,(logprint "error brc out of range" `(brc))
+					 (throw ("std::out_of_range" (string "brc")))
+					 break))))
 			     (consume_padding_bits &s)))))
 		(dotimes (block number_of_baq_blocks)
 		  (let ((brc (aref brcs block))
