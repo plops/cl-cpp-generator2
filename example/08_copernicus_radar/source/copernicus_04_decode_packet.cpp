@@ -1870,8 +1870,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_ie_symbols=")
+                        << (decoded_ie_symbols) << (std::endl);
             assert(0);
           };
           decoded_ie_symbols_a[pos] = v;
@@ -1964,8 +1970,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_ie_symbols=")
+                        << (decoded_ie_symbols) << (std::endl);
             assert(0);
           };
           decoded_ie_symbols_a[pos] = v;
@@ -2058,8 +2070,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_ie_symbols=")
+                        << (decoded_ie_symbols) << (std::endl);
             assert(0);
           };
           decoded_ie_symbols_a[pos] = v;
@@ -2152,8 +2170,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_ie_symbols=")
+                        << (decoded_ie_symbols) << (std::endl);
             assert(0);
           };
           decoded_ie_symbols_a[pos] = v;
@@ -2246,8 +2270,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_ie_symbols=")
+                        << (decoded_ie_symbols) << (std::endl);
             assert(0);
           };
           decoded_ie_symbols_a[pos] = v;
@@ -2360,8 +2390,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_io_symbols=")
+                        << (decoded_io_symbols) << (std::endl);
             assert(0);
           };
           decoded_io_symbols_a[pos] = v;
@@ -2454,8 +2490,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_io_symbols=")
+                        << (decoded_io_symbols) << (std::endl);
             assert(0);
           };
           decoded_io_symbols_a[pos] = v;
@@ -2548,8 +2590,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_io_symbols=")
+                        << (decoded_io_symbols) << (std::endl);
             assert(0);
           };
           decoded_io_symbols_a[pos] = v;
@@ -2642,8 +2690,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_io_symbols=")
+                        << (decoded_io_symbols) << (std::endl);
             assert(0);
           };
           decoded_io_symbols_a[pos] = v;
@@ -2736,8 +2790,14 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                         << (" ") << (std::setw(8))
                         << (" static_cast<int>(thidx)=")
                         << (static_cast<int>(thidx)) << (std::setw(8))
-                        << (" mcode=") << (mcode) << (std::setw(8))
-                        << (" packet_idx=") << (packet_idx) << (std::endl);
+                        << (" block=") << (block) << (std::setw(8)) << (" i=")
+                        << (i) << (std::setw(8)) << (" mcode=") << (mcode)
+                        << (std::setw(8)) << (" packet_idx=") << (packet_idx)
+                        << (std::setw(8)) << (" pos=") << (pos)
+                        << (std::setw(8)) << (" scode=") << (scode)
+                        << (std::setw(8)) << (" symbol_sign=") << (symbol_sign)
+                        << (std::setw(8)) << (" decoded_io_symbols=")
+                        << (decoded_io_symbols) << (std::endl);
             assert(0);
           };
           decoded_io_symbols_a[pos] = v;

@@ -981,7 +981,8 @@
 						    62 6))
 		,@(loop for e in `(ie io qe qo)
 		     collect
-		       (let ((sym (format nil "decoded_~a_symbols" e))
+		       (let ((sym
+			      (format nil "decoded_~a_symbols" e))
 			     (sym-a (format nil "decoded_~a_symbols_a" e)))
 			 `(let ((,sym 0)
 				(,sym-a))
@@ -1197,7 +1198,11 @@
 											     ,(logprint
 											       (format nil "exception normal nrl or sf block=~a brc=~a"
 												       e brc-value)
-											       `((static_cast<int> thidx) mcode packet_idx pos scode symbol_sign))
+											       `((static_cast<int> thidx) block i
+												 mcode packet_idx pos scode symbol_sign
+												 
+												 ,(format nil "decoded_~a_symbols" e)
+												 ))
 											     (assert 0)))))))
 								   (setf (aref ,sym-a pos) v))))))))
 					     break)))
