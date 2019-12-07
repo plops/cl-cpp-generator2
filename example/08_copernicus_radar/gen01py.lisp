@@ -76,23 +76,23 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 16516
-					  24223)))
+				   (tuple 15000
+					  25572)))
 
 		(do0
-		 (setf skip 8000)
-		 (setf spart (aref s (slice skip ":") ":"))
-		 (del s)
+		 (setf skip 0)
+		 ;(setf spart (aref s (slice skip ":") ":"))
+		 ;(del s)
 		 (setf 
 		  ys0
-		  (np.zeros (tuple 1 24223)
+		  #+nil (np.zeros (tuple 1 24223)
 			       :dtype np.complex64)
 		       
-		       ;(np.empty_like spart)
+					(np.empty_like s)
 		       )
 		 
-		 (for (idx (list 0)
-			   ;(range (+ -16 (aref ys0.shape 0)))
+		 #+nil (for (idx 
+			   (range (aref ys0.shape 0))
 			   )
 		  (setf fref 37.53472224
 			row (aref df.iloc (+ skip    idx))
@@ -109,8 +109,8 @@
 			ys (np.exp (* -2j np.pi arg))
 			(aref ys0 idx (slice 0 (len ns))) ys))
 		 
-		 (do0
-		  (setf k0 (np.fft.fft spart 
+		 #+nil (do0
+		  (setf k0 (np.fft.fft s
 				       :axis 1))
 		  (setf kp (np.fft.fft ys0 :axis 1
 				       ))
@@ -121,12 +121,13 @@
 		  (del a)
 		  )
 					
-		 (plt.imshow (np.log (+ .001 (np.abs img))))
+		 #+nil (plt.imshow (np.log (+ .001 (np.abs img))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
-		#+nil (plt.imshow
-		      (np.log (+ .01 (np.abs (aref s "8000:" ":")))))
+		(plt.imshow
+		       (np.log (+ .01 (np.abs  s))))
+		#+nil (plt.imshow (np.real s))
 		#+nil
 		(do0
 		 (setf k (np.fft.fft (s.astype np.complex128) :axis 1))
