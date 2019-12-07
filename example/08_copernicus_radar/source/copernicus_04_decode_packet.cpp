@@ -54,7 +54,7 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
                 << (s->current_bit_count) << (std::setw(8))
                 << (" ((s->data)-(static_cast<uint8_t*>(state._mmap_data)))=")
                 << (((s->data) - (static_cast<uint8_t *>(state._mmap_data))))
-                << (std::endl);
+                << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
     throw std::out_of_range("brc");
   };
   return brc;
@@ -362,6 +362,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
   auto decoded_ie_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
+  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+    decoded_ie_symbols_a[i] = (0.0e+0f);
+  };
   // parse ie data
   for (int block = 0; decoded_ie_symbols < number_of_quads; (block)++) {
     auto brc = get_bit_rate_code(&s);
@@ -475,6 +478,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   consume_padding_bits(&s);
   auto decoded_io_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
+  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+    decoded_io_symbols_a[i] = (0.0e+0f);
+  };
   // parse io data
   for (int block = 0; decoded_io_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];
@@ -587,6 +593,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   consume_padding_bits(&s);
   auto decoded_qe_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
+  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+    decoded_qe_symbols_a[i] = (0.0e+0f);
+  };
   // parse qe data
   for (int block = 0; decoded_qe_symbols < number_of_quads; (block)++) {
     auto thidx = get_threshold_index(&s);
@@ -1041,6 +1050,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   consume_padding_bits(&s);
   auto decoded_qo_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
+  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+    decoded_qo_symbols_a[i] = (0.0e+0f);
+  };
   // parse qo data
   for (int block = 0; decoded_qo_symbols < number_of_quads; (block)++) {
     auto brc = brcs[block];

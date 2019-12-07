@@ -18,7 +18,7 @@ int main() {
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
       "/home/martin/Downloads/"
-      "s1b-s4-raw-s-vv-20191207t145315-20191207t145331-019260-0245d2.dat";
+      "s1a-s4-raw-s-vv-20191204t183618-20191204t183628-030202-0373bf.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto packet_idx = 0;

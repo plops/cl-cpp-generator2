@@ -24,7 +24,6 @@
 
 ;; https://docs.google.com/presentation/d/1LAm3p20egBVvj86p_gmaf-zuPYm4_OAKut5xcl9cWwk/edit?usp=sharing
 
-
 ;;  S1A_EW_GRDM_1SDH_20191130T152919_20191130T153018_030142_0371AB_6678
 ;;  S1A_EW_RAW__0SDH_20191130T152915_20191130T153018_030142_0371AB_8C38
 (progn
@@ -367,7 +366,8 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string "/home/martin/Downloads/s1b-s4-raw-s-vv-20191207t145315-20191207t145331-019260-0245d2.dat"
+		      (string "/home/martin/Downloads/s1a-s4-raw-s-vv-20191204t183618-20191204t183628-030202-0373bf.dat"
+					; "/home/martin/Downloads/s1b-s4-raw-s-vv-20191207t145315-20191207t145331-019260-0245d2.dat"
 					; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat"
 					;"/home/martin/Downloads/s1b-iw-raw-s-hh-20191204t083206-20191204t083239-019212-024466.dat"
 					; "/home/martin/Downloads/s1a-s3-raw-s-hh-20191203t000055-20191203t000115-030176-0372c8.dat" ;; stripmap with 2 islands
@@ -516,9 +516,9 @@
 					     )
 					   (incf ele_count))))
 				      #+safety ("std::out_of_range" (e)
-								  ,(logprint "exception" `(packet_idx))
-								  ;(assert 0)
-								  ))
+								    ,(logprint "exception" `(packet_idx))
+								    ;(assert 0)
+								    ))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
 				("std::to_string" n0)
@@ -795,10 +795,7 @@
 	    "// note: evaluation order is crucial"
 	    #+nil(let ((a (get_sequential_bit s))
 		       (b (get_sequential_bit s))
-		       (c (get_sequential_bit s)))
-		   
-		   
-		   )
+		       (c (get_sequential_bit s))))
 	    #+nil (<<
 		   "std::cout"
 		   ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
@@ -812,9 +809,11 @@
 	      #+safety
 	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
 		,(logprint "brc out of range" `(s->current_bit_count
-						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))))
+						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))
+						brc))
 		(throw ("std::out_of_range" (string "brc")))
-		#+nil (assert 0))
+		;(assert 0)
+		)
 	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
@@ -992,6 +991,9 @@
 			 `(let ((,sym 0)
 				(,sym-a))
 			    (declare (type "std::array<float,MAX_NUMBER_QUADS>" ,sym-a))
+			    (do0
+			     (dotimes (i MAX_NUMBER_QUADS)
+				  (setf (aref ,sym-a i) 0s0)))
 			    (do0
 			     ,(format nil "// parse ~a data" e)
 			     (for ((= "int block" 0)
@@ -1220,21 +1222,12 @@
 				 (t (progn
 				      ,(logprint "unknown brc" `((static_cast<int> brc)))
 				      (assert 0)
-				      break)))
-			      )))))
-
-		#+nil
-		(dotimes (i decoded_ie_symbols)
-		  (do0 (dot (aref output (+ data_offset (* 2 i))) (real (aref decoded_ie_symbols_a i)))
-		       (dot (aref output (+ data_offset (* 2 i))) (imag (aref decoded_qe_symbols_a i))))
-		  (do0 (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (real (aref decoded_io_symbols_a i)))
-		       (dot (aref output (+ data_offset (+ 1 (* 2 i)))) (imag (aref decoded_qo_symbols_a i)))))
+				      break))))))))
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
 		  (do0 (dot (aref output (+ 1 (* 2 i))) (real (aref decoded_io_symbols_a i)))
 		       (dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
-		
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
 		  (return n)))))))))
@@ -1262,7 +1255,6 @@
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
 				    *source-dir*))
-
 		  `(do0
 		    "#ifndef UTILS_H"
 		    " "
@@ -1289,8 +1281,7 @@
 		    )
 		    " "
 		    "#endif"
-		    " ")
-		  )
+		    " "))
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
 								     #P"globals.h"
 								     *source-dir*))

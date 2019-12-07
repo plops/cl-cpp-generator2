@@ -77,11 +77,12 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 24766
-					  24601)))
-		(setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
-		      a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
-		(del a2)
+				   (tuple 16516
+					  24695)))
+		#+nil (do0
+		 (setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
+		       a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
+		 (del a2))
 		#+nil (do0
 		 (setf skip 0)
 		 ;(setf spart (aref s (slice skip ":") ":"))
@@ -124,7 +125,7 @@
 		  (del a)
 		  )
 					
-		 #-nil (plt.imshow (np.log (+ .001 (np.abs img))))
+		 
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
@@ -132,9 +133,11 @@
 		      
 		      (setf fig (plt.figure)
 			    ax (fig.add_subplot (string "111")))
-		      (ax.imshow
-		       a3 #+nil (np.log (+ .01 a3 ;(np.abs  s)
-				  )))
+		      #+nil (ax.imshow (np.log (+ .001 (np.abs img))))
+		      #-nil (ax.imshow
+		       #+nil(np.log (+ .01 (np.abs a3)))
+		       (np.log (+ .01 (np.abs  s)
+					     )))
 		      (ax.set_aspect (string "auto")))
 		#+nil (plt.imshow (np.real s))
 		#+nil
