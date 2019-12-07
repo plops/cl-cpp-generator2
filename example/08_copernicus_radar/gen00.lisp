@@ -12,13 +12,13 @@
 
 (setf *features* (union *features* '(:safety
 					;:nolog
-					:log-brc
-				     :log-consume
+					;:log-brc
+				     ;:log-consume
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
-					      ;:log-brc
-					      ;:log-consume
+					      :log-brc
+					      :log-consume
 					      )))
 
 
@@ -517,7 +517,8 @@
 					   (incf ele_count))))
 				      #+safety ("std::out_of_range" (e)
 								  ,(logprint "exception" `(packet_idx))
-								  (assert 0)))
+								  ;(assert 0)
+								  ))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
 				("std::to_string" n0)
@@ -812,7 +813,8 @@
 	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
 		,(logprint "brc out of range" `(s->current_bit_count
 						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))))
-		(assert 0))
+		(throw ("std::out_of_range" (string "brc")))
+		#+nil (assert 0))
 	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
