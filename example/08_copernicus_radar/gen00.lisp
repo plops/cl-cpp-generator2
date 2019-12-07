@@ -1045,7 +1045,8 @@
 									   (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
 									   (symbol_sign 1s0)
 									   )
-								       
+								       #+nil ,(logprint (format nil "huff brc=~a block=~a"
+											  brc-value e) `(mcode))
 								       (when sign_bit
 									 (setf symbol_sign -1s0))
 								       (do0
@@ -1196,7 +1197,7 @@
 											     ,(logprint
 											       (format nil "exception normal nrl or sf block=~a brc=~a"
 												       e brc-value)
-											       `((static_cast<int> thidx) mcode packet_idx))
+											       `((static_cast<int> thidx) mcode packet_idx pos scode symbol_sign))
 											     (assert 0)))))))
 								   (setf (aref ,sym-a pos) v))))))))
 					     break)))
