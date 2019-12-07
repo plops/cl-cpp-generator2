@@ -383,8 +383,9 @@
 			      (incf (aref map_ele ele) number_of_quads)
 			      (incf packet_idx)))
 		   (let ((ma -1s0)
-			 (ma_ele -1))
-		     (foreach (elevation map_ele)
+			 (ma_ele 6; -1
+			   ))
+		     #+nil (foreach (elevation map_ele)
 			      (let ((number_of_Mquads (/ elevation.second 1e6))
 				    (elevation_beam_address elevation.first))
 				(when (< ma number_of_Mquads)

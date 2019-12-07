@@ -76,7 +76,7 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 5000
+				   (tuple 15000
 					  30213)))
 
 		(do0
@@ -123,9 +123,9 @@
 					
 		 #+nil (plt.imshow (np.log (+ .001 (np.abs img))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
-		#+nil (plt.imshow
+		#-nil (plt.imshow
 		       (np.angle s))
-		(plt.imshow
+		#+nil (plt.imshow
 		       (np.log (+ .01 (np.abs  s))))
 		#+nil (plt.imshow (np.real s))
 		#+nil

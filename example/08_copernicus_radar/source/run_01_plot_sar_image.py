@@ -12,7 +12,7 @@ import numpy.fft
 import pandas as pd
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
-s=np.memmap(next(pathlib.Path("./").glob("o*.cf")), dtype=np.complex64, mode="r", shape=(5000,30213,))
+s=np.memmap(next(pathlib.Path("./").glob("o*.cf")), dtype=np.complex64, mode="r", shape=(15000,30213,))
 skip=0
 ys0=np.empty_like(s)
-plt.imshow(np.log((((9.999999776482582e-3))+(np.abs(s)))))
+plt.imshow(np.angle(s))
