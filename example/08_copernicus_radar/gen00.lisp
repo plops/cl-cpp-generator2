@@ -361,7 +361,8 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string  "/home/martin/Downloads/s1b-iw-raw-s-hh-20191204t083206-20191204t083239-019212-024466.dat"
+		      (string  "/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat"
+			       ;"/home/martin/Downloads/s1b-iw-raw-s-hh-20191204t083206-20191204t083239-019212-024466.dat"
 					; "/home/martin/Downloads/s1a-s3-raw-s-hh-20191203t000055-20191203t000115-030176-0372c8.dat" ;; stripmap with 2 islands
 					; "/home/martin/Downloads/s1a-ew-raw-s-hv-20191130t152915-20191130t153018-030142-0371ab.dat"
 					;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"
@@ -807,6 +808,7 @@
 	    (let ((byte_offset (static_cast<int> (- s->data
 						    (static_cast<uint8_t*> ,(g `_mmap_data))))))
 	      "// make sure we are at first bit of an even byte in the next read"
+	      #-nolog ,(logprint "start consume" `(byte_offset s->current_bit_count))
 	      (setf s->current_bit_count 0)
 	      (if (== 0 (% byte_offset 2))
 		  (do0
@@ -814,7 +816,11 @@
 		   (incf s->data 2))
 		  (do0
 		   "// we are in an odd byte"
-		   (incf s->data 1))))
+		   (incf s->data 1)))
+	      #-nolog ,(logprint "after consume" `((- s->data
+						      (static_cast<uint8_t*> ,(g `_mmap_data)))
+						   s->current_bit_count
+						   )))
 	    #+nil
 	    (let ((pad (- 16
 			  (% s->current_bit_count 16))))
