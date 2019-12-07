@@ -13,10 +13,11 @@
 (setf *features* (union *features* '(:safety
 					;:nolog
 				     :log-brc
+				     :log-consume
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
-					      :log-consum
+					      ;:log-consum
 					      )))
 
 
