@@ -76,8 +76,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 15000
-					  30213)))
+				   (tuple 300
+					  30199)))
 
 		(do0
 		 (setf skip 0)
@@ -123,10 +123,15 @@
 					
 		 #+nil (plt.imshow (np.log (+ .001 (np.abs img))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
-		#-nil (plt.imshow
-		       (np.angle s))
 		#+nil (plt.imshow
+		       (np.angle s))
+		#-nil(do0
+		      
+		      (setf fig (plt.figure)
+			    ax (fig.add_subplot (string "111")))
+		      (ax.imshow
 		       (np.log (+ .01 (np.abs  s))))
+		      (ax.set_aspect (string "auto")))
 		#+nil (plt.imshow (np.real s))
 		#+nil
 		(do0

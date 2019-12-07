@@ -7,12 +7,16 @@
 ;; switches
 ;; :safety .. enable extra asserts in the code
 ;; :nolog  .. suppress all logging output (also makes code more readable)
+;; :log-consume .. show consumption of padding bits
+;; :log-brc .. show decompression
 
 (setf *features* (union *features* '(:safety
-				     ;:nolog
+					;:nolog
+				     :log-brc
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
+					      :log-consum
 					      )))
 
 
@@ -476,7 +480,8 @@
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
-				  (do0 ;handler-case
+				  (#+safety handler-case
+					    #-safety do0
 				      (when (== ele ma_ele)
 					(let (;(output)
 					      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
@@ -485,7 +490,7 @@
 								     ;; create an offset in [0.. ma_data_delay-mi_data_delay)
 								     (+ sar_image (+ (- data_delay mi_data_delay) (* n0 ele_count))))))
 					  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
-					  (unless (== n (* 2 number_of_quads))
+					  #+safety (unless (== n (* 2 number_of_quads))
 					    ,(logprint "unexpected number of quads" `(n number_of_quads)))
 					;,(logprint "tx" `(txprr txpsf txpl))
 					  ,(csvprint "./o_range.csv"
@@ -507,7 +512,7 @@
 						   (aref output i))
 					     )
 					   (incf ele_count))))
-				   #+nil ("std::out_of_range" (e)
+				    #+safety ("std::out_of_range" (e)
 				      ,(logprint "exception" `(packet_idx))))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
@@ -753,9 +758,13 @@
 	   (defun init_sequential_bit_function (seq_state byte_pos)
 	     (declare (type sequential_bit_t* seq_state)
 		      (type size_t byte_pos))
+	     
 	     (setf seq_state->data (ref (aref (static_cast<uint8_t*> ,(g `_mmap_data))
 					      byte_pos))
-		   seq_state->current_bit_count 0))
+		   seq_state->current_bit_count 0)
+	     #+log-consume ,(logprint "start sequential bit function" `((- seq_state->data
+								     (static_cast<uint8_t*> ,(g `_mmap_data)))
+								  seq_state->current_bit_count)))
 	   (defun get_sequential_bit (seq_state)
 	     (declare (type sequential_bit_t* seq_state)
 		      (values "inline bool"))
@@ -798,7 +807,8 @@
 	      #+safety
 	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
 		,(logprint "brc out of range" `(s->current_bit_count
-						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data))))))
+						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))))
+		(assert 0))
 	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
@@ -808,7 +818,7 @@
 	    (let ((byte_offset (static_cast<int> (- s->data
 						    (static_cast<uint8_t*> ,(g `_mmap_data))))))
 	      "// make sure we are at first bit of an even byte in the next read"
-	      #-nolog ,(logprint "start consume" `(byte_offset s->current_bit_count))
+	      #+log-consume ,(logprint "start consume" `(byte_offset s->current_bit_count))
 	      (setf s->current_bit_count 0)
 	      (if (== 0 (% byte_offset 2))
 		  (do0
@@ -817,7 +827,7 @@
 		  (do0
 		   "// we are in an odd byte"
 		   (incf s->data 1)))
-	      #-nolog ,(logprint "after consume" `((- s->data
+	      #+log-consume ,(logprint "after consume" `((- s->data
 						      (static_cast<uint8_t*> ,(g `_mmap_data)))
 						   s->current_bit_count
 						   )))
@@ -959,7 +969,7 @@
 			(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0 3 4 5 12 13 14) collect
 					   `(== ,e baq_mode))))
-			,(logprint "" `(packet_idx baq_mode ;baq_block_length
+			#+log-brc ,(logprint "" `(packet_idx baq_mode ;baq_block_length
 						   data_delay_us
 						   data_delay
 						   number_of_quads)))
@@ -1002,9 +1012,9 @@
 							    ,(logprint "error: out of range" `(brc)) 
 							    (assert 0))
 					
-							  ,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks ,(if (member e `(qe qo))
-															       `(static_cast<int> thidx)
-															       1)))
+							  #+log-brc ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks ,(if (member e `(qe qo))
+																 `(static_cast<int> thidx)
+																 1)))
 							  )
 						,(let ((th (case brc-value
 							     (0 3)
