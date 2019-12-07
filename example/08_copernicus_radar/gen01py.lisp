@@ -76,10 +76,10 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 300
+				   (tuple 6000
 					  30199)))
 
-		(do0
+		#+nil (do0
 		 (setf skip 0)
 		 ;(setf spart (aref s (slice skip ":") ":"))
 		 ;(del s)
@@ -91,7 +91,7 @@
 					(np.empty_like s)
 		       )
 		 
-		 #+nil (for (idx 
+		 #-nil (for (idx 
 			   (range (aref ys0.shape 0))
 			   )
 		  (setf fref 37.53472224
@@ -109,7 +109,7 @@
 			ys (np.exp (* -2j np.pi arg))
 			(aref ys0 idx (slice 0 (len ns))) ys))
 		 
-		 #+nil (do0
+		 #-nil (do0
 		  (setf k0 (np.fft.fft s
 				       :axis 1))
 		  (setf kp (np.fft.fft ys0 :axis 1
@@ -121,11 +121,11 @@
 		  (del a)
 		  )
 					
-		 #+nil (plt.imshow (np.log (+ .001 (np.abs img))))
+		 #-nil (plt.imshow (np.log (+ .001 (np.abs img))))
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
-		#-nil(do0
+		#+nil(do0
 		      
 		      (setf fig (plt.figure)
 			    ax (fig.add_subplot (string "111")))

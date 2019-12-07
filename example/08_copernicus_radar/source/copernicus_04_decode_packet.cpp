@@ -1491,16 +1491,6 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     }
   }
   consume_padding_bits(&s);
-  std::setprecision(3);
-  (std::cout) << (std::setw(10))
-              << (((std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count()) -
-                   (state._start_time)))
-              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-              << (__func__) << (" ") << ("decode ie and io blocks") << (" ")
-              << (std::setw(8)) << (" number_of_baq_blocks=")
-              << (number_of_baq_blocks) << (std::endl);
   for (int block = 0; block < number_of_baq_blocks; (block) += (1)) {
     auto brc = brcs[block];
     auto thidx = thidxs[block];
