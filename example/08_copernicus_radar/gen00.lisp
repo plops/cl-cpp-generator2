@@ -1030,6 +1030,8 @@
 										       `(thidx-unknown)
 										       `(simple normal)) collect
 							      `(do0
+								,(format nil "// reconstruction law block=~a thidx-choice=~a brc=~a" e
+									 thidx-choice brc-value)
 								(for ((= "int i" 0)
 								      (and (< i
 									      128 ;(/ baq_block_length 2) ;; divide by two because even and odd samples are handled in different loops?
@@ -1067,11 +1069,15 @@
 											(simple
 											 `(if (< mcode ,th-mcode)
 											      (setf v (* symbol_sign mcode))
-											      (setf v (* symbol_sign
-													 (dot
-													  ,(format nil "table_b~a"
-														   brc-value)
-													  (at thidx))))))
+											      (if (== mcode ,th-mcode)
+												  (setf v (* symbol_sign
+													     (dot
+													      ,(format nil "table_b~a"
+														       brc-value)
+													      (at thidx))))
+												  (do0
+												   ,(logprint "mcode too large" `(mcode))
+												   (assert 0)))))
 											(normal
 											 `(setf v (* symbol_sign
 												     (dot ,(format nil
@@ -1110,7 +1116,8 @@
 							(assert 0))
 					;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
 						      )
-					    ,(format nil "// decode ~a p.74 reconstruction law middle choice" e)
+					    ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
+						     brc-value)
 					    ,(let ((th (case brc-value
 							 (0 3)
 							 (1 3)
@@ -1120,7 +1127,8 @@
 					       `(if (<= thidx ,th)
 						    ,@(loop for thidx-choice in `(simple normal) collect
 							   `(do0
-							     ,(format nil "// decode ~a p.74 reconstruction law ~a" e thidx-choice)
+							     ,(format nil "// decode ~a p.74 reconstruction law ~a brc=~a"
+								      e thidx-choice brc-value)
 							     (dotimes (i 128)
 							       (let ((pos (+ i (* 128 block)))
 								     (scode (aref ,sym-a pos))

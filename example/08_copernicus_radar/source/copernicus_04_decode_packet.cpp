@@ -405,6 +405,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=ie thidx-choice=thidx-unknown brc=0
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -446,6 +447,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=ie thidx-choice=thidx-unknown brc=1
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -487,6 +489,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=ie thidx-choice=thidx-unknown brc=2
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -528,6 +531,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=ie thidx-choice=thidx-unknown brc=3
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -569,6 +573,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=ie thidx-choice=thidx-unknown brc=4
       for (int i = 0; ((i < 128) && (decoded_ie_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -632,6 +637,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=io thidx-choice=thidx-unknown brc=0
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -673,6 +679,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=io thidx-choice=thidx-unknown brc=1
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -714,6 +721,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=io thidx-choice=thidx-unknown brc=2
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -755,6 +763,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=io thidx-choice=thidx-unknown brc=3
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -796,6 +805,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" block=") << (block) << (std::setw(8))
                   << (" number_of_baq_blocks=") << (number_of_baq_blocks)
                   << (std::setw(8)) << (" 1=") << (1) << (std::endl);
+      // reconstruction law block=io thidx-choice=thidx-unknown brc=4
       for (int i = 0; ((i < 128) && (decoded_io_symbols < number_of_quads));
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
@@ -863,6 +873,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (3)) {
+        // reconstruction law block=qe thidx-choice=simple brc=0
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -876,12 +887,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0.at(thidx)));
+            if ((mcode) == (3)) {
+              v = ((symbol_sign) * (table_b0.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
       } else {
+        // reconstruction law block=qe thidx-choice=normal brc=0
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -927,6 +953,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (3)) {
+        // reconstruction law block=qe thidx-choice=simple brc=1
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -940,12 +967,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1.at(thidx)));
+            if ((mcode) == (4)) {
+              v = ((symbol_sign) * (table_b1.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
       } else {
+        // reconstruction law block=qe thidx-choice=normal brc=1
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -991,6 +1033,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (5)) {
+        // reconstruction law block=qe thidx-choice=simple brc=2
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1004,12 +1047,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2.at(thidx)));
+            if ((mcode) == (6)) {
+              v = ((symbol_sign) * (table_b2.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
       } else {
+        // reconstruction law block=qe thidx-choice=normal brc=2
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1055,6 +1113,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (6)) {
+        // reconstruction law block=qe thidx-choice=simple brc=3
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1068,12 +1127,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3.at(thidx)));
+            if ((mcode) == (9)) {
+              v = ((symbol_sign) * (table_b3.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
       } else {
+        // reconstruction law block=qe thidx-choice=normal brc=3
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1119,6 +1193,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (8)) {
+        // reconstruction law block=qe thidx-choice=simple brc=4
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1132,12 +1207,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4.at(thidx)));
+            if ((mcode) == (15)) {
+              v = ((symbol_sign) * (table_b4.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qe_symbols_a[decoded_qe_symbols] = v;
           (decoded_qe_symbols)++;
         };
       } else {
+        // reconstruction law block=qe thidx-choice=normal brc=4
         for (int i = 0; ((i < 128) && (decoded_qe_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1206,6 +1296,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (3)) {
+        // reconstruction law block=qo thidx-choice=simple brc=0
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1219,12 +1310,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 3) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b0.at(thidx)));
+            if ((mcode) == (3)) {
+              v = ((symbol_sign) * (table_b0.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
       } else {
+        // reconstruction law block=qo thidx-choice=normal brc=0
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1270,6 +1376,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (3)) {
+        // reconstruction law block=qo thidx-choice=simple brc=1
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1283,12 +1390,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 4) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b1.at(thidx)));
+            if ((mcode) == (4)) {
+              v = ((symbol_sign) * (table_b1.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
       } else {
+        // reconstruction law block=qo thidx-choice=normal brc=1
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1334,6 +1456,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (5)) {
+        // reconstruction law block=qo thidx-choice=simple brc=2
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1347,12 +1470,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 6) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b2.at(thidx)));
+            if ((mcode) == (6)) {
+              v = ((symbol_sign) * (table_b2.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
       } else {
+        // reconstruction law block=qo thidx-choice=normal brc=2
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1398,6 +1536,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (6)) {
+        // reconstruction law block=qo thidx-choice=simple brc=3
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1411,12 +1550,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 9) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b3.at(thidx)));
+            if ((mcode) == (9)) {
+              v = ((symbol_sign) * (table_b3.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
       } else {
+        // reconstruction law block=qo thidx-choice=normal brc=3
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1462,6 +1616,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                   << (std::setw(8)) << (" static_cast<int>(thidx)=")
                   << (static_cast<int>(thidx)) << (std::endl);
       if ((thidx) <= (8)) {
+        // reconstruction law block=qo thidx-choice=simple brc=4
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1475,12 +1630,27 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           if (mcode < 15) {
             v = ((symbol_sign) * (mcode));
           } else {
-            v = ((symbol_sign) * (table_b4.at(thidx)));
+            if ((mcode) == (15)) {
+              v = ((symbol_sign) * (table_b4.at(thidx)));
+            } else {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("mcode too large") << (" ")
+                          << (std::setw(8)) << (" mcode=") << (mcode)
+                          << (std::endl);
+              assert(0);
+            }
           };
           decoded_qo_symbols_a[decoded_qo_symbols] = v;
           (decoded_qo_symbols)++;
         };
       } else {
+        // reconstruction law block=qo thidx-choice=normal brc=4
         for (int i = 0; ((i < 128) && (decoded_qo_symbols < number_of_quads));
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
@@ -1532,9 +1702,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode ie p.74 reconstruction law middle choice
+      // decode ie p.74 reconstruction law middle choice brc=0
       if ((thidx) <= (3)) {
-        // decode ie p.74 reconstruction law simple
+        // decode ie p.74 reconstruction law simple brc=0
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1564,7 +1734,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
-        // decode ie p.74 reconstruction law normal
+        // decode ie p.74 reconstruction law normal brc=0
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1592,9 +1762,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode ie p.74 reconstruction law middle choice
+      // decode ie p.74 reconstruction law middle choice brc=1
       if ((thidx) <= (3)) {
-        // decode ie p.74 reconstruction law simple
+        // decode ie p.74 reconstruction law simple brc=1
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1624,7 +1794,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
-        // decode ie p.74 reconstruction law normal
+        // decode ie p.74 reconstruction law normal brc=1
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1652,9 +1822,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode ie p.74 reconstruction law middle choice
+      // decode ie p.74 reconstruction law middle choice brc=2
       if ((thidx) <= (5)) {
-        // decode ie p.74 reconstruction law simple
+        // decode ie p.74 reconstruction law simple brc=2
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1684,7 +1854,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
-        // decode ie p.74 reconstruction law normal
+        // decode ie p.74 reconstruction law normal brc=2
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1712,9 +1882,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode ie p.74 reconstruction law middle choice
+      // decode ie p.74 reconstruction law middle choice brc=3
       if ((thidx) <= (6)) {
-        // decode ie p.74 reconstruction law simple
+        // decode ie p.74 reconstruction law simple brc=3
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1744,7 +1914,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
-        // decode ie p.74 reconstruction law normal
+        // decode ie p.74 reconstruction law normal brc=3
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1772,9 +1942,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode ie p.74 reconstruction law middle choice
+      // decode ie p.74 reconstruction law middle choice brc=4
       if ((thidx) <= (8)) {
-        // decode ie p.74 reconstruction law simple
+        // decode ie p.74 reconstruction law simple brc=4
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1804,7 +1974,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_ie_symbols_a[pos] = v;
         };
       } else {
-        // decode ie p.74 reconstruction law normal
+        // decode ie p.74 reconstruction law normal brc=4
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
@@ -1848,9 +2018,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode io p.74 reconstruction law middle choice
+      // decode io p.74 reconstruction law middle choice brc=0
       if ((thidx) <= (3)) {
-        // decode io p.74 reconstruction law simple
+        // decode io p.74 reconstruction law simple brc=0
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -1880,7 +2050,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_io_symbols_a[pos] = v;
         };
       } else {
-        // decode io p.74 reconstruction law normal
+        // decode io p.74 reconstruction law normal brc=0
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -1908,9 +2078,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode io p.74 reconstruction law middle choice
+      // decode io p.74 reconstruction law middle choice brc=1
       if ((thidx) <= (3)) {
-        // decode io p.74 reconstruction law simple
+        // decode io p.74 reconstruction law simple brc=1
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -1940,7 +2110,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_io_symbols_a[pos] = v;
         };
       } else {
-        // decode io p.74 reconstruction law normal
+        // decode io p.74 reconstruction law normal brc=1
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -1968,9 +2138,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode io p.74 reconstruction law middle choice
+      // decode io p.74 reconstruction law middle choice brc=2
       if ((thidx) <= (5)) {
-        // decode io p.74 reconstruction law simple
+        // decode io p.74 reconstruction law simple brc=2
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -2000,7 +2170,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_io_symbols_a[pos] = v;
         };
       } else {
-        // decode io p.74 reconstruction law normal
+        // decode io p.74 reconstruction law normal brc=2
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -2028,9 +2198,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode io p.74 reconstruction law middle choice
+      // decode io p.74 reconstruction law middle choice brc=3
       if ((thidx) <= (6)) {
-        // decode io p.74 reconstruction law simple
+        // decode io p.74 reconstruction law simple brc=3
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -2060,7 +2230,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_io_symbols_a[pos] = v;
         };
       } else {
-        // decode io p.74 reconstruction law normal
+        // decode io p.74 reconstruction law normal brc=3
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -2088,9 +2258,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
                     << (std::setw(8)) << (" brc=") << (brc) << (std::endl);
         assert(0);
       };
-      // decode io p.74 reconstruction law middle choice
+      // decode io p.74 reconstruction law middle choice brc=4
       if ((thidx) <= (8)) {
-        // decode io p.74 reconstruction law simple
+        // decode io p.74 reconstruction law simple brc=4
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
@@ -2120,7 +2290,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           decoded_io_symbols_a[pos] = v;
         };
       } else {
-        // decode io p.74 reconstruction law normal
+        // decode io p.74 reconstruction law normal brc=4
         for (int i = 0; i < 128; (i) += (1)) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
