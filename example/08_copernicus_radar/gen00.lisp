@@ -12,12 +12,13 @@
 
 (setf *features* (union *features* '(:safety
 					;:nolog
-				     :log-brc
-				     :log-consume
+				     ;:log-brc
+				     ;:log-consume
 				     )))
 (setf *features* (set-difference *features* '(;:safety
 					      :nolog
-					      ;:log-consum
+					      :log-brc
+					      :log-consume
 					      )))
 
 
@@ -1135,7 +1136,7 @@
 										`(== ,e brc)))
 							       ,(logprint "error: out of range" `(brc)) 
 							       (assert 0))
-						       ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks))
+						       #+nil ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks))
 						       )
 					     ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
 						      brc-value)
@@ -1150,8 +1151,13 @@
 							    `(do0
 							      ,(format nil "// decode ~a p.74 reconstruction law ~a brc=~a"
 								       e thidx-choice brc-value)
-							      (dotimes (i 128)
-								(let ((pos (+ i (* 128 block)))
+							      (for ((= "int i" 0)
+								    (and (< i 128)
+									 (< (+ i (* 128 block))
+									    ,(format nil "decoded_~a_symbols" e)))
+								    (incf i)) ;dotimes (i 128)
+								   (let ((pos
+									  (+ i (* 128 block)))
 								      (scode (aref ,sym-a pos))
 								      (mcode (static_cast<int> (fabsf scode)))
 								      (symbol_sign (copysignf 1s0 scode)))
