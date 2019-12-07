@@ -1008,7 +1008,7 @@
 					   `(,(format nil "case ~a" brc-value)
 					      (progn
 						#+safety (do0
-							  (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+							  #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 									     `(== ,e brc)))
 							    ,(logprint "error: out of range" `(brc)) 
 							    (assert 0))
@@ -1110,11 +1110,11 @@
 				       `(,(format nil "case ~a" brc-value)
 					  (progn
 					    #+safety (do0
-						      (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+						      #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
 									 `(== ,e brc)))
 							,(logprint "error: out of range" `(brc)) 
 							(assert 0))
-					;,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
+					,(logprint (format nil "~a" e) `(brc block number_of_baq_blocks))
 						      )
 					    ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
 						     brc-value)
