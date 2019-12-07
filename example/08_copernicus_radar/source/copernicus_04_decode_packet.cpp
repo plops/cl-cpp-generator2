@@ -40,8 +40,22 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
   auto brc = ((((0x4) * (get_sequential_bit(s)))) +
               (((0x2) * (get_sequential_bit(s)))) +
               (((0x1) * (get_sequential_bit(s)))));
-  assert((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) ||
-          ((3) == (brc)) || ((4) == (brc))));
+  if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) || ((3) == (brc)) ||
+         ((4) == (brc))))) {
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("brc out of range") << (" ")
+                << (std::setw(8)) << (" s->current_bit_count=")
+                << (s->current_bit_count) << (std::setw(8))
+                << (" ((s->data)-(static_cast<uint8_t*>(state._mmap_data)))=")
+                << (((s->data) - (static_cast<uint8_t *>(state._mmap_data))))
+                << (std::endl);
+  };
   return brc;
 }
 inline void consume_padding_bits(sequential_bit_t *s) {

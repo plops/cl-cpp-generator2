@@ -795,7 +795,9 @@
 			       `(* (hex ,(expt 2 (- 2 j)))
 				   (get_sequential_bit s))))))
 	      #+safety
-	      (assert (or ,@(loop for e below 5 collect `(== ,e brc))))
+	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
+		,(logprint "brc out of range" `(s->current_bit_count
+						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data))))))
 	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
