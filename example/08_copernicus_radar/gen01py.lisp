@@ -97,6 +97,17 @@
 				    (tuple 16516
 					   24695)
 				    (tuple 800 6000)))
+		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
+					      (glob (string "o_r*.cf"))))
+				   :dtype np.complex64
+				   :mode (string "r")
+				   :shape #+nil (tuple 7000 ; 22778
+						       15283 ;; range
+						       )
+				   
+				    (tuple 16516
+					   24695)
+				   ))
 
 		(do0
 		 (setf fref 37.53472224)
