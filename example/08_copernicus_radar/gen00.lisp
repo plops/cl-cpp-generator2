@@ -448,7 +448,7 @@
 		    (remove (string  "./o_range.csv"))
 		    (remove (string  "./o_cal_range.csv")))
 
-		   (let ((cal_n0 3000)
+		   (let ((cal_n0 6000)
 			 (cal_iter 0)
 			 (cal_image (new (aref "std::complex<float>" (* cal_n0 cal_count))))))
 		   
@@ -1347,7 +1347,7 @@
 				     (sign_bit (>> (logand smcode (hex #b1000000000))
 						   9))
 				     (mcode (logand smcode (hex #b111111111)))
-				     (scode (* (powf 1s0 sign_bit)
+				     (scode (* (powf -1s0 sign_bit)
 					       mcode)))
 				 (setf (aref ,sym-a ,sym) scode)
 				 (incf ,sym)))

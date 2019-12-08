@@ -59,7 +59,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
+    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_ie_symbols_a[decoded_ie_symbols] = scode;
     (decoded_ie_symbols)++;
   }
@@ -74,7 +74,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
+    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_io_symbols_a[decoded_io_symbols] = scode;
     (decoded_io_symbols)++;
   }
@@ -89,7 +89,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
+    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qe_symbols_a[decoded_qe_symbols] = scode;
     (decoded_qe_symbols)++;
   }
@@ -104,7 +104,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
+    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qo_symbols_a[decoded_qo_symbols] = scode;
     (decoded_qo_symbols)++;
   }

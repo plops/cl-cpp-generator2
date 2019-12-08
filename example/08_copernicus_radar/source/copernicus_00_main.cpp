@@ -190,7 +190,7 @@ int main() {
               << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
   remove("./o_range.csv");
   remove("./o_cal_range.csv");
-  auto cal_n0 = 3000;
+  auto cal_n0 = 6000;
   auto cal_iter = 0;
   auto cal_image = new std::complex<float>[((cal_n0) * (cal_count))];
   {

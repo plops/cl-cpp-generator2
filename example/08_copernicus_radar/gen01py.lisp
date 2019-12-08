@@ -96,7 +96,32 @@
 				   #+nil
 				    (tuple 16516
 					   24695)
-				    (tuple 800 3000)))
+				    (tuple 800 6000)))
+
+		(do0
+		 (plt.plot (np.real (np.mean (aref s "0:50" ":") :axis 0))
+			   :label (string "real"))
+		 (plt.plot (np.imag (np.mean (aref s "0:50" ":") :axis 0))
+			   :label (string "imag"))
+		  (setf fref 37.53472224
+			row (aref dfc.iloc 0)
+			txprr row.txprr
+			txprr_ row.txprr_
+			txpsf row.txpsf
+			txpl row.txpl
+			txpl_ row.txpl_
+			tn (np.linspace (* -.5 txpl)
+					(* .5 txpl)
+					(* 2 row.number_of_quads))
+			p1 (- txpsf (* txprr -.5 txpl))
+			p2 (* .5 txprr)
+			arg (+ (* p1 tn)
+			       (* p2 tn tn))
+			ys (* 175 (np.exp (* -2j np.pi arg)))
+			)
+		  (plt.plot (np.abs (np.real ys)) :label (string "analytic"))
+		  (plt.legend)
+		 )
 		#+nil (do0
 		 (setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
 		       a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
