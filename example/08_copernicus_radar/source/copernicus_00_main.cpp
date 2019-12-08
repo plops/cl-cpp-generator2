@@ -23,13 +23,19 @@ int main() {
   init_collect_packet_headers();
   auto packet_idx = 0;
   std::unordered_map<int, int> map_ele;
+  auto cal_count = 0;
   for (auto &e : state._header_data) {
     auto offset = state._header_offset[packet_idx];
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+    auto cal_p = ((0x1) & ((p[59]) >> (7)));
     auto ele = ((0xF) & ((p[60]) >> (4)));
     auto number_of_quads =
         ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
-    (map_ele[ele]) += (number_of_quads);
+    if (cal_p) {
+      (cal_count)++;
+    } else {
+      (map_ele[ele]) += (number_of_quads);
+    }
     (packet_idx)++;
   };
   auto ma = (-1.e+0f);
@@ -62,7 +68,8 @@ int main() {
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("largest ele") << (" ")
               << (std::setw(8)) << (" ma_ele=") << (ma_ele) << (std::setw(8))
-              << (" ma=") << (ma) << (std::endl);
+              << (" ma=") << (ma) << (std::setw(8)) << (" cal_count=")
+              << (cal_count) << (std::endl);
   auto mi_data_delay = 10000000;
   auto ma_data_delay = -1;
   auto ma_data_end = -1;

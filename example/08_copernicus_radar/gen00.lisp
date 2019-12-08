@@ -382,15 +382,20 @@
 
 		(do0
 		 (let ((packet_idx 0)
-		       (map_ele))
+		       (map_ele)
+		       (cal_count 0))
 		   (declare (type "std::unordered_map<int,int>" map_ele))
 		   (foreach (e ,(g `_header_data))
 			    (let ((offset (aref ,(g `_header_offset) packet_idx))
 				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				  (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
 				  (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
-			      (incf (aref map_ele ele) number_of_quads)
+			      (if cal_p
+				  (incf cal_count)
+				  (incf (aref map_ele ele) number_of_quads))
 			      (incf packet_idx)))
+		  
 		   (let ((ma -1s0)
 			 (ma_ele -1
 			   ))
@@ -401,7 +406,7 @@
 				  (setf ma number_of_Mquads
 					ma_ele elevation_beam_address))
 				,(logprint "map_ele" `(elevation_beam_address number_of_Mquads))))
-		     ,(logprint "largest ele" `(ma_ele ma)))
+		     ,(logprint "largest ele" `(ma_ele ma cal_count)))
 
 		   (let ((mi_data_delay 10000000) ;; minimum number of samples before data is stored
 			 (ma_data_delay -1) ;; maximum number of samples before data is stored
