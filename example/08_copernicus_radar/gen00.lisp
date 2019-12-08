@@ -504,6 +504,7 @@
 							       cal_mode
 							       number_of_quads
 							       space_packet_count
+							       signal_type
 							       pri_count
 							       rank
 							       data_delay

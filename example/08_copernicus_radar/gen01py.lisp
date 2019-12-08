@@ -50,7 +50,22 @@
 				    )
 		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
-		(setf dfc (pd.read_csv (string "./o_cal_range.csv")))
+		
+		(setf
+		 cal_type_dtype (pd.api.types.CategoricalDtype
+				 :ordered True
+				 :categories
+				 (list ,@(loop for e in `(tx_cal
+							   rx_cal
+							   epdn_cal
+							   ta_cal
+							   apdn_cal
+							   na_0
+							   na_1
+							   txh_cal_iso)
+					     collect
+					       `(string ,e))))
+		 dfc (pd.read_csv (string "./o_cal_range.csv")))
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)

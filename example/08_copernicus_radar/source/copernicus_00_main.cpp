@@ -242,18 +242,19 @@ int main() {
             outfile.open("./o_cal_range.csv",
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
-              (outfile) << ("cal_iter,packet_idx,offset,cal_type,cal_mode,"
-                            "number_of_quads,space_packet_count,pri_count,rank,"
-                            "data_delay,txprr,txpsf,txpl,txprr_,txpl_")
-                        << (std::endl);
+              (outfile)
+                  << ("cal_iter,packet_idx,offset,cal_type,cal_mode,number_of_"
+                      "quads,space_packet_count,signal_type,pri_count,rank,"
+                      "data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                  << (std::endl);
             };
             (outfile) << (cal_iter) << (",") << (packet_idx) << (",")
                       << (offset) << (",") << (cal_type) << (",") << (cal_mode)
                       << (",") << (number_of_quads) << (",")
-                      << (space_packet_count) << (",") << (pri_count) << (",")
-                      << (rank) << (",") << (data_delay) << (",") << (txprr)
-                      << (",") << (txpsf) << (",") << (txpl) << (",")
-                      << (txprr_) << (",") << (txpl_) << (std::endl);
+                      << (space_packet_count) << (",") << (signal_type) << (",")
+                      << (pri_count) << (",") << (rank) << (",") << (data_delay)
+                      << (",") << (txprr) << (",") << (txpsf) << (",") << (txpl)
+                      << (",") << (txprr_) << (",") << (txpl_) << (std::endl);
             outfile.close();
           };
           (cal_iter)++;
