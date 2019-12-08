@@ -189,6 +189,7 @@ int main() {
               << (std::setw(8)) << (" (((1.e-6f))*(n0)*(ele_number_echoes))=")
               << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
   remove("./o_range.csv");
+  remove("./o_cal_range.csv");
   auto cal_n0 = 3000;
   auto cal_iter = 0;
   auto cal_image = new std::complex<float>[((cal_n0) * (cal_count))];
@@ -212,6 +213,9 @@ int main() {
           ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       auto rank = ((0x1F) & ((p[49]) >> (0)));
+      auto cal_type = ((ele) & (7));
+      auto signal_type = ((0xF) & ((p[63]) >> (4)));
+      auto cal_mode = ((0x3) & ((p[62]) >> (6)));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
       auto txprr_p = ((0x1) & ((p[42]) >> (7)));
@@ -233,6 +237,25 @@ int main() {
         if (cal_p) {
           init_decode_packet_type_a_or_b(
               packet_idx, ((cal_image) + (((cal_n0) * (cal_iter)))));
+          {
+            std::ofstream outfile;
+            outfile.open("./o_cal_range.csv",
+                         ((std::ios_base::out) | (std::ios_base::app)));
+            if ((0) == (outfile.tellp())) {
+              (outfile) << ("cal_iter,packet_idx,offset,cal_type,cal_mode,"
+                            "number_of_quads,space_packet_count,pri_count,rank,"
+                            "data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                        << (std::endl);
+            };
+            (outfile) << (cal_iter) << (",") << (packet_idx) << (",")
+                      << (offset) << (",") << (cal_type) << (",") << (cal_mode)
+                      << (",") << (number_of_quads) << (",")
+                      << (space_packet_count) << (",") << (pri_count) << (",")
+                      << (rank) << (",") << (data_delay) << (",") << (txprr)
+                      << (",") << (txpsf) << (",") << (txpl) << (",")
+                      << (txprr_) << (",") << (txpl_) << (std::endl);
+            outfile.close();
+          };
           (cal_iter)++;
         } else {
           if ((ele) == (ma_ele)) {

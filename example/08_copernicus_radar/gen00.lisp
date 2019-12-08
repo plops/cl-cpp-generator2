@@ -444,7 +444,9 @@
 		     ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
 		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
-		   (remove (string  "./o_range.csv"))
+		   (do0
+		    (remove (string  "./o_range.csv"))
+		    (remove (string  "./o_cal_range.csv")))
 
 		   (let ((cal_n0 3000)
 			 (cal_iter 0)
@@ -463,6 +465,9 @@
 				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (rank ,(space-packet-slot-get 'rank 'p))
+				      (cal_type (logand ele #x7))
+				      (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
+				      (cal_mode ,(space-packet-slot-get 'ses-ssb-cal-mode 'p))
 				      (data_delay (+ ,(/ 320 8)
 						     ,(space-packet-slot-get 'sampling-window-start-time 'p)))
 				      ,@(loop for (e f) in `((txprr_p tx-ramp-rate-polarity)
@@ -491,6 +496,22 @@
 					    (if cal_p
 						(do0
 						 (init_decode_packet_type_a_or_b packet_idx (+ cal_image (* cal_n0 cal_iter)))
+						 ,(csvprint "./o_cal_range.csv"
+							    `(cal_iter
+							      packet_idx
+							      offset
+							       cal_type
+							       cal_mode
+							       number_of_quads
+							       space_packet_count
+							       pri_count
+							       rank
+							       data_delay
+							       txprr
+							       txpsf
+							       txpl
+							       txprr_
+							       txpl_))
 						 (incf cal_iter))
 					      (when (== ele ma_ele)
 						(let ( ;(output)

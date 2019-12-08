@@ -140,7 +140,7 @@
 			     #+nil(np.log (+ .01 (np.abs a3)))
 			     #+nil
 			     (np.real s)
-			     (Ppnp.angle
+			     (np.angle
 
 			       s)
 		       #+nil (np.log (+ .01 (np.abs  s)
