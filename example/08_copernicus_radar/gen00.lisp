@@ -185,12 +185,7 @@
 				      (aref ,data8 ,(+ preceding-octets 0 byte))))
 			   (* (hex ,(expt 2 (1- preceding-bits))	;,(expt 256 bytes)
 			       ) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
-		     (format nil "uint~a_t" (next-power-of-two bits))))
-		  ))))))
-
-
-    )
-  
+		     (format nil "uint~a_t" (next-power-of-two bits)))))))))))
   (progn
     ;; collect code that will be emitted in utils.h
     (defparameter *utils-code* nil)
@@ -267,9 +262,7 @@
 			   `(,e
 			       (string ","))))
 		"std::endl")
-	    (outfile.close)
-	    ))))
-
+	    (outfile.close)))))
     (defun gen-huffman-decoder (name huffman-tree)
       (labels ((frob (tree)
 	     (cond ((null tree)
@@ -279,24 +272,19 @@
 		    `(return ,(car tree)))
 		   (t `(if (get_sequential_bit s)
 			   ,(frob (cadr tree))
-			   ,(frob (car tree))
-			   )))))
+			   ,(frob (car tree)))))))
        `(defun ,(format nil "decode_huffman_~a" name) (s)
 	  (declare (type sequential_bit_t* s)
 		   (values "inline int"))
-	  ,(frob huffman-tree)
-	  )))
-
+	  ,(frob huffman-tree))))
     (defun emit-globals (&key init)
-      (let ((l `(
-		 (_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
-                                                                                       (time_since_epoch)
-                                                                                       (count)))))
+      (let ((l `((_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+							   (time_since_epoch)
+							   (count)))))
 		 ,@(loop for e in *module-global-parameters* collect
 			(destructuring-bind (&key name type default)
 			    e
-			  `(,name ,type)))
-		 )))
+			  `(,name ,type))))))
 	(if init
 	    `(curly
 	      ,@(remove-if
@@ -311,29 +299,22 @@
 		  ,@(loop for e in l collect
 			 (destructuring-bind (name type &optional value) e
 			   `(,name ,type))))))))
-  
     (defun define-module (args)
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
       (destructuring-bind (module-name global-parameters module-code) args
 	(let ((header ()))
-	
 	  (push `(do0
-		
 		  " "
 		  (include "utils.h")
 		  " "
 		  (include "globals.h")
 		  " "
 		  (include "proto2.h")
-			
-		  " "
-		  )
+		  " ")
 		header)
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
 	    (push `(do0 "extern State state;")
-		  header)
-	    )
-	
+		  header))
 	  (push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
 		*module*))
 	(loop for par in global-parameters do
@@ -354,11 +335,9 @@
 		       <cassert>
 		       <unordered_map>
 		       <string>
-		       <fstream>
-		       )
+		       <fstream>)
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type State state)))
-	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -377,14 +356,13 @@
 			       )) 
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
-		;(init_process_packet_headers)
-
-
+					;(init_process_packet_headers)
 		(do0
 		 (let ((packet_idx 0)
 		       (map_ele)
+		       (map_cal)
 		       (cal_count 0))
-		   (declare (type "std::unordered_map<int,int>" map_ele))
+		   (declare (type "std::unordered_map<int,int>" map_ele map_cal))
 		   (foreach (e ,(g `_header_data))
 			    (let ((offset (aref ,(g `_header_offset) packet_idx))
 				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
@@ -392,13 +370,21 @@
 				  (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
 			      (if cal_p
-				  (incf cal_count)
-				  (incf (aref map_ele ele) number_of_quads))
+				  (do0
+				   (incf cal_count)
+				   (incf (aref map_cal (logand ele #x7))))
+				  (do0
+				   (incf (aref map_ele ele) number_of_quads)))
 			      (incf packet_idx)))
-		  
+
+		   (foreach (cal map_cal)
+			    (let ((number_of_cal cal.second)
+				  (cal_mode cal.first))
+			      ,(logprint "map_ele" `(cal_mode number_of_cal))))
+		   
+
 		   (let ((ma -1s0)
-			 (ma_ele -1
-			   ))
+			 (ma_ele -1))
 		     #-nil (foreach (elevation map_ele)
 			      (let ((number_of_Mquads (/ elevation.second 1e6))
 				    (elevation_beam_address elevation.first))
@@ -408,6 +394,8 @@
 				,(logprint "map_ele" `(elevation_beam_address number_of_Mquads))))
 		     ,(logprint "largest ele" `(ma_ele ma cal_count)))
 
+
+		   
 		   (let ((mi_data_delay 10000000) ;; minimum number of samples before data is stored
 			 (ma_data_delay -1) ;; maximum number of samples before data is stored
 			 (ma_data_end -1) ;; maximum number of samples
@@ -442,7 +430,6 @@
 				 (let ((number_of_Mquads (/ azi.second 1e6))
 				       (azi_beam_address azi.first))
 				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
-
 		(do0
 		 ,(logprint "start big allocation" `())
 		 (let ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
@@ -462,14 +449,12 @@
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (rank ,(space-packet-slot-get 'rank 'p))
 				      (data_delay (+ ,(/ 320 8)
-						     ,(space-packet-slot-get 'sampling-window-start-time 'p
-									     )))
+						     ,(space-packet-slot-get 'sampling-window-start-time 'p)))
 				      ,@(loop for (e f) in `((txprr_p tx-ramp-rate-polarity)
 							     (txprr_m tx-ramp-rate-magnitude)
 							     (txpsf_p tx-pulse-start-frequency-polarity)
 							     (txpsf_m tx-pulse-start-frequency-magnitude)
-							     (txpl_ tx-pulse-length))
-					   collect
+							     (txpl_ tx-pulse-length))  collect
 					     `(,e ,(space-packet-slot-get f 'p)))
 				      (fref 37.53472224)
 				      (txprr_ (* (pow -1 txprr_p) txprr_m))
@@ -477,13 +462,11 @@
 						   ,(expt 2 21))
 						(pow -1.0 txprr_p)
 						txprr_m))
-				      
 				      (txpsf (+ (/ txprr (* fref 4)) ;; MHz
 						(* (/ fref
 						      ,(expt 2 14))
 						   (pow -1.0 txpsf_p)
 						   txpsf_m)))
-				      
 				      (txpl (/ (static_cast<double> txpl_) ;; us
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
@@ -537,15 +520,8 @@
 			 ,(logprint "store" '(nbytes))
 			 (file.write ("reinterpret_cast<const char*>" sar_image) nbytes)
 			 ,(logprint "store finished" '()))))
-		   
-		   (delete[] sar_image)
-		   ))
-
-		
-		;(init_decode_packet 1)
-		;(init_decode_packet 2)
-		(destroy_mmap)
-		))))
+		   (delete[] sar_image)))
+		(destroy_mmap)))))
   (define-module
       `(mmap
 	((_mmap_data :direction 'out :type void*)
@@ -584,28 +560,22 @@
 	       (when (== MAP_FAILED data)
 		 ,(logprint "fail mmap"`( data)))
 	       (assert (!= MAP_FAILED data))
-	       
 	       (setf ,(g `_mmap_filesize) filesize
-		     ,(g `_mmap_data) data)))
-	   ))))
-
+		     ,(g `_mmap_data) data)))))))
   (define-module
       `(collect_packet_headers
 	(;(_header_data :direction 'out :type void*)
 	 (_header_data :direction 'out :type "std::vector<std::array<uint8_t,62+6>>")
-	 (_header_offset :direction 'out :type "std::vector<size_t>")
-	 )
+	 (_header_offset :direction 'out :type "std::vector<size_t>"))
 	(do0
 	 (include <array>
 		  <iostream>
 		  <vector>
-		  <cstring>
-		  )
+		  <cstring>)
 	 #+nil (defstruct0 space_packet_header_info_t
 	   (head "std::array<uint8_t, 62+6>")
 	   (offset size_t))
-	 (defun destroy_collect_packet_headers ()
-	 )
+	 (defun destroy_collect_packet_headers ())
 	 (defun init_collect_packet_headers ()
 	   ,(logprint "collect" `(,(g `_mmap_data)))
 	   (let ((offset 0))
@@ -623,20 +593,16 @@
 			 (+ 62 6))
 		 #+nil ,(logprint "len" `(offset data_length ;sync_marker
 					 ))
-		 
 		 (dot ,(g `_header_offset)
 		      (push_back offset))
 		 (dot ,(g `_header_data)
 		      (push_back data_chunk))
-		 (incf offset (+ 6 1 data_length)))))
-	   ))))
-
+		 (incf offset (+ 6 1 data_length)))))))))
   (define-module
       `(process_packet_headers
 	()
 	(do0
 	 (include <unistd.h>)
-	 
 	 (defun init_process_packet_headers ()
 	   (let ((p0 (dot (aref ,(g `_header_data) 0)
 			  (data)))
@@ -734,9 +700,7 @@
 		       (usleep 16000)
 		       (<< "std::cout"
 			   (string "\\033[2J\\033[1;1H")
-			   "std::flush")
-		       )))
-	   ))))
+			   "std::flush"))))))))
   (let ((max-number-quads 52378))
    (define-module
        `(decode_packet
