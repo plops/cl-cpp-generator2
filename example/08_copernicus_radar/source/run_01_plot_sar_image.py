@@ -27,3 +27,7 @@ chirp_start=dfchirpon[((dfchirpon.mag)==(True))].iloc[0].name
 chirp_end=dfchirpon[((dfchirpon.mag)==(True))].iloc[-1].name
 chirp_poly=np.polynomial.polynomial.Polynomial.fit(xs, chirp_phase, 2, domain=[chirp_start, chirp_end])
 plt.plot(xs, np.unwrap(np.angle(input)))
+plt.plot(xs, chirp_poly(xs))
+plt.figure()
+plt.plot(xs, np.real(input))
+plt.plot(xs, np.real(((175)*(np.exp(((1j)*(chirp_poly(xs))))))))

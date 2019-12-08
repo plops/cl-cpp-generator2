@@ -120,9 +120,15 @@
 		  (setf chirp_poly (np.polynomial.polynomial.Polynomial.fit xs chirp_phase 2
 									    :domain (list chirp_start
 											  chirp_end)))
-		  (plt.plot xs (np.unwrap (np.angle input))))
+		  (plt.plot xs (np.unwrap (np.angle input)))
+		  (plt.plot xs (chirp_poly xs)))
 
 
+		 (do0
+		  (plt.figure)
+		  (plt.plot xs (np.real input))
+		  (plt.plot xs (np.real (* 175 (np.exp (* 1j (chirp_poly xs)))))))
+		 
 		 #+nil (do0 
 		  (plt.figure)
 		  
@@ -264,3 +270,4 @@
 		 (plt.imshow (np.log (+ .001 (np.abs k)))))
 		))))
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
+
