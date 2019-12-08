@@ -6,6 +6,7 @@
 #include "proto2.h"
 ;
 extern State state;
+#include <cassert>
 int get_data_type_a_or_b(sequential_bit_t *s) {
   return ((((0x200) * (get_sequential_bit(s)))) +
           (((0x100) * (get_sequential_bit(s)))) +
@@ -44,7 +45,6 @@ int init_decode_packet_type_a_or_b(int packet_idx,
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
-  assert((number_of_baq_blocks) <= (256));
   assert((((0) == (baq_mode))));
   sequential_bit_t s;
   init_sequential_bit_function(
@@ -56,7 +56,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   };
   // parse ie data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
-    auto smcode = get_data_type_a_or_b(s);
+    auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
@@ -71,7 +71,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   };
   // parse io data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
-    auto smcode = get_data_type_a_or_b(s);
+    auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
@@ -86,7 +86,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   };
   // parse qe data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
-    auto smcode = get_data_type_a_or_b(s);
+    auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));
@@ -101,7 +101,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   };
   // parse qo data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
-    auto smcode = get_data_type_a_or_b(s);
+    auto smcode = get_data_type_a_or_b(&s);
     auto sign_bit = (((smcode) & (0x200))) >> (9);
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((1.e+0f), sign_bit)) * (mcode));

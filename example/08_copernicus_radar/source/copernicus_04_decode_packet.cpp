@@ -14,7 +14,7 @@ void init_sequential_bit_function(sequential_bit_t *seq_state,
   seq_state->data = &(static_cast<uint8_t *>(state._mmap_data)[byte_pos]);
   seq_state->current_bit_count = 0;
 }
-inline bool get_sequential_bit(sequential_bit_t *seq_state) {
+bool get_sequential_bit(sequential_bit_t *seq_state) {
   auto current_byte = *(seq_state->data);
   auto res = static_cast<bool>(
       (((current_byte) >> (((7) - (seq_state->current_bit_count)))) & (1)));
@@ -59,7 +59,7 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
   };
   return brc;
 }
-inline void consume_padding_bits(sequential_bit_t *s) {
+void consume_padding_bits(sequential_bit_t *s) {
   auto byte_offset = static_cast<int>(
       ((s->data) - (static_cast<uint8_t *>(state._mmap_data))));
   // make sure we are at first bit of an even byte in the next read

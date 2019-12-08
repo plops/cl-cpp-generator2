@@ -751,7 +751,7 @@
 								  seq_state->current_bit_count)))
 	   (defun get_sequential_bit (seq_state)
 	     (declare (type sequential_bit_t* seq_state)
-		      (values "inline bool"))
+		      (values "bool"))
 	     (let ((current_byte (deref seq_state->data))
 		   (res (static_cast<bool>
 			 (logand (>> current_byte (- 7 seq_state->current_bit_count))
@@ -796,7 +796,7 @@
 	      (return brc)))
 	  (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
-		     (values "inline void"))
+		     (values "void"))
 	    ;; fixme: mod on current_bit_count is not working
 	    ;; check for odd/even byte instead
 	    (let ((byte_offset (static_cast<int> (- s->data
@@ -1217,7 +1217,7 @@
 	 ()
 	 (do0
 	  (do0
-	   
+	   (include <cassert>)
 
 	   (defun get_data_type_a_or_b (s)
 	     (declare (type sequential_bit_t* s)
@@ -1271,7 +1271,7 @@
 	      #+safety (do0
 			#+nil (assert (or (== -1 mi_data_delay)
 				    (<= mi_data_delay data_delay)))
-			(assert (<= number_of_baq_blocks 256))
+			;(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0) collect
 					   `(== ,e baq_mode))))
 			#+log-brc ,(logprint "" `(packet_idx baq_mode baq_block_length
@@ -1297,7 +1297,7 @@
 			    (do0
 			     ,(format nil "// parse ~a data" e)
 			     (dotimes (i number_of_quads)
-			       (let ((smcode (get_data_type_a_or_b s))
+			       (let ((smcode (get_data_type_a_or_b &s))
 				     (sign_bit (>> (logand smcode (hex #b1000000000))
 						   9))
 				     (mcode (logand smcode (hex #b111111111)))
