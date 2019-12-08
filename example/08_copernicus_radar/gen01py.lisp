@@ -138,7 +138,11 @@
 		      #+nil (ax.imshow (np.log (+ .001 (np.abs img))))
 		      #-nil (ax.imshow
 			     #+nil(np.log (+ .01 (np.abs a3)))
+			     #+nil
 			     (np.real s)
+			     (Ppnp.angle
+
+			       s)
 		       #+nil (np.log (+ .01 (np.abs  s)
 					     )))
 		      (ax.set_aspect (string "auto")))
