@@ -100,36 +100,60 @@
 
 		(do0
 		 (setf fref 37.53472224)
-		 (setf  input (* .5 (- (aref s 0 ":3000")
-				       (aref s 1 ":3000")))
+		 (setf  input (* .5 (- (aref s 1 ":3000")
+				       (aref s 0 ":3000")))
 			xs (/ (np.arange (len input))
-						fref))
-		 (plt.plot xs (np.real input)
-			   :label (string "real"))
-		 (plt.plot xs (np.imag input)
-			   :label (string "imag"))
-		 (setf 
-			row (aref dfc.iloc 0)
-			txprr row.txprr
-			txprr_ row.txprr_
-			txpsf row.txpsf
-			txpl row.txpl
-			txpl_ row.txpl_
-			steps (+ -50 (np.linspace 0 3000 3001))
-			tn #+nil (np.arange (* -1 (// txpl_ 2))
-				      (- (// txpl_ 2)
-					 1))
-			(* steps (/ 1s0 fref))
-			#+nil (np.linspace (* -.5 txpl)
-				     (* .5 txpl)
-				     (* 2 row.number_of_quads))
-			p1 (- txpsf (* txprr -.5 txpl))
-			p2 (* .5 txprr)
-			arg (+ (* p1 tn)
-			       (* p2 tn tn))
-			ys (* 175 (np.exp (* -2j np.pi arg)))
-			)
+			      fref))
+		 (do0
+		  (plt.figure)
+		  (setf chirp_phase (np.unwrap (np.angle input)))
+		  (setf dfchirp (dot (pd.DataFrame (dict ((string "xs") xs)
+							 ((string "mag") (np.abs input))))
+				     (set_index (string "xs")))
+			dfchirpon (< 150 dfchirp)
+			chirp_start (dot (aref dfchirpon (== dfchirpon.mag True))
+					 (aref iloc 0)
+					 name)
+			chirp_end (dot (aref dfchirpon (== dfchirpon.mag True))
+				       (aref iloc -1)
+				       name))
+		  (setf chirp_poly (np.polynomial.polynomial.Polynomial.fit xs chirp_phase 2
+									    :domain (list chirp_start
+											  chirp_end)))
+		  (plt.plot xs (np.unwrap (np.angle input))))
 
+
+		 #+nil (do0 
+		  (plt.figure)
+		  
+		  (plt.plot xs (np.real input)
+			    :label (string "real"))
+		  (plt.plot xs (np.imag input)
+			    :label (string "imag"))
+		  (setf 
+		   row (aref dfc.iloc 0)
+		   txprr row.txprr
+		   txprr_ row.txprr_
+		   txpsf row.txpsf
+		   txpl row.txpl
+		   txpl_ row.txpl_
+		   steps (+ -50 (np.linspace 0 3000 3001))
+		   tn #+nil (np.arange (* -1 (// txpl_ 2))
+				       (- (// txpl_ 2)
+					  1))
+		   (* steps (/ 1s0 fref))
+		   #+nil (np.linspace (* -.5 txpl)
+				      (* .5 txpl)
+				      (* 2 row.number_of_quads))
+		   p1 (- txpsf (* txprr -.5 txpl))
+		   p2 (* .5 txprr)
+		   arg (+ (* p1 tn)
+			  (* p2 tn tn))
+		   ys (* 175 (np.exp (* -2j np.pi arg)))
+
+		   ))
+
+		 #+nil (do0
 		  (def chirp (tn amp p1 p2 xoffset xscale)
 		    (setf tns (* xscale tn)
 			  tnso (- tns xoffset))
@@ -142,13 +166,13 @@
 
 		  (setf
 		   p0  (tuple
-						  175s0
-						  (- txpsf (* txprr -.5 txpl))
-						  (* .5 txprr)
-						  0s0
-						  1s0)
+			175s0
+			(- txpsf (* txprr -.5 txpl))
+			(* .5 txprr)
+			0s0
+			1s0)
 		   (ntuple opt opt2)
-		  
+		   
 		   (scipy.optimize.curve_fit chirp
 					     (/ (np.arange (len input))
 						fref)
@@ -156,8 +180,8 @@
 					      (tuple
 					       (np.real input)
 					       (np.imag input)))
-					     :p0 p0))
-
+					     :p0 p0)))
+		 #+nil (do0
 		  
 		  (plt.plot xs
 			    (aref (chirp xs *p0) ":3000")
@@ -165,10 +189,9 @@
 		  (plt.plot xs
 			    (aref (chirp xs *opt) ":3000")
 			    :label (string "fit_re"))
-		  ;(plt.plot xs (np.real ys) :label (string "analytic_re"))
-		  ;(plt.plot xs (np.imag ys) :label (string "analytic_im"))
-		  (plt.legend)
-		 )
+					;(plt.plot xs (np.real ys) :label (string "analytic_re"))
+					;(plt.plot xs (np.imag ys) :label (string "analytic_im"))
+		  (plt.legend)))
 		#+nil (do0
 		 (setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
 		       a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
@@ -219,7 +242,7 @@
 		 #+nil (plt.plot (np.log (+ .001 (np.abs (* k0 kp))))))
 		#+nil (plt.imshow
 		       (np.angle s))
-		#-nil(do0
+		#+nil(do0
 		      
 		      (setf fig (plt.figure)
 			    ax (fig.add_subplot (string "111")))
