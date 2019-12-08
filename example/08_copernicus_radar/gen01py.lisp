@@ -99,27 +99,74 @@
 				    (tuple 800 6000)))
 
 		(do0
-		 (plt.plot (np.real (np.mean (aref s "0:50" ":") :axis 0))
+		 (setf fref 37.53472224)
+		 (setf  input (* .5 (- (aref s 0 ":3000")
+				       (aref s 1 ":3000")))
+			xs (/ (np.arange (len input))
+						fref))
+		 (plt.plot xs (np.real input)
 			   :label (string "real"))
-		 (plt.plot (np.imag (np.mean (aref s "0:50" ":") :axis 0))
+		 (plt.plot xs (np.imag input)
 			   :label (string "imag"))
-		  (setf fref 37.53472224
+		 (setf 
 			row (aref dfc.iloc 0)
 			txprr row.txprr
 			txprr_ row.txprr_
 			txpsf row.txpsf
 			txpl row.txpl
 			txpl_ row.txpl_
-			tn (np.linspace (* -.5 txpl)
-					(* .5 txpl)
-					(* 2 row.number_of_quads))
+			steps (+ -50 (np.linspace 0 3000 3001))
+			tn #+nil (np.arange (* -1 (// txpl_ 2))
+				      (- (// txpl_ 2)
+					 1))
+			(* steps (/ 1s0 fref))
+			#+nil (np.linspace (* -.5 txpl)
+				     (* .5 txpl)
+				     (* 2 row.number_of_quads))
 			p1 (- txpsf (* txprr -.5 txpl))
 			p2 (* .5 txprr)
 			arg (+ (* p1 tn)
 			       (* p2 tn tn))
 			ys (* 175 (np.exp (* -2j np.pi arg)))
 			)
-		  (plt.plot (np.abs (np.real ys)) :label (string "analytic"))
+
+		  (def chirp (tn amp p1 p2 xoffset xscale)
+		    (setf tns (* xscale tn)
+			  tnso (- tns xoffset))
+		    (setf arg (+ (* p1 tnso)
+				 (* p2 tnso tnso)))
+		    (setf z (* amp (np.exp (* -2j np.pi arg))))
+		    (return (np.concatenate
+			     (tuple (np.real z)
+				    (np.imag z)))))
+
+		  (setf
+		   p0  (tuple
+						  175s0
+						  (- txpsf (* txprr -.5 txpl))
+						  (* .5 txprr)
+						  0s0
+						  1s0)
+		   (ntuple opt opt2)
+		  
+		   (scipy.optimize.curve_fit chirp
+					     (/ (np.arange (len input))
+						fref)
+					     (np.concatenate
+					      (tuple
+					       (np.real input)
+					       (np.imag input)))
+					     :p0 p0))
+
+		  
+		  (plt.plot xs
+			    (aref (chirp xs *p0) ":3000")
+			    :label (string "init_re"))
+		  (plt.plot xs
+			    (aref (chirp xs *opt) ":3000")
+			    :label (string "fit_re"))
+		  ;(plt.plot xs (np.real ys) :label (string "analytic_re"))
+		  ;(plt.plot xs (np.imag ys) :label (string "analytic_im"))
 		  (plt.legend)
 		 )
 		#+nil (do0
