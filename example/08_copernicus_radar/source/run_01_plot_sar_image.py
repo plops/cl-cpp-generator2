@@ -13,8 +13,8 @@ import pandas as pd
 import scipy.signal
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
-s=np.memmap(next(pathlib.Path("./").glob("o*.cf")), dtype=np.complex64, mode="r", shape=(16516,24695,))
+s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,3000,))
 fig=plt.figure()
 ax=fig.add_subplot("111")
-ax.imshow(np.log((((9.999999776482582e-3))+(np.abs(s)))))
+ax.imshow(np.real(s))
 ax.set_aspect("auto")

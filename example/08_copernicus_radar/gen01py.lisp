@@ -71,14 +71,16 @@
 		 (setf kp (np.fft.fft (ys.astype np.complex128)))
 		 (plt.plot (np.log (+ .001 (np.abs kp)))))
 		(setf s (np.memmap (next (dot (pathlib.Path (string "./"))
-					      (glob (string "o*.cf"))))
+					      (glob (string "o_cal*.cf"))))
 				   :dtype np.complex64
 				   :mode (string "r")
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 16516
-					  24695)))
+				   #+nil
+				    (tuple 16516
+					   24695)
+				    (tuple 800 3000)))
 		#+nil (do0
 		 (setf a2 (scipy.signal.decimate (np.abs (aref s "8000:" ":")) 10)
 		       a3 (scipy.signal.decimate (np.abs a2) 10 :axis 0))
@@ -135,8 +137,9 @@
 			    ax (fig.add_subplot (string "111")))
 		      #+nil (ax.imshow (np.log (+ .001 (np.abs img))))
 		      #-nil (ax.imshow
-		       #+nil(np.log (+ .01 (np.abs a3)))
-		       (np.log (+ .01 (np.abs  s)
+			     #+nil(np.log (+ .01 (np.abs a3)))
+			     (np.real s)
+		       #+nil (np.log (+ .01 (np.abs  s)
 					     )))
 		      (ax.set_aspect (string "auto")))
 		#+nil (plt.imshow (np.real s))
