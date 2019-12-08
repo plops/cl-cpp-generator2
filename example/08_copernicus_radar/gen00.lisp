@@ -368,11 +368,16 @@
 				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
 				  (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
 				  (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
-				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p)))
+				  (cal_type (logand ele #x7))
+				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				  (baq_mode ,(space-packet-slot-get 'baq-mode 'p))
+				  (test_mode ,(space-packet-slot-get 'test-mode 'p)))
 			      (if cal_p
 				  (do0
 				   (incf cal_count)
-				   (incf (aref map_cal (logand ele #x7))))
+				   (incf (aref map_cal
+					       (logand ele #x7)))
+				   ,(logprint "cal" `(cal_p cal_type number_of_quads baq_mode test_mode)))
 				  (do0
 				   (incf (aref map_ele ele) number_of_quads)))
 			      (incf packet_idx)))
@@ -1197,6 +1202,111 @@
 				      ,(logprint "unknown brc" `((static_cast<int> brc)))
 				      (assert 0)
 				      break))))))))
+		(dotimes (i decoded_ie_symbols)
+		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
+		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
+		  (do0 (dot (aref output (+ 1 (* 2 i))) (real (aref decoded_io_symbols_a i)))
+		       (dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
+		(let ((n (+ decoded_ie_symbols
+			    decoded_io_symbols)))
+		  (return n)))))))))
+
+  (let ((max-number-quads 52378))
+   (define-module
+       `(decode_type_ab_packet
+	 ()
+	 (do0
+	  (do0
+	   
+
+	   (defun get_data_type_a_or_b (s)
+	     (declare (type sequential_bit_t* s)
+		      (values int))
+	     (return (+ ,@(loop for j below 10 collect
+			      `(* (hex ,(expt 2 (- 9 j)))
+				  (get_sequential_bit s)))))))
+	  
+	  	  
+	  	  
+	  (defun init_decode_packet_type_a_or_b
+	      (packet_idx ; mi_data_delay
+	       output
+	       )
+	    (declare (type int packet_idx ;mi_data_delay
+			   )
+		     #+nil (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>&" output)
+		     (type "std::complex<float>*" output)
+		     (values int))
+
+	    "// packet_idx .. index of space packet 0 .."
+	    "// mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest delay in samples between tx pulse start and data acquisition and will be used to compute a sample offset in output so that all echos of one sar image are aligned to the same time offset"
+	    "// output .. array of complex numbers"
+	    "// return value: number of complex data samples written"
+	    
+	    (let ((header (dot (aref ,(g `_header_data) packet_idx)
+			       (data)))
+		  (offset (aref ,(g `_header_offset) packet_idx))
+		  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
+		  
+		  (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
+		  (number_of_words (static_cast<int> (round (ceil (/ (* 10.0 number_of_quads)
+								     16)))))
+		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
+		  (fref 37.53472224)
+		  (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'header)
+			   fref))
+		  (delta_t_suppressed (/ 320d0 (* 8 fref)))
+		  (data_delay_us (+ swst delta_t_suppressed))
+		  (data_delay (+ ,(/ 320 8)
+				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
+		  #+nil (data_offset (- data_delay mi_data_delay))
+			   
+		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+		  
+		  #+nil ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
+										     (format nil "decode_huffman_brc~a" i)))))
+	      
+
+	      
+	      #+safety (do0
+			#+nil (assert (or (== -1 mi_data_delay)
+				    (<= mi_data_delay data_delay)))
+			(assert (<= number_of_baq_blocks 256))
+			(assert (or ,@(loop for e in `(0) collect
+					   `(== ,e baq_mode))))
+			#+log-brc ,(logprint "" `(packet_idx baq_mode baq_block_length
+						   data_delay_us
+						   data_delay
+						   number_of_quads
+						   )))
+	      (let ((s))
+		(declare (type sequential_bit_t s))
+		(init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
+						    62 6))
+		,@(loop for e in `(ie io qe qo)
+		     collect
+		       (let ((sym
+			      (format nil "decoded_~a_symbols" e))
+			     (sym-a (format nil "decoded_~a_symbols_a" e)))
+			 `(let ((,sym 0)
+				(,sym-a))
+			    (declare (type "std::array<float,MAX_NUMBER_QUADS>" ,sym-a))
+			    (do0
+			     (dotimes (i MAX_NUMBER_QUADS)
+				  (setf (aref ,sym-a i) 0s0)))
+			    (do0
+			     ,(format nil "// parse ~a data" e)
+			     (dotimes (i number_of_quads)
+			       (let ((smcode (get_data_type_a_or_b s))
+				     (sign_bit (>> (logand smcode (hex #b1000000000))
+						   9))
+				     (mcode (logand smcode (hex #b111111111)))
+				     (scode (* (powf 1s0 sign_bit)
+					       mcode)))
+				 (setf (aref ,sym-a ,sym) scode)
+				 (incf ,sym)))
+			     (consume_padding_bits &s)))))
+					
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))

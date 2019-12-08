@@ -30,11 +30,27 @@ int main() {
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
     auto cal_p = ((0x1) & ((p[59]) >> (7)));
     auto ele = ((0xF) & ((p[60]) >> (4)));
+    auto cal_type = ((ele) & (7));
     auto number_of_quads =
         ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
+    auto baq_mode = ((0x1F) & ((p[37]) >> (0)));
+    auto test_mode = ((0x7) & ((p[21]) >> (4)));
     if (cal_p) {
       (cal_count)++;
       (map_cal[((ele) & (7))])++;
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("cal") << (" ") << (std::setw(8))
+                  << (" cal_p=") << (cal_p) << (std::setw(8)) << (" cal_type=")
+                  << (cal_type) << (std::setw(8)) << (" number_of_quads=")
+                  << (number_of_quads) << (std::setw(8)) << (" baq_mode=")
+                  << (baq_mode) << (std::setw(8)) << (" test_mode=")
+                  << (test_mode) << (std::endl);
     } else {
       (map_ele[ele]) += (number_of_quads);
     }
