@@ -379,8 +379,8 @@
 
 		   (foreach (cal map_cal)
 			    (let ((number_of_cal cal.second)
-				  (cal_mode cal.first))
-			      ,(logprint "map_ele" `(cal_mode number_of_cal))))
+				  (cal_type cal.first))
+			      ,(logprint "map_ele" `(cal_type number_of_cal))))
 		   
 
 		   (let ((ma -1s0)
@@ -412,18 +412,20 @@
 				       (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				       (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
 				       (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				       (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
 				       (data_delay (+ ,(/ 320 8)
 						      ,(space-packet-slot-get 'sampling-window-start-time 'p))))
-				   (when (== ele ma_ele)
-				     (incf ele_number_echoes)
-				     (when (< data_delay mi_data_delay)
-				       (setf mi_data_delay data_delay))
-				     (when (< ma_data_delay data_delay )
-				       (setf ma_data_delay data_delay))
-				     (let ((v (+ data_delay (* 2 number_of_quads))))
-				       (when (< ma_data_end v)
-					 (setf ma_data_end v)))
-				     (incf (aref map_azi azi) number_of_quads))
+				   (unless cal_p
+				    (when (== ele ma_ele)
+				      (incf ele_number_echoes)
+				      (when (< data_delay mi_data_delay)
+					(setf mi_data_delay data_delay))
+				      (when (< ma_data_delay data_delay )
+					(setf ma_data_delay data_delay))
+				      (let ((v (+ data_delay (* 2 number_of_quads))))
+					(when (< ma_data_end v)
+					  (setf ma_data_end v)))
+				      (incf (aref map_azi azi) number_of_quads)))
 				   (incf packet_idx)))
 			,(logprint "data_delay" `(mi_data_delay ma_data_delay ma_data_end ele_number_echoes))
 			(foreach (azi map_azi)
@@ -442,6 +444,7 @@
 		       (foreach (e ,(g `_header_data))
 				(let ((offset (aref ,(g `_header_offset) packet_idx))
 				      (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				      (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
 				      (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
 				      (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
 				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
@@ -473,40 +476,42 @@
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
 				  (#+safety handler-case
 					    #-safety do0
-				      (when (== ele ma_ele)
-					(let (;(output)
-					      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
-						 (init_decode_packet packet_idx
-								     ;; data_delay is at least mi_data_delay and at most ma_data_delay
-								     ;; create an offset in [0.. ma_data_delay-mi_data_delay)
-								     (+ sar_image (+ (- data_delay mi_data_delay) (* n0 ele_count))))))
-					  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
-					  #+safety (unless (== n (* 2 number_of_quads))
-					    ,(logprint "unexpected number of quads" `(n number_of_quads)))
+					    (unless cal_p
+					      (when (== ele ma_ele)
+						(let ( ;(output)
+						      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
+							 (init_decode_packet packet_idx
+									     ;; data_delay is at least mi_data_delay and at most ma_data_delay
+									     ;; create an offset in [0.. ma_data_delay-mi_data_delay)
+									     (+ sar_image (+ (- data_delay mi_data_delay) (* n0 ele_count))))))
+						  #+nil(declare (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>" output))
+						  #+safety (unless (== n (* 2 number_of_quads))
+							     ,(logprint "unexpected number of quads" `(n number_of_quads)))
 					;,(logprint "tx" `(txprr txpsf txpl))
-					  ,(csvprint "./o_range.csv"
-						     `(ele_count
-						       ele
-						       number_of_quads
-						       space_packet_count
-						       pri_count
-						       rank
-						       data_delay
-						       txprr
-						       txpsf
-						       txpl
-						       txprr_
-						       txpl_))
-					  (do0
-					   #+nil (dotimes (i n)
-					     (setf (aref sar_image (+ i (* n0 ele_count)))
-						   (aref output i))
-					     )
-					   (incf ele_count))))
-				      #+safety ("std::out_of_range" (e)
-								    ,(logprint "exception" `(packet_idx))
-								    ;(assert 0)
-								    ))
+						  ,(csvprint "./o_range.csv"
+							     `(ele_count
+							       ele
+							       number_of_quads
+							       space_packet_count
+							       pri_count
+							       rank
+							       data_delay
+							       txprr
+							       txpsf
+							       txpl
+							       txprr_
+							       txpl_))
+						  (do0
+						   #+nil (dotimes (i n)
+							   (setf (aref sar_image (+ i (* n0 ele_count)))
+								 (aref output i))
+							   )
+						   (incf ele_count)))))
+					    #+safety ("std::out_of_range" (e)
+									  ,(logprint "exception" `(packet_idx
+												   (static_cast<int> cal_p)))
+					;(assert 0)
+									  ))
 				  (incf packet_idx)))
 		       (let ((fn (+ ("std::string" (string "./o_range"))
 				("std::to_string" n0)

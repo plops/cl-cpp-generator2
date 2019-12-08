@@ -42,7 +42,7 @@ int main() {
   };
   for (auto &cal : map_cal) {
     auto number_of_cal = cal.second;
-    auto cal_mode = cal.first;
+    auto cal_type = cal.first;
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -51,7 +51,7 @@ int main() {
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("map_ele") << (" ") << (std::setw(8))
-                << (" cal_mode=") << (cal_mode) << (std::setw(8))
+                << (" cal_type=") << (cal_type) << (std::setw(8))
                 << (" number_of_cal=") << (number_of_cal) << (std::endl);
   };
   auto ma = (-1.e+0f);
@@ -100,21 +100,24 @@ int main() {
       auto azi = ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & (p[60]))))));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
+      auto cal_p = ((0x1) & ((p[59]) >> (7)));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
-      if ((ele) == (ma_ele)) {
-        (ele_number_echoes)++;
-        if (data_delay < mi_data_delay) {
-          mi_data_delay = data_delay;
+      if (!(cal_p)) {
+        if ((ele) == (ma_ele)) {
+          (ele_number_echoes)++;
+          if (data_delay < mi_data_delay) {
+            mi_data_delay = data_delay;
+          };
+          if (ma_data_delay < data_delay) {
+            ma_data_delay = data_delay;
+          };
+          auto v = ((data_delay) + (((2) * (number_of_quads))));
+          if (ma_data_end < v) {
+            ma_data_end = v;
+          };
+          (map_azi[azi]) += (number_of_quads);
         };
-        if (ma_data_delay < data_delay) {
-          ma_data_delay = data_delay;
-        };
-        auto v = ((data_delay) + (((2) * (number_of_quads))));
-        if (ma_data_end < v) {
-          ma_data_end = v;
-        };
-        (map_azi[azi]) += (number_of_quads);
       };
       (packet_idx)++;
     };
@@ -176,6 +179,7 @@ int main() {
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+      auto cal_p = ((0x1) & ((p[59]) >> (7)));
       auto ele = ((0xF) & ((p[60]) >> (4)));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
@@ -207,42 +211,46 @@ int main() {
       auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
       try {
-        if ((ele) == (ma_ele)) {
-          auto n = init_decode_packet(
-              packet_idx, ((sar_image) + (((((data_delay) - (mi_data_delay))) +
-                                           (((n0) * (ele_count)))))));
-          if (!((n) == (((2) * (number_of_quads))))) {
-            std::setprecision(3);
-            (std::cout) << (std::setw(10))
-                        << (((std::chrono::high_resolution_clock::now()
-                                  .time_since_epoch()
-                                  .count()) -
-                             (state._start_time)))
-                        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("unexpected number of quads")
-                        << (" ") << (std::setw(8)) << (" n=") << (n)
-                        << (std::setw(8)) << (" number_of_quads=")
-                        << (number_of_quads) << (std::endl);
-          };
-          {
-            std::ofstream outfile;
-            outfile.open("./o_range.csv",
-                         ((std::ios_base::out) | (std::ios_base::app)));
-            if ((0) == (outfile.tellp())) {
-              (outfile)
-                  << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
-                      "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
-                  << (std::endl);
+        if (!(cal_p)) {
+          if ((ele) == (ma_ele)) {
+            auto n = init_decode_packet(
+                packet_idx,
+                ((sar_image) + (((((data_delay) - (mi_data_delay))) +
+                                 (((n0) * (ele_count)))))));
+            if (!((n) == (((2) * (number_of_quads))))) {
+              std::setprecision(3);
+              (std::cout) << (std::setw(10))
+                          << (((std::chrono::high_resolution_clock::now()
+                                    .time_since_epoch()
+                                    .count()) -
+                               (state._start_time)))
+                          << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("unexpected number of quads") << (" ")
+                          << (std::setw(8)) << (" n=") << (n) << (std::setw(8))
+                          << (" number_of_quads=") << (number_of_quads)
+                          << (std::endl);
             };
-            (outfile) << (ele_count) << (",") << (ele) << (",")
-                      << (number_of_quads) << (",") << (space_packet_count)
-                      << (",") << (pri_count) << (",") << (rank) << (",")
-                      << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                      << (",") << (txpl) << (",") << (txprr_) << (",")
-                      << (txpl_) << (std::endl);
-            outfile.close();
+            {
+              std::ofstream outfile;
+              outfile.open("./o_range.csv",
+                           ((std::ios_base::out) | (std::ios_base::app)));
+              if ((0) == (outfile.tellp())) {
+                (outfile)
+                    << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
+                        "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                    << (std::endl);
+              };
+              (outfile) << (ele_count) << (",") << (ele) << (",")
+                        << (number_of_quads) << (",") << (space_packet_count)
+                        << (",") << (pri_count) << (",") << (rank) << (",")
+                        << (data_delay) << (",") << (txprr) << (",") << (txpsf)
+                        << (",") << (txpl) << (",") << (txprr_) << (",")
+                        << (txpl_) << (std::endl);
+              outfile.close();
+            };
+            (ele_count)++;
           };
-          (ele_count)++;
         };
       } catch (std::out_of_range e) {
         std::setprecision(3);
@@ -254,7 +262,8 @@ int main() {
                     << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                     << (__func__) << (" ") << ("exception") << (" ")
                     << (std::setw(8)) << (" packet_idx=") << (packet_idx)
-                    << (std::endl);
+                    << (std::setw(8)) << (" static_cast<int>(cal_p)=")
+                    << (static_cast<int>(cal_p)) << (std::endl);
       };
       (packet_idx)++;
     };
