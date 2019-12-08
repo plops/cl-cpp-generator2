@@ -316,6 +316,30 @@ int main() {
                 << (std::endl);
   };
   delete[](sar_image);
+  auto fn = ((std::string("./o_cal_range")) + (std::to_string(cal_n0)) +
+             (std::string("_echoes")) + (std::to_string(cal_count)) +
+             (std::string(".cf")));
+  auto file = std::ofstream(fn, std::ofstream::binary);
+  auto nbytes = ((cal_n0) * (cal_count) * (sizeof(std::complex<float>)));
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("store cal") << (" ") << (std::setw(8))
+              << (" nbytes=") << (nbytes) << (std::endl);
+  file.write(reinterpret_cast<const char *>(cal_image), nbytes);
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("store cal finished") << (" ")
+              << (std::endl);
   delete[](cal_image);
   destroy_mmap();
 };

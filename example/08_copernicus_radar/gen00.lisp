@@ -541,6 +541,18 @@
 			 (file.write ("reinterpret_cast<const char*>" sar_image) nbytes)
 			 ,(logprint "store finished" '()))))
 		   (delete[] sar_image)
+		   (let ((fn (+ ("std::string" (string "./o_cal_range"))
+				("std::to_string" cal_n0)
+				("std::string" (string "_echoes"))
+				("std::to_string" cal_count)
+				("std::string" (string ".cf"))))
+			     (file ("std::ofstream" fn "std::ofstream::binary"))
+			     (nbytes (* cal_n0
+					cal_count
+					(sizeof "std::complex<float>"))))
+			 ,(logprint "store cal" '(nbytes))
+			 (file.write ("reinterpret_cast<const char*>" cal_image) nbytes)
+			 ,(logprint "store cal finished" '()))
 		   (delete[] cal_image)))
 		(destroy_mmap)))))
   (define-module
