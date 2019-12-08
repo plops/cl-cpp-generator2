@@ -50,6 +50,7 @@
 				    )
 		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
+		(setf dfc (pd.read_csv (string "./o_cal_range.csv")))
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)

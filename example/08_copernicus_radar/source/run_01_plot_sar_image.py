@@ -13,6 +13,7 @@ import pandas as pd
 import scipy.signal
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
+dfc=pd.read_csv("./o_cal_range.csv")
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,3000,))
 fig=plt.figure()
 ax=fig.add_subplot("111")
