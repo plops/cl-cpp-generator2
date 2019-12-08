@@ -439,10 +439,17 @@
 				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
 		(do0
 		 ,(logprint "start big allocation" `())
-		 (let ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
+		 (let
+
+		     ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
 		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
 		   (remove (string  "./o_range.csv"))
+
+		   (let ((cal_n0 3000)
+			 (cal_iter 0)
+			 (cal_image (new (aref "std::complex<float>" (* cal_n0 cal_count))))))
+		   
 		   (progn
 		     (let ((packet_idx 0)
 			   (ele_count 0))
@@ -481,7 +488,10 @@
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
 				  (#+safety handler-case
 					    #-safety do0
-					    (unless cal_p
+					    (if cal_p
+						(do0
+						 (init_decode_packet_type_a_or_b packet_idx (+ cal_image (* cal_n0 cal_iter)))
+						 (incf cal_iter))
 					      (when (== ele ma_ele)
 						(let ( ;(output)
 						      (n #+nil (init_decode_packet packet_idx mi_data_delay output)
@@ -530,7 +540,8 @@
 			 ,(logprint "store" '(nbytes))
 			 (file.write ("reinterpret_cast<const char*>" sar_image) nbytes)
 			 ,(logprint "store finished" '()))))
-		   (delete[] sar_image)))
+		   (delete[] sar_image)
+		   (delete[] cal_image)))
 		(destroy_mmap)))))
   (define-module
       `(mmap
@@ -1228,7 +1239,8 @@
 	  
 	  	  
 	  	  
-	  (defun init_decode_packet_type_a_or_b
+	  (defun
+	      init_decode_packet_type_a_or_b
 	      (packet_idx ; mi_data_delay
 	       output
 	       )

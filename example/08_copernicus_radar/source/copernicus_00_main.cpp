@@ -189,6 +189,9 @@ int main() {
               << (std::setw(8)) << (" (((1.e-6f))*(n0)*(ele_number_echoes))=")
               << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
   remove("./o_range.csv");
+  auto cal_n0 = 3000;
+  auto cal_iter = 0;
+  auto cal_image = new std::complex<float>[((cal_n0) * (cal_count))];
   {
     auto packet_idx = 0;
     auto ele_count = 0;
@@ -227,7 +230,11 @@ int main() {
       auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
       try {
-        if (!(cal_p)) {
+        if (cal_p) {
+          init_decode_packet_type_a_or_b(
+              packet_idx, ((cal_image) + (((cal_n0) * (cal_iter)))));
+          (cal_iter)++;
+        } else {
           if ((ele) == (ma_ele)) {
             auto n = init_decode_packet(
                 packet_idx,
@@ -267,7 +274,7 @@ int main() {
             };
             (ele_count)++;
           };
-        };
+        }
       } catch (std::out_of_range e) {
         std::setprecision(3);
         (std::cout) << (std::setw(10))
@@ -309,5 +316,6 @@ int main() {
                 << (std::endl);
   };
   delete[](sar_image);
+  delete[](cal_image);
   destroy_mmap();
 };
