@@ -17,20 +17,43 @@ cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na
 dfc=pd.read_csv("./o_cal_range.csv")
 dfc["cal_type_desc"]=list(map(lambda x: cal_type_desc[x], dfc.cal_type))
 dfc.cal_type_desc=dfc.cal_type_desc.astype("category")
+dfc["pcc"]=np.mod(dfc.cal_iter, 2)
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(16516,24695,))
-fref=(3.7534721374511715e+1)
-input=(((5.e-1))*(((s[1,:3000])-(s[0,:3000]))))
-xs=((np.arange(len(input)))/(fref))
-plt.figure()
-chirp_phase=np.unwrap(np.angle(input))
-dfchirp=pd.DataFrame({("xs"):(xs),("mag"):(np.abs(input))}).set_index("xs")
-dfchirpon=((150)<(dfchirp))
-chirp_start=dfchirpon[((dfchirpon.mag)==(True))].iloc[0].name
-chirp_end=dfchirpon[((dfchirpon.mag)==(True))].iloc[-1].name
-chirp_poly=np.polynomial.polynomial.Polynomial.fit(xs, chirp_phase, 2, domain=[chirp_start, chirp_end])
-plt.plot(xs, np.unwrap(np.angle(input)))
-plt.plot(xs, chirp_poly(xs))
-plt.figure()
-plt.plot(xs, np.real(input))
-plt.plot(xs, np.real(((175)*(np.exp(((1j)*(chirp_poly(xs))))))))
+u=dfc.cal_type_desc.unique()
+sub=dfc[((((dfc.cal_type_desc)==("tx_cal"))) & (((dfc.pcc)==(0))))]
+tx_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    tx_cal[j,:]=s[i,:]
+    j=((j)+(1))
+sub=dfc[((((dfc.cal_type_desc)==("rx_cal"))) & (((dfc.pcc)==(0))))]
+rx_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    rx_cal[j,:]=s[i,:]
+    j=((j)+(1))
+sub=dfc[((((dfc.cal_type_desc)==("epdn_cal"))) & (((dfc.pcc)==(0))))]
+epdn_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    epdn_cal[j,:]=s[i,:]
+    j=((j)+(1))
+sub=dfc[((((dfc.cal_type_desc)==("ta_cal"))) & (((dfc.pcc)==(0))))]
+ta_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    ta_cal[j,:]=s[i,:]
+    j=((j)+(1))
+sub=dfc[((((dfc.cal_type_desc)==("apdn_cal"))) & (((dfc.pcc)==(0))))]
+apdn_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    apdn_cal[j,:]=s[i,:]
+    j=((j)+(1))
+sub=dfc[((((dfc.cal_type_desc)==("txh_iso_cal"))) & (((dfc.pcc)==(0))))]
+txh_iso_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
+j=0
+for i in sub.cal_iter:
+    txh_iso_cal[j,:]=s[i,:]
+    j=((j)+(1))

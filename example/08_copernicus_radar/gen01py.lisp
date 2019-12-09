@@ -63,12 +63,13 @@
 					  collect
 					    `(string ,e)))
 		 dfc (pd.read_csv (string "./o_cal_range.csv"))
-		 
 		 (aref dfc (string "cal_type_desc")) 
 		 ("list" (map (lambda (x)
 				(aref cal_type_desc x))
 			      dfc.cal_type))
 		 dfc.cal_type_desc (dfc.cal_type_desc.astype (string "category"))
+		 (aref dfc (string "pcc"))
+		 (np.mod dfc.cal_iter 2)
 		 )
 		#+nil (setf fref 37.53472224
 		      
@@ -111,9 +112,31 @@
 				   
 				    (tuple 16516
 					   24695)
-				   ))
+				    ))
 
-		(do0
+		(setf u (dfc.cal_type_desc.unique))
+		,(let ((l `(tx_cal
+			   rx_cal
+			   epdn_cal
+			   ta_cal
+			   apdn_cal
+			   txh_iso_cal)))
+		   `(do0
+		    ,@(loop for e in l collect
+			   `(do0
+			     (setf sub (aref dfc (& (== dfc.cal_type_desc (string ,e))
+						    (== dfc.pcc 0))))
+			     (setf ,e (np.zeros (tuple (len sub)
+						       6000)
+						:dtype np.complex64))
+			     (setf j 0)
+			     (for (i sub.cal_iter)
+				  (setf (aref ,e j ":")
+					(aref s i ":"))
+				  (setf j (+ j 1)))))))
+		
+		
+		#+nil (do0
 		 (setf fref 37.53472224)
 		 (setf  input (* .5 (- (aref s 1 ":3000")
 				       (aref s 0 ":3000")))
