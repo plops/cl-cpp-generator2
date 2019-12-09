@@ -150,7 +150,14 @@
 			      ,@(loop for n below 2 collect
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
-					 (plt.plot (np.unwrap (np.angle (np.mean ,name :axis 0)))))))))))
+					 (plt.plot (np.unwrap (np.angle (np.mean ,name :axis 0)))))))))
+		     (plt.figure)
+		     ,@(loop for e in l collect
+			    `(do0
+			      ,@(loop for n below 2 collect
+				     (let ((name (format nil "~a_~a" e n)))
+				       `(do0
+					 (plt.plot (np.abs (np.mean ,name :axis 0))))))))))
 		
 		
 		#+nil (do0
