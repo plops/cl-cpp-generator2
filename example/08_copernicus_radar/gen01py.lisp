@@ -52,20 +52,24 @@
 		(setf df (pd.read_csv (string "./o_range.csv")))
 		
 		(setf
-		 cal_type_dtype (pd.api.types.CategoricalDtype
-				 :ordered True
-				 :categories
-				 (list ,@(loop for e in `(tx_cal
-							   rx_cal
-							   epdn_cal
-							   ta_cal
-							   apdn_cal
-							   na_0
-							   na_1
-							   txh_cal_iso)
-					     collect
-					       `(string ,e))))
-		 dfc (pd.read_csv (string "./o_cal_range.csv")))
+		 cal_type_desc (list ,@(loop for e in `(tx_cal
+							rx_cal
+							epdn_cal
+							ta_cal
+							apdn_cal
+							na_0
+							na_1
+							txh_iso_cal)
+					  collect
+					    `(string ,e)))
+		 dfc (pd.read_csv (string "./o_cal_range.csv"))
+		 
+		 (aref dfc (string "cal_type_desc")) 
+		 ("list" (map (lambda (x)
+				(aref cal_type_desc x))
+			      dfc.cal_type))
+		 dfc.cal_type_desc (dfc.cal_type_desc.astype (string "category"))
+		 )
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)

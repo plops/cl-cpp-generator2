@@ -13,8 +13,10 @@ import pandas as pd
 import scipy.signal
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
-cal_type_dtype=pd.api.types.CategoricalDtype(ordered=True, categories=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_cal_iso"])
+cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_iso_cal"]
 dfc=pd.read_csv("./o_cal_range.csv")
+dfc["cal_type_desc"]=list(map(lambda x: cal_type_desc[x], dfc.cal_type))
+dfc.cal_type_desc=dfc.cal_type_desc.astype("category")
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(16516,24695,))
 fref=(3.7534721374511715e+1)
