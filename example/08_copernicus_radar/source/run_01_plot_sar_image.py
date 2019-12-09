@@ -25,33 +25,33 @@ sub=dfc[((((dfc.cal_type_desc)==("tx_cal"))) & (((dfc.pcc)==(0))))]
 tx_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:
-    tx_cal[j,:]=s[i,:]
+    tx_cal[j,:]=(((5.e-1))*(((s[i,:])-(s[((i)+(1)),:]))))
     j=((j)+(1))
 sub=dfc[((((dfc.cal_type_desc)==("rx_cal"))) & (((dfc.pcc)==(0))))]
 rx_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:
-    rx_cal[j,:]=s[i,:]
+    rx_cal[j,:]=(((5.e-1))*(((s[i,:])-(s[((i)+(1)),:]))))
     j=((j)+(1))
 sub=dfc[((((dfc.cal_type_desc)==("epdn_cal"))) & (((dfc.pcc)==(0))))]
 epdn_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:
-    epdn_cal[j,:]=s[i,:]
+    epdn_cal[j,:]=(((5.e-1))*(((s[i,:])-(s[((i)+(1)),:]))))
     j=((j)+(1))
 sub=dfc[((((dfc.cal_type_desc)==("ta_cal"))) & (((dfc.pcc)==(0))))]
 ta_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:
-    ta_cal[j,:]=s[i,:]
+    ta_cal[j,:]=(((5.e-1))*(((s[i,:])-(s[((i)+(1)),:]))))
     j=((j)+(1))
-sub=dfc[((((dfc.cal_type_desc)==("apdn_cal"))) & (((dfc.pcc)==(0))))]
+sub=dfc[((((dfc.cal_type_desc)==("apdn_cal"))) & (True))]
 apdn_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:
     apdn_cal[j,:]=s[i,:]
     j=((j)+(1))
-sub=dfc[((((dfc.cal_type_desc)==("txh_iso_cal"))) & (((dfc.pcc)==(0))))]
+sub=dfc[((((dfc.cal_type_desc)==("txh_iso_cal"))) & (True))]
 txh_iso_cal=np.zeros((len(sub),6000,), dtype=np.complex64)
 j=0
 for i in sub.cal_iter:

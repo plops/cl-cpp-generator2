@@ -125,14 +125,23 @@
 		    ,@(loop for e in l collect
 			   `(do0
 			     (setf sub (aref dfc (& (== dfc.cal_type_desc (string ,e))
-						    (== dfc.pcc 0))))
+						    ,(if (member e `(apdn_cal txh_iso_cal))
+							 `True
+							 `(== dfc.pcc 0)))))
 			     (setf ,e (np.zeros (tuple (len sub)
 						       6000)
 						:dtype np.complex64))
 			     (setf j 0)
 			     (for (i sub.cal_iter)
+
+				  
 				  (setf (aref ,e j ":")
-					(aref s i ":"))
+					,(if (member e `(apdn_cal txh_iso_cal))
+							 `(aref s i ":")
+							 `(* .5 (- (aref s i ":")
+							      (aref s (+ i 1) ":"))))
+					
+					)
 				  (setf j (+ j 1)))))))
 		
 		
