@@ -144,7 +144,13 @@
 							`(aref s i ":")
 							`(* .5 (- (aref s i ":")
 								  (aref s (+ i 1) ":")))))
-					     (setf j (+ j 1))))))))))
+					     (setf j (+ j 1))))))))
+		     ,@(loop for e in l collect
+			    `(do0
+			      ,@(loop for n below 2 collect
+				     (let ((name (format nil "~a_~a" e n)))
+				       `(do0
+					 (plt.plot (np.unwrap (np.angle (np.mean ,name :axis 0)))))))))))
 		
 		
 		#+nil (do0
