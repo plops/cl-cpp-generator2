@@ -114,7 +114,8 @@
 					   24695)
 				    ))
 
-		(setf u (dfc.cal_type_desc.unique))
+		(setf u (dfc.cal_type_desc.unique)
+		      un (dfc.number_of_quads.unique))
 		,(let ((l `(tx_cal
 			   rx_cal
 			   epdn_cal
@@ -122,27 +123,28 @@
 			   apdn_cal
 			   txh_iso_cal)))
 		   `(do0
-		    ,@(loop for e in l collect
-			   `(do0
-			     (setf sub (aref dfc (& (== dfc.cal_type_desc (string ,e))
-						    ,(if (member e `(apdn_cal txh_iso_cal))
-							 `True
-							 `(== dfc.pcc 0)))))
-			     (setf ,e (np.zeros (tuple (len sub)
-						       6000)
-						:dtype np.complex64))
-			     (setf j 0)
-			     (for (i sub.cal_iter)
-
-				  
-				  (setf (aref ,e j ":")
-					,(if (member e `(apdn_cal txh_iso_cal))
-							 `(aref s i ":")
-							 `(* .5 (- (aref s i ":")
-							      (aref s (+ i 1) ":"))))
-					
-					)
-				  (setf j (+ j 1)))))))
+		     ,@(loop for e in l collect
+			    `(do0
+			      
+			      ,@(loop for n below 2 collect
+				     (let ((name (format nil "~a_~a" e n)))
+				      `(do0
+					(setf sub (aref dfc (& (== dfc.cal_type_desc (string ,e))
+							       (== dfc.number_of_quads (aref un ,n))
+							       ,(if (member e `(apdn_cal txh_iso_cal))
+								    `True
+								    `(== dfc.pcc 0)))))
+					(setf ,name (np.zeros (tuple (len sub)
+								     6000)
+							      :dtype np.complex64))
+					(setf j 0)
+					(for (i sub.cal_iter)
+					     (setf (aref ,name j ":")
+						   ,(if (member e `(apdn_cal txh_iso_cal))
+							`(aref s i ":")
+							`(* .5 (- (aref s i ":")
+								  (aref s (+ i 1) ":")))))
+					     (setf j (+ j 1))))))))))
 		
 		
 		#+nil (do0
