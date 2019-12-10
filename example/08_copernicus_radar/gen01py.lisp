@@ -139,10 +139,10 @@
 			   apdn_cal
 			   txh_iso_cal)))
 		   `(do0
-		     (setf count 0)
+		     (setf count 0
+			   kernel_size 8)
 		     ,@(loop for e in l collect
 			    `(do0
-			      
 			      ,@(loop for n below 2 collect
 				     (let ((name (format nil "~a_~a" e n)))
 				      `(do0
@@ -168,13 +168,18 @@
 			      ,@(loop for e in l collect
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
-					 (plt.plot (np.unwrap (np.angle ,(case e
-									   (apdn_cal `(np.mean ,name :axis 0))
-									   (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
-									       (np.mean ,name :axis 0)) )
-									   (t `(aref ,name count ":")))))
+					 (plt.plot (scipy.signal.savgol_filter
+						    (np.unwrap (np.angle ,(case e
+									    (apdn_cal `(np.mean ,name :axis 0))
+									    #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
+												   (np.mean ,name :axis 0)) )
+									    (t `(aref ,name count ":")))))
+						    ,(case n
+						       (0 `(+ 1 (* 2 kernel_size)))
+						       (1 `(+ 1 (* 4 kernel_size))))
+						    2)
 						   :label (string ,(format nil "angle <~a>"  (case e
-											  (txh_iso_cal `txhcal)
+											       #+nil (txh_iso_cal `txhcal)
 											  (t name))))))))
 			      (plt.grid)
 			      (plt.legend)))
@@ -187,13 +192,18 @@
 			      ,@(loop for e in l collect
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
-					 (plt.plot (np.abs ,(case e
-							      (apdn_cal `(np.mean ,name :axis 0))
-							      (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
-									       (np.mean ,name :axis 0)) )
-							      (t `(aref ,name count ":"))))
+					 (plt.plot (scipy.signal.savgol_filter
+						    (np.abs ,(case e
+							       (apdn_cal `(np.mean ,name :axis 0))
+							       #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
+										      (np.mean ,name :axis 0)) )
+							       (t `(aref ,name count ":"))))
+						    ,(case n
+						       (0 `(+ 1 (* 2 kernel_size)))
+						       (1 `(+ 1 (* 4 kernel_size))))
+						    2)
 						   :label (string ,(format nil "|<~a>|" (case e
-											  (txh_iso_cal `txhcal)
+											  #+nil (txh_iso_cal `txhcal)
 											  (t name))))))))
 			      (plt.grid)
 			      (plt.legend)))))
