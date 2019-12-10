@@ -363,6 +363,7 @@
 		       (map_cal)
 		       (cal_count 0))
 		   (declare (type "std::unordered_map<int,int>" map_ele map_cal))
+		   (init_sub_commutated_data_decoder) 
 		   (foreach (e ,(g `_header_data))
 			    (let ((offset (aref ,(g `_header_offset) packet_idx))
 				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
@@ -371,7 +372,12 @@
 				  (cal_type (logand ele #x7))
 				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
 				  (baq_mode ,(space-packet-slot-get 'baq-mode 'p))
-				  (test_mode ,(space-packet-slot-get 'test-mode 'p)))
+				  (test_mode ,(space-packet-slot-get 'test-mode 'p))
+				  (sub_index ,(space-packet-slot-get 'sub-commutated-index 'p))
+				  (sub_data ,(space-packet-slot-get 'sub-commutated-data 'p)))
+			      
+
+			      (feed_sub_commutated_data_decoder sub_data sub_index)
 			      (if cal_p
 				  (do0
 				   (incf cal_count)
@@ -1352,12 +1358,13 @@
 		  (return n)))))))))
   (define-module
        `(decode_sub_commutated_data
-	 ((_ancillary_data :direction 'out :type "std::array<uint16_t,64>")
-	  (_ancillary_data_valid :direction 'out :type "std::array<bool,64>")
+	 ((_ancillary_data :direction 'out :type "std::array<uint16_t,65>")
+	  (_ancillary_data_valid :direction 'out :type "std::array<bool,65>")
 	  (_ancillary_decoded :direction 'out :type "ancillary_data_t")
 	  (_ancillary_data_index :direction 'out :type int))
 	 (do0
-	  (include <cstring>)
+	  (include <cstring>
+		   <cassert>)
 	  ,(emit-utils :code
 			`(do0
 			  (defstruct0 ancillary_data_t
@@ -1388,7 +1395,8 @@
 			    (tgu_temperature uint16_t))))
 	  (defun init_sub_commutated_data_decoder ()
 	    (setf ,(g `_ancillary_data_index) 0)
-	    (dotimes (i 64)
+	    (dotimes (i (dot ,(g `_ancillary_data_valid)
+			 (size)))
 	      (setf (dot ,(g `_ancillary_data_valid)
 			 (at i))
 		    false)))
@@ -1396,16 +1404,24 @@
 	    (declare (type uint16_t word)
 		     (type int idx)
 		     (values bool)) ;; data full
+	    ,(logprint "add" `(word idx))
 	    (setf  ,(g `_ancillary_data_index) idx
 		   (dot ,(g `_ancillary_data)
 			(at ,(g `_ancillary_data_index)))
 		   word
-		   (dot ,(g `_ancillary_data)
+		   (dot ,(g `_ancillary_data_valid)
 			(at ,(g `_ancillary_data_index)))
 		   true)
 					;(incf ,(g `_ancillary_data_index))
-	    (if (== ,(g `_ancillary_data_index) 64)
+	    (if (== ,(g `_ancillary_data_index)
+		    (- (dot ,(g `_ancillary_data)
+			    (size))
+		       1))
 		(do0
+		 ,@(loop for i from 1 upto 64 collect
+			`(assert (dot ,(g `_ancillary_data_valid)
+				      (at ,i))))
+		 
 		 (memcpy (reinterpret_cast<void*> (ref ,(g `_ancillary_decoded)
 						       ))
 			 (reinterpret_cast<void*> (dot ,(g `_ancillary_data)
