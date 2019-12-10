@@ -186,7 +186,7 @@
 			       (plt.grid)
 			       (plt.legend))))
 
-		     ,@(loop for (code-name code) in `((mag (scipy.signal.savgol_filter
+		   #+nil ,@(loop for (code-name code) in `((mag (scipy.signal.savgol_filter
 							       (np.abs q)
 							       savgol_kernel_size
 							       2))
@@ -279,7 +279,9 @@
 		   (plt.legend)
 		   (plt.grid))))
 
+		
 		(do0
+		 #+nil
 		 (do0 (plt.figure)
 		      (plt.suptitle (string "single pulse"))
 		      (setf pl (tuple 5 1))
@@ -305,7 +307,7 @@
 							    (t  `(aref ,e count ":")))))))
 			(setf win (np.fft.fftshift (scipy.signal.tukey (aref tx_cal_0.shape 1) :alpha .1)))
 			(setf (aref reps count ":") (np.fft.ifft (* win (/ top bot))))))
-		 (for (count (range 3 ))
+		 #+nil(for (count (range 3 ))
 		      (do0
 		       "# i want to compute rep_vv according to page 36 (detailed alg definition)"
 		       (do0
@@ -348,6 +350,7 @@
 			 (ax4.legend)
 			 (ax4.grid))))))
 		
+		#+nil
 		(do0
 		 "# page 38, (4-36) compress replicas using the first extracted replica"
 		 (setf repsc (np.zeros (tuple
@@ -361,6 +364,19 @@
 			      (np.fft.fft (aref reps i))
 			      (np.conj
 			       (np.fft.fft (aref reps 0))))))))
+
+		(do0
+		 "# %% fit polynomial to magnitude and phase"
+		 (setf a (np.abs (aref reps 0))
+		       th (* .5 (np.max a))
+		       mask (< th a)
+		       start (np.argmax mask)
+		       end (- (len mask)
+			      (np.argmax (aref mask "::-1"))))
+		 (plt.plot a)
+		 (plt.axvline :x start)
+		 (plt.axvline :x end))
+
 		
 		#+nil (do0
 		 (setf fref 37.53472224)
