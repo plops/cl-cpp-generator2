@@ -123,6 +123,7 @@
 			   apdn_cal
 			   txh_iso_cal)))
 		   `(do0
+		     (setf count 0)
 		     ,@(loop for e in l collect
 			    `(do0
 			      
@@ -145,19 +146,33 @@
 							`(* .5 (- (aref s i ":")
 								  (aref s (+ i 1) ":")))))
 					     (setf j (+ j 1))))))))
-		     ,@(loop for e in l collect
+		     ,@(loop for n below 2 collect
 			    `(do0
-			      ,@(loop for n below 2 collect
+			      (plt.figure)
+			      ,@(loop for e in l collect
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
-					 (plt.plot (np.unwrap (np.angle (np.mean ,name :axis 0)))))))))
-		     (plt.figure)
-		     ,@(loop for e in l collect
+					 (plt.plot (np.unwrap (np.angle ,(case e
+									     (apdn_cal `(np.mean ,name :axis 0))
+									     (t `(aref ,name count ":")))))
+						   :label (string ,(format nil "angle <~a>" name))))))
+			      (plt.grid)
+			      (plt.legend)))
+
+
+		     
+		     ,@(loop for n below 2 collect
 			    `(do0
-			      ,@(loop for n below 2 collect
+			      (plt.figure)
+			      ,@(loop for e in l collect
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
-					 (plt.plot (np.abs (np.mean ,name :axis 0))))))))))
+					 (plt.plot (np.abs ,(case e
+									     (apdn_cal `(np.mean ,name :axis 0))
+									     (t `(aref ,name count ":"))))
+						   :label (string ,(format nil "|<~a>|" name))))))
+			      (plt.grid)
+			      (plt.legend)))))
 		
 		
 		#+nil (do0
