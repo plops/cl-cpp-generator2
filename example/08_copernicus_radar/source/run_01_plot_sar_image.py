@@ -14,6 +14,7 @@ import scipy.signal
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
 cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_iso_cal"]
+pol_desc=[]
 dfc=pd.read_csv("./o_cal_range.csv")
 dfc["cal_type_desc"]=list(map(lambda x: cal_type_desc[x], dfc.cal_type))
 dfc.cal_type_desc=dfc.cal_type_desc.astype("category")

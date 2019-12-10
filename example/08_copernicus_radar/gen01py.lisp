@@ -62,6 +62,14 @@
 							txh_iso_cal)
 					  collect
 					    `(string ,e)))
+		 pol_desc (list ,@(loop for e in `(txh
+						   txh_rxh
+						   txh_rxv
+						   txh_rxvh
+						   txv
+						   txv_rxh
+						   txv_rxv
+						   txv_rxvh)))
 		 dfc (pd.read_csv (string "./o_cal_range.csv"))
 		 (aref dfc (string "cal_type_desc")) 
 		 ("list" (map (lambda (x)
