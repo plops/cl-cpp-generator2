@@ -1373,8 +1373,12 @@
 				   `(,(format nil "gps_data_timestamp_~a" i) uint16_t))
 			    (pointing_status uint16_t)
 			    (temperature_update_status uint16_t)
-			    
-			    )))
+			    ,@(loop for tile from 1 upto 14 by 1 appending
+				   `((,(format nil "tile_~a_efe_h_temperature" tile) uint8_t)
+				     (,(format nil "tile_~a_efe_v_temperature" tile) uint8_t)
+				     (,(format nil "tile_~a_active_ta_temperature" tile) uint8_t)
+				     (,(format nil "tile_~a_efe_h_ta_temperature" (+ 1 tile)) uint8_t)))
+			    (tgu_temperature uint16_t))))
 	  (defun init_sub_commutated_data_decoder ()
 	    (setf ,(g `_ancillary_data_index) 0))
 	  (defun feed_sub_commutated_data_decoder (word)
