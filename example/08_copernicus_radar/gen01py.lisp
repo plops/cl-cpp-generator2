@@ -188,54 +188,52 @@
 			       (plt.grid)
 			       (plt.legend))))
 
-		     ,(let  ((e 0)
-			     (name 0)
-			     (n 0))
-		      `(do0
-			,@(loop for (code-name code) in `((mag (scipy.signal.savgol_filter
-								(np.abs ,(case e
-									   (apdn_cal `(np.mean ,name :axis 0))
-									   #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
-												  (np.mean ,name :axis 0)) )
-									   (t `(aref ,name count ":"))))
-								,(case n
-								   (0 `(+ 1 (* 2 kernel_size)))
-								   (1 `(+ 1 (* 4 kernel_size))))
-								2))
-							  (angle (scipy.signal.savgol_filter
-								  (np.unwrap (np.angle ,(case e
-											  (apdn_cal `(np.mean ,name :axis 0))
-											  #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
-														 (np.mean ,name :axis 0)) )
-											  (t `(aref ,name count ":")))))
-								  ,(case n
-								     (0 `(+ 1 (* 2 kernel_size)))
-								     (1 `(+ 1 (* 4 kernel_size))))
-								  2))) collect
-			       `(do0
-				 (plt.figure)
-				 ,@(loop for n below 2 collect
-					`(do0
-					  (dot (plt.gca)
-					       (set_prop_cycle None))
-					  ,@(loop for e in l collect
-						 (let ((name (format nil "~a_~a" e n)))
-						   `(do0
-						     (setf v ,code)
-						     (plt.plot (np.linspace 0 (/ (- (len v) 1)
-										 ,(+ n 1)) (len v))
-							       v
-							       :linestyle ,(case n
-									     (0 `(string "-"))
-									     (1 `(string "--")))
-							       :label (string ,(format nil (case code-name
-											     (mag "|~a|")
-											     (angle "ang ~a")) 
-										       (case e
-											 #+nil (txh_iso_cal `txhcal)
-											 (t name))))))))))
-				 (plt.grid)
-				 (plt.legend)))))))
+		     ,@(loop for (code-name code) in `((mag (scipy.signal.savgol_filter
+							       (np.abs q)
+							       savgol_kernel_size
+							       2))
+							 (angle (scipy.signal.savgol_filter
+								 (np.unwrap (np.angle q))
+								 savgol_kernel_size
+								 2))) collect
+			      `(do0
+				(plt.figure)
+				,@(loop for n below 2 collect
+				       `(do0
+					 (dot (plt.gca)
+					      (set_prop_cycle None))
+					 ,@(loop for e in l collect
+						(let ((name (format nil "~a_~a" e n)))
+						  `(do0
+						    (setf savgol_kernel_size ,(case n
+								    (0 `(+ 1 (* 2 kernel_size)))
+								    (1 `(+ 1 (* 4 kernel_size)))))
+						    (setf q ,(case e
+							       (apdn_cal `(np.mean ,name :axis 0))
+							       #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
+										      (np.mean ,name :axis 0)) )
+							       (t `(aref ,name count ":"))))
+						    (setf scale ,(case code-name
+								   (mag `1.0)
+								   (angle (case n
+									    (0 1.0)
+									    (1 .5)))))
+						    (setf v (* scale ,code))
+						    
+						    (plt.plot (np.linspace 0 (/ (- (len v) 1)
+										,(+ n 1)) (len v))
+							      v
+							      :linestyle ,(case n
+									    (0 `(string "-"))
+									    (1 `(string "--")))
+							      :label (string ,(format nil (case code-name
+											    (mag "|~a|")
+											    (angle "ang ~a")) 
+										      (case e
+											#+nil (txh_iso_cal `txhcal)
+											(t name))))))))))
+				(plt.grid)
+				(plt.legend)))))
 		
 		
 		#+nil (do0
