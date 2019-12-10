@@ -14,7 +14,7 @@ struct sequential_bit_t {
   uint8_t *data;
 };
 typedef struct sequential_bit_t sequential_bit_t;
-struct anxillary_data_t {
+struct ancillary_data_t {
   double x_axis_position;
   double y_axis_position;
   double z_axis_position;
@@ -96,7 +96,7 @@ struct anxillary_data_t {
   uint8_t tile_15_efe_h_ta_temperature;
   uint16_t tgu_temperature;
 };
-typedef struct anxillary_data_t anxillary_data_t;
+typedef struct ancillary_data_t ancillary_data_t;
 ;
 
 #endif
