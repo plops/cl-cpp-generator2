@@ -203,7 +203,8 @@
 					 (dot (plt.gca)
 					      (set_prop_cycle None))
 					 ,@(loop for e in l collect
-						(let ((name (format nil "~a_~a" e n)))
+						(let ((name (format nil "~a_~a" e n))
+						      (sav_name (format nil "sav_~a_~a" e n)))
 						  `(do0
 						    (setf savgol_kernel_size ,(case n
 								    (0 `(+ 1 (* 2 kernel_size)))
@@ -213,13 +214,22 @@
 							       #+nil (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
 										      (np.mean ,name :axis 0)) )
 							       (t `(aref ,name count ":"))))
+						    (setf sav_mag_q (scipy.signal.savgol_filter
+									(np.abs q)
+									savgol_kernel_size
+									2)
+							  sav_arg_q (scipy.signal.savgol_filter
+								     (np.unwrap (np.angle q))
+								     savgol_kernel_size
+								     2))
+						    (setf ,sav_name (* sav_mag_q							     
+								       (np.exp (* 1j sav_arg_q))))
 						    (setf scale ,(case code-name
 								   (mag `1.0)
 								   (angle (case n
 									    (0 1.0)
 									    (1 .5)))))
 						    (setf v (* scale ,code))
-						    
 						    (plt.plot (np.linspace 0 (/ (- (len v) 1)
 										,(+ n 1)) (len v))
 							      v
@@ -228,13 +238,142 @@
 									    (1 `(string "--")))
 							      :label (string ,(format nil (case code-name
 											    (mag "|~a|")
-											    (angle "ang ~a")) 
+											    (angle "arg ~a")) 
 										      (case e
 											#+nil (txh_iso_cal `txhcal)
 											(t name))))))))))
 				(plt.grid)
 				(plt.legend)))))
-		
+
+		#+nil (do0
+		 "# i want to compute rep_vv according to page 36 (detailed alg definition) using savgol filtered pulse"
+		 (setf top (* ,@(loop for e in `(sav_tx_cal_0
+						 sav_rx_cal_0
+						 sav_ta_cal_0)
+				   collect
+				     `(np.fft.fft ,e)))
+		       bot (* ,@(loop for e in `(sav_apdn_cal_0
+						 sav_epdn_cal_0)
+				   collect
+				     `(np.fft.fft ,e))))
+		 (do0
+		  (plt.figure)
+		  (plt.suptitle (string "savgol averaged pulse"))
+		  (setf pl (tuple 4 1))
+		  (do0
+		   (plt.subplot2grid pl (tuple 0 0))
+		   (plt.plot (np.abs top) :label (string "top"))
+		   (plt.grid)
+		   (plt.legend))
+		  (do0
+		   (plt.subplot2grid pl (tuple 1 0))
+		   (plt.plot (np.abs bot) :label (string "bot"))
+		   (plt.legend)
+		   (plt.grid))
+		  (do0
+		   (plt.subplot2grid pl (tuple 2 0))
+		   (plt.plot (np.abs (/ top bot)) :label (string "top/bot"))
+		   (plt.legend)
+		   (plt.grid))
+		  (do0
+		   (plt.subplot2grid pl (tuple 3 0))
+		   (plt.plot (np.real (np.fft.ifft (/ top bot))) :label (string "ifft top/bot"))
+		   (plt.legend)
+		   (plt.grid))))
+
+		(do0
+		 (do0 (plt.figure)
+		      (plt.suptitle (string "single pulse"))
+		      (setf pl (tuple 5 1))
+		      ,@(loop for i below 5 collect
+			      `(setf ,(format nil "ax~a" i)
+				     (plt.subplot2grid pl (tuple ,i 0)))))
+		 (do0
+		  (setf reps (np.zeros tx_cal_0.shape
+				       :dtype np.complex64)))
+		 (for (count (range (aref reps.shape 0)))
+		      (do0
+			(setf top (* ,@(loop for e in `(tx_cal_0
+							rx_cal_0
+							ta_cal_0)
+					  collect
+					    `(np.fft.fft (aref ,e count ":")
+							 )))
+			      bot (* ,@(loop for e in `(apdn_cal_0
+							epdn_cal_0)
+					  collect
+					    `(np.fft.fft ,(case e
+							    (apdn_cal_0  `(np.mean ,e :axis 0))
+							    (t  `(aref ,e count ":")))))))
+			(setf win (np.fft.fftshift (scipy.signal.tukey (aref tx_cal_0.shape 1) :alpha .1)))
+			(setf (aref reps count ":") (np.fft.ifft (* win (/ top bot))))))
+		 (for (count (range 3 ))
+		      (do0
+		       "# i want to compute rep_vv according to page 36 (detailed alg definition)"
+		       (do0
+			(setf top (* ,@(loop for e in `(tx_cal_0
+							rx_cal_0
+							ta_cal_0)
+					  collect
+					    `(np.fft.fft (aref ,e count ":")
+							 )))
+			      bot (* ,@(loop for e in `(apdn_cal_0
+							epdn_cal_0)
+					  collect
+					    `(np.fft.fft ,(case e
+							    (apdn_cal_0  `(np.mean ,e :axis 0))
+							    (t  `(aref ,e count ":")))))))
+			(setf win (np.fft.fftshift (scipy.signal.tukey (aref tx_cal_0.shape 1) :alpha .1)))
+			(setf (aref reps count ":") (np.fft.ifft (* win (/ top bot)))))
+		       (do0
+			
+			(setf xs (np.fft.fftfreq (len top)))
+			(do0
+			 
+			 (ax0.plot xs (np.abs top) :label (string "top"))
+			 (ax0.grid)
+			 (ax0.legend))
+			(do0
+			 
+			 (ax1.plot xs (np.abs bot) :label (string "bot"))
+			 (ax1.legend)
+			 (ax1.grid))
+		  
+			(do0
+			 
+			 
+			 (ax2.plot xs win :label (string "tukey"))
+		   
+			 (ax2.legend)
+			 (ax2.grid))
+			(do0
+			 
+			 (ax3.plot xs (np.abs (/ top bot)) :label (string "top/bot"))
+			 (ax3.plot xs (* win (np.abs (/ top bot))) :label (string "top/bot*win"))
+			 (ax3.legend)
+			 (ax3.grid))
+			(do0
+			 
+			 (ax4.plot (np.real (np.fft.ifft (/ top bot))) :label (string "ifft top/bot"))
+			 (ax4.plot (np.real (np.fft.ifft (* win (/ top bot)))) :label (string "ifft top/bot*win"))
+			 (ax4.legend)
+			 
+			 (ax4.grid))))))
+
+
+		(do0
+		 "# page 38, (4-36) compress replicas using the first extracted replica"
+		 (setf repsc (np.zeros (tuple
+					(- (aref reps.shape 0) 1)
+					(aref reps.shape 1))
+				       :dtype np.complex64))
+		 (for (i (range 1 (aref reps.shape 0)))
+		      (setf (aref repsc (- i 1) ":")
+			    (np.fft.ifft
+			     (*
+			      (np.fft.fft (aref reps i))
+			      (np.conj
+			       (np.fft.fft (aref reps 0))))))))
 		
 		#+nil (do0
 		 (setf fref 37.53472224)
