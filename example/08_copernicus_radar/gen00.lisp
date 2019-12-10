@@ -466,6 +466,7 @@
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (rank ,(space-packet-slot-get 'rank 'p))
 				      (cal_type (logand ele #x7))
+				      (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
 				      (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 				      (cal_mode ,(space-packet-slot-get 'ses-ssb-cal-mode 'p))
 				      (data_delay (+ ,(/ 320 8)
@@ -512,7 +513,8 @@
 							       txpsf
 							       txpl
 							       txprr_
-							       txpl_))
+							       txpl_
+							       pol))
 						 (incf cal_iter))
 					      (when (== ele ma_ele)
 						(let ( ;(output)

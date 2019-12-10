@@ -153,9 +153,13 @@
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
 					 (plt.plot (np.unwrap (np.angle ,(case e
-									     (apdn_cal `(np.mean ,name :axis 0))
-									     (t `(aref ,name count ":")))))
-						   :label (string ,(format nil "angle <~a>" name))))))
+									   (apdn_cal `(np.mean ,name :axis 0))
+									   (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
+									       (np.mean ,name :axis 0)) )
+									   (t `(aref ,name count ":")))))
+						   :label (string ,(format nil "angle <~a>"  (case e
+											  (txh_iso_cal `txhcal)
+											  (t name))))))))
 			      (plt.grid)
 			      (plt.legend)))
 
@@ -168,9 +172,13 @@
 				     (let ((name (format nil "~a_~a" e n)))
 				       `(do0
 					 (plt.plot (np.abs ,(case e
-									     (apdn_cal `(np.mean ,name :axis 0))
-									     (t `(aref ,name count ":"))))
-						   :label (string ,(format nil "|<~a>|" name))))))
+							      (apdn_cal `(np.mean ,name :axis 0))
+							      (txh_iso_cal `(- ,(format nil "txh_cal_~a" n)
+									       (np.mean ,name :axis 0)) )
+							      (t `(aref ,name count ":"))))
+						   :label (string ,(format nil "|<~a>|" (case e
+											  (txh_iso_cal `txhcal)
+											  (t name))))))))
 			      (plt.grid)
 			      (plt.legend)))))
 		

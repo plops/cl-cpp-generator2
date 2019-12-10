@@ -214,6 +214,7 @@ int main() {
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       auto rank = ((0x1F) & ((p[49]) >> (0)));
       auto cal_type = ((ele) & (7));
+      auto pol = ((0x7) & ((p[59]) >> (4)));
       auto signal_type = ((0xF) & ((p[63]) >> (4)));
       auto cal_mode = ((0x3) & ((p[62]) >> (6)));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
@@ -245,7 +246,7 @@ int main() {
               (outfile)
                   << ("cal_iter,packet_idx,offset,cal_type,cal_mode,number_of_"
                       "quads,space_packet_count,signal_type,pri_count,rank,"
-                      "data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                      "data_delay,txprr,txpsf,txpl,txprr_,txpl_,pol")
                   << (std::endl);
             };
             (outfile) << (cal_iter) << (",") << (packet_idx) << (",")
@@ -254,7 +255,8 @@ int main() {
                       << (space_packet_count) << (",") << (signal_type) << (",")
                       << (pri_count) << (",") << (rank) << (",") << (data_delay)
                       << (",") << (txprr) << (",") << (txpsf) << (",") << (txpl)
-                      << (",") << (txprr_) << (",") << (txpl_) << (std::endl);
+                      << (",") << (txprr_) << (",") << (txpl_) << (",") << (pol)
+                      << (std::endl);
             outfile.close();
           };
           (cal_iter)++;
