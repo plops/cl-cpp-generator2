@@ -1356,81 +1356,90 @@
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
 		  (return n)))))))))
-  (define-module
-       `(decode_sub_commutated_data
-	 ((_ancillary_data :direction 'out :type "std::array<uint16_t,65>")
-	  (_ancillary_data_valid :direction 'out :type "std::array<bool,65>")
-	  (_ancillary_decoded :direction 'out :type "ancillary_data_t")
-	  (_ancillary_data_index :direction 'out :type int))
-	 (do0
-	  (include <cstring>
-		   <cassert>)
-	  ,(emit-utils :code
+  (let ((l `(,@(loop for e in `(x y z) collect
+		    `(,(format nil "~a_axis_position" e) double))
+	       ,@(loop for e in `(x y z) collect
+		      `(,(format nil "~a_velocity" e) float))
+	       ,@(loop for i below 4 collect
+		      `(,(format nil "pod_solution_data_stamp_~a" i) uint16_t))
+	       ,@(loop for i below 4 collect
+		      `(,(format nil "quaternion_~a" i) float))
+	       ,@(loop for e in `(x y z) collect
+		      `(,(format nil "angular_rate_~a" e) float))
+	       ,@(loop for i below 4 collect
+		      `(,(format nil "gps_data_timestamp_~a" i) uint16_t))
+	       (pointing_status uint16_t)
+	       (temperature_update_status uint16_t)
+	       ,@(loop for tile from 1 upto 14 by 2 appending
+		      `((,(format nil "tile_~a_efe_h_temperature" tile) uint8_t)
+			(,(format nil "tile_~a_efe_v_temperature" tile) uint8_t)
+			(,(format nil "tile_~a_active_ta_temperature" tile) uint8_t)
+			(,(format nil "tile_~a_efe_h_ta_temperature" (+ 1 tile)) uint8_t)
+			
+			(,(format nil "tile_~a_efe_h_temperature" (+ 1 tile)) uint8_t)
+			(,(format nil "tile_~a_efe_v_temperature" (+ 1 tile)) uint8_t)
+			(,(format nil "tile_~a_active_ta_temperature" (+ 1 tile)) uint8_t)
+			(,(format nil "tile_~a_efe_h_ta_temperature" (+ 2 tile)) uint8_t)))
+	       (tgu_temperature uint16_t))))
+     (define-module
+	`(decode_sub_commutated_data
+	  ((_ancillary_data :direction 'out :type "std::array<uint16_t,65>")
+	   (_ancillary_data_valid :direction 'out :type "std::array<bool,65>")
+	   (_ancillary_decoded :direction 'out :type "ancillary_data_t")
+	   (_ancillary_data_index :direction 'out :type int))
+	  (do0
+	   (include <cstring>
+		    <cassert>)
+	   ,(emit-utils :code
 			`(do0
 			  (defstruct0 ancillary_data_t
-			      ,@(loop for e in `(x y z) collect
-				     `(,(format nil "~a_axis_position" e) double))
-			    ,@(loop for e in `(x y z) collect
-				   `(,(format nil "~a_velocity" e) float))
-			    ,@(loop for i below 4 collect
-				   `(,(format nil "pod_solution_data_stamp_~a" i) uint16_t))
-			    ,@(loop for i below 4 collect
-				   `(,(format nil "quaternion_~a" i) float))
-			    ,@(loop for e in `(x y z) collect
-				   `(,(format nil "angular_rate_~a" e) float))
-			    ,@(loop for i below 4 collect
-				   `(,(format nil "gps_data_timestamp_~a" i) uint16_t))
-			    (pointing_status uint16_t)
-			    (temperature_update_status uint16_t)
-			    ,@(loop for tile from 1 upto 14 by 2 appending
-				   `((,(format nil "tile_~a_efe_h_temperature" tile) uint8_t)
-				     (,(format nil "tile_~a_efe_v_temperature" tile) uint8_t)
-				     (,(format nil "tile_~a_active_ta_temperature" tile) uint8_t)
-				     (,(format nil "tile_~a_efe_h_ta_temperature" (+ 1 tile)) uint8_t)
-				     
-				     (,(format nil "tile_~a_efe_h_temperature" (+ 1 tile)) uint8_t)
-				     (,(format nil "tile_~a_efe_v_temperature" (+ 1 tile)) uint8_t)
-				     (,(format nil "tile_~a_active_ta_temperature" (+ 1 tile)) uint8_t)
-				     (,(format nil "tile_~a_efe_h_ta_temperature" (+ 2 tile)) uint8_t)))
-			    (tgu_temperature uint16_t))))
-	  (defun init_sub_commutated_data_decoder ()
-	    (setf ,(g `_ancillary_data_index) 0)
-	    (dotimes (i (dot ,(g `_ancillary_data_valid)
-			 (size)))
-	      (setf (dot ,(g `_ancillary_data_valid)
-			 (at i))
-		    false)))
-	  (defun feed_sub_commutated_data_decoder (word idx)
-	    (declare (type uint16_t word)
-		     (type int idx)
-		     (values bool)) ;; data full
-	    ,(logprint "add" `(word idx))
-	    (setf  ,(g `_ancillary_data_index) idx
-		   (dot ,(g `_ancillary_data)
-			(at ,(g `_ancillary_data_index)))
-		   word
-		   (dot ,(g `_ancillary_data_valid)
-			(at ,(g `_ancillary_data_index)))
-		   true)
+			      ,@l)))
+	   (defun init_sub_commutated_data_decoder ()
+	     (setf ,(g `_ancillary_data_index) 0)
+	     (dotimes (i (dot ,(g `_ancillary_data_valid)
+			      (size)))
+	       (setf (dot ,(g `_ancillary_data_valid)
+			  (at i))
+		     false)))
+	   (defun feed_sub_commutated_data_decoder (word idx)
+	     (declare (type uint16_t word)
+		      (type int idx)
+		      (values bool)) ;; data full
+	     #+nil ,(logprint "add" `(word idx))
+	     (setf  ,(g `_ancillary_data_index) idx
+		    (dot ,(g `_ancillary_data)
+			 (at ,(g `_ancillary_data_index)))
+		    word
+		    (dot ,(g `_ancillary_data_valid)
+			 (at ,(g `_ancillary_data_index)))
+		    true)
 					;(incf ,(g `_ancillary_data_index))
-	    (if (== ,(g `_ancillary_data_index)
-		    (- (dot ,(g `_ancillary_data)
-			    (size))
-		       1))
-		(do0
-		 ,@(loop for i from 1 upto 64 collect
-			`(assert (dot ,(g `_ancillary_data_valid)
-				      (at ,i))))
+	     (if (== ,(g `_ancillary_data_index)
+		     (- (dot ,(g `_ancillary_data)
+			     (size))
+			1))
+		 (do0
+		  ,@(loop for i from 1 upto 64 collect
+			 `(assert (dot ,(g `_ancillary_data_valid)
+				       (at ,i))))
 		 
-		 (memcpy (reinterpret_cast<void*> (ref ,(g `_ancillary_decoded)
-						       ))
-			 (reinterpret_cast<void*> (dot ,(g `_ancillary_data)
-						       (data)))
-			 (sizeof ,(g `_ancillary_data)))
-		 (init_sub_commutated_data_decoder)
-		 (return true))
-		(do0
-		 (return false)))))))
+		  (memcpy (reinterpret_cast<void*> (ref ,(g `_ancillary_decoded)
+							))
+			  (reinterpret_cast<void*> (dot ,(g `_ancillary_data)
+							(data)))
+			  (sizeof ,(g `_ancillary_data)))
+		  (init_sub_commutated_data_decoder)
+		  ,(logprint "anxillary" (mapcar #'(lambda (x)
+						     (destructuring-bind (name type) x
+						       (case type
+							 (uint8_t `(static_cast<int> (dot ,(g `_ancillary_decoded)
+									 ,name)))
+							 (t `(dot ,(g `_ancillary_decoded)
+								,name)))))
+						  l))
+		  (return true))
+		 (do0
+		  (return false))))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
