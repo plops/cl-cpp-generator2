@@ -1428,14 +1428,30 @@
 							(data)))
 			  (sizeof ,(g `_ancillary_data)))
 		  (init_sub_commutated_data_decoder)
-		  ,(logprint "anxillary" (mapcar #'(lambda (x)
-						     (destructuring-bind (name type) x
-						       (case type
-							 (uint8_t `(static_cast<int> (dot ,(g `_ancillary_decoded)
-									 ,name)))
-							 (t `(dot ,(g `_ancillary_decoded)
-								,name)))))
-						  l))
+
+
+		  (<< "std::cout"
+		      ("std::setw" 10)
+		      (- (dot ("std::chrono::high_resolution_clock::now")
+			      (time_since_epoch)
+			      (count))
+			 ,(g `_start_time))
+		      (string " ")
+		      __FILE__
+		      (string ":")
+		      __LINE__
+		      (string " ")
+		      __func__
+		      "std::endl"
+		      ,@(loop for x in l appending
+			     (destructuring-bind (name type) x
+			       `((string ,(format nil "    ~a=" name))
+				 ,(case type
+				    (uint8_t `(static_cast<int> (dot ,(g `_ancillary_decoded)
+								     ,name)))
+				    (t `(dot ,(g `_ancillary_decoded)
+					     ,name)))
+				 "std::endl"))))
 		  (return true))
 		 (do0
 		  (return false))))))))
