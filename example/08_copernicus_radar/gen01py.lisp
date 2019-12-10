@@ -50,7 +50,6 @@
 				    )
 		      xm (et.parse xmlfn))
 		(setf df (pd.read_csv (string "./o_range.csv")))
-		
 		(setf
 		 cal_type_desc (list ,@(loop for e in `(tx_cal
 							rx_cal
@@ -69,16 +68,25 @@
 						   txv
 						   txv_rxh
 						   txv_rxv
-						   txv_rxvh)))
+						   txv_rxvh)
+				     collect
+				       `(string ,e)))
+		 rx_desc (list ,@(loop for e in `(rxv
+						  rxh) collect
+				      `(string ,e)))
 		 dfc (pd.read_csv (string "./o_cal_range.csv"))
-		 (aref dfc (string "cal_type_desc")) 
-		 ("list" (map (lambda (x)
-				(aref cal_type_desc x))
-			      dfc.cal_type))
-		 dfc.cal_type_desc (dfc.cal_type_desc.astype (string "category"))
-		 (aref dfc (string "pcc"))
-		 (np.mod dfc.cal_iter 2)
+		 (aref dfc (string "pcc")) (np.mod dfc.cal_iter 2)
 		 )
+		,@(loop for e in `(cal_type pol rx) collect
+		       (let ((name (format nil "~a_desc" e)))
+			`(do0
+			  (setf (aref dfc (string ,name))
+				
+				("list" (map (lambda (x)
+					       (aref ,name x)
+					       )
+					     (dot dfc ,e))))
+			  (setf (dot dfc ,name) (dot dfc ,name (astype (string "category")))))))
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)
