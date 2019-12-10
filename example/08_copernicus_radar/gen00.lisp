@@ -1423,8 +1423,7 @@
 			 `(assert (dot ,(g `_ancillary_data_valid)
 				       (at ,i))))
 		 
-		  (memcpy (reinterpret_cast<void*> (ref ,(g `_ancillary_decoded)
-							))
+		  (memcpy (reinterpret_cast<void*> (ref ,(g `_ancillary_decoded)))
 			  (reinterpret_cast<void*> (dot ,(g `_ancillary_data)
 							(data)))
 			  (sizeof ,(g `_ancillary_data)))
