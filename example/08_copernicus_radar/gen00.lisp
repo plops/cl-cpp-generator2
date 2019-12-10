@@ -1266,37 +1266,28 @@
 	 (do0
 	  (do0
 	   (include <cassert>)
-
 	   (defun get_data_type_a_or_b (s)
 	     (declare (type sequential_bit_t* s)
 		      (values int))
 	     (return (+ ,@(loop for j below 10 collect
 			      `(* (hex ,(expt 2 (- 9 j)))
 				  (get_sequential_bit s)))))))
-	  
-	  	  
-	  	  
-	  (defun
-	      init_decode_packet_type_a_or_b
+	  (defun init_decode_packet_type_a_or_b
 	      (packet_idx ; mi_data_delay
-	       output
-	       )
+	       output)
 	    (declare (type int packet_idx ;mi_data_delay
 			   )
 		     #+nil (type "std::array<std::complex<float>,MAX_NUMBER_QUADS>&" output)
 		     (type "std::complex<float>*" output)
 		     (values int))
-
 	    "// packet_idx .. index of space packet 0 .."
 	    "// mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest delay in samples between tx pulse start and data acquisition and will be used to compute a sample offset in output so that all echos of one sar image are aligned to the same time offset"
 	    "// output .. array of complex numbers"
 	    "// return value: number of complex data samples written"
-	    
 	    (let ((header (dot (aref ,(g `_header_data) packet_idx)
 			       (data)))
 		  (offset (aref ,(g `_header_offset) packet_idx))
 		  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
-		  
 		  (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
 		  (number_of_words (static_cast<int> (round (ceil (/ (* 10.0 number_of_quads)
 								     16)))))
@@ -1309,13 +1300,9 @@
 		  (data_delay (+ ,(/ 320 8)
 				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
 		  #+nil (data_offset (- data_delay mi_data_delay))
-			   
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-		  
 		  #+nil ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
 										     (format nil "decode_huffman_brc~a" i)))))
-	      
-
 	      
 	      #+safety (do0
 			#+nil (assert (or (== -1 mi_data_delay)
@@ -1355,7 +1342,6 @@
 				 (setf (aref ,sym-a ,sym) scode)
 				 (incf ,sym)))
 			     (consume_padding_bits &s)))))
-					
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
@@ -1367,16 +1353,43 @@
   (define-module
        `(decode_sub_commutated_data
 	 ((_ancillary_data :direction 'out :type "std::array<uint16_t,64>")
+	  (_ancillary_decoded :direction 'out :type "anillary_data_t")
 	  (_ancillary_data_index :direction 'out :type int))
 	 (do0
+	  ,(emit-utils :code
+			`(do0
+			  (defstruct0 anxillary_data_t
+			      ,@(loop for e in `(x y z) collect
+				     `(,(format nil "~a_axis_position" e) double))
+			    ,@(loop for e in `(x y z) collect
+				   `(,(format nil "~a_velocity" e) float))
+			    ,@(loop for i below 4 collect
+				   `(,(format nil "pod_solution_data_stamp_~a" i) uint16_t))
+			    ,@(loop for i below 4 collect
+				   `(,(format nil "quaternion_~a" i) float))
+			    ,@(loop for e in `(x y z) collect
+				   `(,(format nil "angular_rate_~a" e) float))
+			    ,@(loop for i below 4 collect
+				   `(,(format nil "gps_data_timestamp_~a" i) uint16_t))
+			    (pointing_status uint16_t)
+			    (temperature_update_status uint16_t)
+			    
+			    )))
 	  (defun init_sub_commutated_data_decoder ()
 	    (setf ,(g `_ancillary_data_index) 0))
 	  (defun feed_sub_commutated_data_decoder (word)
-	    (declare (type uint16_t word))
+	    (declare (type uint16_t word)
+		     (values bool)) ;; data full
 	    (setf (dot ,(g `_ancillary_data)
 		       (at ,(g `_ancillary_data_index)))
 		  word)
-	    (incf ,(g `_ancillary_data_index))))))
+	    (incf ,(g `_ancillary_data_index))
+	    (if (== ,(g `_ancillary_data_index) 64)
+		(do0
+		 (setf ,(g `_ancillary_data_index) 0)
+		 (return true))
+		(do0
+		 (return false)))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
