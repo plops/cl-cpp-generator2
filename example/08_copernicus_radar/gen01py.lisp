@@ -39,6 +39,7 @@
 			  ;scipy.ndimage
 					;scipy.optimize
 			  scipy.signal
+			  numpy.polynomial
 					;nfft
 			  ;sklearn
 			  ;sklearn.linear_model
@@ -365,17 +366,76 @@
 			      (np.conj
 			       (np.fft.fft (aref reps 0))))))))
 
+		#-nil
 		(do0
-		 "# %% fit polynomial to magnitude and phase"
+		 "# %% fit polynomial to magnitude "
 		 (setf a (np.abs (aref reps 0))
-		       th (* .5 (np.max a))
+		       th_level .9
+		       th (* th_level (np.max a))
 		       mask (< th a)
 		       start (np.argmax mask)
 		       end (- (len mask)
-			      (np.argmax (aref mask "::-1"))))
-		 (plt.plot a)
-		 (plt.axvline :x start)
-		 (plt.axvline :x end))
+			      (np.argmax (aref mask "::-1")))
+		       cut (aref a "start:end"))
+		 (setf
+		  xs (np.arange (len cut))
+		  (ntuple cba cba_diag)
+		  (np.polynomial.chebyshev.chebfit xs
+						   cut
+						   23
+						   :full True))
+
+		 
+		 (do0 ;; plot magnitude and cheby poly
+		  (plt.figure)
+		  (setf pl (tuple 2 1))
+		  (plt.subplot2grid pl (tuple 0 0))
+		  (plt.plot a)
+		  (plt.plot (+ start xs) (np.polynomial.chebyshev.chebval xs cba))
+		  (do0 (plt.axvline :x start :color (string "r"))
+		       (plt.axvline :x end :color (string "r")))
+		  (plt.xlim (- start 100) (+ end 100))
+		  (plt.subplot2grid pl (tuple 1 0))
+		  
+		  (plt.plot (+ start xs) (- cut (np.polynomial.chebyshev.chebval xs cba)))
+		  (plt.xlim (- start 100) (+ end 100))
+		  (do0 (plt.axvline :x start :color (string "r"))
+		       (plt.axvline :x end :color (string "r")))))
+
+		(do0
+		 "# %% fit polynomial to phase"
+		 
+		 (setf a (np.abs (aref reps 0))
+		       arg (np.unwrap (np.angle (aref reps 0)))
+		       th (* th_level (np.max a))
+		       mask (< th a)
+		       start (np.argmax mask)
+		       end (- (len mask)
+			      (np.argmax (aref mask "::-1")))
+		       cut (aref arg "start:end"))
+		 (setf
+		  xs (np.arange (len cut))
+		  (ntuple cbarg cbarg_diag)
+		  (np.polynomial.chebyshev.chebfit xs
+						   cut
+						   22
+						   :full True))
+
+		 (do0 ;; plot phase and cheby poly
+		  (plt.figure)
+		  (setf pl (tuple 2 1))
+		  (plt.subplot2grid pl (tuple 0 0))
+		  (plt.plot arg)
+		  (plt.plot (+ start xs) (np.polynomial.chebyshev.chebval xs cbarg))
+		  (do0 (plt.axvline :x start :color (string "r"))
+		       (plt.axvline :x end :color (string "r")))
+		  (plt.xlim (- start 100) (+ end 100))
+		  (plt.subplot2grid pl (tuple 1 0))
+		  
+		  (plt.plot (+ start xs) (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
+		  (plt.xlim (- start 100) (+ end 100))
+		  (do0 (plt.axvline :x start :color (string "r"))
+		       (plt.axvline :x end :color (string "r")))))
 
 		
 		#+nil (do0

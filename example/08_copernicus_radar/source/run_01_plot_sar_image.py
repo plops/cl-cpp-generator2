@@ -9,6 +9,7 @@ import numpy as np
 import numpy.fft
 import pandas as pd
 import scipy.signal
+import numpy.polynomial
 import xml.etree.ElementTree as et
 df=pd.read_csv("./o_range.csv")
 cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_iso_cal"]
@@ -106,12 +107,49 @@ for count in range(reps.shape[0]):
     bot=((np.fft.fft(np.mean(apdn_cal_0, axis=0)))*(np.fft.fft(epdn_cal_0[count,:])))
     win=np.fft.fftshift(scipy.signal.tukey(tx_cal_0.shape[1], alpha=(1.0000000149011612e-1)))
     reps[count,:]=np.fft.ifft(((win)*(((top)/(bot)))))
-# %% fit polynomial to magnitude and phase
+# %% fit polynomial to magnitude 
 a=np.abs(reps[0])
-th=(((5.e-1))*(np.max(a)))
+th_level=(8.99999976158142e-1)
+th=((th_level)*(np.max(a)))
 mask=((th)<(a))
 start=np.argmax(mask)
 end=((len(mask))-(np.argmax(mask[::-1])))
+cut=a[start:end]
+xs=np.arange(len(cut))
+cba, cba_diag=np.polynomial.chebyshev.chebfit(xs, cut, 23, full=True)
+plt.figure()
+pl=(2,1,)
+plt.subplot2grid(pl, (0,0,))
 plt.plot(a)
-plt.axvline(x=start)
-plt.axvline(x=end)
+plt.plot(((start)+(xs)), np.polynomial.chebyshev.chebval(xs, cba))
+plt.axvline(x=start, color="r")
+plt.axvline(x=end, color="r")
+plt.xlim(((start)-(100)), ((end)+(100)))
+plt.subplot2grid(pl, (1,0,))
+plt.plot(((start)+(xs)), ((cut)-(np.polynomial.chebyshev.chebval(xs, cba))))
+plt.xlim(((start)-(100)), ((end)+(100)))
+plt.axvline(x=start, color="r")
+plt.axvline(x=end, color="r")
+# %% fit polynomial to phase
+a=np.abs(reps[0])
+arg=np.unwrap(np.angle(reps[0]))
+th=((th_level)*(np.max(a)))
+mask=((th)<(a))
+start=np.argmax(mask)
+end=((len(mask))-(np.argmax(mask[::-1])))
+cut=arg[start:end]
+xs=np.arange(len(cut))
+cbarg, cbarg_diag=np.polynomial.chebyshev.chebfit(xs, cut, 22, full=True)
+plt.figure()
+pl=(2,1,)
+plt.subplot2grid(pl, (0,0,))
+plt.plot(arg)
+plt.plot(((start)+(xs)), np.polynomial.chebyshev.chebval(xs, cbarg))
+plt.axvline(x=start, color="r")
+plt.axvline(x=end, color="r")
+plt.xlim(((start)-(100)), ((end)+(100)))
+plt.subplot2grid(pl, (1,0,))
+plt.plot(((start)+(xs)), ((cut)-(np.polynomial.chebyshev.chebval(xs, cbarg))))
+plt.xlim(((start)-(100)), ((end)+(100)))
+plt.axvline(x=start, color="r")
+plt.axvline(x=end, color="r")
