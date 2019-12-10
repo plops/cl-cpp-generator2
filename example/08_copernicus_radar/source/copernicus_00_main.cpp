@@ -26,6 +26,7 @@ int main() {
   std::unordered_map<int, int> map_cal;
   auto cal_count = 0;
   init_sub_commutated_data_decoder();
+  remove("./o_anxillary.csv");
   for (auto &e : state._header_data) {
     auto offset = state._header_offset[packet_idx];
     auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
@@ -36,9 +37,12 @@ int main() {
         ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
     auto baq_mode = ((0x1F) & ((p[37]) >> (0)));
     auto test_mode = ((0x7) & ((p[21]) >> (4)));
+    auto space_packet_count =
+        ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) + (((0x10000) * (p[30]))) +
+         (((0x1000000) * (((0xFF) & (p[29]))))));
     auto sub_index = ((0xFF) & ((p[26]) >> (0)));
     auto sub_data = ((((0x1) * (p[28]))) + (((0x100) * (((0xFF) & (p[27]))))));
-    feed_sub_commutated_data_decoder(sub_data, sub_index);
+    feed_sub_commutated_data_decoder(sub_data, sub_index, space_packet_count);
     if (cal_p) {
       (cal_count)++;
       (map_cal[((ele) & (7))])++;

@@ -8,6 +8,7 @@
 extern State state;
 #include <cassert>
 #include <cstring>
+#include <fstream>
 
 void init_sub_commutated_data_decoder() {
   state._ancillary_data_index = 0;
@@ -15,7 +16,8 @@ void init_sub_commutated_data_decoder() {
     state._ancillary_data_valid.at(i) = false;
   }
 }
-bool feed_sub_commutated_data_decoder(uint16_t word, int idx) {
+bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
+                                      int space_packet_count) {
   state._ancillary_data_index = idx;
   state._ancillary_data.at(state._ancillary_data_index) = word;
   state._ancillary_data_valid.at(state._ancillary_data_index) = true;
@@ -89,205 +91,248 @@ bool feed_sub_commutated_data_decoder(uint16_t word, int idx) {
            reinterpret_cast<void *>(state._ancillary_data.data()),
            sizeof(state._ancillary_data));
     init_sub_commutated_data_decoder();
-    (std::cout)
-        << (std::setw(10))
-        << (((std::chrono::high_resolution_clock::now()
-                  .time_since_epoch()
-                  .count()) -
-             (state._start_time)))
-        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-        << (std::endl) << ("    x_axis_position=")
-        << (state._ancillary_decoded.x_axis_position) << (std::endl)
-        << ("    y_axis_position=")
-        << (state._ancillary_decoded.y_axis_position) << (std::endl)
-        << ("    z_axis_position=")
-        << (state._ancillary_decoded.z_axis_position) << (std::endl)
-        << ("    x_velocity=") << (state._ancillary_decoded.x_velocity)
-        << (std::endl) << ("    y_velocity=")
-        << (state._ancillary_decoded.y_velocity) << (std::endl)
-        << ("    z_velocity=") << (state._ancillary_decoded.z_velocity)
-        << (std::endl) << ("    pod_solution_data_stamp_0=")
-        << (state._ancillary_decoded.pod_solution_data_stamp_0) << (std::endl)
-        << ("    pod_solution_data_stamp_1=")
-        << (state._ancillary_decoded.pod_solution_data_stamp_1) << (std::endl)
-        << ("    pod_solution_data_stamp_2=")
-        << (state._ancillary_decoded.pod_solution_data_stamp_2) << (std::endl)
-        << ("    pod_solution_data_stamp_3=")
-        << (state._ancillary_decoded.pod_solution_data_stamp_3) << (std::endl)
-        << ("    quaternion_0=") << (state._ancillary_decoded.quaternion_0)
-        << (std::endl) << ("    quaternion_1=")
-        << (state._ancillary_decoded.quaternion_1) << (std::endl)
-        << ("    quaternion_2=") << (state._ancillary_decoded.quaternion_2)
-        << (std::endl) << ("    quaternion_3=")
-        << (state._ancillary_decoded.quaternion_3) << (std::endl)
-        << ("    angular_rate_x=") << (state._ancillary_decoded.angular_rate_x)
-        << (std::endl) << ("    angular_rate_y=")
-        << (state._ancillary_decoded.angular_rate_y) << (std::endl)
-        << ("    angular_rate_z=") << (state._ancillary_decoded.angular_rate_z)
-        << (std::endl) << ("    gps_data_timestamp_0=")
-        << (state._ancillary_decoded.gps_data_timestamp_0) << (std::endl)
-        << ("    gps_data_timestamp_1=")
-        << (state._ancillary_decoded.gps_data_timestamp_1) << (std::endl)
-        << ("    gps_data_timestamp_2=")
-        << (state._ancillary_decoded.gps_data_timestamp_2) << (std::endl)
-        << ("    gps_data_timestamp_3=")
-        << (state._ancillary_decoded.gps_data_timestamp_3) << (std::endl)
-        << ("    pointing_status=")
-        << (state._ancillary_decoded.pointing_status) << (std::endl)
-        << ("    temperature_update_status=")
-        << (state._ancillary_decoded.temperature_update_status) << (std::endl)
-        << ("    tile_1_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_1_efe_h_temperature))
-        << (std::endl) << ("    tile_1_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_1_efe_v_temperature))
-        << (std::endl) << ("    tile_1_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_1_active_ta_temperature))
-        << (std::endl) << ("    tile_2_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_2_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_2_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_2_efe_h_temperature))
-        << (std::endl) << ("    tile_2_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_2_efe_v_temperature))
-        << (std::endl) << ("    tile_2_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_2_active_ta_temperature))
-        << (std::endl) << ("    tile_3_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_3_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_3_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_3_efe_h_temperature))
-        << (std::endl) << ("    tile_3_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_3_efe_v_temperature))
-        << (std::endl) << ("    tile_3_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_3_active_ta_temperature))
-        << (std::endl) << ("    tile_4_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_4_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_4_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_4_efe_h_temperature))
-        << (std::endl) << ("    tile_4_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_4_efe_v_temperature))
-        << (std::endl) << ("    tile_4_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_4_active_ta_temperature))
-        << (std::endl) << ("    tile_5_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_5_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_5_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_5_efe_h_temperature))
-        << (std::endl) << ("    tile_5_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_5_efe_v_temperature))
-        << (std::endl) << ("    tile_5_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_5_active_ta_temperature))
-        << (std::endl) << ("    tile_6_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_6_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_6_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_6_efe_h_temperature))
-        << (std::endl) << ("    tile_6_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_6_efe_v_temperature))
-        << (std::endl) << ("    tile_6_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_6_active_ta_temperature))
-        << (std::endl) << ("    tile_7_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_7_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_7_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_7_efe_h_temperature))
-        << (std::endl) << ("    tile_7_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_7_efe_v_temperature))
-        << (std::endl) << ("    tile_7_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_7_active_ta_temperature))
-        << (std::endl) << ("    tile_8_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_8_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_8_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_8_efe_h_temperature))
-        << (std::endl) << ("    tile_8_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_8_efe_v_temperature))
-        << (std::endl) << ("    tile_8_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_8_active_ta_temperature))
-        << (std::endl) << ("    tile_9_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_9_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_9_efe_h_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_9_efe_h_temperature))
-        << (std::endl) << ("    tile_9_efe_v_temperature=")
-        << (static_cast<int>(state._ancillary_decoded.tile_9_efe_v_temperature))
-        << (std::endl) << ("    tile_9_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_9_active_ta_temperature))
-        << (std::endl) << ("    tile_10_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_10_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_10_efe_h_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_10_efe_h_temperature))
-        << (std::endl) << ("    tile_10_efe_v_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_10_efe_v_temperature))
-        << (std::endl) << ("    tile_10_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_10_active_ta_temperature))
-        << (std::endl) << ("    tile_11_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_11_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_11_efe_h_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_11_efe_h_temperature))
-        << (std::endl) << ("    tile_11_efe_v_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_11_efe_v_temperature))
-        << (std::endl) << ("    tile_11_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_11_active_ta_temperature))
-        << (std::endl) << ("    tile_12_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_12_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_12_efe_h_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_12_efe_h_temperature))
-        << (std::endl) << ("    tile_12_efe_v_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_12_efe_v_temperature))
-        << (std::endl) << ("    tile_12_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_12_active_ta_temperature))
-        << (std::endl) << ("    tile_13_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_13_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_13_efe_h_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_13_efe_h_temperature))
-        << (std::endl) << ("    tile_13_efe_v_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_13_efe_v_temperature))
-        << (std::endl) << ("    tile_13_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_13_active_ta_temperature))
-        << (std::endl) << ("    tile_14_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_14_efe_h_ta_temperature))
-        << (std::endl) << ("    tile_14_efe_h_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_14_efe_h_temperature))
-        << (std::endl) << ("    tile_14_efe_v_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_14_efe_v_temperature))
-        << (std::endl) << ("    tile_14_active_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_14_active_ta_temperature))
-        << (std::endl) << ("    tile_15_efe_h_ta_temperature=")
-        << (static_cast<int>(
-               state._ancillary_decoded.tile_15_efe_h_ta_temperature))
-        << (std::endl) << ("    tgu_temperature=")
-        << (state._ancillary_decoded.tgu_temperature) << (std::endl);
+    auto x_axis_position = state._ancillary_decoded.x_axis_position;
+    auto y_axis_position = state._ancillary_decoded.y_axis_position;
+    auto z_axis_position = state._ancillary_decoded.z_axis_position;
+    auto x_velocity = state._ancillary_decoded.x_velocity;
+    auto y_velocity = state._ancillary_decoded.y_velocity;
+    auto z_velocity = state._ancillary_decoded.z_velocity;
+    auto pod_solution_data_stamp_0 =
+        state._ancillary_decoded.pod_solution_data_stamp_0;
+    auto pod_solution_data_stamp_1 =
+        state._ancillary_decoded.pod_solution_data_stamp_1;
+    auto pod_solution_data_stamp_2 =
+        state._ancillary_decoded.pod_solution_data_stamp_2;
+    auto pod_solution_data_stamp_3 =
+        state._ancillary_decoded.pod_solution_data_stamp_3;
+    auto quaternion_0 = state._ancillary_decoded.quaternion_0;
+    auto quaternion_1 = state._ancillary_decoded.quaternion_1;
+    auto quaternion_2 = state._ancillary_decoded.quaternion_2;
+    auto quaternion_3 = state._ancillary_decoded.quaternion_3;
+    auto angular_rate_x = state._ancillary_decoded.angular_rate_x;
+    auto angular_rate_y = state._ancillary_decoded.angular_rate_y;
+    auto angular_rate_z = state._ancillary_decoded.angular_rate_z;
+    auto gps_data_timestamp_0 = state._ancillary_decoded.gps_data_timestamp_0;
+    auto gps_data_timestamp_1 = state._ancillary_decoded.gps_data_timestamp_1;
+    auto gps_data_timestamp_2 = state._ancillary_decoded.gps_data_timestamp_2;
+    auto gps_data_timestamp_3 = state._ancillary_decoded.gps_data_timestamp_3;
+    auto pointing_status = state._ancillary_decoded.pointing_status;
+    auto temperature_update_status =
+        state._ancillary_decoded.temperature_update_status;
+    auto tile_1_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_1_efe_h_temperature);
+    auto tile_1_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_1_efe_v_temperature);
+    auto tile_1_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_1_active_ta_temperature);
+    auto tile_2_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_2_efe_h_ta_temperature);
+    auto tile_2_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_2_efe_h_temperature);
+    auto tile_2_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_2_efe_v_temperature);
+    auto tile_2_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_2_active_ta_temperature);
+    auto tile_3_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_3_efe_h_ta_temperature);
+    auto tile_3_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_3_efe_h_temperature);
+    auto tile_3_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_3_efe_v_temperature);
+    auto tile_3_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_3_active_ta_temperature);
+    auto tile_4_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_4_efe_h_ta_temperature);
+    auto tile_4_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_4_efe_h_temperature);
+    auto tile_4_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_4_efe_v_temperature);
+    auto tile_4_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_4_active_ta_temperature);
+    auto tile_5_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_5_efe_h_ta_temperature);
+    auto tile_5_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_5_efe_h_temperature);
+    auto tile_5_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_5_efe_v_temperature);
+    auto tile_5_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_5_active_ta_temperature);
+    auto tile_6_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_6_efe_h_ta_temperature);
+    auto tile_6_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_6_efe_h_temperature);
+    auto tile_6_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_6_efe_v_temperature);
+    auto tile_6_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_6_active_ta_temperature);
+    auto tile_7_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_7_efe_h_ta_temperature);
+    auto tile_7_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_7_efe_h_temperature);
+    auto tile_7_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_7_efe_v_temperature);
+    auto tile_7_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_7_active_ta_temperature);
+    auto tile_8_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_8_efe_h_ta_temperature);
+    auto tile_8_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_8_efe_h_temperature);
+    auto tile_8_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_8_efe_v_temperature);
+    auto tile_8_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_8_active_ta_temperature);
+    auto tile_9_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_9_efe_h_ta_temperature);
+    auto tile_9_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_9_efe_h_temperature);
+    auto tile_9_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_9_efe_v_temperature);
+    auto tile_9_active_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_9_active_ta_temperature);
+    auto tile_10_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_10_efe_h_ta_temperature);
+    auto tile_10_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_10_efe_h_temperature);
+    auto tile_10_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_10_efe_v_temperature);
+    auto tile_10_active_ta_temperature = static_cast<int>(
+        state._ancillary_decoded.tile_10_active_ta_temperature);
+    auto tile_11_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_11_efe_h_ta_temperature);
+    auto tile_11_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_11_efe_h_temperature);
+    auto tile_11_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_11_efe_v_temperature);
+    auto tile_11_active_ta_temperature = static_cast<int>(
+        state._ancillary_decoded.tile_11_active_ta_temperature);
+    auto tile_12_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_12_efe_h_ta_temperature);
+    auto tile_12_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_12_efe_h_temperature);
+    auto tile_12_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_12_efe_v_temperature);
+    auto tile_12_active_ta_temperature = static_cast<int>(
+        state._ancillary_decoded.tile_12_active_ta_temperature);
+    auto tile_13_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_13_efe_h_ta_temperature);
+    auto tile_13_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_13_efe_h_temperature);
+    auto tile_13_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_13_efe_v_temperature);
+    auto tile_13_active_ta_temperature = static_cast<int>(
+        state._ancillary_decoded.tile_13_active_ta_temperature);
+    auto tile_14_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_14_efe_h_ta_temperature);
+    auto tile_14_efe_h_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_14_efe_h_temperature);
+    auto tile_14_efe_v_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_14_efe_v_temperature);
+    auto tile_14_active_ta_temperature = static_cast<int>(
+        state._ancillary_decoded.tile_14_active_ta_temperature);
+    auto tile_15_efe_h_ta_temperature =
+        static_cast<int>(state._ancillary_decoded.tile_15_efe_h_ta_temperature);
+    auto tgu_temperature = state._ancillary_decoded.tgu_temperature;
+    {
+      std::ofstream outfile;
+      outfile.open("./o_anxillary.csv",
+                   ((std::ios_base::out) | (std::ios_base::app)));
+      if ((0) == (outfile.tellp())) {
+        (outfile)
+            << ("space_packet_count,x_axis_position,y_axis_position,z_axis_"
+                "position,x_velocity,y_velocity,z_velocity,pod_solution_data_"
+                "stamp_0,pod_solution_data_stamp_1,pod_solution_data_stamp_2,"
+                "pod_solution_data_stamp_3,quaternion_0,quaternion_1,"
+                "quaternion_2,quaternion_3,angular_rate_x,angular_rate_y,"
+                "angular_rate_z,gps_data_timestamp_0,gps_data_timestamp_1,gps_"
+                "data_timestamp_2,gps_data_timestamp_3,pointing_status,"
+                "temperature_update_status,tile_1_efe_h_temperature,tile_1_efe_"
+                "v_temperature,tile_1_active_ta_temperature,tile_2_efe_h_ta_"
+                "temperature,tile_2_efe_h_temperature,tile_2_efe_v_temperature,"
+                "tile_2_active_ta_temperature,tile_3_efe_h_ta_temperature,tile_"
+                "3_efe_h_temperature,tile_3_efe_v_temperature,tile_3_active_ta_"
+                "temperature,tile_4_efe_h_ta_temperature,tile_4_efe_h_"
+                "temperature,tile_4_efe_v_temperature,tile_4_active_ta_"
+                "temperature,tile_5_efe_h_ta_temperature,tile_5_efe_h_"
+                "temperature,tile_5_efe_v_temperature,tile_5_active_ta_"
+                "temperature,tile_6_efe_h_ta_temperature,tile_6_efe_h_"
+                "temperature,tile_6_efe_v_temperature,tile_6_active_ta_"
+                "temperature,tile_7_efe_h_ta_temperature,tile_7_efe_h_"
+                "temperature,tile_7_efe_v_temperature,tile_7_active_ta_"
+                "temperature,tile_8_efe_h_ta_temperature,tile_8_efe_h_"
+                "temperature,tile_8_efe_v_temperature,tile_8_active_ta_"
+                "temperature,tile_9_efe_h_ta_temperature,tile_9_efe_h_"
+                "temperature,tile_9_efe_v_temperature,tile_9_active_ta_"
+                "temperature,tile_10_efe_h_ta_temperature,tile_10_efe_h_"
+                "temperature,tile_10_efe_v_temperature,tile_10_active_ta_"
+                "temperature,tile_11_efe_h_ta_temperature,tile_11_efe_h_"
+                "temperature,tile_11_efe_v_temperature,tile_11_active_ta_"
+                "temperature,tile_12_efe_h_ta_temperature,tile_12_efe_h_"
+                "temperature,tile_12_efe_v_temperature,tile_12_active_ta_"
+                "temperature,tile_13_efe_h_ta_temperature,tile_13_efe_h_"
+                "temperature,tile_13_efe_v_temperature,tile_13_active_ta_"
+                "temperature,tile_14_efe_h_ta_temperature,tile_14_efe_h_"
+                "temperature,tile_14_efe_v_temperature,tile_14_active_ta_"
+                "temperature,tile_15_efe_h_ta_temperature,tgu_temperature")
+            << (std::endl);
+      };
+      (outfile)
+          << (space_packet_count) << (",") << (x_axis_position) << (",")
+          << (y_axis_position) << (",") << (z_axis_position) << (",")
+          << (x_velocity) << (",") << (y_velocity) << (",") << (z_velocity)
+          << (",") << (pod_solution_data_stamp_0) << (",")
+          << (pod_solution_data_stamp_1) << (",") << (pod_solution_data_stamp_2)
+          << (",") << (pod_solution_data_stamp_3) << (",") << (quaternion_0)
+          << (",") << (quaternion_1) << (",") << (quaternion_2) << (",")
+          << (quaternion_3) << (",") << (angular_rate_x) << (",")
+          << (angular_rate_y) << (",") << (angular_rate_z) << (",")
+          << (gps_data_timestamp_0) << (",") << (gps_data_timestamp_1) << (",")
+          << (gps_data_timestamp_2) << (",") << (gps_data_timestamp_3) << (",")
+          << (pointing_status) << (",") << (temperature_update_status) << (",")
+          << (tile_1_efe_h_temperature) << (",") << (tile_1_efe_v_temperature)
+          << (",") << (tile_1_active_ta_temperature) << (",")
+          << (tile_2_efe_h_ta_temperature) << (",")
+          << (tile_2_efe_h_temperature) << (",") << (tile_2_efe_v_temperature)
+          << (",") << (tile_2_active_ta_temperature) << (",")
+          << (tile_3_efe_h_ta_temperature) << (",")
+          << (tile_3_efe_h_temperature) << (",") << (tile_3_efe_v_temperature)
+          << (",") << (tile_3_active_ta_temperature) << (",")
+          << (tile_4_efe_h_ta_temperature) << (",")
+          << (tile_4_efe_h_temperature) << (",") << (tile_4_efe_v_temperature)
+          << (",") << (tile_4_active_ta_temperature) << (",")
+          << (tile_5_efe_h_ta_temperature) << (",")
+          << (tile_5_efe_h_temperature) << (",") << (tile_5_efe_v_temperature)
+          << (",") << (tile_5_active_ta_temperature) << (",")
+          << (tile_6_efe_h_ta_temperature) << (",")
+          << (tile_6_efe_h_temperature) << (",") << (tile_6_efe_v_temperature)
+          << (",") << (tile_6_active_ta_temperature) << (",")
+          << (tile_7_efe_h_ta_temperature) << (",")
+          << (tile_7_efe_h_temperature) << (",") << (tile_7_efe_v_temperature)
+          << (",") << (tile_7_active_ta_temperature) << (",")
+          << (tile_8_efe_h_ta_temperature) << (",")
+          << (tile_8_efe_h_temperature) << (",") << (tile_8_efe_v_temperature)
+          << (",") << (tile_8_active_ta_temperature) << (",")
+          << (tile_9_efe_h_ta_temperature) << (",")
+          << (tile_9_efe_h_temperature) << (",") << (tile_9_efe_v_temperature)
+          << (",") << (tile_9_active_ta_temperature) << (",")
+          << (tile_10_efe_h_ta_temperature) << (",")
+          << (tile_10_efe_h_temperature) << (",") << (tile_10_efe_v_temperature)
+          << (",") << (tile_10_active_ta_temperature) << (",")
+          << (tile_11_efe_h_ta_temperature) << (",")
+          << (tile_11_efe_h_temperature) << (",") << (tile_11_efe_v_temperature)
+          << (",") << (tile_11_active_ta_temperature) << (",")
+          << (tile_12_efe_h_ta_temperature) << (",")
+          << (tile_12_efe_h_temperature) << (",") << (tile_12_efe_v_temperature)
+          << (",") << (tile_12_active_ta_temperature) << (",")
+          << (tile_13_efe_h_ta_temperature) << (",")
+          << (tile_13_efe_h_temperature) << (",") << (tile_13_efe_v_temperature)
+          << (",") << (tile_13_active_ta_temperature) << (",")
+          << (tile_14_efe_h_ta_temperature) << (",")
+          << (tile_14_efe_h_temperature) << (",") << (tile_14_efe_v_temperature)
+          << (",") << (tile_14_active_ta_temperature) << (",")
+          << (tile_15_efe_h_ta_temperature) << (",") << (tgu_temperature)
+          << (std::endl);
+      outfile.close();
+    };
     return true;
   } else {
     return false;

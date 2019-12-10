@@ -363,7 +363,8 @@
 		       (map_cal)
 		       (cal_count 0))
 		   (declare (type "std::unordered_map<int,int>" map_ele map_cal))
-		   (init_sub_commutated_data_decoder) 
+		   (init_sub_commutated_data_decoder)
+		   (remove (string  "./o_anxillary.csv"))
 		   (foreach (e ,(g `_header_data))
 			    (let ((offset (aref ,(g `_header_offset) packet_idx))
 				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
@@ -373,11 +374,12 @@
 				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
 				  (baq_mode ,(space-packet-slot-get 'baq-mode 'p))
 				  (test_mode ,(space-packet-slot-get 'test-mode 'p))
+				  (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				  (sub_index ,(space-packet-slot-get 'sub-commutated-index 'p))
 				  (sub_data ,(space-packet-slot-get 'sub-commutated-data 'p)))
 			      
 
-			      (feed_sub_commutated_data_decoder sub_data sub_index)
+			      (feed_sub_commutated_data_decoder sub_data sub_index space_packet_count)
 			      (if cal_p
 				  (do0
 				   (incf cal_count)
@@ -1389,7 +1391,8 @@
 	   (_ancillary_data_index :direction 'out :type int))
 	  (do0
 	   (include <cstring>
-		    <cassert>)
+		    <cassert>
+		    <fstream>)
 	   ,(emit-utils :code
 			`(do0
 			  (defstruct0 ancillary_data_t
@@ -1401,9 +1404,9 @@
 	       (setf (dot ,(g `_ancillary_data_valid)
 			  (at i))
 		     false)))
-	   (defun feed_sub_commutated_data_decoder (word idx)
+	   (defun feed_sub_commutated_data_decoder (word idx space_packet_count) 
 	     (declare (type uint16_t word)
-		      (type int idx)
+		      (type int idx space_packet_count)
 		      (values bool)) ;; data full
 	     #+nil ,(logprint "add" `(word idx))
 	     (setf  ,(g `_ancillary_data_index) idx
@@ -1429,7 +1432,20 @@
 			  (sizeof ,(g `_ancillary_data)))
 		  (init_sub_commutated_data_decoder)
 
-
+		  (let (,@(loop for x in l collect
+			       (destructuring-bind (name type) x
+				 `(,name
+				   ,(case type
+				     (uint8_t `(static_cast<int> (dot ,(g `_ancillary_decoded)
+								      ,name)))
+				     (t `(dot ,(g `_ancillary_decoded)
+					      ,name)))))))
+		   ,(csvprint "./o_anxillary.csv"
+			      `(space_packet_count
+				,@(loop for x in l collect
+				       (destructuring-bind (name type) x
+					 name)))))
+		  #+nil
 		  (<< "std::cout"
 		      ("std::setw" 10)
 		      (- (dot ("std::chrono::high_resolution_clock::now")
