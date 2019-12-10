@@ -125,10 +125,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   
-				    (tuple 16516
-					   24695)
-				    ))
+				   (tuple 16516
+					   24695)))
 
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))
@@ -326,41 +324,30 @@
 			(setf win (np.fft.fftshift (scipy.signal.tukey (aref tx_cal_0.shape 1) :alpha .1)))
 			(setf (aref reps count ":") (np.fft.ifft (* win (/ top bot)))))
 		       (do0
-			
 			(setf xs (np.fft.fftfreq (len top)))
 			(do0
-			 
 			 (ax0.plot xs (np.abs top) :label (string "top"))
 			 (ax0.grid)
 			 (ax0.legend))
 			(do0
-			 
 			 (ax1.plot xs (np.abs bot) :label (string "bot"))
 			 (ax1.legend)
 			 (ax1.grid))
-		  
 			(do0
-			 
-			 
 			 (ax2.plot xs win :label (string "tukey"))
-		   
 			 (ax2.legend)
 			 (ax2.grid))
 			(do0
-			 
 			 (ax3.plot xs (np.abs (/ top bot)) :label (string "top/bot"))
 			 (ax3.plot xs (* win (np.abs (/ top bot))) :label (string "top/bot*win"))
 			 (ax3.legend)
 			 (ax3.grid))
 			(do0
-			 
 			 (ax4.plot (np.real (np.fft.ifft (/ top bot))) :label (string "ifft top/bot"))
 			 (ax4.plot (np.real (np.fft.ifft (* win (/ top bot)))) :label (string "ifft top/bot*win"))
 			 (ax4.legend)
-			 
 			 (ax4.grid))))))
-
-
+		
 		(do0
 		 "# page 38, (4-36) compress replicas using the first extracted replica"
 		 (setf repsc (np.zeros (tuple

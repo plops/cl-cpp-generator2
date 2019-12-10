@@ -776,8 +776,7 @@
 					;(user_data_position size_t)
 			      (current_bit_count size_t)
 					;(current_byte size_t)
-			    (data uint8_t*)
-			    )))
+			    (data uint8_t*))))
 	   #+nil (defun reverse_bit (b)
 		   (declare (type uint8_t b)
 			    (values uint8_t))
@@ -1365,7 +1364,19 @@
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
 		  (return n)))))))))
-       
+  (define-module
+       `(decode_sub_commutated_data
+	 ((_ancillary_data :direction 'out :type "std::array<uint16_t,64>")
+	  (_ancillary_data_index :direction 'out :type int))
+	 (do0
+	  (defun init_sub_commutated_data_decoder ()
+	    (setf ,(g `_ancillary_data_index) 0))
+	  (defun feed_sub_commutated_data_decoder (word)
+	    (declare (type uint16_t word))
+	    (setf (dot ,(g `_ancillary_data)
+		       (at ,(g `_ancillary_data_index)))
+		  word)
+	    (incf ,(g `_ancillary_data_index))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
