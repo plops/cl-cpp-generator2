@@ -259,24 +259,22 @@ int main() {
             outfile.open("./o_cal_range.csv",
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
-              (outfile)
-                  << ("cal_iter,packet_idx,offset,azi,baqmod,baq_n,tstmod,"
-                      "swath,cal_p,cal_type,cal_mode,number_of_quads,space_"
-                      "packet_count,signal_type,pri_count,rank,data_delay,"
-                      "txprr,txpsf,txpl,txprr_,txpl_,pol,rx")
-                  << (std::endl);
+              (outfile) << ("azi,baq_n,baqmod,cal_iter,cal_mode,cal_p,cal_type,"
+                            "data_delay,number_of_quads,offset,packet_idx,pol,"
+                            "pri_count,rank,rx,signal_type,space_packet_count,"
+                            "swath,tstmod,txpl,txpl_,txprr,txprr_,txpsf")
+                        << (std::endl);
             };
-            (outfile) << (cal_iter) << (",") << (packet_idx) << (",")
-                      << (offset) << (",") << (azi) << (",") << (baqmod)
-                      << (",") << (baq_n) << (",") << (tstmod) << (",")
-                      << (swath) << (",") << (cal_p) << (",") << (cal_type)
-                      << (",") << (cal_mode) << (",") << (number_of_quads)
-                      << (",") << (space_packet_count) << (",") << (signal_type)
-                      << (",") << (pri_count) << (",") << (rank) << (",")
-                      << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                      << (",") << (txpl) << (",") << (txprr_) << (",")
-                      << (txpl_) << (",") << (pol) << (",") << (rx)
-                      << (std::endl);
+            (outfile) << (azi) << (",") << (baq_n) << (",") << (baqmod) << (",")
+                      << (cal_iter) << (",") << (cal_mode) << (",") << (cal_p)
+                      << (",") << (cal_type) << (",") << (data_delay) << (",")
+                      << (number_of_quads) << (",") << (offset) << (",")
+                      << (packet_idx) << (",") << (pol) << (",") << (pri_count)
+                      << (",") << (rank) << (",") << (rx) << (",")
+                      << (signal_type) << (",") << (space_packet_count) << (",")
+                      << (swath) << (",") << (tstmod) << (",") << (txpl)
+                      << (",") << (txpl_) << (",") << (txprr) << (",")
+                      << (txprr_) << (",") << (txpsf) << (std::endl);
             outfile.close();
           };
           (cal_iter)++;
@@ -306,16 +304,23 @@ int main() {
                            ((std::ios_base::out) | (std::ios_base::app)));
               if ((0) == (outfile.tellp())) {
                 (outfile)
-                    << ("ele_count,ele,number_of_quads,space_packet_count,pri_"
-                        "count,rank,data_delay,txprr,txpsf,txpl,txprr_,txpl_")
+                    << ("azi,baq_n,baqmod,cal_iter,cal_mode,cal_p,data_delay,"
+                        "ele,ele_count,number_of_quads,offset,packet_idx,pol,"
+                        "pri_count,rank,rx,signal_type,space_packet_count,"
+                        "swath,tstmod,txpl,txpl_,txprr,txprr_,txpsf")
                     << (std::endl);
               };
-              (outfile) << (ele_count) << (",") << (ele) << (",")
-                        << (number_of_quads) << (",") << (space_packet_count)
-                        << (",") << (pri_count) << (",") << (rank) << (",")
-                        << (data_delay) << (",") << (txprr) << (",") << (txpsf)
-                        << (",") << (txpl) << (",") << (txprr_) << (",")
-                        << (txpl_) << (std::endl);
+              (outfile) << (azi) << (",") << (baq_n) << (",") << (baqmod)
+                        << (",") << (cal_iter) << (",") << (cal_mode) << (",")
+                        << (cal_p) << (",") << (data_delay) << (",") << (ele)
+                        << (",") << (ele_count) << (",") << (number_of_quads)
+                        << (",") << (offset) << (",") << (packet_idx) << (",")
+                        << (pol) << (",") << (pri_count) << (",") << (rank)
+                        << (",") << (rx) << (",") << (signal_type) << (",")
+                        << (space_packet_count) << (",") << (swath) << (",")
+                        << (tstmod) << (",") << (txpl) << (",") << (txpl_)
+                        << (",") << (txprr) << (",") << (txprr_) << (",")
+                        << (txpsf) << (std::endl);
               outfile.close();
             };
             (ele_count)++;

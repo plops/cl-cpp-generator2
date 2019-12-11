@@ -521,30 +521,33 @@
 						(do0
 						 (init_decode_packet_type_a_or_b packet_idx (+ cal_image (* cal_n0 cal_iter)))
 						 ,(csvprint "./o_cal_range.csv"
-							    `(cal_iter
-							      packet_idx
-							      offset
+							    `(
 							      azi
-							      baqmod
 							      baq_n
-							      tstmod
-							      swath
+							      baqmod
+							      cal_iter
+							      cal_mode
 							      cal_p
-							       cal_type
-							       cal_mode
-							       number_of_quads
-							       space_packet_count
-							       signal_type
-							       pri_count
-							       rank
-							       data_delay
-							       txprr
-							       txpsf
-							       txpl
-							       txprr_
-							       txpl_
-							       pol
-							       rx))
+							      cal_type
+							      data_delay
+							      number_of_quads
+							      offset
+							      packet_idx
+							      pol
+							      pri_count
+							      rank
+							      rx
+							      signal_type
+							      space_packet_count
+							      swath
+							      tstmod
+							      txpl
+							      txpl_
+							      txprr
+							      txprr_
+							      txpsf
+
+							      ))
 						 (incf cal_iter))
 					      (when (== ele ma_ele)
 						(let ( ;(output)
@@ -558,18 +561,34 @@
 							     ,(logprint "unexpected number of quads" `(n number_of_quads)))
 					;,(logprint "tx" `(txprr txpsf txpl))
 						  ,(csvprint "./o_range.csv"
-							     `(ele_count
+							     `(
+							       azi
+							       baq_n
+							       baqmod
+							       cal_iter
+							       cal_mode
+							       cal_p
+							       data_delay
 							       ele
+							       ele_count
 							       number_of_quads
-							       space_packet_count
+							       offset
+							       packet_idx
+							       pol
 							       pri_count
 							       rank
-							       data_delay
-							       txprr
-							       txpsf
+							       rx
+							       signal_type
+							       space_packet_count
+							       swath
+							       tstmod
 							       txpl
+							       txpl_
+							       txprr
 							       txprr_
-							       txpl_))
+							       txpsf
+							       
+							       ))
 						  (do0
 						   #+nil (dotimes (i n)
 							   (setf (aref sar_image (+ i (* n0 ele_count)))
