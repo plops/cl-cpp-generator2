@@ -484,9 +484,12 @@
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (rank ,(space-packet-slot-get 'rank 'p))
 				      (rx ,(space-packet-slot-get 'rx-channel-id 'p))
+				      (rgdec ,(space-packet-slot-get 'range-decimation 'p))
 				      (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
 				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				      (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
+				      (swl ,(space-packet-slot-get 'sampling-window-length 'p))
+				      (swst ,(space-packet-slot-get 'sampling-window-start-time 'p))
 				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 				      (tstmod ,(space-packet-slot-get 'test-mode 'p))
 
@@ -536,10 +539,13 @@
 							      pol
 							      pri_count
 							      rank
+							      rgdec
 							      rx
 							      signal_type
 							      space_packet_count
 							      swath
+							      swl
+							      swst
 							      tstmod
 							      txpl
 							      txpl_
@@ -578,9 +584,12 @@
 							       pri_count
 							       rank
 							       rx
+							       rgdec
 							       signal_type
 							       space_packet_count
 							       swath
+							       swl
+							       swst
 							       tstmod
 							       txpl
 							       txpl_
