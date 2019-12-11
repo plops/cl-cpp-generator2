@@ -207,25 +207,32 @@ int main() {
     for (auto &e : state._header_data) {
       auto offset = state._header_offset[packet_idx];
       auto p = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+      auto azi = ((((0x1) * (p[61]))) + (((0x100) * (((0x3) & (p[60]))))));
+      auto baq_n = ((0xFF) & ((p[38]) >> (0)));
+      auto baqmod = ((0x1F) & ((p[37]) >> (0)));
+      auto cal_mode = ((0x3) & ((p[62]) >> (6)));
       auto cal_p = ((0x1) & ((p[59]) >> (7)));
+      auto ecc = ((0xFF) & ((p[20]) >> (0)));
       auto ele = ((0xF) & ((p[60]) >> (4)));
+      auto cal_type = ((ele) & (7));
+      auto err = ((0x1) & ((p[37]) >> (7)));
       auto number_of_quads =
           ((((0x1) * (p[66]))) + (((0x100) * (((0xFF) & (p[65]))))));
-      auto sync_marker =
-          ((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
-           (((0x10000) * (p[13]))) + (((0x1000000) * (((0xFF) & (p[12]))))));
-      auto space_packet_count =
-          ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
-           (((0x10000) * (p[30]))) + (((0x1000000) * (((0xFF) & (p[29]))))));
+      auto pol = ((0x7) & ((p[59]) >> (4)));
       auto pri_count =
           ((((0x1) * (p[36]))) + (((0x100) * (p[35]))) +
            (((0x10000) * (p[34]))) + (((0x1000000) * (((0xFF) & (p[33]))))));
       auto rank = ((0x1F) & ((p[49]) >> (0)));
-      auto cal_type = ((ele) & (7));
-      auto pol = ((0x7) & ((p[59]) >> (4)));
       auto rx = ((0xF) & ((p[21]) >> (0)));
       auto signal_type = ((0xF) & ((p[63]) >> (4)));
-      auto cal_mode = ((0x3) & ((p[62]) >> (6)));
+      auto space_packet_count =
+          ((((0x1) * (p[32]))) + (((0x100) * (p[31]))) +
+           (((0x10000) * (p[30]))) + (((0x1000000) * (((0xFF) & (p[29]))))));
+      auto swath = ((0xFF) & ((p[64]) >> (0)));
+      auto sync_marker =
+          ((((0x1) * (p[15]))) + (((0x100) * (p[14]))) +
+           (((0x10000) * (p[13]))) + (((0x1000000) * (((0xFF) & (p[12]))))));
+      auto tstmod = ((0x7) & ((p[21]) >> (4)));
       auto data_delay = ((40) + (((((0x1) * (p[55]))) + (((0x100) * (p[54]))) +
                                   (((0x10000) * (((0xFF) & (p[53]))))))));
       auto txprr_p = ((0x1) & ((p[42]) >> (7)));
@@ -253,19 +260,23 @@ int main() {
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
               (outfile)
-                  << ("cal_iter,packet_idx,offset,cal_type,cal_mode,number_of_"
-                      "quads,space_packet_count,signal_type,pri_count,rank,"
-                      "data_delay,txprr,txpsf,txpl,txprr_,txpl_,pol,rx")
+                  << ("cal_iter,packet_idx,offset,azi,baqmod,baq_n,tstmod,"
+                      "swath,cal_p,cal_type,cal_mode,number_of_quads,space_"
+                      "packet_count,signal_type,pri_count,rank,data_delay,"
+                      "txprr,txpsf,txpl,txprr_,txpl_,pol,rx")
                   << (std::endl);
             };
             (outfile) << (cal_iter) << (",") << (packet_idx) << (",")
-                      << (offset) << (",") << (cal_type) << (",") << (cal_mode)
-                      << (",") << (number_of_quads) << (",")
-                      << (space_packet_count) << (",") << (signal_type) << (",")
-                      << (pri_count) << (",") << (rank) << (",") << (data_delay)
-                      << (",") << (txprr) << (",") << (txpsf) << (",") << (txpl)
-                      << (",") << (txprr_) << (",") << (txpl_) << (",") << (pol)
-                      << (",") << (rx) << (std::endl);
+                      << (offset) << (",") << (azi) << (",") << (baqmod)
+                      << (",") << (baq_n) << (",") << (tstmod) << (",")
+                      << (swath) << (",") << (cal_p) << (",") << (cal_type)
+                      << (",") << (cal_mode) << (",") << (number_of_quads)
+                      << (",") << (space_packet_count) << (",") << (signal_type)
+                      << (",") << (pri_count) << (",") << (rank) << (",")
+                      << (data_delay) << (",") << (txprr) << (",") << (txpsf)
+                      << (",") << (txpl) << (",") << (txprr_) << (",")
+                      << (txpl_) << (",") << (pol) << (",") << (rx)
+                      << (std::endl);
             outfile.close();
           };
           (cal_iter)++;

@@ -75,10 +75,27 @@
 		 rx_desc (list ,@(loop for e in `(rxv
 						  rxh) collect
 				      `(string ,e)))
+		 signal_type_desc (list ,@(loop for e in `(echo
+							   noise
+							   na2
+							   na3
+							   na4
+							   na5
+							   na6
+							   na7
+							   tx_cal
+							   rx_cal
+							   epdn_cal
+							   ta_cal
+							   apdn_cal
+							   na13
+							   na14
+							   txhiso_cal) collect
+				      `(string ,e)))
 		 dfc (pd.read_csv (string "./o_cal_range.csv"))
 		 (aref dfc (string "pcc")) (np.mod dfc.cal_iter 2)
 		 )
-		,@(loop for e in `(cal_type pol rx) collect
+		,@(loop for e in `(cal_type pol rx signal_type) collect
 		       (let ((name (format nil "~a_desc" e)))
 			`(do0
 			  (setf (aref dfc (string ,name))
@@ -126,7 +143,7 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 1000
+				   (tuple 10000
 					   29884)))
 
 		(setf u (dfc.cal_type_desc.unique)

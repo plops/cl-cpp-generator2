@@ -467,18 +467,31 @@
 		       (foreach (e ,(g `_header_data))
 				(let ((offset (aref ,(g `_header_offset) packet_idx))
 				      (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+
+				      
+				      (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+				      (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
+				      (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+				      (cal_mode ,(space-packet-slot-get 'ses-ssb-cal-mode 'p))
 				      (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
+				      (ecc ,(space-packet-slot-get 'ecc-number 'p))
 				      (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				      (cal_type (logand ele #x7))
+				      (err ,(space-packet-slot-get 'error-flag 'p))
 				      (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
-				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
-				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
+				      
+				      (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
 				      (pri_count ,(space-packet-slot-get 'pri-count 'p))
 				      (rank ,(space-packet-slot-get 'rank 'p))
-				      (cal_type (logand ele #x7))
-				      (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
 				      (rx ,(space-packet-slot-get 'rx-channel-id 'p))
 				      (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
-				      (cal_mode ,(space-packet-slot-get 'ses-ssb-cal-mode 'p))
+				      (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
+				      (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
+				      (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+				      (tstmod ,(space-packet-slot-get 'test-mode 'p))
+
+				  
+			   
 				      (data_delay (+ ,(/ 320 8)
 						     ,(space-packet-slot-get 'sampling-window-start-time 'p)))
 				      ,@(loop for (e f) in `((txprr_p tx-ramp-rate-polarity)
@@ -511,6 +524,12 @@
 							    `(cal_iter
 							      packet_idx
 							      offset
+							      azi
+							      baqmod
+							      baq_n
+							      tstmod
+							      swath
+							      cal_p
 							       cal_type
 							       cal_mode
 							       number_of_quads
@@ -701,7 +720,7 @@
 			   (rank ,(space-packet-slot-get 'rank 'p))
 			   (rank2 (static_cast<int> (aref p (+ 49))))
 			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
-			    (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
+			   (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
 			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
 			   (sync2 (+ ,@(loop for j below 4  collect
 					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
