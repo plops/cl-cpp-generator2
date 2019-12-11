@@ -23,70 +23,198 @@ bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
   state._ancillary_data_valid.at(state._ancillary_data_index) = true;
   if ((state._ancillary_data_index) ==
       (((state._ancillary_data.size()) - (1)))) {
-    assert(state._ancillary_data_valid.at(1));
-    assert(state._ancillary_data_valid.at(2));
-    assert(state._ancillary_data_valid.at(3));
-    assert(state._ancillary_data_valid.at(4));
-    assert(state._ancillary_data_valid.at(5));
-    assert(state._ancillary_data_valid.at(6));
-    assert(state._ancillary_data_valid.at(7));
-    assert(state._ancillary_data_valid.at(8));
-    assert(state._ancillary_data_valid.at(9));
-    assert(state._ancillary_data_valid.at(10));
-    assert(state._ancillary_data_valid.at(11));
-    assert(state._ancillary_data_valid.at(12));
-    assert(state._ancillary_data_valid.at(13));
-    assert(state._ancillary_data_valid.at(14));
-    assert(state._ancillary_data_valid.at(15));
-    assert(state._ancillary_data_valid.at(16));
-    assert(state._ancillary_data_valid.at(17));
-    assert(state._ancillary_data_valid.at(18));
-    assert(state._ancillary_data_valid.at(19));
-    assert(state._ancillary_data_valid.at(20));
-    assert(state._ancillary_data_valid.at(21));
-    assert(state._ancillary_data_valid.at(22));
-    assert(state._ancillary_data_valid.at(23));
-    assert(state._ancillary_data_valid.at(24));
-    assert(state._ancillary_data_valid.at(25));
-    assert(state._ancillary_data_valid.at(26));
-    assert(state._ancillary_data_valid.at(27));
-    assert(state._ancillary_data_valid.at(28));
-    assert(state._ancillary_data_valid.at(29));
-    assert(state._ancillary_data_valid.at(30));
-    assert(state._ancillary_data_valid.at(31));
-    assert(state._ancillary_data_valid.at(32));
-    assert(state._ancillary_data_valid.at(33));
-    assert(state._ancillary_data_valid.at(34));
-    assert(state._ancillary_data_valid.at(35));
-    assert(state._ancillary_data_valid.at(36));
-    assert(state._ancillary_data_valid.at(37));
-    assert(state._ancillary_data_valid.at(38));
-    assert(state._ancillary_data_valid.at(39));
-    assert(state._ancillary_data_valid.at(40));
-    assert(state._ancillary_data_valid.at(41));
-    assert(state._ancillary_data_valid.at(42));
-    assert(state._ancillary_data_valid.at(43));
-    assert(state._ancillary_data_valid.at(44));
-    assert(state._ancillary_data_valid.at(45));
-    assert(state._ancillary_data_valid.at(46));
-    assert(state._ancillary_data_valid.at(47));
-    assert(state._ancillary_data_valid.at(48));
-    assert(state._ancillary_data_valid.at(49));
-    assert(state._ancillary_data_valid.at(50));
-    assert(state._ancillary_data_valid.at(51));
-    assert(state._ancillary_data_valid.at(52));
-    assert(state._ancillary_data_valid.at(53));
-    assert(state._ancillary_data_valid.at(54));
-    assert(state._ancillary_data_valid.at(55));
-    assert(state._ancillary_data_valid.at(56));
-    assert(state._ancillary_data_valid.at(57));
-    assert(state._ancillary_data_valid.at(58));
-    assert(state._ancillary_data_valid.at(59));
-    assert(state._ancillary_data_valid.at(60));
-    assert(state._ancillary_data_valid.at(61));
-    assert(state._ancillary_data_valid.at(62));
-    assert(state._ancillary_data_valid.at(63));
-    assert(state._ancillary_data_valid.at(64));
+    if (!(state._ancillary_data_valid.at(1))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(2))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(3))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(4))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(5))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(6))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(7))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(8))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(9))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(10))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(11))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(12))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(13))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(14))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(15))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(16))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(17))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(18))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(19))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(20))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(21))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(22))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(23))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(24))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(25))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(26))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(27))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(28))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(29))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(30))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(31))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(32))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(33))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(34))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(35))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(36))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(37))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(38))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(39))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(40))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(41))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(42))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(43))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(44))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(45))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(46))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(47))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(48))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(49))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(50))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(51))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(52))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(53))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(54))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(55))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(56))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(57))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(58))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(59))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(60))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(61))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(62))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(63))) {
+      return false;
+    };
+    if (!(state._ancillary_data_valid.at(64))) {
+      return false;
+    };
     memcpy(reinterpret_cast<void *>(&(state._ancillary_decoded)),
            reinterpret_cast<void *>(state._ancillary_data.data()),
            sizeof(state._ancillary_data));
