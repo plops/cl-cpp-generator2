@@ -142,7 +142,7 @@
 			   kernel_size 8)
 		     ,@(loop for e in l collect
 			    `(do0
-			      ,@(loop for n below 2 collect
+			      ,@(loop for n below 1 collect
 				     (let ((name (format nil "~a_~a" e n)))
 				      `(do0
 					(setf sub (aref dfc (& (== dfc.cal_type_desc (string ,e))
