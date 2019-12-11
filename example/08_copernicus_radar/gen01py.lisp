@@ -95,16 +95,20 @@
 		 dfc (pd.read_csv (string "./o_cal_range.csv"))
 		 (aref dfc (string "pcc")) (np.mod dfc.cal_iter 2)
 		 )
-		,@(loop for e in `(cal_type pol rx signal_type) collect
-		       (let ((name (format nil "~a_desc" e)))
-			`(do0
-			  (setf (aref dfc (string ,name))
+		,@(loop for d in `(dfc df) collect
+		       `(do0
+			 ,@(loop for e in (case d
+					    (dfc `( pol rx signal_type cal_type))
+					    (df `( pol rx signal_type))) collect
+			    (let ((name (format nil "~a_desc" e)))
+			      `(do0
+				(setf (aref ,d (string ,name))
 				
-				("list" (map (lambda (x)
-					       (aref ,name x)
-					       )
-					     (dot dfc ,e))))
-			  (setf (dot dfc ,name) (dot dfc ,name (astype (string "category")))))))
+				      ("list" (map (lambda (x)
+						     (aref ,name x)
+						     )
+						   (dot ,d ,e))))
+				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)
