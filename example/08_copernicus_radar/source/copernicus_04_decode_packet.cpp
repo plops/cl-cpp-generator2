@@ -236,32 +236,32 @@ inline int decode_huffman_brc4(sequential_bit_t *s) {
   }
 }
 // table 5.2-1 simple reconstruction parameter values B
-const std::array<float, 4> table_b0 = {3, 3, (3.16e+0f), (3.53e+0f)};
-const std::array<float, 4> table_b1 = {4, 4, (4.08e+0f), (4.3699998e+0f)};
-const std::array<float, 6> table_b2 = {6,          6,         6,
-                                       (6.15e+0f), (6.5e+0f), (6.88e+0f)};
-const std::array<float, 7> table_b3 = {9,          9,         9,         9,
-                                       (9.36e+0f), (9.5e+0f), (1.01e+1f)};
-const std::array<float, 9> table_b4 = {
+const std::array<const float, 4> table_b0 = {3, 3, (3.16e+0f), (3.53e+0f)};
+const std::array<const float, 4> table_b1 = {4, 4, (4.08e+0f), (4.3699998e+0f)};
+const std::array<const float, 6> table_b2 = {6,          6,         6,
+                                             (6.15e+0f), (6.5e+0f), (6.88e+0f)};
+const std::array<const float, 7> table_b3 = {
+    9, 9, 9, 9, (9.36e+0f), (9.5e+0f), (1.01e+1f)};
+const std::array<const float, 9> table_b4 = {
     15, 15, 15, 15, 15, 15, (1.522e+1f), (1.55e+1f), (1.6049999e+1f)};
 // table 5.2-2 normalized reconstruction levels
-const std::array<float, 4> table_nrl0 = {(3.637e-1f), (1.0915001e+0f),
-                                         (1.8208e+0f), (2.6406e+0f)};
-const std::array<float, 5> table_nrl1 = {(3.042e-1f), (9.127e-1f), (1.5216e+0f),
-                                         (2.1313e+0f), (2.8426e+0f)};
-const std::array<float, 7> table_nrl2 = {
+const std::array<const float, 4> table_nrl0 = {(3.637e-1f), (1.0915001e+0f),
+                                               (1.8208e+0f), (2.6406e+0f)};
+const std::array<const float, 5> table_nrl1 = {
+    (3.042e-1f), (9.127e-1f), (1.5216e+0f), (2.1313e+0f), (2.8426e+0f)};
+const std::array<const float, 7> table_nrl2 = {
     (2.305e-1f),  (6.916e-1f),  (1.15279995e+0f), (1.6139999e+0f),
     (2.0754e+0f), (2.5369e+0f), (3.1191e+0f)};
-const std::array<float, 10> table_nrl3 = {
+const std::array<const float, 10> table_nrl3 = {
     (1.702e-1f),  (5.107e-1f),     (8.511e-1f),  (1.1916e+0f), (1.5321e+0f),
     (1.8726e+0f), (2.2130999e+0f), (2.5536e+0f), (2.8942e+0f), (3.3743998e+0f)};
-const std::array<float, 16> table_nrl4 = {
+const std::array<const float, 16> table_nrl4 = {
     (1.13e-1f),       (3.389e-1f),  (5.649e-1f),  (7.908e-1f),
     (1.01670004e+0f), (1.2428e+0f), (1.4687e+0f), (1.6947e+0f),
     (1.9206001e+0f),  (2.1466e+0f), (2.3725e+0f), (2.5985e+0f),
     (2.8244e+0f),     (3.0504e+0f), (3.2764e+0f), (3.6623e+0f)};
 // table 5.2-3 sigma factors
-const std::array<float, 256> table_sf = {
+extern const std::array<const float, 256> table_sf = {
     (0.0e+0f),        (6.3e-1f),        (1.25e+0f),       (1.88e+0f),
     (2.51e+0f),       (3.1300002e+0f),  (3.76e+0f),       (4.3899998e+0f),
     (5.0100005e+0f),  (5.64e+0f),       (6.27e+0f),       (6.89e+0f),

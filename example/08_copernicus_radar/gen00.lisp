@@ -951,7 +951,7 @@
 		and brc from 0 collect
 		  (let ((table (format nil "table_b~a" brc)))
 		    `(let ((,table (curly ,@l)))
-		       (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
+		       (declare (type ,(format nil "const std::array<const float,~a>" (length l)) ,table))))))
 
 	  (do0
 	   "// table 5.2-2 normalized reconstruction levels"
@@ -964,7 +964,7 @@
 		and brc from 0 collect
 		  (let ((table (format nil "table_nrl~a" brc)))
 		    `(let ((,table (curly ,@l)))
-		       (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
+		       (declare (type ,(format nil "const std::array<const float,~a>" (length l)) ,table))))))
 	  
 	  
 	  (do0
@@ -997,7 +997,7 @@
 		       239.70 240.95 242.21 243.46 244.71 245.97 247.22 248.47 249.73
 		       250.98 252.23 253.49 254.74 255.99 255.99)))
 	      `(let ((table_sf (curly ,@l)))
-		 (declare (type ,(format nil "const std::array<float,~a>" (length l)) table_sf)))))
+		 (declare (type ,(format nil "extern const std::array<const float,~a>" (length l)) table_sf)))))
 
 	  
 
@@ -1533,7 +1533,7 @@
 	;; i need tables for: A{3,4,5}[thidx], NRL{3,4,5}[mcode]
 	;; SF[thidx] (already in decode_packet module)
 
-	"extern const std::array<float, 256> table_sf;"
+	"extern const std::array<const float, 256> table_sf;"
 	
 	(do0
 	 "// table 5.2-1 simple reconstruction parameter values A"
@@ -1544,7 +1544,7 @@
 	      and a in '(3 4 5) collect
 		(let ((table (format nil "table_a~a" a)))
 		  `(let ((,table (curly ,@l)))
-		     (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
+		     (declare (type ,(format nil "const std::array<const float,~a>" (length l)) ,table))))))
 
 	(do0
 	 "// table 5.2-2 normalized reconstruction levels"
@@ -1555,7 +1555,7 @@
 	      and a in '(3 4 5) collect
 		(let ((table (format nil "table_nrla~a" a)))
 		  `(let ((,table (curly ,@l)))
-		     (declare (type ,(format nil "const std::array<float,~a>" (length l)) ,table))))))
+		     (declare (type ,(format nil "const std::array<const float,~a>" (length l)) ,table))))))
 
 	,@(loop for a in '(3 4 5) collect
 	       `(defun ,(format nil "get_baq~a_code" a) (s)
