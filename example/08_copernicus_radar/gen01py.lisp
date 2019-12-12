@@ -113,7 +113,7 @@
 						   (dot ,d ,e))))
 				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
 
-		(do0 "# %% sample rate computation using 3.2.5.4, tab5.1-1, txpl and swl description"
+		(do0 "# %% sample rate computation using 3.2.5.4, tab5.1-1, tab5.1-2, txpl and swl description"
 		     (setf decimation_filter_bandwidth
 		       (list 100 87.71 -1 74.25 59.44
 			     50.62 44.89 22.2 56.59 42.86
@@ -121,7 +121,9 @@
 		     (setf decimation_filter_L (list 3 2 -1 5 4 3 1 1 3 5 3 4))
 		     (setf decimation_filter_M (list 4 3 -1 9 9 8 3 6 7 16 26 11))
 		     (setf decimation_filter_length_NF
-			   (list 28 28 -1 32 40 48 52 92 36 68 120 44))
+			   (list 28 28 -1 32 40 48 52  92 36 68 120 44))
+		     (setf decimation_filter_output_offset
+			   (list 87 87 -1 88 90 92 93 103 89 97 110 91))
 		     (setf decimation_filter_swath_desc
 			   (list
 			    ,@(loop for e in `(full_bandwidth
@@ -145,6 +147,7 @@
 					    decimation_filter_L
 					    decimation_filter_M
 					    decimation_filter_length_NF
+					    decimation_filter_output_offset
 					    decimation_filter_swath_desc)
 			      collect
 				(let ((name (format nil "~a" e)))
@@ -164,7 +167,10 @@
 			       (dot (np.ceil 
 				     (* (dot ,d fdec)
 					(dot ,d txpl)))
-				    (astype np.int)))))
+				    (astype np.int)))
+			 (setf (aref ,d (string "decimation_filter_B"))
+			       (- (* 2 (dot ,d swl))
+				  (+ (dot ,d decimation_filter_output_offset) 17)))))
 		
 		#+nil (setf fref 37.53472224
 		      
