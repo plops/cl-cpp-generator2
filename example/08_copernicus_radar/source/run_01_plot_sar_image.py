@@ -11,11 +11,13 @@ import pandas as pd
 import scipy.signal
 import numpy.polynomial
 import xml.etree.ElementTree as et
+# %% echo packet information
 df=pd.read_csv("./o_range.csv")
 cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_iso_cal"]
 pol_desc=["txh", "txh_rxh", "txh_rxv", "txh_rxvh", "txv", "txv_rxh", "txv_rxv", "txv_rxvh"]
 rx_desc=["rxv", "rxh"]
 signal_type_desc=["echo", "noise", "na2", "na3", "na4", "na5", "na6", "na7", "tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na13", "na14", "txhiso_cal"]
+# %% calibration packet information
 dfc=pd.read_csv("./o_cal_range.csv")
 dfc["pcc"]=np.mod(dfc.cal_iter, 2)
 dfc["pol_desc"]=list(map(lambda x: pol_desc[x], dfc.pol))
@@ -49,7 +51,9 @@ df["decimation_filter_length_NF"]=list(map(lambda x: decimation_filter_length_NF
 df["decimation_filter_swath_desc"]=list(map(lambda x: decimation_filter_swath_desc[x], df.rgdec))
 fref=(3.7534721374511715e+1)
 dfc["fdec"]=((4)*(fref)*(((dfc.decimation_filter_L)/(dfc.decimation_filter_M))))
+dfc["N3_Tx"]=np.ceil(((dfc.fdec)*(dfc.txpl))).astype(np.int)
 df["fdec"]=((4)*(fref)*(((df.decimation_filter_L)/(df.decimation_filter_M))))
+df["N3_Tx"]=np.ceil(((df.fdec)*(df.txpl))).astype(np.int)
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(700,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(10000,29884,))
 u=dfc.cal_type_desc.unique()

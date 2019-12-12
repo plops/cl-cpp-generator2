@@ -49,7 +49,8 @@
 			  ))
 		#+nil (setf xmlfn (string "/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
 				    )
-		      xm (et.parse xmlfn))
+			    xm (et.parse xmlfn))
+		"# %% echo packet information"
 		(setf df (pd.read_csv (string "./o_range.csv")))
 		(setf
 		 cal_type_desc (list ,@(loop for e in `(tx_cal
@@ -92,7 +93,9 @@
 							   na14
 							   txhiso_cal) collect
 				      `(string ,e)))
-		 dfc (pd.read_csv (string "./o_cal_range.csv"))
+		 )
+		"# %% calibration packet information"
+		(setf dfc (pd.read_csv (string "./o_cal_range.csv"))
 		 (aref dfc (string "pcc")) (np.mod dfc.cal_iter 2)
 		 )
 		,@(loop for d in `(dfc df) collect
@@ -155,7 +158,12 @@
 			 (setf (aref ,d (string "fdec"))
 			       (* 4 fref
 				  (/ (dot ,d decimation_filter_L)
-				     (dot ,d decimation_filter_M))))))
+				     (dot ,d decimation_filter_M))))
+			 (setf (aref ,d (string "N3_Tx"))
+			       (dot (np.ceil 
+				     (* (dot ,d fdec)
+					(dot ,d txpl)))
+				    (astype np.int)))))
 		
 		#+nil (setf fref 37.53472224
 		      
