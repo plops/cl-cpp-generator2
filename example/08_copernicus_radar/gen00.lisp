@@ -1355,10 +1355,8 @@
 		  (data_delay_us (+ swst delta_t_suppressed))
 		  (data_delay (+ ,(/ 320 8)
 				 ,(space-packet-slot-get 'sampling-window-start-time 'header)))
-		  #+nil (data_offset (- data_delay mi_data_delay))
 		  (data (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
-		  #+nil ("(*decoder_jump_table[5])(sequential_bit_t*)" (curly ,@(loop for i below 5 collect
-										     (format nil "decode_huffman_brc~a" i)))))
+		  )
 	      
 	      #+safety (do0
 			#+nil (assert (or (== -1 mi_data_delay)
@@ -1366,7 +1364,8 @@
 			;(assert (<= number_of_baq_blocks 256))
 			(assert (or ,@(loop for e in `(0) collect
 					   `(== ,e baq_mode))))
-			#+log-brc ,(logprint "" `(packet_idx baq_mode baq_block_length
+			;#+log-brc
+			,(logprint "" `(packet_idx baq_mode baq_block_length
 						   data_delay_us
 						   data_delay
 						   number_of_quads
@@ -1406,6 +1405,7 @@
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
 		  (return n)))))))))
+
   (let ((l `(,@(loop for e in `(x y z) collect
 		    `(,(format nil "~a_axis_position" e) double))
 	       ,@(loop for e in `(x y z) collect
