@@ -109,6 +109,27 @@
 						     )
 						   (dot ,d ,e))))
 				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
+
+		(do0 (setf decimation_filter_bandwidth
+		       (list 100 87.71 -1 74.25 59.44
+			     50.62 44.89 22.2 56.59 42.86
+			     15.1 48.35))
+		     (setf decimation_filter_L (list 3 2 -1 5 4 3 1 1 3 5 3 4))
+		     (setf decimation_filter_M (list 4 3 -1 9 9 8 3 6 7 16 26 11)))
+		
+		,@(loop for d in `(dfc df) collect
+		       `(do0
+			 ,@(loop for e in `(decimation_filter_bandwidth
+					    decimation_filter_L
+					    decimation_filter_M)
+			      collect
+			    (let ((name (format nil "~a" e)))
+			      `(do0
+				(setf (aref ,d (string ,name))
+				
+				      ("list" (map (lambda (x)
+						     (aref ,name x))
+						   (dot ,d (string "rgdec"))))))))))
 		#+nil (setf fref 37.53472224
 		      
 		      row (aref df.iloc 0)
