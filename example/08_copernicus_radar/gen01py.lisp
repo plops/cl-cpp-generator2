@@ -150,6 +150,12 @@
 							 (aref ,name x))
 						       (dot ,d rgdec)))))))))
 		(setf fref 37.53472224)
+		,@(loop for d in `(dfc df) collect
+		       `(do0
+			 (setf (aref ,d (string "fdec"))
+			       (* 4 fref
+				  (/ (dot ,d decimation_filter_L)
+				     (dot ,d decimation_filter_M))))))
 		
 		#+nil (setf fref 37.53472224
 		      
