@@ -522,7 +522,9 @@
 					    #-safety do0
 					    (if cal_p
 						(do0
-						 (init_decode_packet_type_a_or_b packet_idx (+ cal_image (* cal_n0 cal_iter)))
+						 (init_decode_type_c_packet_baq5
+					;init_decode_packet_type_a_or_b
+						  packet_idx (+ cal_image (* cal_n0 cal_iter)))
 						 ,(csvprint "./o_cal_range.csv"
 							    `(
 							      azi

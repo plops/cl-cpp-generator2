@@ -257,7 +257,7 @@ int main() {
       assert((sync_marker) == (0x352EF853));
       try {
         if (cal_p) {
-          init_decode_packet_type_a_or_b(
+          init_decode_type_c_packet_baq5(
               packet_idx, ((cal_image) + (((cal_n0) * (cal_iter)))));
           {
             std::ofstream outfile;
