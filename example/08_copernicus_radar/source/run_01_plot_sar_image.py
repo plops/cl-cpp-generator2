@@ -34,6 +34,7 @@ df["rx_desc"]=list(map(lambda x: rx_desc[x], df.rx))
 df.rx_desc=df.rx_desc.astype("category")
 df["signal_type_desc"]=list(map(lambda x: signal_type_desc[x], df.signal_type))
 df.signal_type_desc=df.signal_type_desc.astype("category")
+# %% sample rate computation using 3.2.5.4, tab5.1-1, txpl and swl description
 decimation_filter_bandwidth=[100, (8.770999908447266e+1), -1, (7.424999999999999e+1), (5.943999862670898e+1), (5.061999893188476e+1), (4.4889999389648433e+1), (2.220000076293945e+1), (5.659000015258788e+1), (4.286000061035156e+1), (1.5100000381469728e+1), (4.834999847412109e+1)]
 decimation_filter_L=[3, 2, -1, 5, 4, 3, 1, 1, 3, 5, 3, 4]
 decimation_filter_M=[4, 3, -1, 9, 9, 8, 3, 6, 7, 16, 26, 11]

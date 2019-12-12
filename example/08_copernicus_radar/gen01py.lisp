@@ -113,7 +113,8 @@
 						   (dot ,d ,e))))
 				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
 
-		(do0 (setf decimation_filter_bandwidth
+		(do0 "# %% sample rate computation using 3.2.5.4, tab5.1-1, txpl and swl description"
+		     (setf decimation_filter_bandwidth
 		       (list 100 87.71 -1 74.25 59.44
 			     50.62 44.89 22.2 56.59 42.86
 			     15.1 48.35))
