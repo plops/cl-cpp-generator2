@@ -35,12 +35,19 @@ df.signal_type_desc=df.signal_type_desc.astype("category")
 decimation_filter_bandwidth=[100, (8.770999908447266e+1), -1, (7.424999999999999e+1), (5.943999862670898e+1), (5.061999893188476e+1), (4.4889999389648433e+1), (2.220000076293945e+1), (5.659000015258788e+1), (4.286000061035156e+1), (1.5100000381469728e+1), (4.834999847412109e+1)]
 decimation_filter_L=[3, 2, -1, 5, 4, 3, 1, 1, 3, 5, 3, 4]
 decimation_filter_M=[4, 3, -1, 9, 9, 8, 3, 6, 7, 16, 26, 11]
-dfc["decimation_filter_bandwidth"]=list(map(lambda x: decimation_filter_bandwidth[x], dfc."rgdec"))
-dfc["decimation_filter_L"]=list(map(lambda x: decimation_filter_L[x], dfc."rgdec"))
-dfc["decimation_filter_M"]=list(map(lambda x: decimation_filter_M[x], dfc."rgdec"))
-df["decimation_filter_bandwidth"]=list(map(lambda x: decimation_filter_bandwidth[x], df."rgdec"))
-df["decimation_filter_L"]=list(map(lambda x: decimation_filter_L[x], df."rgdec"))
-df["decimation_filter_M"]=list(map(lambda x: decimation_filter_M[x], df."rgdec"))
+decimation_filter_length_NF=[28, 28, -1, 32, 40, 48, 52, 92, 36, 68, 120, 44]
+decimation_filter_swath_desc=["full_bandwidth", "s1_wv1", "n/a", "s2", "s3", "s4", "s5", "ew1", "iw1", "s6_iw3", "ew2_ew3_ew4_ew5", "iw2_wv2"]
+dfc["decimation_filter_bandwidth"]=list(map(lambda x: decimation_filter_bandwidth[x], dfc.rgdec))
+dfc["decimation_filter_L"]=list(map(lambda x: decimation_filter_L[x], dfc.rgdec))
+dfc["decimation_filter_M"]=list(map(lambda x: decimation_filter_M[x], dfc.rgdec))
+dfc["decimation_filter_length_NF"]=list(map(lambda x: decimation_filter_length_NF[x], dfc.rgdec))
+dfc["decimation_filter_swath_desc"]=list(map(lambda x: decimation_filter_swath_desc[x], dfc.rgdec))
+df["decimation_filter_bandwidth"]=list(map(lambda x: decimation_filter_bandwidth[x], df.rgdec))
+df["decimation_filter_L"]=list(map(lambda x: decimation_filter_L[x], df.rgdec))
+df["decimation_filter_M"]=list(map(lambda x: decimation_filter_M[x], df.rgdec))
+df["decimation_filter_length_NF"]=list(map(lambda x: decimation_filter_length_NF[x], df.rgdec))
+df["decimation_filter_swath_desc"]=list(map(lambda x: decimation_filter_swath_desc[x], df.rgdec))
+fref=(3.7534721374511715e+1)
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(700,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(10000,29884,))
 u=dfc.cal_type_desc.unique()
