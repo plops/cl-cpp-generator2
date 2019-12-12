@@ -139,7 +139,24 @@
 					       ew2_ew3_ew4_ew5
 					       iw2_wv2)
 				 collect
-				   `(string ,e)))))
+				   `(string ,e))))
+		     "# table 5.1-1 D values as a function of rgdec and C. first index is rgdec"
+		     (setf decimation_filter_D
+			   (list (list 1 1 2 3)
+				 (list 1 1 2)
+				 (list -1)
+				 (list 1 1 2 2 3 3 4 4 5)
+				 (list 0 1 1 2 2 3 3 4 4)
+				 (list 0 1 1 1 2 2 3 3)
+				 (list 0 0 1)
+				 (list 0 0 0 0 0 1)
+				 (list 0 1 1 2 2 3 3)
+				 (list 0 0 1 1 1 2 2 2 2 3 3 3 4 4 4 5)
+				 (list 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 ;; as many as prev col
+				       2 2 2 2  2 2 2 2 ; 8 times 2
+				       3 3
+				       )
+				 (list 0 1 1 1 2 2 3 3 3 4 4))))
 		
 		,@(loop for d in `(dfc df) collect
 		       `(do0
@@ -175,7 +192,20 @@
 			       (- (dot ,d decimation_filter_B)
 				  (* (dot ,d decimation_filter_M)
 				     (// (dot ,d decimation_filter_B)
-					 (dot ,d decimation_filter_M)))))))
+					 (dot ,d decimation_filter_M)))))
+			 (setf (aref ,d (string "N3_rx"))
+			       ("list"
+				(map
+				 (lambda (idx_row)
+				   (* 2 
+				      (+ (* (dot (aref idx_row 1) decimation_filter_L)
+					    (// (dot (aref idx_row 1) decimation_filter_B)
+						(dot (aref idx_row 1) decimation_filter_M)))
+					 (aref (aref decimation_filter_D
+						     (dot (aref idx_row 1) rgdec))
+					       (dot (aref idx_row 1) decimation_filter_C))
+					 1)))
+				 (dot ,d (iterrows)))))))
 		
 		#+nil (setf fref 37.53472224
 		      
