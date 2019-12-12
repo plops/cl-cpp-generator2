@@ -25,7 +25,7 @@ bool get_sequential_bit(sequential_bit_t *seq_state) {
   };
   return res;
 };
-inline int get_threshold_index(sequential_bit_t *s) {
+int get_threshold_index(sequential_bit_t *s) {
   return ((((0x80) * (get_sequential_bit(s)))) +
           (((0x40) * (get_sequential_bit(s)))) +
           (((0x20) * (get_sequential_bit(s)))) +

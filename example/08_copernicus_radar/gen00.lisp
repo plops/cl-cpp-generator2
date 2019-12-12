@@ -868,7 +868,7 @@
 
 	  (defun get_threshold_index (s)
 	    (declare (type sequential_bit_t* s)
-		     (values "inline int"))
+		     (values "int"))
 	    (return (+ ,@(loop for j below 8 collect
 			      `(* (hex ,(expt 2 (- 7 j)))
 				  (get_sequential_bit s)))))
@@ -1526,13 +1526,15 @@
      `(decode_type_c_packet
        ()
        (do0
-	(do0
-	 (include <cassert>
-		  <cmath>))
+	(include <cassert>
+		 <cmath>)
+	
 	  	  
 	;; i need tables for: A{3,4,5}[thidx], NRL{3,4,5}[mcode]
 	;; SF[thidx] (already in decode_packet module)
-	  
+
+	"extern const std::array<float, 256> table_sf;"
+	
 	(do0
 	 "// table 5.2-1 simple reconstruction parameter values A"
 	 ,@(loop for l in `((3 (3 3 3.12 3.55))
@@ -1688,16 +1690,9 @@
 							     (when sign_bit
 							       (setf symbol_sign -1s0))
 							     (do0
-							      #+nil (let ((bit s.current_bit_count)
-									  (byte (static_cast<int>
-										 (-  s.data
-										     (static_cast<uint8_t*> ,(g `_mmap_data))
-										     ))))
-								      ,(logprint "" `(v ,sym i byte bit
-											block)))
 							      ,(if (member e `(qe qo))
 								   `(do0
-								     ,(format nil "// decode ~a p.75" e)
+								     ,(format nil "// decode ~a p.66" e)
 								     ,(let ((th-mcode (case a
 											(3 3)
 											(4 7)
@@ -1723,8 +1718,7 @@
 										      (format nil "exception simple a=~a"
 											      a)
 										      `(thidx packet_idx))
-										    (assert 0))
-										  ))
+										    (assert 0))))
 									      (normal
 									       `(handler-case
 										    (do0 (setf v (* symbol_sign
@@ -1744,113 +1738,92 @@
 							      
 							      (setf (aref ,sym-a ,sym)
 								    v)))
-							   (incf ,sym))))))
-				      break)
-				    #+safety
-				    (t (progn
-					 #-nolog ,(logprint "error brc out of range" `(brc))
-					 (assert 0)
-					;(throw ("std::out_of_range" (string "brc")))
-					 break)))
+							   (incf ,sym))))))))
 			       (consume_padding_bits &s)))))
-					;,(logprint "decode ie and io blocks" `(number_of_baq_blocks))
-		  #+nil ,@(loop for e in `(ie io) collect
+		  ,(logprint "decode ie and io blocks" `(number_of_baq_blocks))
+		  ,@(loop for e in `(ie io) collect
 			 `(dotimes (block number_of_baq_blocks)
-			    (let ((brc (aref brcs block))
-				  (thidx (aref thidxs block)))
+			    (let ((thidx (aref thidxs block)))
 			      (do0
 			       ,(let ( ;(sym (format nil "decoded_~a_symbols" e))
 				      (sym-a (format nil "decoded_~a_symbols_a" e)))
-				  `(case brc
-				     ,@(loop for brc-value below 5 collect
-					    `(,(format nil "case ~a" brc-value)
-					       (progn
-						 #+safety (do0
-							   #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
-										    `(== ,e brc)))
-								   ,(logprint "error: out of range" `(brc)) 
-								   (assert 0))
-							   #+nil ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks))
-							   )
-						 ,(format nil "// decode ~a p.74 reconstruction law middle choice brc=~a" e
-							  brc-value)
-						 ,(let ((th (case brc-value
-							      (0 3)
-							      (1 3)
-							      (2 5)
-							      (3 6)
-							      (4 8))))
-						    `(if (<= thidx ,th)
-							 ,@(loop for thidx-choice in `(simple normal) collect
-								`(do0
-								  ,(format nil "// decode ~a p.74 reconstruction law ~a brc=~a"
-									   e thidx-choice brc-value)
-								  (for ((= "int i" 0)
-									(and (< i 128)
-									     (< (+ i (* 128 block))
-										,(format nil "decoded_~a_symbols" e)))
-									(incf i)) ;dotimes (i 128)
-								       (let ((pos
-									      (+ i (* 128 block)))
-									     (scode (aref ,sym-a pos))
-									     (mcode (static_cast<int> (fabsf scode)))
-									     (symbol_sign (copysignf 1s0 scode)))
-									 (do0
-									  ,(format nil "// decode ~a p.74 reconstruction law right side" e)
-									  ,(let ((th-mcode (case brc-value
-											     (0 3)
-											     (1 4)
-											     (2 6)
-											     (3 9)
-											     (4 15))))
-									     `(let ((v 0s0))
-										,(case thidx-choice
-										   (simple
-										    `
-										    (handler-case
-											(do0 (if (< mcode ,th-mcode)
-												 (setf v (* symbol_sign mcode))
-												 (if (== mcode ,th-mcode)
-												     (setf v (* symbol_sign
-														(dot
-														 ,(format nil "table_b~a"
-															  brc-value)
-														 (at thidx))))
-												     (do0
-												      #-nolog ,(logprint "mcode too large" `(mcode))
-												      (assert 0)))))
-										      ("std::out_of_range" (e)
-											,(logprint
-											  (format nil "exception simple block=~a brc=~a"
-												  e brc-value)
-											  `((static_cast<int> thidx) mcode packet_idx))
-											(assert 0))))
-										   (normal
-										    `
-										    (handler-case
-											(do0 (setf v (* symbol_sign
-													(dot ,(format nil
-														      "table_nrla~a"
-														      a)
-													     (at mcode))
-													(dot table_sf (at thidx)))))
-										      ("std::out_of_range" (e)
-											,(logprint
-											  (format nil "exception normal nrl or sf block=~a a=~a"
-												  e a)
-											  `((static_cast<int> thidx) block i
-											    mcode packet_idx pos scode symbol_sign
-												 
-											    ,(format nil "decoded_~a_symbols" e)
-											    ))
-											(assert 0)))))))
-									  (setf (aref ,sym-a pos) v))))))))
-						 break)))
-				     #+safety
-				     (t (progn
-					  ,(logprint "unknown brc" `((static_cast<int> brc)))
-					  (assert 0)
-					  break))))))))
+				  `(do0
+				    #+safety (do0
+						  #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
+									   `(== ,e brc)))
+							  ,(logprint "error: out of range" `(brc)) 
+							  (assert 0))
+						  #+nil ,(logprint (format nil "~a" e) `((static_cast<int> brc) block number_of_baq_blocks))
+						  )
+					,(format nil "// decode ~a p.66 reconstruction law middle choice a=~a" e
+						 a)
+					,(let ((th (case a
+						   (3 3)
+						   (4 5)
+						   (5 10))))
+					   `(if (<= thidx ,th)
+						,@(loop for thidx-choice in `(simple normal) collect
+						       `(do0
+							 ,(format nil "// decode ~a p.66 reconstruction law ~a a=~a"
+								  e thidx-choice a)
+							 (for ((= "int i" 0)
+							       (and (< i 128)
+								    (< (+ i (* 128 block))
+								       ,(format nil "decoded_~a_symbols" e)))
+							       (incf i)) ;dotimes (i 128)
+							      (let ((pos
+								     (+ i (* 128 block)))
+								    (scode (aref ,sym-a pos))
+								    (mcode (static_cast<int> (fabsf scode)))
+								    (symbol_sign (copysignf 1s0 scode)))
+								(do0
+								 ,(format nil "// decode ~a p.66 reconstruction law right side" e)
+								 ,(let ((th-mcode (case a
+											(3 3)
+											(4 7)
+											(5 15))))
+								    `(let ((v 0s0))
+								       ,(case thidx-choice
+									  (simple
+									   `
+									   (handler-case
+									       (do0 (if (< mcode ,th-mcode)
+											(setf v (* symbol_sign mcode))
+											(if (== mcode ,th-mcode)
+											    (setf v (* symbol_sign
+												       (dot
+													,(format nil "table_a~a"
+														 a)
+													(at thidx))))
+											    (do0
+											     #-nolog ,(logprint "mcode too large" `(mcode))
+											     (assert 0)))))
+									     ("std::out_of_range" (e)
+									       ,(logprint
+										 (format nil "exception simple block=~a a=~a"
+											 e a)
+										 `((static_cast<int> thidx) mcode packet_idx))
+									       (assert 0))))
+									  (normal
+									   `
+									   (handler-case
+									       (do0 (setf v (* symbol_sign
+											       (dot ,(format nil
+													     "table_nrla~a"
+													     a)
+												    (at mcode))
+											       (dot table_sf (at thidx)))))
+									     ("std::out_of_range" (e)
+									       ,(logprint
+										 (format nil "exception normal nrl or sf block=~a a=~a"
+											 e a)
+										 `((static_cast<int> thidx) block i
+										   mcode packet_idx pos scode symbol_sign
+										   
+										   ,(format nil "decoded_~a_symbols" e)
+										   ))
+									       (assert 0)))))))
+								 (setf (aref ,sym-a pos) v))))))))))))))
 		  (dotimes (i decoded_ie_symbols)
 		    (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 			 (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
