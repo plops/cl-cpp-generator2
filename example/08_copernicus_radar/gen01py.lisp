@@ -180,7 +180,7 @@
 			       (* 4 fref
 				  (/ (dot ,d decimation_filter_L)
 				     (dot ,d decimation_filter_M))))
-			 (setf (aref ,d (string "N3_Tx"))
+			 (setf (aref ,d (string "N3_tx"))
 			       (dot (np.ceil 
 				     (* (dot ,d fdec)
 					(dot ,d txpl)))
