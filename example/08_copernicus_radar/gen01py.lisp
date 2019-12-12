@@ -170,7 +170,12 @@
 				    (astype np.int)))
 			 (setf (aref ,d (string "decimation_filter_B"))
 			       (- (* 2 (dot ,d swl))
-				  (+ (dot ,d decimation_filter_output_offset) 17)))))
+				  (+ (dot ,d decimation_filter_output_offset) 17)))
+			 (setf (aref ,d (string "decimation_filter_C"))
+			       (- (dot ,d decimation_filter_B)
+				  (* (dot ,d decimation_filter_M)
+				     (// (dot ,d decimation_filter_B)
+					 (dot ,d decimation_filter_M)))))))
 		
 		#+nil (setf fref 37.53472224
 		      
