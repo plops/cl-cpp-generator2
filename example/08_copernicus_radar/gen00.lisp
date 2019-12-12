@@ -1537,7 +1537,7 @@
 	
 	(do0
 	 "// table 5.2-1 simple reconstruction parameter values A"
-	 ,@(loop for l in `((3 (3 3 3.12 3.55))
+	 ,@(loop for l in `((3 3 3.12 3.55)
 			    (7 7 7 7.17 7.4 7.76)
 			    (15 15 15  15 15 15  15.44 15.56  16.11 16.38 16.65))
 		  
@@ -1680,8 +1680,8 @@
 								    number_of_quads
 								    ))
 							    (incf i))
-							   (let ((sign_bit (get_sequential_bit &s))
-								 (smcode (,(format nil "get_baq~a_code" a) (&s)))
+							   (let (
+								 (smcode (,(format nil "get_baq~a_code" a) &s))
 								 (sign_bit (logand 1 (>> smcode (- ,a 1))))
 								 (mcode (logand smcode (hex ,(loop for i below (- a 1) sum
 												  (expt 2 i)))))
