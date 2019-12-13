@@ -1414,30 +1414,43 @@
 		(declare (type sequential_bit_t s))
 		(init_sequential_bit_function &s (+ (aref ,(g `_header_offset) packet_idx)
 						    62 6))
-		,@(loop for e in `(ie io qe qo)
-		     collect
-		       (let ((sym
-			      (format nil "decoded_~a_symbols" e))
-			     (sym-a (format nil "decoded_~a_symbols_a" e)))
-			 `(let ((,sym 0)
-				(,sym-a))
-			    (declare (type "std::array<float,MAX_NUMBER_QUADS>" ,sym-a))
-			    (do0
-			     (dotimes (i MAX_NUMBER_QUADS)
-				  (setf (aref ,sym-a i) 0s0)))
-			    (do0
-			     ,(format nil "// parse ~a data" e)
-			     (dotimes (i number_of_quads)
-			       (let ((smcode (get_data_type_a_or_b &s))
-				     (sign_bit (logand 1 (>> smcode 9))) ;; FIXME
-				     (mcode (logand smcode (hex ,(loop for i below 9 sum
-								      (expt 2 i)))
-						    #+nil (hex #b1 1111 1111)))
-				     (scode (* (powf -1s0 sign_bit)
-					       mcode)))
-				 (setf (aref ,sym-a ,sym) scode)
-				 (incf ,sym)))
-			     (consume_padding_bits &s)))))
+		(let ((data_start s.data))
+		 ,@(loop for e in `(ie io qe qo)
+		      collect
+			(let ((sym
+			       (format nil "decoded_~a_symbols" e))
+			      (sym-a (format nil "decoded_~a_symbols_a" e)))
+			  `(let ((,sym 0)
+				 (,sym-a))
+			     (declare (type "std::array<float,MAX_NUMBER_QUADS>" ,sym-a))
+			     (do0
+			      (dotimes (i MAX_NUMBER_QUADS)
+				(setf (aref ,sym-a i) 0s0)))
+			     (do0
+			      ,(format nil "// parse ~a data" e)
+			      (dotimes (i number_of_quads)
+				(let ((smcode (get_data_type_a_or_b &s))
+				      (sign_bit (logand 1 (>> smcode 9))) ;; FIXME
+				      (mcode (logand smcode (hex ,(loop for i below 9 sum
+								       (expt 2 i)))
+						     #+nil (hex #b1 1111 1111)))
+				      (scode smcode #+nil (* (powf -1s0 sign_bit)
+							     mcode)))
+				  (declare (type int sign_bit)
+					   (type float scode))
+				  (setf (aref ,sym-a ,sym) scode)
+				  (incf ,sym)))
+			      (consume_padding_bits &s)
+			      (progn
+				(let ((word_end (+ 62 2 (* 2 number_of_words ,(case e
+										(ie 1)
+										(io 2)
+										(qe 3)
+										(qo 4)))))
+				      (seq_off (- s.data data_start)))
+				  ,(logprint "padding" `(word_end
+							 seq_off
+							 s.current_bit_count)))))))))
 		(do0
 		 (assert (== decoded_ie_symbols
 			     decoded_io_symbols 

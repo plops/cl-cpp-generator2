@@ -63,6 +63,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
+  auto data_start = s.data;
   auto decoded_ie_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
@@ -71,13 +72,29 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse ie data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = ((1) & ((smcode) >> (9)));
+    int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = smcode;
     decoded_ie_symbols_a[decoded_ie_symbols] = scode;
     (decoded_ie_symbols)++;
   }
   consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (1))));
+    auto seq_off = ((s.data) - (data_start));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("padding") << (" ") << (std::setw(8))
+                << (" word_end=") << (word_end) << (std::setw(8))
+                << (" seq_off=") << (seq_off) << (std::setw(8))
+                << (" s.current_bit_count=") << (s.current_bit_count)
+                << (std::endl);
+  };
   auto decoded_io_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
@@ -86,13 +103,29 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse io data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = ((1) & ((smcode) >> (9)));
+    int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = smcode;
     decoded_io_symbols_a[decoded_io_symbols] = scode;
     (decoded_io_symbols)++;
   }
   consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (2))));
+    auto seq_off = ((s.data) - (data_start));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("padding") << (" ") << (std::setw(8))
+                << (" word_end=") << (word_end) << (std::setw(8))
+                << (" seq_off=") << (seq_off) << (std::setw(8))
+                << (" s.current_bit_count=") << (s.current_bit_count)
+                << (std::endl);
+  };
   auto decoded_qe_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
@@ -101,13 +134,29 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse qe data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = ((1) & ((smcode) >> (9)));
+    int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = smcode;
     decoded_qe_symbols_a[decoded_qe_symbols] = scode;
     (decoded_qe_symbols)++;
   }
   consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (3))));
+    auto seq_off = ((s.data) - (data_start));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("padding") << (" ") << (std::setw(8))
+                << (" word_end=") << (word_end) << (std::setw(8))
+                << (" seq_off=") << (seq_off) << (std::setw(8))
+                << (" s.current_bit_count=") << (s.current_bit_count)
+                << (std::endl);
+  };
   auto decoded_qo_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
@@ -116,13 +165,29 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse qo data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = ((1) & ((smcode) >> (9)));
+    int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = smcode;
     decoded_qo_symbols_a[decoded_qo_symbols] = scode;
     (decoded_qo_symbols)++;
   }
   consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (4))));
+    auto seq_off = ((s.data) - (data_start));
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("padding") << (" ") << (std::setw(8))
+                << (" word_end=") << (word_end) << (std::setw(8))
+                << (" seq_off=") << (seq_off) << (std::setw(8))
+                << (" s.current_bit_count=") << (s.current_bit_count)
+                << (std::endl);
+  };
   assert((decoded_ie_symbols) == (decoded_io_symbols));
   assert((decoded_ie_symbols) == (decoded_qe_symbols));
   assert((decoded_qo_symbols) == (decoded_qe_symbols));
