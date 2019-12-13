@@ -1440,7 +1440,7 @@
 			     (consume_padding_bits &s)))))
 		(do0
 		 (assert (== decoded_ie_symbols
-			     decoded_io_symbols
+			     decoded_io_symbols 
 			     ))
 		 (assert (== decoded_ie_symbols
 			     decoded_qe_symbols
