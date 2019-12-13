@@ -526,6 +526,7 @@
 		  
 		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba)))
 
+
 		  (plt.xlim (- start_us 10) (+ end_us 10))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
@@ -541,9 +542,14 @@
 		       start (np.argmax mask)
 		       end (- (len mask)
 			      (np.argmax (aref mask "::-1")))
-		       cut (aref arg "start:end"))
+		       cut (aref arg "start:end")
+		       fdec (dot (aref dfc.iloc 0)
+				 fdec)
+		       start_us (/ start fdec)
+		       end_us (/ end fdec))
 		 (setf
-		  xs (np.arange (len cut))
+		  xs_a_us  (/ (np.arange (len a)) fdec)
+		  xs (aref xs_a_us "start:end")
 		  (ntuple cbarg cbarg_diag)
 		  (np.polynomial.chebyshev.chebfit xs
 						   cut
@@ -555,16 +561,17 @@
 		  (setf pl (tuple 2 1))
 		  (plt.subplot2grid pl (tuple 0 0))
 		  (plt.plot arg)
-		  (plt.plot (+ start xs) (np.polynomial.chebyshev.chebval xs cbarg))
-		  (do0 (plt.axvline :x start :color (string "r"))
-		       (plt.axvline :x end :color (string "r")))
-		  (plt.xlim (- start 100) (+ end 100))
+		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cbarg))
+		  (do0 (plt.axvline :x start_us :color (string "r"))
+		       (plt.axvline :x end_us :color (string "r")))
+		  (plt.xlim (- start_us 10) (+ end_us 10))
+		  (plt.xlabel (string "time (us)"))
 		  (plt.subplot2grid pl (tuple 1 0))
-		  
-		  (plt.plot (+ start xs) (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
-		  (plt.xlim (- start 100) (+ end 100))
-		  (do0 (plt.axvline :x start :color (string "r"))
-		       (plt.axvline :x end :color (string "r")))))
+		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
+		  (plt.xlim (- start_us 10) (+ end_us 10))
+		  (plt.xlabel (string "time (us)"))
+		  (do0 (plt.axvline :x start_us :color (string "r"))
+		       (plt.axvline :x end_us :color (string "r")))))
 
 		
 		#+nil (do0
