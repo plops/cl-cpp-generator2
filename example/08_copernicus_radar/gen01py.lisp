@@ -237,7 +237,7 @@
 				   #+nil 
 				    (tuple 16516
 					   24695)
-				    (tuple 700 6000)))
+				    (tuple 800 6000)))
 		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
@@ -245,8 +245,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 6000
-					  30199)))
+				   (tuple 1000
+					  24890)))
 
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))
@@ -490,7 +490,7 @@
 		 "# %% fit polynomial to magnitude "
 		 (setf a (np.abs (aref reps 0))
 		       
-		       th_level .9
+		       th_level .6
 		       th (* th_level (np.max a))
 		       mask (< th a)
 		       start (np.argmax mask)
