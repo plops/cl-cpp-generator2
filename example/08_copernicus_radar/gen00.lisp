@@ -1429,11 +1429,11 @@
 			     ,(format nil "// parse ~a data" e)
 			     (dotimes (i number_of_quads)
 			       (let ((smcode (get_data_type_a_or_b &s))
-				     (sign_bit (logand 1 (>> smcode 9)))
+				     (sign_bit (logand 1 (>> smcode 9))) ;; FIXME
 				     (mcode (logand smcode (hex ,(loop for i below 9 sum
 								      (expt 2 i)))
 						    #+nil (hex #b1 1111 1111)))
-				     (scode (* (powf -1s0 sign_bit)
+				     (scode smcode #+nil (* (powf -1s0 sign_bit)
 					       mcode)))
 				 (setf (aref ,sym-a ,sym) scode)
 				 (incf ,sym)))
