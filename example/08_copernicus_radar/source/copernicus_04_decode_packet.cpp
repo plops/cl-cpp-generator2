@@ -14,26 +14,19 @@ void init_sequential_bit_function(sequential_bit_t *seq_state,
   seq_state->data = &(static_cast<uint8_t *>(state._mmap_data)[byte_pos]);
   seq_state->current_bit_count = 0;
 }
-bool get_sequential_bit(sequential_bit_t *seq_state) {
-  auto current_byte = *(seq_state->data);
-  auto res = static_cast<bool>(
-      (((current_byte) >> (((7) - (seq_state->current_bit_count)))) & (1)));
-  (seq_state->current_bit_count)++;
-  if (7 < seq_state->current_bit_count) {
-    seq_state->current_bit_count = 0;
-    (seq_state->data)++;
+
+void consume_padding_bits(sequential_bit_t *s) {
+  auto byte_offset = static_cast<int>(
+      ((s->data) - (static_cast<uint8_t *>(state._mmap_data))));
+  // make sure we are at first bit of an even byte in the next read
+  s->current_bit_count = 0;
+  if ((0) == (byte_offset % 2)) {
+    // we are in an even byte
+    (s->data) += (2);
+  } else {
+    // we are in an odd byte
+    (s->data) += (1);
   };
-  return res;
-};
-int get_threshold_index(sequential_bit_t *s) {
-  return ((((0x80) * (get_sequential_bit(s)))) +
-          (((0x40) * (get_sequential_bit(s)))) +
-          (((0x20) * (get_sequential_bit(s)))) +
-          (((0x10) * (get_sequential_bit(s)))) +
-          (((0x8) * (get_sequential_bit(s)))) +
-          (((0x4) * (get_sequential_bit(s)))) +
-          (((0x2) * (get_sequential_bit(s)))) +
-          (((0x1) * (get_sequential_bit(s)))));
 }
 inline int get_bit_rate_code(sequential_bit_t *s) {
   // note: evaluation order is crucial
@@ -58,20 +51,7 @@ inline int get_bit_rate_code(sequential_bit_t *s) {
     throw std::out_of_range("brc");
   };
   return brc;
-}
-void consume_padding_bits(sequential_bit_t *s) {
-  auto byte_offset = static_cast<int>(
-      ((s->data) - (static_cast<uint8_t *>(state._mmap_data))));
-  // make sure we are at first bit of an even byte in the next read
-  s->current_bit_count = 0;
-  if ((0) == (byte_offset % 2)) {
-    // we are in an even byte
-    (s->data) += (2);
-  } else {
-    // we are in an odd byte
-    (s->data) += (1);
-  };
-}
+};
 inline int decode_huffman_brc0(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {

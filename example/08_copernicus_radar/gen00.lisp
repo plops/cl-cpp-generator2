@@ -337,7 +337,7 @@
 		       <string>
 		       <fstream>)
 	      (let ((state ,(emit-globals :init t)))
-		(declare (type State state)))
+		(declare (type "State" state)))
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -865,54 +865,37 @@
 		   seq_state->current_bit_count 0)
 	     #+log-consume ,(logprint "start sequential bit function" `((- seq_state->data
 								     (static_cast<uint8_t*> ,(g `_mmap_data)))
-								  seq_state->current_bit_count)))
-	   (defun get_sequential_bit (seq_state)
-	     (declare (type sequential_bit_t* seq_state)
-		      (values "bool"))
-	     (let ((current_byte (deref seq_state->data))
-		   (res (static_cast<bool>
-			 (logand (>> current_byte (- 7 seq_state->current_bit_count))
-				 1))))
-	       (incf seq_state->current_bit_count)
-	       (when (< 7 seq_state->current_bit_count)
-		 (setf seq_state->current_bit_count 0)
-		 (incf seq_state->data))
-	       (return res))))
+									seq_state->current_bit_count)))
 
-	  (defun get_threshold_index (s)
+	   ,(emit-utils
+	    :code
+	    `(do0
+	      ;(include "globals.h")
+	      ;"extern State state;"
+	      (defun get_sequential_bit (seq_state)
+	       (declare (type sequential_bit_t* seq_state)
+			(values "inline bool"))
+	       (let ((current_byte (deref seq_state->data))
+		     (res (static_cast<bool>
+			   (logand (>> current_byte (- 7 seq_state->current_bit_count))
+				   1))))
+		 (incf seq_state->current_bit_count)
+		 (when (< 7 seq_state->current_bit_count)
+		   (setf seq_state->current_bit_count 0)
+		   (incf seq_state->data))
+		 (return res)))
+	      (defun get_threshold_index (s)
 	    (declare (type sequential_bit_t* s)
-		     (values "int"))
+		     (values "inline int"))
 	    (return (+ ,@(loop for j below 8 collect
 			      `(* (hex ,(expt 2 (- 7 j)))
 				  (get_sequential_bit s)))))
 	    )
-	  (defun get_bit_rate_code (s)
-	    (declare (type sequential_bit_t* s)
-		     (values "inline int"))
-	    "// note: evaluation order is crucial"
-	    #+nil(let ((a (get_sequential_bit s))
-		       (b (get_sequential_bit s))
-		       (c (get_sequential_bit s))))
-	    #+nil (<<
-		   "std::cout"
-		   ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
-				    bits)))
-			(loop for j from (1- bits) downto 0 collect
-			     `(static_cast<int> (logand 1 (>> v ,j)))))
-		   "std::endl")
-	    (let ((brc (+ ,@(loop for j below 3 collect
-			       `(* (hex ,(expt 2 (- 2 j)))
-				   (get_sequential_bit s))))))
-	      #+safety
-	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
-		,(logprint "brc out of range" `(s->current_bit_count
-						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))
-						brc))
-		(throw ("std::out_of_range" (string "brc")))
-		;(assert 0)
-		)
-	      (return brc)))
-	  (defun consume_padding_bits (s)
+	      
+	      ))
+
+
+	   (defun consume_padding_bits (s)
 	    (declare (type sequential_bit_t* s)
 		     (values "void"))
 	    ;; fixme: mod on current_bit_count is not working
@@ -940,6 +923,38 @@
 	      (dotimes (i pad)
 		(assert (== 0
 			    (get_sequential_bit s))))))
+	   
+	   (defun get_bit_rate_code (s)
+	    (declare (type sequential_bit_t* s)
+		     (values "inline int"))
+	    "// note: evaluation order is crucial"
+	    #+nil(let ((a (get_sequential_bit s))
+		       (b (get_sequential_bit s))
+		       (c (get_sequential_bit s))))
+	    #+nil (<<
+		   "std::cout"
+		   ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
+				    bits)))
+			(loop for j from (1- bits) downto 0 collect
+			     `(static_cast<int> (logand 1 (>> v ,j)))))
+		   "std::endl")
+	    (let ((brc (+ ,@(loop for j below 3 collect
+			       `(* (hex ,(expt 2 (- 2 j)))
+				   (get_sequential_bit s))))))
+	      #+safety
+	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
+		,(logprint "brc out of range" `(s->current_bit_count
+						(- s->data (static_cast<uint8_t*> ,(g `_mmap_data)))
+						brc))
+		(throw ("std::out_of_range" (string "brc")))
+		;(assert 0)
+		)
+	      (return brc)))
+	   )
+
+	  
+	  
+	  
 
 	  ;; decode_huffman_brc<n> n=0..4
 	  ,(gen-huffman-decoder 'brc0 '(0 (1 (2 (3))))) ;; page 71 in space packet protocol data unit
