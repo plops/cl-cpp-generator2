@@ -71,7 +71,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse ie data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = (((smcode) & (0x200))) >> (9);
+    auto sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_ie_symbols_a[decoded_ie_symbols] = scode;
@@ -86,7 +86,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse io data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = (((smcode) & (0x200))) >> (9);
+    auto sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_io_symbols_a[decoded_io_symbols] = scode;
@@ -101,7 +101,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse qe data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = (((smcode) & (0x200))) >> (9);
+    auto sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qe_symbols_a[decoded_qe_symbols] = scode;
@@ -116,13 +116,16 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   // parse qo data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
-    auto sign_bit = (((smcode) & (0x200))) >> (9);
+    auto sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
     auto scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qo_symbols_a[decoded_qo_symbols] = scode;
     (decoded_qo_symbols)++;
   }
   consume_padding_bits(&s);
+  assert((decoded_ie_symbols) == (decoded_io_symbols));
+  assert((decoded_ie_symbols) == (decoded_qe_symbols));
+  assert((decoded_qo_symbols) == (decoded_qe_symbols));
   for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
     output[((2) * (i))].real(decoded_ie_symbols_a[i]);
     output[((2) * (i))].imag(decoded_qe_symbols_a[i]);

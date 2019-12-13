@@ -1414,14 +1414,25 @@
 			     ,(format nil "// parse ~a data" e)
 			     (dotimes (i number_of_quads)
 			       (let ((smcode (get_data_type_a_or_b &s))
-				     (sign_bit (>> (logand smcode (hex #b1000000000))
-						   9))
-				     (mcode (logand smcode (hex #b111111111)))
+				     (sign_bit (logand 1 (>> smcode 9)))
+				     (mcode (logand smcode (hex ,(loop for i below 9 sum
+								      (expt 2 i)))
+						    #+nil (hex #b1 1111 1111)))
 				     (scode (* (powf -1s0 sign_bit)
 					       mcode)))
 				 (setf (aref ,sym-a ,sym) scode)
 				 (incf ,sym)))
 			     (consume_padding_bits &s)))))
+		(do0
+		 (assert (== decoded_ie_symbols
+			     decoded_io_symbols
+			     ))
+		 (assert (== decoded_ie_symbols
+			     decoded_qe_symbols
+			     ))
+		 (assert (== decoded_qo_symbols
+			     decoded_qe_symbols
+			     )))
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
@@ -1707,7 +1718,7 @@
 							   (let (
 								 (smcode (,(format nil "get_baq~a_code" a) &s))
 								 (sign_bit (logand 1 (>> smcode (- ,a 1))))
-								 (mcode (logand smcode (hex ,(loop for i below (- a 1) sum
+								 (mcode (logand smcode (hex ,(loop for i below (- a 1) sum ;; FIXME: bounds
 												  (expt 2 i)))))
 								 (symbol_sign 1s0))
 							     

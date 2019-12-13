@@ -1,6 +1,6 @@
 CXX=g++
 LDFLAGS=
-CXXFLAGS=-march=native -ffast-math -std=gnu++1z -O2 -ggdb -fsanitize=address  #`pkg-config --cflags cglm`  
+CXXFLAGS=-march=native -ffast-math -std=gnu++1z -O2 -ggdb -pg # -fsanitize=address  #`pkg-config --cflags cglm` 
 CFILES:=$(shell ls | grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 HFILES:=$(CFILES:%.cpp=%.h)
