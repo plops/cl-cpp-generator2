@@ -366,8 +366,9 @@
 		 (let ((packet_idx 0)
 		       (map_ele)
 		       (map_cal)
+		       (map_sig)
 		       (cal_count 0))
-		   (declare (type "std::unordered_map<int,int>" map_ele map_cal))
+		   (declare (type "std::unordered_map<int,int>" map_ele map_cal map_sig))
 		   (init_sub_commutated_data_decoder)
 		   (remove (string  "./o_anxillary.csv"))
 		   (foreach (e ,(g `_header_data))
@@ -381,10 +382,12 @@
 				  (test_mode ,(space-packet-slot-get 'test-mode 'p))
 				  (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
 				  (sub_index ,(space-packet-slot-get 'sub-commutated-index 'p))
-				  (sub_data ,(space-packet-slot-get 'sub-commutated-data 'p)))
+				  (sub_data ,(space-packet-slot-get 'sub-commutated-data 'p))
+				  (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p)))
 			      
-
+			      
 			      (feed_sub_commutated_data_decoder sub_data sub_index space_packet_count)
+			      (incf (aref map_sig signal_type))
 			      (if cal_p
 				  (do0
 				   (incf cal_count)
@@ -399,6 +402,10 @@
 			    (let ((number_of_cal cal.second)
 				  (cal_type cal.first))
 			      ,(logprint "map_ele" `(cal_type number_of_cal))))
+		   (foreach (sig map_sig)
+			    (let ((number_of_sig sig.second)
+				  (sig_type sig.first))
+			      ,(logprint "map_sig" `(sig_type number_of_sig))))
 		   
 
 		   (let ((ma -1s0)

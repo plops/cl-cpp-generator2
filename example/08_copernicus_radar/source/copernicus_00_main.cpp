@@ -24,6 +24,7 @@ int main() {
   auto packet_idx = 0;
   std::unordered_map<int, int> map_ele;
   std::unordered_map<int, int> map_cal;
+  std::unordered_map<int, int> map_sig;
   auto cal_count = 0;
   init_sub_commutated_data_decoder();
   remove("./o_anxillary.csv");
@@ -42,7 +43,9 @@ int main() {
          (((0x1000000) * (((0xFF) & (p[29]))))));
     auto sub_index = ((0xFF) & ((p[26]) >> (0)));
     auto sub_data = ((((0x1) * (p[28]))) + (((0x100) * (((0xFF) & (p[27]))))));
+    auto signal_type = ((0xF) & ((p[63]) >> (4)));
     feed_sub_commutated_data_decoder(sub_data, sub_index, space_packet_count);
+    (map_sig[signal_type])++;
     if (cal_p) {
       (cal_count)++;
       (map_cal[((ele) & (7))])++;
@@ -77,6 +80,20 @@ int main() {
                 << (__func__) << (" ") << ("map_ele") << (" ") << (std::setw(8))
                 << (" cal_type=") << (cal_type) << (std::setw(8))
                 << (" number_of_cal=") << (number_of_cal) << (std::endl);
+  };
+  for (auto &sig : map_sig) {
+    auto number_of_sig = sig.second;
+    auto sig_type = sig.first;
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("map_sig") << (" ") << (std::setw(8))
+                << (" sig_type=") << (sig_type) << (std::setw(8))
+                << (" number_of_sig=") << (number_of_sig) << (std::endl);
   };
   auto ma = (-1.e+0f);
   auto ma_ele = -1;
