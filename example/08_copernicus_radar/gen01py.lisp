@@ -234,7 +234,7 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   #+nil
+				   #+nil 
 				    (tuple 16516
 					   24695)
 				    (tuple 700 6000)))
