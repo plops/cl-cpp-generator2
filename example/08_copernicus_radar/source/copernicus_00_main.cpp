@@ -18,7 +18,7 @@ int main() {
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
       "/home/martin/Downloads/"
-      "s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat";
+      "s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto packet_idx = 0;
@@ -257,7 +257,7 @@ int main() {
       assert((sync_marker) == (0x352EF853));
       try {
         if (cal_p) {
-          init_decode_type_c_packet_baq5(
+          init_decode_packet_type_a_or_b(
               packet_idx, ((cal_image) + (((cal_n0) * (cal_iter)))));
           {
             std::ofstream outfile;

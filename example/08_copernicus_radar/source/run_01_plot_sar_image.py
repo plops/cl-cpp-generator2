@@ -67,7 +67,7 @@ df["decimation_filter_B"]=((((2)*(df.swl)))-(((df.decimation_filter_output_offse
 df["decimation_filter_C"]=((df.decimation_filter_B)-(((df.decimation_filter_M)*(((df.decimation_filter_B)//(df.decimation_filter_M))))))
 df["N3_rx"]=list(map(lambda idx_row: ((2)*(((((idx_row[1].decimation_filter_L)*(((idx_row[1].decimation_filter_B)//(idx_row[1].decimation_filter_M)))))+(decimation_filter_D[idx_row[1].rgdec][idx_row[1].decimation_filter_C])+(1)))), df.iterrows()))
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(700,6000,))
-ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(10000,29884,))
+ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(5533,13177,))
 u=dfc.cal_type_desc.unique()
 un=dfc.number_of_quads.unique()
 count=0

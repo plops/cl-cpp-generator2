@@ -245,8 +245,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 10000
-					   29884)))
+				   (tuple 5533
+					   13177)))
 
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))

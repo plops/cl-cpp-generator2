@@ -345,7 +345,9 @@
 					     (count)))
 					;(vkprint "main" )
 		(setf ,(g `_filename)
-		      (string  "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector
+		      (string
+		       "/home/martin/Downloads/s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat" ;; short stripe in greenland
+		       "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector https://scihub.copernicus.eu/dhus/odata/v1/Products(%275b395b3e-f9e8-494e-973b-b5ed6a8921e7%27)/Nodes(%27S1A_IW_RAW__0SDV_20191124T174119_20191124T174151_030056_036EAD_1207.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat%27)/$value
 					; "/home/martin/Downloads/s1a-s4-raw-s-vv-20191204t183618-20191204t183628-030202-0373bf.dat" ;; lone island stripmap
 					; "/home/martin/Downloads/s1b-s4-raw-s-vv-20191207t145315-20191207t145331-019260-0245d2.dat"
 					; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat"
@@ -522,8 +524,8 @@
 					    #-safety do0
 					    (if cal_p
 						(do0
-						 (init_decode_type_c_packet_baq5
-					;init_decode_packet_type_a_or_b
+						 (;init_decode_type_c_packet_baq5
+						  init_decode_packet_type_a_or_b
 						  packet_idx (+ cal_image (* cal_n0 cal_iter)))
 						 ,(csvprint "./o_cal_range.csv"
 							    `(
