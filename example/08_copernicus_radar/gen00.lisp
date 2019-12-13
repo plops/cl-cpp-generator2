@@ -1433,7 +1433,7 @@
 				     (mcode (logand smcode (hex ,(loop for i below 9 sum
 								      (expt 2 i)))
 						    #+nil (hex #b1 1111 1111)))
-				     (scode smcode #+nil (* (powf -1s0 sign_bit)
+				     (scode (* (powf -1s0 sign_bit)
 					       mcode)))
 				 (setf (aref ,sym-a ,sym) scode)
 				 (incf ,sym)))
