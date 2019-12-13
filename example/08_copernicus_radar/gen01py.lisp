@@ -237,7 +237,7 @@
 				   #+nil 
 				    (tuple 16516
 					   24695)
-				    (tuple 720 6000)))
+				    (tuple 700 6000)))
 		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
@@ -245,9 +245,9 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 8000
-					  23704)))
-
+				   (tuple 18576
+					  30199)))
+		
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))
 		,(let ((l `(tx_cal
@@ -586,7 +586,7 @@
 			   amp (scipy.ndimage.gaussian_filter1d amp 120.0)
 			   arg arg_all ;(aref arg mask) (aref arg_all mask)
 			   repim (* amp (np.exp (* 1j arg))))
-		     (setf krepim (np.fft.fft repim)
+		     #+nil (setf krepim (np.fft.fft repim)
 			   kss (np.fft.fft ss :axis 1)
 			   rcomp (np.fft.ifft (* kss (np.conj krepim)))))
 		#+nil (do0

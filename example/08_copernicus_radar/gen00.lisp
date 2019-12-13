@@ -348,8 +348,8 @@
 		      (string
 		       ;;"/home/martin/Downloads/s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat" ;; stripmap with 2 islands https://scihub.copernicus.eu/dhus/odata/v1/Products(%2742030b2d-07d3-4fe0-9104-2ba800de184d%27)/Nodes(%27S1B_S3_RAW__0SDV_20191212T150115_20191212T150141_019333_024829_9492.SAFE%27)/Nodes(%27s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat%27)/$value
 		       
-					;"/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat" ;; australia retro reflectors ; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27a43207a0-c3bb-47e2-a819-0885468cf16f%27)/Nodes(%27S1A_IW_RAW__0SDV_20191205T192200_20191205T192233_030217_03743D_C3C8.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat%27)/$value
-		        "/home/martin/Downloads/s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat" ;; north sea wind park and strong reflector ;; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27f4698f73-c40c-4de5-8852-cb11ad11fd1f%27)/Nodes(%27S1B_IW_RAW__0SDV_20191127T171630_20191127T171702_019116_024140_5DFA.SAFE%27)/Nodes(%27s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat%27)/$value
+					"/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat" ;; australia retro reflectors ; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27a43207a0-c3bb-47e2-a819-0885468cf16f%27)/Nodes(%27S1A_IW_RAW__0SDV_20191205T192200_20191205T192233_030217_03743D_C3C8.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat%27)/$value
+		       ; "/home/martin/Downloads/s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat" ;; north sea wind park and strong reflector ;; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27f4698f73-c40c-4de5-8852-cb11ad11fd1f%27)/Nodes(%27S1B_IW_RAW__0SDV_20191127T171630_20191127T171702_019116_024140_5DFA.SAFE%27)/Nodes(%27s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat%27)/$value
 					;"/home/martin/Downloads/s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat" ;; short stripe in greenland
 					; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector https://scihub.copernicus.eu/dhus/odata/v1/Products(%275b395b3e-f9e8-494e-973b-b5ed6a8921e7%27)/Nodes(%27S1A_IW_RAW__0SDV_20191124T174119_20191124T174151_030056_036EAD_1207.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat%27)/$value
 					; "/home/martin/Downloads/s1a-s4-raw-s-vv-20191204t183618-20191204t183628-030202-0373bf.dat" ;; lone island stripmap
@@ -411,8 +411,8 @@
 		   
 
 		   (let ((ma -1s0)
-			 (ma_ele 8))
-		     #+nil (foreach (elevation map_ele)
+			 (ma_ele -1))
+		     #-nil (foreach (elevation map_ele)
 			      (let ((number_of_Mquads (/ elevation.second 1e6))
 				    (elevation_beam_address elevation.first))
 				(when (< ma number_of_Mquads)
@@ -467,6 +467,7 @@
 		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
 		   (do0
+		    (remove (string  "./o_all.csv"))
 		    (remove (string  "./o_range.csv"))
 		    (remove (string  "./o_cal_range.csv")))
 
@@ -531,6 +532,50 @@
 					       fref)))
 				  (assert (== sync_marker (hex #x352EF853)))
 				  #+nil ,(logprint "iter" `(space_packet_count pri_count))
+
+				  ,(let ((l (loop for e in *space-packet* collect
+						 (destructuring-bind (name_ default-value &key bits) e
+						   name_)))
+					 (l-c (loop for e in *space-packet* collect
+						 (destructuring-bind (name_ default-value &key bits) e
+						   (substitute #\_ #\- (format nil "~a" name_))))))
+				     `(progn
+					(let (,@(loop for e in l and ec in l-c collect
+						     `(,ec ,(space-packet-slot-get e 'p))))
+					  ,(csvprint "./o_all.csv"
+						`(
+						  ,@(loop for e in l and ec in l-c collect
+						     ec)
+						  azi
+						  baq_n
+						  baqmod
+						  cal_iter
+						  cal_mode
+						  cal_p
+						  cal_type
+						  data_delay
+						  number_of_quads
+						  offset
+						  packet_idx
+						  pol
+						  pri_count
+						  rank
+						  rgdec
+						  rx
+						  signal_type
+						  space_packet_count
+						  swath
+						  swl
+						  swst
+						  tstmod
+						  txpl
+						  txpl_
+						  txprr
+						  txprr_
+						  txpsf
+
+						  )))
+					))
 				  (#+safety handler-case
 					    #-safety do0
 					    (if cal_p

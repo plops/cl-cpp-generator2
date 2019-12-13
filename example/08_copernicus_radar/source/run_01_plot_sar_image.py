@@ -67,8 +67,8 @@ df["N3_tx"]=np.ceil(((df.fdec)*(df.txpl))).astype(np.int)
 df["decimation_filter_B"]=((((2)*(df.swl)))-(((df.decimation_filter_output_offset)+(17))))
 df["decimation_filter_C"]=((df.decimation_filter_B)-(((df.decimation_filter_M)*(((df.decimation_filter_B)//(df.decimation_filter_M))))))
 df["N3_rx"]=list(map(lambda idx_row: ((2)*(((((idx_row[1].decimation_filter_L)*(((idx_row[1].decimation_filter_B)//(idx_row[1].decimation_filter_M)))))+(decimation_filter_D[idx_row[1].rgdec][idx_row[1].decimation_filter_C])+(1)))), df.iterrows()))
-s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(720,6000,))
-ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(8000,23704,))
+s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(700,6000,))
+ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(18576,30199,))
 u=dfc.cal_type_desc.unique()
 un=dfc.number_of_quads.unique()
 count=0
@@ -173,7 +173,7 @@ plt.xlim(((start_us)-(10)), ((end_us)+(10)))
 plt.xlabel("time (us)")
 plt.axvline(x=start_us, color="r")
 plt.axvline(x=end_us, color="r")
-# %% compute phase and amplitude polynomials with image time sampling
+# %% compute phase and amplitude polynomials with image time sampling and convolve with replica
 xs=((np.arange(ss.shape[1]))/(df.fdec[0]))
 amp=np.zeros(len(xs))
 arg=np.zeros(len(xs))
@@ -184,6 +184,3 @@ amp[mask]=amp_all[mask]
 amp=scipy.ndimage.gaussian_filter1d(amp, (1.2e+2))
 arg=arg_all
 repim=((amp)*(np.exp(((1j)*(arg)))))
-krepim=np.fft.fft(repim)
-kss=np.fft.fft(ss, axis=1)
-rcomp=np.fft.ifft(((kss)*(np.conj(krepim))))
