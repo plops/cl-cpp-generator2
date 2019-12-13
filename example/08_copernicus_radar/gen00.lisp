@@ -1320,6 +1320,16 @@
 				      ,(logprint "unknown brc" `((static_cast<int> brc)))
 				      (assert 0)
 				      break))))))))
+		(do0
+		 (assert (== decoded_ie_symbols
+			     decoded_io_symbols
+			     ))
+		 (assert (== decoded_ie_symbols
+			     decoded_qe_symbols
+			     ))
+		 (assert (== decoded_qo_symbols
+			     decoded_qe_symbols
+			     )))
 		(dotimes (i decoded_ie_symbols)
 		  (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 		       (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))
@@ -1327,7 +1337,8 @@
 		       (dot (aref output (+ 1 (* 2 i))) (imag (aref decoded_qo_symbols_a i)))))
 		(let ((n (+ decoded_ie_symbols
 			    decoded_io_symbols)))
-		  (return n)))))))))
+		  (return n)))
+	      ))))))
 
   (let ((max-number-quads 52378))
    (define-module
@@ -1837,6 +1848,16 @@
 										   ))
 									       (assert 0)))))))
 								 (setf (aref ,sym-a pos) v))))))))))))))
+		  (do0
+		 (assert (== decoded_ie_symbols
+			     decoded_io_symbols
+			     ))
+		 (assert (== decoded_ie_symbols
+			     decoded_qe_symbols
+			     ))
+		 (assert (== decoded_qo_symbols
+			     decoded_qe_symbols
+			     )))
 		  (dotimes (i decoded_ie_symbols)
 		    (do0 (dot (aref output (* 2 i)) (real (aref decoded_ie_symbols_a i)))
 			 (dot (aref output (* 2 i)) (imag (aref decoded_qe_symbols_a i))))

@@ -2474,6 +2474,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     }
     };
   }
+  assert((decoded_ie_symbols) == (decoded_io_symbols));
+  assert((decoded_ie_symbols) == (decoded_qe_symbols));
+  assert((decoded_qo_symbols) == (decoded_qe_symbols));
   for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
     output[((2) * (i))].real(decoded_ie_symbols_a[i]);
     output[((2) * (i))].imag(decoded_qe_symbols_a[i]);
