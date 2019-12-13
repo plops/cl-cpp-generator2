@@ -237,7 +237,7 @@
 				   #+nil
 				    (tuple 16516
 					   24695)
-				    (tuple 700 6000)))
+				    (tuple 720 6000)))
 		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
@@ -245,8 +245,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 5533
-					   13177)))
+				   (tuple 1000
+					  30034)))
 
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))

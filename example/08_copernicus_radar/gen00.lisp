@@ -346,8 +346,9 @@
 					;(vkprint "main" )
 		(setf ,(g `_filename)
 		      (string
-		       "/home/martin/Downloads/s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat" ;; short stripe in greenland
-		       "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector https://scihub.copernicus.eu/dhus/odata/v1/Products(%275b395b3e-f9e8-494e-973b-b5ed6a8921e7%27)/Nodes(%27S1A_IW_RAW__0SDV_20191124T174119_20191124T174151_030056_036EAD_1207.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat%27)/$value
+		       "/home/martin/Downloads/s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat" ;; north sea wind park and strong reflector ;; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27f4698f73-c40c-4de5-8852-cb11ad11fd1f%27)/Nodes(%27S1B_IW_RAW__0SDV_20191127T171630_20191127T171702_019116_024140_5DFA.SAFE%27)/Nodes(%27s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat%27)/$value
+		       ;"/home/martin/Downloads/s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat" ;; short stripe in greenland
+		       ; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector https://scihub.copernicus.eu/dhus/odata/v1/Products(%275b395b3e-f9e8-494e-973b-b5ed6a8921e7%27)/Nodes(%27S1A_IW_RAW__0SDV_20191124T174119_20191124T174151_030056_036EAD_1207.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat%27)/$value
 					; "/home/martin/Downloads/s1a-s4-raw-s-vv-20191204t183618-20191204t183628-030202-0373bf.dat" ;; lone island stripmap
 					; "/home/martin/Downloads/s1b-s4-raw-s-vv-20191207t145315-20191207t145331-019260-0245d2.dat"
 					; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat"
@@ -356,7 +357,7 @@
 					; "/home/martin/Downloads/s1a-ew-raw-s-hv-20191130t152915-20191130t153018-030142-0371ab.dat"
 					;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20181106T135244_20181106T135316_024468_02AEB9_3552.SAFE/s1a-iw-raw-s-vh-20181106t135244-20181106t135316-024468-02aeb9.dat"
 					;"/home/martin/Downloads/S1A_IW_RAW__0SDV_20191125T135230_20191125T135303_030068_036F1E_6704.SAFE/s1a-iw-raw-s-vv-20191125t135230-20191125t135303-030068-036f1e.dat"
-			       )) 
+		       )) 
 		(init_mmap ,(g `_filename))
 		(init_collect_packet_headers) 
 					;(init_process_packet_headers)
