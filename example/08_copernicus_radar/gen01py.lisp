@@ -245,7 +245,7 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 1000
+				   (tuple 6000
 					  30199)))
 
 		(setf u (dfc.cal_type_desc.unique)
@@ -489,15 +489,22 @@
 		(do0
 		 "# %% fit polynomial to magnitude "
 		 (setf a (np.abs (aref reps 0))
+		       
 		       th_level .9
 		       th (* th_level (np.max a))
 		       mask (< th a)
 		       start (np.argmax mask)
 		       end (- (len mask)
 			      (np.argmax (aref mask "::-1")))
-		       cut (aref a "start:end"))
+		       cut (aref a "start:end")
+		       fdec (dot (aref dfc.iloc 0)
+				 fdec)
+		       start_us (/ start fdec)
+		       end_us (/ end fdec))
 		 (setf
-		  xs (np.arange (len cut))
+		  
+		  xs_a_us  (/ (np.arange (len a)) fdec)
+		  xs (aref xs_a_us "start:end")
 		  (ntuple cba cba_diag)
 		  (np.polynomial.chebyshev.chebfit xs
 						   cut
@@ -509,17 +516,20 @@
 		  (plt.figure)
 		  (setf pl (tuple 2 1))
 		  (plt.subplot2grid pl (tuple 0 0))
-		  (plt.plot a)
-		  (plt.plot (+ start xs) (np.polynomial.chebyshev.chebval xs cba))
-		  (do0 (plt.axvline :x start :color (string "r"))
-		       (plt.axvline :x end :color (string "r")))
-		  (plt.xlim (- start 100) (+ end 100))
+		  (plt.plot xs_a_us a)
+		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cba))
+		  (do0 (plt.axvline :x start_us :color (string "r"))
+		       (plt.axvline :x end_us :color (string "r")))
+		  (plt.xlim (- start_us 10) (+ end_us 10))
+		  (plt.xlabel (string "time (us)"))
 		  (plt.subplot2grid pl (tuple 1 0))
 		  
-		  (plt.plot (+ start xs) (- cut (np.polynomial.chebyshev.chebval xs cba)))
-		  (plt.xlim (- start 100) (+ end 100))
-		  (do0 (plt.axvline :x start :color (string "r"))
-		       (plt.axvline :x end :color (string "r")))))
+		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba)))
+
+		  (plt.xlim (- start_us 10) (+ end_us 10))
+		  (do0 (plt.axvline :x start_us :color (string "r"))
+		       (plt.axvline :x end_us :color (string "r")))
+		  (plt.xlabel (string "time (us)"))))
 
 		(do0
 		 "# %% fit polynomial to phase"
