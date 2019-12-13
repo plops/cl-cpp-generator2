@@ -36,7 +36,7 @@
 					;skimage.restoration
 					;(u astropy.units)
 					; EP_SerialIO
-			  ;scipy.ndimage
+			  scipy.ndimage
 					;scipy.optimize
 			  scipy.signal
 			  numpy.polynomial
@@ -237,7 +237,7 @@
 				   #+nil 
 				    (tuple 16516
 					   24695)
-				    (tuple 800 6000)))
+				    (tuple 720 6000)))
 		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
@@ -245,8 +245,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 1000
-					  24890)))
+				   (tuple 8000
+					  23704)))
 
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))
@@ -573,7 +573,22 @@
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))))
 
-		
+		(do0 "# %% compute phase and amplitude polynomials with image time sampling and convolve with replica"
+		     (setf xs (/ (np.arange (aref ss.shape 1))
+				 (aref df.fdec 0))
+			   amp (np.zeros (len xs))
+			   arg (np.zeros (len xs))
+			   amp_all (np.polynomial.chebyshev.chebval xs cba)
+			   arg_all (np.polynomial.chebyshev.chebval xs cbarg)
+			   mask (& (< start_us xs)
+				   (< xs end_us ))
+			   (aref amp mask) (aref amp_all mask)
+			   amp (scipy.ndimage.gaussian_filter1d amp 120.0)
+			   arg arg_all ;(aref arg mask) (aref arg_all mask)
+			   repim (* amp (np.exp (* 1j arg))))
+		     (setf krepim (np.fft.fft repim)
+			   kss (np.fft.fft ss :axis 1)
+			   rcomp (np.fft.ifft (* kss (np.conj krepim)))))
 		#+nil (do0
 		 (setf fref 37.53472224)
 		 (setf  input (* .5 (- (aref s 1 ":3000")
