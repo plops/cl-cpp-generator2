@@ -7,7 +7,7 @@
 ;
 extern State state;
 #include <cassert>
-int get_data_type_a_or_b(sequential_bit_t *s) {
+inline int get_data_type_a_or_b(sequential_bit_t *s) {
   return ((((0x200) * (get_sequential_bit(s)))) +
           (((0x100) * (get_sequential_bit(s)))) +
           (((0x80) * (get_sequential_bit(s)))) +

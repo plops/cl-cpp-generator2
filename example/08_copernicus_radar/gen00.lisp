@@ -1364,7 +1364,7 @@
 	   (include <cassert>)
 	   (defun get_data_type_a_or_b (s)
 	     (declare (type sequential_bit_t* s)
-		      (values int))
+		      (values "inline int"))
 	     (return (+ ,@(loop for j below 10 collect
 			      `(* (hex ,(expt 2 (- 9 j)))
 				  (get_sequential_bit s)))))))
