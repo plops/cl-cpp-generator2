@@ -22,11 +22,63 @@ void consume_padding_bits(sequential_bit_t *s) {
   s->current_bit_count = 0;
   if ((0) == (byte_offset % 2)) {
     // we are in an even byte
-    (s->data) += (2);
+    if ((0) == (s->current_bit_count)) {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ")
+                  << ("start consume from even byte on border, do nothing")
+                  << (" ") << (std::setw(8)) << (" byte_offset=")
+                  << (byte_offset) << (std::setw(8))
+                  << (" s->current_bit_count=") << (s->current_bit_count)
+                  << (std::endl);
+    } else {
+      std::setprecision(3);
+      (std::cout) << (std::setw(10))
+                  << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__) << (" ") << ("start consume from even byte")
+                  << (" ") << (std::setw(8)) << (" byte_offset=")
+                  << (byte_offset) << (std::setw(8))
+                  << (" s->current_bit_count=") << (s->current_bit_count)
+                  << (std::endl);
+      (s->data) += (2);
+    };
   } else {
     // we are in an odd byte
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("start consume from odd byte")
+                << (" ") << (std::setw(8)) << (" byte_offset=") << (byte_offset)
+                << (std::setw(8)) << (" s->current_bit_count=")
+                << (s->current_bit_count) << (std::endl);
     (s->data) += (1);
-  };
+  }
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("after consume") << (" ")
+              << (std::setw(8))
+              << (" ((s->data)-(static_cast<uint8_t*>(state._mmap_data)))=")
+              << (((s->data) - (static_cast<uint8_t *>(state._mmap_data))))
+              << (std::setw(8)) << (" s->current_bit_count=")
+              << (s->current_bit_count) << (std::endl);
 }
 inline int get_bit_rate_code(sequential_bit_t *s) {
   // note: evaluation order is crucial

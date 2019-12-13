@@ -903,16 +903,25 @@
 	    (let ((byte_offset (static_cast<int> (- s->data
 						    (static_cast<uint8_t*> ,(g `_mmap_data))))))
 	      "// make sure we are at first bit of an even byte in the next read"
-	      #+log-consume ,(logprint "start consume" `(byte_offset s->current_bit_count))
+	      ;#+log-consume
+	      
 	      (setf s->current_bit_count 0)
 	      (if (== 0 (% byte_offset 2))
 		  (do0
 		   "// we are in an even byte"
-		   (incf s->data 2))
+		   
+		   (if (== 0 s->current_bit_count)
+		       (do0
+			,(logprint "start consume from even byte on border, do nothing" `(byte_offset s->current_bit_count)))
+		       (do0
+			,(logprint "start consume from even byte" `(byte_offset s->current_bit_count))
+			(incf s->data 2))))
 		  (do0
 		   "// we are in an odd byte"
+		   ,(logprint "start consume from odd byte" `(byte_offset s->current_bit_count))
 		   (incf s->data 1)))
-	      #+log-consume ,(logprint "after consume" `((- s->data
+	      ;#+log-consume
+	      ,(logprint "after consume" `((- s->data
 						      (static_cast<uint8_t*> ,(g `_mmap_data)))
 						   s->current_bit_count
 						   )))
@@ -1440,21 +1449,21 @@
 					   (type float scode))
 				  (setf (aref ,sym-a ,sym) scode)
 				  (incf ,sym)))
-					;(consume_padding_bits &s)
+			      (consume_padding_bits &s)
 
-			      (progn
-				(let ((word_end (+ 62 2 (* 2 number_of_words ,(case e
-										(ie 1)
-										(io 2)
-										(qe 3)
-										(qo 4))))))
+			      #+nil (progn
+				(let ((word_end (+ 62 2 (* 2 (- number_of_words 1) ,(case e
+										  (ie 1)
+										  (io 2)
+										  (qe 3)
+										  (qo 4))))))
 				 (setf s.data (+ data_start word_end))))
 			      (progn
-				(let ((word_end (+ 62 2 (* 2 number_of_words ,(case e
-										(ie 1)
-										(io 2)
-										(qe 3)
-										(qo 4)))))
+				(let ((word_end (+ 62 2 (* 2 (- number_of_words 1) ,(case e
+										  (ie 1)
+										  (io 2)
+										  (qe 3)
+										  (qo 4)))))
 				      (seq_off (- s.data data_start)))
 				  ,(logprint "padding" `(word_end
 							 seq_off
