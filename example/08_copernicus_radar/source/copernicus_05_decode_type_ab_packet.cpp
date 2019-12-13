@@ -74,11 +74,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = smcode;
+    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_ie_symbols_a[decoded_ie_symbols] = scode;
     (decoded_ie_symbols)++;
   }
-  consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (1))));
+    s.data = ((data_start) + (word_end));
+  };
   {
     auto word_end = ((62) + (2) + (((2) * (number_of_words) * (1))));
     auto seq_off = ((s.data) - (data_start));
@@ -105,11 +108,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = smcode;
+    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_io_symbols_a[decoded_io_symbols] = scode;
     (decoded_io_symbols)++;
   }
-  consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (2))));
+    s.data = ((data_start) + (word_end));
+  };
   {
     auto word_end = ((62) + (2) + (((2) * (number_of_words) * (2))));
     auto seq_off = ((s.data) - (data_start));
@@ -136,11 +142,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = smcode;
+    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qe_symbols_a[decoded_qe_symbols] = scode;
     (decoded_qe_symbols)++;
   }
-  consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (3))));
+    s.data = ((data_start) + (word_end));
+  };
   {
     auto word_end = ((62) + (2) + (((2) * (number_of_words) * (3))));
     auto seq_off = ((s.data) - (data_start));
@@ -167,11 +176,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = smcode;
+    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
     decoded_qo_symbols_a[decoded_qo_symbols] = scode;
     (decoded_qo_symbols)++;
   }
-  consume_padding_bits(&s);
+  {
+    auto word_end = ((62) + (2) + (((2) * (number_of_words) * (4))));
+    s.data = ((data_start) + (word_end));
+  };
   {
     auto word_end = ((62) + (2) + (((2) * (number_of_words) * (4))));
     auto seq_off = ((s.data) - (data_start));

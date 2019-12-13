@@ -632,9 +632,9 @@
 			     (nbytes (* n0
 					ele_number_echoes
 					(sizeof "std::complex<float>"))))
-			 ,(logprint "store" '(nbytes))
+			 ,(logprint "store echo" '(nbytes))
 			 (file.write ("reinterpret_cast<const char*>" sar_image) nbytes)
-			 ,(logprint "store finished" '()))))
+			 ,(logprint "store echo finished" '()))))
 		   (delete[] sar_image)
 		   (let ((fn (+ ("std::string" (string "./o_cal_range"))
 				("std::to_string" cal_n0)
@@ -1434,13 +1434,21 @@
 				      (mcode (logand smcode (hex ,(loop for i below 9 sum
 								       (expt 2 i)))
 						     #+nil (hex #b1 1111 1111)))
-				      (scode smcode #+nil (* (powf -1s0 sign_bit)
+				      (scode (* (powf -1s0 sign_bit)
 							     mcode)))
 				  (declare (type int sign_bit)
 					   (type float scode))
 				  (setf (aref ,sym-a ,sym) scode)
 				  (incf ,sym)))
-			      (consume_padding_bits &s)
+					;(consume_padding_bits &s)
+
+			      (progn
+				(let ((word_end (+ 62 2 (* 2 number_of_words ,(case e
+										(ie 1)
+										(io 2)
+										(qe 3)
+										(qo 4))))))
+				 (setf s.data (+ data_start word_end))))
 			      (progn
 				(let ((word_end (+ 62 2 (* 2 number_of_words ,(case e
 										(ie 1)

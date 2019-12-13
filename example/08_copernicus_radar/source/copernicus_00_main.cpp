@@ -378,8 +378,8 @@ int main() {
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("store") << (" ") << (std::setw(8))
-                << (" nbytes=") << (nbytes) << (std::endl);
+                << (__func__) << (" ") << ("store echo") << (" ")
+                << (std::setw(8)) << (" nbytes=") << (nbytes) << (std::endl);
     file.write(reinterpret_cast<const char *>(sar_image), nbytes);
     std::setprecision(3);
     (std::cout) << (std::setw(10))
@@ -388,7 +388,7 @@ int main() {
                           .count()) -
                      (state._start_time)))
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("store finished") << (" ")
+                << (__func__) << (" ") << ("store echo finished") << (" ")
                 << (std::endl);
   };
   delete[](sar_image);
