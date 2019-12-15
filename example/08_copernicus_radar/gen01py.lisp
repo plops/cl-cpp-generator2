@@ -16,8 +16,8 @@
                   ;(matplotlib.use (string "Agg"))
                   (imports ((plt matplotlib.pyplot)))
                   (plt.ion)
-                  ;(setf font (dict ((string size) (string 5))))
-                  ;(matplotlib.rc (string "font") **font)
+                  (setf font (dict ((string size) (string 5))))
+                  (matplotlib.rc (string "font") **font)
                   )
 
 	   
@@ -220,7 +220,8 @@
 					txprr_
 					txpl
 					txpl_
-					txpsf)
+					txpsf
+					ses_ssb_tx_pulse_number)
 			  collect
 			    `(setf (aref dfa (string ,(format nil "ranked_~a" e)))
 				   (dot dfap
@@ -229,6 +230,100 @@
 						 (aref dfa (string "rank"))))
 					(reset_index)
 					,e))))
+		(do0 "# %% plot calibration time sequence"
+		     (plt.figure)
+		     ,(let ((l `(sab_ssb_calibration_p
+				 sab_ssb_elevation_beam_address
+				 sab_ssb_azimuth_beam_address
+				 cal_iter
+				 ele_count
+				 number_of_quads
+				 signal_type
+				 cal_mode
+				 cal_type
+				 ses_ssb_cal_mode
+				 ses_ssb_signal_type
+				 ses_ssb_swath_number
+				 ses_ssb_tx_pulse_number
+				 ranked_ses_ssb_tx_pulse_number
+				 ses_ssb_swap
+				 rank
+				 ranked_txpl
+				 ranked_txpsf
+				 ranked_txprr)
+			      ))
+			`(do0
+			  (setf pl (tuple ,(length l) 1))
+			  ,@(loop for e in l and i from 0 collect
+				 `(do0
+				   (plt.subplot2grid pl (tuple ,i 0))
+				   (dot (aref dfa (string ,e)) (plot))
+				   (plt.legend)
+				   (plt.grid))))))
+
+		(do0 "# %% plot calibration time sequence only with cal"
+		     (setf dfa_cal (dot (aref dfa (== dfa.sab_ssb_calibration_p 1))
+					(set_index (string "cal_iter"))))
+		     (plt.figure)
+		     ,(let ((l `(sab_ssb_calibration_p
+				 sab_ssb_elevation_beam_address
+				 sab_ssb_azimuth_beam_address
+					; cal_iter
+				 number_of_quads
+				 signal_type
+				 cal_mode
+				 cal_type
+				 ses_ssb_cal_mode
+				 ses_ssb_signal_type
+				 ses_ssb_swath_number
+				 ses_ssb_tx_pulse_number
+				 ranked_ses_ssb_tx_pulse_number
+				 ses_ssb_swap
+				 rank
+				 ranked_txpl
+				 ranked_txpsf
+				 ranked_txprr)
+			      ))
+			`(do0
+			  (setf pl (tuple ,(length l) 1))
+			  ,@(loop for e in l and i from 0 collect
+				 `(do0
+				   (plt.subplot2grid pl (tuple ,i 0))
+				   (dot (aref dfa_cal (string ,e)) (plot))
+				   (plt.legend)
+				   (plt.grid)))
+			  (plt.xlabel (string "cal_iter")))))
+		(do0 "# %% plot calibration time sequence only with image echos"
+		     (setf dfa_img (dot (aref dfa (== dfa.sab_ssb_calibration_p 0))
+					(set_index (string "ele_count"))))
+		     (plt.figure)
+		     ,(let ((l `(sab_ssb_calibration_p
+				 sab_ssb_elevation_beam_address
+				 sab_ssb_azimuth_beam_address
+					; cal_iter
+				 number_of_quads
+				 signal_type
+				 cal_mode
+				 ;ses_ssb_cal_mode
+				 ses_ssb_signal_type
+				 ses_ssb_swath_number
+				 ranked_ses_ssb_tx_pulse_number
+				 ses_ssb_swap
+				 ;cal_type
+				 rank
+				 ranked_txpl
+				 ranked_txpsf
+				 ranked_txprr)
+			      ))
+			`(do0
+			  (setf pl (tuple ,(length l) 1))
+			  ,@(loop for e in l and i from 0 collect
+				 `(do0
+				   (plt.subplot2grid pl (tuple ,i 0))
+				   (dot (aref dfa_img (string ,e)) (plot))
+				   (plt.legend)
+				   (plt.grid)))
+			  (plt.xlabel (string "ele_count")))))
 		
 		#+nil (setf fref 37.53472224
 		      

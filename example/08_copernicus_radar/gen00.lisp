@@ -549,7 +549,8 @@
 						  azi
 						  baq_n
 						  baqmod
-						  cal_iter
+						    cal_iter
+						    ele_count
 						  cal_mode
 						  cal_p
 						  cal_type
@@ -588,6 +589,7 @@
 							      baq_n
 							      baqmod
 							      cal_iter
+							      ele_count
 							      cal_mode
 							      cal_p
 							      cal_type

@@ -379,10 +379,10 @@ int main() {
                     "ignore_1,sab_ssb_azimuth_beam_address,ses_ssb_cal_mode,"
                     "ses_ssb_ignore_0,ses_ssb_tx_pulse_number,ses_ssb_signal_"
                     "type,ses_ssb_ignore_1,ses_ssb_swap,ses_ssb_swath_number,"
-                    "number_of_quads,ignore_4,azi,baq_n,baqmod,cal_iter,cal_"
-                    "mode,cal_p,cal_type,data_delay,offset,packet_idx,pol,"
-                    "rgdec,rx,signal_type,swath,swl,swst,tstmod,txpl,txpl_,"
-                    "txprr,txprr_,txpsf")
+                    "number_of_quads,ignore_4,azi,baq_n,baqmod,cal_iter,ele_"
+                    "count,cal_mode,cal_p,cal_type,data_delay,offset,packet_"
+                    "idx,pol,rgdec,rx,signal_type,swath,swl,swst,tstmod,txpl,"
+                    "txpl_,txprr,txprr_,txpsf")
                 << (std::endl);
           };
           (outfile) << (packet_version_number) << (",") << (packet_type)
@@ -422,14 +422,14 @@ int main() {
                     << (ses_ssb_swath_number) << (",") << (number_of_quads)
                     << (",") << (ignore_4) << (",") << (azi) << (",") << (baq_n)
                     << (",") << (baqmod) << (",") << (cal_iter) << (",")
-                    << (cal_mode) << (",") << (cal_p) << (",") << (cal_type)
-                    << (",") << (data_delay) << (",") << (offset) << (",")
-                    << (packet_idx) << (",") << (pol) << (",") << (rgdec)
-                    << (",") << (rx) << (",") << (signal_type) << (",")
-                    << (swath) << (",") << (swl) << (",") << (swst) << (",")
-                    << (tstmod) << (",") << (txpl) << (",") << (txpl_) << (",")
-                    << (txprr) << (",") << (txprr_) << (",") << (txpsf)
-                    << (std::endl);
+                    << (ele_count) << (",") << (cal_mode) << (",") << (cal_p)
+                    << (",") << (cal_type) << (",") << (data_delay) << (",")
+                    << (offset) << (",") << (packet_idx) << (",") << (pol)
+                    << (",") << (rgdec) << (",") << (rx) << (",")
+                    << (signal_type) << (",") << (swath) << (",") << (swl)
+                    << (",") << (swst) << (",") << (tstmod) << (",") << (txpl)
+                    << (",") << (txpl_) << (",") << (txprr) << (",") << (txprr_)
+                    << (",") << (txpsf) << (std::endl);
           outfile.close();
         };
       };
@@ -443,23 +443,24 @@ int main() {
                          ((std::ios_base::out) | (std::ios_base::app)));
             if ((0) == (outfile.tellp())) {
               (outfile)
-                  << ("azi,baq_n,baqmod,cal_iter,cal_mode,cal_p,cal_type,data_"
-                      "delay,number_of_quads,offset,packet_idx,pol,pri_count,"
-                      "rank,rgdec,rx,signal_type,space_packet_count,swath,swl,"
-                      "swst,tstmod,txpl,txpl_,txprr,txprr_,txpsf")
+                  << ("azi,baq_n,baqmod,cal_iter,ele_count,cal_mode,cal_p,cal_"
+                      "type,data_delay,number_of_quads,offset,packet_idx,pol,"
+                      "pri_count,rank,rgdec,rx,signal_type,space_packet_count,"
+                      "swath,swl,swst,tstmod,txpl,txpl_,txprr,txprr_,txpsf")
                   << (std::endl);
             };
             (outfile) << (azi) << (",") << (baq_n) << (",") << (baqmod) << (",")
-                      << (cal_iter) << (",") << (cal_mode) << (",") << (cal_p)
-                      << (",") << (cal_type) << (",") << (data_delay) << (",")
-                      << (number_of_quads) << (",") << (offset) << (",")
-                      << (packet_idx) << (",") << (pol) << (",") << (pri_count)
-                      << (",") << (rank) << (",") << (rgdec) << (",") << (rx)
-                      << (",") << (signal_type) << (",") << (space_packet_count)
-                      << (",") << (swath) << (",") << (swl) << (",") << (swst)
-                      << (",") << (tstmod) << (",") << (txpl) << (",")
-                      << (txpl_) << (",") << (txprr) << (",") << (txprr_)
-                      << (",") << (txpsf) << (std::endl);
+                      << (cal_iter) << (",") << (ele_count) << (",")
+                      << (cal_mode) << (",") << (cal_p) << (",") << (cal_type)
+                      << (",") << (data_delay) << (",") << (number_of_quads)
+                      << (",") << (offset) << (",") << (packet_idx) << (",")
+                      << (pol) << (",") << (pri_count) << (",") << (rank)
+                      << (",") << (rgdec) << (",") << (rx) << (",")
+                      << (signal_type) << (",") << (space_packet_count) << (",")
+                      << (swath) << (",") << (swl) << (",") << (swst) << (",")
+                      << (tstmod) << (",") << (txpl) << (",") << (txpl_)
+                      << (",") << (txprr) << (",") << (txprr_) << (",")
+                      << (txpsf) << (std::endl);
             outfile.close();
           };
           (cal_iter)++;
