@@ -114,7 +114,7 @@
 						   (dot ,d ,e))))
 				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
 
-
+		
 		
 
 		(do0 "# %% sample rate computation using 3.2.5.4, tab5.1-1, tab5.1-2, txpl and swl description"
@@ -210,6 +210,25 @@
 					       (dot (aref idx_row 1) decimation_filter_C))
 					 1)))
 				 (dot ,d (iterrows)))))))
+
+
+		(do0 "# %% get pulse configuration that is rank pri_counts in the past"
+		     ;;  dfap.loc[dfa.pri_count-dfa['rank']].txprr
+		     (setf dfap (dot dfa (set_index (string "pri_count")))
+			   )
+		     ,@(loop for e in `(txprr
+					txprr_
+					txpl
+					txpl_
+					txpsf)
+			  collect
+			    `(setf (aref dfa (string ,(format nil "ranked_~a" e)))
+				   (dot dfap
+					(aref loc
+					      (- dfa.pri_count
+						 (aref dfa (string "rank"))))
+					(reset_index)
+					,e))))
 		
 		#+nil (setf fref 37.53472224
 		      

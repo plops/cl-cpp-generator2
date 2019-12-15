@@ -68,6 +68,13 @@ df["N3_tx"]=np.ceil(((df.fdec)*(df.txpl))).astype(np.int)
 df["decimation_filter_B"]=((((2)*(df.swl)))-(((df.decimation_filter_output_offset)+(17))))
 df["decimation_filter_C"]=((df.decimation_filter_B)-(((df.decimation_filter_M)*(((df.decimation_filter_B)//(df.decimation_filter_M))))))
 df["N3_rx"]=list(map(lambda idx_row: ((2)*(((((idx_row[1].decimation_filter_L)*(((idx_row[1].decimation_filter_B)//(idx_row[1].decimation_filter_M)))))+(decimation_filter_D[idx_row[1].rgdec][idx_row[1].decimation_filter_C])+(1)))), df.iterrows()))
+# %% get pulse configuration that is rank pri_counts in the past
+dfap=dfa.set_index("pri_count")
+dfa["ranked_txprr"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txprr
+dfa["ranked_txprr_"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txprr_
+dfa["ranked_txpl"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl
+dfa["ranked_txpl_"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl_
+dfa["ranked_txpsf"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpsf
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(700,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(18576,30199,))
 u=dfc.cal_type_desc.unique()
