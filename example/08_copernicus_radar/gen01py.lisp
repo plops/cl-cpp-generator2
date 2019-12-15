@@ -52,6 +52,7 @@
 			    xm (et.parse xmlfn))
 		"# %% echo packet information"
 		(setf df (pd.read_csv (string "./o_range.csv")))
+		(setf dfa (pd.read_csv (string "./o_all.csv")))
 		(setf
 		 cal_type_desc (list ,@(loop for e in `(tx_cal
 							rx_cal
@@ -98,7 +99,7 @@
 		(setf dfc (pd.read_csv (string "./o_cal_range.csv"))
 		 (aref dfc (string "pcc")) (np.mod dfc.cal_iter 2)
 		 )
-		,@(loop for d in `(dfc df) collect
+		,@(loop for d in `(dfc df dfa) collect
 		       `(do0
 			 ,@(loop for e in (case d
 					    (dfc `( pol rx signal_type cal_type))
@@ -112,6 +113,9 @@
 						     )
 						   (dot ,d ,e))))
 				(setf (dot ,d ,name) (dot ,d ,name (astype (string "category")))))))))
+
+
+		
 
 		(do0 "# %% sample rate computation using 3.2.5.4, tab5.1-1, tab5.1-2, txpl and swl description"
 		     (setf decimation_filter_bandwidth

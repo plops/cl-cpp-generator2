@@ -554,16 +554,15 @@
 						  cal_p
 						  cal_type
 						  data_delay
-						  number_of_quads
-						  offset
+						    
+						    offset
 						  packet_idx
 						  pol
-						  pri_count
-						  rank
-						  rgdec
+						    
+						    rgdec
 						  rx
 						  signal_type
-						  space_packet_count
+						    
 						  swath
 						  swl
 						  swst

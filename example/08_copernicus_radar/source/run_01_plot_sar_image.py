@@ -14,6 +14,7 @@ import numpy.polynomial
 import xml.etree.ElementTree as et
 # %% echo packet information
 df=pd.read_csv("./o_range.csv")
+dfa=pd.read_csv("./o_all.csv")
 cal_type_desc=["tx_cal", "rx_cal", "epdn_cal", "ta_cal", "apdn_cal", "na_0", "na_1", "txh_iso_cal"]
 pol_desc=["txh", "txh_rxh", "txh_rxv", "txh_rxvh", "txv", "txv_rxh", "txv_rxv", "txv_rxvh"]
 rx_desc=["rxv", "rxh"]
