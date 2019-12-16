@@ -45,7 +45,7 @@
 			  ;sklearn.linear_model
 			  ;itertools
 					;datetime
-			  (et xml.etree.ElementTree)
+			  ;(et xml.etree.ElementTree)
 			  ))
 		#+nil (setf xmlfn (string "/home/martin/Downloads/s1a-iw1-slc-vh-20181106t135248-20181106t135313-024468-02aeb9-001.xml"
 				    )
@@ -230,100 +230,105 @@
 						 (aref dfa (string "rank"))))
 					(reset_index)
 					,e))))
-		(do0 "# %% plot calibration time sequence"
-		     (plt.figure)
-		     ,(let ((l `(sab_ssb_calibration_p
-				 sab_ssb_elevation_beam_address
-				 sab_ssb_azimuth_beam_address
-				 cal_iter
-				 ele_count
-				 number_of_quads
-				 signal_type
-				 cal_mode
-				 cal_type
-				 ses_ssb_cal_mode
-				 ses_ssb_signal_type
-				 ses_ssb_swath_number
-				 ses_ssb_tx_pulse_number
-				 ranked_ses_ssb_tx_pulse_number
-				 ses_ssb_swap
-				 rank
-				 ranked_txpl
-				 ranked_txpsf
-				 ranked_txprr)
-			      ))
-			`(do0
-			  (setf pl (tuple ,(length l) 1))
-			  ,@(loop for e in l and i from 0 collect
-				 `(do0
-				   (plt.subplot2grid pl (tuple ,i 0))
-				   (dot (aref dfa (string ,e)) (plot))
-				   (plt.legend)
-				   (plt.grid))))))
 
-		(do0 "# %% plot calibration time sequence only with cal"
-		     (setf dfa_cal (dot (aref dfa (== dfa.sab_ssb_calibration_p 1))
-					(set_index (string "cal_iter"))))
-		     (plt.figure)
-		     ,(let ((l `(sab_ssb_calibration_p
-				 sab_ssb_elevation_beam_address
-				 sab_ssb_azimuth_beam_address
+		#+nil
+		(do0 "# plot all packet infomration for echos, calibration and all packets"
+		 (do0 "# %% plot calibration time sequence"
+		      (plt.figure)
+		      ,(let ((l `(sab_ssb_calibration_p
+				  sab_ssb_elevation_beam_address
+				  sab_ssb_azimuth_beam_address
+				  cal_iter
+				  ele_count
+				  number_of_quads
+				  signal_type
+				  cal_mode
+				  cal_type
+				  ses_ssb_cal_mode
+				  ses_ssb_signal_type
+				  ses_ssb_swath_number
+				  ses_ssb_tx_pulse_number
+				  ranked_ses_ssb_tx_pulse_number
+				  ses_ssb_swap
+				  rank
+				  ranked_txpl
+				  ranked_txpsf
+				  ranked_txprr)
+			       ))
+			 `(do0
+			   (setf pl (tuple ,(length l) 1))
+			   ,@(loop for e in l and i from 0 collect
+				  `(do0
+				    (plt.subplot2grid pl (tuple ,i 0))
+				    (dot (aref dfa (string ,e)) (plot))
+				    (plt.legend)
+				    (plt.grid))))))
+
+		 (do0 "# %% plot calibration time sequence only with cal"
+		      (setf dfa_cal (dot (aref dfa (== dfa.sab_ssb_calibration_p 1))
+					 (set_index (string "cal_iter"))))
+		      (plt.figure)
+		      ,(let ((l `(sab_ssb_calibration_p
+				  sab_ssb_elevation_beam_address
+				  sab_ssb_azimuth_beam_address
 					; cal_iter
-				 number_of_quads
-				 signal_type
-				 cal_mode
-				 cal_type
-				 ses_ssb_cal_mode
-				 ses_ssb_signal_type
-				 ses_ssb_swath_number
-				 ses_ssb_tx_pulse_number
-				 ranked_ses_ssb_tx_pulse_number
-				 ses_ssb_swap
-				 rank
-				 ranked_txpl
-				 ranked_txpsf
-				 ranked_txprr)
-			      ))
-			`(do0
-			  (setf pl (tuple ,(length l) 1))
-			  ,@(loop for e in l and i from 0 collect
-				 `(do0
-				   (plt.subplot2grid pl (tuple ,i 0))
-				   (dot (aref dfa_cal (string ,e)) (plot))
-				   (plt.legend)
-				   (plt.grid)))
-			  (plt.xlabel (string "cal_iter")))))
-		(do0 "# %% plot calibration time sequence only with image echos"
-		     (setf dfa_img (dot (aref dfa (== dfa.sab_ssb_calibration_p 0))
-					(set_index (string "ele_count"))))
-		     (plt.figure)
-		     ,(let ((l `(sab_ssb_calibration_p
-				 sab_ssb_elevation_beam_address
-				 sab_ssb_azimuth_beam_address
+				  number_of_quads
+				  signal_type
+				  cal_mode
+				  cal_type
+				  ses_ssb_cal_mode
+				  ses_ssb_signal_type
+				  ses_ssb_swath_number
+				  ses_ssb_tx_pulse_number
+				  ranked_ses_ssb_tx_pulse_number
+				  ses_ssb_swap
+				  rank
+				  ranked_txpl
+				  ranked_txpsf
+				  ranked_txprr)
+			       ))
+			 `(do0
+			   (setf pl (tuple ,(length l) 1))
+			   ,@(loop for e in l and i from 0 collect
+				  `(do0
+				    (plt.subplot2grid pl (tuple ,i 0))
+				    (dot (aref dfa_cal (string ,e)) (plot))
+				    (plt.legend)
+				    (plt.grid)))
+			   (plt.xlabel (string "cal_iter")))))
+
+		 
+		 (do0 "# %% plot calibration time sequence only with image echos"
+		      (setf dfa_img (dot (aref dfa (== dfa.sab_ssb_calibration_p 0))
+					 (set_index (string "ele_count"))))
+		      (plt.figure)
+		      ,(let ((l `(sab_ssb_calibration_p
+				  sab_ssb_elevation_beam_address
+				  sab_ssb_azimuth_beam_address
 					; cal_iter
-				 number_of_quads
-				 signal_type
-				 cal_mode
-				 ;ses_ssb_cal_mode
-				 ses_ssb_signal_type
-				 ses_ssb_swath_number
-				 ranked_ses_ssb_tx_pulse_number
-				 ses_ssb_swap
-				 ;cal_type
-				 rank
-				 ranked_txpl
-				 ranked_txpsf
-				 ranked_txprr)
-			      ))
-			`(do0
-			  (setf pl (tuple ,(length l) 1))
-			  ,@(loop for e in l and i from 0 collect
-				 `(do0
-				   (plt.subplot2grid pl (tuple ,i 0))
-				   (dot (aref dfa_img (string ,e)) (plot))
-				   (plt.legend)
-				   (plt.grid)))
-			  (plt.xlabel (string "ele_count")))))
+				  number_of_quads
+				  signal_type
+				  cal_mode
+					;ses_ssb_cal_mode
+				  ses_ssb_signal_type
+				  ses_ssb_swath_number
+				  ranked_ses_ssb_tx_pulse_number
+				  ses_ssb_swap
+					;cal_type
+				  rank
+				  ranked_txpl
+				  ranked_txpsf
+				  ranked_txprr)
+			       ))
+			 `(do0
+			   (setf pl (tuple ,(length l) 1))
+			   ,@(loop for e in l and i from 0 collect
+				  `(do0
+				    (plt.subplot2grid pl (tuple ,i 0))
+				    (dot (aref dfa_img (string ,e)) (plot))
+				    (plt.legend)
+				    (plt.grid)))
+			   (plt.xlabel (string "ele_count"))))))
 		
 		#+nil (setf fref 37.53472224
 		      
@@ -355,7 +360,7 @@
 				   #+nil 
 				    (tuple 16516
 					   24695)
-				    (tuple 700 6000)))
+				    (tuple 800 6000)))
 		(setf ss (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
@@ -363,8 +368,8 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 18576
-					  30199)))
+				   (tuple 1000
+					  24890)))
 		
 		(setf u (dfc.cal_type_desc.unique)
 		      un (dfc.number_of_quads.unique))
@@ -635,11 +640,22 @@
 		  (setf pl (tuple 2 1))
 		  (plt.subplot2grid pl (tuple 0 0))
 		  (plt.plot xs_a_us a)
+		  (plt.plot xs_a_us (np.real (aref reps 0))
+			    :label (string "re reps0"))
+		  (setf xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
+				  .5)
+			arg_nomchirp (* -2 np.pi
+					(+ (* xs_off (+ (aref dfc.txpsf 0)
+							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
+		  (plt.plot xs_a_us (* 750 (np.real (np.exp (* 1j arg_nomchirp))))
+			    :label (string "nomchirp"))
 		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cba))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
 		  (plt.xlim (- start_us 10) (+ end_us 10))
 		  (plt.xlabel (string "time (us)"))
+		  (plt.legend)
 		  (plt.subplot2grid pl (tuple 1 0))
 		  
 		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba)))
@@ -678,12 +694,14 @@
 		  (plt.figure)
 		  (setf pl (tuple 2 1))
 		  (plt.subplot2grid pl (tuple 0 0))
-		  (plt.plot arg)
-		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cbarg))
+		  (plt.plot arg :label (string "arg_meas"))
+		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cbarg) :label (string "arg_cheb"))
+		  (plt.plot xs_a_us arg_nomchirp :label (string "arg_nomchirp"))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
 		  (plt.xlim (- start_us 10) (+ end_us 10))
 		  (plt.xlabel (string "time (us)"))
+		  (plt.legend)
 		  (plt.subplot2grid pl (tuple 1 0))
 		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
 		  (plt.xlim (- start_us 10) (+ end_us 10))
@@ -691,6 +709,7 @@
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))))
 
+		#+nil
 		(do0 "# %% compute phase and amplitude polynomials with image time sampling and convolve with replica"
 		     (setf xs (/ (np.arange (aref ss.shape 1))
 				 (aref df.fdec 0))

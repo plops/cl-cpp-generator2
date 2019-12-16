@@ -22,49 +22,13 @@ void consume_padding_bits(sequential_bit_t *s) {
   if ((0) == (byte_offset % 2)) {
     // we are in an even byte
     if ((0) == (s->current_bit_count)) {
-      // nothing to be done
-      std::setprecision(3);
-      (std::cout) << (std::setw(10))
-                  << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (state._start_time)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << (" ")
-                  << ("start consume from even byte on border, do nothing")
-                  << (" ") << (std::setw(8)) << (" byte_offset=")
-                  << (byte_offset) << (std::setw(8))
-                  << (" s->current_bit_count=") << (s->current_bit_count)
-                  << (std::endl);
+      // nothing to be done;
     } else {
-      std::setprecision(3);
-      (std::cout) << (std::setw(10))
-                  << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (state._start_time)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__) << (" ") << ("start consume from even byte")
-                  << (" ") << (std::setw(8)) << (" byte_offset=")
-                  << (byte_offset) << (std::setw(8))
-                  << (" s->current_bit_count=") << (s->current_bit_count)
-                  << (std::endl);
       (s->data) += (2);
       s->current_bit_count = 0;
     };
   } else {
     // we are in an odd byte
-    std::setprecision(3);
-    (std::cout) << (std::setw(10))
-                << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (state._start_time)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("start consume from odd byte")
-                << (" ") << (std::setw(8)) << (" byte_offset=") << (byte_offset)
-                << (std::setw(8)) << (" s->current_bit_count=")
-                << (s->current_bit_count) << (std::endl);
     (s->data) += (1);
     s->current_bit_count = 0;
   };

@@ -346,9 +346,9 @@
 					;(vkprint "main" )
 		(setf ,(g `_filename)
 		      (string
-		       ;;"/home/martin/Downloads/s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat" ;; stripmap with 2 islands https://scihub.copernicus.eu/dhus/odata/v1/Products(%2742030b2d-07d3-4fe0-9104-2ba800de184d%27)/Nodes(%27S1B_S3_RAW__0SDV_20191212T150115_20191212T150141_019333_024829_9492.SAFE%27)/Nodes(%27s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat%27)/$value
+		       "/home/martin/Downloads/s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat" ;; stripmap with 2 islands https://scihub.copernicus.eu/dhus/odata/v1/Products(%2742030b2d-07d3-4fe0-9104-2ba800de184d%27)/Nodes(%27S1B_S3_RAW__0SDV_20191212T150115_20191212T150141_019333_024829_9492.SAFE%27)/Nodes(%27s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat%27)/$value
 		       
-					"/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat" ;; australia retro reflectors ; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27a43207a0-c3bb-47e2-a819-0885468cf16f%27)/Nodes(%27S1A_IW_RAW__0SDV_20191205T192200_20191205T192233_030217_03743D_C3C8.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat%27)/$value
+		       ;;"/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat" ;; australia retro reflectors ; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27a43207a0-c3bb-47e2-a819-0885468cf16f%27)/Nodes(%27S1A_IW_RAW__0SDV_20191205T192200_20191205T192233_030217_03743D_C3C8.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat%27)/$value
 		       ; "/home/martin/Downloads/s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat" ;; north sea wind park and strong reflector ;; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27f4698f73-c40c-4de5-8852-cb11ad11fd1f%27)/Nodes(%27S1B_IW_RAW__0SDV_20191127T171630_20191127T171702_019116_024140_5DFA.SAFE%27)/Nodes(%27s1b-iw-raw-s-vv-20191127t171630-20191127t171702-019116-024140.dat%27)/$value
 					;"/home/martin/Downloads/s1a-ew-raw-s-hh-20191212t201350-20191212t201407-030320-0377ca.dat" ;; short stripe in greenland
 					; "/home/martin/Downloads/s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat" ;; north sea reflector https://scihub.copernicus.eu/dhus/odata/v1/Products(%275b395b3e-f9e8-494e-973b-b5ed6a8921e7%27)/Nodes(%27S1A_IW_RAW__0SDV_20191124T174119_20191124T174151_030056_036EAD_1207.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191124t174119-20191124t174151-030056-036ead.dat%27)/$value
@@ -960,16 +960,16 @@
 		   (if (== 0 s->current_bit_count)
 		       (do0
 			"// nothing to be done"
-			;#+log-consume
+			#+log-consume
 			,(logprint "start consume from even byte on border, do nothing" `(byte_offset s->current_bit_count)))
 		       (do0
-			;#+log-consume
+			#+log-consume
 			,(logprint "start consume from even byte" `(byte_offset s->current_bit_count))
 			(incf s->data 2)
 			(setf s->current_bit_count 0))))
 		  (do0
 		   "// we are in an odd byte"
-		   ;#+log-consume
+		   #+log-consume
 		   ,(logprint "start consume from odd byte" `(byte_offset s->current_bit_count))
 		   (incf s->data 1)
 		   (setf s->current_bit_count 0)))
