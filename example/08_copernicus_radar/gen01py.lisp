@@ -657,11 +657,11 @@
 				  xs_off (- xs delta_t )
 				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 					     (< xs_off (* .5 (aref dfc.txpl 0))))
-				  arg_nomchirp (* -2 np.pi
-						  (+ (* xs_off (+ (aref dfc.txpsf 0)
-								  (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-						     (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
-				 (setf z (* amp xs_mask (np.exp (* 1j (+ arg_nomchirp ph))))))))
+				  arg_nomchirp (+ ph (* -2 np.pi
+							(+ (* xs_off (+ (aref dfc.txpsf 0)
+									(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+							   (* (** xs_off 2) .5 (aref dfc.txprr 0))))))
+				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp (xs delta_t ph)
 			  ,fun-code
@@ -670,7 +670,10 @@
 					  (np.imag z)))))
 			(def fun_nomchirpz (xs delta_t ph)
 			  ,fun-code
-			  (return z))))
+			  (return z))
+			(def fun_nomchirparg (xs delta_t ph)
+			  ,fun-code
+			  (return arg_nomchirp))))
 
 		  (setf
 		   p0  (tuple
@@ -738,6 +741,8 @@
 		  (plt.plot arg :label (string "arg_meas"))
 		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cbarg) :label (string "arg_cheb"))
 		  (plt.plot xs_a_us arg_nomchirp :label (string "arg_nomchirp"))
+		  (plt.plot xs_a_us (fun_nomchirparg xs_a_us *opt)
+			    :label (string "nomchirparg_fit"))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
 		  (plt.xlim (- start_us 10) (+ end_us 10))
