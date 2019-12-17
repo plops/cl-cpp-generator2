@@ -647,22 +647,19 @@
 			xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 				   (< xs_off (* .5 (aref dfc.txpl 0))))
 			arg_nomchirp (* -2 np.pi
-					(+ (* xs_off (+ (aref dfc.txpsf 0)
+					(+ (* xs_off  (+ (aref dfc.txpsf 0)
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
 		  (do0
 		   ,(let ((parm `(xs  delta_t
-				  ph p0 p1 p2 p3
-				  ))
+				      ph  p0 p1 ; p2 p3
+				      ))
 			  (parm0 `(
 
 				   
 				   0s0
-				   -22.5s0
-				   1s0
-				   1s0
-				   0s0
-				   0s0
+				   -98.5s0
+				    1s0  1s0 ; 0s0  0s0
 				   ))
 			  (fun-code
 			   `(do0 (setf
@@ -678,11 +675,15 @@
 					     (< xs_off (+ -.5 (* .5 (aref dfc.txpl 0)))))
 				  arg_nomchirp (+ (* (/ np.pi 180s0) ph)
 						  (* -2 np.pi
-						     (+ (* xs_off p0  (+ (aref dfc.txpsf 0)
-								      (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-							(* (** xs_off 2) p1  .5 (aref dfc.txprr 0))
-							(* (** xs_off 3) p2)
-							(* (** xs_off 4) p3)))))
+						     (+ (*  xs_off p0
+							   (+ (aref dfc.txpsf 0)
+							      (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+							(* (** xs_off 2) p1
+							   .5 (aref dfc.txprr 0)
+							   )
+							;(* (** xs_off 3) p2)
+					;(* (** xs_off 4) p3)
+							))))
 				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp ,parm
@@ -777,9 +778,9 @@
 
 		 (do0 ;; plot phase and cheby poly
 		  (plt.figure)
-		  (setf pl (tuple 2 1))
+		  (setf pl (tuple 3 1))
 		  (plt.subplot2grid pl (tuple 0 0))
-		  (plt.plot arg :label (string "arg_meas"))
+		  (plt.plot xs_a_us arg :label (string "arg_meas"))
 		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cbarg) :label (string "arg_cheb"))
 		  (plt.plot xs_a_us arg_nomchirp :label (string "arg_nomchirp"))
 		  (plt.plot xs_a_us (fun_nomchirparg xs_a_us *opt)
@@ -789,12 +790,28 @@
 		  (plt.xlim (- start_us 10) (+ end_us 10))
 		  (plt.xlabel (string "time (us)"))
 		  (plt.legend)
-		  (plt.subplot2grid pl (tuple 1 0))
-		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
-		  (plt.xlim (- start_us 10) (+ end_us 10))
-		  (plt.xlabel (string "time (us)"))
-		  (do0 (plt.axvline :x start_us :color (string "r"))
-		       (plt.axvline :x end_us :color (string "r")))))
+		  (do0
+		   (plt.subplot2grid pl (tuple 1 0))
+		   (setf scale (/ 1s0 (* 2s0 np.pi)))
+		   (plt.plot xs (* scale (- cut (np.polynomial.chebyshev.chebval xs cbarg))))
+		   (plt.plot xs_a_us (* scale (- (- arg (fun_nomchirparg xs_a_us *opt))
+						 (aref (- arg (fun_nomchirparg xs_a_us *opt))
+						       0)))
+			     :label (string "nomchirparg_fit"))
+		   (plt.xlim (- start_us 10) (+ end_us 10))
+		   (plt.xlabel (string "time (us)"))
+		   (do0 (plt.axvline :x start_us :color (string "r"))
+			(plt.axvline :x end_us :color (string "r"))))
+		  (do0
+		   (plt.subplot2grid pl (tuple 2 0))
+		   
+		   (plt.plot xs (np.angle (np.exp (* 1j (np.polynomial.chebyshev.chebval xs cbarg)))))
+		   (plt.plot xs_a_us (np.angle (np.exp (* 1j (fun_nomchirparg xs_a_us *opt))))
+			     :label (string "nomchirparg_fit"))
+		   (plt.xlim (- start_us 10) (+ end_us 10))
+		   (plt.xlabel (string "time (us)"))
+		   (do0 (plt.axvline :x start_us :color (string "r"))
+			(plt.axvline :x end_us :color (string "r"))))))
 
 		#+nil
 		(do0 "# %% compute phase and amplitude polynomials with image time sampling and convolve with replica"
