@@ -651,15 +651,22 @@
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
 		  (do0
-		   ,(let ((parm `(xs  delta_t ph p0))
+		   ,(let ((parm `(xs  delta_t
+				  ph p0 p1 p2 p3
+				  ))
 			  (parm0 `(
 
 				   
 				   0s0
 				   -22.5s0
-				   1s0))
+				   1s0
+				   1s0
+				   0s0
+				   0s0
+				   ))
 			  (fun-code
 			   `(do0 (setf
+				  delta_t 0s0
 				  amp (+ 0s0 750s0)
 				  ;xs (aref xs_a_us "start:end")
 				  ;amp (np.zeros (len xs_a_us))
@@ -667,13 +674,15 @@
 				  xs_off (- xs (+ delta_t 
 							(+ (* .5  (aref dfc.txpl 0))
 							   .5)))
-				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
-					     (< xs_off (+ .5 (* .5 (aref dfc.txpl 0)))))
+				  xs_mask (& (< (+ .5 (* -.5 (aref dfc.txpl 0))) xs_off)
+					     (< xs_off (+ -.5 (* .5 (aref dfc.txpl 0)))))
 				  arg_nomchirp (+ (* (/ np.pi 180s0) ph)
 						  (* -2 np.pi
 						     (+ (* xs_off p0  (+ (aref dfc.txpsf 0)
 								      (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-							(* (** xs_off 2)  .5 (aref dfc.txprr 0))))))
+							(* (** xs_off 2) p1  .5 (aref dfc.txprr 0))
+							(* (** xs_off 3) p2)
+							(* (** xs_off 4) p3)))))
 				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp ,parm
@@ -705,13 +714,13 @@
 						 .5)
 		       )
 		   (ntuple opt opt2)
-		   (scipy.optimize.curve_fit fun_nomchirp ;_polar
+		   (scipy.optimize.curve_fit fun_nomchirp_polar
 					     xs_a_us
-					     #+nil (np.concatenate
+					     #-nil (np.concatenate
 					      (tuple
 					       (np.abs (aref reps 0))
 					       (np.unwrap (np.angle (aref reps 0)))))
-					     (np.concatenate
+					     #+nil(np.concatenate
 					      (tuple
 					       (np.real (aref reps 0))
 					       (np.imag (aref reps 0))))
