@@ -651,27 +651,29 @@
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
 		  (do0
-		   ,(let ((parm `(xs amp0 amp1 delta_t ph))
-			  (parm0 `(0s0
+		   ,(let ((parm `(xs  delta_t ph p0))
+			  (parm0 `(
+
+				   
 				   0s0
-				   0s0
-				   0s0))
+				   -22.5s0
+				   1s0))
 			  (fun-code
 			   `(do0 (setf
-				  amp (+ amp0 750s0 (* xs amp1))
+				  amp (+ 0s0 750s0)
 				  ;xs (aref xs_a_us "start:end")
 				  ;amp (np.zeros (len xs_a_us))
 				  ;(aref amp "start:end") (np.polynomial.chebyshev.chebval xs cba)
 				  xs_off (- xs (+ delta_t 
-							(
-							 + (* .5 (aref dfc.txpl 0))
-							 .5)))
+							(+ (* .5  (aref dfc.txpl 0))
+							   .5)))
 				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 					     (< xs_off (+ .5 (* .5 (aref dfc.txpl 0)))))
-				  arg_nomchirp (+ (* (/ np.pi 180s0) ph) (* -2 np.pi
-							   (+ (* xs_off (+ (aref dfc.txpsf 0)
-									   (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-							      (* (** xs_off 2) .5 (aref dfc.txprr 0))))))
+				  arg_nomchirp (+ (* (/ np.pi 180s0) ph)
+						  (* -2 np.pi
+						     (+ (* xs_off p0  (+ (aref dfc.txpsf 0)
+								      (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+							(* (** xs_off 2)  .5 (aref dfc.txprr 0))))))
 				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp ,parm
@@ -685,8 +687,9 @@
 			  ,fun-code
 			  (return (np.concatenate
 				   (tuple (np.abs z)
-					  ;arg_nomchirp ;
-					  (np.unwrap (np.angle z))
+					;arg_nomchirp ;
+					  ;(np.angle z)
+					(np.unwrap (np.angle z))
 					  ))))
 			(def fun_nomchirpz ,parm
 			  
@@ -702,12 +705,16 @@
 						 .5)
 		       )
 		   (ntuple opt opt2)
-		   (scipy.optimize.curve_fit fun_nomchirp_polar
+		   (scipy.optimize.curve_fit fun_nomchirp ;_polar
 					     xs_a_us
-					     (np.concatenate
+					     #+nil (np.concatenate
 					      (tuple
 					       (np.abs (aref reps 0))
 					       (np.unwrap (np.angle (aref reps 0)))))
+					     (np.concatenate
+					      (tuple
+					       (np.real (aref reps 0))
+					       (np.imag (aref reps 0))))
 					     :p0 p0))))
 
 		   )

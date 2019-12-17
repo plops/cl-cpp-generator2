@@ -147,36 +147,36 @@ plt.plot(xs_a_us, np.real(reps[0]), label="re reps0")
 xs_off=((xs_a_us)-((((5.e-1))*(dfc.txpl[0])))-((5.e-1)))
 xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))*(dfc.txpl[0]))))))
 arg_nomchirp=((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))
-def fun_nomchirp(xs, amp0, amp1, delta_t, ph):
-    amp=((amp0)+((7.5e+2))+(((xs)*(amp1))))
+def fun_nomchirp(xs, delta_t, ph, p0):
+    amp=(((0.0e+0))+((7.5e+2)))
     xs_off=((xs)-(((delta_t)+((((((5.e-1))*(dfc.txpl[0])))+((5.e-1)))))))
     xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))+((((5.e-1))*(dfc.txpl[0]))))))))
-    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
+    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(p0)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
     z=((amp)*(xs_mask)*(np.exp(((1j)*(arg_nomchirp)))))
     return np.concatenate((np.real(z),np.imag(z),))
-def fun_nomchirp_polar(xs, amp0, amp1, delta_t, ph):
-    amp=((amp0)+((7.5e+2))+(((xs)*(amp1))))
+def fun_nomchirp_polar(xs, delta_t, ph, p0):
+    amp=(((0.0e+0))+((7.5e+2)))
     xs_off=((xs)-(((delta_t)+((((((5.e-1))*(dfc.txpl[0])))+((5.e-1)))))))
     xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))+((((5.e-1))*(dfc.txpl[0]))))))))
-    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
+    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(p0)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
     z=((amp)*(xs_mask)*(np.exp(((1j)*(arg_nomchirp)))))
     return np.concatenate((np.abs(z),np.unwrap(np.angle(z)),))
-def fun_nomchirpz(xs, amp0, amp1, delta_t, ph):
-    amp=((amp0)+((7.5e+2))+(((xs)*(amp1))))
+def fun_nomchirpz(xs, delta_t, ph, p0):
+    amp=(((0.0e+0))+((7.5e+2)))
     xs_off=((xs)-(((delta_t)+((((((5.e-1))*(dfc.txpl[0])))+((5.e-1)))))))
     xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))+((((5.e-1))*(dfc.txpl[0]))))))))
-    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
+    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(p0)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
     z=((amp)*(xs_mask)*(np.exp(((1j)*(arg_nomchirp)))))
     return z
-def fun_nomchirparg(xs, amp0, amp1, delta_t, ph):
-    amp=((amp0)+((7.5e+2))+(((xs)*(amp1))))
+def fun_nomchirparg(xs, delta_t, ph, p0):
+    amp=(((0.0e+0))+((7.5e+2)))
     xs_off=((xs)-(((delta_t)+((((((5.e-1))*(dfc.txpl[0])))+((5.e-1)))))))
     xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))+((((5.e-1))*(dfc.txpl[0]))))))))
-    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
+    arg_nomchirp=((((((np.pi)/((1.8e+2))))*(ph)))+(((-2)*(np.pi)*(((((xs_off)*(p0)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))))
     z=((amp)*(xs_mask)*(np.exp(((1j)*(arg_nomchirp)))))
     return arg_nomchirp
-p0=((0.0e+0),(0.0e+0),(0.0e+0),(0.0e+0),)
-opt, opt2=scipy.optimize.curve_fit(fun_nomchirp_polar, xs_a_us, np.concatenate((np.abs(reps[0]),np.unwrap(np.angle(reps[0])),)), p0=p0)
+p0=((0.0e+0),(-2.25e+1),(1.e+0),)
+opt, opt2=scipy.optimize.curve_fit(fun_nomchirp, xs_a_us, np.concatenate((np.real(reps[0]),np.imag(reps[0]),)), p0=p0)
 plt.plot(xs_a_us, np.real(fun_nomchirpz(xs_a_us, *opt)), label="nomchirp_fit")
 plt.plot(xs, np.polynomial.chebyshev.chebval(xs, cba))
 plt.axvline(x=start_us, color="r")
