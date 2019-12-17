@@ -651,20 +651,26 @@
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
 		  (do0
-		   ,(let ((parm `(xs delta_t ph p1 p2))
+		   ,(let ((parm `(xs amp0 delta_t ph))
+			  (parm0 `(0s0
+				   0s0
+				   0s0))
 			  (fun-code
 			   `(do0 (setf
-				  amp 750s0
+				  amp (+ amp0 750s0)
 				  ;xs (aref xs_a_us "start:end")
 				  ;amp (np.zeros (len xs_a_us))
 				  ;(aref amp "start:end") (np.polynomial.chebyshev.chebval xs cba)
-				  xs_off (- xs delta_t )
+				  xs_off (- xs (+ delta_t 
+							(
+							 + (* .5 (aref dfc.txpl 0))
+							 .5)))
 				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 					     (< xs_off (* .5 (aref dfc.txpl 0))))
 				  arg_nomchirp (+ ph (* -2 np.pi
-							(+ (* xs_off (+ p1 (aref dfc.txpsf 0)
+							(+ (* xs_off (+ (aref dfc.txpsf 0)
 									(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-							   (* (** xs_off 2) .5 (+ p2 (aref dfc.txprr 0)))))))
+							   (* (** xs_off 2) .5 (aref dfc.txprr 0))))))
 				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp ,parm
@@ -673,31 +679,37 @@
 			  (return (np.concatenate
 				   (tuple (np.real z)
 					  (np.imag z)))))
+			(def fun_nomchirp_polar ,parm
+			  
+			  ,fun-code
+			  (return (np.concatenate
+				   (tuple (np.abs z)
+					  ;arg_nomchirp ;
+					  (np.unwrap (np.angle z))
+					  ))))
 			(def fun_nomchirpz ,parm
 			  
 			  ,fun-code
 			  (return z))
 			(def fun_nomchirparg ,parm
 			  ,fun-code
-			  (return arg_nomchirp))))
-
-		  (setf
+			  (return arg_nomchirp))
+			(setf
 		   p0  (tuple
-			
-			(+ (* .5 (aref dfc.txpl 0))
+			,@parm0
+			#+nil(+ (* .5 (aref dfc.txpl 0))
 						 .5)
-		       
-			0s0
-			0s0
-			0s0)
+		       )
 		   (ntuple opt opt2)
-		   (scipy.optimize.curve_fit fun_nomchirp
+		   (scipy.optimize.curve_fit fun_nomchirp_polar
 					     xs_a_us
 					     (np.concatenate
 					      (tuple
-					       (np.real (aref reps 0))
-					       (np.imag (aref reps 0))))
-					     :p0 p0)))
+					       (np.abs (aref reps 0))
+					       (np.unwrap (np.angle (aref reps 0)))))
+					     :p0 p0))))
+
+		   )
 		  (plt.plot xs_a_us (* 750 xs_mask (np.real (np.exp (* 1j arg_nomchirp))))
 			    :label (string "nomchirp"))
 		  (plt.plot xs_a_us (np.real (fun_nomchirpz xs_a_us *opt))
