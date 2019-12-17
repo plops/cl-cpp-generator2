@@ -650,8 +650,47 @@
 					(+ (* xs_off (+ (aref dfc.txpsf 0)
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
+		  (do0
+		   ,(let ((fun-code
+			   `(do0 (setf
+				  amp 750s0
+				  xs_off (- xs delta_t )
+				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
+					     (< xs_off (* .5 (aref dfc.txpl 0))))
+				  arg_nomchirp (* -2 np.pi
+						  (+ (* xs_off (+ (aref dfc.txpsf 0)
+								  (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+						     (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
+				 (setf z (* amp xs_mask (np.exp (* 1j (+ arg_nomchirp ph))))))))
+		      `(do0
+			(def fun_nomchirp (xs delta_t ph)
+			  ,fun-code
+			  (return (np.concatenate
+				   (tuple (np.real z)
+					  (np.imag z)))))
+			(def fun_nomchirpz (xs delta_t ph)
+			  ,fun-code
+			  (return z))))
+
+		  (setf
+		   p0  (tuple
+			
+			(+ (* .5 (aref dfc.txpl 0))
+						 .5)
+		       
+			0s0)
+		   (ntuple opt opt2)
+		   (scipy.optimize.curve_fit fun_nomchirp
+					     xs_a_us
+					     (np.concatenate
+					      (tuple
+					       (np.real (aref reps 0))
+					       (np.imag (aref reps 0))))
+					     :p0 p0)))
 		  (plt.plot xs_a_us (* 750 xs_mask (np.real (np.exp (* 1j arg_nomchirp))))
 			    :label (string "nomchirp"))
+		  (plt.plot xs_a_us (np.real (fun_nomchirpz xs_a_us *opt))
+			    :label (string "nomchirp_fit"))
 		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cba))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
