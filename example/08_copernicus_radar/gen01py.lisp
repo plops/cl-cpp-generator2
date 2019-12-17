@@ -651,13 +651,14 @@
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
 		  (do0
-		   ,(let ((parm `(xs amp0 delta_t ph))
+		   ,(let ((parm `(xs amp0 amp1 delta_t ph))
 			  (parm0 `(0s0
+				   0s0
 				   0s0
 				   0s0))
 			  (fun-code
 			   `(do0 (setf
-				  amp (+ amp0 750s0)
+				  amp (+ amp0 750s0 (* xs amp1))
 				  ;xs (aref xs_a_us "start:end")
 				  ;amp (np.zeros (len xs_a_us))
 				  ;(aref amp "start:end") (np.polynomial.chebyshev.chebval xs cba)
@@ -666,11 +667,11 @@
 							 + (* .5 (aref dfc.txpl 0))
 							 .5)))
 				  xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
-					     (< xs_off (* .5 (aref dfc.txpl 0))))
-				  arg_nomchirp (+ ph (* -2 np.pi
-							(+ (* xs_off (+ (aref dfc.txpsf 0)
-									(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
-							   (* (** xs_off 2) .5 (aref dfc.txprr 0))))))
+					     (< xs_off (+ .5 (* .5 (aref dfc.txpl 0)))))
+				  arg_nomchirp (+ (* (/ np.pi 180s0) ph) (* -2 np.pi
+							   (+ (* xs_off (+ (aref dfc.txpsf 0)
+									   (* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
+							      (* (** xs_off 2) .5 (aref dfc.txprr 0))))))
 				 (setf z (* amp xs_mask (np.exp (* 1j arg_nomchirp)))))))
 		      `(do0
 			(def fun_nomchirp ,parm
@@ -710,7 +711,7 @@
 					     :p0 p0))))
 
 		   )
-		  (plt.plot xs_a_us (* 750 xs_mask (np.real (np.exp (* 1j arg_nomchirp))))
+		  #+nil(plt.plot xs_a_us (* 750 xs_mask (np.real (np.exp (* 1j arg_nomchirp))))
 			    :label (string "nomchirp"))
 		  (plt.plot xs_a_us (np.real (fun_nomchirpz xs_a_us *opt))
 			    :label (string "nomchirp_fit"))
@@ -722,8 +723,12 @@
 		  (plt.legend)
 		  (plt.subplot2grid pl (tuple 1 0))
 		  
-		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba)))
-
+		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba))
+			    :label (string "cheb res")
+			    )
+		  (plt.plot xs_a_us (np.abs (- (aref reps 0) (fun_nomchirpz xs_a_us *opt)))
+			    :label (string "z res"))
+		  (plt.legend)
 
 		  (plt.xlim (- start_us 10) (+ end_us 10))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
