@@ -631,7 +631,7 @@
 		  (ntuple cba cba_diag)
 		  (np.polynomial.chebyshev.chebfit xs
 						   cut
-						   23
+						   2
 						   :full True))
 
 		 
@@ -728,10 +728,39 @@
 					     :p0 p0))))
 
 		   )
+
+		  (do0 "# %% fit polynomial to phase"
+		  (setf a (np.abs (aref reps 0))
+			arg (np.unwrap (np.angle (aref reps 0)))
+			th (* th_level (np.max a))
+			mask (< th a)
+			start (np.argmax mask)
+			end (- (len mask)
+			       (np.argmax (aref mask "::-1")))
+			cut (aref arg "start:end")
+			fdec (dot (aref dfc.iloc 0)
+				  fdec)
+			start_us (/ start fdec)
+			end_us (/ end fdec))
+		  (setf
+		   xs_a_us  (/ (np.arange (len a)) fdec)
+		   xs (aref xs_a_us "start:end")
+		   (ntuple cbarg cbarg_diag)
+		   (np.polynomial.chebyshev.chebfit xs
+						    cut
+						    2
+						    :full True)))
+		  
 		  #+nil(plt.plot xs_a_us (* 750 xs_mask (np.real (np.exp (* 1j arg_nomchirp))))
 			    :label (string "nomchirp"))
-		  (plt.plot xs_a_us (np.real (fun_nomchirpz xs_a_us *opt))
+		  #+nil (plt.plot xs_a_us (np.real (fun_nomchirpz xs_a_us *opt))
 			    :label (string "nomchirp_fit"))
+
+		  (plt.plot xs (np.real (* (np.polynomial.chebyshev.chebval xs cba)
+					   (np.exp (* 1j (np.polynomial.chebyshev.chebval xs cbarg)))))
+
+			    :label (string "cheb_full"))
+		  
 		  (plt.plot xs (np.polynomial.chebyshev.chebval xs cba))
 		  (do0 (plt.axvline :x start_us :color (string "r"))
 		       (plt.axvline :x end_us :color (string "r")))
@@ -739,11 +768,18 @@
 		  (plt.xlabel (string "time (us)"))
 		  (plt.legend)
 		  (plt.subplot2grid pl (tuple 1 0))
-		  
-		  (plt.plot xs (- cut (np.polynomial.chebyshev.chebval xs cba))
+		  #+nil
+		  (plt.plot xs (- (aref (np.abs (aref reps 0))
+					"start:end")
+				  (np.polynomial.chebyshev.chebval xs cba))
 			    :label (string "cheb res")
 			    )
-		  (plt.plot xs_a_us (np.abs (- (aref reps 0) (fun_nomchirpz xs_a_us *opt)))
+		  (plt.plot xs (np.abs (- (aref (aref reps 0) "start:end")
+					  (* (np.polynomial.chebyshev.chebval xs cba)
+					   (np.exp (* 1j (np.polynomial.chebyshev.chebval xs cbarg))))))
+			    :label (string "cheb full")
+			    )
+		  #+nil (plt.plot xs_a_us (np.abs (- (aref reps 0) (fun_nomchirpz xs_a_us *opt)))
 			    :label (string "z res"))
 		  (plt.legend)
 
@@ -752,29 +788,11 @@
 		       (plt.axvline :x end_us :color (string "r")))
 		  (plt.xlabel (string "time (us)"))))
 
-		(do0
-		 "# %% fit polynomial to phase"
+		(do0 "# %% show phase fit"
 		 
-		 (setf a (np.abs (aref reps 0))
-		       arg (np.unwrap (np.angle (aref reps 0)))
-		       th (* th_level (np.max a))
-		       mask (< th a)
-		       start (np.argmax mask)
-		       end (- (len mask)
-			      (np.argmax (aref mask "::-1")))
-		       cut (aref arg "start:end")
-		       fdec (dot (aref dfc.iloc 0)
-				 fdec)
-		       start_us (/ start fdec)
-		       end_us (/ end fdec))
-		 (setf
-		  xs_a_us  (/ (np.arange (len a)) fdec)
-		  xs (aref xs_a_us "start:end")
-		  (ntuple cbarg cbarg_diag)
-		  (np.polynomial.chebyshev.chebfit xs
-						   cut
-						   22
-						   :full True))
+
+		     
+		 
 
 		 (do0 ;; plot phase and cheby poly
 		  (plt.figure)
@@ -792,19 +810,22 @@
 		  (plt.legend)
 		  (do0
 		   (plt.subplot2grid pl (tuple 1 0))
-		   (setf scale (/ 1s0 (* 2s0 np.pi)))
-		   (plt.plot xs (* scale (- cut (np.polynomial.chebyshev.chebval xs cbarg))))
+		   (setf scale (/ 360s0 (* 2s0 np.pi)))
+		   (plt.ylabel (string "phase error (deg)"))
+		   (plt.plot xs (* scale (- cut (np.polynomial.chebyshev.chebval xs cbarg)))
+			     :label (string "cbarg"))
 		   (plt.plot xs_a_us (* scale (- (- arg (fun_nomchirparg xs_a_us *opt))
 						 (aref (- arg (fun_nomchirparg xs_a_us *opt))
 						       0)))
 			     :label (string "nomchirparg_fit"))
+		   (plt.legend)
 		   (plt.xlim (- start_us 10) (+ end_us 10))
 		   (plt.xlabel (string "time (us)"))
 		   (do0 (plt.axvline :x start_us :color (string "r"))
 			(plt.axvline :x end_us :color (string "r"))))
 		  (do0
 		   (plt.subplot2grid pl (tuple 2 0))
-		   
+		   (plt.ylabel (string "phase error (deg)"))
 		   (plt.plot xs (np.angle (np.exp (* 1j (np.polynomial.chebyshev.chebval xs cbarg)))))
 		   (plt.plot xs_a_us (np.angle (np.exp (* 1j (fun_nomchirparg xs_a_us *opt))))
 			     :label (string "nomchirparg_fit"))
