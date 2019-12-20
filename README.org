@@ -323,3 +323,4 @@ comments. Their suggestions went into cl-cpp-generator2.
 - https://www.youtube.com/watch?v=9ULGJwRu0Q0 cache associativity
 
 - how to compile programs that run on most modern linux distributions (>2011): https://casualhacking.io/blog/2018/12/25/create-highly-portable-elf-binaries-using-the-build-anywhere-toolchain
+- https://github.com/andreasfertig/cppinsights C++ Insights is a clang-based tool which does a source to source transformation. Its goal is to make things visible which normally, and intentionally, happen behind the scenes.
