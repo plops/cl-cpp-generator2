@@ -89,7 +89,7 @@ dfa["ranked_txpl_"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl
 dfa["ranked_txpsf"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpsf
 dfa["ranked_ses_ssb_tx_pulse_number"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().ses_ssb_tx_pulse_number
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,6000,))
-ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(1000,24890,))
+ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(4000,24890,))
 u=dfc.cal_type_desc.unique()
 un=dfc.number_of_quads.unique()
 count=0
@@ -245,6 +245,9 @@ def make_chirp(row, n=6000):
     return (nomchirp_im,nomchirp_xs,)
 nomchirp_0=make_chirp(dfc.iloc[0])
 nomchirp_im_0=make_chirp(df.iloc[0], n=ss.shape[1])
+kchirp=np.conj(np.fft.fft(nomchirp_im_0[0]))
+kss=np.fft.fft(ss, axis=1)
+compss=np.fft.ifft(((kss)*(kchirp)))
 plt.plot(xs, ((np.polynomial.chebyshev.chebval(xs, cbarg))-(0)), label="arg_cheb")
 plt.plot(xs, ((np.polynomial.polynomial.polyval(xs, polyarg))-(0)), label="arg_poly")
 plt.plot(xs, polyarg3, label="arg_poly3")

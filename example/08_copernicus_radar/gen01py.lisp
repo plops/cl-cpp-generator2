@@ -368,7 +368,7 @@
 				   :shape #+nil (tuple 7000 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 1000
+				   (tuple 4000
 					  24890)))
 		
 		(setf u (dfc.cal_type_desc.unique)
@@ -840,8 +840,12 @@
 							(* (** nomchirp_xs 2) (* .5 row.txprr))))))))
 		    (return (tuple nomchirp_im nomchirp_xs)))
 		  (setf nomchirp_0 (make_chirp (aref dfc.iloc 0)))
-		  (setf nomchirp_im_0 (make_chirp (aref df.iloc 0)
-						  :n (aref ss.shape 1)))
+		  (do0
+		   (setf nomchirp_im_0 (make_chirp (aref df.iloc 0)
+						   :n (aref ss.shape 1)))
+		   (setf kchirp (np.conj (np.fft.fft (aref nomchirp_im_0 0)))
+			 kss (np.fft.fft ss :axis 1)
+			 compss (np.fft.ifft (* kss kchirp))))
 
 		  (plt.plot xs (- (np.polynomial.chebyshev.chebval xs cbarg)
 				  0 ;(np.polynomial.chebyshev.chebval xs_extreme cbarg)
