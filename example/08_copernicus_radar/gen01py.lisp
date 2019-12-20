@@ -650,6 +650,7 @@
 					(+ (* xs_off  (+ (aref dfc.txpsf 0)
 							(* .5 (aref dfc.txpl 0) (aref dfc.txprr 0))))
 					   (* (** xs_off 2) .5 (aref dfc.txprr 0)))))
+		  
 		  (do0
 		   ,(let ((parm `(xs  delta_t
 				      ph  p0 p1 ; p2 p3
@@ -818,6 +819,13 @@
 			 polyarg3 (* -2 np.pi
 				     (+ (* xs3  polyarg3_a)
 					(* (** xs3 2) polyarg3_b)))))
+		  (setf
+		   nomchirp_xs (/ (np.arange (len a)) fdec)
+		   nomchirp_mask (< nomchirp_xs (aref dfc.txpl 0))
+		   nomchirp_im (* (* 750s0 nomchirp_mask)
+				  (np.exp (* 1j (* -2 np.pi
+						   (+ (* nomchirp_xs  (aref dfc.txpsf 0))
+						      (* (** nomchirp_xs 2) (* .5 (aref dfc.txprr 0)))))))))
 		  (plt.plot xs (- (np.polynomial.chebyshev.chebval xs cbarg)
 				  0 ;(np.polynomial.chebyshev.chebval xs_extreme cbarg)
 				  ) :label (string "arg_cheb"))
@@ -826,6 +834,7 @@
 				  ) :label (string "arg_poly"))
 		  #+nil (plt.plot xs polyarg2 :label (string "arg_poly2"))
 		  (plt.plot xs polyarg3 :label (string "arg_poly3"))
+		  (plt.plot nomchirp_xs (np.unwrap (np.angle nomchirp_im)) :label (string "nomchirp_im"))
 		  #+nil (plt.plot xs_a_us arg_nomchirp :label (string "arg_nomchirp"))
 		  #+nil (plt.plot xs_a_us (fun_nomchirparg xs_a_us *opt)
 			    :label (string "nomchirparg_fit"))
