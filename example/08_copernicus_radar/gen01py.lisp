@@ -162,7 +162,7 @@
 				       )
 				 (list 0 1 1 1 2 2 3 3 3 4 4))))
 		
-		,@(loop for d in `(dfc df) collect
+		,@(loop for d in `(dfc df dfa) collect
 		       `(do0
 			 ,@(loop for e in `(decimation_filter_bandwidth
 					    decimation_filter_L
@@ -178,7 +178,7 @@
 							 (aref ,name x))
 						       (dot ,d rgdec)))))))))
 		(setf fref 37.53472224)
-		,@(loop for d in `(dfc df) collect
+		,@(loop for d in `(dfc df dfa) collect
 		       `(do0
 			 (setf (aref ,d (string "fdec"))
 			       (* 4 fref
@@ -819,6 +819,7 @@
 			 polyarg3 (* -2 np.pi
 				     (+ (* xs3  polyarg3_a)
 					(* (** xs3 2) polyarg3_b)))))
+		  
 		  (setf
 		   nomchirp_xs (/ (np.arange (len a)) (dot (aref dfc.iloc 0)
 							   fdec))
@@ -827,6 +828,21 @@
 				  (np.exp (* 1j (* -2 np.pi
 						   (+ (* nomchirp_xs  (aref dfc.txpsf 0))
 						      (* (** nomchirp_xs 2) (* .5 (aref dfc.txprr 0)))))))))
+
+		  (def make_chirp (row &key (n 6000))
+		    (setf
+		     nomchirp_xs (/ (np.arange n) (dot row
+							     fdec))
+		     nomchirp_mask (< nomchirp_xs row.txpl)
+		     nomchirp_im (* (* 750s0 nomchirp_mask)
+				    (np.exp (* 1j (* -2 np.pi
+						     (+ (* nomchirp_xs  row.txpsf)
+							(* (** nomchirp_xs 2) (* .5 row.txprr))))))))
+		    (return (tuple nomchirp_im nomchirp_xs)))
+		  (setf nomchirp_0 (make_chirp (aref dfc.iloc 0)))
+		  (setf nomchirp_im_0 (make_chirp (aref df.iloc 0)
+						  :n (aref ss.shape 1)))
+
 		  (plt.plot xs (- (np.polynomial.chebyshev.chebval xs cbarg)
 				  0 ;(np.polynomial.chebyshev.chebval xs_extreme cbarg)
 				  ) :label (string "arg_cheb"))
