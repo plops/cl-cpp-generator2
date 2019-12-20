@@ -820,7 +820,8 @@
 				     (+ (* xs3  polyarg3_a)
 					(* (** xs3 2) polyarg3_b)))))
 		  (setf
-		   nomchirp_xs (/ (np.arange (len a)) fdec)
+		   nomchirp_xs (/ (np.arange (len a)) (dot (aref dfc.iloc 0)
+							   fdec))
 		   nomchirp_mask (< nomchirp_xs (aref dfc.txpl 0))
 		   nomchirp_im (* (* 750s0 nomchirp_mask)
 				  (np.exp (* 1j (* -2 np.pi
