@@ -10,3 +10,7 @@ void errorCallback (int err, const char* description);
 static void framebufferResizeCallback (GLFWwindow* window, int width, int height);
 void initWindow ();
 void cleanupWindow ();
+void uploadTex (const void* image, int w, int h);
+void initDraw ();
+void cleanupDraw ();
+void drawFrame ();
