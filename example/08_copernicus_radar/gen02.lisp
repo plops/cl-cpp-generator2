@@ -316,9 +316,16 @@
 	      (defun drawFrame ()
 		(glClear GL_COLOR_BUFFER_BIT)
 		(do0
-		 (glBegin GL_LINES)
-		 (glVertex2f 0 0)
-		 (glVertex2f 1 1)
+		 (glBegin GL_QUADS)
+		 ,@(loop for (e f) in `((0 0)
+					(0 1)
+					(1 1)
+					(1 0))
+		      collect
+			`(do0
+			  (glVertex2f ,(* 1 (- e .5))
+				      ,(* 1 (- f .5)))
+			  (glTexCoord2f ,e ,f)))
 		 (glEnd))
 		(glfwSwapBuffers ,(g `_window))))))
   
