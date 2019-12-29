@@ -13,6 +13,8 @@ struct State {
   GLFWwindow *_window;
   size_t _mmap_filesize;
   void *_mmap_data;
+  int _echo;
+  int _range;
   char const *_filename;
 };
 typedef struct State State;

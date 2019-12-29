@@ -15,16 +15,7 @@
 					      :log-brc
 					      :log-consume
 					      )))
-(let ((data-filename "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/o_range24890_echoes48141.cf")
-      )
-  (cl-ppcre:register-groups-bind (a b) ("[.*](\\d*)_[.*](\\d*)" data-filename)
-    (list a b)))
 
-(let ((data-filename "o_range24890_echoes48141.cf")
-      )
-  (cl-ppcre:register-groups-bind (range echo) (".*range(\\d*).*echoes(\\d*)\\.cf" data-filename)
-    (list (parse-integer range)
-	  (parse-integer echo))))
 
 (progn
   ;; make sure to run this code twice during the first time, so that
@@ -137,65 +128,76 @@
 		     *module-global-parameters*))))))
   (defun g (arg)
     `(dot state ,arg))
-  ,(let ((data-filename "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/o_range24890_echoes48141.cf"))
-   `(define-module
-       `(main ((_filename :direction 'out :type "char const *"))
-	      (do0
-	       (include <iostream>
-			<chrono>
-			<cstdio>
-			<cassert>
-			<unordered_map>
-			<string>
-			<fstream>)
+  
+  (let ((data-filename "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/o_range24890_echoes48141.cf"))
+     (cl-ppcre:register-groups-bind (range-s echo-s) (".*range(\\d*).*echoes(\\d*)\\.cf" data-filename)
+       (let ((range-value (parse-integer range-s))
+	     (echo-value (parse-integer echo-s)))
+	 (define-module
+	      `(main ((_filename :direction 'out :type "char const *")
+		     (_range :direction 'out :type int)
+		     (_echo :direction 'out :type int)
+		     )
+		    (do0
+		     (include <iostream>
+			      <chrono>
+			      <cstdio>
+			      <cassert>
+			      <unordered_map>
+			      <string>
+			      <fstream>)
 
-	      
-	       (let ((state ,(emit-globals :init t)))
-		 (declare (type "State" state)))
-
-
-	       (do0
-		(defun now ()
-		  (declare (values double))
-		  (let ((tp))
-		    (declare (type "struct timespec" tp))
-		    ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
-		    (clock_gettime CLOCK_REALTIME &tp)
-		    (return (+ (cast double tp.tv_sec)
-			       (* 1d-9 tp.tv_nsec)))))
-		(defun mainLoop ()
-		  ,(logprint "mainLoop" `())
 		 
-		  (while (not (glfwWindowShouldClose ,(g `_window)))
-		    (glfwPollEvents)
-		    (drawFrame)
-		   
-		    )
-		 
-		  )
-		(defun run ()
-		  (initWindow)
-		  (initDraw)
-		  (mainLoop)
+		     (let ((state ,(emit-globals :init t)))
+		       (declare (type "State" state)))
+
+
+		     (do0
+		      (defun now ()
+			(declare (values double))
+			(let ((tp))
+			  (declare (type "struct timespec" tp))
+			  ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+			  (clock_gettime CLOCK_REALTIME &tp)
+			  (return (+ (cast double tp.tv_sec)
+				     (* 1d-9 tp.tv_nsec)))))
+		      (defun mainLoop ()
+			,(logprint "mainLoop" `())
+		    
+			(while (not (glfwWindowShouldClose ,(g `_window)))
+			  (glfwPollEvents)
+			  (drawFrame)
+		      
+			  )
+		    
+			)
+		      (defun run ()
+			(initWindow)
+			(initDraw)
+			(mainLoop)
 					;(cleanup)
-		  )
-		)
-	      
-	       (defun main ()
-		 (declare (values int))
-		 (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
-					      (time_since_epoch)
-					      (count)))
+			)
+		      )
+		 
+		     (defun main ()
+		       (declare (values int))
+		       (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+						    (time_since_epoch)
+						    (count))
+			     ,(g `_echo) ,echo-value
+			     ,(g `_range) ,range-value)
 					;(vkprint "main" )
-		 (setf ,(g `_filename)
-		       (string
-			,data-filename)) 
-		 (init_mmap ,(g `_filename))
-		 (do0
-		  (run)
-		  (cleanupDraw)
-		  (cleanupWindow))
-		 (return 0))))))
+		       (setf ,(g `_filename)
+			     (string
+			      ,data-filename)) 
+		       (init_mmap ,(g `_filename))
+		       (do0
+			(run)
+			(cleanupDraw)
+			(cleanupWindow))
+		       (return 0))))))))
+
+  
   		 
 		 
   
