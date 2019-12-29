@@ -2,10 +2,14 @@
 
 #define GLOBALS_H
 
+#include <GLFW/glfw3.h>
+
 #include <chrono>
 struct State {
   typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
       _start_time;
+  bool _framebufferResized;
+  GLFWwindow *_window;
   size_t _mmap_filesize;
   void *_mmap_data;
   char const *_filename;

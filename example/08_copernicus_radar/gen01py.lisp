@@ -365,10 +365,12 @@
 					      (glob (string "o_r*.cf"))))
 				   :dtype np.complex64
 				   :mode (string "r")
-				   :shape #+nil (tuple 7000 ; 22778
+				   :offset (* 4 2 24890 10800)
+				   :shape #+nil (tuple 1400 ; 22778
 						       15283 ;; range
 						       )
-				   (tuple 4000
+				   
+				   (tuple 7400
 					  24890)))
 		
 		(setf u (dfc.cal_type_desc.unique)
@@ -836,7 +838,7 @@
 		     nomchirp_mask (< nomchirp_xs row.txpl)
 		     nomchirp_im (* (* 750s0 nomchirp_mask)
 				    (np.exp (* 1j (* -2 np.pi
-						     (+ (* nomchirp_xs  row.txpsf)
+						     (+ (* nomchirp_xs  (+ 20 row.txpsf))
 							(* (** nomchirp_xs 2) (* .5 row.txprr))))))))
 		    (return (tuple nomchirp_im nomchirp_xs)))
 		  (setf nomchirp_0 (make_chirp (aref dfc.iloc 0)))

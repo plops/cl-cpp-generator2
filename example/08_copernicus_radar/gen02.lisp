@@ -138,8 +138,39 @@
 		       <unordered_map>
 		       <string>
 		       <fstream>)
+
+	      
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
+
+
+	      (do0
+	       (defun now ()
+		 (declare (values double))
+		 (let ((tp))
+		   (declare (type "struct timespec" tp))
+		   ;; https://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
+		   (clock_gettime CLOCK_REALTIME &tp)
+		   (return (+ (cast double tp.tv_sec)
+			      (* 1d-9 tp.tv_nsec)))))
+	       (defun mainLoop ()
+		 ,(logprint "mainLoop" `())
+		 
+		 (while (not (glfwWindowShouldClose ,(g `_window)))
+		   (glfwPollEvents)
+		   ;(drawFrame)
+		   
+		   )
+		 
+		 )
+	       (defun run ()
+		 (initWindow)
+		 ;(initDraw)
+		 (mainLoop)
+					;(cleanup)
+		 )
+	       )
+	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -150,7 +181,14 @@
 		      (string
 		       "/home/martin//stage/cl-cpp-generator2/example/08_copernicus_radar/source/o_range24890_echoes48141.cf")) 
 		(init_mmap ,(g `_filename))
+		(do0
+		 (run)
+		 ;(cleanupDraw)
+		 (cleanupWindow))
 		(return 0)))))
+  		 
+		 
+  
   (define-module
       `(mmap
 	((_mmap_data :direction 'out :type void*)
@@ -191,6 +229,61 @@
 	       (assert (!= MAP_FAILED data))
 	       (setf ,(g `_mmap_filesize) filesize
 		     ,(g `_mmap_data) data)))))))
+
+  (define-module
+      `(glfw_window
+	((_window :direction 'out :type GLFWwindow* )
+	 (_framebufferResized :direction 'out :type bool)
+	 )
+	(do0
+	 
+	 (defun keyCallback (window key scancode action mods)
+	   (declare (type GLFWwindow* window)
+		    (type int key scancode action mods))
+	   (when (and (or (== key GLFW_KEY_ESCAPE)
+			  (== key GLFW_KEY_Q))
+		      (== action GLFW_PRESS))
+	     (glfwSetWindowShouldClose window GLFW_TRUE))
+	   )
+	 (defun errorCallback (err description)
+	   (declare (type int err)
+		    (type "const char*" description))
+	   ,(logprint "error" `(err description)))
+	 (defun framebufferResizeCallback (window width height)
+	   (declare (values "static void")
+		    ;; static because glfw doesnt know how to call a member function with a this pointer
+		    (type GLFWwindow* window)
+		    (type int width height))
+	   ,(logprint "resize" `(width height))
+	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
+	     (setf app->_framebufferResized true)))
+	 (defun initWindow ()
+	   (declare (values void))
+	   (when (glfwInit)
+	     (do0
+	      (glfwSetErrorCallback errorCallback)
+	      
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 2)
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
+	      
+	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
+	      (setf ,(g `_window) (glfwCreateWindow 800 600
+						    (string "optix window")
+						    NULL
+						    NULL))
+	      ;; store this pointer to the instance for use in the callback
+	      (glfwSetKeyCallback ,(g `_window) keyCallback)
+	      (glfwSetWindowUserPointer ,(g `_window) (ref state))
+	      (glfwSetFramebufferSizeCallback ,(g `_window)
+					      framebufferResizeCallback)
+	      (glfwMakeContextCurrent ,(g `_window))
+	      )))
+	 (defun cleanupWindow ()
+	   (declare (values void))
+	   (glfwDestroyWindow ,(g `_window))
+	   (glfwTerminate)
+	   ))))
+  
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
@@ -223,6 +316,7 @@
 			     <array>
 			     <iostream>
 			     <iomanip>)
+		    
 		    " "
 		    (do0
 		     
@@ -248,6 +342,8 @@
 		    "#ifndef GLOBALS_H"
 		    " "
 		    "#define GLOBALS_H"
+		    " "
+		    (include <GLFW/glfw3.h>)
 		    " "
 		    ,(emit-globals)
 		    " "

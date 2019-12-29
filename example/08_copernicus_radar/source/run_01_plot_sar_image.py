@@ -89,7 +89,7 @@ dfa["ranked_txpl_"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl
 dfa["ranked_txpsf"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpsf
 dfa["ranked_ses_ssb_tx_pulse_number"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().ses_ssb_tx_pulse_number
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,6000,))
-ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", shape=(4000,24890,))
+ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", offset=((4)*(2)*(24890)*(10800)), shape=(7400,24890,))
 u=dfc.cal_type_desc.unique()
 un=dfc.number_of_quads.unique()
 count=0
@@ -241,7 +241,7 @@ nomchirp_im=(((((7.5e+2))*(nomchirp_mask)))*(np.exp(((1j)*(((-2)*(np.pi)*(((((no
 def make_chirp(row, n=6000):
     nomchirp_xs=((np.arange(n))/(row.fdec))
     nomchirp_mask=((nomchirp_xs)<(row.txpl))
-    nomchirp_im=(((((7.5e+2))*(nomchirp_mask)))*(np.exp(((1j)*(((-2)*(np.pi)*(((((nomchirp_xs)*(row.txpsf)))+(((((nomchirp_xs)**(2)))*((((5.e-1))*(row.txprr)))))))))))))
+    nomchirp_im=(((((7.5e+2))*(nomchirp_mask)))*(np.exp(((1j)*(((-2)*(np.pi)*(((((nomchirp_xs)*(((20)+(row.txpsf)))))+(((((nomchirp_xs)**(2)))*((((5.e-1))*(row.txprr)))))))))))))
     return (nomchirp_im,nomchirp_xs,)
 nomchirp_0=make_chirp(dfc.iloc[0])
 nomchirp_im_0=make_chirp(df.iloc[0], n=ss.shape[1])

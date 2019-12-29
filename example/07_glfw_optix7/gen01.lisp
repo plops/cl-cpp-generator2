@@ -174,7 +174,7 @@
 		(run)
 		(cleanupDraw)
 		(cleanupWindow)))))
-    (define-module
+  (define-module
       `(glfw_window
 	((_window :direction 'out :type GLFWwindow* ) )
 	(do0
