@@ -1,0 +1,4 @@
+| file   | priority | comment                                                 |
+| gen00  |        0 | decode space packet data and header information         |
+| gen01  |        1 | visualize decoded calibration and echo data with python |
+| gen02  |        1 | try doppler decoding of raw data                        |
