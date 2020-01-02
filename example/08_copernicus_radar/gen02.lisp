@@ -392,8 +392,37 @@
 		     "/opt/cuda/targets/x86_64-linux/include/cuda_runtime.h"
 		     )
 		    " "
-		    "typedef float2 Complex;"
+		    ,(emit-utils :code
+				 `(do0
+				   "typedef float2 Complex;"))
+		    
 		    " "
+		    (defun ComplexMul (a b)
+		      (declare (type Complex a b)
+			       (values "static __device__ __host__ inline Complex"))
+		      (let ((c))
+			(declare (type Complex c))
+			(setf c.x (- (* a.x b.x)
+				     (* a.y b.y))
+			      c.y (+ (* a.x b.y)
+				     (* a.y b.x)))
+			(return c)))
+		    (defun ComplexPointwiseMul (a b size)
+		      (declare (type Complex* a b)
+			       (type int size)
+			       (values "static __global__ void"))
+		      (let ((numThreads (* blockDim.x
+					   gridDim.x))
+			    (threadID (+ (* blockIdx.x
+					    blockDim.x)
+					 threadIdx.x)))
+			(for (("int i" threadID)
+			      (< i size)
+			      (incf i numThreads))
+			     (setf (aref a i)
+				   (ComplexMul (aref a i)
+					       (aref b i))))))
+		    
 		    (defun initProcessing ()
 		      (do0
 		       (let ((n_cuda 0))
@@ -424,7 +453,12 @@
 			 
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
 						(* (sizeof Complex)
-						   range)))))
+						   range))))
+			(do0
+			 ("ComplexPointwiseMul<<<32,256>>>" d_signal
+							  d_kernel
+							  range)
+			 ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_INVERSE))))
 		      )
 		    (defun cleanupProcessing ()))))
   

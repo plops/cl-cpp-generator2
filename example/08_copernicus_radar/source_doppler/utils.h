@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+typedef float2 Complex;
 ;
 
 #endif

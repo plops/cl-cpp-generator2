@@ -13,8 +13,19 @@ extern State state;
 #include "/opt/cuda/targets/x86_64-linux/include/cufft.h"
 #include "/opt/cuda/targets/x86_64-linux/include/cufftw.h"
 
-typedef float2 Complex;
-
+static __device__ __host__ inline Complex ComplexMul(Complex a, Complex b) {
+  Complex c;
+  c.x = ((((a.x) * (b.x))) - (((a.y) * (b.y))));
+  c.y = ((((a.x) * (b.y))) + (((a.y) * (b.x))));
+  return c;
+}
+static __global__ void ComplexPointwiseMul(Complex *a, Complex *b, int size) {
+  auto numThreads = ((blockDim.x) * (gridDim.x));
+  auto threadID = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
+  for (int i(threadID); i < size; (i) += (numThreads)) {
+    a[i] = ComplexMul(a[i], b[i]);
+  };
+}
 void initProcessing() {
   auto n_cuda = 0;
   {
@@ -112,6 +123,19 @@ void runProcessing(int index) {
                     "((sizeof(Complex))*(range))) => ")
                 << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
                 << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
+  ComplexPointwiseMul<<<32, 256>>>(d_signal, d_kernel, range);
+  {
+    auto r = cufftExecC2C(plan, d_signal, d_signal, CUFFT_INVERSE);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (state._start_time)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cufftExecC2C(plan, d_signal, d_signal, CUFFT_INVERSE) => ") << (r)
+        << (std::endl);
     assert((cudaSuccess) == (r));
   };
 }
