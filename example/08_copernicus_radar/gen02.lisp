@@ -216,10 +216,12 @@
 			     (string
 			      ,data-filename)) 
 		       (init_mmap ,(g `_filename))
+		       (initProcessing)
 		       (do0
 			(run)
 			(cleanupDraw)
-			(cleanupWindow))
+			(cleanupWindow)
+			(cleanupProcessing))
 		       (return 0))))))))
 
   

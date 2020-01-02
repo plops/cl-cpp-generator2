@@ -45,8 +45,10 @@ int main() {
   state._filename = "/home/martin/stage/cl-cpp-generator2/example/"
                     "08_copernicus_radar/source/o_range24890_echoes48141.cf";
   init_mmap(state._filename);
+  initProcessing();
   run();
   cleanupDraw();
   cleanupWindow();
+  cleanupProcessing();
   return 0;
 };
