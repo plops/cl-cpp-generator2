@@ -14,3 +14,5 @@ void uploadTex (const void* image, int w, int h);
 void initDraw ();
 void cleanupDraw ();
 void drawFrame ();
+void initProcessing ();
+void cleanupProcessing ();

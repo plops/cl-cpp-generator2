@@ -32,6 +32,31 @@
   (progn
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
+    (defun cuprint (call &optional rest)
+      `(progn (let ((r ,call))
+		(<< "std::cout"
+		  (- (dot ("std::chrono::high_resolution_clock::now")
+			  (time_since_epoch)
+			  (count))
+		     ,(g `_start_time))
+		  (string " ")
+		  __FILE__
+		  (string ":")
+		  __LINE__
+		  (string " ")
+		  __func__
+		  (string ,(format nil " ~a => " (emit-c :code call)))
+		  r
+		  (string " '")
+		  (cudaGetErrorString r)
+		  (string "' ")
+		  ,@(loop for e in rest appending
+			 `((string ,(format nil " ~a=" (emit-c :code e)))
+			   ,e))
+		  "std::endl"))
+	      (assert (== cudaSuccess r))
+	  )
+      )
     (defun vkprint (call &optional rest)
       `(do0 #-nolog
 	    (do0
@@ -99,7 +124,7 @@
 	      (include <chrono>)
 	      (defstruct0 State
 		  ,@(loop for e in l collect
-			 (destructuring-bind (name type &optional value) e
+ 			 (destructuring-bind (name type &optional value) e
 			   `(,name ,type))))))))
     (defun define-module (args)
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
@@ -328,6 +353,31 @@
 			  (glTexCoord2f ,e ,f)))
 		 (glEnd))
 		(glfwSwapBuffers ,(g `_window))))))
+
+  (define-module
+      `(cuda_processing ()
+		   (do0
+		    "// https://github.com/NVIDIA/cuda-samples/blob/master/Samples/simpleCUFFT/simpleCUFFT.cu"
+		    (include <cassert>)
+		    " "
+		    (include
+		     "/opt/cuda/targets/x86_64-linux/include/cufftw.h"
+		     "/opt/cuda/targets/x86_64-linux/include/cufft.h"
+		     "/opt/cuda/targets/x86_64-linux/include/cuda_runtime.h"
+		     )
+	      
+	      
+		    (defun initProcessing ()
+		      (do0
+		       (let ((n_cuda 0))
+			 ,(cuprint `(cudaGetDeviceCount &n_cuda) `(n_cuda)))
+		       ,(cuprint `(cudaSetDevice 0)))
+		      #+nil(let ((argv[] (curly (string "doppler")))
+		      (argc 1))
+		  (declare (type int argc)
+			   (type "const char*" argv[]))
+		  (findCudaDevice argc argv)))
+	      (defun cleanupProcessing ()))))
   
   
   (progn
@@ -345,9 +395,13 @@
 	     
 	     (write-source (asdf:system-relative-pathname
 			    'cl-cpp-generator2
-			    (format nil
-				    "~a/doppler_~2,'0d_~a.cpp"
-				    *source-dir* i name))
+			    (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
+			      (format nil
+				     "~a/doppler_~2,'0d_~a.~a"
+				     *source-dir* i name
+				     (if cuda
+					 "cu"
+					 "cpp"))))
 			   code))))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
