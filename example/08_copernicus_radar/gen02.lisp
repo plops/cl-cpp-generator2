@@ -57,6 +57,29 @@
 	      (assert (== cudaSuccess r))
 	  )
       )
+    (defun cufftprint (call &optional rest)
+      `(progn (let ((r ,call))
+		(<< "std::cout"
+		  (- (dot ("std::chrono::high_resolution_clock::now")
+			  (time_since_epoch)
+			  (count))
+		     ,(g `_start_time))
+		  (string " ")
+		  __FILE__
+		  (string ":")
+		  __LINE__
+		  (string " ")
+		  __func__
+		  (string ,(format nil " ~a => " (emit-c :code call)))
+		  r
+		  
+		  ,@(loop for e in rest appending
+			 `((string ,(format nil " ~a=" (emit-c :code e)))
+			   ,e))
+		  "std::endl"))
+	      (assert (== cudaSuccess r))
+	  )
+      )
     (defun vkprint (call &optional rest)
       `(do0 #-nolog
 	    (do0
@@ -388,17 +411,21 @@
 			    (d_kernel)
 			    (memsize (* (sizeof Complex) range)))
 			(declare (type Complex* d_signal d_kernel))
-
-			;; checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_signal), mem_size))
-			,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
-					       memsize))
-
-			;; cudaMemcpy(d_signal, h_padded_signal, mem_size, cudaMemcpyHostToDevice)
-			,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice))
-			,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
-					       (* (sizeof Complex)
-						  range)))
-			))
+			(do0
+			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
+						memsize))
+			 ,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice)))
+			(let ((plan ))
+			  (declare (type cufftHandle plan))
+			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))
+			  ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_FORWARD)))
+			
+			(do0
+			 
+			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
+						(* (sizeof Complex)
+						   range)))))
+		      )
 		    (defun cleanupProcessing ()))))
   
   

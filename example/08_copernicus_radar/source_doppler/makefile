@@ -1,5 +1,5 @@
 CXX=g++
-LDFLAGS=-lglfw -lGL -L/opt/cuda/lib64 -lcudart
+LDFLAGS=-lglfw -lGL -L/opt/cuda/lib64 -lcudart -lcufft -lcufftw
 CXXFLAGS=-march=native -ffast-math -std=gnu++1z -O2 # -ggdb -pg # -fsanitize=address  #`pkg-config --cflags cglm` 
 CFILES:=$(shell ls | grep .cpp$)
 CUFILES:=$(shell ls | grep .cu$)
