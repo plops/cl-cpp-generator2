@@ -46,6 +46,7 @@ int main() {
                     "08_copernicus_radar/source/o_range24890_echoes48141.cf";
   init_mmap(state._filename);
   initProcessing();
+  runProcessing(0);
   run();
   cleanupDraw();
   cleanupWindow();

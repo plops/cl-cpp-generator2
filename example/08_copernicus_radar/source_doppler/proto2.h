@@ -15,4 +15,5 @@ void initDraw ();
 void cleanupDraw ();
 void drawFrame ();
 void initProcessing ();
+void runProcessing (int index);
 void cleanupProcessing ();

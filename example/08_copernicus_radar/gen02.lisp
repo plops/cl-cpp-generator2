@@ -217,6 +217,7 @@
 			      ,data-filename)) 
 		       (init_mmap ,(g `_filename))
 		       (initProcessing)
+		       (runProcessing 0)
 		       (do0
 			(run)
 			(cleanupDraw)
@@ -367,19 +368,38 @@
 		     "/opt/cuda/targets/x86_64-linux/include/cufft.h"
 		     "/opt/cuda/targets/x86_64-linux/include/cuda_runtime.h"
 		     )
-	      
-	      
+		    " "
+		    "typedef float2 Complex;"
+		    " "
 		    (defun initProcessing ()
 		      (do0
 		       (let ((n_cuda 0))
 			 ,(cuprint `(cudaGetDeviceCount &n_cuda) `(n_cuda)))
 		       ,(cuprint `(cudaSetDevice 0)))
-		      #+nil(let ((argv[] (curly (string "doppler")))
-		      (argc 1))
-		  (declare (type int argc)
-			   (type "const char*" argv[]))
-		  (findCudaDevice argc argv)))
-	      (defun cleanupProcessing ()))))
+		      )
+		    (defun runProcessing (index)
+		      (declare (type int index))
+		      
+		      ;; ,(g `_echo)
+		      (let ((p (reinterpret_cast<Complex*> ,(g `_mmap_data)))
+			    (range ,(g `_range))
+			    (h_signal (ref (aref p (* range index))))
+			    (d_signal)
+			    (d_kernel)
+			    (memsize (* (sizeof Complex) range)))
+			(declare (type Complex* d_signal d_kernel))
+
+			;; checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_signal), mem_size))
+			,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
+					       memsize))
+
+			;; cudaMemcpy(d_signal, h_padded_signal, mem_size, cudaMemcpyHostToDevice)
+			,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice))
+			,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
+					       (* (sizeof Complex)
+						  range)))
+			))
+		    (defun cleanupProcessing ()))))
   
   
   (progn
