@@ -42,7 +42,8 @@
 			  numpy.polynomial
 			  numba
 			  numba.cuda
-			  cupy
+			  (cp cupy)
+			  cupy.fft
 			  ))
 		"# %% echo packet information"
 		(setf df (pd.read_csv (string "./o_range.csv")))
@@ -249,9 +250,14 @@
 				   (tuple 7400
 					  24890)))
 
+		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
+		      csig (cp.asarray nsig)
+		      cksig (cp.fft.fft csig))
 		
-		(setf
-		      xs_a_us  (/ (np.arange (aref s.shape 1)) fdec)
+		
+		(setf fdec (dot (aref dfc.iloc 0)
+				  fdec)
+		      xs_a_us  (/ (np.arange (aref ss.shape 1)) fdec)
 		      xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
 				.5)
 		      xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
