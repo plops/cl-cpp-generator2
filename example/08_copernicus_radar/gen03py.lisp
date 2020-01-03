@@ -172,6 +172,7 @@
 					  ("list" (map (lambda (x)
 							 (aref ,name x))
 						       (dot ,d rgdec)))))))))
+		(print (string "decimation filter .."))
 		(setf fref 37.53472224)
 		,@(loop for d in `(dfc df dfa) collect
 		       `(do0
@@ -207,7 +208,9 @@
 				 (dot ,d (iterrows)))))))
 
 
+
 		(do0 "# %% get pulse configuration that is rank pri_counts in the past"
+		     (print (string "pulse from past"))
 		     ;;  dfap.loc[dfa.pri_count-dfa['rank']].txprr
 		     (setf dfap (dot dfa (set_index (string "pri_count")))
 			   )
@@ -249,10 +252,8 @@
 				   
 				   (tuple 7400
 					  24890)))
-
-		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
-		      csig (cp.asarray nsig)
-		      cksig (cp.fft.fft csig))
+		
+		
 		
 		
 		(setf fdec (dot (aref dfc.iloc 0)
@@ -264,6 +265,7 @@
 				 (< xs_off (* .5 (aref dfc.txpl 0))))
 		      arg_nomchirp (* -2 np.pi
 				      (+ (* xs_off  (+ (aref dfc.txpsf 0)
+						       1000
 						       (* .5
 							  (aref dfc.txpl 0)
 							  (aref dfc.txprr 0))))
@@ -271,8 +273,14 @@
 					    .5
 					    (aref dfc.txprr 0))))
 		      z (* xs_mask (np.exp (* 1j arg_nomchirp))))
-		#+nil
-		(plt.plot (cp.asnumpy (cp.angle z)))))))
+		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
+		      csig (cp.asarray nsig)
+		      cksig (cp.fft.fft csig)
+		      ckz (cp.fft.fft z)
+		      czsig (cp.fft.ifft (* ckz cksig)))
+		
+		
+		(plt.plot (cp.asnumpy (cp.abs czsig)))))))
     
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
