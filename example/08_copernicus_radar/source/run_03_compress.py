@@ -92,13 +92,15 @@ dfa["ranked_txpl"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl
 dfa["ranked_txpl_"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpl_
 dfa["ranked_txpsf"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().txpsf
 dfa["ranked_ses_ssb_tx_pulse_number"]=dfap.loc[((dfa.pri_count)-(dfa["rank"]))].reset_index().ses_ssb_tx_pulse_number
+print("start mmap ..")
 s=np.memmap(next(pathlib.Path("./").glob("o_cal*.cf")), dtype=np.complex64, mode="r", shape=(800,6000,))
 ss=np.memmap(next(pathlib.Path("./").glob("o_r*.cf")), dtype=np.complex64, mode="r", offset=((4)*(2)*(24890)*(10800)), shape=(7400,24890,))
 nsig=numba.cuda.to_device(ss[0,:])
 csig=cp.asarray(nsig)
 cksig=cp.fft.fft(csig)
 fdec=dfc.iloc[0].fdec
-xs_a_us=((np.arange(ss.shape[1]))/(fdec))
+xs_a_us=((cp.arange(ss.shape[1]))/(fdec))
 xs_off=((xs_a_us)-((((5.e-1))*(dfc.txpl[0])))-((5.e-1)))
 xs_mask=(((((((-5.e-1))*(dfc.txpl[0])))<(xs_off))) & (((xs_off)<((((5.e-1))*(dfc.txpl[0]))))))
 arg_nomchirp=((-2)*(np.pi)*(((((xs_off)*(((dfc.txpsf[0])+((((5.e-1))*(dfc.txpl[0])*(dfc.txprr[0])))))))+(((((xs_off)**(2)))*((5.e-1))*(dfc.txprr[0]))))))
+z=((xs_mask)*(np.exp(((1j)*(arg_nomchirp)))))

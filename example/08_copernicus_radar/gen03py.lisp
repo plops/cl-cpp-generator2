@@ -226,7 +226,7 @@
 					(reset_index)
 					,e))))
 
-		
+		(print (string "start mmap .."))
 		(setf s (np.memmap (next (dot (pathlib.Path (string "./"))
 					      (glob (string "o_cal*.cf"))))
 				   :dtype np.complex64
@@ -257,7 +257,7 @@
 		
 		(setf fdec (dot (aref dfc.iloc 0)
 				  fdec)
-		      xs_a_us  (/ (np.arange (aref ss.shape 1)) fdec)
+		      xs_a_us  (/ (cp.arange (aref ss.shape 1)) fdec)
 		      xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
 				.5)
 		      xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
@@ -269,6 +269,10 @@
 							  (aref dfc.txprr 0))))
 					 (* (** xs_off 2)
 					    .5
-					    (aref dfc.txprr 0)))))))))
+					    (aref dfc.txprr 0))))
+		      z (* xs_mask (np.exp (* 1j arg_nomchirp))))
+		#+nil
+		(plt.plot (cp.asnumpy (cp.angle z)))))))
+    
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
