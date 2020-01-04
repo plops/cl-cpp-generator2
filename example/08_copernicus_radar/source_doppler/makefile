@@ -11,7 +11,7 @@ PROTOS:=$(patsubst %, proto_%, $(HFILES))
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 %.o: %.cu
-	/opt/cuda/bin/nvcc -c --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb -o $@ $< 
+	/opt/cuda/bin/nvcc -c --std=c++14 -O3 -g -Xcompiler=-march=native -Xcompiler=-ggdb  --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.3.0 -o $@ $< 
 
 
 all: doppler
