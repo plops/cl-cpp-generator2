@@ -277,16 +277,18 @@
 				.5)
 		      xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 				 (< xs_off (* .5 (aref dfc.txpl 0))))
+		      xs2 (aref xs_off ":" cp.newaxis)
+		      doppler  (cp.linspace -1000 1000 10)
 		      arg_nomchirp (* -2 np.pi
-				      (+ (* xs_off  (+ (aref dfc.txpsf 0)
-						       1000
-						       (* .5
-							  (aref dfc.txpl 0)
-							  (aref dfc.txprr 0))))
-					 (* (** xs_off 2)
+				      (+ (* xs2  (+ (aref dfc.txpsf 0)
+						    doppler
+							 (* .5
+							    (aref dfc.txpl 0)
+							    (aref dfc.txprr 0))))
+					 (* (** xs2 2)
 					    .5
 					    (aref dfc.txprr 0))))
-		      z (* xs_mask (np.exp (* 1j arg_nomchirp))))
+		      z (* (aref xs_mask ":" cp.newaxis) (np.exp (* 1j arg_nomchirp))))
 		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
 		      csig (cp.asarray nsig)
 		      cksig (cp.fft.fft csig)
