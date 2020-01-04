@@ -276,7 +276,7 @@
 		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
 		      csig (cp.asarray nsig)
 		      cksig (cp.fft.fft csig)
-		      ckz (cp.fft.fft z)
+		      ckz (cp.conj (cp.fft.fft z))
 		      czsig (cp.fft.ifft (* ckz cksig)))
 		
 		
