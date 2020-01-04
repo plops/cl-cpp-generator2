@@ -268,32 +268,56 @@
 					  24890)))
 		
 		
-		
-		
-		(setf fdec (dot (aref dfc.iloc 0)
-				  fdec)
-		      xs_a_us  (/ (cp.arange (aref ss.shape 1)) fdec)
-		      xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
-				.5)
-		      xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
-				 (< xs_off (* .5 (aref dfc.txpl 0))))
-		      xs2 (aref xs_off ":" cp.newaxis)
-		      doppler  (cp.linspace -128 128 (* 1 1024))
-		      arg_nomchirp (* -2 np.pi
-				      (+ (* xs2  (+ (aref dfc.txpsf 0)
-						    doppler
-							 (* .5
-							    (aref dfc.txpl 0)
-							    (aref dfc.txprr 0))))
-					 (* (** xs2 2)
-					    .5
-					    (aref dfc.txprr 0))))
-		      z (* (aref xs_mask ":" cp.newaxis) (np.exp (* 1j arg_nomchirp))))
-		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
-		      csig (cp.asarray nsig)
-		      cksig (cp.fft.fft csig)
-		      ckz (cp.conj (cp.fft.fft z :axis 0))
-		      czsig (cp.fft.ifft (* ckz (aref cksig ":" cp.newaxis)) :axis 0))
+		#+nil
+		(do0 
+		 (setf fdec (dot (aref dfc.iloc 0)
+				 fdec)
+		       xs_a_us  (/ (cp.arange (aref ss.shape 1)) fdec)
+		       xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
+				 .5)
+		       xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
+				  (< xs_off (* .5 (aref dfc.txpl 0))))
+		       xs2 (aref xs_off ":" cp.newaxis)
+		       doppler  (cp.linspace -64 64 (* 1 1024))
+		       arg_nomchirp (* -2 np.pi
+				       (+ (* xs2  (+ (aref dfc.txpsf 0)
+						     doppler
+						     (* .5
+							(aref dfc.txpl 0)
+							(aref dfc.txprr 0))))
+					  (* (** xs2 2)
+					     .5
+					     (aref dfc.txprr 0))))
+		       z (* (aref xs_mask ":" cp.newaxis) (np.exp (* 1j arg_nomchirp))))
+		 (setf nsig (numba.cuda.to_device (aref ss 1000 ":"))
+		       csig (cp.asarray nsig)
+		       cksig (cp.fft.fft csig)
+		       ckz (cp.conj (cp.fft.fft z :axis 0))
+		       czsig (cp.fft.ifft (* ckz (aref cksig ":" cp.newaxis)) :axis 0)))
+
+		(do0 
+		 (setf fdec (dot (aref dfc.iloc 0)
+				 fdec)
+		       xs_a_us  (/ (cp.arange (aref ss.shape 1)) fdec)
+		       xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
+				 .5)
+		       xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
+				  (< xs_off (* .5 (aref dfc.txpl 0))))
+		       arg_nomchirp (* -2 np.pi
+				       (+ (* xs_off  (+ (aref dfc.txpsf 0)
+						     (* .5
+							(aref dfc.txpl 0)
+							(aref dfc.txprr 0))))
+					  (* (** xs_off 2)
+					     .5
+					     (aref dfc.txprr 0))))
+		       z (* xs_mask (np.exp (* 1j arg_nomchirp))))
+		 (setf nsig (numba.cuda.to_device (aref ss "1000:2000" ":"))
+		       csig (cp.asarray nsig)
+		       cksig (cp.fft.fft csig :axis 1)
+		       ckz (cp.conj (cp.fft.fft z))
+		       czsig (cp.fft.ifft (* (aref ckz cp.newaxis ":")
+					     cksig) :axis 1)))
 		
 		
 		(plt.imshow (cp.asnumpy (cp.abs czsig)))))))
