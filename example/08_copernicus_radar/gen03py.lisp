@@ -278,7 +278,7 @@
 		      xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
 				 (< xs_off (* .5 (aref dfc.txpl 0))))
 		      xs2 (aref xs_off ":" cp.newaxis)
-		      doppler  (cp.linspace -1000 1000 10)
+		      doppler  (cp.linspace -128 128 (* 1 1024))
 		      arg_nomchirp (* -2 np.pi
 				      (+ (* xs2  (+ (aref dfc.txpsf 0)
 						    doppler
@@ -292,11 +292,11 @@
 		(setf nsig (numba.cuda.to_device (aref ss 0 ":"))
 		      csig (cp.asarray nsig)
 		      cksig (cp.fft.fft csig)
-		      ckz (cp.conj (cp.fft.fft z))
-		      czsig (cp.fft.ifft (* ckz cksig)))
+		      ckz (cp.conj (cp.fft.fft z :axis 0))
+		      czsig (cp.fft.ifft (* ckz (aref cksig ":" cp.newaxis)) :axis 0))
 		
 		
-		(plt.plot (cp.asnumpy (cp.abs czsig)))))))
+		(plt.imshow (cp.asnumpy (cp.abs czsig)))))))
     
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
