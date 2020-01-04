@@ -312,7 +312,7 @@
 					     .5
 					     (aref dfc.txprr 0))))
 		       z (* xs_mask (np.exp (* 1j arg_nomchirp))))
-		 (setf nsig (numba.cuda.to_device (aref ss "1000:2000" ":"))
+		 (setf nsig (numba.cuda.to_device (aref ss "0:2300" ":"))
 		       csig (cp.asarray nsig)
 		       cksig (cp.fft.fft csig :axis 1)
 		       ckz (cp.conj (cp.fft.fft z))
@@ -320,7 +320,25 @@
 					     cksig) :axis 1)))
 		
 		
-		(plt.imshow (cp.asnumpy (cp.abs czsig)))))))
+		;(plt.imshow (cp.asnumpy (cp.abs czsig)))
+		(do0
+		 "#%% doppler centroid estimation"
+		 (setf phi_accc
+		       (cp.angle
+			(cp.sum
+			 (* (aref czsig "1:" ":")
+			    (cp.conj (aref czsig "0:-1" ":")))
+			 :axis 0)))
+		 (setf phi_accc_r (scipy.signal.savgol_filter (cp.asnumpy phi_accc)
+						       101
+						       1))
+		 (plt.plot (cp.asnumpy phi_accc)
+			   )
+		 (plt.plot phi_accc_r)
+		 
+		 )
+		
+		))))
     
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
