@@ -30,10 +30,13 @@ void mainLoop() {
   while (!(glfwWindowShouldClose(state._window))) {
     glfwPollEvents();
     drawFrame();
+    drawGui();
+    glfwSwapBuffers(state._window);
   }
 }
 void run() {
   initWindow();
+  initGui();
   initDraw();
   mainLoop();
 };
@@ -49,6 +52,7 @@ int main() {
   runProcessing(0);
   run();
   cleanupDraw();
+  cleanupGui();
   cleanupWindow();
   cleanupProcessing();
   return 0;

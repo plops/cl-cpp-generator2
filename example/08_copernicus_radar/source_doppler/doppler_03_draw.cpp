@@ -31,5 +31,4 @@ void drawFrame() {
   glVertex2f((5.e-1f), (-5.e-1f));
   glTexCoord2f(1, 0);
   glEnd();
-  glfwSwapBuffers(state._window);
 };

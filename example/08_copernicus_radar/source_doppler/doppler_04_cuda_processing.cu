@@ -13,6 +13,8 @@ extern State state;
 #include "/opt/cuda/targets/x86_64-linux/include/cufft.h"
 #include "/opt/cuda/targets/x86_64-linux/include/cufftw.h"
 
+typedef float2 Complex;
+
 static __device__ __host__ inline Complex ComplexMul(Complex a, Complex b) {
   Complex c;
   c.x = ((((a.x) * (b.x))) - (((a.y) * (b.y))));

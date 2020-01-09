@@ -4,7 +4,6 @@
 
 (in-package :cl-cpp-generator2)
 
-
 (setf *features* (union *features* '(:safety
 					;:nolog
 					;:log-brc
@@ -215,12 +214,14 @@
 			(while (not (glfwWindowShouldClose ,(g `_window)))
 			  (glfwPollEvents)
 			  (drawFrame)
-		      
+			  (drawGui)
+			  (glfwSwapBuffers ,(g `_window))
 			  )
 		    
 			)
 		      (defun run ()
 			(initWindow)
+			(initGui)
 			(initDraw)
 			(mainLoop)
 					;(cleanup)
@@ -244,6 +245,7 @@
 		       (do0
 			(run)
 			(cleanupDraw)
+			(cleanupGui)
 			(cleanupWindow)
 			(cleanupProcessing))
 		       (return 0))))))))
@@ -378,7 +380,7 @@
 				      ,(* 1 (- f .5)))
 			  (glTexCoord2f ,e ,f)))
 		 (glEnd))
-		(glfwSwapBuffers ,(g `_window))))))
+		))))
 
   (define-module
       `(cuda_processing ()
@@ -394,8 +396,10 @@
 		    " "
 		    ,(emit-utils :code
 				 `(do0
-				   "typedef float2 Complex;"))
-		    
+				   "void initProcessing();"
+				   "void runProcessing(int);"
+				   "void cleanupProcessing();"))
+		    "typedef float2 Complex;"
 		    " "
 		    (defun ComplexMul (a b)
 		      (declare (type Complex a b)
@@ -462,6 +466,36 @@
 		      )
 		    (defun cleanupProcessing ()))))
   
+  (define-module
+      `(gui ()
+	    (do0
+	     "// https://youtu.be/nVaQuNXueFw?t=317"
+	      (include "imgui/imgui.h"
+		       "imgui/imgui_impl_glfw.h"
+		       "imgui/imgui_impl_opengl2.h")  
+	      (defun initGui ()
+		(IMGUI_CHECKVERSION)
+		("ImGui::CreateContext")
+		
+		(ImGui_ImplGlfw_InitForOpenGL ,(g `_window)
+					      true)
+		(ImGui_ImplOpenGL2_Init)
+		("ImGui::StyleColorsDark"))
+	      (defun cleanupGui ()
+		(ImGui_ImplOpenGL2_Shutdown)
+		(ImGui_ImplGlfw_Shutdown)
+		("ImGui::DestroyContext"))
+	      (defun drawGui ()
+		(ImGui_ImplOpenGL2_NewFrame)
+		(ImGui_ImplGlfw_NewFrame)
+		("ImGui::NewFrame")
+		(let ((b true))
+		 ("ImGui::ShowDemoWindow" &b))
+		("ImGui::Render")
+		(ImGui_ImplOpenGL2_RenderDrawData
+		 ("ImGui::GetDrawData"))
+		))))
+  
   
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
@@ -471,21 +505,22 @@
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
       (loop for e in (reverse *module*) and i from 0 do
-	   (destructuring-bind (&key name code) e  
-	     (emit-c :code code :hook-defun 
-		     #'(lambda (str)
-			 (format s "~a~%" str)))
-	     
-	     (write-source (asdf:system-relative-pathname
-			    'cl-cpp-generator2
-			    (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
+	   (destructuring-bind (&key name code) e
+	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
+	       (unless cuda
+		(emit-c :code code :hook-defun 
+			#'(lambda (str)
+			    (format s "~a~%" str))))
+	       
+	       (write-source (asdf:system-relative-pathname
+			      'cl-cpp-generator2
 			      (format nil
-				     "~a/doppler_~2,'0d_~a.~a"
-				     *source-dir* i name
-				     (if cuda
-					 "cu"
-					 "cpp"))))
-			   code))))
+				      "~a/doppler_~2,'0d_~a.~a"
+				      *source-dir* i name
+				      (if cuda
+					  "cu"
+					  "cpp")))
+			     code)))))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"

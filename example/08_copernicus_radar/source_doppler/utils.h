@@ -7,7 +7,9 @@
 #include <iostream>
 #include <vector>
 
-typedef float2 Complex;
+void initProcessing();
+void runProcessing(int);
+void cleanupProcessing();
 ;
 
 #endif
