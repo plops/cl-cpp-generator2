@@ -542,44 +542,60 @@
 		     (declare (type "static float*" range_raw_re))
 		     (dotimes (i range)
 		       (setf (aref range_raw_re i)
-			     ("std::real" (aref ,(g `_range_line)
+			     ("std::real" (aref h_signal
 						i))))
 		     (when range_raw_re
 		       (do0
 			("ImGui::PlotLines"
-		      (string "range_raw_re") ;; label
-		      range_raw_re	       ;; values
-		      range	       ;; count
-		      0		       ;; offset
-		      NULL	       ;; overlay_text
-		      FLT_MAX	       ;; scale_min
-		      FLT_MAX	       ;; scale_max
-		      (ImVec2 600 200) ;; graph_size
-		      (sizeof float)	;;stride
-		      ))))))
+			 (string "range_raw_re") ;; label
+			 ;("reinterpret_cast<float*>" h_signal)
+					range_raw_re ;; values
+			 range			  ;; count
+			 0			  ;; offset
+			 NULL			  ;; overlay_text
+			 FLT_MAX		  ;; scale_min
+			 FLT_MAX		  ;; scale_max
+			 (ImVec2 1200 200)	  ;; graph_size
+			 (sizeof float)		  ;;stride
+			 ))))))
 		 
 		 (let ((range ,(g `_range))
 		       ;(memsize (* (sizeof Complex) range))
-		       (range_abs (static_cast<float*> (malloc (* (sizeof float) range)))))
-		   (declare (type "static float*" range_abs))
+		       (range_abs (static_cast<float*> (malloc (* (sizeof float) range))))
+		       (range_re (static_cast<float*> (malloc (* (sizeof float) range)))))
+		   (declare (type "static float*" range_abs range_re))
 
 		   (when ,(g `_range_line)
 		    (do0
 		     (dotimes (i range)
 		       (setf (aref range_abs i)
 			     ("std::abs" (aref ,(g `_range_line)
+					       i)))
+		       (setf (aref range_re i)
+			     ("std::real" (aref ,(g `_range_line)
 					       i))))
 		    
 		    
 		     ("ImGui::PlotLines"
-		      (string "range") ;; label
+		      (string "range_abs") ;; label
 		      range_abs	       ;; values
 		      range	       ;; count
 		      0		       ;; offset
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 600 200) ;; graph_size
+		      (ImVec2 1200 200) ;; graph_size
+		      (sizeof float)	;;stride
+		      )
+		     ("ImGui::PlotLines"
+		      (string "range_re") ;; label
+		      range_re	       ;; values
+		      range	       ;; count
+		      0		       ;; offset
+		      NULL	       ;; overlay_text
+		      FLT_MAX	       ;; scale_min
+		      FLT_MAX	       ;; scale_max
+		      (ImVec2 1200 200) ;; graph_size
 		      (sizeof float)	;;stride
 		      )))))
 		("ImGui::Render")
