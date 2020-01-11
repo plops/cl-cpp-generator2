@@ -7,8 +7,12 @@
 #include <iostream>
 #include <vector>
 
+#include <complex>
+
+#include <cmath>
+
 void initProcessing();
-void runProcessing(int);
+std::complex<float> *runProcessing(int);
 void cleanupProcessing();
 ;
 

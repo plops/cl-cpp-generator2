@@ -12,6 +12,11 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+
+#include <complex>
+
+#include <cmath>
+
 State state = {};
 double now() {
   struct timespec tp;
@@ -49,7 +54,7 @@ int main() {
                     "08_copernicus_radar/source/o_range24890_echoes48141.cf";
   init_mmap(state._filename);
   initProcessing();
-  runProcessing(0);
+  state._range_line = runProcessing(0);
   run();
   cleanupDraw();
   cleanupGui();

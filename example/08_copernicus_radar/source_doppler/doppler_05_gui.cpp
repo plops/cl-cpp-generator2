@@ -26,8 +26,14 @@ void drawGui() {
   ImGui_ImplOpenGL2_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  auto b = true;
-  ImGui::ShowDemoWindow(&b);
+  auto range = state._range;
+  static float *range_abs =
+      static_cast<float *>(malloc(((sizeof(float)) * (range))));
+  for (int i = 0; i < range; (i) += (1)) {
+    range_abs[i] = std::abs(state._range_line[i]);
+  };
+  ImGui::PlotLines("range", range_abs, range, 0, NULL, FLT_MAX, FLT_MAX,
+                   ImVec2(1200, 500), sizeof(float));
   ImGui::Render();
   ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 };

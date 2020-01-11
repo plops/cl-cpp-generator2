@@ -184,7 +184,7 @@
 	      `(main ((_filename :direction 'out :type "char const *")
 		     (_range :direction 'out :type int)
 		     (_echo :direction 'out :type int)
-		     )
+		     (_range_line :direction 'out :type "std::complex<float>*"))
 		    (do0
 		     (include <iostream>
 			      <chrono>
@@ -192,9 +192,13 @@
 			      <cassert>
 			      <unordered_map>
 			      <string>
-			      <fstream>)
-
-		 
+			      <fstream>
+			      )
+		     " "
+		     (include <complex>)
+		     " "
+		     (include <cmath>)
+		     " "
 		     (let ((state ,(emit-globals :init t)))
 		       (declare (type "State" state)))
 
@@ -241,58 +245,61 @@
 			      ,data-filename)) 
 		       (init_mmap ,(g `_filename))
 		       (initProcessing)
-		       (runProcessing 0)
+
+		       (setf ,(g `_range_line)
+			(runProcessing 0))
+		       
 		       (do0
 			(run)
 			(cleanupDraw)
 			(cleanupGui)
 			(cleanupWindow)
 			(cleanupProcessing))
-		       (return 0))))))))
+		       (return 0))))))
 
-  
-  		 
-		 
-  
-  (define-module
-      `(mmap
-	((_mmap_data :direction 'out :type void*)
-	 (_mmap_filesize :direction 'out :type size_t))
-	(do0
-	 (include <sys/mman.h>
-		  <sys/stat.h>
-		  <sys/types.h>
-		  <fcntl.h>
-		  <cstdio>
-		  <cassert>
-		  <iostream>)
-	 (defun get_filesize (filename)
-	   (declare (type "const char*" filename)
-		    (values size_t))
-	   (let ((st))
-	     (declare (type "struct stat" st))
-	     (stat filename &st)
-	     (return st.st_size)))
-	 (defun destroy_mmap ()
-	   (let ((rc (munmap ,(g `_mmap_data)
-			     ,(g `_mmap_filesize))))  
-	     (unless (== 0 rc)
-	       ,(logprint "fail munmap" `(rc)))
-	     (assert (== 0 rc))))
-	 (defun init_mmap (filename)
-	   (declare (type "const char*" filename))
-	   (let ((filesize (get_filesize filename))
-		 (fd (open filename O_RDONLY 0)))
-	     ,(logprint "size" `(filesize filename))
-	     (when (== -1 fd)
-	       ,(logprint "fail open" `(fd filename)))
-	     (assert (!= -1 fd))
-	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
-	       (when (== MAP_FAILED data)
-		 ,(logprint "fail mmap"`( data)))
-	       (assert (!= MAP_FAILED data))
-	       (setf ,(g `_mmap_filesize) filesize
-		     ,(g `_mmap_data) data)))))))
+       
+       
+       
+       
+       (define-module
+	   `(mmap
+	     ((_mmap_data :direction 'out :type void*)
+	      (_mmap_filesize :direction 'out :type size_t))
+	     (do0
+	      (include <sys/mman.h>
+		       <sys/stat.h>
+		       <sys/types.h>
+		       <fcntl.h>
+		       <cstdio>
+		       <cassert>
+		       <iostream>)
+	      (defun get_filesize (filename)
+		(declare (type "const char*" filename)
+			 (values size_t))
+		(let ((st))
+		  (declare (type "struct stat" st))
+		  (stat filename &st)
+		  (return st.st_size)))
+	      (defun destroy_mmap ()
+		(let ((rc (munmap ,(g `_mmap_data)
+				  ,(g `_mmap_filesize))))  
+		  (unless (== 0 rc)
+		    ,(logprint "fail munmap" `(rc)))
+		  (assert (== 0 rc))))
+	      (defun init_mmap (filename)
+		(declare (type "const char*" filename))
+		(let ((filesize (get_filesize filename))
+		      (fd (open filename O_RDONLY 0)))
+		  ,(logprint "size" `(filesize filename))
+		  (when (== -1 fd)
+		    ,(logprint "fail open" `(fd filename)))
+		  (assert (!= -1 fd))
+		  (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
+		    (when (== MAP_FAILED data)
+		      ,(logprint "fail mmap"`( data)))
+		    (assert (!= MAP_FAILED data))
+		    (setf ,(g `_mmap_filesize) filesize
+			  ,(g `_mmap_data) data)))))))))
 
   (define-module
       `(glfw_window
@@ -397,7 +404,7 @@
 		    ,(emit-utils :code
 				 `(do0
 				   "void initProcessing();"
-				   "void runProcessing(int);"
+				   "std::complex<float>* runProcessing(int);"
 				   "void cleanupProcessing();"))
 		    "typedef float2 Complex;"
 		    " "
@@ -434,16 +441,21 @@
 		       ,(cuprint `(cudaSetDevice 0)))
 		      )
 		    (defun runProcessing (index)
-		      (declare (type int index))
+		      (declare (type int index)
+			       (values "std::complex<float>*"))
 		      
 		      ;; ,(g `_echo)
+		      
 		      (let ((p (reinterpret_cast<Complex*> ,(g `_mmap_data)))
 			    (range ,(g `_range))
 			    (h_signal (ref (aref p (* range index))))
+			    
 			    (d_signal)
 			    (d_kernel)
-			    (memsize (* (sizeof Complex) range)))
-			(declare (type Complex* d_signal d_kernel))
+			    (memsize (* (sizeof Complex) range))
+			    (h_signal2 (static_cast<Complex*> (malloc memsize))))
+			(declare (type Complex* d_signal d_kernel)
+				 (type "static Complex*" h_signal2))
 			(do0
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
 						memsize))
@@ -462,7 +474,17 @@
 			 ("ComplexPointwiseMul<<<32,256>>>" d_signal
 							  d_kernel
 							  range)
-			 ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_INVERSE))))
+			 ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_INVERSE))
+			 ,(cuprint `(cudaMemcpy h_signal2 d_signal memsize cudaMemcpyDeviceToHost)))
+			(do0
+			 ,(cufftprint `(cufftDestroy plan)
+				      )
+			 ,(cuprint `(cudaFree d_signal)
+				      )
+			 ,(cuprint `(cudaFree d_kernel)
+				      )
+			 (return ("reinterpret_cast< std::complex<float>* >" h_signal2))
+			 ))
 		      )
 		    (defun cleanupProcessing ()))))
   
@@ -489,8 +511,43 @@
 		(ImGui_ImplOpenGL2_NewFrame)
 		(ImGui_ImplGlfw_NewFrame)
 		("ImGui::NewFrame")
+		#+nil
 		(let ((b true))
 		 ("ImGui::ShowDemoWindow" &b))
+		(do0
+		 #+nil ,@(loop for (e mi ma) in `((a 0 29)
+					    (b 0 29)
+					    (c 0 33)) collect
+			(let ((name (format nil "slider_~a" e)))
+			  `(let ((,name ,(floor (* .5 (+ mi ma)))))
+			     (declare (type "static int" ,name))
+			     ("ImGui::SliderInt"
+			      (string ,name)
+			      (ref ,name)
+			      ,mi
+			      ,(- ma 1)
+			      ))))
+		 (let ((range ,(g `_range))
+		       ;(memsize (* (sizeof Complex) range))
+		       (range_abs (static_cast<float*> (malloc (* (sizeof float) range)))))
+		   (declare (type "static float*" range_abs))
+		   (dotimes (i range)
+		     (setf (aref range_abs i)
+			   ("std::abs" (aref ,(g `_range_line)
+					 i))))
+		   
+		   )
+		 ("ImGui::PlotLines"
+		  (string "range") ;; label
+		  range_abs ;; values
+		  range ;; count
+		  0 ;; offset
+		  NULL ;; overlay_text
+		  FLT_MAX ;; scale_min
+		  FLT_MAX ;; scale_max
+		  (ImVec2 1200 500) ;; graph_size
+		  (sizeof float)		  ;;stride
+		  ))
 		("ImGui::Render")
 		(ImGui_ImplOpenGL2_RenderDrawData
 		 ("ImGui::GetDrawData"))
@@ -534,6 +591,11 @@
 			     <array>
 			     <iostream>
 			     <iomanip>)
+		    " "
+		    (include <complex>)
+		    " "
+		    (include <cmath>)
+		    " "
 		    
 		    " "
 		    (do0
@@ -563,6 +625,11 @@
 		    " "
 		    (include <GLFW/glfw3.h>)
 		    " "
+		    (include <complex>)
+		    " "
+		    (include <cmath>)
+		    " "
+		    
 		    ,(emit-globals)
 		    " "
 		    "#endif"
