@@ -238,7 +238,8 @@
 						    (time_since_epoch)
 						    (count))
 			     ,(g `_echo) ,echo-value
-			     ,(g `_range) ,range-value)
+			     ,(g `_range) ,range-value
+			     ,(g `_range_line) nullptr)
 					;(vkprint "main" )
 		       (setf ,(g `_filename)
 			     (string
@@ -458,8 +459,10 @@
 				 (type "static Complex*" h_signal2))
 			(do0
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
-						memsize))
-			 ,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice)))
+						memsize)
+				   `(memsize))
+			 ,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice)
+				   `(memsize)))
 			(let ((plan ))
 			  (declare (type cufftHandle plan))
 			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))
@@ -468,21 +471,19 @@
 			(do0
 			 
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
-						(* (sizeof Complex)
-						   range))))
+						memsize)
+				   `(memsize)))
 			(do0
 			 ("ComplexPointwiseMul<<<32,256>>>" d_signal
 							  d_kernel
 							  range)
 			 ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_INVERSE))
-			 ,(cuprint `(cudaMemcpy h_signal2 d_signal memsize cudaMemcpyDeviceToHost)))
+			 ,(cuprint `(cudaMemcpy h_signal2 d_signal memsize cudaMemcpyDeviceToHost)
+				   `(memsize)))
 			(do0
-			 ,(cufftprint `(cufftDestroy plan)
-				      )
-			 ,(cuprint `(cudaFree d_signal)
-				      )
-			 ,(cuprint `(cudaFree d_kernel)
-				      )
+			 ,(cufftprint `(cufftDestroy plan))
+			 ,(cuprint `(cudaFree d_signal))
+			 ,(cuprint `(cudaFree d_kernel))
 			 (return ("reinterpret_cast< std::complex<float>* >" h_signal2))
 			 ))
 		      )
@@ -515,9 +516,8 @@
 		(let ((b true))
 		 ("ImGui::ShowDemoWindow" &b))
 		(do0
-		 #+nil ,@(loop for (e mi ma) in `((a 0 29)
-					    (b 0 29)
-					    (c 0 33)) collect
+		 ,@(loop for (e mi ma) in `((a 0 100)
+						  ) collect
 			(let ((name (format nil "slider_~a" e)))
 			  `(let ((,name ,(floor (* .5 (+ mi ma)))))
 			     (declare (type "static int" ,name))
@@ -527,27 +527,61 @@
 			      ,mi
 			      ,(- ma 1)
 			      ))))
+		 (setf ,(g `_range_line)
+		       (runProcessing slider_a))
+
+		 (progn
+		  (do0
+		  
+		   "// plot raw data (real)"
+		   (let ((p ("reinterpret_cast<std::complex<float>*>" ,(g `_mmap_data)))
+			 (range ,(g `_range))
+			 (h_signal (ref (aref p (* range slider_a))))
+			 (range_raw_re (static_cast<float*> (malloc (* (sizeof float) range))))
+			 )
+		     (declare (type "static float*" range_raw_re))
+		     (dotimes (i range)
+		       (setf (aref range_raw_re i)
+			     ("std::real" (aref ,(g `_range_line)
+						i))))
+		     (when range_raw_re
+		       (do0
+			("ImGui::PlotLines"
+		      (string "range_raw_re") ;; label
+		      range_raw_re	       ;; values
+		      range	       ;; count
+		      0		       ;; offset
+		      NULL	       ;; overlay_text
+		      FLT_MAX	       ;; scale_min
+		      FLT_MAX	       ;; scale_max
+		      (ImVec2 600 200) ;; graph_size
+		      (sizeof float)	;;stride
+		      ))))))
+		 
 		 (let ((range ,(g `_range))
 		       ;(memsize (* (sizeof Complex) range))
 		       (range_abs (static_cast<float*> (malloc (* (sizeof float) range)))))
 		   (declare (type "static float*" range_abs))
-		   (dotimes (i range)
-		     (setf (aref range_abs i)
-			   ("std::abs" (aref ,(g `_range_line)
-					 i))))
-		   
-		   )
-		 ("ImGui::PlotLines"
-		  (string "range") ;; label
-		  range_abs ;; values
-		  range ;; count
-		  0 ;; offset
-		  NULL ;; overlay_text
-		  FLT_MAX ;; scale_min
-		  FLT_MAX ;; scale_max
-		  (ImVec2 1200 500) ;; graph_size
-		  (sizeof float)		  ;;stride
-		  ))
+
+		   (when ,(g `_range_line)
+		    (do0
+		     (dotimes (i range)
+		       (setf (aref range_abs i)
+			     ("std::abs" (aref ,(g `_range_line)
+					       i))))
+		    
+		    
+		     ("ImGui::PlotLines"
+		      (string "range") ;; label
+		      range_abs	       ;; values
+		      range	       ;; count
+		      0		       ;; offset
+		      NULL	       ;; overlay_text
+		      FLT_MAX	       ;; scale_min
+		      FLT_MAX	       ;; scale_max
+		      (ImVec2 600 200) ;; graph_size
+		      (sizeof float)	;;stride
+		      )))))
 		("ImGui::Render")
 		(ImGui_ImplOpenGL2_RenderDrawData
 		 ("ImGui::GetDrawData"))

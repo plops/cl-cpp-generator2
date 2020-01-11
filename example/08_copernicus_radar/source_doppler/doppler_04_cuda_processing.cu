@@ -71,7 +71,8 @@ std::complex<float> *runProcessing(int index) {
              (state._start_time)))
         << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
         << (" cudaMalloc(reinterpret_cast<void**>(&d_signal), memsize) => ")
-        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (std::endl);
+        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" memsize=")
+        << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
   {
@@ -85,7 +86,7 @@ std::complex<float> *runProcessing(int index) {
                 << (" cudaMemcpy(d_signal, h_signal, memsize, "
                     "cudaMemcpyHostToDevice) => ")
                 << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (std::endl);
+                << (" memsize=") << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
   cufftHandle plan;
@@ -114,18 +115,16 @@ std::complex<float> *runProcessing(int index) {
     assert((cudaSuccess) == (r));
   };
   {
-    auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel),
-                        ((sizeof(Complex)) * (range)));
-    (std::cout) << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (state._start_time)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__)
-                << (" cudaMalloc(reinterpret_cast<void**>(&d_kernel), "
-                    "((sizeof(Complex))*(range))) => ")
-                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (std::endl);
+    auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel), memsize);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (state._start_time)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cudaMalloc(reinterpret_cast<void**>(&d_kernel), memsize) => ")
+        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" memsize=")
+        << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
   ComplexPointwiseMul<<<32, 256>>>(d_signal, d_kernel, range);
@@ -152,7 +151,7 @@ std::complex<float> *runProcessing(int index) {
                 << (" cudaMemcpy(h_signal2, d_signal, memsize, "
                     "cudaMemcpyDeviceToHost) => ")
                 << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (std::endl);
+                << (" memsize=") << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
   {
