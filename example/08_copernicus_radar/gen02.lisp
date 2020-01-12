@@ -499,6 +499,7 @@
 						      d_signal ;; in
 						      d_signal_out ;; out
 						      CUFFT_FORWARD)))
+			#+nil
 			(do0
 			 "// copy data back"
 			 (progn
@@ -524,6 +525,20 @@
 			 ("ComplexPointwiseMul<<<128,1024>>>" d_signal_out
 							    d_kernel
 							    range)
+			 (do0
+			 "// copy data back"
+			 (progn
+			  (let ((h_signal3 (static_cast<Complex*> (malloc memsize)))
+				(v ("reinterpret_cast<std::complex<float>*>" h_signal3)))
+			    ,(cuprint `(cudaMemcpy h_signal3 ;; dst
+						   d_signal_out ;; src
+						   memsize cudaMemcpyDeviceToHost)
+				      `(memsize))
+			    ,(logprint "runProcessing"
+				       `(,@(loop for i below 5 collect
+						`(aref v
+						       ,i))))
+			    (free h_signal3))))
 			 ,(cufftprint `(cufftExecC2C plan
 						     d_signal_out ;; in
 						     d_signal ;; out

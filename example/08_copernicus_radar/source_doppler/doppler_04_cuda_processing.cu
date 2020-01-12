@@ -128,6 +128,20 @@ std::complex<float> *runProcessing(int index) {
         << (r) << (std::endl);
     assert((cudaSuccess) == (r));
   };
+  {
+    auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel), memsize);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (state._start_time)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cudaMalloc(reinterpret_cast<void**>(&d_kernel), memsize) => ")
+        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" memsize=")
+        << (memsize) << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
+  ComplexPointwiseMul<<<128, 1024>>>(d_signal_out, d_kernel, range);
   // copy data back
   {
     auto h_signal3 = static_cast<Complex *>(malloc(memsize));
@@ -161,20 +175,6 @@ std::complex<float> *runProcessing(int index) {
                 << (std::setw(8)) << (" v[4]=") << (v[4]) << (std::endl);
     free(h_signal3);
   };
-  {
-    auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel), memsize);
-    (std::cout)
-        << (((std::chrono::high_resolution_clock::now()
-                  .time_since_epoch()
-                  .count()) -
-             (state._start_time)))
-        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-        << (" cudaMalloc(reinterpret_cast<void**>(&d_kernel), memsize) => ")
-        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" memsize=")
-        << (memsize) << (std::endl);
-    assert((cudaSuccess) == (r));
-  };
-  ComplexPointwiseMul<<<128, 1024>>>(d_signal_out, d_kernel, range);
   {
     auto r = cufftExecC2C(plan, d_signal_out, d_signal, CUFFT_INVERSE);
     (std::cout)
