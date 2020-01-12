@@ -452,21 +452,30 @@
 			    (h_signal (ref (aref p (* range index))))
 			    
 			    (d_signal)
+			    (d_signal_out)
 			    (d_kernel)
 			    (memsize (* (sizeof Complex) range))
 			    (h_signal2 (static_cast<Complex*> (malloc memsize))))
-			(declare (type Complex* d_signal d_kernel)
+			(declare (type Complex* d_signal d_kernel d_signal_out)
 				 (type "static Complex*" h_signal2))
 			(do0
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
 						memsize)
 				   `(memsize))
-			 ,(cuprint `(cudaMemcpy d_signal h_signal memsize cudaMemcpyHostToDevice)
+			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal_out)
+						memsize)
+				   `(memsize))
+			 ,(cuprint `(cudaMemcpy d_signal ;; dst
+						h_signal ;; src
+						memsize cudaMemcpyHostToDevice)
 				   `(memsize)))
 			(let ((plan ))
 			  (declare (type cufftHandle plan))
 			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))
-			  ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_FORWARD)))
+			  ,(cufftprint `(cufftExecC2C plan
+						      d_signal ;; in
+						      d_signal_out ;; out
+						      CUFFT_FORWARD)))
 			
 			(do0
 			 
@@ -474,15 +483,23 @@
 						memsize)
 				   `(memsize)))
 			(do0
-			 ("ComplexPointwiseMul<<<32,256>>>" d_signal
-							  d_kernel
-							  range)
-			 ,(cufftprint `(cufftExecC2C plan d_signal d_signal CUFFT_INVERSE))
-			 ,(cuprint `(cudaMemcpy h_signal2 d_signal memsize cudaMemcpyDeviceToHost)
+			 ;; numblocks, threads per block
+			 ("ComplexPointwiseMul<<<128,1024>>>" d_signal_out
+							    d_kernel
+							    range)
+			 ,(cufftprint `(cufftExecC2C plan
+						     d_signal_out ;; in
+						     d_signal ;; out
+						     CUFFT_INVERSE))
+			 ,(cuprint `(cudaMemcpy h_signal2 ;; dst
+						d_signal ;; src
+						memsize cudaMemcpyDeviceToHost
+						)
 				   `(memsize)))
 			(do0
 			 ,(cufftprint `(cufftDestroy plan))
 			 ,(cuprint `(cudaFree d_signal))
+			 ,(cuprint `(cudaFree d_signal_out))
 			 ,(cuprint `(cudaFree d_kernel))
 			 (return ("reinterpret_cast< std::complex<float>* >" h_signal2))
 			 ))
@@ -555,7 +572,7 @@
 			 NULL			  ;; overlay_text
 			 FLT_MAX		  ;; scale_min
 			 FLT_MAX		  ;; scale_max
-			 (ImVec2 1200 200)	  ;; graph_size
+			 (ImVec2 1200 100)	  ;; graph_size
 			 (sizeof float)		  ;;stride
 			 ))))))
 		 
@@ -584,7 +601,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 1200 200) ;; graph_size
+		      (ImVec2 1200 100) ;; graph_size
 		      (sizeof float)	;;stride
 		      )
 		     ("ImGui::PlotLines"
@@ -595,7 +612,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 1200 200) ;; graph_size
+		      (ImVec2 1200 100) ;; graph_size
 		      (sizeof float)	;;stride
 		      )))))
 		("ImGui::Render")

@@ -41,7 +41,7 @@ void drawGui() {
     }
     if (range_raw_re) {
       ImGui::PlotLines("range_raw_re", range_raw_re, range, 0, NULL, FLT_MAX,
-                       FLT_MAX, ImVec2(1200, 200), sizeof(float));
+                       FLT_MAX, ImVec2(1200, 100), sizeof(float));
     };
   };
   auto range = state._range;
@@ -55,9 +55,9 @@ void drawGui() {
       range_re[i] = std::real(state._range_line[i]);
     }
     ImGui::PlotLines("range_abs", range_abs, range, 0, NULL, FLT_MAX, FLT_MAX,
-                     ImVec2(1200, 200), sizeof(float));
+                     ImVec2(1200, 100), sizeof(float));
     ImGui::PlotLines("range_re", range_re, range, 0, NULL, FLT_MAX, FLT_MAX,
-                     ImVec2(1200, 200), sizeof(float));
+                     ImVec2(1200, 100), sizeof(float));
   };
   ImGui::Render();
   ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
