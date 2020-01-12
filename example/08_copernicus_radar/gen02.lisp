@@ -456,8 +456,13 @@
 			    (d_kernel)
 			    (memsize (* (sizeof Complex) range))
 			    (h_signal2 (static_cast<Complex*> (malloc memsize))))
-			(declare (type Complex* d_signal d_kernel d_signal_out)
+			(declare (type Complex* d_signal d_kernel d_signal_out p h_signal)
 				 (type "static Complex*" h_signal2))
+			#+nil (do0
+			 ,(logprint "runProcessing"
+				    `(,@(loop for i below 5 collect
+					     `(aref ("reinterpret_cast<std::complex<float>*>" h_signal)
+						    ,i)))))
 			(do0
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal)
 						memsize)
@@ -469,6 +474,23 @@
 						h_signal ;; src
 						memsize cudaMemcpyHostToDevice)
 				   `(memsize)))
+
+			
+			(do0
+			 "// copy data back"
+			 (progn
+			  (let ((h_signal3 (static_cast<Complex*> (malloc memsize)))
+				(v ("reinterpret_cast<std::complex<float>*>" h_signal3)))
+			    ,(cuprint `(cudaMemcpy h_signal3 ;; dst
+						   d_signal ;; src
+						   memsize cudaMemcpyDeviceToHost)
+				      `(memsize))
+			    ,(logprint "runProcessing"
+				       `(,@(loop for i below 5 collect
+						`(aref v
+						       ,i))))
+			    (free h_signal3))))
+			
 			(let ((plan ))
 			  (declare (type cufftHandle plan))
 			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))

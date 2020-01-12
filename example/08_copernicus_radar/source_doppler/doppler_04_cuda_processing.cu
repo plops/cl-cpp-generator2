@@ -55,9 +55,9 @@ void initProcessing() {
   };
 }
 std::complex<float> *runProcessing(int index) {
-  auto p = reinterpret_cast<Complex *>(state._mmap_data);
+  Complex *p = reinterpret_cast<Complex *>(state._mmap_data);
   auto range = state._range;
-  auto h_signal = &(p[((range) * (index))]);
+  Complex *h_signal = &(p[((range) * (index))]);
   Complex *d_signal;
   Complex *d_signal_out;
   Complex *d_kernel;
@@ -102,6 +102,38 @@ std::complex<float> *runProcessing(int index) {
                 << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
                 << (" memsize=") << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
+  };
+  // copy data back
+  {
+    auto h_signal3 = static_cast<Complex *>(malloc(memsize));
+    auto v = reinterpret_cast<std::complex<float> *>(h_signal3);
+    {
+      auto r = cudaMemcpy(h_signal3, d_signal, memsize, cudaMemcpyDeviceToHost);
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" cudaMemcpy(h_signal3, d_signal, memsize, "
+                      "cudaMemcpyDeviceToHost) => ")
+                  << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
+                  << (" memsize=") << (memsize) << (std::endl);
+      assert((cudaSuccess) == (r));
+    };
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("runProcessing") << (" ")
+                << (std::setw(8)) << (" v[0]=") << (v[0]) << (std::setw(8))
+                << (" v[1]=") << (v[1]) << (std::setw(8)) << (" v[2]=")
+                << (v[2]) << (std::setw(8)) << (" v[3]=") << (v[3])
+                << (std::setw(8)) << (" v[4]=") << (v[4]) << (std::endl);
+    free(h_signal3);
   };
   cufftHandle plan;
   {
