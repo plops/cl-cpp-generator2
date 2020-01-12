@@ -103,38 +103,6 @@ std::complex<float> *runProcessing(int index) {
                 << (" memsize=") << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
-  // copy data back
-  {
-    auto h_signal3 = static_cast<Complex *>(malloc(memsize));
-    auto v = reinterpret_cast<std::complex<float> *>(h_signal3);
-    {
-      auto r = cudaMemcpy(h_signal3, d_signal, memsize, cudaMemcpyDeviceToHost);
-      (std::cout) << (((std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count()) -
-                       (state._start_time)))
-                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                  << (__func__)
-                  << (" cudaMemcpy(h_signal3, d_signal, memsize, "
-                      "cudaMemcpyDeviceToHost) => ")
-                  << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                  << (" memsize=") << (memsize) << (std::endl);
-      assert((cudaSuccess) == (r));
-    };
-    std::setprecision(3);
-    (std::cout) << (std::setw(10))
-                << (((std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count()) -
-                     (state._start_time)))
-                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
-                << (__func__) << (" ") << ("runProcessing") << (" ")
-                << (std::setw(8)) << (" v[0]=") << (v[0]) << (std::setw(8))
-                << (" v[1]=") << (v[1]) << (std::setw(8)) << (" v[2]=")
-                << (v[2]) << (std::setw(8)) << (" v[3]=") << (v[3])
-                << (std::setw(8)) << (" v[4]=") << (v[4]) << (std::endl);
-    free(h_signal3);
-  };
   cufftHandle plan;
   {
     auto r = cufftPlan1d(&plan, range, CUFFT_C2C, 1);
@@ -159,6 +127,39 @@ std::complex<float> *runProcessing(int index) {
         << (" cufftExecC2C(plan, d_signal, d_signal_out, CUFFT_FORWARD) => ")
         << (r) << (std::endl);
     assert((cudaSuccess) == (r));
+  };
+  // copy data back
+  {
+    auto h_signal3 = static_cast<Complex *>(malloc(memsize));
+    auto v = reinterpret_cast<std::complex<float> *>(h_signal3);
+    {
+      auto r =
+          cudaMemcpy(h_signal3, d_signal_out, memsize, cudaMemcpyDeviceToHost);
+      (std::cout) << (((std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count()) -
+                       (state._start_time)))
+                  << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                  << (__func__)
+                  << (" cudaMemcpy(h_signal3, d_signal_out, memsize, "
+                      "cudaMemcpyDeviceToHost) => ")
+                  << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
+                  << (" memsize=") << (memsize) << (std::endl);
+      assert((cudaSuccess) == (r));
+    };
+    std::setprecision(3);
+    (std::cout) << (std::setw(10))
+                << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" ") << ("runProcessing") << (" ")
+                << (std::setw(8)) << (" v[0]=") << (v[0]) << (std::setw(8))
+                << (" v[1]=") << (v[1]) << (std::setw(8)) << (" v[2]=")
+                << (v[2]) << (std::setw(8)) << (" v[3]=") << (v[3])
+                << (std::setw(8)) << (" v[4]=") << (v[4]) << (std::endl);
+    free(h_signal3);
   };
   {
     auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel), memsize);
