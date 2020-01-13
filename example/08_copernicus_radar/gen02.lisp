@@ -17,7 +17,7 @@
 					      )))
 
 (with-open-file (s (first (directory
-                           "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/dfa.csv")))
+                           "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/df.csv")))
   (defparameter *dfa-csv* (read-csv:parse-csv s)))
 
 
@@ -410,6 +410,15 @@
 		     "/opt/cuda/targets/x86_64-linux/include/cuda_runtime.h"
 		     )
 		    " "
+		    (include "data.h")
+		    " "
+		    (include <complex>)
+		    " " 
+		    (include <cmath>)
+		    " "
+		    "// fixme: tx configuration for each pulse is currently always the same. for iw datasets i have to figure out how to get the tx configuration rank packets in the past."
+		    
+		    " "
 		    ,(emit-utils :code
 				 `(do0
 				   "void initProcessing();"
@@ -529,6 +538,48 @@
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
 						memsize)
 				   `(memsize)))
+			#+nil (setf fdec (dot (aref dfc.iloc 0)
+				 fdec)
+		       xs_a_us  (/ (cp.arange (aref ss.shape 1)) fdec)
+		       xs_off (- xs_a_us (* .5 (aref dfc.txpl 0))
+				 .5)
+		       xs_mask (& (< (* -.5 (aref dfc.txpl 0)) xs_off)
+				  (< xs_off (* .5 (aref dfc.txpl 0))))
+		       arg_nomchirp (* -2 np.pi
+				       (+ (* xs_off  (+ (aref dfc.txpsf 0)
+							(* .5
+							   (aref dfc.txpl 0)
+							   (aref dfc.txprr 0))))
+					  (* (** xs_off 2)
+					     .5
+					     (aref dfc.txprr 0))))
+		       z (* xs_mask (np.exp (* 1j arg_nomchirp))))
+
+			(do0
+			 (let ,(loop for e in `(txprr
+						txpl
+						txpsf
+						fdec
+					;ses_ssb_tx_pulse_number
+						)
+				  collect
+				    `(,(format nil "_~a" e) (aref ,e index)))
+			   (let ((h_kernel ("static_cast<std::complex<float>*>"
+					    (malloc memsize))))
+			     (dotimes (i 5000)
+			       "const std::complex<float> imag(0, 1);"
+			       (let ((xs_us (/ i _fdec))
+				     (xs_off (- xs_us (* .5 _txpl)
+						.5))
+				     (arg (* -2 ,(coerce pi 'single-float) (+ (* xs_off (+ _txpsf
+								      (* .5s0
+									 _txpl
+									 _txprr)))
+							 (* (* xs_off xs_off)
+							    .5s0 _txprr))))
+				     (cplx ("std::exp" (* imag arg))))
+				 (setf (aref h_kernel i) cplx)))
+			     (free h_kernel))))
 			(do0
 			 ;; numblocks, threads per block
 			 ("ComplexPointwiseMul<<<128,1024>>>" d_signal_out
@@ -746,9 +797,17 @@
 
     (let ((data
 	   `(do0
-	     ,@(loop for e in `(txpl) ;(elt *dfa-csv* 0)
+	     ,@(loop for e_ in `(txprr
+				 txpl
+				 txpsf
+				 fdec
+				 ;ses_ssb_tx_pulse_number
+				 )
+					;(elt *dfa-csv* 0)
 		  collect
-		    (let* ((colindex (position (format nil "~a" e) (elt *dfa-csv* 0) :test #'string=))
+		    (let* ((e e_ ;(format nil "ranked_~a" e_)
+			     )
+			   (colindex (position (format nil "~a" e) (elt *dfa-csv* 0) :test #'string=))
 			   (name `(aref ,e ,(- (length *dfa-csv*) 1))))
 		      `(let ((,name (curly ,@(loop for row in (cdr *dfa-csv*) collect
 						  (elt row colindex)))))
@@ -761,7 +820,7 @@
 		    " "
 		    "#define DATA_H"
 		    " "
-		    ,@data
+		    ,data
 		    " "
 		    "#endif"
 		    " ")))

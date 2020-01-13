@@ -13,6 +13,16 @@ extern State state;
 #include "/opt/cuda/targets/x86_64-linux/include/cufft.h"
 #include "/opt/cuda/targets/x86_64-linux/include/cufftw.h"
 
+#include "data.h"
+
+#include <complex>
+
+#include <cmath>
+
+// fixme: tx configuration for each pulse is currently always the same. for iw
+// datasets i have to figure out how to get the tx configuration rank packets in
+// the past.
+
 typedef float2 Complex;
 
 static __device__ __host__ inline Complex ComplexMul(Complex a, Complex b) {
@@ -141,6 +151,23 @@ std::complex<float> *runProcessing(int index) {
         << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
+  auto _txprr = txprr[index];
+  auto _txpl = txpl[index];
+  auto _txpsf = txpsf[index];
+  auto _fdec = fdec[index];
+  auto h_kernel = static_cast<std::complex<float> *>(malloc(memsize));
+  for (int i = 0; i < 5000; (i) += (1)) {
+    const std::complex<float> imag(0, 1);
+    auto xs_us = ((i) / (_fdec));
+    auto xs_off = ((xs_us) - ((((5.e-1f)) * (_txpl))) - ((5.e-1f)));
+    auto arg =
+        ((-2) * ((3.1415927e+0f)) *
+         (((((xs_off) * (((_txpsf) + ((((5.e-1f)) * (_txpl) * (_txprr))))))) +
+           (((((xs_off) * (xs_off))) * ((5.e-1f)) * (_txprr))))));
+    auto cplx = std::exp(((imag) * (arg)));
+    h_kernel[i] = cplx;
+  }
+  free(h_kernel);
   ComplexPointwiseMul<<<128, 1024>>>(d_signal_out, d_kernel, range);
   // copy data back
   {
