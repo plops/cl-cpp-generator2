@@ -472,9 +472,10 @@
 			    (d_signal)
 			    (d_signal_out)
 			    (d_kernel)
+			    (d_kernel_out)
 			    (memsize (* (sizeof Complex) range))
 			    (h_signal2 (static_cast<Complex*> (malloc memsize))))
-			(declare (type Complex* d_signal d_kernel d_signal_out p h_signal)
+			(declare (type Complex* d_signal d_kernel d_signal_out p h_signal d_kernel_out)
 				 (type "static Complex*" h_signal2))
 			#+nil (do0
 			 ,(logprint "runProcessing"
@@ -537,6 +538,9 @@
 			 
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel)
 						memsize)
+				   `(memsize))
+			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_kernel_out)
+						memsize)
 				   `(memsize)))
 			#+nil (setf fdec (dot (aref dfc.iloc 0)
 				 fdec)
@@ -565,25 +569,37 @@
 				  collect
 				    `(,(format nil "_~a" e) (aref ,e index)))
 			   (let ((h_kernel ("static_cast<std::complex<float>*>"
-					    (malloc memsize))))
-			     (dotimes (i 5000)
+					    (malloc memsize)))
+				 (xs_off 0))
+			     (for (("int i" 0)
+				   (< xs_off _txpl)
+				   (incf i))
 			       "const std::complex<float> imag(0, 1);"
 			       (let ((xs_us (/ i _fdec))
-				     (xs_off (- xs_us (* .5 _txpl)
-						.5))
-				     (arg (* -2 ,(coerce pi 'single-float) (+ (* xs_off (+ _txpsf
-								      (* .5s0
-									 _txpl
-									 _txprr)))
-							 (* (* xs_off xs_off)
-							    .5s0 _txprr))))
-				     (cplx ("std::exp" (* imag arg))))
-				 (setf (aref h_kernel i) cplx)))
+				     )
+				 (setf xs_off (- xs_us (* .5 _txpl)
+						 .5))
+				(let ((arg (* -2 ,(coerce pi 'single-float) (+ (* xs_off (+ _txpsf
+											    (* .5s0
+											       _txpl
+											       _txprr)))
+									       (* (* xs_off xs_off)
+										  .5s0 _txprr))))
+				      (cplx ("std::exp" (* imag arg))))
+				  (setf (aref h_kernel i) cplx))))
+			     ,(cuprint `(cudaMemcpy d_kernel ;; dst
+						    h_kernel ;; src
+						    memsize cudaMemcpyHostToDevice)
+				       `(memsize))
+			     ,(cufftprint `(cufftExecC2C plan
+						      d_kernel ;; in
+						      d_kernel_out ;; out
+						      CUFFT_FORWARD))
 			     (free h_kernel))))
 			(do0
 			 ;; numblocks, threads per block
 			 ("ComplexPointwiseMul<<<128,1024>>>" d_signal_out
-							    d_kernel
+							    d_kernel_out
 							    range)
 			 (do0
 			 "// copy data back"
@@ -613,6 +629,7 @@
 			 ,(cuprint `(cudaFree d_signal))
 			 ,(cuprint `(cudaFree d_signal_out))
 			 ,(cuprint `(cudaFree d_kernel))
+			 ,(cuprint `(cudaFree d_kernel_out))
 			 (return ("reinterpret_cast< std::complex<float>* >" h_signal2))
 			 ))
 		      )

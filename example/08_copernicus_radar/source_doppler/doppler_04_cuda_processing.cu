@@ -71,6 +71,7 @@ std::complex<float> *runProcessing(int index) {
   Complex *d_signal;
   Complex *d_signal_out;
   Complex *d_kernel;
+  Complex *d_kernel_out;
   auto memsize = ((sizeof(Complex)) * (range));
   static Complex *h_signal2 = static_cast<Complex *>(malloc(memsize));
   {
@@ -151,15 +152,29 @@ std::complex<float> *runProcessing(int index) {
         << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
+  {
+    auto r = cudaMalloc(reinterpret_cast<void **>(&d_kernel_out), memsize);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (state._start_time)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cudaMalloc(reinterpret_cast<void**>(&d_kernel_out), memsize) => ")
+        << (r) << (" '") << (cudaGetErrorString(r)) << ("' ") << (" memsize=")
+        << (memsize) << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
   auto _txprr = txprr[index];
   auto _txpl = txpl[index];
   auto _txpsf = txpsf[index];
   auto _fdec = fdec[index];
   auto h_kernel = static_cast<std::complex<float> *>(malloc(memsize));
-  for (int i = 0; i < 5000; (i) += (1)) {
+  auto xs_off = 0;
+  for (int i(0); xs_off < _txpl; (i)++) {
     const std::complex<float> imag(0, 1);
     auto xs_us = ((i) / (_fdec));
-    auto xs_off = ((xs_us) - ((((5.e-1f)) * (_txpl))) - ((5.e-1f)));
+    xs_off = ((xs_us) - ((((5.e-1f)) * (_txpl))) - ((5.e-1f)));
     auto arg =
         ((-2) * ((3.1415927e+0f)) *
          (((((xs_off) * (((_txpsf) + ((((5.e-1f)) * (_txpl) * (_txprr))))))) +
@@ -167,8 +182,34 @@ std::complex<float> *runProcessing(int index) {
     auto cplx = std::exp(((imag) * (arg)));
     h_kernel[i] = cplx;
   }
+  {
+    auto r = cudaMemcpy(d_kernel, h_kernel, memsize, cudaMemcpyHostToDevice);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__)
+                << (" cudaMemcpy(d_kernel, h_kernel, memsize, "
+                    "cudaMemcpyHostToDevice) => ")
+                << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
+                << (" memsize=") << (memsize) << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
+  {
+    auto r = cufftExecC2C(plan, d_kernel, d_kernel_out, CUFFT_FORWARD);
+    (std::cout)
+        << (((std::chrono::high_resolution_clock::now()
+                  .time_since_epoch()
+                  .count()) -
+             (state._start_time)))
+        << (" ") << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+        << (" cufftExecC2C(plan, d_kernel, d_kernel_out, CUFFT_FORWARD) => ")
+        << (r) << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
   free(h_kernel);
-  ComplexPointwiseMul<<<128, 1024>>>(d_signal_out, d_kernel, range);
+  ComplexPointwiseMul<<<128, 1024>>>(d_signal_out, d_kernel_out, range);
   // copy data back
   {
     auto h_signal3 = static_cast<Complex *>(malloc(memsize));
@@ -270,6 +311,17 @@ std::complex<float> *runProcessing(int index) {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" cudaFree(d_kernel) => ") << (r) << (" '")
                 << (cudaGetErrorString(r)) << ("' ") << (std::endl);
+    assert((cudaSuccess) == (r));
+  };
+  {
+    auto r = cudaFree(d_kernel_out);
+    (std::cout) << (((std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count()) -
+                     (state._start_time)))
+                << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+                << (__func__) << (" cudaFree(d_kernel_out) => ") << (r)
+                << (" '") << (cudaGetErrorString(r)) << ("' ") << (std::endl);
     assert((cudaSuccess) == (r));
   };
   return reinterpret_cast<std::complex<float> *>(h_signal2);
