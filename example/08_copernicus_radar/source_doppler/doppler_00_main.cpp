@@ -51,6 +51,7 @@ int main() {
   state._echo = 48141;
   state._range = 24890;
   state._range_line = nullptr;
+  state._kernel_arg = nullptr;
   state._filename = "/home/martin/stage/cl-cpp-generator2/example/"
                     "08_copernicus_radar/source/o_range24890_echoes48141.cf";
   init_mmap(state._filename);

@@ -165,6 +165,10 @@ std::complex<float> *runProcessing(int index) {
         << (memsize) << (std::endl);
     assert((cudaSuccess) == (r));
   };
+  if (!(state._kernel_arg)) {
+    state._kernel_arg =
+        static_cast<float *>(malloc(((sizeof(float)) * (state._range))));
+  };
   auto _txprr = txprr[index];
   auto _txpl = txpl[index];
   auto _txpsf = txpsf[index];
@@ -181,6 +185,7 @@ std::complex<float> *runProcessing(int index) {
            (((((xs_off) * (xs_off))) * ((5.e-1f)) * (_txprr))))));
     auto cplx = std::exp(((imag) * (arg)));
     h_kernel[i] = cplx;
+    state._kernel_arg[i] = arg;
   }
   {
     auto r = cudaMemcpy(d_kernel, h_kernel, memsize, cudaMemcpyHostToDevice);

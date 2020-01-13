@@ -247,7 +247,8 @@
 						    (count))
 			     ,(g `_echo) ,echo-value
 			     ,(g `_range) ,range-value
-			     ,(g `_range_line) nullptr)
+			     ,(g `_range_line) nullptr
+			     ,(g `_kernel_arg) nullptr)
 					;(vkprint "main" )
 		       (setf ,(g `_filename)
 			     (string
@@ -399,7 +400,7 @@
 		))))
 
   (define-module
-      `(cuda_processing ()
+      `(cuda_processing ((_kernel_arg :direction 'out :type "float*"))
 		   (do0
 		    "// https://github.com/NVIDIA/cuda-samples/blob/master/Samples/simpleCUFFT/simpleCUFFT.cu"
 		    (include <cassert>)
@@ -491,26 +492,11 @@
 				   `(memsize))
 			 ,(cuprint `(cudaMemcpy d_signal ;; dst
 						h_signal ;; src
-						memsize cudaMemcpyHostToDevice)
+						memsize
+						cudaMemcpyHostToDevice)
 				   `(memsize)))
 
 
-			#+nil
-			(do0
-			 "// copy data back"
-			 (progn
-			  (let ((h_signal3 (static_cast<Complex*> (malloc memsize)))
-				(v ("reinterpret_cast<std::complex<float>*>" h_signal3)))
-			    ,(cuprint `(cudaMemcpy h_signal3 ;; dst
-						   d_signal ;; src
-						   memsize cudaMemcpyDeviceToHost)
-				      `(memsize))
-			    ,(logprint "runProcessing"
-				       `(,@(loop for i below 5 collect
-						`(aref v
-						       ,i))))
-			    (free h_signal3))))
-			
 			(let ((plan ))
 			  (declare (type cufftHandle plan))
 			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))
@@ -518,21 +504,7 @@
 						      d_signal ;; in
 						      d_signal_out ;; out
 						      CUFFT_FORWARD)))
-			#+nil
-			(do0
-			 "// copy data back"
-			 (progn
-			  (let ((h_signal3 (static_cast<Complex*> (malloc memsize)))
-				(v ("reinterpret_cast<std::complex<float>*>" h_signal3)))
-			    ,(cuprint `(cudaMemcpy h_signal3 ;; dst
-						   d_signal_out ;; src
-						   memsize cudaMemcpyDeviceToHost)
-				      `(memsize))
-			    ,(logprint "runProcessing"
-				       `(,@(loop for i below 5 collect
-						`(aref v
-						       ,i))))
-			    (free h_signal3))))
+			
 			
 			(do0
 			 
@@ -560,6 +532,10 @@
 		       z (* xs_mask (np.exp (* 1j arg_nomchirp))))
 
 			(do0
+			 (unless ,(g `_kernel_arg)
+			   (setf ,(g `_kernel_arg) (static_cast<float*>
+						    (malloc (* (sizeof float)
+							      ,(g `_range))))))
 			 (let ,(loop for e in `(txprr
 						txpl
 						txpsf
@@ -587,7 +563,8 @@
 									       (* (* xs_off xs_off)
 										  .5s0 _txprr))))
 				      (cplx ("std::exp" (* imag arg))))
-				  (setf (aref h_kernel i) cplx))))
+				   (setf (aref h_kernel i) cplx)
+				   (setf (aref ,(g `_kernel_arg) i) arg))))
 			     ,(cuprint `(cudaMemcpy d_kernel ;; dst
 						    h_kernel ;; src
 						    memsize cudaMemcpyHostToDevice)
@@ -702,9 +679,57 @@
 			 NULL			  ;; overlay_text
 			 FLT_MAX		  ;; scale_min
 			 FLT_MAX		  ;; scale_max
-			 (ImVec2 3700 400)	  ;; graph_size
+			 (ImVec2 1200 100)	  ;; graph_size
 			 (sizeof float)		  ;;stride
 			 ))))))
+
+		 (progn
+		  (do0
+		  
+		   "// plot raw data (arg)"
+		   (let ((p ("reinterpret_cast<std::complex<float>*>" ,(g `_mmap_data)))
+			 (range ,(g `_range))
+			 (h_signal (ref (aref p (* range slider_a))))
+			 (range_raw_arg (static_cast<float*> (malloc (* (sizeof float) range))))
+			 )
+		     (declare (type "static float*" range_raw_arg))
+		     (dotimes (i range)
+		       (setf (aref range_raw_arg i)
+			     ("std::arg" (aref h_signal
+					       i))))
+		     (when range_raw_arg
+		       (do0
+			("ImGui::PlotLines"
+			 (string "kernel_raw_arg") ;; label
+			 ;("reinterpret_cast<float*>" h_signal)
+					range_raw_arg ;; values
+			 range			  ;; count
+			 0			  ;; offset
+			 NULL			  ;; overlay_text
+			 FLT_MAX		  ;; scale_min
+			 FLT_MAX		  ;; scale_max
+			 (ImVec2 1200 100)	  ;; graph_size
+			 (sizeof float)		  ;;stride
+			 ))))))
+
+
+		 (progn
+		  (do0
+		  
+		   "// plot raw data (arg computed)"
+		   (do0
+		    ("ImGui::PlotLines"
+		     (string "kernel_arg") ;; label
+					;("reinterpret_cast<float*>" h_signal)
+		     ,(g `_kernel_arg) ;; values
+		     ,(g `_range)			  ;; count
+		     0			  ;; offset
+		     NULL			  ;; overlay_text
+		     FLT_MAX		  ;; scale_min
+		     FLT_MAX		  ;; scale_max
+		     (ImVec2 1200 100)	  ;; graph_size
+		     (sizeof float)		  ;;stride
+		     ))))
 		 
 		 (let ((range ,(g `_range))
 		       ;(memsize (* (sizeof Complex) range))
@@ -731,7 +756,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 3200 400) ;; graph_size
+		      (ImVec2 1200 100) ;; graph_size
 		      (sizeof float)	;;stride
 		      )
 		     ("ImGui::PlotLines"
@@ -742,7 +767,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 3200 400) ;; graph_size
+		      (ImVec2 1200 100) ;; graph_size
 		      (sizeof float)	;;stride
 		      )))))
 		("ImGui::Render")

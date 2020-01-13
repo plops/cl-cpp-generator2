@@ -41,8 +41,28 @@ void drawGui() {
     }
     if (range_raw_re) {
       ImGui::PlotLines("range_raw_re", range_raw_re, range, 0, NULL, FLT_MAX,
-                       FLT_MAX, ImVec2(3700, 400), sizeof(float));
+                       FLT_MAX, ImVec2(1200, 100), sizeof(float));
     };
+  };
+  {
+    // plot raw data (arg)
+    auto p = reinterpret_cast<std::complex<float> *>(state._mmap_data);
+    auto range = state._range;
+    auto h_signal = &(p[((range) * (slider_a))]);
+    static float *range_raw_arg =
+        static_cast<float *>(malloc(((sizeof(float)) * (range))));
+    for (int i = 0; i < range; (i) += (1)) {
+      range_raw_arg[i] = std::arg(h_signal[i]);
+    }
+    if (range_raw_arg) {
+      ImGui::PlotLines("kernel_raw_arg", range_raw_arg, range, 0, NULL, FLT_MAX,
+                       FLT_MAX, ImVec2(1200, 100), sizeof(float));
+    };
+  };
+  {
+    // plot raw data (arg computed)
+    ImGui::PlotLines("kernel_arg", state._kernel_arg, state._range, 0, NULL,
+                     FLT_MAX, FLT_MAX, ImVec2(1200, 100), sizeof(float));
   };
   auto range = state._range;
   static float *range_abs =
@@ -55,9 +75,9 @@ void drawGui() {
       range_re[i] = std::real(state._range_line[i]);
     }
     ImGui::PlotLines("range_abs", range_abs, range, 0, NULL, FLT_MAX, FLT_MAX,
-                     ImVec2(3200, 400), sizeof(float));
+                     ImVec2(1200, 100), sizeof(float));
     ImGui::PlotLines("range_re", range_re, range, 0, NULL, FLT_MAX, FLT_MAX,
-                     ImVec2(3200, 400), sizeof(float));
+                     ImVec2(1200, 100), sizeof(float));
   };
   ImGui::Render();
   ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());

@@ -12,6 +12,7 @@
 struct State {
   typeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())
       _start_time;
+  float *_kernel_arg;
   GLuint _fontTex;
   bool _framebufferResized;
   GLFWwindow *_window;
