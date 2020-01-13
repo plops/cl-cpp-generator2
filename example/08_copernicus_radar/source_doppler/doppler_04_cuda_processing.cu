@@ -126,7 +126,7 @@ std::complex<float> *runProcessing(int index) {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__)
                 << (" cufftPlan1d(&plan, range, CUFFT_C2C, 1) => ") << (r)
-                << (std::endl);
+                << (" range=") << (range) << (std::endl);
     assert((cudaSuccess) == (r));
   };
   {

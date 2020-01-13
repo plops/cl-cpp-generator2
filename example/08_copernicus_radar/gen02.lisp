@@ -502,7 +502,8 @@
 
 			(let ((plan ))
 			  (declare (type cufftHandle plan))
-			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1))
+			  ,(cufftprint `(cufftPlan1d &plan range CUFFT_C2C 1)
+				       `(range))
 			  ,(cufftprint `(cufftExecC2C plan
 						      d_signal ;; in
 						      d_signal_out ;; out
