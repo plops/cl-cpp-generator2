@@ -60,9 +60,11 @@ void drawGui() {
     };
   };
   {
-    // plot raw data (arg computed)
-    ImGui::PlotLines("kernel_arg", state._kernel_arg, state._range, 0, NULL,
-                     FLT_MAX, FLT_MAX, ImVec2(1200, 100), sizeof(float));
+    if (state._kernel_arg) {
+      // plot raw data (arg computed)
+      ImGui::PlotLines("kernel_arg", state._kernel_arg, state._range, 0, NULL,
+                       FLT_MAX, FLT_MAX, ImVec2(1200, 100), sizeof(float));
+    };
   };
   auto range = state._range;
   static float *range_abs =

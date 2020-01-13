@@ -309,7 +309,8 @@
 		      ,(logprint "fail mmap"`( data)))
 		    (assert (!= MAP_FAILED data))
 		    (setf ,(g `_mmap_filesize) filesize
-			  ,(g `_mmap_data) data)))))))))
+			  ,(g `_mmap_data) data)
+		    ,(logprint "mmap" `(filesize data))))))))))
 
   (define-module
       `(glfw_window
@@ -476,7 +477,8 @@
 			    (d_kernel_out)
 			    (memsize (* (sizeof Complex) range))
 			    (h_signal2 (static_cast<Complex*> (malloc memsize))))
-			(declare (type Complex* d_signal d_kernel d_signal_out p h_signal d_kernel_out)
+			(declare (type Complex* d_signal d_kernel d_signal_out p
+				       h_signal d_kernel_out)
 				 (type "static Complex*" h_signal2))
 			#+nil (do0
 			 ,(logprint "runProcessing"
@@ -490,11 +492,12 @@
 			 ,(cuprint `(cudaMalloc (reinterpret_cast<void**> &d_signal_out)
 						memsize)
 				   `(memsize))
+			 ;,(cuprint `(cudaThreadSynchronize) `())
 			 ,(cuprint `(cudaMemcpy d_signal ;; dst
 						h_signal ;; src
 						memsize
 						cudaMemcpyHostToDevice)
-				   `(memsize)))
+				   `(memsize d_signal h_signal p)))
 
 
 			(let ((plan ))
@@ -714,22 +717,23 @@
 
 
 		 (progn
-		  (do0
+		   (when ,(g `_kernel_arg)
+		    (do0
 		  
-		   "// plot raw data (arg computed)"
-		   (do0
-		    ("ImGui::PlotLines"
-		     (string "kernel_arg") ;; label
+		     "// plot raw data (arg computed)"
+		     (do0
+		      ("ImGui::PlotLines"
+		       (string "kernel_arg") ;; label
 					;("reinterpret_cast<float*>" h_signal)
-		     ,(g `_kernel_arg) ;; values
-		     ,(g `_range)			  ;; count
-		     0			  ;; offset
-		     NULL			  ;; overlay_text
-		     FLT_MAX		  ;; scale_min
-		     FLT_MAX		  ;; scale_max
-		     (ImVec2 1200 100)	  ;; graph_size
-		     (sizeof float)		  ;;stride
-		     ))))
+		       ,(g `_kernel_arg) ;; values
+		       ,(g `_range)	 ;; count
+		       0		 ;; offset
+		       NULL		 ;; overlay_text
+		       FLT_MAX		 ;; scale_min
+		       FLT_MAX		 ;; scale_max
+		       (ImVec2 1200 100) ;; graph_size
+		       (sizeof float)	 ;;stride
+		       )))))
 		 
 		 (let ((range ,(g `_range))
 		       ;(memsize (* (sizeof Complex) range))

@@ -74,4 +74,14 @@ void init_mmap(const char *filename) {
   assert((MAP_FAILED) != (data));
   state._mmap_filesize = filesize;
   state._mmap_data = data;
+  std::setprecision(3);
+  (std::cout) << (std::setw(10))
+              << (((std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count()) -
+                   (state._start_time)))
+              << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
+              << (__func__) << (" ") << ("mmap") << (" ") << (std::setw(8))
+              << (" filesize=") << (filesize) << (std::setw(8)) << (" data=")
+              << (data) << (std::endl);
 };

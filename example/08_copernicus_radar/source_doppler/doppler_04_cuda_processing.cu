@@ -111,7 +111,9 @@ std::complex<float> *runProcessing(int index) {
                 << (" cudaMemcpy(d_signal, h_signal, memsize, "
                     "cudaMemcpyHostToDevice) => ")
                 << (r) << (" '") << (cudaGetErrorString(r)) << ("' ")
-                << (" memsize=") << (memsize) << (std::endl);
+                << (" memsize=") << (memsize) << (" d_signal=") << (d_signal)
+                << (" h_signal=") << (h_signal) << (" p=") << (p)
+                << (std::endl);
     assert((cudaSuccess) == (r));
   };
   cufftHandle plan;
