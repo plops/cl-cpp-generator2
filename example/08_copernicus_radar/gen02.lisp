@@ -1,6 +1,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-  (ql:quickload "cl-ppcre"))
+  (ql:quickload "cl-ppcre")
+  (ql:quickload "read-csv"))
 
 (in-package :cl-cpp-generator2)
 
@@ -14,6 +15,13 @@
 					      :log-brc
 					      :log-consume
 					      )))
+
+(with-open-file (s (first (directory
+                           "/home/martin/stage/cl-cpp-generator2/example/08_copernicus_radar/source/dfa.csv")))
+  (defparameter *dfa-csv* (read-csv:parse-csv s)))
+
+
+
 
 
 (progn
@@ -406,7 +414,8 @@
 				 `(do0
 				   "void initProcessing();"
 				   "std::complex<float>* runProcessing(int);"
-				   "void cleanupProcessing();"))
+				   "void cleanupProcessing();"
+				   ))
 		    "typedef float2 Complex;"
 		    " "
 		    (defun ComplexMul (a b)
@@ -734,6 +743,28 @@
 		    " "
 		    "#endif"
 		    " "))
+
+    (let ((data
+	   `(do0
+	     ,@(loop for e in `(txpl) ;(elt *dfa-csv* 0)
+		  collect
+		    (let* ((colindex (position (format nil "~a" e) (elt *dfa-csv* 0) :test #'string=))
+			   (name `(aref ,e ,(- (length *dfa-csv*) 1))))
+		      `(let ((,name (curly ,@(loop for row in (cdr *dfa-csv*) collect
+						  (elt row colindex)))))
+			 (declare (type float ,name))))))))
+      (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
+								     #P"data.h"
+								     *source-dir*))
+		  `(do0
+		    "#ifndef DATA_H"
+		    " "
+		    "#define DATA_H"
+		    " "
+		    ,@data
+		    " "
+		    "#endif"
+		    " ")))
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
 								     #P"globals.h"
 								     *source-dir*))
