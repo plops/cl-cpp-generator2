@@ -176,7 +176,7 @@ std::complex<float> *runProcessing(int index) {
     auto xs_us = ((i) / (_fdec));
     xs_off = ((xs_us) - ((((5.e-1f)) * (_txpl))) - ((5.e-1f)));
     auto arg =
-        ((-2) * ((3.1415927e+0f)) *
+        ((2) * ((3.1415927e+0f)) *
          (((((xs_off) * (((_txpsf) + ((((5.e-1f)) * (_txpl) * (_txprr))))))) +
            (((((xs_off) * (xs_off))) * ((5.e-1f)) * (_txprr))))));
     auto cplx = std::exp(((imag) * (arg)));

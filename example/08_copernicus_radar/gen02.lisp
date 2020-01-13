@@ -579,7 +579,8 @@
 				     )
 				 (setf xs_off (- xs_us (* .5 _txpl)
 						 .5))
-				(let ((arg (* -2 ,(coerce pi 'single-float) (+ (* xs_off (+ _txpsf
+				 (let ((arg (* 2 ;; -1 * -2 for conjugation
+					       ,(coerce pi 'single-float) (+ (* xs_off (+ _txpsf
 											    (* .5s0
 											       _txpl
 											       _txprr)))
@@ -701,7 +702,7 @@
 			 NULL			  ;; overlay_text
 			 FLT_MAX		  ;; scale_min
 			 FLT_MAX		  ;; scale_max
-			 (ImVec2 1200 100)	  ;; graph_size
+			 (ImVec2 3700 400)	  ;; graph_size
 			 (sizeof float)		  ;;stride
 			 ))))))
 		 
@@ -730,7 +731,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 1200 100) ;; graph_size
+		      (ImVec2 3200 400) ;; graph_size
 		      (sizeof float)	;;stride
 		      )
 		     ("ImGui::PlotLines"
@@ -741,7 +742,7 @@
 		      NULL	       ;; overlay_text
 		      FLT_MAX	       ;; scale_min
 		      FLT_MAX	       ;; scale_max
-		      (ImVec2 1200 100) ;; graph_size
+		      (ImVec2 3200 400) ;; graph_size
 		      (sizeof float)	;;stride
 		      )))))
 		("ImGui::Render")
