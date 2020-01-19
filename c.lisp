@@ -187,7 +187,7 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "[] ~a~@[: ~a ~]"
+	  (format s "[] ~a~@[-> ~a ~]"
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect
 					 (format nil "~a~@[: ~a~]"
