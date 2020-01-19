@@ -173,6 +173,11 @@ entry return-values contains a list of return values"
 
 (defun parse-lambda (code emit)
   ;;  lambda lambda-list [declaration*] form*
+  ;; no return value:
+  ;;  [] (int a, float b) { body }
+  ;; with (declaration (values float)):
+  ;;  [] (int a, float b) -> float { body }
+  ;; currently no support for captures (which would be placed into the first set of brackets)
   (destructuring-bind (lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env) (consume-declare body)
       (multiple-value-bind (req-param opt-param res-param
@@ -182,7 +187,7 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "fun ~a~@[: ~a ~]"
+	  (format s "[] ~a~@[: ~a ~]"
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect
 					 (format nil "~a~@[: ~a~]"
@@ -191,7 +196,7 @@ entry return-values contains a list of return values"
 						   (if type
 						       type
 						       #+nil (break "can't find type for ~a in defun"
-							      p)))))))
+								    p)))))))
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(funcall emit `(paren ,@r))

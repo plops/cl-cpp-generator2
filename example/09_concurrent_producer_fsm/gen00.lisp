@@ -121,9 +121,11 @@
 					     (count)))
 		(let ((th ("std::thread"
 			   (lambda ()
+			     (declare (values float))
 			     (<< "std::cout"
 				 (string "hello ")
-				 "std::endl"))))))
+				 "std::endl")
+			     (return 2s0))))))
 		(th.join)
 		(return 0)))))
 

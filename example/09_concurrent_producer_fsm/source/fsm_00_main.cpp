@@ -13,7 +13,11 @@ State state = {};
 int main() {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
-  auto th = std::thread(fun() { (std::cout) << ("hello ") << (std::endl); });
+  auto th = std::thread([]()
+                        : float {
+                          (std::cout) << ("hello ") << (std::endl);
+                          return (2.e+0f);
+                        });
   th.join();
   return 0;
 };
