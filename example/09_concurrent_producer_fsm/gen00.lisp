@@ -99,7 +99,9 @@
 		     *module-global-parameters*))))))
   (defun g (arg)
     `(dot state ,arg))
-  
+
+
+    
   (define-module
       `(main ()
 	     (do0
@@ -109,10 +111,50 @@
 		       )
 	      
 	      " "
+
+	      #+nil
+	      (do0
+
+	       (_serial_communication_queue_incomment_mutex :type "std::mutex")
+	       (_serial_communication_queue_incomment_filled_condition :type "std::condition_variable")
+	       
+
+	       ,(format nil
+			"std::lock_guard<std::mutex> guard(~a);"
+			(cl-cpp-generator2::emit-c :code (g `_virtual_twin_data_mutex)))
+	       
+	       ,(format nil
+			"std::unique_lock<std::mutex> lk(~a);"
+			(cl-cpp-generator2::emit-c :code (g `_serial_communication_queue_out_mutex)))
+
+	       (dot ,(g `_serial_communication_queue_out_filled_condition)
+		    (wait lk)))
+
+	      (do0
+	       "template <int MaxLen>"
+	       (defclass FixedDeque "public std::deque<float>"
+		 "private:"
+		 (let ((filled_condition)
+		       (not_full_condition)
+		       (mutex))
+		   (declare (type "std::condition_variable" not_full_condition filled_condition)
+			    (type "std::mutex" mutex)))
+		 "public:"
+		 (defun push_back (val)
+		   (declare (type "const float&" val))
+		   ,(format nil
+			"std::unique_lock<std::mutex> lk(~a);"
+			(cl-cpp-generator2::emit-c :code 'this->mutex))
+		   (dot this->full_condition)
+		   (when (== MaxLen (this->size))
+		     (this->pop_front))
+		   ("std::deque<float>::push_back" val))))
+
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
 
+	      
 	      	      
 	      (defun main ()
 		(declare (values int))
