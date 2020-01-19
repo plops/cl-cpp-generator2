@@ -119,6 +119,12 @@
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
+		(let ((th ("std::thread"
+			   (lambda ()
+			     (<< "std::cout"
+				 (string "hello ")
+				 "std::endl"))))))
+		(th.join)
 		(return 0)))))
 
   
