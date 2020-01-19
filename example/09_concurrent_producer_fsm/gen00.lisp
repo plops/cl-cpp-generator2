@@ -1,7 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
-;  (ql:quickload "cl-ppcre")
-)
+  (ql:quickload "cl-ppcre"))
 
 (in-package :cl-cpp-generator2)
 
@@ -142,7 +141,7 @@
 	       (write-source (asdf:system-relative-pathname
 			      'cl-cpp-generator2
 			      (format nil
-				      "~a/doppler_~2,'0d_~a.~a"
+				      "~a/fsm_~2,'0d_~a.~a"
 				      *source-dir* i name
 				      (if cuda
 					  "cu"

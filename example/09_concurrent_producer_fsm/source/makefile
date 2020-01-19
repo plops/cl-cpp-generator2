@@ -8,7 +8,7 @@ OBJ:=$(CFILES:%.cpp=%.o)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 all: fsm
-doppler: $(OBJ) $(CUOBJ)
+fsm: $(OBJ) 
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 genclean:
