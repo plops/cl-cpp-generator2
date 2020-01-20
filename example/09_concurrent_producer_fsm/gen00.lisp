@@ -103,12 +103,9 @@
 
     
   (define-module
-      `(main ()
+      `(main ((_q :type "FixedDeque<10>"))
 	     (do0
-	      (include <deque>
-		       <thread>
-		       <condition_variable>
-		       )
+	      
 	      
 	      " "
 
@@ -130,45 +127,52 @@
 	       (dot ,(g `_serial_communication_queue_out_filled_condition)
 		    (wait lk)))
 
-	      (do0
-	       "template <int MaxLen>"
-	       (defclass FixedDeque "public std::deque<float>"
-		 "private:"
-		 (let ((filled_condition)
-		       (not_full_condition)
-		       (mutex))
-		   (declare (type "std::condition_variable" not_full_condition filled_condition)
-			    (type "std::mutex" mutex)))
-		 "public:"
-		 (defun push_back (val)
-		   (declare (type "const float&" val))
-		   ,(format nil
-			"std::unique_lock<std::mutex> lk(~a);"
-			(cl-cpp-generator2::emit-c :code 'this->mutex))
-		   (dot this->full_condition)
-		   (when (== MaxLen (this->size))
-		     (this->pop_front))
-		   ("std::deque<float>::push_back" val))))
+	      
 
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
 
-	      
+	      "using namespace std::chrono_literals;"
 	      	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
-		(let ((th ("std::thread"
+		
+		(let ((th0 ("std::thread"
 			   (lambda ()
 			     (declare (values float))
+			     ("std::this_thread::sleep_for" "30ms")
 			     (<< "std::cout"
 				 (string "hello ")
 				 "std::endl")
+			     (dotimes (i 10)
+			       (<< "std::cout"
+				   (string "push ")
+				   i
+				   "std::endl"
+				   "std::flush")
+			       (dot ,(g `_q)
+				    (push_back (* 1s0 i)))
+			       )
+			     (return 2s0))))
+		      (th1 ("std::thread"
+			   (lambda ()
+			     (declare (values float))
+			     
+			     (dotimes (i 12)
+			       (<< "std::cout"
+				 (string "                  back ")
+				 (dot ,(g `_q)
+				    (back))
+				 "std::endl"
+				 "std::flush")
+			       )
 			     (return 2s0))))))
-		(th.join)
+		(th0.join)
+		(th1.join)
 		(return 0)))))
 
   
@@ -233,7 +237,44 @@
 		    " "
 		    "#define GLOBALS_H"
 		    " "
-		    		    
+
+		    (include <deque>
+		       <thread>
+		       <condition_variable>
+		       )
+		    " "
+
+		    (do0
+		     "template <int MaxLen>"
+		     (defclass FixedDeque "public std::deque<float>"
+		       "private:"
+		       (let ((filled_condition)
+			     (mutex))
+			 (declare (type "std::condition_variable" filled_condition)
+				  (type "std::mutex" mutex)))
+		       "public:"
+		       (defun push_back (val)
+			 (declare (type "const float&" val))
+			 ,(format nil
+				  "std::lock_guard<std::mutex> guard(~a);"
+				  (cl-cpp-generator2::emit-c :code 'this->mutex))
+			 (when (== MaxLen (this->size))
+			   (this->pop_front))
+
+			 ("std::deque<float>::push_back" val)
+			 (dot this->filled_condition
+					   (notify_all)))
+		       (defun back ()
+			 (declare (values float))
+			 ,(format nil
+				  "std::unique_lock<std::mutex> lk(~a);"
+				  (cl-cpp-generator2::emit-c :code 'this->mutex))
+			 (dot this->filled_condition
+			      (wait lk))
+			 (let ((b ("std::deque<float>::back")))
+			   (lk.unlock)
+			   (return b)))))
+		    " "
 		    ,(emit-globals)
 		    " "
 		    "#endif"
