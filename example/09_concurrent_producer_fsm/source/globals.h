@@ -7,7 +7,7 @@
 #include <thread>
 
 template <int MaxLen> class FixedDeque : public std::deque<float> {
-private:
+public:
   std::condition_variable filled_condition;
   std::mutex mutex;
 

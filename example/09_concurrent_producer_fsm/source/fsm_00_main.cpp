@@ -27,8 +27,14 @@ int main() {
   auto th1 = std::thread([]() -> float {
     for (int i = 0; i < 12; (i) += (1)) {
       auto b = state._q.back();
-      (std::cout) << ("                  back=") << (b) << (std::endl)
-                  << (std::flush);
+      (std::cout) << ("                  back=") << (b) << (" [");
+      {
+        std::lock_guard<std::mutex> guard(state._q.mutex);
+        for (int i = 0; i < state._q.size(); (i) += (1)) {
+          (std::cout) << (state._q[i]) << (" ");
+        }
+      };
+      (std::cout) << ("]") << (std::endl) << (std::flush);
     }
     return (2.e+0f);
   });

@@ -170,6 +170,19 @@
 				(<< "std::cout"
 				    (string "                  back=")
 				    b
+				    (string " ["))
+				(progn
+				  ,(format nil
+				  "std::lock_guard<std::mutex> guard(~a);"
+				  (cl-cpp-generator2::emit-c :code `(dot ,(g `_q)
+									 mutex)))
+				  (dotimes (i (dot ,(g `_q)
+						   (size)))
+				   (<< "std::cout"
+				       (aref ,(g `_q) i)
+				       (string " "))))
+				(<< "std::cout"
+				    (string "]")
 				    "std::endl"
 				    "std::flush"))
 			       )
@@ -250,7 +263,7 @@
 		    (do0
 		     "template <int MaxLen>"
 		     (defclass FixedDeque "public std::deque<float>"
-		       "private:"
+		       "public:" ; "private:"
 		       (let ((filled_condition)
 			     (mutex))
 			 (declare (type "std::condition_variable" filled_condition)
