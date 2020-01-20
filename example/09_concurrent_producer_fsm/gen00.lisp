@@ -103,7 +103,8 @@
 
     
   (define-module
-      `(main ((_q :type "FixedDeque<10>"))
+      `(main ((_q :type "FixedDeque<10>")
+	      )
 	     (do0
 	      
 	      (include <cstdlib>
@@ -135,7 +136,12 @@
 
 
 	      "using namespace std::chrono_literals;"
-	      	      
+
+	      (let ((filled_condition)
+			     (mutex))
+			 (declare (type "std::condition_variable" filled_condition)
+				  (type "std::mutex" mutex)))
+	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -149,13 +155,14 @@
 			     (<< "std::cout"
 				 (string "hello ")
 				 "std::endl")
-			     (dotimes (i 10)
+			     (dotimes (i 20)
+			       ("std::this_thread::sleep_for" (* ("std::experimental::fundamentals_v2::randint" 5 300) "1ms"))
 			       (<< "std::cout"
 				   (string "push ")
 				   i
 				   "std::endl"
 				   "std::flush")
-			       ("std::this_thread::sleep_for" (* ("std::experimental::fundamentals_v2::randint" 5 300) "1ms"))
+			       
 			       (dot ,(g `_q)
 				    (push_back (* 1s0 i)))
 			       )
@@ -164,7 +171,7 @@
 			   (lambda ()
 			     (declare (values float))
 			     
-			     (dotimes (i 12)
+			     (dotimes (i 22)
 			       (let ((b (dot ,(g `_q)
 					 (back))))
 				(<< "std::cout"
