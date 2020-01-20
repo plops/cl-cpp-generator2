@@ -5,6 +5,8 @@
 
 #include "proto2.h"
 ;
+#include <cstdlib>
+#include <experimental/random>
 
 State state = {};
 using namespace std::chrono_literals;
@@ -16,14 +18,17 @@ int main() {
     (std::cout) << ("hello ") << (std::endl);
     for (int i = 0; i < 10; (i) += (1)) {
       (std::cout) << ("push ") << (i) << (std::endl) << (std::flush);
+      std::this_thread::sleep_for(
+          ((std::experimental::fundamentals_v2::randint(5, 300)) * (1ms)));
       state._q.push_back((((1.e+0f)) * (i)));
     }
     return (2.e+0f);
   });
   auto th1 = std::thread([]() -> float {
     for (int i = 0; i < 12; (i) += (1)) {
-      (std::cout) << ("                  back ") << (state._q.back())
-                  << (std::endl) << (std::flush);
+      auto b = state._q.back();
+      (std::cout) << ("                  back=") << (b) << (std::endl)
+                  << (std::flush);
     }
     return (2.e+0f);
   });

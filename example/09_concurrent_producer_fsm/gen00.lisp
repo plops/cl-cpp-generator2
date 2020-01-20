@@ -106,7 +106,8 @@
       `(main ((_q :type "FixedDeque<10>"))
 	     (do0
 	      
-	      
+	      (include <cstdlib>
+		       <experimental/random>)
 	      " "
 
 	      #+nil
@@ -154,6 +155,7 @@
 				   i
 				   "std::endl"
 				   "std::flush")
+			       ("std::this_thread::sleep_for" (* ("std::experimental::fundamentals_v2::randint" 5 300) "1ms"))
 			       (dot ,(g `_q)
 				    (push_back (* 1s0 i)))
 			       )
@@ -163,12 +165,13 @@
 			     (declare (values float))
 			     
 			     (dotimes (i 12)
-			       (<< "std::cout"
-				 (string "                  back ")
-				 (dot ,(g `_q)
-				    (back))
-				 "std::endl"
-				 "std::flush")
+			       (let ((b (dot ,(g `_q)
+					 (back))))
+				(<< "std::cout"
+				    (string "                  back=")
+				    b
+				    "std::endl"
+				    "std::flush"))
 			       )
 			     (return 2s0))))))
 		(th0.join)
