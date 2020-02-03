@@ -609,11 +609,10 @@ entry return-values contains a list of return values"
 
 		       (if (listp name)
 			   ;; lambda call and similar complex constructs
-			   (format nil "(~a)(~a)"
+			   (format nil "(~a)~a"
 				   (emit name)
-				   (if args
-				       (emit `(paren ,@args))
-				       ""))
+				   (emit `(paren ,@args))
+				   )
 			   ;; function call
 			   
 			   
