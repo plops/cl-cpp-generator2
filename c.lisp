@@ -299,6 +299,7 @@ entry return-values contains a list of return values"
 						;; or if x is an s-expression with a c thing that doesn't end with semicolon
 						(if (or (eq #\; (aref b (- (length b) 1)))
 							(and (typep x 'string))
+							(and (typep x '(array character (*))))
 							(and (listp x)
 							     (member (car x) `(defun if for include dotimes while case))))
 						    ""
