@@ -207,10 +207,10 @@ entry return-values contains a list of return values"
   "print a single floating point number as a string with a given nr. of                                                                                                                                             
   digits. parse it again and increase nr. of digits until the same bit                                                                                                                                              
   pattern."
-  (let* ((a f)
+    (let* ((a f)
          (digits 1)
          (b (- a 1)))
-    (unless (eq a 0)
+    (unless (= a 0)
      (loop while (< 1e-6 (/ (abs (- a b))
 		       (abs a)))
         do
@@ -227,7 +227,7 @@ entry return-values contains a list of return values"
   (let* ((a f)
          (digits 1)
          (b (- a 1)))
-    (unless (eq a 0)
+    (unless (= a 0)
       (loop while (< 1d-12
 		     (/ (abs (- a b))
 		       (abs a))
@@ -489,7 +489,7 @@ entry return-values contains a list of return values"
 						   `(do0
 						     ,@(mapcar #'emit
 							       forms))))
-					  (format nil "~a: ~a"
+					  (format nil "case ~a: ~a"
 						  (emit key)
 						  (emit
 						   `(do0
