@@ -631,8 +631,9 @@ entry return-values contains a list of return values"
 			     (format nil "~a~a" name
 				     (emit `(paren ,@args)))))))))
 	      (cond
-		((or (symbolp code)
-		     (stringp code)) ;; print variable
+		((symbolp code)
+		 (substitute #\: #\- (format nil "~a" code)))
+		((stringp code) ;; print variable
 		 (format nil "~a" code))
 		((numberp code) ;; print constants
 		 (cond ((integerp code) (format str "~a" code))

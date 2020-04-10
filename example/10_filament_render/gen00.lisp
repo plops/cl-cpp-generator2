@@ -125,7 +125,7 @@
 					     (time_since_epoch)
 					     (count)))
 		
-		(let ((engine (Engine--create)))
+		(let ((engine ("filament::Engine::create")))
 		  (engine->destroy &engine))
 		(return 0)))))
 
@@ -149,7 +149,7 @@
 	       (write-source (asdf:system-relative-pathname
 			      'cl-cpp-generator2
 			      (format nil
-				      "~a/fsm_~2,'0d_~a.~a"
+				      "~a/render_~2,'0d_~a.~a"
 				      *source-dir* i name
 				      (if cuda
 					  "cu"
