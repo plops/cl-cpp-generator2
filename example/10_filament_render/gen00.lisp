@@ -152,13 +152,16 @@
 		    (declare (type App app))
 		    (let ((setup
 			   (lambda (engine view scene)
-			     (declare (type filament--Engine* engine)
-				      (type filament--View* view)
-				      (type filament--Scene* scene))
+			     (declare
+			      (capture &app)
+			      (type filament--Engine* engine)
+			      (type filament--View* view)
+			      (type filament--Scene* scene))
 			     (view->setClearColor (curly 0 0 1 1))))
 			  (cleanup
 			   (lambda (engine view scene)
-			     (declare (type filament--Engine* engine)
+			     (declare (capture &app)
+				      (type filament--Engine* engine)
 				      (type filament--View* view)
 				      (type filament--Scene* scene))
 			     ,@(loop for e in `(renderable vb ib cam) collect

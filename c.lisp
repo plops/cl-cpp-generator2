@@ -57,8 +57,9 @@
 (defun consume-declare (body)
   "take a list of instructions from body, parse type declarations,
 return the body without them and a hash table with an environment. the
-entry return-values contains a list of return values"
+entry return-values contains a list of return values. currently supports type, values and capture declarations "
   (let ((env (make-hash-table))
+	(captures nil)
 	(looking-p t)
 	(new-body nil))
     (loop for e in body do
@@ -66,12 +67,18 @@ entry return-values contains a list of return values"
 	     (if (listp e)
 		 (if (eq (car e) 'declare)
 		     (loop for declaration in (cdr e) do
-		      (when (eq (first declaration) 'type)
-			(destructuring-bind (symb type &rest vars) declaration
-			  (declare (ignorable symb))
-			  (loop for var in vars do
-			       (setf (gethash var env) type))))
-		      (when (eq (first declaration) 'values)
+			  (when (eq (first declaration) 'type)
+			    (destructuring-bind (symb type &rest vars) declaration
+			      (declare (ignorable symb))
+			      (loop for var in vars do
+				   (setf (gethash var env) type))))
+			  (when (eq (first declaration) 'capture)
+			    (destructuring-bind (symb &rest vars) declaration
+			      (declare (ignorable symb))
+			      (loop for var in vars do
+				   (push var captures))))
+			  
+			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
 			  (declare (ignorable symb))
 			  (let ((types nil))
@@ -87,7 +94,7 @@ entry return-values contains a list of return values"
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env)))
+    (values (reverse new-body) env (reverse captures))))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -120,7 +127,7 @@ entry return-values contains a list of return values"
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env) (consume-declare body)
+    (multiple-value-bind (body env captures) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -140,7 +147,7 @@ entry return-values contains a list of return values"
 (defun parse-defun (code emit &key header-only)
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -177,9 +184,10 @@ entry return-values contains a list of return values"
   ;;  [] (int a, float b) { body }
   ;; with (declaration (values float)):
   ;;  [] (int a, float b) -> float { body }
-  ;; currently no support for captures (which would be placed into the first set of brackets)
+  ;; support for captures (placed into the first set of brackets)
+  ;; (declare (capture &app bla)) will result in [&app, bla]
   (destructuring-bind (lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env) (consume-declare body)
+    (multiple-value-bind (body env captures) (consume-declare body)
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -187,7 +195,8 @@ entry return-values contains a list of return values"
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "[] ~a~@[-> ~a ~]"
+	  (format s "[~{~a~^,~}] ~a~@[-> ~a ~]"
+		  (mapcar emit captures)
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect
 					 (format nil "~a ~a"
