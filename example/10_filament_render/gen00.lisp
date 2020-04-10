@@ -108,22 +108,40 @@
 	     (do0
 	      
 	      (include <cstdlib>
-		       <filament/FilamentAPI.h>
-		       <filament/Engine.h>)
+		       ,@(loop for e in `(IndexBuffer
+					  RenderableManager
+					  Scene
+					  VertexBuffer
+					  View
+					  
+					  )
+			    collect
+			      (format nil "<filament/~a.h>" e))
+		       ;<filament/FilamentAPI.h>
+					;<filament/Engine.h>
+		       <filamentapp/FilamentApp.h>
+		       <utils/EntityManager.h>
+		       )
 	      " "
 	      
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
-
+	      
 
 	      "using namespace std::chrono_literals;"
+	      ; "using namespace filament;"
 
+	      (defstruct0 App
+		  (vb filament--VertexBuffer*)
+		(ib filament--IndexBuffer*)
+		(cam filament--Camera*)
+		(renderable utils--Entity))
 	      	      
 	      (defun main ()
 		(declare (values int))
 		#+nil (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
-					     (time_since_epoch)
-					     (count)))
+						   (time_since_epoch)
+						   (count)))
 		
 		(let ((engine ("filament::Engine::create")))
 		  (engine->destroy &engine))
