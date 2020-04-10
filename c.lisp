@@ -3,7 +3,8 @@
 (progn (ql:quickload "alexandria")
        (defpackage :cl-cpp-generator2
 	 (:use :cl
-	       :alexandria)
+	       :alexandria
+	       :cl-ppcre)
 	 (:export
 	  #:write-source)))
 ;(setf *features* (union *features* '(:generic-c)))
@@ -53,6 +54,9 @@
   ;; (declare (values int float &optional))
 
   ;; FIXME doesnt handle documentation strings
+
+
+
 
 (defun consume-declare (body)
   "take a list of instructions from body, parse type declarations,
@@ -642,7 +646,10 @@ entry return-values contains a list of return values. currently supports type, v
 				     (emit `(paren ,@args)))))))))
 	      (cond
 		((symbolp code)
-		 (substitute #\: #\- (format nil "~a" code)))
+					;(cl-ppcre::regex-replace-all "--" "bla--fub" "::")
+		 (cl-ppcre::regex-replace-all "--" (format nil "~a" code) "::")
+		 ;(substitute #\: #\- (format nil "~a" code))
+		 )
 		((stringp code) ;; print variable
 		 (format nil "~a" code))
 		((numberp code) ;; print constants
