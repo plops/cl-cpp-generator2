@@ -24,7 +24,20 @@ struct App {
 };
 typedef struct App App;
 int main() {
-  auto engine = filament::Engine::create();
-  engine->destroy(&engine);
+  Config config;
+  config.title = "viewtest";
+  config.backend = filament::Engine::Backend::VULKAN;
+  App app;
+  auto setup = [](filament::Engine *engine, filament::View *view,
+                  filament::Scene *scene) {
+    view->setClearColor({0, 0, 1, 1});
+  };
+  auto cleanup = [](filament::Engine *engine, filament::View *view,
+                    filament::Scene *scene) {
+    engine->destroy(app.renderable);
+    engine->destroy(app.vb);
+    engine->destroy(app.ib);
+    engine->destroy(app.cam);
+  };
   return 0;
 };

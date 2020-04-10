@@ -142,7 +142,28 @@
 		#+nil (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 						   (time_since_epoch)
 						   (count)))
-		
+
+
+		(let ((config))
+		  (declare (type Config config))
+		  (setf config.title (string "viewtest")
+			config.backend filament--Engine--Backend--VULKAN)
+		  (let ((app))
+		    (declare (type App app))
+		    (let ((setup
+			   (lambda (engine view scene)
+			     (declare (type filament--Engine* engine)
+				      (type filament--View* view)
+				      (type filament--Scene* scene))
+			     (view->setClearColor (curly 0 0 1 1))))
+			  (cleanup
+			   (lambda (engine view scene)
+			     (declare (type filament--Engine* engine)
+				      (type filament--View* view)
+				      (type filament--Scene* scene))
+			     ,@(loop for e in `(renderable vb ib cam) collect
+				    `(engine->destroy (dot app ,e)))))))))
+		#+Nil
 		(let ((engine ("filament::Engine::create")))
 		  (engine->destroy &engine))
 		(return 0)))))

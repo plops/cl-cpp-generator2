@@ -163,7 +163,7 @@ entry return-values contains a list of return values"
 					 (format nil "~a ~a"
 						 (let ((type (gethash p env)))
 						   (if type
-						       type
+						       (funcall emit type)
 						       (break "can't find type for ~a in defun"
 							      p)))
 						 p))))
@@ -193,7 +193,7 @@ entry return-values contains a list of return values"
 					 (format nil "~a ~a"
 						 (let ((type (gethash p env)))
 						   (if type
-						       type
+						       (funcall emit type)
 						       (break "can't find type for ~a in defun"
 							      p)))
 						 p
