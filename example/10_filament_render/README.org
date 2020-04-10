@@ -1,0 +1,10 @@
+- try to render scene with filament
+
+* Dependencies
+
+- filament release (use source/populate.sh to retrieve)
+- filamenapp
+#+begin_example
+cd ~/src/
+git clone https://github.com/google/filament
+#+end_example
