@@ -6,7 +6,6 @@ all: render_00_main
 CFILES = /home/martin/src/filament/libs/filamentapp/src/Cube.cpp \
 /home/martin/src/filament/libs/filamentapp/src/NativeWindowHelperLinux.cpp \
 /home/martin/src/filament/libs/filamentapp/src/IBL.cpp \
-/home/martin/src/filament/libs/filamentapp/src/NativeWindowHelperWindows.cpp \
 /home/martin/src/filament/libs/filamentapp/src/Sphere.cpp \
 /home/martin/src/filament/libs/filamentapp/src/Image.cpp \
 /home/martin/src/filament/libs/filamentapp/src/MeshAssimp.cpp \
@@ -15,9 +14,12 @@ CFILES = /home/martin/src/filament/libs/filamentapp/src/Cube.cpp \
 
 OBJ := $(CFILES:%.cpp=%.o)
 
-CXXFLAGS=-Ifilament/include/ -I/home/martin/src/filament/libs/filamentapp/include -I/usr/include/SDL2 \
+CXXFLAGS=-Ifilament/include/ \
+-I/usr/include/SDL2 \
+-I/home/martin/src/filament/libs/filamentapp/include \
 -I/home/martin/src/filament/libs/utils/include/ \
--I /home/martin/src/filament/third_party/stb \
+-I/home/martin/src/filament/third_party/stb \
+-I/home/martin/src/filament/third_party/libassimp/include/ \
 -std=c++14 -pthread \
 -march=native -O2 \
 
