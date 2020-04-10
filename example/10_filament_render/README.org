@@ -8,3 +8,13 @@
 cd ~/src/
 git clone https://github.com/google/filament
 #+end_example
+
+- compile materials
+#+begin_example
+martin@labolg ~/src/filament/libs/filamentapp/materials $ for i in *.mat; do /home/martin/stage/cl-cpp-generator2/example/10_filament_render/source/filament/bin/matc -o `basename $i .mat`.filamat $i;done
+#+end_example
+
+
+* Current state
+
+- I am stuck. I can't compile filament repo in ubuntu or gentoo. I can't figure out how to generate material resources for filamentapp
