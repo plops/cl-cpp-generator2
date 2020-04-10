@@ -30,7 +30,7 @@
 	 ("std::setprecision" 3)
 	 (<< "std::cout"
 	     ("std::setw" 10)
-	     (- (dot ("std::chrono::high_resolution_clock::now")
+	     #+nil (- (dot ("std::chrono::high_resolution_clock::now")
 		     (time_since_epoch)
 		     (count))
 		,(g `_start_time))
@@ -51,7 +51,7 @@
 	     "std::endl"))))
     
     (defun emit-globals (&key init)
-      (let ((l `((_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+      (let ((l `(#+nil (_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
 							   (time_since_epoch)
 							   (count)))))
 		 ,@(loop for e in *module-global-parameters* collect
@@ -121,7 +121,7 @@
 	      	      
 	      (defun main ()
 		(declare (values int))
-		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+		#+nil (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
 		
