@@ -3,7 +3,7 @@
 * Dependencies
 
 - filament release (use source/populate.sh to retrieve)
-- filamenapp
+- filamenapp 
 #+begin_example
 cd ~/src/
 git clone https://github.com/google/filament
