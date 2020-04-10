@@ -165,7 +165,9 @@
 				      (type filament--View* view)
 				      (type filament--Scene* scene))
 			     ,@(loop for e in `(renderable vb ib cam) collect
-				    `(engine->destroy (dot app ,e)))))))))
+				    `(engine->destroy (dot app ,e))))))
+		      (dot (FilamentApp--get)
+			   (run config setup cleanup)))))
 		#+Nil
 		(let ((engine ("filament::Engine::create")))
 		  (engine->destroy &engine))

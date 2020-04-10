@@ -30,14 +30,20 @@ int main() {
   App app;
   auto setup = [&app](filament::Engine *engine, filament::View *view,
                       filament::Scene *scene) {
-    view->setClearColor({0, 0, 1, 1});
+    view:
+      > setClearColor({0, 0, 1, 1});
   };
   auto cleanup = [&app](filament::Engine *engine, filament::View *view,
                         filament::Scene *scene) {
-    engine->destroy(app.renderable);
-    engine->destroy(app.vb);
-    engine->destroy(app.ib);
-    engine->destroy(app.cam);
+    engine:
+      > destroy(app.renderable);
+    engine:
+      > destroy(app.vb);
+    engine:
+      > destroy(app.ib);
+    engine:
+      > destroy(app.cam);
   };
+  FilamentApp::get().run(config, setup, cleanup);
   return 0;
 };

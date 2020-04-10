@@ -637,7 +637,8 @@ entry return-values contains a list of return values. currently supports type, v
 				   (eq (aref (format nil "~a" (car args)) 0) #\.))
 			     #+nil (format nil "~a~a" name
 					   (emit args))
-			     (format nil "~a~a" name
+			     (format nil "~a~a"
+				     (emit name)
 				     (emit `(paren ,@args)))))))))
 	      (cond
 		((symbolp code)
