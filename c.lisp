@@ -276,6 +276,9 @@ entry return-values contains a list of return values. currently supports type, v
 		   ;; paren {args}*
 		   (let ((args (cdr code)))
 		     (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
+		  (angle
+		   (let ((args (cdr code)))
+		     (format nil "<~{~a~^, ~}>" (mapcar #'emit args))))
 		  (bracket
 		   ;; bracket {args}*
 		   (let ((args (cdr code)))
