@@ -146,43 +146,47 @@
 		  (declare (type Gemm gemm_op)
 			   (type cutlass--Status status)))
 
-		(let ((M 512)
-		      (N 256)
-		      (K 128)
-		      (alpha (float 1.25s0))
-		      (beta (float -1.25s0))
-		      ((A (curly M K)))
-		      ((B (curly K N)))
-		      ((C (curly M N)))
-		      ((D (curly M N)))
-		      ,@(loop for e in `((A) (B) (C) (D D "")) collect
-			     (destructuring-bind (ptr &optional (var ptr) (const 'const)) e
-			       `(,(format nil "*ptr~a" ptr) (,(format nil "static_cast<cutlass::half_t ~a*>" const)
-							     (dot ,var (device_data))))))
-		      
-		      
-		      ,@(loop for e in `(A B C D) collect
-			     `(,(format nil "ld~a" e) (dot ,e (device_ref) (stride 0))))
-		      
-		      )
-		  (declare (type (space cutlass--HostTensor (angle
-							     cutlass--half_t
-							     cutlass--layout--ColumnMajor))
-				 (A (curly M K))
-				 (B (curly K N))
-				 (C (curly M N))
-				 (D (curly M N))
-				 ))
-		  (setf status (gemm_op (curly (curly M N K)
-					       ,@(loop for e in `((ptrA ldA)
-								  (ptrB ldB)
-								  (ptrC ldC)
-								  (ptrD ldD)
-								  (alpha beta))
-						    collect
-						      `(curly ,@e)))))
-		  (unless (== status cutlass--Status--kSuccess)
-		    (return -1)))
+		,(let ((l `((A) (B) (C) (D C ""))))
+		   `(let ((M 512)
+			  (N 256)
+			  (K 128)
+			  (alpha (float 1.25s0))
+			  (beta (float -1.25s0))
+			  ((A (curly M K)))
+			  ((B (curly K N)))
+			  ((C (curly M N)))
+					;((D (curly M N)))
+			  ,@(loop for e in l
+			       collect
+				 (destructuring-bind (ptr &optional (var ptr) (const 'const)) e
+				   `(,(format nil "*ptr~a" ptr) (,(format nil "static_cast<cutlass::half_t ~a*>" const)
+								  (dot ,var (device_data))))))
+			  
+			  
+			  ,@(loop for e in l collect
+				 (destructuring-bind (ptr &optional (var ptr) (const 'const)) e
+				   (declare (ignorable const))
+				  `(,(format nil "ld~a" ptr) (dot ,var (device_ref) (stride 0)))))
+			  
+			  )
+		      (declare (type (space cutlass--HostTensor (angle
+								 cutlass--half_t
+								 cutlass--layout--ColumnMajor))
+				     (A (curly M K))
+				     (B (curly K N))
+				     (C (curly M N))
+				     (D (curly M N))
+				     ))
+		      (setf status (gemm_op (curly (curly M N K)
+						   ,@(loop for e in `((ptrA ldA)
+								      (ptrB ldB)
+								      (ptrC ldC)
+								      (ptrD ldD)
+								      (alpha beta))
+							collect
+							  `(curly ,@e)))))
+		      (unless (== status cutlass--Status--kSuccess)
+			(return -1))))
 		(return 0)))))
 
   
