@@ -145,6 +145,23 @@
 		      (status))
 		  (declare (type Gemm gemm_op)
 			   (type cutlass--Status status)))
+
+		(let ((M 512)
+		      (N 256)
+		      (K 128)
+		      (alpha 1.25s0)
+		      (beta -1.25s0)
+		      ((A (curly M K)))
+		      ((B (curly K N)))
+		      ((C (curly M N)))
+		      )
+		  (declare (type (space cutlass--HostTensor (angle
+							     cutlass--half_t
+							     cutlass--layout--ColumnMajor))
+				 (A (curly M K))
+				 (B (curly K N))
+				 (C (curly M N))
+				 )))
 		(return 0)))))
 
   
