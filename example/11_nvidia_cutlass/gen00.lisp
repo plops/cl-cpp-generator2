@@ -106,7 +106,7 @@
       `(cuda_main (
 	      )
 	     (do0
-	      "// export PATH=$PATH:/opt/cuda/nvvm/bin/; nvcc nvcut_00_main.cpp  -I /home/martin/src/cutlass/include/ -I /opt/cuda/include/ -I/home/martin/src/cutlass/tools/util/include/  --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
+	      "// export PATH=$PATH:/opt/cuda/nvvm/bin/; /opt/cuda/bin/nvcc nvcut_00_main.cpp  -I /home/martin/src/cutlass/include/ -I /opt/cuda/include/ -I/home/martin/src/cutlass/tools/util/include/  --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
 
 	      (include <cutlass/numeric_types.h>
 		       <cutlass/gemm/device/gemm.h>
@@ -140,7 +140,7 @@
 			      float
 			      cutlass--arch--OpClassTensorOp
 			      cutlass--arch--Sm75
-			      >)))
+			      )))
 		(let ((gemm_op)
 		      (status))
 		  (declare (type Gemm gemm_op)
