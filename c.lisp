@@ -244,15 +244,16 @@ entry return-values contains a list of return values. currently supports type, v
   digits. parse it again and increase nr. of digits until the same bit                                                                                                                                              
   pattern."
     (let* ((a f)
-         (digits 1)
-         (b (- a 1)))
-    (unless (= a 0)
-     (loop while (< 1e-6 (/ (abs (- a b))
-		       (abs a)))
-        do
-          (setf b (read-from-string (format nil "~,vG" digits a)))
-          (incf digits)))
-    (format nil "~,vG" digits a)))
+           (digits 1)
+           (b (- a 1)))
+      (unless (= a 0)
+	(loop while (< 1e-6 (/ (abs (- a b))
+			       (abs a)))
+           do
+             (setf b (read-from-string (format nil "~,vG" digits a)))
+             (incf digits)))
+      ;(format nil "~,vG" digits a)
+      (format nil "~,v,,,,,'fG" digits a)))
 
 
 (defun print-sufficient-digits-f64 (f)
@@ -269,8 +270,10 @@ entry return-values contains a list of return values. currently supports type, v
 		       (abs a))
 		     ) do
           (setf b (read-from-string (format nil "~,vG" digits a)))
-          (incf digits)))
-    (substitute #\e #\d (format nil "~,vG" digits a))))
+	   (incf digits)))
+    (format nil "~,v,,,,,'eG" digits a)
+    ;(substitute #\e #\d (format nil "~,vG" digits a))
+    ))
 
 			  
 (progn
