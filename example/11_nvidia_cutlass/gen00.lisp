@@ -105,8 +105,12 @@
   (define-module
       `(cuda_main (
 	      )
-	     (do0
-	      "// export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/src/cutlass/build/tools/library/; export PATH=$PATH:/opt/cuda/nvvm/bin/; /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I /home/martin/src/cutlass/include/ -I /opt/cuda/include/ -I/home/martin/src/cutlass/tools/util/include/ -I/home/martin/src/tools/library/include -L/home/martin/src/cutlass/build/tools/library/ -lcutlass --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
+		  (do0
+		   "/*"
+		   "  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/src/cutlass/build/tools/library/"
+		   "  export PATH=$PATH:/opt/cuda/nvvm/bin/"
+		   "  /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I /home/martin/src/cutlass/include/ -I /opt/cuda/include/ -I/home/martin/src/cutlass/tools/util/include/ -I/home/martin/src/tools/library/include -L/home/martin/src/cutlass/build/tools/library/ -lcutlass --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
+		   "*/"
 	      "// https://github.com/NVIDIA/cutlass/blob/master/media/docs/quickstart.md"
 	      "// https://github.com/NVIDIA/cutlass/blob/master/media/docs/functionality.md"
 	      (include <cutlass/numeric_types.h>
@@ -179,10 +183,10 @@
 				     (D (curly M N))
 				     ))
 		      (setf status (gemm_op (curly (curly M N K)
-						   ,@(loop for e in `((A ldA)
-								      (B ldB)
-								      (C ldC)
-								      (D ldD)
+						   ,@(loop for e in `((ptrA ldA)
+								      (ptrB ldB)
+								      (ptrC ldC)
+								      (ptrD ldD)
 								      (alpha beta))
 							collect
 							  `(curly ,@e)))))

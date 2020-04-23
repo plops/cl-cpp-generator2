@@ -49,8 +49,12 @@ int main() {
   auto ldB = B.device_ref().stride(0);
   auto ldC = C.device_ref().stride(0);
   auto ldD = C.device_ref().stride(0);
-  status = gemm_op(
-      {{M, N, K}, {A, ldA}, {B, ldB}, {C, ldC}, {C, ldD}, {alpha, beta}});
+  status = gemm_op({{M, N, K},
+                    {ptrA, ldA},
+                    {ptrB, ldB},
+                    {ptrC, ldC},
+                    {ptrD, ldD},
+                    {alpha, beta}});
   if (!((status) == (cutlass::Status::kSuccess))) {
     return -1;
   };
