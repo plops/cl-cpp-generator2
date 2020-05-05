@@ -25,6 +25,14 @@ struct v {
     return ((((x) * (r.x))) + (((y) * (r.y))) + (((z) * (r.z))));
   };
   __device__ v(){};
+  __device__ v(float a, float b, float c) {
+    x = a;
+    y = b;
+    z = c;
+  };
+  __device__ v operator!() {
+    return ((*this) * ((((1.0)) / (sqrt(*this % *this)))));
+  };
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;

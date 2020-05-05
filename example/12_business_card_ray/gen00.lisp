@@ -145,7 +145,24 @@
 		       (space __device__
 			(defun v ()
 			  (declare 
-				   (values " "))))))
+			   (values " "))))
+
+		       (space __device__
+			(defun v (a b c)
+			  (declare (type float a b c)
+				   (values " "))
+			  ,@(loop for e in `(x y z) and f in `(a b c) collect
+					    `(setf ,e ,f))
+			  ))
+
+		       (space __device__
+			(defun "operator!" ()
+			  (declare 
+				   (values v))
+			  (return (* *this
+				     (/ 1s0 (sqrt (% *this *this)))))))
+
+		       ))
 	      
 	      (space __global__
 		     (defun GetColor (img)
