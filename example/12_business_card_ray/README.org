@@ -1,0 +1,5 @@
+
+* References
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/index.html
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_base.html
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_cuda.html
