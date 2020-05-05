@@ -117,13 +117,56 @@
 	      "using namespace std::chrono_literals;"
 	      ; "using namespace filament;"
 
+
+	      (space "struct v"
+		     (progn
+		       (let ((x)
+			     (y)
+			     (z))
+			 (declare (type float x y z)))
+		       (space __device__
+			(defun operator+ (r)
+			  (declare (type v r)
+				   (values v))
+			  (return (v ,@(loop for e in `(x y z) collect
+					    `(+ ,e (dot r ,e)))))))
+		       (space __device__
+			(defun operator* (r)
+			  (declare (type float r)
+				   (values v))
+			  (return (v ,@(loop for e in `(x y z) collect
+					    `(* ,e r))))))
+		       (space __device__
+			(defun operator% (r)
+			  (declare (type v r)
+				   (values float))
+			  (return (+ ,@(loop for e in `(x y z) collect
+					    `(* ,e (dot r ,e)))))))
+		       (space __device__
+			(defun v ()
+			  (declare 
+				   (values " "))))))
 	      
+	      (space __global__
+		     (defun GetColor (img)
+		       (declare (values void)
+				(type "unsigned char*" img))
+		       (let ((x blockIdx.x)
+			     (y threadIdx.x)))))
 	      	      
 	      (defun main ()
 		(declare (values int))
 		(let ((bitmap (aref "new char"
-				    (* DIM DIM BPP)))))
-		(return EXIT_SUCCESS)))))
+				    (* DIM DIM BPP)))
+		      (dev_bitmap))
+		  (declare (type "unsigned char*" dev_bitmap))
+		  (cudaMalloc (static_cast<void**> &dev_bitmap)
+			      (* DIM DIM BPP))
+		  ("GetColor<<<DIM,DIM>>>" dev_bitmap)
+		  (cudaMemcpy bitmap dev_bitmap (* DIM DIM BPP)
+			      cudaMemcpyDeviceToHost))
+		(return 0 ; EXIT_SUCCESS
+			)))))
 
   
   

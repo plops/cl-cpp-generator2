@@ -11,7 +11,31 @@
 State state = {};
 enum { DIM = 512, BPP = 3 };
 using namespace std::chrono_literals;
+struct v {
+  float x;
+  float y;
+  float z;
+  __device__ v operator+(v r) {
+    return v(((x) + (r.x)), ((y) + (r.y)), ((z) + (r.z)));
+  };
+  __device__ v operator*(float r) {
+    return v(((x) * (r)), ((y) * (r)), ((z) * (r)));
+  };
+  __device__ float operator%(v r) {
+    return ((((x) * (r.x))) + (((y) * (r.y))) + (((z) * (r.z))));
+  };
+  __device__ v(){};
+};
+__global__ void GetColor(unsigned char *img) {
+  auto x = blockIdx.x;
+  auto y = threadIdx.x;
+};
 int main() {
   auto bitmap = new char[((DIM) * (DIM) * (BPP))];
-  return EXIT_SUCCESS;
+  unsigned char *dev_bitmap;
+  cudaMalloc(static_cast<void **>(&dev_bitmap), ((DIM) * (DIM) * (BPP)));
+  GetColor<<<DIM, DIM>>>(dev_bitmap);
+  cudaMemcpy(bitmap, dev_bitmap, ((DIM) * (DIM) * (BPP)),
+             cudaMemcpyDeviceToHost);
+  return 0;
 };

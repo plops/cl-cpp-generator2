@@ -1,5 +1,6 @@
 
 * References
 http://fabiensanglard.net/revisiting_the_businesscard_raytracer/index.html
-http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_base.html
-http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_cuda.html
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_base.html cpu
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_cuda.html recursion
+http://fabiensanglard.net/revisiting_the_businesscard_raytracer/card_cudb.html iteration
