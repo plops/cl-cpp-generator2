@@ -106,18 +106,23 @@
       `(cuda_main (
 	      )
 		  (do0
+		   "// /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I/opt/cuda/include/ --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0" 
 		   
 	      
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
-	      
+
+	      "enum { DIM=512, BPP=3};"
 
 	      "using namespace std::chrono_literals;"
 	      ; "using namespace filament;"
+
 	      
 	      	      
 	      (defun main ()
 		(declare (values int))
+		(let ((bitmap (aref "new char"
+				    (* DIM DIM BPP)))))
 		(return EXIT_SUCCESS)))))
 
   
