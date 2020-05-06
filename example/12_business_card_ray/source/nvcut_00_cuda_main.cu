@@ -90,9 +90,22 @@ __device__ v Sample(v origin, v destination, int r) {
   auto light_dir =
       ((!(v(((9) + (R())), ((9) + (R())), 16))) + (((intersection) * (-1))));
   auto half_vec =
-      ((destination) + (((normal) * (((normal % destination) * (2))))));
-  auto color = (1.0f);
-  return v(((10) * (origin.x)), color, color);
+      ((destination) + (((normal) * (((normal % destination) * (-2))))));
+  auto lamb_f = light_dir % normal;
+  if (((lamb_f < 0) || (TraceRay(intersection, light_dir, tau, normal)))) {
+    lamb_f = 0;
+  };
+  auto color = powf(((light_dir % half_vec) * (0 < lamb_f)), 99);
+  if (((match) & (1))) {
+    intersection = ((intersection) * ((0.20f)));
+    return (((static_cast<int>(
+                 ((ceilf(intersection.x)) + (ceilf(intersection.y))))) &
+             (1)))
+               ? (v(3, 1, 1))
+               : (((v(3, 3, 3)) * (((((lamb_f) * ((0.20f)))) + ((0.10f))))));
+  };
+  return ((v(color, color, color)) +
+          (((Sample(intersection, half_vec, ((r) + (1)))) * ((0.50f)))));
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;

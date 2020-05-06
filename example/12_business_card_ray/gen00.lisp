@@ -264,7 +264,7 @@
 				 (lamb_f (% light_dir normal)))
 			     ;; lambertian coef > 0 or in shadow
 			     (when (or (< lamb_f 0)
-				       (TraceRay intersection light_dir t normal))
+				       (TraceRay intersection light_dir tau normal))
 			       (setf lamb_f 0))
 			     (let ((color (powf (* (% light_dir
 						      half_vec)
@@ -272,12 +272,20 @@
 			       (when (& match 1)
 				 ;; no sphere hit and ray goes down
 				 (setf intersection (* intersection .2s0))
-				 (return )
-				 )))
+				 (return (? (& (static_cast<int> (+ (ceilf intersection.x)
+								    (ceilf intersection.y)))
+					       1)
+					    (v 3 1 1)
+					    (* (v 3 3 3)
+					       (+ (* lamb_f .2s0)
+						  .1s0)))))
+			       ;; m == 2 sphere was hit, cast ray bouncing from sphere, attenuate color by 50%
+			       (return (+ (v color color color)
+					  (* (Sample intersection half_vec (+ r 1))
+					     .5s0)))
+			       ))
 			   ))
-		       
-		       (let ((color 1s0))
-			(return (v (* 10 origin.x) color color)))))
+		       ))
 	      
 	      (space __global__
 		     (defun GetColor (img)
