@@ -5,8 +5,9 @@
 
 #include "proto2.h"
 ;
-// /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I/opt/cuda/include/ --std=c++14
-// -O1 -g -Xcompiler=-march=native
+// /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu --gpu-architecture=compute_75
+// --gpu-code=compute_75  -I/opt/cuda/include/ --std=c++14 -O1 -g
+// -Xcompiler=-march=native
 // --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0
 #include <cstdio>
 State state = {};
