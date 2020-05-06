@@ -49,12 +49,12 @@ __device__ float R() {
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
   auto y = threadIdx.x;
-  auto cam_dir = !(v(-6, -16, 0));
+  auto cam_dir = !(v((-6.0), (-16.), (0.)));
   auto s = (2.00e-3);
-  auto cam_up = ((!(((v(0, 0, 1)) ^ (cam_dir)))) * (s));
+  auto cam_up = ((!(((v((0.), (0.), (1.0))) ^ (cam_dir)))) * (s));
   auto cam_right = ((!(((cam_dir) ^ (cam_up)))) * (s));
-  auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) - (cam_dir));
-  auto color = v(13, 13, 13);
+  auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) + (cam_dir));
+  auto color = v((13.), (13.), (13.));
 };
 int main() {
   char *bitmap = new char[((DIM) * (DIM) * (BPP))];

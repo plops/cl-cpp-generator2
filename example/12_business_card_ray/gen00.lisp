@@ -195,17 +195,17 @@
 				(type "unsigned char*" img))
 		       (let ((x blockIdx.x)
 			     (y threadIdx.x)
-			     (cam_dir (! (v -6 -16 0)))
+			     (cam_dir (! (v -6s0 -16s0 0s0)))
 			     (s .002s0)
-			     (cam_up (* (! (^ (v 0 0 1) cam_dir)) s))
+			     (cam_up (* (! (^ (v 0s0 0s0 1s0) cam_dir)) s))
 			     (cam_right (* (! (^ cam_dir cam_up)) s))
-			     (eye_offset (- (* (+ cam_up
+			     (eye_offset (+  (* (+ cam_up
 						cam_right)
 					       -256)
 					    cam_dir))
-			     (color (v 13 13 13)))
+			     (color (v 13s0 13s0 13s0)))
 			 #+nil (dotimes (r 64)
-			   #+nil (let ((delta (+ (* cam_up
+				 #+nil (let ((delta (+ (* cam_up
 					      (- (R) .5s0)
 					      99)
 					   (* cam_right
