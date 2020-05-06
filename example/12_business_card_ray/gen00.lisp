@@ -250,7 +250,7 @@
 			   (unless match
 			     ;; no sphere hit, ray goes up
 			     (return (* (v .7s0 .6s0 1)
-					(pow (- 1 destination.z) 4))))
+					(powf (- 1 destination.z) 4))))
 			   ;; a sphere maybe hit
 			   (let ((intersection (+ origin (* destination tau)))
 				 (light_dir (+ (! (v (+ 9 (R))

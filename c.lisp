@@ -239,6 +239,7 @@ entry return-values contains a list of return values. currently supports type, v
 			(funcall emit `(paren ,@r))
 			(car r))))
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
+
 (defun print-sufficient-digits-f32 (f)
   "print a single floating point number as a string with a given nr. of                                                                                                                                             
   digits. parse it again and increase nr. of digits until the same bit                                                                                                                                              
@@ -255,8 +256,13 @@ entry return-values contains a list of return values. currently supports type, v
 					       digits a
 					       )))
              (incf digits)))
-      ;(format nil "~,vG" digits a)
-      (format nil "~,v,,,,,'eG" digits a)))
+					;(format nil "~,vG" digits a)
+      ;(format nil "~,v,,,,,'eGf" digits a)
+      (let ((str
+	     (format nil "~,v,,,,,'eG" digits a)))
+	(if (find #\e str)
+	    str
+	    (format nil "~af" (string-trim '(#\Space) str))))))
 
 
 (defun print-sufficient-digits-f64 (f)
