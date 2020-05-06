@@ -196,7 +196,7 @@
 				(type v origin destination)
 				(type int r))
 		       (let ((color 1s0))
-			(return (v color color color)))))
+			(return (v (* 10 origin.x) color color)))))
 	      
 	      (space __global__
 		     (defun GetColor (img)

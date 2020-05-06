@@ -49,7 +49,7 @@ __device__ float R() {
 };
 __device__ v Sample(v origin, v destination, int r) {
   auto color = (1.0);
-  return v(color, color, color);
+  return v(((10) * (origin.x)), color, color);
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
