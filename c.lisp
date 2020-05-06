@@ -250,10 +250,13 @@ entry return-values contains a list of return values. currently supports type, v
 	(loop while (< 1e-6 (/ (abs (- a b))
 			       (abs a)))
            do
-             (setf b (read-from-string (format nil "~,vG" digits a)))
+             (setf b (read-from-string (format nil "~,v,,,,,'eG"
+					;"~,vG"
+					       digits a
+					       )))
              (incf digits)))
       ;(format nil "~,vG" digits a)
-      (format nil "~,v,,,,,'fG" digits a)))
+      (format nil "~,v,,,,,'eG" digits a)))
 
 
 (defun print-sufficient-digits-f64 (f)

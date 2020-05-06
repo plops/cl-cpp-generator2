@@ -39,11 +39,22 @@ struct v {
     return ((*this) * ((((1.0)) / (sqrt(*this % *this)))));
   };
 };
+__device__ int G[9] = {247570, 280596, 280600, 249748, 18578,
+                       18577,  231184, 16,     16};
+__device__ int g_seed = 1;
+__device__ float R() {
+  g_seed = ((((214013) * (g_seed))) + (2531011));
+  return (((((g_seed) >> (16)) & (0x7fff))) / ((66635.)));
+};
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
   auto y = threadIdx.x;
   auto cam_dir = !(v(-6, -16, 0));
-  auto cam_up = ((!(((v(0, 0, 1)) ^ (cam_dir)))) * ((2.00f - 3)));
+  auto s = (2.00e-3);
+  auto cam_up = ((!(((v(0, 0, 1)) ^ (cam_dir)))) * (s));
+  auto cam_right = ((!(((cam_dir) ^ (cam_up)))) * (s));
+  auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) - (cam_dir));
+  auto color = v(13, 13, 13);
 };
 int main() {
   char *bitmap = new char[((DIM) * (DIM) * (BPP))];

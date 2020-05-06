@@ -170,6 +170,24 @@
 				     (/ 1s0 (sqrt (% *this *this)))))))
 
 		       ))
+
+
+	      (do0
+	       ,(let ((l `(247570 280596 280600 249748 18578 18577 231184 16 16)))
+		  `(let ((G (curly ,@l))
+			 (g_seed 1))
+		     (declare (type (array  "__device__ int" ,(length l))
+				    G)
+			      (type "__device__ int" g_seed))
+		     (space __device__
+			    (defun R ()
+			      (declare (values float))
+			      (setf g_seed (+ (* 214013 g_seed)
+					      2531011))
+			      (return (/ (& (>> g_seed 16)
+					    0x7fff)
+					 66635s0)))
+			    ))))
 	      
 	      (space __global__
 		     (defun GetColor (img)
@@ -178,7 +196,24 @@
 		       (let ((x blockIdx.x)
 			     (y threadIdx.x)
 			     (cam_dir (! (v -6 -16 0)))
-			     (cam_up (* (! (^ (v 0 0 1) cam_dir)) .002s0))))))
+			     (s .002s0)
+			     (cam_up (* (! (^ (v 0 0 1) cam_dir)) s))
+			     (cam_right (* (! (^ cam_dir cam_up)) s))
+			     (eye_offset (- (* (+ cam_up
+						cam_right)
+					       -256)
+					    cam_dir))
+			     (color (v 13 13 13)))
+			 #+nil (dotimes (r 64)
+			   #+nil (let ((delta (+ (* cam_up
+					      (- (R) .5s0)
+					      99)
+					   (* cam_right
+					      (- (R) .5s0)
+					      99))))
+			     #+nil
+			     (incf color
+				   ))))))
 	      	      
 	      (defun main ()
 		(declare (values int))
