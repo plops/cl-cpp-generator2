@@ -77,6 +77,20 @@ __device__ int TraceRay(v origin, v destination, float &tau, v &normal) {
   return m;
 };
 __device__ v Sample(v origin, v destination, int r) {
+  auto tau = (0.);
+  auto normal = v();
+  if (4 < r) {
+    return v();
+  };
+  auto match = TraceRay(origin, destination, tau, normal);
+  if (!(match)) {
+    return ((v((0.70), (0.60), 1)) * (pow(((1) - (destination.z)), 4)));
+  };
+  auto intersection = ((origin) + (((destination) * (tau))));
+  auto light_dir =
+      ((!(v(((9) + (R())), ((9) + (R())), 16))) + (((intersection) * (-1))));
+  auto half_vec =
+      ((destination) + (((normal) * (((normal % destination) * (2))))));
   auto color = (1.0);
   return v(((10) * (origin.x)), color, color);
 };

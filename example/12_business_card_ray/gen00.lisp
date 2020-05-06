@@ -239,6 +239,30 @@
 		       (declare (values v)
 				(type v origin destination)
 				(type int r))
+
+		       (let ((tau 0s0)
+			     (normal (v)))
+			 (when (< 4 r)
+			   (return (v)))
+			 (let ((match (TraceRay origin
+						destination
+						tau normal)))
+			   (unless match
+			     ;; no sphere hit, ray goes up
+			     (return (* (v .7s0 .6s0 1)
+					(pow (- 1 destination.z) 4))))
+			   ;; a sphere maybe hit
+			   (let ((intersection (+ origin (* destination tau)))
+				 (light_dir (+ (! (v (+ 9 (R))
+						     (+ 9 (R))
+						     16))
+					       (* intersection -1)))
+				 (half_vec (+ destination
+					      (* normal (* (% normal
+							      destination)
+							   2))))))
+			   ))
+		       
 		       (let ((color 1s0))
 			(return (v (* 10 origin.x) color color)))))
 	      
