@@ -40,12 +40,41 @@ struct v {
     return ((*this) * ((((1.0)) / (sqrt(*this % *this)))));
   };
 };
-__device__ int G[9] = {247570, 280596, 280600, 249748, 18578,
-                       18577,  231184, 16,     16};
 __device__ int g_seed = 1;
 __device__ float R() {
   g_seed = ((((214013) * (g_seed))) + (2531011));
   return (((((g_seed) >> (16)) & (0x7fff))) / ((66635.)));
+};
+__device__ int G[9] = {247570, 280596, 280600, 249748, 18578,
+                       18577,  231184, 16,     16};
+__device__ int TraceRay(v origin, v destination, float &tau, v &normal) {
+  tau = (1.0e+9);
+  auto m = 0;
+  auto p = ((-origin.z) / (destination.z));
+  if ((1.00e-2) < p) {
+    tau = p;
+    normal = v(0, 0, 1);
+    m = 1;
+  };
+  for (int k = 19; 0 < k; k--) {
+    for (int j = 9; 0 < j; j--) {
+      if ((((G[j]) & (1))) << (k)) {
+        auto p = ((origin) + (v(-k, 0, ((-j) - (4)))));
+        auto b = p % destination;
+        auto c = ((p % p) - ((1.0)));
+        auto q = ((((b) * (b))) - (c));
+        if (0 < q) {
+          auto s = ((-b) - (sqrt(q)));
+          if (((s < tau) && ((1.00e-2) < s))) {
+            tau = s;
+            normal = !(((p) + (((destination) * (tau)))));
+            m = 2;
+          };
+        };
+      };
+    }
+  }
+  return m;
 };
 __device__ v Sample(v origin, v destination, int r) {
   auto color = (1.0);

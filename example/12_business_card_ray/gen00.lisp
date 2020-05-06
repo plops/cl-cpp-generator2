@@ -174,11 +174,9 @@
 
 
 	      (do0
-	       ,(let ((l `(247570 280596 280600 249748 18578 18577 231184 16 16)))
-		  `(let ((G (curly ,@l))
-			 (g_seed 1))
-		     (declare (type (array  "__device__ int" ,(length l))
-				    G)
+	       (let (
+		      (g_seed 1))
+		     (declare 
 			      (type "__device__ int" g_seed))
 		     (space __device__
 			    (defun R ()
@@ -188,7 +186,53 @@
 			      (return (/ (& (>> g_seed 16)
 					    0x7fff)
 					 66635s0)))
-			    ))))
+			    )))
+
+	      (do0
+	       ,(let ((l `(247570 280596 280600 249748 18578 18577 231184 16 16)))
+		  `(let ((G (curly ,@l))
+			 )
+		     (declare (type (array  "__device__ int" ,(length l))
+				    G)
+			      )
+		     (space __device__
+			    (defun TraceRay (origin destination tau normal)
+			      (declare (values int)
+				       (type v origin destination)
+				       (type float& tau)
+				       (type v& normal)
+				       )
+
+			      (setf tau 1s9)
+			      (let ((m 0)
+				    (p (/ -origin.z
+					  destination.z)))
+				(when (< .01s0 p)
+				  (setf tau p
+					normal (v 0 0 1)
+					m 1))
+				(for ((= "int k" 19)
+				      (< 0 k)
+				      "k--")
+				     (for ((= "int j" 9)
+					   (< 0 j)
+					   "j--")
+					  (when (<< (& (aref G j) 1)
+						    k)
+					    (let ((p (+ origin (v -k 0 (- -j 4))))
+						  (b (% p destination))
+						  (c (- (% p p) 1s0))
+						  (q (- (* b b) c)))
+					      (when (< 0 q)
+						;; ray hits sphere
+						(let ((s (- -b (sqrt q))))
+						  ;; distance camera-sphere
+						  (when (and (< s tau)
+							    (< .01s0 s))
+						    (setf tau s
+							  normal (! (+ p (* destination tau)))
+							  m 2))))))))
+				(return m)))))))
 
 	      (space __device__
 		     (defun Sample (origin destination r)
