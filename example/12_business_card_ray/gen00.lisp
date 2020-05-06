@@ -217,10 +217,13 @@
 				     (for ((= "int j" 9)
 					   (< 0 j)
 					   "j--")
-					  (when (<<
+					  (when #+nil (<<
 						 (& (aref G j) 1)
 						 k
 						 )
+						(& (aref G j) (<< 1 k))
+						
+						
 					    (let ((p (+ origin (v -k 0 (- -j 4))))
 						  (b (% p destination))
 						  (c (- (% p p) 1s0))
@@ -269,8 +272,9 @@
 				       (TraceRay intersection light_dir tau normal))
 			       (setf lamb_f 0))
 			     (let ((color (powf (* (% light_dir
-						      half_vec)
-						   (< 0 lamb_f)) 99)))
+						      (* half_vec
+							 (< 0 lamb_f)))
+						   1) 99)))
 			       (declare (type float color))
 			       (when (& match 1)
 				 ;; no sphere hit and ray goes down
@@ -283,10 +287,10 @@
 					       (+ (* lamb_f .2s0)
 						  .1s0)))))
 			       ;; m == 2 sphere was hit, cast ray bouncing from sphere, attenuate color by 50%
-			       (return (v 90 0 0)
+			       (return (v color color color)
 				       #+nil (+ (v color color color)
-					     (* (Sample intersection half_vec (+ r 1))
-						.5s0)))
+						(* (Sample intersection half_vec (+ r 1))
+						   .5s0)))
 			       ))
 			   ))
 		       ))

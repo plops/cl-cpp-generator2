@@ -59,7 +59,7 @@ __device__ int TraceRay(v origin, v destination, float &tau, v &normal) {
   };
   for (int k = 19; 0 < k; k--) {
     for (int j = 9; 0 < j; j--) {
-      if ((((G[j]) & (1))) << (k)) {
+      if (((G[j]) & ((1) << (k)))) {
         auto p = ((origin) + (v(-k, 0, ((-j) - (4)))));
         auto b = p % destination;
         auto c = ((p % p) - ((1.0f)));
@@ -96,7 +96,7 @@ __device__ v Sample(v origin, v destination, int r) {
   if (((lamb_f < 0) || (TraceRay(intersection, light_dir, tau, normal)))) {
     lamb_f = 0;
   };
-  float color = powf(((light_dir % half_vec) * (0 < lamb_f)), 99);
+  float color = powf(((light_dir % ((half_vec) * (0 < lamb_f))) * (1)), 99);
   if (((match) & (1))) {
     intersection = ((intersection) * ((0.20f)));
     return (((static_cast<int>(
@@ -105,7 +105,7 @@ __device__ v Sample(v origin, v destination, int r) {
                ? (v(3, 1, 1))
                : (((v(3, 3, 3)) * (((((lamb_f) * ((0.20f)))) + ((0.10f))))));
   };
-  return v(90, 0, 0);
+  return v(color, color, color);
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
