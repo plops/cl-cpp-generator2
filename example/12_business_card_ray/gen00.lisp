@@ -260,7 +260,20 @@
 				 (half_vec (+ destination
 					      (* normal (* (% normal
 							      destination)
-							   2))))))
+							   -2))))
+				 (lamb_f (% light_dir normal)))
+			     ;; lambertian coef > 0 or in shadow
+			     (when (or (< lamb_f 0)
+				       (TraceRay intersection light_dir t normal))
+			       (setf lamb_f 0))
+			     (let ((color (powf (* (% light_dir
+						      half_vec)
+						   (< 0 lamb_f)) 99)))
+			       (when (& match 1)
+				 ;; no sphere hit and ray goes down
+				 (setf intersection (* intersection .2s0))
+				 (return )
+				 )))
 			   ))
 		       
 		       (let ((color 1s0))

@@ -490,6 +490,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (char (format nil "'~a'" (cadr code)))
 		  (hex (destructuring-bind (number) (cdr code)
 			 (format nil "0x~x" number)))
+		  (? (destructuring-bind (a b &optional c) (cdr code)
+			(if c
+			    (format nil "(~a) ? (~a) : (~a)" (emit a) (emit b) (emit c))
+			    (format nil "(~a) ? (~a)" (emit a) (emit b)))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
