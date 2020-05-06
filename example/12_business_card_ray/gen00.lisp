@@ -188,6 +188,14 @@
 					    0x7fff)
 					 66635s0)))
 			    ))))
+
+	      (space __device__
+		     (defun Sample (origin destination r)
+		       (declare (values v)
+				(type v origin destination)
+				(type int r))
+		       (let ((color 1s0))
+			(return (v color color color)))))
 	      
 	      (space __global__
 		     (defun GetColor (img)
@@ -204,8 +212,8 @@
 					       -256)
 					    cam_dir))
 			     (color (v 13s0 13s0 13s0)))
-			 #+nil (dotimes (r 64)
-				 #+nil (let ((delta (+ (* cam_up
+			 (dotimes (r 64)
+			   (let ((delta (+ (* cam_up
 					      (- (R) .5s0)
 					      99)
 					   (* cam_right

@@ -46,6 +46,10 @@ __device__ float R() {
   g_seed = ((((214013) * (g_seed))) + (2531011));
   return (((((g_seed) >> (16)) & (0x7fff))) / ((66635.)));
 };
+__device__ v Sample(v origin, v destination, int r) {
+  auto color = (1.0);
+  return v(color, color, color);
+};
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
   auto y = threadIdx.x;
@@ -55,6 +59,10 @@ __global__ void GetColor(unsigned char *img) {
   auto cam_right = ((!(((cam_dir) ^ (cam_up)))) * (s));
   auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) + (cam_dir));
   auto color = v((13.), (13.), (13.));
+  for (int r = 0; r < 64; (r) += (1)) {
+    auto delta = ((((cam_up) * (((R()) - ((0.50)))) * (99))) +
+                  (((cam_right) * (((R()) - ((0.50)))) * (99))));
+  };
 };
 int main() {
   char *bitmap = new char[((DIM) * (DIM) * (BPP))];
