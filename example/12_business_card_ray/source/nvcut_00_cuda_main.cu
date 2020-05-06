@@ -24,6 +24,11 @@ struct v {
   __device__ float operator%(v r) {
     return ((((x) * (r.x))) + (((y) * (r.y))) + (((z) * (r.z))));
   };
+  __device__ v operator^(v r) {
+    return v(((((y) * (r.z))) - (((z) * (r.y)))),
+             ((((z) * (r.x))) - (((x) * (r.z)))),
+             ((((x) * (r.y))) - (((y) * (r.x)))));
+  };
   __device__ v(){};
   __device__ v(float a, float b, float c) {
     x = a;
@@ -37,13 +42,16 @@ struct v {
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
   auto y = threadIdx.x;
+  auto cam_dir = !(v(-6, -16, 0));
+  auto cam_up = ((!(((v(0, 0, 1)) ^ (cam_dir)))) * ((2.00f - 3)));
 };
 int main() {
-  auto bitmap = new char[((DIM) * (DIM) * (BPP))];
+  char *bitmap = new char[((DIM) * (DIM) * (BPP))];
   unsigned char *dev_bitmap;
-  cudaMalloc(static_cast<void **>(&dev_bitmap), ((DIM) * (DIM) * (BPP)));
+  cudaMalloc(reinterpret_cast<void **>(&dev_bitmap), ((DIM) * (DIM) * (BPP)));
   GetColor<<<DIM, DIM>>>(dev_bitmap);
   cudaMemcpy(bitmap, dev_bitmap, ((DIM) * (DIM) * (BPP)),
              cudaMemcpyDeviceToHost);
+  delete (bitmap);
   return 0;
 };

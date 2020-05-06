@@ -143,6 +143,13 @@
 			  (return (+ ,@(loop for e in `(x y z) collect
 					    `(* ,e (dot r ,e)))))))
 		       (space __device__
+			(defun operator^ (r)
+			  (declare (type v r)
+				   (values v))
+			  (return (v ,@(loop for (e f) in `((y z) (z x) (x y)) collect
+					    `(- (* ,e (dot r ,f))
+						(* ,f (dot r ,e))))))))
+		       (space __device__
 			(defun v ()
 			  (declare 
 			   (values " "))))
@@ -169,19 +176,24 @@
 		       (declare (values void)
 				(type "unsigned char*" img))
 		       (let ((x blockIdx.x)
-			     (y threadIdx.x)))))
+			     (y threadIdx.x)
+			     (cam_dir (! (v -6 -16 0)))
+			     (cam_up (* (! (^ (v 0 0 1) cam_dir)) .002s0))))))
 	      	      
 	      (defun main ()
 		(declare (values int))
 		(let ((bitmap (aref "new char"
 				    (* DIM DIM BPP)))
 		      (dev_bitmap))
-		  (declare (type "unsigned char*" dev_bitmap))
-		  (cudaMalloc (static_cast<void**> &dev_bitmap)
-			      (* DIM DIM BPP))
-		  ("GetColor<<<DIM,DIM>>>" dev_bitmap)
-		  (cudaMemcpy bitmap dev_bitmap (* DIM DIM BPP)
-			      cudaMemcpyDeviceToHost))
+		  (declare (type "unsigned char*" dev_bitmap)
+			   (type char* bitmap))
+		 (do0
+		  (cudaMalloc (reinterpret_cast<void**> &dev_bitmap)
+				  (* DIM DIM BPP))
+		      ("GetColor<<<DIM,DIM>>>" dev_bitmap)
+		      (cudaMemcpy bitmap dev_bitmap (* DIM DIM BPP)
+				  cudaMemcpyDeviceToHost)
+		      (delete bitmap)))
 		(return 0 ; EXIT_SUCCESS
 			)))))
 
