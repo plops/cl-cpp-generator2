@@ -168,7 +168,7 @@
 			  (declare 
 				   (values v))
 			  (return (* *this
-				     (/ 1s0 (sqrt (% *this *this)))))))
+				     (/ 1s0 (sqrtf (% *this *this)))))))
 
 		       ))
 
@@ -217,8 +217,9 @@
 				     (for ((= "int j" 9)
 					   (< 0 j)
 					   "j--")
-					  (when (<< (& (aref G j) 1)
-						    k)
+					  (when (& (aref G j)
+						   (<< 1 k)
+						   )
 					    (let ((p (+ origin (v -k 0 (- -j 4))))
 						  (b (% p destination))
 						  (c (- (% p p) 1s0))

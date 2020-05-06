@@ -6,8 +6,8 @@
 #include "proto2.h"
 ;
 // /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu --gpu-architecture=compute_75
-// --gpu-code=compute_75  -I/opt/cuda/include/ --std=c++14 -O1 -g
-// -Xcompiler=-march=native
+// --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/ --std=c++14 -O3
+// -g -Xcompiler=-march=native
 // --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0
 #include <cstdio>
 State state = {};
@@ -38,7 +38,7 @@ struct v {
     z = c;
   };
   __device__ v operator!() {
-    return ((*this) * ((((1.0f)) / (sqrt(*this % *this)))));
+    return ((*this) * ((((1.0f)) / (sqrtf(*this % *this)))));
   };
 };
 __device__ int g_seed = 1;
@@ -59,7 +59,7 @@ __device__ int TraceRay(v origin, v destination, float &tau, v &normal) {
   };
   for (int k = 19; 0 < k; k--) {
     for (int j = 9; 0 < j; j--) {
-      if ((((G[j]) & (1))) << (k)) {
+      if (((G[j]) & ((1) << (k)))) {
         auto p = ((origin) + (v(-k, 0, ((-j) - (4)))));
         auto b = p % destination;
         auto c = ((p % p) - ((1.0f)));
