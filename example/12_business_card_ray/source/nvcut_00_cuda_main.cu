@@ -96,36 +96,37 @@ __device__ v Sample(v origin, v destination, int r) {
   if (((lamb_f < 0) || (TraceRay(intersection, light_dir, tau, normal)))) {
     lamb_f = 0;
   };
-  float color = powf(((light_dir % ((half_vec) * (0 < lamb_f))) * (1)), 99);
   if (((match) & (1))) {
     intersection = ((intersection) * ((0.20f)));
-    return (((static_cast<int>(
-                 ((ceilf(intersection.x)) + (ceilf(intersection.y))))) &
-             (1)))
-               ? (v(3, 1, 1))
-               : (((v(3, 3, 3)) * (((((lamb_f) * ((0.20f)))) + ((0.10f))))));
+    auto c = (((static_cast<int>(
+                   ((ceilf(intersection.x)) + (ceilf(intersection.y))))) &
+               (1)))
+                 ? (v(3, 1, 1))
+                 : (v(3, 3, 3));
+    return ((c) * (((((lamb_f) * ((0.20f)))) + ((0.10f)))));
   };
-  return v(color, color, color);
+  float color = powf(((light_dir % half_vec) * (1)), (99.f));
+  return ((v(color, color, color)) +
+          (((Sample(intersection, half_vec, ((r) + (1)))) * ((0.50f)))));
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
   auto y = threadIdx.x;
-  auto cam_dir = !(v((-6.0f), (-16.f), (0.f)));
-  auto s = (2.00e-3);
+  auto cam_dir = !(v((-2.0f), (-16.f), (0.f)));
+  auto s = (4.00e-3);
   auto cam_up = ((!(((v((0.f), (0.f), (1.0f))) ^ (cam_dir)))) * (s));
   auto cam_right = ((!(((cam_dir) ^ (cam_up)))) * (s));
   auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) + (cam_dir));
   auto color = v((13.f), (13.f), (13.f));
   for (int r = 0; r < 64; (r) += (1)) {
     auto delta = ((((cam_up) * (99))) + (((cam_right) * (99))));
-    color =
-        ((((Sample(((v(17, 16, 8)) + (delta)),
-                   !(((((((delta) * (-1))) + (((cam_up) * (((R()) + (x))))) +
-                        (((cam_right) * (((y) + (R()))))) + (eye_offset))) *
-                      (16))),
-                   0)) *
-           ((3.50f)))) +
-         (color));
+    color = ((((Sample(((v(17, 16, 8)) + (delta)),
+                       !(((((((delta) * (-1))) + (((cam_up) * (x))) +
+                            (((cam_right) * (y))) + (eye_offset))) *
+                          (16))),
+                       0)) *
+               ((3.50f)))) +
+             (color));
   }
   img[((((DIM) * (y) * (BPP))) + (((BPP) * (x))) + (0))] = color.x;
   img[((((DIM) * (y) * (BPP))) + (((BPP) * (x))) + (1))] = color.y;

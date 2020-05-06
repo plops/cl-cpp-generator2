@@ -271,24 +271,37 @@
 			     (when (or (< lamb_f 0)
 				       (TraceRay intersection light_dir tau normal))
 			       (setf lamb_f 0))
-			     (let ((color (powf (* (% light_dir
+
+
+			     (when (& match 1)
+				 ;; no sphere hit and ray goes down
+			       (setf intersection (* intersection .2s0))
+			       (let ((c (? (& (static_cast<int> (+ (ceilf intersection.x)
+								   (ceilf intersection.y)))
+					      1)
+					   (v 3 1 1)
+					   (v 3 3 3)
+					      )))
+				(return (* c (+ (* lamb_f .2s0)
+						 .1s0)))))
+			     
+			     (let ((color (powf #+nil (* (% light_dir
 						      (* half_vec
 							 (< 0 lamb_f)))
-						   1) 99)))
+							 1)
+						(* (% light_dir
+						    half_vec
+						    )
+						   1 ;(< lamb_f 0)
+						   )
+						
+						
+						99s0)))
 			       (declare (type float color))
-			       (when (& match 1)
-				 ;; no sphere hit and ray goes down
-				 (setf intersection (* intersection .2s0))
-				 (return (? (& (static_cast<int> (+ (ceilf intersection.x)
-								    (ceilf intersection.y)))
-					       1)
-					    (v 3 1 1)
-					    (* (v 3 3 3)
-					       (+ (* lamb_f .2s0)
-						  .1s0)))))
+			       
 			       ;; m == 2 sphere was hit, cast ray bouncing from sphere, attenuate color by 50%
-			       (return (v color color color)
-				       #+nil (+ (v color color color)
+			       (return ; (v color color color)
+				       #-nil (+ (v color color color)
 						(* (Sample intersection half_vec (+ r 1))
 						   .5s0)))
 			       ))
@@ -301,8 +314,8 @@
 				(type "unsigned char*" img))
 		       (let ((x blockIdx.x)
 			     (y threadIdx.x)
-			     (cam_dir (! (v -6s0 -16s0 0s0)))
-			     (s .002s0)
+			     (cam_dir (! (v -2s0 -16s0 0s0)))
+			     (s .004s0)
 			     (cam_up (* (! (^ (v 0s0 0s0 1s0) cam_dir)) s))
 			     (cam_right (* (! (^ cam_dir cam_up)) s))
 			     (eye_offset (+  (* (+ cam_up
@@ -324,8 +337,10 @@
 				     (Sample (+ (v 17 16 8)
 						delta)
 					     (! (* (+ (* delta -1)
-						      (* cam_up (+ (R) x))
-						      (* cam_right (+ y (R)))
+						      (* cam_up x ;(+ (R) x)
+							 )
+						      (* cam_right y ; (+ y (R))
+							 )
 						      eye_offset)
 						   16))
 					     0)
