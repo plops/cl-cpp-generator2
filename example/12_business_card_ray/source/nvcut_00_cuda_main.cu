@@ -59,13 +59,13 @@ __device__ int TraceRay(v origin, v destination, float &tau, v &normal) {
   };
   for (int k = 19; 0 < k; k--) {
     for (int j = 9; 0 < j; j--) {
-      if (((G[j]) & ((1) << (k)))) {
+      if ((((G[j]) & (1))) << (k)) {
         auto p = ((origin) + (v(-k, 0, ((-j) - (4)))));
         auto b = p % destination;
         auto c = ((p % p) - ((1.0f)));
         auto q = ((((b) * (b))) - (c));
         if (0 < q) {
-          auto s = ((-b) - (sqrt(q)));
+          auto s = ((-b) - (sqrtf(q)));
           if (((s < tau) && ((1.00e-2) < s))) {
             tau = s;
             normal = !(((p) + (((destination) * (tau)))));
@@ -81,11 +81,11 @@ __device__ v Sample(v origin, v destination, int r) {
   auto tau = (0.f);
   auto normal = v();
   if (4 < r) {
-    return v();
+    return v(0, 80, 0);
   };
   auto match = TraceRay(origin, destination, tau, normal);
   if (!(match)) {
-    return ((v((0.70f), (0.60f), 1)) * (powf(((1) - (destination.z)), 4)));
+    return v(0, 0, 80);
   };
   auto intersection = ((origin) + (((destination) * (tau))));
   auto light_dir =
@@ -105,8 +105,7 @@ __device__ v Sample(v origin, v destination, int r) {
                ? (v(3, 1, 1))
                : (((v(3, 3, 3)) * (((((lamb_f) * ((0.20f)))) + ((0.10f))))));
   };
-  return ((v(color, color, color)) +
-          (((Sample(intersection, half_vec, ((r) + (1)))) * ((0.50f)))));
+  return v(90, 0, 0);
 };
 __global__ void GetColor(unsigned char *img) {
   auto x = blockIdx.x;
@@ -118,8 +117,7 @@ __global__ void GetColor(unsigned char *img) {
   auto eye_offset = ((((((cam_up) + (cam_right))) * (-256))) + (cam_dir));
   auto color = v((13.f), (13.f), (13.f));
   for (int r = 0; r < 64; (r) += (1)) {
-    auto delta = ((((cam_up) * (((R()) - ((0.50f)))) * (99))) +
-                  (((cam_right) * (((R()) - ((0.50f)))) * (99))));
+    auto delta = ((((cam_up) * (99))) + (((cam_right) * (99))));
     color =
         ((((Sample(((v(17, 16, 8)) + (delta)),
                    !(((((((delta) * (-1))) + (((cam_up) * (((R()) + (x))))) +
@@ -142,8 +140,8 @@ int main() {
              cudaMemcpyDeviceToHost);
   printf("P6 512 512 255 ");
   auto c = bitmap;
-  for (int y = 0; y < DIM; (y) += (1)) {
-    for (int x = 0; x < DIM; (x) += (1)) {
+  for (int y = DIM; y; y--) {
+    for (int x = DIM; x; x--) {
       c = &(bitmap[((((y) * (DIM) * (BPP))) + (((x) * (BPP))))]);
       printf("%c%c%c", c[0], c[1], c[2]);
       (c) += (BPP);

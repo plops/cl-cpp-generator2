@@ -217,16 +217,17 @@
 				     (for ((= "int j" 9)
 					   (< 0 j)
 					   "j--")
-					  (when (& (aref G j)
-						   (<< 1 k)
-						   )
+					  (when (<<
+						 (& (aref G j) 1)
+						 k
+						 )
 					    (let ((p (+ origin (v -k 0 (- -j 4))))
 						  (b (% p destination))
 						  (c (- (% p p) 1s0))
 						  (q (- (* b b) c)))
 					      (when (< 0 q)
 						;; ray hits sphere
-						(let ((s (- -b (sqrt q))))
+						(let ((s (- -b (sqrtf q))))
 						  ;; distance camera-sphere
 						  (when (and (< s tau)
 							    (< .01s0 s))
@@ -244,14 +245,14 @@
 		       (let ((tau 0s0)
 			     (normal (v)))
 			 (when (< 4 r)
-			   (return (v)))
+			   (return (v 0 80 0)))
 			 (let ((match (TraceRay origin
 						destination
 						tau normal)))
 			   (unless match
 			     ;; no sphere hit, ray goes up
-			     (return (* (v .7s0 .6s0 1)
-					(powf (- 1 destination.z) 4))))
+			     (return (v 0 0 80)#+nil (* (v .7s0 .6s0 1)
+						(powf (- 1 destination.z) 4))))
 			   ;; a sphere maybe hit
 			   (let ((intersection (+ origin (* destination tau)))
 				 (light_dir (+ (! (v (+ 9 (R))
@@ -282,9 +283,10 @@
 					       (+ (* lamb_f .2s0)
 						  .1s0)))))
 			       ;; m == 2 sphere was hit, cast ray bouncing from sphere, attenuate color by 50%
-			       (return (+ (v color color color)
-					  (* (Sample intersection half_vec (+ r 1))
-					     .5s0)))
+			       (return (v 90 0 0)
+				       #+nil (+ (v color color color)
+					     (* (Sample intersection half_vec (+ r 1))
+						.5s0)))
 			       ))
 			   ))
 		       ))
@@ -306,10 +308,10 @@
 			     (color (v 13s0 13s0 13s0)))
 			 (dotimes (r 64)
 			   (let ((delta (+ (* cam_up
-					      (- (R) .5s0)
+					      ;(- (R) .5s0)
 					      99)
 					   (* cam_right
-					      (- (R) .5s0)
+					      ;(- (R) .5s0)
 					      99))))
 			     
 			     (setf color
@@ -347,15 +349,19 @@
 		      (do0
 		       (printf (string "P6 512 512 255 "))
 		       (let ((c bitmap))
-			 (dotimes (y DIM)
-			   (dotimes (x DIM)
-			     (setf c (ref (aref bitmap (+ (* y DIM BPP)
-							  (* x BPP)))))
-			     (printf (string "%c%c%c")
-				     (aref c 0)
-				     (aref c 1)
-				     (aref c 2))
-			     (incf c BPP)))))
+			 (for ((= "int y" DIM)
+			       y
+			       "y--") ; dotimes (y DIM)
+			      (for ((= "int x" DIM)
+				    x
+				    "x--") ; dotimes (x DIM)
+				    (setf c (ref (aref bitmap (+ (* y DIM BPP)
+								 (* x BPP)))))
+				    (printf (string "%c%c%c")
+					    (aref c 0)
+					    (aref c 1)
+					    (aref c 2))
+				    (incf c BPP)))))
 		      (delete bitmap)))
 		(return 0 ; EXIT_SUCCESS
 			)))))
