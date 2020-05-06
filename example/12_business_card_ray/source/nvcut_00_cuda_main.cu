@@ -95,7 +95,7 @@ __device__ v Sample(v origin, v destination, int r) {
   if (((lamb_f < 0) || (TraceRay(intersection, light_dir, tau, normal)))) {
     lamb_f = 0;
   };
-  auto color = powf(((light_dir % half_vec) * (0 < lamb_f)), 99);
+  float color = powf(((light_dir % half_vec) * (0 < lamb_f)), 99);
   if (((match) & (1))) {
     intersection = ((intersection) * ((0.20f)));
     return (((static_cast<int>(

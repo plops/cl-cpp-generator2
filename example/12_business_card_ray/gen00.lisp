@@ -269,6 +269,7 @@
 			     (let ((color (powf (* (% light_dir
 						      half_vec)
 						   (< 0 lamb_f)) 99)))
+			       (declare (type float color))
 			       (when (& match 1)
 				 ;; no sphere hit and ray goes down
 				 (setf intersection (* intersection .2s0))
