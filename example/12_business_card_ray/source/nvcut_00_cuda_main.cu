@@ -8,6 +8,7 @@
 // /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I/opt/cuda/include/ --std=c++14
 // -O1 -g -Xcompiler=-march=native
 // --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0
+#include <cstdio>
 State state = {};
 enum { DIM = 512, BPP = 3 };
 using namespace std::chrono_literals;
@@ -62,7 +63,18 @@ __global__ void GetColor(unsigned char *img) {
   for (int r = 0; r < 64; (r) += (1)) {
     auto delta = ((((cam_up) * (((R()) - ((0.50)))) * (99))) +
                   (((cam_right) * (((R()) - ((0.50)))) * (99))));
-  };
+    color =
+        ((((Sample(((v(17, 16, 8)) + (delta)),
+                   !(((((((delta) * (-1))) + (((cam_up) * (((R()) + (x))))) +
+                        (((cam_right) * (((y) + (R()))))) + (eye_offset))) *
+                      (16))),
+                   0)) *
+           ((3.50)))) +
+         (color));
+  }
+  img[((((DIM) * (y) * (BPP))) + (((BPP) * (x))) + (0))] = color.x;
+  img[((((DIM) * (y) * (BPP))) + (((BPP) * (x))) + (1))] = color.y;
+  img[((((DIM) * (y) * (BPP))) + (((BPP) * (x))) + (2))] = color.z;
 };
 int main() {
   char *bitmap = new char[((DIM) * (DIM) * (BPP))];
@@ -71,6 +83,15 @@ int main() {
   GetColor<<<DIM, DIM>>>(dev_bitmap);
   cudaMemcpy(bitmap, dev_bitmap, ((DIM) * (DIM) * (BPP)),
              cudaMemcpyDeviceToHost);
+  printf("P6 512 512 255 ");
+  auto c = bitmap;
+  for (int y = 0; y < DIM; (y) += (1)) {
+    for (int x = 0; x < DIM; (x) += (1)) {
+      c = &(bitmap[((((y) * (DIM) * (BPP))) + (((x) * (BPP))))]);
+      printf("%c%c%c", c[0], c[1], c[2]);
+      (c) += (BPP);
+    }
+  };
   delete (bitmap);
   return 0;
 };

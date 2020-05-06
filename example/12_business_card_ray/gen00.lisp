@@ -107,7 +107,8 @@
 	      )
 		  (do0
 		   "// /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I/opt/cuda/include/ --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0" 
-		   
+
+		   (include <cstdio>)
 	      
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
@@ -219,9 +220,25 @@
 					   (* cam_right
 					      (- (R) .5s0)
 					      99))))
-			     #+nil
-			     (incf color
-				   ))))))
+			     
+			     (setf color
+				   (+
+				    (* 
+				     (Sample (+ (v 17 16 8)
+						delta)
+					     (! (* (+ (* delta -1)
+						      (* cam_up (+ (R) x))
+						      (* cam_right (+ y (R)))
+						      eye_offset)
+						   16))
+					     0)
+				     3.5s0)
+				    color))))
+			 ,@(loop for e in `(x y z) and i from 0 collect
+				`(setf (aref img (+ (* DIM y BPP)
+						    (* BPP x)
+						    ,i))
+				       (dot color ,e))))))
 	      	      
 	      (defun main ()
 		(declare (values int))
@@ -236,6 +253,18 @@
 		      ("GetColor<<<DIM,DIM>>>" dev_bitmap)
 		      (cudaMemcpy bitmap dev_bitmap (* DIM DIM BPP)
 				  cudaMemcpyDeviceToHost)
+		      (do0
+		       (printf (string "P6 512 512 255 "))
+		       (let ((c bitmap))
+			 (dotimes (y DIM)
+			   (dotimes (x DIM)
+			     (setf c (ref (aref bitmap (+ (* y DIM BPP)
+							  (* x BPP)))))
+			     (printf (string "%c%c%c")
+				     (aref c 0)
+				     (aref c 1)
+				     (aref c 2))
+			     (incf c BPP)))))
 		      (delete bitmap)))
 		(return 0 ; EXIT_SUCCESS
 			)))))
