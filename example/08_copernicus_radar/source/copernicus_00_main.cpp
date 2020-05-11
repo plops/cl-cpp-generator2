@@ -17,8 +17,9 @@ int main() {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
-      "/home/martin/Downloads/"
-      "s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat";
+      "/media/sdb4/sar/singapore/"
+      "S1A_IW_RAW__0SDV_20200413T224752_20200413T224825_032115_03B64B_FDA8."
+      "SAFE/s1a-iw-raw-s-vv-20200413t224752-20200413t224825-032115-03b64b.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto packet_idx = 0;
@@ -528,7 +529,7 @@ int main() {
       };
       (packet_idx)++;
     };
-    auto fn = ((std::string("./o_range")) + (std::to_string(n0)) +
+    auto fn = ((std::string("/media/sdb4/sar/o_range")) + (std::to_string(n0)) +
                (std::string("_echoes")) + (std::to_string(ele_number_echoes)) +
                (std::string(".cf")));
     auto file = std::ofstream(fn, std::ofstream::binary);
@@ -554,9 +555,9 @@ int main() {
                 << (std::endl);
   };
   delete[](sar_image);
-  auto fn = ((std::string("./o_cal_range")) + (std::to_string(cal_n0)) +
-             (std::string("_echoes")) + (std::to_string(cal_count)) +
-             (std::string(".cf")));
+  auto fn = ((std::string("/media/sdb4/sar/o_cal_range")) +
+             (std::to_string(cal_n0)) + (std::string("_echoes")) +
+             (std::to_string(cal_count)) + (std::string(".cf")));
   auto file = std::ofstream(fn, std::ofstream::binary);
   auto nbytes = ((cal_n0) * (cal_count) * (sizeof(std::complex<float>)));
   std::setprecision(3);
