@@ -32,14 +32,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto number_of_quads =
       ((((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
   auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
-  auto number_of_words = static_cast<int>(
-      round(ceil((((((1.e+1f)) * (number_of_quads))) / (16)))));
+  auto number_of_words =
+      static_cast<int>(round(ceil((((((10.f)) * (number_of_quads))) / (16)))));
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
-  auto fref = (3.7534723e+1f);
+  auto fref = (37.53472f);
   auto swst = ((((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                  (((0x10000) * (((0xFF) & (header[53]))))))) /
                (fref));
-  auto delta_t_suppressed = (((3.2e+2)) / (((8) * (fref))));
+  auto delta_t_suppressed = (((3.20e+2)) / (((8) * (fref))));
   auto data_delay_us = ((swst) + (delta_t_suppressed));
   auto data_delay =
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
@@ -67,14 +67,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto decoded_ie_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_ie_symbols_a[i] = (0.0e+0f);
+    decoded_ie_symbols_a[i] = (0.f);
   };
   // parse ie data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = ((powf((-1.0f), sign_bit)) * (mcode));
     decoded_ie_symbols_a[decoded_ie_symbols] = scode;
     (decoded_ie_symbols)++;
   }
@@ -82,14 +82,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto decoded_io_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_io_symbols_a[i] = (0.0e+0f);
+    decoded_io_symbols_a[i] = (0.f);
   };
   // parse io data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = ((powf((-1.0f), sign_bit)) * (mcode));
     decoded_io_symbols_a[decoded_io_symbols] = scode;
     (decoded_io_symbols)++;
   }
@@ -97,14 +97,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto decoded_qe_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_qe_symbols_a[i] = (0.0e+0f);
+    decoded_qe_symbols_a[i] = (0.f);
   };
   // parse qe data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = ((powf((-1.0f), sign_bit)) * (mcode));
     decoded_qe_symbols_a[decoded_qe_symbols] = scode;
     (decoded_qe_symbols)++;
   }
@@ -112,14 +112,14 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto decoded_qo_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_qo_symbols_a[i] = (0.0e+0f);
+    decoded_qo_symbols_a[i] = (0.f);
   };
   // parse qo data
   for (int i = 0; i < number_of_quads; (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
-    float scode = ((powf((-1.e+0f), sign_bit)) * (mcode));
+    float scode = ((powf((-1.0f), sign_bit)) * (mcode));
     decoded_qo_symbols_a[decoded_qo_symbols] = scode;
     (decoded_qo_symbols)++;
   }

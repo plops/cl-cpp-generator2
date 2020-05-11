@@ -221,96 +221,74 @@ inline int decode_huffman_brc4(sequential_bit_t *s) {
   }
 }
 // table 5.2-1 simple reconstruction parameter values B
-const std::array<const float, 4> table_b0 = {3, 3, (3.16e+0f), (3.53e+0f)};
-const std::array<const float, 4> table_b1 = {4, 4, (4.08e+0f), (4.3699998e+0f)};
-const std::array<const float, 6> table_b2 = {6,          6,         6,
-                                             (6.15e+0f), (6.5e+0f), (6.88e+0f)};
-const std::array<const float, 7> table_b3 = {
-    9, 9, 9, 9, (9.36e+0f), (9.5e+0f), (1.01e+1f)};
+const std::array<const float, 4> table_b0 = {3, 3, (3.160f), (3.530f)};
+const std::array<const float, 4> table_b1 = {4, 4, (4.080f), (4.370f)};
+const std::array<const float, 6> table_b2 = {6,        6,       6,
+                                             (6.150f), (6.50f), (6.880f)};
+const std::array<const float, 7> table_b3 = {9,        9,       9,       9,
+                                             (9.360f), (9.50f), (10.10f)};
 const std::array<const float, 9> table_b4 = {
-    15, 15, 15, 15, 15, 15, (1.522e+1f), (1.55e+1f), (1.6049999e+1f)};
+    15, 15, 15, 15, 15, 15, (15.220f), (15.50f), (16.050f)};
 // table 5.2-2 normalized reconstruction levels
-const std::array<const float, 4> table_nrl0 = {(3.637e-1f), (1.0915001e+0f),
-                                               (1.8208e+0f), (2.6406e+0f)};
+const std::array<const float, 4> table_nrl0 = {(0.36370f), (1.09150f),
+                                               (1.82080f), (2.64060f)};
 const std::array<const float, 5> table_nrl1 = {
-    (3.042e-1f), (9.127e-1f), (1.5216e+0f), (2.1313e+0f), (2.8426e+0f)};
+    (0.30420f), (0.91270f), (1.52160f), (2.13130f), (2.84260f)};
 const std::array<const float, 7> table_nrl2 = {
-    (2.305e-1f),  (6.916e-1f),  (1.15279995e+0f), (1.6139999e+0f),
-    (2.0754e+0f), (2.5369e+0f), (3.1191e+0f)};
+    (0.23050f), (0.69160f), (1.15280f), (1.6140f),
+    (2.07540f), (2.53690f), (3.11910f)};
 const std::array<const float, 10> table_nrl3 = {
-    (1.702e-1f),  (5.107e-1f),     (8.511e-1f),  (1.1916e+0f), (1.5321e+0f),
-    (1.8726e+0f), (2.2130999e+0f), (2.5536e+0f), (2.8942e+0f), (3.3743998e+0f)};
+    (0.17020f), (0.51070f), (0.85110f), (1.19160f), (1.53210f),
+    (1.87260f), (2.21310f), (2.55360f), (2.89420f), (3.37440f)};
 const std::array<const float, 16> table_nrl4 = {
-    (1.13e-1f),       (3.389e-1f),  (5.649e-1f),  (7.908e-1f),
-    (1.01670004e+0f), (1.2428e+0f), (1.4687e+0f), (1.6947e+0f),
-    (1.9206001e+0f),  (2.1466e+0f), (2.3725e+0f), (2.5985e+0f),
-    (2.8244e+0f),     (3.0504e+0f), (3.2764e+0f), (3.6623e+0f)};
+    (0.1130f),  (0.33890f), (0.56490f), (0.79080f), (1.01670f), (1.24280f),
+    (1.46870f), (1.69470f), (1.92060f), (2.14660f), (2.37250f), (2.59850f),
+    (2.82440f), (3.05040f), (3.27640f), (3.66230f)};
 // table 5.2-3 sigma factors
 extern const std::array<const float, 256> table_sf = {
-    (0.0e+0f),        (6.3e-1f),        (1.25e+0f),       (1.88e+0f),
-    (2.51e+0f),       (3.1300002e+0f),  (3.76e+0f),       (4.3899998e+0f),
-    (5.0100005e+0f),  (5.64e+0f),       (6.27e+0f),       (6.89e+0f),
-    (7.52e+0f),       (8.1499994e+0f),  (8.7700003e+0f),  (9.3999994e+0f),
-    (1.003e+1f),      (1.065e+1f),      (1.12799995e+1f), (1.191e+1f),
-    (1.2529999e+1f),  (1.3159999e+1f),  (1.379e+1f),      (1.441e+1f),
-    (1.504e+1f),      (1.567e+1f),      (1.6290002e+1f),  (1.692e+1f),
-    (1.7549999e+1f),  (1.817e+1f),      (1.88e+1f),       (1.943e+1f),
-    (2.005e+1f),      (2.068e+1f),      (2.131e+1f),      (2.193e+1f),
-    (2.2559999e+1f),  (2.319e+1f),      (2.3809999e+1f),  (2.4440001e+1f),
-    (2.507e+1f),      (2.569e+1f),      (2.6319999e+1f),  (2.6950002e+1f),
-    (2.757e+1f),      (2.82e+1f),       (2.883e+1f),      (2.945e+1f),
-    (3.008e+1f),      (3.071e+1f),      (3.133e+1f),      (3.196e+1f),
-    (3.259e+1f),      (3.321e+1f),      (3.384e+1f),      (3.447e+1f),
-    (3.509e+1f),      (3.5720003e+1f),  (3.635e+1f),      (3.697e+1f),
-    (3.76e+1f),       (3.823e+1f),      (3.8849998e+1f),  (3.948e+1f),
-    (4.011e+1f),      (4.073e+1f),      (4.136e+1f),      (4.1990003e+1f),
-    (4.2610002e+1f),  (4.3240002e+1f),  (4.387e+1f),      (4.449e+1f),
-    (4.5119998e+1f),  (4.575e+1f),      (4.637e+1f),      (4.7e+1f),
-    (4.763e+1f),      (4.825e+1f),      (4.8880002e+1f),  (4.951e+1f),
-    (5.0130004e+1f),  (5.076e+1f),      (5.139e+1f),      (5.201e+1f),
-    (5.2639997e+1f),  (5.327e+1f),      (5.389e+1f),      (5.452e+1f),
-    (5.515e+1f),      (5.577e+1f),      (5.64e+1f),       (5.703e+1f),
-    (5.765e+1f),      (5.828e+1f),      (5.891e+1f),      (5.9529996e+1f),
-    (6.016e+1f),      (6.079e+1f),      (6.141e+1f),      (6.204e+1f),
-    (6.298e+1f),      (6.4239997e+1f),  (6.5489995e+1f),  (6.674e+1f),
-    (6.8e+1f),        (6.925e+1f),      (7.05e+1f),       (7.1760005e+1f),
-    (7.3010004e+1f),  (7.426e+1f),      (7.5519997e+1f),  (7.6769996e+1f),
-    (7.8019994e+1f),  (7.928e+1f),      (8.053e+1f),      (8.178e+1f),
-    (8.304e+1f),      (8.4290004e+1f),  (8.554e+1f),      (8.6800003e+1f),
-    (8.805e+1f),      (8.93e+1f),       (9.0559995e+1f),  (9.181e+1f),
-    (9.306e+1f),      (9.432e+1f),      (9.557e+1f),      (9.6819997e+1f),
-    (9.8080003e+1f),  (9.933e+1f),      (1.0058e+2f),     (1.0184e+2f),
-    (1.03089996e+2f), (1.04339994e+2f), (1.056e+2f),      (1.0685e+2f),
-    (1.081e+2f),      (1.09349996e+2f), (1.1061e+2f),     (1.1186e+2f),
-    (1.1311e+2f),     (1.1437e+2f),     (1.1562e+2f),     (1.1687e+2f),
-    (1.1813e+2f),     (1.1938e+2f),     (1.20629996e+2f), (1.2189e+2f),
-    (1.2314e+2f),     (1.2439e+2f),     (1.2565e+2f),     (1.269e+2f),
-    (1.2815e+2f),     (1.2941e+2f),     (1.3066e+2f),     (1.3191e+2f),
-    (1.3317e+2f),     (1.3442e+2f),     (1.3566999e+2f),  (1.3692999e+2f),
-    (1.3817999e+2f),  (1.3942999e+2f),  (1.4069e+2f),     (1.4194e+2f),
-    (1.4319e+2f),     (1.4445e+2f),     (1.457e+2f),      (1.4694999e+2f),
-    (1.4821e+2f),     (1.4946e+2f),     (1.5071e+2f),     (1.5197e+2f),
-    (1.5322e+2f),     (1.5447e+2f),     (1.5573e+2f),     (1.5698e+2f),
-    (1.5822999e+2f),  (1.5949e+2f),     (1.6074e+2f),     (1.6199e+2f),
-    (1.6325e+2f),     (1.645e+2f),      (1.6575e+2f),     (1.6701e+2f),
-    (1.6826e+2f),     (1.6950999e+2f),  (1.7077e+2f),     (1.7202e+2f),
-    (1.7327e+2f),     (1.7453e+2f),     (1.7578e+2f),     (1.7703e+2f),
-    (1.7829e+2f),     (1.7954e+2f),     (1.8078999e+2f),  (1.8205e+2f),
-    (1.833e+2f),      (1.8455e+2f),     (1.8581e+2f),     (1.8706e+2f),
-    (1.8831e+2f),     (1.8957001e+2f),  (1.9082001e+2f),  (1.9207e+2f),
-    (1.9333e+2f),     (1.9458e+2f),     (1.9583e+2f),     (1.9709e+2f),
-    (1.9834e+2f),     (1.9959e+2f),     (2.0085001e+2f),  (2.0210001e+2f),
-    (2.0335001e+2f),  (2.0461e+2f),     (2.0586e+2f),     (2.0711e+2f),
-    (2.0837e+2f),     (2.0962e+2f),     (2.1087e+2f),     (2.1213001e+2f),
-    (2.1338001e+2f),  (2.1463001e+2f),  (2.1589e+2f),     (2.1714e+2f),
-    (2.1839e+2f),     (2.1965e+2f),     (2.209e+2f),      (2.2215e+2f),
-    (2.2341001e+2f),  (2.2466001e+2f),  (2.2591001e+2f),  (2.2717e+2f),
-    (2.2842e+2f),     (2.2967e+2f),     (2.3092999e+2f),  (2.3218e+2f),
-    (2.3343e+2f),     (2.3469e+2f),     (2.3594001e+2f),  (2.3719001e+2f),
-    (2.3844999e+2f),  (2.3969999e+2f),  (2.4095e+2f),     (2.4221e+2f),
-    (2.4346e+2f),     (2.4471001e+2f),  (2.4597e+2f),     (2.4722e+2f),
-    (2.4847001e+2f),  (2.4972999e+2f),  (2.5098e+2f),     (2.5223e+2f),
-    (2.5349e+2f),     (2.5474e+2f),     (2.5599e+2f),     (2.5599e+2f)};
+    (0.f),      (0.630f),   (1.250f),   (1.880f),   (2.510f),   (3.130f),
+    (3.760f),   (4.390f),   (5.010f),   (5.640f),   (6.270f),   (6.890f),
+    (7.520f),   (8.150f),   (8.770f),   (9.40f),    (10.030f),  (10.650f),
+    (11.280f),  (11.910f),  (12.530f),  (13.160f),  (13.790f),  (14.410f),
+    (15.040f),  (15.670f),  (16.290f),  (16.920f),  (17.550f),  (18.170f),
+    (18.80f),   (19.430f),  (20.050f),  (20.680f),  (21.310f),  (21.930f),
+    (22.560f),  (23.190f),  (23.810f),  (24.440f),  (25.070f),  (25.690f),
+    (26.320f),  (26.950f),  (27.570f),  (28.20f),   (28.830f),  (29.450f),
+    (30.080f),  (30.710f),  (31.330f),  (31.960f),  (32.590f),  (33.210f),
+    (33.840f),  (34.470f),  (35.090f),  (35.720f),  (36.350f),  (36.970f),
+    (37.60f),   (38.230f),  (38.850f),  (39.480f),  (40.110f),  (40.730f),
+    (41.360f),  (41.990f),  (42.610f),  (43.240f),  (43.870f),  (44.490f),
+    (45.120f),  (45.750f),  (46.370f),  (47.f),     (47.630f),  (48.250f),
+    (48.880f),  (49.510f),  (50.130f),  (50.760f),  (51.390f),  (52.010f),
+    (52.640f),  (53.270f),  (53.890f),  (54.520f),  (55.150f),  (55.770f),
+    (56.40f),   (57.030f),  (57.650f),  (58.280f),  (58.910f),  (59.530f),
+    (60.160f),  (60.790f),  (61.410f),  (62.040f),  (62.980f),  (64.240f),
+    (65.490f),  (66.740f),  (68.f),     (69.250f),  (70.50f),   (71.760f),
+    (73.010f),  (74.260f),  (75.520f),  (76.770f),  (78.020f),  (79.280f),
+    (80.530f),  (81.780f),  (83.040f),  (84.290f),  (85.540f),  (86.80f),
+    (88.050f),  (89.30f),   (90.560f),  (91.810f),  (93.060f),  (94.320f),
+    (95.570f),  (96.820f),  (98.080f),  (99.330f),  (100.580f), (101.840f),
+    (103.090f), (104.340f), (105.60f),  (106.850f), (108.10f),  (109.350f),
+    (110.610f), (111.860f), (113.110f), (114.370f), (115.620f), (116.870f),
+    (118.130f), (119.380f), (120.630f), (121.890f), (123.140f), (124.390f),
+    (125.650f), (126.90f),  (128.150f), (129.410f), (130.660f), (131.910f),
+    (133.170f), (134.420f), (135.670f), (136.930f), (138.180f), (139.430f),
+    (140.690f), (141.940f), (143.190f), (144.450f), (145.70f),  (146.950f),
+    (148.210f), (149.460f), (150.710f), (151.970f), (153.220f), (154.470f),
+    (155.730f), (156.980f), (158.230f), (159.490f), (160.740f), (161.990f),
+    (163.250f), (164.50f),  (165.750f), (167.010f), (168.260f), (169.510f),
+    (170.770f), (172.020f), (173.270f), (174.530f), (175.780f), (177.030f),
+    (178.290f), (179.540f), (180.790f), (182.050f), (183.30f),  (184.550f),
+    (185.810f), (187.060f), (188.310f), (189.570f), (190.820f), (192.070f),
+    (193.330f), (194.580f), (195.830f), (197.090f), (198.340f), (199.590f),
+    (200.850f), (202.10f),  (203.350f), (204.610f), (205.860f), (207.110f),
+    (208.370f), (209.620f), (210.870f), (212.130f), (213.380f), (214.630f),
+    (215.890f), (217.140f), (218.390f), (219.650f), (220.90f),  (222.150f),
+    (223.410f), (224.660f), (225.910f), (227.170f), (228.420f), (229.670f),
+    (230.930f), (232.180f), (233.430f), (234.690f), (235.940f), (237.190f),
+    (238.450f), (239.70f),  (240.950f), (242.210f), (243.460f), (244.710f),
+    (245.970f), (247.220f), (248.470f), (249.730f), (250.980f), (252.230f),
+    (253.490f), (254.740f), (255.990f), (255.990f)};
 int init_decode_packet(int packet_idx, std::complex<float> *output) {
   // packet_idx .. index of space packet 0 ..
   // mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest
@@ -323,16 +301,16 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   auto number_of_quads =
       ((((0x1) * (header[66]))) + (((0x100) * (((0xFF) & (header[65]))))));
   auto baq_block_length = ((8) * (((1) + (((0xFF) & ((header[38]) >> (0)))))));
-  auto number_of_baq_blocks = static_cast<int>(
-      round(ceil((((((2.e+0f)) * (number_of_quads))) / (256)))));
+  auto number_of_baq_blocks =
+      static_cast<int>(round(ceil((((((2.0f)) * (number_of_quads))) / (256)))));
   std::array<uint8_t, 205> brcs;
   std::array<uint8_t, 205> thidxs;
   auto baq_mode = ((0x1F) & ((header[37]) >> (0)));
-  auto fref = (3.7534723e+1f);
+  auto fref = (37.53472f);
   auto swst = ((((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                  (((0x10000) * (((0xFF) & (header[53]))))))) /
                (fref));
-  auto delta_t_suppressed = (((3.2e+2)) / (((8) * (fref))));
+  auto delta_t_suppressed = (((3.20e+2)) / (((8) * (fref))));
   auto data_delay_us = ((swst) + (delta_t_suppressed));
   auto data_delay =
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
@@ -348,7 +326,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   auto decoded_ie_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_ie_symbols_a[i] = (0.0e+0f);
+    decoded_ie_symbols_a[i] = (0.f);
   };
   // parse ie data
   for (int block = 0; decoded_ie_symbols < number_of_quads; (block)++) {
@@ -362,9 +340,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -380,9 +358,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -398,9 +376,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -416,9 +394,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -434,9 +412,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -464,7 +442,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   auto decoded_io_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_io_symbols_a[i] = (0.0e+0f);
+    decoded_io_symbols_a[i] = (0.f);
   };
   // parse io data
   for (int block = 0; decoded_io_symbols < number_of_quads; (block)++) {
@@ -477,9 +455,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc0(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -495,9 +473,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc1(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -513,9 +491,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc2(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -531,9 +509,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc3(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -549,9 +527,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
            (i)++) {
         auto sign_bit = get_sequential_bit(&s);
         auto mcode = decode_huffman_brc4(&s);
-        auto symbol_sign = (1.e+0f);
+        auto symbol_sign = (1.0f);
         if (sign_bit) {
-          symbol_sign = (-1.e+0f);
+          symbol_sign = (-1.0f);
         };
         auto v = ((symbol_sign) * (mcode));
         // in ie and io we don't have thidx yet, will be processed later;
@@ -579,7 +557,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   auto decoded_qe_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_qe_symbols_a[i] = (0.0e+0f);
+    decoded_qe_symbols_a[i] = (0.f);
   };
   // parse qe data
   for (int block = 0; decoded_qe_symbols < number_of_quads; (block)++) {
@@ -595,12 +573,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc0(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 3) {
               v = ((symbol_sign) * (mcode));
@@ -644,12 +622,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc0(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -681,12 +659,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc1(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 4) {
               v = ((symbol_sign) * (mcode));
@@ -730,12 +708,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc1(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -767,12 +745,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc2(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 6) {
               v = ((symbol_sign) * (mcode));
@@ -816,12 +794,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc2(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -853,12 +831,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc3(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 9) {
               v = ((symbol_sign) * (mcode));
@@ -902,12 +880,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc3(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -939,12 +917,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc4(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 15) {
               v = ((symbol_sign) * (mcode));
@@ -988,12 +966,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc4(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qe p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1036,7 +1014,7 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
   auto decoded_qo_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
   for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
-    decoded_qo_symbols_a[i] = (0.0e+0f);
+    decoded_qo_symbols_a[i] = (0.f);
   };
   // parse qo data
   for (int block = 0; decoded_qo_symbols < number_of_quads; (block)++) {
@@ -1051,12 +1029,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc0(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 3) {
               v = ((symbol_sign) * (mcode));
@@ -1100,12 +1078,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc0(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1137,12 +1115,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc1(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 4) {
               v = ((symbol_sign) * (mcode));
@@ -1186,12 +1164,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc1(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1223,12 +1201,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc2(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 6) {
               v = ((symbol_sign) * (mcode));
@@ -1272,12 +1250,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc2(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1309,12 +1287,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc3(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 9) {
               v = ((symbol_sign) * (mcode));
@@ -1358,12 +1336,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc3(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1395,12 +1373,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc4(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 15) {
               v = ((symbol_sign) * (mcode));
@@ -1444,12 +1422,12 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
              (i)++) {
           auto sign_bit = get_sequential_bit(&s);
           auto mcode = decode_huffman_brc4(&s);
-          auto symbol_sign = (1.e+0f);
+          auto symbol_sign = (1.0f);
           if (sign_bit) {
-            symbol_sign = (-1.e+0f);
+            symbol_sign = (-1.0f);
           };
           // decode qo p.75
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1504,9 +1482,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 3) {
               v = ((symbol_sign) * (mcode));
@@ -1553,9 +1531,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1597,9 +1575,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 4) {
               v = ((symbol_sign) * (mcode));
@@ -1646,9 +1624,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1690,9 +1668,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 6) {
               v = ((symbol_sign) * (mcode));
@@ -1739,9 +1717,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1783,9 +1761,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 9) {
               v = ((symbol_sign) * (mcode));
@@ -1832,9 +1810,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1876,9 +1854,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 15) {
               v = ((symbol_sign) * (mcode));
@@ -1925,9 +1903,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_ie_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode ie p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -1989,9 +1967,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 3) {
               v = ((symbol_sign) * (mcode));
@@ -2038,9 +2016,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -2082,9 +2060,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 4) {
               v = ((symbol_sign) * (mcode));
@@ -2131,9 +2109,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -2175,9 +2153,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 6) {
               v = ((symbol_sign) * (mcode));
@@ -2224,9 +2202,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -2268,9 +2246,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 9) {
               v = ((symbol_sign) * (mcode));
@@ -2317,9 +2295,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {
@@ -2361,9 +2339,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             if (mcode < 15) {
               v = ((symbol_sign) * (mcode));
@@ -2410,9 +2388,9 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
           auto pos = ((i) + (((128) * (block))));
           auto scode = decoded_io_symbols_a[pos];
           auto mcode = static_cast<int>(fabsf(scode));
-          auto symbol_sign = copysignf((1.e+0f), scode);
+          auto symbol_sign = copysignf((1.0f), scode);
           // decode io p.74 reconstruction law right side
-          auto v = (0.0e+0f);
+          auto v = (0.f);
           try {
             v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
           } catch (std::out_of_range e) {

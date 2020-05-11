@@ -1188,7 +1188,7 @@
 					     (thidx (aref thidxs block))))))
 				  (case brc
 				    ,@(loop for brc-value below 5 collect
-					   `(,(format nil "case ~a" brc-value)
+					   `(,(format nil "~a" brc-value)
 					      (progn
 						#+safety (do0
 							  #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect
@@ -1309,7 +1309,7 @@
 				  (sym-a (format nil "decoded_~a_symbols_a" e)))
 			      `(case brc
 				 ,@(loop for brc-value below 5 collect
-					`(,(format nil "case ~a" brc-value)
+					`(,(format nil " ~a" brc-value)
 					   (progn
 					     #+safety (do0
 						       #+nil (unless (or ,@(loop for e in `(0 1 2 3 4) collect

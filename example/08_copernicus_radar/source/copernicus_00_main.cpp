@@ -95,10 +95,10 @@ int main() {
                 << (" sig_type=") << (sig_type) << (std::setw(8))
                 << (" number_of_sig=") << (number_of_sig) << (std::endl);
   };
-  auto ma = (-1.e+0f);
+  auto ma = (-1.0f);
   auto ma_ele = -1;
   for (auto &elevation : map_ele) {
-    auto number_of_Mquads = ((elevation.second) / ((1.e+6f)));
+    auto number_of_Mquads = ((elevation.second) / ((1.0e+6)));
     auto elevation_beam_address = elevation.first;
     if (ma < number_of_Mquads) {
       ma = number_of_Mquads;
@@ -176,7 +176,7 @@ int main() {
                 << (std::setw(8)) << (" ele_number_echoes=")
                 << (ele_number_echoes) << (std::endl);
     for (auto &azi : map_azi) {
-      auto number_of_Mquads = ((azi.second) / ((1.e+6f)));
+      auto number_of_Mquads = ((azi.second) / ((1.0e+6)));
       auto azi_beam_address = azi.first;
       std::setprecision(3);
       (std::cout) << (std::setw(10))
@@ -211,8 +211,8 @@ int main() {
                    (state._start_time)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("end big allocation") << (" ")
-              << (std::setw(8)) << (" (((1.e-6f))*(n0)*(ele_number_echoes))=")
-              << ((((1.e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
+              << (std::setw(8)) << (" (((1.00e-6))*(n0)*(ele_number_echoes))=")
+              << ((((1.00e-6)) * (n0) * (ele_number_echoes))) << (std::endl);
   remove("./o_all.csv");
   remove("./o_range.csv");
   remove("./o_cal_range.csv");
@@ -264,13 +264,13 @@ int main() {
       auto txpsf_m = ((((0x1) * (p[45]))) + (((0x100) * (((0x7F) & (p[44]))))));
       auto txpl_ = ((((0x1) * (p[48]))) + (((0x100) * (p[47]))) +
                     (((0x10000) * (((0xFF) & (p[46]))))));
-      auto fref = (3.7534723e+1f);
+      auto fref = (37.53472f);
       auto txprr_ = ((pow(-1, txprr_p)) * (txprr_m));
       auto txprr = ((((((fref) * (fref))) / (2097152))) *
-                    (pow((-1.e+0f), txprr_p)) * (txprr_m));
+                    (pow((-1.0f), txprr_p)) * (txprr_m));
       auto txpsf =
           ((((txprr) / (((fref) * (4))))) +
-           (((((fref) / (16384))) * (pow((-1.e+0f), txpsf_p)) * (txpsf_m))));
+           (((((fref) / (16384))) * (pow((-1.0f), txpsf_p)) * (txpsf_m))));
       auto txpl = ((static_cast<double>(txpl_)) / (fref));
       assert((sync_marker) == (0x352EF853));
       {
