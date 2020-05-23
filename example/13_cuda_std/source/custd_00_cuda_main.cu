@@ -12,19 +12,24 @@
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf
 // p. 338
 #include <cstdio>
-auto _code_git_version = "dc6049159f9c635da36416df9e52c3f27860f733";
+auto _code_git_version = "c8c7b12e9d65f8df7f3376ba008af3c8392c6e9b";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "23:08:05 of Saturday, 2020-05-23 (GMT+1)";
+auto _code_generation_time = "23:12:55 of Saturday, 2020-05-23 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
 struct trie {
   struct ref {
     trie *ptr = nullptr;
-  };
+  } next[26];
   int count = 0;
-  v insert(std::string_view input, trie *&bump) {
+  void insert(std::string_view input, trie *&bump) {
     return v(((x) + (r.x)), ((y) + (r.y)), ((z) + (r.z)));
   }
 };
+int index_of(char c) {
+  if (((('a') <= (c)) && ((c) <= ('z')))) {
+    return ((c) - ('a'));
+  };
+}
 int main() { return 0; };

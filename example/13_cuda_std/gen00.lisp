@@ -154,7 +154,8 @@
 		       (space "struct ref"
 			      (progn
 				(let ((ptr nullptr))
-				  (declare (type trie* ptr)))))
+				  (declare (type trie* ptr))))
+			      "next[26]")
 		       
 		       (let ((count 0)
 			     )
@@ -162,12 +163,16 @@
 		       (defun insert (input &bump)
 			 (declare (type std--string_view input)
 				  (type trie* &bump)
-				  (values v))
+				  )
 			 (return (v ,@(loop for e in `(x y z) collect
 					   `(+ ,e (dot r ,e))))))
 		   ))
 
-
+	      (defun index_of (c)
+		(declare (type char c)
+			 (values int))
+		(when (<= (char "a") c (char "z"))
+		  (return (- c (char "a")))))
 	      
 	      	      
 	      (defun main ()
