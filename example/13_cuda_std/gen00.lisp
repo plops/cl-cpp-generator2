@@ -164,6 +164,16 @@
 			 (declare (type std--string_view input)
 				  (type trie* &bump)
 				  )
+			 (let ((n this)) ;; n .. current position in trie
+			   (for-range (pc input)
+				      (let ((index (index_of pc)))
+					(declare (type "auto const" index))
+					(when (== index -1) ;; end of word
+					  (when (!= n this) ;; word isn't empty
+					    (incf n->count)
+					    (setf n this) ;; reset position
+					    )
+					  ))))
 			 (return (v ,@(loop for e in `(x y z) collect
 					   `(+ ,e (dot r ,e))))))
 		   ))
@@ -172,7 +182,10 @@
 		(declare (type char c)
 			 (values int))
 		(when (<= (char "a") c (char "z"))
-		  (return (- c (char "a")))))
+		  (return (- c (char "a"))))
+		(when (<= (char "A") c (char "Z"))
+		  (return (- c (char "A"))))
+		(return -1))
 	      
 	      	      
 	      (defun main ()

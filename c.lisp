@@ -564,6 +564,15 @@ entry return-values contains a list of return values. currently supports type, v
 				 (emit end)
 				 (emit iter)
 				 (emit `(progn ,@body)))))
+		  (for-range (destructuring-bind ((var-decl range) &rest statement-list)
+				 (cdr code)
+			       (format str "for(~a : ~a) ~a"
+				       (if (atom var-decl)
+					   (format nil "auto ~a" var-decl)
+					   (destructuring-bind (name &key (type 'auto)) var-decl
+					     (format nil "~a ~a" type name)))
+				       (emit range)
+				       (emit `(progn ,@statement-list)))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
 			     (emit `(for (,(format nil "int ~a = 0" (emit i))
 					   (< ,(emit i) ,(emit n))
