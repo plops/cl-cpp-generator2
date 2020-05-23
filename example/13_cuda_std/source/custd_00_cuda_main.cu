@@ -11,19 +11,25 @@
 // --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf
 // p. 338
+// https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/
 #include <cstdio>
-auto _code_git_version = "1b8686058447e1398c8d9717f1e0d065c6e07647";
+#include <cuda/std/atomic>
+#include <cuda/std/detail/libcxx/include/__config>
+#include <cuda/std/detail/libcxx/include/string_view>
+auto _code_git_version = "aebbb0a4c19054cb5fd5ad2ab95c7870e2d958a5";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "23:23:38 of Saturday, 2020-05-23 (GMT+1)";
+auto _code_generation_time = "00:00:42 of Sunday, 2020-05-24 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
 struct trie {
   struct ref {
-    trie *ptr = nullptr;
+    cuda::std::atomic<trie *> ptr = ATOMIC_VAR_INIT(nullptr);
+    cuda::std::atomic_flag flag = ATOMIC_FLAG_INIT;
   } next[26];
-  int count = 0;
-  void insert(std::string_view input, trie *&bump) {
+  cuda::std::atomic<int> count = ATOMIC_VAR_INIT(0);
+  __host__ __device__ void insert(cuda::std::string_view input,
+                                  cuda::std::atomic<trie *> &bump) {
     auto n = this;
     for (auto pc : input) {
       auto const index = index_of(pc);
@@ -40,7 +46,7 @@ struct trie {
       };
       n = n->next[index].ptr;
     };
-  }
+  };
 };
 int index_of(char c) {
   if (((('a') <= (c)) && ((c) <= ('z')))) {

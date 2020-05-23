@@ -115,8 +115,11 @@
 		  (do0
 		   "// /opt/cuda/bin/nvcc custd_00_cuda_main.cu --gpu-architecture=compute_75 --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/ --std=c++14 -O3 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
 		   "// https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf p. 338"
-
-		   (include <cstdio>)
+		   "// https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/"
+		   (include <cstdio>
+			    <cuda/std/atomic>
+			    <cuda/std/detail/libcxx/include/__config>
+			    <cuda/std/detail/libcxx/include/string_view>)
 	      (let (
 		    (_code_git_version
 		     (string ,(let ((str 
@@ -147,6 +150,7 @@
 	      
 
 	      "using namespace std::chrono_literals;"
+	      ;"using namespace cuda;"
 	      
 
 	      (space "struct trie"
@@ -154,38 +158,47 @@
 		       ;; indexed by alphabet
 		       (space "struct ref"
 			      (progn 
-				(let ((ptr nullptr))
-				  (declare (type trie* ptr))))
+				(let ((ptr #+host nullptr
+					   #-host (ATOMIC_VAR_INIT nullptr))
+				      (flag ATOMIC_FLAG_INIT))
+				  (declare (type #+host trie*
+						 #-host "cuda::std::atomic<trie*>" ptr)
+					   (type "cuda::std::atomic_flag" flag))))
 			      "next[26]")
 		       
-		       (let ((count 0) ;; mapped value for this position of the trie
+		       #+host (let ((count 0) ;; mapped value for this position of the trie
 			     )
-			 (declare (type int count)))
-		       (defun insert (input &bump)
-			 (declare (type std--string_view input)
-				  (type trie* &bump)
-				  )
-			 (let ((n this)) ;; n .. current position in trie
-			   (for-range (pc input)
-				      (let ((index (index_of pc)))
-					(declare (type "auto const" index))
-					(when (== index -1) ;; end of word
-					  (when (!= n this) ;; word isn't empty
-					    (incf n->count)
-					    (setf n this) ;; reset position
-					    )
-					  continue)
-					(when (== (dot (aref n->next index)
-						       ptr)
-						  nullptr) ;; node doesnt exist
-					  (incf bump) ;; allocate new node
-					  (setf (dot (aref n->next index)
-						     ptr)
-						bump))
-					;; advance position
-					(setf n (dot (aref n->next index)
-						     ptr))
-					))))))
+				(declare (type int count)))
+		       #-host (let ((count (ATOMIC_VAR_INIT 0)))
+				(declare (type "cuda::std::atomic<int>" count)))
+		       (space "__host__ __device__"
+			(defun insert (input &bump)
+			  (declare (type cuda--std--string_view input)
+				   (type #+host trie*
+					 #-host cuda--std--atomic<trie*>
+					 &bump)
+				   )
+			  (let ((n this)) ;; n .. current position in trie
+			    (for-range (pc input)
+				       (let ((index (index_of pc)))
+					 (declare (type "auto const" index))
+					 (when (== index -1) ;; end of word
+					   (when (!= n this) ;; word isn't empty
+					     (incf n->count)
+					     (setf n this) ;; reset position
+					     )
+					   continue)
+					 (when (== (dot (aref n->next index)
+							ptr)
+						   nullptr) ;; node doesnt exist
+					   (incf bump) ;; allocate new node
+					   (setf (dot (aref n->next index)
+						      ptr)
+						 bump))
+					 ;; advance position
+					 (setf n (dot (aref n->next index)
+						      ptr))
+					 )))))))
 
 	      (defun index_of (c)
 		(declare (type char c)
