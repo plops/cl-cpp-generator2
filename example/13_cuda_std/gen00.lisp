@@ -151,13 +151,14 @@
 
 	      (space "struct trie"
 		     (progn
+		       ;; indexed by alphabet
 		       (space "struct ref"
-			      (progn
+			      (progn 
 				(let ((ptr nullptr))
 				  (declare (type trie* ptr))))
 			      "next[26]")
 		       
-		       (let ((count 0)
+		       (let ((count 0) ;; mapped value for this position of the trie
 			     )
 			 (declare (type int count)))
 		       (defun insert (input &bump)

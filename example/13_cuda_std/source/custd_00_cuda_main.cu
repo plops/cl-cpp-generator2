@@ -12,10 +12,10 @@
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf
 // p. 338
 #include <cstdio>
-auto _code_git_version = "57807579fcbc231a087751163c583184a12c1fa9";
+auto _code_git_version = "1b8686058447e1398c8d9717f1e0d065c6e07647";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "23:21:59 of Saturday, 2020-05-23 (GMT+1)";
+auto _code_generation_time = "23:23:38 of Saturday, 2020-05-23 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
 struct trie {
