@@ -173,10 +173,18 @@
 					    (incf n->count)
 					    (setf n this) ;; reset position
 					    )
-					  ))))
-			 (return (v ,@(loop for e in `(x y z) collect
-					   `(+ ,e (dot r ,e))))))
-		   ))
+					  continue)
+					(when (== (dot (aref n->next index)
+						       ptr)
+						  nullptr) ;; node doesnt exist
+					  (incf bump) ;; allocate new node
+					  (setf (dot (aref n->next index)
+						     ptr)
+						bump))
+					;; advance position
+					(setf n (dot (aref n->next index)
+						     ptr))
+					))))))
 
 	      (defun index_of (c)
 		(declare (type char c)
