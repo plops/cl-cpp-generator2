@@ -118,8 +118,9 @@
 		   "// https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/"
 		   (include <cstdio>
 			    <cuda/std/atomic>
-			    <cuda/std/detail/libcxx/include/__config>
-			    <cuda/std/detail/libcxx/include/string_view>)
+			    ;<cuda/std/detail/libcxx/include/__config>
+			    ;<cuda/std/detail/libcxx/include/string_view>
+			    )
 	      (let (
 		    (_code_git_version
 		     (string ,(let ((str 

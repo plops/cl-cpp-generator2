@@ -14,12 +14,10 @@
 // https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/
 #include <cstdio>
 #include <cuda/std/atomic>
-#include <cuda/std/detail/libcxx/include/__config>
-#include <cuda/std/detail/libcxx/include/string_view>
-auto _code_git_version = "aebbb0a4c19054cb5fd5ad2ab95c7870e2d958a5";
+auto _code_git_version = "bd4bb1625df2448d51539c8fb9f26a62983bfd82";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "00:00:42 of Sunday, 2020-05-24 (GMT+1)";
+auto _code_generation_time = "00:06:05 of Sunday, 2020-05-24 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
 struct trie {
