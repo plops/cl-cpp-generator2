@@ -6,20 +6,24 @@
 #include "proto2.h"
 ;
 // /opt/cuda/bin/nvcc custd_00_cuda_main.cu --gpu-architecture=compute_75
-// --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/ --std=c++14 -O3
-// -g -Xcompiler=-march=native
+// --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/
+// -I/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/
+// -I/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/libcxx/include/
+// --std=c++14 -O3 -g -Xcompiler=-march=native
 // --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf
 // p. 338
 // https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/
+#include "/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/libcxx/include/string_view"
 #include <cstdio>
 #include <cuda/std/atomic>
-auto _code_git_version = "bd4bb1625df2448d51539c8fb9f26a62983bfd82";
+auto _code_git_version = "51751fe955676df9a0033d05b398574077df38ec";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "00:06:05 of Sunday, 2020-05-24 (GMT+1)";
+auto _code_generation_time = "09:03:47 of Sunday, 2020-05-24 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
+using namespace cuda;
 struct trie {
   struct ref {
     cuda::std::atomic<trie *> ptr = ATOMIC_VAR_INIT(nullptr);
