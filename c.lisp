@@ -22,7 +22,7 @@
 	(code-str (emit-c :code code))
 	(fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
-    (format t "write code into file: '~a'" fn)
+    (format t "write code into file: '~a'~%" fn)
     (multiple-value-bind (old-code-hash exists) (gethash fn-hash *file-hashes*)
       (when (or (not exists) ignore-hash (/= code-hash old-code-hash)
 		(not (probe-file fn)))
@@ -40,7 +40,7 @@
 	;; FIXME: figure out how to prevent that
 	(sb-ext:run-program "/usr/bin/clang-format"
 			    (list "-i"  (namestring fn)
-					;"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
+					"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
 				  ))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
@@ -50,7 +50,7 @@
 
 
 
-  ;; (declare (type int a b) (type float c)
+  ;; (declare (type int a b) (type float c) 
   ;; (declare (values int &optional))
   ;; (declare (values int float &optional))
 
@@ -275,12 +275,14 @@ entry return-values contains a list of return values. currently supports type, v
          (digits 1)
          (b (- a 1)))
     (unless (= a 0)
-      (loop while (< 1d-12
-		     (/ (abs (- a b))
-		       (abs a))
-		     ) do
-          (setf b (read-from-string (format nil "~,vG" digits a)))
+      (loop while (and (< 1d-12
+			  (/ (abs (- a b))
+			     (abs a))
+			  )
+		       (< digits 30)) do
+           (setf b (read-from-string (format nil "~,vG" digits a)))
 	   (incf digits)))
+    ;(format t "~,v,,,,,'eG~%" digits a)
     (format nil "~,v,,,,,'eG" digits a)
     ;(substitute #\e #\d (format nil "~,vG" digits a))
     ))
