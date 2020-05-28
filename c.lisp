@@ -249,8 +249,9 @@ entry return-values contains a list of return values. currently supports type, v
            (digits 1)
            (b (- a 1)))
       (unless (= a 0)
-	(loop while (< 1e-6 (/ (abs (- a b))
-			       (abs a)))
+	(loop while (and (< 1e-6 (/ (abs (- a b))
+				    (abs a)))
+			 (< digits 30))
            do
              (setf b (read-from-string (format nil "~,v,,,,,'eG"
 					;"~,vG"
