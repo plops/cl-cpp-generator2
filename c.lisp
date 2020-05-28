@@ -40,7 +40,7 @@
 	;; FIXME: figure out how to prevent that
 	(sb-ext:run-program "/usr/bin/clang-format"
 			    (list "-i"  (namestring fn)
-					"-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
+					;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
 				  ))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
