@@ -1,6 +1,6 @@
 - https://github.com/SaschaWillems/Vulkan/blob/master/examples/computeraytracing/computeraytracing.cpp
 
-- https://github.com/nvpro-samples/vk_raytracing_tutorial
+- https://github.com/nvpro-samples/vk_raytracing_tutorial_KHR
 
 - https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_tracing
 
