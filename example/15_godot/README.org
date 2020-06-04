@@ -1,0 +1,11 @@
+- https://docs.godotengine.org/en/stable/development/compiling/compiling_for_x11.html
+#+begin_example
+emerge -av dev-util/scons x11-libs/libX11 x11-libs/libXcursor x11-libs/libXinerama x11-libs/libXi \
+    media-libs/mesa media-libs/glu media-libs/alsa-lib media-sound/pulseaudio dev-lang/yasm
+git clone https://github.com/godotengine/godot
+#git checkout vulkan # not required anymore after 11 Feb 2020
+git checkout 3.2
+scons -c # to clean
+scons -j12 platform=x11 target=release tools=no
+scons -j12 platform=x11 target=release tools=no use_llvm=yes use_lld=yes
+#+end_example

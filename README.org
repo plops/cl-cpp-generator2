@@ -123,6 +123,29 @@ the footprint of the debug printf's in the C code could be
 substantially reduced. I don't consider this important enough to spend
 time on.
 
+* Overview of examples
+
+|                            | state | comment                                                                                                                  |   |
+| 01_helloworld              |  100% |                                                                                                                          |   |
+| 02_shader                  |   10% |                                                                                                                          |   |
+| 03_cuda                    |   80% | few cuda examples, not all of them compile                                                                               |   |
+| 04_vulkan                  |  100% | c++ vulkan tutorial in single file                                                                                       |   |
+| 05_vulkan_generic_c        |  100% | vulkan tutorial using C, split into 21 files                                                                             |   |
+| 06_vulkan_ray              |    1% | did not get very far with vk_ray                                                                                         |   |
+| 07_glfw_optix7             |   90% | i think it worked, get segfault because of missing font                                                                  |   |
+| 08_copernicus_radar        |   80% | decodes raw satellite packets                                                                                            |   |
+| 09_concurrent_producer_fsm |   90% | try std::thread, mutex and guards                                                                                        |   |
+| 10_filament_render         |    1% | i think i never managed to compile filament                                                                              |   |
+| 11_nvidia_cutlass          |   10% | got stuck on a bug in nvidia tutorial, wait for their fix                                                                |   |
+| 12_business_card_ray       |  100% | raytracer that could fit on a business card converted cuda (by someone else, i just converted code to cl-cpp-generator2) |   |
+| 13_cuda_std                |   10% | try automatic variable features of the new cuda standard library (revisit when cuda 11 is launched)                      |   |
+| 14_skia                    |    1% | i can't even compile skia                                                                                                |   |
+| 15_godot                   |   5%  | i'm trying to compile godot                                                                                              |   |
+| 16_cauldron                |    1% | cauldron doesnt work on linux                                                                                            |   |
+
+
+
+
 * FAQ
 
 ** There is no such language as c/C++. (https://news.ycombinator.com/item?id=20195740 )

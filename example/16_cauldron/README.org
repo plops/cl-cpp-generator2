@@ -1,0 +1,11 @@
+- https://github.com/GPUOpen-LibrariesAndSDKs/Cauldron
+#+begin_example
+git clone --recurse-submodules https://github.com/GPUOpen-LibrariesAndSDKs/Cauldron
+#comment out #set(CMAKE_GENERATOR_PLATFORM x64)
+ ~/src/Cauldron/src $ ln -s /home/martin/src/Cauldron/src/common/ Common
+~/src/Cauldron/libs $ ln -s /home/martin/src/Cauldron/libs/imgui/ ImGUI
+cmake .. -DGFX_API=VK -DCMAKE_BUILD_TYPE=Release
+
+#+end_example
+
+- this definitely is not supposed to build in linux

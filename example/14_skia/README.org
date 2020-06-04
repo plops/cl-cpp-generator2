@@ -1,0 +1,11 @@
+- in order to build skia we need gn
+#+begin_example
+sudo eselect gcc set 2
+. /etc/profile
+emerge gn
+git clone --recurse-submodules https://github.com/google/skia
+gn gen out/Release  --args='is_debug=false is_official_build=true cc="clang-10" cxx="clang++10"'
+gn gen out/Static --args='is_debug=false is_official_build=true cc="clang-10" cxx="clang++10" skia_use_vulkan=true'
+ninja -C out/Release
+ninja -C out/Static
+#+end_example
