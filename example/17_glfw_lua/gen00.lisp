@@ -1,0 +1,803 @@
+(eval-when (:compile-toplevel :execute :load-toplevel)
+     (ql:quickload "cl-cpp-generator2")
+     (ql:quickload "cl-ppcre"))
+
+(in-package :cl-cpp-generator2)
+
+
+
+(setf *features* (union *features* `()))
+
+(setf *features* (set-difference *features*
+				 '()))
+
+
+
+
+(progn
+
+  (defparameter *source-dir* #P"example/17_glfw_lua/source/")
+  
+  (defparameter *day-names*
+    '("Monday" "Tuesday" "Wednesday"
+      "Thursday" "Friday" "Saturday"
+      "Sunday"))
+  
+  (progn
+    ;; collect code that will be emitted in utils.h
+    (defparameter *utils-code* nil)
+    (defun emit-utils (&key code)
+      (push code *utils-code*)
+      " ")
+    (defparameter *global-code* nil)
+    (defun emit-global (&key code)
+      (push code *global-code*)
+      " "))
+  (progn
+  
+    (defparameter *module-global-parameters* nil)
+    (defparameter *module* nil)
+    (defun logprint (msg &optional rest)
+      `(do0
+	" "
+	#-nolog
+	(do0
+					;("std::setprecision" 3)
+	 (<< "std::cout"
+	     ;;"std::endl"
+	     ("std::setw" 10)
+	     (dot ("std::chrono::high_resolution_clock::now")
+		  (time_since_epoch)
+		  (count))
+					;,(g `_start_time)
+	     
+	     (string " ")
+	     ("std::this_thread::get_id")
+	     (string " ")
+	     __FILE__
+	     (string ":")
+	     __LINE__
+	     (string " ")
+	     __func__
+	     (string " ")
+	     (string ,msg)
+	     (string " ")
+	     ,@(loop for e in rest appending
+		    `(("std::setw" 8)
+					;("std::width" 8)
+		      (string ,(format nil " ~a='" (emit-c :code e)))
+		      ,e
+		      (string "'")))
+	     "std::endl"
+	     "std::flush"))))
+    (defun guard (code &key (debug t))
+      `(do0
+	#+lock-debug ,(if debug
+			  (logprint (format nil "hold guard on ~a" (cl-cpp-generator2::emit-c :code code))
+				    `())
+			  "// no debug")
+	#+eou ,(if debug
+		   `(if (dot ,code ("std::mutex::try_lock"))
+			(do0
+			 (dot ,code (unlock)))
+			(do0
+			 ,(logprint (format nil "have to wait on ~a" (cl-cpp-generator2::emit-c :code code))
+				    `())))
+		   "// no debug")
+	"// no debug"
+	,(format nil
+		 "std::lock_guard<std::mutex> guard(~a);"
+		 (cl-cpp-generator2::emit-c :code code))))
+    (defun lock (code &key (debug t))
+      `(do0
+	#+lock-debug ,(if debug
+			  (logprint (format nil "hold lock on ~a" (cl-cpp-generator2::emit-c :code code))
+				    `())
+			  "// no debug")
+
+	#+nil (if (dot ,code ("std::mutex::try_lock"))
+		  (do0
+		   (dot ,code (unlock)))
+		  (do0
+		   ,(logprint (format nil "have to wait on ~a" (cl-cpp-generator2::emit-c :code code))
+			      `())))
+	
+	,(format nil
+		 "std::unique_lock<std::mutex> lk(~a);"
+		 
+		 (cl-cpp-generator2::emit-c :code code))
+	))
+
+    
+    (defun emit-globals (&key init)
+      (let ((l `((_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
+							   (time_since_epoch)
+							   (count)))))
+		 ,@(loop for e in *module-global-parameters* collect
+			(destructuring-bind (&key name type default)
+			    e
+			  `(,name ,type))))))
+	(if init
+	    `(curly
+	      ,@(remove-if
+		 #'null
+		 (loop for e in l collect
+		      (destructuring-bind (name type &optional value) e
+			(when value
+			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
+	    `(do0
+	      (include <chrono>)
+	      (defstruct0 State
+		  ,@(loop for e in l collect
+ 			 (destructuring-bind (name type &optional value) e
+			   `(,name ,type))))))))
+    (defun define-module (args)
+      "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
+      (destructuring-bind (module-name global-parameters module-code) args
+	(let ((header ()))
+	  #+nil (format t "generate ~a~%" module-name)
+	  (push `(do0
+		  " "
+		  (include "utils.h")
+		  " "
+		  (include "globals.h")
+		  " "
+		  (include "proto2.h")
+		  " ")
+		header)
+	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+	    (push `(do0 "extern State state;")
+		  header))
+	  (push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
+		*module*))
+	(loop for par in global-parameters do
+	     (destructuring-bind (parameter-name
+				  &key (direction 'in)
+				  (type 'int)
+				  (default nil)) par
+	       (push `(:name ,parameter-name :type ,type :default ,default)
+		     *module-global-parameters*))))))
+  (defun g (arg)
+    `(dot state ,arg))
+  
+  (define-module
+      `(main ((_main_version :type "std::string")
+	      (_code_repository :type "std::string")
+	      (_code_generation_time :type "std::string"))
+	     (do0
+	      (include <iostream>
+		       <chrono>
+		       <cstdio>
+		       <cassert>
+					;<unordered_map>
+		       <string>
+		       <fstream>
+		       )
+
+	      "using namespace std::chrono_literals;"
+	      (let ((state ,(emit-globals :init t)))
+		(declare (type "State" state)))
+
+
+	      (do0
+	      
+	       (defun mainLoop ()
+		 ,(logprint "mainLoop" `())
+		 (while (not (glfwWindowShouldClose ,(g `_window)))
+		   (glfwPollEvents)
+		   
+		   (drawFrame)
+		   (drawGui)
+		   (glfwSwapBuffers ,(g `_window))
+		   )
+		 ,(logprint "exit mainLoop" `()))
+	       (defun run ()
+		 ,(logprint "start run" `())
+		 
+		 (initWindow)
+		 (initGui)
+		 (initDraw)
+		 (initLua)
+		 
+		 (mainLoop)
+		 ,(logprint "finish run" `())))
+	      
+	      (defun main ()
+		(declare (values int))
+		(setf ,(g `_main_version)
+		      (string ,(let ((str (with-output-to-string (s)
+					    (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
+				 (subseq str 0 (1- (length str))))))
+
+		 (setf
+               
+               
+                  ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
+		  
+                  ,(g `_code_generation_time) 
+                  (string ,(multiple-value-bind
+                                 (second minute hour date month year day-of-week dst-p tz)
+                               (get-decoded-time)
+                             (declare (ignorable dst-p))
+                      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+                              hour
+                              minute
+                              second
+                              (nth day-of-week *day-names*)
+                              year
+                              month
+                              date
+                              (- tz)))))
+
+		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count)))
+		,(logprint "start main" `(,(g `_main_version)
+					  ,(g `_code_repository)
+					  ,(g `_code_generation_time)))
+		
+		(do0
+		 (run)
+		 ,(logprint "start cleanups" `())
+		 
+		(cleanupLua)
+		 (cleanupDraw)
+		 (cleanupGui)
+		 (cleanupWindow)
+		)
+		,(logprint "end main" `())
+		(return 0)))))
+
+  
+  
+  
+  (define-module
+      `(glfw_window
+	((_window :direction 'out :type GLFWwindow* )
+	 (_framebufferResized :direction 'out :type bool))
+	(do0
+	 (defun keyCallback (window key scancode action mods)
+	   (declare (type GLFWwindow* window)
+		    (type int key scancode action mods))
+	   (when (and (or (== key GLFW_KEY_ESCAPE)
+			  (== key GLFW_KEY_Q))
+		      (== action GLFW_PRESS))
+	     (glfwSetWindowShouldClose window GLFW_TRUE))
+	   )
+	 (defun errorCallback (err description)
+	   (declare (type int err)
+		    (type "const char*" description))
+	   ,(logprint "error" `(err description)))
+	 (defun framebufferResizeCallback (window width height)
+	   (declare (values "static void")
+		    ;; static because glfw doesnt know how to call a member function with a this pointer
+		    (type GLFWwindow* window)
+		    (type int width height))
+	   ,(logprint "resize" `(width height))
+	   (let ((app ("(State*)" (glfwGetWindowUserPointer window))))
+	     (setf app->_framebufferResized true)))
+	 (defun initWindow ()
+	   (declare (values void))
+	   (when (glfwInit)
+	     (do0
+	      
+	      (glfwSetErrorCallback errorCallback)
+	      
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 2)
+	      (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
+	      
+	      (glfwWindowHint GLFW_RESIZABLE GLFW_TRUE)
+	      (let ((label)
+		    )
+		(declare (type "std::stringstream" label))
+		(<< label
+		    (string "glfw lua example [")
+		    ,(g `_code_generation_time)
+		    (string "] git:")
+		    "std::fixed"
+		    ("std::setprecision" 3)
+		    ,(g `_main_version)
+		    ))
+	      
+	      (setf ,(g `_window) (glfwCreateWindow 930 930
+						    (dot label (str) (c_str))
+						   
+						    NULL
+						    NULL))
+	      ,(logprint "initWindow" `(,(g `_window)
+					 (glfwGetVersionString)))
+	      ;; store this pointer to the instance for use in the callback
+	      (glfwSetKeyCallback ,(g `_window) keyCallback)
+	      (glfwSetWindowUserPointer ,(g `_window) (ref state))
+	      (glfwSetFramebufferSizeCallback ,(g `_window)
+					      framebufferResizeCallback)
+	      (glfwMakeContextCurrent ,(g `_window))
+	      (glfwSwapInterval 1)
+	      )))
+	 (defun cleanupWindow ()
+	   (declare (values void))
+	   (glfwDestroyWindow ,(g `_window))
+	   (glfwTerminate)
+	   ))))
+  
+
+  (define-module
+      `(draw ((_fontTex :direction 'out :type GLuint)
+	      (_draw_mutex :type "std::mutex")
+	      (_draw_display_log :type bool)
+	      ,@(loop for e in `(offset_x offset_y scale_x scale_y alpha marker_x)
+		   collect
+		     `(,(format nil "_draw_~a" e) :type float))
+	      )
+	     (do0
+	      (include <algorithm>)
+	      (defun uploadTex (image w h)
+		(declare (type "const void*" image)
+			 (type int w h))
+		(glGenTextures 1 (ref ,(g `_fontTex)))
+		(glBindTexture GL_TEXTURE_2D ,(g `_fontTex))
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+		(glTexImage2D GL_TEXTURE_2D 0 GL_RGBA w h 0 GL_RGBA GL_UNSIGNED_BYTE image))
+	      
+	      (defun initDraw ()
+		(progn
+		  ,(guard (g `_draw_mutex))
+		  (setf ,(g `_draw_display_log) true)
+		  ,@(loop for (e f) in `((offset_x -.03)
+					 (offset_y -.44)
+					 (scale_x .22s0)
+					 (scale_y .23s0)
+					 (alpha .19s0)
+					 (marker_x 100s0))
+		       collect
+			 `(setf ,(g (format nil "_draw_~a" e)) ,f)))
+					;(glEnable GL_TEXTURE_2D)
+		#+nil (glEnable GL_DEPTH_TEST)
+		(do0 (glHint GL_LINE_SMOOTH GL_NICEST)
+		     (do0 (glEnable GL_BLEND)
+			  (glBlendFunc GL_SRC_ALPHA
+				       GL_ONE_MINUS_SRC_ALPHA)))
+		(glClearColor 0 0 0 1)
+		(setf ,(g `_framebufferResized) true))
+	      
+	      (defun cleanupDraw ()
+		(glDeleteTextures 1 (ref ,(g `_fontTex))))
+	      (defun drawFrame ()
+
+		(when ,(g `_framebufferResized)
+		  (do0
+		   (setf ,(g `_framebufferResized) false)
+		   (let ((width 0)
+			 (height 0))
+		     (declare (type int width height))
+		     (while (or (== 0 width)
+				(== 0 height))
+		       (glfwGetFramebufferSize ,(g `_window)
+					       &width
+					       &height)
+                       
+		       (glViewport 0 0 width height)
+		       
+		       (do0 (glMatrixMode GL_PROJECTION)
+			    (glPushMatrix)
+			    (glLoadIdentity)
+					;(glOrtho 0s0 width height 0s0 -1s0 1s0)
+			    (glOrtho -1s0 1s0 -1s0 1s0 -1s0 1s0)
+			    )
+		       
+		       (do0 (glMatrixMode GL_MODELVIEW)
+			    (glPushMatrix)
+			    (glLoadIdentity))))))
+
+		
+		(glClear (logior GL_COLOR_BUFFER_BIT
+				 GL_DEPTH_BUFFER_BIT))
+
+		))))
+
+  
+  (define-module
+      `(gui ((_gui_mutex :type "std::mutex")
+	     (_gui_request_diff_reset :type bool))
+	    (do0
+	     "// https://youtu.be/nVaQuNXueFw?t=317"
+	     "// https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html"
+	     (include "imgui/imgui.h"
+		      "imgui/imgui_impl_glfw.h"
+		      "imgui/imgui_impl_opengl2.h")
+	     (include <algorithm>
+		      <string>)
+	     (include <iostream>
+		      <fstream>)
+	     (defun initGui ()
+	       ,(logprint "initGui" '())
+	       (IMGUI_CHECKVERSION)
+	       ("ImGui::CreateContext")
+	       
+	       (ImGui_ImplGlfw_InitForOpenGL ,(g `_window)
+					     true)
+	       (ImGui_ImplOpenGL2_Init)
+	       ("ImGui::StyleColorsDark"))
+	     (defun cleanupGui ()
+	       (ImGui_ImplOpenGL2_Shutdown)
+	       (ImGui_ImplGlfw_Shutdown)
+	       ("ImGui::DestroyContext"))
+	     (defun get_FixedDeque (data idx)
+	       (declare (type "void*" data)
+			(type int idx )
+			(values float))
+	       (let ((data1 (reinterpret_cast<FixedDeque<120>*> data)))
+		 (return (aref (aref data1 0) idx))))
+	     
+	     (defun drawGui ()
+	       #+nil (<< "std::cout"
+			 (string "g")
+			 "std::flush")
+	       
+	       (ImGui_ImplOpenGL2_NewFrame)
+	       (ImGui_ImplGlfw_NewFrame)
+	       ("ImGui::NewFrame")
+	       
+	       	       
+	       
+	       (let ((b true))
+		 ("ImGui::ShowDemoWindow" &b))
+	       ("ImGui::Render")
+	       (ImGui_ImplOpenGL2_RenderDrawData
+		("ImGui::GetDrawData"))
+	       ))))
+
+  (define-module
+      `(lua ((_lua_state :type lua_State*))
+	    (do0
+	     (comment "Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw")
+	      ;; https://stackoverflow.com/questions/35422215/problems-linking-to-lua-5-2-4-even-when-compiling-sources-inline
+	      ;; every lua.h inclusion must be extern C!
+	      (space "extern \"C\""
+		     (progn
+		       (include "lua/lua.h"
+				"lua/lauxlib.h"
+				"lua/lualib.h")))
+
+	      
+	      (defun checkLua (L res)
+		(declare (type int res)
+			 (type lua_State* L)
+			 (values bool))
+		(unless (== res LUA_OK)
+		  (do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))
+		  (return false))
+		(return true))
+
+	      (defun lua_HostFunction (L)
+		(declare 
+			 (type lua_State* L)
+			 (values int))
+		(let ((a (static_cast<float> (lua_tonumber L 1))
+			)
+		      (b (static_cast<float> (lua_tonumber L 2))))
+		  ,(logprint "HostFunction" `(a b))
+		  (let ((c (* a b)))
+		    (lua_pushnumber L c)))
+		;; number of args going back to c++
+		(return 1))
+	      
+	      (defun initLua ()
+		(setf ,(g `_lua_state) (luaL_newstate))
+		
+		(let ((cmd (string "a = 7+11+math.sin(23.7)"))
+		      (L ,(g `_lua_state))
+		      )
+		  (declare (type std--string cmd)
+			   (type lua_State* L))
+		  (luaL_openlibs L)
+		  (lua_register L (string "HostFunction"
+					  )
+				lua_HostFunction)
+		  (let ((res ;(luaL_dostring L (cmd.c_str))
+			 (luaL_dofile L (string "init.lua"))
+			 ))
+		    (if (== res LUA_OK)
+			(do0
+			 (lua_getglobal L (string "a"))
+			 (when (lua_isnumber L -1)
+			   ,(logprint "lua_ok" `((static_cast<float> (lua_tonumber L -1)))))
+
+			 (do0
+			  (lua_getglobal L (string "DoAThing"))
+			  (when (lua_isfunction L -1)
+			    (lua_pushnumber L 3.5s0)
+			    (lua_pushnumber L 7.1s0)
+			    (when (checkLua L (lua_pcall L 2 1 0))
+			      ,(logprint "lua" `((static_cast<float> (lua_tonumber L -1)))))))
+			 )
+			(do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))))
+		  )
+		)
+	      
+	      (defun cleanupLua ()
+		(lua_close ,(g `_lua_state))
+		)
+	      )))
+  
+  (progn
+    (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
+						      (merge-pathnames #P"proto2.h"
+								       *source-dir*))
+		       :direction :output
+		       :if-exists :supersede
+		       :if-does-not-exist :create)
+      (loop for e in (reverse *module*) and i from 0 do
+	   (destructuring-bind (&key name code) e
+	     
+	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
+	       
+	       (unless cuda
+		 #+nil (progn (format t "emit function declarations for ~a~%" name)
+			(emit-c :code code :hook-defun 
+				#'(lambda (str)
+				    (format t "~a~%" str))))
+		 (emit-c :code code :hook-defun 
+			 #'(lambda (str)
+			     (format s "~a~%" str))))
+
+	       #+nil (format t "emit cpp file for ~a~%" name)
+	       (write-source (asdf:system-relative-pathname
+			      'cl-cpp-generator2
+			      (format nil
+				      "~a/vis_~2,'0d_~a.~a"
+				      *source-dir* i name
+				      (if cuda
+					  "cu"
+					  "cpp")))
+			     code)))))
+    (write-source (asdf:system-relative-pathname
+		   'cl-cpp-generator2
+		   (merge-pathnames #P"utils.h"
+				    *source-dir*))
+		  `(do0
+		    "#ifndef UTILS_H"
+		    " "
+		    "#define UTILS_H"
+		    " "
+		    (include <vector>
+			     <array>
+			     <iostream>
+			     <iomanip>)
+		    
+		    " "
+		    (do0
+		     
+		     " "
+		     ,@(loop for e in (reverse *utils-code*) collect
+			  e)
+					;"#define length(a) (sizeof((a))/sizeof(*(a)))"
+					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
+					;"#define min(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a < _b ? _a : _b; })"
+					;"#define max(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a > _b ? _a : _b; })"
+					;"#define min(a,b) ({ __auto_type _a = (a);  __auto_type _b = (b); _a < _b ? _a : _b; })"
+		     
+		     " "
+		     
+		     )
+		    " "
+		    "#endif"
+		    " "))
+    (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
+								     #P"globals.h"
+								     *source-dir*))
+		  `(do0
+		    "#ifndef GLOBALS_H"
+		    " "
+		    "#define GLOBALS_H"
+		    " "
+		    #+glad (include <glad/gl.h>)
+		    " "
+		    (include <GLFW/glfw3.h>)
+		    (space "extern \"C\""
+			   (progn
+			     (include "lua/lua.h"
+				      )))
+
+		    " "
+					;(include <winsock2.h>)
+		    " "
+					;(include "SPinGW/serialport.h")
+		    " "
+		    (include <thread>
+			     <mutex>
+			     <queue>
+			     <deque>
+			     <map>
+			     <string>
+			     <condition_variable>
+			     <complex>)
+		    #+nil (include "sqlite/sqlite-preprocessed-3310100/sqlite3.h")
+		    ;(include <sqlite3.h>)
+		    " "
+
+		    ,@(loop for e in (reverse *global-code*) collect
+			 e)
+
+		    (defstruct0 CommunicationTransaction
+			,@(loop for e in `(start_loop_time tx_time rx_time)
+			     collect
+			       `(,e "long long int")
+			       
+			       )
+		      (tx_message "std::string")
+		      (rx_message "std::string"))
+
+		    
+		    
+		    (do0
+		     "template <typename T, int MaxLen>"
+		     (defclass FixedDequeT "public std::deque<T>"
+		       "// https://stackoverflow.com/questions/56334492/c-create-fixed-size-queue"
+		       "public:"
+		       (defun push_back (val)
+			 (declare (type "const T&" val))
+			 (when (== MaxLen (this->size))
+			   (this->pop_front))
+			 ("std::deque<T>::push_back" val))))
+		    (do0
+		     "template <typename T, int MaxLen>"
+		     (defclass FixedDequeTM "public std::deque<T>"
+		       "// https://stackoverflow.com/questions/56334492/c-create-fixed-size-queue"
+		       
+		       "public:"
+		       (let ((mutex))
+			 (declare (type "std::mutex" mutex)))
+		       (defun push_back (val)
+			 (declare (type "const T&" val))
+			 (when (== MaxLen (this->size))
+			   (this->pop_front))
+			 ("std::deque<T>::push_back" val))))
+		    (do0
+		     "template <int MaxLen>"
+		     (defclass FixedDeque "public std::deque<float>"
+		       "// https://stackoverflow.com/questions/56334492/c-create-fixed-size-queue"
+		       "public:"
+		       (defun push_back (val)
+			 (declare (type "const float&" val))
+			 (when (== MaxLen (this->size))
+			   #+nil (<< "std::cout"
+				     (string "size") (this->size)
+				     (string "back") (this->back)
+				     "std::endl")
+					;,(logprint (string "fixed deque is full" )`(this->size MaxLen))
+			   (this->pop_front))
+			 ("std::deque<float>::push_back" val))))
+		    " "
+		    (do0
+		     "template <int MaxLen>"
+		     (defclass FixedGuardedDeque ()
+		       "private:"
+		       (let ((mutex)
+			     (deque))
+			 (declare (type "std::mutex" mutex)
+				  (type FixedDeque<MaxLen> deque)))
+		       "public:"
+		       (defun push_back (val)
+			 (declare (type "const float&" val))
+			 (progn
+			   ,(guard 'mutex)
+			   (deque.push_back val)))
+		       (defun empty ()
+			 (declare (values bool))
+			 ,(guard 'mutex)
+			 (return (deque.empty)))
+		       (defun size ()
+			 (declare (values size_t))
+			 ,(guard 'mutex)
+			 (return (deque.size)))
+		       (defun back ()
+			 (declare (values float))
+			 ,(guard 'mutex)
+			 (return (deque.back)))
+		       (defun "operator[]" (n)
+			 (declare (type size_t n)
+				  (values float))
+			 ,(guard 'mutex)
+			 (return (aref deque n)))))
+		    (do0
+		     "template <int MaxLen>"
+		     (defclass FixedGuardedWaitingDeque ()
+		       "// https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html"
+		       "private:"
+		       (let ((mutex)
+			     (not_empty)
+			     (deque))
+			 (declare (type "std::mutex" mutex)
+				  (type "std::condition_variable" not_empty)
+				  (type FixedDeque<MaxLen> deque)))
+		       "public:"
+		       (defun push_back (val)
+			 (declare (type "const float&" val))
+			 (progn
+			   ,(guard 'mutex)
+			   (deque.push_back val))
+			 (dot not_empty
+			      (notify_one)))
+		       (defun back ()
+			 (declare (values float))
+			 ,(lock 'mutex)
+			 (while (== 0 (deque.size))
+			   (dot not_empty (wait lk)))
+			 (return (deque.back)))
+		       (defun "operator[]" (n)
+			 (declare (type size_t n)
+				  (values float))
+			 ,(lock 'mutex)
+			 (while (== 0 (deque.size))
+			   (dot not_empty (wait lk)))
+			 (return (aref deque n)))))
+
+
+		    (do0
+		     "template <typename T, int MaxLen>"
+		     (defclass FixedQueue "public std::queue<T>"
+		       "// https://stackoverflow.com/questions/56334492/c-create-fixed-size-queue"
+		       "public:"
+		       (defun push (val)
+			 (declare (type "const T&" val))
+			 (when (== MaxLen (this->size))
+			   (this->pop))
+			 ("std::queue<T>::push" val))))
+		    
+		    (do0
+		     "template <typename T, int MaxLen>"
+		     
+		     (defclass GuardedWaitingQueue ()
+		       "// https://baptiste-wicht.com/posts/2012/04/c11-concurrency-tutorial-advanced-locking-and-condition-variables.html"
+		       "private:"
+		       (let ((mutex)
+			     (not_empty)
+			     (not_full)
+			     (queue))
+			 (declare (type "std::mutex" mutex)
+				  (type "std::condition_variable" not_empty not_full)
+					;(type "FixedQueue<T,MaxLen>" queue)
+				  (type "std::queue<T>" queue)
+				  ))
+		       "public:"
+		       (defun push (val)
+			 (declare (type "const T&" val))
+			 (progn
+			   ,(lock 'mutex)
+			   (while (== MaxLen (queue.size))
+			     (dot not_full (wait lk)))
+			   (queue.push val)
+			   (lk.unlock))
+			 (dot not_empty
+			      (notify_one)))
+		       (defun front_no_wait ()
+			 (declare (values T))
+			 ,(guard 'mutex)
+			 (return (queue.front)))
+		       (defun size_no_wait ()
+			 (declare (values size_t))
+			 ,(guard 'mutex)
+			 (return (queue.size)))
+		       (defun front_and_pop ()
+			 (declare (values T))
+			 "// fixme: should this return a reference?"
+			 ,(lock 'mutex)
+			 (while (== 0 (queue.size))
+			   (dot not_empty (wait lk)))
+			 (if (queue.size)
+			     (do0
+			      (let ((result (queue.front)))
+				(queue.pop)
+				(lk.unlock)
+				(not_full.notify_one)
+				(return result)))
+			     (do0
+			      (throw ("std::runtime_error" (string "can't pop empty"))))))))
+		    
+		    " "
+		    ,(emit-globals)
+		    " "
+		    "#endif"
+		    " "))))
