@@ -1,3 +1,9 @@
+- how to get submodules for a fresh clone
+#+BEGIN_EXAMPLE
+git submodule update --init
+#+END_EXAMPLE
+
+
 - how i added the dependencies:
 #+begin_example
 cd source
@@ -12,3 +18,4 @@ git submodule add https://github.com/lewissbaker/cppcoro
 - https://www.modernescpp.com/index.php/c-20-thread-synchronization-with-coroutines
   - i don't understand this yet, maybe i don't need to
 - https://www.modernescpp.com/index.php/c-20-coroutines-with-cppcoro
+
