@@ -3,8 +3,12 @@
 cd source
 git submodule add https://github.com/ocornut/imgui
 git submodule add https://github.com/lua/lua
+git submodule add https://github.com/lewissbaker/cppcoro
 #+end_example
 
 * Literature
 
 - https://www.modernescpp.com/index.php/c-20-coroutines-the-first-overview
+- https://www.modernescpp.com/index.php/c-20-thread-synchronization-with-coroutines
+  - i don't understand this yet, maybe i don't need to
+- https://www.modernescpp.com/index.php/c-20-coroutines-with-cppcoro

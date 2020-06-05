@@ -4,3 +4,6 @@
 [submodule "example/17_glfw_lua/source/imgui"]
 	path = example/17_glfw_lua/source/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "example/17_glfw_lua/source/cppcoro"]
+	path = example/17_glfw_lua/source/cppcoro
+	url = https://github.com/lewissbaker/cppcoro
