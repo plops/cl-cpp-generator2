@@ -6,13 +6,13 @@
 #include "proto2.h"
 ;
 extern State state;
-comment(Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw);
+// Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw
 extern "C" {
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 #include "lua/lualib.h"
 };
-bool checkLua (lua_State* L, int res){
+bool checkLua(lua_State *L, int res) {
   if (!((res) == (LUA_OK))) {
 
     (std::cout) << (std::setw(10))
@@ -29,7 +29,7 @@ bool checkLua (lua_State* L, int res){
   };
   return true;
 }
-int lua_HostFunction (lua_State* L){
+int lua_HostFunction(lua_State *L) {
   auto a = static_cast<float>(lua_tonumber(L, 1));
   auto b = static_cast<float>(lua_tonumber(L, 2));
 
@@ -44,7 +44,7 @@ int lua_HostFunction (lua_State* L){
   lua_pushnumber(L, c);
   return 1;
 }
-void initLua (){
+void initLua() {
   state._lua_state = luaL_newstate();
   std::string cmd = "a = 7+11+math.sin(23.7)";
   lua_State *L = state._lua_state;
@@ -98,6 +98,4 @@ void initLua (){
                 << (std::endl) << (std::flush);
   };
 }
-void cleanupLua (){
-  lua_close(state._lua_state);
-};
+void cleanupLua() { lua_close(state._lua_state); };

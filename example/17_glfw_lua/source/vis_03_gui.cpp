@@ -8,9 +8,9 @@
 extern State state;
 // https://youtu.be/nVaQuNXueFw?t=317
 // https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
+#include "imgui/examples/imgui_impl_glfw.h"
+#include "imgui/examples/imgui_impl_opengl2.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl2.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>

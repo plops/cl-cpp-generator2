@@ -24,7 +24,8 @@ OPT=-Ofast -march=native -mtune=native
 
 CXXFLAGS = \
 $(OPT) \
--std=gnu++20 
+-std=gnu++20 \
+-Iimgui
 
 CFLAGS= \
 $(OPT) \
@@ -64,8 +65,8 @@ vis_03_gui.o \
 vis_04_lua.o \
 imgui/imgui_demo.o \
 imgui/imgui_draw.o \
-imgui/imgui_impl_glfw.o \
-imgui/imgui_impl_opengl2.o \
+imgui/examples/imgui_impl_glfw.o \
+imgui/examples/imgui_impl_opengl2.o \
 imgui/imgui.o \
 imgui/imgui_widgets.o
 
@@ -131,4 +132,5 @@ genclean:
 	rm *.cpp *.o globals.h utils.h proto2.h vis *.s imgui/*.o  SPinGW/*.o lua/*.o
 
 clean:
-	rm *.o vis vis.exe *.s imgui/*.o lua/*.o
+	rm *.o vis vis.exe *.s imgui/*.o lua/*.o imgui/examples/*.o
+

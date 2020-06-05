@@ -404,8 +404,8 @@
 	     "// https://youtu.be/nVaQuNXueFw?t=317"
 	     "// https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html"
 	     (include "imgui/imgui.h"
-		      "imgui/imgui_impl_glfw.h"
-		      "imgui/imgui_impl_opengl2.h")
+		      "imgui/examples/imgui_impl_glfw.h"
+		      "imgui/examples/imgui_impl_opengl2.h")
 	     (include <algorithm>
 		      <string>)
 	     (include <iostream>
@@ -451,7 +451,7 @@
   (define-module
       `(lua ((_lua_state :type lua_State*))
 	    (do0
-	     (comment "Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw")
+	     "// Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw"
 	      ;; https://stackoverflow.com/questions/35422215/problems-linking-to-lua-5-2-4-even-when-compiling-sources-inline
 	      ;; every lua.h inclusion must be extern C!
 	      (space "extern \"C\""

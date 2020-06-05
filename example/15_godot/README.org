@@ -6,6 +6,6 @@ git clone https://github.com/godotengine/godot
 #git checkout vulkan # not required anymore after 11 Feb 2020
 git checkout 3.2
 scons -c # to clean
-scons -j12 platform=x11 target=release tools=no
+scons -j12 platform=x11 target=release_debug tools=yes
 scons -j12 platform=x11 target=release tools=no use_llvm=yes use_lld=yes
 #+end_example
