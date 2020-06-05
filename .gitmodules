@@ -1,0 +1,6 @@
+[submodule "example/17_glfw_lua/source/lua"]
+	path = example/17_glfw_lua/source/lua
+	url = https://github.com/lua/lua
+[submodule "example/17_glfw_lua/source/imgui"]
+	path = example/17_glfw_lua/source/imgui
+	url = https://github.com/ocornut/imgui
