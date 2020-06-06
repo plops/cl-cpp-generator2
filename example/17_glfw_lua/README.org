@@ -13,8 +13,6 @@ git submodule update --init
 git clone --recurse-submodules https://github.com/plops/cl-cpp-generator2
 #+end_example
 
-- documenatation for coroutine: https://luncliff.github.io/coroutine/
-- https://luncliff.github.io/coroutine/ppt/%5BEng%5DExploringTheCppCoroutine.pdf
 
 - go into example/17_glfw_lua/source/coroutine/ and build it
 #+begin_example
@@ -57,3 +55,6 @@ git submodule add  https://github.com/luncliff/coroutine
   - i don't understand this yet, maybe i don't need to
 - https://www.modernescpp.com/index.php/c-20-coroutines-with-cppcoro
 
+- documenatation for coroutine: 
+  - https://luncliff.github.io/coroutine/
+  - https://luncliff.github.io/coroutine/ppt/%5BEng%5DExploringTheCppCoroutine.pdf
