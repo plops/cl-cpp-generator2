@@ -3,13 +3,51 @@
 git submodule update --init
 #+END_EXAMPLE
 
+- go into example/17_glfw_lua/source/coroutine/ and get its submodules
+#+begin_example
+git submodule update --init
+#+end_example
+
+- alternative with nested submodules
+#+begin_example
+git clone --recurse-submodules https://github.com/plops/cl-cpp-generator2
+#+end_example
+
+- documenatation for coroutine: https://luncliff.github.io/coroutine/
+- https://luncliff.github.io/coroutine/ppt/%5BEng%5DExploringTheCppCoroutine.pdf
+
+- go into example/17_glfw_lua/source/coroutine/ and build it
+#+begin_example
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j12
+#+end_example
+
+- this generates
+#+begin_example
+coroutine/build/modules/system/libcoroutine_system.so
+coroutine/build/modules/portable/libcoroutine_portable.so
+coroutine/build/modules/net/libcoroutine_net.so
+#+end_example
+
 
 - how i added the dependencies:
 #+begin_example
 cd source
 git submodule add https://github.com/ocornut/imgui
 git submodule add https://github.com/lua/lua
-git submodule add https://github.com/lewissbaker/cppcoro
+# git submodule add https://github.com/lewissbaker/cppcoro
+git submodule add  https://github.com/luncliff/coroutine
+#+end_example
+
+- how to remove a submodule
+#+begin_example
+    Delete the section referring to the submodule from the .gitmodules file.
+    Stage the changes via git add .gitmodules.
+    Delete the relevant section of the submodule from .git/config .
+    Run git rm --cached path_to_submodule (no trailing slash)
+    Run rm -rf .git/modules/path_to_submodule.
 #+end_example
 
 * Literature
