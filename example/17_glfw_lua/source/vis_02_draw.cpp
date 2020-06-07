@@ -6,7 +6,6 @@
 #include "proto2.h"
 ;
 extern State state;
-
 #include <algorithm>
 
 // initialize static varibles
@@ -251,7 +250,7 @@ void drawFrame() {
       state._selected_node =
           state._line->get_next_node(state._snapped_world_cursor);
       if ((nullptr) == (state._selected_node)) {
-        ;
+        state._line->color = glm::vec4((1.0f), (1.0f), (1.0f), (1.0f));
       };
     };
     old_left_mouse_button_state = left_mouse_button_state;

@@ -340,7 +340,7 @@
 	      (_line :type Line*)
 	      (_selected_node :type Node*))
 	     (do0
-	      ,(emit-global :code `(include <glm/vec2.hpp>))
+	      ;,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
 
 	      ,(emit-global
@@ -360,8 +360,10 @@
 			 (let ((nodes)
 			       (max_nodes 0)
 			       (world_scale)
-			       (world_offset))
+			       (world_offset)
+			       (color))
 			   (declare (type std--vector<Node> nodes)
+				    (type glm--vec4 color)
 				    (type int max_nodes)
 				    (type "static float" world_scale)
 				    (type "static glm::vec2" world_offset)))
@@ -406,7 +408,8 @@
 		       (space "Line()"
 			      (progn
 				(setf max_nodes 2)
-				(nodes.reserve max_nodes)))
+				(nodes.reserve max_nodes)
+				(setf color (glm--vec4 1s0 1s0 0s0 1s0))))
 		       (defun draw ()
 			 (let ((sx 0)
 			       (sy 0)
@@ -416,6 +419,8 @@
 					    sx sy)
 			   (world_to_screen (dot (aref nodes 1) pos)
 					    ex ey)
+			   (glColor4f ,@(loop for i below 4 collect
+					     `(aref color ,i)))
 			   (glBegin GL_LINES)
 			   (glVertex2i sx sy)
 			   (glVertex2i ex ey)
@@ -676,7 +681,7 @@
 						      (get_next_node ,(g `_snapped_world_cursor))))
 		       (when (== nullptr ,(g `_selected_node))
 			 ;; shape is complete
-			 
+			 (setf (-> ,(g `_line) color)  (glm--vec4 1s0 1s0 1s0 1s0))
 			 ))
 		     ;; video Practical Polymorphism C++ 29:27
 		     (setf old_left_mouse_button_state left_mouse_button_state))))
@@ -1044,6 +1049,7 @@
 		    " "
 
 		    (include <glm/vec2.hpp>)
+		    (include <glm/vec4.hpp>)
 		    " "
 		    (include "proto2.h")
 		    " "

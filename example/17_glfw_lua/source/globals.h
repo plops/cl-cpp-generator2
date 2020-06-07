@@ -17,10 +17,10 @@ extern "C" {
 #include <thread>
 
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 #include "proto2.h"
 
-#include <glm/vec2.hpp>
 // shapes for 2d cad
 struct Shape;
 struct Node {
@@ -32,6 +32,7 @@ struct Shape {
   int max_nodes = 0;
   static float world_scale;
   static glm::vec2 world_offset;
+  glm::vec4 color;
   virtual void draw() = 0;
   void draw_nodes() {
     for (auto n : nodes) {
@@ -63,6 +64,7 @@ struct Line : public Shape {
   Line() {
     max_nodes = 2;
     nodes.reserve(max_nodes);
+    color = glm::vec4((1.0f), (1.0f), (0.f), (1.0f));
   };
   void draw() {
     auto sx = 0;
@@ -71,6 +73,7 @@ struct Line : public Shape {
     auto ey = 0;
     world_to_screen(nodes[0].pos, sx, sy);
     world_to_screen(nodes[1].pos, ex, ey);
+    glColor4f(color[0], color[1], color[2], color[3]);
     glBegin(GL_LINES);
     glVertex2i(sx, sy);
     glVertex2i(ex, ey);
