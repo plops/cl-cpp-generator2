@@ -9,24 +9,6 @@ extern State state;
 
 #include <algorithm>
 
-struct Line : public Shape {
-  Line() {
-    max_nodes = 2;
-    nodes.reserve(max_nodes);
-  };
-  void draw() {
-    auto sx = 0;
-    auto sy = 0;
-    auto ex = 0;
-    auto ey = 0;
-    world_to_screen(nodes[0].pos, sx, sy);
-    world_to_screen(nodes[1].pos, ex, ey);
-    glBegin(GL_LINES);
-    glVertex2i(sx, sy);
-    glVertex2i(ex, ey);
-    glEnd();
-  }
-};
 // initialize static varibles
 float Shape::world_scale = (1.0f);
 glm::vec2 Shape::world_offset = {0, 0};
@@ -126,6 +108,8 @@ void draw_circle(float sx, float sy, float rad) {
   glEnd();
 }
 void initDraw() {
+  state._line = nullptr;
+  state._selected_node = nullptr;
   {
     // no debug
     std::lock_guard<std::mutex> guard(state._draw_mutex);
@@ -246,6 +230,30 @@ void drawFrame() {
       floorf((((((0.50f)) + (mouse_after_zoom[0]))) * (state._screen_grid)));
   state._snapped_world_cursor[1] =
       floorf((((((0.50f)) + (mouse_after_zoom[1]))) * (state._screen_grid)));
+  {
+    // draw line
+    auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
+    if ((key_state) == (GLFW_PRESS)) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("start line") << (" ") << (std::setw(8))
+                  << (" key_state='") << (key_state) << ("'") << (std::endl)
+                  << (std::flush);
+      state._line = new Line();
+      state._selected_node =
+          state._line->get_next_node(state._snapped_world_cursor);
+      state._selected_node =
+          state._line->get_next_node(state._snapped_world_cursor);
+    };
+    if (!((state._selected_node) == (nullptr))) {
+      state._selected_node->pos = state._snapped_world_cursor;
+    };
+  };
   old_mouse_state = mouse_state;
   auto world_top_left = glm::vec2();
   auto world_bottom_right = glm::vec2();
@@ -1889,29 +1897,15 @@ void drawFrame() {
   glEnd();
   glLineStipple(1, 0xFFFF);
   glDisable(GL_LINE_STIPPLE);
+  if (!((nullptr) == (state._line))) {
+    // draw the geometric objects
+    state._line->draw();
+    state._line->draw_nodes();
+  };
   // draw snapped cursor circle
   world_to_screen(state._snapped_world_cursor, sx, sy);
   glColor3f((1.0f), (1.0f), (0.f));
   draw_circle(sx, sy, 3);
-  {
-    // draw line
-    static Node *selected_node = nullptr;
-    static Line *line = nullptr;
-    auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
-    if ((key_state) == (GLFW_PRESS)) {
-      line = new Line();
-      selected_node = line->get_next_node(state._snapped_world_cursor);
-      selected_node = line->get_next_node(state._snapped_world_cursor);
-    };
-    if (!((selected_node) == (nullptr))) {
-      selected_node->pos = state._snapped_world_cursor;
-    };
-    auto mouse_state =
-        glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
-    if ((mouse_state) == (GLFW_RELEASE)) {
-      selected_node = line->get_next_node(state._snapped_world_cursor);
-    };
-  };
   int width = 0;
   int height = 0;
   glfwGetFramebufferSize(state._window, &width, &height);

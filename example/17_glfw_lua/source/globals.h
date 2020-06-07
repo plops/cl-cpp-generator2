@@ -59,6 +59,24 @@ struct Shape {
     return &(nodes[((nodes.size()) - (1))]);
   }
 };
+struct Line : public Shape {
+  Line() {
+    max_nodes = 2;
+    nodes.reserve(max_nodes);
+  };
+  void draw() {
+    auto sx = 0;
+    auto sy = 0;
+    auto ex = 0;
+    auto ey = 0;
+    world_to_screen(nodes[0].pos, sx, sy);
+    world_to_screen(nodes[1].pos, ex, ey);
+    glBegin(GL_LINES);
+    glVertex2i(sx, sy);
+    glVertex2i(ex, ey);
+    glEnd();
+  }
+};
 struct CommunicationTransaction {
   long long int start_loop_time;
   long long int tx_time;
@@ -229,6 +247,8 @@ struct State {
   lua_State *_lua_state;
   bool _gui_request_diff_reset;
   std::mutex _gui_mutex;
+  Node *_selected_node;
+  Line *_line;
   glm::vec2 _snapped_world_cursor;
   float _screen_grid;
   float _screen_scale;

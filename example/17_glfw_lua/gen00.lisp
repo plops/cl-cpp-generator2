@@ -336,7 +336,9 @@
 	      (_screen_start_pan :type glm--vec2)
 	      (_screen_scale :type float)
 	      (_screen_grid :type float)
-	      (_snapped_world_cursor :type glm--vec2))
+	      (_snapped_world_cursor :type glm--vec2)
+	      (_line :type Line*)
+	      (_selected_node :type Node*))
 	     (do0
 	      ,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
@@ -398,9 +400,8 @@
 			     ;; we need to be careful with this pointer
 			     ;; instance needs to reserve memory for the nodes vector
 			     (return (ref (aref nodes (- (nodes.size)
-							 1))))))))))
-
-	      (space struct Line ":public" Shape
+							 1))))))))
+		(space struct Line ":public" Shape
 		     (progn
 		       (space "Line()"
 			      (progn
@@ -418,7 +419,9 @@
 			   (glBegin GL_LINES)
 			   (glVertex2i sx sy)
 			   (glVertex2i ex ey)
-			   (glEnd)))))
+			   (glEnd)))))))
+
+	      
 	      
 	      (do0
 	       "// initialize static varibles"
@@ -473,6 +476,8 @@
 					 (+ sy (* rad (cosf (* 2 M_PI arg)))))))))
 		(glEnd))
 	      (defun initDraw ()
+		(setf ,(g `_line) nullptr
+		      ,(g `_selected_node) nullptr)
 		(progn
 		  ,(guard (g `_draw_mutex))
 		  (setf ,(g `_draw_display_log) true)
@@ -639,6 +644,35 @@
 						  ,(g `_screen_grid))))))
 			))
 		    )
+
+		   (progn
+		  "// draw line"
+		  (let (;(selected_node nullptr)
+			;(line nullptr)
+			)
+		    (declare (type "static Line*" line)
+			     (type "static Node*" selected_node))
+		   (let ((key_state (glfwGetKey ,(g `_window)
+						GLFW_KEY_L)))
+		     (when (== key_state GLFW_PRESS)
+		       ,(logprint "start line" `(key_state))
+		       (setf ,(g `_line) (new (Line))
+			     ,(g `_selected_node) (-> ,(g `_line)
+						  (get_next_node ,(g `_snapped_world_cursor)))
+			     ,(g `_selected_node) (-> ,(g `_line)
+						  (get_next_node ,(g `_snapped_world_cursor))))
+		       ))
+		   (unless (== ,(g `_selected_node) nullptr)
+		     (setf (-> ,(g `_selected_node) pos) ,(g `_snapped_world_cursor)))
+		  #+nil (let ((mouse_state (glfwGetMouseButton ,(g `_window)
+							GLFW_MOUSE_BUTTON_LEFT))
+			 )
+		     (when (== mouse_state GLFW_RELEASE)
+		       (setf selected_node (line->get_next_node ,(g `_snapped_world_cursor)))
+		       (when (== nullptr selected_node)
+			 ;; shape is complete
+			 
+			 )))))
 		   
 		   (setf old_mouse_state mouse_state)))
 
@@ -715,6 +749,12 @@
 		 (do0 (glLineStipple 1 (hex #xFFFF))
 		      (glDisable GL_LINE_STIPPLE))
 
+		 (unless (== nullptr ,(g `_line))
+		  (do0
+		   "// draw the geometric objects"
+		   (-> ,(g `_line) (draw))
+		   (-> ,(g `_line) (draw_nodes))))
+
 		 (do0
 		  "// draw snapped cursor circle"
 		  (world_to_screen ,(g `_snapped_world_cursor) sx sy)
@@ -728,26 +768,7 @@
 
 
 		
-		(progn
-		  "// draw line"
-		  (let ((selected_node nullptr)
-			(line nullptr))
-		    (declare (type "static Line*" line)
-			     (type "static Node*" selected_node))
-		   (let ((key_state (glfwGetKey ,(g `_window)
-						GLFW_KEY_L)))
-		     (when (== key_state GLFW_PRESS)
-		       (setf line (new (Line))
-			     selected_node (line->get_next_node ,(g `_snapped_world_cursor))
-			     selected_node (line->get_next_node ,(g `_snapped_world_cursor)))
-		       ))
-		   (unless (== selected_node nullptr)
-		     (setf selected_node->pos ,(g `_snapped_world_cursor)))
-		   (let ((mouse_state (glfwGetMouseButton ,(g `_window)
-							GLFW_MOUSE_BUTTON_LEFT))
-			 )
-		     (when (== mouse_state GLFW_RELEASE)
-		       (setf selected_node (line->get_next_node ,(g `_snapped_world_cursor)))))))
+		
 
 		
 
