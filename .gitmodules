@@ -7,3 +7,6 @@
 [submodule "example/17_glfw_lua/source/coroutine"]
 	path = example/17_glfw_lua/source/coroutine
 	url = https://github.com/luncliff/coroutine
+[submodule "example/17_glfw_lua/source/glm"]
+	path = example/17_glfw_lua/source/glm
+	url = https://github.com/g-truc/glm
