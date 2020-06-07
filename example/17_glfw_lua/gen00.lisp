@@ -335,7 +335,8 @@
 	      (_screen_offset :type glm--vec2)
 	      (_screen_start_pan :type glm--vec2)
 	      (_screen_scale :type float)
-	      (_screen_grid :type float))
+	      (_screen_grid :type float)
+	      (_snapped_world_cursor :type glm--vec2))
 	     (do0
 	      ,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
@@ -534,7 +535,15 @@
 				       mouse_after_zoom)
 			(incf ,(g `_screen_offset)
 			      (- mouse_before_zoom
-				 mouse_after_zoom))))
+				 mouse_after_zoom))
+
+			(do0
+			 "// compute snapped world cursor"
+			 ,@(loop for i below 2 collect
+				`(setf (aref ,(g `_snapped_world_cursor ) ,i)
+				       (floorf (* (aref mouse_after_zoom ,i)
+						  ,(g `_screen_grid))))))
+			))
 		    )
 		   
 		   (setf old_mouse_state mouse_state)))
@@ -584,7 +593,7 @@
 		       (glVertex2f ex ey)
 		       (glEnd)
 		       
-		       ;(glLineStipple 1 (hex #xFFFF))
+		       
 		       )
 
 		      (do0
@@ -593,13 +602,13 @@
 		       (glLineStipple 1 (hex #xAAAA))
 		 (glBegin GL_LINES)
 		 
-		 ,@(loop for i from -10 upto 10 collect
+		 ,@(loop for i from -100 upto 100 collect
 			;; parallel to x axis
 			`(do0 (world_to_screen (curly (aref world_top_left 0) ,i) sx sy)
 			      (world_to_screen (curly (aref world_bottom_right 0) ,i) ex ey)
 			      (glVertex2f sx sy)
 			      (glVertex2f ex ey)))
-		 ,@(loop for i from -10 upto 10 collect
+		 ,@(loop for i from -100 upto 100 collect
 			;; parallel to y axis
 			`(do0 (world_to_screen (curly ,i (aref world_top_left 1)) sx sy)
 			      (world_to_screen (curly ,i (aref world_bottom_right 1)) ex ey)
@@ -607,8 +616,10 @@
 
 			      (glVertex2f sx sy)
 			      (glVertex2f ex ey)))
-		 (glDisable GL_LINE_STIPPLE)
-		 (glEnd))
+		 
+		 (glEnd)
+		 (do0 (glLineStipple 1 (hex #xFFFF))
+		      (glDisable GL_LINE_STIPPLE)))
 		      )
 		    )
 		   )
