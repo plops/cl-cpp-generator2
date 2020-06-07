@@ -37,6 +37,7 @@ git submodule add https://github.com/ocornut/imgui
 git submodule add https://github.com/lua/lua
 # git submodule add https://github.com/lewissbaker/cppcoro
 git submodule add  https://github.com/luncliff/coroutine
+git submodule add https://github.com/g-truc/glm
 #+end_example
 
 - how to remove a submodule

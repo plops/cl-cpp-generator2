@@ -6,6 +6,7 @@
 #include "proto2.h"
 ;
 extern State state;
+
 #include <algorithm>
 void uploadTex(const void *image, int w, int h) {
   glGenTextures(1, &(state._fontTex));
@@ -32,6 +33,16 @@ void initDraw() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClearColor(0, 0, 0, 1);
   state._framebufferResized = true;
+  state._screen_offset = {(0.f), (0.f)};
+  state._screen_start_pan = {(0.f), (0.f)};
+  state._screen_scale = (10.f);
+  state._screen_grid = (1.0f);
+}
+void world_to_screen(const glm::vec2 &v, int &screeni, int &screenj) {
+  screeni = static_cast<int>(
+      ((((v[0]) - (state._screen_offset[0]))) * (state._screen_scale)));
+  screenj = static_cast<int>(
+      ((((v[1]) - (state._screen_offset[1]))) * (state._screen_scale)));
 }
 void cleanupDraw() { glDeleteTextures(1, &(state._fontTex)); }
 void drawFrame() {

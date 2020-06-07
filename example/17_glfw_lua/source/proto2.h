@@ -8,6 +8,7 @@ void initWindow ();
 void cleanupWindow ();
 void uploadTex (const void* image, int w, int h);
 void initDraw ();
+void world_to_screen (const glm::vec2 & v, int& screeni, int& screenj);
 void cleanupDraw ();
 void drawFrame ();
 void initGui ();

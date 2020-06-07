@@ -16,6 +16,7 @@ extern "C" {
 #include <string>
 #include <thread>
 
+#include <glm/vec2.hpp>
 struct CommunicationTransaction {
   long long int start_loop_time;
   long long int tx_time;
@@ -186,6 +187,10 @@ struct State {
   lua_State *_lua_state;
   bool _gui_request_diff_reset;
   std::mutex _gui_mutex;
+  float _screen_grid;
+  float _screen_scale;
+  glm::vec2 _screen_start_pan;
+  glm::vec2 _screen_offset;
   float _draw_marker_x;
   float _draw_alpha;
   float _draw_scale_y;

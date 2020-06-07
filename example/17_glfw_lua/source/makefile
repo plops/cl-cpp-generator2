@@ -26,7 +26,8 @@ CXXFLAGS = \
 $(OPT) \
 -std=gnu++20 \
 -fcoroutines \
--Iimgui
+-Iimgui \
+-Iglm 
 
 CFLAGS= \
 $(OPT) \

@@ -332,9 +332,14 @@
 	      ,@(loop for e in `(offset_x offset_y scale_x scale_y alpha marker_x)
 		   collect
 		     `(,(format nil "_draw_~a" e) :type float))
-	      )
+	      (_screen_offset :type glm--vec2)
+	      (_screen_start_pan :type glm--vec2)
+	      (_screen_scale :type float)
+	      (_screen_grid :type float))
 	     (do0
+	      ,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
+	      
 	      (defun uploadTex (image w h)
 		(declare (type "const void*" image)
 			 (type int w h))
@@ -363,7 +368,23 @@
 			  (glBlendFunc GL_SRC_ALPHA
 				       GL_ONE_MINUS_SRC_ALPHA)))
 		(glClearColor 0 0 0 1)
-		(setf ,(g `_framebufferResized) true))
+		(setf ,(g `_framebufferResized) true)
+		(setf ,(g `_screen_offset) (curly 0s0 0s0)
+		      ,(g `_screen_start_pan) (curly 0s0 0s0)
+		      ,(g `_screen_scale) 10s0
+		      ,(g `_screen_grid) 1s0
+		      
+		      ))
+
+	      (defun world_to_screen (v screeni screenj)
+		(declare (type "const glm::vec2 &" v)
+			 (type "int&" screeni screenj))
+		(setf screeni (static_cast<int> (* (- (aref v 0)
+						      (aref ,(g `_screen_offset) 0))
+						   ,(g `_screen_scale)))
+		      screenj (static_cast<int> (* (- (aref v 1)
+						      (aref ,(g `_screen_offset) 1))
+						   ,(g `_screen_scale)))))
 	      
 	      (defun cleanupDraw ()
 		(glDeleteTextures 1 (ref ,(g `_fontTex))))
