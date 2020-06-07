@@ -367,6 +367,15 @@
 					     &width
 					     &height)
 		     (return height)))
+
+	      (defun get_mouse_position ()
+		(declare (values "glm::vec2"))
+		(let ((x 0d0)
+		      (y 0d0))
+		  (glfwGetCursorPos ,(g `_window)
+				    &x &y)
+		  (return (glm--vec2 (curly (static_cast<float> x)
+					    (static_cast<float> y))))))
 	      
 	      (defun initDraw ()
 		(progn
@@ -462,10 +471,21 @@
 
 		(do0
 		 (let ((mouse_state (glfwGetMouseButton ,(g `_window)
-						  GLFW_MOUSE_BUTTON_LEFT)))
-		   (when (== mouse_state GLFW_PRESS)
-		     (setf ,(g `_screen_start_pan) (curly ,(g `_cursor_xpos)
-							  ,(g `_cursor_ypos))))))
+							GLFW_MOUSE_BUTTON_LEFT))
+		       (old_mouse_state GLFW_RELEASE)
+		       (mouse_pos (get_mouse_position)))
+		   
+		   (when (and (== mouse_state GLFW_PRESS) ;; new press
+			      (== old_mouse_state GLFW_RELEASE))
+		     (setf ,(g `_screen_start_pan) mouse_pos))
+
+		   (when (and (== mouse_state GLFW_PRESS) ;; button is being held
+			      (== old_mouse_state GLFW_PRESS))
+		     (decf ,(g `_screen_offset)
+			   (/ (- mouse_pos ,(g `_screen_start_pan))
+			      ,(g `_screen_scale)))
+		     (setf ,(g `_screen_start_pan) mouse_pos))
+		   (setf old_mouse_state mouse_state)))
 
 		
 		(do0

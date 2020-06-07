@@ -28,6 +28,12 @@ int screen_height() {
   glfwGetFramebufferSize(state._window, &width, &height);
   return height;
 }
+glm::vec2 get_mouse_position() {
+  auto x = (0.);
+  auto y = (0.);
+  glfwGetCursorPos(state._window, &x, &y);
+  return glm::vec2({static_cast<float>(x), static_cast<float>(y)});
+}
 void initDraw() {
   {
     // no debug
@@ -87,9 +93,19 @@ void drawFrame() {
   };
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_DEPTH_BUFFER_BIT)));
   auto mouse_state = glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
-  if ((mouse_state) == (GLFW_PRESS)) {
-    state._screen_start_pan = {state._cursor_xpos, state._cursor_ypos};
+  auto old_mouse_state = GLFW_RELEASE;
+  auto mouse_pos = get_mouse_position();
+  if ((((mouse_state) == (GLFW_PRESS)) &&
+       ((old_mouse_state) == (GLFW_RELEASE)))) {
+    state._screen_start_pan = mouse_pos;
   };
+  if ((((mouse_state) == (GLFW_PRESS)) &&
+       ((old_mouse_state) == (GLFW_PRESS)))) {
+    (state._screen_offset) -=
+        (((((mouse_pos) - (state._screen_start_pan))) / (state._screen_scale)));
+    state._screen_start_pan = mouse_pos;
+  };
+  old_mouse_state = mouse_state;
   glColor4f((0.30f), (0.30f), (0.30f), 1);
   glBegin(GL_LINES);
   glVertex2f(-1, (-1.0f));

@@ -9,6 +9,7 @@ void cleanupWindow ();
 void uploadTex (const void* image, int w, int h);
 int screen_width ();
 int screen_height ();
+glm::vec2 get_mouse_position ();
 void initDraw ();
 void world_to_screen (const glm::vec2 & v, int& screeni, int& screenj);
 void screen_to_world (int screeni, int screenj, glm::vec2 & v);
