@@ -749,11 +749,15 @@
 		 (do0 (glLineStipple 1 (hex #xFFFF))
 		      (glDisable GL_LINE_STIPPLE))
 
-		 (unless (== nullptr ,(g `_line))
-		  (do0
-		   "// draw the geometric objects"
-		   (-> ,(g `_line) (draw))
-		   (-> ,(g `_line) (draw_nodes))))
+		 (do0
+		  "// draw the geometric objects"
+		  (setf "Shape::world_scale" ,(g `_screen_scale)
+			"Shape::world_offset" ,(g `_screen_offset))
+		  (unless (== nullptr ,(g `_line))
+		    (do0
+		     
+		     (-> ,(g `_line) (draw))
+		     (-> ,(g `_line) (draw_nodes)))))
 
 		 (do0
 		  "// draw snapped cursor circle"

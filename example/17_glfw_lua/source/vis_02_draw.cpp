@@ -1897,8 +1897,10 @@ void drawFrame() {
   glEnd();
   glLineStipple(1, 0xFFFF);
   glDisable(GL_LINE_STIPPLE);
+  // draw the geometric objects
+  Shape::world_scale = state._screen_scale;
+  Shape::world_offset = state._screen_offset;
   if (!((nullptr) == (state._line))) {
-    // draw the geometric objects
     state._line->draw();
     state._line->draw_nodes();
   };
