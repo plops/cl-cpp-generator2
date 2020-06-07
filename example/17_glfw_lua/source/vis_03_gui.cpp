@@ -42,6 +42,11 @@ void drawGui() {
   ImGui_ImplOpenGL2_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+  ImGui::Begin("snapped_cursor");
+  ImGui::Text("x: %04d y: %04d",
+              static_cast<int>(state._snapped_world_cursor[0]),
+              static_cast<int>(state._snapped_world_cursor[1]));
+  ImGui::End();
   auto b = true;
   ImGui::ShowDemoWindow(&b);
   ImGui::Render();

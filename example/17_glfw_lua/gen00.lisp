@@ -718,7 +718,12 @@
 	       (ImGui_ImplGlfw_NewFrame)
 	       ("ImGui::NewFrame")
 	       
-	       	       
+	       (do0
+		(ImGui--Begin (string "snapped_cursor"))
+		(ImGui--Text (string "x: %04d y: %04d")
+			     (static_cast<int> (aref ,(g `_snapped_world_cursor) 0))
+			     (static_cast<int> (aref ,(g `_snapped_world_cursor) 1)))
+		(ImGui--End))	       
 	       
 	       (let ((b true))
 		 ("ImGui::ShowDemoWindow" &b))
