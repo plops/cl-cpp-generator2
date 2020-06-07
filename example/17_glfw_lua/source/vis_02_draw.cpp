@@ -115,14 +115,32 @@ void drawFrame() {
   };
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_DEPTH_BUFFER_BIT)));
   auto mouse_state = glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
-  auto old_mouse_state = GLFW_RELEASE;
+  static int old_mouse_state = GLFW_RELEASE;
   auto mouse_pos = get_mouse_position();
   if ((((mouse_state) == (GLFW_PRESS)) &&
        ((old_mouse_state) == (GLFW_RELEASE)))) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("left mouse is pressed") << (" ") << (std::endl)
+                << (std::flush);
     state._screen_start_pan = mouse_pos;
   };
   if ((((mouse_state) == (GLFW_PRESS)) &&
        ((old_mouse_state) == (GLFW_PRESS)))) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("left mouse is held") << (" ") << (std::endl)
+                << (std::flush);
     (state._screen_offset) -=
         (((((mouse_pos) - (state._screen_start_pan))) / (state._screen_scale)));
     state._screen_start_pan = mouse_pos;

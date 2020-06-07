@@ -491,13 +491,16 @@
 							GLFW_MOUSE_BUTTON_LEFT))
 		       (old_mouse_state GLFW_RELEASE)
 		       (mouse_pos (get_mouse_position)))
+		   (declare (type "static int" old_mouse_state))
 		   
 		   (when (and (== mouse_state GLFW_PRESS) ;; new press
 			      (== old_mouse_state GLFW_RELEASE))
+		     ,(logprint "left mouse is pressed")
 		     (setf ,(g `_screen_start_pan) mouse_pos))
 
 		   (when (and (== mouse_state GLFW_PRESS) ;; button is being held
 			      (== old_mouse_state GLFW_PRESS))
+		     ,(logprint "left mouse is held")
 		     (decf ,(g `_screen_offset)
 			   (/ (- mouse_pos ,(g `_screen_start_pan))
 			      ,(g `_screen_scale)))
