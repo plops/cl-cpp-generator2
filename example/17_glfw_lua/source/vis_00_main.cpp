@@ -23,6 +23,8 @@ void mainLoop() {
       << (std::endl) << (std::flush);
   while (!(glfwWindowShouldClose(state._window))) {
     glfwPollEvents();
+    glfwGetCursorPos(state._window, &(state._cursor_xpos),
+                     &(state._cursor_ypos));
     drawFrame();
     drawGui();
     glfwSwapBuffers(state._window);
@@ -57,9 +59,9 @@ void run() {
       << (std::endl) << (std::flush);
 };
 int main() {
-  state._main_version = "1aaf7f05db7deb2f8ce4a11711882244f198ce97";
+  state._main_version = "8c30ff4408fc4f571b4821b6c12e839f17b714d6";
   state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "21:18:24 of Friday, 2020-06-05 (GMT+1)";
+  state._code_generation_time = "10:59:58 of Sunday, 2020-06-07 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

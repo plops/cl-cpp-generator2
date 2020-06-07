@@ -197,6 +197,8 @@ struct State {
   GLuint _fontTex;
   bool _framebufferResized;
   GLFWwindow *_window;
+  double _cursor_ypos;
+  double _cursor_xpos;
   std::string _code_generation_time;
   std::string _code_repository;
   std::string _main_version;

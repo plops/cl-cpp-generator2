@@ -58,3 +58,8 @@ git submodule add  https://github.com/luncliff/coroutine
 - documenatation for coroutine: 
   - https://luncliff.github.io/coroutine/
   - https://luncliff.github.io/coroutine/ppt/%5BEng%5DExploringTheCppCoroutine.pdf
+
+- gcc
+  - https://gcc.gnu.org/projects/cxx-status.html
+
+- Practical Polymorphism C++  https://www.youtube.com/watch?v=kxKKHKSMGIg

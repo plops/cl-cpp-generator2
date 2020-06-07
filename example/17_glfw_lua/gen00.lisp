@@ -163,7 +163,9 @@
   (define-module
       `(main ((_main_version :type "std::string")
 	      (_code_repository :type "std::string")
-	      (_code_generation_time :type "std::string"))
+	      (_code_generation_time :type "std::string")
+	      (_cursor_xpos :type double)
+	      (_cursor_ypos :type double))
 	     (do0
 	      (include <iostream>
 		       <chrono>
@@ -185,7 +187,9 @@
 		 ,(logprint "mainLoop" `())
 		 (while (not (glfwWindowShouldClose ,(g `_window)))
 		   (glfwPollEvents)
-		   
+		   (glfwGetCursorPos ,(g `_window)
+				     (ref ,(g `_cursor_xpos))
+				     (ref ,(g `_cursor_ypos)))
 		   (drawFrame)
 		   (drawGui)
 		   (glfwSwapBuffers ,(g `_window))

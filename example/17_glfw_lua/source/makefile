@@ -25,6 +25,7 @@ OPT=-Ofast -march=native -mtune=native
 CXXFLAGS = \
 $(OPT) \
 -std=gnu++20 \
+-fcoroutines \
 -Iimgui
 
 CFLAGS= \
