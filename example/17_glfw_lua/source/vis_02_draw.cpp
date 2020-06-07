@@ -234,16 +234,6 @@ void drawFrame() {
     // draw line
     auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
     if ((key_state) == (GLFW_PRESS)) {
-
-      (std::cout) << (std::setw(10))
-                  << (std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count())
-                  << (" ") << (std::this_thread::get_id()) << (" ")
-                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("start line") << (" ") << (std::setw(8))
-                  << (" key_state='") << (key_state) << ("'") << (std::endl)
-                  << (std::flush);
       state._line = new Line();
       state._selected_node =
           state._line->get_next_node(state._snapped_world_cursor);
@@ -253,6 +243,18 @@ void drawFrame() {
     if (!((state._selected_node) == (nullptr))) {
       state._selected_node->pos = state._snapped_world_cursor;
     };
+    auto left_mouse_button_state =
+        glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
+    static int old_left_mouse_button_state = GLFW_RELEASE;
+    if ((((old_left_mouse_button_state) == (GLFW_PRESS)) &&
+         ((left_mouse_button_state) == (GLFW_RELEASE)))) {
+      state._selected_node =
+          state._line->get_next_node(state._snapped_world_cursor);
+      if ((nullptr) == (state._selected_node)) {
+        ;
+      };
+    };
+    old_left_mouse_button_state = left_mouse_button_state;
   };
   old_mouse_state = mouse_state;
   auto world_top_left = glm::vec2();
