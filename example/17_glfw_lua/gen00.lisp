@@ -551,7 +551,7 @@
 			 "// compute snapped world cursor"
 			 ,@(loop for i below 2 collect
 				`(setf (aref ,(g `_snapped_world_cursor ) ,i)
-				       (floorf (* (aref mouse_after_zoom ,i)
+				       (floorf (* (+ .5s0 (aref mouse_after_zoom ,i))
 						  ,(g `_screen_grid))))))
 			))
 		    )

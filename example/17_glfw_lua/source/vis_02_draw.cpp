@@ -221,9 +221,9 @@ void drawFrame() {
   (state._screen_offset) += (((mouse_before_zoom) - (mouse_after_zoom)));
   // compute snapped world cursor
   state._snapped_world_cursor[0] =
-      floorf(((mouse_after_zoom[0]) * (state._screen_grid)));
+      floorf((((((0.50f)) + (mouse_after_zoom[0]))) * (state._screen_grid)));
   state._snapped_world_cursor[1] =
-      floorf(((mouse_after_zoom[1]) * (state._screen_grid)));
+      floorf((((((0.50f)) + (mouse_after_zoom[1]))) * (state._screen_grid)));
   old_mouse_state = mouse_state;
   auto world_top_left = glm::vec2();
   auto world_bottom_right = glm::vec2();
