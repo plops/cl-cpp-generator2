@@ -21,6 +21,7 @@ extern "C" {
 
 #include "proto2.h"
 
+#include <list>
 // shapes for 2d cad
 struct Shape;
 struct Node {
@@ -251,7 +252,8 @@ struct State {
   bool _gui_request_diff_reset;
   std::mutex _gui_mutex;
   Node *_selected_node;
-  Line *_line;
+  std::list<Line *> _shapes;
+  Line *_temp_shape;
   glm::vec2 _snapped_world_cursor;
   float _screen_grid;
   float _screen_scale;

@@ -107,7 +107,7 @@ void draw_circle(float sx, float sy, float rad) {
   glEnd();
 }
 void initDraw() {
-  state._line = nullptr;
+  state._temp_shape = nullptr;
   state._selected_node = nullptr;
   {
     // no debug
@@ -233,11 +233,11 @@ void drawFrame() {
     // draw line
     auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
     if ((key_state) == (GLFW_PRESS)) {
-      state._line = new Line();
+      state._temp_shape = new Line();
       state._selected_node =
-          state._line->get_next_node(state._snapped_world_cursor);
+          state._temp_shape->get_next_node(state._snapped_world_cursor);
       state._selected_node =
-          state._line->get_next_node(state._snapped_world_cursor);
+          state._temp_shape->get_next_node(state._snapped_world_cursor);
     };
     if (!((state._selected_node) == (nullptr))) {
       state._selected_node->pos = state._snapped_world_cursor;
@@ -247,10 +247,13 @@ void drawFrame() {
     static int old_left_mouse_button_state = GLFW_RELEASE;
     if ((((old_left_mouse_button_state) == (GLFW_PRESS)) &&
          ((left_mouse_button_state) == (GLFW_RELEASE)))) {
-      state._selected_node =
-          state._line->get_next_node(state._snapped_world_cursor);
-      if ((nullptr) == (state._selected_node)) {
-        state._line->color = glm::vec4((1.0f), (1.0f), (1.0f), (1.0f));
+      if (!((nullptr) == (state._temp_shape))) {
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+        if ((nullptr) == (state._selected_node)) {
+          //  shape is complete
+          state._temp_shape->color = glm::vec4((1.0f), (1.0f), (1.0f), (1.0f));
+        };
       };
     };
     old_left_mouse_button_state = left_mouse_button_state;
@@ -1901,9 +1904,13 @@ void drawFrame() {
   // draw the geometric objects
   Shape::world_scale = state._screen_scale;
   Shape::world_offset = state._screen_offset;
-  if (!((nullptr) == (state._line))) {
-    state._line->draw();
-    state._line->draw_nodes();
+  for (auto shape : state._shapes) {
+    shape->draw();
+    shape->draw_nodes();
+  };
+  if (!((nullptr) == (state._temp_shape))) {
+    state._temp_shape->draw();
+    state._temp_shape->draw_nodes();
   };
   // draw snapped cursor circle
   world_to_screen(state._snapped_world_cursor, sx, sy);

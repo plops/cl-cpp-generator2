@@ -337,7 +337,8 @@
 	      (_screen_scale :type float)
 	      (_screen_grid :type float)
 	      (_snapped_world_cursor :type glm--vec2)
-	      (_line :type Line*)
+	      (_temp_shape :type Line*)
+	      (_shapes :type std--list<Line*>)
 	      (_selected_node :type Node*))
 	     (do0
 	      ;,(emit-global :code `(include <glm/vec2.hpp>))
@@ -346,6 +347,7 @@
 	      ,(emit-global
 	       :code
 	       `(do0
+		 (include <list>)
 		"// shapes for 2d cad"
 		"struct Shape;"
 		(space struct Node
@@ -481,7 +483,7 @@
 					 (+ sy (* rad (cosf (* 2 M_PI arg)))))))))
 		(glEnd))
 	      (defun initDraw ()
-		(setf ,(g `_line) nullptr
+		(setf ,(g `_temp_shape) nullptr
 		      ,(g `_selected_node) nullptr)
 		(progn
 		  ,(guard (g `_draw_mutex))
@@ -661,10 +663,10 @@
 						GLFW_KEY_L)))
 		     (when (== key_state GLFW_PRESS)
 		       ;,(logprint "start line" `(key_state))
-		       (setf ,(g `_line) (new (Line))
-			     ,(g `_selected_node) (-> ,(g `_line)
+		       (setf ,(g `_temp_shape) (new (Line))
+			     ,(g `_selected_node) (-> ,(g `_temp_shape)
 						  (get_next_node ,(g `_snapped_world_cursor)))
-			     ,(g `_selected_node) (-> ,(g `_line)
+			     ,(g `_selected_node) (-> ,(g `_temp_shape)
 						  (get_next_node ,(g `_snapped_world_cursor))))
 		       ))
 		   (unless (== ,(g `_selected_node) nullptr)
@@ -676,13 +678,14 @@
 		     ;,(logprint "mouse" `(left_mouse_button_state old_left_mouse_button_state))
 		     (when (and (== old_left_mouse_button_state GLFW_PRESS)
 				(== left_mouse_button_state GLFW_RELEASE))
-		       ;,(logprint "stop line")
-		       (setf ,(g `_selected_node) (-> ,(g `_line)
-						      (get_next_node ,(g `_snapped_world_cursor))))
-		       (when (== nullptr ,(g `_selected_node))
-			 ;; shape is complete
-			 (setf (-> ,(g `_line) color)  (glm--vec4 1s0 1s0 1s0 1s0))
-			 ))
+		       (unless (== nullptr ,(g `_temp_shape))
+			(setf ,(g `_selected_node) (-> ,(g `_temp_shape)
+						       (get_next_node ,(g `_snapped_world_cursor))))
+			(when (== nullptr ,(g `_selected_node))
+			  "//  shape is complete"
+			  (setf (-> ,(g `_temp_shape) color)  (glm--vec4 1s0 1s0 1s0 1s0))
+			  
+			  )))
 		     ;; video Practical Polymorphism C++ 29:27
 		     (setf old_left_mouse_button_state left_mouse_button_state))))
 		   
@@ -765,11 +768,15 @@
 		  "// draw the geometric objects"
 		  (setf "Shape::world_scale" ,(g `_screen_scale)
 			"Shape::world_offset" ,(g `_screen_offset))
-		  (unless (== nullptr ,(g `_line))
+		  (for-range (shape ,(g `_shapes))
+			     (do0
+		     	      (-> shape (draw))
+			      (-> shape (draw_nodes))))
+		  (unless (== nullptr ,(g `_temp_shape))
 		    (do0
 		     
-		     (-> ,(g `_line) (draw))
-		     (-> ,(g `_line) (draw_nodes)))))
+		     (-> ,(g `_temp_shape) (draw))
+		     (-> ,(g `_temp_shape) (draw_nodes)))))
 
 		 (do0
 		  "// draw snapped cursor circle"
