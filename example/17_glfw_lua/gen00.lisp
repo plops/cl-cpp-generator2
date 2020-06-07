@@ -508,7 +508,8 @@
 
 		   (do0
 		    ;; zoom
-		    (let ((mouse_before_zoom (glm--vec2)))
+		    (let ((mouse_before_zoom (glm--vec2))
+			  (zoom_speed .05s0))
 		      (screen_to_world (static_cast<int> (aref mouse_pos 0))
 				       (static_cast<int> (aref mouse_pos 1))
 				       mouse_before_zoom)
@@ -519,14 +520,21 @@
 			 (when (== key_state GLFW_PRESS)
 			   ;; zoom out with .
 			   (setf ,(g `_screen_scale)
-				 (* .9s0  ,(g `_screen_scale))))))
+				 (* (- 1s0 zoom_speed)  ,(g `_screen_scale))))))
 		      (progn
 		       (let ((key_state (glfwGetKey ,(g `_window)
 						    GLFW_KEY_COMMA)))
 			 (when (== key_state GLFW_PRESS)
 			   ;; zoom in with ,
 			   (setf ,(g `_screen_scale)
-				 (* 1.1s0  ,(g `_screen_scale)))))))
+				 (* (+ 1s0 zoom_speed) ,(g `_screen_scale))))))
+		      (let ((mouse_after_zoom (glm--vec2)))
+			(screen_to_world (static_cast<int> (aref mouse_pos 0))
+				       (static_cast<int> (aref mouse_pos 1))
+				       mouse_after_zoom)
+			(incf ,(g `_screen_offset)
+			      (- mouse_before_zoom
+				 mouse_after_zoom))))
 		    )
 		   
 		   (setf old_mouse_state mouse_state)))

@@ -129,20 +129,27 @@ void drawFrame() {
     state._screen_start_pan = mouse_pos;
   };
   auto mouse_before_zoom = glm::vec2();
+  auto zoom_speed = (5.00e-2);
   screen_to_world(static_cast<int>(mouse_pos[0]),
                   static_cast<int>(mouse_pos[1]), mouse_before_zoom);
   {
     auto key_state = glfwGetKey(state._window, GLFW_KEY_PERIOD);
     if ((key_state) == (GLFW_PRESS)) {
-      state._screen_scale = (((0.90f)) * (state._screen_scale));
+      state._screen_scale =
+          (((((1.0f)) - (zoom_speed))) * (state._screen_scale));
     };
   };
   {
     auto key_state = glfwGetKey(state._window, GLFW_KEY_COMMA);
     if ((key_state) == (GLFW_PRESS)) {
-      state._screen_scale = (((1.10f)) * (state._screen_scale));
+      state._screen_scale =
+          (((((1.0f)) + (zoom_speed))) * (state._screen_scale));
     };
   };
+  auto mouse_after_zoom = glm::vec2();
+  screen_to_world(static_cast<int>(mouse_pos[0]),
+                  static_cast<int>(mouse_pos[1]), mouse_after_zoom);
+  (state._screen_offset) += (((mouse_before_zoom) - (mouse_after_zoom)));
   old_mouse_state = mouse_state;
   auto world_top_left = glm::vec2();
   auto world_bottom_right = glm::vec2();
