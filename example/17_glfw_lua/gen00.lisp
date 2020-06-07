@@ -488,23 +488,47 @@
 
 		(do0
 		 (let ((mouse_state (glfwGetMouseButton ,(g `_window)
-							GLFW_MOUSE_BUTTON_LEFT))
+							GLFW_MOUSE_BUTTON_MIDDLE))
 		       (old_mouse_state GLFW_RELEASE)
 		       (mouse_pos (get_mouse_position)))
 		   (declare (type "static int" old_mouse_state))
 		   
 		   (when (and (== mouse_state GLFW_PRESS) ;; new press
 			      (== old_mouse_state GLFW_RELEASE))
-		     ,(logprint "left mouse is pressed")
+		     ;,(logprint "left mouse is pressed")
 		     (setf ,(g `_screen_start_pan) mouse_pos))
 
 		   (when (and (== mouse_state GLFW_PRESS) ;; button is being held
 			      (== old_mouse_state GLFW_PRESS))
-		     ,(logprint "left mouse is held")
+		     ;;,(logprint "left mouse is held")
 		     (decf ,(g `_screen_offset)
 			   (/ (- mouse_pos ,(g `_screen_start_pan))
 			      ,(g `_screen_scale)))
 		     (setf ,(g `_screen_start_pan) mouse_pos))
+
+		   (do0
+		    ;; zoom
+		    (let ((mouse_before_zoom (glm--vec2)))
+		      (screen_to_world (static_cast<int> (aref mouse_pos 0))
+				       (static_cast<int> (aref mouse_pos 1))
+				       mouse_before_zoom)
+
+		      (progn
+		       (let ((key_state (glfwGetKey ,(g `_window)
+						    GLFW_KEY_PERIOD)))
+			 (when (== key_state GLFW_PRESS)
+			   ;; zoom out with .
+			   (setf ,(g `_screen_scale)
+				 (* .9s0  ,(g `_screen_scale))))))
+		      (progn
+		       (let ((key_state (glfwGetKey ,(g `_window)
+						    GLFW_KEY_COMMA)))
+			 (when (== key_state GLFW_PRESS)
+			   ;; zoom in with ,
+			   (setf ,(g `_screen_scale)
+				 (* 1.1s0  ,(g `_screen_scale)))))))
+		    )
+		   
 		   (setf old_mouse_state mouse_state)))
 
 
@@ -543,7 +567,7 @@
 		       )
 		      (do0 ;; x axis
 		       (world_to_screen (curly (aref world_top_left 0) 0) sx sy)
-		      (world_to_screen (curly (aref world_bottom_right 0) 0) ex ey)
+		       (world_to_screen (curly (aref world_bottom_right 0) 0) ex ey)
 		      
 		       (glColor4f .8 .3 .3 1)
 		       ;(glLineStipple 1 (hex #xF0F0))
@@ -551,22 +575,35 @@
 		       (glVertex2f sx sy)
 		       (glVertex2f ex ey)
 		       (glEnd)
-		       (glDisable GL_LINE_STIPPLE)
+		       
 		       ;(glLineStipple 1 (hex #xFFFF))
 		       )
+
+		      (do0
+		 ;; grid axes
+		       (glColor4f .3 .3 .3 1)
+		       (glLineStipple 1 (hex #xAAAA))
+		 (glBegin GL_LINES)
+		 
+		 ,@(loop for i from -10 upto 10 collect
+			;; parallel to x axis
+			`(do0 (world_to_screen (curly (aref world_top_left 0) ,i) sx sy)
+			      (world_to_screen (curly (aref world_bottom_right 0) ,i) ex ey)
+			      (glVertex2f sx sy)
+			      (glVertex2f ex ey)))
+		 ,@(loop for i from -10 upto 10 collect
+			;; parallel to y axis
+			`(do0 (world_to_screen (curly ,i (aref world_top_left 1)) sx sy)
+			      (world_to_screen (curly ,i (aref world_bottom_right 1)) ex ey)
+		      
+
+			      (glVertex2f sx sy)
+			      (glVertex2f ex ey)))
+		 (glDisable GL_LINE_STIPPLE)
+		 (glEnd))
 		      )
 		    )
-		   (do0
-		 ;; grid axes
-		 (glColor4f .3 .3 .3 1)
-		 (glBegin GL_LINES)
-		 ,@(loop for i from -10 upto 10 collect
-			`(do0 (glVertex2f -1 ,(/ i 10s0))
-			      (glVertex2f 1 ,(/ i 10s0))))
-		 ,@(loop for i from -10 upto 10 collect
-			`(do0 (glVertex2f ,(/ i 10s0) -1)
-			      (glVertex2f ,(/ i 10s0) 1)))
-		 (glEnd)))
+		   )
 	       )
 		
 		
