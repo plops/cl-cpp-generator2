@@ -106,6 +106,14 @@ void drawFrame() {
     state._screen_start_pan = mouse_pos;
   };
   old_mouse_state = mouse_state;
+  auto world_top_left = glm::vec2();
+  auto world_bottom_right = glm::vec2();
+  screen_to_world(0, 0, world_top_left);
+  screen_to_world(screen_width(), screen_height(), world_bottom_right);
+  world_top_left[0] = floor(world_top_left[0]);
+  world_top_left[1] = floor(world_top_left[1]);
+  world_bottom_right[0] = ceil(world_bottom_right[0]);
+  world_bottom_right[1] = ceil(world_bottom_right[1]);
   glColor4f((0.30f), (0.30f), (0.30f), 1);
   glBegin(GL_LINES);
   glVertex2f(-1, (-1.0f));

@@ -487,6 +487,22 @@
 		     (setf ,(g `_screen_start_pan) mouse_pos))
 		   (setf old_mouse_state mouse_state)))
 
+
+		(do0
+		 ;; get visible world
+		 (let ((world_top_left (glm--vec2))
+		       (world_bottom_right (glm--vec2)))
+		   (screen_to_world 0 0 world_top_left)
+		   (screen_to_world (screen_width)
+				    (screen_height)
+				    world_bottom_right)
+		   ,@(loop for (edge op) in `((world_top_left floor)
+					      (world_bottom_right ceil))
+			append
+			  (loop for i below 2 collect
+			       `(setf (aref ,edge ,i)
+				      (,op (aref ,edge ,i))))))
+	       )
 		
 		(do0
 		 (glColor4f .3 .3 .3 1)
@@ -500,7 +516,7 @@
 		 (glEnd))
 
 		(let ((width 0)
-			 (height 0))
+		      (height 0))
 		  (declare (type int width height))
 		  (glfwGetFramebufferSize ,(g `_window)
 					       &width
@@ -518,13 +534,7 @@
 		   (glVertex2d x 1)
 		   (glVertex2d -1 y)
 		   (glVertex2d 1 y))
-		 (glEnd))
-		  )
-		
-		
-		
-
-		))))
+		 (glEnd)))))))
 
   
   (define-module
