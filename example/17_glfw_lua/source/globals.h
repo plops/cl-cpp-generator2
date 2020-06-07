@@ -31,7 +31,7 @@ struct Shape {
   std::vector<Node> nodes;
   int max_nodes = 0;
   static float world_scale;
-  glm::vec2 world_offset;
+  static glm::vec2 world_offset;
   virtual void draw() = 0;
   void draw_nodes() {
     for (auto n : nodes) {

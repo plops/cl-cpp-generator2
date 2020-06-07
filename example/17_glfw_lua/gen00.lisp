@@ -362,7 +362,7 @@
 			   (declare (type std--vector<Node> nodes)
 				    (type int max_nodes)
 				    (type "static float" world_scale)
-				    (type glm--vec2 world_offset)))
+				    (type "static glm::vec2" world_offset)))
 			 "virtual void draw() = 0;"
 			 ;;"void draw_nodes();"
 
@@ -396,8 +396,34 @@
 				   )
 			     (nodes.push_back n)
 			     ;; we need to be careful with this pointer
+			     ;; instance needs to reserve memory for the nodes vector
 			     (return (ref (aref nodes (- (nodes.size)
 							 1))))))))))
+
+	      (space struct Line ":public" Shape
+		     (progn
+		       (space "Line()"
+			      (progn
+				(setf max_nodes 2)
+				(nodes.reserve max_nodes)))
+		       (defun draw ()
+			 (let ((sx 0)
+			       (sy 0)
+			       (ex 0)
+			       (ey 0))
+			   (world_to_screen (dot (aref nodes 0) pos)
+					    sx sy)
+			   (world_to_screen (dot (aref nodes 1) pos)
+					    ex ey)
+			   (glBegin GL_LINES)
+			   (glVertex2i sx sy)
+			   (glVertex2i ex ey)
+			   (glEnd)))))
+	      
+	      (do0
+	       "// initialize static varibles"
+	       (setf "float Shape::world_scale" 1s0
+		     "glm::vec2 Shape::world_offset" (curly 0 0)))
 	      
 	      (defun uploadTex (image w h)
 		(declare (type "const void*" image)
@@ -699,7 +725,30 @@
 		    )
 		   )
 	       )
+
+
 		
+		(progn
+		  "// draw line"
+		  (let ((selected_node nullptr)
+			(line nullptr))
+		    (declare (type "static Line*" line)
+			     (type "static Node*" selected_node))
+		   (let ((key_state (glfwGetKey ,(g `_window)
+						GLFW_KEY_L)))
+		     (when (== key_state GLFW_PRESS)
+		       (setf line (new (Line))
+			     selected_node (line->get_next_node ,(g `_snapped_world_cursor))
+			     selected_node (line->get_next_node ,(g `_snapped_world_cursor)))
+		       ))
+		   (unless (== selected_node nullptr)
+		     (setf selected_node->pos ,(g `_snapped_world_cursor)))
+		   (let ((mouse_state (glfwGetMouseButton ,(g `_window)
+							GLFW_MOUSE_BUTTON_LEFT))
+			 )
+		     (when (== mouse_state GLFW_RELEASE)
+		       (setf selected_node (line->get_next_node ,(g `_snapped_world_cursor)))))))
+
 		
 
 		(let ((width 0)

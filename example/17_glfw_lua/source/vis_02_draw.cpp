@@ -9,6 +9,27 @@ extern State state;
 
 #include <algorithm>
 
+struct Line : public Shape {
+  Line() {
+    max_nodes = 2;
+    nodes.reserve(max_nodes);
+  };
+  void draw() {
+    auto sx = 0;
+    auto sy = 0;
+    auto ex = 0;
+    auto ey = 0;
+    world_to_screen(nodes[0].pos, sx, sy);
+    world_to_screen(nodes[1].pos, ex, ey);
+    glBegin(GL_LINES);
+    glVertex2i(sx, sy);
+    glVertex2i(ex, ey);
+    glEnd();
+  }
+};
+// initialize static varibles
+float Shape::world_scale = (1.0f);
+glm::vec2 Shape::world_offset = {0, 0};
 void uploadTex(const void *image, int w, int h) {
   glGenTextures(1, &(state._fontTex));
   glBindTexture(GL_TEXTURE_2D, state._fontTex);
@@ -1872,6 +1893,25 @@ void drawFrame() {
   world_to_screen(state._snapped_world_cursor, sx, sy);
   glColor3f((1.0f), (1.0f), (0.f));
   draw_circle(sx, sy, 3);
+  {
+    // draw line
+    static Node *selected_node = nullptr;
+    static Line *line = nullptr;
+    auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
+    if ((key_state) == (GLFW_PRESS)) {
+      line = new Line();
+      selected_node = line->get_next_node(state._snapped_world_cursor);
+      selected_node = line->get_next_node(state._snapped_world_cursor);
+    };
+    if (!((selected_node) == (nullptr))) {
+      selected_node->pos = state._snapped_world_cursor;
+    };
+    auto mouse_state =
+        glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
+    if ((mouse_state) == (GLFW_RELEASE)) {
+      selected_node = line->get_next_node(state._snapped_world_cursor);
+    };
+  };
   int width = 0;
   int height = 0;
   glfwGetFramebufferSize(state._window, &width, &height);
