@@ -678,6 +678,7 @@
 			 ;; shape is complete
 			 
 			 ))
+		     ;; video Practical Polymorphism C++ 29:27
 		     (setf old_left_mouse_button_state left_mouse_button_state))))
 		   
 		   (setf old_mouse_state mouse_state)))
