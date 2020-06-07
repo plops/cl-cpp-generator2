@@ -337,8 +337,8 @@
 	      (_screen_scale :type float)
 	      (_screen_grid :type float)
 	      (_snapped_world_cursor :type glm--vec2)
-	      (_temp_shape :type Line*)
-	      (_shapes :type std--list<Line*>)
+	      (_temp_shape :type Shape*)
+	      (_shapes :type std--list<Shape*>)
 	      (_selected_node :type Node*))
 	     (do0
 	      ;,(emit-global :code `(include <glm/vec2.hpp>))
