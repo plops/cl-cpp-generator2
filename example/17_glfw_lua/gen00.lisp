@@ -398,6 +398,42 @@
 		(glClear (logior GL_COLOR_BUFFER_BIT
 				 GL_DEPTH_BUFFER_BIT))
 
+		(do0
+		 (glColor4f .3 .3 .3 1)
+		 (glBegin GL_LINES)
+		 ,@(loop for i from -10 upto 10 collect
+			`(do0 (glVertex2f -1 ,(/ i 10s0))
+			      (glVertex2f 1 ,(/ i 10s0))))
+		 ,@(loop for i from -10 upto 10 collect
+			`(do0 (glVertex2f ,(/ i 10s0) -1)
+			      (glVertex2f ,(/ i 10s0) 1)))
+		 (glEnd))
+
+		(let ((width 0)
+			 (height 0))
+		  (declare (type int width height))
+		  (glfwGetFramebufferSize ,(g `_window)
+					       &width
+					       &height)
+		  (do0
+		 (glColor4f 1 1 1 1)
+		 (glBegin GL_LINES)
+		 (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
+				 width)
+			      .5)))
+		       (y (* -2 (- (/ ,(g `_cursor_ypos)
+				 height)
+			      .5))))
+		   (glVertex2d x -1)
+		   (glVertex2d x 1)
+		   (glVertex2d -1 y)
+		   (glVertex2d 1 y))
+		 (glEnd))
+		  )
+		
+		
+		
+
 		))))
 
   
