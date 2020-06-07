@@ -231,13 +231,25 @@ void drawFrame() {
       floorf((((((0.50f)) + (mouse_after_zoom[1]))) * (state._screen_grid)));
   {
     // draw line
-    auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
-    if ((key_state) == (GLFW_PRESS)) {
-      state._temp_shape = new Line();
-      state._selected_node =
-          state._temp_shape->get_next_node(state._snapped_world_cursor);
-      state._selected_node =
-          state._temp_shape->get_next_node(state._snapped_world_cursor);
+    {
+      auto key_state = glfwGetKey(state._window, GLFW_KEY_L);
+      if ((key_state) == (GLFW_PRESS)) {
+        state._temp_shape = new Line();
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+      };
+    };
+    {
+      auto key_state = glfwGetKey(state._window, GLFW_KEY_B);
+      if ((key_state) == (GLFW_PRESS)) {
+        state._temp_shape = new Box();
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+      };
     };
     {
       auto key_state = glfwGetKey(state._window, GLFW_KEY_M);

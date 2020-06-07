@@ -419,6 +419,31 @@
 			     ;; instance needs to reserve memory for the nodes vector
 			     (return (ref (aref nodes (- (nodes.size)
 							 1))))))))
+		(space struct Box ":public" Shape
+		     (progn
+		       (space "Box()"
+			      (progn
+				(setf max_nodes 2)
+				(nodes.reserve max_nodes)
+				(setf color (glm--vec4 1s0 1s0 0s0 1s0))))
+		       (defun draw ()
+			 (let ((sx 0)
+			       (sy 0)
+			       (ex 0)
+			       (ey 0))
+			   (world_to_screen (dot (aref nodes 0) pos)
+					    sx sy)
+			   (world_to_screen (dot (aref nodes 1) pos)
+					    ex ey)
+			   (glColor4f ,@(loop for i below 4 collect
+					     `(aref color ,i)))
+			   (glBegin GL_LINE_STRIP)
+			   (glVertex2i sx sy)
+			   (glVertex2i ex sy)
+			   (glVertex2i ex ey)
+			   (glVertex2i sx ey)
+			   (glEnd)))))
+
 		(space struct Line ":public" Shape
 		     (progn
 		       (space "Line()"
@@ -673,16 +698,21 @@
 			)
 		    (declare (type "static Line*" line)
 			     (type "static Node*" selected_node))
-		   (let ((key_state (glfwGetKey ,(g `_window)
-						GLFW_KEY_L)))
-		     (when (== key_state GLFW_PRESS)
-		       ;,(logprint "start line" `(key_state))
-		       (setf ,(g `_temp_shape) (new (Line))
-			     ,(g `_selected_node) (-> ,(g `_temp_shape)
-						  (get_next_node ,(g `_snapped_world_cursor)))
-			     ,(g `_selected_node) (-> ,(g `_temp_shape)
-						  (get_next_node ,(g `_snapped_world_cursor))))
-		       ))
+
+		    ,@(loop for (key shape) in `((L Line)
+						 (B Box))
+			 collect 
+			   `(progn
+			      (let ((key_state (glfwGetKey ,(g `_window)
+							  ,(format nil "GLFW_KEY_~a" key))))
+			       (when (== key_state GLFW_PRESS)
+					;,(logprint "start line" `(key_state))
+				 (setf ,(g `_temp_shape) (new (,shape))
+				       ,(g `_selected_node) (-> ,(g `_temp_shape)
+								(get_next_node ,(g `_snapped_world_cursor)))
+				       ,(g `_selected_node) (-> ,(g `_temp_shape)
+								(get_next_node ,(g `_snapped_world_cursor))))
+				 ))))
 
 		   (progn
 		     ;; move node

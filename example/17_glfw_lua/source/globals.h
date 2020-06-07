@@ -71,6 +71,28 @@ struct Shape {
     return &(nodes[((nodes.size()) - (1))]);
   }
 };
+struct Box : public Shape {
+  Box() {
+    max_nodes = 2;
+    nodes.reserve(max_nodes);
+    color = glm::vec4((1.0f), (1.0f), (0.f), (1.0f));
+  };
+  void draw() {
+    auto sx = 0;
+    auto sy = 0;
+    auto ex = 0;
+    auto ey = 0;
+    world_to_screen(nodes[0].pos, sx, sy);
+    world_to_screen(nodes[1].pos, ex, ey);
+    glColor4f(color[0], color[1], color[2], color[3]);
+    glBegin(GL_LINE_STRIP);
+    glVertex2i(sx, sy);
+    glVertex2i(ex, sy);
+    glVertex2i(ex, ey);
+    glVertex2i(sx, ey);
+    glEnd();
+  }
+};
 struct Line : public Shape {
   Line() {
     max_nodes = 2;
