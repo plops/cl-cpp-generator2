@@ -419,31 +419,52 @@
 			     ;; instance needs to reserve memory for the nodes vector
 			     (return (ref (aref nodes (- (nodes.size)
 							 1))))))))
-		(space struct Box ":public" Shape
-		     (progn
-		       (space "Box()"
+		,@(loop for (shape code) in `((Line (do0
+						     (glBegin GL_LINES)
+						     (glVertex2i sx sy)
+						     (glVertex2i ex ey)
+						     (glEnd)))
+					      (Box (do0
+						    (glBegin GL_LINE_STRIP)
+						    (glVertex2i sx sy)
+						    (glVertex2i ex sy)
+						    (glVertex2i ex ey)
+						    (glVertex2i sx ey)
+						    (glEnd)))
+					      (Circle
+					       (do0
+						(glBegin GL_LINES)
+						(glVertex2i sx sy)
+						(glVertex2i ex ey)
+						(glEnd)
+						(let ((radius (* world_scale
+								 (glm--distance
+								  (dot (aref nodes 0) pos)
+								  (dot (aref nodes 1) pos)))))
+						 (draw_circle sx sy radius)))
+					       ))
+		     collect
+		       `(space struct ,shape ":public" Shape
 			      (progn
-				(setf max_nodes 2)
-				(nodes.reserve max_nodes)
-				(setf color (glm--vec4 1s0 1s0 0s0 1s0))))
-		       (defun draw ()
-			 (let ((sx 0)
-			       (sy 0)
-			       (ex 0)
-			       (ey 0))
-			   (world_to_screen (dot (aref nodes 0) pos)
-					    sx sy)
-			   (world_to_screen (dot (aref nodes 1) pos)
-					    ex ey)
-			   (glColor4f ,@(loop for i below 4 collect
-					     `(aref color ,i)))
-			   (glBegin GL_LINE_STRIP)
-			   (glVertex2i sx sy)
-			   (glVertex2i ex sy)
-			   (glVertex2i ex ey)
-			   (glVertex2i sx ey)
-			   (glEnd)))))
+				(space ,shape "()"
+				       (progn
+					 (setf max_nodes 2)
+					 (nodes.reserve max_nodes)
+					 (setf color (glm--vec4 1s0 1s0 0s0 1s0))))
+				(defun draw ()
+				  (let ((sx 0)
+					(sy 0)
+					(ex 0)
+					(ey 0))
+				    (world_to_screen (dot (aref nodes 0) pos)
+						     sx sy)
+				    (world_to_screen (dot (aref nodes 1) pos)
+						     ex ey)
+				    (glColor4f ,@(loop for i below 4 collect
+						      `(aref color ,i)))
+				    ,code)))))
 
+		#+nil
 		(space struct Line ":public" Shape
 		     (progn
 		       (space "Line()"
@@ -462,10 +483,11 @@
 					    ex ey)
 			   (glColor4f ,@(loop for i below 4 collect
 					     `(aref color ,i)))
-			   (glBegin GL_LINES)
-			   (glVertex2i sx sy)
-			   (glVertex2i ex ey)
-			   (glEnd)))))))
+			   (do0
+			    (glBegin GL_LINES)
+			    (glVertex2i sx sy)
+			    (glVertex2i ex ey)
+			    (glEnd))))))))
 
 	      
 	      
@@ -512,9 +534,9 @@
 					    (static_cast<float> y))))))
 	      (defun draw_circle (sx sy rad)
 		(declare (type float sx sy rad))
-		(glBegin GL_LINE_STRIP)
-		,@(let ((n 13))
-		    (loop for i below n collect
+		(glBegin GL_LINE_LOOP)
+		,@(let ((n 17))
+		    (loop for i upto n collect
 			 `(progn
 			    (let ((arg ,(/ (* 1s0 i) (+ n 1)))
 				 )
@@ -700,7 +722,8 @@
 			     (type "static Node*" selected_node))
 
 		    ,@(loop for (key shape) in `((L Line)
-						 (B Box))
+						 (B Box)
+						 (C Circle))
 			 collect 
 			   `(progn
 			      (let ((key_state (glfwGetKey ,(g `_window)

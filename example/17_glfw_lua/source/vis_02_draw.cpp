@@ -38,39 +38,49 @@ glm::vec2 get_mouse_position() {
   return glm::vec2({static_cast<float>(x), static_cast<float>(y)});
 }
 void draw_circle(float sx, float sy, float rad) {
-  glBegin(GL_LINE_STRIP);
+  glBegin(GL_LINE_LOOP);
   {
     auto arg = (0.f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (7.142857e-2);
+    auto arg = (5.555556e-2);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.14285715f);
+    auto arg = (0.11111111f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.21428572f);
+    auto arg = (0.16666667f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.28571430f);
+    auto arg = (0.22222222f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.3571429f);
+    auto arg = (0.2777778f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.42857143f);
+    auto arg = (0.33333334f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3888889f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.44444445f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -80,27 +90,42 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.5714286f);
+    auto arg = (0.5555556f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.6428571f);
+    auto arg = (0.6111111f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.7142857f);
+    auto arg = (0.6666667f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.7857143f);
+    auto arg = (0.7222222f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.8571429f);
+    auto arg = (0.7777778f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8333333f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8888889f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9444444f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -245,6 +270,16 @@ void drawFrame() {
       auto key_state = glfwGetKey(state._window, GLFW_KEY_B);
       if ((key_state) == (GLFW_PRESS)) {
         state._temp_shape = new Box();
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+        state._selected_node =
+            state._temp_shape->get_next_node(state._snapped_world_cursor);
+      };
+    };
+    {
+      auto key_state = glfwGetKey(state._window, GLFW_KEY_C);
+      if ((key_state) == (GLFW_PRESS)) {
+        state._temp_shape = new Circle();
         state._selected_node =
             state._temp_shape->get_next_node(state._snapped_world_cursor);
         state._selected_node =

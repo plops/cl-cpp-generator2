@@ -71,6 +71,26 @@ struct Shape {
     return &(nodes[((nodes.size()) - (1))]);
   }
 };
+struct Line : public Shape {
+  Line() {
+    max_nodes = 2;
+    nodes.reserve(max_nodes);
+    color = glm::vec4((1.0f), (1.0f), (0.f), (1.0f));
+  };
+  void draw() {
+    auto sx = 0;
+    auto sy = 0;
+    auto ex = 0;
+    auto ey = 0;
+    world_to_screen(nodes[0].pos, sx, sy);
+    world_to_screen(nodes[1].pos, ex, ey);
+    glColor4f(color[0], color[1], color[2], color[3]);
+    glBegin(GL_LINES);
+    glVertex2i(sx, sy);
+    glVertex2i(ex, ey);
+    glEnd();
+  }
+};
 struct Box : public Shape {
   Box() {
     max_nodes = 2;
@@ -93,8 +113,8 @@ struct Box : public Shape {
     glEnd();
   }
 };
-struct Line : public Shape {
-  Line() {
+struct Circle : public Shape {
+  Circle() {
     max_nodes = 2;
     nodes.reserve(max_nodes);
     color = glm::vec4((1.0f), (1.0f), (0.f), (1.0f));
@@ -111,6 +131,8 @@ struct Line : public Shape {
     glVertex2i(sx, sy);
     glVertex2i(ex, ey);
     glEnd();
+    auto radius = ((world_scale) * (glm::distance(nodes[0].pos, nodes[1].pos)));
+    draw_circle(sx, sy, radius);
   }
 };
 struct CommunicationTransaction {
