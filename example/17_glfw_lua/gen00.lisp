@@ -412,6 +412,14 @@
 						      ,(g `_screen_scale)))
 		       )
                  )
+		,(logprint "screen"
+			   `(,@(loop for e in `((aref _screen_offset 0)
+						(aref _screen_offset 1)
+						(aref _screen_start_pan 0)
+						(aref _screen_start_pan 1)
+						_screen_scale
+							       _screen_grid) collect
+				    (g e))))
 		)
 
 	      (defun world_to_screen (v screeni screenj)
@@ -458,8 +466,17 @@
 			    (glPushMatrix)
 			    (glLoadIdentity)
 			    (glOrtho 0s0 width height 0s0 -1s0 1s0)
-			    ;(glOrtho -1s0 1s0 -1s0 1s0 -1s0 1s0)
+					;(glOrtho -1s0 1s0 -1s0 1s0 -1s0 1s0)
 			    )
+
+		       (do0
+		 "// default offset to middle of screen"
+		 (setf ,(g `_screen_offset) (curly (/ (static_cast<float> (/ (screen_width) -2))
+						      ,(g `_screen_scale))
+						   (/ (static_cast<float> (/ (screen_height) -2))
+						      ,(g `_screen_scale)))
+		       )
+                 )
 		       
 		       (do0 (glMatrixMode GL_MODELVIEW)
 			    (glPushMatrix)
