@@ -16,6 +16,7 @@ extern "C" {
 #include <string>
 #include <thread>
 
+#include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
@@ -35,6 +36,14 @@ struct Shape {
   static glm::vec2 world_offset;
   glm::vec4 color;
   virtual void draw() = 0;
+  Node *hit_node(glm::vec2 &p) {
+    for (auto &n : nodes) {
+      if ((glm::distance(p, n.pos)) < ((1.00e-2))) {
+        return &n;
+      };
+      return nullptr;
+    };
+  }
   void draw_nodes() {
     for (auto n : nodes) {
       auto sx = 0;

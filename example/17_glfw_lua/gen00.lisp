@@ -372,7 +372,19 @@
 			 "virtual void draw() = 0;"
 			 ;;"void draw_nodes();"
 
-			 (defun "draw_nodes" ()
+			 (defun hit_node (p)
+			   (declare (type glm--vec2& p)
+				    (values Node*))
+			   (for-range ((n :type auto&) nodes)
+				      
+				      (when (< (glm--distance
+						p
+						n.pos)
+					       .01s0)
+					(return &n))
+				      (return nullptr)))
+			 
+			 (defun draw_nodes ()
 			   (for-range (n nodes)
 				      (let ((sx 0)
 					    (sy 0))
@@ -1058,6 +1070,7 @@
 
 		    (include <glm/vec2.hpp>)
 		    (include <glm/vec4.hpp>)
+		    (include <glm/geometric.hpp>) ;; for distance
 		    " "
 		    (include "proto2.h")
 		    " "
