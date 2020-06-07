@@ -377,7 +377,17 @@
 				    &x &y)
 		  (return (glm--vec2 (curly (static_cast<float> x)
 					    (static_cast<float> y))))))
-	      
+	      (defun draw_circle (sx sy rad)
+		(declare (type float sx sy rad))
+		(glBegin GL_LINE_STRIP)
+		,@(let ((n 13))
+		    (loop for i below n collect
+			 `(progn
+			    (let ((arg ,(/ (* 1s0 i) (+ n 1)))
+				 )
+			     (glVertex2f (+ sx (* rad (sinf (* 2 M_PI arg))))
+					 (+ sy (* rad (cosf (* 2 M_PI arg)))))))))
+		(glEnd))
 	      (defun initDraw ()
 		(progn
 		  ,(guard (g `_draw_mutex))
@@ -619,7 +629,14 @@
 		 
 		 (glEnd)
 		 (do0 (glLineStipple 1 (hex #xFFFF))
-		      (glDisable GL_LINE_STIPPLE)))
+		      (glDisable GL_LINE_STIPPLE))
+
+		 (do0
+		  "// draw snapped cursor circle"
+		  (world_to_screen ,(g `_snapped_world_cursor) sx sy)
+		  (glColor3f 1s0 1s0 0s0)
+		  (draw_circle sx sy 3))
+		 )
 		      )
 		    )
 		   )

@@ -34,6 +34,75 @@ glm::vec2 get_mouse_position() {
   glfwGetCursorPos(state._window, &x, &y);
   return glm::vec2({static_cast<float>(x), static_cast<float>(y)});
 }
+void draw_circle(float sx, float sy, float rad) {
+  glBegin(GL_LINE_STRIP);
+  {
+    auto arg = (0.f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (7.142857e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.14285715f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.21428572f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.28571430f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3571429f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.42857143f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.50f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5714286f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6428571f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7142857f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7857143f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8571429f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  glEnd();
+}
 void initDraw() {
   {
     // no debug
@@ -1798,6 +1867,10 @@ void drawFrame() {
   glEnd();
   glLineStipple(1, 0xFFFF);
   glDisable(GL_LINE_STIPPLE);
+  // draw snapped cursor circle
+  world_to_screen(state._snapped_world_cursor, sx, sy);
+  glColor3f((1.0f), (1.0f), (0.f));
+  draw_circle(sx, sy, 3);
   int width = 0;
   int height = 0;
   glfwGetFramebufferSize(state._window, &width, &height);
