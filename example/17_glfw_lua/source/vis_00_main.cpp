@@ -59,9 +59,9 @@ void run() {
       << (std::endl) << (std::flush);
 };
 int main() {
-  state._main_version = "1f120651157e6d53fb8cf5873f69e86f10a4c9f8";
+  state._main_version = "f32dad7acce721648f620db3a016085b1539635f";
   state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "22:41:41 of Sunday, 2020-06-07 (GMT+1)";
+  state._code_generation_time = "22:43:00 of Sunday, 2020-06-07 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

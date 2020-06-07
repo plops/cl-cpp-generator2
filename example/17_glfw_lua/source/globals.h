@@ -42,8 +42,8 @@ struct Shape {
       if ((glm::distance(p, n.pos)) < ((1.00e-2))) {
         return &n;
       };
-      return nullptr;
     };
+    return nullptr;
   }
   void draw_nodes() {
     for (auto n : nodes) {

@@ -383,7 +383,8 @@
 						n.pos)
 					       .01s0)
 					(return &n))
-				      (return nullptr)))
+				      )
+			   (return nullptr))
 			 
 			 (defun draw_nodes ()
 			   (for-range (n nodes)

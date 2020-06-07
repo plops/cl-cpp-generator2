@@ -16,9 +16,9 @@ LDFLAGS_LUA = -ldl -lreadline -lm
 
 
 
-OPT=-Og -ggdb -march=native
+#OPT=-Og -ggdb -march=native
 #OPT=-Ofast -march=core2 -mtune=core2 -flto
-#OPT=-Ofast -march=native -mtune=native
+OPT=-Ofast -march=native -mtune=native
 
 #-flto
 
