@@ -684,7 +684,8 @@
 			(when (== nullptr ,(g `_selected_node))
 			  "//  shape is complete"
 			  (setf (-> ,(g `_temp_shape) color)  (glm--vec4 1s0 1s0 1s0 1s0))
-			  
+			  (dot ,(g `_shapes)
+			       (push_back ,(g `_temp_shape)))
 			  )))
 		     ;; video Practical Polymorphism C++ 29:27
 		     (setf old_left_mouse_button_state left_mouse_button_state))))

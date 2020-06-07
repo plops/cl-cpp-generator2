@@ -253,6 +253,7 @@ void drawFrame() {
         if ((nullptr) == (state._selected_node)) {
           //  shape is complete
           state._temp_shape->color = glm::vec4((1.0f), (1.0f), (1.0f), (1.0f));
+          state._shapes.push_back(state._temp_shape);
         };
       };
     };
