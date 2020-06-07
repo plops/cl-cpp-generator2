@@ -239,6 +239,18 @@ void drawFrame() {
       state._selected_node =
           state._temp_shape->get_next_node(state._snapped_world_cursor);
     };
+    {
+      auto key_state = glfwGetKey(state._window, GLFW_KEY_M);
+      if ((key_state) == (GLFW_PRESS)) {
+        state._selected_node = nullptr;
+        for (auto &shape : state._shapes) {
+          state._selected_node = shape->hit_node(state._snapped_world_cursor);
+          if (!((nullptr) == (state._selected_node))) {
+            break;
+          };
+        };
+      };
+    };
     if (!((state._selected_node) == (nullptr))) {
       state._selected_node->pos = state._snapped_world_cursor;
     };

@@ -37,6 +37,7 @@ struct Shape {
   glm::vec4 color;
   virtual void draw() = 0;
   Node *hit_node(glm::vec2 &p) {
+    // p is in world space
     for (auto &n : nodes) {
       if ((glm::distance(p, n.pos)) < ((1.00e-2))) {
         return &n;

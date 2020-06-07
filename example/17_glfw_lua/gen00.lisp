@@ -375,6 +375,7 @@
 			 (defun hit_node (p)
 			   (declare (type glm--vec2& p)
 				    (values Node*))
+			   "// p is in world space"
 			   (for-range ((n :type auto&) nodes)
 				      
 				      (when (< (glm--distance
@@ -681,6 +682,25 @@
 			     ,(g `_selected_node) (-> ,(g `_temp_shape)
 						  (get_next_node ,(g `_snapped_world_cursor))))
 		       ))
+
+		   (progn
+		     ;; move node
+		    (let ((key_state (glfwGetKey ,(g `_window)
+						 GLFW_KEY_M)))
+		      (when (== key_state GLFW_PRESS)
+					
+			(setf 
+			      ,(g `_selected_node) nullptr
+			      )
+			(for-range ((shape :type auto&) ,(g `_shapes))
+				   (setf ,(g `_selected_node)
+					 (-> shape (hit_node ,(g `_snapped_world_cursor))))
+				   (unless (== nullptr
+					       ,(g `_selected_node))
+				     break))
+			)))
+
+		   
 		   (unless (== ,(g `_selected_node) nullptr)
 		     (setf (-> ,(g `_selected_node) pos) ,(g `_snapped_world_cursor)))
 		   (let ((left_mouse_button_state (glfwGetMouseButton ,(g `_window)
