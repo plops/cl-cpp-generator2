@@ -457,8 +457,8 @@
 		       (do0 (glMatrixMode GL_PROJECTION)
 			    (glPushMatrix)
 			    (glLoadIdentity)
-					;(glOrtho 0s0 width height 0s0 -1s0 1s0)
-			    (glOrtho -1s0 1s0 -1s0 1s0 -1s0 1s0)
+			    (glOrtho 0s0 width height 0s0 -1s0 1s0)
+			    ;(glOrtho -1s0 1s0 -1s0 1s0 -1s0 1s0)
 			    )
 		       
 		       (do0 (glMatrixMode GL_MODELVIEW)
@@ -501,10 +501,43 @@
 			append
 			  (loop for i below 2 collect
 			       `(setf (aref ,edge ,i)
-				      (,op (aref ,edge ,i))))))
-	       )
-		
-		(do0
+				      (,op (aref ,edge ,i)))))
+		   (do0
+		    ;; world axes
+		    (let ((sx 0)
+			  (sy 0)
+			  (ex 0)
+			  (ey 0))
+		      (do0 ;; y axis
+		       (world_to_screen (curly 0 (aref world_top_left 1)) sx sy)
+		      (world_to_screen (curly 0 (aref world_bottom_right 1)) ex ey)
+		      
+		      (glColor4f .8 .3 .3 1)
+		      (glEnable GL_LINE_STIPPLE)
+		       (glLineStipple 1 (hex #xF0F0))
+		       (glBegin GL_LINES)
+		       (glVertex2f sx sy)
+		       (glVertex2f ex ey)
+		       (glEnd)
+		       ;(glLineStipple 1 (hex #xFFFF))
+		       )
+		      (do0 ;; x axis
+		       (world_to_screen (curly (aref world_top_left 0) 0) sx sy)
+		      (world_to_screen (curly (aref world_bottom_right 0) 0) ex ey)
+		      
+		       (glColor4f .8 .3 .3 1)
+		       ;(glLineStipple 1 (hex #xF0F0))
+		       (glBegin GL_LINES)
+		       (glVertex2f sx sy)
+		       (glVertex2f ex ey)
+		       (glEnd)
+		       (glDisable GL_LINE_STIPPLE)
+		       ;(glLineStipple 1 (hex #xFFFF))
+		       )
+		      )
+		    )
+		   (do0
+		 ;; grid axes
 		 (glColor4f .3 .3 .3 1)
 		 (glBegin GL_LINES)
 		 ,@(loop for i from -10 upto 10 collect
@@ -513,7 +546,10 @@
 		 ,@(loop for i from -10 upto 10 collect
 			`(do0 (glVertex2f ,(/ i 10s0) -1)
 			      (glVertex2f ,(/ i 10s0) 1)))
-		 (glEnd))
+		 (glEnd)))
+	       )
+		
+		
 
 		(let ((width 0)
 		      (height 0))
@@ -521,20 +557,30 @@
 		  (glfwGetFramebufferSize ,(g `_window)
 					       &width
 					       &height)
-		  (do0
-		 (glColor4f 1 1 1 1)
-		 (glBegin GL_LINES)
-		 (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
-				 width)
-			      .5)))
-		       (y (* -2 (- (/ ,(g `_cursor_ypos)
-				 height)
-			      .5))))
-		   (glVertex2d x -1)
-		   (glVertex2d x 1)
-		   (glVertex2d -1 y)
-		   (glVertex2d 1 y))
-		 (glEnd)))))))
+		  (do0 ;; mouse cursor
+		   (glColor4f 1 1 1 1)
+		   #+nil (do0
+		    (glBegin GL_LINES)
+		    (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
+					width)
+				     .5)))
+			  (y (* -2 (- (/ ,(g `_cursor_ypos)
+					 height)
+				      .5))))
+		      (glVertex2d x -1)
+		      (glVertex2d x 1)
+		      (glVertex2d -1 y)
+		      (glVertex2d 1 y))
+		    (glEnd))
+		   (do0
+		    (glBegin GL_LINES)
+		    (let ((x ,(g `_cursor_xpos))
+			  (y ,(g `_cursor_ypos)))
+		      (glVertex2d x 0)
+		      (glVertex2d x width)
+		      (glVertex2d 0 y)
+		      (glVertex2d height y))
+		    (glEnd))))))))
 
   
   (define-module
