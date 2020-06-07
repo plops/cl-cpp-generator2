@@ -8,6 +8,7 @@
 extern State state;
 
 #include <algorithm>
+
 void uploadTex(const void *image, int w, int h) {
   glGenTextures(1, &(state._fontTex));
   glBindTexture(GL_TEXTURE_2D, state._fontTex);

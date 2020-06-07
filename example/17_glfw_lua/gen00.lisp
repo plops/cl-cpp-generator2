@@ -340,6 +340,64 @@
 	     (do0
 	      ,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
+
+	      ,(emit-global
+	       :code
+	       `(do0
+		"// shapes for 2d cad"
+		"struct Shape;"
+		(space struct Node
+		       (progn
+			 (let ((parent)
+			       (pos))
+			   (declare (type Shape* parent)
+				    (type glm--vec2 pos)))
+			 ))
+		(space struct Shape
+		       (progn
+			 (let ((nodes)
+			       (max_nodes 0)
+			       (world_scale)
+			       (world_offset))
+			   (declare (type std--vector<Node> nodes)
+				    (type int max_nodes)
+				    (type "static float" world_scale)
+				    (type glm--vec2 world_offset)))
+			 "virtual void draw() = 0;"
+			 ;;"void draw_nodes();"
+
+			 (defun "draw_nodes" ()
+			   (for-range (n nodes)
+				      (let ((sx 0)
+					    (sy 0))
+					(world_to_screen n.pos sx sy)
+					(glColor4f 1s0 .3s0 .3s0 1s0)
+					(draw_circle sx sy 2))))
+			 
+			 (defun world_to_screen (v screeni screenj)
+			   (declare (type "const glm::vec2 &" v)
+				    (type "int&" screeni screenj))
+			   (setf screeni (static_cast<int> (* (- (aref v 0)
+								 (aref world_offset 0))
+							      world_scale))
+				 screenj (static_cast<int> (* (- (aref v 1)
+								 (aref world_offset 1))
+							      world_scale))))
+			 (defun get_next_node (p)
+			   (declare (type "const glm::vec2 &" p)
+				    (values Node*))
+			   (when (== (nodes.size)  max_nodes)
+			     ;; shape is complete
+			     (return nullptr))
+			   (let ((n))
+			     (declare (type Node n))
+			     (setf n.parent this
+				   n.pos p
+				   )
+			     (nodes.push_back n)
+			     ;; we need to be careful with this pointer
+			     (return (ref (aref nodes (- (nodes.size)
+							 1))))))))))
 	      
 	      (defun uploadTex (image w h)
 		(declare (type "const void*" image)
@@ -812,6 +870,8 @@
 		       :direction :output
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
+      (format s "#ifndef PROTO2_H~%#define PROTO2_H~%")
+      		    
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
 	     
@@ -835,7 +895,8 @@
 				      (if cuda
 					  "cu"
 					  "cpp")))
-			     code)))))
+			     code))))
+      (format s "#endif"))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
@@ -901,9 +962,15 @@
 		    ;(include <sqlite3.h>)
 		    " "
 
+		    (include <glm/vec2.hpp>)
+		    " "
+		    (include "proto2.h")
+		    " "
 		    ,@(loop for e in (reverse *global-code*) collect
 			 e)
 
+		    
+		    
 		    (defstruct0 CommunicationTransaction
 			,@(loop for e in `(start_loop_time tx_time rx_time)
 			     collect

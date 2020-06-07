@@ -1,3 +1,5 @@
+#ifndef PROTO2_H
+#define PROTO2_H
 void mainLoop ();
 void run ();
 int main ();
@@ -24,3 +26,4 @@ bool checkLua (lua_State* L, int res);
 int lua_HostFunction (lua_State* L);
 void initLua ();
 void cleanupLua ();
+#endif

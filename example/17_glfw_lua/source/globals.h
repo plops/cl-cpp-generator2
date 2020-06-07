@@ -17,6 +17,48 @@ extern "C" {
 #include <thread>
 
 #include <glm/vec2.hpp>
+
+#include "proto2.h"
+
+#include <glm/vec2.hpp>
+// shapes for 2d cad
+struct Shape;
+struct Node {
+  Shape *parent;
+  glm::vec2 pos;
+};
+struct Shape {
+  std::vector<Node> nodes;
+  int max_nodes = 0;
+  static float world_scale;
+  glm::vec2 world_offset;
+  virtual void draw() = 0;
+  void draw_nodes() {
+    for (auto n : nodes) {
+      auto sx = 0;
+      auto sy = 0;
+      world_to_screen(n.pos, sx, sy);
+      glColor4f((1.0f), (0.30f), (0.30f), (1.0f));
+      draw_circle(sx, sy, 2);
+    };
+  }
+  void world_to_screen(const glm::vec2 &v, int &screeni, int &screenj) {
+    screeni =
+        static_cast<int>(((((v[0]) - (world_offset[0]))) * (world_scale)));
+    screenj =
+        static_cast<int>(((((v[1]) - (world_offset[1]))) * (world_scale)));
+  }
+  Node *get_next_node(const glm::vec2 &p) {
+    if ((nodes.size()) == (max_nodes)) {
+      return nullptr;
+    };
+    Node n;
+    n.parent = this;
+    n.pos = p;
+    nodes.push_back(n);
+    return &(nodes[((nodes.size()) - (1))]);
+  }
+};
 struct CommunicationTransaction {
   long long int start_loop_time;
   long long int tx_time;
