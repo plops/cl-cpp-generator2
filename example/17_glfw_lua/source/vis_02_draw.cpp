@@ -16,6 +16,18 @@ void uploadTex(const void *image, int w, int h) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                image);
 }
+int screen_width() {
+  int width = 0;
+  int height = 0;
+  glfwGetFramebufferSize(state._window, &width, &height);
+  return width;
+}
+int screen_height() {
+  int width = 0;
+  int height = 0;
+  glfwGetFramebufferSize(state._window, &width, &height);
+  return height;
+}
 void initDraw() {
   {
     // no debug
@@ -37,12 +49,23 @@ void initDraw() {
   state._screen_start_pan = {(0.f), (0.f)};
   state._screen_scale = (10.f);
   state._screen_grid = (1.0f);
+  // default offset to middle of screen
+  state._screen_offset = {
+      ((static_cast<float>(((screen_width()) / (-2)))) / (state._screen_scale)),
+      ((static_cast<float>(((screen_height()) / (-2)))) /
+       (state._screen_scale))};
 }
 void world_to_screen(const glm::vec2 &v, int &screeni, int &screenj) {
   screeni = static_cast<int>(
       ((((v[0]) - (state._screen_offset[0]))) * (state._screen_scale)));
   screenj = static_cast<int>(
       ((((v[1]) - (state._screen_offset[1]))) * (state._screen_scale)));
+}
+void screen_to_world(int screeni, int screenj, glm::vec2 &v) {
+  v[0] = ((((static_cast<float>(screeni)) / (state._screen_scale))) +
+          (state._screen_offset[0]));
+  v[1] = ((((static_cast<float>(screenj)) / (state._screen_scale))) +
+          (state._screen_offset[1]));
 }
 void cleanupDraw() { glDeleteTextures(1, &(state._fontTex)); }
 void drawFrame() {
@@ -63,6 +86,10 @@ void drawFrame() {
     };
   };
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_DEPTH_BUFFER_BIT)));
+  auto mouse_state = glfwGetMouseButton(state._window, GLFW_MOUSE_BUTTON_LEFT);
+  if ((mouse_state) == (GLFW_PRESS)) {
+    state._screen_start_pan = {state._cursor_xpos, state._cursor_ypos};
+  };
   glColor4f((0.30f), (0.30f), (0.30f), 1);
   glBegin(GL_LINES);
   glVertex2f(-1, (-1.0f));

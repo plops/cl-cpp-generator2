@@ -348,6 +348,25 @@
 		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
 		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
 		(glTexImage2D GL_TEXTURE_2D 0 GL_RGBA w h 0 GL_RGBA GL_UNSIGNED_BYTE image))
+
+	      (defun screen_width ()
+		(declare (values int))
+		(let ((width 0)
+		       (height 0))
+		     (declare (type int width height))
+		     (glfwGetFramebufferSize ,(g `_window)
+					     &width
+					     &height)
+		     (return width)))
+	      (defun screen_height ()
+		(declare (values int))
+		(let ((width 0)
+		       (height 0))
+		     (declare (type int width height))
+		     (glfwGetFramebufferSize ,(g `_window)
+					     &width
+					     &height)
+		     (return height)))
 	      
 	      (defun initDraw ()
 		(progn
@@ -374,7 +393,17 @@
 		      ,(g `_screen_scale) 10s0
 		      ,(g `_screen_grid) 1s0
 		      
-		      ))
+		      )
+
+		(do0
+		 "// default offset to middle of screen"
+		 (setf ,(g `_screen_offset) (curly (/ (static_cast<float> (/ (screen_width) -2))
+						      ,(g `_screen_scale))
+						   (/ (static_cast<float> (/ (screen_height) -2))
+						      ,(g `_screen_scale)))
+		       )
+                 )
+		)
 
 	      (defun world_to_screen (v screeni screenj)
 		(declare (type "const glm::vec2 &" v)
@@ -385,6 +414,18 @@
 		      screenj (static_cast<int> (* (- (aref v 1)
 						      (aref ,(g `_screen_offset) 1))
 						   ,(g `_screen_scale)))))
+
+	      (defun screen_to_world (screeni screenj v)
+		(declare (type "glm::vec2 &" v)
+			 (type "int" screeni screenj))
+		
+		(setf (aref v 0) (+ (/ (static_cast<float> screeni)
+				       ,(g `_screen_scale))
+				    (aref ,(g `_screen_offset) 0))
+		      (aref v 1) (+ (/ (static_cast<float> screenj)
+				       ,(g `_screen_scale))
+				    (aref ,(g `_screen_offset) 1))
+		      ))
 	      
 	      (defun cleanupDraw ()
 		(glDeleteTextures 1 (ref ,(g `_fontTex))))
@@ -419,6 +460,14 @@
 		(glClear (logior GL_COLOR_BUFFER_BIT
 				 GL_DEPTH_BUFFER_BIT))
 
+		(do0
+		 (let ((mouse_state (glfwGetMouseButton ,(g `_window)
+						  GLFW_MOUSE_BUTTON_LEFT)))
+		   (when (== mouse_state GLFW_PRESS)
+		     (setf ,(g `_screen_start_pan) (curly ,(g `_cursor_xpos)
+							  ,(g `_cursor_ypos))))))
+
+		
 		(do0
 		 (glColor4f .3 .3 .3 1)
 		 (glBegin GL_LINES)
