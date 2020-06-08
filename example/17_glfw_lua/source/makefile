@@ -115,7 +115,7 @@ lua/ldblib.c \
 lua/ltable.c \
 lua/liolib.c
 
-OBJ_LUA:=$(CFILES_LUA:%.c=%.o)
+#OBJ_LUA:=$(CFILES_LUA:%.c=%.o)
 
 
 CORE_O= lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
@@ -123,11 +123,10 @@ CORE_O= lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
         ltm.o lundump.o lvm.o lzio.o ltests.o
 LIB_O=  lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o \
         lutf8lib.o loadlib.o lcorolib.o linit.o
+OBJ_LUA = lua/lauxlib.o  $(LIB_O:%.o=lua/%.o) $(CORE_O:%.o=lua/%.o)
 
 
-
-
-vis:   lua/lauxlib.o  $(LIB_O:%.o=lua/%.o) $(CORE_O:%.o=lua/%.o) $(OBJ2)
+vis:  $(OBJ_LUA) $(OBJ2)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS) $(LDFLAGS_LUA)
 
 genclean:
