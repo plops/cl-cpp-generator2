@@ -66,3 +66,4 @@ git submodule add https://github.com/g-truc/glm
 - Practical Polymorphism C++  https://www.youtube.com/watch?v=kxKKHKSMGIg
   
 - CGAL https://scikit-geometry.github.io/scikit-geometry/introduction.html
+- GDSII https://github.com/HomerReid/libGDSII
