@@ -201,6 +201,17 @@ void drawFrame() {
       glPushMatrix();
       glLoadIdentity();
       glOrtho((0.f), width, height, (0.f), (-1.0f), (1.0f));
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("drawFrame resize") << (" ") << (std::setw(8))
+                  << (" screen_width()='") << (screen_width()) << ("'")
+                  << (std::setw(8)) << (" screen_height()='")
+                  << (screen_height()) << ("'") << (std::endl) << (std::flush);
       // default offset to middle of screen
       state._screen_offset = {
           ((static_cast<float>(((screen_width()) / (-2)))) /

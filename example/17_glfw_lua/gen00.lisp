@@ -34,7 +34,7 @@
       (push code *global-code*)
       " "))
   (progn
-  
+    
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
     (defun logprint (msg &optional rest)
@@ -182,7 +182,7 @@
 
 
 	      (do0
-	      
+	       
 	       (defun mainLoop ()
 		 ,(logprint "mainLoop" `())
 		 (while (not (glfwWindowShouldClose ,(g `_window)))
@@ -213,42 +213,42 @@
 					    (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
 				 (subseq str 0 (1- (length str))))))
 
-		 (setf
-               
-               
-                  ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
-		  
-                  ,(g `_code_generation_time) 
-                  (string ,(multiple-value-bind
-                                 (second minute hour date month year day-of-week dst-p tz)
-                               (get-decoded-time)
-                             (declare (ignorable dst-p))
-                      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-                              hour
-                              minute
-                              second
-                              (nth day-of-week *day-names*)
-                              year
-                              month
-                              date
-                              (- tz)))))
+		(setf
+		 
+		 
+                 ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
+		 
+                 ,(g `_code_generation_time) 
+                 (string ,(multiple-value-bind
+                                (second minute hour date month year day-of-week dst-p tz)
+                              (get-decoded-time)
+                            (declare (ignorable dst-p))
+			    (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				    hour
+				    minute
+				    second
+				    (nth day-of-week *day-names*)
+				    year
+				    month
+				    date
+				    (- tz)))))
 
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 					     (time_since_epoch)
 					     (count)))
 		,(logprint "start main" `(,(g `_main_version)
-					  ,(g `_code_repository)
-					  ,(g `_code_generation_time)))
+					   ,(g `_code_repository)
+					   ,(g `_code_generation_time)))
 		
 		(do0
 		 (run)
 		 ,(logprint "start cleanups" `())
 		 
-		(cleanupLua)
+		 (cleanupLua)
 		 (cleanupDraw)
 		 (cleanupGui)
 		 (cleanupWindow)
-		)
+		 )
 		,(logprint "end main" `())
 		(return 0)))))
 
@@ -305,7 +305,7 @@
 	      
 	      (setf ,(g `_window) (glfwCreateWindow 930 930
 						    (dot label (str) (c_str))
-						   
+						    
 						    NULL
 						    NULL))
 	      ,(logprint "initWindow" `(,(g `_window)
@@ -341,153 +341,153 @@
 	      (_shapes :type std--list<Shape*>)
 	      (_selected_node :type Node*))
 	     (do0
-	      ;,(emit-global :code `(include <glm/vec2.hpp>))
+					;,(emit-global :code `(include <glm/vec2.hpp>))
 	      (include <algorithm>)
 
 	      ,(emit-global
-	       :code
-	       `(do0
-		 (include <list>)
-		"// shapes for 2d cad"
-		"struct Shape;"
-		(space struct Node
-		       (progn
-			 (let ((parent)
-			       (pos))
-			   (declare (type Shape* parent)
-				    (type glm--vec2 pos)))
-			 ))
-		(space struct Shape
-		       (progn
-			 (let ((nodes)
-			       (max_nodes 0)
-			       (world_scale)
-			       (world_offset)
-			       (color))
-			   (declare (type std--vector<Node> nodes)
-				    (type glm--vec4 color)
-				    (type int max_nodes)
-				    (type "static float" world_scale)
-				    (type "static glm::vec2" world_offset)))
-			 "virtual void draw() = 0;"
-			 ;;"void draw_nodes();"
+		:code
+		`(do0
+		  (include <list>)
+		  "// shapes for 2d cad"
+		  "struct Shape;"
+		  (space struct Node
+			 (progn
+			   (let ((parent)
+				 (pos))
+			     (declare (type Shape* parent)
+				      (type glm--vec2 pos)))
+			   ))
+		  (space struct Shape
+			 (progn
+			   (let ((nodes)
+				 (max_nodes 0)
+				 (world_scale)
+				 (world_offset)
+				 (color))
+			     (declare (type std--vector<Node> nodes)
+				      (type glm--vec4 color)
+				      (type int max_nodes)
+				      (type "static float" world_scale)
+				      (type "static glm::vec2" world_offset)))
+			   "virtual void draw() = 0;"
+			   ;;"void draw_nodes();"
 
-			 (defun hit_node (p)
-			   (declare (type glm--vec2& p)
-				    (values Node*))
-			   "// p is in world space"
-			   (for-range ((n :type auto&) nodes)
-				      
-				      (when (< (glm--distance
-						p
-						n.pos)
-					       .01s0)
-					(return &n))
-				      )
-			   (return nullptr))
-			 
-			 (defun draw_nodes ()
-			   (for-range (n nodes)
-				      (let ((sx 0)
-					    (sy 0))
-					(world_to_screen n.pos sx sy)
-					(glColor4f 1s0 .3s0 .3s0 1s0)
-					(draw_circle sx sy 2))))
-			 
-			 (defun world_to_screen (v screeni screenj)
-			   (declare (type "const glm::vec2 &" v)
-				    (type "int&" screeni screenj))
-			   (setf screeni (static_cast<int> (* (- (aref v 0)
-								 (aref world_offset 0))
-							      world_scale))
-				 screenj (static_cast<int> (* (- (aref v 1)
-								 (aref world_offset 1))
-							      world_scale))))
-			 (defun get_next_node (p)
-			   (declare (type "const glm::vec2 &" p)
-				    (values Node*))
-			   (when (== (nodes.size)  max_nodes)
-			     ;; shape is complete
+			   (defun hit_node (p)
+			     (declare (type glm--vec2& p)
+				      (values Node*))
+			     "// p is in world space"
+			     (for-range ((n :type auto&) nodes)
+					
+					(when (< (glm--distance
+						  p
+						  n.pos)
+						 .01s0)
+					  (return &n))
+					)
 			     (return nullptr))
-			   (let ((n))
-			     (declare (type Node n))
-			     (setf n.parent this
-				   n.pos p
-				   )
-			     (nodes.push_back n)
-			     ;; we need to be careful with this pointer
-			     ;; instance needs to reserve memory for the nodes vector
-			     (return (ref (aref nodes (- (nodes.size)
-							 1))))))))
-		,@(loop for (shape code) in `((Line (do0
-						     (glBegin GL_LINES)
-						     (glVertex2i sx sy)
-						     (glVertex2i ex ey)
-						     (glEnd)))
-					      (Box (do0
-						    (glBegin GL_LINE_STRIP)
-						    (glVertex2i sx sy)
-						    (glVertex2i ex sy)
-						    (glVertex2i ex ey)
-						    (glVertex2i sx ey)
-						    (glEnd)))
-					      (Circle
-					       (do0
-						(glBegin GL_LINES)
-						(glVertex2i sx sy)
-						(glVertex2i ex ey)
-						(glEnd)
-						(let ((radius (* world_scale
-								 (glm--distance
-								  (dot (aref nodes 0) pos)
-								  (dot (aref nodes 1) pos)))))
-						 (draw_circle sx sy radius)))
-					       ))
-		     collect
-		       `(space struct ,shape ":public" Shape
-			      (progn
-				(space ,shape "()"
-				       (progn
-					 (setf max_nodes 2)
-					 (nodes.reserve max_nodes)
-					 (setf color (glm--vec4 1s0 1s0 0s0 1s0))))
-				(defun draw ()
-				  (let ((sx 0)
-					(sy 0)
-					(ex 0)
-					(ey 0))
-				    (world_to_screen (dot (aref nodes 0) pos)
-						     sx sy)
-				    (world_to_screen (dot (aref nodes 1) pos)
-						     ex ey)
-				    (glColor4f ,@(loop for i below 4 collect
-						      `(aref color ,i)))
-				    ,code)))))
+			   
+			   (defun draw_nodes ()
+			     (for-range (n nodes)
+					(let ((sx 0)
+					      (sy 0))
+					  (world_to_screen n.pos sx sy)
+					  (glColor4f 1s0 .3s0 .3s0 1s0)
+					  (draw_circle sx sy 2))))
+			   
+			   (defun world_to_screen (v screeni screenj)
+			     (declare (type "const glm::vec2 &" v)
+				      (type "int&" screeni screenj))
+			     (setf screeni (static_cast<int> (* (- (aref v 0)
+								   (aref world_offset 0))
+								world_scale))
+				   screenj (static_cast<int> (* (- (aref v 1)
+								   (aref world_offset 1))
+								world_scale))))
+			   (defun get_next_node (p)
+			     (declare (type "const glm::vec2 &" p)
+				      (values Node*))
+			     (when (== (nodes.size)  max_nodes)
+			       ;; shape is complete
+			       (return nullptr))
+			     (let ((n))
+			       (declare (type Node n))
+			       (setf n.parent this
+				     n.pos p
+				     )
+			       (nodes.push_back n)
+			       ;; we need to be careful with this pointer
+			       ;; instance needs to reserve memory for the nodes vector
+			       (return (ref (aref nodes (- (nodes.size)
+							   1))))))))
+		  ,@(loop for (shape code) in `((Line (do0
+						       (glBegin GL_LINES)
+						       (glVertex2i sx sy)
+						       (glVertex2i ex ey)
+						       (glEnd)))
+						(Box (do0
+						      (glBegin GL_LINE_STRIP)
+						      (glVertex2i sx sy)
+						      (glVertex2i ex sy)
+						      (glVertex2i ex ey)
+						      (glVertex2i sx ey)
+						      (glEnd)))
+						(Circle
+						 (do0
+						  (glBegin GL_LINES)
+						  (glVertex2i sx sy)
+						  (glVertex2i ex ey)
+						  (glEnd)
+						  (let ((radius (* world_scale
+								   (glm--distance
+								    (dot (aref nodes 0) pos)
+								    (dot (aref nodes 1) pos)))))
+						    (draw_circle sx sy radius)))
+						 ))
+		       collect
+			 `(space struct ,shape ":public" Shape
+				 (progn
+				   (space ,shape "()"
+					  (progn
+					    (setf max_nodes 2)
+					    (nodes.reserve max_nodes)
+					    (setf color (glm--vec4 1s0 1s0 0s0 1s0))))
+				   (defun draw ()
+				     (let ((sx 0)
+					   (sy 0)
+					   (ex 0)
+					   (ey 0))
+				       (world_to_screen (dot (aref nodes 0) pos)
+							sx sy)
+				       (world_to_screen (dot (aref nodes 1) pos)
+							ex ey)
+				       (glColor4f ,@(loop for i below 4 collect
+							 `(aref color ,i)))
+				       ,code)))))
 
-		#+nil
-		(space struct Line ":public" Shape
-		     (progn
-		       (space "Line()"
-			      (progn
-				(setf max_nodes 2)
-				(nodes.reserve max_nodes)
-				(setf color (glm--vec4 1s0 1s0 0s0 1s0))))
-		       (defun draw ()
-			 (let ((sx 0)
-			       (sy 0)
-			       (ex 0)
-			       (ey 0))
-			   (world_to_screen (dot (aref nodes 0) pos)
-					    sx sy)
-			   (world_to_screen (dot (aref nodes 1) pos)
-					    ex ey)
-			   (glColor4f ,@(loop for i below 4 collect
-					     `(aref color ,i)))
-			   (do0
-			    (glBegin GL_LINES)
-			    (glVertex2i sx sy)
-			    (glVertex2i ex ey)
-			    (glEnd))))))))
+		  #+nil
+		  (space struct Line ":public" Shape
+			 (progn
+			   (space "Line()"
+				  (progn
+				    (setf max_nodes 2)
+				    (nodes.reserve max_nodes)
+				    (setf color (glm--vec4 1s0 1s0 0s0 1s0))))
+			   (defun draw ()
+			     (let ((sx 0)
+				   (sy 0)
+				   (ex 0)
+				   (ey 0))
+			       (world_to_screen (dot (aref nodes 0) pos)
+						sx sy)
+			       (world_to_screen (dot (aref nodes 1) pos)
+						ex ey)
+			       (glColor4f ,@(loop for i below 4 collect
+						 `(aref color ,i)))
+			       (do0
+				(glBegin GL_LINES)
+				(glVertex2i sx sy)
+				(glVertex2i ex ey)
+				(glEnd))))))))
 
 	      
 	      
@@ -508,21 +508,21 @@
 	      (defun screen_width ()
 		(declare (values int))
 		(let ((width 0)
-		       (height 0))
-		     (declare (type int width height))
-		     (glfwGetFramebufferSize ,(g `_window)
-					     &width
-					     &height)
-		     (return width)))
+		      (height 0))
+		  (declare (type int width height))
+		  (glfwGetFramebufferSize ,(g `_window)
+					  &width
+					  &height)
+		  (return width)))
 	      (defun screen_height ()
 		(declare (values int))
 		(let ((width 0)
-		       (height 0))
-		     (declare (type int width height))
-		     (glfwGetFramebufferSize ,(g `_window)
-					     &width
-					     &height)
-		     (return height)))
+		      (height 0))
+		  (declare (type int width height))
+		  (glfwGetFramebufferSize ,(g `_window)
+					  &width
+					  &height)
+		  (return height)))
 
 	      (defun get_mouse_position ()
 		(declare (values "glm::vec2"))
@@ -539,9 +539,9 @@
 		    (loop for i upto n collect
 			 `(progn
 			    (let ((arg ,(/ (* 1s0 i) (+ n 1)))
-				 )
-			     (glVertex2f (+ sx (* rad (sinf (* 2 M_PI arg))))
-					 (+ sy (* rad (cosf (* 2 M_PI arg)))))))))
+				  )
+			      (glVertex2f (+ sx (* rad (sinf (* 2 M_PI arg))))
+					  (+ sy (* rad (cosf (* 2 M_PI arg)))))))))
 		(glEnd))
 	      (defun initDraw ()
 		(setf ,(g `_temp_shape) nullptr
@@ -586,7 +586,7 @@
 						(aref _screen_start_pan 0)
 						(aref _screen_start_pan 1)
 						_screen_scale
-							       _screen_grid) collect
+						_screen_grid) collect
 				    (g e))))
 		)
 
@@ -638,13 +638,15 @@
 			    )
 
 		       (do0
-		 "// default offset to middle of screen"
-		 (setf ,(g `_screen_offset) (curly (/ (static_cast<float> (/ (screen_width) -2))
-						      ,(g `_screen_scale))
-						   (/ (static_cast<float> (/ (screen_height) -2))
-						      ,(g `_screen_scale)))
-		       )
-                 )
+			,(logprint "drawFrame resize" `((screen_width)
+							(screen_height)))
+			"// default offset to middle of screen"
+			(setf ,(g `_screen_offset) (curly (/ (static_cast<float> (/ (screen_width) -2))
+							     ,(g `_screen_scale))
+							  (/ (static_cast<float> (/ (screen_height) -2))
+							     ,(g `_screen_scale)))
+			      )
+			)
 		       
 		       (do0 (glMatrixMode GL_MODELVIEW)
 			    (glPushMatrix)
@@ -663,7 +665,7 @@
 		   
 		   (when (and (== mouse_state GLFW_PRESS) ;; new press
 			      (== old_mouse_state GLFW_RELEASE))
-		     ;,(logprint "left mouse is pressed")
+					;,(logprint "left mouse is pressed")
 		     (setf ,(g `_screen_start_pan) mouse_pos))
 
 		   (when (and (== mouse_state GLFW_PRESS) ;; button is being held
@@ -683,23 +685,23 @@
 				       mouse_before_zoom)
 
 		      (progn
-		       (let ((key_state (glfwGetKey ,(g `_window)
-						    GLFW_KEY_PERIOD)))
-			 (when (== key_state GLFW_PRESS)
-			   ;; zoom out with .
-			   (setf ,(g `_screen_scale)
-				 (* (- 1s0 zoom_speed)  ,(g `_screen_scale))))))
+			(let ((key_state (glfwGetKey ,(g `_window)
+						     GLFW_KEY_PERIOD)))
+			  (when (== key_state GLFW_PRESS)
+			    ;; zoom out with .
+			    (setf ,(g `_screen_scale)
+				  (* (- 1s0 zoom_speed)  ,(g `_screen_scale))))))
 		      (progn
-		       (let ((key_state (glfwGetKey ,(g `_window)
-						    GLFW_KEY_COMMA)))
-			 (when (== key_state GLFW_PRESS)
-			   ;; zoom in with ,
-			   (setf ,(g `_screen_scale)
-				 (* (+ 1s0 zoom_speed) ,(g `_screen_scale))))))
+			(let ((key_state (glfwGetKey ,(g `_window)
+						     GLFW_KEY_COMMA)))
+			  (when (== key_state GLFW_PRESS)
+			    ;; zoom in with ,
+			    (setf ,(g `_screen_scale)
+				  (* (+ 1s0 zoom_speed) ,(g `_screen_scale))))))
 		      (let ((mouse_after_zoom (glm--vec2)))
 			(screen_to_world (static_cast<int> (aref mouse_pos 0))
-				       (static_cast<int> (aref mouse_pos 1))
-				       mouse_after_zoom)
+					 (static_cast<int> (aref mouse_pos 1))
+					 mouse_after_zoom)
 			(incf ,(g `_screen_offset)
 			      (- mouse_before_zoom
 				 mouse_after_zoom))
@@ -714,67 +716,67 @@
 		    )
 
 		   (progn
-		  "// draw line"
-		  (let (;(selected_node nullptr)
-			;(line nullptr)
-			)
-		    (declare (type "static Line*" line)
-			     (type "static Node*" selected_node))
+		     "// draw line"
+		     (let (		;(selected_node nullptr)
+					;(line nullptr)
+			   )
+		       (declare (type "static Line*" line)
+				(type "static Node*" selected_node))
 
-		    ,@(loop for (key shape) in `((L Line)
-						 (B Box)
-						 (C Circle))
-			 collect 
-			   `(progn
-			      (let ((key_state (glfwGetKey ,(g `_window)
-							  ,(format nil "GLFW_KEY_~a" key))))
-			       (when (== key_state GLFW_PRESS)
+		       ,@(loop for (key shape) in `((L Line)
+						    (B Box)
+						    (C Circle))
+			    collect 
+			      `(progn
+				 (let ((key_state (glfwGetKey ,(g `_window)
+							      ,(format nil "GLFW_KEY_~a" key))))
+				   (when (== key_state GLFW_PRESS)
 					;,(logprint "start line" `(key_state))
-				 (setf ,(g `_temp_shape) (new (,shape))
-				       ,(g `_selected_node) (-> ,(g `_temp_shape)
-								(get_next_node ,(g `_snapped_world_cursor)))
-				       ,(g `_selected_node) (-> ,(g `_temp_shape)
-								(get_next_node ,(g `_snapped_world_cursor))))
-				 ))))
+				     (setf ,(g `_temp_shape) (new (,shape))
+					   ,(g `_selected_node) (-> ,(g `_temp_shape)
+								    (get_next_node ,(g `_snapped_world_cursor)))
+					   ,(g `_selected_node) (-> ,(g `_temp_shape)
+								    (get_next_node ,(g `_snapped_world_cursor))))
+				     ))))
 
-		   (progn
-		     ;; move node
-		    (let ((key_state (glfwGetKey ,(g `_window)
-						 GLFW_KEY_M)))
-		      (when (== key_state GLFW_PRESS)
-					
-			(setf 
+		       (progn
+			 ;; move node
+			 (let ((key_state (glfwGetKey ,(g `_window)
+						      GLFW_KEY_M)))
+			   (when (== key_state GLFW_PRESS)
+			     
+			     (setf 
 			      ,(g `_selected_node) nullptr
 			      )
-			(for-range ((shape :type auto&) ,(g `_shapes))
-				   (setf ,(g `_selected_node)
-					 (-> shape (hit_node ,(g `_snapped_world_cursor))))
-				   (unless (== nullptr
-					       ,(g `_selected_node))
-				     break))
-			)))
+			     (for-range ((shape :type auto&) ,(g `_shapes))
+					(setf ,(g `_selected_node)
+					      (-> shape (hit_node ,(g `_snapped_world_cursor))))
+					(unless (== nullptr
+						    ,(g `_selected_node))
+					  break))
+			     )))
 
-		   
-		   (unless (== ,(g `_selected_node) nullptr)
-		     (setf (-> ,(g `_selected_node) pos) ,(g `_snapped_world_cursor)))
-		   (let ((left_mouse_button_state (glfwGetMouseButton ,(g `_window)
-							GLFW_MOUSE_BUTTON_LEFT))
-			 (old_left_mouse_button_state GLFW_RELEASE))
-		     (declare (type "static int" old_left_mouse_button_state))
-		     ;,(logprint "mouse" `(left_mouse_button_state old_left_mouse_button_state))
-		     (when (and (== old_left_mouse_button_state GLFW_PRESS)
-				(== left_mouse_button_state GLFW_RELEASE))
-		       (unless (== nullptr ,(g `_temp_shape))
-			(setf ,(g `_selected_node) (-> ,(g `_temp_shape)
-						       (get_next_node ,(g `_snapped_world_cursor))))
-			(when (== nullptr ,(g `_selected_node))
-			  "//  shape is complete"
-			  (setf (-> ,(g `_temp_shape) color)  (glm--vec4 1s0 1s0 1s0 1s0))
-			  (dot ,(g `_shapes)
-			       (push_back ,(g `_temp_shape)))
-			  )))
-		     ;; video Practical Polymorphism C++ 29:27
-		     (setf old_left_mouse_button_state left_mouse_button_state))))
+		       
+		       (unless (== ,(g `_selected_node) nullptr)
+			 (setf (-> ,(g `_selected_node) pos) ,(g `_snapped_world_cursor)))
+		       (let ((left_mouse_button_state (glfwGetMouseButton ,(g `_window)
+									  GLFW_MOUSE_BUTTON_LEFT))
+			     (old_left_mouse_button_state GLFW_RELEASE))
+			 (declare (type "static int" old_left_mouse_button_state))
+					;,(logprint "mouse" `(left_mouse_button_state old_left_mouse_button_state))
+			 (when (and (== old_left_mouse_button_state GLFW_PRESS)
+				    (== left_mouse_button_state GLFW_RELEASE))
+			   (unless (== nullptr ,(g `_temp_shape))
+			     (setf ,(g `_selected_node) (-> ,(g `_temp_shape)
+							    (get_next_node ,(g `_snapped_world_cursor))))
+			     (when (== nullptr ,(g `_selected_node))
+			       "//  shape is complete"
+			       (setf (-> ,(g `_temp_shape) color)  (glm--vec4 1s0 1s0 1s0 1s0))
+			       (dot ,(g `_shapes)
+				    (push_back ,(g `_temp_shape)))
+			       )))
+			 ;; video Practical Polymorphism C++ 29:27
+			 (setf old_left_mouse_button_state left_mouse_button_state))))
 		   
 		   (setf old_mouse_state mouse_state)))
 
@@ -801,23 +803,23 @@
 			  (ey 0))
 		      (do0 ;; y axis
 		       (world_to_screen (curly 0 (aref world_top_left 1)) sx sy)
-		      (world_to_screen (curly 0 (aref world_bottom_right 1)) ex ey)
-		      
-		      (glColor4f .8 .3 .3 1)
-		      (glEnable GL_LINE_STIPPLE)
+		       (world_to_screen (curly 0 (aref world_bottom_right 1)) ex ey)
+		       
+		       (glColor4f .8 .3 .3 1)
+		       (glEnable GL_LINE_STIPPLE)
 		       (glLineStipple 1 (hex #xF0F0))
 		       (glBegin GL_LINES)
 		       (glVertex2f sx sy)
 		       (glVertex2f ex ey)
 		       (glEnd)
-		       ;(glLineStipple 1 (hex #xFFFF))
+					;(glLineStipple 1 (hex #xFFFF))
 		       )
 		      (do0 ;; x axis
 		       (world_to_screen (curly (aref world_top_left 0) 0) sx sy)
 		       (world_to_screen (curly (aref world_bottom_right 0) 0) ex ey)
-		      
+		       
 		       (glColor4f .8 .3 .3 1)
-		       ;(glLineStipple 1 (hex #xF0F0))
+					;(glLineStipple 1 (hex #xF0F0))
 		       (glBegin GL_LINES)
 		       (glVertex2f sx sy)
 		       (glVertex2f ex ey)
@@ -827,54 +829,54 @@
 		       )
 
 		      (do0
-		 ;; grid axes
+		       ;; grid axes
 		       (glColor4f .3 .3 .3 1)
 		       (glLineStipple 1 (hex #xAAAA))
-		 (glBegin GL_LINES)
-		 
-		 ,@(loop for i from -100 upto 100 collect
-			;; parallel to x axis
-			`(do0 (world_to_screen (curly (aref world_top_left 0) ,i) sx sy)
-			      (world_to_screen (curly (aref world_bottom_right 0) ,i) ex ey)
-			      (glVertex2f sx sy)
-			      (glVertex2f ex ey)))
-		 ,@(loop for i from -100 upto 100 collect
-			;; parallel to y axis
-			`(do0 (world_to_screen (curly ,i (aref world_top_left 1)) sx sy)
-			      (world_to_screen (curly ,i (aref world_bottom_right 1)) ex ey)
-		      
+		       (glBegin GL_LINES)
+		       
+		       ,@(loop for i from -100 upto 100 collect
+			    ;; parallel to x axis
+			      `(do0 (world_to_screen (curly (aref world_top_left 0) ,i) sx sy)
+				    (world_to_screen (curly (aref world_bottom_right 0) ,i) ex ey)
+				    (glVertex2f sx sy)
+				    (glVertex2f ex ey)))
+		       ,@(loop for i from -100 upto 100 collect
+			    ;; parallel to y axis
+			      `(do0 (world_to_screen (curly ,i (aref world_top_left 1)) sx sy)
+				    (world_to_screen (curly ,i (aref world_bottom_right 1)) ex ey)
+				    
 
-			      (glVertex2f sx sy)
-			      (glVertex2f ex ey)))
-		 
-		 (glEnd)
-		 (do0 (glLineStipple 1 (hex #xFFFF))
-		      (glDisable GL_LINE_STIPPLE))
+				    (glVertex2f sx sy)
+				    (glVertex2f ex ey)))
+		       
+		       (glEnd)
+		       (do0 (glLineStipple 1 (hex #xFFFF))
+			    (glDisable GL_LINE_STIPPLE))
 
-		 (do0
-		  "// draw the geometric objects"
-		  (setf "Shape::world_scale" ,(g `_screen_scale)
-			"Shape::world_offset" ,(g `_screen_offset))
-		  (for-range (shape ,(g `_shapes))
-			     (do0
-		     	      (-> shape (draw))
-			      (-> shape (draw_nodes))))
-		  (unless (== nullptr ,(g `_temp_shape))
-		    (do0
-		     
-		     (-> ,(g `_temp_shape) (draw))
-		     (-> ,(g `_temp_shape) (draw_nodes)))))
+		       (do0
+			"// draw the geometric objects"
+			(setf "Shape::world_scale" ,(g `_screen_scale)
+			      "Shape::world_offset" ,(g `_screen_offset))
+			(for-range (shape ,(g `_shapes))
+				   (do0
+		     		    (-> shape (draw))
+				    (-> shape (draw_nodes))))
+			(unless (== nullptr ,(g `_temp_shape))
+			  (do0
+			   
+			   (-> ,(g `_temp_shape) (draw))
+			   (-> ,(g `_temp_shape) (draw_nodes)))))
 
-		 (do0
-		  "// draw snapped cursor circle"
-		  (world_to_screen ,(g `_snapped_world_cursor) sx sy)
-		  (glColor3f 1s0 1s0 0s0)
-		  (draw_circle sx sy 3))
-		 )
+		       (do0
+			"// draw snapped cursor circle"
+			(world_to_screen ,(g `_snapped_world_cursor) sx sy)
+			(glColor3f 1s0 1s0 0s0)
+			(draw_circle sx sy 3))
+		       )
 		      )
 		    )
 		   )
-	       )
+		 )
 
 
 		
@@ -886,23 +888,23 @@
 		      (height 0))
 		  (declare (type int width height))
 		  (glfwGetFramebufferSize ,(g `_window)
-					       &width
-					       &height)
+					  &width
+					  &height)
 		  (do0 ;; mouse cursor
 		   (glColor4f 1 1 1 1)
 		   #+nil (do0
-		    (glBegin GL_LINES)
-		    (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
-					width)
-				     .5)))
-			  (y (* -2 (- (/ ,(g `_cursor_ypos)
-					 height)
-				      .5))))
-		      (glVertex2d x -1)
-		      (glVertex2d x 1)
-		      (glVertex2d -1 y)
-		      (glVertex2d 1 y))
-		    (glEnd))
+			  (glBegin GL_LINES)
+			  (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
+					      width)
+					   .5)))
+				(y (* -2 (- (/ ,(g `_cursor_ypos)
+					       height)
+					    .5))))
+			    (glVertex2d x -1)
+			    (glVertex2d x 1)
+			    (glVertex2d -1 y)
+			    (glVertex2d 1 y))
+			  (glEnd))
 		   (do0
 		    (glBegin GL_LINES)
 		    (let ((x ,(g `_cursor_xpos))
@@ -974,74 +976,74 @@
       `(lua ((_lua_state :type lua_State*))
 	    (do0
 	     "// Embedding Lua in C++ #1  https://www.youtube.com/watch?v=4l5HdmPoynw"
-	      ;; https://stackoverflow.com/questions/35422215/problems-linking-to-lua-5-2-4-even-when-compiling-sources-inline
-	      ;; every lua.h inclusion must be extern C!
-	      (space "extern \"C\""
-		     (progn
-		       (include "lua/lua.h"
-				"lua/lauxlib.h"
-				"lua/lualib.h")))
+	     ;; https://stackoverflow.com/questions/35422215/problems-linking-to-lua-5-2-4-even-when-compiling-sources-inline
+	     ;; every lua.h inclusion must be extern C!
+	     (space "extern \"C\""
+		    (progn
+		      (include "lua/lua.h"
+			       "lua/lauxlib.h"
+			       "lua/lualib.h")))
 
-	      
-	      (defun checkLua (L res)
-		(declare (type int res)
-			 (type lua_State* L)
-			 (values bool))
-		(unless (== res LUA_OK)
-		  (do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))
-		  (return false))
-		(return true))
+	     
+	     (defun checkLua (L res)
+	       (declare (type int res)
+			(type lua_State* L)
+			(values bool))
+	       (unless (== res LUA_OK)
+		 (do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))
+		 (return false))
+	       (return true))
 
-	      (defun lua_HostFunction (L)
-		(declare 
-			 (type lua_State* L)
-			 (values int))
-		(let ((a (static_cast<float> (lua_tonumber L 1))
-			)
-		      (b (static_cast<float> (lua_tonumber L 2))))
-		  ,(logprint "HostFunction" `(a b))
-		  (let ((c (* a b)))
-		    (lua_pushnumber L c)))
-		;; number of args going back to c++
-		(return 1))
-	      
-	      (defun initLua ()
-		(setf ,(g `_lua_state) (luaL_newstate))
-		
-		(let ((cmd (string "a = 7+11+math.sin(23.7)"))
-		      (L ,(g `_lua_state))
-		      )
-		  (declare (type std--string cmd)
-			   (type lua_State* L))
-		  (luaL_openlibs L)
-		  (lua_register L (string "HostFunction"
-					  )
-				lua_HostFunction)
-		  (let ((res ;(luaL_dostring L (cmd.c_str))
-			 (luaL_dofile L (string "init.lua"))
+	     (defun lua_HostFunction (L)
+	       (declare 
+		(type lua_State* L)
+		(values int))
+	       (let ((a (static_cast<float> (lua_tonumber L 1))
+		       )
+		     (b (static_cast<float> (lua_tonumber L 2))))
+		 ,(logprint "HostFunction" `(a b))
+		 (let ((c (* a b)))
+		   (lua_pushnumber L c)))
+	       ;; number of args going back to c++
+	       (return 1))
+	     
+	     (defun initLua ()
+	       (setf ,(g `_lua_state) (luaL_newstate))
+	       
+	       (let ((cmd (string "a = 7+11+math.sin(23.7)"))
+		     (L ,(g `_lua_state))
+		     )
+		 (declare (type std--string cmd)
+			  (type lua_State* L))
+		 (luaL_openlibs L)
+		 (lua_register L (string "HostFunction"
+					 )
+			       lua_HostFunction)
+		 (let ((res		;(luaL_dostring L (cmd.c_str))
+			(luaL_dofile L (string "init.lua"))
 			 ))
-		    (if (== res LUA_OK)
-			(do0
-			 (lua_getglobal L (string "a"))
-			 (when (lua_isnumber L -1)
-			   ,(logprint "lua_ok" `((static_cast<float> (lua_tonumber L -1)))))
+		   (if (== res LUA_OK)
+		       (do0
+			(lua_getglobal L (string "a"))
+			(when (lua_isnumber L -1)
+			  ,(logprint "lua_ok" `((static_cast<float> (lua_tonumber L -1)))))
 
-			 (do0
-			  (lua_getglobal L (string "DoAThing"))
-			  (when (lua_isfunction L -1)
-			    (lua_pushnumber L 3.5s0)
-			    (lua_pushnumber L 7.1s0)
-			    (when (checkLua L (lua_pcall L 2 1 0))
-			      ,(logprint "lua" `((static_cast<float> (lua_tonumber L -1)))))))
-			 )
-			(do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))))
-		  )
-		)
-	      
-	      (defun cleanupLua ()
-		(lua_close ,(g `_lua_state))
-		)
-	      )))
+			(do0
+			 (lua_getglobal L (string "DoAThing"))
+			 (when (lua_isfunction L -1)
+			   (lua_pushnumber L 3.5s0)
+			   (lua_pushnumber L 7.1s0)
+			   (when (checkLua L (lua_pcall L 2 1 0))
+			     ,(logprint "lua" `((static_cast<float> (lua_tonumber L -1)))))))
+			)
+		       (do0 ,(logprint "lua_error" `(res (lua_tostring L -1))))))
+		 )
+	       )
+	     
+	     (defun cleanupLua ()
+	       (lua_close ,(g `_lua_state))
+	       )
+	     )))
   
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
@@ -1051,7 +1053,7 @@
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
       (format s "#ifndef PROTO2_H~%#define PROTO2_H~%")
-      		    
+      
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
 	     
@@ -1059,9 +1061,9 @@
 	       
 	       (unless cuda
 		 #+nil (progn (format t "emit function declarations for ~a~%" name)
-			(emit-c :code code :hook-defun 
-				#'(lambda (str)
-				    (format t "~a~%" str))))
+			      (emit-c :code code :hook-defun 
+				      #'(lambda (str)
+					  (format t "~a~%" str))))
 		 (emit-c :code code :hook-defun 
 			 #'(lambda (str)
 			     (format s "~a~%" str))))
@@ -1139,7 +1141,7 @@
 			     <condition_variable>
 			     <complex>)
 		    #+nil (include "sqlite/sqlite-preprocessed-3310100/sqlite3.h")
-		    ;(include <sqlite3.h>)
+					;(include <sqlite3.h>)
 		    " "
 
 		    (include <glm/vec2.hpp>)
