@@ -105,7 +105,7 @@ struct Box : public Shape {
     world_to_screen(nodes[0].pos, sx, sy);
     world_to_screen(nodes[1].pos, ex, ey);
     glColor4f(color[0], color[1], color[2], color[3]);
-    glBegin(GL_LINE_STRIP);
+    glBegin(GL_LINE_LOOP);
     glVertex2i(sx, sy);
     glVertex2i(ex, sy);
     glVertex2i(ex, ey);

@@ -425,7 +425,7 @@
 						       (glVertex2i ex ey)
 						       (glEnd)))
 						(Box (do0
-						      (glBegin GL_LINE_STRIP)
+						      (glBegin GL_LINE_LOOP)
 						      (glVertex2i sx sy)
 						      (glVertex2i ex sy)
 						      (glVertex2i ex ey)
@@ -638,15 +638,13 @@
 			    )
 
 		       (do0
-			,(logprint "drawFrame resize" `((screen_width)
-							(screen_height)))
+			#+nil ,(logprint "drawFrame resize" `((screen_width) width
+							(screen_height) height))
 			"// default offset to middle of screen"
 			(setf ,(g `_screen_offset) (curly (/ (static_cast<float> (/ (screen_width) -2))
 							     ,(g `_screen_scale))
 							  (/ (static_cast<float> (/ (screen_height) -2))
-							     ,(g `_screen_scale)))
-			      )
-			)
+							     ,(g `_screen_scale)))))
 		       
 		       (do0 (glMatrixMode GL_MODELVIEW)
 			    (glPushMatrix)
@@ -711,9 +709,7 @@
 			 ,@(loop for i below 2 collect
 				`(setf (aref ,(g `_snapped_world_cursor ) ,i)
 				       (floorf (* (+ .5s0 (aref mouse_after_zoom ,i))
-						  ,(g `_screen_grid))))))
-			))
-		    )
+						  ,(g `_screen_grid)))))))))
 
 		   (progn
 		     "// draw line"
@@ -844,11 +840,8 @@
 			    ;; parallel to y axis
 			      `(do0 (world_to_screen (curly ,i (aref world_top_left 1)) sx sy)
 				    (world_to_screen (curly ,i (aref world_bottom_right 1)) ex ey)
-				    
-
 				    (glVertex2f sx sy)
 				    (glVertex2f ex ey)))
-		       
 		       (glEnd)
 		       (do0 (glLineStipple 1 (hex #xFFFF))
 			    (glDisable GL_LINE_STIPPLE))
@@ -871,49 +864,23 @@
 			"// draw snapped cursor circle"
 			(world_to_screen ,(g `_snapped_world_cursor) sx sy)
 			(glColor3f 1s0 1s0 0s0)
-			(draw_circle sx sy 3))
-		       )
-		      )
-		    )
-		   )
-		 )
+			(draw_circle sx sy 3)))))))
 
-
-		
-		
-
-		
-
-		(let ((width 0)
-		      (height 0))
-		  (declare (type int width height))
-		  (glfwGetFramebufferSize ,(g `_window)
-					  &width
-					  &height)
-		  (do0 ;; mouse cursor
-		   (glColor4f 1 1 1 1)
-		   #+nil (do0
-			  (glBegin GL_LINES)
-			  (let ((x (* 2 (- (/ ,(g `_cursor_xpos)
-					      width)
-					   .5)))
-				(y (* -2 (- (/ ,(g `_cursor_ypos)
-					       height)
-					    .5))))
-			    (glVertex2d x -1)
-			    (glVertex2d x 1)
-			    (glVertex2d -1 y)
-			    (glVertex2d 1 y))
-			  (glEnd))
-		   (do0
-		    (glBegin GL_LINES)
-		    (let ((x ,(g `_cursor_xpos))
-			  (y ,(g `_cursor_ypos)))
-		      (glVertex2d x 0)
-		      (glVertex2d x width)
-		      (glVertex2d 0 y)
-		      (glVertex2d height y))
-		    (glEnd))))))))
+		(do0 ;; mouse cursor
+		 (glColor4f 1 1 1 1)
+		 
+		 (do0
+		  (glBegin GL_LINES)
+		  (let ((x ,(g `_cursor_xpos))
+			(y ,(g `_cursor_ypos))
+			(h (screen_height))
+			(w (screen_width)))
+		    
+		    (glVertex2d x (* .1 h))
+		    (glVertex2d x (* .9 h))
+		    (glVertex2d (* .1 w) y)
+		    (glVertex2d (* .9 w) y))
+		  (glEnd)))))))
 
   
   (define-module
