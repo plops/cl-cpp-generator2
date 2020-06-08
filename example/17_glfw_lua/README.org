@@ -64,3 +64,5 @@ git submodule add https://github.com/g-truc/glm
   - https://gcc.gnu.org/projects/cxx-status.html
 
 - Practical Polymorphism C++  https://www.youtube.com/watch?v=kxKKHKSMGIg
+  
+- CGAL https://scikit-geometry.github.io/scikit-geometry/introduction.html

@@ -535,7 +535,7 @@
 	      (defun draw_circle (sx sy rad)
 		(declare (type float sx sy rad))
 		(glBegin GL_LINE_LOOP)
-		,@(let ((n 17))
+		,@(let ((n 113))
 		    (loop for i upto n collect
 			 `(progn
 			    (let ((arg ,(/ (* 1s0 i) (+ n 1)))
@@ -800,7 +800,6 @@
 		      (do0 ;; y axis
 		       (world_to_screen (curly 0 (aref world_top_left 1)) sx sy)
 		       (world_to_screen (curly 0 (aref world_bottom_right 1)) ex ey)
-		       
 		       (glColor4f .8 .3 .3 1)
 		       (glEnable GL_LINE_STIPPLE)
 		       (glLineStipple 1 (hex #xF0F0))
@@ -813,17 +812,13 @@
 		      (do0 ;; x axis
 		       (world_to_screen (curly (aref world_top_left 0) 0) sx sy)
 		       (world_to_screen (curly (aref world_bottom_right 0) 0) ex ey)
-		       
 		       (glColor4f .8 .3 .3 1)
 					;(glLineStipple 1 (hex #xF0F0))
 		       (glBegin GL_LINES)
 		       (glVertex2f sx sy)
 		       (glVertex2f ex ey)
-		       (glEnd)
-		       
-		       
-		       )
-
+		       (glEnd))
+		      
 		      (do0
 		       ;; grid axes
 		       (glColor4f .3 .3 .3 1)
@@ -875,11 +870,16 @@
 			(y ,(g `_cursor_ypos))
 			(h (screen_height))
 			(w (screen_width)))
-		    
-		    (glVertex2d x (* .1 h))
-		    (glVertex2d x (* .9 h))
-		    (glVertex2d (* .1 w) y)
-		    (glVertex2d (* .9 w) y))
+		    #+nil (do0
+		     (glVertex2d x (* .1 h))
+		     (glVertex2d x (* .9 h))
+		     (glVertex2d (* .1 w) y)
+		     (glVertex2d (* .9 w) y))
+		    (do0
+		     (glVertex2d x (* 0 h))
+		     (glVertex2d x (* 1 h))
+		     (glVertex2d (* 0 w) y)
+		     (glVertex2d (* 1 w) y)))
 		  (glEnd)))))))
 
   

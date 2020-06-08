@@ -45,12 +45,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (5.555556e-2);
+    auto arg = (8.771930e-3);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.11111111f);
+    auto arg = (1.7543860e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (2.631579e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (3.508772e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (4.3859650e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (5.263158e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (6.140351e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (7.017544e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (7.894737e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (8.771930e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (9.649122e-2);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.10526316f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.1140351f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.1228070f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.1315790f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.1403509f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.14912280f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.15789473f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -60,12 +140,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.22222222f);
+    auto arg = (0.17543860f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.2777778f);
+    auto arg = (0.18421052f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.19298245f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.20175439f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.21052632f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.21929824f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.228070f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.2368421f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.2456140f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.2543860f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.2631579f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.271930f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.2807018f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.28947368f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.29824560f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.30701753f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.31578946f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.32456142f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -75,12 +235,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.3888889f);
+    auto arg = (0.3421053f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.44444445f);
+    auto arg = (0.3508772f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3596491f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3684210f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3771930f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3859649f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.3947369f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4035088f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4122807f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4210526f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.42982456f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.43859650f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4473684f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.456140f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4649123f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4736842f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4824561f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.4912281f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -90,12 +330,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.5555556f);
+    auto arg = (0.5087720f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.6111111f);
+    auto arg = (0.5175439f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5263158f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5350877f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.543860f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5526316f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5614035f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5701754f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5789474f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5877193f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.5964912f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6052632f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6140351f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6228070f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6315789f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6403509f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6491228f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6578947f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -105,12 +425,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.7222222f);
+    auto arg = (0.6754386f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.7777778f);
+    auto arg = (0.684211f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.6929824f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7017544f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7105263f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7192982f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.728070f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7368421f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7456141f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7543859f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7631579f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.771930f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7807018f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7894737f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.7982456f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8070176f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.815789f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8245614f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -120,12 +520,92 @@ void draw_circle(float sx, float sy, float rad) {
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.8888889f);
+    auto arg = (0.8421053f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
   {
-    auto arg = (0.9444444f);
+    auto arg = (0.8508772f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8596491f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8684211f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8771930f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8859649f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.8947368f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9035088f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.912281f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9210526f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9298246f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9385965f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9473684f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.956140f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9649123f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9736842f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9824561f);
+    glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
+               ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
+  };
+  {
+    auto arg = (0.9912280f);
     glVertex2f(((sx) + (((rad) * (sinf(((2) * (M_PI) * (arg))))))),
                ((sy) + (((rad) * (cosf(((2) * (M_PI) * (arg))))))));
   };
@@ -1982,9 +2462,9 @@ void drawFrame() {
   auto y = state._cursor_ypos;
   auto h = screen_height();
   auto w = screen_width();
-  glVertex2d(x, (((0.10f)) * (h)));
-  glVertex2d(x, (((0.90f)) * (h)));
-  glVertex2d((((0.10f)) * (w)), y);
-  glVertex2d((((0.90f)) * (w)), y);
+  glVertex2d(x, ((0) * (h)));
+  glVertex2d(x, ((1) * (h)));
+  glVertex2d(((0) * (w)), y);
+  glVertex2d(((1) * (w)), y);
   glEnd();
 };
