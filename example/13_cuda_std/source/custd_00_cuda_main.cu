@@ -14,14 +14,15 @@
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf
 // p. 338
 // https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/
+// 2:27 shows how to includ libcu++ headers
 // https://x.momo86.net/?p=107 .. japanese article, maybe string isn't supported
 // yet
 #include <cuda/std/atomic>
-#include <cuda/std/detail/libcxx/include/string_view>
-auto _code_git_version = "6cfdea63581de0d73fbd0052a18cf6dd55a26550";
+#include <string>
+auto _code_git_version = "2a2a92992ab3ce8cec9bd421d74f207c8e4f3dd1";
 auto _code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                         "master/example/13_cuda_std/source/";
-auto _code_generation_time = "03:49:05 of Thursday, 2020-06-11 (GMT+1)";
+auto _code_generation_time = "04:21:10 of Thursday, 2020-06-11 (GMT+1)";
 State state = {};
 using namespace std::chrono_literals;
 struct trie {
