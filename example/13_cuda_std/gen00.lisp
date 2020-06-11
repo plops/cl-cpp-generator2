@@ -114,16 +114,17 @@
 	      )
 		  (do0
 		   ;;-I/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/ -I/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/libcxx/include/
-		   "// /opt/cuda/bin/nvcc custd_00_cuda_main.cu --gpu-architecture=compute_75 --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/  --std=c++14 -O3 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
+		   "// /opt/cuda/bin/nvcc /media/sdb4/cuda/b/cuda_nvcc/bin/nvcc custd_00_cuda_main.cu --gpu-architecture=compute_75 --gpu-code=compute_75 --use_fast_math  -I/opt/cuda/include/  --std=c++14 -O3 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0 -I/media/sdb4/cuda/b/cuda_cudart/targets/x86_64-linux/include/ "
 		   "// https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/cwe21285.pdf p. 338"
 		   "// https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/"
 		   "// https://x.momo86.net/?p=107 .. japanese article, maybe string isn't supported yet"
-		   (include <cstdio>
+		   "// https://on-demand.gputechconf.com/supercomputing/2019/video/sc1942-the-cuda-c++-standard-library/"
+		   (include ;<cstdio>
 			    <cuda/std/atomic>
 			    
 			    ;"/opt/cuda/targets/x86_64-linux/include/cuda/std/detail/libcxx/include/string_view"
 			    ;<cuda/std/detail/libcxx/include/__config>
-			    ;<cuda/std/detail/libcxx/include/string_view>
+			    <cuda/std/detail/libcxx/include/string_view>
 			    )
 	      (let (
 		    (_code_git_version
@@ -178,8 +179,8 @@
 				(declare (type "cuda::std::atomic<int>" count)))
 		       (space "__host__ __device__"
 			(defun insert (input &bump)
-			  (declare (type ;cuda-std--string_view
-				    char*
+			  (declare (type cuda--std--string_view
+				    ;char*
 					 input)
 				   (type #+host trie*
 					 #-host cuda--std--atomic<trie*>
