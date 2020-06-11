@@ -121,6 +121,7 @@
 		   "// https://x.momo86.net/?p=107 .. japanese article, maybe string isn't supported yet"
 		   "// i can't find libcu++ on github. perhaps it is this:"
 		   "// https://github.com/rapidsai/thirdparty-freestanding"
+		   "// or by the speaker of the talk: https://github.com/brycelelbach/cpp20_synchronization_library"
 		   (include ;<cstdio>
 			    <cuda/std/atomic>
 			    
