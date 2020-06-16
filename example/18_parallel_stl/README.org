@@ -1,1 +1,3 @@
 - parallel stl coffeebeforarch https://www.youtube.com/watch?v=xyDUPkq90pQ
+- https://github.com/CoffeeBeforeArch/parallel_programming
+- https://github.com/CoffeeBeforeArch/parallel_programming/blob/master/basics/parallel_stl/parallel_sort.cpp

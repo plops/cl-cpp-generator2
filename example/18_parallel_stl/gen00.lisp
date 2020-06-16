@@ -12,9 +12,7 @@
 				 '()))
 
 (progn
-
   (defparameter *source-dir* #P"example/18_parallel_stl/source/")
-  
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -87,7 +85,7 @@
 	      (include <chrono>)
 	      (defstruct0 State
 		  ,@(loop for e in l collect
- 			 (destructuring-bind (name type &optional value) e
+			 (destructuring-bind (name type &optional value) e
 			   `(,name ,type))))))))
     (defun define-module (args)
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
@@ -122,23 +120,22 @@
       `(main ((_main_version :type "std::string")
 	      (_code_repository :type "std::string")
 	      (_code_generation_time :type "std::string")
-)
+	      )
 	     (do0
 	      (include <iostream>
+		       <iomanip>
+		       <thread>
 		       <chrono>
 		       <algorithm>
 		       <execution>
 		       <random>
 		       <vector>)
 
+	      "// sudo pacman -S intel-tbb"
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
-
-	      (do0
-	       
-	)
 	      
 	      (defun main ()
 		(declare (values int))
@@ -150,13 +147,13 @@
 		(setf
 		 
 		 
-                 ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
+		 ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
 		 
-                 ,(g `_code_generation_time) 
-                 (string ,(multiple-value-bind
-                                (second minute hour date month year day-of-week dst-p tz)
-                              (get-decoded-time)
-                            (declare (ignorable dst-p))
+		 ,(g `_code_generation_time) 
+		 (string ,(multiple-value-bind
+				(second minute hour date month year day-of-week dst-p tz)
+			      (get-decoded-time)
+			    (declare (ignorable dst-p))
 			    (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
 				    hour
 				    minute
@@ -174,14 +171,14 @@
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
 		
-	
+		
 		(return 0)))))
 
   
   
   
   (progn
-    #+nil (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
+    (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
 								       *source-dir*))
 		       :direction :output
@@ -191,9 +188,7 @@
       
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
-	     
 	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
-	       
 	       (unless cuda
 		 #+nil (progn (format t "emit function declarations for ~a~%" name)
 			      (emit-c :code code :hook-defun 
@@ -202,7 +197,7 @@
 		 (emit-c :code code :hook-defun 
 			 #'(lambda (str)
 			     (format s "~a~%" str))))
-
+	       
 	       #+nil (format t "emit cpp file for ~a~%" name)
 	       (write-source (asdf:system-relative-pathname
 			      'cl-cpp-generator2
@@ -214,7 +209,7 @@
 					  "cpp")))
 			     code))))
       (format s "#endif"))
-#+nil    (write-source (asdf:system-relative-pathname
+    (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
 				    *source-dir*))
@@ -233,7 +228,7 @@
 		     " "
 		     ,@(loop for e in (reverse *utils-code*) collect
 			  e)
-					     
+		     
 		     " "
 		     
 		     )
