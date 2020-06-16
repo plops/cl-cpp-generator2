@@ -171,7 +171,15 @@
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
 		
-		
+		,(let ((n (expt 2 20)))
+		   `(let (((v ,n)
+			   )
+			  (rng)
+			  ((dist 0 255)))
+		      (declare (type "std::vector<int>" (v ,n))
+			       (type "std::mt19937" rng)
+			       (type std--uniform_int_distribution<int> (dist 0 255)))
+		      (rng.seed ((std--random_device)))))
 		(return 0)))))
 
   

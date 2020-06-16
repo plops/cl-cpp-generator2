@@ -13,12 +13,13 @@
 #include <random>
 #include <thread>
 #include <vector>
+// sudo pacman -S intel-tbb
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "d551a0f817c14c980c1cf410f5842314218f7896";
+  state._main_version = "194b53f29429f9ed1a6a75d20991782fa1bdc950";
   state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "18:34:25 of Tuesday, 2020-06-16 (GMT+1)";
+  state._code_generation_time = "18:38:32 of Tuesday, 2020-06-16 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -32,5 +33,9 @@ int main() {
       << (state._code_repository) << ("'") << (std::setw(8))
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
+  std::vector<int> v(1048576);
+  std::mt19937 rng;
+  std::uniform_int_distribution<int> dist(0, 255);
+  rng.seed((std::random_device())());
   return 0;
 };
