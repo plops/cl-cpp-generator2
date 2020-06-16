@@ -136,7 +136,9 @@
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
-	      
+	      (defun get_time ()
+		(declare (values auto))
+		(return (std--chrono--high_resolution_clock--now)))
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_main_version)
@@ -179,7 +181,18 @@
 		      (declare (type "std::vector<int>" (v ,n))
 			       (type "std::mt19937" rng)
 			       (type std--uniform_int_distribution<int> (dist 0 255)))
-		      (rng.seed ((std--random_device)))))
+		      (rng.seed ((std--random_device)))
+		      (std--generate (begin v)
+				     (end v)
+				     (lambda ()
+				       (declare (capture &))
+				       (return (dist rng))))
+		      (let ((start (get_time)))
+			(std--sort std--execution--par (begin v)
+				   (end v))
+			(let ((finish (get_time))
+			      (duration_ms (std--chrono--duration_cast<std--chrono--milliseconds> (- finish start))))
+			  ,(logprint "parallel run" `((duration_ms.count)))))))
 		(return 0)))))
 
   

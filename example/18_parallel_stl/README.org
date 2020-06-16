@@ -1,3 +1,25 @@
 - parallel stl coffeebeforarch https://www.youtube.com/watch?v=xyDUPkq90pQ
 - https://github.com/CoffeeBeforeArch/parallel_programming
 - https://github.com/CoffeeBeforeArch/parallel_programming/blob/master/basics/parallel_stl/parallel_sort.cpp
+
+- on x201
+#+BEGIN_EXAMPLE
+$ make
+g++ -c -o vis_00_main.o vis_00_main.cpp -Ofast -march=native -mtune=native -flto -std=gnu++20
+g++ -o vis vis_00_main.o -Ofast -march=native -mtune=native -flto -std=gnu++20 -ltbb
+$ ./vis
+1592325841225249151 139695465700928 vis_00_main.cpp:31 main start main  state._main_version='4ac11e942cf7c4e5bd5c86c4479fcfe867c4a226' state._code_repository='http://10.1.10.5:30080/martin/py_wavelength_tune/' state._code_generation_time='18:42:41 of Tuesday, 2020-06-16 (GMT+1)'
+1592325841299360989 139695465700928 vis_00_main.cpp:52 main parallel run  duration.count()='30'
+$ head /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 37
+model name      : Intel(R) Core(TM) i5 CPU       M 540  @ 2.53GHz
+stepping        : 5
+microcode       : 0x7
+cpu MHz         : 1287.936
+cache size      : 3072 KB
+physical id     : 0
+
+#+END_EXAMPLE

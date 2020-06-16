@@ -2,17 +2,17 @@
 #CC=x86_64-w64-mingw32-gcc
 
 LDFLAGS = -ltbb
-OPT=-O0
+#OPT=-O0
 #OPT=-Og -ggdb -march=native
 #OPT=-Ofast -march=core2 -mtune=core2 -flto
-#OPT=-Ofast -march=native -mtune=native -flto
+OPT=-Ofast -march=native -mtune=native -flto
 
 #-flto
 
 CXXFLAGS = \
 $(OPT) \
--std=gnu++20 \
--fcoroutines
+-std=gnu++20
+#-fcoroutines
 
 CFLAGS= \
 $(OPT) \
