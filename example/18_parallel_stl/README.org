@@ -23,3 +23,21 @@ cache size      : 3072 KB
 physical id     : 0
 
 #+END_EXAMPLE
+
+
+- on ryzen
+#+BEGIN_EXAMPLE
+ ~/stage/cl-cpp-generator2/example/18_parallel_stl/source $ ./vis
+1592325989793633885 140258123103808 vis_00_main.cpp:31 main start main  state._main_version='4ac11e942cf7c4e5bd5c86c4479fcfe867c4a226' state._code_repository='http://10.1.10.5:30080/martin/py_wavelength_tune/' state._code_generation_time='18:42:41 of Tuesday, 2020-06-16 (GMT+1)'
+1592325989814932131 140258123103808 vis_00_main.cpp:52 main parallel run  duration.count()='7'
+ ~/stage/cl-cpp-generator2/example/18_parallel_stl/source $ head /proc/cpuinfo 
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 23
+model           : 113
+model name      : AMD Ryzen 5 3600 6-Core Processor
+stepping        : 0
+microcode       : 0x8701013
+cpu MHz         : 2191.605
+cache size      : 512 KB
+#+END_EXAMPLE
