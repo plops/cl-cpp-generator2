@@ -62,10 +62,11 @@
 (defun consume-declare (body)
   "take a list of instructions from body, parse type declarations,
 return the body without them and a hash table with an environment. the
-entry return-values contains a list of return values. currently supports type, values and capture declarations "
+entry return-values contains a list of return values. currently supports type, values, construct and capture declarations. construct is member assignment in constructors. capture is for lambda functions"
   (let ((env (make-hash-table))
 	(captures nil)
-	(looking-p t)
+	(constructs nil)
+	(looking-p t) 
 	(new-body nil))
     (loop for e in body do
 	 (if looking-p
@@ -82,6 +83,12 @@ entry return-values contains a list of return values. currently supports type, v
 			      (declare (ignorable symb))
 			      (loop for var in vars do
 				   (push var captures))))
+
+			  (when (eq (first declaration) 'construct)
+			    (destructuring-bind (symb &rest vars) declaration
+			      (declare (ignorable symb))
+			      (loop for var in vars do
+				   (push var constructs))))
 			  
 			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
@@ -99,7 +106,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env (reverse captures))))
+    (values (reverse new-body) env (reverse captures) (reverse constructs))))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -155,7 +162,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures) (consume-declare body)
+    (multiple-value-bind (body env captures constructs) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -175,7 +182,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only)
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -183,7 +190,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~a ~a ~a~:[~;;~]"
+	  (format s "~a ~a ~a~:[~;;~] ~@[: ~a~]"
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 					;(funcall emit `(paren ,@r))
@@ -193,6 +200,7 @@ entry return-values contains a list of return values. currently supports type, v
 			    (car r)
 			    "void")))
 		  name
+		  
 		  (funcall emit `(paren
 				  ,@(loop for p in req-param collect
 					 (format nil "~a ~a"
@@ -202,7 +210,10 @@ entry return-values contains a list of return values. currently supports type, v
 						       (break "can't find type for ~a in defun"
 							      p)))
 						 p))))
-		  header-only)
+		  header-only
+		  (when (and constructs
+			     (not header-only))
+		   (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (unless header-only
 	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 
@@ -215,7 +226,7 @@ entry return-values contains a list of return values. currently supports type, v
   ;; support for captures (placed into the first set of brackets)
   ;; (declare (capture &app bla)) will result in [&app, bla]
   (destructuring-bind (lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures) (consume-declare body)
+    (multiple-value-bind (body env captures constructs) (consume-declare body)
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)

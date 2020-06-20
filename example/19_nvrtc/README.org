@@ -2,3 +2,4 @@
 - https://www.youtube.com/watch?v=tHepctS09uQ
 - https://github.com/mgopshtein/cudacpp
 - https://docs.nvidia.com/cuda/nvrtc/index.html
+- https://migocpp.wordpress.com/

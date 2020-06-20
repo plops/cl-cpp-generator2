@@ -14,9 +14,9 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "11dcab9afe1cbec4ba0f529c83b17021dc7bda7b";
+  state._main_version = "c450bff920ba904d71d311db17211976d738783d";
   state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "06:13:15 of Saturday, 2020-06-20 (GMT+1)";
+  state._code_generation_time = "06:37:03 of Saturday, 2020-06-20 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

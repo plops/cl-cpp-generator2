@@ -187,6 +187,21 @@
 	(do0
 	 (include <nvrtc.h>)
 	 )))
+  (define-module
+      `(cu_device
+	()
+	(do0
+	 (include <cuda_runtime.h>
+		  <cuda.h>
+		  )
+	 (defclass CudaDeviceProperties ()
+		(let ((_props))
+		  (declare (type cudaDeviceProp _props)))
+		(defun CudaDeviceProperties (props)
+		  (declare (type "const cudaDeviceProp&" props)
+			   (construct (_props props))
+			   (values explicit)
+			   ))))))
     (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"

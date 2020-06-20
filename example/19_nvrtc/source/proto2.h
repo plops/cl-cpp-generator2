@@ -1,4 +1,5 @@
 #ifndef PROTO2_H
 #define PROTO2_H
-int main ();
+int main (); 
+explicit CudaDeviceProperties (const cudaDeviceProp& props); 
 #endif
