@@ -103,7 +103,7 @@
 		  " "
 		  (include "globals.h")
 		  " "
-		  (include "proto2.h")
+		  ;(include "proto2.h")
 		  " ")
 		header)
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
@@ -191,7 +191,10 @@
       `(cu_device
 	()
 	(do0
-	 (include <cuda_runtime.h>
+	 "//  g++ --std=gnu++20 vis_02_cu_device.cpp -I /media/sdb4/cuda/11.0.1/include/"
+	 (include
+	  ;<driver_types.h>
+	  <cuda_runtime.h>
 		  <cuda.h>
 		  )
 	 (defclass CudaDeviceProperties ()
@@ -203,22 +206,22 @@
 			   (values explicit)
 			   ))
 		"public:"
-		(defun CudaDevicProperties (device)
+		(defun CudaDeviceProperties (device)
 		  (declare (type int device)
 			   (values :constructor))
 		  (cudaGetDeviceProperties &_props device)
 		  (let ((nameSize (/ (sizeof _props.name)
 				     (sizeof (aref _props.name 0)))))
-		    (setf (aref _props.name (- namesSize 1))
+		    (setf (aref _props.name (- nameSize 1))
 			  (char \\0))))
 		(defun FromExistingProperties (props)
 		  (declare (type "const cudaDeviceProp&" props)
-			   (values static))
+			   (values "static CudaDeviceProperties"))
 		  (return (space CudaDeviceProperties (curly props))))
 		(defun ByIntegratedType (integrated)
 		  (declare (type bool integrated)
-			   (values static))
-		  (let ((props (space cudaDeviceProps (curly 0))))
+			   (values "static CudaDeviceProperties"))
+		  (let ((props (space cudaDeviceProp (curly 0))))
 		    (setf props.integrated (? integrated 1 0))
 		    (return (FromExistingProperties props))))
 		(defun getRawStruct ()
@@ -236,7 +239,12 @@
 				     (const))
 			    ,(if code
 				`(return ,code)
-				`(return (dot _props ,name))))))))))
+				`(return (dot _props ,name)))))))
+	 (defclass CudaDevice ()
+	   (let ((_device)
+		 (_props))
+	     (declare (type int _device)
+		      (type CudaDeviceProperties _props)))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
@@ -315,7 +323,7 @@
 		    " "
 
 		    " "
-		    (include "proto2.h")
+		    ;(include "proto2.h")
 		    " "
 		    ,@(loop for e in (reverse *global-code*) collect
 			 e)

@@ -2,9 +2,9 @@
 #define PROTO2_H
 int main ();  
 explicit CudaDeviceProperties (const cudaDeviceProp& props);  
- CudaDevicProperties (int device);  
-static FromExistingProperties (const cudaDeviceProp& props);  
-static ByIntegratedType (bool integrated);  
+ CudaDeviceProperties (int device);  
+static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props);  
+static CudaDeviceProperties ByIntegratedType (bool integrated);  
 const auto& getRawStruct ();  
 auto major ();  
 auto minor ();  

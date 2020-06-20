@@ -3,7 +3,6 @@
 
 #include "globals.h"
 
-#include "proto2.h"
 ;
 #include <cassert>
 #include <chrono>
@@ -14,9 +13,9 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "f62b37799ab23b7edf1efc3ea745e3c21ab3af9e";
+  state._main_version = "a017257de411d8b8bf4c02d101dbcddc34286fa9";
   state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "07:12:46 of Saturday, 2020-06-20 (GMT+1)";
+  state._code_generation_time = "14:13:04 of Saturday, 2020-06-20 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
