@@ -201,7 +201,12 @@
 		  (declare (type "const cudaDeviceProp&" props)
 			   (construct (_props props))
 			   (values explicit)
-			   ))))))
+			   ))
+		"public:"
+		(defun CudaDevicProperties (device)
+		  (declare (type int device)
+			   (values :constructor))
+		  (cudaGetDeviceProperties &_props device))))))
     (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"

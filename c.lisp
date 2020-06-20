@@ -93,6 +93,8 @@ entry return-values contains a list of return values. currently supports type, v
 			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
 			  (declare (ignorable symb))
+			  ;; if no values specified parse-defun will emit void
+			  ;; if (values :constructor) then nothing will be emitted
 			  (let ((types nil))
 			    ;; only collect types until occurrance of &optional
 			    (loop for type in types-opt do
@@ -193,11 +195,12 @@ entry return-values contains a list of return values. currently supports type, v
 	  (format s "~a ~a ~a~:[~;;~] ~@[: ~a~]"
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
-					;(funcall emit `(paren ,@r))
 			(break "multiple return values unsupported: ~a"
 			       r)
 			(if (car r)
-			    (car r)
+			    (case (car r)
+			      (:constructor "") ;; (values :constructor) will not print anything
+			      (t (car r)))
 			    "void")))
 		  name
 		  
