@@ -120,13 +120,22 @@
 		     *module-global-parameters*))))))
   (defun g (arg)
     `(dot state ,arg))
-  
+  (defun cuss (code)
+    `(unless (== CUDA_SUCCESS
+		 ,code)
+       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
+  (defun cuda (code)
+    `(unless (== cudaSuccess
+		 ,code)
+       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
+
   (define-module
       `(main ((_main_version :type "std::string")
 	      (_code_repository :type "std::string")
 	      (_code_generation_time :type "std::string")
 	      )
 	     (do0
+	      "// g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart"
 	      (include <iostream>
 		       <chrono>
 		       <cstdio>
@@ -134,7 +143,9 @@
 					;<unordered_map>
 		       <string>
 		       <fstream>
+		       <thread>
 		       )
+	      (include "vis_02_cu_device.cpp")
 
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
@@ -174,7 +185,11 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		
+		(let ((pro (CudaDeviceProperties--ByIntegratedType false))
+		      (dev (CudaDevice--FindByProperties
+			    pro)))
+		  ;(dev.setAsCurrent)
+		  )
 		,(logprint "end main" `())
 		(return 0)))))
 
@@ -191,24 +206,13 @@
 		  )
 	 
 	 )))
-  (defun cuss (code)
-    `(unless (== CUDA_SUCCESS
-		 ,code)
-       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
-  (defun cuda (code)
-    `(unless (== cudaSuccess
-		 ,code)
-       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
   (define-module
       `(cu_device
 	()
 	(do0
 	 "//  g++ --std=gnu++20 vis_02_cu_device.cpp -I /media/sdb4/cuda/11.0.1/include/"
-	 (include
-	  ;<driver_types.h>
-	  <cuda_runtime.h>
-		  <cuda.h>
-		  )
+	 (include <cuda_runtime.h>
+		  <cuda.h>)
 	 (include <algorithm>
 		  <vector>)
 	 (defclass CudaDeviceProperties ()
@@ -237,6 +241,7 @@
 			   (values "static CudaDeviceProperties"))
 		  (let ((props (space cudaDeviceProp (curly 0))))
 		    (setf props.integrated (? integrated 1 0))
+		    ;,(logprint "" `(props))
 		    (return (FromExistingProperties props))))
 		(defun getRawStruct ()
 		  (declare (values "const auto&")
@@ -273,14 +278,14 @@
 	       ,(cuss `(cuDeviceGet &h _device))
 	       (return h)))
 	   (defun FindByProperties (props)
-	     (declare (values "inline CudaDevice")
+	     (declare (values "static CudaDevice")
 		      (type "const CudaDeviceProperties&" props))
 	     (let ((device ))
 	       (declare (type int device))
 	       ,(cuda `(cudaChooseDevice &device (&props.getRawStruct)))
 	       (return (space CudaDevice (curly device)))))
 	   (defun NumberOfDevices ()
-	     (declare (values "inline int")
+	     (declare (values "static int")
 		      )
 	     (let ((numDevices 0))
 	       (declare (type int numDevices))
@@ -298,7 +303,7 @@
 				     (const))
 			    (return ,code))))
 	   (defun FindByName (name)
-	     (declare (values "inline CudaDevice")
+	     (declare (values "static CudaDevice")
 		      (type std--string name))
 	     
 	     (let ((numDevices (NumberOfDevices)))
@@ -322,7 +327,7 @@
 		     (return devi))))
 	       (throw (std--runtime_error (string "could not find cuda device by name")))))
 	   (defun EnumerateDevices ()
-	     (declare (values "inline std::vector<CudaDevice>")
+	     (declare (values "static std::vector<CudaDevice>")
 		      )
 	     
 	     (let ((res)
@@ -332,8 +337,7 @@
 		 (res.emplace_back i))
 	       (return res)))
 	   (defun CurrentDevice ()
-	     (declare (values "inline CudaDevice")
-		      )
+	     (declare (values "static CudaDevice"))
 	     
 	     (let ((device)
 		   )

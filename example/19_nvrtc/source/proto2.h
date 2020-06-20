@@ -12,12 +12,12 @@ bool integrated ();
 const char* name ();  
 explicit CudaDevice (int device);  
 inline CUdevice handle ();  
-inline CudaDevice FindByProperties (const CudaDeviceProperties& props);  
-inline int NumberOfDevices ();  
+static CudaDevice FindByProperties (const CudaDeviceProperties& props);  
+static int NumberOfDevices ();  
 void setAsCurrent ();  
 const auto & properties ();  
 const char* name ();  
-inline CudaDevice FindByName (std::string name);  
-inline std::vector<CudaDevice> EnumerateDevices ();  
-inline CudaDevice CurrentDevice ();  
+static CudaDevice FindByName (std::string name);  
+static std::vector<CudaDevice> EnumerateDevices ();  
+static CudaDevice CurrentDevice ();  
 #endif
