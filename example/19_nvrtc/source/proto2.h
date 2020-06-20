@@ -1,6 +1,8 @@
 #ifndef PROTO2_H
 #define PROTO2_H
 int main ();  
+template<typename... ARGS> explicit Code (ARGS&& ...args);  
+const auto& code ();  
 explicit CudaDeviceProperties (const cudaDeviceProp& props);  
  CudaDeviceProperties (int device);  
 static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props);  
@@ -20,4 +22,6 @@ const char* name ();
 static CudaDevice FindByName (std::string name);  
 static std::vector<CudaDevice> EnumerateDevices ();  
 static CudaDevice CurrentDevice ();  
+ CudaContext (const CudaDevice& device);  
+ ~CudaContext ();  
 #endif

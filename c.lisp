@@ -331,6 +331,8 @@ entry return-values contains a list of return values. currently supports type, v
 		   ;; space {args}*
 		   (let ((args (cdr code)))
 		     (format nil "~{~a~^ ~}" (mapcar #'emit args))))
+		  (comments (let ((args (cdr code)))
+                              (format nil "~{// ~a~%~}" args)))
 		  (paren
 		   ;; paren {args}*
 		   (let ((args (cdr code)))

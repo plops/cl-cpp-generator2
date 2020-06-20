@@ -5,7 +5,7 @@ LDFLAGS= \
 -lcudart \
 -lcuda
 
-vis: vis_00_main.cpp vis_02_cu_device.cpp
+vis: vis_00_main.cpp vis_01_rtc.cpp vis_02_cu_device.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o vis vis_00_main.cpp
 
 clean:

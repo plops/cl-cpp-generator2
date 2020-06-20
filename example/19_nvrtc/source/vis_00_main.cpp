@@ -6,6 +6,8 @@
 ;
 // g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
 // -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
+// -lcuda
+#include "vis_01_rtc.cpp"
 #include "vis_02_cu_device.cpp"
 #include <cassert>
 #include <chrono>
@@ -17,10 +19,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "915d57146a08262a13af147fc70565872f0bb406";
+  state._main_version = "6a0d9736d0d4aefde50b814a2bfb061cd40eb0ce";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "18:42:36 of Saturday, 2020-06-20 (GMT+1)";
+  state._code_generation_time = "19:03:47 of Saturday, 2020-06-20 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -37,6 +39,7 @@ int main() {
   auto dev = CudaDevice::FindByProperties(
       CudaDeviceProperties::ByIntegratedType(false));
   dev.setAsCurrent();
+  auto ctx = CudaContext(dev);
 
   (std::cout)
       << (std::setw(10))

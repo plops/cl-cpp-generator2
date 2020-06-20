@@ -135,7 +135,7 @@
 	      (_code_generation_time :type "std::string")
 	      )
 	     (do0
-	      "// g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart"
+	      "// g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart -lcuda"
 	      (include <iostream>
 		       <chrono>
 		       <cstdio>
@@ -146,6 +146,7 @@
 		       <thread>
 		       )
 	      (include "vis_02_cu_device.cpp")
+	      (include "vis_01_rtc.cpp")
 
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
@@ -188,6 +189,7 @@
 		(let ((dev (CudaDevice--FindByProperties
 			    (CudaDeviceProperties--ByIntegratedType false))))
 		  (dev.setAsCurrent)
+		  (let ((ctx (CudaContext dev))))
 		  )
 		,(logprint "end main" `())
 		(return 0)))))
@@ -200,10 +202,27 @@
 	()
 	(do0
 	 (include <nvrtc.h>
-		  <exception>
-		 ; <string>
-		  )
-	 
+		  <string>
+		  <fstream>
+		  <streambuf>)
+	 (comments "Code c{ <params> };  .. initialize"
+		   "Code c = Code::FromFile(fname);  .. load contents of file"
+		   "auto& code = c.code() .. get reference to internal string")
+	 (defclass Code ()
+	   (let ((_code))
+	     (declare (type "const std--string" _code)))
+	   "public:"
+	   (defun Code (...args)
+	     (declare (type ARGS&& ...args)
+		      (values "template<typename... ARGS> explicit")
+		      (construct (_code (space (std--forward<ARGS> args) "...")))))
+	   (defun code ()
+	     (declare (values "const auto&")
+		      (const))
+	     (return _code)))
+	 (defclass Program ()
+	   (let ((_prog))
+	     (declare (type nvrtcProgram _prog))))
 	 )))
   (define-module
       `(cu_device
@@ -343,7 +362,25 @@
 	       (declare (type int device))
 	       ,(cuda `(cudaGetDevice &device))
 	       (return (space CudaDevice (curly device)))))
-	   ))))
+	   )
+
+	 (defclass CudaContext ()
+	   (let ((_ctx))
+	     (declare (type CUcontext _ctx)))
+	   "public:"
+	   (defun CudaContext (device)
+	     (declare (type "const CudaDevice&" device)
+		      (construct (_ctx nullptr))
+		      (values :constructor))
+	     ,(cuss `(cuInit 0))
+	     ,(cuss `(cuCtxCreate &_ctx 0 (device.handle))))
+	   (defun ~CudaContext ()
+	     (declare (values :constructor))
+	     (when _ctx
+	       (cuCtxDestroy _ctx)
+	       
+	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
+		 ,(logprint "error when trying to destroy context" `()))))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
