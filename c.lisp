@@ -66,6 +66,7 @@ entry return-values contains a list of return values. currently supports type, v
   (let ((env (make-hash-table))
 	(captures nil)
 	(constructs nil)
+	(const-p nil)
 	(looking-p t) 
 	(new-body nil))
     (loop for e in body do
@@ -89,6 +90,8 @@ entry return-values contains a list of return values. currently supports type, v
 			      (declare (ignorable symb))
 			      (loop for var in vars do
 				   (push var constructs))))
+			  (when (eq (first declaration) 'const)
+			    (setf const-p t))
 			  
 			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
@@ -108,7 +111,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env (reverse captures) (reverse constructs))))
+    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -164,7 +167,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -184,7 +187,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only)
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -192,7 +195,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~a ~a ~a~:[~;;~] ~@[: ~a~]"
+	  (format s "~a ~a ~a~:[~;;~] ~@[~a~] ~@[: ~a~]"
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(break "multiple return values unsupported: ~a"
@@ -214,6 +217,9 @@ entry return-values contains a list of return values. currently supports type, v
 							      p)))
 						 p))))
 		  header-only
+		  (when (and const-p
+			     (not header-only))
+		    "const")
 		  (when (and constructs
 			     (not header-only))
 		   (funcall emit `(comma ,@(mapcar emit constructs)))))
@@ -229,7 +235,7 @@ entry return-values contains a list of return values. currently supports type, v
   ;; support for captures (placed into the first set of brackets)
   ;; (declare (capture &app bla)) will result in [&app, bla]
   (destructuring-bind (lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p) (consume-declare body)
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)

@@ -206,8 +206,38 @@
 		(defun CudaDevicProperties (device)
 		  (declare (type int device)
 			   (values :constructor))
-		  (cudaGetDeviceProperties &_props device))))))
-    (progn
+		  (cudaGetDeviceProperties &_props device)
+		  (let ((nameSize (/ (sizeof _props.name)
+				     (sizeof (aref _props.name 0)))))
+		    (setf (aref _props.name (- namesSize 1))
+			  (char \\0))))
+		(defun FromExistingProperties (props)
+		  (declare (type "const cudaDeviceProp&" props)
+			   (values static))
+		  (return (space CudaDeviceProperties (curly props))))
+		(defun ByIntegratedType (integrated)
+		  (declare (type bool integrated)
+			   (values static))
+		  (let ((props (space cudaDeviceProps (curly 0))))
+		    (setf props.integrated (? integrated 1 0))
+		    (return (FromExistingProperties props))))
+		(defun getRawStruct ()
+		  (declare (values "const auto&")
+			   (const))
+		  (return _props))
+		,@(loop for e in `((major)
+				   (minor)
+				   (integrated :type bool :code (< 0 _props.integrated))
+				   (name :type "const char*"))
+		     collect
+		       (destructuring-bind (name &key code (type "auto")) e
+			 `(defun ,name ()
+			    (declare (values ,type)
+				     (const))
+			    ,(if code
+				`(return ,code)
+				`(return (dot _props ,name))))))))))
+  (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
 								       *source-dir*))
