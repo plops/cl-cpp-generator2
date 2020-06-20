@@ -124,6 +124,10 @@
     `(unless (== CUDA_SUCCESS
 		 ,code)
        (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
+  (defun rtc (code)
+    `(unless (== NVRTC_SUCCESS
+		 ,code)
+       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
   (defun cuda (code)
     `(unless (== cudaSuccess
 		 ,code)
@@ -240,7 +244,7 @@
 	     (return _code)))
 
 	 
-	 (defclass Header ("public Code")
+	 (defclass Header "public Code"
 	   (let ((_name))
 	     (declare (type "const std::string" _name))
 	     )
@@ -248,7 +252,7 @@
 	   (defun Header (name ...args)
 	     (declare (type "const std::string&" name)
 		      (type ARGS&& ...args)
-		      (values "template<typename... ARGS> explicit")
+		      (values "template<typename... ARGS>")
 		      ;; who thought of this grammar? this is a mess
 		      (construct (Code (space (std--forward<ARGS> args) "..."))
 				 (_name name))))
@@ -267,6 +271,26 @@
 	     (declare (type nvrtcProgram _prog))
 	     )
 	   "public:"
+	   (defun Program (name code headers)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (type "const std::vector<Header>&" headers)
+		      
+		      (values :constructor))
+	     (let ((nh (headers.size))
+		   (headersContent)
+		   (headersNames))
+	       (declare (type "std::vector<const char*>" headersContent headersNames))
+	       (for-range (&h headers)
+			  (headersContent.push_back (dot h (code) (c_str)))
+			  (headersContent.push_back (dot h (name) (c_str))))
+	       ,(rtc `(nvrtcCreateProgram
+				  &_prog
+				  (dot code (code) (c_str))
+				  (name.c_str)
+				  (static_cast<int> nh)
+				  (? (< 0 nh) (headersContent.data) nullptr)
+				  (? (< 0 nh) (headersNames.data) nullptr)))))
 	   (defun Program (name code)
 	     (declare (type "const std::string&" name)
 		      (type "const Code&" code)

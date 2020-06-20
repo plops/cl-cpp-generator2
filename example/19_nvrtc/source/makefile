@@ -3,7 +3,8 @@ CXXFLAGS=-O0 -march=native -Wall -std=gnu++20 \
 LDFLAGS= \
 -L/media/sdb4/cuda/11.0.1/lib \
 -lcudart \
--lcuda
+-lcuda \
+-lnvrtc
 
 vis: vis_00_main.cpp vis_01_rtc.cpp vis_02_cu_device.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o vis vis_00_main.cpp

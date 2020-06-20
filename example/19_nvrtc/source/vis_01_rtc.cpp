@@ -34,12 +34,12 @@ public:
   }
   const auto &code() const { return _code; }
 };
-class Header : public Code() {
+class Header : public Code {
   const std::string _name;
 
 public:
   template <typename... ARGS>
-  explicit Header(const std::string &name, ARGS &&... args)
+  Header(const std::string &name, ARGS &&... args)
       : Code(std::forward<ARGS>(args)...), _name(name) {}
   const auto &name() const { return _name; }
 };
@@ -47,6 +47,26 @@ class Program {
   nvrtcProgram _prog;
 
 public:
+  Program(const std::string &name, const Code &code,
+          const std::vector<Header> &headers) {
+    auto nh = headers.size();
+    std::vector<const char *> headersContent;
+    std::vector<const char *> headersNames;
+    for (auto &h : headers) {
+      headersContent.push_back(h.code().c_str());
+      headersContent.push_back(h.name().c_str());
+    };
+    if (!((NVRTC_SUCCESS) ==
+          (nvrtcCreateProgram(
+              &_prog, code.code().c_str(), name.c_str(), static_cast<int>(nh),
+              ((0) < (nh)) ? (headersContent.data()) : (nullptr),
+              ((0) < (nh)) ? (headersNames.data()) : (nullptr))))) {
+      throw std::runtime_error(
+          "nvrtcCreateProgram(&_prog, code.code().c_str(), name.c_str(), "
+          "static_cast<int>(nh), ((0)<(nh)) ? (headersContent.data()) : "
+          "(nullptr), ((0)<(nh)) ? (headersNames.data()) : (nullptr))");
+    };
+  }
   Program(const std::string &name, const Code &code)
       : Program(name, code, {}) {}
 };
