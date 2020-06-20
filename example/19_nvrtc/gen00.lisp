@@ -162,7 +162,7 @@
 		(setf
 		 
 		 
-                 ,(g `_code_repository) (string ,(format nil "http://10.1.10.5:30080/martin/py_wavelength_tune/"))
+                 ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc"))
 		 
                  ,(g `_code_generation_time) 
                  (string ,(multiple-value-bind
@@ -185,10 +185,9 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		(let ((pro (CudaDeviceProperties--ByIntegratedType false))
-		      (dev (CudaDevice--FindByProperties
-			    pro)))
-		  ;(dev.setAsCurrent)
+		(let ((dev (CudaDevice--FindByProperties
+			    (CudaDeviceProperties--ByIntegratedType false))))
+		  (dev.setAsCurrent)
 		  )
 		,(logprint "end main" `())
 		(return 0)))))

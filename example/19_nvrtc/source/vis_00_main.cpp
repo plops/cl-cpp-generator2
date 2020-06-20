@@ -17,9 +17,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "efd61cdb8540ed48fa773a4ff0c290705c8a0053";
-  state._code_repository = "http://10.1.10.5:30080/martin/py_wavelength_tune/";
-  state._code_generation_time = "18:39:37 of Saturday, 2020-06-20 (GMT+1)";
+  state._main_version = "915d57146a08262a13af147fc70565872f0bb406";
+  state._code_repository =
+      "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
+  state._code_generation_time = "18:42:36 of Saturday, 2020-06-20 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -33,8 +34,9 @@ int main() {
       << (state._code_repository) << ("'") << (std::setw(8))
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
-  auto pro = CudaDeviceProperties::ByIntegratedType(false);
-  auto dev = CudaDevice::FindByProperties(pro);
+  auto dev = CudaDevice::FindByProperties(
+      CudaDeviceProperties::ByIntegratedType(false));
+  dev.setAsCurrent();
 
   (std::cout)
       << (std::setw(10))
