@@ -209,7 +209,8 @@
 	  <cuda_runtime.h>
 		  <cuda.h>
 		  )
-	 (include <algorithm>)
+	 (include <algorithm>
+		  <vector>)
 	 (defclass CudaDeviceProperties ()
 		(let ((_props))
 		  (declare (type cudaDeviceProp _props)))
@@ -319,7 +320,27 @@
 				   --tolower)
 		   (unless (== std--string--npos (deviName.find name))
 		     (return devi))))
-	       (throw (std--runtime_error (string "could not find cuda device by name")))))))))
+	       (throw (std--runtime_error (string "could not find cuda device by name")))))
+	   (defun EnumerateDevices ()
+	     (declare (values "inline std::vector<CudaDevice>")
+		      )
+	     
+	     (let ((res)
+		   (n (NumberOfDevices)))
+	       (declare (type std--vector<CudaDevice> res))
+	       (dotimes (i n)
+		 (res.emplace_back i))
+	       (return res)))
+	   (defun CurrentDevice ()
+	     (declare (values "inline CudaDevice")
+		      )
+	     
+	     (let ((device)
+		   )
+	       (declare (type int device))
+	       ,(cuda `(cudaGetDevice &device))
+	       (return (space CudaDevice (curly device)))))
+	   ))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"

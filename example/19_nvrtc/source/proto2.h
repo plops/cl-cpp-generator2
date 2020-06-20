@@ -18,4 +18,6 @@ void setAsCurrent ();
 const auto & properties ();  
 const char* name ();  
 inline CudaDevice FindByName (std::string name);  
+inline std::vector<CudaDevice> EnumerateDevices ();  
+inline CudaDevice CurrentDevice ();  
 #endif
