@@ -11,5 +11,11 @@ auto minor ();
 bool integrated ();  
 const char* name ();  
 explicit CudaDevice (int device);  
-CUdevice handle ();  
+inline CUdevice handle ();  
+inline CudaDevice FindByProperties (const CudaDeviceProperties& props);  
+inline int NumberOfDevices ();  
+void setAsCurrent ();  
+const auto & properties ();  
+const char* name ();  
+inline CudaDevice FindByName (std::string name);  
 #endif

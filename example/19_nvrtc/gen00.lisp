@@ -195,6 +195,10 @@
     `(unless (== CUDA_SUCCESS
 		 ,code)
        (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
+  (defun cuda (code)
+    `(unless (== cudaSuccess
+		 ,code)
+       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
   (define-module
       `(cu_device
 	()
@@ -205,6 +209,7 @@
 	  <cuda_runtime.h>
 		  <cuda.h>
 		  )
+	 (include <algorithm>)
 	 (defclass CudaDeviceProperties ()
 		(let ((_props))
 		  (declare (type cudaDeviceProp _props)))
@@ -260,12 +265,61 @@
 		      (construct (_device device)
 				 (_props device))))
 	   (defun handle ()
-	     (declare (values CUdevice)
+	     (declare (values "inline CUdevice")
 		      (const))
 	     (let ((h ))
 	       (declare (type CUdevice h))
 	       ,(cuss `(cuDeviceGet &h _device))
-	       (return h)))))))
+	       (return h)))
+	   (defun FindByProperties (props)
+	     (declare (values "inline CudaDevice")
+		      (type "const CudaDeviceProperties&" props))
+	     (let ((device ))
+	       (declare (type int device))
+	       ,(cuda `(cudaChooseDevice &device (&props.getRawStruct)))
+	       (return (space CudaDevice (curly device)))))
+	   (defun NumberOfDevices ()
+	     (declare (values "inline int")
+		      )
+	     (let ((numDevices 0))
+	       (declare (type int numDevices))
+	       ,(cuda `(cudaGetDeviceCount &numDevices))
+	       (return numDevices)))
+	   (defun setAsCurrent ()
+	     (cudaSetDevice _device))
+	   ,@(loop for e in `((properties :type "const auto &" :code _props)
+			      (name :type "const char*" :code (dot (properties)
+								   (name))))
+		     collect
+		       (destructuring-bind (name &key code (type "auto")) e
+			 `(defun ,name ()
+			    (declare (values ,type)
+				     (const))
+			    (return ,code))))
+	   (defun FindByName (name)
+	     (declare (values "inline CudaDevice")
+		      (type std--string name))
+	     
+	     (let ((numDevices (NumberOfDevices)))
+	       
+	       (when (== numDevices 0)
+		 (throw (std--runtime_error (string "no cuda devices found"))))
+	       (std--transform (name.begin)
+			       (name.end)
+			       (name.begin)
+			       --tolower)
+	       (dotimes (i numDevices)
+		 (let ((devi (CudaDevice i))
+		       (deviName (std--string (devi.name))))
+		   #+nil (declare (type CudaDevice (space devi (curly i)))
+			    (type std--string (space deviName (curly (devi.name)))))
+		   (std--transform (deviName.begin)
+				   (deviName.end)
+				   (deviName.begin)
+				   --tolower)
+		   (unless (== std--string--npos (deviName.find name))
+		     (return devi))))
+	       (throw (std--runtime_error (string "could not find cuda device by name")))))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
