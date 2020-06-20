@@ -19,6 +19,18 @@ class Code {
 public:
   template <typename... ARGS>
   explicit Code(ARGS &&... args) : _code(std::forward<ARGS>(args)...) {}
+  static Code FromFile(const std::string &name) {
+    auto input = std::ifstream(name);
+    if (!(input.good())) {
+      throw std::runtime_error("can't read file");
+    };
+    input.seekg(0, std::ios::end);
+    auto str = std::string(input.tellg());
+    input.seekg(0, std::ios::beg);
+    str.assign(std::istreambuf_iterator<char>(input),
+               std::istreambuf_iterator<char>());
+    return Code{std::move(str)};
+  }
   const auto &code() const { return _code; }
 };
 class Program {
