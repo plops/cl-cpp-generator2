@@ -10,4 +10,6 @@ auto major ();
 auto minor ();  
 bool integrated ();  
 const char* name ();  
+explicit CudaDevice (int device);  
+CUdevice handle ();  
 #endif

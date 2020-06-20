@@ -185,8 +185,16 @@
       `(rtc
 	()
 	(do0
-	 (include <nvrtc.h>)
+	 (include <nvrtc.h>
+		  <exception>
+		 ; <string>
+		  )
+	 
 	 )))
+  (defun cuss (code)
+    `(unless (== CUDA_SUCCESS
+		 ,code)
+       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
   (define-module
       `(cu_device
 	()
@@ -244,7 +252,20 @@
 	   (let ((_device)
 		 (_props))
 	     (declare (type int _device)
-		      (type CudaDeviceProperties _props)))))))
+		      (type CudaDeviceProperties _props)))
+	   "public:"
+	   (defun CudaDevice (device)
+	     (declare (type int device)
+		      (values explicit)
+		      (construct (_device device)
+				 (_props device))))
+	   (defun handle ()
+	     (declare (values CUdevice)
+		      (const))
+	     (let ((h ))
+	       (declare (type CUdevice h))
+	       ,(cuss `(cuDeviceGet &h _device))
+	       (return h)))))))
   (progn
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						      (merge-pathnames #P"proto2.h"
