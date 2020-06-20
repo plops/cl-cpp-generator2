@@ -238,6 +238,30 @@
 	     (declare (values "const auto&")
 		      (const))
 	     (return _code)))
+
+	 
+	 (defclass Header ("public Code")
+	   (let ((_name))
+	     (declare (type "const std::string" _name))
+	     )
+	   "public:"
+	   (defun Header (name ...args)
+	     (declare (type "const std::string&" name)
+		      (type ARGS&& ...args)
+		      (values "template<typename... ARGS> explicit")
+		      ;; who thought of this grammar? this is a mess
+		      (construct (Code (space (std--forward<ARGS> args) "..."))
+				 (_name name))))
+	   ,@(loop for e in `(
+			      (name :type "const auto&" :code _name))
+		     collect
+		       (destructuring-bind (name &key code (type "auto")) e
+			 `(defun ,name ()
+			    (declare (values ,type)
+				     (const))
+			    (return ,code))))
+	   )
+
 	 (defclass Program ()
 	   (let ((_prog))
 	     (declare (type nvrtcProgram _prog))

@@ -4,6 +4,8 @@ int main ();
 template<typename... ARGS> explicit Code (ARGS&& ...args);  
 static Code FromFile (const std::string& name);  
 const auto& code ();  
+template<typename... ARGS> explicit Header (const std::string& name, ARGS&& ...args);  
+const auto& name ();  
  Program (const std::string& name, const Code& code);  
 explicit CudaDeviceProperties (const cudaDeviceProp& props);  
  CudaDeviceProperties (int device);  

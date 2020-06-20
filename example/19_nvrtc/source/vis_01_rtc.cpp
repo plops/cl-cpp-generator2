@@ -34,6 +34,15 @@ public:
   }
   const auto &code() const { return _code; }
 };
+class Header : public Code() {
+  const std::string _name;
+
+public:
+  template <typename... ARGS>
+  explicit Header(const std::string &name, ARGS &&... args)
+      : Code(std::forward<ARGS>(args)...), _name(name) {}
+  const auto &name() const { return _name; }
+};
 class Program {
   nvrtcProgram _prog;
 
