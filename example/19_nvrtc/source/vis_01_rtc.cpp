@@ -14,7 +14,7 @@ extern State state;
 // auto& code = c.code() .. get reference to internal string
 ;
 class Code {
-  const std-- string _code;
+  const std::string _code;
 
 public:
   template <typename... ARGS>
@@ -25,7 +25,8 @@ public:
       throw std::runtime_error("can't read file");
     };
     input.seekg(0, std::ios::end);
-    auto str = std::string(input.tellg());
+    std::string str;
+    str.reserve(input.tellg());
     input.seekg(0, std::ios::beg);
     str.assign(std::istreambuf_iterator<char>(input),
                std::istreambuf_iterator<char>());
@@ -35,4 +36,8 @@ public:
 };
 class Program {
   nvrtcProgram _prog;
+
+public:
+  Program(const std::string &name, const Code &code)
+      : Program(name, code, {}) {}
 };

@@ -2,7 +2,9 @@
 #define PROTO2_H
 int main ();  
 template<typename... ARGS> explicit Code (ARGS&& ...args);  
+static Code FromFile (const std::string& name);  
 const auto& code ();  
+ Program (const std::string& name, const Code& code);  
 explicit CudaDeviceProperties (const cudaDeviceProp& props);  
  CudaDeviceProperties (int device);  
 static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props);  
