@@ -483,7 +483,10 @@
 							 (name)
 							 (c_str)))))
 	   (defun compile (&key (opt (curly)))
-	     (declare (type "const CompilationOptions&" opt))))
+	     (declare (type "const CompilationOptions&" opt))
+	     ,(rtc `(nvrtcCompileProgram _prog
+					 (static_cast<int> (opt.numOptions))
+					 (opt.options)))))
 
 
 	 

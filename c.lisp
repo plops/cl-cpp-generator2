@@ -223,14 +223,17 @@ entry return-values contains a list of return values. currently supports type, v
 				  ;; key parameters
 				  ;; http://www.crategus.com/books/alexandria/pages/alexandria.0.dev_fun_parse-ordinary-lambda-list.html
 				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
-					 (format nil "~a ~a = ~a"
-						 (let ((type (gethash keyword-name env)))
-						   (if type
-						       (funcall emit type)
-						       (break "can't find type for keyword parameter ~a in defun"
-							      keyword-name)))
-						 keyword-name
-						 init))
+					 (progn
+					   (format t "~a~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
+								     (format nil "'~a'='~a'~%" k v)) keyword-name init))
+					  (format nil "~a ~a = ~a"
+						  (let ((type (gethash keyword-name env)))
+						    (if type
+							(funcall emit type)
+							(break "can't find type for keyword parameter ~a in defun"
+							       keyword-name)))
+						  keyword-name
+						  init)))
 				  ))
 		  
 		  ;; semicolon if header only
