@@ -455,7 +455,7 @@ entry return-values contains a list of return values. currently supports type, v
 						 (emit name)
 						 (when parents
 						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body) :class (emit name) :header-only t)))))
+						 (emit `(progn ,@body) :class nil :header-only t)))))
 			    (progn
 			      ;; only create function definitions of the class
 			      ;; expand defun but non of the other commands
