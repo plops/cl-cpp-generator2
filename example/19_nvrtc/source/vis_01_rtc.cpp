@@ -127,16 +127,16 @@ public:
   ;
 };
 namespace detail {
-template <typename T, typename U, typename... REST>
-static inline auto AddTypesToTemplate(Kernel::TemplateParameters &params) {
-  params.addType<T>();
-  AddTypesToTemplate<U, REST...>(params);
-}
+static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
 template <typename T>
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
   params.addType<T>();
 }
-static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
+template <typename T, typename U, typename... REST>
+static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
+  params.addType<T>();
+  AddTypesToTemplate<U, REST...>(params);
+}
 }; // namespace detail
 template <typename... ARGS> inline Kernel &Kernel::instantiate() {
   TemplateParameters tp;
