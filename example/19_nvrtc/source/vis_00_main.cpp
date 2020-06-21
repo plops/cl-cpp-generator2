@@ -19,10 +19,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "1f5c4c1b1dc1e4943bdfeb986b32092c745b06d6";
+  state._main_version = "92b11d220ef8a3573ef72e27d743cb5b9766c983";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "09:17:41 of Sunday, 2020-06-21 (GMT+1)";
+  state._code_generation_time = "10:35:00 of Sunday, 2020-06-21 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

@@ -5,6 +5,7 @@
 
 ;
 extern State state;
+#include <cuda.h>
 #include <fstream>
 #include <nvrtc.h>
 #include <streambuf>
@@ -110,3 +111,28 @@ public:
     return instantiate(tp);
   }
 };
+namespace detail {
+template <typename... ARGS>
+static inline std::vector<void *> BuildArgs(const ARGS &... args) {
+  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
+}
+template <typename T> class NameExtractor {
+  static std::string extract() {
+    nvrtcGetTypeName<T>(&type_name);
+    return type_name;
+  }
+};
+template <typename T, T t> class NameExtractor<std::integral_constant<T, y>> {
+  static std::string extract() { return std::to_string(y); }
+};
+template <typename T, typename U, typename... REST>
+static inline auto AddTypesToTemplate(Kernel::TemplateParameters &params) {
+  params.addType<T>();
+  AddTypesToTemplate<U, REST...>(params);
+}
+template <typename T>
+static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
+  params.addType<T>();
+}
+static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
+}; // namespace detail

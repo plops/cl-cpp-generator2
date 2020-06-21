@@ -220,6 +220,7 @@
 	()
 	(do0
 	 (include <nvrtc.h>
+		  <cuda.h>
 		  <string>
 		  <fstream>
 		  <streambuf>)
@@ -309,6 +310,10 @@
 		      (construct (Program name code (curly)))
 		      (values :constructor))))
 
+
+
+	 
+	 
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
 		 (_name))
@@ -360,6 +365,40 @@
 	       (declare (type TemplateParameters tp))
 	       (detail--AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp)))))
+
+	 (space namespace detail
+		(progn
+		 (defun BuildArgs (...args)
+		   (declare (type "const ARGS&" ...args)
+			    (values "template<typename... ARGS> static inline std::vector<void*>"))
+		   (return (curly (space
+				   (const_cast<void*>
+				    ("reinterpret_cast<const void*>" &args))
+				   "..."))))
+		 (space "template<typename T>"
+		  (defclass NameExtractor ()
+		    (defun extract ()
+		      (declare (values "static std::string"))
+		      (nvrtcGetTypeName<T> &type_name)
+		      (return type_name))))
+		 (space "template<typename T, T t>"
+		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
+		    (defun extract ()
+		      (declare (values "static std::string"))
+		      (return (std--to_string y)))))
+		 (defun AddTypesToTemplate (params)
+		   (declare (values "template<typename T, typename U, typename... REST> static inline auto")
+			    (type "Kernel::TemplateParameters&" params))
+		   (params.addType<T>)
+		   ("AddTypesToTemplate<U, REST...>" params))
+		 (defun AddTypesToTemplate (params)
+		   (declare (values "template<typename T> static inline void")
+			    (type "Kernel::TemplateParameters&" params))
+		   (params.addType<T>))
+		 (defun AddTypesToTemplate (params)
+		   (declare (values "static inline void")
+			    (type "Kernel::TemplateParameters&" params))
+		   )))
 	 )))
   (define-module
       `(cu_device
