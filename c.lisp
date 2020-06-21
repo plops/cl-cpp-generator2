@@ -430,6 +430,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  (parse-defun code #'emit)
 			(when hook-defun
 			  (funcall hook-defun (parse-defun code #'emit :header-only t)))))
+		  (defun* (parse-defun code #'emit :header-only t))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (co_return (format nil "co_return ~a" (emit (car (cdr code)))))
 		  (co_await (format nil "co_await ~a" (emit (car (cdr code)))))

@@ -312,7 +312,29 @@
 
 
 
-	 
+	 (space namespace detail
+		(progn
+		 (defun BuildArgs (...args)
+		   (declare (type "const ARGS&" ...args)
+			    (values "template<typename... ARGS> static inline std::vector<void*>"))
+		   (return (curly (space
+				   (const_cast<void*>
+				    ("reinterpret_cast<const void*>" &args))
+				   "..."))))
+		 (space "template<typename T>"
+		  (defclass NameExtractor ()
+		    (defun extract ()
+		      (declare (values "static std::string"))
+		      (let ((type_name))
+			(declare (type std--string type_name))
+			(nvrtcGetTypeName<T> &type_name)
+		       (return type_name)))))
+		 (space "template<typename T, T y>"
+		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
+		    (defun extract ()
+		      (declare (values "static std::string"))
+		      (return (std--to_string y)))))
+		 ))
 	 
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
@@ -358,35 +380,14 @@
 			    (tp)
 			    (string ">")))
 	     (return *this))
-	   (defun instantiate ()
-	     (declare 
-		      (values "template<typename... ARGS> inline Kernel&"))
-	     (let ((tp))
-	       (declare (type TemplateParameters tp))
-	       (detail--AddTypesToTemplate<ARGS...> tp)
-	       (return (instantiate tp)))))
+	   (defun* instantiate ()
+	     (declare (values "template<typename... ARGS> Kernel&"))
+	     ))
 
+	 
 	 (space namespace detail
 		(progn
-		 (defun BuildArgs (...args)
-		   (declare (type "const ARGS&" ...args)
-			    (values "template<typename... ARGS> static inline std::vector<void*>"))
-		   (return (curly (space
-				   (const_cast<void*>
-				    ("reinterpret_cast<const void*>" &args))
-				   "..."))))
-		 (space "template<typename T>"
-		  (defclass NameExtractor ()
-		    (defun extract ()
-		      (declare (values "static std::string"))
-		      (nvrtcGetTypeName<T> &type_name)
-		      (return type_name))))
-		 (space "template<typename T, T t>"
-		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
-		    (defun extract ()
-		      (declare (values "static std::string"))
-		      (return (std--to_string y)))))
-		 (defun AddTypesToTemplate (params)
+		  (defun AddTypesToTemplate (params)
 		   (declare (values "template<typename T, typename U, typename... REST> static inline auto")
 			    (type "Kernel::TemplateParameters&" params))
 		   (params.addType<T>)
@@ -399,6 +400,13 @@
 		   (declare (values "static inline void")
 			    (type "Kernel::TemplateParameters&" params))
 		   )))
+
+	 (defun "Kernel::instantiate" ()
+	     (declare (values "template<typename... ARGS> inline Kernel&"))
+	     (let ((tp))
+	       (declare (type TemplateParameters tp))
+	       (detail--AddTypesToTemplate<ARGS...> tp)
+	       (return (instantiate tp))))
 	 )))
   (define-module
       `(cu_device

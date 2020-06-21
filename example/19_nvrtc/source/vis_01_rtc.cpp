@@ -71,6 +71,22 @@ public:
   Program(const std::string &name, const Code &code)
       : Program(name, code, {}) {}
 };
+namespace detail {
+template <typename... ARGS>
+static inline std::vector<void *> BuildArgs(const ARGS &... args) {
+  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
+}
+template <typename T> class NameExtractor {
+  static std::string extract() {
+    std::string type_name;
+    nvrtcGetTypeName<T>(&type_name);
+    return type_name;
+  }
+};
+template <typename T, T y> class NameExtractor<std::integral_constant<T, y>> {
+  static std::string extract() { return std::to_string(y); }
+};
+}; // namespace detail
 class Kernel {
   CUfunction _kernel = nullptr;
   std::string _name;
@@ -105,26 +121,10 @@ public:
     _name = ((_name) + ("<") + (tp()) + (">"));
     return *this;
   }
-  template <typename... ARGS> inline Kernel &instantiate() {
-    TemplateParameters tp;
-    detail::AddTypesToTemplate<ARGS...>(tp);
-    return instantiate(tp);
-  }
+  template <typename... ARGS> Kernel &instantiate();
+  ;
 };
 namespace detail {
-template <typename... ARGS>
-static inline std::vector<void *> BuildArgs(const ARGS &... args) {
-  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
-}
-template <typename T> class NameExtractor {
-  static std::string extract() {
-    nvrtcGetTypeName<T>(&type_name);
-    return type_name;
-  }
-};
-template <typename T, T t> class NameExtractor<std::integral_constant<T, y>> {
-  static std::string extract() { return std::to_string(y); }
-};
 template <typename T, typename U, typename... REST>
 static inline auto AddTypesToTemplate(Kernel::TemplateParameters &params) {
   params.addType<T>();
@@ -136,3 +136,8 @@ static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
 }
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
 }; // namespace detail
+template <typename... ARGS> inline Kernel &Kernel::instantiate() {
+  TemplateParameters tp;
+  detail::AddTypesToTemplate<ARGS...>(tp);
+  return instantiate(tp);
+};
