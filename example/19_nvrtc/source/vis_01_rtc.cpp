@@ -70,3 +70,43 @@ public:
   Program(const std::string &name, const Code &code)
       : Program(name, code, {}) {}
 };
+class Kernel {
+  CUfunction _kernel = nullptr;
+  std::string _name;
+
+public:
+  inline Kernel(const std::string &name) : _name(name) {}
+  class TemplateParameters {
+    std::string _val;
+    bool _first = true;
+    void addComma() {
+      if (_first) {
+        _first = false;
+      } else {
+        _val = ((_val) + (","));
+      }
+    }
+
+  public:
+    template <typename T> auto &addValue(const T &val) {
+      addComma();
+      _val = ((_val) + (std::string(val)));
+      return *this;
+    }
+    template <typename T> auto &addType() {
+      addComma();
+      _val = ((_val) + (detail::NameExtractor<T>::extract()));
+      return *this;
+    }
+    const std::string &operator()() const { return _val; };
+  };
+  inline Kernel &instantiate(const TemplateParameters &tp) {
+    _name = ((_name) + ("<") + (tp()) + (">"));
+    return *this;
+  }
+  template <typename... ARGS> inline Kernel &instantiate() {
+    TemplateParameters tp;
+    detail::AddTypesToTemplate<ARGS...>(tp);
+    return instantiate(tp);
+  }
+};
