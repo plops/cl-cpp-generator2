@@ -17,7 +17,7 @@ extern State state;
 // auto& code = c.code() .. get reference to internal string
 ;
 template <typename... ARGS>
-explicit Code::Code(ARGS &&... args) : _code(std::forward<ARGS>(args)...) {}
+Code::Code(ARGS &&... args) : _code(std::forward<ARGS>(args)...) {}
 static Code Code::FromFile(const std::string &name) {
   auto input = std::ifstream(name);
   if (!(input.good())) {
@@ -151,7 +151,7 @@ inline void Program::registerKernel(const Kernel &k) {
     throw std::runtime_error("nvrtcAddNameExpression(_prog, k.name().c_str())");
   };
 }
-void Program::compile(const CompilationOptions &opt = {}) {
+void Program::compile(const CompilationOptions &opt) {
   if (!((NVRTC_SUCCESS) ==
         (nvrtcCompileProgram(_prog, static_cast<int>(opt.numOptions()),
                              opt.options())))) {

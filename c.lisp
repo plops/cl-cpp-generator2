@@ -233,14 +233,15 @@ entry return-values contains a list of return values. currently supports type, v
 					 (progn
 					   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
 								       (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
-					  (format nil "~a ~a = ~a"
+					  (format nil "~a ~a ~@[~a~]"
 						  (let ((type (gethash name env)))
 						    (if type
 							(funcall emit type)
 							(break "can't find type for keyword parameter ~a in defun"
 							       name)))
 						  name
-						 (funcall emit init))))
+						  (when header-only ;; only in class definition
+						   (format nil "= ~a" (funcall emit init))))))
 				  ))
 		  
 		  ;; semicolon if header only
@@ -455,7 +456,7 @@ entry return-values contains a list of return values. currently supports type, v
 						 (emit name)
 						 (when parents
 						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body) :class nil :header-only t)))))
+						 (emit `(progn ,@body) :class (emit name) :header-only t)))))
 			    (progn
 			      ;; only create function definitions of the class
 			      ;; expand defun but non of the other commands
@@ -471,7 +472,8 @@ entry return-values contains a list of return values. currently supports type, v
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defun
 		      (prog1
-			  (parse-defun code #'emit :class current-class :header-only header-only)
+			  (parse-defun code #'emit :class current-class :header-only header-only
+				       )
 			(when (and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))

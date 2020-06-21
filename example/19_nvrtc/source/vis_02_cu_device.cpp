@@ -11,7 +11,7 @@ extern State state;
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <vector>
-explicit CudaDeviceProperties::CudaDeviceProperties(const cudaDeviceProp &props)
+CudaDeviceProperties::CudaDeviceProperties(const cudaDeviceProp &props)
     : _props(props) {}
 CudaDeviceProperties::CudaDeviceProperties(int device) {
   cudaGetDeviceProperties(&_props, device);
@@ -35,7 +35,7 @@ bool CudaDeviceProperties::integrated() const {
   return (0) < (_props.integrated);
 }
 const char *CudaDeviceProperties::name() const { return _props.name; };
-explicit CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
+CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
 inline CUdevice CudaDevice::handle() const {
   CUdevice h;
   if (!((CUDA_SUCCESS) == (cuDeviceGet(&h, _device)))) {

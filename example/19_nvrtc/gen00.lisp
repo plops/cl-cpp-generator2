@@ -247,7 +247,7 @@
 	   "public:"
 	   (defun Code (...args)
 	     (declare (type ARGS&& ...args)
-		      (values "template<typename... ARGS> explicit")
+		      (values "template<typename... ARGS>") ; explicit
 		      ;; who thought of this grammar? this is a mess
 		      (construct (_code (space (std--forward<ARGS> args) "...")))))
 	   (defun FromFile (name)
@@ -594,7 +594,7 @@
 		(defun CudaDeviceProperties (props)
 		  (declare (type "const cudaDeviceProp&" props)
 			   (construct (_props props))
-			   (values explicit)
+			   (values :constructor) ;explicit
 			   ))
 		"public:"
 		(defun CudaDeviceProperties (device)
@@ -640,7 +640,7 @@
 	   "public:"
 	   (defun CudaDevice (device)
 	     (declare (type int device)
-		      (values explicit)
+		      (values :constructor) ; explicit
 		      (construct (_device device)
 				 (_props device))))
 	   (defun handle ()
@@ -751,13 +751,16 @@
 	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
 	       
 	       (unless cuda
-		 #+nil (progn (format t "emit function declarations for ~a~%" name)
+		 (progn (format t "emit function declarations for ~a~%" name)
 			      (emit-c :code code :hook-defun 
 				      #'(lambda (str)
-					  (format t "~a~%" str))))
+					  (format t "~a~%" str))
+				      :header-only nil))
 		 (emit-c :code code
 			 :hook-defun #'(lambda (str)
-					 (format s "~a~%" str))
+					 (format s "~a~%" str)
+					 )
+			 :header-only t
 			 ))
 
 	       #+nil (format t "emit cpp file for ~a~%" name)
