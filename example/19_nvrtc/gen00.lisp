@@ -1,3 +1,8 @@
+(declaim (optimize 
+	  (safety 3)
+	  (speed 0)
+	  (debug 3)))
+
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
      (ql:quickload "cl-ppcre"))
@@ -15,7 +20,6 @@
 
 
 (progn
-
   (defparameter *source-dir* #P"example/19_nvrtc/source/")
   
   (defparameter *day-names*
@@ -84,6 +88,7 @@
 		 #'null
 		 (loop for e in l collect
 		      (destructuring-bind (name type &optional value) e
+			(declare (ignorable type))
 			(when value
 			  `(= ,(format nil ".~a" (elt (cl-ppcre:split "\\[" (format nil "~a" name)) 0)) ,value))))))
 	    `(do0
@@ -91,6 +96,7 @@
 	      (defstruct0 State
 		  ,@(loop for e in l collect
  			 (destructuring-bind (name type &optional value) e
+			   (declare (ignorable value))
 			   `(,name ,type))))))))
     (defun define-module (args)
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
