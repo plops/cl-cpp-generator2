@@ -126,6 +126,13 @@ public:
     insertOptions(ts...);
   }
   CompilationOptions() = default;
+  auto numOptions() const { return _options.size(); }
+  const char **options() const {
+    _chOptions.resize(_options.size());
+    std::transform(_options.begin(), _options.end(), _chOptions.begin(),
+                   [](const auto &s) { return s.c_str(); });
+    return _chOptions.data();
+  }
 };
 namespace options {
 class GpuArchitecture {
@@ -159,6 +166,7 @@ public:
       return "c++17";
     }
     }
+    throw std::runtime_error("unknown C++ version");
   }
 };
 }; // namespace options

@@ -393,7 +393,26 @@
 	      (declare (type "TS&&" ...ts)
 		       (values "template<typename... TS>"))
 	      (insertOptions ts...))
-	    (setf (CompilationOptions) default))
+	    (setf (CompilationOptions) default)
+	    (defun numOptions ()
+	      (declare (values auto)
+		       (const))
+	      (return (_options.size)))
+	    (defun options ()
+	      (declare (const)
+		       (values "const char**")
+		       )
+	      (dot _chOptions
+		   (resize (_options.size)))
+	      (std--transform (_options.begin)
+			      (_options.end)
+			      (_chOptions.begin)
+			      (lambda (s)
+				(declare (type "const auto&" s))
+				(return (s.c_str))))
+	      (return (dot _chOptions
+			   (data))))
+	    )
 	  (space namespace options
 		     (progn
 		       (defclass GpuArchitecture ()
@@ -444,7 +463,8 @@
 			    (case _version
 			      (CPP_x11 (progn (return (string "c++11"))))
 			      (CPP_x14 (progn (return (string "c++14"))))
-			      (CPP_x17 (progn (return (string "c++17")))))))))))
+			      (CPP_x17 (progn (return (string "c++17")))))
+			    (throw (std--runtime_error (string "unknown C++ version")))))))))
 	 
 	 (defclass Program ()
 	   (let ((_prog))
