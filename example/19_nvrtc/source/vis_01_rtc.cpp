@@ -195,7 +195,15 @@ public:
           "nvrtcAddNameExpression(_prog, k.name().c_str())");
     };
   }
-  void compile() {}
+  void compile(const CompilationOptions &opt = {}) {
+    if (!((NVRTC_SUCCESS) ==
+          (nvrtcCompileProgram(_prog, static_cast<int>(opt.numOptions()),
+                               opt.options())))) {
+      throw std::runtime_error(
+          "nvrtcCompileProgram(_prog, static_cast<int>(opt.numOptions()), "
+          "opt.options())");
+    };
+  }
 };
 namespace detail {
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
