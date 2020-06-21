@@ -199,13 +199,13 @@
 			(kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
-		  #+nil (do0
-		   (program.registerKernel)
-		   (program.compile (curly
+		  (do0
+		   (program.registerKernel kernel)
+		   #+nil (program.compile (curly
 				     (options--GpuArchitecture (dev.properties))
-				     (options--CPPLang options--CPP_x14)))
+				     (options--CPPLang options--CPP_x17)))
 		   
-		   (let ((module (Module ctx program))
+		   #+nil(let ((module (Module ctx program))
 			 )
 		     (kernel.init module program)))
 		  )
@@ -356,6 +356,50 @@
 		      (const))
 	     (return _name))
 	   )
+	 (do0
+	  (defclass CompilationOptions ()
+	    (let ((_options)
+		  (_chOptions))
+	      (declare (type "std::vector<std::string>" _options)
+		       (type "mutable std::vector<const char*>" _chOptions)))
+	    "public:"
+	    (defun insert (op)
+	      (declare (type "const std::string&" op))
+	      (dot _options (push_back op)))
+	    (defun insert (name value)
+	      (declare (type "const std::string&" name value))
+	      (if (value.empty)
+		  (insert name)
+		  (dot _options (push_back (+ name (string "=") value)))))
+	    (defun insertOptions (p)
+	      (declare (type "const T&" p)
+		       (values "template<typename T> void"))
+	      (insert (p.name) (p.value)))
+	    (defun insertOptions (p ...ts)
+	      (declare (type "const T&" p)
+		       (type "const TS&" ...ts)
+		       (values "template<typename T, typename... TS> void"))
+	      (insert (p.name) (p.value))
+	      (insertOptions ts...)
+	      )
+	   
+	   
+	    (defun CompilationOptions (...ts)
+	      (declare (type "TS&&" ...ts)
+		       (values "template<typename... TS>"))
+	      (insertOptions ts...))
+	    (setf (CompilationOptions) default))
+	  (namespace options
+		     (progn
+		       (defclass GpuArchitecture ()
+			 (let ((_arch))
+			   (declare (type "const std::string" _arch)))
+			 "public:"
+			 (defun GpuArchitecture (major minor)
+			   (declare (type int major minor)
+				    (construct (_arch (+ (std--string (string "compute_"))
+							 (std--to_string major)
+							 (std--to_string minor))))))))))
 	 
 	 (defclass Program ()
 	   (let ((_prog))

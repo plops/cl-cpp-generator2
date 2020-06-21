@@ -100,6 +100,42 @@ public:
   ;
   const auto &name() const { return _name; }
 };
+class CompilationOptions {
+  std::vector<std::string> _options;
+  mutable std::vector<const char *> _chOptions;
+
+public:
+  void insert(const std::string &op) { _options.push_back(op); }
+  void insert(const std::string &name, const std::string &value) {
+    if (value.empty()) {
+      insert(name);
+    } else {
+      _options.push_back(((name) + ("=") + (value)));
+    }
+  }
+  template <typename T> void insertOptions(const T &p) {
+    insert(p.name(), p.value());
+  }
+  template <typename T, typename... TS>
+  void insertOptions(const T &p, const TS &... ts) {
+    insert(p.name(), p.value());
+    insertOptions(ts...);
+  }
+  template <typename... TS> CompilationOptions(TS &&... ts) {
+    insertOptions(ts...);
+  }
+  CompilationOptions() = default;
+};
+namespace(options, {
+  class GpuArchitecture {
+    const std::string _arch;
+
+  public:
+    void GpuArchitecture(int major, int minor)
+        : _arch(((std::string("compute_")) + (std::to_string(major)) +
+                 (std::to_string(minor)))) {}
+  };
+});
 class Program {
   nvrtcProgram _prog;
 
