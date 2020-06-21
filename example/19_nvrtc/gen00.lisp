@@ -279,39 +279,6 @@
 			    (return ,code))))
 	   )
 
-	 (defclass Program ()
-	   (let ((_prog))
-	     (declare (type nvrtcProgram _prog))
-	     )
-	   "public:"
-	   (defun Program (name code headers)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (type "const std::vector<Header>&" headers)
-		      
-		      (values :constructor))
-	     (let ((nh (headers.size))
-		   (headersContent)
-		   (headersNames))
-	       (declare (type "std::vector<const char*>" headersContent headersNames))
-	       (for-range (&h headers)
-			  (headersContent.push_back (dot h (code) (c_str)))
-			  (headersContent.push_back (dot h (name) (c_str))))
-	       ,(rtc `(nvrtcCreateProgram
-				  &_prog
-				  (dot code (code) (c_str))
-				  (name.c_str)
-				  (static_cast<int> nh)
-				  (? (< 0 nh) (headersContent.data) nullptr)
-				  (? (< 0 nh) (headersNames.data) nullptr)))))
-	   (defun Program (name code)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (construct (Program name code (curly)))
-		      (values :constructor))))
-
-
-
 	 (space namespace detail
 		(progn
 		 (defun BuildArgs (...args)
@@ -383,7 +350,55 @@
 	     (return *this))
 	   (defun* instantiate ()
 	     (declare (values "template<typename... ARGS> Kernel&"))
-	     ))
+	     )
+	   (defun name ()
+	     (declare (values "const auto&")
+		      (const))
+	     (return _name))
+	   )
+	 
+	 (defclass Program ()
+	   (let ((_prog))
+	     (declare (type nvrtcProgram _prog))
+	     )
+	   "public:"
+	   (defun Program (name code headers)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (type "const std::vector<Header>&" headers)
+		      
+		      (values :constructor))
+	     (let ((nh (headers.size))
+		   (headersContent)
+		   (headersNames))
+	       (declare (type "std::vector<const char*>" headersContent headersNames))
+	       (for-range (&h headers)
+			  (headersContent.push_back (dot h (code) (c_str)))
+			  (headersContent.push_back (dot h (name) (c_str))))
+	       ,(rtc `(nvrtcCreateProgram
+				  &_prog
+				  (dot code (code) (c_str))
+				  (name.c_str)
+				  (static_cast<int> nh)
+				  (? (< 0 nh) (headersContent.data) nullptr)
+				  (? (< 0 nh) (headersNames.data) nullptr)))))
+	   (defun Program (name code)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (construct (Program name code (curly)))
+		      (values :constructor)))
+	   (defun registerKernel (k)
+	     (declare (type "const Kernel&" k)
+		      (values "inline void"))
+	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
+							 (name)
+							 (c_str))))))
+
+
+	 
+	 
+	 
+	 
 
 	 
 	 (space namespace detail
@@ -400,21 +415,7 @@
 		   (declare (values "template<typename T, typename U, typename... REST> static inline void")
 			    (type "Kernel::TemplateParameters&" params))
 		   (params.addType<T>)
-		   ("AddTypesToTemplate<U, REST...>" params))
-		  #+nil (defun AddTypesToTemplate (params)
-		   (declare (values "template<typename T, typename U, typename R> static inline auto")
-			    (type "Kernel::TemplateParameters&" params))
-		   (params.addType<T>)
-		   ("AddTypesToTemplate<U,R>" params)
-		   )
-		  #+nil (defun AddTypesToTemplate (params)
-		    (declare (values "template<typename T, typename U> static inline auto")
-			    (type "Kernel::TemplateParameters&" params))
-		   (params.addType<T>)
-		   ("AddTypesToTemplate<U>" params)
-		   )
-		 
-		 ))
+		   ("AddTypesToTemplate<U, REST...>" params))))
 
 	 (defun "Kernel::instantiate" ()
 	     (declare (values "template<typename... ARGS> inline Kernel&"))
