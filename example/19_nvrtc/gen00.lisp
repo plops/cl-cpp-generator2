@@ -81,6 +81,7 @@
 		 ,@(loop for e in *module-global-parameters* collect
 			(destructuring-bind (&key name type default)
 			    e
+			  (declare (ignorable default))
 			  `(,name ,type))))))
 	(if init
 	    `(curly
@@ -122,6 +123,7 @@
 				  &key (direction 'in)
 				  (type 'int)
 				  (default nil)) par
+	       (declare (ignorable direction))
 	       (push `(:name ,parameter-name :type ,type :default ,default)
 		     *module-global-parameters*))))))
   (defun g (arg)
