@@ -1,4 +1,7 @@
-
+(declaim (optimize 
+	  (safety 3)
+	  (speed 0)
+	  (debug 3)))
 #-nil
 (progn (ql:quickload "alexandria")
        (defpackage :cl-cpp-generator2
@@ -461,7 +464,7 @@ entry return-values contains a list of return values. currently supports type, v
 				  (loop for e in body do
 				       (when (and (listp e)
 						  (eq (car e) 'defun))
-					 (emit e :class (emit name))))))))
+					 (format s "~a" (emit e :class (emit name)))))))))
 		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
