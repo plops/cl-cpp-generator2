@@ -196,6 +196,7 @@ entry return-values contains a list of return values. currently supports type, v
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
 	  (format s "~a ~a ~a~:[~;;~] ~@[~a~] ~@[: ~a~]"
+		  ;; return value
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(break "multiple return values unsupported: ~a"
@@ -205,21 +206,40 @@ entry return-values contains a list of return values. currently supports type, v
 			      (:constructor "") ;; (values :constructor) will not print anything
 			      (t (car r)))
 			    "void")))
+		  ;; function-name
 		  name
-		  
+
+		  ;; positional parameters, followed by key parameters
 		  (funcall emit `(paren
+				  ;; positional
 				  ,@(loop for p in req-param collect
 					 (format nil "~a ~a"
 						 (let ((type (gethash p env)))
 						   (if type
 						       (funcall emit type)
-						       (break "can't find type for ~a in defun"
+						       (break "can't find type for positional parameter ~a in defun"
 							      p)))
-						 p))))
+						 p))
+				  ;; key parameters
+				  ;; http://www.crategus.com/books/alexandria/pages/alexandria.0.dev_fun_parse-ordinary-lambda-list.html
+				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
+					 (format nil "~a ~a = ~a"
+						 (let ((type (gethash keyword-name env)))
+						   (if type
+						       (funcall emit type)
+						       (break "can't find type for keyword parameter ~a in defun"
+							      keyword-name)))
+						 keyword-name
+						 init))
+				  ))
+		  
+		  ;; semicolon if header only
 		  header-only
+		  ;; const keyword
 		  (when (and const-p
 			     (not header-only))
 		    "const")
+		  ;; constructor initializers
 		  (when (and constructs
 			     (not header-only))
 		   (funcall emit `(comma ,@(mapcar emit constructs)))))
