@@ -3,6 +3,7 @@
 
 #include "globals.h"
 
+#include "proto2.h"
 ;
 extern State state;
 //  g++ --std=gnu++20 vis_02_cu_device.cpp -I /media/sdb4/cuda/11.0.1/include/

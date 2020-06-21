@@ -8,7 +8,12 @@ LDFLAGS= \
 -lcuda \
 -lnvrtc
 
-vis: vis_00_main.cpp vis_01_rtc.cpp vis_02_cu_device.cpp
+OFILES = vis_00_main.o vis_01_rtc.o vis_02_cu_device.o
+
+%.o: %.cpp globals.h proto2.h
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+vis: $(OFILES)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o vis vis_00_main.cpp
 
 clean:

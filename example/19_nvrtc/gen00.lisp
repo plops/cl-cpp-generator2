@@ -110,7 +110,7 @@
 		  " "
 		  (include "globals.h")
 		  " "
-		  ;(include "proto2.h")
+		  (include "proto2.h")
 		  " ")
 		header)
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
@@ -815,7 +815,7 @@
 		    " "
 
 		    " "
-		    ;(include "proto2.h")
+		    (include "proto2.h")
 		    " "
 		    ,@(loop for e in (reverse *global-code*) collect
 			 e)

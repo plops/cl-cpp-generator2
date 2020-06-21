@@ -3,6 +3,7 @@
 
 #include "globals.h"
 
+#include "proto2.h"
 ;
 extern State state;
 #include "vis_02_cu_device.cpp"

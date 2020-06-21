@@ -3,6 +3,7 @@
 
 #include "globals.h"
 
+#include "proto2.h"
 ;
 // g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
 // -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
@@ -20,10 +21,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "de24dca114d7cd5fcd4156b0225a405d5f9a2de4";
+  state._main_version = "ee8d7cb8a4df6f6ec4242d4e3c8ca604318e296f";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "23:10:38 of Sunday, 2020-06-21 (GMT+1)";
+  state._code_generation_time = "23:11:13 of Sunday, 2020-06-21 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
