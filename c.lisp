@@ -184,7 +184,7 @@ entry return-values contains a list of return values. currently supports type, v
 					     (variable-declaration :name decl :env env :emit emit))))
 			  ,@body)))))))
 
-(defun parse-defun (code emit &key header-only)
+(defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p) (consume-declare body) ;; py
@@ -206,8 +206,12 @@ entry return-values contains a list of return values. currently supports type, v
 			      (:constructor "") ;; (values :constructor) will not print anything
 			      (t (car r)))
 			    "void")))
-		  ;; function-name
-		  name
+		  ;; function-name, add class if not header
+		  (if class
+		      (if header-only
+			  (format nil "~a::~a" class name)
+			  name)
+		      name)
 
 		  ;; positional parameters, followed by key parameters
 		  (funcall emit `(paren
@@ -333,11 +337,11 @@ entry return-values contains a list of return values. currently supports type, v
 
 			  
 (progn
-  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil))
+  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (current-class nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
-    (flet ((emit (code &optional (dl 0))
+    (flet ((emit (code &key (dl 0) (class current-class))
 	     "change the indentation level. this is used in do"
-	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun)))
+	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun :current-class class)))
       (if code
 	  (if (listp code)
 	      (progn
@@ -387,7 +391,7 @@ entry return-values contains a list of return values. currently supports type, v
 			 (format s "~{~&~a~}"
 				 (mapcar
 				  #'(lambda (x)
-				      (let ((b (emit `(indent ,x) 0)))
+				      (let ((b (emit `(indent ,x) :dl 0)))
 					(format nil "~a~a"
 						b
 						;; don't add semicolon if there is already one
@@ -444,16 +448,16 @@ entry return-values contains a list of return values. currently supports type, v
 				  (emit name)
 				  (when parents
 				    (emit `(comma ,parents)))
-				  (emit `(progn ,@body))
+				  (emit `(progn ,@body) :class (emit name))
 				  )))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defun
 		      (prog1
-			  (parse-defun code #'emit)
+			  (parse-defun code #'emit :class current-class)
 			(when hook-defun
-			  (funcall hook-defun (parse-defun code #'emit :header-only t)))))
-		  (defun* (parse-defun code #'emit :header-only t))
+			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))
+		  (defun* (parse-defun code #'emit :header-only t :class current-class))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (co_return (format nil "co_return ~a" (emit (car (cdr code)))))
 		  (co_await (format nil "co_await ~a" (emit (car (cdr code)))))

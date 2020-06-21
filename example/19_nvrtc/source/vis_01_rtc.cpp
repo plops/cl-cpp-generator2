@@ -63,6 +63,7 @@ public:
   static std::string extract() { return std::to_string(y); }
 };
 }; // namespace detail
+class Program;
 class Module {
   CUmodule _module;
 

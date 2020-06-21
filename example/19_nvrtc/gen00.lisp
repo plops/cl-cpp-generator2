@@ -310,6 +310,7 @@
 		      (declare (values "static std::string"))
 		      (return (std--to_string y)))))
 		 ))
+	 "class Program;"
 	 (defclass Module ()
 	   (let ((_module))
 	     (declare (type CUmodule _module))
