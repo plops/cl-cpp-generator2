@@ -7,8 +7,6 @@
 // g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
 // -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
 // -lcuda
-#include "vis_01_rtc.cpp"
-#include "vis_02_cu_device.cpp"
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -16,13 +14,16 @@
 #include <iostream>
 #include <string>
 #include <thread>
+
+#include "vis_01_rtc.cpp"
+
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "6e4b2ad10096ef3c557361bc1c5774f16684fddc";
+  state._main_version = "d67f21cda3478cfb8ce6ce8790f49fc817f5cb49";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "12:47:04 of Sunday, 2020-06-21 (GMT+1)";
+  state._code_generation_time = "15:57:45 of Sunday, 2020-06-21 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -45,6 +46,8 @@ int main() {
   auto kernel =
       Kernel("setKernel").instantiate<float, std::integral_constant<int, 10>>();
   program.registerKernel(kernel);
+  program.compile({options::GpuArchitecture(dev.properties()),
+                   options::CPPLang(options::CPP_x17)});
 
   (std::cout)
       << (std::setw(10))

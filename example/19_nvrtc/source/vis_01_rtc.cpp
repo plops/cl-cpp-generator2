@@ -5,6 +5,7 @@
 
 ;
 extern State state;
+#include "vis_02_cu_device.cpp"
 #include <cuda.h>
 #include <fstream>
 #include <nvrtc.h>
@@ -126,16 +127,41 @@ public:
   }
   CompilationOptions() = default;
 };
-namespace(options, {
-  class GpuArchitecture {
-    const std::string _arch;
+namespace options {
+class GpuArchitecture {
+  const std::string _arch;
 
-  public:
-    void GpuArchitecture(int major, int minor)
-        : _arch(((std::string("compute_")) + (std::to_string(major)) +
-                 (std::to_string(minor)))) {}
-  };
-});
+public:
+  GpuArchitecture(int major, int minor)
+      : _arch(((std::string("compute_")) + (std::to_string(major)) +
+               (std::to_string(minor)))) {}
+  GpuArchitecture(const CudaDeviceProperties &props)
+      : GpuArchitecture(props.major(), props.minor()) {}
+  auto name() const { return "--gpu-architecture"; }
+  auto &value() const { return _arch; }
+};
+enum CPPLangVer { CPP_x11, CPP_x14, CPP_x17 };
+class CPPLang {
+  CPPLangVer _version;
+
+public:
+  CPPLang(CPPLangVer version) : _version(version) {}
+  auto name() const { return "--std"; }
+  auto value() const {
+    switch (_version) {
+    case CPP_x11: {
+      return "c++11";
+    }
+    case CPP_x14: {
+      return "c++14";
+    }
+    case CPP_x17: {
+      return "c++17";
+    }
+    }
+  }
+};
+}; // namespace options
 class Program {
   nvrtcProgram _prog;
 
@@ -169,6 +195,7 @@ public:
           "nvrtcAddNameExpression(_prog, k.name().c_str())");
     };
   }
+  void compile() {}
 };
 namespace detail {
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}

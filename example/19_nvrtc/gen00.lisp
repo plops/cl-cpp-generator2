@@ -149,9 +149,12 @@
 		       <fstream>
 		       <thread>
 		       )
-	      (include "vis_02_cu_device.cpp")
+	      " "
 	      (include "vis_01_rtc.cpp")
-
+	      " "
+	      ;(include "vis_02_cu_device.cpp")
+	      " "
+	      
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
@@ -201,7 +204,7 @@
 		  
 		  (do0
 		   (program.registerKernel kernel)
-		   #+nil (program.compile (curly
+		    (program.compile (curly
 				     (options--GpuArchitecture (dev.properties))
 				     (options--CPPLang options--CPP_x17)))
 		   
@@ -224,6 +227,8 @@
 		  <string>
 		  <fstream>
 		  <streambuf>)
+	 
+	 (include "vis_02_cu_device.cpp")
 	 (comments "Code c{ <params> };  .. initialize"
 		   "Code c = Code::FromFile(fname);  .. load contents of file"
 		   "auto& code = c.code() .. get reference to internal string")
@@ -389,7 +394,7 @@
 		       (values "template<typename... TS>"))
 	      (insertOptions ts...))
 	    (setf (CompilationOptions) default))
-	  (namespace options
+	  (space namespace options
 		     (progn
 		       (defclass GpuArchitecture ()
 			 (let ((_arch))
@@ -397,9 +402,49 @@
 			 "public:"
 			 (defun GpuArchitecture (major minor)
 			   (declare (type int major minor)
+				    (values :constructor)
 				    (construct (_arch (+ (std--string (string "compute_"))
 							 (std--to_string major)
-							 (std--to_string minor))))))))))
+							 (std--to_string minor))))))
+			 (defun GpuArchitecture (props)
+			   (declare (type "const CudaDeviceProperties&" props)
+				    (values :constructor)
+				    (construct (GpuArchitecture (props.major)
+								(props.minor)))))
+			 (defun name ()
+			   (declare (const)
+				    (values auto))
+			   (return (string "--gpu-architecture")))
+			 (defun value ()
+			   (declare (const)
+				    (values auto&))
+			   (return _arch)))
+		       (do0
+			(space enum CPPLangVer
+			       (curly
+				CPP_x11
+				CPP_x14
+				CPP_x17))
+			(defclass CPPLang ()
+			  (let ((_version))
+			    (declare (type CPPLangVer _version))
+			    )
+			  "public:"
+			  (defun CPPLang (version)
+			    (declare (values :constructor)
+				     (type CPPLangVer version)
+				     (construct (_version version))))
+			  (defun name ()
+			    (declare (const)
+				     (values auto))
+			    (return (string "--std")))
+			  (defun value ()
+			    (declare (const)
+				     (values auto))
+			    (case _version
+			      (CPP_x11 (progn (return (string "c++11"))))
+			      (CPP_x14 (progn (return (string "c++14"))))
+			      (CPP_x17 (progn (return (string "c++17")))))))))))
 	 
 	 (defclass Program ()
 	   (let ((_prog))
@@ -436,7 +481,9 @@
 		      (values "inline void"))
 	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
 							 (name)
-							 (c_str))))))
+							 (c_str)))))
+	   (defun compile (&key (opt (curly)))
+	     (declare (type "const CompilationOptions&" opt))))
 
 
 	 
