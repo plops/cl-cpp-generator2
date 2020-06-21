@@ -207,9 +207,11 @@ public:
     if (!((NVRTC_SUCCESS) ==
           (nvrtcCompileProgram(_prog, static_cast<int>(opt.numOptions()),
                                opt.options())))) {
-      throw std::runtime_error(
-          "nvrtcCompileProgram(_prog, static_cast<int>(opt.numOptions()), "
-          "opt.options())");
+      std::size_t logSize;
+      nvrtcGetProgramLogSize(_prog, &logSize);
+      auto log = std::string(logSize, '\0');
+      nvrtcGetProgramLog(_prog, &log.front());
+      throw std::runtime_error(log.c_str());
     };
   }
 };

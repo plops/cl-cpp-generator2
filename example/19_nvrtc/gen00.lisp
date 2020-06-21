@@ -504,9 +504,15 @@
 							 (c_str)))))
 	   (defun compile (&key (opt (curly)))
 	     (declare (type "const CompilationOptions&" opt))
-	     ,(rtc `(nvrtcCompileProgram _prog
-					 (static_cast<int> (opt.numOptions))
-					 (opt.options)))))
+	     (unless (== NVRTC_SUCCESS (nvrtcCompileProgram _prog
+							    (static_cast<int> (opt.numOptions))
+							    (opt.options)))
+	       (let ((logSize))
+		 (declare (type std--size_t logSize))
+		 (nvrtcGetProgramLogSize _prog &logSize)
+		 (let ((log (std--string logSize (char "\\0"))))
+		   (nvrtcGetProgramLog _prog (&log.front))
+		   (throw (std--runtime_error (log.c_str))))))))
 
 
 	 
