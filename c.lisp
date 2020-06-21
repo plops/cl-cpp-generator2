@@ -212,8 +212,8 @@ entry return-values contains a list of return values. currently supports type, v
 		  ;; function-name, add class if not header
 		  (if class
 		      (if header-only
-			  (format nil "~a::~a" class name)
-			  name)
+			  name
+			  (format nil "~a::~a" class name))
 		      name)
 
 		  ;; positional parameters, followed by key parameters

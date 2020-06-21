@@ -318,7 +318,7 @@
 		      (declare (values "static std::string"))
 		      (return (std--to_string y)))))
 		 ))
-	 "class Program;"
+	 
 	 (defclass Module ()
 	   (let ((_module))
 	     (declare (type CUmodule _module))
@@ -755,9 +755,10 @@
 			      (emit-c :code code :hook-defun 
 				      #'(lambda (str)
 					  (format t "~a~%" str))))
-		 (emit-c :code code :hook-defun 
-			 #'(lambda (str)
-			     (format s "~a~%" str))))
+		 (emit-c :code code
+			 :hook-defun #'(lambda (str)
+					 (format s "~a~%" str))
+			 ))
 
 	       #+nil (format t "emit cpp file for ~a~%" name)
 	       (write-source (asdf:system-relative-pathname
