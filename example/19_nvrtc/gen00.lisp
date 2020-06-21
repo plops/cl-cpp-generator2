@@ -210,7 +210,7 @@
 		   
 		   (let ((module (Module ctx program))
 			 )
-		     ;(kernel.init module program)
+		     (kernel.init module program)
 		     ))
 		  )
 		,(logprint "end main" `())
@@ -310,7 +310,22 @@
 		      (declare (values "static std::string"))
 		      (return (std--to_string y)))))
 		 ))
-	 
+	 (defclass Module ()
+	   (let ((_module))
+	     (declare (type CUmodule _module))
+	     )
+	   "public:"
+	   (defun Module (ctx p)
+	     (declare (type "const CudaContext&" ctx)
+		      (type "const Program&" p)
+		      (values :constructor))
+	     (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defun module ()
+	     (declare (values auto)
+		      (const))
+	     (return _module)))
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
 		 (_name))
@@ -361,6 +376,11 @@
 	     (declare (values "const auto&")
 		      (const))
 	     (return _name))
+	   (defun init (m p)
+	     (declare (type "const Module&" m)
+		      (type "const Program&" p))
+	     ,(cuss `(cuModuleGetFunction &_kernel (m.module) (dot p (loweredName *this)
+								   (c_str)))))
 	   )
 	 (do0
 	  (defclass CompilationOptions ()
@@ -548,22 +568,7 @@
 	       (detail--AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp))))
 
-	 (defclass Module ()
-	   (let ((_module))
-	     (declare (type CUmodule _module))
-	     )
-	   "public:"
-	   (defun Module (ctx p)
-	     (declare (type "const CudaContext&" ctx)
-		      (type "const Program&" p)
-		      (values :constructor))
-	     (cuModuleLoadDataEx &_module
-				 (dot p (PTX) (c_str))
-				 0 0 0))
-	   (defun module ()
-	     (declare (values auto)
-		      (const))
-	     (return _module)))
+	 
 	 )))
   (define-module
       `(cu_device

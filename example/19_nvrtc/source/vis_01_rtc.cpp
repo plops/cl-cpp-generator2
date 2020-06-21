@@ -63,6 +63,15 @@ public:
   static std::string extract() { return std::to_string(y); }
 };
 }; // namespace detail
+class Module {
+  CUmodule _module;
+
+public:
+  Module(const CudaContext &ctx, const Program &p) {
+    cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
+  }
+  auto module() const { return _module; }
+};
 class Kernel {
   CUfunction _kernel = nullptr;
   std::string _name;
@@ -100,6 +109,14 @@ public:
   template <typename... ARGS> Kernel &instantiate();
   ;
   const auto &name() const { return _name; }
+  void init(const Module &m, const Program &p) {
+    if (!((CUDA_SUCCESS) ==
+          (cuModuleGetFunction(&_kernel, m.module(),
+                               p.loweredName(*this).c_str())))) {
+      throw std::runtime_error("cuModuleGetFunction(&_kernel, m.module(), "
+                               "p.loweredName(*this).c_str())");
+    };
+  }
 };
 class CompilationOptions {
   std::vector<std::string> _options;
@@ -242,13 +259,4 @@ template <typename... ARGS> inline Kernel &Kernel::instantiate() {
   TemplateParameters tp;
   detail::AddTypesToTemplate<ARGS...>(tp);
   return instantiate(tp);
-}
-class Module {
-  CUmodule _module;
-
-public:
-  Module(const CudaContext &ctx, const Program &p) {
-    cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
-  }
-  auto module() const { return _module; }
 };
