@@ -337,11 +337,11 @@ entry return-values contains a list of return values. currently supports type, v
 
 			  
 (progn
-  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (current-class nil))
+  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (current-class nil) (header-only nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
-    (flet ((emit (code &key (dl 0) (class current-class))
+    (flet ((emit (code &key (dl 0) (class current-class) (header-only))
 	     "change the indentation level. this is used in do"
-	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun :current-class class)))
+	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun :current-class class :header-only header-only)))
       (if code
 	  (if (listp code)
 	      (progn
@@ -435,11 +435,11 @@ entry return-values contains a list of return values. currently supports type, v
 		  (progn (with-output-to-string (s)
 			   ;; progn {form}*
 			   ;; like do but surrounds forms with braces.
-			   (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
+			   (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) :dl 1)) (cdr code)))))
 		  (do (with-output-to-string (s)
 			;; do {form}*
 			;; print each form on a new line with one more indentation.
-			(format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) 1)) (cdr code)))))
+			(format s "~{~&~a~}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) :dl 1)) (cdr code)))))
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; class TA : public Faculty, public Student { ... }
@@ -451,12 +451,23 @@ entry return-values contains a list of return values. currently supports type, v
 				       (emit name)
 				       (when parents
 					 (emit `(comma ,parents)))
-				       (emit `(progn ,@body) :class (emit name) :header-only t))))))
+				       (emit `(progn ,@body) :class (emit name) :header-only t))))
+			    (progn
+			      ;; only create function definitions of the class
+			      ;; expand defun but non of the other commands
+			      (destructuring-bind (name parents &rest body) (cdr code)
+				(declare (ignorable parents))
+				(with-output-to-string (s)
+				  (loop for e in body do
+				       (when (and (listp e)
+						  (eq (car e) 'defun))
+					 (emit e :class (emit name))))))))
+		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defun
 		      (prog1
-			  (parse-defun code #'emit :class current-class)
+			  (parse-defun code #'emit :class current-class :header-only header-only)
 			(when (and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))
@@ -701,9 +712,8 @@ entry return-values contains a list of return values. currently supports type, v
 					       `(progn
 						  ,@(loop for desc in slot-descriptions collect
 							 (destructuring-bind (slot-name &optional type value) desc
-							   (format nil "~a ~a;" (emit type) (emit slot-name))))))
-					      
-					      )
+							   (declare (ignorable value))
+							   (format nil "~a ~a;" (emit type) (emit slot-name)))))))
 				     (deftype ,name () (struct ,name)))))))
 		  (handler-case
 		      ;; handler-case expression [[{error-clause}*]]
