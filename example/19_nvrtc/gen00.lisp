@@ -389,11 +389,17 @@
 	 
 	 (space namespace detail
 		(progn
-		  (defun AddTypesToTemplate (params)
+		 (defun AddTypesToTemplate (params)
 		   (declare (values "template<typename T, typename U, typename... REST> static inline auto")
 			    (type "Kernel::TemplateParameters&" params))
 		   (params.addType<T>)
 		   ("AddTypesToTemplate<U, REST...>" params))
+		  #+nil (defun AddTypesToTemplate (params)
+		   (declare (values "template<typename T, typename U> static inline auto")
+			    (type "Kernel::TemplateParameters&" params))
+		   ;(params.addType<T>)
+		   ;("AddTypesToTemplate<U>" params)
+		   )
 		 (defun AddTypesToTemplate (params)
 		   (declare (values "template<typename T> static inline void")
 			    (type "Kernel::TemplateParameters&" params))
