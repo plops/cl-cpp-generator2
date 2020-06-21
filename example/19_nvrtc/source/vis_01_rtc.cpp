@@ -77,6 +77,7 @@ static inline std::vector<void *> BuildArgs(const ARGS &... args) {
   return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
 }
 template <typename T> class NameExtractor {
+public:
   static std::string extract() {
     std::string type_name;
     nvrtcGetTypeName<T>(&type_name);
@@ -84,6 +85,7 @@ template <typename T> class NameExtractor {
   }
 };
 template <typename T, T y> class NameExtractor<std::integral_constant<T, y>> {
+public:
   static std::string extract() { return std::to_string(y); }
 };
 }; // namespace detail
