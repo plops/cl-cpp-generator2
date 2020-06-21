@@ -214,6 +214,17 @@ public:
       throw std::runtime_error(log.c_str());
     };
   }
+  inline std::string PTX() const {
+    std::size_t size = 0;
+    if (!((NVRTC_SUCCESS) == (nvrtcGetPTXSize(_prog, &size)))) {
+      throw std::runtime_error("nvrtcGetPTXSize(_prog, &size)");
+    };
+    auto str = std::string(size, '\0');
+    if (!((NVRTC_SUCCESS) == (nvrtcGetPTX(_prog, &str.front())))) {
+      throw std::runtime_error("nvrtcGetPTX(_prog, &str.front())");
+    };
+    return str;
+  }
 };
 namespace detail {
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
@@ -231,4 +242,13 @@ template <typename... ARGS> inline Kernel &Kernel::instantiate() {
   TemplateParameters tp;
   detail::AddTypesToTemplate<ARGS...>(tp);
   return instantiate(tp);
+}
+class Module {
+  CUmodule _module;
+
+public:
+  Module(const CudaContext &ctx, const Program &p) {
+    cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
+  }
+  auto module() const { return _module; }
 };

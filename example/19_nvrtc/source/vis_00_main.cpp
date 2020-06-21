@@ -20,10 +20,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "f9dadac25f7244930dacba105af46429267e4026";
+  state._main_version = "2eb288d1e5202e8693acb2202641298e16d6dfae";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "16:32:50 of Sunday, 2020-06-21 (GMT+1)";
+  state._code_generation_time = "16:46:40 of Sunday, 2020-06-21 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -48,6 +48,7 @@ int main() {
   program.registerKernel(kernel);
   program.compile({options::GpuArchitecture(dev.properties()),
                    options::CPPLang(options::CPP_x17)});
+  auto module = Module(ctx, program);
 
   (std::cout)
       << (std::setw(10))

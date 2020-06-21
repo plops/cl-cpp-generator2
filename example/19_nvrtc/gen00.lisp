@@ -208,9 +208,10 @@
 				     (options--GpuArchitecture (dev.properties))
 				     (options--CPPLang options--CPP_x17)))
 		   
-		   #+nil(let ((module (Module ctx program))
+		   (let ((module (Module ctx program))
 			 )
-		     (kernel.init module program)))
+		     ;(kernel.init module program)
+		     ))
 		  )
 		,(logprint "end main" `())
 		(return 0)))))
@@ -512,15 +513,18 @@
 		 (nvrtcGetProgramLogSize _prog &logSize)
 		 (let ((log (std--string logSize (char "\\0"))))
 		   (nvrtcGetProgramLog _prog (&log.front))
-		   (throw (std--runtime_error (log.c_str))))))))
+		   (throw (std--runtime_error (log.c_str)))))))
+	   (defun PTX ()
+	     (declare (values "inline std::string")
+		      (const))
+	     (let ((size 0))
+	       (declare (type std--size_t size))
+	       ,(rtc `(nvrtcGetPTXSize _prog &size))
+	       (let ((str (std--string size (char "\\0"))))
+		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
+		 (return str)))))
 
 
-	 
-	 
-	 
-	 
-
-	 
 	 (space namespace detail
 		(progn
 		  (defun AddTypesToTemplate (params)
@@ -543,6 +547,23 @@
 	       (declare (type TemplateParameters tp))
 	       (detail--AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp))))
+
+	 (defclass Module ()
+	   (let ((_module))
+	     (declare (type CUmodule _module))
+	     )
+	   "public:"
+	   (defun Module (ctx p)
+	     (declare (type "const CudaContext&" ctx)
+		      (type "const Program&" p)
+		      (values :constructor))
+	     (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defun module ()
+	     (declare (values auto)
+		      (const))
+	     (return _module)))
 	 )))
   (define-module
       `(cu_device
