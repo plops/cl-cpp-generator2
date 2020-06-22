@@ -778,7 +778,26 @@
 					 (format s "~a;~%" str)
 					 )
 			 :header-only t
+			 )
+		 (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
+						      (format nil
+							      "~a/vis_~2,'0d_~a.hpp"
+							      *source-dir* i name
+							      ))
+				    :direction :output
+				    :if-exists :supersede
+				    :if-does-not-exist :create)
+		   (emit-c :code code
+			 :hook-defun #'(lambda (str)
+					 (format sh "~a~%" str)
+					 )
+			 :hook-defclass #'(lambda (str)
+					 (format sh "~a;~%" str)
+					 )
+			 :header-only t
 			 ))
+
+		 )
 
 	       #+nil (format t "emit cpp file for ~a~%" name)
 	       (write-source (asdf:system-relative-pathname
