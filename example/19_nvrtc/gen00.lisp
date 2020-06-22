@@ -752,7 +752,12 @@
 		       :direction :output
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
-      (format s "#ifndef PROTO2_H~%#define PROTO2_H~%")
+      (format s "#ifndef PROTO2_H~%#define PROTO2_H~%~a~%"
+	      (emit-c :code `(include <cuda_runtime.h>
+				      <cuda.h>
+				      <nvrtc.h>)))
+
+      
       
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
