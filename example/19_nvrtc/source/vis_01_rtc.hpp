@@ -1,5 +1,19 @@
 #ifndef VIS_01_RTC_H
 #define VIS_01_RTC_H
+#include "utils.h"
+;
+#include "globals.h"
+;
+#include <nvrtc.h>
+#include <cuda.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
+;
+#include "vis_04_cu_module.hpp"
+;
+#include "vis_02_cu_device.hpp"
+;
 class Code  {
             const std::string _code ;
         public:
@@ -21,12 +35,6 @@ template<typename T> class NameExtractor  {
 template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
                                 public:
                                 static std::string extract ();  
-};
-class Module  {
-            CUmodule _module ;
-        public:
-         Module (const CudaContext& ctx, const Program& p);  
-        auto module ();  
 };
 class TemplateParameters  {
                         std::string _val ;
@@ -75,15 +83,6 @@ class CPPLang  {
                          CPPLang (CPPLangVer version);  
                         auto name ();  
                         auto value ();  
-};
-class Program  {
-            nvrtcProgram _prog ;
-        public:
-         Program (const std::string& name, const Code& code, const std::vector<Header>& headers);  
-         Program (const std::string& name, const Code& code);  
-        inline void registerKernel (const Kernel& k);  
-        void compile (const CompilationOptions& opt = {});  
-        inline std::string PTX ();  
 };
 static inline void AddTypesToTemplate (Kernel::TemplateParameters& params);  
 template<typename T> static inline void AddTypesToTemplate (Kernel::TemplateParameters& params);  

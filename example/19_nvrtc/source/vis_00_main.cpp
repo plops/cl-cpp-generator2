@@ -3,7 +3,6 @@
 
 #include "globals.h"
 
-#include "proto2.h"
 ;
 // g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
 // -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
@@ -15,16 +14,25 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <vector>
 
-#include "vis_01_rtc.cpp"
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <nvrtc.h>
+
+#include "vis_03_cu_program.hpp"
+
+#include "vis_02_cu_device.hpp"
+
+#include "vis_01_rtc.hpp"
 
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "f056bf1c56af0382f4ba7a504d11dab92c0c06de";
+  state._main_version = "bc590e5c56bf353b807d448bd8c09706a525589f";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "18:26:28 of Monday, 2020-06-22 (GMT+1)";
+  state._code_generation_time = "18:50:43 of Monday, 2020-06-22 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

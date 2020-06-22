@@ -1,5 +1,15 @@
 #ifndef VIS_02_CU_DEVICE_H
 #define VIS_02_CU_DEVICE_H
+#include "utils.h"
+;
+#include "globals.h"
+;
+#include <cuda_runtime.h>
+#include <cuda.h>
+;
+#include <algorithm>
+#include <vector>
+;
 class CudaDeviceProperties  {
             cudaDeviceProp _props ;
          CudaDeviceProperties (const cudaDeviceProp& props);  
