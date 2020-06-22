@@ -779,23 +779,31 @@
 					 )
 			 :header-only t
 			 )
-		 (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
-						      (format nil
-							      "~a/vis_~2,'0d_~a.hpp"
-							      *source-dir* i name
-							      ))
-				    :direction :output
-				    :if-exists :supersede
-				    :if-does-not-exist :create)
-		   (emit-c :code code
-			 :hook-defun #'(lambda (str)
-					 (format sh "~a~%" str)
-					 )
-			 :hook-defclass #'(lambda (str)
-					 (format sh "~a;~%" str)
-					 )
-			 :header-only t
-			 ))
+		 (let* ((file (format nil
+				     "vis_~2,'0d_~a"
+				     i name
+				     ))
+		       (file-h (string-upcase (format nil "~a_H" file))))
+		  (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
+								     (format nil "~a/~a.hpp"
+									     *source-dir* file))
+				      :direction :output
+				      :if-exists :supersede
+				      :if-does-not-exist :create)
+		    (format sh "#ifndef ~a~%" file-h)
+		    (format sh "#define ~a~%" file-h)
+		   
+		    (emit-c :code code
+			    :hook-defun #'(lambda (str)
+					    (format sh "~a~%" str)
+					    )
+			    :hook-defclass #'(lambda (str)
+					       (format sh "~a;~%" str)
+					       )
+			    :header-only t
+			    )
+		    (format sh "#endif")
+		    ))
 
 		 )
 

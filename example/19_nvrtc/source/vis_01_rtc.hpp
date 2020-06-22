@@ -1,3 +1,5 @@
+#ifndef VIS_01_RTC_H
+#define VIS_01_RTC_H
 class Code  {
             const std::string _code ;
         public:
@@ -87,3 +89,4 @@ static inline void AddTypesToTemplate (Kernel::TemplateParameters& params);
 template<typename T> static inline void AddTypesToTemplate (Kernel::TemplateParameters& params);  
 template<typename T, typename U, typename... REST> static inline void AddTypesToTemplate (Kernel::TemplateParameters& params);  
 template<typename... ARGS> inline Kernel& Kernel::instantiate ();  
+#endif

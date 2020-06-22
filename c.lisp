@@ -458,16 +458,16 @@ entry return-values contains a list of return values. currently supports type, v
 			(prog1
 			    (if hook-defclass
 				" "
-			     (progn
-			       ;; only create function definitions of the class
-			       ;; expand defun but non of the other commands
-			       (destructuring-bind (name parents &rest body) (cdr code)
-				 (declare (ignorable parents))
-				 (with-output-to-string (s)
-				   (loop for e in body do
-					(when (and (listp e)
-						   (eq (car e) 'defun))
-					  (format s "~a" (emit e :class (emit name) :header-only-p nil))))))))
+				(progn
+				  ;; only create function definitions of the class
+				  ;; expand defun but non of the other commands
+				  (destructuring-bind (name parents &rest body) (cdr code)
+				    (declare (ignorable parents))
+				    (with-output-to-string (s)
+				      (loop for e in body do
+					   (when (and (listp e)
+						      (eq (car e) 'defun))
+					     (format s "~a" (emit e :class (emit name) :header-only-p nil))))))))
 			  (when hook-defclass
 			      ;; create class definition with function headers
 			      (funcall hook-defclass

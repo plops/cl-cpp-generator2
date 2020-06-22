@@ -1,3 +1,5 @@
+#ifndef VIS_02_CU_DEVICE_H
+#define VIS_02_CU_DEVICE_H
 class CudaDeviceProperties  {
             cudaDeviceProp _props ;
          CudaDeviceProperties (const cudaDeviceProp& props);  
@@ -32,3 +34,4 @@ class CudaContext  {
          CudaContext (const CudaDevice& device);  
          ~CudaContext ();  
 };
+#endif
