@@ -314,6 +314,7 @@
 			(declare (type std--string type_name))
 			(nvrtcGetTypeName<T> &type_name)
 		       (return type_name)))))
+		 #+nil
 		 (space "template<typename T, T y>"
 		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
 		    "public:"
@@ -321,6 +322,13 @@
 		      (declare (values "static std::string"))
 		      (return (std--to_string y)))))
 		 ))
+
+	 (space "template<typename T, T y>"
+		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
+		    "public:"
+		    (defun extract ()
+		      (declare (values "static std::string"))
+		      (return (std--to_string y)))))
 	 
 	 (defclass Module ()
 	   (let ((_module))
