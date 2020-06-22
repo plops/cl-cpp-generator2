@@ -472,15 +472,24 @@ entry return-values contains a list of return values. currently supports type, v
 			      ;; create class definition with function headers
 			      (funcall hook-defclass
 				       (destructuring-bind (name parents &rest body) (cdr code)
-					 (format nil "class ~a ~@[: ~a~] ~a"
-						 (emit name)
-						 (when parents
-						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body)
-						       :class nil ;(emit name)
-						       :hook-fun nil
-						       :hook-class hook-defclass
-						       :header-only-p t)))))
+					 (let ((class-name (if (listp name)
+								  (car name)
+								  name))
+					       (class-template nil))
+					   (when (listp name)
+					     (destructuring-bind (name &key (template nil)) name
+					       (setf class-name name
+						     class-template template)))
+					   (format nil "~@[~a ~]class ~a ~@[: ~a~] ~a"
+						   class-template
+						   (emit class-name)
+						   (when parents
+						     (emit `(comma ,parents)))
+						   (emit `(progn ,@body)
+							 :class nil ;(emit name)
+							 :hook-fun nil
+							 :hook-class hook-defclass
+							 :header-only-p t))))))
 			  )
 		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))

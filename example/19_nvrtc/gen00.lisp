@@ -306,7 +306,7 @@
 				    ("reinterpret_cast<const void*>" &args))
 				   "..."))))
 		 (progn ;space "template<typename T>"
-		   (defclass NameExtractor ()
+		   (defclass (NameExtractor :template "template<typename T>") ()
 		     "public:"
 			  (defun extract ()
 		      (declare (values "static std::string"))
@@ -316,7 +316,8 @@
 		       (return type_name)))))
 		 
 		 (progn ;space "template<typename T, T y>"
-		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
+		   (defclass ("NameExtractor<std::integral_constant<T, y>>"
+			      :template "template<typename T, T y>") ()
 		    "public:"
 		    (defun extract ()
 		      (declare (values "static std::string"))

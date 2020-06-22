@@ -43,15 +43,16 @@ const auto &Header::name() const { return _name; };
       return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
     }
     {
-      static std::string NameExtractor::extract() {
+      static std::string NameExtractor(template, template <typename T>
+                                       )::extract() {
         std::string type_name;
         nvrtcGetTypeName<T>(&type_name);
         return type_name;
       };
     };
     {
-      static std::string
-      NameExtractor<std::integral_constant<T, y>>::extract() {
+      static std::string NameExtractor<std::integral_constant<T, y>>(
+          template, template <typename T, T y>)::extract() {
         return std::to_string(y);
       };
     };
