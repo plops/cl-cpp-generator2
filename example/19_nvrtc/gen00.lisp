@@ -305,17 +305,17 @@
 				   (const_cast<void*>
 				    ("reinterpret_cast<const void*>" &args))
 				   "..."))))
-		 (space "template<typename T>"
-			(defclass NameExtractor ()
-			  "public:"
+		 (progn ;space "template<typename T>"
+		   (defclass NameExtractor ()
+		     "public:"
 			  (defun extract ()
 		      (declare (values "static std::string"))
 		      (let ((type_name))
 			(declare (type std--string type_name))
 			(nvrtcGetTypeName<T> &type_name)
 		       (return type_name)))))
-		 #+nil
-		 (space "template<typename T, T y>"
+		 
+		 (progn ;space "template<typename T, T y>"
 		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
 		    "public:"
 		    (defun extract ()
@@ -323,12 +323,7 @@
 		      (return (std--to_string y)))))
 		 ))
 
-	 (space "template<typename T, T y>"
-		  (defclass "NameExtractor<std::integral_constant<T, y>>" ()
-		    "public:"
-		    (defun extract ()
-		      (declare (values "static std::string"))
-		      (return (std--to_string y)))))
+	 
 	 
 	 (defclass Module ()
 	   (let ((_module))

@@ -42,14 +42,18 @@ const auto &Header::name() const { return _name; };
     static inline std::vector<void *> BuildArgs(const ARGS &... args) {
       return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
     }
-    template <typename T> static std::string NameExtractor::extract() {
-      std::string type_name;
-      nvrtcGetTypeName<T>(&type_name);
-      return type_name;
+    {
+      static std::string NameExtractor::extract() {
+        std::string type_name;
+        nvrtcGetTypeName<T>(&type_name);
+        return type_name;
+      };
     };
-    template <typename T, T y>
-    static std::string NameExtractor<std::integral_constant<T, y>>::extract() {
-      return std::to_string(y);
+    {
+      static std::string
+      NameExtractor<std::integral_constant<T, y>>::extract() {
+        return std::to_string(y);
+      };
     };
   };
 };

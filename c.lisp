@@ -453,6 +453,8 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; class TA : public Faculty, public Student { ... }
+			;; defclass (class-name :template "template<T>") ({superclass-name}*) ({slot-specifier}*) [[class-option]]
+			;; template<T> class TA...
 			(prog1
 			    (if hook-defclass
 				" "
