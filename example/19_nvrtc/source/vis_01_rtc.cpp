@@ -36,21 +36,23 @@ template <typename... ARGS>
 Header::Header(const std::string &name, ARGS &&... args)
     : Code(std::forward<ARGS>(args)...), _name(name) {}
 const auto &Header::name() const { return _name; };
-namespace detail {
-template <typename... ARGS>
-static inline std::vector<void *> BuildArgs(const ARGS &... args) {
-  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
-}
-template <typename T> static std::string NameExtractor::extract() {
-  std::string type_name;
-  nvrtcGetTypeName<T>(&type_name);
-  return type_name;
+{
+  {
+    template <typename... ARGS>
+    static inline std::vector<void *> BuildArgs(const ARGS &... args) {
+      return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
+    }
+    template <typename T> static std::string NameExtractor::extract() {
+      std::string type_name;
+      nvrtcGetTypeName<T>(&type_name);
+      return type_name;
+    };
+    template <typename T, T y>
+    static std::string NameExtractor<std::integral_constant<T, y>>::extract() {
+      return std::to_string(y);
+    };
+  };
 };
-template <typename T, T y>
-static std::string NameExtractor<std::integral_constant<T, y>>::extract() {
-  return std::to_string(y);
-};
-}; // namespace detail
 Module::Module(const CudaContext &ctx, const Program &p) {
   cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
 }
@@ -98,32 +100,34 @@ const char **CompilationOptions::options() const {
                  [](const auto &s) { return s.c_str(); });
   return _chOptions.data();
 };
-namespace options {
-GpuArchitecture::GpuArchitecture(int major, int minor)
-    : _arch(((std::string("compute_")) + (std::to_string(major)) +
-             (std::to_string(minor)))) {}
-GpuArchitecture::GpuArchitecture(const CudaDeviceProperties &props)
-    : GpuArchitecture(props.major(), props.minor()) {}
-auto GpuArchitecture::name() const { return "--gpu-architecture"; }
-auto &GpuArchitecture::value() const { return _arch; };
-enum CPPLangVer { CPP_x11, CPP_x14, CPP_x17 };
-CPPLang::CPPLang(CPPLangVer version) : _version(version) {}
-auto CPPLang::name() const { return "--std"; }
-auto CPPLang::value() const {
-  switch (_version) {
-  case CPP_x11: {
-    return "c++11";
-  }
-  case CPP_x14: {
-    return "c++14";
-  }
-  case CPP_x17: {
-    return "c++17";
-  }
-  }
-  throw std::runtime_error("unknown C++ version");
+{
+  {
+    GpuArchitecture::GpuArchitecture(int major, int minor)
+        : _arch(((std::string("compute_")) + (std::to_string(major)) +
+                 (std::to_string(minor)))) {}
+    GpuArchitecture::GpuArchitecture(const CudaDeviceProperties &props)
+        : GpuArchitecture(props.major(), props.minor()) {}
+    auto GpuArchitecture::name() const { return "--gpu-architecture"; }
+    auto &GpuArchitecture::value() const { return _arch; };
+    enum CPPLangVer { CPP_x11, CPP_x14, CPP_x17 };
+    CPPLang::CPPLang(CPPLangVer version) : _version(version) {}
+    auto CPPLang::name() const { return "--std"; }
+    auto CPPLang::value() const {
+      switch (_version) {
+      case CPP_x11: {
+        return "c++11";
+      }
+      case CPP_x14: {
+        return "c++14";
+      }
+      case CPP_x17: {
+        return "c++17";
+      }
+      }
+      throw std::runtime_error("unknown C++ version");
+    };
+  };
 };
-}; // namespace options
 Program::Program(const std::string &name, const Code &code,
                  const std::vector<Header> &headers) {
   auto nh = headers.size();
@@ -173,20 +177,23 @@ inline std::string Program::PTX() const {
   };
   return str;
 };
-namespace detail {
-static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {}
-template <typename T>
-static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
-  params.addType<T>();
+{
+  {static inline void AddTypesToTemplate(Kernel::TemplateParameters &
+                                         params){} template <typename T>
+   static inline void AddTypesToTemplate(Kernel::TemplateParameters &
+                                         params){params.addType<T>();
 }
 template <typename T, typename U, typename... REST>
 static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
   params.addType<T>();
   AddTypesToTemplate<U, REST...>(params);
 }
-}; // namespace detail
+}
+;
+}
+;
 template <typename... ARGS> inline Kernel &Kernel::instantiate() {
   TemplateParameters tp;
-  detail::AddTypesToTemplate<ARGS...>(tp);
+  AddTypesToTemplate<ARGS...>(tp);
   return instantiate(tp);
 };

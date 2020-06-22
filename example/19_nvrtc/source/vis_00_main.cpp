@@ -21,10 +21,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "91b565fae0f6b1ff8ad2a2dd15f17e4fe7a21d9f";
+  state._main_version = "7f89172d44e77ea196acb557f54552853aa643c9";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "09:10:48 of Monday, 2020-06-22 (GMT+1)";
+  state._code_generation_time = "09:31:24 of Monday, 2020-06-22 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -47,8 +47,7 @@ int main() {
   auto kernel =
       Kernel("setKernel").instantiate<float, std::integral_constant<int, 10>>();
   program.registerKernel(kernel);
-  program.compile({options::GpuArchitecture(dev.properties()),
-                   options::CPPLang(options::CPP_x17)});
+  program.compile({GpuArchitecture(dev.properties()), CPPLang(CPP_x17)});
   auto module = Module(ctx, program);
   kernel.init(module, program);
 

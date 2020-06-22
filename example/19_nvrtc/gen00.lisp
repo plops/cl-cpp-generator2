@@ -213,8 +213,11 @@
 		  (do0
 		   (program.registerKernel kernel)
 		    (program.compile (curly
-				     (options--GpuArchitecture (dev.properties))
-				     (options--CPPLang options--CPP_x17)))
+				      (;options--
+				       GpuArchitecture (dev.properties))
+				      (;options--
+				       CPPLang ;options--
+					       CPP_x17)))
 		   
 		   (let ((module (Module ctx program))
 			 )
@@ -293,7 +296,7 @@
 			    (return ,code))))
 	   )
 
-	 (space namespace detail
+	 (progn ;space namespace detail
 		(progn
 		 (defun BuildArgs (...args)
 		   (declare (type "const ARGS&" ...args)
@@ -364,7 +367,8 @@
 	       (defun addType ()
 		 (declare (values "template<typename T> auto&"))
 		 (addComma)
-		 (setf _val (+ _val (detail--NameExtractor<T>--extract)))
+		 (setf _val (+ _val (;detail--
+				     NameExtractor<T>--extract)))
 		 (return *this))
 	       (defun "operator()" ()
 		 (declare (const)
@@ -443,7 +447,7 @@
 	      (return (dot _chOptions
 			   (data))))
 	    )
-	  (space namespace options
+	  (progn ;space namespace options
 		     (progn
 		       (defclass GpuArchitecture ()
 			 (let ((_arch))
@@ -554,7 +558,7 @@
 		 (return str)))))
 
 
-	 (space namespace detail
+	 (progn ;space namespace detail
 		(progn
 		  (defun AddTypesToTemplate (params)
 		   (declare (values "static inline void")
@@ -574,7 +578,8 @@
 	     (declare (values "template<typename... ARGS> inline Kernel&"))
 	     (let ((tp))
 	       (declare (type TemplateParameters tp))
-	       (detail--AddTypesToTemplate<ARGS...> tp)
+	       (;detail--
+		AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp))))
 
 	 
