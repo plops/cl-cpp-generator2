@@ -341,11 +341,17 @@ entry return-values contains a list of return values. currently supports type, v
 
 			  
 (progn
-  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (current-class nil) (header-only nil))
+  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
-    (flet ((emit (code &key (dl 0) (class current-class) (header-only))
+    (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
+		       (hook-class hook-defclass))
 	     "change the indentation level. this is used in do"
-	     (emit-c :code code :level (+ dl level) :hook-defun hook-defun :current-class class :header-only header-only)))
+	     (emit-c :code code
+		     :level (+ dl level)
+		     :hook-defun hook-fun
+		     :hook-defclass hook-class
+		     :current-class class
+		     :header-only header-only-p)))
       (if code
 	  (if (listp code)
 	      (progn
@@ -447,34 +453,40 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; class TA : public Faculty, public Student { ... }
-			(if hook-defun
-			    (progn
+			(prog1
+			    (if hook-defclass
+				" "
+			     (progn
+			       ;; only create function definitions of the class
+			       ;; expand defun but non of the other commands
+			       (destructuring-bind (name parents &rest body) (cdr code)
+				 (declare (ignorable parents))
+				 (with-output-to-string (s)
+				   (loop for e in body do
+					(when (and (listp e)
+						   (eq (car e) 'defun))
+					  (format s "~a" (emit e :class (emit name) :header-only-p nil))))))))
+			  (when hook-defclass
 			      ;; create class definition with function headers
-			      (funcall hook-defun
+			      (funcall hook-defclass
 				       (destructuring-bind (name parents &rest body) (cdr code)
 					 (format nil "class ~a ~@[: ~a~] ~a"
 						 (emit name)
 						 (when parents
 						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body) :class (emit name) :header-only t)))))
-			    (progn
-			      ;; only create function definitions of the class
-			      ;; expand defun but non of the other commands
-			      (destructuring-bind (name parents &rest body) (cdr code)
-				(declare (ignorable parents))
-				(with-output-to-string (s)
-				  (loop for e in body do
-				       (when (and (listp e)
-						  (eq (car e) 'defun))
-					 (format s "~a" (emit e :class (emit name)))))))))
+						 (emit `(progn ,@body)
+						       :class nil ;(emit name)
+						       :hook-fun nil
+						       :hook-class hook-defclass
+						       :header-only-p t)))))
+			  )
 		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defun
 		      (prog1
-			  (parse-defun code #'emit :class current-class :header-only header-only
-				       )
-			(when (and hook-defun (not current-class))
+			  (parse-defun code #'emit :class current-class :header-only header-only)
+			(when hook-defun ;(and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))
 		  (defun* (parse-defun code #'emit :header-only t :class current-class))

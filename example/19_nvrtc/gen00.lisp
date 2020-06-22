@@ -751,14 +751,17 @@
 	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
 	       
 	       (unless cuda
-		 (progn (format t "emit function declarations for ~a~%" name)
-			      (emit-c :code code :hook-defun 
-				      #'(lambda (str)
-					  (format t "~a~%" str))
-				      :header-only nil))
+		 #+nil (progn (format t "emit function declarations for ~a~%" name)
+			(emit-c :code code
+				:hook-defun #'(lambda (str)
+						(format t "~a~%" str))
+				:header-only t))
 		 (emit-c :code code
 			 :hook-defun #'(lambda (str)
 					 (format s "~a~%" str)
+					 )
+			 :hook-defclass #'(lambda (str)
+					 (format s "~a;~%" str)
 					 )
 			 :header-only t
 			 ))
