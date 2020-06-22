@@ -435,13 +435,16 @@ entry return-values contains a list of return values. currently supports type, v
 			     ;; include {name}*
 			     ;; (include <stdio.h>)   => #include <stdio.h>
 			     ;; (include interface.h) => #include "interface.h"
-			     (with-output-to-string (s)
-			       (loop for e in args do
-				  ;; emit string if first character is not <
-				    (format s "~&#include ~a"
-					    (emit (if (eq #\< (aref (format nil "~a" e) 0))
-						      e
-						      `(string ,e))))))))
+			     (let ((str (with-output-to-string (s)
+				      (loop for e in args do
+					 ;; emit string if first character is not <
+					   (format s "~&#include ~a"
+						   (emit (if (eq #\< (aref (format nil "~a" e) 0))
+							     e
+							     `(string ,e))))))))
+			       (when hook-defclass
+				 (funcall hook-defclass (format nil "~a~%" str)))
+			       str)))
 		  (progn (with-output-to-string (s)
 			   ;; progn {form}*
 			   ;; like do but surrounds forms with braces.

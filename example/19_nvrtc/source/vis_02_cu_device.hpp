@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <vector>
 ;
+#include "vis_02_cu_device.hpp"
+;
 class CudaDeviceProperties  {
             cudaDeviceProp _props ;
          CudaDeviceProperties (const cudaDeviceProp& props);  

@@ -21,6 +21,7 @@
 #include <nvrtc.h>
 
 #include "vis_03_cu_program.hpp"
+#include "vis_04_cu_module.hpp"
 
 #include "vis_02_cu_device.hpp"
 
@@ -29,10 +30,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "bc590e5c56bf353b807d448bd8c09706a525589f";
+  state._main_version = "1fadf3d0e6aa31c91eaf333ceca45238f533e2ff";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "18:50:43 of Monday, 2020-06-22 (GMT+1)";
+  state._code_generation_time = "23:33:35 of Monday, 2020-06-22 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

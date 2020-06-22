@@ -7,6 +7,7 @@
 extern State state;
 #include "vis_02_cu_device.hpp"
 #include "vis_03_cu_program.hpp"
+#include "vis_04_cu_module.hpp"
 #include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>

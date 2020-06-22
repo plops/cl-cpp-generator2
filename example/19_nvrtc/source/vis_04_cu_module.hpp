@@ -14,6 +14,8 @@
 ;
 #include "vis_02_cu_device.hpp"
 ;
+#include "vis_04_cu_module.hpp"
+;
 class Module  {
             CUmodule _module ;
         public:

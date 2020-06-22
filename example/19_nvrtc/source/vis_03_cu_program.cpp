@@ -6,6 +6,7 @@
 ;
 extern State state;
 #include "vis_01_rtc.hpp"
+#include "vis_03_cu_program.hpp"
 #include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>

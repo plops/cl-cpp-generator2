@@ -12,6 +12,8 @@
 ;
 #include "vis_01_rtc.hpp"
 ;
+#include "vis_03_cu_program.hpp"
+;
 class Program  {
             nvrtcProgram _prog ;
         public:

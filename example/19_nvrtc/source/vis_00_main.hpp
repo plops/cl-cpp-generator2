@@ -19,6 +19,8 @@
 ;
 #include "vis_03_cu_program.hpp"
 ;
+#include "vis_04_cu_module.hpp"
+;
 #include "vis_02_cu_device.hpp"
 ;
 #include "vis_01_rtc.hpp"

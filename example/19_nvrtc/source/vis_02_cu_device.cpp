@@ -6,6 +6,7 @@
 ;
 extern State state;
 //  g++ --std=gnu++20 vis_02_cu_device.cpp -I /media/sdb4/cuda/11.0.1/include/
+#include "vis_02_cu_device.hpp"
 #include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>

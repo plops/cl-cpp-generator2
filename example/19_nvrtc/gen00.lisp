@@ -110,7 +110,7 @@
 		  " "
 		  (include "globals.h")
 		  " "
-		  (include "proto2.h")
+		  ;(include "proto2.h")
 		  " ")
 		header)
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
@@ -156,11 +156,21 @@
 		       <string>
 		       <fstream>
 		       <thread>
+		       <vector>
 		       )
 	      " "
-	      (include "vis_01_rtc.cpp")
+	      (include
+	       <nvrtc.h>
+	       <cuda.h>
+	       <cuda_runtime.h>)
 	      " "
-	      ;(include "vis_02_cu_device.cpp")
+	      (include "vis_03_cu_program.hpp")
+	      (include "vis_04_cu_module.hpp")
+	      " "
+	      (include "vis_02_cu_device.hpp")
+	      " "
+	      (include "vis_01_rtc.hpp")
+	      
 	      " "
 	      
 	      "using namespace std::chrono_literals;"
@@ -239,8 +249,12 @@
 		  <string>
 		  <fstream>
 		  <streambuf>)
+
+	 (include "vis_04_cu_module.hpp")
 	 
-	 (include "vis_02_cu_device.cpp")
+	 (include "vis_02_cu_device.hpp")
+	 (include "vis_01_rtc.hpp")
+	 
 	 (comments "Code c{ <params> };  .. initialize"
 		   "Code c = Code::FromFile(fname);  .. load contents of file"
 		   "auto& code = c.code() .. get reference to internal string")
@@ -326,22 +340,7 @@
 
 	 
 	 
-	 (defclass Module ()
-	   (let ((_module))
-	     (declare (type CUmodule _module))
-	     )
-	   "public:"
-	   (defun Module (ctx p)
-	     (declare (type "const CudaContext&" ctx)
-		      (type "const Program&" p)
-		      (values :constructor))
-	     (cuModuleLoadDataEx &_module
-				 (dot p (PTX) (c_str))
-				 0 0 0))
-	   (defun module ()
-	     (declare (values auto)
-		      (const))
-	     (return _module)))
+	 
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
 		 (_name))
@@ -504,62 +503,7 @@
 			      (CPP_x17 (progn (return (string "c++17")))))
 			    (throw (std--runtime_error (string "unknown C++ version")))))))))
 	 
-	 (defclass Program ()
-	   (let ((_prog))
-	     (declare (type nvrtcProgram _prog))
-	     )
-	   "public:"
-	   (defun Program (name code headers)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (type "const std::vector<Header>&" headers)
-		      
-		      (values :constructor))
-	     (let ((nh (headers.size))
-		   (headersContent)
-		   (headersNames))
-	       (declare (type "std::vector<const char*>" headersContent headersNames))
-	       (for-range (&h headers)
-			  (headersContent.push_back (dot h (code) (c_str)))
-			  (headersContent.push_back (dot h (name) (c_str))))
-	       ,(rtc `(nvrtcCreateProgram
-				  &_prog
-				  (dot code (code) (c_str))
-				  (name.c_str)
-				  (static_cast<int> nh)
-				  (? (< 0 nh) (headersContent.data) nullptr)
-				  (? (< 0 nh) (headersNames.data) nullptr)))))
-	   (defun Program (name code)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (construct (Program name code (curly)))
-		      (values :constructor)))
-	   (defun registerKernel (k)
-	     (declare (type "const Kernel&" k)
-		      (values "inline void"))
-	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
-							 (name)
-							 (c_str)))))
-	   (defun compile (&key (opt (curly)))
-	     (declare (type "const CompilationOptions&" opt))
-	     (unless (== NVRTC_SUCCESS (nvrtcCompileProgram _prog
-							    (static_cast<int> (opt.numOptions))
-							    (opt.options)))
-	       (let ((logSize))
-		 (declare (type std--size_t logSize))
-		 (nvrtcGetProgramLogSize _prog &logSize)
-		 (let ((log (std--string logSize (char "\\0"))))
-		   (nvrtcGetProgramLog _prog (&log.front))
-		   (throw (std--runtime_error (log.c_str)))))))
-	   (defun PTX ()
-	     (declare (values "inline std::string")
-		      (const))
-	     (let ((size 0))
-	       (declare (type std--size_t size))
-	       ,(rtc `(nvrtcGetPTXSize _prog &size))
-	       (let ((str (std--string size (char "\\0"))))
-		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
-		 (return str)))))
+	 
 
 
 	 (progn ;space namespace detail
@@ -597,6 +541,7 @@
 		  <cuda.h>)
 	 (include <algorithm>
 		  <vector>)
+	 (include "vis_02_cu_device.hpp")
 	 (defclass CudaDeviceProperties ()
 		(let ((_props))
 		  (declare (type cudaDeviceProp _props)))
@@ -744,18 +689,128 @@
 	       (cuCtxDestroy _ctx)
 	       
 	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
-		 ,(logprint "error when trying to destroy context" `()))))))))
+		      ,(logprint "error when trying to destroy context" `()))))))))
+
+
+  (define-module
+      `(cu_program
+	()
+	(do0
+	 
+	 (include <cuda_runtime.h>
+		  <cuda.h>)
+	 (include <algorithm>
+		  <vector>)
+
+	 (include "vis_01_rtc.hpp")
+	 (include "vis_03_cu_program.hpp")
+	 (defclass Program ()
+	   (let ((_prog))
+	     (declare (type nvrtcProgram _prog))
+	     )
+	   "public:"
+	   (defun Program (name code headers)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (type "const std::vector<Header>&" headers)
+		      
+		      (values :constructor))
+	     (let ((nh (headers.size))
+		   (headersContent)
+		   (headersNames))
+	       (declare (type "std::vector<const char*>" headersContent headersNames))
+	       (for-range (&h headers)
+			  (headersContent.push_back (dot h (code) (c_str)))
+			  (headersContent.push_back (dot h (name) (c_str))))
+	       ,(rtc `(nvrtcCreateProgram
+				  &_prog
+				  (dot code (code) (c_str))
+				  (name.c_str)
+				  (static_cast<int> nh)
+				  (? (< 0 nh) (headersContent.data) nullptr)
+				  (? (< 0 nh) (headersNames.data) nullptr)))))
+	   (defun Program (name code)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (construct (Program name code (curly)))
+		      (values :constructor)))
+	   (defun registerKernel (k)
+	     (declare (type "const Kernel&" k)
+		      (values "inline void"))
+	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
+							 (name)
+							 (c_str)))))
+	   (defun compile (&key (opt (curly)))
+	     (declare (type "const CompilationOptions&" opt))
+	     (unless (== NVRTC_SUCCESS (nvrtcCompileProgram _prog
+							    (static_cast<int> (opt.numOptions))
+							    (opt.options)))
+	       (let ((logSize))
+		 (declare (type std--size_t logSize))
+		 (nvrtcGetProgramLogSize _prog &logSize)
+		 (let ((log (std--string logSize (char "\\0"))))
+		   (nvrtcGetProgramLog _prog (&log.front))
+		   (throw (std--runtime_error (log.c_str)))))))
+	   (defun PTX ()
+	     (declare (values "inline std::string")
+		      (const))
+	     (let ((size 0))
+	       (declare (type std--size_t size))
+	       ,(rtc `(nvrtcGetPTXSize _prog &size))
+	       (let ((str (std--string size (char "\\0"))))
+		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
+		 (return str)))))
+	 )))
+
+  (define-module
+      `(cu_module
+	()
+	(do0
+	 
+	 (include <cuda_runtime.h>
+		  <cuda.h>)
+	 (include <algorithm>
+		  <vector>)
+
+	 (include "vis_03_cu_program.hpp")
+	 (include "vis_02_cu_device.hpp")
+	 (include "vis_04_cu_module.hpp")
+	 (defclass Module ()
+	   (let ((_module))
+	     (declare (type CUmodule _module))
+	     )
+	   "public:"
+	   (defun Module (ctx p)
+	     (declare (type "const CudaContext&" ctx)
+		      (type "const Program&" p)
+		      (values :constructor))
+	     (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defun module ()
+	     (declare (values auto)
+		      (const))
+	     (return _module)))
+	 )))
+
+
+  
+
+
+  
+  
   (progn
-    (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
-						      (merge-pathnames #P"proto2.h"
-								       *source-dir*))
-		       :direction :output
-		       :if-exists :supersede
-		       :if-does-not-exist :create)
-      (format s "#ifndef PROTO2_H~%#define PROTO2_H~%~a~%"
-	      (emit-c :code `(include <cuda_runtime.h>
-				      <cuda.h>
-				      <nvrtc.h>)))
+    (progn ;with-open-file
+      #+nil (s (asdf:system-relative-pathname 'cl-cpp-generator2
+					(merge-pathnames #P"proto2.h"
+							 *source-dir*))
+	 :direction :output
+	 :if-exists :supersede
+	 :if-does-not-exist :create)
+      #+nil (format s "#ifndef PROTO2_H~%#define PROTO2_H~%~a~%"
+		    (emit-c :code `(include <cuda_runtime.h>
+					    <cuda.h>
+					    <nvrtc.h>)))
 
       
       
@@ -766,44 +821,44 @@
 	       
 	       (unless cuda
 		 #+nil (progn (format t "emit function declarations for ~a~%" name)
-			(emit-c :code code
-				:hook-defun #'(lambda (str)
-						(format t "~a~%" str))
-				:header-only t))
-		 (emit-c :code code
+			      (emit-c :code code
+				      :hook-defun #'(lambda (str)
+						      (format t "~a~%" str))
+				      :header-only t))
+		 #+nil (emit-c :code code
 			 :hook-defun #'(lambda (str)
 					 (format s "~a~%" str)
 					 )
 			 :hook-defclass #'(lambda (str)
-					 (format s "~a;~%" str)
-					 )
+					    (format s "~a;~%" str)
+					    )
 			 :header-only t
 			 )
 		 (let* ((file (format nil
-				     "vis_~2,'0d_~a"
-				     i name
-				     ))
-		       (file-h (string-upcase (format nil "~a_H" file))))
-		  (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
-								     (format nil "~a/~a.hpp"
-									     *source-dir* file))
-				      :direction :output
-				      :if-exists :supersede
-				      :if-does-not-exist :create)
-		    (format sh "#ifndef ~a~%" file-h)
-		    (format sh "#define ~a~%" file-h)
-		   
-		    (emit-c :code code
-			    :hook-defun #'(lambda (str)
-					    (format sh "~a~%" str)
-					    )
-			    :hook-defclass #'(lambda (str)
-					       (format sh "~a;~%" str)
-					       )
-			    :header-only t
-			    )
-		    (format sh "#endif")
-		    ))
+				      "vis_~2,'0d_~a"
+				      i name
+				      ))
+			(file-h (string-upcase (format nil "~a_H" file))))
+		   (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
+								      (format nil "~a/~a.hpp"
+									      *source-dir* file))
+				       :direction :output
+				       :if-exists :supersede
+				       :if-does-not-exist :create)
+		     (format sh "#ifndef ~a~%" file-h)
+		     (format sh "#define ~a~%" file-h)
+		     
+		     (emit-c :code code
+			     :hook-defun #'(lambda (str)
+					     (format sh "~a~%" str)
+					     )
+			     :hook-defclass #'(lambda (str)
+						(format sh "~a;~%" str)
+						)
+			     :header-only t
+			     )
+		     (format sh "#endif")
+		     ))
 
 		 )
 
@@ -817,7 +872,7 @@
 					  "cu"
 					  "cpp")))
 			     code))))
-      (format s "#endif"))
+      #+nil (format s "#endif"))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
@@ -862,7 +917,7 @@
 		    " "
 
 		    " "
-		    (include "proto2.h")
+		    ;(include "proto2.h")
 		    " "
 		    ,@(loop for e in (reverse *global-code*) collect
 			 e)

@@ -14,6 +14,8 @@
 ;
 #include "vis_02_cu_device.hpp"
 ;
+#include "vis_01_rtc.hpp"
+;
 class Code  {
             const std::string _code ;
         public:
