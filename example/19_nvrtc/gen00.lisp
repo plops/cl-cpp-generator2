@@ -474,8 +474,8 @@
 		  (declare (values "const auto&")
 			   (const))
 		  (return _props))
-		,@(loop for e in `((major)
-				   (minor)
+		,@(loop for e in `((major :type int)
+				   (minor :type int)
 				   (integrated :type bool :code (< 0 _props.integrated))
 				   (name :type "const char*"))
 		     collect

@@ -20,8 +20,8 @@ class CudaDeviceProperties  {
         static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props)  ;  
         static CudaDeviceProperties ByIntegratedType (bool integrated)  ;  
         const auto& getRawStruct () const ;  
-        auto major () const ;  
-        auto minor () const ;  
+        int major () const ;  
+        int minor () const ;  
         bool integrated () const ;  
         const char* name () const ;  
 };

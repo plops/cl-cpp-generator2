@@ -28,8 +28,8 @@ CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
   return FromExistingProperties(props);
 }
 const auto &CudaDeviceProperties::getRawStruct() const { return _props; }
-auto CudaDeviceProperties::major() const { return _props.major; }
-auto CudaDeviceProperties::minor() const { return _props.minor; }
+int CudaDeviceProperties::major() const { return _props.major; }
+int CudaDeviceProperties::minor() const { return _props.minor; }
 bool CudaDeviceProperties::integrated() const {
   return (0) < (_props.integrated);
 }
