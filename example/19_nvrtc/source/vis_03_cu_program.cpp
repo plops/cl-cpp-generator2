@@ -10,6 +10,11 @@ extern State state;
 #include <cuda_runtime.h>
 #include <vector>
 
+class Code;
+class Header;
+class Kernel;
+class CompilationOptions;
+
 #include "vis_01_rtc.hpp"
 
 #include "vis_03_cu_program.hpp"

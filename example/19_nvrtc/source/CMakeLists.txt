@@ -18,5 +18,7 @@ add_executable(source
         vis_03_cu_program.cpp
         vis_03_cu_program.hpp
         vis_04_cu_module.cpp
-        vis_04_cu_module.hpp)
+        vis_04_cu_module.hpp
+        vis_05_cu_compilation_options.cpp
+        vis_05_cu_compilation_options.hpp)
 target_include_directories(source PRIVATE /media/sdb4/cuda/11.0.1/include)

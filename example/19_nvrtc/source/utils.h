@@ -7,6 +7,6 @@
 #include <iostream>
 #include <vector>
 
-;
+enum CPPLangVer { CPP_x11, CPP_x14, CPP_x17 };
 
 #endif
