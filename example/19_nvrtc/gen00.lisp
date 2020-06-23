@@ -832,7 +832,8 @@
 					    <cuda.h>
 					    <nvrtc.h>)))
 
-      
+      ;; include file
+      ;; http://www.cplusplus.com/forum/articles/10627/
       
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
