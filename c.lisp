@@ -484,8 +484,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; class TA : public Faculty, public Student { ... }
-			;; defclass (class-name :template "template<T>") ({superclass-name}*) ({slot-specifier}*) [[class-option]]
+			;; defclass (class-name :template "<T>") ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; template<T> class TA...
+			;; defclass (class-name :template <T,y> :template-instance "std::integral_constant<T,y>") ...
+			;; template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
 			(destructuring-bind (name parents &rest body) (cdr code)
 			  (let ((class-name (if (listp name)
 							       (car name)

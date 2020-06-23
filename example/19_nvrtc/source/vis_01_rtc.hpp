@@ -34,7 +34,7 @@ class Header : public Code {
         const auto& name () const ;  
 };
 template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
-template<typename T> class NameExtractor  {
+template<typename T> class NameExtractor<>  {
         public:
         static std::string extract ()  ;  
 };
