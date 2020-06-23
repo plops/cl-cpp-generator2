@@ -3,3 +3,30 @@
 - https://github.com/mgopshtein/cudacpp
 - https://docs.nvidia.com/cuda/nvrtc/index.html
 - https://migocpp.wordpress.com/
+
+* Dependency in cudacpp project
+
+  #+begin_example
+g++ -M *.h rtc/*.h -I /media/sdb4/cuda/11.0.1/include
+  #+end_example 
+
+  #+begin_example
+CudaContext.o: CudaContext.h /usr/include/stdc-predef.h CudaDevice.h 
+CudaDevice.o: CudaDevice.h 
+Defs.o: Defs.h
+DeviceMemory.o: DeviceMemory.h DevicePtr.h Size.h Defs.h DeviceVector.h Index.h
+DeviceObject.o: DeviceObject.h DevicePtr.h Size.h Defs.h DeviceMemory.h DeviceVector.h Index.h
+DevicePtr.o: DevicePtr.h Size.h Defs.h
+DeviceVector.o: DeviceVector.h DevicePtr.h Size.h Defs.h Index.h
+Event.o: Event.h
+Grid.o: Grid.h
+GridInfo.o: GridInfo.h 
+Index.o: Index.h
+Size.o: Size.h
+Stream.o: Stream.h
+Code.o: rtc/Code.h 
+CompilationOptions.o: rtc/CompilationOptions.h
+Header.o: rtc/Header.h
+Kernel.o: rtc/Kernel.h  rtc/Module.h rtc/Program.h
+
+  #+end_example

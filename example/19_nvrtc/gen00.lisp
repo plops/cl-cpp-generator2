@@ -239,7 +239,7 @@
 
   
   
-  
+  #+nil 
   (define-module
       `(rtc
 	()
@@ -452,6 +452,7 @@
 
 	 
 	 )))
+  #+nil
   (define-module
       `(cu_device
 	()
@@ -623,7 +624,7 @@
 	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
 		      ,(logprint "error when trying to destroy context" `()))))))))
 
-
+  #+nil
   (define-module
       `(cu_program
 	()
@@ -709,7 +710,7 @@
 		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
 		 (return str)))))
 	 )))
-
+  #+nil
   (define-module
       `(cu_module
 	()
@@ -750,7 +751,7 @@
 		      (const))
 	     (return _module)))
 	 )))
-
+  #+nil
   (define-module
       `(cu_compilation_options
 	()
