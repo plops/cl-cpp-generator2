@@ -5,21 +5,24 @@
 
 ;
 extern State state;
-#include "vis_01_rtc.hpp"
-#include "vis_02_cu_device.hpp"
-#include "vis_04_cu_module.hpp"
 #include <cuda.h>
 #include <fstream>
 #include <nvrtc.h>
 #include <streambuf>
 #include <string>
+
+class Module;
+class Program;
+
+#include "vis_01_rtc.hpp"
+
 // Code c{ <params> };  .. initialize
 // Code c = Code::FromFile(fname);  .. load contents of file
 // auto& code = c.code() .. get reference to internal string
 ;
 template <typename... ARGS>
 Code::Code(ARGS &&... args) : _code(std::forward<ARGS>(args)...) {}
-static Code Code::FromFile(const std::string &name) {
+Code Code::FromFile(const std::string &name) {
   auto input = std::ifstream(name);
   if (!(input.good())) {
     throw std::runtime_error("can't read file");
@@ -37,32 +40,27 @@ template <typename... ARGS>
 Header::Header(const std::string &name, ARGS &&... args)
     : Code(std::forward<ARGS>(args)...), _name(name) {}
 const auto &Header::name() const { return _name; };
-{
-  {
-    template <typename... ARGS>
-    static inline std::vector<void *> BuildArgs(const ARGS &... args) {
-      return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
-    }
-    {
-      static std::string NameExtractor(template, template <typename T>
-                                       )::extract() {
-        std::string type_name;
-        nvrtcGetTypeName<T>(&type_name);
-        return type_name;
-      };
-    };
-    {
-      static std::string NameExtractor<std::integral_constant<T, y>>(
-          template, template <typename T, T y>)::extract() {
-        return std::to_string(y);
-      };
-    };
-  };
+template <typename... ARGS>
+std::vector<void *> BuildArgs(const ARGS &... args) {
+  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
+}
+std::string NameExtractor::extract() {
+  std::string type_name;
+  nvrtcGetTypeName<T>(&type_name);
+  return type_name;
+};
+static std::string NameExtractor<std::integral_constant<T, y>>::extract() {
+  return std::to_string(y);
 };
 inline Kernel::Kernel(const std::string &name) : _name(name) {}
 inline Kernel &Kernel::instantiate(const TemplateParameters &tp) {
   _name = ((_name) + ("<") + (tp()) + (">"));
   return *this;
+}
+template <typename... ARGS> Kernel &Kernel::instantiate() {
+  TemplateParameters tp;
+  AddTypesToTemplate<ARGS...>(tp);
+  return instantiate(tp);
 }
 const auto &Kernel::name() const { return _name; }
 void Kernel::init(const Module &m, const Program &p) {
@@ -73,23 +71,13 @@ void Kernel::init(const Module &m, const Program &p) {
                              "p.loweredName(*this).c_str())");
   };
 };
-{
-  {static inline void AddTypesToTemplate(Kernel::TemplateParameters &
-                                         params){} template <typename T>
-   static inline void AddTypesToTemplate(Kernel::TemplateParameters &
-                                         params){params.addType<T>();
+static inline void AddTypesToTemplate(TemplateParameters &params) {}
+template <typename T>
+static inline void AddTypesToTemplate(TemplateParameters &params) {
+  params.addType<T>();
 }
 template <typename T, typename U, typename... REST>
-static inline void AddTypesToTemplate(Kernel::TemplateParameters &params) {
+static inline void AddTypesToTemplate(TemplateParameters &params) {
   params.addType<T>();
   AddTypesToTemplate<U, REST...>(params);
-}
-}
-;
-}
-;
-template <typename... ARGS> inline Kernel &Kernel::instantiate() {
-  TemplateParameters tp;
-  AddTypesToTemplate<ARGS...>(tp);
-  return instantiate(tp);
 };

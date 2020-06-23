@@ -10,17 +10,13 @@
 #include <fstream>
 #include <streambuf>
 ;
-#include "vis_04_cu_module.hpp"
-;
-#include "vis_02_cu_device.hpp"
-;
 #include "vis_01_rtc.hpp"
 ;
 class Code  {
             const std::string _code ;
         public:
         template<typename... ARGS> Code (ARGS&& ...args)  ;  
-        static static Code FromFile (const std::string& name)  ;  
+        static Code FromFile (const std::string& name)  ;  
         const auto& code () const ;  
 };
 class Header : public Code {
@@ -31,12 +27,12 @@ class Header : public Code {
 };
 template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
 template<typename T> class NameExtractor  {
-                                public:
-                                static std::string extract ()  ;  
+        public:
+        static std::string extract ()  ;  
 };
 template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
-                                public:
-                                static std::string extract ()  ;  
+        public:
+        static std::string extract ()  ;  
 };
 class TemplateParameters  {
                         std::string _val ;
@@ -54,12 +50,11 @@ class Kernel  {
         inline Kernel (const std::string& name)  ;  
          ;
         inline Kernel& instantiate (const TemplateParameters& tp)  ;  
-        template<typename... ARGS> Kernel& instantiate ()  ;  ;
+        template<typename... ARGS> inline Kernel& instantiate ()  ;  
         const auto& name () const ;  
         void init (const Module& m, const Program& p)  ;  
 };
-static inline void AddTypesToTemplate (Kernel::TemplateParameters& params)  ;  
-template<typename T> static inline void AddTypesToTemplate (Kernel::TemplateParameters& params)  ;  
-template<typename T, typename U, typename... REST> static inline void AddTypesToTemplate (Kernel::TemplateParameters& params)  ;  
-template<typename... ARGS> inline Kernel& Kernel::instantiate ()  ;  
+static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
+template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
+template<typename T, typename U, typename... REST> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
 #endif

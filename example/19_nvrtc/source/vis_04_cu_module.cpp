@@ -10,6 +10,8 @@ extern State state;
 #include <cuda_runtime.h>
 #include <vector>
 
+class CudaContext;
+
 #include "vis_03_cu_program.hpp"
 
 #include "vis_04_cu_module.hpp"

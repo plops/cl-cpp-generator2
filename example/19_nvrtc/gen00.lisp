@@ -249,12 +249,16 @@
 		  <string>
 		  <fstream>
 		  <streambuf>)
-
-	 (include "vis_04_cu_module.hpp")
+	 " "
+	 (do0
+	  "class Module;"
+	  "class Program;")
+	 " "
+	 ;(include "vis_04_cu_module.hpp")
 	 
-	 (include "vis_02_cu_device.hpp")
+					;(include "vis_02_cu_device.hpp")
 	 (include "vis_01_rtc.hpp")
-	 
+	 " "
 	 (comments "Code c{ <params> };  .. initialize"
 		   "Code c = Code::FromFile(fname);  .. load contents of file"
 		   "auto& code = c.code() .. get reference to internal string")
@@ -270,12 +274,12 @@
 	   (defun FromFile (name)
 	     (declare (type "const std::string&" name)
 		      (static)
-		      (values "static Code"))
+		      (values Code))
 	     (let ((input (std--ifstream name)))
 	       (unless (input.good)
 		 (throw (std--runtime_error (string "can't read file"))))
 	       (input.seekg 0 std--ios--end)
-	       (let ((str ;(std--string (input.tellg)  (char "\\0"))
+	       (let ((str   ;(std--string (input.tellg)  (char "\\0"))
 		      ))
 		 (declare (type "std::string"  str))
 		 (str.reserve (input.tellg))
@@ -303,41 +307,45 @@
 				 (_name name))))
 	   ,@(loop for e in `(
 			      (name :type "const auto&" :code _name))
-		     collect
-		       (destructuring-bind (name &key code (type "auto")) e
-			 `(defun ,name ()
-			    (declare (values ,type)
-				     (const))
-			    (return ,code))))
+		collect
+		  (destructuring-bind (name &key code (type "auto")) e
+		    `(defun ,name ()
+		       (declare (values ,type)
+				(const))
+		       (return ,code))))
 	   )
 
-	 (progn ;space namespace detail
-		(progn
-		 (defun BuildArgs (...args)
-		   (declare (type "const ARGS&" ...args)
-			    (values "template<typename... ARGS> static inline std::vector<void*>"))
-		   (return (curly (space
-				   (const_cast<void*>
-				    ("reinterpret_cast<const void*>" &args))
-				   "..."))))
-		 (progn ;space "template<typename T>"
-		   (defclass (NameExtractor :template "template<typename T>") ()
-		     "public:"
-			  (defun extract ()
-		      (declare (values "static std::string"))
-		      (let ((type_name))
-			(declare (type std--string type_name))
-			(nvrtcGetTypeName<T> &type_name)
-		       (return type_name)))))
+	 (do0				;space namespace detail
+	   (do0 
+	     (defun BuildArgs (...args)
+	       (declare (type "const ARGS&" ...args)
+			(template "template<typename... ARGS>")
+			(static)
+			(inline)
+			(values "std::vector<void*>"))
+	       (return (curly (space
+			       (const_cast<void*>
+				("reinterpret_cast<const void*>" &args))
+			       "..."))))
+	     (do0 			;space "template<typename T>"
+	       (defclass (NameExtractor :template "template<typename T>") ()
+		 "public:"
+		 (defun extract ()
+		   (declare (static)
+			    (values "std::string"))
+		   (let ((type_name))
+		     (declare (type std--string type_name))
+		     (nvrtcGetTypeName<T> &type_name)
+		     (return type_name)))))
 		 
-		 (progn ;space "template<typename T, T y>"
-		   (defclass ("NameExtractor<std::integral_constant<T, y>>"
-			      :template "template<typename T, T y>") ()
-		    "public:"
-		    (defun extract ()
-		      (declare (values "static std::string"))
-		      (return (std--to_string y)))))
-		 ))
+	     (do0 		    ;space "template<typename T, T y>"
+	       (defclass ("NameExtractor<std::integral_constant<T, y>>"
+			  :template "template<typename T, T y>") ()
+		 "public:"
+		 (defun extract ()
+		   (declare (values "static std::string"))
+		   (return (std--to_string y)))))
+	     ))
 
 	 
 	 
@@ -371,7 +379,7 @@
 	       (defun addType ()
 		 (declare (values "template<typename T> auto&"))
 		 (addComma)
-		 (setf _val (+ _val (;detail--
+		 (setf _val (+ _val (	;detail--
 				     NameExtractor<T>--extract)))
 		 (return *this))
 	       (defun "operator()" ()
@@ -386,7 +394,16 @@
 			    (tp)
 			    (string ">")))
 	     (return *this))
-	   (defun* instantiate ()
+	   (defun instantiate ()
+	     (declare (values  Kernel&)
+		      (template "template<typename... ARGS>")
+		      (inline))
+	     (let ((tp))
+	       (declare (type TemplateParameters tp))
+	       (				;detail--
+		AddTypesToTemplate<ARGS...> tp)
+	       (return (instantiate tp))))
+	   #+nil (defun* instantiate ()
 	     (declare (values "template<typename... ARGS> Kernel&"))
 	     )
 	   (defun name ()
@@ -404,29 +421,23 @@
 	 
 
 
-	 (progn ;space namespace detail
-		(progn
-		  (defun AddTypesToTemplate (params)
-		   (declare (values "static inline void")
-			    (type "Kernel::TemplateParameters&" params))
-		   )
-		  (defun AddTypesToTemplate (params)
-		   (declare (values "template<typename T> static inline void")
-			    (type "Kernel::TemplateParameters&" params))
-		   (params.addType<T>))
-		  (defun AddTypesToTemplate (params)
-		   (declare (values "template<typename T, typename U, typename... REST> static inline void")
-			    (type "Kernel::TemplateParameters&" params))
-		   (params.addType<T>)
-		   ("AddTypesToTemplate<U, REST...>" params))))
-
-	 (defun "Kernel::instantiate" ()
-	     (declare (values "template<typename... ARGS> inline Kernel&"))
-	     (let ((tp))
-	       (declare (type TemplateParameters tp))
-	       (;detail--
-		AddTypesToTemplate<ARGS...> tp)
-	       (return (instantiate tp))))
+	 (do0 				;space namespace detail
+	   (do0 ;progn
+	     (defun AddTypesToTemplate (params)
+	       (declare (values "static inline void")
+			(type TemplateParameters& params)) ;; Kernel::
+	       )
+	     (defun AddTypesToTemplate (params)
+	       (declare (values "template<typename T> static inline void")
+			(type TemplateParameters& params)) ;; Kernel::
+	       (params.addType<T>))
+	     (defun AddTypesToTemplate (params)
+	       (declare (values "template<typename T, typename U, typename... REST> static inline void")
+			(type TemplateParameters& params)) ;; Kernel::
+	       (params.addType<T>)
+	       ("AddTypesToTemplate<U, REST...>" params))))
+	 
+	 
 
 	 
 	 )))
@@ -698,6 +709,11 @@
 	 (include <algorithm>
 		  <vector>)
 	 " "
+
+	 (do0
+	  "class CudaContext;"
+	  )
+	 
 	; (include "vis_02_cu_device.hpp")
 	 " "
 	 (include "vis_03_cu_program.hpp")
