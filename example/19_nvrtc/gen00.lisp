@@ -343,7 +343,8 @@
 			  :template "template<typename T, T y>") ()
 		 "public:"
 		 (defun extract ()
-		   (declare (values "static std::string"))
+		   (declare (values "std::string")
+			    (static))
 		   (return (std--to_string y)))))
 	     ))
 

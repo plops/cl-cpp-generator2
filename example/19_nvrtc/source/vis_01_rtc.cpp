@@ -54,7 +54,7 @@ std::string NameExtractor<T>::extract() {
   return type_name;
 };
 template <typename T, T y>
-static std::string
+std::string
 NameExtractor<std::integral_constant<T, y>>::extract() {
   return std::to_string(y);
 };
