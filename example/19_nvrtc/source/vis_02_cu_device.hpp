@@ -18,12 +18,6 @@ class CudaDeviceProperties  {
         public:
          CudaDeviceProperties (int device);  
         static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props);  
-        static CudaDeviceProperties ByIntegratedType (bool integrated);  
-        const auto& getRawStruct ();  
-        auto major ();  
-        auto minor ();  
-        bool integrated ();  
-        const char* name ();  
 };
 class CudaDevice  {
             int _device ;
@@ -31,19 +25,5 @@ class CudaDevice  {
         public:
          CudaDevice (int device);  
         inline CUdevice handle ();  
-        static CudaDevice FindByProperties (const CudaDeviceProperties& props);  
-        static int NumberOfDevices ();  
-        void setAsCurrent ();  
-        const auto & properties ();  
-        const char* name ();  
-        static CudaDevice FindByName (std::string name);  
-        static std::vector<CudaDevice> EnumerateDevices ();  
-        static CudaDevice CurrentDevice ();  
-};
-class CudaContext  {
-            CUcontext _ctx ;
-        public:
-         CudaContext (const CudaDevice& device);  
-         ~CudaContext ();  
 };
 #endif

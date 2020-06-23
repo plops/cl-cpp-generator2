@@ -21,19 +21,7 @@ CudaDeviceProperties::CudaDeviceProperties(int device) {
 CudaDeviceProperties
 CudaDeviceProperties::FromExistingProperties(const cudaDeviceProp &props) {
   return CudaDeviceProperties{props};
-}
-CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
-  auto props = cudaDeviceProp{0};
-  props.integrated = (integrated) ? (1) : (0);
-  return FromExistingProperties(props);
-}
-const auto &CudaDeviceProperties::getRawStruct() const { return _props; }
-auto CudaDeviceProperties::major() const { return _props.major; }
-auto CudaDeviceProperties::minor() const { return _props.minor; }
-bool CudaDeviceProperties::integrated() const {
-  return (0) < (_props.integrated);
-}
-const char *CudaDeviceProperties::name() const { return _props.name; };
+};
 CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
 inline CUdevice CudaDevice::handle() const {
   CUdevice h;
@@ -41,67 +29,4 @@ inline CUdevice CudaDevice::handle() const {
     throw std::runtime_error("cuDeviceGet(&h, _device)");
   };
   return h;
-}
-CudaDevice CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
-  int device;
-  if (!((cudaSuccess) == (cudaChooseDevice(&device, &props.getRawStruct())))) {
-    throw std::runtime_error(
-        "cudaChooseDevice(&device, &props.getRawStruct())");
-  };
-  return CudaDevice{device};
-}
-int CudaDevice::NumberOfDevices() {
-  int numDevices = 0;
-  if (!((cudaSuccess) == (cudaGetDeviceCount(&numDevices)))) {
-    throw std::runtime_error("cudaGetDeviceCount(&numDevices)");
-  };
-  return numDevices;
-}
-void CudaDevice::setAsCurrent() { cudaSetDevice(_device); }
-const auto &CudaDevice::properties() const { return _props; }
-const char *CudaDevice::name() const { return properties().name(); }
-CudaDevice CudaDevice::FindByName(std::string name) {
-  auto numDevices = NumberOfDevices();
-  if ((numDevices) == (0)) {
-    throw std::runtime_error("no cuda devices found");
-  };
-  std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-  for (int i = 0; (i) < (numDevices); (i) += (1)) {
-    auto devi = CudaDevice(i);
-    auto deviName = std::string(devi.name());
-    std::transform(deviName.begin(), deviName.end(), deviName.begin(),
-                   ::tolower);
-    if (!((std::string::npos) == (deviName.find(name)))) {
-      return devi;
-    };
-  }
-  throw std::runtime_error("could not find cuda device by name");
-}
-std::vector<CudaDevice> CudaDevice::EnumerateDevices() {
-  std::vector<CudaDevice> res;
-  auto n = NumberOfDevices();
-  for (int i = 0; (i) < (n); (i) += (1)) {
-    res.emplace_back(i);
-  }
-  return res;
-}
-CudaDevice CudaDevice::CurrentDevice() {
-  int device;
-  if (!((cudaSuccess) == (cudaGetDevice(&device)))) {
-    throw std::runtime_error("cudaGetDevice(&device)");
-  };
-  return CudaDevice{device};
-};
-CudaContext::CudaContext(const CudaDevice &device) : _ctx(nullptr) {
-  if (!((CUDA_SUCCESS) == (cuInit(0)))) {
-    throw std::runtime_error("cuInit(0)");
-  };
-  if (!((CUDA_SUCCESS) == (cuCtxCreate(&_ctx, 0, device.handle())))) {
-    throw std::runtime_error("cuCtxCreate(&_ctx, 0, device.handle())");
-  };
-}
-CudaContext::~CudaContext() {
-  if (_ctx) {
-    cuCtxDestroy(_ctx);
-  };
 };
