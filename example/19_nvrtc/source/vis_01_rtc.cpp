@@ -70,12 +70,12 @@ template <typename... ARGS> Kernel &Kernel::instantiate() {
 }
 const auto &Kernel::name() const { return _name; }
 void Kernel::init(const Module &m, const Program &p) {
-  if (!((CUDA_SUCCESS) ==
+  /*if (!((CUDA_SUCCESS) ==
         (cuModuleGetFunction(&_kernel, m.module(),
                              p.loweredName(*this).c_str())))) {
     throw std::runtime_error("cuModuleGetFunction(&_kernel, m.module(), "
                              "p.loweredName(*this).c_str())");
-  };
+  };*/
 };
 static inline void AddTypesToTemplate(TemplateParameters &params) {}
 template <typename T>
