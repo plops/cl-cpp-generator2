@@ -337,7 +337,12 @@
 		     (declare (type std--string type_name))
 		     (nvrtcGetTypeName<T> &type_name)
 		     (return type_name)))))
-		 
+
+
+	     ;; hpp: template<typename T, T y> class NameExtractor<std::integral_constant<T, y>> { 
+	     ;; public: static std::string extract ()  ;   ...
+	     ;; cpp: std::string NameExtractor<std::integral_constant<T, y>>::extract()
+	     
 	     (do0 		    ;space "template<typename T, T y>"
 	       (defclass ("NameExtractor<std::integral_constant<T, y>>"
 			  :template "template<typename T, T y>") ()
