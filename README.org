@@ -145,7 +145,7 @@ time on.
 | 17_glfw_lua                |  100% | cad program with polymorphism (javidx) and lua binding                                                                   |   |
 | 18_parallel_stl            |  100% | example of parallel computation (coffeebeforearch)                                                                       |   |
 | 19_nvrtc                   |   40% | try to load cuda code at runtime (mgopshtein), i had to add a lot of template handling code to cl-cpp-generator2         |   |
-|                            |       |                                                                                                                          |   |
+| 20_tbb                     |  100% | parallel_invoke example for intel thread building blocks (coffeebeforearch)                                              |   |
 |                            |       |                                                                                                                          |   |
 
 
