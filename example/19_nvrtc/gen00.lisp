@@ -340,7 +340,7 @@
 
 
 	     ;; hpp: template<typename T, T y> class NameExtractor<std::integral_constant<T, y>> { 
-	     ;; public: static std::string extract ()  ;   ...
+	     ;; public: static std::string extract ()  ;   ... 
 	     ;; cpp: std::string NameExtractor<std::integral_constant<T, y>>::extract()
 	     
 	     (do0 		    ;space "template<typename T, T y>"
