@@ -507,7 +507,7 @@ entry return-values contains a list of return values. currently supports type, v
 					 (loop for e in body do
 					      (when (and (listp e)
 							 (eq (car e) 'defun))
-						(format s "~a" (emit e :class (emit class-name) :header-only-p nil))))))))
+						(format s "~@[~a ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
 			     (when hook-defclass
 			       ;; create class definition with function headers
 			       (funcall hook-defclass

@@ -44,12 +44,15 @@ template <typename... ARGS>
 std::vector<void *> BuildArgs(const ARGS &... args) {
   return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
 }
-std::string NameExtractor::extract() {
+template <typename T>
+std::string NameExtractor<T>::extract() {
   std::string type_name;
   nvrtcGetTypeName<T>(&type_name);
   return type_name;
 };
-static std::string NameExtractor<std::integral_constant<T, y>>::extract() {
+template <typename T, T y>
+static std::string
+NameExtractor<std::integral_constant<T, y>>::extract() {
   return std::to_string(y);
 };
 inline Kernel::Kernel(const std::string &name) : _name(name) {}
