@@ -216,7 +216,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  ;; explicit
 		  (when (and explicit-p
 			     header-only)
-		    "explict")
+		    "explicit")
 		  ;; inline
 		  (when (and inline-p
 			     header-only)

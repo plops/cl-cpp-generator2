@@ -23,7 +23,7 @@ class CudaDevice  {
             int _device ;
     CudaDeviceProperties _props ;
         public:
-        explict  CudaDevice (int device)  ;  
+        explicit  CudaDevice (int device)  ;  
         inline CUdevice handle () const ;  
 };
 #endif
