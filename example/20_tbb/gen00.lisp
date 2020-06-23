@@ -128,18 +128,7 @@
 		     *module-global-parameters*))))))
   (defun g (arg)
     `(dot state ,arg))
-  (defun cuss (code)
-    `(unless (== CUDA_SUCCESS
-		 ,code)
-       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
-  (defun rtc (code)
-    `(unless (== NVRTC_SUCCESS
-		 ,code)
-       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
-  (defun cuda (code)
-    `(unless (== cudaSuccess
-		 ,code)
-       (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))
+
 
   (define-module
       `(main ((_main_version :type "std::string")
@@ -213,7 +202,7 @@
 		(setf
 		 
 		 
-                 ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc"))
+                 ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/20_tbb"))
 		 
                  ,(g `_code_generation_time) 
                  (string ,(multiple-value-bind

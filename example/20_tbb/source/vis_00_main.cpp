@@ -50,10 +50,10 @@ void run() {
       << (std::endl) << (std::flush);
 }
 int main() {
-  state._main_version = "18607e22d96984df97ea47782f75aebdccc998ca";
+  state._main_version = "1ae11bac414537db72592104164c4b9ed0bdeb23";
   state._code_repository =
-      "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "21:53:37 of Tuesday, 2020-06-23 (GMT+1)";
+      "https://github.com/plops/cl-cpp-generator2/tree/master/example/20_tbb";
+  state._code_generation_time = "21:54:30 of Tuesday, 2020-06-23 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
