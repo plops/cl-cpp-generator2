@@ -20,7 +20,7 @@ class Code  {
             const std::string _code ;
         public:
         template<typename... ARGS> Code (ARGS&& ...args);  
-        static Code FromFile (const std::string& name);  
+        static static Code FromFile (const std::string& name);  
         const auto& code ();  
 };
 class Header : public Code {

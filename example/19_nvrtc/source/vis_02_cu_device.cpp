@@ -77,7 +77,7 @@ CudaDevice CudaDevice::FindByName(std::string name) {
   }
   throw std::runtime_error("could not find cuda device by name");
 }
-std-- vector<CudaDevice> CudaDevice::EnumerateDevices() {
+std::vector<CudaDevice> CudaDevice::EnumerateDevices() {
   std::vector<CudaDevice> res;
   auto n = NumberOfDevices();
   for (int i = 0; (i) < (n); (i) += (1)) {

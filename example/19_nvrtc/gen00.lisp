@@ -660,7 +660,7 @@
 		     (return devi))))
 	       (throw (std--runtime_error (string "could not find cuda device by name")))))
 	   (defun EnumerateDevices ()
-	     (declare (values std--vector<CudaDevice>)
+	     (declare (values "std::vector<CudaDevice>")
 		      (static)
 		      )
 	     
