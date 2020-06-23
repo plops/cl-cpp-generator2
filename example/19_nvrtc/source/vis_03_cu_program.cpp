@@ -5,12 +5,15 @@
 
 ;
 extern State state;
-#include "vis_01_rtc.hpp"
-#include "vis_03_cu_program.hpp"
 #include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <vector>
+
+#include "vis_01_rtc.hpp"
+
+#include "vis_03_cu_program.hpp"
+
 Program::Program(const std::string &name, const Code &code,
                  const std::vector<Header> &headers) {
   auto nh = headers.size();

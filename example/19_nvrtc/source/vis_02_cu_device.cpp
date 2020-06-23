@@ -18,12 +18,11 @@ CudaDeviceProperties::CudaDeviceProperties(int device) {
   auto nameSize = ((sizeof(_props.name)) / (sizeof(_props.name[0])));
   _props.name[((nameSize) - (1))] = '\0';
 }
-static CudaDeviceProperties
+CudaDeviceProperties
 CudaDeviceProperties::FromExistingProperties(const cudaDeviceProp &props) {
   return CudaDeviceProperties{props};
 }
-static CudaDeviceProperties
-CudaDeviceProperties::ByIntegratedType(bool integrated) {
+CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
   auto props = cudaDeviceProp{0};
   props.integrated = (integrated) ? (1) : (0);
   return FromExistingProperties(props);
@@ -43,8 +42,7 @@ inline CUdevice CudaDevice::handle() const {
   };
   return h;
 }
-static CudaDevice
-CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
+CudaDevice CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
   int device;
   if (!((cudaSuccess) == (cudaChooseDevice(&device, &props.getRawStruct())))) {
     throw std::runtime_error(
@@ -52,7 +50,7 @@ CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
   };
   return CudaDevice{device};
 }
-static int CudaDevice::NumberOfDevices() {
+int CudaDevice::NumberOfDevices() {
   int numDevices = 0;
   if (!((cudaSuccess) == (cudaGetDeviceCount(&numDevices)))) {
     throw std::runtime_error("cudaGetDeviceCount(&numDevices)");
@@ -62,7 +60,7 @@ static int CudaDevice::NumberOfDevices() {
 void CudaDevice::setAsCurrent() { cudaSetDevice(_device); }
 const auto &CudaDevice::properties() const { return _props; }
 const char *CudaDevice::name() const { return properties().name(); }
-static CudaDevice CudaDevice::FindByName(std::string name) {
+CudaDevice CudaDevice::FindByName(std::string name) {
   auto numDevices = NumberOfDevices();
   if ((numDevices) == (0)) {
     throw std::runtime_error("no cuda devices found");
@@ -79,7 +77,7 @@ static CudaDevice CudaDevice::FindByName(std::string name) {
   }
   throw std::runtime_error("could not find cuda device by name");
 }
-static std::vector<CudaDevice> CudaDevice::EnumerateDevices() {
+std-- vector<CudaDevice> CudaDevice::EnumerateDevices() {
   std::vector<CudaDevice> res;
   auto n = NumberOfDevices();
   for (int i = 0; (i) < (n); (i) += (1)) {
@@ -87,7 +85,7 @@ static std::vector<CudaDevice> CudaDevice::EnumerateDevices() {
   }
   return res;
 }
-static CudaDevice CudaDevice::CurrentDevice() {
+CudaDevice CudaDevice::CurrentDevice() {
   int device;
   if (!((cudaSuccess) == (cudaGetDevice(&device)))) {
     throw std::runtime_error("cudaGetDevice(&device)");

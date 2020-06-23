@@ -269,6 +269,7 @@
 		      (construct (_code (space (std--forward<ARGS> args) "...")))))
 	   (defun FromFile (name)
 	     (declare (type "const std::string&" name)
+		      (static)
 		      (values "static Code"))
 	     (let ((input (std--ifstream name)))
 	       (unless (input.good)
@@ -561,11 +562,13 @@
 			  (char \\0))))
 		(defun FromExistingProperties (props)
 		  (declare (type "const cudaDeviceProp&" props)
-			   (values "static CudaDeviceProperties"))
+			   (values CudaDeviceProperties)
+			   (static))
 		  (return (space CudaDeviceProperties (curly props))))
 		(defun ByIntegratedType (integrated)
 		  (declare (type bool integrated)
-			   (values "static CudaDeviceProperties"))
+			   (values "CudaDeviceProperties")
+			   (static))
 		  (let ((props (space cudaDeviceProp (curly 0))))
 		    (setf props.integrated (? integrated 1 0))
 		    ;,(logprint "" `(props))
@@ -605,14 +608,16 @@
 	       ,(cuss `(cuDeviceGet &h _device))
 	       (return h)))
 	   (defun FindByProperties (props)
-	     (declare (values "static CudaDevice")
+	     (declare (values CudaDevice)
+		      (static)
 		      (type "const CudaDeviceProperties&" props))
 	     (let ((device ))
 	       (declare (type int device))
 	       ,(cuda `(cudaChooseDevice &device (&props.getRawStruct)))
 	       (return (space CudaDevice (curly device)))))
 	   (defun NumberOfDevices ()
-	     (declare (values "static int")
+	     (declare (values int)
+		      (static)
 		      )
 	     (let ((numDevices 0))
 	       (declare (type int numDevices))
@@ -630,7 +635,8 @@
 				     (const))
 			    (return ,code))))
 	   (defun FindByName (name)
-	     (declare (values "static CudaDevice")
+	     (declare (values CudaDevice)
+		      (static)
 		      (type std--string name))
 	     
 	     (let ((numDevices (NumberOfDevices)))
@@ -654,7 +660,8 @@
 		     (return devi))))
 	       (throw (std--runtime_error (string "could not find cuda device by name")))))
 	   (defun EnumerateDevices ()
-	     (declare (values "static std::vector<CudaDevice>")
+	     (declare (values std--vector<CudaDevice>)
+		      (static)
 		      )
 	     
 	     (let ((res)
@@ -664,7 +671,8 @@
 		 (res.emplace_back i))
 	       (return res)))
 	   (defun CurrentDevice ()
-	     (declare (values "static CudaDevice"))
+	     (declare (values CudaDevice)
+		      (static))
 	     
 	     (let ((device)
 		   )
@@ -701,13 +709,14 @@
 		  <cuda.h>)
 	 (include <algorithm>
 		  <vector>)
-
+	 " "
 	 (include "vis_01_rtc.hpp")
+	 " "
 	 (include "vis_03_cu_program.hpp")
+	 " "
 	 (defclass Program ()
 	   (let ((_prog))
-	     (declare (type nvrtcProgram _prog))
-	     )
+	     (declare (type nvrtcProgram _prog)))
 	   "public:"
 	   (defun Program (name code headers)
 	     (declare (type "const std::string&" name)
@@ -771,10 +780,15 @@
 		  <cuda.h>)
 	 (include <algorithm>
 		  <vector>)
-
+	 " "
+	; (include "vis_02_cu_device.hpp")
+	 " "
 	 (include "vis_03_cu_program.hpp")
-	 (include "vis_02_cu_device.hpp")
+	 " "
+	 
+	 " "
 	 (include "vis_04_cu_module.hpp")
+	 " "
 	 (defclass Module ()
 	   (let ((_module))
 	     (declare (type CUmodule _module))
