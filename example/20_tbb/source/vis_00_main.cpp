@@ -27,16 +27,40 @@ State state = {};
 auto get_time() { return std::chrono::high_resolution_clock::now(); }
 void run() {
   constexpr int N = 1048576;
-  auto v1 = std::vector<int>(N);
-  auto v2 = std::vector<int>(N);
+  auto v00 = std::vector<int>(N);
+  auto v01 = std::vector<int>(N);
+  auto v02 = std::vector<int>(N);
+  auto v03 = std::vector<int>(N);
+  auto v04 = std::vector<int>(N);
+  auto v05 = std::vector<int>(N);
+  auto v06 = std::vector<int>(N);
+  auto v07 = std::vector<int>(N);
+  auto v08 = std::vector<int>(N);
+  auto v09 = std::vector<int>(N);
   auto rng = std::mt19937();
   rng.seed((std::random_device())());
   auto dist = std::uniform_int_distribution<int>(0, 255);
-  std::generate(begin(v1), end(v1), [&]() { return dist(rng); });
-  std::generate(begin(v2), end(v2), [&]() { return dist(rng); });
+  std::generate(begin(v00), end(v00), [&]() { return dist(rng); });
+  std::generate(begin(v01), end(v01), [&]() { return dist(rng); });
+  std::generate(begin(v02), end(v02), [&]() { return dist(rng); });
+  std::generate(begin(v03), end(v03), [&]() { return dist(rng); });
+  std::generate(begin(v04), end(v04), [&]() { return dist(rng); });
+  std::generate(begin(v05), end(v05), [&]() { return dist(rng); });
+  std::generate(begin(v06), end(v06), [&]() { return dist(rng); });
+  std::generate(begin(v07), end(v07), [&]() { return dist(rng); });
+  std::generate(begin(v08), end(v08), [&]() { return dist(rng); });
+  std::generate(begin(v09), end(v09), [&]() { return dist(rng); });
   auto start = get_time();
-  tbb::parallel_invoke([&]() { std::sort(begin(v1), end(v1)); },
-                       [&]() { std::sort(begin(v2), end(v2)); });
+  tbb::parallel_invoke([&]() { std::sort(begin(v00), end(v00)); },
+                       [&]() { std::sort(begin(v01), end(v01)); },
+                       [&]() { std::sort(begin(v02), end(v02)); },
+                       [&]() { std::sort(begin(v03), end(v03)); },
+                       [&]() { std::sort(begin(v04), end(v04)); },
+                       [&]() { std::sort(begin(v05), end(v05)); },
+                       [&]() { std::sort(begin(v06), end(v06)); },
+                       [&]() { std::sort(begin(v07), end(v07)); },
+                       [&]() { std::sort(begin(v08), end(v08)); },
+                       [&]() { std::sort(begin(v09), end(v09)); });
   auto end = get_time();
   auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(((end) - (start)))
@@ -51,10 +75,10 @@ void run() {
       << (std::endl) << (std::flush);
 }
 int main() {
-  state._main_version = "113944db02bf843605f5b1b09dbadd25deb1c862";
+  state._main_version = "e6021a67912b9a29a8a4bf5ecc6fdc879b66372f";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/20_tbb";
-  state._code_generation_time = "21:56:24 of Tuesday, 2020-06-23 (GMT+1)";
+  state._code_generation_time = "22:05:57 of Tuesday, 2020-06-23 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

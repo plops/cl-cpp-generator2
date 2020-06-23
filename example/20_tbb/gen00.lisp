@@ -165,10 +165,17 @@
 		(return (std--chrono--high_resolution_clock--now)))
 
 	      (defun run ()
-		,(let ((n (expt 2 20)))
+		,(let* ((n (expt 2 20))
+		       (k 10)
+		       (vs (loop for i below k collect
+				(format nil "v~2,'0d" i))))
 		   `(let ((N ,n)
-			  (v1 (std--vector<int> N)	; (v1 N)
-			   )
+			  ,@(loop for e in vs collect
+				  `(,e (std--vector<int> N)))
+			  #+nil
+			  (v1 (std--vector<int> N) ; (v1 N)
+			    )
+			  #+nil
 			  (v2 (std--vector<int> N))
 			  (rng (std--mt19937)))
 		      (declare (type "constexpr int" N)
@@ -177,14 +184,14 @@
 			       )
 		      (rng.seed ((std--random_device)))
 		      (let ((dist (std--uniform_int_distribution<int> 0 255)))
-			,@(loop for e in `(v1 v2) collect
+			,@(loop for e in vs collect
 			       `(std--generate (begin ,e) (end ,e)
 							    (lambda ()
 							      (declare (capture &))
 							      (return (dist rng)))))
 			(let ((start (get_time)))
 			  (tbb--parallel_invoke
-			   ,@(loop for e in `(v1 v2) collect
+			   ,@(loop for e in vs collect
 				  `(lambda ()
 				     (declare (capture &))
 				     (std--sort (begin ,e) (end ,e)))))
