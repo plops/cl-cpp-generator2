@@ -140,9 +140,13 @@ time on.
 | 12_business_card_ray       |  100% | raytracer that could fit on a business card converted cuda (by someone else, i just converted code to cl-cpp-generator2) |   |
 | 13_cuda_std                |   10% | try automatic variable features of the new cuda standard library (revisit when cuda 11 is launched)                      |   |
 | 14_skia                    |    1% | i can't even compile skia                                                                                                |   |
-| 15_godot                   |   5%  | i'm trying to compile godot                                                                                              |   |
+| 15_godot                   |    5% | i'm trying to compile godot                                                                                              |   |
 | 16_cauldron                |    1% | cauldron doesnt work on linux                                                                                            |   |
-
+| 17_glfw_lua                |  100% | cad program with polymorphism (javidx) and lua binding                                                                   |   |
+| 18_parallel_stl            |  100% | example of parallel computation (coffeebeforearch)                                                                       |   |
+| 19_nvrtc                   |   40% | try to load cuda code at runtime (mgopshtein), i had to add a lot of template handling code to cl-cpp-generator2         |   |
+|                            |       |                                                                                                                          |   |
+|                            |       |                                                                                                                          |   |
 
 
 
