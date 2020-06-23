@@ -30,3 +30,27 @@ Header.o: rtc/Header.h rtc/Code.h
 Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
 Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
   #+end_example
+
+
+- sort files from few to many dependencies
+
+  #+begin_example
+1 Defs.o: Defs.h
+1 CudaDevice.o: CudaDevice.h
+1 Event.o: Event.h
+1 GridInfo.o: GridInfo.h 
+1 Size.o: Size.h 
+1 Code.o: rtc/Code.h
+2 CudaContext.o: CudaContext.h CudaDevice.h
+2 Index.o: Index.h Size.h
+2 CompilationOptions.o: rtc/CompilationOptions.h rtc/../CudaDevice.h
+2 Header.o: rtc/Header.h rtc/Code.h
+3 Stream.o: Stream.h Size.h Event.h
+3 DevicePtr.o: DevicePtr.h Size.h Defs.h
+3 Grid.o: Grid.h Size.h Index.h 
+3 Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
+5 DeviceVector.o: DeviceVector.h DevicePtr.h Size.h Defs.h Index.h
+6 DeviceMemory.o: DeviceMemory.h DevicePtr.h Size.h Defs.h DeviceVector.h Index.h
+7 DeviceObject.o: DeviceObject.h DevicePtr.h Size.h Defs.h DeviceMemory.h DeviceVector.h Index.h
+x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
+  #+end_example
