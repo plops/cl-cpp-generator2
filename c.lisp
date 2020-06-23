@@ -209,7 +209,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; template
 		  (when template
 		    template)
@@ -484,19 +484,21 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; class TA : public Faculty, public Student { ... }
-			;; defclass (class-name :template "<T>") ({superclass-name}*) ({slot-specifier}*) [[class-option]]
+			;; defclass (class-name :template "T") ({superclass-name}*) ({slot-specifier}*) [[class-option]]
 			;; template<T> class TA...
-			;; defclass (class-name :template <T,y> :template-instance "std::integral_constant<T,y>") ...
+			;; defclass (class-name :template "T,y" :template-instance "std::integral_constant<T,y>") ...
 			;; template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
 			(destructuring-bind (name parents &rest body) (cdr code)
 			  (let ((class-name (if (listp name)
 							       (car name)
 							       name))
-				(class-template nil))
+				(class-template nil)
+				(class-template-instance nil))
 			    (when (listp name)
-			      (destructuring-bind (name &key (template nil)) name
+			      (destructuring-bind (name &key (template nil) (template-instance nil)) name
 				(setf class-name name
-				      class-template template)))
+				      class-template template
+				      class-template-instance template-instance)))
 			   (prog1
 			       (if hook-defclass
 				   " "
@@ -513,9 +515,13 @@ entry return-values contains a list of return values. currently supports type, v
 			     (when hook-defclass
 			       ;; create class definition with function headers
 			       (funcall hook-defclass
-					(format nil "~@[~a ~]class ~a ~@[: ~a~] ~a"
+					(format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+						
 						class-template
 						(emit class-name)
+
+						class-template-instance
+						
 						(when parents
 						  (emit `(comma ,parents)))
 						(emit `(progn ,@body)

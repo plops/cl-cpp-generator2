@@ -268,7 +268,9 @@
 	   "public:"
 	   (defun Code (...args)
 	     (declare (type ARGS&& ...args)
-		      (values "template<typename... ARGS>") ; explicit
+		      (template "typename... ARGS")
+		      (explicit)
+		      (values :constructor) ; explicit
 		      ;; who thought of this grammar? this is a mess
 		      (construct (_code (space (std--forward<ARGS> args) "...")))))
 	   (defun FromFile (name)
@@ -301,7 +303,8 @@
 	   (defun Header (name ...args)
 	     (declare (type "const std::string&" name)
 		      (type ARGS&& ...args)
-		      (values "template<typename... ARGS>")
+		      (template "typename... ARGS")
+		      (values :constructor)
 		      ;; who thought of this grammar? this is a mess
 		      (construct (Code (space (std--forward<ARGS> args) "..."))
 				 (_name name))))
@@ -319,7 +322,7 @@
 	   (do0 
 	     (defun BuildArgs (...args)
 	       (declare (type "const ARGS&" ...args)
-			(template "template<typename... ARGS>")
+			(template "typename... ARGS")
 			(static)
 			(inline)
 			(values "std::vector<void*>"))
@@ -328,7 +331,7 @@
 				("reinterpret_cast<const void*>" &args))
 			       "..."))))
 	     (do0 			;space "template<typename T>"
-	       (defclass (NameExtractor :template "template<typename T>") ()
+	       (defclass (NameExtractor :template "typename T") ()
 		 "public:"
 		 (defun extract ()
 		   (declare (static)
@@ -344,8 +347,9 @@
 	     ;; cpp: std::string NameExtractor<std::integral_constant<T, y>>::extract()
 	     
 	     (do0 		    ;space "template<typename T, T y>"
-	       (defclass ("NameExtractor<std::integral_constant<T, y>>"
-			  :template "template<typename T, T y>") ()
+	       (defclass (NameExtractor
+			  :template "typename T, T y"
+			  :template-instance "std::integral_constant<T, y>") ()
 		 "public:"
 		 (defun extract ()
 		   (declare (values "std::string")
@@ -377,7 +381,8 @@
 		     (setf _val (+ _val (string ",")))))
 	       "public:"
 	       (defun addValue (val)
-		 (declare (values "template<typename T> auto&")
+		 (declare (template "typename T")
+			  (values "auto&")
 			  (type "const T&" val))
 		 (addComma)
 		 (setf _val (+ _val (std--string val)))

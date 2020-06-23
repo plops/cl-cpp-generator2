@@ -10,31 +10,23 @@
 #include <fstream>
 #include <streambuf>
 ;
-//#include "vis_03_cu_program.hpp"
-//#include "vis_04_cu_module.hpp"
-
-class Module;
-class Program;
-
-#include "vis_05_cu_compilation_options.hpp"
-
 #include "vis_01_rtc.hpp"
 ;
 class Code  {
             const std::string _code ;
         public:
-        template<typename... ARGS> Code (ARGS&& ...args)  ;  
+        template<typename... ARGS> explicit  Code (ARGS&& ...args)  ;  
         static Code FromFile (const std::string& name)  ;  
         const auto& code () const ;  
 };
 class Header : public Code {
             const std::string _name ;
         public:
-        template<typename... ARGS> Header (const std::string& name, ARGS&& ...args)  ;  
+        template<typename... ARGS>  Header (const std::string& name, ARGS&& ...args)  ;  
         const auto& name () const ;  
 };
 template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
-template<typename T> class NameExtractor<>  {
+template<typename T> class NameExtractor  {
         public:
         static std::string extract ()  ;  
 };
@@ -58,7 +50,7 @@ class Kernel  {
         inline Kernel (const std::string& name)  ;  
          ;
         inline Kernel& instantiate (const TemplateParameters& tp)  ;  
-        template<typename... ARGS> inline Kernel& instantiate ()  ;  
+        template<template<typename... ARGS>> inline Kernel& instantiate ()  ;  
         const auto& name () const ;  
         void init (const Module& m, const Program& p)  ;  
 };

@@ -11,11 +11,8 @@ extern State state;
 #include <streambuf>
 #include <string>
 
-//class Module;
-//class Program;
-
-#include "vis_03_cu_program.hpp"
-#include "vis_04_cu_module.hpp"
+class Module;
+class Program;
 
 #include "vis_01_rtc.hpp"
 
@@ -47,15 +44,12 @@ template <typename... ARGS>
 std::vector<void *> BuildArgs(const ARGS &... args) {
   return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
 }
-template <typename T>
-std::string NameExtractor<T>::extract() {
+typename T std::string NameExtractor::extract() {
   std::string type_name;
   nvrtcGetTypeName<T>(&type_name);
   return type_name;
 };
-template <typename T, T y>
-std::string
-NameExtractor<std::integral_constant<T, y>>::extract() {
+typename T, T y std::string NameExtractor::extract() {
   return std::to_string(y);
 };
 inline Kernel::Kernel(const std::string &name) : _name(name) {}
@@ -63,19 +57,19 @@ inline Kernel &Kernel::instantiate(const TemplateParameters &tp) {
   _name = ((_name) + ("<") + (tp()) + (">"));
   return *this;
 }
-template <typename... ARGS> Kernel &Kernel::instantiate() {
+template <template <typename... ARGS>> Kernel &Kernel::instantiate() {
   TemplateParameters tp;
   AddTypesToTemplate<ARGS...>(tp);
   return instantiate(tp);
 }
 const auto &Kernel::name() const { return _name; }
 void Kernel::init(const Module &m, const Program &p) {
-  /*if (!((CUDA_SUCCESS) ==
+  if (!((CUDA_SUCCESS) ==
         (cuModuleGetFunction(&_kernel, m.module(),
                              p.loweredName(*this).c_str())))) {
     throw std::runtime_error("cuModuleGetFunction(&_kernel, m.module(), "
                              "p.loweredName(*this).c_str())");
-  };*/
+  };
 };
 static inline void AddTypesToTemplate(TemplateParameters &params) {}
 template <typename T>
