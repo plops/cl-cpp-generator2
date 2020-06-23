@@ -893,7 +893,7 @@ entry return-values contains a list of return values. currently supports type, v
 				      (loop for (e f) in args
 					 do
 					   (format s "~a: ~a," (emit e) (emit f))))))
-			   (format nil "{~a}" ;; remove trailing comma
+			   (format nil "{~a}" ;; remobve trailing comma
 				   (subseq str 0 (- (length str) 1))))))
 		      (go (format nil "go ~a" (emit (car (cdr code)))))
 		      (range (format nil "range ~a" (emit (car (cdr code)))))

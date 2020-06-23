@@ -11,8 +11,11 @@ extern State state;
 #include <streambuf>
 #include <string>
 
-class Module;
-class Program;
+//class Module;
+//class Program;
+
+#include "vis_03_cu_program.hpp"
+#include "vis_04_cu_module.hpp"
 
 #include "vis_01_rtc.hpp"
 

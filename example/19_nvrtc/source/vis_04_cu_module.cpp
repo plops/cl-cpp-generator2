@@ -19,4 +19,4 @@ class CudaContext;
 Module::Module(const CudaContext &ctx, const Program &p) {
   cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
 }
-auto Module::module() const { return _module; };
+CUmodule Module::module() const { return _module; };

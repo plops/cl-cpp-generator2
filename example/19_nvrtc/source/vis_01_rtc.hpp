@@ -10,6 +10,14 @@
 #include <fstream>
 #include <streambuf>
 ;
+//#include "vis_03_cu_program.hpp"
+//#include "vis_04_cu_module.hpp"
+
+class Module;
+class Program;
+
+#include "vis_05_cu_compilation_options.hpp"
+
 #include "vis_01_rtc.hpp"
 ;
 class Code  {

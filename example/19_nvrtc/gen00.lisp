@@ -735,7 +735,7 @@
 				 (dot p (PTX) (c_str))
 				 0 0 0))
 	   (defun module ()
-	     (declare (values auto)
+	     (declare (values CUmodule)
 		      (const))
 	     (return _module)))
 	 )))
