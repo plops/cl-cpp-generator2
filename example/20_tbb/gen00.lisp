@@ -190,6 +190,8 @@
 							      (declare (capture &))
 							      (return (dist rng)))))
 			(let ((start (get_time)))
+			  (comments "https://software.intel.com/en-us/node/506168"
+				    "The expression parallel_invoke(f0,f1,...,fk) evaluates f0(), f1(), ..., fk() possibly in parallel. There can be from 2 to 10 arguments.")
 			  (tbb--parallel_invoke
 			   ,@(loop for e in vs collect
 				  `(lambda ()

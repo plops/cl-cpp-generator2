@@ -51,6 +51,10 @@ void run() {
   std::generate(begin(v08), end(v08), [&]() { return dist(rng); });
   std::generate(begin(v09), end(v09), [&]() { return dist(rng); });
   auto start = get_time();
+  // https://software.intel.com/en-us/node/506168
+  // The expression parallel_invoke(f0,f1,...,fk) evaluates f0(), f1(), ...,
+  // fk() possibly in parallel. There can be from 2 to 10 arguments.
+  ;
   tbb::parallel_invoke([&]() { std::sort(begin(v00), end(v00)); },
                        [&]() { std::sort(begin(v01), end(v01)); },
                        [&]() { std::sort(begin(v02), end(v02)); },
@@ -75,10 +79,10 @@ void run() {
       << (std::endl) << (std::flush);
 }
 int main() {
-  state._main_version = "e6021a67912b9a29a8a4bf5ecc6fdc879b66372f";
+  state._main_version = "35b36ad988bb8da8d9f4258fa98cf18b52eaeae6";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/20_tbb";
-  state._code_generation_time = "22:05:57 of Tuesday, 2020-06-23 (GMT+1)";
+  state._code_generation_time = "22:10:04 of Tuesday, 2020-06-23 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
