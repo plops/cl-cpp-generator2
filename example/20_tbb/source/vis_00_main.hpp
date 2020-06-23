@@ -14,6 +14,9 @@
 #include <vector>
 ;
 #include <algorithm>
+#include <random>
 ;
+auto get_time ()  ;  
+void run ()  ;  
 int main ()  ;  
 #endif

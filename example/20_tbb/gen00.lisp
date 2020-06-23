@@ -162,14 +162,31 @@
 		       <vector>
 		       )
 	      " "
-	      (include <algorithm>)
+	      (include <algorithm>
+		       <random>)
 	      " " 
 	      
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
+	      (defun get_time ()
+		(declare (values auto))
+		(return (std--chrono--high_resolution_clock--now)))
 
+	      (defun run ()
+		,(let ((n (expt 2 20)))
+		   `(let ((N ,n)
+			  ((v1 N))
+			  ((v2 N))
+			  (rng))
+		      (declare (type "constexpr int" N)
+			       (type std--vector<int> (v1 N) (v2 N))
+			       (type std--mt19937 rng))
+		      (rng.seed ((std--random_device)))
+		      (let ((dist (std--uniform_int_distribution<int> 0 255)))
+			))))
+	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_main_version)
@@ -203,7 +220,7 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		
+		(run)
 		,(logprint "end main" `())
 		(return 0)))))
 
