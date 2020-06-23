@@ -36,7 +36,7 @@ Program::Program(const std::string &name, const Code &code,
 }
 Program::Program(const std::string &name, const Code &code)
     : Program(name, code, {}) {}
-inline void Program::registerKernel(const Kernel &k) {
+void Program::registerKernel(const Kernel &k) {
   if (!((NVRTC_SUCCESS) == (nvrtcAddNameExpression(_prog, k.name().c_str())))) {
     throw std::runtime_error("nvrtcAddNameExpression(_prog, k.name().c_str())");
   };

@@ -14,16 +14,16 @@
 ;
 class CudaDeviceProperties  {
             cudaDeviceProp _props ;
-         CudaDeviceProperties (const cudaDeviceProp& props);  
+         CudaDeviceProperties (const cudaDeviceProp& props)  ;  
         public:
-         CudaDeviceProperties (int device);  
-        static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props);  
+         CudaDeviceProperties (int device)  ;  
+        static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props)  ;  
 };
 class CudaDevice  {
             int _device ;
     CudaDeviceProperties _props ;
         public:
-         CudaDevice (int device);  
-        inline CUdevice handle ();  
+        explict  CudaDevice (int device)  ;  
+        inline CUdevice handle () const ;  
 };
 #endif

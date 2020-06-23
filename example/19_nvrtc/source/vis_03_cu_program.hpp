@@ -17,10 +17,10 @@
 class Program  {
             nvrtcProgram _prog ;
         public:
-         Program (const std::string& name, const Code& code, const std::vector<Header>& headers);  
-         Program (const std::string& name, const Code& code);  
-        inline void registerKernel (const Kernel& k);  
-        void compile (const CompilationOptions& opt = {});  
-        inline std::string PTX ();  
+         Program (const std::string& name, const Code& code, const std::vector<Header>& headers)  ;  
+         Program (const std::string& name, const Code& code)  ;  
+        inline void registerKernel (const Kernel& k)  ;  
+        void compile (const CompilationOptions& opt = {})  ;  
+        inline std::string PTX () const ;  
 };
 #endif

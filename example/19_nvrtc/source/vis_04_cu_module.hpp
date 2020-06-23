@@ -17,7 +17,7 @@
 class Module  {
             CUmodule _module ;
         public:
-         Module (const CudaContext& ctx, const Program& p);  
-        auto module ();  
+         Module (const CudaContext& ctx, const Program& p)  ;  
+        auto module () const ;  
 };
 #endif

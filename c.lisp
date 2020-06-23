@@ -208,7 +208,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format s "~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a~:[~;;~] ~@[~a~] ~@[: ~a~]"
+	  (format s "~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; static
 		  (when (and static-p
 			     header-only)
@@ -266,17 +266,18 @@ entry return-values contains a list of return values. currently supports type, v
 						  (when header-only ;; only in class definition
 						   (format nil "= ~a" (funcall emit init))))))
 				  ))
+		  ;; const keyword
+		  (when const-p #+nil
+		    (and const-p
+			 (not header-only))
+		    "const")
 		  
 		  ;; semicolon if header only
 		  header-only
-		  ;; const keyword
-		  (when (and const-p
-			     (not header-only))
-		    "const")
 		  ;; constructor initializers
 		  (when (and constructs
-			     (not header-only))
-		   (funcall emit `(comma ,@(mapcar emit constructs)))))
+			 (not header-only))
+		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (unless header-only
 	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 

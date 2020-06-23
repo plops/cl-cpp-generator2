@@ -25,5 +25,5 @@
 ;
 #include "vis_01_rtc.hpp"
 ;
-int main ();  
+int main ()  ;  
 #endif

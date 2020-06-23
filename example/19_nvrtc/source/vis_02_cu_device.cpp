@@ -23,7 +23,7 @@ CudaDeviceProperties::FromExistingProperties(const cudaDeviceProp &props) {
   return CudaDeviceProperties{props};
 };
 CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
-inline CUdevice CudaDevice::handle() const {
+CUdevice CudaDevice::handle() const {
   CUdevice h;
   if (!((CUDA_SUCCESS) == (cuDeviceGet(&h, _device)))) {
     throw std::runtime_error("cuDeviceGet(&h, _device)");

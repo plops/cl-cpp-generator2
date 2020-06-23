@@ -597,11 +597,13 @@
 	   "public:"
 	   (defun CudaDevice (device)
 	     (declare (type int device)
-		      (values :constructor) ; explicit
+		      (values :constructor)
+		      (explicit)
 		      (construct (_device device)
 				 (_props device))))
 	   (defun handle ()
-	     (declare (values "inline CUdevice")
+	     (declare (values CUdevice)
+		      (inline)
 		      (const))
 	     (let ((h ))
 	       (declare (type CUdevice h))
@@ -748,7 +750,8 @@
 		      (values :constructor)))
 	   (defun registerKernel (k)
 	     (declare (type "const Kernel&" k)
-		      (values "inline void"))
+		      (values void)
+		      (inline))
 	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
 							 (name)
 							 (c_str)))))
