@@ -54,3 +54,15 @@ Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
 7 DeviceObject.o: DeviceObject.h DevicePtr.h Size.h Defs.h DeviceMemory.h DeviceVector.h Index.h
 x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
   #+end_example
+
+- only files that i will need for the beginning of the example
+
+#+begin_example
+1 CudaDevice.o: CudaDevice.h
+1 Code.o: rtc/Code.h
+2 CudaContext.o: CudaContext.h CudaDevice.h
+2 CompilationOptions.o: rtc/CompilationOptions.h rtc/../CudaDevice.h
+2 Header.o: rtc/Header.h rtc/Code.h
+3 Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
+x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
+#+end_example
