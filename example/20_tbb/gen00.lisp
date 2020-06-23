@@ -152,7 +152,8 @@
 		       )
 	      " "
 	      (include <algorithm>
-		       <random>)
+		       <random>
+		       <tbb/parallel_invoke.h>)
 	      " " 
 	      
 	      "using namespace std::chrono_literals;"
@@ -182,8 +183,11 @@
 							      (declare (capture &))
 							      (return (dist rng)))))
 			(let ((start (get_time)))
-			  ,@(loop for e in `(v1 v2) collect
-			       `(std--sort (begin ,e) (end ,e)))
+			  (tbb--parallel_invoke
+			   ,@(loop for e in `(v1 v2) collect
+				  `(lambda ()
+				     (declare (capture &))
+				     (std--sort (begin ,e) (end ,e)))))
 			  (let ((end (get_time))
 				(duration (dot (std--chrono--duration_cast<std--chrono--microseconds>
 						(- end start))

@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <random>
+#include <tbb/parallel_invoke.h>
 
 using namespace std::chrono_literals;
 State state = {};
@@ -34,8 +35,8 @@ void run() {
   std::generate(begin(v1), end(v1), [&]() { return dist(rng); });
   std::generate(begin(v2), end(v2), [&]() { return dist(rng); });
   auto start = get_time();
-  std::sort(begin(v1), end(v1));
-  std::sort(begin(v2), end(v2));
+  tbb::parallel_invoke([&]() { std::sort(begin(v1), end(v1)); },
+                       [&]() { std::sort(begin(v2), end(v2)); });
   auto end = get_time();
   auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(((end) - (start)))
@@ -50,10 +51,10 @@ void run() {
       << (std::endl) << (std::flush);
 }
 int main() {
-  state._main_version = "1ae11bac414537db72592104164c4b9ed0bdeb23";
+  state._main_version = "113944db02bf843605f5b1b09dbadd25deb1c862";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/20_tbb";
-  state._code_generation_time = "21:54:30 of Tuesday, 2020-06-23 (GMT+1)";
+  state._code_generation_time = "21:56:24 of Tuesday, 2020-06-23 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
