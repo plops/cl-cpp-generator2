@@ -28,8 +28,8 @@ class GpuArchitecture  {
         public:
          GpuArchitecture (int major, int minor)  ;  ;
          GpuArchitecture (const CudaDeviceProperties& props)  ;  ;
-        auto name () const ;  ;
-        auto& value () const ;  ;
+        std::string name () const ;  ;
+        const std::string& value () const ;  ;
 };
 class CPPLang  {
             CPPLangVer _version ;

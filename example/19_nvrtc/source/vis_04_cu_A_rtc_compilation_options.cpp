@@ -45,8 +45,8 @@ GpuArchitecture::GpuArchitecture(int major, int minor)
              (std::to_string(minor)))) {}
 GpuArchitecture::GpuArchitecture(const CudaDeviceProperties &props)
     : GpuArchitecture(props.major(), props.minor()) {}
-auto GpuArchitecture::name() const { return "--gpu-architecture"; }
-auto &GpuArchitecture::value() const { return _arch; };
+std::string GpuArchitecture::name() const { return "--gpu-architecture"; }
+const std::string &GpuArchitecture::value() const { return _arch; };
 
 CPPLang::CPPLang(CPPLangVer version) : _version(version) {}
 auto CPPLang::name() const { return "--std"; }

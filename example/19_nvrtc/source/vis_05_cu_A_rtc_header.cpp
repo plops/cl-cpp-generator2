@@ -11,4 +11,4 @@ extern State state;
 template <typename... ARGS>
 Header::Header(const std::string &name, ARGS &&... args)
     : Code(std::forward<ARGS>(args)...), _name(name) {}
-const auto &Header::name() const { return _name; };
+const std::string &Header::name() const { return _name; };

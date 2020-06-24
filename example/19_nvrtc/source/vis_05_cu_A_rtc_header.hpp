@@ -12,6 +12,6 @@ class Header : public Code {
             const std::string _name ;
         public:
         template<typename... ARGS>  Header (const std::string& name, ARGS&& ...args)  ;  ;
-        const auto& name () const ;  ;
+        const std::string& name () const ;  ;
 };
 #endif

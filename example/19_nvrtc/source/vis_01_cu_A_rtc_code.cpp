@@ -28,4 +28,4 @@ Code Code::FromFile(const std::string &name) {
              std::istreambuf_iterator<char>());
   return Code{std::move(str)};
 }
-const auto &Code::code() const { return _code; };
+const std::string &Code::code() const { return _code; };

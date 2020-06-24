@@ -278,7 +278,7 @@
 			     (std--istreambuf_iterator<char>))
 		 (return (space Code (curly (std--move str)))))))
 	   (defmethod code ()
-	     (declare (values "const auto&")
+	     (declare (values "const std::string&")
 		      (const))
 	     (return _code))))))
   (define-module
@@ -458,7 +458,7 @@
 	 )))
 
   (define-module
-      `(cu_A_compilation_options
+      `(cu_A_rtc_compilation_options
 	()
 	(do0
 	 " "
@@ -466,7 +466,7 @@
 	 " "
 	 (include "vis_02_cu_A_device.hpp")
 	 " "
-	 (include "vis_04_cu_A_compilation_options.hpp")
+	 (include "vis_04_cu_A_rtc_compilation_options.hpp")
 
 	 (do0
 	  (defclass CompilationOptions ()
@@ -539,11 +539,13 @@
 								(props.minor)))))
 			 (defmethod name ()
 			   (declare (const)
-				    (values auto))
+				    (values "std::string" ; auto
+					    ))
 			   (return (string "--gpu-architecture")))
 			 (defmethod value ()
 			   (declare (const)
-				    (values auto&))
+				    (values "const std::string&" ; auto&
+					    ))
 			   (return _arch)))
 		       (do0
 			,(emit-utils :code `(space enum CPPLangVer
@@ -575,6 +577,115 @@
 	 )
 	)
       )
+
+  (define-module
+      `(cu_A_rtc_header
+	()
+	(do0
+	 (include "vis_01_cu_A_rtc_code.hpp")
+	 " "
+	 (include "vis_05_cu_A_rtc_header.hpp")
+	 
+	 (defclass Header "public Code"
+	   (let ((_name))
+	     (declare (type "const std::string" _name))
+	     )
+	   "public:"
+	   (defmethod Header (name ...args)
+	     (declare (type "const std::string&" name)
+		      (type ARGS&& ...args)
+		      (template "typename... ARGS")
+		      (values :constructor)
+		      (construct (Code (space (std--forward<ARGS> args) "..."))
+				 (_name name))))
+	   ,@(loop for e in `(
+			      (name :type "const std::string&" :code _name))
+		collect
+		  (destructuring-bind (name &key code (type "auto")) e
+		    `(defmethod ,name ()
+		       (declare (values ,type)
+				(const))
+		       (return ,code))))))))
+  (define-module
+      `(cu_A_rtc_program
+	()
+	(do0
+	 (include <nvrtc.h>)
+	 " "
+	 
+	 (include "vis_01_cu_A_rtc_code.hpp")
+	 (include "vis_04_cu_A_rtc_compilation_options.hpp")
+	 (include "vis_05_cu_A_rtc_header.hpp")
+	 " "
+	 (include "vis_06_cu_A_rtc_program.hpp")
+	 " "
+	 "class Kernel;"
+	 " "
+	 (defclass Program ()
+	   (let ((_prog))
+	     (declare (type nvrtcProgram _prog)))
+	   "public:"
+	   (defmethod Program (name code headers)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (type "const std::vector<Header>&" headers)
+		      
+		      (values :constructor))
+	     (let ((nh (headers.size))
+		   (headersContent)
+		   (headersNames))
+	       (declare (type "std::vector<const char*>" headersContent headersNames))
+	       (for-range (&h headers)
+			  (headersContent.push_back (dot h (code) (c_str)))
+			  (headersContent.push_back (dot h (name) (c_str))))
+	       ,(rtc `(nvrtcCreateProgram
+				  &_prog
+				  (dot code (code) (c_str))
+				  (name.c_str)
+				  (static_cast<int> nh)
+				  (? (< 0 nh) (headersContent.data) nullptr)
+				  (? (< 0 nh) (headersNames.data) nullptr)))))
+	   (defmethod Program (name code)
+	     (declare (type "const std::string&" name)
+		      (type "const Code&" code)
+		      (construct (Program name code (curly)))
+		      (values :constructor)))
+	   
+	   (defmethod compile (&key (opt (curly)))
+	     (declare (type "const CompilationOptions&" opt))
+	     (unless (== NVRTC_SUCCESS (nvrtcCompileProgram _prog
+							    (static_cast<int> (opt.numOptions))
+							    (opt.options)))
+	       (let ((logSize))
+		 (declare (type std--size_t logSize))
+		 (nvrtcGetProgramLogSize _prog &logSize)
+		 (let ((log (std--string logSize (char "\\0"))))
+		   (nvrtcGetProgramLog _prog (&log.front))
+		   (throw (std--runtime_error (log.c_str)))))))
+	   (defmethod PTX ()
+	     (declare (values "std::string")
+		      (inline)
+		      (const))
+	     (let ((size 0))
+	       (declare (type std--size_t size))
+	       ,(rtc `(nvrtcGetPTXSize _prog &size))
+	       (let ((str (std--string size (char "\\0"))))
+		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
+		 (return str))))
+	   #+nil (defmethod registerKernel (k)
+	     (declare (type "const Kernel&" k)
+		      (values void)
+		      (inline))
+	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
+							 (name)
+							 (c_str))))))
+	 )))
+#+nil
+  (define-module
+      `(cu_A_rtc_module
+	()
+	(do0
+	 (include ""))))
   #+nil 
   (define-module
       `(rtc
@@ -599,28 +710,7 @@
 	 
 
 	 
-	 (defclass Header "public Code"
-	   (let ((_name))
-	     (declare (type "const std::string" _name))
-	     )
-	   "public:"
-	   (defun Header (name ...args)
-	     (declare (type "const std::string&" name)
-		      (type ARGS&& ...args)
-		      (template "typename... ARGS")
-		      (values :constructor)
-		      ;; who thought of this grammar? this is a mess
-		      (construct (Code (space (std--forward<ARGS> args) "..."))
-				 (_name name))))
-	   ,@(loop for e in `(
-			      (name :type "const auto&" :code _name))
-		collect
-		  (destructuring-bind (name &key code (type "auto")) e
-		    `(defun ,name ()
-		       (declare (values ,type)
-				(const))
-		       (return ,code))))
-	   )
+	 
 
 	 (do0				;space namespace detail
 	   (do0 
@@ -800,62 +890,7 @@
 
 
 	 
-	 (defclass Program ()
-	   (let ((_prog))
-	     (declare (type nvrtcProgram _prog)))
-	   "public:"
-	   (defun Program (name code headers)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (type "const std::vector<Header>&" headers)
-		      
-		      (values :constructor))
-	     (let ((nh (headers.size))
-		   (headersContent)
-		   (headersNames))
-	       (declare (type "std::vector<const char*>" headersContent headersNames))
-	       (for-range (&h headers)
-			  (headersContent.push_back (dot h (code) (c_str)))
-			  (headersContent.push_back (dot h (name) (c_str))))
-	       ,(rtc `(nvrtcCreateProgram
-				  &_prog
-				  (dot code (code) (c_str))
-				  (name.c_str)
-				  (static_cast<int> nh)
-				  (? (< 0 nh) (headersContent.data) nullptr)
-				  (? (< 0 nh) (headersNames.data) nullptr)))))
-	   (defun Program (name code)
-	     (declare (type "const std::string&" name)
-		      (type "const Code&" code)
-		      (construct (Program name code (curly)))
-		      (values :constructor)))
-	   (defun registerKernel (k)
-	     (declare (type "const Kernel&" k)
-		      (values void)
-		      (inline))
-	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
-							 (name)
-							 (c_str)))))
-	   (defun compile (&key (opt (curly)))
-	     (declare (type "const CompilationOptions&" opt))
-	     (unless (== NVRTC_SUCCESS (nvrtcCompileProgram _prog
-							    (static_cast<int> (opt.numOptions))
-							    (opt.options)))
-	       (let ((logSize))
-		 (declare (type std--size_t logSize))
-		 (nvrtcGetProgramLogSize _prog &logSize)
-		 (let ((log (std--string logSize (char "\\0"))))
-		   (nvrtcGetProgramLog _prog (&log.front))
-		   (throw (std--runtime_error (log.c_str)))))))
-	   (defun PTX ()
-	     (declare (values "inline std::string")
-		      (const))
-	     (let ((size 0))
-	       (declare (type std--size_t size))
-	       ,(rtc `(nvrtcGetPTXSize _prog &size))
-	       (let ((str (std--string size (char "\\0"))))
-		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
-		 (return str)))))
+	 
 	 )))
   #+nil
   (define-module

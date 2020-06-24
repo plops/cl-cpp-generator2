@@ -15,6 +15,6 @@ class Code  {
         public:
         template<typename... ARGS> explicit  Code (ARGS&& ...args)  ;  ;
         static Code FromFile (const std::string& name)  ;  ;
-        const auto& code () const ;  ;
+        const std::string& code () const ;  ;
 };
 #endif
