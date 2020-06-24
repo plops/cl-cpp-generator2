@@ -630,6 +630,11 @@ entry return-values contains a list of return values. currently supports type, v
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
 		      (parse-defmethod code #'emit :class current-class :header-only header-only))
+		  (defmethod*
+		   (when hook-defclass
+		       (funcall hook-defclass (parse-defmethod code #'emit :class current-class :header-only t))
+		       )
+		      " ")
 		  (defun
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)

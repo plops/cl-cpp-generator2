@@ -674,10 +674,11 @@
 	       (let ((str (std--string size (char "\\0"))))
 		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
 		 (return str))))
-	   #+nil (defmethod registerKernel (k)
+	   (defmethod* registerKernel (k)
 	     (declare (type "const Kernel&" k)
 		      (values void)
-		      (inline))
+		      ;(inline)
+		      )
 	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
 							 (name)
 							 (c_str))))))
