@@ -696,10 +696,6 @@
 	 " "
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
 	 " "
-
-	 (defclass Kernel2 ()
-	   (let ((_name))
-	     (declare (type int _name))))
 	 
 
 	 (defclass Kernel ()
@@ -745,25 +741,27 @@
 
 	 
 
-	 #+nil(defclass TemplateParameters ()
-	   #+nil(let ((_val)
-		   (_first true))
-	       (declare (type std--string _val)
-			(type bool _first))
+	 (defclass TemplateParameters ()
+	   (let ((_val)
+		 (_first "true"))
+	     (declare (type "std::string" _val)
+		      ;(type "bool" _first)
+		      )
 	       
-	       #+nil(defmethod addComma ()
+	     (defmethod addComma ()
+	       (declare (values void))
 		 (if _first
 		     (setf _first false)
 		     (setf _val (+ _val (string ",")))))
-	       #+nil"public:"
-	       #+nil(defmethod addValue (val)
+	       "public:"
+	       (defmethod addValue (val)
 		 (declare (template "typename T")
 			  (values "auto&")
 			  (type "const T&" val))
 		 (addComma)
 		 (setf _val (+ _val (std--string val)))
 		 (return *this))
-	       #+nil(defmethod addType ()
+	       (defmethod addType ()
 		 (declare
 		  (template "typename T")
 		  (values "auto&"))
@@ -771,7 +769,7 @@
 		 (setf _val (+ _val (	;detail--
 				     NameExtractor<T>--extract)))
 		 (return *this))
-	       #+nil(defmethod "operator()" ()
+	       (defmethod "operator()" ()
 		 (declare (const)
 			  (values "const std::string&"))
 		 (return _val))))

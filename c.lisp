@@ -516,9 +516,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (split-header-and-code
 		   (let ((args (cdr code)))
 		     (destructuring-bind (arg0 arg1) args
-		      (if hook-defclass
+		       (if hook-defclass
 			  (funcall hook-defclass (format nil "~a" (emit `(do0 ,arg0))))
 			  (format nil "~a" (emit `(do0 ,arg1))))
+		       
 		      )))
 		  (do0 (with-output-to-string (s)
 			 ;; do0 {form}*
@@ -598,7 +599,24 @@ entry return-values contains a list of return values. currently supports type, v
 				      class-template-instance template-instance)))
 			   (prog1
 			       (if hook-defclass
-				   " "
+				   (progn
+				;; create class definition with function headers
+				(funcall hook-defclass
+					 (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+						
+						 class-template
+						 (emit class-name)
+
+						 class-template-instance
+						
+						 (when parents
+						   (emit `(comma ,parents)))
+						 (emit `(progn ,@body)
+						       :class nil ;(emit name)
+						       :hook-fun nil
+						       :hook-class hook-defclass
+						       :header-only-p t)))
+				" ")
 				   (progn
 				     ;; only create function definitions of the class
 				     ;; expand defun but non of the other commands
@@ -610,23 +628,7 @@ entry return-values contains a list of return values. currently supports type, v
 							 (or (eq (car e) 'defmethod)
 							     (eq (car e) 'defmethod*)))
 						(format s "~@[~a ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
-			     (when hook-defclass
-			       ;; create class definition with function headers
-			       (funcall hook-defclass
-					(format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
-						
-						class-template
-						(emit class-name)
-
-						class-template-instance
-						
-						(when parents
-						  (emit `(comma ,parents)))
-						(emit `(progn ,@body)
-						      :class nil ;(emit name)
-						      :hook-fun nil
-						      :hook-class hook-defclass
-						      :header-only-p t))))
+			     
 			     )))
 		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))

@@ -8,9 +8,6 @@
 ;
 #include "vis_07_cu_A_rtc_kernel.hpp"
 ;
-class Kernel2  {
-            int _name ;
-};
 class Kernel  {
             CUfunction _kernel  = nullptr;
     std::string _name ;
@@ -23,6 +20,15 @@ class Kernel  {
         return instantiate(tp);
 };
         const std::string& name () const ;  ;
+};
+class TemplateParameters  {
+            std::string _val ;
+    auto _first  = true;
+    void addComma ()  ;  ;
+    public:
+    template<typename T> auto& addValue (const T& val)  ;  ;
+    template<typename T> auto& addType ()  ;  ;
+    const std::string& operator() () const ;  ;
 };
 static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
 template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
