@@ -424,11 +424,35 @@
 	     (let ((device))
 	       (declare (type int device))
 	       ,(cuda `(cudaGetDevice &device))
-	       (return (space CudaDevice (curly device)))))
-	   
-	   
-	   
-	   ))))
+	       (return (space CudaDevice (curly device)))))))))
+
+  (define-module
+      `(cu_A_context
+	()
+	(do0
+	 "class CudaDevice;"
+	 " "
+	 (include <cuda.h>)
+	 " "
+	 (include "vis_03_cu_A_context.hpp")
+	 (defclass CudaContext ()
+	   (let ((_ctx))
+	     (declare (type CUcontext _ctx)))
+	   "public:"
+	   (defun CudaContext (device)
+	     (declare (type "const CudaDevice&" device)
+		      (construct (_ctx nullptr))
+		      (values :constructor))
+	     ,(cuss `(cuInit 0))
+	     ,(cuss `(cuCtxCreate &_ctx 0 (device.handle))))
+	   (defun ~CudaContext ()
+	     (declare (values :constructor))
+	     (when _ctx
+	       (cuCtxDestroy _ctx)
+	       
+	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
+		      ,(logprint "error when trying to destroy context" `())))))
+	 )))
   #+nil 
   (define-module
       `(rtc
@@ -623,23 +647,7 @@
 	 (include "vis_02_cu_device.hpp")
 	 
 
-	 (defclass CudaContext ()
-	   (let ((_ctx))
-	     (declare (type CUcontext _ctx)))
-	   "public:"
-	   (defun CudaContext (device)
-	     (declare (type "const CudaDevice&" device)
-		      (construct (_ctx nullptr))
-		      (values :constructor))
-	     ,(cuss `(cuInit 0))
-	     ,(cuss `(cuCtxCreate &_ctx 0 (device.handle))))
-	   (defun ~CudaContext ()
-	     (declare (values :constructor))
-	     (when _ctx
-	       (cuCtxDestroy _ctx)
-	       
-	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
-		      ,(logprint "error when trying to destroy context" `()))))))))
+	 )))
 
   #+nil
   (define-module
