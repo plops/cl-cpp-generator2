@@ -620,8 +620,11 @@
 	 " "
 	 (include "vis_06_cu_A_rtc_program.hpp")
 	 " "
-	 (forward-declaration
-	  "class Kernel;")
+	 (split-header-and-code
+	  "class Kernel;"
+	  (do0
+	   (include "vis_07_cu_A_rtc_kernel.hpp")
+	   " "))
 	 " "
 	 (defclass Program ()
 	   (let ((_prog))
@@ -674,17 +677,113 @@
 	       (let ((str (std--string size (char "\\0"))))
 		 ,(rtc `(nvrtcGetPTX _prog (&str.front)))
 		 (return str))))
-	   (defmethod* registerKernel (k)
+	   (defmethod registerKernel (k)
 	     (declare (type "const Kernel&" k)
 		      (values void)
 		      ;(inline)
 		      )
+	     
 	     ,(rtc `(nvrtcAddNameExpression _prog (dot k
 							 (name)
 							 (c_str))))))
 	 )))
-#+nil
   (define-module
+      `(cu_A_rtc_kernel
+	()
+	(do0
+	 ;(include "vis_08_cu_A_rtc_module.hpp")
+	 (include "vis_07_cu_A_rtc_kernel.hpp")
+
+
+	 (defclass Kernel ()
+	   (let ((_kernel nullptr)
+		 (_name))
+	     (declare (type CUfunction _kernel)
+		      (type std--string _name)))
+	   "public:"
+	   (defmethod Kernel (name)
+	     (declare (type "const std::string&" name)
+		      (values inline)
+		      (construct (_name name))))
+	   (defclass TemplateParameters ()
+	     (let ((_val)
+		   (_first true))
+	       (declare (type std--string _val)
+			(type bool _first))
+	       
+	       (defmethod addComma ()
+		 (if _first
+		     (setf _first false)
+		     (setf _val (+ _val (string ",")))))
+	       "public:"
+	       #+nil (defmethod addValue (val)
+		 (declare (template "typename T")
+			  (values "auto&")
+			  (type "const T&" val))
+		 (addComma)
+		 (setf _val (+ _val (std--string val)))
+		 (return *this))
+	       #+nil (defmethod addType ()
+		 (declare (values "template<typename T> auto&"))
+		 (addComma)
+		 (setf _val (+ _val (	;detail--
+				     NameExtractor<T>--extract)))
+		 (return *this))
+	       (defun "operator()" ()
+		 (declare (const)
+			  (values "const std::string&"))
+		 (return _val))))
+	   #+nil
+	   (defmethod instantiate (tp)
+	     (declare (type "const TemplateParameters&" tp)
+		      (values "inline Kernel&"))
+	     (setf _name (+ _name
+			    (string "<")
+			    (tp)
+			    (string ">")))
+	     (return *this))
+	   #+nil
+	   (defmethod instantiate ()
+	     (declare (values  Kernel&)
+		      (template "template<typename... ARGS>")
+		      (inline))
+	     (let ((tp))
+	       (declare (type TemplateParameters tp))
+	       (				;detail--
+		AddTypesToTemplate<ARGS...> tp)
+	       (return (instantiate tp))))
+	   #+nil (defun* instantiate ()
+	     (declare (values "template<typename... ARGS> Kernel&"))
+	     )
+	   (defmethod name ()
+	     (declare (values "const std::string&")
+		      (const))
+	     (return _name))
+	   #+nil (defmethod init (m p)
+	     (declare (type "const Module&" m)
+		      (type "const Program&" p))
+	     ,(cuss `(cuModuleGetFunction &_kernel (m.module) (dot p (loweredName *this)
+								   (c_str)))))
+	   )
+	 #+nil
+	 (do0 				;space namespace detail
+	   (defun AddTypesToTemplate (params)
+	     (declare (values "static inline void")
+		      (type TemplateParameters& params)) ;; Kernel::
+	     )
+	   (defun AddTypesToTemplate (params)
+	     (declare (values "template<typename T> static inline void")
+		      (type TemplateParameters& params)) ;; Kernel::
+	     (params.addType<T>))
+	   (defun AddTypesToTemplate (params)
+	     (declare (values "template<typename T, typename U, typename... REST> static inline void")
+		      (type TemplateParameters& params)) ;; Kernel::
+	     (params.addType<T>)
+	     ("AddTypesToTemplate<U, REST...>" params)))
+	 
+	 )))
+ #+nil
+ (define-module 
       `(cu_A_rtc_module
 	()
 	(do0
@@ -757,93 +856,13 @@
 	 
 	 
 	 
-	 (defclass Kernel ()
-	   (let ((_kernel nullptr)
-		 (_name))
-	     (declare (type CUfunction _kernel)
-		      (type std--string _name)))
-	   "public:"
-	   (defun Kernel (name)
-	     (declare (type "const std::string&" name)
-		      (values inline)
-		      (construct (_name name))))
-	   (defclass TemplateParameters ()
-	     (let ((_val)
-		   (_first true))
-	       (declare (type std--string _val)
-			(type bool _first))
-	       (defun addComma ()
-		 (if _first
-		     (setf _first false)
-		     (setf _val (+ _val (string ",")))))
-	       "public:"
-	       (defun addValue (val)
-		 (declare (template "typename T")
-			  (values "auto&")
-			  (type "const T&" val))
-		 (addComma)
-		 (setf _val (+ _val (std--string val)))
-		 (return *this))
-	       (defun addType ()
-		 (declare (values "template<typename T> auto&"))
-		 (addComma)
-		 (setf _val (+ _val (	;detail--
-				     NameExtractor<T>--extract)))
-		 (return *this))
-	       (defun "operator()" ()
-		 (declare (const)
-			  (values "const std::string&"))
-		 (return _val))))
-	   (defun instantiate (tp)
-	     (declare (type "const TemplateParameters&" tp)
-		      (values "inline Kernel&"))
-	     (setf _name (+ _name
-			    (string "<")
-			    (tp)
-			    (string ">")))
-	     (return *this))
-	   (defun instantiate ()
-	     (declare (values  Kernel&)
-		      (template "template<typename... ARGS>")
-		      (inline))
-	     (let ((tp))
-	       (declare (type TemplateParameters tp))
-	       (				;detail--
-		AddTypesToTemplate<ARGS...> tp)
-	       (return (instantiate tp))))
-	   #+nil (defun* instantiate ()
-	     (declare (values "template<typename... ARGS> Kernel&"))
-	     )
-	   (defun name ()
-	     (declare (values "const auto&")
-		      (const))
-	     (return _name))
-	   (defun init (m p)
-	     (declare (type "const Module&" m)
-		      (type "const Program&" p))
-	     ,(cuss `(cuModuleGetFunction &_kernel (m.module) (dot p (loweredName *this)
-								   (c_str)))))
-	   )
+	 
 	 
 	 
 	 
 
 
-	 (do0 				;space namespace detail
-	   (do0 ;progn
-	     (defun AddTypesToTemplate (params)
-	       (declare (values "static inline void")
-			(type TemplateParameters& params)) ;; Kernel::
-	       )
-	     (defun AddTypesToTemplate (params)
-	       (declare (values "template<typename T> static inline void")
-			(type TemplateParameters& params)) ;; Kernel::
-	       (params.addType<T>))
-	     (defun AddTypesToTemplate (params)
-	       (declare (values "template<typename T, typename U, typename... REST> static inline void")
-			(type TemplateParameters& params)) ;; Kernel::
-	       (params.addType<T>)
-	       ("AddTypesToTemplate<U, REST...>" params))))
+	 
 	 
 	 
 

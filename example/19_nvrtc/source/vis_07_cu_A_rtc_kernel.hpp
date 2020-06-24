@@ -19,6 +19,6 @@ class Kernel  {
         public:
         inline Kernel (const std::string& name)  ;  ;
          ;
-        const auto& name () const ;  ;
+        const std::string& name () const ;  ;
 };
 #endif

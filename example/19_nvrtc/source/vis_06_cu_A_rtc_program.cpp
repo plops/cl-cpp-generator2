@@ -13,7 +13,8 @@ extern State state;
 
 #include "vis_06_cu_A_rtc_program.hpp"
 
-class Kernel;
+#include "vis_07_cu_A_rtc_kernel.hpp"
+;
 
 Program::Program(const std::string &name, const Code &code,
                  const std::vector<Header> &headers) {
@@ -49,7 +50,6 @@ void Program::compile(const CompilationOptions &opt) {
   };
 }
 void Program::registerKernel(const Kernel &k) {
-#include "vis_07_cu_A_rtc_kernel.hpp"
   if (!((NVRTC_SUCCESS) == (nvrtcAddNameExpression(_prog, k.name().c_str())))) {
     throw std::runtime_error("nvrtcAddNameExpression(_prog, k.name().c_str())");
   };

@@ -513,11 +513,13 @@ entry return-values contains a list of return values. currently supports type, v
 			   ;; print indentation characters
 			   (loop for i below level collect "    ")
 			   (emit (cadr code))))
-		  (forward-declaration
-		   (let ((s (format nil "~a" (emit `(do0 ,@(cdr code))))))
-		    (when hook-defclass
-		      (funcall hook-defclass s))
-		    s))
+		  (split-header-and-code
+		   (let ((args (cdr code)))
+		     (destructuring-bind (arg0 arg1) args
+		      (if hook-defclass
+			  (funcall hook-defclass (format nil "~a" (emit `(do0 ,arg0))))
+			  (format nil "~a" (emit `(do0 ,arg1))))
+		      )))
 		  (do0 (with-output-to-string (s)
 			 ;; do0 {form}*
 			 ;; write each form into a newline, keep current indentation level
@@ -605,7 +607,8 @@ entry return-values contains a list of return values. currently supports type, v
 				       (with-output-to-string (s)
 					 (loop for e in body do
 					      (when (and (listp e)
-							 (eq (car e) 'defmethod))
+							 (or (eq (car e) 'defmethod)
+							     (eq (car e) 'defmethod*)))
 						(format s "~@[~a ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
 			     (when hook-defclass
 			       ;; create class definition with function headers
@@ -630,11 +633,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
 		      (parse-defmethod code #'emit :class current-class :header-only header-only))
-		  (defmethod*
-		   (when hook-defclass
-		       (funcall hook-defclass (parse-defmethod code #'emit :class current-class :header-only t))
-		       )
-		      " ")
+		  #+nil (defmethod*
+		   (if hook-defclass
+		       (parse-defmethod code #'emit :class current-class :header-only t)
+		       (parse-defmethod code #'emit :class current-class :header-only nil)))
 		  (defun
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)
