@@ -8,27 +8,32 @@
 ;
 #include "vis_07_cu_A_rtc_kernel.hpp"
 ;
-class Kernel  {
-            CUfunction _kernel  = nullptr;
-    std::string _name ;
+template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
+template<typename T> class NameExtractor  {
         public:
-        inline Kernel (const std::string& name)  ;  ;
-        inline Kernel& instantiate (const TemplateParameters& tp)  ;  ;
-        template<template<typename... ARGS>> inline Kernel& instantiate ()    {
-                        TemplateParameters tp ;
-        AddTypesToTemplate<ARGS...>(tp);
-        return instantiate(tp);
+        static std::string extract ()  ;  ;
 };
-        const std::string& name () const ;  ;
+template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
+        public:
+        static std::string extract ()  ;  ;
 };
 class TemplateParameters  {
             std::string _val ;
     bool _first  = true;
         public:
         void addComma ()  ;  ;
-        auto& addValue (const T& val)  ;  ;
-        void addComma ()  ;  ;
+        template<typename T> auto& addValue (const T& val)  ;  ;
+        template<typename T> auto& addType ()  ;  ;
         const std::string& operator() () const ;  ;
+};
+class Kernel  {
+            CUfunction _kernel  = nullptr;
+    std::string _name ;
+        public:
+        inline Kernel (const std::string& name)  ;  ;
+        Kernel& instantiate (const TemplateParameters& tp)  ;  ;
+        template<typename... ARGS> Kernel& instantiate ()  ;  ;
+        const std::string& name () const ;  ;
 };
 static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
 template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  

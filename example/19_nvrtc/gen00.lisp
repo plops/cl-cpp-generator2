@@ -696,7 +696,69 @@
 	 " "
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
 	 " "
+					
+	 (defun BuildArgs (...args)
+	   (declare (type "const ARGS&" ...args)
+		    (template "typename... ARGS")
+		    (static)
+		    (inline)
+		    (values "std::vector<void*>"))
+	   (return (curly (space
+			   (const_cast<void*>
+			    ("reinterpret_cast<const void*>" &args))
+			   "..."))))
+	 (defclass (NameExtractor :template "typename T") ()
+	   "public:"
+	   (defmethod extract ()
+	     (declare (static)
+		      (values "std::string"))
+	     (let ((type_name))
+	       (declare (type std--string type_name))
+	       (nvrtcGetTypeName<T> &type_name)
+	       (return type_name))))
+
+	 	 
+	 (defclass (NameExtractor
+		    :template "typename T, T y"
+		    :template-instance "std::integral_constant<T, y>") ()
+	   "public:"
+	   (defmethod extract ()
+	     (declare (values "std::string")
+		      (static))
+	     (return (std--to_string y))))
 	 
+	 (defclass TemplateParameters ()
+	   (let ((_val)
+		 (_first true))
+	     (declare (type "std::string" _val)
+		      (type bool _first)))
+	   "public:"
+	   (defmethod addComma ()
+	       (declare (values void))
+		 (if _first
+		     (setf _first false)
+		     (setf _val (+ _val (string ",")))))
+	   (defmethod addValue (val)
+		 (declare (template "typename T")
+			  (values "auto&")
+			  (type "const T&" val))
+		 (addComma)
+		 (setf _val (+ _val (std--string val)))
+		 (return *this))
+	   (defmethod addType ()
+		 (declare (template "typename T")
+			  (values "auto&")
+			  )
+		 (addComma)
+		 (setf _val (+ _val (NameExtractor<T>--extract)))
+		 (return *this))
+	   
+	   
+	   (defmethod "operator()" ()
+		 (declare (const)
+			  (values "const std::string&"))
+		 (return _val))
+	   )
 
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
@@ -704,13 +766,15 @@
 	     (declare (type CUfunction _kernel)
 		      (type std--string _name)))
 	   "public:"
+	   
 	   (defmethod Kernel (name)
 	     (declare (type "const std::string&" name)
 		      (values inline)
 		      (construct (_name name))))
 	   (defmethod instantiate (tp)
 	     (declare (type "const TemplateParameters&" tp)
-		      (values "inline Kernel&"))
+		      ;(inline)
+		      (values "Kernel&"))
 	     (setf _name (+ _name
 			    (string "<")
 			    (tp)
@@ -719,8 +783,9 @@
 	   
 	   (defmethod instantiate ()
 	     (declare (values  Kernel&)
-		      (template "template<typename... ARGS>")
-		      (inline))
+		      (template "typename... ARGS")
+		      ;(inline)
+		      )
 	     (let ((tp))
 	       (declare (type TemplateParameters tp))
 	       (				;detail--
@@ -740,35 +805,7 @@
 	   )
 
 	 
-	 (defclass TemplateParameters ()
-	   (let ((_val)
-		 (_first true))
-	     (declare (type "std::string" _val)
-		      (type bool _first)))
-	   "public:"
-	   (defmethod addComma ()
-	       (declare (values void))
-		 (if _first
-		     (setf _first false)
-		     (setf _val (+ _val (string ",")))))
-	   (defmethod addValue (val)
-		 (declare ;(template "typename T")
-			  (values "auto&")
-			  (type "const T&" val))
-		 (addComma)
-		 (setf _val (+ _val (std--string val)))
-		 (return *this))
-	   
-	   (defmethod addComma ()
-	     
-	     (cuModuleLoadDataEx &_module
-				 (dot p (PTX) (c_str))
-				 0 0 0))
-	   (defmethod "operator()" ()
-		 (declare (const)
-			  (values "const std::string&"))
-		 (return _val))
-	   )
+	 
 	 
 	 
 	 (do0 				;space namespace detail
@@ -815,44 +852,6 @@
 		      (const))
 	     (return _module))))))
 
-  (define-module
-      `(cu_A_rtc_template
-	()
-	(do0
-	 (include "vis_09_cu_A_rtc_template.hpp")
-
-	 (defclass TemplateParameters ()
-	   (let ((_val)
-		 (_first true))
-	     (declare (type "std::string" _val)
-		      (type bool _first)))
-	   "public:"
-	   (defmethod addComma ()
-	       (declare (values void))
-		 (if _first
-		     (setf _first false)
-		     (setf _val (+ _val (string ",")))))
-	   (defmethod addValue (val)
-		 (declare ;(template "typename T")
-			  (values "auto&")
-			  (type "const T&" val))
-		 (addComma)
-		 (setf _val (+ _val (std--string val)))
-		 (return *this))
-	   
-	   (defmethod addComma ()
-	     
-	     (cuModuleLoadDataEx &_module
-				 (dot p (PTX) (c_str))
-				 0 0 0))
-	   (defmethod "operator()" ()
-		 (declare (const)
-			  (values "const std::string&"))
-		 (return _val))
-	   )
-
-	 
-	 )))
   #+nil 
   (define-module
       `(rtc
@@ -879,44 +878,7 @@
 	 
 	 
 
-	 (do0				;space namespace detail
-	   (do0 
-	     (defun BuildArgs (...args)
-	       (declare (type "const ARGS&" ...args)
-			(template "typename... ARGS")
-			(static)
-			(inline)
-			(values "std::vector<void*>"))
-	       (return (curly (space
-			       (const_cast<void*>
-				("reinterpret_cast<const void*>" &args))
-			       "..."))))
-	     (do0 			;space "template<typename T>"
-	       (defclass (NameExtractor :template "typename T") ()
-		 "public:"
-		 (defun extract ()
-		   (declare (static)
-			    (values "std::string"))
-		   (let ((type_name))
-		     (declare (type std--string type_name))
-		     (nvrtcGetTypeName<T> &type_name)
-		     (return type_name)))))
-
-
-	     ;; hpp: template<typename T, T y> class NameExtractor<std::integral_constant<T, y>> { 
-	     ;; public: static std::string extract ()  ;   ... 
-	     ;; cpp: std::string NameExtractor<std::integral_constant<T, y>>::extract()
-	     
-	     (do0 		    ;space "template<typename T, T y>"
-	       (defclass (NameExtractor
-			  :template "typename T, T y"
-			  :template-instance "std::integral_constant<T, y>") ()
-		 "public:"
-		 (defun extract ()
-		   (declare (values "std::string")
-			    (static))
-		   (return (std--to_string y)))))
-	     ))
+	 
 
 	 
 	 
