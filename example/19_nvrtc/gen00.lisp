@@ -350,7 +350,7 @@
 				 (_props device))))
 	   (defmethod handle ()
 	     (declare (values CUdevice)
-		      ;(inline)
+		      (inline)
 		      (const))
 	     (let ((h ))
 	       (declare (type CUdevice h))

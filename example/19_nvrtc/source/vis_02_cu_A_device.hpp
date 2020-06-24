@@ -28,7 +28,13 @@ class CudaDevice  {
     CudaDeviceProperties _props ;
         public:
         explicit  CudaDevice (int device)  ;  ;
-        CUdevice handle () const ;  ;
+        inline CUdevice handle () const   {
+                        CUdevice h ;
+        if ( !((CUDA_SUCCESS)==(cuDeviceGet(&h, _device))) ) {
+                                    throw std::runtime_error("cuDeviceGet(&h, _device)");
+};
+        return h;
+};
         static CudaDevice FindByProperties (const CudaDeviceProperties& props)  ;  ;
         static int NumberOfDevices ()  ;  ;
         void setAsCurrent ()  ;  ;

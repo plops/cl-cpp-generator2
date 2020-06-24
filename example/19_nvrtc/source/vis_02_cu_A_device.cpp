@@ -27,13 +27,6 @@ CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
 }
 const auto &CudaDeviceProperties::getRawStruct() const { return _props; };
 CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
-CUdevice CudaDevice::handle() const {
-  CUdevice h;
-  if (!((CUDA_SUCCESS) == (cuDeviceGet(&h, _device)))) {
-    throw std::runtime_error("cuDeviceGet(&h, _device)");
-  };
-  return h;
-}
 CudaDevice CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
   int device;
   if (!((cudaSuccess) == (cudaChooseDevice(&device, &props.getRawStruct())))) {

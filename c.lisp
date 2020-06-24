@@ -296,6 +296,8 @@ entry return-values contains a list of return values. currently supports type, v
 	  (parse-ordinary-lambda-list lambda-list)
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
+	(when (and inline-p (not header-only))
+	  (return-from parse-defmethod ""))
 	(with-output-to-string (s)
 	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; template
@@ -365,12 +367,12 @@ entry return-values contains a list of return values. currently supports type, v
 		    "const")
 		  
 		  ;; semicolon if header only
-		  header-only
+		  (and (not inline-p) header-only)
 		  ;; constructor initializers
 		  (when (and constructs
 			 (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
-	  (unless header-only
+	  (when (or inline-p (not header-only))
 	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-lambda (code emit)
