@@ -5,6 +5,7 @@
 #include "globals.h"
 ;
 #include <algorithm>
+#include <vector>
 ;
 #include "vis_02_cu_A_device.hpp"
 ;
@@ -20,7 +21,7 @@ class CompilationOptions  {
         template<typename T, typename... TS> void insertOptions (const T& p, const TS& ...ts)  ;  ;
         template<typename... TS> CompilationOptions (TS&& ...ts)  ;  ;
             CompilationOptions()=default;
-        auto numOptions () const ;  ;
+        decltype(_options.size()) numOptions () const ;  ;
         const char** options () const ;  ;
 };
 class GpuArchitecture  {

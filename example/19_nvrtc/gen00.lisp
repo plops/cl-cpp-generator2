@@ -462,7 +462,8 @@
 	()
 	(do0
 	 " "
-	 (include <algorithm>)
+	 (include <algorithm>
+		  <vector>)
 	 " "
 	 (include "vis_02_cu_A_device.hpp")
 	 " "
@@ -502,7 +503,7 @@
 	      (insertOptions ts...))
 	    (setf (CompilationOptions) default)
 	    (defmethod numOptions ()
-	      (declare (values auto)
+	      (declare (values "decltype(_options.size())")
 		       (const))
 	      (return (_options.size)))
 	    (defmethod options ()
