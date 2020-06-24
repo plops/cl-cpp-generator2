@@ -283,6 +283,94 @@ entry return-values contains a list of return values. currently supports type, v
 			 (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (unless header-only
+	    (format s "~a" (funcall emit `(progn ,@body)))))))))
+
+
+(defun parse-defmethod (code emit &key header-only (class nil))
+  ;; defun function-name lambda-list [declaration*] form*
+  (destructuring-bind (name lambda-list &rest body) (cdr code)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template) (consume-declare body) ;; py
+      (multiple-value-bind (req-param opt-param res-param
+				      key-param other-key-p
+				      aux-param key-exist-p)
+	  (parse-ordinary-lambda-list lambda-list)
+	(declare (ignorable req-param opt-param res-param
+			    key-param other-key-p aux-param key-exist-p))
+	(with-output-to-string (s)
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+		  ;; template
+		  (when template
+		    template)
+		  ;; static
+		  (when (and static-p
+			     header-only) 
+		    "static")
+		  ;; explicit
+		  (when (and explicit-p
+			     header-only)
+		    "explicit")
+		  ;; inline
+		  (when (and inline-p
+			     header-only)
+		    "inline")
+		  
+		  ;; return value
+		  (let ((r (gethash 'return-values env)))
+		    (if (< 1 (length r))
+			(break "multiple return values unsupported: ~a"
+			       r)
+			(if (car r)
+			    (case (car r)
+			      (:constructor "") ;; (values :constructor) will not print anything
+			      (t (car r)))
+			    "void")))
+		  ;; function-name, add class if not header
+		  (if class
+		      (if header-only
+			  name
+			  (format nil "~a::~a" class name))
+		      name)
+
+		  ;; positional parameters, followed by key parameters
+		  (funcall emit `(paren
+				  ;; positional
+				  ,@(loop for p in req-param collect
+					 (format nil "~a ~a"
+						 (let ((type (gethash p env)))
+						   (if type
+						       (funcall emit type)
+						       (break "can't find type for positional parameter ~a in defun"
+							      p)))
+						 p))
+				  ;; key parameters
+				  ;; http://www.crategus.com/books/alexandria/pages/alexandria.0.dev_fun_parse-ordinary-lambda-list.html
+				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
+					 (progn
+					   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
+								       (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
+					  (format nil "~a ~a ~@[~a~]"
+						  (let ((type (gethash name env)))
+						    (if type
+							(funcall emit type)
+							(break "can't find type for keyword parameter ~a in defun"
+							       name)))
+						  name
+						  (when header-only ;; only in class definition
+						   (format nil "= ~a" (funcall emit init))))))
+				  ))
+		  ;; const keyword
+		  (when const-p #+nil
+		    (and const-p
+			 (not header-only))
+		    "const")
+		  
+		  ;; semicolon if header only
+		  header-only
+		  ;; constructor initializers
+		  (when (and constructs
+			 (not header-only))
+		    (funcall emit `(comma ,@(mapcar emit constructs)))))
+	  (unless header-only
 	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-lambda (code emit)
@@ -510,7 +598,7 @@ entry return-values contains a list of return values. currently supports type, v
 				       (with-output-to-string (s)
 					 (loop for e in body do
 					      (when (and (listp e)
-							 (eq (car e) 'defun))
+							 (eq (car e) 'defmethod))
 						(format s "~@[~a ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
 			     (when hook-defclass
 			       ;; create class definition with function headers
@@ -533,6 +621,8 @@ entry return-values contains a list of return values. currently supports type, v
 		      )
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
+		  (defmethod
+		      (parse-defmethod code #'emit :class current-class :header-only header-only))
 		  (defun
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)

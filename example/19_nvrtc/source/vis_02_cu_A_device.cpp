@@ -6,6 +6,7 @@
 ;
 extern State state;
 #include "vis_02_cu_A_device.hpp"
+#include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>
 CudaDeviceProperties::CudaDeviceProperties(const cudaDeviceProp &props)
@@ -24,13 +25,7 @@ CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
   props.integrated = (integrated) ? (1) : (0);
   return FromExistingProperties(props);
 }
-const auto &CudaDeviceProperties::getRawStruct() const { return _props; }
-int CudaDeviceProperties::major() const { return _props.major; }
-int CudaDeviceProperties::minor() const { return _props.minor; }
-bool CudaDeviceProperties::integrated() const {
-  return (0) < (_props.integrated);
-}
-const char *CudaDeviceProperties::name() const { return _props.name; };
+const auto &CudaDeviceProperties::getRawStruct() const { return _props; };
 CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
 CUdevice CudaDevice::handle() const {
   CUdevice h;
@@ -55,8 +50,6 @@ int CudaDevice::NumberOfDevices() {
   return numDevices;
 }
 void CudaDevice::setAsCurrent() { cudaSetDevice(_device); }
-const auto &CudaDevice::properties() const { return _props; }
-const char *CudaDevice::name() const { return properties().name(); }
 CudaDevice CudaDevice::FindByName(std::string name) {
   auto numDevices = NumberOfDevices();
   if ((numDevices) == (0)) {
