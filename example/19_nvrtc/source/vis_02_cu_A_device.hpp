@@ -27,7 +27,7 @@ class CudaDevice  {
     CudaDeviceProperties _props ;
         public:
         explicit  CudaDevice (int device)  ;  
-        inline CUdevice handle () const ;  
+        CUdevice handle () const ;  
         static CudaDevice FindByProperties (const CudaDeviceProperties& props)  ;  
         static int NumberOfDevices ()  ;  
         void setAsCurrent ()  ;  

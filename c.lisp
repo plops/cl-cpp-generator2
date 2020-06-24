@@ -215,7 +215,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    template)
 		  ;; static
 		  (when (and static-p
-			     header-only)
+			     header-only) 
 		    "static")
 		  ;; explicit
 		  (when (and explicit-p
