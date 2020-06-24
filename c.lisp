@@ -513,6 +513,11 @@ entry return-values contains a list of return values. currently supports type, v
 			   ;; print indentation characters
 			   (loop for i below level collect "    ")
 			   (emit (cadr code))))
+		  (forward-declaration
+		   (let ((s (format nil "~a" (emit `(do0 ,@(cdr code))))))
+		    (when hook-defclass
+		      (funcall hook-defclass s))
+		    s))
 		  (do0 (with-output-to-string (s)
 			 ;; do0 {form}*
 			 ;; write each form into a newline, keep current indentation level

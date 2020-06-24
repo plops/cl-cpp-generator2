@@ -620,7 +620,8 @@
 	 " "
 	 (include "vis_06_cu_A_rtc_program.hpp")
 	 " "
-	 "class Kernel;"
+	 (forward-declaration
+	  "class Kernel;")
 	 " "
 	 (defclass Program ()
 	   (let ((_prog))
