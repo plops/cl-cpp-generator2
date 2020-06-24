@@ -691,7 +691,8 @@
       `(cu_A_rtc_kernel
 	()
 	(do0
-	 ;(include "vis_08_cu_A_rtc_module.hpp")
+	 
+	 (include "vis_08_cu_A_rtc_module.hpp")
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
 
 
@@ -782,12 +783,33 @@
 	     ("AddTypesToTemplate<U, REST...>" params)))
 	 
 	 )))
- #+nil
- (define-module 
+ 
+  (define-module 
       `(cu_A_rtc_module
 	()
 	(do0
-	 (include ""))))
+	 (include <cuda.h>)
+	 " "
+	 (include "vis_06_cu_A_rtc_program.hpp")
+	 (include "vis_03_cu_A_context.hpp")
+	 " "
+	 (include "vis_08_cu_A_rtc_module.hpp")
+	 " "
+	 (defclass Module ()
+	   (let ((_module))
+	     (declare (type CUmodule _module)))
+	   "public:"
+	   (defmethod Module (ctx p)
+	     (declare (type "const CudaContext&" ctx)
+		      (type "const Program&" p)
+		      (values :constructor))
+	     #+nil (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defmethod module ()
+	     (declare (values CUmodule)
+		      (const))
+	     (return _module))))))
   #+nil 
   (define-module
       `(rtc
@@ -868,116 +890,11 @@
 
 	 
 	 )))
-  #+nil
-  (define-module
-      `(cu_device
-	()
-	(do0
-	 "//  g++ --std=gnu++20 vis_02_cu_device.cpp -I /media/sdb4/cuda/11.0.1/include/"
-	 (include <cuda_runtime.h>
-		  <cuda.h>)
-	 (include <algorithm>
-		  <vector>)
-	 (include "vis_02_cu_device.hpp")
-	 
-
-	 )))
-
-  #+nil
-  (define-module
-      `(cu_program
-	()
-	(do0
-	 
-	 (include <cuda_runtime.h>
-		  <cuda.h>)
-	 (include <algorithm>
-		  <vector>)
-
-	 " "
-	 (do0
-	  "class Code;"
-
-	  "class Header;"
-	  "class Kernel;"
-	  "class CompilationOptions;"
-					;"enum CPPLangVer;"
-	  
-	  )
-	 " "
-	 (include "vis_01_rtc.hpp")
-	 " "
-	 (include "vis_03_cu_program.hpp")
-	 " "
 
 
-	 
-	 
-	 )))
-  #+nil
-  (define-module
-      `(cu_module
-	()
-	(do0
-	 
-	 (include <cuda_runtime.h>
-		  <cuda.h>)
-	 (include <algorithm>
-		  <vector>)
-	 " "
 
-	 (do0
-	  "class CudaContext;"
-	  )
-	 
-	; (include "vis_02_cu_device.hpp")
-	 " "
-	 (include "vis_03_cu_program.hpp")
-	 " "
-	 
-	 " "
-	 (include "vis_04_cu_module.hpp")
-	 " "
-	 (defclass Module ()
-	   (let ((_module))
-	     (declare (type CUmodule _module))
-	     )
-	   "public:"
-	   (defun Module (ctx p)
-	     (declare (type "const CudaContext&" ctx)
-		      (type "const Program&" p)
-		      (values :constructor))
-	     (cuModuleLoadDataEx &_module
-				 (dot p (PTX) (c_str))
-				 0 0 0))
-	   (defun module ()
-	     (declare (values CUmodule)
-		      (const))
-	     (return _module)))
-	 )))
-  #+nil
-  (define-module
-      `(cu_compilation_options
-	()
-	(do0
-	 
-	 (include <cuda_runtime.h>
-		  <cuda.h>)
-	 (include <algorithm>
-		  <vector>)
-	 " "
-	 " "
-	 (include "vis_02_cu_device.hpp")
-	 " "
-	 (include "vis_05_cu_compilation_options.hpp")
-	 " "
-	 
-					;"class CudaDeviceProperties;"
-	 ;(include "vis_02_cu_device.hpp")
-	 " "
-	 
-	 
-	 )))
+  
+
 
   
   
