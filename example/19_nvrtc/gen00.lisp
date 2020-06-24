@@ -236,29 +236,17 @@
 		  )
 		,(logprint "end main" `())
 		(return 0)))))
-
-  
-  
-  #+nil 
+  ;; cu .. cuda related
+  ;; A .. first set of files
+  ;; number .. ordered by the number of dependencies
   (define-module
-      `(rtc
+      `(cu_A_rtc_code
 	()
 	(do0
-	 (include <nvrtc.h>
-		  <cuda.h>
-		  <string>
+	 (include <string>
 		  <fstream>
 		  <streambuf>)
-	 " "
-	 (do0
-	  "class Module;"
-	  "class Program;")
-	 " "
-	 ;(include "vis_04_cu_module.hpp")
-	 
-					;(include "vis_02_cu_device.hpp")
-	 (include "vis_01_rtc.hpp")
-	 " "
+	 (include "vis_01_cu_A_rtc_code.hpp")
 	 (comments "Code c{ <params> };  .. initialize"
 		   "Code c = Code::FromFile(fname);  .. load contents of file"
 		   "auto& code = c.code() .. get reference to internal string")
@@ -292,7 +280,177 @@
 	   (defun code ()
 	     (declare (values "const auto&")
 		      (const))
-	     (return _code)))
+	     (return _code))))))
+  (define-module
+      `(cu_A_device
+	()
+	(do0
+	 (include <cuda.h>
+		  <cuda_runtime.h>)
+	 (include "vis_02_cu_A_device.hpp")
+	 (defclass CudaDeviceProperties ()
+	   (let ((_props))
+	     (declare (type cudaDeviceProp _props)))
+	   (defun CudaDeviceProperties (props)
+	     (declare (type "const cudaDeviceProp&" props)
+		      (explicit)
+		      (construct (_props props))
+		      (values :constructor) ;explicit
+		      ))
+	   "public:"
+	   (defun CudaDeviceProperties (device)
+	     (declare (type int device)
+		      (values :constructor))
+	     (cudaGetDeviceProperties &_props device)
+	     (let ((nameSize (/ (sizeof _props.name)
+				(sizeof (aref _props.name 0)))))
+	       (setf (aref _props.name (- nameSize 1))
+		     (char \\0))))
+	   (defun FromExistingProperties (props)
+	     (declare (type "const cudaDeviceProp&" props)
+		      (values CudaDeviceProperties)
+		      (static))
+	     (return (space CudaDeviceProperties (curly props))))
+	   (defun ByIntegratedType (integrated)
+	     (declare (type bool integrated)
+		      (values "CudaDeviceProperties")
+		      (static))
+	     (let ((props (space cudaDeviceProp (curly 0))))
+	       (setf props.integrated (? integrated 1 0))
+					;,(logprint "" `(props))
+	       (return (FromExistingProperties props))))
+	   (defun getRawStruct ()
+	     (declare (values "const auto&")
+		      (const))
+	     (return _props))
+	   ,@(loop for e in `((major :type int)
+			      (minor :type int)
+			      (integrated :type bool :code (< 0 _props.integrated))
+			      (name :type "const char*"))
+		collect
+		  (destructuring-bind (name &key code (type "auto")) e
+		    `(defun ,name ()
+		       (declare (values ,type)
+				(const))
+		       ,(if code
+			    `(return ,code)
+			    `(return (dot _props ,name)))))))
+	 (defclass CudaDevice ()
+	   (let ((_device)
+		 (_props))
+	     (declare (type int _device)
+		      (type CudaDeviceProperties _props)))
+	   "public:"
+	   (defun CudaDevice (device)
+	     (declare (type int device)
+		      (values :constructor)
+		      (explicit)
+		      (construct (_device device)
+				 (_props device))))
+	   (defun handle ()
+	     (declare (values CUdevice)
+		      (inline)
+		      (const))
+	     (let ((h ))
+	       (declare (type CUdevice h))
+	       ,(cuss `(cuDeviceGet &h _device))
+	       (return h)))
+	   (defun FindByProperties (props)
+	     (declare (values CudaDevice)
+		      (static)
+		      (type "const CudaDeviceProperties&" props))
+	     (let ((device ))
+	       (declare (type int device))
+	       ,(cuda `(cudaChooseDevice &device (&props.getRawStruct)))
+	       (return (space CudaDevice (curly device)))))
+	   (defun NumberOfDevices ()
+	     (declare (values int)
+		      (static)
+		      )
+	     (let ((numDevices 0))
+	       (declare (type int numDevices))
+	       ,(cuda `(cudaGetDeviceCount &numDevices))
+	       (return numDevices)))
+	   (defun setAsCurrent ()
+	     (cudaSetDevice _device))
+	   ,@(loop for e in `((properties :type "const auto &" :code _props)
+			      (name :type "const char*" :code (dot (properties)
+								   (name))))
+		collect
+		  (destructuring-bind (name &key code (type "auto")) e
+		    `(defun ,name ()
+		       (declare (values ,type)
+				(const))
+		       (return ,code))))
+	   (defun FindByName (name)
+	     (declare (values CudaDevice)
+		      (static)
+		      (type std--string name))
+	     
+	     (let ((numDevices (NumberOfDevices)))
+	       
+	       (when (== numDevices 0)
+		 (throw (std--runtime_error (string "no cuda devices found"))))
+	       (std--transform (name.begin)
+			       (name.end)
+			       (name.begin)
+			       --tolower)
+	       (dotimes (i numDevices)
+		 (let ((devi (CudaDevice i))
+		       (deviName (std--string (devi.name))))
+		   #+nil (declare (type CudaDevice (space devi (curly i)))
+				  (type std--string (space deviName (curly (devi.name)))))
+		   (std--transform (deviName.begin)
+				   (deviName.end)
+				   (deviName.begin)
+				   --tolower)
+		   (unless (== std--string--npos (deviName.find name))
+		     (return devi))))
+	       (throw (std--runtime_error (string "could not find cuda device by name")))))
+	   (defun EnumerateDevices ()
+	     (declare (values "std::vector<CudaDevice>")
+		      (static)
+		      )
+	     
+	     (let ((res)
+		   (n (NumberOfDevices)))
+	       (declare (type std--vector<CudaDevice> res))
+	       (dotimes (i n)
+		 (res.emplace_back i))
+	       (return res)))
+	   (defun CurrentDevice ()
+	     (declare (values CudaDevice)
+		      (static))
+	     (let ((device))
+	       (declare (type int device))
+	       ,(cuda `(cudaGetDevice &device))
+	       (return (space CudaDevice (curly device)))))
+	   
+	   
+	   
+	   ))))
+  #+nil 
+  (define-module
+      `(rtc
+	()
+	(do0
+	 (include <nvrtc.h>
+		  <cuda.h>
+		  <string>
+		  <fstream>
+		  <streambuf>)
+	 " "
+	 (do0
+	  "class Module;"
+	  "class Program;")
+	 " "
+	 ;(include "vis_04_cu_module.hpp")
+	 
+					;(include "vis_02_cu_device.hpp")
+	 (include "vis_01_rtc.hpp")
+	 " "
+	 
+	 
 
 	 
 	 (defclass Header "public Code"
@@ -463,148 +621,7 @@
 	 (include <algorithm>
 		  <vector>)
 	 (include "vis_02_cu_device.hpp")
-	 (defclass CudaDeviceProperties ()
-		(let ((_props))
-		  (declare (type cudaDeviceProp _props)))
-		(defun CudaDeviceProperties (props)
-		  (declare (type "const cudaDeviceProp&" props)
-			   (construct (_props props))
-			   (values :constructor) ;explicit
-			   ))
-		"public:"
-		(defun CudaDeviceProperties (device)
-		  (declare (type int device)
-			   (values :constructor))
-		  (cudaGetDeviceProperties &_props device)
-		  (let ((nameSize (/ (sizeof _props.name)
-				     (sizeof (aref _props.name 0)))))
-		    (setf (aref _props.name (- nameSize 1))
-			  (char \\0))))
-	        (defun FromExistingProperties (props)
-		  (declare (type "const cudaDeviceProp&" props)
-			   (values CudaDeviceProperties)
-			   (static))
-		  (return (space CudaDeviceProperties (curly props))))
-		(defun ByIntegratedType (integrated)
-		  (declare (type bool integrated)
-			   (values "CudaDeviceProperties")
-			   (static))
-		  (let ((props (space cudaDeviceProp (curly 0))))
-		    (setf props.integrated (? integrated 1 0))
-		    ;,(logprint "" `(props))
-		    (return (FromExistingProperties props))))
-		 (defun getRawStruct ()
-		  (declare (values "const auto&")
-			   (const))
-		  (return _props))
-		,@(loop for e in `((major :type int)
-				   (minor :type int)
-				   (integrated :type bool :code (< 0 _props.integrated))
-				   (name :type "const char*"))
-		     collect
-		       (destructuring-bind (name &key code (type "auto")) e
-			 `(defun ,name ()
-			    (declare (values ,type)
-				     (const))
-			    ,(if code
-				`(return ,code)
-				`(return (dot _props ,name)))))))
-	  (defclass CudaDevice ()
-	   (let ((_device)
-		 (_props))
-	     (declare (type int _device)
-		      (type CudaDeviceProperties _props)))
-	   "public:"
-	   (defun CudaDevice (device)
-	     (declare (type int device)
-		      (values :constructor)
-		      (explicit)
-		      (construct (_device device)
-				 (_props device))))
-	   (defun handle ()
-	     (declare (values CUdevice)
-		      (inline)
-		      (const))
-	     (let ((h ))
-	       (declare (type CUdevice h))
-	       ,(cuss `(cuDeviceGet &h _device))
-	       (return h)))
-	    (defun FindByProperties (props)
-	      (declare (values CudaDevice)
-		       (static)
-		       (type "const CudaDeviceProperties&" props))
-	      (let ((device ))
-		(declare (type int device))
-		,(cuda `(cudaChooseDevice &device (&props.getRawStruct)))
-		(return (space CudaDevice (curly device)))))
-	    (defun NumberOfDevices ()
-	      (declare (values int)
-		       (static)
-		       )
-	      (let ((numDevices 0))
-		(declare (type int numDevices))
-		,(cuda `(cudaGetDeviceCount &numDevices))
-		(return numDevices)))
-	    (defun setAsCurrent ()
-	      (cudaSetDevice _device))
-	    ,@(loop for e in `((properties :type "const auto &" :code _props)
-			       (name :type "const char*" :code (dot (properties)
-								    (name))))
-		 collect
-		   (destructuring-bind (name &key code (type "auto")) e
-		     `(defun ,name ()
-			(declare (values ,type)
-				 (const))
-			(return ,code))))
-	    (defun FindByName (name)
-	      (declare (values CudaDevice)
-		       (static)
-		       (type std--string name))
-	      
-	      (let ((numDevices (NumberOfDevices)))
-		
-		(when (== numDevices 0)
-		  (throw (std--runtime_error (string "no cuda devices found"))))
-		(std--transform (name.begin)
-				(name.end)
-				(name.begin)
-				--tolower)
-		(dotimes (i numDevices)
-		  (let ((devi (CudaDevice i))
-			(deviName (std--string (devi.name))))
-		    #+nil (declare (type CudaDevice (space devi (curly i)))
-				   (type std--string (space deviName (curly (devi.name)))))
-		    (std--transform (deviName.begin)
-				    (deviName.end)
-				    (deviName.begin)
-				    --tolower)
-		    (unless (== std--string--npos (deviName.find name))
-		      (return devi))))
-		(throw (std--runtime_error (string "could not find cuda device by name")))))
-	    (defun EnumerateDevices ()
-	      (declare (values "std::vector<CudaDevice>")
-		       (static)
-		       )
-	      
-	      (let ((res)
-		    (n (NumberOfDevices)))
-		(declare (type std--vector<CudaDevice> res))
-		(dotimes (i n)
-		  (res.emplace_back i))
-		(return res)))
-	    (defun CurrentDevice ()
-	      (declare (values CudaDevice)
-		       (static))
-	      
-	      (let ((device)
-		    )
-		(declare (type int device))
-		,(cuda `(cudaGetDevice &device))
-		(return (space CudaDevice (curly device)))))
-	   
-	   
-	   
-	   )
+	 
 
 	 (defclass CudaContext ()
 	   (let ((_ctx))

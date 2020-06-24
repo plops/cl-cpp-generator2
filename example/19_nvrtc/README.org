@@ -52,7 +52,7 @@ Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
 5 DeviceVector.o: DeviceVector.h DevicePtr.h Size.h Defs.h Index.h
 6 DeviceMemory.o: DeviceMemory.h DevicePtr.h Size.h Defs.h DeviceVector.h Index.h
 7 DeviceObject.o: DeviceObject.h DevicePtr.h Size.h Defs.h DeviceMemory.h DeviceVector.h Index.h
-x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
+x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/Compilati2onOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
   #+end_example
 
 - only files that i will need for the beginning of the example
