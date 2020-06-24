@@ -803,7 +803,7 @@
 	     (declare (type "const CudaContext&" ctx)
 		      (type "const Program&" p)
 		      (values :constructor))
-	     #+nil (cuModuleLoadDataEx &_module
+	     (cuModuleLoadDataEx &_module
 				 (dot p (PTX) (c_str))
 				 0 0 0))
 	   (defmethod module ()
