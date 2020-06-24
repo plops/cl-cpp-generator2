@@ -23,12 +23,12 @@ class Kernel  {
 };
 class TemplateParameters  {
             std::string _val ;
-    auto _first  = true;
-    void addComma ()  ;  ;
-    public:
-    template<typename T> auto& addValue (const T& val)  ;  ;
-    template<typename T> auto& addType ()  ;  ;
-    const std::string& operator() () const ;  ;
+    bool _first  = true;
+        public:
+        void addComma ()  ;  ;
+        auto& addValue (const T& val)  ;  ;
+        void addComma ()  ;  ;
+        const std::string& operator() () const ;  ;
 };
 static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
 template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  

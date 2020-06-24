@@ -740,39 +740,36 @@
 	   )
 
 	 
-
 	 (defclass TemplateParameters ()
 	   (let ((_val)
-		 (_first "true"))
+		 (_first true))
 	     (declare (type "std::string" _val)
-		      ;(type "bool" _first)
-		      )
-	       
-	     (defmethod addComma ()
+		      (type bool _first)))
+	   "public:"
+	   (defmethod addComma ()
 	       (declare (values void))
 		 (if _first
 		     (setf _first false)
 		     (setf _val (+ _val (string ",")))))
-	       "public:"
-	       (defmethod addValue (val)
-		 (declare (template "typename T")
+	   (defmethod addValue (val)
+		 (declare ;(template "typename T")
 			  (values "auto&")
 			  (type "const T&" val))
 		 (addComma)
 		 (setf _val (+ _val (std--string val)))
 		 (return *this))
-	       (defmethod addType ()
-		 (declare
-		  (template "typename T")
-		  (values "auto&"))
-		 (addComma)
-		 (setf _val (+ _val (	;detail--
-				     NameExtractor<T>--extract)))
-		 (return *this))
-	       (defmethod "operator()" ()
+	   
+	   (defmethod addComma ()
+	     
+	     (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defmethod "operator()" ()
 		 (declare (const)
 			  (values "const std::string&"))
-		 (return _val))))
+		 (return _val))
+	   )
+	 
 	 
 	 (do0 				;space namespace detail
 	   (defun AddTypesToTemplate (params)
@@ -817,6 +814,45 @@
 	     (declare (values CUmodule)
 		      (const))
 	     (return _module))))))
+
+  (define-module
+      `(cu_A_rtc_template
+	()
+	(do0
+	 (include "vis_09_cu_A_rtc_template.hpp")
+
+	 (defclass TemplateParameters ()
+	   (let ((_val)
+		 (_first true))
+	     (declare (type "std::string" _val)
+		      (type bool _first)))
+	   "public:"
+	   (defmethod addComma ()
+	       (declare (values void))
+		 (if _first
+		     (setf _first false)
+		     (setf _val (+ _val (string ",")))))
+	   (defmethod addValue (val)
+		 (declare ;(template "typename T")
+			  (values "auto&")
+			  (type "const T&" val))
+		 (addComma)
+		 (setf _val (+ _val (std--string val)))
+		 (return *this))
+	   
+	   (defmethod addComma ()
+	     
+	     (cuModuleLoadDataEx &_module
+				 (dot p (PTX) (c_str))
+				 0 0 0))
+	   (defmethod "operator()" ()
+		 (declare (const)
+			  (values "const std::string&"))
+		 (return _val))
+	   )
+
+	 
+	 )))
   #+nil 
   (define-module
       `(rtc

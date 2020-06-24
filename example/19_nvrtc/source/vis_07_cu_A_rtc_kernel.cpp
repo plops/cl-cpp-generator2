@@ -16,6 +16,22 @@ inline Kernel &Kernel::instantiate(const TemplateParameters &tp) {
   return *this;
 }
 const std::string &Kernel::name() const { return _name; };
+void TemplateParameters::addComma() {
+  if (_first) {
+    _first = false;
+  } else {
+    _val = ((_val) + (","));
+  }
+}
+auto &TemplateParameters::addValue(const T &val) {
+  addComma();
+  _val = ((_val) + (std::string(val)));
+  return *this;
+}
+void TemplateParameters::addComma() {
+  cuModuleLoadDataEx(&_module, p.PTX().c_str(), 0, 0, 0);
+}
+const std::string &TemplateParameters::operator()() const { return _val; };
 static inline void AddTypesToTemplate(TemplateParameters &params) {}
 template <typename T>
 static inline void AddTypesToTemplate(TemplateParameters &params) {
