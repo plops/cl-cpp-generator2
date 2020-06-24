@@ -456,6 +456,125 @@
 	       #+nil(unless (== CUDA_SUCCESS (cuCtxDestroy _ctx))
 		      ,(logprint "error when trying to destroy context" `())))))
 	 )))
+
+  (define-module
+      `(cu_A_compilation_options
+	()
+	(do0
+	 " "
+	 (include <algorithm>)
+	 " "
+	 (include "vis_02_cu_A_device.hpp")
+	 " "
+	 (include "vis_04_cu_A_compilation_options.hpp")
+
+	 (do0
+	  (defclass CompilationOptions ()
+	    (let ((_options)
+		  (_chOptions))
+	      (declare (type "std::vector<std::string>" _options)
+		       (type "mutable std::vector<const char*>" _chOptions)))
+	    "public:"
+	    (defmethod insert (op)
+	      (declare (type "const std::string&" op))
+	      (dot _options (push_back op)))
+	    (defmethod insert (name value)
+	      (declare (type "const std::string&" name value))
+	      (if (value.empty)
+		  (insert name)
+		  (dot _options (push_back (+ name (string "=") value)))))
+	    (defmethod insertOptions (p)
+	      (declare (type "const T&" p)
+		       (values "template<typename T> void"))
+	      (insert (p.name) (p.value)))
+	    (defmethod insertOptions (p ...ts)
+	      (declare (type "const T&" p)
+		       (type "const TS&" ...ts)
+		       (values "template<typename T, typename... TS> void"))
+	      (insert (p.name) (p.value))
+	      (insertOptions ts...)
+	      )
+	   
+	   
+	    (defmethod CompilationOptions (...ts)
+	      (declare (type "TS&&" ...ts)
+		       (values "template<typename... TS>"))
+	      (insertOptions ts...))
+	    (setf (CompilationOptions) default)
+	    (defmethod numOptions ()
+	      (declare (values auto)
+		       (const))
+	      (return (_options.size)))
+	    (defmethod options ()
+	      (declare (const)
+		       (values "const char**")
+		       )
+	      (dot _chOptions
+		   (resize (_options.size)))
+	      (std--transform (_options.begin)
+			      (_options.end)
+			      (_chOptions.begin)
+			      (lambda (s)
+				(declare (type "const auto&" s))
+				(return (s.c_str))))
+	      (return (dot _chOptions
+			   (data))))
+	    )
+	  (do0  ;space namespace options
+		     (do0 
+		       (defclass GpuArchitecture ()
+			 (let ((_arch))
+			   (declare (type "const std::string" _arch)))
+			 "public:"
+			 (defmethod GpuArchitecture (major minor)
+			   (declare (type int major minor)
+				    (values :constructor)
+				    (construct (_arch (+ (std--string (string "compute_"))
+							 (std--to_string major)
+							 (std--to_string minor))))))
+			 (defmethod GpuArchitecture (props)
+			   (declare (type "const CudaDeviceProperties&" props)
+				    (values :constructor)
+				    (construct (GpuArchitecture (props.major)
+								(props.minor)))))
+			 (defmethod name ()
+			   (declare (const)
+				    (values auto))
+			   (return (string "--gpu-architecture")))
+			 (defmethod value ()
+			   (declare (const)
+				    (values auto&))
+			   (return _arch)))
+		       (do0
+			,(emit-utils :code `(space enum CPPLangVer
+						  (curly
+				    CPP_x11
+				    CPP_x14
+				    CPP_x17)))
+			(defclass CPPLang ()
+			  (let ((_version))
+			    (declare (type CPPLangVer _version))
+			    )
+			  "public:"
+			  (defmethod CPPLang (version)
+			    (declare (values :constructor)
+				     (type CPPLangVer version)
+				     (construct (_version version))))
+			  (defmethod name ()
+			    (declare (const)
+				     (values auto))
+			    (return (string "--std")))
+			  (defmethod value ()
+			    (declare (const)
+				     (values auto))
+			    (case _version
+			      (CPP_x11 (progn (return (string "c++11"))))
+			      (CPP_x14 (progn (return (string "c++14"))))
+			      (CPP_x17 (progn (return (string "c++17")))))
+			    (throw (std--runtime_error (string "unknown C++ version")))))))))
+	 )
+	)
+      )
   #+nil 
   (define-module
       `(rtc
@@ -799,110 +918,7 @@
 					;"class CudaDeviceProperties;"
 	 ;(include "vis_02_cu_device.hpp")
 	 " "
-	 (do0
-	  (defclass CompilationOptions ()
-	    (let ((_options)
-		  (_chOptions))
-	      (declare (type "std::vector<std::string>" _options)
-		       (type "mutable std::vector<const char*>" _chOptions)))
-	    "public:"
-	    (defun insert (op)
-	      (declare (type "const std::string&" op))
-	      (dot _options (push_back op)))
-	    (defun insert (name value)
-	      (declare (type "const std::string&" name value))
-	      (if (value.empty)
-		  (insert name)
-		  (dot _options (push_back (+ name (string "=") value)))))
-	    (defun insertOptions (p)
-	      (declare (type "const T&" p)
-		       (values "template<typename T> void"))
-	      (insert (p.name) (p.value)))
-	    (defun insertOptions (p ...ts)
-	      (declare (type "const T&" p)
-		       (type "const TS&" ...ts)
-		       (values "template<typename T, typename... TS> void"))
-	      (insert (p.name) (p.value))
-	      (insertOptions ts...)
-	      )
-	   
-	   
-	    (defun CompilationOptions (...ts)
-	      (declare (type "TS&&" ...ts)
-		       (values "template<typename... TS>"))
-	      (insertOptions ts...))
-	    (setf (CompilationOptions) default)
-	    (defun numOptions ()
-	      (declare (values auto)
-		       (const))
-	      (return (_options.size)))
-	    (defun options ()
-	      (declare (const)
-		       (values "const char**")
-		       )
-	      (dot _chOptions
-		   (resize (_options.size)))
-	      (std--transform (_options.begin)
-			      (_options.end)
-			      (_chOptions.begin)
-			      (lambda (s)
-				(declare (type "const auto&" s))
-				(return (s.c_str))))
-	      (return (dot _chOptions
-			   (data))))
-	    )
-	  (do0  ;space namespace options
-		     (do0 
-		       (defclass GpuArchitecture ()
-			 (let ((_arch))
-			   (declare (type "const std::string" _arch)))
-			 "public:"
-			 (defun GpuArchitecture (major minor)
-			   (declare (type int major minor)
-				    (values :constructor)
-				    (construct (_arch (+ (std--string (string "compute_"))
-							 (std--to_string major)
-							 (std--to_string minor))))))
-			 (defun GpuArchitecture (props)
-			   (declare (type "const CudaDeviceProperties&" props)
-				    (values :constructor)
-				    (construct (GpuArchitecture (props.major)
-								(props.minor)))))
-			 (defun name ()
-			   (declare (const)
-				    (values auto))
-			   (return (string "--gpu-architecture")))
-			 (defun value ()
-			   (declare (const)
-				    (values auto&))
-			   (return _arch)))
-		       (do0
-			,(emit-utils :code `(space enum CPPLangVer
-						  (curly
-				    CPP_x11
-				    CPP_x14
-				    CPP_x17)))
-			(defclass CPPLang ()
-			  (let ((_version))
-			    (declare (type CPPLangVer _version))
-			    )
-			  "public:"
-			  (defun CPPLang (version)
-			    (declare (values :constructor)
-				     (type CPPLangVer version)
-				     (construct (_version version))))
-			  (defun name ()
-			    (declare (const)
-				     (values auto))
-			    (return (string "--std")))
-			  (defun value ()
-			    (declare (const)
-				     (values auto))
-			    (case _version
-			      (CPP_x11 (progn (return (string "c++11"))))
-			      (CPP_x14 (progn (return (string "c++14"))))
-			      (CPP_x17 (progn (return (string "c++17")))))
-			    (throw (std--runtime_error (string "unknown C++ version")))))))))
+	 
 	 
 	 )))
 
