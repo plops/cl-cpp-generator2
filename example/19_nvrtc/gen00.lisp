@@ -430,9 +430,11 @@
       `(cu_A_context
 	()
 	(do0
-	 "class CudaDevice;"
+	 
 	 " "
 	 (include <cuda.h>)
+	 " "
+	 (include "vis_02_cu_A_device.hpp")
 	 " "
 	 (include "vis_03_cu_A_context.hpp")
 	 (defclass CudaContext ()
