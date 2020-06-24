@@ -691,10 +691,16 @@
       `(cu_A_rtc_kernel
 	()
 	(do0
-	 
+	 " "
 	 (include "vis_08_cu_A_rtc_module.hpp")
+	 " "
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
+	 " "
 
+	 (defclass Kernel2 ()
+	   (let ((_name))
+	     (declare (type int _name))))
+	 
 
 	 (defclass Kernel ()
 	   (let ((_kernel nullptr)
@@ -706,35 +712,6 @@
 	     (declare (type "const std::string&" name)
 		      (values inline)
 		      (construct (_name name))))
-	   (defclass TemplateParameters ()
-	     (let ((_val)
-		   (_first true))
-	       (declare (type std--string _val)
-			(type bool _first))
-	       
-	       (defmethod addComma ()
-		 (if _first
-		     (setf _first false)
-		     (setf _val (+ _val (string ",")))))
-	       "public:"
-	       #+nil (defmethod addValue (val)
-		 (declare (template "typename T")
-			  (values "auto&")
-			  (type "const T&" val))
-		 (addComma)
-		 (setf _val (+ _val (std--string val)))
-		 (return *this))
-	       #+nil (defmethod addType ()
-		 (declare (values "template<typename T> auto&"))
-		 (addComma)
-		 (setf _val (+ _val (	;detail--
-				     NameExtractor<T>--extract)))
-		 (return *this))
-	       (defun "operator()" ()
-		 (declare (const)
-			  (values "const std::string&"))
-		 (return _val))))
-	   #+nil
 	   (defmethod instantiate (tp)
 	     (declare (type "const TemplateParameters&" tp)
 		      (values "inline Kernel&"))
@@ -743,7 +720,7 @@
 			    (tp)
 			    (string ">")))
 	     (return *this))
-	   #+nil
+	   
 	   (defmethod instantiate ()
 	     (declare (values  Kernel&)
 		      (template "template<typename... ARGS>")
@@ -754,8 +731,7 @@
 		AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp))))
 	   #+nil (defun* instantiate ()
-	     (declare (values "template<typename... ARGS> Kernel&"))
-	     )
+	     (declare (values "template<typename... ARGS> Kernel&")))
 	   (defmethod name ()
 	     (declare (values "const std::string&")
 		      (const))
@@ -766,7 +742,40 @@
 	     ,(cuss `(cuModuleGetFunction &_kernel (m.module) (dot p (loweredName *this)
 								   (c_str)))))
 	   )
-	 #+nil
+
+	 
+
+	 #+nil(defclass TemplateParameters ()
+	   #+nil(let ((_val)
+		   (_first true))
+	       (declare (type std--string _val)
+			(type bool _first))
+	       
+	       #+nil(defmethod addComma ()
+		 (if _first
+		     (setf _first false)
+		     (setf _val (+ _val (string ",")))))
+	       #+nil"public:"
+	       #+nil(defmethod addValue (val)
+		 (declare (template "typename T")
+			  (values "auto&")
+			  (type "const T&" val))
+		 (addComma)
+		 (setf _val (+ _val (std--string val)))
+		 (return *this))
+	       #+nil(defmethod addType ()
+		 (declare
+		  (template "typename T")
+		  (values "auto&"))
+		 (addComma)
+		 (setf _val (+ _val (	;detail--
+				     NameExtractor<T>--extract)))
+		 (return *this))
+	       #+nil(defmethod "operator()" ()
+		 (declare (const)
+			  (values "const std::string&"))
+		 (return _val))))
+	 
 	 (do0 				;space namespace detail
 	   (defun AddTypesToTemplate (params)
 	     (declare (values "static inline void")
