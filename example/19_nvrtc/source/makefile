@@ -1,4 +1,4 @@
-CXXFLAGS=-O0 -march=native -Wall -std=gnu++20 \
+CXXFLAGS=-O0 -march=native -Wall -std=gnu++17 \
 -I/media/sdb4/cuda/11.0.1/include/ \
 -DNVRTC_GET_TYPE_NAME=1
 

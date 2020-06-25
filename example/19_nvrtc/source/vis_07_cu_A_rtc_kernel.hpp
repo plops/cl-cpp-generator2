@@ -30,7 +30,7 @@ class Kernel  {
             CUfunction _kernel  = nullptr;
     std::string _name ;
         public:
-        inline Kernel (const std::string& name)  ;  ;
+         Kernel (const std::string& name)  ;  ;
         Kernel& instantiate (const TemplateParameters& tp)  ;  ;
         template<typename... ARGS> Kernel& instantiate ()  ;  ;
         const std::string& name () const ;  ;

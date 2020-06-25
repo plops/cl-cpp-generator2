@@ -41,7 +41,7 @@ template <typename T> auto &TemplateParameters::addType() {
   return *this;
 }
 const std::string &TemplateParameters::operator()() const { return _val; };
-inline Kernel::Kernel(const std::string &name) : _name(name) {}
+Kernel::Kernel(const std::string &name) : _name(name) {}
 Kernel &Kernel::instantiate(const TemplateParameters &tp) {
   _name = ((_name) + ("<") + (tp()) + (">"));
   return *this;

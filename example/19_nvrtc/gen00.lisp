@@ -216,7 +216,7 @@
 		  (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
-			#+nil (kernel (dot (Kernel (string "setKernel"))
+			(kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
 		 #+nil (do0
@@ -771,7 +771,7 @@
 	   
 	   (defmethod Kernel (name)
 	     (declare (type "const std::string&" name)
-		      (values inline)
+		      (values :constructor)
 		      (construct (_name name))))
 	   (defmethod instantiate (tp)
 	     (declare (type "const TemplateParameters&" tp)
@@ -793,8 +793,7 @@
 	       (				;detail--
 		AddTypesToTemplate<ARGS...> tp)
 	       (return (instantiate tp))))
-	   #+nil (defun* instantiate ()
-	     (declare (values "template<typename... ARGS> Kernel&")))
+	   
 	   (defmethod name ()
 	     (declare (values "const std::string&")
 		      (const))
