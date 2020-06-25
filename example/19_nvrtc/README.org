@@ -70,3 +70,9 @@ x Program.o: rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/
 3 Module.o: rtc/Module.h rtc/Program.h rtc/Code.h
 x Kernel.o: rtc/Kernel.h rtc/Module.h rtc/Program.h rtc/Code.h rtc/Header.h rtc/CompilationOptions.h rtc/../CudaDevice.h rtc/../CudaContext.h rtc/../Grid.h rtc/../Size.h rtc/../Index.h rtc/../Stream.h rtc/../Event.h
 #+end_example
+
+* building with cmake
+  #+begin_example
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release   .. 
+ninja
+  #+end_example

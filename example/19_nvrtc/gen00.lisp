@@ -692,6 +692,8 @@
 	()
 	(do0
 	 " "
+	 (include <nvrtc.h>)
+	 " "
 	 (include "vis_08_cu_A_rtc_module.hpp")
 	 " "
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
