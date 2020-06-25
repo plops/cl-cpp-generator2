@@ -210,10 +210,10 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		#+nil (let ((dev (CudaDevice--FindByProperties
+		(let ((dev (CudaDevice--FindByProperties
 			    (CudaDeviceProperties--ByIntegratedType false))))
 		  (dev.setAsCurrent)
-		  #+nil (let ((ctx (CudaContext dev))
+		  (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
 			#+nil (kernel (dot (Kernel (string "setKernel"))
@@ -806,8 +806,6 @@
 								   (c_str)))))
 	   )
 
-	 
-	 
 	 
 	 
 	 (do0 				;space namespace detail
