@@ -3,7 +3,7 @@
 - https://github.com/mgopshtein/cudacpp
 - https://docs.nvidia.com/cuda/nvrtc/index.html
 - https://migocpp.wordpress.com/
-
+ 
 * Dependency in cudacpp project
 
   #+begin_example
