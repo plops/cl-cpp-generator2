@@ -11,7 +11,7 @@
 template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
 template<typename T> class NameExtractor  {
         public:
-        template<T> static std::string extract ()  ;  ;
+        static std::string extract ()  ;  ;
 };
 template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
         public:

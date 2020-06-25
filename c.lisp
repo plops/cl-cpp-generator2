@@ -109,7 +109,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  (when (eq (first declaration) 'template)
 			    (setf template (second declaration)))
 			  (when (eq (first declaration) 'template-instance)
-			    (setf template (second declaration)))
+			    (setf template-instance (second declaration)))
 			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
 			  (declare (ignorable symb))
