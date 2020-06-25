@@ -17,13 +17,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 ;
-#include "vis_03_cu_program.hpp"
-;
-#include "vis_04_cu_module.hpp"
-;
-#include "vis_02_cu_device.hpp"
-;
-#include "vis_01_rtc.hpp"
+#include "vis_06_cu_A_rtc_program.hpp"
+#include "vis_02_cu_A_device.hpp"
+#include "vis_03_cu_A_context.hpp"
+#include "vis_07_cu_A_rtc_kernel.hpp"
 ;
 int main ()  ;  
 #endif

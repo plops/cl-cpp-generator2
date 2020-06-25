@@ -8,7 +8,7 @@ LDFLAGS= \
 -lcuda \
 -lnvrtc
 
-OFILES = vis_00_main.o vis_01_rtc.o vis_02_cu_device.o
+OFILES = vis_00_main.o vis_01_cu_A_rtc_code.o vis_02_cu_A_device.o vis_03_cu_A_context.o vis_04_cu_A_rtc_compilation_options.o vis_05_cu_A_rtc_header.o vis_06_cu_A_rtc_program.o vis_07_cu_A_rtc_kernel.o vis_08_cu_A_rtc_module.o vis_09_cu_A_rtc_template.o
 
 %.o: %.cpp globals.h proto2.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
@@ -17,4 +17,4 @@ vis: $(OFILES)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o vis vis_00_main.cpp
 
 clean:
-	rm vis
+	rm vis $(OFILES)

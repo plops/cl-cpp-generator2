@@ -34,9 +34,7 @@ void CompilationOptions::insertOptions(const T &p, const TS &... ts) {
 template <typename... TS> CompilationOptions::CompilationOptions(TS &&... ts) {
   insertOptions(ts...);
 }
-decltype(_options.size()) CompilationOptions::numOptions() const {
-  return _options.size();
-}
+size_t CompilationOptions::numOptions() const { return _options.size(); }
 const char **CompilationOptions::options() const {
   _chOptions.resize(_options.size());
   std::transform(_options.begin(), _options.end(), _chOptions.begin(),

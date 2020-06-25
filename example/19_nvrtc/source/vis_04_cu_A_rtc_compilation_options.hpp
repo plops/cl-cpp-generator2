@@ -21,7 +21,7 @@ class CompilationOptions  {
         template<typename T, typename... TS> void insertOptions (const T& p, const TS& ...ts)  ;  ;
         template<typename... TS> CompilationOptions (TS&& ...ts)  ;  ;
             CompilationOptions()=default;
-        decltype(_options.size()) numOptions () const ;  ;
+        size_t numOptions () const ;  ;
         const char** options () const ;  ;
 };
 class GpuArchitecture  {

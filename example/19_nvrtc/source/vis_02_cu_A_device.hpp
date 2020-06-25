@@ -38,7 +38,7 @@ class CudaDevice  {
         static CudaDevice FindByProperties (const CudaDeviceProperties& props)  ;  ;
         static int NumberOfDevices ()  ;  ;
         void setAsCurrent ()  ;  ;
-        const auto & properties () const ;  
+        const CudaDeviceProperties & properties () const ;  
         const char* name () const ;  
         static CudaDevice FindByName (std::string name)  ;  ;
         static std::vector<CudaDevice> EnumerateDevices ()  ;  ;

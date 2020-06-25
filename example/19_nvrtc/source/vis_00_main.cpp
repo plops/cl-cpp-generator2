@@ -20,20 +20,18 @@
 #include <cuda_runtime.h>
 #include <nvrtc.h>
 
-#include "vis_03_cu_program.hpp"
-#include "vis_04_cu_module.hpp"
-
-#include "vis_02_cu_device.hpp"
-
-#include "vis_01_rtc.hpp"
+#include "vis_02_cu_A_device.hpp"
+#include "vis_03_cu_A_context.hpp"
+#include "vis_06_cu_A_rtc_program.hpp"
+#include "vis_07_cu_A_rtc_kernel.hpp"
 
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "3ca56315de33d2fce838f25b65146b40486cda51";
+  state._main_version = "33f3171d8cb347c53b0baae26a97e38d156cbf0b";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "09:11:23 of Thursday, 2020-06-25 (GMT+1)";
+  state._code_generation_time = "19:10:08 of Thursday, 2020-06-25 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -58,7 +56,6 @@ int main() {
   program.registerKernel(kernel);
   program.compile({GpuArchitecture(dev.properties()), CPPLang(CPP_x17)});
   auto module = Module(ctx, program);
-  kernel.init(module, program);
 
   (std::cout)
       << (std::setw(10))

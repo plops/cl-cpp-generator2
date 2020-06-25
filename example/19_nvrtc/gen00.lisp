@@ -164,12 +164,11 @@
 	       <cuda.h>
 	       <cuda_runtime.h>)
 	      " "
-	      (include "vis_03_cu_program.hpp")
-	      (include "vis_04_cu_module.hpp")
-	      " "
-	      (include "vis_02_cu_device.hpp")
-	      " "
-	      (include "vis_01_rtc.hpp")
+	      (include "vis_06_cu_A_rtc_program.hpp"
+		       "vis_02_cu_A_device.hpp"
+		       "vis_03_cu_A_context.hpp"
+		       "vis_07_cu_A_rtc_kernel.hpp")
+	      ;(include "vis_01_rtc.hpp")
 	      
 	      " "
 	      
@@ -231,7 +230,7 @@
 		   
 		   (let ((module (Module ctx program))
 			 )
-		     (kernel.init module program)
+		     ;(kernel.init module program)
 		     ))
 		  )
 		,(logprint "end main" `())
@@ -374,7 +373,7 @@
 	       (return numDevices)))
 	   (defmethod setAsCurrent ()
 	     (cudaSetDevice _device))
-	   ,@(loop for e in `((properties :type "const auto &" :code _props)
+	   ,@(loop for e in `((properties :type "const CudaDeviceProperties &" :code _props)
 			      (name :type "const char*" :code (dot (properties)
 								   (name))))
 		collect
@@ -503,7 +502,8 @@
 	      (insertOptions ts...))
 	    (setf (CompilationOptions) default)
 	    (defmethod numOptions ()
-	      (declare (values "decltype(_options.size())")
+	      (declare (values size_t ; "decltype(_options.size())"
+			       )
 		       (const))
 	      (return (_options.size)))
 	    (defmethod options ()
