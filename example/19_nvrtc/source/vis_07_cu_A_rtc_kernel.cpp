@@ -14,12 +14,13 @@ template <typename... ARGS>
 std::vector<void *> BuildArgs(const ARGS &... args) {
   return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
 }
-template <typename T> std::string NameExtractor::extract() {
+template <typename T> template <T> std::string NameExtractor::extract() {
   std::string type_name;
   nvrtcGetTypeName<T>(&type_name);
   return type_name;
 };
-template <typename T, T y> std::string NameExtractor::extract() {
+template <typename T, T y>
+std::string NameExtractor<std::integral_constant<T, y>>::extract() {
   return std::to_string(y);
 };
 void TemplateParameters::addComma() {

@@ -711,6 +711,7 @@
 	   "public:"
 	   (defmethod extract ()
 	     (declare (static)
+		      (template-instance "T")
 		      (values "std::string"))
 	     (let ((type_name))
 	       (declare (type std--string type_name))
@@ -724,6 +725,7 @@
 	   "public:"
 	   (defmethod extract ()
 	     (declare (values "std::string")
+		      
 		      (static))
 	     (return (std--to_string y))))
 	 

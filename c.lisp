@@ -74,6 +74,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(inline-p nil)
 	(static-p nil)
 	(template nil)
+	(template-instance nil)
 	(looking-p t) 
 	(new-body nil))
     (loop for e in body do
@@ -107,6 +108,8 @@ entry return-values contains a list of return values. currently supports type, v
 			    (setf static-p t))
 			  (when (eq (first declaration) 'template)
 			    (setf template (second declaration)))
+			  (when (eq (first declaration) 'template-instance)
+			    (setf template (second declaration)))
 			  (when (eq (first declaration) 'values)
 			(destructuring-bind (symb &rest types-opt) declaration
 			  (declare (ignorable symb))
@@ -125,7 +128,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p explicit-p inline-p static-p template)))
+    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p explicit-p inline-p static-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -181,7 +184,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -201,7 +204,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -289,7 +292,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defmethod (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -330,7 +333,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (if class
 		      (if header-only
 			  name
-			  (format nil "~a::~a" class name))
+			  (format nil "~a~@[< ~a >~]::~a" class template-instance name))
 		      name)
 
 		  ;; positional parameters, followed by key parameters
@@ -627,7 +630,9 @@ entry return-values contains a list of return values. currently supports type, v
 					      (when (and (listp e)
 							 (or (eq (car e) 'defmethod)
 							     (eq (car e) 'defmethod*)))
-						(format s "~@[template< ~a > ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
+						(format s "~@[template< ~a > ~]~a" class-template (emit e :class
+													(emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
+													:header-only-p nil))))))))
 			     
 			     )))
 		      )
