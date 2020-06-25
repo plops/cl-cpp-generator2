@@ -627,7 +627,7 @@ entry return-values contains a list of return values. currently supports type, v
 					      (when (and (listp e)
 							 (or (eq (car e) 'defmethod)
 							     (eq (car e) 'defmethod*)))
-						(format s "~@[~a ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
+						(format s "~@[template< ~a > ~]~a" class-template (emit e :class (emit class-name) :header-only-p nil))))))))
 			     
 			     )))
 		      )
