@@ -28,10 +28,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "cbce05406582b134b045a47600a35a989128d42c";
+  state._main_version = "5ef36427be5d6a732fec042fcbd145b92e647fbd";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "22:59:50 of Thursday, 2020-06-25 (GMT+1)";
+  state._code_generation_time = "23:05:55 of Thursday, 2020-06-25 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -51,8 +51,6 @@ int main() {
   auto ctx = CudaContext(dev);
   auto code = Code::FromFile("bla.cu");
   auto program = Program("myprog", code);
-  auto kernel =
-      Kernel("setKernel").instantiate<float, std::integral_constant<int, 10>>();
 
   (std::cout)
       << (std::setw(10))

@@ -216,7 +216,7 @@
 		  (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
-			(kernel (dot (Kernel (string "setKernel"))
+			#+nil (kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
 		 #+nil (do0
