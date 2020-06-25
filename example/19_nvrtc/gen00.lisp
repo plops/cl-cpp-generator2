@@ -210,16 +210,16 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		(let ((dev (CudaDevice--FindByProperties
+		#+nil (let ((dev (CudaDevice--FindByProperties
 			    (CudaDeviceProperties--ByIntegratedType false))))
 		  (dev.setAsCurrent)
-		  (let ((ctx (CudaContext dev))
+		  #+nil (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
-			(kernel (dot (Kernel (string "setKernel"))
+			#+nil (kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
-		  (do0
+		 #+nil (do0
 		   (program.registerKernel kernel)
 		    (program.compile (curly
 				      (;options--
@@ -329,7 +329,7 @@
 			      (name :type "const char*"))
 		collect
 		  (destructuring-bind (name &key code (type "auto")) e
-		    `(defun ,name ()
+		    `(defmethod ,name ()
 		       (declare (values ,type)
 				(const))
 		       ,(if code
@@ -378,7 +378,7 @@
 								   (name))))
 		collect
 		  (destructuring-bind (name &key code (type "auto")) e
-		    `(defun ,name ()
+		    `(defmethod ,name ()
 		       (declare (values ,type)
 				(const))
 		       (return ,code))))

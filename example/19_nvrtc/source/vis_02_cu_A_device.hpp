@@ -18,10 +18,10 @@ class CudaDeviceProperties  {
         static CudaDeviceProperties FromExistingProperties (const cudaDeviceProp& props)  ;  ;
         static CudaDeviceProperties ByIntegratedType (bool integrated)  ;  ;
         const auto& getRawStruct () const ;  ;
-        int major () const ;  
-        int minor () const ;  
-        bool integrated () const ;  
-        const char* name () const ;  
+        int major () const ;  ;
+        int minor () const ;  ;
+        bool integrated () const ;  ;
+        const char* name () const ;  ;
 };
 class CudaDevice  {
             int _device ;
@@ -38,8 +38,8 @@ class CudaDevice  {
         static CudaDevice FindByProperties (const CudaDeviceProperties& props)  ;  ;
         static int NumberOfDevices ()  ;  ;
         void setAsCurrent ()  ;  ;
-        const CudaDeviceProperties & properties () const ;  
-        const char* name () const ;  
+        const CudaDeviceProperties & properties () const ;  ;
+        const char* name () const ;  ;
         static CudaDevice FindByName (std::string name)  ;  ;
         static std::vector<CudaDevice> EnumerateDevices ()  ;  ;
         static CudaDevice CurrentDevice ()  ;  ;

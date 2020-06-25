@@ -25,7 +25,13 @@ CudaDeviceProperties CudaDeviceProperties::ByIntegratedType(bool integrated) {
   props.integrated = (integrated) ? (1) : (0);
   return FromExistingProperties(props);
 }
-const auto &CudaDeviceProperties::getRawStruct() const { return _props; };
+const auto &CudaDeviceProperties::getRawStruct() const { return _props; }
+int CudaDeviceProperties::major() const { return _props.major; }
+int CudaDeviceProperties::minor() const { return _props.minor; }
+bool CudaDeviceProperties::integrated() const {
+  return (0) < (_props.integrated);
+}
+const char *CudaDeviceProperties::name() const { return _props.name; };
 CudaDevice::CudaDevice(int device) : _device(device), _props(device) {}
 CudaDevice CudaDevice::FindByProperties(const CudaDeviceProperties &props) {
   int device;
@@ -43,6 +49,8 @@ int CudaDevice::NumberOfDevices() {
   return numDevices;
 }
 void CudaDevice::setAsCurrent() { cudaSetDevice(_device); }
+const CudaDeviceProperties &CudaDevice::properties() const { return _props; }
+const char *CudaDevice::name() const { return properties().name(); }
 CudaDevice CudaDevice::FindByName(std::string name) {
   auto numDevices = NumberOfDevices();
   if ((numDevices) == (0)) {
