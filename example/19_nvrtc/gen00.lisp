@@ -807,21 +807,22 @@
 	   )
 
 	 
-	 
-	 (do0 				;space namespace detail
-	   (defun AddTypesToTemplate (params)
+	 (split-header-and-code
+	  (do0 				;space namespace detail
+	   (defun+ AddTypesToTemplate (params)
 	     (declare (values "static inline void")
 		      (type TemplateParameters& params)) ;; Kernel::
 	     )
-	   (defun AddTypesToTemplate (params)
+	   (defun+ AddTypesToTemplate (params)
 	     (declare (values "template<typename T> static inline void")
 		      (type TemplateParameters& params)) ;; Kernel::
 	     (params.addType<T>))
-	   (defun AddTypesToTemplate (params)
+	   (defun+ AddTypesToTemplate (params)
 	     (declare (values "template<typename T, typename U, typename... REST> static inline void")
 		      (type TemplateParameters& params)) ;; Kernel::
 	     (params.addType<T>)
 	     ("AddTypesToTemplate<U, REST...>" params)))
+	  " ")
 	 
 	 )))
  

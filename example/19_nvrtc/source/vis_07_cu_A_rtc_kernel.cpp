@@ -52,13 +52,4 @@ template <typename... ARGS> Kernel &Kernel::instantiate() {
   return instantiate(tp);
 }
 const std::string &Kernel::name() const { return _name; };
-static inline void AddTypesToTemplate(TemplateParameters &params) {}
-template <typename T>
-static inline void AddTypesToTemplate(TemplateParameters &params) {
-  params.addType<T>();
-}
-template <typename T, typename U, typename... REST>
-static inline void AddTypesToTemplate(TemplateParameters &params) {
-  params.addType<T>();
-  AddTypesToTemplate<U, REST...>(params);
-};
+;

@@ -35,7 +35,13 @@ class Kernel  {
         template<typename... ARGS> Kernel& instantiate ()  ;  ;
         const std::string& name () const ;  ;
 };
-static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
-template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
-template<typename T, typename U, typename... REST> static inline void AddTypesToTemplate (TemplateParameters& params)  ;  
+static inline void AddTypesToTemplate (TemplateParameters& params)    {
+};
+template<typename T> static inline void AddTypesToTemplate (TemplateParameters& params)    {
+        params.addType<T>();
+};
+template<typename T, typename U, typename... REST> static inline void AddTypesToTemplate (TemplateParameters& params)    {
+        params.addType<T>();
+        AddTypesToTemplate<U, REST...>(params);
+};;
 #endif

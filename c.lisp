@@ -651,6 +651,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))
 		  (defun* (parse-defun code #'emit :header-only t :class current-class))
+		  (defun+ (parse-defun code #'emit :header-only nil :class current-class))
 		  (return (format nil "return ~a" (emit (car (cdr code)))))
 		  (co_return (format nil "co_return ~a" (emit (car (cdr code)))))
 		  (co_await (format nil "co_await ~a" (emit (car (cdr code)))))
