@@ -10,18 +10,22 @@
 ;
 #include "vis_07_cu_A_rtc_kernel.hpp"
 ;
-template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)  ;  
-template<typename T> struct NameExtractor  {
-        static  std::string extract ()    {
+template<typename... ARGS> static inline std::vector<void*> BuildArgs (const ARGS& ...args)    {
+        return {const_cast<void*>(reinterpret_cast<const void*>(&args)) ...};
+};;
+template<typename T> class NameExtractor  {
+        public:
+        static inline std::string extract ()    {
                         std::string type_name ;
         nvrtcGetTypeName<T>(&type_name);
         return type_name;
-}
 };
-template<typename T, T y> struct NameExtractor<std::integral_constant<T, y>>  {
-        static  std::string extract ()    {
+};
+template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
+        public:
+        static inline std::string extract ()    {
                 return std::to_string(y);
-}
+};
 };
 class TemplateParameters  {
             std::string _val ;

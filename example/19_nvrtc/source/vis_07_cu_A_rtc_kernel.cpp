@@ -12,11 +12,9 @@ extern State state;
 
 #include "vis_07_cu_A_rtc_kernel.hpp"
 
-template <typename... ARGS>
-std::vector<void *> BuildArgs(const ARGS &... args) {
-  return {const_cast<void *>(reinterpret_cast<const void *>(&args))...};
-}
-
+;
+//template <typename T>;
+//template <typename T, T y>;
 void TemplateParameters::addComma() {
   if (_first) {
     _first = false;

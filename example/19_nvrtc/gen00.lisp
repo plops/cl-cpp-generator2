@@ -216,7 +216,7 @@
 		  (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
-			#+nil (kernel (dot (Kernel (string "setKernel"))
+			(kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
 		 #+nil (do0
@@ -698,17 +698,18 @@
 	 " "
 	 (include "vis_07_cu_A_rtc_kernel.hpp")
 	 " "
-					
-	 (defun BuildArgs (...args)
-	   (declare (type "const ARGS&" ...args)
-		    (template "typename... ARGS")
-		    (static)
-		    (inline)
-		    (values "std::vector<void*>"))
-	   (return (curly (space
-			   (const_cast<void*>
-			    ("reinterpret_cast<const void*>" &args))
-			   "..."))))
+	 (split-header-and-code
+	  (defun+ BuildArgs (...args)
+	    (declare (type "const ARGS&" ...args)
+		     (template "typename... ARGS")
+		     ;(static)
+		     ;(inline)
+		     (values "static inline std::vector<void*>"))
+	    (return (curly (space
+			    (const_cast<void*>
+			     ("reinterpret_cast<const void*>" &args))
+			    "..."))))
+	  " ")
 	 (defclass (NameExtractor :template "typename T") ()
 	   "public:"
 	   (defmethod extract ()
