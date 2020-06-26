@@ -4,7 +4,7 @@ project(source)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
-
+add_definitions(-DNVRTC_GET_TYPE_NAME=1)
 add_executable(source
 bla.cu
 globals.h
