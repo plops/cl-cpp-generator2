@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 add_definitions(-DNVRTC_GET_TYPE_NAME=1)
+link_directories(/media/sdb4/cuda/11.0.1/lib)
+
 add_executable(source
 bla.cu
 globals.h
@@ -28,3 +30,4 @@ vis_07_cu_A_rtc_kernel.hpp
 vis_08_cu_A_rtc_module.cpp
 vis_08_cu_A_rtc_module.hpp)
 target_include_directories(source PRIVATE /media/sdb4/cuda/11.0.1/include)
+target_link_libraries(source cuda cudart nvrtc)
