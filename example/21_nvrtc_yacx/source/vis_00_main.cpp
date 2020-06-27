@@ -24,11 +24,11 @@
 
 using namespace std::chrono_literals;
 State state = {};
-int main() {
-  state._main_version = "b3853afbe618a2435612527d232d33a535513f97";
+int main(int argc, char const *const *const argv) {
+  state._main_version = "07696ebb10407b96e22c7cdd89e0ada323ad98bd";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "15:04:15 of Saturday, 2020-06-27 (GMT+1)";
+  state._code_generation_time = "17:41:21 of Saturday, 2020-06-27 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -42,6 +42,8 @@ int main() {
       << (state._code_repository) << ("'") << (std::setw(8))
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
+  auto device = yacx::Devices::findDevice();
+  auto options = yacx::Options(yacx::options::GpuArchitecture(device));
 
   (std::cout)
       << (std::setw(10))

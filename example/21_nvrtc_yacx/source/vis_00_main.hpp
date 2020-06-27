@@ -19,5 +19,5 @@
 ;
 #include <yacx/main.hpp>
 ;
-int main ()  ;  
+int main (int argc, char const *const *const argv)  ;  
 #endif
