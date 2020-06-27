@@ -208,45 +208,60 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		(let ((device (yacx--Devices--findDevice))
-		      (options (yacx--Options (yacx--options--GpuArchitecture device)))
-		      )
-		  (options.insert (string "--std")
-				  (string "c++17"))
-		  (let ((source (yacx--Source
-				 (string-r
-				  ,(emit-c
-				    :code
-				    `(do0
-				      (defun my_kernel
-					  (c val)
-					(declare (type type* c)
-						 (type type val)
-						 (values "__global__ void")
-						 (template "typename type, int size"))
-					(let ((idx (+ (* blockIdx.x
-							 blockDim.x)
-						      threadIdx.x)))
-					  (dotimes (i size)
-					    (setf (aref c i)
-						  (+ idx val))))))))))
+		(handler-case
+		    (let ((device (yacx--Devices--findDevice))
+		       (options (yacx--Options (yacx--options--GpuArchitecture device)))
+		       )
+		   (options.insert (string "--std")
+				   (string "c++17"))
+		   (let ((source (yacx--Source
+				  (string-r
+				   ,(emit-c
+				     :code
+				     `(do0
+				       (defun my_kernel
+					   (c val)
+					 (declare (type type* c)
+						  (type type val)
+						  (values "__global__ void")
+						  (template "typename type, int size"))
+					 (let ((idx (+ (* blockIdx.x
+							  blockDim.x)
+						       threadIdx.x)))
+					   (dotimes (i size)
+					     (setf (aref c i)
+						   (+ idx val))))))))))
 			
-			)
-		    (let ((size 32)
-			  (data 1)
-			  (times 4)
-			  (v (std--vector<int>)))
-		      (declare (type "const int" size data times))
-		      (static_assert (== 0 (% size times)))
-		      (v.resize size)
-		      (std--fill (v.begin)
-				 (v.end)
-				 0)
-		      (let ((args (std--vector<yacx--KernelArg> (curly (space yacx--KernelArg (curly (v.data)
-										     (* (sizeof int)
-											(v.size))
-										     true))
-							     (space yacx--KernelArg (curly (const_cast<int*> &data)))))))))))
+			 )
+		     (let ((size 32)
+			   (data 1)
+			   (times 4)
+			   (v (std--vector<int>)))
+		       (declare (type "const int" size data times))
+		       (static_assert (== 0 (% size times)))
+		       (v.resize size)
+		       (std--fill (v.begin)
+				  (v.end)
+				  0)
+		       (let ((args (std--vector<yacx--KernelArg>
+				    (curly (space yacx--KernelArg (curly (v.data)
+									 (* (sizeof int)
+									    (v.size))
+									 true))
+					   (space yacx--KernelArg (curly (const_cast<int*> &data))))))
+			     (grid (dim3 (/ (v.size)
+					    times)))
+			     (block (dim3 1)))
+			 (dot source
+			      (program (string "my_kernel"))
+			      (instantiate (yacx--type_of data)
+					   times)
+			      (compile options)
+			      (configure grid block)
+			      (launch args device))))))
+		  ("const std::exception&" (e)
+		    ,(logprint "error" `((e.what))))
+		  )
 		,(logprint "end main" `())
 		(return 0)))))
   
