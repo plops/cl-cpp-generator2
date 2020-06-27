@@ -25,10 +25,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "d18621e9dc0004e30cec464389ce0d245cab7761";
+  state._main_version = "1db1fd923fada5c8919febe48b41fc7be11afecf";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "17:53:55 of Saturday, 2020-06-27 (GMT+1)";
+  state._code_generation_time = "17:58:29 of Saturday, 2020-06-27 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -52,6 +52,9 @@ int main(int argc, char const *const *const argv) {
                         c[i]=((idx)+(val));
 };
 })");
+  auto args = std::vector<yacx::KernelArg>(
+      {yacx::KernelArg{v.data(), ((sizeof(int)) * (v.size())), true},
+       yacx::KernelArg{const_cast<int *>(&data)}});
 
   (std::cout)
       << (std::setw(10))

@@ -229,7 +229,12 @@
 						      threadIdx.x)))
 					  (dotimes (i size)
 					    (setf (aref c i)
-						  (+ idx val)))))))))))))
+						  (+ idx val))))))))))
+			(args (std--vector<yacx--KernelArg> (curly (space yacx--KernelArg (curly (v.data)
+										     (* (sizeof int)
+											(v.size))
+										     true))
+							     (space yacx--KernelArg (curly (const_cast<int*> &data)))))))))
 		,(logprint "end main" `())
 		(return 0)))))
   
