@@ -399,7 +399,7 @@
 		 (let ((devi (CudaDevice i))
 		       (deviName (std--string (devi.name))))
 		   #+nil (declare (type CudaDevice (space devi (curly i)))
-				  (type std--string (space deviName (curly (devi.name)))))
+				  (type std--string (space deviName (curly (devi.name))))) 
 		   (std--transform (deviName.begin)
 				   (deviName.end)
 				   (deviName.begin)
