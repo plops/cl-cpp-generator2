@@ -210,7 +210,26 @@
 					   ,(g `_code_generation_time)))
 		(let ((device (yacx--Devices--findDevice))
 		      (options (yacx--Options (yacx--options--GpuArchitecture device)))
-		      ))
+		      )
+		  (options.insert (string "--std")
+				  (string "c++17"))
+		  (let ((source (yacx--Source
+				 (string-r
+				  ,(emit-c
+				    :code
+				    `(do0
+				      (defun my_kernel
+					  (c val)
+					(declare (type type* c)
+						 (type type val)
+						 (values "__global__ void")
+						 (template "typename type, int size"))
+					(let ((idx (+ (* blockIdx.x
+							 blockDim.x)
+						      threadIdx.x)))
+					  (dotimes (i size)
+					    (setf (aref c i)
+						  (+ idx val)))))))))))))
 		,(logprint "end main" `())
 		(return 0)))))
   
@@ -343,3 +362,6 @@
 		    " "
 		    "#endif"
 		    " "))))
+
+
+

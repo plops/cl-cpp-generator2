@@ -774,6 +774,7 @@ entry return-values contains a list of return values. currently supports type, v
 			      (format nil "(~a)-=(~a)" (emit a) (emit b))
 			      (format nil "(~a)--" (emit a)))))
 		  (string (format nil "\"~a\"" (cadr code)))
+		  (string-r (format nil "R\"(~a)\"" (cadr code)))
 		  (char (format nil "'~a'" (cadr code)))
 		  (hex (destructuring-bind (number) (cdr code)
 			 (format nil "0x~x" number)))
@@ -853,7 +854,7 @@ entry return-values contains a list of return values. currently supports type, v
 				       (emit range)
 				       (emit `(progn ,@statement-list)))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			     (emit `(for (,(format nil "int ~a = 0" (emit i))
+			     (emit `(for (,(format nil "auto ~a = 0" (emit i)) ;; int
 					   (< ,(emit i) ,(emit n))
 					   (incf ,(emit i) ,(emit step)))
 					 ,@body))))

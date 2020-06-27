@@ -25,10 +25,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "07696ebb10407b96e22c7cdd89e0ada323ad98bd";
+  state._main_version = "d18621e9dc0004e30cec464389ce0d245cab7761";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "17:41:21 of Saturday, 2020-06-27 (GMT+1)";
+  state._code_generation_time = "17:53:55 of Saturday, 2020-06-27 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -44,6 +44,14 @@ int main(int argc, char const *const *const argv) {
       << ("'") << (std::endl) << (std::flush);
   auto device = yacx::Devices::findDevice();
   auto options = yacx::Options(yacx::options::GpuArchitecture(device));
+  options.insert("--std", "c++17");
+  auto source = yacx::Source(
+      R"(template<typename type, int size> __global__ void my_kernel (type* c, type val)    {
+            auto idx  = ((((blockIdx.x)*(blockDim.x)))+(threadIdx.x));
+    for (auto i = 0;(i)<(size);(i)+=(1)) {
+                        c[i]=((idx)+(val));
+};
+})");
 
   (std::cout)
       << (std::setw(10))
