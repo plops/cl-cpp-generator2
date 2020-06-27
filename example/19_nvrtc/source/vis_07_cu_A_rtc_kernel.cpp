@@ -13,8 +13,6 @@ extern State state;
 #include "vis_07_cu_A_rtc_kernel.hpp"
 
 ;
-//template <typename T>;
-//template <typename T, T y>;
 void TemplateParameters::addComma() {
   if (_first) {
     _first = false;

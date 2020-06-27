@@ -4,8 +4,32 @@
   - note: i tried building this project in linux. i don't think it works with g++
   - needs replacement s/std::exception/std::runtime_error/g
   - then some problems related to templates (that i don't understand and can't debug)
+- alternative to cudacpp https://github.com/ZerataX/yacx
+
+#+begin_example
+martin@labolg ~/src/yacx/examples $ clang++ -std=c++20 example_program.cpp -I../include -I /media/sdb4/cuda/11.0.1/include/ -DNVRTC_GET_TYPE_NAME=1  -L /media/sdb4/cuda/11.0.1/lib ../src/*.cpp -lcuda -lcudart -lnvrtc -lnvrtc-builtins -Wl,-rpath=/media/sdb4/cuda/11.0.1/lib
+martin@labolg ~/src/yacx/examples $ ./a.out 
+2020-06-27 09:36:30 WARNING[../include/yacx/Exception.hpp:81]: nvrtcResultException 
+7
+ with description: 
+NVRTC_ERROR_BUILTIN_OPERATION_FAILURE
+->occoured in file <../src/Program.cpp in line 64
+ m_log: nvrtc: error: failed to open libnvrtc-builtins.so.
+  Make sure that libnvrtc-builtins.so is installed correctly.
+
+
+ created.
+NVRTC_ERROR_BUILTIN_OPERATION_FAILURE
+->occoured in file <../src/Program.cpp in line 64
+ m_log: nvrtc: error: failed to open libnvrtc-builtins.so.
+  Make sure that libnvrtc-builtins.so is installed correctly.
+#+end_example 
+
+
 - https://docs.nvidia.com/cuda/nvrtc/index.html
 - https://migocpp.wordpress.com/
+
+
  
 * Dependency in cudacpp project
 

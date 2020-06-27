@@ -216,7 +216,7 @@
 		  (let ((ctx (CudaContext dev))
 			(code (Code--FromFile (string "bla.cu")))
 			(program (Program (string "myprog") code))
-			(kernel (dot (Kernel (string "setKernel"))
+			#+nil (kernel (dot (Kernel (string "setKernel"))
 				     ("instantiate<float, std::integral_constant<int,10>>")))))
 		  
 		 #+nil (do0
@@ -710,28 +710,29 @@
 			     ("reinterpret_cast<const void*>" &args))
 			    "..."))))
 	  " ")
-	 (defclass (NameExtractor :template "typename T") ()
-	   "public:"
-	   (defmethod extract ()
-	     (declare (static)
-		      (inline)
-		      (template-instance "T")
-		      (values "std::string"))
-	     (let ((type_name))
-	       (declare (type std--string type_name))
-	       (nvrtcGetTypeName<T> &type_name)
-	       (return type_name))))
+	 #+nil (do0
+	  (defclass (NameExtractor :template "typename T") ()
+	    "public:"
+	    (defmethod extract ()
+	      (declare (static)
+		       (inline)
+		       (template-instance "T")
+		       (values "std::string"))
+	      (let ((type_name))
+		(declare (type std--string type_name))
+		(nvrtcGetTypeName<T> &type_name)
+		(return type_name))))
 
-	 	 
-	 (defclass (NameExtractor
-		    :template "typename T, T y"
-		    :template-instance "std::integral_constant<T, y>") ()
-	   "public:"
-	   (defmethod extract ()
-	     (declare (values "std::string")
-		      (inline)
-		      (static))
-	     (return (std--to_string y))))
+	  
+	  (defclass (NameExtractor
+		     :template "typename T, T y"
+		     :template-instance "std::integral_constant<T, y>") ()
+	    "public:"
+	    (defmethod extract ()
+	      (declare (values "std::string")
+		       (inline)
+		       (static))
+	      (return (std--to_string y)))))
 	 
 	 (defclass TemplateParameters ()
 	   (let ((_val)
