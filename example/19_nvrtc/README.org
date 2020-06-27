@@ -23,6 +23,12 @@ NVRTC_ERROR_BUILTIN_OPERATION_FAILURE
 ->occoured in file <../src/Program.cpp in line 64
  m_log: nvrtc: error: failed to open libnvrtc-builtins.so.
   Make sure that libnvrtc-builtins.so is installed correctly.
+
+martin@labolg ~/src/yacx/examples $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/sdb4/cuda/11.0.1/lib 
+martin@labolg ~/src/yacx/examples $ ./a.out 
+
+6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
 #+end_example 
 
 
