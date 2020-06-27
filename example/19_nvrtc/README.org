@@ -1,6 +1,9 @@
 * References
 - https://www.youtube.com/watch?v=tHepctS09uQ
 - https://github.com/mgopshtein/cudacpp
+  - note: i tried building this project in linux. i don't think it works with g++
+  - needs replacement s/std::exception/std::runtime_error/g
+  - then some problems related to templates (that i don't understand and can't debug)
 - https://docs.nvidia.com/cuda/nvrtc/index.html
 - https://migocpp.wordpress.com/
  
