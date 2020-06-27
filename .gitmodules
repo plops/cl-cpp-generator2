@@ -10,3 +10,6 @@
 [submodule "example/17_glfw_lua/source/glm"]
 	path = example/17_glfw_lua/source/glm
 	url = https://github.com/g-truc/glm
+[submodule "example/21_nvrtc_yacx/source/yacx"]
+	path = example/21_nvrtc_yacx/source/yacx
+	url = https://github.com/ZerataX/yacx
