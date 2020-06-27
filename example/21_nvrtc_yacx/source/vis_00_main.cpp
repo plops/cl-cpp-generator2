@@ -7,9 +7,11 @@
 // g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
 // -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
 // -lcuda
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
+#include <experimental/iterator>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -25,10 +27,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "e447df76b378083da41a9dac7ab014f1ab1a5f4f";
+  state._main_version = "04524a06715c1ac7c174e5edd6458b3c0afbd3d5";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "20:33:44 of Saturday, 2020-06-27 (GMT+1)";
+  state._code_generation_time = "20:37:33 of Saturday, 2020-06-27 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -70,6 +72,8 @@ int main(int argc, char const *const *const argv) {
         .compile(options)
         .configure(grid, block)
         .launch(args, device);
+    std::copy(v.begin(), v.end(),
+              std::experimental::make_ostream_joiner(std::cout, ","));
   } catch (const std::exception &e) {
 
     (std::cout) << (std::setw(10))

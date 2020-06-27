@@ -12,6 +12,8 @@
 #include <fstream>
 #include <thread>
 #include <vector>
+#include <experimental/iterator>
+#include <algorithm>
 ;
 #include <nvrtc.h>
 #include <cuda.h>

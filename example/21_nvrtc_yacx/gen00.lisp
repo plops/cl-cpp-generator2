@@ -157,6 +157,8 @@
 		       <fstream>
 		       <thread>
 		       <vector>
+		       <experimental/iterator>
+		       <algorithm>
 		       )
 	      " "
 	      (include
@@ -258,10 +260,16 @@
 					   times)
 			      (compile options)
 			      (configure grid block)
-			      (launch args device))))))
+			      (launch args device))
+			 (std--copy
+		 (v.begin)
+		    (v.end)
+		    (std--experimental--make_ostream_joiner std--cout (string ",")))))))
 		  ("const std::exception&" (e)
 		    ,(logprint "error" `((e.what))))
+		  
 		  )
+		
 		,(logprint "end main" `())
 		(return 0)))))
   
