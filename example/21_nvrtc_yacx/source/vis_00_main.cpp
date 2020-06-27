@@ -25,10 +25,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main() {
-  state._main_version = "d99031a25c898c0dffdc86d9c73344ca2e2fd8ad";
+  state._main_version = "b3853afbe618a2435612527d232d33a535513f97";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "15:03:28 of Saturday, 2020-06-27 (GMT+1)";
+  state._code_generation_time = "15:04:15 of Saturday, 2020-06-27 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -42,12 +42,6 @@ int main() {
       << (state._code_repository) << ("'") << (std::setw(8))
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
-  auto dev = CudaDevice::FindByProperties(
-      CudaDeviceProperties::ByIntegratedType(false));
-  dev.setAsCurrent();
-  auto ctx = CudaContext(dev);
-  auto code = Code::FromFile("bla.cu");
-  auto program = Program("myprog", code);
 
   (std::cout)
       << (std::setw(10))

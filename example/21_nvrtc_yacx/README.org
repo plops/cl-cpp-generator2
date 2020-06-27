@@ -1,1 +1,15 @@
-https://github.com/ZerataX/yacx/blob/master/docs/diagram/classDiagram.pdf
+- https://github.com/ZerataX/yacx/blob/master/docs/diagram/classDiagram.pdf
+
+* How to add the dependency
+
+- https://stackoverflow.com/questions/7813030/how-can-i-have-linked-dependencies-in-a-git-repo
+#+begin_example
+cd ~/stage/cl-cpp-generator2
+git submodule add https://github.com/ZerataX/yacx example/21_nvrtc_yacx/source/yacx
+#+end_example
+
+- in a new clone of cl-cpp-generator2 do this to get the dependencies:
+#+begin_example
+git submodule init
+git submodule update
+#+end_example
