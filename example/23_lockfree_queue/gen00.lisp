@@ -210,7 +210,21 @@
 		     (let ((q (moodycamel--BlockingReaderWriterQueue<int>))
 			   (reader (std--thread (lambda ()
 						  (declare (capture "&"))
-						  (let ((item (int 0)))))))))
+						  (let ((item (int 0)))
+						    (dotimes (i 100)
+						      (q.wait_dequeue item)
+						      (when (q.wait_dequeue_timed
+							     item
+							     (std--chrono--milliseconds 5))
+							(incf i)))))))
+			   (writer (std--thread (lambda ()
+						  (declare (capture "&"))
+						  (dotimes (i 100)
+						    (q.enqueue i)
+						    (std--this_thread--sleep_for
+						     (std--chrono--milliseconds 10)))))))
+		       (writer.join)
+		       (reader.join))
 		     )
 		  ("const std::exception&" (e)
 		    ,(logprint "error" `((e.what))))
