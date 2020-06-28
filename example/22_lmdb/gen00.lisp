@@ -209,7 +209,23 @@
 		    (do0
 		     (let ((env (lmdb--env--create)))
 		       (env.set_mapsize (* 1UL 1024UL 1024UL 1024UL))
-		       (env.open (string "./example.mdb" 0 "0664")))
+		       (env.open (string "./example.mdb" 0 "0664"))
+		       (let ((wtxn (lmdb--txn--begin env))
+			     (dbi (lmdb--dbi--open wtxn nullptr)))
+			 ,@(loop for (key value) in `((username jhacker)
+						      (email jhacker@example.org)
+						      (fullname "J. Random Hacker"))
+			      collect
+				`(dbi.put wtxn (string ,key) (string ,value)))
+			 (wtxn.commit))
+		       (let ((rtxn (lmdb--txn--begin env nullptr MDB_RDONLY))
+			     (cursor (lmdb--cursor--open rtxn dbi))
+			     (key (std--string))
+			     (value (std--string)))
+			 (while (cursor.get key value MDB_NEXT)
+			   ,(logprint "" `(key value)))
+			 (cursor.close)
+			 (rtxn.abort)))
 		     #+Nil
 		     (std--copy
 			      (v.begin)

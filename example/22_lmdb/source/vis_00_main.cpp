@@ -18,10 +18,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "a8f22c3dd370b0de1048e2e653faccde4e69d1ab";
+  state._main_version = "e8faa6ee8fe1a3b8b367708dadf9436c4309ae17";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "09:05:42 of Sunday, 2020-06-28 (GMT+1)";
+  state._code_generation_time = "09:15:38 of Sunday, 2020-06-28 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -39,6 +39,30 @@ int main(int argc, char const *const *const argv) {
     auto env = lmdb::env::create();
     env.set_mapsize(((1UL) * (1024UL) * (1024UL) * (1024UL)));
     env.open("./example.mdb");
+    auto wtxn = lmdb::txn::begin(env);
+    auto dbi = lmdb::dbi::open(wtxn, nullptr);
+    dbi.put(wtxn, "username", "jhacker");
+    dbi.put(wtxn, "email", "jhacker@example.org");
+    dbi.put(wtxn, "fullname", "J. Random Hacker");
+    wtxn.commit();
+    auto rtxn = lmdb::txn::begin(env, nullptr, MDB_RDONLY);
+    auto cursor = lmdb::cursor::open(rtxn, dbi);
+    auto key = std::string();
+    auto value = std::string();
+    while (cursor.get(key, value, MDB_NEXT)) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("") << (" ") << (std::setw(8)) << (" key='")
+                  << (key) << ("'") << (std::setw(8)) << (" value='") << (value)
+                  << ("'") << (std::endl) << (std::flush);
+    }
+    cursor.close();
+    rtxn.abort();
   } catch (const std::exception &e) {
 
     (std::cout) << (std::setw(10))
