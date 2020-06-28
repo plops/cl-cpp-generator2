@@ -144,10 +144,10 @@ time on.
 | 16_cauldron                |    1% | cauldron doesnt work on linux                                                                                            |   |
 | 17_glfw_lua                |  100% | cad program with polymorphism (javidx) and lua binding                                                                   |   |
 | 18_parallel_stl            |  100% | example of parallel computation (coffeebeforearch)                                                                       |   |
-| 19_nvrtc                   |   40% | try to load cuda code at runtime (mgopshtein), i had to add a lot of template handling code to cl-cpp-generator2         |   |
+| 19_nvrtc                   |   40% | try to load cuda code at runtime (mgopshtein), this is not compatible with g++, use 21_nvrtc_yacx instead                |   |
 | 20_tbb                     |  100% | parallel_invoke example for intel thread building blocks (coffeebeforearch)                                              |   |
-|                            |       |                                                                                                                          |   |
-
+| 21_nvrtc_yacx              |  100% | load cuda at runtime                                                                                                     |   |
+| 22_lmdb                    |   90% | lightning db (lmdb) example (fast key value disk store)                                                                  |   |
 
 
 * FAQ
