@@ -1,1 +1,15 @@
-https://github.com/drycpp/lmdbxx
+- https://github.com/drycpp/lmdbxx
+  - C++11 interface and example
+
+- i manually head to create a directory:
+#+begin_example
+cd source
+mkdir b
+cd b
+cmake ..
+mkdir example.mdb
+./source
+1593328041210624254 139653342911296 /home/martin/stage/cl-cpp-generator2/example/22_lmdb/source/vis_00_main.cpp:32 main start main  state._main_version='a8f22c3dd370b0de1048e2e653faccde4e69d1ab' state._code_repository='https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc' state._code_generation_time='09:05:42 of Sunday, 2020-06-28 (GMT+1)'
+1593328041210809050 139653342911296 /home/martin/stage/cl-cpp-generator2/example/22_lmdb/source/vis_00_main.cpp:58 main end main 
+
+#+end_example
