@@ -1,0 +1,3 @@
+- https://github.com/cameron314/readerwriterqueue
+- https://github.com/cameron314/concurrentqueue fast lock-free queue
+- https://github.com/cameron314/concurrentqueue/blob/master/samples.md
