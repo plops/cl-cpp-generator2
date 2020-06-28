@@ -1,4 +1,5 @@
 - https://github.com/cameron314/readerwriterqueue
+  - cameron314 initially developed this for audio processing
 - https://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++.htm
   - Relacy: It works by running unit tests (that you write) under
    every possible permutation of thread interleaving
