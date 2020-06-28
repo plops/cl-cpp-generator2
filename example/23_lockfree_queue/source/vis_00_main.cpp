@@ -15,10 +15,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "34d77a0caea93abea64cc0a6fd4cf36a431e6e61";
+  state._main_version = "51bee2a6fd3b5d1ef681e5344bec69520d1bd584";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "22:12:07 of Sunday, 2020-06-28 (GMT+1)";
+  state._code_generation_time = "22:17:11 of Sunday, 2020-06-28 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -33,7 +33,8 @@ int main(int argc, char const *const *const argv) {
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
   try {
-    ;
+    auto q = moodycamel::BlockingReaderWriterQueue<int>();
+    auto reader = std::thread([&]() { auto item = int(0); });
   } catch (const std::exception &e) {
 
     (std::cout) << (std::setw(10))

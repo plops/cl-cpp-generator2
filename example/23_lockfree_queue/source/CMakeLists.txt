@@ -16,4 +16,4 @@ vis_00_main.hpp
 )
 # target_include_directories(source PRIVATE /media/sdb4/cuda/11.0.1/include)
 # target_include_directories(source PRIVATE /home/martin/stage/cl-cpp-generator2/example/22_lmdb/source/lmdbpp/)
-# target_link_libraries(source dl)
+target_link_libraries(source pthread)

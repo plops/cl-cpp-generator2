@@ -207,7 +207,10 @@
 					   ,(g `_code_generation_time)))
 		(handler-case
 		    (do0
-		     
+		     (let ((q (moodycamel--BlockingReaderWriterQueue<int>))
+			   (reader (std--thread (lambda ()
+						  (declare (capture "&"))
+						  (let ((item (int 0)))))))))
 		     )
 		  ("const std::exception&" (e)
 		    ,(logprint "error" `((e.what))))
