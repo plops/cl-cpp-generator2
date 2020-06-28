@@ -1,6 +1,8 @@
 - https://github.com/drycpp/lmdbxx
   - C++11 interface and example
 
+- common lisp: https://borretti.me/article/lmdb-from-common-lisp
+
 - i manually head to create a directory:
 #+begin_example
 cd source
