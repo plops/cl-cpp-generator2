@@ -4,6 +4,7 @@ project(source)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
+include_directories(rwqueue)
 # add_definitions(-DNVRTC_GET_TYPE_NAME=1)
 # link_directories(/media/sdb4/cuda/11.0.1/lib)
 
@@ -15,4 +16,4 @@ vis_00_main.hpp
 )
 # target_include_directories(source PRIVATE /media/sdb4/cuda/11.0.1/include)
 # target_include_directories(source PRIVATE /home/martin/stage/cl-cpp-generator2/example/22_lmdb/source/lmdbpp/)
-target_link_libraries(source lmdb)
+# target_link_libraries(source dl)

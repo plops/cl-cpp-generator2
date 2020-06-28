@@ -161,7 +161,7 @@
 		       ;;<algorithm>
 		       )
 	      " "
-	      (include "lmdbpp/lmdb++.h")
+	      (include "rwqueue/readerwriterqueue.h")
 	      " "
 
 	      
