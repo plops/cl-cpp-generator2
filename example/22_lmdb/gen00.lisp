@@ -161,6 +161,8 @@
 		       ;;<algorithm>
 		       )
 	      " "
+	      (include "lmdbpp/lmdb++.h")
+	      " "
 
 	      
 	      "using namespace std::chrono_literals;"

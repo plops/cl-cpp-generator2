@@ -9,5 +9,7 @@
 #include <cstdio>
 #include <cassert>
 ;
+#include "lmdbpp/lmdb++.h"
+;
 int main (int argc, char const *const *const argv)  ;  
 #endif
