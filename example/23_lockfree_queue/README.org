@@ -1,4 +1,18 @@
 - https://github.com/cameron314/readerwriterqueue
 - https://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++.htm
+  - Relacy: It works by running unit tests (that you write) under
+   every possible permutation of thread interleaving
+  - alternatives:
+    - https://software.intel.com/content/www/us/en/develop/articles/single-producer-single-consumer-queue.html
+    - https://github.com/facebook/folly/blob/master/folly/ProducerConsumerQueue.h
+- comment of cameron314
+#+begin_example
+I wonder, though, how far this multi-core-with-shared-memory
+architecture will go -- the cache coherence protocols and memory
+barrier instructions don't seem to scale very well (performance-wise)
+to highly parallel CPUs. Immutable shared memory with thread-local
+writes may be the future. Sounds like a job for functional
+programming!
+#+end_example
 - https://github.com/cameron314/concurrentqueue fast lock-free queue
 - https://github.com/cameron314/concurrentqueue/blob/master/samples.md
