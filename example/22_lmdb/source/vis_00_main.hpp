@@ -8,6 +8,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cassert>
+#include <thread>
 ;
 #include "lmdbpp/lmdb++.h"
 ;

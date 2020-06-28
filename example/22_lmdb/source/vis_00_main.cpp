@@ -11,16 +11,17 @@
 #include <chrono>
 #include <cstdio>
 #include <iostream>
+#include <thread>
 
 #include "lmdbpp/lmdb++.h"
 
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "2a5ac73f13e7bcd7e1a2a0ca2386fc54146c7d65";
+  state._main_version = "a8f22c3dd370b0de1048e2e653faccde4e69d1ab";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "09:01:58 of Sunday, 2020-06-28 (GMT+1)";
+  state._code_generation_time = "09:05:42 of Sunday, 2020-06-28 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -35,7 +36,9 @@ int main(int argc, char const *const *const argv) {
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
   try {
-    ;
+    auto env = lmdb::env::create();
+    env.set_mapsize(((1UL) * (1024UL) * (1024UL) * (1024UL)));
+    env.open("./example.mdb");
   } catch (const std::exception &e) {
 
     (std::cout) << (std::setw(10))

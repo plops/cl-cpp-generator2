@@ -155,7 +155,7 @@
 					;<unordered_map>
 		       ;;<string>
 		       ;;<fstream>
-		       ;;<thread>
+		       <thread>
 		       ;;<vector>
 		       ;;<experimental/iterator>
 		       ;;<algorithm>
@@ -207,6 +207,9 @@
 					   ,(g `_code_generation_time)))
 		(handler-case
 		    (do0
+		     (let ((env (lmdb--env--create)))
+		       (env.set_mapsize (* 1UL 1024UL 1024UL 1024UL))
+		       (env.open (string "./example.mdb" 0 "0664")))
 		     #+Nil
 		     (std--copy
 			      (v.begin)
