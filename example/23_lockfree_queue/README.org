@@ -1,3 +1,4 @@
 - https://github.com/cameron314/readerwriterqueue
+- https://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++.htm
 - https://github.com/cameron314/concurrentqueue fast lock-free queue
 - https://github.com/cameron314/concurrentqueue/blob/master/samples.md
