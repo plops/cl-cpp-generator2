@@ -148,7 +148,7 @@ time on.
 | 20_tbb                     |  100% | parallel_invoke example for intel thread building blocks (coffeebeforearch)                                              |   |
 | 21_nvrtc_yacx              |  100% | load cuda at runtime                                                                                                     |   |
 | 22_lmdb                    |   90% | lightning db (lmdb) example (fast key value disk store)                                                                  |   |
-
+| 23_lockfree_queue          |   70% | one producer, one consumer                                                                                               |   |
 
 * FAQ
 
