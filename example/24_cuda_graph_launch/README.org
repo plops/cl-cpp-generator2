@@ -1,0 +1,1 @@
+- cuda graphs for kernel launching https://developer.nvidia.com/blog/cuda-graphs/
