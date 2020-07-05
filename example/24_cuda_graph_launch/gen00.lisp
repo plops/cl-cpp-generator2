@@ -246,11 +246,12 @@
 		    (do0 ,(cuda `(cudaMallocManaged &in (* N (sizeof float))))
 			 ,(cuda `(cudaMallocManaged &out (* N (sizeof float)))))
 		    (init_input in N)
-		    
-		   (dotimes (istep NSTEP)
-		     (dotimes (ik NKERNEL)
-		       ("shortKernel<<<blocks,threads,0,stream>>>" out in)
-		       (cudaStreamSynchronize stream)))
+
+		    (dotimes (istep NSTEP)
+		      (dotimes (ik NKERNEL)
+			("shortKernel<<<blocks,threads,0,stream>>>" out in)
+			)
+		      (cudaStreamSynchronize stream))
 
 		   (do0
 		    ,(cuda `(cudaFree in))
