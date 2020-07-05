@@ -147,7 +147,6 @@
 	      (_code_generation_time :type "std::string")
 	      )
 	     (do0
-	      "// g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart -lcuda"
 	      (include <iostream>
 		       <chrono>
 		       <cstdio>
@@ -169,6 +168,15 @@
 	      ;(include <yacx/main.hpp>)
 	      
 	      " "
+
+	      (space enum (curly
+			   (= N 500000
+			      
+			      )
+			   (= NSTEP 1000)
+			   (= NKERNEL 20)
+			   
+			   ))
 	      
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))

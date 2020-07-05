@@ -4,9 +4,6 @@
 #include "globals.h"
 
 ;
-// g++ -march=native -Ofast --std=gnu++20 vis_00_main.cpp
-// -I/media/sdb4/cuda/11.0.1/include/ -L /media/sdb4/cuda/11.0.1/lib -lcudart
-// -lcuda
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -21,13 +18,14 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+enum { N = 500000, NSTEP = 1000, NKERNEL = 20 };
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "2b18b4f0796d0c2e05322bfae91210158241bed9";
+  state._main_version = "76a0ec6e14428aa90c3127560f9d79777d3565ce";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "12:47:33 of Sunday, 2020-07-05 (GMT+1)";
+  state._code_generation_time = "12:55:34 of Sunday, 2020-07-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
