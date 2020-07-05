@@ -1,4 +1,5 @@
 - https://github.com/ZerataX/yacx/blob/master/docs/diagram/classDiagram.pdf
+- cuda graphs for kernel launching https://developer.nvidia.com/blog/cuda-10-features-revealed/
 
 * How to add the dependency
 
