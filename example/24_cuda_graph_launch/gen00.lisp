@@ -239,19 +239,40 @@
 		  (declare (type cudaStream_t stream)
 			   )
 		  ,(cuda `(cudaStreamCreate &stream))
+
+		  
 		  (let ((in)
 			(out))
 		    (declare (type float* in out))
 		    ;; https://developer.nvidia.com/blog/unified-memory-cuda-beginners/
 		    (do0 ,(cuda `(cudaMallocManaged &in (* N (sizeof float))))
 			 ,(cuda `(cudaMallocManaged &out (* N (sizeof float)))))
+
+
 		    (init_input in N)
 
-		    (dotimes (istep NSTEP)
-		      (dotimes (ik NKERNEL)
-			("shortKernel<<<blocks,threads,0,stream>>>" out in)
-			)
-		      (cudaStreamSynchronize stream))
+		    (let ((graph_created false)
+			  (graph)
+			  (instance))
+		      (declare (type cudaGraph_t graph)
+			       (type cudaGraphExec_t instance))
+		      (dotimes (istep NSTEP)
+			(unless graph_created
+			  (cudaStreamBeginCapture stream cudaStreamCaptureModeGlobal)
+			  (dotimes (ik NKERNEL)
+			    ("shortKernel<<<blocks,threads,0,stream>>>" out in))
+			  (cudaStreamEndCapture stream &graph)
+			  (cudaGraphInstantiate &instance graph nullptr nullptr 0)
+			  (setf graph_created true))
+			(cudaGraphLaunch instance stream)
+			(cudaStreamSynchronize)))
+		    #+nil
+		    (do0
+		     (dotimes (istep NSTEP)
+		       (dotimes (ik NKERNEL)
+			 ("shortKernel<<<blocks,threads,0,stream>>>" out in)
+			 )
+		       (cudaStreamSynchronize stream)))
 
 		   (do0
 		    ,(cuda `(cudaFree in))

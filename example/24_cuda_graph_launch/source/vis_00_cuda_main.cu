@@ -33,10 +33,10 @@ void init_input(float *a, size_t size) {
   }
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "9233cd85924a7d8e73cc2ce0e469c3caef6e5000";
+  state._main_version = "79326c91e639a8b4eee31ae03a68889853db456f";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "16:43:10 of Sunday, 2020-07-05 (GMT+1)";
+  state._code_generation_time = "16:47:30 of Sunday, 2020-07-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -65,12 +65,22 @@ int main(int argc, char const *const *const argv) {
     throw std::runtime_error("cudaMallocManaged(&out, ((N)*(sizeof(float))))");
   };
   init_input(in, N);
+  auto graph_created = false;
+  cudaGraph_t graph;
+  cudaGraphExec_t instance;
   for (auto istep = 0; (istep) < (NSTEP); (istep) += (1)) {
-    for (auto ik = 0; (ik) < (NKERNEL); (ik) += (1)) {
-      shortKernel<<<blocks, threads, 0, stream>>>(out, in);
-    }
-    cudaStreamSynchronize(stream);
-  }
+    if (!(graph_created)) {
+      cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+      for (auto ik = 0; (ik) < (NKERNEL); (ik) += (1)) {
+        shortKernel<<<blocks, threads, 0, stream>>>(out, in);
+      }
+      cudaStreamEndCapture(stream, &graph);
+      cudaGraphInstantiate(&instance, graph, nullptr, nullptr, 0);
+      graph_created = true;
+    };
+    cudaGraphLaunch(instance, stream);
+    cudaStreamSynchronize();
+  };
   if (!((cudaSuccess) == (cudaFree(in)))) {
     throw std::runtime_error("cudaFree(in)");
   };
