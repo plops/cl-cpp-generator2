@@ -265,7 +265,7 @@
 			  (cudaGraphInstantiate &instance graph nullptr nullptr 0)
 			  (setf graph_created true))
 			(cudaGraphLaunch instance stream)
-			(cudaStreamSynchronize)))
+			(cudaStreamSynchronize stream)))
 		    #+nil
 		    (do0
 		     (dotimes (istep NSTEP)

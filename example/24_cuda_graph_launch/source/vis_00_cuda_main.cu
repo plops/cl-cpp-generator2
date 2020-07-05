@@ -33,10 +33,10 @@ void init_input(float *a, size_t size) {
   }
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "79326c91e639a8b4eee31ae03a68889853db456f";
+  state._main_version = "9f05a502b0b331d1162a8d3b6998d17ac2338d89";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "16:47:30 of Sunday, 2020-07-05 (GMT+1)";
+  state._code_generation_time = "16:48:00 of Sunday, 2020-07-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -79,7 +79,7 @@ int main(int argc, char const *const *const argv) {
       graph_created = true;
     };
     cudaGraphLaunch(instance, stream);
-    cudaStreamSynchronize();
+    cudaStreamSynchronize(stream);
   };
   if (!((cudaSuccess) == (cudaFree(in)))) {
     throw std::runtime_error("cudaFree(in)");
