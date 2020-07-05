@@ -1,5 +1,5 @@
-- cuda graphs for kernel launching https://developer.nvidia.com/blog/cuda-graphs/
-
+- blog post cuda graphs for kernel launching https://developer.nvidia.com/blog/cuda-graphs/
+- reference for cuda graphs: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-graphs
 - more extensive example, showing interleaving of kernel launches and memory copies
   - listing of new examples in each cuda version https://docs.nvidia.com/cuda/cuda-samples/index.html#simple-cuda-graphs
   - https://github.com/NVIDIA/cuda-samples/blob/master/Samples/simpleCudaGraphs/simpleCudaGraphs.cu
