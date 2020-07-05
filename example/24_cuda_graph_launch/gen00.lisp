@@ -187,6 +187,13 @@
 		  (when (< idx N)
 		    (setf (aref out idx)
 			  (* (aref in idx) 1.23)))))
+
+	      (defun init_input (a size)
+		(declare (type float* a)
+			 (type size_t size))
+		(dotimes (i size)
+		  (setf (aref a i)
+			(* 1s0 i))))
 	      
 	      (defun main (argc argv)
 		(declare (values int)
@@ -223,11 +230,31 @@
 		,(logprint "start main" `(,(g `_main_version)
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
-		
-		(dotimes (istep NSTEP)
-		  (dotimes (ik NKERNEL)
-		    ("shortKernel<<<blocks,threads,0,stream>>>" out in)
-		    (cudaStreamSynchronize stream)))
+
+		(let ((stream)
+		      (blocks 512)
+		      (threads 512) ;; threads per block
+		      
+		      )
+		  (declare (type cudaStream_t stream)
+			   )
+		  ,(cuda `(cudaStreamCreate &stream))
+		  (let ((in)
+			(out))
+		    (declare (type float* in out))
+		    ;; https://developer.nvidia.com/blog/unified-memory-cuda-beginners/
+		    (do0 ,(cuda `(cudaMallocManaged &in (* N (sizeof float))))
+			 ,(cuda `(cudaMallocManaged &out (* N (sizeof float)))))
+		    (init_input in N)
+		    
+		   (dotimes (istep NSTEP)
+		     (dotimes (ik NKERNEL)
+		       ("shortKernel<<<blocks,threads,0,stream>>>" out in)
+		       (cudaStreamSynchronize stream)))
+
+		   (do0
+		    ,(cuda `(cudaFree in))
+		    ,(cuda `(cudaFree out)))))
 		,(logprint "end main" `())
 		(return 0)))))
   

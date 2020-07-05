@@ -27,11 +27,16 @@ __global__ void shortKernel(float *out, float *in) {
     out[idx] = ((in[idx]) * ((1.230f)));
   };
 }
+void init_input(float *a, size_t size) {
+  for (auto i = 0; (i) < (size); (i) += (1)) {
+    a[i] = (((1.0f)) * (i));
+  }
+}
 int main(int argc, char const *const *const argv) {
-  state._main_version = "5fb4c2cb6e13dfca03ee0dea66562c6c532e8744";
+  state._main_version = "20cef43786ea4778fc0f1f8cfffee2ef426ca172";
   state._code_repository =
       "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc";
-  state._code_generation_time = "12:58:38 of Sunday, 2020-07-05 (GMT+1)";
+  state._code_generation_time = "14:03:57 of Sunday, 2020-07-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -45,12 +50,33 @@ int main(int argc, char const *const *const argv) {
       << (state._code_repository) << ("'") << (std::setw(8))
       << (" state._code_generation_time='") << (state._code_generation_time)
       << ("'") << (std::endl) << (std::flush);
+  cudaStream_t stream;
+  auto blocks = 512;
+  auto threads = 512;
+  if (!((cudaSuccess) == (cudaStreamCreate(&stream)))) {
+    throw std::runtime_error("cudaStreamCreate(&stream)");
+  };
+  float *in;
+  float *out;
+  if (!((cudaSuccess) == (cudaMallocManaged(&in, ((N) * (sizeof(float))))))) {
+    throw std::runtime_error("cudaMallocManaged(&in, ((N)*(sizeof(float))))");
+  };
+  if (!((cudaSuccess) == (cudaMallocManaged(&out, ((N) * (sizeof(float))))))) {
+    throw std::runtime_error("cudaMallocManaged(&out, ((N)*(sizeof(float))))");
+  };
+  init_input(in, N);
   for (auto istep = 0; (istep) < (NSTEP); (istep) += (1)) {
     for (auto ik = 0; (ik) < (NKERNEL); (ik) += (1)) {
       shortKernel<<<blocks, threads, 0, stream>>>(out, in);
       cudaStreamSynchronize(stream);
     }
   }
+  if (!((cudaSuccess) == (cudaFree(in)))) {
+    throw std::runtime_error("cudaFree(in)");
+  };
+  if (!((cudaSuccess) == (cudaFree(out)))) {
+    throw std::runtime_error("cudaFree(out)");
+  };
 
   (std::cout)
       << (std::setw(10))
