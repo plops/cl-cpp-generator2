@@ -1,1 +1,3 @@
 - cuda graphs for kernel launching https://developer.nvidia.com/blog/cuda-graphs/
+- listing of new examples in each cuda version https://docs.nvidia.com/cuda/cuda-samples/index.html#simple-cuda-graphs
+- https://github.com/NVIDIA/cuda-samples/blob/master/Samples/simpleCudaGraphs/simpleCudaGraphs.cu

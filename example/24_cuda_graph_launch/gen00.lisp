@@ -170,19 +170,24 @@
 	      " "
 
 	      (space enum (curly
-			   (= N 500000
-			      
-			      )
+			   (= N 500000)
 			   (= NSTEP 1000)
-			   (= NKERNEL 20)
-			   
-			   ))
+			   (= NKERNEL 20)))
 	      
 	      "using namespace std::chrono_literals;"
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
 
+	      (defun shortKernel (out in)
+		(declare (type float* out in)
+			 (values "__global__ void"))
+		(let ((idx (+ (* blockIdx.x blockDim.x)
+			      threadIdx.x)))
+		  (when (< idx N)
+		    (setf (aref out idx)
+			  (* (aref in idx) 1.23)))))
+	      
 	      (defun main (argc argv)
 		(declare (values int)
 			 (type int argc)
@@ -219,7 +224,10 @@
 					   ,(g `_code_repository)
 					   ,(g `_code_generation_time)))
 		
-		
+		(dotimes (istep NSTEP)
+		  (dotimes (ik NKERNEL)
+		    ("shortKernel<<<blocks,threads,0,stream>>>" out in)
+		    (cudaStreamSynchronize stream)))
 		,(logprint "end main" `())
 		(return 0)))))
   
