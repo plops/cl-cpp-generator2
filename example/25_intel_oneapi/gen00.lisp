@@ -203,7 +203,36 @@
 				 `(,(format nil "~a_buf" e)
 				    ("sycl::buffer<int,1>"
 				     (dot ,e (data))
-				     (dot ,e (size)))))))))
+				     (dot ,e (size)))))
+			  (e (q.submit
+			      (lambda (h)
+				(declare (type sycl--handler& h)
+					 (capture "&"))
+				(let
+				    (,@(loop for (e f) in `((a read)
+							     (b read)
+							     (c write))
+					   collect
+					     `(,e
+					       (dot ,(format nil "~a_buf" e)
+						    (,(format nil "get_access<sycl::access::mode::~a>" f)
+						      h)))))
+				  (h.parallel_for
+				   a_size
+				   (lambda (idx)
+				     (declare (capture "=")
+					      (type "sycl::id<1>" idx))
+				     (setf (aref c idx)
+					   (+ (aref a idx)
+					      (aref b idx))))))))))
+		      (e.wait)
+		      (progn
+			(let ((c (dot c_buf
+				      (get_access<sycl--access--mode--read>))))
+			  ,(logprint ""
+				     `((aref c 0)
+				       (aref c 1)
+				       (aref c (- n 1)))))))))
 		#+nil (do0
 		 (setf ,(g `_main_version)
 		       (string ,(let ((str (with-output-to-string (s)

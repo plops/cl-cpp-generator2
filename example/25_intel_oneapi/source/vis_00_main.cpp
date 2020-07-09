@@ -44,5 +44,23 @@ int main(int argc, char const *const *const argv) {
   auto a_buf = sycl::buffer<int, 1>(a.data(), a.size());
   auto b_buf = sycl::buffer<int, 1>(b.data(), b.size());
   auto c_buf = sycl::buffer<int, 1>(c.data(), c.size());
+  auto e = q.submit([&](sycl::handler &h) {
+    auto a = a_buf.get_access<sycl::access::mode::read>(h);
+    auto b = b_buf.get_access<sycl::access::mode::read>(h);
+    auto c = c_buf.get_access<sycl::access::mode::write>(h);
+    h.parallel_for(a_size,
+                   [=](sycl::id<1> idx) { c[idx] = ((a[idx]) + (b[idx])); });
+  });
+  e.wait();
+  {
+    auto c = c_buf.get_access<sycl::access::mode::read>();
+
+    (std::cout) << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+                << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+                << (std::setw(8)) << (" c[0]='") << (c[0]) << ("'")
+                << (std::setw(8)) << (" c[1]='") << (c[1]) << ("'")
+                << (std::setw(8)) << (" c[((n)-(1))]='") << (c[((n) - (1))])
+                << ("'") << (std::endl) << (std::flush);
+  };
   return 0;
 };
