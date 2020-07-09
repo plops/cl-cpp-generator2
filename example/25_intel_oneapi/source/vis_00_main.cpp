@@ -40,5 +40,9 @@ int main(int argc, char const *const *const argv) {
   };
   auto s = sycl::default_selector();
   auto q = sycl::queue(s);
+  auto a_size = sycl::range<1>(n);
+  auto a_buf = sycl::buffer<int, 1>(a.data(), a.size());
+  auto b_buf = sycl::buffer<int, 1>(b.data(), b.size());
+  auto c_buf = sycl::buffer<int, 1>(c.data(), c.size());
   return 0;
 };

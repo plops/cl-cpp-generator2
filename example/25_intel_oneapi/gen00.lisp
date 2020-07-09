@@ -197,7 +197,13 @@
 			(&d devices)
 			,(logprint "" `((d.get_info<sycl--info--device--name>))))))
 		    (let ((s (sycl--default_selector))
-			  (q (sycl--queue s))))))
+			  (q (sycl--queue s))
+			  (a_size (sycl--range<1> n))
+			  ,@(loop for e in `(a b c) collect
+				 `(,(format nil "~a_buf" e)
+				    ("sycl::buffer<int,1>"
+				     (dot ,e (data))
+				     (dot ,e (size)))))))))
 		#+nil (do0
 		 (setf ,(g `_main_version)
 		       (string ,(let ((str (with-output-to-string (s)
