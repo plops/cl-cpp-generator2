@@ -27,7 +27,18 @@ int main(int argc, char const *const *const argv) {
                 << (" p.get_info<sycl::info::platform::name>()='")
                 << (p.get_info<sycl::info::platform::name>()) << ("'")
                 << (std::endl) << (std::flush);
-    auto devs = p.get_devices();
+    auto devices = p.get_devices();
+    for (auto &d : devices) {
+
+      (std::cout) << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                  << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                  << (" ") << (std::setw(8))
+                  << (" d.get_info<sycl::info::device::name>()='")
+                  << (d.get_info<sycl::info::device::name>()) << ("'")
+                  << (std::endl) << (std::flush);
+    };
   };
+  auto s = sycl::default_selector();
+  auto q = sycl::queue(s);
   return 0;
 };

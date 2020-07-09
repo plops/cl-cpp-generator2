@@ -189,9 +189,15 @@
 		    (setf (aref c i) i))
 		  (let ((platforms
 			 (sycl--platform--get_platforms)))
-		    (for-range (&p platforms)
-			       ,(logprint "" `((p.get_info<sycl--info--platform--name>)))
-			       (let ((devs (p.get_devices)))))))
+		    (for-range
+		     (&p platforms)
+		     ,(logprint "" `((p.get_info<sycl--info--platform--name>)))
+		     (let ((devices (p.get_devices)))
+		       (for-range
+			(&d devices)
+			,(logprint "" `((d.get_info<sycl--info--device--name>))))))
+		    (let ((s (sycl--default_selector))
+			  (q (sycl--queue s))))))
 		#+nil (do0
 		 (setf ,(g `_main_version)
 		       (string ,(let ((str (with-output-to-string (s)
