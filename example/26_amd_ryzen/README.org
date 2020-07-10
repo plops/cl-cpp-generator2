@@ -1,1 +1,2 @@
 - https://www.youtube.com/watch?v=d0TMCbDDg5g AMD Ryzen Processor Software Optimization
+- https://youtu.be/d0TMCbDDg5g?list=PLx15eYqzJifdT1M-vOTz74fwdqHIlMrVc&t=1169 threading example (windows)
