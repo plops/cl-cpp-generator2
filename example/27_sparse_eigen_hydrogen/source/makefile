@@ -14,8 +14,8 @@ LDFLAGS=-L/media/sdb4/cuda/11.0.1/lib \
 -L/media/sdb4/cuda/11.0.1/cuda_cudart/targets/x86_64-linux/lib \
 -Larpack-ng/b/ -larpack \
 -llapack \
--lblas 
-
+-lblas \
+-lgfortran
 %.o: %.cu
 	$(CXX) -c -o $@ $^ $(CXXFLAGS)
 
