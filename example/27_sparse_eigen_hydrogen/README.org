@@ -1,0 +1,2 @@
+- https://www.osti.gov/biblio/1457406
+- Gomez, Thomas, Nagayama, Taisuke, Fontes, Chris, Kilcrease, Dave, Hansen, Stephanie B., Montgomery, Mike, and Winget, Don. Matrix Methods for Solving Hartree-Fock Equations in Atomic Structure Calculations and Line Broadening. United States: N. p., 2018. Web. doi:10.3390/atoms6020022.
