@@ -25,32 +25,32 @@ using namespace std::chrono_literals;
 State state = {};
 __global__ void kernel_hamiltonian(float *out, float *in) {
   auto idx = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
-  auto ri = ((((1) + (idx))) * ((5.00e-2)));
+  auto ri = ((((1) + (idx))) * ((1.6666667e-2)));
   auto l = 0;
   auto Z = 1;
-  if ((idx) < (1000)) {
+  if ((idx) < (3000)) {
     auto Vr = ((((((l) * (((l) + (1))))) / (((ri) * (ri))))) -
                (((((2) * (Z))) / (ri))));
-    if ((((1) <= (idx)) && ((idx) <= (998)))) {
-      out[idx] = ((((((-1) / ((2.50e-3)))) *
+    if ((((1) <= (idx)) && ((idx) <= (2998)))) {
+      out[idx] = ((((((-1) / ((2.777778e-4)))) *
                     (((in[((idx) - (1))]) + (in[((idx) + (1))]))))) +
-                  (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+                  (((((((2) / ((2.777778e-4)))) + (Vr))) * (in[idx]))));
     } else {
       if ((idx) == (0)) {
-        out[idx] = ((((((-1) / ((2.50e-3)))) * (((in[((idx) + (1))]))))) +
-                    (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+        out[idx] = ((((((-1) / ((2.777778e-4)))) * (((in[((idx) + (1))]))))) +
+                    (((((((2) / ((2.777778e-4)))) + (Vr))) * (in[idx]))));
       } else {
-        out[idx] = ((((((-1) / ((2.50e-3)))) * (((in[((idx) - (1))]))))) +
-                    (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+        out[idx] = ((((((-1) / ((2.777778e-4)))) * (((in[((idx) - (1))]))))) +
+                    (((((((2) / ((2.777778e-4)))) + (Vr))) * (in[idx]))));
       }
     };
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "5886278ad8e3a72e4c3262e303f4b6298ff5a61f";
+  state._main_version = "a84e5b2596ed2b51f383b8f183f3c9594a52cc4e";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:59:11 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "16:01:23 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -97,7 +97,7 @@ int main(int argc, char const *const *const argv) {
   float *in;
   float *out;
   {
-    auto res = cudaMallocManaged(&in, ((1000) * (sizeof(float))));
+    auto res = cudaMallocManaged(&in, ((3000) * (sizeof(float))));
     if (!((cudaSuccess) == (res))) {
 
       (std::cout) << (std::setw(10))
@@ -110,11 +110,11 @@ int main(int argc, char const *const *const argv) {
                   << (" cudaGetErrorString(res)='") << (cudaGetErrorString(res))
                   << ("'") << (std::endl) << (std::flush);
       throw std::runtime_error(
-          "cudaMallocManaged(&in, ((1000)*(sizeof(float))))");
+          "cudaMallocManaged(&in, ((3000)*(sizeof(float))))");
     };
   };
   {
-    auto res = cudaMallocManaged(&out, ((1000) * (sizeof(float))));
+    auto res = cudaMallocManaged(&out, ((3000) * (sizeof(float))));
     if (!((cudaSuccess) == (res))) {
 
       (std::cout) << (std::setw(10))
@@ -127,7 +127,7 @@ int main(int argc, char const *const *const argv) {
                   << (" cudaGetErrorString(res)='") << (cudaGetErrorString(res))
                   << ("'") << (std::endl) << (std::flush);
       throw std::runtime_error(
-          "cudaMallocManaged(&out, ((1000)*(sizeof(float))))");
+          "cudaMallocManaged(&out, ((3000)*(sizeof(float))))");
     };
   };
   // relevant arpack++ example
@@ -151,7 +151,7 @@ int main(int argc, char const *const *const argv) {
   // execution time and/or anomalous results. A better approach is to use
   // shift-invert mode.
   ;
-  auto prob = ARrcSymStdEig<float>(1000, 8L, "SA", 0, (1.00e-4), 100000);
+  auto prob = ARrcSymStdEig<float>(3000, 8L, "SA", 0, (0.f), 100000);
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();
@@ -159,13 +159,13 @@ int main(int argc, char const *const *const argv) {
       auto in_ = prob.GetVector();
       auto out_ = prob.PutVector();
       // multiply
-      for (auto i = 0; (i) < (1000); (i) += (1)) {
+      for (auto i = 0; (i) < (3000); (i) += (1)) {
         auto v = in_[i];
         in[i] = v;
       }
       kernel_hamiltonian<<<2, 512, 0, stream>>>(out, in);
       cudaStreamSynchronize(stream);
-      for (auto i = 0; (i) < (1000); (i) += (1)) {
+      for (auto i = 0; (i) < (3000); (i) += (1)) {
         auto v = out[i];
         out_[i] = v;
       };

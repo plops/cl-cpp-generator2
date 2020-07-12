@@ -142,7 +142,7 @@
 	  ,(logprint "error:" `((cudaGetErrorString res)))
 	  (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))))
 
-  (let*  ((N 1000)
+  (let*  ((N 3000)
 	  (rmax 50s0)
 	  (dr (/ rmax N))
 	  (cuda-free nil))
@@ -297,7 +297,7 @@
 							    "8L" ;; nevp
 							    (string "SA") ;; which
 							    0 ;; ncvp
-							    0.0001s0  ;; tolp
+							    0.0s0  ;; tolp
 							    100000 ;; maxitp 
 							    )))
 			    (while (not (prob.ArnoldiBasisFound))
