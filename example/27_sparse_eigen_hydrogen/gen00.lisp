@@ -142,7 +142,7 @@
 	  ,(logprint "error:" `((cudaGetErrorString res)))
 	  (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))))
 
-  (let*  ((N 30)
+  (let*  ((N 1000)
 	  (rmax 50s0)
 	  (dr (/ rmax N))
 	  (cuda-free nil))
@@ -280,7 +280,13 @@
 				   ,(cuda `(cudaMallocManaged &out (* ,N (sizeof float))))))
 			  (comments "relevant arpack++ example https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc")
 			  ;; get one eigenvector
-			  (let ((prob (ARrcSymStdEig<float> ,N "1L" (string "SM"))))
+			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
+							    "1L" ;; nevp
+							    (string "LM") ;; which
+							    0 ;; ncvp
+							    0.001s0  ;; tolp
+							    10000 ;; maxitp 
+							    )))
 			    (while (not (prob.ArnoldiBasisFound))
 			      (prob.TakeStep)
 			      (let ((ido (prob.GetIdo)))
