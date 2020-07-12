@@ -142,7 +142,7 @@
 	  ,(logprint "error:" `((cudaGetErrorString res)))
 	  (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))))
 
-  (let*  ((N 3000)
+  (let*  ((N 100)
 	  (rmax 50s0)
 	  (dr (/ rmax N))
 	  (cuda-free nil))
@@ -263,8 +263,8 @@
 		      
 		      
 		      (let ((stream)
-					;(blocks 512)
-					;(threads 512) ;; threads per block
+			    (blocks ,(ceiling N 512))
+			    (threads 512) ;; threads per block
 			    )
 			(declare (type cudaStream_t stream))
 			,(cuda `(cudaStreamCreate &stream))
@@ -294,7 +294,7 @@
 "Note that ARPACK is generally better at finding extremal eigenvalues, that is, eigenvalues with large magnitudes. In particular, using which = 'SM' may lead to slow execution time and/or anomalous results. A better approach is to use shift-invert mode.")
 			  
 			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
-							    "8L" ;; nevp
+							    "4L" ;; nevp
 							    (string "SA") ;; which
 							    0 ;; ncvp
 							    0.0s0  ;; tolp
@@ -312,7 +312,7 @@
 				      (let ((v  (aref in_ i)))
 					;,(logprint "in" `(v i))
 					(setf (aref in i) v)))
-				    (do0 ("kernel_hamiltonian<<<2,512,0,stream>>>" out in)
+				    (do0 ("kernel_hamiltonian<<<blocks,threads,0,stream>>>" out in)
 					 (cudaStreamSynchronize stream))
 				    (dotimes (i ,N)
 				      (let ((v  (aref out i)))
@@ -320,8 +320,12 @@
 					(setf (aref out_ i) v))))
 				  )))
 			    (prob.FindEigenvectors)
+
 			    (dotimes (i 8)
-			      ,(logprint "" `((prob.Eigenvalue i))))
+			      ,(logprint "" `(i (prob.Eigenvalue i))))
+			    (dotimes (i 1)
+			      (dotimes (j ,N)
+			       ,(logprint "" `(i j (prob.Eigenvector i j)))))
 			    )
 
 			  ;; this error could indicate nan or inf 
