@@ -143,7 +143,7 @@
 	  (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))))
 
   (let*  ((N 1000)
-	  (rmax 50)
+	  (rmax 50s0)
 	  (dr (/ rmax N))
 	  (cuda-free nil))
    (define-module
@@ -190,10 +190,24 @@
 		      (declare (type float* out in)
 			       (values "__global__ void"))
 			   (let ((idx (+ (* blockIdx.x blockDim.x)
-					 threadIdx.x)))
+					 threadIdx.x))
+				 (ri (* idx ,dr))
+				 (l 0)
+				 (Z 1)
+				 )
 			     (when (< idx ,N)
-			       (setf (aref out idx)
-				     (aref in idx)))))
+			       (let ((Vr (- (/ (* l (+ l 1))
+					       (* ri ri))
+					    (/ (* 2 Z)
+					       ri))))
+				 (when (<= 1 idx ,(- N 2))
+				   (setf (aref out idx)
+					 (+ (* (/ 1 ,(* dr dr))
+					       (+ (aref in (- idx 1))
+						  (aref in (+ idx 1))))
+					  (* (+ (/ -2 ,(* dr dr))
+						Vr)
+					     (aref in idx)))))))))
 		    
 		    
 		    (defun main (argc argv)
@@ -206,7 +220,7 @@
 				       (subseq str 0 (1- (length str))))))
 
 		      (setf
-		       ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/19_nvrtc"))
+		       ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/27_sparse_eigen_hydrogen"))
 		       ,(g `_code_generation_time) 
                        (string ,(multiple-value-bind
                                       (second minute hour date month year day-of-week dst-p tz)
@@ -225,9 +239,9 @@
 		      (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
 						   (time_since_epoch)
 						   (count)))
-		      ,(logprint "start main" `(,(g `_main_version)
-						 ,(g `_code_repository)
-						 ,(g `_code_generation_time)))
+		      ,(logprint "start main" `(,(g `_main_version)))
+		      ,(logprint "" `(,(g `_code_repository)))
+		      ,(logprint "" `(,(g `_code_generation_time)))
 
 		      (let ((stream)
 			    ;(blocks 512)
