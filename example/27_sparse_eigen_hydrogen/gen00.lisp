@@ -260,18 +260,7 @@
 		      ,(logprint "" `(,(g `_code_generation_time)))
 
 
-		      (let ((prob (ARrcSymStdEig<float> ,N "4L")))
-			(while (not (prob.ArnoldiBasisFound))
-			  (prob.TakeStep)
-			  (let ((ido (prob.GetIdo)))
-			    (when (or (== ido 1)
-				      (== ido -1))
-			      (let ((in (prob.GetVector))
-				    (out (prob.PutVector)))
-			       "// multiply"))))
-			(prob.FindEigenvectors)
-			;(prob.Eigenvalue)
-			)
+		      
 		      
 		      (let ((stream)
 					;(blocks 512)
@@ -290,10 +279,29 @@
 			     `(do0 ,(cuda `(cudaMallocManaged &in (* ,N (sizeof float))))
 				   ,(cuda `(cudaMallocManaged &out (* ,N (sizeof float))))))
 			   
-			  
+			  (let ((prob (ARrcSymStdEig<float> ,N "4L")))
+			    (while (not (prob.ArnoldiBasisFound))
+			      (prob.TakeStep)
+			      (let ((ido (prob.GetIdo)))
+				(when (or (== ido 1)
+					  (== ido -1))
+				  (let ((in_ (prob.GetVector))
+					(out_ (prob.PutVector)))
+				    "// multiply"
+				    (dotimes (i ,N)
+				      (setf (aref in i) (aref in_ i)
+					    ))
+				    (do0 ("kernel_hamiltonian<<<2,512,0,stream>>>" out in)
+					 (cudaStreamSynchronize stream))
+				    (dotimes (i ,N)
+				      (setf (aref out_ i) (aref out i)
+					    )))
+				  )))
+			    (prob.FindEigenvectors)
+					;(prob.Eigenvalue)
+			    )
 
-			  ("kernel_hamiltonian<<<2,512,0,stream>>>" out in)
-			  (cudaStreamSynchronize stream)
+			  
 			  
 
 			  (do0

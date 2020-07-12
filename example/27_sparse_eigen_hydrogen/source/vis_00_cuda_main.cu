@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "289f091b40e9dc152da70b9af6c6a21bc39e2e48";
+  state._main_version = "4b36f2cbf4824fc2d9155499a6684edc1e431fc7";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:22:58 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:27:36 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -77,17 +77,6 @@ int main(int argc, char const *const *const argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
       << (std::setw(8)) << (" state._code_generation_time='")
       << (state._code_generation_time) << ("'") << (std::endl) << (std::flush);
-  auto prob = ARrcSymStdEig<float>(1000, 4L);
-  while (!(prob.ArnoldiBasisFound())) {
-    prob.TakeStep();
-    auto ido = prob.GetIdo();
-    if ((((ido) == (1)) || ((ido) == (-1)))) {
-      auto in = prob.GetVector();
-      auto out = prob.PutVector();
-      // multiply;
-    };
-  }
-  prob.FindEigenvectors();
   cudaStream_t stream;
   {
     auto res = cudaStreamCreate(&stream);
@@ -141,8 +130,25 @@ int main(int argc, char const *const *const argv) {
           "cudaMallocManaged(&out, ((1000)*(sizeof(float))))");
     };
   };
-  kernel_hamiltonian<<<2, 512, 0, stream>>>(out, in);
-  cudaStreamSynchronize(stream);
+  auto prob = ARrcSymStdEig<float>(1000, 4L);
+  while (!(prob.ArnoldiBasisFound())) {
+    prob.TakeStep();
+    auto ido = prob.GetIdo();
+    if ((((ido) == (1)) || ((ido) == (-1)))) {
+      auto in_ = prob.GetVector();
+      auto out_ = prob.PutVector();
+      // multiply
+      for (auto i = 0; (i) < (1000); (i) += (1)) {
+        in[i] = in_[i];
+      }
+      kernel_hamiltonian<<<2, 512, 0, stream>>>(out, in);
+      cudaStreamSynchronize(stream);
+      for (auto i = 0; (i) < (1000); (i) += (1)) {
+        out_[i] = out[i];
+      };
+    };
+  }
+  prob.FindEigenvectors();
   {
     auto res = cudaFree(out);
     if (!((cudaSuccess) == (res))) {
