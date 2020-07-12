@@ -34,14 +34,22 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
       out[idx] = ((((((1) / ((2.50e-3)))) *
                     (((in[((idx) - (1))]) + (in[((idx) + (1))]))))) +
                   (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+    } else {
+      if ((idx) == (0)) {
+        out[idx] = ((((((1) / ((2.50e-3)))) * (((in[((idx) + (1))]))))) +
+                    (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+      } else {
+        out[idx] = ((((((1) / ((2.50e-3)))) * (((in[((idx) - (1))]))))) +
+                    (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+      }
     };
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "fff5b020b8e56c2ddbac7efcb13629e0d8344782";
+  state._main_version = "4feb8b93b5338504f57be6bfedf1b17949961c18";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "14:50:59 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "14:52:26 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
