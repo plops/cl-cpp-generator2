@@ -282,10 +282,10 @@
 			  ;; get one eigenvector
 			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
 							    "1L" ;; nevp
-							    (string "LM") ;; which
+							    (string "SM") ;; which
 							    0 ;; ncvp
-							    0.001s0  ;; tolp
-							    10000 ;; maxitp 
+							    0.01s0  ;; tolp
+							    100000 ;; maxitp 
 							    )))
 			    (while (not (prob.ArnoldiBasisFound))
 			      (prob.TakeStep)

@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "e314f51497662f2d67a4803e55fe056008fb6e73";
+  state._main_version = "db8425ad5f8d2892b866268d2d885eb59b33aec7";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:45:24 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:46:21 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -133,7 +133,7 @@ int main(int argc, char const *const *const argv) {
   // relevant arpack++ example
   // https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc
   ;
-  auto prob = ARrcSymStdEig<float>(1000, 1L, "LM", 0, (1.00e-3), 10000);
+  auto prob = ARrcSymStdEig<float>(1000, 1L, "SM", 0, (1.00e-2), 100000);
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();
