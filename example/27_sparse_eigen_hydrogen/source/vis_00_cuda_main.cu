@@ -32,25 +32,25 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
     auto Vr = ((((((l) * (((l) + (1))))) / (((ri) * (ri))))) -
                (((((2) * (Z))) / (ri))));
     if ((((1) <= (idx)) && ((idx) <= (998)))) {
-      out[idx] = ((((((1) / ((2.50e-3)))) *
+      out[idx] = ((((((-1) / ((2.50e-3)))) *
                     (((in[((idx) - (1))]) + (in[((idx) + (1))]))))) +
-                  (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+                  (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
     } else {
       if ((idx) == (0)) {
-        out[idx] = ((((((1) / ((2.50e-3)))) * (((in[((idx) + (1))]))))) +
-                    (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+        out[idx] = ((((((-1) / ((2.50e-3)))) * (((in[((idx) + (1))]))))) +
+                    (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
       } else {
-        out[idx] = ((((((1) / ((2.50e-3)))) * (((in[((idx) - (1))]))))) +
-                    (((((((-2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
+        out[idx] = ((((((-1) / ((2.50e-3)))) * (((in[((idx) - (1))]))))) +
+                    (((((((2) / ((2.50e-3)))) + (Vr))) * (in[idx]))));
       }
     };
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "d162a1cf0a5e1ff34647fdacfba3bea886af4ef8";
+  state._main_version = "6df5a139794d7c0c1f6014dc0c3d1ccea7e2c723";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:51:25 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:56:06 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -151,7 +151,7 @@ int main(int argc, char const *const *const argv) {
   // execution time and/or anomalous results. A better approach is to use
   // shift-invert mode.
   ;
-  auto prob = ARrcSymStdEig<float>(1000, 8L, "BE", 57, (1.00e-2), 100000);
+  auto prob = ARrcSymStdEig<float>(1000, 8L, "BE", 0, (1.00e-4), 100000);
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();

@@ -202,26 +202,26 @@
 					  ri))))
 			    (if (<= 1 idx ,(- N 2))
 				(setf (aref out idx)
-				      (+ (* (/ 1 ,(* dr dr))
+				      (+ (* (/ -1 ,(* dr dr))
 					    (+ (aref in (- idx 1))
 					       (aref in (+ idx 1))))
-					 (* (+ (/ -2 ,(* dr dr))
+					 (* (+ (/ 2 ,(* dr dr))
 					       Vr)
 					    (aref in idx))))
 				(if (== idx 0)
 				    (setf (aref out idx)
-					  (+ (* (/ 1 ,(* dr dr))
+					  (+ (* (/ -1 ,(* dr dr))
 						(+ ;(aref in (- idx 1))
 						 (aref in (+ idx 1))))
-					     (* (+ (/ -2 ,(* dr dr))
+					     (* (+ (/ 2 ,(* dr dr))
 						   Vr)
 						(aref in idx))))
 				    (setf (aref out idx)
-					  (+ (* (/ 1 ,(* dr dr))
+					  (+ (* (/ -1 ,(* dr dr))
 						(+ (aref in (- idx 1))
 					;(aref in (+ idx 1))
 						   ))
-					     (* (+ (/ -2 ,(* dr dr))
+					     (* (+ (/ 2 ,(* dr dr))
 						   Vr)
 						(aref in idx))))))))))
 		    
@@ -296,8 +296,8 @@
 			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
 							    "8L" ;; nevp
 							    (string "BE") ;; which
-							    57 ;; ncvp
-							    0.01s0  ;; tolp
+							    0 ;; ncvp
+							    0.0001s0  ;; tolp
 							    100000 ;; maxitp 
 							    )))
 			    (while (not (prob.ArnoldiBasisFound))
