@@ -295,7 +295,7 @@
 			  
 			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
 							    "8L" ;; nevp
-							    (string "BE") ;; which
+							    (string "SA") ;; which
 							    0 ;; ncvp
 							    0.0001s0  ;; tolp
 							    100000 ;; maxitp 

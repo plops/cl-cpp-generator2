@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "6df5a139794d7c0c1f6014dc0c3d1ccea7e2c723";
+  state._main_version = "5886278ad8e3a72e4c3262e303f4b6298ff5a61f";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:56:06 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:59:11 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -151,7 +151,7 @@ int main(int argc, char const *const *const argv) {
   // execution time and/or anomalous results. A better approach is to use
   // shift-invert mode.
   ;
-  auto prob = ARrcSymStdEig<float>(1000, 8L, "BE", 0, (1.00e-4), 100000);
+  auto prob = ARrcSymStdEig<float>(1000, 8L, "SA", 0, (1.00e-4), 100000);
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();
