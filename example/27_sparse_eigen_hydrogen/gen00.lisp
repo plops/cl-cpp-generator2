@@ -142,7 +142,7 @@
 	  ,(logprint "error:" `((cudaGetErrorString res)))
 	  (throw (std--runtime_error (string ,(format nil "~a" (emit-c :code code)))))))))
 
-  (let*  ((N 100)
+  (let*  ((N 3000)
 	  (rmax 50s0)
 	  (dr (/ rmax N))
 	  (cuda-free nil))
@@ -321,11 +321,12 @@
 				  )))
 			    (prob.FindEigenvectors)
 
-			    (dotimes (i 8)
+			    (dotimes (i 3)
 			      ,(logprint "" `(i (prob.Eigenvalue i))))
 			    (dotimes (i 1)
 			      (dotimes (j ,N)
-			       ,(logprint "" `(i j (prob.Eigenvector i j)))))
+				(let ((r (* ,dr (+ j 1))))
+				 ,(logprint "" `(i r (prob.Eigenvector i j))))))
 			    )
 
 			  ;; this error could indicate nan or inf 
