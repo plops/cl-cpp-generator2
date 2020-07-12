@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "4b36f2cbf4824fc2d9155499a6684edc1e431fc7";
+  state._main_version = "23c0eff6ac25570a29d7274af6776d015a6e82ec";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:27:36 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:35:45 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -130,7 +130,10 @@ int main(int argc, char const *const *const argv) {
           "cudaMallocManaged(&out, ((1000)*(sizeof(float))))");
     };
   };
-  auto prob = ARrcSymStdEig<float>(1000, 4L);
+  // relevant arpack++ example
+  // https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc
+  ;
+  auto prob = ARrcSymStdEig<float>(1000, 1L, "SM");
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();
@@ -149,6 +152,14 @@ int main(int argc, char const *const *const argv) {
     };
   }
   prob.FindEigenvectors();
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" prob.Eigenvalue(0)='") << (prob.Eigenvalue(0))
+      << ("'") << (std::endl) << (std::flush);
   {
     auto res = cudaFree(out);
     if (!((cudaSuccess) == (res))) {

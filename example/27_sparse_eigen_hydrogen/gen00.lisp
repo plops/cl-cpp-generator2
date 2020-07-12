@@ -278,8 +278,9 @@
 			     (push 'out cuda-free)
 			     `(do0 ,(cuda `(cudaMallocManaged &in (* ,N (sizeof float))))
 				   ,(cuda `(cudaMallocManaged &out (* ,N (sizeof float))))))
-			   
-			  (let ((prob (ARrcSymStdEig<float> ,N "4L")))
+			  (comments "relevant arpack++ example https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc")
+			  ;; get one eigenvector
+			  (let ((prob (ARrcSymStdEig<float> ,N "1L" (string "SM"))))
 			    (while (not (prob.ArnoldiBasisFound))
 			      (prob.TakeStep)
 			      (let ((ido (prob.GetIdo)))
@@ -298,10 +299,11 @@
 					    )))
 				  )))
 			    (prob.FindEigenvectors)
-					;(prob.Eigenvalue)
+			    ,(logprint "" `((prob.Eigenvalue 0)))
 			    )
 
-			  
+			  ;; this error could indicate nan or inf 
+			  ;; * On entry to SLASCL parameter number  4 had an illegal value
 			  
 
 			  (do0
