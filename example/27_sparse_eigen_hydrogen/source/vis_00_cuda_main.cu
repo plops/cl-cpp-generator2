@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 State state = {};
 __global__ void kernel_hamiltonian(float *out, float *in) {
   auto idx = ((((blockIdx.x) * (blockDim.x))) + (threadIdx.x));
-  auto ri = ((idx) * ((1.6666666f)));
+  auto ri = ((((1) + (idx))) * ((1.6666666f)));
   auto l = 0;
   auto Z = 1;
   if ((idx) < (30)) {
@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "83baa46d5f038dd575ab5f351a9911a4df819eeb";
+  state._main_version = "0421c61f5724656842f42eadf277400373e02ee1";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:38:05 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:39:50 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -143,32 +143,12 @@ int main(int argc, char const *const *const argv) {
       // multiply
       for (auto i = 0; (i) < (30); (i) += (1)) {
         auto v = in_[i];
-
-        (std::cout) << (std::setw(10))
-                    << (std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count())
-                    << (" ") << (std::this_thread::get_id()) << (" ")
-                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("in") << (" ") << (std::setw(8)) << (" v='")
-                    << (v) << ("'") << (std::setw(8)) << (" i='") << (i)
-                    << ("'") << (std::endl) << (std::flush);
         in[i] = v;
       }
       kernel_hamiltonian<<<2, 512, 0, stream>>>(out, in);
       cudaStreamSynchronize(stream);
       for (auto i = 0; (i) < (30); (i) += (1)) {
         auto v = out[i];
-
-        (std::cout) << (std::setw(10))
-                    << (std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count())
-                    << (" ") << (std::this_thread::get_id()) << (" ")
-                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("out") << (" ") << (std::setw(8)) << (" v='")
-                    << (v) << ("'") << (std::setw(8)) << (" i='") << (i)
-                    << ("'") << (std::endl) << (std::flush);
         out_[i] = v;
       };
     };
