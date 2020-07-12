@@ -280,10 +280,23 @@
 				   ,(cuda `(cudaMallocManaged &out (* ,N (sizeof float))))))
 			  (comments "relevant arpack++ example https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc")
 			  ;; get one eigenvector
+
+			  (comments "The following values of which are available:"
+"which = 'LM' : Eigenvalues with largest magnitude (eigs, eigsh), that is, largest eigenvalues in the euclidean norm of complex numbers."
+"which = 'SM' : Eigenvalues with smallest magnitude (eigs, eigsh), that is, smallest eigenvalues in the euclidean norm of complex numbers."
+"which = 'LR' : Eigenvalues with largest real part (eigs)."
+"which = 'SR' : Eigenvalues with smallest real part (eigs)."
+"which = 'LI' : Eigenvalues with largest imaginary part (eigs)."
+"which = 'SI' : Eigenvalues with smallest imaginary part (eigs)."
+"which = 'LA' : Eigenvalues with largest algebraic value (eigsh), that is, largest eigenvalues inclusive of any negative sign."
+"which = 'SA' : Eigenvalues with smallest algebraic value (eigsh), that is, smallest eigenvalues inclusive of any negative sign."
+"which = 'BE' : Eigenvalues from both ends of the spectrum (eigsh)."
+"Note that ARPACK is generally better at finding extremal eigenvalues, that is, eigenvalues with large magnitudes. In particular, using which = 'SM' may lead to slow execution time and/or anomalous results. A better approach is to use shift-invert mode.")
+			  
 			  (let ((prob (ARrcSymStdEig<float> ,N ;; n
-							    "1L" ;; nevp
-							    (string "SM") ;; which
-							    0 ;; ncvp
+							    "8L" ;; nevp
+							    (string "BE") ;; which
+							    57 ;; ncvp
 							    0.01s0  ;; tolp
 							    100000 ;; maxitp 
 							    )))
@@ -307,7 +320,8 @@
 					(setf (aref out_ i) v))))
 				  )))
 			    (prob.FindEigenvectors)
-			    ,(logprint "" `((prob.Eigenvalue 0)))
+			    (dotimes (i 8)
+			      ,(logprint "" `((prob.Eigenvalue i))))
 			    )
 
 			  ;; this error could indicate nan or inf 

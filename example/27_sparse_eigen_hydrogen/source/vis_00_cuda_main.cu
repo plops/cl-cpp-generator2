@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "db8425ad5f8d2892b866268d2d885eb59b33aec7";
+  state._main_version = "d162a1cf0a5e1ff34647fdacfba3bea886af4ef8";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:46:21 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:51:25 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -133,7 +133,25 @@ int main(int argc, char const *const *const argv) {
   // relevant arpack++ example
   // https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc
   ;
-  auto prob = ARrcSymStdEig<float>(1000, 1L, "SM", 0, (1.00e-2), 100000);
+  // The following values of which are available:
+  // which = 'LM' : Eigenvalues with largest magnitude (eigs, eigsh), that is,
+  // largest eigenvalues in the euclidean norm of complex numbers. which = 'SM'
+  // : Eigenvalues with smallest magnitude (eigs, eigsh), that is, smallest
+  // eigenvalues in the euclidean norm of complex numbers. which = 'LR' :
+  // Eigenvalues with largest real part (eigs). which = 'SR' : Eigenvalues with
+  // smallest real part (eigs). which = 'LI' : Eigenvalues with largest
+  // imaginary part (eigs). which = 'SI' : Eigenvalues with smallest imaginary
+  // part (eigs). which = 'LA' : Eigenvalues with largest algebraic value
+  // (eigsh), that is, largest eigenvalues inclusive of any negative sign. which
+  // = 'SA' : Eigenvalues with smallest algebraic value (eigsh), that is,
+  // smallest eigenvalues inclusive of any negative sign. which = 'BE' :
+  // Eigenvalues from both ends of the spectrum (eigsh). Note that ARPACK is
+  // generally better at finding extremal eigenvalues, that is, eigenvalues with
+  // large magnitudes. In particular, using which = 'SM' may lead to slow
+  // execution time and/or anomalous results. A better approach is to use
+  // shift-invert mode.
+  ;
+  auto prob = ARrcSymStdEig<float>(1000, 8L, "BE", 57, (1.00e-2), 100000);
   while (!(prob.ArnoldiBasisFound())) {
     prob.TakeStep();
     auto ido = prob.GetIdo();
@@ -154,14 +172,17 @@ int main(int argc, char const *const *const argv) {
     };
   }
   prob.FindEigenvectors();
+  for (auto i = 0; (i) < (8); (i) += (1)) {
 
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" prob.Eigenvalue(0)='") << (prob.Eigenvalue(0))
-      << ("'") << (std::endl) << (std::flush);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
+                << (" ") << (std::setw(8)) << (" prob.Eigenvalue(i)='")
+                << (prob.Eigenvalue(i)) << ("'") << (std::endl) << (std::flush);
+  };
   {
     auto res = cudaFree(out);
     if (!((cudaSuccess) == (res))) {
