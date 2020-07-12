@@ -260,7 +260,18 @@
 		      ,(logprint "" `(,(g `_code_generation_time)))
 
 
-		      (let ((prob (ARrcSymStdEig<float> ,N "4L"))))
+		      (let ((prob (ARrcSymStdEig<float> ,N "4L")))
+			(while (not (prob.ArnoldiBasisFound))
+			  (prob.TakeStep)
+			  (let ((ido (prob.GetIdo)))
+			    (when (or (== ido 1)
+				      (== ido -1))
+			      (let ((in (prob.GetVector))
+				    (out (prob.PutVector)))
+			       "// multiply"))))
+			(prob.FindEigenvectors)
+			;(prob.Eigenvalue)
+			)
 		      
 		      (let ((stream)
 					;(blocks 512)

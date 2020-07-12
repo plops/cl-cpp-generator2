@@ -47,10 +47,10 @@ __global__ void kernel_hamiltonian(float *out, float *in) {
   };
 }
 int main(int argc, char const *const *const argv) {
-  state._main_version = "5a196113f13de3697e657243e680e31575176f78";
+  state._main_version = "289f091b40e9dc152da70b9af6c6a21bc39e2e48";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "15:18:19 of Sunday, 2020-07-12 (GMT+1)";
+  state._code_generation_time = "15:22:58 of Sunday, 2020-07-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -78,6 +78,16 @@ int main(int argc, char const *const *const argv) {
       << (std::setw(8)) << (" state._code_generation_time='")
       << (state._code_generation_time) << ("'") << (std::endl) << (std::flush);
   auto prob = ARrcSymStdEig<float>(1000, 4L);
+  while (!(prob.ArnoldiBasisFound())) {
+    prob.TakeStep();
+    auto ido = prob.GetIdo();
+    if ((((ido) == (1)) || ((ido) == (-1)))) {
+      auto in = prob.GetVector();
+      auto out = prob.PutVector();
+      // multiply;
+    };
+  }
+  prob.FindEigenvectors();
   cudaStream_t stream;
   {
     auto res = cudaStreamCreate(&stream);
