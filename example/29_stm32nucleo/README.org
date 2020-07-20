@@ -1,1 +1,18 @@
-https://www.youtube.com/watch?v=hyZS2p1tW-g nucleo l476rg
+- https://www.youtube.com/watch?v=hyZS2p1tW-g nucleo l476rg
+- https://www.st.com/en/evaluation-tools/nucleo-l476rg.html
+- https://os.mbed.com/platforms/ST-Nucleo-L476RG/ best pin legends
+- https://youtu.be/isOekyygpR8?t=127 uart virtual com port over usb
+  - pa2 and pa3 at the bottom left
+- https://youtu.be/OPrcpbKNSjU?t=328 freertos, cmsis-rtos v2
+- https://youtu.be/OPrcpbKNSjU?t=429 task definition in ide
+  - TIM6 for HAL timebase
+  - osDelay(500) 
+#+begin_example
+(defun StartBlink02 (arg)
+  (declare (type void* arg))
+  (for ()
+    (HAL_GPIO_TogglePin GPIOA GPIO_PIN_5)
+    (osDelay 30))
+  (osThreadTerminate nullptr))
+
+#+end_example

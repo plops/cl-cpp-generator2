@@ -278,6 +278,8 @@
 			     (push 'out cuda-free)
 			     `(do0 ,(cuda `(cudaMallocManaged &in (* ,N (sizeof float))))
 				   ,(cuda `(cudaMallocManaged &out (* ,N (sizeof float))))))
+
+
 			  (comments "relevant arpack++ example https://github.com/m-reuter/arpackpp/blob/master/examples/reverse/sym/rsymreg.cc")
 			  ;; get one eigenvector
 
