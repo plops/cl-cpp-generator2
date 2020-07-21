@@ -58,8 +58,21 @@
 - https://youtu.be/QPxWiGo346Q?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=175
   - 2.5 clocks for sampling, 12.5 clocks for conversion
     - other sample times: 2.5, 6.5, 12.5, 24.5, 47.5, 92.5, 247.5, 640.5
-  - 1 ADC with 12 bit => 5.33Msamples/s
-  - 1 ADC with 10 bit => 6.15Msamples/s
+  - 1 ADC with 12 bit => 5.33Msamples/s    865uA
+  - 1 ADC 10kS/s -> 17uA
+  - 1 ADC with 10 bit => 6.15Msamples/s   
   - 1 ADC with 6 bit => 8.88Msamples/s
-  - 2 ADCs 12 bit, in dual interleave mode can read 10Msamples/s
+  - ADC1 + ADC2 12 bit, in dual interleave mode can read 10Msamples/s
   - re-calibrate if vref changes more than 10% (coming back from sleep)
+  - adc modes https://youtu.be/QPxWiGo346Q?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=293
+  - oversampling allows up to 16 bit adc result
+    - x4  => 13bit 1.33MS/s
+    - x16 => 14    333kS/s
+    - x64 => 15    83kS/s
+    - x256 => 16   20.8kS/s
+  - analog watchdog can stop sampling without cpu intervention
+  - injected conversion stores in different register
+ 
+- https://youtu.be/nLElR9CTnWM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=150 adc hands on
+  - connect dac and adc
+  - neat: observe globals at runtime https://youtu.be/nLElR9CTnWM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=667
