@@ -16,3 +16,50 @@
   (osThreadTerminate nullptr))
 
 #+end_example
+
+- https://youtu.be/EsZLgqhqfO0?t=68 ADC and UART with DMA
+- https://www.st.com/resource/en/application_note/dm00707058-how-to-implement-adaptive-synchronous-rectification-in-flyback-converters-using-stm32-mcus-stmicroelectronics.pdf flyback converter
+- https://www.st.com/resource/en/application_note/cd00259245-audio-and-waveform-generation-using-the-dac-in-stm32-products-stmicroelectronics.pdf
+
+- usb devices
+#+begin_example
+
+[ 6536.319630] usb 3-3: USB disconnect, device number 2
+[ 6539.986032] usb 3-3: new full-speed USB device number 4 using xhci_hcd
+[ 6540.140597] usb 3-3: New USB device found, idVendor=0483, idProduct=374b, bcdDevice= 1.00
+[ 6540.140599] usb 3-3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[ 6540.140601] usb 3-3: Product: STM32 STLink
+[ 6540.140602] usb 3-3: Manufacturer: STMicroelectronics
+[ 6540.140603] usb 3-3: SerialNumber: 0670FF485649785087161721
+[ 6540.257622] usb-storage 3-3:1.1: USB Mass Storage device detected
+[ 6540.257771] scsi host7: usb-storage 3-3:1.1
+[ 6540.260628] cdc_acm 3-3:1.2: ttyACM0: USB ACM device
+[ 6541.274690] scsi 7:0:0:0: Direct-Access     MBED     microcontroller  1.0  PQ: 0 ANSI: 2
+[ 6541.274789] sd 7:0:0:0: Attached scsi generic sg2 type 0
+[ 6541.275014] sd 7:0:0:0: [sdc] 2120 512-byte logical blocks: (1.09 MB/1.04 MiB)
+[ 6541.275160] sd 7:0:0:0: [sdc] Write Protect is off
+[ 6541.275161] sd 7:0:0:0: [sdc] Mode Sense: 03 00 00 00
+[ 6541.275300] sd 7:0:0:0: [sdc] No Caching mode page found
+[ 6541.275302] sd 7:0:0:0: [sdc] Assuming drive cache: write through
+[ 6541.292276] sd 7:0:0:0: [sdc] Attached SCSI removable disk
+
+#+end_example
+
+- repository https://www.youtube.com/watch?v=5m9HfOMljKg
+- window -> preferences -> stm32cube -> firmware updater
+- ~/STM32Cube/Repository/STM32Cube_FW_L4_V1.15.1 contains 1.9GB
+- help -> manage embedded software packages
+
+- https://www.youtube.com/watch?v=1WAtFzkfpLI&list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&index=5 crc check with dma
+- https://youtu.be/y3WX3hBxbCY?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=200 description of dac
+  - sample and hold mode for power saving
+
+
+- https://youtu.be/QPxWiGo346Q?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=175
+  - 2.5 clocks for sampling, 12.5 clocks for conversion
+    - other sample times: 2.5, 6.5, 12.5, 24.5, 47.5, 92.5, 247.5, 640.5
+  - 1 ADC with 12 bit => 5.33Msamples/s
+  - 1 ADC with 10 bit => 6.15Msamples/s
+  - 1 ADC with 6 bit => 8.88Msamples/s
+  - 2 ADCs 12 bit, in dual interleave mode can read 10Msamples/s
+  - re-calibrate if vref changes more than 10% (coming back from sleep)
