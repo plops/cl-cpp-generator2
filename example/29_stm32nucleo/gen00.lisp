@@ -107,26 +107,21 @@
   (progn
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
-	   (format t "name=~a file=~a" name file)
-	   (defparameter *a*
-	    (with-open-file (s (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file)
-			       :direction :input)
-	      (let ((a (make-string (file-length s))))
-		(read-sequence a s)
-		a)
-	      )
-	     )
-#+nil
-	   (write-source (asdf:system-relative-pathname
-			     'cl-cpp-generator2
-			     (format nil
-				     "~a/vis_~2,'0d_~a.~a"
-				     *source-dir* i name
-				     ))
-			    code)
-	   ))
-    
-    ))
+	   (let* ((start-comment (format nil "/* USER CODE BEGIN ~a */" name))
+		 (end-comment (format nil "/* USER CODE END ~a */" name))
+		 (a (with-open-file (s (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file)
+				       :direction :input)
+		      (let ((a (make-string (file-length s))))
+			(read-sequence a s)
+			a)
+		      ))
+		 (new (cl-ppcre:regex-replace (format nil "~a\\s+~a" start-comment end-comment)
+				     a
+				     (format nil "~a~%~a~%~a~%" start-comment (emit-c :code code) end-comment))))
+	     (with-open-file (s "/dev/shm/o.c" :direction :output :if-exists :supersede :if-does-not-exist :create)
+	       (write-sequence new s))
+	    
+	     (format t "name=~a file=~a" name file))))))
 
 
 
