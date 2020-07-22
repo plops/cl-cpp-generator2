@@ -76,3 +76,85 @@
 - https://youtu.be/nLElR9CTnWM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=150 adc hands on
   - connect dac and adc
   - neat: observe globals at runtime https://youtu.be/nLElR9CTnWM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=667
+
+- opamp https://youtu.be/Wc0_ec82_VA?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=112
+  - 4 fixed gains 2,4,8,16
+  - adc input
+  - external capacitor allows low pass filtering
+  - bga132 and bga169 packages have pins with 1nA leakage and allow high precision current to voltage conversion
+  - normal mode 1.6MHz gain band width, 500uA output current
+  - low power mode 0.42 MHz gain band width, 100uA output current
+
+- https://youtu.be/kbwWuRMMJ40?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=132
+  - how to configure gpio for led drive
+    - output level: low
+    - gpio mode: output push pull
+    - no pull up/down
+    - max output speed: low
+
+- https://youtu.be/kzecsy9Qnhc?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=54
+  - DAC to opamp (as PGA)
+  - ADC to opamp output
+
+- https://youtu.be/pQKdBRPSV2s?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=288 application of comparator/hysteresis with spikes at the beginning of PWM period
+- https://youtu.be/1FtgmMDbeg4?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=124 drag and drop a pin with CTL
+
+- https://youtu.be/2-aKn47NXC4?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=91
+  - usart works in low power mode
+  - maximum baud rate is 10Mbaud
+  - autobaudrate detection  https://youtu.be/2-aKn47NXC4?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=624
+    - bit at 1
+    - 10xx
+    - 0x7ff
+    - 0x55
+
+- https://www.youtube.com/watch?v=mKlP0D2uZWM&list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&index=29
+  - spi maixmum speed 40MHz (if the mcu is generating)
+  - receiving spi is more challenging
+
+- https://youtu.be/rLnQ3W8gmjY?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=67
+  - virtual com port with usb
+  - 2048 bytes buffer size
+- https://youtu.be/GKpQ3n0_WwI?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=1391
+  - dead time for bridges
+  - can stop when ecc errors are detected
+  - adc can be triggered by the timers (e.g. for 3 phase motor)
+
+- https://youtu.be/yQH0bQxUJK8?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=45
+  - low power timer runs even without clocks
+  - for gas meter
+  - can output pwm
+  - inputs have glitch filtering circuitry
+
+- https://youtu.be/XAgGS-NaztM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=22
+  - real time clock
+  - 128 bytes erased on tamper detection
+  - active in all low-power modes
+  - 50 or 60Hz mains as reference clock
+ 
+- https://youtu.be/xe3cwf-g8xU?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=79  window watchdog
+  - check that software fullfills timing requirement
+  - RCC_APB1ENR1
+  - 51.2us .. 26.2,ms
+  - debugger can halt counter
+
+- https://youtu.be/w-ZOj0WlKHs?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=87 dfsdm
+  - more than 16bit resolution up to 24 bits
+  - serial interface to external analog part one or two wires
+    - 20 MHz
+    - SPI or manchester coded
+    - manchester cheapest for optical isolation
+    - also input from internal adcs but not on the device i have
+  - 32bit internal integrator
+  - 24bit final data register width
+  - extremes detector
+  - STPMS2 thermal monitor 2EUR
+    - programmable gain low noise chopper amp
+    - two delta sigma
+    - bandgap voltage reference
+    - https://eu.mouser.com/datasheet/2/389/cd00253175-1796951.pdf
+    - https://youtu.be/w-ZOj0WlKHs?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=1263 3 phase power meter without transformer
+-  https://youtu.be/MdDqVeIGhec?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=135 handson microphone
+- https://youtu.be/iV8flZyTAa4?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=436 lcd waveform discription
+  - can drive high capacitive loads
+  - lots of pins https://youtu.be/UHSXeXvCVJA?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=271
