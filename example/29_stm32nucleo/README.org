@@ -107,6 +107,7 @@
     - 10xx
     - 0x7ff
     - 0x55
+- https://youtu.be/DSrPZYPXUSM?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=267 uart hands on
 
 - https://www.youtube.com/watch?v=mKlP0D2uZWM&list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&index=29
   - spi maixmum speed 40MHz (if the mcu is generating)
@@ -158,3 +159,5 @@
 - https://youtu.be/iV8flZyTAa4?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=436 lcd waveform discription
   - can drive high capacitive loads
   - lots of pins https://youtu.be/UHSXeXvCVJA?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=271
+
+- adc scan conversion https://www.st.com/resource/en/application_note/cd00258017-stm32-s-adc-modes-and-their-applications-stmicroelectronics.pdf
