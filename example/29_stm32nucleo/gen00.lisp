@@ -145,4 +145,6 @@
 	       ))))))
 
 ;; NOTE: Ctrl - Shift - F in Eclipse formats the c-code
- 
+;; fastest serial speed without probes: 2MHz
+;; fastest serial speed with logic analyzer on TX pin: 500kHz
+;; minicom -D /dev/ttyACM0 -8 -b 500000
