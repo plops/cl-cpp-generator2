@@ -120,7 +120,12 @@
       (define-part 
 	  `(main.c 2
 		   (do0
-		    #+dac1 (do0 (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
+		    #+dac1 (do0
+			    ,(let ((report "call HAL_DAC_MspInit\\r\\n"))
+			      `(HAL_UART_Transmit_DMA &huart2 (string ,report)
+						     ,(length report)))
+			    (HAL_DAC_MspInit &hdac1)
+			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 				(HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						   DAC_ALIGN_12B_R))
 		    #+adc1 (do0 (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
@@ -143,7 +148,7 @@
 				     (setf value_dac 0))
 				  (HAL_Delay 1)
 				  (progn
-		      ,(let ((l `(#+dac1 (dac (aref value_dac count))
+		      #+nil ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 0)
 						      )
