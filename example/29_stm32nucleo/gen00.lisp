@@ -91,7 +91,7 @@
 		   (do0
 		    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 		    (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
-		    (HAL_ADC_Start_DMA &hadc1 ("uint32_t*" value_adc) ,n-channels))))
+		    (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))))
       (define-part 
 	  `(main.c 3
 		   (do0
@@ -116,7 +116,8 @@
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
 	   ;; open the file that we will modify
-	   (let ((a (with-open-file (s (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file)
+	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file))
+		  (a (with-open-file (s full-fn
 				       :direction :input)
 		      (let ((a (make-string (file-length s))))
 			(read-sequence a s)
@@ -124,14 +125,18 @@
 	     (let* ((start-comment (format nil "/* USER CODE BEGIN ~a */" name))
 		    (end-comment (format nil "/* USER CODE END ~a */" name))
 		    ;; escape * characters to convert c comment to regex
-		    (regex (format nil "~a\\s*.*\\s*~a"
+		    (regex (format nil "~a.*~a"
 				   (regex-replace-all "\\*" start-comment "\\*")
 				   (regex-replace-all "\\*" end-comment "\\*")))
 		    ;; now use the regex to replace the text between the comments
-		    (new (cl-ppcre:regex-replace regex
+		    (new (cl-ppcre:regex-replace (cl-ppcre:create-scanner regex :single-line-mode t)
 						 a
-						 (format nil "~a~%~a~%~a~%" start-comment (emit-c :code code) end-comment))))
-	       (with-open-file (s "/dev/shm/o.c" :direction :output :if-exists :supersede :if-does-not-exist :create)
+						 (format nil "~a~%~a~%~a~%" start-comment
+							 (emit-c :code code)
+							 end-comment
+							 ))))
+	       (with-open-file (s full-fn ;"/dev/shm/o.c"
+				  :direction :output :if-exists :supersede :if-does-not-exist :create)
 		 (write-sequence new s))
 	       
 	       (format t "name=~a file=~a" name file)))))))
