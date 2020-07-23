@@ -16,7 +16,8 @@
 
 (setf *features* (set-difference *features*
 				 '(;:dac1
-				   :adc1)))
+				   ;:adc1
+				   )))
 
 (progn
   (defparameter *source-dir* #P"example/29_stm32nucleo/source/")
@@ -155,6 +156,27 @@
 			      `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 									,(length report)))
 				(Error_Handler)))))))
+		)))))
+
+      (let ((l `(,@(loop for e in `(USART2 DAC1 ADC1)
+		      appending
+			(list
+			 (format nil "~a_MspInit 1" e)
+			 (format nil "~a_MspDeInit 1" e)
+			 ))
+		   )))
+	(loop for e in l do
+	 (define-part 
+	     `(stm32l4xx_hal_msp.c
+	       ,e
+	       (progn
+		 (let ((huart2))
+		   (declare (type "extern UART_HandleTypeDef" huart2))
+		  ,(let ((report (format nil "~a\\r\\n" e)))
+		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+								,(length report)))
+			(Error_Handler))))
+		
 		))))))
     
     (loop for e in *parts* and i from 0 do
