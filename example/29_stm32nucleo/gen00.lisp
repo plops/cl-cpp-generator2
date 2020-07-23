@@ -138,24 +138,4 @@
 	       (with-open-file (s full-fn ;"/dev/shm/o.c"
 				  :direction :output :if-exists :supersede :if-does-not-exist :create)
 		 (write-sequence new s))
-	       
-	       (format t "name=~a file=~a" name file)))))))
-
-(let ((a "/* USER CODE BEGIN 3 */
-          HAL_DAC_SetValue(&hdac1,DAC_CHANNEL_1,DAC_ALIGN_12B_R,value_dac);
-          HAL_DAC_SetValue(&hdac2,DAC_CHANNEL_1,DAC_ALIGN_12B_R,value_dac);
-
-  /* USER CODE END 3 */"))
-  (let* ((name 3)
-	 (start-comment (format nil "/* USER CODE BEGIN ~a */" name))
-	 (end-comment (format nil "/* USER CODE END ~a */" name))
-	 ;; escape * characters to convert c comment to regex
-	 (regex (format nil "~a.*~a"
-			(regex-replace-all "\\*" start-comment "\\*")
-			(regex-replace-all "\\*" end-comment "\\*")))
-	 ;; now use the regex to replace the text between the comments
-	 (new (cl-ppcre:regex-replace (cl-ppcre:create-scanner regex :single-line-mode t)
-				      a
-				      (format nil "~a~%~a~%~a~%" start-comment "bla" end-comment)))
-	 )
-    new))
+	       ))))))
