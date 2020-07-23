@@ -75,15 +75,9 @@
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
   (let ((n-channels 2)
-	(n-tx-chars 128))
-    #+nil (define-part
-	 `(main.c 0
-		  (let ((value_adc)
-			(value_dac)
-			(BufferToSend))
-		    (declare (type (array uint16_t ,n-channels) value_adc)
-			     (type uint16_t value_dac)
-			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
+	(n-tx-chars 128)
+	(n-dac-vals 4096))
+    
     (progn
       (define-part
 	 `(main.c Includes
@@ -94,53 +88,62 @@
 			#+dac1 (value_dac)
 			(BufferToSend))
 		    (declare (type (array uint16_t ,n-channels) value_adc)
-			     (type uint16_t value_dac)
+			     (type (array uint16_t ,n-dac-vals) value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
       (let ((l `((ADC
 		  (ConvHalfCplt
 		   Error
-		   ConvCplt)
-					;(DMAError DMAHalfConvCplt DMAConvCplt)
-		  )
-		 (UART (Error TransmitCplt AbortOnError)))))
+		   ConvCplt))
+		 (UART (Error TransmitCplt AbortOnError))
+		 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
 	(define-part
 	    ;; USE_HAL_UART_REGISTER_CALLBACKS
 	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
 	    `(main.c 0
 		     (do0
 		      ,@(loop for e in l appending
-			    (destructuring-bind (module irqs) e
-			      (loop for irq in irqs collect
-				   `(defun ,(format nil "HAL_~a_~aCallback" module irq)
-					(arg)
-				      (declare (type ,(format nil "~a_HandleTypeDef*" module)
-						     arg))
-				      (let ((huart2))
-					(declare (type "extern UART_HandleTypeDef" huart2))
-					,(let ((report (format nil "~a ~a\\r\\n" module irq)))
-					   `(HAL_UART_Transmit_DMA &huart2 (string ,report)
-										      ,(length report))
-					   #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
-										      ,(length report)))
-					      (Error_Handler))))))))))))
+			    (destructuring-bind (module irqs &key (channels `(""))) e
+			      (loop for irq in irqs append
+				   (loop for ch in channels collect
+				    `(defun ,(format nil "HAL_~a_~aCallback~a" module irq ch)
+					 (arg)
+				       (declare (type ,(format nil "~a_HandleTypeDef*" module)
+						      arg))
+				       (let ((huart2))
+					 (declare (type "extern UART_HandleTypeDef" huart2))
+					 ,(let ((report (format nil "~a ~a ~a\\r\\n" module irq ch)))
+					    `(HAL_UART_Transmit_DMA &huart2 (string ,report)
+								    ,(length report))
+					    #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+											     ,(length report)))
+						     (Error_Handler)))))))))))))
       (define-part 
 	  `(main.c 2
 		   (do0
-		    #+dac1 (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
+		    #+dac1 (do0 (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
+				(HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
+						   DAC_ALIGN_12B_R))
 		    #+adc1 (do0 (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
-			 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)))))
+				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
+				))))
       (define-part 
 	  `(main.c 3
 		   (do0
 		    #+dac1 (do0
-			    (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
-			    (if (< value_dac ,(- (expt 2 12) 1))
-				(incf value_dac)
-				(setf value_dac 0)))
-		    (HAL_Delay 100)
-
-		     (progn
-		      ,(let ((l `(#+dac1 (dac value_dac)
+					;(HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
+			    (progn
+				(let ((count))
+				  (declare (type "static int" count))
+				  (incf count)
+				  (when (<= ,(expt 2 12) count)
+				    (setf count 0))
+				  (setf (aref value_dac count) count)
+				  #+nil (if (< value_dac ,(- (expt 2 12) 1))
+				     (incf value_dac)
+				     (setf value_dac 0))
+				  (HAL_Delay 1)
+				  (progn
+		      ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 0)
 						      )
@@ -153,12 +156,17 @@
 					    ,@(mapcar #'second l))))
 			   (declare (type int n))
 			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
-			     (Error_Handler)))))
+			     (Error_Handler))))))))
+		    
+
+		    
 		    "}"
 		    
 		    )))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel1
+					   DMA1_Channel3
+					   TIM6_DAC
 					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
