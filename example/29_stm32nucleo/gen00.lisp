@@ -93,7 +93,8 @@
       (let ((l `((ADC
 		  (;ConvHalfCplt
 		   Error
-		   ConvCplt))
+		   ;ConvCplt
+		   ))
 		 (UART (Error TransmitCplt AbortOnError))
 		 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
 	(define-part
@@ -129,7 +130,8 @@
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    #+nil (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						   DAC_ALIGN_12B_R))
-		    #+adc1 (do0 (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
+		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
+				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
 				))))
       (define-part 
@@ -148,7 +150,7 @@
 				     (incf value_dac)
 				     (setf value_dac 0))
 				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R (aref value_dac count))
-				  (HAL_Delay 1)
+				  (HAL_Delay 10)
 				  (progn
 		       ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
