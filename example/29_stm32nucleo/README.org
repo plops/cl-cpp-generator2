@@ -269,3 +269,8 @@ will not compile.
   - lots of pins https://youtu.be/UHSXeXvCVJA?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=271
 
 - adc scan conversion https://www.st.com/resource/en/application_note/cd00258017-stm32-s-adc-modes-and-their-applications-stmicroelectronics.pdf
+
+
+** How to execute from RAM
+
+- https://stackoverflow.com/questions/42612329/executing-code-from-ram-in-stm32

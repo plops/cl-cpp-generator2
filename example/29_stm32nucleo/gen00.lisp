@@ -88,7 +88,9 @@
 			#+dac1 (value_dac)
 			(BufferToSend))
 		    (declare (type (array uint16_t ,n-channels) value_adc)
-			     (type (array uint16_t ,n-dac-vals) value_dac)
+			     (type ;(array uint16_t ,n-dac-vals)
+			      uint16_t
+				   value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
       (let ((l `((ADC
 		  ((ConvHalfCplt :modulo 1000000)
@@ -161,14 +163,18 @@
 				  (incf count)
 				  (when (<= ,(expt 2 12) count)
 				    (setf count 0))
-				  (setf (aref value_dac count) count)
+				  (setf value_dac ;(aref value_dac count)
+					count
+					)
 				  #+nil (if (< value_dac ,(- (expt 2 12) 1))
 				     (incf value_dac)
 				     (setf value_dac 0))
-				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R (aref value_dac count))
+				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
+						    )
 				  (HAL_Delay 10)
 				  (progn
-		       ,(let ((l `(#+dac1 (dac (aref value_dac count))
+		       ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
+					       )
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 0)
 						      )
