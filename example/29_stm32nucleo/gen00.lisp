@@ -96,6 +96,29 @@
 		    (declare (type (array uint16_t ,n-channels) value_adc)
 			     (type uint16_t value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
+      (let ((l `((ADC
+		  (ConvHalfCplt
+		   Error
+		   ConvCplt)
+					;(DMAError DMAHalfConvCplt DMAConvCplt)
+		  )
+		 (UART (Error TransmitCplt AbortOnError)))))
+	(define-part 
+	    `(main.c 0
+		     (do0
+		      ,@(loop for e in l appending
+			    (destructuring-bind (module irqs) e
+			      (loop for irq in irqs collect
+				   `(defun ,(format nil "HAL_~a_~aCallback" module irq)
+					(arg)
+				      (declare (type ,(format nil "~a_HandleTypeDef*" module)
+						     arg))
+				      (let ((huart2))
+					(declare (type "extern UART_HandleTypeDef" huart2))
+					,(let ((report (format nil "~a ~a\\r\\n" module irq)))
+					   `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+										      ,(length report)))
+					      (Error_Handler))))))))))))
       (define-part 
 	  `(main.c 2
 		   (do0
@@ -110,9 +133,9 @@
 			    (if (< value_dac ,(- (expt 2 12) 1))
 				(incf value_dac)
 				(setf value_dac 0)))
-		    (HAL_Delay 0)
+		    (HAL_Delay 100)
 
-		    #+nil (progn
+		     (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
 				  #+adc1 (adc (aref value_adc 0)))))
 			 `(let ((n (snprintf (cast int8_t* BufferToSend)
@@ -126,6 +149,7 @@
 		    
 		    )))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
+					   DMA1_Channel1
 					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
@@ -160,7 +184,7 @@
 
       (let ((l `(,@(loop for e in `(USART2 DAC1 ADC1)
 		      appending
-			(list
+			(list ;; MSP means mcu support package
 			 (format nil "~a_MspInit 1" e)
 			 (format nil "~a_MspDeInit 1" e)
 			 ))
