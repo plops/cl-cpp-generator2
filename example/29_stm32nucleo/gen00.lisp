@@ -113,6 +113,7 @@
 			(declare (type int n))
 			(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
 			  (Error_Handler))))
+		    "}"
 		    
 		    ))))
     
@@ -135,8 +136,7 @@
 		    (new (cl-ppcre:regex-replace (cl-ppcre:create-scanner regex :single-line-mode t)
 						 a
 						 (format nil "~a~%~a~%~a~%" start-comment
-							 " "
-					; (emit-c :code code)
+							 (emit-c :code code)
 							 end-comment
 							 ))))
 	       (with-open-file (s full-fn ;"/dev/shm/o.c"
