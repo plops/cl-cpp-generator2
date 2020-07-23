@@ -79,6 +79,9 @@
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
     (progn
       (define-part
+	 `(main.c Includes
+		  (include <stdio.h>)))
+      (define-part
 	 `(main.c PV
 		  (let ((value_adc)
 			(value_dac)
@@ -102,7 +105,7 @@
 		    (HAL_Delay 10)
 
 		    (progn
-		      (let ((n (snprintf (int8_t* BufferToSend)
+		      (let ((n (snprintf (cast int8_t* BufferToSend)
 					 ,n-tx-chars
 					 (string "dac=%d adc=%d")
 					 value_adc
@@ -132,7 +135,8 @@
 		    (new (cl-ppcre:regex-replace (cl-ppcre:create-scanner regex :single-line-mode t)
 						 a
 						 (format nil "~a~%~a~%~a~%" start-comment
-							 (emit-c :code code)
+							 " "
+					; (emit-c :code code)
 							 end-comment
 							 ))))
 	       (with-open-file (s full-fn ;"/dev/shm/o.c"
