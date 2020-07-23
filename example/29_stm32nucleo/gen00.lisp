@@ -139,10 +139,6 @@
 	  `(main.c 2
 		   (do0
 		    #+dac1 (do0
-			    ,(let ((report "call HAL_DAC_MspInit\\r\\n"))
-			      `(HAL_UART_Transmit_DMA &huart2 (string ,report)
-						     ,(length report)))
-					;(HAL_DAC_MspInit &hdac1)
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    #+nil (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
@@ -167,7 +163,7 @@
 				     (incf value_dac)
 				     (setf value_dac 0))
 				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R (aref value_dac count))
-				  (HAL_Delay 0)
+				  (HAL_Delay 10)
 				  (progn
 		       ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
@@ -240,6 +236,26 @@
 	(loop for e in l do
 	 (define-part 
 	     `(stm32l4xx_hal_msp.c
+	       ,e
+	       (progn
+		 (let ((huart2))
+		   (declare (type "extern UART_HandleTypeDef" huart2))
+		  ,(let ((report (format nil "~a\\r\\n" e)))
+		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+								,(length report)))
+			(Error_Handler))))
+		
+		 )))))
+
+      (let ((l `(,@(loop for e in `(USART2 DAC1 ADC1)
+		      collect 
+			(format nil "~a_Init 0" e)
+			 
+			 )
+		   )))
+	(loop for e in l do
+	 (define-part 
+	     `(main.c
 	       ,e
 	       (progn
 		 (let ((huart2))
