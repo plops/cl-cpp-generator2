@@ -143,4 +143,6 @@
 				  :direction :output :if-exists :supersede :if-does-not-exist :create)
 		 (write-sequence new s))
 	       ))))))
+
+;; NOTE: Ctrl - Shift - F in Eclipse formats the c-code
  
