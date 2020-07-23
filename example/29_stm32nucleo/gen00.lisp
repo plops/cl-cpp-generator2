@@ -109,7 +109,7 @@
 			    (if (< value_dac 2047)
 				(incf value_dac)
 				(setf value_dac 0)))
-		    (HAL_Delay 4)
+		    ;(HAL_Delay 4)
 
 		    (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
