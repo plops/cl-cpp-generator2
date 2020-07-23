@@ -91,7 +91,7 @@
 			     (type (array uint16_t ,n-dac-vals) value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
       (let ((l `((ADC
-		  (ConvHalfCplt
+		  (;ConvHalfCplt
 		   Error
 		   ConvCplt))
 		 (UART (Error TransmitCplt AbortOnError))
@@ -124,9 +124,10 @@
 			    ,(let ((report "call HAL_DAC_MspInit\\r\\n"))
 			      `(HAL_UART_Transmit_DMA &huart2 (string ,report)
 						     ,(length report)))
-			    (HAL_DAC_MspInit &hdac1)
+					;(HAL_DAC_MspInit &hdac1)
+			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
-				(HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
+			    #+nil (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						   DAC_ALIGN_12B_R))
 		    #+adc1 (do0 (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
@@ -135,7 +136,7 @@
 	  `(main.c 3
 		   (do0
 		    #+dac1 (do0
-					;(HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
+			    
 			    (progn
 				(let ((count))
 				  (declare (type "static int" count))
@@ -146,9 +147,10 @@
 				  #+nil (if (< value_dac ,(- (expt 2 12) 1))
 				     (incf value_dac)
 				     (setf value_dac 0))
+				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R (aref value_dac count))
 				  (HAL_Delay 1)
 				  (progn
-		      #+nil ,(let ((l `(#+dac1 (dac (aref value_dac count))
+		       ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 0)
 						      )
@@ -169,7 +171,7 @@
 		    
 		    )))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
-					   DMA1_Channel1
+					   (DMA1_Channel1 :modulo 1000000)
 					   DMA1_Channel3
 					   TIM6_DAC
 					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
