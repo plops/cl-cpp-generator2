@@ -124,20 +124,37 @@
 		    "}"
 		    
 		    )))
-      (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7 SysTick PendSV DebugMonitor SVCall
+      (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
+					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
+					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
 					   NonMaskableInt)
 		      collect
-			(format nil "~a_IRQn 0" e))
+			(if (listp e)
+			    (destructuring-bind (name &key (modulo 1)) e
+				(list (format nil "~a_IRQn 0" name)
+				      modulo))
+			    (list (format nil "~a_IRQn 0" e)
+				  1)))
 		   )))
-	(loop for e in l do
+	(loop for (e modulo) in l do
 	 (define-part 
 	     `(stm32l4xx_it.c
 	       ,e
 	       (do0
-		(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
+		,(if (eq modulo 1)
+		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
 							  ,(+ 2 (length e))))
-		  (Error_Handler))))))))
+		       (Error_Handler))
+		     `(progn
+			(let ((count 0))
+			  (declare (type "static int" count))
+			  (incf count)
+			  (when (== 0 (% count ,modulo))
+			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a#~a\\r\\n" e modulo))
+								     ,(+ 2 (length e))))
+			     (Error_Handler))))))
+		))))))
     
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
