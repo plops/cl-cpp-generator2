@@ -2,7 +2,7 @@
 	  (safety 3)
 	  (speed 0)
 	  (debug 3)))
-
+(setf *features* (union *features* '(:generic-c)))
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
      (ql:quickload "cl-ppcre"))
@@ -91,9 +91,9 @@
 			     (type (array uint16_t ,n-dac-vals) value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
       (let ((l `((ADC
-		  (;ConvHalfCplt
+		  ((ConvHalfCplt :modulo 1000000)
 		   Error
-		   ;ConvCplt
+		   (ConvCplt :modulo 1000000)
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
 		 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
@@ -116,7 +116,7 @@
 						   (arg)
 						 (declare (type ,(format nil "~a_HandleTypeDef*" module)
 								arg))
-						 (let ((output_p 1))q
+						 (let ((output_p 1))
 						   ,(if (eq irq-mod 1)
 							`(comments "no counter")
 							`(let ((count 0))
@@ -127,8 +127,9 @@
 						  (when output_p
 						   (let ((huart2))
 						     (declare (type "extern UART_HandleTypeDef" huart2))
-						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n" module irq-name ch (unless (eq 1 irq-mod)
-															  modulo))))
+						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n"
+									    module irq-name ch (unless (eq 1 irq-mod)
+												 irq-mod))))
 							`(HAL_UART_Transmit_DMA &huart2 (string ,report)
 										,(length report))
 							#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
