@@ -11,6 +11,12 @@
 
 
 
+(setf *features* (union *features* `(:dac1
+				     :adc1)))
+
+(setf *features* (set-difference *features*
+				 '(;:dac1
+				   :adc1)))
 
 (progn
   (defparameter *source-dir* #P"example/29_stm32nucleo/source/")
@@ -83,8 +89,8 @@
 		  (include <stdio.h>)))
       (define-part
 	 `(main.c PV
-		  (let ((value_adc)
-			(value_dac)
+		  (let (#+adc1 (value_adc)
+			#+dac1 (value_dac)
 			(BufferToSend))
 		    (declare (type (array uint16_t ,n-channels) value_adc)
 			     (type uint16_t value_dac)
@@ -92,27 +98,29 @@
       (define-part 
 	  `(main.c 2
 		   (do0
-		    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
-		    (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
-		    (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))))
+		    #+dac1 (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
+		    #+adc1 (do0 (HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
+			 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)))))
       (define-part 
 	  `(main.c 3
 		   (do0
-		    (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
-		    (if (< value_dac 2047)
-			(incf value_dac)
-			(setf value_dac 0))
+		    #+dac1 (do0
+			    (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
+			    (if (< value_dac 2047)
+				(incf value_dac)
+				(setf value_dac 0)))
 		    (HAL_Delay 4)
 
 		    (progn
-		      (let ((n (snprintf (cast int8_t* BufferToSend)
-					 ,n-tx-chars
-					 (string "dac=%d adc=%d\\r\\n")
-					 value_dac
-					 (aref value_adc 0))))
-			(declare (type int n))
-			(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
-			  (Error_Handler))))
+		      ,(let ((l `(#+dac1 (dac value_dac)
+				  #+adc1 (adc (aref value_adc 0)))))
+			 `(let ((n (snprintf (cast int8_t* BufferToSend)
+					    ,n-tx-chars
+					    (string ,(format nil "~{~a=%d ~}\\r\\n" (mapcar #'first l)))
+					    ,@(mapcar #'second l))))
+			   (declare (type int n))
+			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
+			     (Error_Handler)))))
 		    "}"
 		    
 		    ))))
