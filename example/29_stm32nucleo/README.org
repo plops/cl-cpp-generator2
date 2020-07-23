@@ -2,10 +2,9 @@
 
 The common lisp code modifies the boiler plate code of a STM32CubeIDE project.
 
-You would open STM32CubeIDE and call `File -> New -> STM32 Project
-from STM32CubeMX .ioc File` and load the ioc file from this repo. This
-will generate boiler plate for ADC, DAC and UART for a Nucleo L476RG
-board.
+Open STM32CubeIDE and call `File -> New -> STM32 Project from
+STM32CubeMX .ioc File` and load the ioc file from this repo. This will
+generate boiler plate for ADC, DAC and UART for a Nucleo L476RG board.
 
 The boiler plate code looks like this:
 #+begin_example
