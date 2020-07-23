@@ -106,10 +106,10 @@
 		   (do0
 		    #+dac1 (do0
 			    (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac)
-			    (if (< value_dac 2047)
+			    (if (< value_dac ,(- (expt 2 12) 1))
 				(incf value_dac)
 				(setf value_dac 0)))
-		    ;(HAL_Delay 4)
+		    (HAL_Delay 0)
 
 		    (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
@@ -123,7 +123,21 @@
 			     (Error_Handler)))))
 		    "}"
 		    
-		    ))))
+		    )))
+      (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7 SysTick PendSV DebugMonitor SVCall
+					   UsageFault BusFault MemoryManagement HardFault
+					   NonMaskableInt)
+		      collect
+			(format nil "~a_IRQn 0" e))
+		   )))
+	(loop for e in l do
+	 (define-part 
+	     `(stm32l4xx_it.c
+	       ,e
+	       (do0
+		(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
+							  ,(+ 2 (length e))))
+		  (Error_Handler))))))))
     
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
