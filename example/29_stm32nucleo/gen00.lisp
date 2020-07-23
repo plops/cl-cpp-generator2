@@ -103,21 +103,37 @@
 	    `(main.c 0
 		     (do0
 		      ,@(loop for e in l appending
-			    (destructuring-bind (module irqs &key (channels `(""))) e
-			      (loop for irq in irqs append
-				   (loop for ch in channels collect
-				    `(defun ,(format nil "HAL_~a_~aCallback~a" module irq ch)
-					 (arg)
-				       (declare (type ,(format nil "~a_HandleTypeDef*" module)
-						      arg))
-				       (let ((huart2))
-					 (declare (type "extern UART_HandleTypeDef" huart2))
-					 ,(let ((report (format nil "~a ~a ~a\\r\\n" module irq ch)))
-					    `(HAL_UART_Transmit_DMA &huart2 (string ,report)
-								    ,(length report))
-					    #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
-											     ,(length report)))
-						     (Error_Handler)))))))))))))
+			     (destructuring-bind (module irqs &key (channels `(""))) e
+			       (loop for ch in channels append
+				    (loop for irq in irqs collect
+					 (let ((irq-name irq)
+					       (irq-mod 1)) 
+					   (when (listp irq)
+					      (destructuring-bind (irq-n &key (modulo 1)) irq
+						(setf irq-name irq-n
+						      irq-mod modulo)))
+					  `(defun ,(format nil "HAL_~a_~aCallback~a" module irq-name ch)
+						   (arg)
+						 (declare (type ,(format nil "~a_HandleTypeDef*" module)
+								arg))
+						 (let ((output_p 1))q
+						   ,(if (eq irq-mod 1)
+							`(comments "no counter")
+							`(let ((count 0))
+							   (declare (type "static int" count))
+							   (incf count)
+							   (unless (== 0 (% count ,irq-mod))
+							     (setf output_p 0))))
+						  (when output_p
+						   (let ((huart2))
+						     (declare (type "extern UART_HandleTypeDef" huart2))
+						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n" module irq-name ch (unless (eq 1 irq-mod)
+															  modulo))))
+							`(HAL_UART_Transmit_DMA &huart2 (string ,report)
+										,(length report))
+							#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+													 ,(length report)))
+								 (Error_Handler))))))))))))))))
       (define-part 
 	  `(main.c 2
 		   (do0
@@ -150,7 +166,7 @@
 				     (incf value_dac)
 				     (setf value_dac 0))
 				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R (aref value_dac count))
-				  (HAL_Delay 10)
+				  (HAL_Delay 0)
 				  (progn
 		       ,(let ((l `(#+dac1 (dac (aref value_dac count))
 					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
