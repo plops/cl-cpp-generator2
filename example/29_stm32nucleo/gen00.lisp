@@ -103,7 +103,9 @@
 					;(DMAError DMAHalfConvCplt DMAConvCplt)
 		  )
 		 (UART (Error TransmitCplt AbortOnError)))))
-	(define-part 
+	(define-part
+	    ;; USE_HAL_UART_REGISTER_CALLBACKS
+	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
 	    `(main.c 0
 		     (do0
 		      ,@(loop for e in l appending
@@ -137,10 +139,12 @@
 
 		     (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
-				  #+adc1 (adc (aref value_adc 0)))))
+					 #+adc1 (adc  ;USE_HAL_UART_REGISTER_CALLBACKS
+						      (aref value_adc 0)
+						      ))))
 			 `(let ((n (snprintf (cast int8_t* BufferToSend)
 					    ,n-tx-chars
-					    (string ,(format nil "~{~a=%d ~}\\r\\n" (mapcar #'first l)))
+					    (string ,(format nil "~{~a:%d ~}\\r\\n" (mapcar #'first l)))
 					    ,@(mapcar #'second l))))
 			   (declare (type int n))
 			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
