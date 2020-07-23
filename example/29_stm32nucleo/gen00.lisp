@@ -117,6 +117,9 @@
 						 (declare (type ,(format nil "~a_HandleTypeDef*" module)
 								arg))
 						 (let ((output_p 1))
+						   (declare (type ,(if (eq 1 irq-mod)
+								       "const int"
+								       "int") output_p))
 						   ,(if (eq irq-mod 1)
 							`(comments "no counter")
 							`(let ((count 0))
@@ -130,7 +133,7 @@
 						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n"
 									    module irq-name ch (unless (eq 1 irq-mod)
 												 irq-mod))))
-							`(HAL_UART_Transmit_DMA &huart2 (string ,report)
+							`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" (string ,report))
 										,(length report))
 							#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 													 ,(length report)))
@@ -172,12 +175,12 @@
 					 #+adc1 (adc1  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 1)
 						      ))))
-			 `(let ((n (snprintf (cast int8_t* BufferToSend)
+			 `(let ((n (snprintf (cast char* BufferToSend)
 					    ,n-tx-chars
 					    (string ,(format nil "~{~a:%d ~}\\r\\n" (mapcar #'first l)))
 					    ,@(mapcar #'second l))))
 			   (declare (type int n))
-			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
+			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) n))
 			     (Error_Handler))))))))
 		    
 
@@ -208,8 +211,9 @@
 	       (do0
 		,(if (eq modulo 1)
 		     `(do0
-		       (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
-									,(+ 2 (length e)))
+		       (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
+					      
+					      ,(+ 2 (length e)))
 		       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
 									,(+ 2 (length e))))
 				(Error_Handler)))
@@ -219,7 +223,7 @@
 			  (incf count)
 			  (when (== 0 (% count ,modulo))
 			    ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
-			       `(HAL_UART_Transmit_DMA &huart2 (string ,report)
+			       `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 									,(length report))
 			       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 									,(length report)))
@@ -241,7 +245,7 @@
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
-		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" (string ,report))
 								,(length report)))
 			(Error_Handler))))
 		
@@ -261,7 +265,7 @@
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
-		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 								,(length report)))
 			(Error_Handler))))
 		
