@@ -102,13 +102,13 @@
 		    (if (< value_dac 2047)
 			(incf value_dac)
 			(setf value_dac 0))
-		    (HAL_Delay 10)
+		    (HAL_Delay 4)
 
 		    (progn
 		      (let ((n (snprintf (cast int8_t* BufferToSend)
 					 ,n-tx-chars
-					 (string "dac=%d adc=%d")
-					 value_adc
+					 (string "dac=%d adc=%d\\r\\n")
+					 value_dac
 					 (aref value_adc 0))))
 			(declare (type int n))
 			(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 BufferToSend n))
@@ -120,7 +120,7 @@
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
 	   ;; open the file that we will modify
-	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback2/Core/Src/~a" file))
+	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file))
 		  (a (with-open-file (s full-fn
 				       :direction :input)
 		      (let ((a (make-string (file-length s))))
