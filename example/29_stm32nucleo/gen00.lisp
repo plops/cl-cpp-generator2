@@ -118,7 +118,9 @@
 				      (let ((huart2))
 					(declare (type "extern UART_HandleTypeDef" huart2))
 					,(let ((report (format nil "~a ~a\\r\\n" module irq)))
-					   `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+					   `(HAL_UART_Transmit_DMA &huart2 (string ,report)
+										      ,(length report))
+					   #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 										      ,(length report)))
 					      (Error_Handler))))))))))))
       (define-part 
@@ -139,8 +141,11 @@
 
 		     (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
-					 #+adc1 (adc  ;USE_HAL_UART_REGISTER_CALLBACKS
+					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
 						      (aref value_adc 0)
+						      )
+					 #+adc1 (adc1  ;USE_HAL_UART_REGISTER_CALLBACKS
+						      (aref value_adc 1)
 						      ))))
 			 `(let ((n (snprintf (cast int8_t* BufferToSend)
 					    ,n-tx-chars
@@ -181,7 +186,9 @@
 			  (incf count)
 			  (when (== 0 (% count ,modulo))
 			    ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
-			      `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+			       `(HAL_UART_Transmit_DMA &huart2 (string ,report)
+									,(length report))
+			       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 									,(length report)))
 				(Error_Handler)))))))
 		)))))
