@@ -190,9 +190,12 @@
 	       ,e
 	       (do0
 		,(if (eq modulo 1)
-		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
-							  ,(+ 2 (length e))))
-		       (Error_Handler))
+		     `(do0
+		       (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
+									,(+ 2 (length e)))
+		       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
+									,(+ 2 (length e))))
+				(Error_Handler)))
 		     `(progn
 			(let ((count 0))
 			  (declare (type "static int" count))
