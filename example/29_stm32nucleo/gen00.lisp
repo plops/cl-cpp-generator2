@@ -225,7 +225,7 @@
 		    ;; now use the regex to replace the text between the comments
 		    (new (cl-ppcre:regex-replace (cl-ppcre:create-scanner regex :single-line-mode t)
 						 a
-						 (format nil "~a~%~a~%~a~%" start-comment
+						 (format nil "~a~%~a~%~a" start-comment
 							 (emit-c :code code)
 							 end-comment
 							 ))))
