@@ -142,11 +142,11 @@
 
 
 ;; now use the regex to replace the text between the comments
-(let ((regex (format nil "~a\\s*~a" (regex-replace-all "\\*" "/* USER CODE BEGIN 0 */" "\\*")
+(let ((regex (format nil "~a\\s*.*\\s*~a" (regex-replace-all "\\*" "/* USER CODE BEGIN 0 */" "\\*")
 		     (regex-replace-all "\\*" "/* USER CODE END 0 */" "\\*"))))
  (regex-replace regex
 		"/* USER CODE BEGIN 0 */
-
+old-code
 /* USER CODE END 0 */"
 		"/* USER CODE BEGIN 0 */
 babtbrsabtaibte
