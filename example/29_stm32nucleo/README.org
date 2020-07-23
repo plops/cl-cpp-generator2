@@ -274,3 +274,4 @@ will not compile.
 ** How to execute from RAM
 
 - https://stackoverflow.com/questions/42612329/executing-code-from-ram-in-stm32
+- flash seems to be faster: https://community.st.com/s/question/0D50X00009XkWw7/stm32f4-how-can-i-move-code-into-fast-ram
