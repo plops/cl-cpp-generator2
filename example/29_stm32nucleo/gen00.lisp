@@ -69,7 +69,7 @@
 	      *parts*))))
   (let ((n-channels 2)
 	(n-tx-chars 128))
-    (define-part
+    #+nil (define-part
 	 `(main.c 0
 		  (let ((value_adc)
 			(value_dac)
@@ -77,7 +77,7 @@
 		    (declare (type (array uint16_t ,n-channels) value_adc)
 			     (type uint16_t value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
-    #+nil (progn
+    (progn
       (define-part
 	 `(main.c PV
 		  (let ((value_adc)
@@ -113,18 +113,22 @@
 		    
 		    ))))
     
-    (progn
-      (loop for e in *parts* and i from 0 do
-	   (destructuring-bind (&key name file code) e
+    (loop for e in *parts* and i from 0 do
+	 (destructuring-bind (&key name file code) e
+	   ;; open the file that we will modify
+	   (let ((a (with-open-file (s (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file)
+				       :direction :input)
+		      (let ((a (make-string (file-length s))))
+			(read-sequence a s)
+			a))))
 	     (let* ((start-comment (format nil "/* USER CODE BEGIN ~a */" name))
 		    (end-comment (format nil "/* USER CODE END ~a */" name))
-		    (a (with-open-file (s (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file)
-					  :direction :input)
-			 (let ((a (make-string (file-length s))))
-			   (read-sequence a s)
-			   a)
-			 ))
-		    (new (cl-ppcre:regex-replace (format nil "~a\\s+~a" start-comment end-comment)
+		    ;; escape * characters to convert c comment to regex
+		    (regex (format nil "~a\\s*.*\\s*~a"
+				   (regex-replace-all "\\*" start-comment "\\*")
+				   (regex-replace-all "\\*" end-comment "\\*")))
+		    ;; now use the regex to replace the text between the comments
+		    (new (cl-ppcre:regex-replace regex
 						 a
 						 (format nil "~a~%~a~%~a~%" start-comment (emit-c :code code) end-comment))))
 	       (with-open-file (s "/dev/shm/o.c" :direction :output :if-exists :supersede :if-does-not-exist :create)
@@ -132,22 +136,3 @@
 	       
 	       (format t "name=~a file=~a" name file)))))))
 
-
-(regex-replace "/\\* abc \\*/.*cde"
-	       "/* abc */ itasntaencde"
-	       "ab__m__cde")
-
-;; escape * characters to convert c comment to regex
-(regex-replace-all "\\*" "/* USER CODE BEGIN 0 */" "\\*")
-
-
-;; now use the regex to replace the text between the comments
-(let ((regex (format nil "~a\\s*.*\\s*~a" (regex-replace-all "\\*" "/* USER CODE BEGIN 0 */" "\\*")
-		     (regex-replace-all "\\*" "/* USER CODE END 0 */" "\\*"))))
- (regex-replace regex
-		"/* USER CODE BEGIN 0 */
-old-code
-/* USER CODE END 0 */"
-		"/* USER CODE BEGIN 0 */
-babtbrsabtaibte
-/* USER CODE END 0 */"))
