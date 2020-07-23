@@ -119,7 +119,7 @@
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
 	   ;; open the file that we will modify
-	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file))
+	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback2/Core/Src/~a" file))
 		  (a (with-open-file (s full-fn
 				       :direction :input)
 		      (let ((a (make-string (file-length s))))
