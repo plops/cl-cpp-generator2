@@ -111,7 +111,7 @@
 				(setf value_dac 0)))
 		    (HAL_Delay 0)
 
-		    (progn
+		    #+nil (progn
 		      ,(let ((l `(#+dac1 (dac value_dac)
 				  #+adc1 (adc (aref value_adc 0)))))
 			 `(let ((n (snprintf (cast int8_t* BufferToSend)
@@ -151,9 +151,10 @@
 			  (declare (type "static int" count))
 			  (incf count)
 			  (when (== 0 (% count ,modulo))
-			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a#~a\\r\\n" e modulo))
-								     ,(+ 2 (length e))))
-			     (Error_Handler))))))
+			    ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
+			      `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+									,(length report)))
+				(Error_Handler)))))))
 		))))))
     
     (loop for e in *parts* and i from 0 do
