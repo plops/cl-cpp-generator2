@@ -184,7 +184,7 @@
 			    (list (format nil "~a_IRQn 0" e)
 				  1)))
 		   )))
-	(loop for (e modulo) in l do
+	(loop for (e modulo) in l do 
 	 (define-part 
 	     `(stm32l4xx_it.c
 	       ,e
