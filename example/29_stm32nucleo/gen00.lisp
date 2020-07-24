@@ -90,8 +90,8 @@
 		  (let (#+adc1 (value_adc)
 			#+dac1 (value_dac)
 			(BufferToSend))
-		    (declare (type (array ; uint8_t
-					  uint16_t
+		    (declare (type (array  uint8_t
+					   ;uint16_t
 					  ,n-channels) value_adc)
 			     (type (array uint16_t ,n-dac-vals)
 			      ;uint16_t
