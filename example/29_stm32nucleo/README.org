@@ -280,3 +280,15 @@ will not compile.
 - $3 reference https://www.maximintegrated.com/en/products/analog/voltage-references/MAX6126.html
 - adc accuracy app note https://www.st.com/content/ccc/resource/technical/document/application_note/group0/3f/4c/a4/82/bd/63/4e/92/CD00211314/files/CD00211314.pdf/jcr:content/translations/en.CD00211314.pdf
   - improve resolution by adding noise (or triangular sweep)
+
+** Float
+
+- https://stackoverflow.com/questions/28334435/stm32-printf-float-variable
+#+begin_example
+with the GCC ARM Embedded toolchain, floating point support in printf isn't enabled by default. To enable, add -u _printf_float to your LDFLAGS.
+#+end_example
+- another way
+#+begin_example
+int i = 132;
+ printf("Result is: %d.%d", i/10, i%10);
+#+end_example
