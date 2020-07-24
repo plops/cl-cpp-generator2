@@ -76,7 +76,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 1 1024))
+  (let ((n-channels (* 128))
 	(n-tx-chars 128)
 	(n-dac-vals 4096))
     
@@ -100,7 +100,7 @@
       (let ((l `((ADC
 		  ((ConvHalfCplt :modulo 1000000)
 		   Error
-		   (ConvCplt :modulo  30 ;1000000
+		   (ConvCplt :modulo  ,(* (/ 1024 128) 30) ;1000000
 			     )
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
