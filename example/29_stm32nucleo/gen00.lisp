@@ -193,7 +193,7 @@
 							     )
 							#+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
 								(aref value_adc 0) :type "%d"
-								)
+								) 
 							#+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
 								avg :type "%8.2f"
 								)
