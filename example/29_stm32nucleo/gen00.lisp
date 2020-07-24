@@ -151,10 +151,12 @@
 		   (do0
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
+			    
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    (dotimes (i ,n-dac-vals)
 			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))))
 			       (setf (aref value_dac i) v)))
+			    (HAL_TIM_Base_Start &htim6)
 			    (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						     DAC_ALIGN_12B_R))
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
@@ -196,7 +198,7 @@
 					       (incf var (* h h))))
 					   (setf var (/ var ,(* 1s0 n-channels)))
 					   (setf std (sqrtf var)))
-				      ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
+				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
 							 #+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
@@ -229,6 +231,7 @@
 		    
 		    )))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
+					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
 					   DMA1_Channel3
 					   TIM6_DAC
