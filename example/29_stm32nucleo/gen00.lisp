@@ -176,17 +176,29 @@
 						    )
 				  (HAL_Delay 10)
 				  (progn
-				    (let ((avg 0s0))
-				      (dotimes (i ,n-channels)
-					(incf avg (aref value_adc i)))
-				      (setf avg (/ avg ,(* 1s0 n-channels)))
+				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
+				    (let ((avg 0s0)
+					  (var 0s0)
+					  (std 0s0))
+				      (do0 (dotimes (i ,n-channels)
+					     (incf avg (aref value_adc i)))
+					   (setf avg (/ avg ,(* 1s0 n-channels))))
+				      (do0 (dotimes (i ,n-channels)
+					     (let ((h (- (aref value_adc i)
+							  avg)))
+					      (incf var (* h h))))
+					   (setf var (/ var ,(* 1s0 n-channels)))
+					   (setf std (sqrtf var)))
 				     ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
 							     )
 							#+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
 								(aref value_adc 0) :type "%d"
 								)
-							#+adc1 (adc1 ;USE_HAL_UART_REGISTER_CALLBACKS
-								avg :type "%8.4f"
+							#+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
+								avg :type "%8.2f"
+								)
+							#+adc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
+								std :type "%8.2f"
 								))))
 					`(let ((n (snprintf (cast char* BufferToSend)
 							    ,n-tx-chars
