@@ -140,7 +140,7 @@ entry return-values contains a list of return values. currently supports type, v
     (cond ((null type)
 
 	   (format nil "~a ~a"
-		    #+generic-c "__auto_type"
+		   #+generic-c "__auto_type"
 		    #-generic-c "auto"
 		    (funcall emit name)))
 	  ((and (listp type)
@@ -855,7 +855,10 @@ entry return-values contains a list of return values. currently supports type, v
 				       (emit range)
 				       (emit `(progn ,@statement-list)))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			     (emit `(for (,(format nil "auto ~a = 0" (emit i)) ;; int
+			     (emit `(for (,(format nil "~a ~a = 0"
+						   #+generic-c "__auto_type"
+						   #-generic-c "auto"
+						   (emit i)) ;; int
 					   (< ,(emit i) ,(emit n))
 					   (incf ,(emit i) ,(emit step)))
 					 ,@body))))

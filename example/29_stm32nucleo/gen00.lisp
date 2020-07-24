@@ -74,7 +74,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels 4)
+  (let ((n-channels (* 1 1024))
 	(n-tx-chars 128)
 	(n-dac-vals 4096))
     
@@ -97,7 +97,8 @@
       (let ((l `((ADC
 		  ((ConvHalfCplt :modulo 1000000)
 		   Error
-		   (ConvCplt :modulo 1000000)
+		   (ConvCplt :modulo 30 ;1000000
+			     )
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
 		 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
@@ -175,21 +176,33 @@
 						    )
 				  (HAL_Delay 10)
 				  (progn
-		       ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
-					       )
-					 #+adc1 (adc0  ;USE_HAL_UART_REGISTER_CALLBACKS
-						      (aref value_adc 0)
-						      )
-					 #+adc1 (adc1  ;USE_HAL_UART_REGISTER_CALLBACKS
-						      (aref value_adc 1)
-						      ))))
-			 `(let ((n (snprintf (cast char* BufferToSend)
-					    ,n-tx-chars
-					    (string ,(format nil "~{~a:%d ~}\\r\\n" (mapcar #'first l)))
-					    ,@(mapcar #'second l))))
-			   (declare (type int n))
-			   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) n))
-			     (Error_Handler))))))))
+				    (let ((avg 0s0))
+				      (dotimes (i ,n-channels)
+					(incf avg (aref value_adc i)))
+				      (setf avg (/ avg ,(* 1s0 n-channels)))
+				     ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
+							     )
+							#+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
+								(aref value_adc 0) :type "%d"
+								)
+							#+adc1 (adc1 ;USE_HAL_UART_REGISTER_CALLBACKS
+								avg :type "%8.4f"
+								))))
+					`(let ((n (snprintf (cast char* BufferToSend)
+							    ,n-tx-chars
+							    (string ,(format nil "~{~a~^ ~}\\r\\n"
+									     (mapcar #'(lambda (x)
+											 (destructuring-bind (name v &key (type "%d")) x
+											   (format nil "~a=~a"
+												   name type)))
+										     l)))
+							    ,@(mapcar #'(lambda (x)
+									  (destructuring-bind (name v &key (type "%d")) x
+									    v))
+								      l))))
+					   (declare (type int n))
+					   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) n))
+					     (Error_Handler)))))))))
 		    
 
 		    
