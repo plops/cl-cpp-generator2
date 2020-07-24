@@ -12,11 +12,13 @@
 
 
 (setf *features* (union *features* `(:dac1
-				     :adc1)))
+				     :adc1
+				     :opamp1)))
 
 (setf *features* (set-difference *features*
 				 '(;:dac1
-				   ;:adc1
+					;:adc1
+				   :opamp1
 				   )))
 
 (progn
@@ -91,8 +93,8 @@
 		    (declare (type (array ; uint8_t
 					  uint16_t
 					  ,n-channels) value_adc)
-			     (type ;(array uint16_t ,n-dac-vals)
-			      uint16_t
+			     (type (array uint16_t ,n-dac-vals)
+			      ;uint16_t
 				   value_dac)
 			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
       (let ((l `((ADC
@@ -150,9 +152,12 @@
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
-			    #+nil (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
+			    (dotimes (i ,n-dac-vals)
+			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))))
+			       (setf (aref value_dac i) v)))
+			    (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						     DAC_ALIGN_12B_R))
-		    (HAL_OPAMP_Start &hopamp1)
+		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
 		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
@@ -168,15 +173,15 @@
 				  (incf count)
 				  (when (<= ,(expt 2 12) count)
 				    (setf count 0))
-				  (setf value_dac ;(aref value_dac count)
-					count
-					)
+				  #+nil (setf value_dac ;(aref value_dac count)
+					      count
+					      )
 				  #+nil (if (< value_dac ,(- (expt 2 12) 1))
-				     (incf value_dac)
-				     (setf value_dac 0))
-				  (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
-						    )
-				  (HAL_Delay 10)
+					    (incf value_dac)
+					    (setf value_dac 0))
+				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
+							  )
+				  ;(HAL_Delay 10)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let ((avg 0s0)
@@ -187,36 +192,36 @@
 					   (setf avg (/ avg ,(* 1s0 n-channels))))
 				      (do0 (dotimes (i ,n-channels)
 					     (let ((h (- (aref value_adc i)
-							  avg)))
-					      (incf var (* h h))))
+							 avg)))
+					       (incf var (* h h))))
 					   (setf var (/ var ,(* 1s0 n-channels)))
 					   (setf std (sqrtf var)))
-				     ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
-							     )
-							#+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
-								(aref value_adc 0) :type "%d"
-								) 
-							#+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
-								avg :type "%8.2f"
-								)
-							#+adc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
-								std :type "%8.2f"
-								))))
-					`(let ((n (snprintf (cast char* BufferToSend)
-							    ,n-tx-chars
-							    (string ,(format nil "~{~a~^ ~}\\r\\n"
-									     (mapcar #'(lambda (x)
-											 (destructuring-bind (name v &key (type "%d")) x
-											   (format nil "~a=~a"
-												   name type)))
-										     l)))
-							    ,@(mapcar #'(lambda (x)
-									  (destructuring-bind (name v &key (type "%d")) x
-									    v))
-								      l))))
-					   (declare (type int n))
-					   (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) n))
-					     (Error_Handler)))))))))
+				      ,(let ((l `(#+dac1 (dac value_dac ;(aref value_dac count)
+							      )
+							 #+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
+								 (aref value_adc 0) :type "%d"
+								 ) 
+							 #+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
+								 avg :type "%8.2f"
+								 )
+							 #+adc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
+								 std :type "%8.2f"
+								 ))))
+					 `(let ((n (snprintf (cast char* BufferToSend)
+							     ,n-tx-chars
+							     (string ,(format nil "~{~a~^ ~}\\r\\n"
+									      (mapcar #'(lambda (x)
+											  (destructuring-bind (name v &key (type "%d")) x
+											    (format nil "~a=~a"
+												    name type)))
+										      l)))
+							     ,@(mapcar #'(lambda (x)
+									   (destructuring-bind (name v &key (type "%d")) x
+									     v))
+								       l))))
+					    (declare (type int n))
+					    (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) n))
+					      (Error_Handler)))))))))
 		    
 
 		    
