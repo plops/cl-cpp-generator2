@@ -13,6 +13,7 @@
 
 (setf *features* (union *features* `(:dac1
 				     :adc1
+				     :adc2
 				     :opamp1)))
 
 (setf *features* (set-difference *features*
@@ -88,11 +89,13 @@
       (define-part
 	 `(main.c PV
 		  (let (#+adc1 (value_adc)
-			#+dac1 (value_dac)
+			       #+adc2 (value_adc2)
+			       #+dac1 (value_dac)
+			       
 			(BufferToSend))
 		    (declare (type (array  uint8_t
 					   ;uint16_t
-					  ,n-channels) value_adc)
+					  ,n-channels) value_adc value_adc2)
 			     (type (array uint16_t ,n-dac-vals)
 			      ;uint16_t
 				   value_dac)
@@ -163,6 +166,10 @@
 		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
+				)
+		    #+adc2 (do0 (HAL_ADC_Init &hadc2)
+				(HAL_ADCEx_Calibration_Start &hadc2 ADC_SINGLE_ENDED)
+				(HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels)
 				))))
       (define-part 
 	  `(main.c 3
@@ -200,14 +207,17 @@
 					   (setf std (sqrtf var)))
 				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
-							 #+adc1 (adc0 ;USE_HAL_UART_REGISTER_CALLBACKS
+							 #+adc1 (adc1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
-								 ) 
+								 )
+							 #+adc2 (adc2 ;USE_HAL_UART_REGISTER_CALLBACKS
+								 (aref value_adc2 0) :type "%d"
+								 )
 							 #+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
-								 avg :type "%8.2f"
+								 avg :type "%8.0f"
 								 )
 							 #+adc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
-								 std :type "%8.2f"
+								 std :type "%3.1f"
 								 ))))
 					 `(let ((n (snprintf (cast char* BufferToSend)
 							     ,n-tx-chars

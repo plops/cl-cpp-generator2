@@ -294,7 +294,16 @@ int i = 132;
 #+end_example
 
 
+** Interleaved ADC
+
+- http://www.jiee.eu/wp-content/uploads/papers/vol2i1/v2i1_Jacko_Kovac.pdf
 ** Sync DAC and ADC
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
+#+begin_example
+cd src
+git clone https://github.com/nanopb/nanopb/
+mkdir b; cd b
+cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+#+end_example
