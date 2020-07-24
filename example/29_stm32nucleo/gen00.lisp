@@ -100,7 +100,7 @@
       (let ((l `((ADC
 		  ((ConvHalfCplt :modulo 1000000)
 		   Error
-		   (ConvCplt :modulo 30 ;1000000
+		   (ConvCplt :modulo  30 ;1000000
 			     )
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
