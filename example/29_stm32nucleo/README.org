@@ -114,7 +114,7 @@ will not compile.
 - https://youtu.be/OPrcpbKNSjU?t=328 freertos, cmsis-rtos v2
 - https://youtu.be/OPrcpbKNSjU?t=429 task definition in ide
   - TIM6 for HAL timebase
-  - osDelay(500) 
+  - osDelay(500)  
 #+begin_example
 (defun StartBlink02 (arg)
   (declare (type void* arg))
