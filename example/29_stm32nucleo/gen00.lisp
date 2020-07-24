@@ -74,7 +74,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels 2)
+  (let ((n-channels 4)
 	(n-tx-chars 128)
 	(n-dac-vals 4096))
     
@@ -87,7 +87,9 @@
 		  (let (#+adc1 (value_adc)
 			#+dac1 (value_dac)
 			(BufferToSend))
-		    (declare (type (array uint16_t ,n-channels) value_adc)
+		    (declare (type (array ; uint8_t
+					  uint16_t
+					  ,n-channels) value_adc)
 			     (type ;(array uint16_t ,n-dac-vals)
 			      uint16_t
 				   value_dac)

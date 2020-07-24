@@ -275,3 +275,7 @@ will not compile.
 
 - https://stackoverflow.com/questions/42612329/executing-code-from-ram-in-stm32
 - flash seems to be faster: https://community.st.com/s/question/0D50X00009XkWw7/stm32f4-how-can-i-move-code-into-fast-ram
+
+** Voltage Reference
+- $3 reference https://www.maximintegrated.com/en/products/analog/voltage-references/MAX6126.html
+- adc accuracy app note https://www.st.com/content/ccc/resource/technical/document/application_note/group0/3f/4c/a4/82/bd/63/4e/92/CD00211314/files/CD00211314.pdf/jcr:content/translations/en.CD00211314.pdf
