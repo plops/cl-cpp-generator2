@@ -298,6 +298,8 @@ int i = 132;
 
 - http://www.jiee.eu/wp-content/uploads/papers/vol2i1/v2i1_Jacko_Kovac.pdf describes delay problem
 - https://community.st.com/s/question/0D50X00009XkdhRSAR/stm32f103c8t6-fast-interleaved-adc-gives-samples-in-wrong-order don't calibrate adc with dma enabled
+- https://www.tablix.org/~avian/blog/archives/2013/10/interleaved_adc_mode_on_stm32f1/ blog post
+  - https://github.com/avian2/vesna-adc-hf-test example code
 
 ** Sync DAC and ADC
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
