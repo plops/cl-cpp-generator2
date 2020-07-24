@@ -89,7 +89,7 @@
       (define-part
 	 `(main.c PV
 		  (let (#+adc1 (value_adc)
-			       #+adc2 (value_adc2)
+			       #+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
 			       #+dac1 (value_dac)
 			       
 			(BufferToSend))
@@ -165,12 +165,14 @@
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
 		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
-				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
+				
 				)
 		    #+adc2 (do0 (HAL_ADC_Init &hadc2)
 				(HAL_ADCEx_Calibration_Start &hadc2 ADC_SINGLE_ENDED)
-				(HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels)
-				))))
+				
+				)
+		    #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
+		    #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels))))
       (define-part 
 	  `(main.c 3
 		   (do0
