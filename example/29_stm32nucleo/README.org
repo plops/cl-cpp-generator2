@@ -296,3 +296,5 @@ int i = 132;
 
 ** Sync DAC and ADC
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
+** Protobuf
+- https://github.com/nanopb/nanopb/blob/master/docs/index.rst
