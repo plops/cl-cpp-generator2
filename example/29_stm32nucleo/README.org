@@ -292,3 +292,7 @@ with the GCC ARM Embedded toolchain, floating point support in printf isn't enab
 int i = 132;
  printf("Result is: %d.%d", i/10, i%10);
 #+end_example
+
+
+** Sync DAC and ADC
+- https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading

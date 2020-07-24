@@ -81,7 +81,8 @@
     (progn
       (define-part
 	 `(main.c Includes 
-		  (include <stdio.h>)))
+		  (include <stdio.h>
+			   <math.h>)))
       (define-part
 	 `(main.c PV
 		  (let (#+adc1 (value_adc)
@@ -150,7 +151,8 @@
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    #+nil (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
-						   DAC_ALIGN_12B_R))
+						     DAC_ALIGN_12B_R))
+		    (HAL_OPAMP_Start &hopamp1)
 		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				(HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
