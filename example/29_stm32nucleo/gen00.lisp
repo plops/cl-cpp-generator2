@@ -90,13 +90,13 @@
       (define-part
 	 `(main.c PV
 		  (let (#+adc1 (value_adc)
-			       #+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
+			       ;#+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
 			       #+dac1 (value_dac)
 			       
 			(BufferToSend))
-		    (declare (type (array  ;uint8_t
-					   uint16_t
-					  ,(* 1 n-channels)) value_adc value_adc2)
+		    (declare (type (array  uint8_t
+					   ;uint16_t
+					  ,(* 2 n-channels)) value_adc value_adc2)
 			     (type (array uint16_t ,n-dac-vals)
 			      ;uint16_t
 				   value_dac)
@@ -153,6 +153,7 @@
       (define-part 
 	  `(main.c 2
 		   (do0
+		    (do0 (HAL_TIM_Base_Start &htim6))
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
 			    
@@ -160,33 +161,56 @@
 			    (dotimes (i ,n-dac-vals)
 			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))))
 			       (setf (aref value_dac i) v)))
-			    (HAL_TIM_Base_Start &htim6)
+			    
 			    (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						     DAC_ALIGN_12B_R))
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
-		    #+adc1 (do0 (HAL_ADC_Init &hadc1)
+
+		    (do0
+		     (let ((mode))
+		       (declare (type ADC_MultiModeTypeDef mode))
+		       (setf mode.Mode ADC_DUALMODE_INTERL  ;; ADC_HAL_EC_MULTI_MODE
+			     mode.DMAAccessMode ADC_DMAACCESSMODE_8_6_BITS ;; ADC_HAL_EC_MULTI_DMA_TRANSFER_RESOLUTION
+			     mode.TwoSamplingDelay ADC_TWOSAMPLINGDELAY_1CYCLE ;; ADC_HAL_EC_MULTI_TWOSMP_DELAY
+			     )
+		      (HAL_ADCEx_MultiModeConfigChannel &hadc1 &mode)))
+		    
+		    #+adc2 (do0 
+			    ;(HAL_ADC_Init &hadc2)
+					;(HAL_ADC_Start_IT &hadc2)
+			    (HAL_ADCEx_Calibration_Start &hadc2 ADC_SINGLE_ENDED)
+				
+			    )
+		    #+adc1 (do0; (HAL_ADC_Init &hadc1)
+				;(HAL_ADC_Start_IT &hadc1)
+
+				
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				
 				)
-		    #+adc2 (do0 (HAL_ADC_Init &hadc2)
-				(HAL_ADCEx_Calibration_Start &hadc2 ADC_SINGLE_ENDED)
-				
-				)
-		    #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
-		    ;#+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels)
+		    (do0
+		     (HAL_ADCEx_MultiModeStart_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
+		     )
+		    #+nil (do0
+		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
+		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
+
+		    ,(let ((report (format nil "adc dmas started\\r\\n" )))
+				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
+							     ,(length report)))
 		    )))
       (define-part 
 	  `(main.c 3
 		   (do0
-		    #+dac1 (do0
+		    (do0
 			    
-			    (progn
-				(let ((count))
-				  (declare (type "static int" count))
-				  (incf count)
-				  (when (<= ,(expt 2 12) count)
-				    (setf count 0))
-				  #+nil (setf value_dac ;(aref value_dac count)
+		     (progn
+			      (let ((count))
+				(declare (type "static int" count))
+				(incf count)
+				(when (<= ,(expt 2 12) count)
+				  (setf count 0))
+				#+nil (setf value_dac ;(aref value_dac count)
 					      count
 					      )
 				  #+nil (if (< value_dac ,(- (expt 2 12) 1))
@@ -194,16 +218,21 @@
 					    (setf value_dac 0))
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
-				  ;(HAL_Delay 10)
+				  (HAL_ADC_Start &hadc1)
+				  ,(let ((report (format nil "trigger\\r\\n" )))
+				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
+							     ,(length report)))
+				  (HAL_Delay 10)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
-				    (let ((avg 0s0)
-					  (var 0s0)
-					  (std 0s0))
-				      (do0 (dotimes (i ,n-channels)
+				    (let (;(avg 0s0)
+					   ; (var 0s0)
+					   ; (std 0s0)
+					  )
+				      #+nil (do0 (dotimes (i ,n-channels)
 					     (incf avg (aref value_adc i)))
 					   (setf avg (/ avg ,(* 1s0 n-channels))))
-				      (do0 (dotimes (i ,n-channels)
+				      #+nil (do0 (dotimes (i ,n-channels)
 					     (let ((h (- (aref value_adc i)
 							 avg)))
 					       (incf var (* h h))))
@@ -214,15 +243,16 @@
 							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
 								 )
-							 #+adc2 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
-								 (aref value_adc2 0) :type "%d"
-								 )
-							 #+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
-								 avg :type "%8.0f"
-								 )
-							 #+adc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
-								 std :type "%3.1f"
-								 ))))
+							 #+danadc2
+							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
+							  (aref value_adc2 0) :type "%d"
+							  )
+							 #+satadc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS
+								    avg :type "%8.0f"
+								    )
+							 #+satadc1 (std ;USE_HAL_UART_REGISTER_CALLBACKS
+								    std :type "%3.1f"
+								    ))))
 					 `(let ((n (snprintf (cast char* BufferToSend)
 							     ,n-tx-chars
 							     (string ,(format nil "~{~a~^ ~}\\r\\n"
@@ -248,7 +278,8 @@
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
 					   DMA1_Channel3
-					   #+dac1 TIM6_DAC
+					   ;#+dac1
+					   TIM6_DAC
 					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
