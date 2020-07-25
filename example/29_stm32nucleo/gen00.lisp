@@ -146,7 +146,7 @@
 									    module irq-name ch (unless (eq 1 irq-mod)
 												 irq-mod))))
 							`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" (string ,report))
-										,(length report))
+										,(+ -2 (length report)))
 							#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 													 ,(length report)))
 								 (Error_Handler))))))))))))))))
@@ -197,7 +197,7 @@
 
 		    ,(let ((report (format nil "adc dmas started\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-							     ,(length report)))
+							     ,(+ -2 (length report))))
 		    )))
       (define-part 
 	  `(main.c 3
@@ -221,7 +221,7 @@
 				  (HAL_ADC_Start &hadc1)
 				  ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-							     ,(length report)))
+							     ,(+ -2 (length report))))
 				  (HAL_Delay 10)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -314,7 +314,7 @@
 			   (when (== 0 (% count ,modulo))
 			     ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
 				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-							,(length report))
+							,(+ -2 (length report)))
 				#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
 										 ,(length report)))
 					 (Error_Handler))))))))
@@ -337,7 +337,7 @@
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
 		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" (string ,report))
-								,(length report)))
+								,(+ -2 (length report))))
 			(Error_Handler))))
 		
 		 )))))
@@ -358,7 +358,7 @@
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
 		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-								,(length report)))
+								,(+ -2 (length report))))
 			(Error_Handler))))
 		
 		))))))
