@@ -343,14 +343,14 @@
 	  `(stm32l4xx_it.c
 	    Includes
 	    (do0
-	     #+nil (include 
+	      (include 
 	      "global_log.h"
 		      ))))
       (define-part
 	  `(stm32l4xx_hal_msp.c
 	    Includes
 	    (do0
-	     #+nil (include 
+	     (include 
 	      "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel2
@@ -375,7 +375,7 @@
 	     `(stm32l4xx_it.c
 	       ,e
 	       (do0
-		#+nil ,(if (eq modulo 1)
+		 ,(if (eq modulo 1)
 		     `(do0
 		       ,(uartprint e)
 		       #+nil(let ((huart2))
@@ -413,7 +413,7 @@
 	     `(stm32l4xx_hal_msp.c
 	       ,e
 	       (progn
-		 #+nil ,(uartprint (format nil "~a" e))
+		  ,(uartprint (format nil "~a" e))
 		 #+Nil
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
