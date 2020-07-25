@@ -77,7 +77,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 128))
+  (let ((n-channels (* 2))
 	(n-tx-chars 128)
 	(n-dac-vals 4096))
     
@@ -93,9 +93,9 @@
 			       #+dac1 (value_dac)
 			       
 			(BufferToSend))
-		    (declare (type (array  uint8_t
-					   ;uint16_t
-					  ,n-channels) value_adc value_adc2)
+		    (declare (type (array  ;uint8_t
+					   uint16_t
+					  ,(* 1 n-channels)) value_adc value_adc2)
 			     (type (array uint16_t ,n-dac-vals)
 			      ;uint16_t
 				   value_dac)
@@ -172,7 +172,8 @@
 				
 				)
 		    #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
-		    #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels))))
+		    ;#+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc) ,n-channels)
+		    )))
       (define-part 
 	  `(main.c 3
 		   (do0
@@ -209,10 +210,10 @@
 					   (setf std (sqrtf var)))
 				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
-							 #+adc1 (adc1 ;USE_HAL_UART_REGISTER_CALLBACKS
+							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
 								 )
-							 #+adc2 (adc2 ;USE_HAL_UART_REGISTER_CALLBACKS
+							 #+adc2 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc2 0) :type "%d"
 								 )
 							 #+adc1 (avg ;USE_HAL_UART_REGISTER_CALLBACKS

@@ -301,7 +301,7 @@ int i = 132;
 - https://www.tablix.org/~avian/blog/archives/2013/10/interleaved_adc_mode_on_stm32f1/ blog post
   - https://github.com/avian2/vesna-adc-hf-test example code
   - https://nbviewer.jupyter.org/github/avian2/vesna-adc-hf-test/blob/master/interleaved_mode/Interleaved%20mode%20test.ipynb jupyter notebook
-
+- https://www.st.com/resource/en/application_note/dm00069390-stm32f30x-adc-modes-and-application-stmicroelectronics.pdf
 ** Sync DAC and ADC
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
 ** Protobuf
