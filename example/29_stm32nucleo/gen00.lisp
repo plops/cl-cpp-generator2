@@ -86,8 +86,8 @@
   (let ((n-channels (* 2))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
-	(log-max-entries 128)
-	(log-max-message-length 78))
+	(log-max-entries 99)
+	(log-max-message-length 27))
     (defun uartprint (msg)
       `(progn
 	 (let ((huart2)
@@ -168,7 +168,7 @@
 	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
 	    `(main.c 0
 		     (do0
-		      #+nil,@(loop for e in l appending
+		      ,@(loop for e in l appending
 			     (destructuring-bind (module irqs &key (channels `(""))) e
 			       (loop for ch in channels append
 				    (loop for irq in irqs collect
@@ -436,7 +436,8 @@
 	     `(main.c
 	       ,e
 	       (progn
-		 (let ((huart2))
+		 ,(uartprint (format nil "~a" e))
+		#+nil (let ((huart2)) 
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
 		     `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
