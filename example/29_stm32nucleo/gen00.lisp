@@ -89,42 +89,44 @@
 	(log-max-entries 128)
 	(log-max-message-length 78))
     (defun uartprint (msg)
-      `(let ((huart2)
-	     (htim2))
-	 (declare (type "extern UART_HandleTypeDef" huart2)
-		  (type "extern TIM_HandleTypeDef" htim2))
-	 ,(let ((report (format nil "~a\\r\\n" msg))
-		(i 0))
-	    `(let ((c_msg (string ,report)))
-	       (declare (type "const char*" c_msg))
+      `(progn
+	 (let ((huart2)
+	      (htim2))
+	  (declare (type "extern UART_HandleTypeDef" huart2)
+		   (type "extern TIM_HandleTypeDef" htim2))
+	  ,(let ((report (format nil "~a\\r\\n" msg))
+		 (i 0))
+	     `(let ((c_msg (string ,report)))
+		(declare (type "const char*" c_msg))
 	       
-	       (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
-						    )
-				      ,(+ -2 (length report)))
-	       (setf (dot (aref glog glog_count)
-			  ts)
-		     ; htim2.instance->CNT
-		     (__HAL_TIM_GetCounter htim2)
-		     )
-	       (let ((p (ref (aref (dot (aref glog glog_count)
-					msg) 0))))
-		 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
-			(prog1
-			    `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
-					)
-				  )
-			  (incf i)))
-		 (setf (aref p ,i) 0))
-	       (do0
-		(incf glog_count)
-		(when (<= ,log-max-entries glog_count)
-		  (setf glog_count 0)))))))
+		(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
+						     )
+				       ,(+ -2 (length report)))
+		(setf (dot (aref glog glog_count)
+			   ts)
+		      htim2.Instance->CNT
+					;(__HAL_TIM_GetCounter htim2)
+		      )
+		(let ((p (ref (aref (dot (aref glog glog_count)
+					 msg) 0))))
+		  ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
+			 (prog1
+			     `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
+					 )
+				   )
+			   (incf i)))
+		  (setf (aref p ,i) 0))
+		(do0
+		 (incf glog_count)
+		 (when (<= ,log-max-entries glog_count)
+		   (setf glog_count 0))))))))
     (progn
       (define-part
 	 `(main.c Includes 
 		  (include <stdio.h>
 			   <math.h>
-			   <stm32l4xx_hal_tim.h>)))
+			   ;<stm32l4xx_hal_tim.h>
+			   )))
       (define-part
 	  `(main.c PV
 		   (do0
@@ -166,7 +168,7 @@
 	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
 	    `(main.c 0
 		     (do0
-		      ,@(loop for e in l appending
+		      #+nil,@(loop for e in l appending
 			     (destructuring-bind (module irqs &key (channels `(""))) e
 			       (loop for ch in channels append
 				    (loop for irq in irqs collect
@@ -279,7 +281,8 @@
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
 				  (HAL_ADC_Start &hadc1
-						 ,(uartprint "trigger"))
+						 )
+				  ,(uartprint "trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
@@ -340,15 +343,15 @@
 	  `(stm32l4xx_it.c
 	    Includes
 	    (do0
-	     (include 
+	     #+nil (include 
 	      "global_log.h"
 		      ))))
       (define-part
 	  `(stm32l4xx_hal_msp.c
 	    Includes
 	    (do0
-	     (include 
-		      "global_log.h"))))
+	     #+nil (include 
+	      "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
@@ -368,11 +371,11 @@
 				  1)))
 		   )))
 	(loop for (e modulo) in l do 
-	 (define-part 
+	     (define-part 
 	     `(stm32l4xx_it.c
 	       ,e
 	       (do0
-		,(if (eq modulo 1)
+		#+nil ,(if (eq modulo 1)
 		     `(do0
 		       ,(uartprint e)
 		       #+nil(let ((huart2))
@@ -410,7 +413,7 @@
 	     `(stm32l4xx_hal_msp.c
 	       ,e
 	       (progn
-		 ,(uartprint (format nil "~a" e))
+		 #+nil ,(uartprint (format nil "~a" e))
 		 #+Nil
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
@@ -444,7 +447,7 @@
     (write-source "/home/martin/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/Core/Src/global_log.h"
 		  `(do0
 		    (do0 
-		     (include <stm32l4xx_hal_tim.h>)
+		     ;(include <stm32l4xx_hal_tim.h>)
 		     (defstruct0 log_t
 			 (ts uint32_t)
 		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
