@@ -103,7 +103,9 @@
 				      ,(+ -2 (length report)))
 	       (setf (dot (aref glog glog_count)
 			  ts)
-		     htim2.instance->CNT)
+		     ; htim2.instance->CNT
+		     (__HAL_TIM_GetCounter htim2)
+		     )
 	       (let ((p (ref (aref (dot (aref glog glog_count)
 					msg) 0))))
 		 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
@@ -121,7 +123,8 @@
       (define-part
 	 `(main.c Includes 
 		  (include <stdio.h>
-			   <math.h>)))
+			   <math.h>
+			   <stm32l4xx_hal_tim.h>)))
       (define-part
 	  `(main.c PV
 		   (do0
@@ -337,12 +340,15 @@
 	  `(stm32l4xx_it.c
 	    Includes
 	    (do0
-	     (include "global_log.h"))))
+	     (include 
+	      "global_log.h"
+		      ))))
       (define-part
 	  `(stm32l4xx_hal_msp.c
 	    Includes
 	    (do0
-	     (include "global_log.h"))))
+	     (include 
+		      "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
@@ -438,7 +444,7 @@
     (write-source "/home/martin/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/Core/Src/global_log.h"
 		  `(do0
 		    (do0 
-		     
+		     (include <stm32l4xx_hal_tim.h>)
 		     (defstruct0 log_t
 			 (ts uint32_t)
 		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
