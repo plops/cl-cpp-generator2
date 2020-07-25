@@ -30,6 +30,8 @@
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday")) 
+
+
   
  
   (progn
@@ -39,7 +41,10 @@
     ;;                    ^^^^^^^ --- part-name
     ;; a part is a piece of user code that will be inserted between two part-name comments
     
-    (defparameter *parts* nil) 
+    (defparameter *parts* nil)
+
+    
+    
     (defun logprint (msg &optional rest)
       `(do0
 	" "
@@ -80,27 +85,71 @@
 	      *parts*))))
   (let ((n-channels (* 2))
 	(n-tx-chars 128)
-	(n-dac-vals 4096))
-    
+	(n-dac-vals 4096)
+	(log-max-entries 128)
+	(log-max-message-length 78))
+    (defun uartprint (msg)
+      `(let ((huart2)
+	     (htim2))
+	 (declare (type "extern UART_HandleTypeDef" huart2)
+		  (type "extern TIM_HandleTypeDef" htim2))
+	 ,(let ((report (format nil "~a\\r\\n" msg))
+		(i 0))
+	    `(let ((c_msg (string ,report)))
+	       (declare (type "const char*" c_msg))
+	       
+	       (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
+						    )
+				      ,(+ -2 (length report)))
+	       (setf (dot (aref glog glog_count)
+			  ts)
+		     htim2.instance->CNT)
+	       (let ((p (ref (aref (dot (aref glog glog_count)
+					msg) 0))))
+		 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
+			(prog1
+			    `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
+					)
+				  )
+			  (incf i)))
+		 (setf (aref p ,i) 0))
+	       (do0
+		(incf glog_count)
+		(when (<= ,log-max-entries glog_count)
+		  (setf glog_count 0)))))))
     (progn
       (define-part
 	 `(main.c Includes 
 		  (include <stdio.h>
 			   <math.h>)))
       (define-part
-	 `(main.c PV
-		  (let (#+adc1 (value_adc)
-			       ;#+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
-			       #+dac1 (value_dac)
+	  `(main.c PV
+		   (do0
+		    (do0 
+		     
+		     (defstruct0 log_t
+			 (ts uint32_t)
+		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+		       )
+		     (let (
+			   (glog)
+			   (glog_count 0)
+			   )
+		       (declare (type (array log_t ,log-max-entries) glog)
+				(type int glog_count)
+				)))
+		    (let (#+adc1 (value_adc)
+					;#+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
+				 #+dac1 (value_dac)
 			       
-			(BufferToSend))
-		    (declare (type (array  uint8_t
-					   ;uint16_t
-					  ,(* 2 n-channels)) value_adc value_adc2)
-			     (type (array uint16_t ,n-dac-vals)
-			      ;uint16_t
-				   value_dac)
-			     (type (array uint8_t ,n-tx-chars) BufferToSend)))))
+				 (BufferToSend))
+		      (declare (type (array  uint8_t
+					;uint16_t
+					     ,(* 2 n-channels)) value_adc value_adc2)
+			       (type (array uint16_t ,n-dac-vals)
+					;uint16_t
+				     value_dac)
+			       (type (array uint8_t ,n-tx-chars) BufferToSend))))))
       (let ((l `((ADC
 		  ((ConvHalfCplt :modulo 1000000)
 		   Error
@@ -139,8 +188,12 @@
 							   (incf count)
 							   (unless (== 0 (% count ,irq-mod))
 							     (setf output_p 0))))
-						  (when output_p
-						    (let ((huart2))
+						   (when output_p
+						     ,(uartprint (format nil "~a ~a ~a~@[@~a~]"
+									 module irq-name ch
+									 (unless (eq 1 irq-mod)
+									   irq-mod)))
+						     #+nil(let ((huart2))
 						     (declare (type "extern UART_HandleTypeDef" huart2))
 						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n"
 									    module irq-name ch (unless (eq 1 irq-mod)
@@ -153,7 +206,10 @@
       (define-part 
 	  `(main.c 2
 		   (do0
-		    (do0 (HAL_TIM_Base_Start &htim6))
+		    (do0 (HAL_TIM_Base_Init &htim6)
+			 (HAL_TIM_Base_Start &htim6))
+		    (do0 (HAL_TIM_Base_Init &htim2)
+			 (HAL_TIM_Base_Start &htim2))
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
 			    
@@ -195,7 +251,8 @@
 		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
 		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
 
-		    ,(let ((report (format nil "adc dmas started\\r\\n" )))
+		    ,(uartprint "adc dmas started")
+		    #+nil ,(let ((report (format nil "adc dmas started\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
 		    )))
@@ -218,8 +275,9 @@
 					    (setf value_dac 0))
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
-				  (HAL_ADC_Start &hadc1)
-				  ,(let ((report (format nil "trigger\\r\\n" )))
+				  (HAL_ADC_Start &hadc1
+						 ,(uartprint "trigger"))
+				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
 				  (HAL_Delay 10)
@@ -274,6 +332,17 @@
 		    "}"
 		    
 		    )))
+
+      (define-part
+	  `(stm32l4xx_it.c
+	    Includes
+	    (do0
+	     (include "global_log.h"))))
+      (define-part
+	  `(stm32l4xx_hal_msp.c
+	    Includes
+	    (do0
+	     (include "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
@@ -299,20 +368,22 @@
 	       (do0
 		,(if (eq modulo 1)
 		     `(do0
-		       (let ((huart2))
+		       ,(uartprint e)
+		       #+nil(let ((huart2))
 			 (declare (type "extern UART_HandleTypeDef" huart2))
 			 (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
 					      
 					      ,(+ 2 (length e)))))
 		     `(progn
-			(let ((huart2))
-			 (declare (type "extern UART_HandleTypeDef" huart2))
+			(do0 ;let ((huart2))
+			 ;(declare (type "extern UART_HandleTypeDef" huart2))
 			
 			 (let ((count 0))
 			   (declare (type "static int" count))
 			   (incf count)
 			   (when (== 0 (% count ,modulo))
-			     ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
+			     ,(uartprint (format nil "~a#~a" e modulo))
+			     #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
 				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							,(+ -2 (length report)))
 				#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
@@ -333,6 +404,8 @@
 	     `(stm32l4xx_hal_msp.c
 	       ,e
 	       (progn
+		 ,(uartprint (format nil "~a" e))
+		 #+Nil
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
@@ -362,7 +435,22 @@
 			(Error_Handler))))
 		
 		))))))
-    
+    (write-source "/home/martin/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/Core/Src/global_log.h"
+		  `(do0
+		    (do0 
+		     
+		     (defstruct0 log_t
+			 (ts uint32_t)
+		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+		       )
+		     (let (
+			   (glog)
+			   (glog_count)
+			   )
+		       (declare (type (array "extern log_t" ,log-max-entries) glog)
+				(type "extern int" glog_count)
+				)))
+		    ))
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
 	   ;; open the file that we will modify
