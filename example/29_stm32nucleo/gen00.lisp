@@ -17,8 +17,9 @@
 				     :opamp1)))
 
 (setf *features* (set-difference *features*
-				 '(;:dac1
+				 '(:dac1
 					;:adc1
+				   ;:adc2
 				   :opamp1
 				   )))
 
@@ -28,7 +29,7 @@
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
-      "Sunday"))
+      "Sunday")) 
   
  
   (progn
@@ -107,7 +108,7 @@
 			     )
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
-		 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
+		 #+dac1 (DAC (Error ConvCplt ConvHalfCplt) :channels (Ch1 Ch2)))))
 	(define-part
 	    ;; USE_HAL_UART_REGISTER_CALLBACKS
 	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
@@ -139,7 +140,7 @@
 							   (unless (== 0 (% count ,irq-mod))
 							     (setf output_p 0))))
 						  (when output_p
-						   (let ((huart2))
+						    (let ((huart2))
 						     (declare (type "extern UART_HandleTypeDef" huart2))
 						     ,(let ((report (format nil "~a ~a ~a ~@[@~a~]\\r\\n"
 									    module irq-name ch (unless (eq 1 irq-mod)
@@ -247,7 +248,7 @@
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1000000)
 					   DMA1_Channel3
-					   TIM6_DAC
+					   #+dac1 TIM6_DAC
 					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
@@ -267,26 +268,29 @@
 	       (do0
 		,(if (eq modulo 1)
 		     `(do0
-		       (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
+		       (let ((huart2))
+			 (declare (type "extern UART_HandleTypeDef" huart2))
+			 (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
 					      
-					      ,(+ 2 (length e)))
-		       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,(format nil "~a\\r\\n" e))
-									,(+ 2 (length e))))
-				(Error_Handler)))
+					      ,(+ 2 (length e)))))
 		     `(progn
-			(let ((count 0))
-			  (declare (type "static int" count))
-			  (incf count)
-			  (when (== 0 (% count ,modulo))
-			    ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
-			       `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-									,(length report))
-			       #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
-									,(length report)))
-				(Error_Handler)))))))
+			(let ((huart2))
+			 (declare (type "extern UART_HandleTypeDef" huart2))
+			
+			 (let ((count 0))
+			   (declare (type "static int" count))
+			   (incf count)
+			   (when (== 0 (% count ,modulo))
+			     ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
+				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
+							,(length report))
+				#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+										 ,(length report)))
+					 (Error_Handler))))))))
 		)))))
 
-      (let ((l `(,@(loop for e in `(USART2 DAC1 ADC1)
+      (let ((l `(,@(loop for e in `(USART2 #+dac1 DAC1 #+adc1 ADC1
+					   #+adc2 ADC2)
 		      appending
 			(list ;; MSP means mcu support package
 			 (format nil "~a_MspInit 1" e)
@@ -307,7 +311,8 @@
 		
 		 )))))
 
-      (let ((l `(,@(loop for e in `(USART2 DAC1 ADC1)
+      (let ((l `(,@(loop for e in `(USART2 #+dac1 DAC1 #+adc1 ADC1
+					   #+adc2 ADC2)
 		      collect 
 			(format nil "~a_Init 0" e)
 			 
@@ -330,7 +335,7 @@
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
 	   ;; open the file that we will modify
-	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.3.0/nucleo_l476rg_dac_adc_loopback/Core/Src/~a" file))
+	   (let* ((full-fn (format nil "/home/martin/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/Core/Src/~a" file))
 		  (a (with-open-file (s full-fn
 				       :direction :input)
 		      (let ((a (make-string (file-length s))))
