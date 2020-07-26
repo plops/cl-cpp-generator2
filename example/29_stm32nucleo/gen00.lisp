@@ -86,8 +86,8 @@
   (let ((n-channels (* 2))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
-	(log-max-entries (* 6 1024))
-	(log-max-message-length 45)
+	(log-max-entries (* 2 1024))
+	(log-max-message-length 27)
 	(uart-print-message nil))
     (defun uartprint (msg) ;; FIXME: make sure this code isn't preempted by another interrupt
 	   `(progn
