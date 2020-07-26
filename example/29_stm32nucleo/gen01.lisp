@@ -166,7 +166,9 @@
 		    (defun main (argc argv)
 		      (declare (values int)
 			       (type int argc)
-			       (type "char const *const *const" argv))
+			       (type ; "char const *const *const"
+				"char**"
+				     argv))
 		      (setf ,(g `_main_version)
 			    (string ,(let ((str (with-output-to-string (s)
 						  (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
@@ -196,10 +198,8 @@
 		      ,(logprint "" `(,(g `_code_repository)))
 		      ,(logprint "" `(,(g `_code_generation_time)))
 
-		      (let ((app (QApplication argc argv))
-
-
-			    ))
+		      (let (((app argc argv)))
+			(declare (type QApplication (app argc argv))))
 
 		      ,(logprint "end main" `())
 		      (return 0))))))

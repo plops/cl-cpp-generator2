@@ -304,13 +304,13 @@
 					    (setf value_dac 0))
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
-				  (HAL_ADC_Start &hadc1
+				  #+nil (HAL_ADC_Start &hadc1
 						 )
-				  ,(global-log "main.c_3 trigger")
+				  #+nil ,(global-log "main.c_3 trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 100)
+				  ;(HAL_Delay 100)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)

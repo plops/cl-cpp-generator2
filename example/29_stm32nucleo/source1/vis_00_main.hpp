@@ -13,5 +13,5 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 ;
-int main (int argc, char const *const *const argv)  ;  
+int main (int argc, char** argv)  ;  
 #endif
