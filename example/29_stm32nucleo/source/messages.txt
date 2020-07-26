@@ -7,12 +7,12 @@
 6 main.c_2 adc dmas started
 7 main.c_3 trigger
 8 stm32l4xx_it.c_USART2_IRQn 0
-9 stm32l4xx_it.c_DMA1_Channel7_IRQn 0
+9 stm32l4xx_it.c_DMA1_Channel7_IRQn 0 <USART2_TX>
 10 stm32l4xx_it.c_DMA1_Channel2_IRQn 0
-11 stm32l4xx_it.c_DMA1_Channel1_IRQn 0
+11 stm32l4xx_it.c_DMA1_Channel1_IRQn 0 <ADC1>
 12 stm32l4xx_it.c_DMA1_Channel3_IRQn 0
 13 stm32l4xx_it.c_TIM6_DAC_IRQn 0
-14 stm32l4xx_it.c_SysTick_IRQn 0#1000
+14 stm32l4xx_it.c_SysTick_IRQn 0 #1000
 15 stm32l4xx_it.c_PendSV_IRQn 0
 16 stm32l4xx_it.c_DebugMonitor_IRQn 0
 17 stm32l4xx_it.c_SVCall_IRQn 0

@@ -83,7 +83,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 1024))
+  (let ((n-channels (* 4 1024))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
 	(log-max-entries (* 2 1024))
@@ -378,10 +378,10 @@
 	    (do0
 	     (include 
 	      "global_log.h"))))
-      (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
+      (let ((l `(,@(loop for e in `(USART2 (DMA1_Channel7 :comment USART2_TX)
 					   DMA1_Channel2
 					   (DMA1_Channel1 :modulo 1; 1000000
-							  )
+							  :comment ADC1)
 					   DMA1_Channel3
 					   ;#+dac1
 					   TIM6_DAC
@@ -392,8 +392,8 @@
 					   NonMaskableInt)
 		      collect
 			(if (listp e)
-			    (destructuring-bind (name &key (modulo 1)) e
-				(list (format nil "~a_IRQn 0" name)
+			    (destructuring-bind (name &key (modulo 1) (comment nil)) e
+				(list (format nil "~a_IRQn 0 ~@[<~a>~]" name comment)
 				      modulo))
 			    (list (format nil "~a_IRQn 0" e)
 				  1)))
