@@ -87,15 +87,17 @@
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
 	(log-max-entries 99)
-	(log-max-message-length 27))
+	;(log-max-message-length 27)
+	(uart-print-message nil))
     (defun uartprint (msg) ;; FIXME: make sure this code isn't preempted by another interrupt
 	   `(progn
 	      (let (;(huart2)
 		    (htim2))
 		(declare (type "extern UART_HandleTypeDef" huart2)
 			 (type "extern TIM_HandleTypeDef" htim2))
-		,(let ((report (format nil "~a\\r\\n" msg))
-		       (i 0))
+		,(let (;(report (format nil "~a\\r\\n" msg))
+		       ;(i 0)
+		       )
 		   `(do0 ;let ((c_msg (string ,report)))
 		      ;(declare (type "const char*" c_msg))
 	       
@@ -111,6 +113,12 @@
 			       htim2.Instance->CNT
 					;(__HAL_TIM_GetCounter htim2)
 			       )
+			 ,(progn
+			    (push msg uart-print-message)
+			    
+			    `(setf (dot (aref glog glog_count)
+				      msg)
+				  ,(length uart-print-message)))
 			 #+nil (let ((p (ref (aref (dot (aref glog glog_count)
 							msg) 0))))
 				 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
@@ -203,7 +211,7 @@
 							   (unless (== 0 (% count ,irq-mod))
 							     (setf output_p 0))))
 						   (when output_p
-						     ,(uartprint (format nil "~a ~a ~a~@[@~a~]"
+						     ,(uartprint (format nil "main.c_0 ~a ~a ~a~@[@~a~]"
 									 module irq-name ch
 									 (unless (eq 1 irq-mod)
 									   irq-mod)))
@@ -265,7 +273,7 @@
 		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
 		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
 
-		    ,(uartprint "adc dmas started")
+		    ,(uartprint "main.c_2 adc dmas started")
 		    #+nil ,(let ((report (format nil "adc dmas started\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
@@ -291,7 +299,7 @@
 							  )
 				  (HAL_ADC_Start &hadc1
 						 )
-				  ,(uartprint "trigger")
+				  ,(uartprint "main.c_3 trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
@@ -331,11 +339,13 @@
 							     (string ,(format nil "~{~a~^ ~}\\r\\n"
 									      (mapcar #'(lambda (x)
 											  (destructuring-bind (name v &key (type "%d")) x
+											    (declare (ignorable v))
 											    (format nil "~a=~a"
 												    name type)))
 										      l)))
 							     ,@(mapcar #'(lambda (x)
 									   (destructuring-bind (name v &key (type "%d")) x
+									     (declare (ignorable name v type))
 									     v))
 								       l))))
 					    (declare (type int n))
@@ -386,7 +396,8 @@
 	       (do0
 		 ,(if (eq modulo 1)
 		     `(do0
-		       ,(uartprint e)
+		       ,(uartprint
+			 (format nil "stm32l4xx_it.c_~a" e))
 		       #+nil(let ((huart2))
 			 (declare (type "extern UART_HandleTypeDef" huart2))
 			 (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
@@ -400,7 +411,7 @@
 			   (declare (type "static int" count))
 			   (incf count)
 			   (when (== 0 (% count ,modulo))
-			     ,(uartprint (format nil "~a#~a" e modulo))
+			     ,(uartprint (format nil "stm32l4xx_it.c_~a#~a" e modulo))
 			     #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
 				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							,(+ -2 (length report)))
@@ -422,7 +433,7 @@
 	     `(stm32l4xx_hal_msp.c
 	       ,e
 	       (progn
-		  ,(uartprint (format nil "~a" e))
+		  ,(uartprint (format nil "stm32l4xx_hal_msp.c_~a" e))
 		 #+Nil
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
@@ -445,7 +456,7 @@
 	     `(main.c
 	       ,e
 	       (progn
-		 ,(uartprint (format nil "~a" e))
+		 ,(uartprint (format nil "main.c_~a" e))
 		#+nil (let ((huart2)) 
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
@@ -496,7 +507,14 @@
 	       (with-open-file (s full-fn ;"/dev/shm/o.c"
 				  :direction :output :if-exists :supersede :if-does-not-exist :create)
 		 (write-sequence new s))
-	       ))))))
+	       ))))
+    (with-open-file (s "/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source/messages.txt"
+		       :direction :output
+		       :if-exists :supersede
+		       :if-does-not-exist :create)
+      (loop for e in uart-print-message and i from 0 do
+	   
+	   (format s "~d ~a~%" i e)))))
 
 ;; NOTE: Ctrl - Shift - F in Eclipse formats the c-code
 ;; fastest serial speed without probes: 2MHz
