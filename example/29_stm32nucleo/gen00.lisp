@@ -92,9 +92,9 @@
     (defun global-log (msg) 
 	   `(progn
 	      (let (;(huart2)
-		    (htim2))
+		    (htim5))
 		(declare (type "extern UART_HandleTypeDef" huart2)
-			 (type "extern TIM_HandleTypeDef" htim2))
+			 (type "extern TIM_HandleTypeDef" htim5))
 		,(let (;(report (format nil "~a\\r\\n" msg))
 		       ;(i 0)
 		       )
@@ -111,7 +111,7 @@
 			(do0 ;; https://stm32f4-discovery.net/2015/06/how-to-properly-enabledisable-interrupts-in-arm-cortex-m/
 			 (setf (dot (aref glog glog_count)
 				    ts)
-			       htim2.Instance->CNT
+			       htim5.Instance->CNT
 					;(__HAL_TIM_GetCounter htim2)
 			       )
 			 ,(progn
@@ -239,6 +239,8 @@
 			 (HAL_TIM_Base_Start &htim6))
 		    (do0 (HAL_TIM_Base_Init &htim2)
 			 (HAL_TIM_Base_Start &htim2))
+		    (do0 (HAL_TIM_Base_Init &htim5)
+			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
 			    
@@ -331,7 +333,8 @@
 							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
 								 )
-							 (tim2 htim2.Instance->CNT :type "%ld") 
+							 (tim2 htim2.Instance->CNT :type "%ld")
+							 (tim5 htim5.Instance->CNT :type "%ld") 
 							 (tim6 htim6.Instance->CNT :type "%ld")
 							 (log# glog_count)
 							 #+danadc2
