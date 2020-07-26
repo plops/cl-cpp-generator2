@@ -95,10 +95,11 @@
 		    (htim2))
 		(declare (type "extern UART_HandleTypeDef" huart2)
 			 (type "extern TIM_HandleTypeDef" htim2))
-		,(let ((report (format nil "~a\\r\\n" msg))
-		       (i 0)
+		,(let (;(report (format nil "~a\\r\\n" msg))
+		       ;(i 0)
 		       )
-		   `(let ((c_msg (string ,report)))
+		   `(let (;(c_msg (string ,report))
+			  )
 		      (declare (type "const char*" c_msg))
 	       
 		     #+nil  (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
@@ -121,7 +122,7 @@
 				   ,(position msg uart-print-message :test #'string= )
 				   ;,(length uart-print-message)
 				   ))
-			 (let ((p (ref (aref (dot (aref glog glog_count)
+			 #+readable_log (let ((p (ref (aref (dot (aref glog glog_count)
 						   msg_str) 0))))
 			    ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1)))
 				 collect
@@ -153,7 +154,7 @@
 			 (ts uint32_t)
 		       
 		       (msg uint16_t)
-		       (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
+		       #+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
 		       
 		       )
 		     (let (
@@ -481,7 +482,7 @@
 			 (ts uint32_t)
 					
 		       (msg uint16_t)
-		       (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
+		       #+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
 		       )
 		     (let (
 			   (glog)
