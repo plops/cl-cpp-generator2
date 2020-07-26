@@ -293,7 +293,8 @@ int i = 132;
  printf("Result is: %d.%d", i/10, i%10);
 #+end_example
 
-
+** Disable Interrupts
+- https://stm32f4-discovery.net/2015/06/how-to-properly-enabledisable-interrupts-in-arm-cortex-m/
 ** Interleaved ADC
 
 - http://www.jiee.eu/wp-content/uploads/papers/vol2i1/v2i1_Jacko_Kovac.pdf describes delay problem

@@ -88,38 +88,44 @@
 	(n-dac-vals 4096)
 	(log-max-entries 99)
 	(log-max-message-length 27))
-    (defun uartprint (msg)
-      `(progn
-	 (let ((huart2)
-	      (htim2))
-	  (declare (type "extern UART_HandleTypeDef" huart2)
-		   (type "extern TIM_HandleTypeDef" htim2))
-	  ,(let ((report (format nil "~a\\r\\n" msg))
-		 (i 0))
-	     `(let ((c_msg (string ,report)))
-		(declare (type "const char*" c_msg))
+    (defun uartprint (msg) ;; FIXME: make sure this code isn't preempted by another interrupt
+	   `(progn
+	      (let (;(huart2)
+		    (htim2))
+		(declare (type "extern UART_HandleTypeDef" huart2)
+			 (type "extern TIM_HandleTypeDef" htim2))
+		,(let ((report (format nil "~a\\r\\n" msg))
+		       (i 0))
+		   `(do0 ;let ((c_msg (string ,report)))
+		      ;(declare (type "const char*" c_msg))
 	       
-		(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
-						     )
-				       ,(+ -2 (length report)))
-		(setf (dot (aref glog glog_count)
-			   ts)
-		      htim2.Instance->CNT
+		     #+nil  (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
+							   )
+						   ,(+ -2 (length report)))
+		     (progn
+		       (let ((prim (__get_PRIMASK)))
+			 (__disable_irq)
+			(do0 ;; https://stm32f4-discovery.net/2015/06/how-to-properly-enabledisable-interrupts-in-arm-cortex-m/
+			 (setf (dot (aref glog glog_count)
+				    ts)
+			       htim2.Instance->CNT
 					;(__HAL_TIM_GetCounter htim2)
-		      )
-		(let ((p (ref (aref (dot (aref glog glog_count)
-					 msg) 0))))
-		  ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
-			 (prog1
-			     `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
-					 )
-				   )
-			   (incf i)))
-		  (setf (aref p ,i) 0))
-		(do0
-		 (incf glog_count)
-		 (when (<= ,log-max-entries glog_count)
-		   (setf glog_count 0))))))))
+			       )
+			 #+nil (let ((p (ref (aref (dot (aref glog glog_count)
+							msg) 0))))
+				 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
+					(prog1
+					    `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
+							)
+						  )
+					  (incf i)))
+				 (setf (aref p ,i) 0))
+			 (do0
+			  (incf glog_count)
+			  (when (<= ,log-max-entries glog_count)
+			    (setf glog_count 0))))
+			(unless prim
+			  (__enable_irq)))))))))
     (progn
       (define-part
 	 `(main.c Includes 
@@ -134,13 +140,16 @@
 		     
 		     (defstruct0 log_t
 			 (ts uint32_t)
-		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+					; (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+		       (msg uint16_t)
 		       )
 		     (let (
 			   (glog)
 			   (glog_count 0)
 			   )
-		       (declare (type (array log_t ,log-max-entries) glog)
+		       (declare (type (array log_t ,log-max-entries)
+				 ; uint16_t
+				      glog)
 				(type int glog_count)
 				)))
 		    (let (#+adc1 (value_adc)
@@ -451,7 +460,8 @@
 		     ;(include <stm32l4xx_hal_tim.h>)
 		     (defstruct0 log_t
 			 (ts uint32_t)
-		       (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+					;(,(format nil "msg[~a]" log-max-message-length) uint8_t)
+		       (msg uint16_t)
 		       )
 		     (let (
 			   (glog)
