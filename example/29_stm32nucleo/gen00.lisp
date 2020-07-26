@@ -114,7 +114,7 @@
 					;(__HAL_TIM_GetCounter htim2)
 			       )
 			 ,(progn
-			    (push msg uart-print-message)
+			    (setf uart-print-message (append uart-print-message (list msg)))
 			    ;(defparameter *bla* uart-print-message)
 			    `(setf (dot (aref glog glog_count)
 					msg)
