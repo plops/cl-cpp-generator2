@@ -305,6 +305,8 @@ int i = 132;
 - https://www.st.com/resource/en/application_note/dm00069390-stm32f30x-adc-modes-and-application-stmicroelectronics.pdf
 ** Sync DAC and ADC
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
+- https://community.st.com/s/question/0D50X00009XkY6v/dacadc-conversion-timer-triggering in some devices timers can't trigger adc under certain conditions
+- https://youtu.be/GKpQ3n0_WwI?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=1391 perhaps i can use the deadtime hardware to trigger dac followed by adc
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
 #+begin_example
