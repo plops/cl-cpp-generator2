@@ -310,7 +310,7 @@
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  ;(HAL_Delay 100)
+				  (HAL_Delay 10)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -331,8 +331,9 @@
 							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
 								 )
-							 (tim2 htim2.Instance->CNT)
-							 (tim6 htim6.Instance->CNT)
+							 (tim2 htim2.Instance->CNT :type "%ld") 
+							 (tim6 htim6.Instance->CNT :type "%ld")
+							 (log# glog_count)
 							 #+danadc2
 							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
 							  (aref value_adc2 0) :type "%d"
@@ -381,10 +382,10 @@
 	     (include 
 	      "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 (DMA1_Channel7 :comment USART2_TX)
-					   DMA1_Channel2
+					   (DMA1_Channel2 :comment TIM2)
 					   (DMA1_Channel1 :modulo 1; 1000000
 							  :comment ADC1)
-					   DMA1_Channel3
+					   (DMA1_Channel3 :comment TIM6)
 					   ;#+dac1
 					   TIM6_DAC
 					   (SysTick :modulo  1000
