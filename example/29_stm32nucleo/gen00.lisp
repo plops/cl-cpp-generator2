@@ -115,7 +115,7 @@
 			       )
 			 ,(progn
 			    (push msg uart-print-message)
-			    
+			    (defparameter *bla* uart-print-message)
 			    `(setf (dot (aref glog glog_count)
 				      msg)
 				   ,(length uart-print-message)))
@@ -527,3 +527,6 @@
 ;; fastest serial speed without probes: 2MHz
 ;; fastest serial speed with logic analyzer on TX pin: 500kHz
 ;; minicom -D /dev/ttyACM0 -8 -b 500000
+
+#+nil
+(position "main.c_3 trigger" *bla* :test #'string= )
