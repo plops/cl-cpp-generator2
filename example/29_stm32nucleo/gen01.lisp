@@ -1,3 +1,4 @@
+(setf *features* (set-difference *features* '(:generic-c)))
 (declaim (optimize 
 	  (safety 3)
 	  (speed 0)
@@ -16,6 +17,9 @@
 (setf *features* (set-difference *features*
 				 '()))
 
+
+;; qmake -project
+;; qmake source1
 (progn
   (defparameter *source-dir* #P"example/29_stm32nucleo/source1/")
   
@@ -139,8 +143,8 @@
 			<cassert>
 					;<unordered_map>
 			;<string>
-			;     <fstream>
-			;     <thread>
+					;     <fstream>
+			<thread>
 			;     <vector>
 			;     <experimental/iterator>
 			;     <algorithm>
@@ -148,8 +152,8 @@
 		    " "
 		    (include
 			
-		     <QApplication>
-		     <QDialog>)
+		     <QtWidgets/QApplication>
+		     <QtWidgets/QDialog>)
 		    " "
 					;(include <yacx/main.hpp>)
 

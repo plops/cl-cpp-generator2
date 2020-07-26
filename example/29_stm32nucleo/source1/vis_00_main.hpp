@@ -8,9 +8,10 @@
 #include <chrono>
 #include <cstdio>
 #include <cassert>
+#include <thread>
 ;
-#include <QApplication>
-#include <QDialog>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QDialog>
 ;
 int main (int argc, char const *const *const argv)  ;  
 #endif

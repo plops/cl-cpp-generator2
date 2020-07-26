@@ -83,13 +83,13 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 4 1024))
+  (let ((n-channels (* 16 1024))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
-	(uart-print-message nil))
-    (defun uartprint (msg) ;; FIXME: make sure this code isn't preempted by another interrupt
+	(global-log-message nil))
+    (defun global-log (msg) 
 	   `(progn
 	      (let (;(huart2)
 		    (htim2))
@@ -115,12 +115,12 @@
 					;(__HAL_TIM_GetCounter htim2)
 			       )
 			 ,(progn
-			    (setf uart-print-message (append uart-print-message (list msg)))
-			    ;(defparameter *bla* uart-print-message)
+			    (setf global-log-message (append global-log-message (list msg)))
+			    ;(defparameter *bla* global-log-message)
 			    `(setf (dot (aref glog glog_count)
 					msg)
-				   ,(position msg uart-print-message :test #'string= )
-				   ;,(length uart-print-message)
+				   ,(position msg global-log-message :test #'string= )
+				   ;,(length global-log-message)
 				   ))
 			 #+readable_log (let ((p (ref (aref (dot (aref glog glog_count)
 						   msg_str) 0))))
@@ -218,7 +218,7 @@
 							   (unless (== 0 (% count ,irq-mod))
 							     (setf output_p 0))))
 						   (when output_p
-						     ,(uartprint (format nil "main.c_0 ~a ~a ~a~@[@~a~]"
+						     ,(global-log (format nil "main.c_0 ~a ~a ~a~@[@~a~]"
 									 module irq-name ch
 									 (unless (eq 1 irq-mod)
 									   irq-mod)))
@@ -280,7 +280,7 @@
 		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
 		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
 
-		    ,(uartprint "main.c_2 adc dmas started")
+		    ,(global-log "main.c_2 adc dmas started")
 		    #+nil ,(let ((report (format nil "adc dmas started\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
@@ -306,11 +306,11 @@
 							  )
 				  (HAL_ADC_Start &hadc1
 						 )
-				  ,(uartprint "main.c_3 trigger")
+				  ,(global-log "main.c_3 trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 10)
+				  (HAL_Delay 100)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -405,7 +405,7 @@
 	       (do0
 		 ,(if (eq modulo 1)
 		     `(do0
-		       ,(uartprint
+		       ,(global-log
 			 (format nil "stm32l4xx_it.c_~a" e))
 		       #+nil(let ((huart2))
 			 (declare (type "extern UART_HandleTypeDef" huart2))
@@ -420,7 +420,7 @@
 			   (declare (type "static int" count))
 			   (incf count)
 			   (when (== 0 (% count ,modulo))
-			     ,(uartprint (format nil "stm32l4xx_it.c_~a#~a" e modulo))
+			     ,(global-log (format nil "stm32l4xx_it.c_~a#~a" e modulo))
 			     #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
 				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							,(+ -2 (length report)))
@@ -442,7 +442,7 @@
 	     `(stm32l4xx_hal_msp.c
 	       ,e
 	       (progn
-		  ,(uartprint (format nil "stm32l4xx_hal_msp.c_~a" e))
+		  ,(global-log (format nil "stm32l4xx_hal_msp.c_~a" e))
 		 #+Nil
 		 (let ((huart2))
 		   (declare (type "extern UART_HandleTypeDef" huart2))
@@ -465,7 +465,7 @@
 	     `(main.c
 	       ,e
 	       (progn
-		 ,(uartprint (format nil "main.c_~a" e))
+		 ,(global-log (format nil "main.c_~a" e))
 		#+nil (let ((huart2)) 
 		   (declare (type "extern UART_HandleTypeDef" huart2))
 		  ,(let ((report (format nil "~a\\r\\n" e)))
@@ -522,7 +522,7 @@
 		       :direction :output
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
-      (loop for e in uart-print-message and i from 0 do
+      (loop for e in global-log-message and i from 0 do
 	   
 	   (format s "~d ~a~%" i e)))))
 

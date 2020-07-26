@@ -8,17 +8,18 @@
 #include <chrono>
 #include <cstdio>
 #include <iostream>
+#include <thread>
 
-#include <QApplication>
-#include <QDialog>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QDialog>
 
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char const *const *const argv) {
-  state._main_version = "918383856a14f30680b07cf0d66f62f334878323";
+  state._main_version = "cf4e8ec9202e94b7bd4cd4c02dd4e14c44772675";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "14:21:07 of Sunday, 2020-07-26 (GMT+1)";
+  state._code_generation_time = "14:27:09 of Sunday, 2020-07-26 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
