@@ -1,0 +1,32 @@
+0 ADC2_Init 0
+1 ADC1_Init 0
+2 USART2_Init 0
+3 ADC2_MspDeInit 1
+4 ADC2_MspInit 1
+5 ADC1_MspDeInit 1
+6 ADC1_MspInit 1
+7 USART2_MspDeInit 1
+8 USART2_MspInit 1
+9 NonMaskableInt_IRQn 0
+10 HardFault_IRQn 0
+11 MemoryManagement_IRQn 0
+12 BusFault_IRQn 0
+13 UsageFault_IRQn 0
+14 SVCall_IRQn 0
+15 DebugMonitor_IRQn 0
+16 PendSV_IRQn 0
+17 SysTick_IRQn 0#1000
+18 TIM6_DAC_IRQn 0
+19 DMA1_Channel3_IRQn 0
+20 DMA1_Channel1_IRQn 0#1000000
+21 DMA1_Channel2_IRQn 0
+22 DMA1_Channel7_IRQn 0
+23 USART2_IRQn 0
+24 trigger
+25 adc dmas started
+26 UART AbortOnError 
+27 UART TransmitCplt 
+28 UART Error 
+29 ADC ConvCplt @240
+30 ADC Error 
+31 ADC ConvHalfCplt @1000000
