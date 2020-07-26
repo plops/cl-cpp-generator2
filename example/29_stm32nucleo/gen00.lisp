@@ -365,7 +365,7 @@
 	      (include 
 	      "global_log.h"
 		      ))))
-      (define-part
+      (define-part 
 	  `(stm32l4xx_hal_msp.c
 	    Includes
 	    (do0
