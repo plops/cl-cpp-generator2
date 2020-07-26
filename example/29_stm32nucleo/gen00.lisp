@@ -331,6 +331,8 @@
 							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%d"
 								 )
+							 (tim2 htim2.Instance->CNT)
+							 (tim6 htim6.Instance->CNT)
 							 #+danadc2
 							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
 							  (aref value_adc2 0) :type "%d"
