@@ -86,8 +86,8 @@
   (let ((n-channels (* 2))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
-	(log-max-entries 99)
-	;(log-max-message-length 27)
+	(log-max-entries (* 6 1024))
+	(log-max-message-length 45)
 	(uart-print-message nil))
     (defun uartprint (msg) ;; FIXME: make sure this code isn't preempted by another interrupt
 	   `(progn
@@ -95,11 +95,11 @@
 		    (htim2))
 		(declare (type "extern UART_HandleTypeDef" huart2)
 			 (type "extern TIM_HandleTypeDef" htim2))
-		,(let (;(report (format nil "~a\\r\\n" msg))
-		       ;(i 0)
+		,(let ((report (format nil "~a\\r\\n" msg))
+		       (i 0)
 		       )
-		   `(do0 ;let ((c_msg (string ,report)))
-		      ;(declare (type "const char*" c_msg))
+		   `(let ((c_msg (string ,report)))
+		      (declare (type "const char*" c_msg))
 	       
 		     #+nil  (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" c_msg ;(string ,report)
 							   )
@@ -118,16 +118,17 @@
 			    
 			    `(setf (dot (aref glog glog_count)
 				      msg)
-				  ,(length uart-print-message)))
-			 #+nil (let ((p (ref (aref (dot (aref glog glog_count)
-							msg) 0))))
-				 ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1))) collect
-					(prog1
-					    `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
-							)
-						  )
-					  (incf i)))
-				 (setf (aref p ,i) 0))
+				   ,(length uart-print-message)))
+			 (let ((p (ref (aref (dot (aref glog glog_count)
+						   msg_str) 0))))
+			    ,@(loop for e across (subseq msg 0 (min (length msg) (- log-max-message-length 1)))
+				 collect
+				   (prog1
+				       `(do0 (setf (aref p ,i) (aref c_msg ,i) ; (char ,e)
+						   )
+					     )
+				     (incf i)))
+			    (setf (aref p ,i) 0))
 			 (do0
 			  (incf glog_count)
 			  (when (<= ,log-max-entries glog_count)
@@ -148,8 +149,10 @@
 		     
 		     (defstruct0 log_t
 			 (ts uint32_t)
-					; (,(format nil "msg[~a]" log-max-message-length) uint8_t)
+		       
 		       (msg uint16_t)
+		       (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
+		       
 		       )
 		     (let (
 			   (glog)
@@ -173,9 +176,10 @@
 				     value_dac)
 			       (type (array uint8_t ,n-tx-chars) BufferToSend))))))
       (let ((l `((ADC
-		  ((ConvHalfCplt :modulo 1000000)
+		  ((ConvHalfCplt :modulo 1 ;1000000
+				 )
 		   Error
-		   (ConvCplt :modulo  ,(* (/ 1024 128) 30) ;1000000
+		   (ConvCplt :modulo  1 ; ,(* (/ 1024 128) 30) ;1000000
 			     )
 		   ))
 		 (UART (Error TransmitCplt AbortOnError))
@@ -373,11 +377,13 @@
 	      "global_log.h"))))
       (let ((l `(,@(loop for e in `(USART2 DMA1_Channel7
 					   DMA1_Channel2
-					   (DMA1_Channel1 :modulo 1000000)
+					   (DMA1_Channel1 :modulo 1; 1000000
+							  )
 					   DMA1_Channel3
 					   ;#+dac1
 					   TIM6_DAC
-					   (SysTick :modulo 1000) ;; only show every 1000th interrupt
+					   (SysTick :modulo 1; 1000
+						    ) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
 					   NonMaskableInt)
@@ -471,8 +477,9 @@
 		     ;(include <stm32l4xx_hal_tim.h>)
 		     (defstruct0 log_t
 			 (ts uint32_t)
-					;(,(format nil "msg[~a]" log-max-message-length) uint8_t)
+					
 		       (msg uint16_t)
+		       (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
 		       )
 		     (let (
 			   (glog)

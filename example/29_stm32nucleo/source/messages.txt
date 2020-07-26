@@ -15,10 +15,10 @@
 14 stm32l4xx_it.c_SVCall_IRQn 0
 15 stm32l4xx_it.c_DebugMonitor_IRQn 0
 16 stm32l4xx_it.c_PendSV_IRQn 0
-17 stm32l4xx_it.c_SysTick_IRQn 0#1000
+17 stm32l4xx_it.c_SysTick_IRQn 0
 18 stm32l4xx_it.c_TIM6_DAC_IRQn 0
 19 stm32l4xx_it.c_DMA1_Channel3_IRQn 0
-20 stm32l4xx_it.c_DMA1_Channel1_IRQn 0#1000000
+20 stm32l4xx_it.c_DMA1_Channel1_IRQn 0
 21 stm32l4xx_it.c_DMA1_Channel2_IRQn 0
 22 stm32l4xx_it.c_DMA1_Channel7_IRQn 0
 23 stm32l4xx_it.c_USART2_IRQn 0
@@ -27,6 +27,6 @@
 26 main.c_0 UART AbortOnError 
 27 main.c_0 UART TransmitCplt 
 28 main.c_0 UART Error 
-29 main.c_0 ADC ConvCplt @240
+29 main.c_0 ADC ConvCplt 
 30 main.c_0 ADC Error 
-31 main.c_0 ADC ConvHalfCplt @1000000
+31 main.c_0 ADC ConvHalfCplt 
