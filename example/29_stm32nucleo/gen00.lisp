@@ -83,7 +83,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 2))
+  (let ((n-channels (* 1024))
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
 	(log-max-entries (* 2 1024))
@@ -385,7 +385,7 @@
 					   DMA1_Channel3
 					   ;#+dac1
 					   TIM6_DAC
-					   (SysTick :modulo 1; 1000
+					   (SysTick :modulo  1000
 						    ) ;; only show every 1000th interrupt
 					   PendSV DebugMonitor SVCall
 					   UsageFault BusFault MemoryManagement HardFault
