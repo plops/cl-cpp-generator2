@@ -392,7 +392,7 @@
 					   (DMA1_Channel2 :comment TIM2)
 					   (DMA1_Channel1 :modulo 1; 1000000
 							  :comment ADC1)
-					   (DMA1_Channel3 :comment TIM6)
+					   (DMA1_Channel3 :comment DAC_CH1)
 					   ;#+dac1
 					   TIM6_DAC
 					   (SysTick :modulo  1000
@@ -403,41 +403,43 @@
 		      collect
 			(if (listp e)
 			    (destructuring-bind (name &key (modulo 1) (comment nil)) e
-				(list (format nil "~a_IRQn 0 ~@[<~a>~]" name comment)
-				      modulo))
+				(list (format nil "~a_IRQn 0" name   ;~@[<~a>~] comment
+					      )
+				      modulo comment))
 			    (list (format nil "~a_IRQn 0" e)
 				  1)))
 		   )))
-	(loop for (e modulo) in l do 
-	     (define-part 
-	     `(stm32l4xx_it.c
-	       ,e
-	       (do0
-		 ,(if (eq modulo 1)
-		     `(do0
-		       ,(global-log
-			 (format nil "stm32l4xx_it.c_~a" e))
-		       #+nil(let ((huart2))
-			 (declare (type "extern UART_HandleTypeDef" huart2))
-			 (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
+	(loop for f in l do
+	     (destructuring-bind (e modulo &optional (comment "")) f
+	      (define-part 
+		  `(stm32l4xx_it.c
+		    ,e
+		    (do0
+		     ,(if (eq modulo 1)
+			  `(do0
+			    ,(global-log
+			      (format nil "stm32l4xx_it.c_~a" e))
+			    #+nil(let ((huart2))
+				   (declare (type "extern UART_HandleTypeDef" huart2))
+				   (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,(format nil "~a\\r\\n" e)))
 					      
-					      ,(+ 2 (length e)))))
-		     `(progn
-			(do0 ;let ((huart2))
-			 ;(declare (type "extern UART_HandleTypeDef" huart2))
+							  ,(+ 2 (length e)))))
+			  `(progn
+			     (do0	;let ((huart2))
+					;(declare (type "extern UART_HandleTypeDef" huart2))
 			
-			 (let ((count 0))
-			   (declare (type "static int" count))
-			   (incf count)
-			   (when (== 0 (% count ,modulo))
-			     ,(global-log (format nil "stm32l4xx_it.c_~a#~a" e modulo))
-			     #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
-				`(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
-							,(+ -2 (length report)))
-				#+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
-										 ,(length report)))
-					 (Error_Handler))))))))
-		)))))
+			      (let ((count 0))
+				(declare (type "static int" count))
+				(incf count)
+				(when (== 0 (% count ,modulo))
+				  ,(global-log (format nil "stm32l4xx_it.c_~a#~a" e modulo))
+				  #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
+					   `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
+								   ,(+ -2 (length report)))
+					   #+nil `(unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (string ,report)
+											    ,(length report)))
+						    (Error_Handler))))))))
+		     ))))))
 
       (let ((l `(,@(loop for e in `(USART2 #+dac1 DAC1 #+adc1 ADC1
 					   #+adc2 ADC2)

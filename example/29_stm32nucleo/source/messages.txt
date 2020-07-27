@@ -12,12 +12,12 @@
 11 main.c_0 DAC ConvHalfCplt Ch2
 12 main.c_2 adc dmas started
 13 stm32l4xx_it.c_USART2_IRQn 0
-14 stm32l4xx_it.c_DMA1_Channel7_IRQn 0 <USART2_TX>
-15 stm32l4xx_it.c_DMA1_Channel2_IRQn 0 <TIM2>
-16 stm32l4xx_it.c_DMA1_Channel1_IRQn 0 <ADC1>
-17 stm32l4xx_it.c_DMA1_Channel3_IRQn 0 <TIM6>
+14 stm32l4xx_it.c_DMA1_Channel7_IRQn 0
+15 stm32l4xx_it.c_DMA1_Channel2_IRQn 0
+16 stm32l4xx_it.c_DMA1_Channel1_IRQn 0
+17 stm32l4xx_it.c_DMA1_Channel3_IRQn 0
 18 stm32l4xx_it.c_TIM6_DAC_IRQn 0
-19 stm32l4xx_it.c_SysTick_IRQn 0 #1000
+19 stm32l4xx_it.c_SysTick_IRQn 0#1000
 20 stm32l4xx_it.c_PendSV_IRQn 0
 21 stm32l4xx_it.c_DebugMonitor_IRQn 0
 22 stm32l4xx_it.c_SVCall_IRQn 0
