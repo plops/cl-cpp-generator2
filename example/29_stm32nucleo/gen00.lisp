@@ -19,7 +19,7 @@
 (setf *features* (set-difference *features*
 				 '(;:dac1
 					;:adc1
-				   ;:adc2
+				   :adc2
 				   :opamp1
 				   )))
 
@@ -176,9 +176,9 @@
 				 #+dac1 (value_dac)
 			       
 				 (BufferToSend))
-		      (declare (type (array  uint8_t
-					;uint16_t
-					     ,(* 2 n-channels)) value_adc value_adc2)
+		      (declare (type (array  #+adc-interleaved uint8_t
+					     #-adc-interleaved uint16_t
+					     ,(* #+adc-interleaved 2 n-channels)) value_adc value_adc2)
 			       (type (array uint16_t ,n-dac-vals)
 					;uint16_t
 				     value_dac)
@@ -257,7 +257,7 @@
 						     DAC_ALIGN_12B_R))
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
 
-		    (do0
+		    #+adc-interleaved (do0
 		     (let ((mode))
 		       (declare (type ADC_MultiModeTypeDef mode))
 		       (setf mode.Mode ADC_DUALMODE_INTERL  ;; ADC_HAL_EC_MULTI_MODE
@@ -279,10 +279,11 @@
 				(HAL_ADCEx_Calibration_Start &hadc1 ADC_SINGLE_ENDED)
 				
 				)
+		    #+adc-interleaved
 		    (do0
 		     (HAL_ADCEx_MultiModeStart_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels)
 		     )
-		    #+nil (do0
+		     (do0
 		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
 		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
  
