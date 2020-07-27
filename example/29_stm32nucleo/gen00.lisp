@@ -235,7 +235,7 @@
       (define-part 
 	  `(main.c 2
 		   (do0
-		    (do0 (HAL_TIM_Base_Init &htim6)
+		    #+nil (do0 (HAL_TIM_Base_Init &htim6)
 			 (HAL_TIM_Base_Start &htim6))
 		    (do0 (HAL_TIM_Base_Init &htim2)
 			 (HAL_TIM_Base_Start &htim2))
@@ -335,7 +335,7 @@
 								 )
 							 (tim2 htim2.Instance->CNT :type "%ld")
 							 (tim5 htim5.Instance->CNT :type "%ld") 
-							 (tim6 htim6.Instance->CNT :type "%ld")
+							 ;(tim6 htim6.Instance->CNT :type "%ld")
 							 (log# glog_count)
 							 #+danadc2
 							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
