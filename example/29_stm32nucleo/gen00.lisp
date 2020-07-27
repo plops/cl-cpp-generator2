@@ -279,7 +279,7 @@
 		    #+nil (do0
 		     #+adc2 (HAL_ADC_Start_DMA &hadc2 (cast "uint32_t*" value_adc2) ,n-channels)
 		     #+adc1 (HAL_ADC_Start_DMA &hadc1 (cast "uint32_t*" value_adc) ,n-channels))
-
+ 
 		    ,(global-log "main.c_2 adc dmas started")
 		    #+nil ,(let ((report (format nil "adc dmas started\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
