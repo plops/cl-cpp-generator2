@@ -109,16 +109,13 @@
 		       (let ((prim (__get_PRIMASK)))
 			 (__disable_irq)
 			(do0 ;; https://stm32f4-discovery.net/2015/06/how-to-properly-enabledisable-interrupts-in-arm-cortex-m/
-			 (setf (dot (aref glog glog_count)
-				    ts)
-			       htim5.Instance->CNT
-					;(__HAL_TIM_GetCounter htim2)
-			       )
+			 (setf (aref glog_ts glog_count)
+			       htim5.Instance->CNT)
 			 ,(progn
 			    (setf global-log-message (append global-log-message (list msg)))
 			    ;(defparameter *bla* global-log-message)
-			    `(setf (dot (aref glog glog_count)
-					msg)
+			    `(setf (aref glog_msg glog_count)
+				   
 				   ,(position msg global-log-message :test #'string= )
 				   ;,(length global-log-message)
 				   ))
@@ -149,23 +146,31 @@
 	  `(main.c PV
 		   (do0
 		    (do0 
-		     
-		     (defstruct0 log_t
-			 (ts uint32_t)
+
+		     (let ((glog_ts)
+			   (glog_msg)
+			   (glog_count))
+		       (declare (type (array uint32_t ,log-max-entries) glog_ts)
+				(type (array uint8_t ,log-max-entries) glog_msg)
+				(type int glog_count)))
+
+		     #+nil(do0 
+		      (defstruct0 log_t
+			  (ts uint32_t)
 		       
-		       (msg uint16_t)
-		       #+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
+			(msg uint16_t)
+			#+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
 		       
-		       )
-		     (let (
-			   (glog)
-			   (glog_count 0)
-			   )
-		       (declare (type (array log_t ,log-max-entries)
-				 ; uint16_t
-				      glog)
-				(type int glog_count)
-				)))
+			)
+		      (let (
+			    (glog)
+			    (glog_count 0)
+			    )
+			(declare (type (array log_t ,log-max-entries)
+					; uint16_t
+				       glog)
+				 (type int glog_count)
+				 ))))
 		    (let (#+adc1 (value_adc)
 					;#+adc2 (value_adc2) ;; FIXME: 4 byte alignment for dma access
 				 #+dac1 (value_dac)
@@ -481,21 +486,30 @@
 		))))))
     (write-source "/home/martin/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/Core/Src/global_log.h"
 		  `(do0
-		    (do0 
-		     ;(include <stm32l4xx_hal_tim.h>)
-		     (defstruct0 log_t
-			 (ts uint32_t)
+		    (do0
+		     (let ((glog_ts)
+			   (glog_msg)
+			   (glog_count))
+		       (declare (type (array "extern uint32_t" ,log-max-entries) glog_ts)
+				(type (array "extern uint8_t" ,log-max-entries) glog_msg)
+				(type "extern int" glog_count)))
+					;(include <stm32l4xx_hal_tim.h>)
+		     #+nil(do0
+		      (defstruct0 log_t
+			  (ts uint32_t)
 					
-		       (msg uint16_t)
-		       #+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
-		       )
-		     (let (
-			   (glog)
-			   (glog_count)
-			   )
-		       (declare (type (array "extern log_t" ,log-max-entries) glog)
-				(type "extern int" glog_count)
-				)))
+			(msg uint16_t)
+			#+readable_log (,(format nil "msg_str[~a]" log-max-message-length) uint8_t)
+			)
+		      
+		      
+		      (let (
+			    (glog)
+			    (glog_count)
+			    )
+			(declare (type (array "extern log_t" ,log-max-entries) glog)
+				 (type "extern int" glog_count)
+				 ))))
 		    ))
     (loop for e in *parts* and i from 0 do
 	 (destructuring-bind (&key name file code) e
