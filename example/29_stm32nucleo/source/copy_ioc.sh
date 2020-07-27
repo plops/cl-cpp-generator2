@@ -1,0 +1,1 @@
+cp ~/STM32CubeIDE/workspace_1.4.0/nucleo_l476rg_dual_adc_dac/nucleo_l476rg_dual_adc_dac.ioc nucleo_l476rg_dual_adc_dac.ioc
