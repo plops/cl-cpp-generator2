@@ -307,6 +307,8 @@ int i = 132;
 - https://community.st.com/s/question/0D50X00009XkWEK/sync-dac-output-and-adc-reading
 - https://community.st.com/s/question/0D50X00009XkY6v/dacadc-conversion-timer-triggering in some devices timers can't trigger adc under certain conditions
 - https://youtu.be/GKpQ3n0_WwI?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=1391 perhaps i can use the deadtime hardware to trigger dac followed by adc
+  - https://youtu.be/GKpQ3n0_WwI?list=PLnMKNibPkDnEEvQWrDqVuu1w_iQ214GXi&t=722 preload mode must be preferred for applications with realtime constraints
+- https://www.st.com/resource/en/application_note/dm00042534-stm32-crossseries-timer-overview-stmicroelectronics.pdf 
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
 #+begin_example
