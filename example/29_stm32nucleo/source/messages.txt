@@ -34,7 +34,13 @@
 33 stm32l4xx_hal_msp.c_ADC1_MspDeInit 1
 34 stm32l4xx_hal_msp.c_ADC2_MspInit 1
 35 stm32l4xx_hal_msp.c_ADC2_MspDeInit 1
-36 main.c_USART2_Init 0
-37 main.c_DAC1_Init 0
-38 main.c_ADC1_Init 0
-39 main.c_ADC2_Init 0
+36 stm32l4xx_hal_msp.c_TIM2_MspInit 1
+37 stm32l4xx_hal_msp.c_TIM2_MspPostInit 1
+38 stm32l4xx_hal_msp.c_TIM2_MspDeInit 1
+39 stm32l4xx_hal_msp.c_TIM5_MspInit 1
+40 stm32l4xx_hal_msp.c_TIM5_MspPostInit 1
+41 stm32l4xx_hal_msp.c_TIM5_MspDeInit 1
+42 main.c_USART2_Init 0
+43 main.c_DAC1_Init 0
+44 main.c_ADC1_Init 0
+45 main.c_ADC2_Init 0

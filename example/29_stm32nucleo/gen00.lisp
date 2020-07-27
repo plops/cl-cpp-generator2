@@ -240,7 +240,7 @@
       (define-part 
 	  `(main.c 2
 		   (do0
-		    #+nil (do0 (HAL_TIM_Base_Init &htim6)
+		    #-nil (do0 (HAL_TIM_Base_Init &htim6)
 			 (HAL_TIM_Base_Start &htim6))
 		    (do0 (HAL_TIM_Base_Init &htim2)
 			 (HAL_TIM_Base_Start &htim2))
@@ -339,7 +339,7 @@
 								 )
 							 (tim2 htim2.Instance->CNT :type "%ld")
 							 (tim5 htim5.Instance->CNT :type "%ld") 
-							 ;(tim6 htim6.Instance->CNT :type "%ld")
+							 (tim6 htim6.Instance->CNT :type "%ld")
 							 (log# glog_count)
 							 #+danadc2
 							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
@@ -432,7 +432,7 @@
 				(declare (type "static int" count))
 				(incf count)
 				(when (== 0 (% count ,modulo))
-				  ,(global-log (format nil "stm32l4xx_it.c_~a#~a" e modulo))
+				  ,(global-log (format nil "stm32l4xx_it.c_~a#~a~@[<~a>~]" e modulo comment))
 				  #+nil ,(let ((report (format nil "~a#~a\\r\\n" e modulo)))
 					   `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 								   ,(+ -2 (length report)))
@@ -442,10 +442,18 @@
 		     ))))))
 
       (let ((l `(,@(loop for e in `(USART2 #+dac1 DAC1 #+adc1 ADC1
-					   #+adc2 ADC2)
+					   #+adc2 ADC2
+					   )
 		      appending
 			(list ;; MSP means mcu support package
 			 (format nil "~a_MspInit 1" e)
+			 (format nil "~a_MspDeInit 1" e)
+			 ))
+		   ,@(loop for e in `(TIM2 TIM5)
+		      appending
+			(list ;; MSP means mcu support package
+			 (format nil "~a_MspInit 1" e)
+			 (format nil "~a_MspPostInit 1" e)
 			 (format nil "~a_MspDeInit 1" e)
 			 ))
 		   )))
