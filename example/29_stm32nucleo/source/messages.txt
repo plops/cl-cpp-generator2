@@ -4,28 +4,37 @@
 3 main.c_0 UART Error 
 4 main.c_0 UART TransmitCplt 
 5 main.c_0 UART AbortOnError 
-6 main.c_2 adc dmas started
-7 stm32l4xx_it.c_USART2_IRQn 0
-8 stm32l4xx_it.c_DMA1_Channel7_IRQn 0 <USART2_TX>
-9 stm32l4xx_it.c_DMA1_Channel2_IRQn 0 <TIM2>
-10 stm32l4xx_it.c_DMA1_Channel1_IRQn 0 <ADC1>
-11 stm32l4xx_it.c_DMA1_Channel3_IRQn 0 <TIM6>
-12 stm32l4xx_it.c_TIM6_DAC_IRQn 0
-13 stm32l4xx_it.c_SysTick_IRQn 0 #1000
-14 stm32l4xx_it.c_PendSV_IRQn 0
-15 stm32l4xx_it.c_DebugMonitor_IRQn 0
-16 stm32l4xx_it.c_SVCall_IRQn 0
-17 stm32l4xx_it.c_UsageFault_IRQn 0
-18 stm32l4xx_it.c_BusFault_IRQn 0
-19 stm32l4xx_it.c_MemoryManagement_IRQn 0
-20 stm32l4xx_it.c_HardFault_IRQn 0
-21 stm32l4xx_it.c_NonMaskableInt_IRQn 0
-22 stm32l4xx_hal_msp.c_USART2_MspInit 1
-23 stm32l4xx_hal_msp.c_USART2_MspDeInit 1
-24 stm32l4xx_hal_msp.c_ADC1_MspInit 1
-25 stm32l4xx_hal_msp.c_ADC1_MspDeInit 1
-26 stm32l4xx_hal_msp.c_ADC2_MspInit 1
-27 stm32l4xx_hal_msp.c_ADC2_MspDeInit 1
-28 main.c_USART2_Init 0
-29 main.c_ADC1_Init 0
-30 main.c_ADC2_Init 0
+6 main.c_0 DAC Error Ch1
+7 main.c_0 DAC ConvCplt Ch1
+8 main.c_0 DAC ConvHalfCplt Ch1
+9 main.c_0 DAC Error Ch2
+10 main.c_0 DAC ConvCplt Ch2
+11 main.c_0 DAC ConvHalfCplt Ch2
+12 main.c_2 adc dmas started
+13 stm32l4xx_it.c_USART2_IRQn 0
+14 stm32l4xx_it.c_DMA1_Channel7_IRQn 0 <USART2_TX>
+15 stm32l4xx_it.c_DMA1_Channel2_IRQn 0 <TIM2>
+16 stm32l4xx_it.c_DMA1_Channel1_IRQn 0 <ADC1>
+17 stm32l4xx_it.c_DMA1_Channel3_IRQn 0 <TIM6>
+18 stm32l4xx_it.c_TIM6_DAC_IRQn 0
+19 stm32l4xx_it.c_SysTick_IRQn 0 #1000
+20 stm32l4xx_it.c_PendSV_IRQn 0
+21 stm32l4xx_it.c_DebugMonitor_IRQn 0
+22 stm32l4xx_it.c_SVCall_IRQn 0
+23 stm32l4xx_it.c_UsageFault_IRQn 0
+24 stm32l4xx_it.c_BusFault_IRQn 0
+25 stm32l4xx_it.c_MemoryManagement_IRQn 0
+26 stm32l4xx_it.c_HardFault_IRQn 0
+27 stm32l4xx_it.c_NonMaskableInt_IRQn 0
+28 stm32l4xx_hal_msp.c_USART2_MspInit 1
+29 stm32l4xx_hal_msp.c_USART2_MspDeInit 1
+30 stm32l4xx_hal_msp.c_DAC1_MspInit 1
+31 stm32l4xx_hal_msp.c_DAC1_MspDeInit 1
+32 stm32l4xx_hal_msp.c_ADC1_MspInit 1
+33 stm32l4xx_hal_msp.c_ADC1_MspDeInit 1
+34 stm32l4xx_hal_msp.c_ADC2_MspInit 1
+35 stm32l4xx_hal_msp.c_ADC2_MspDeInit 1
+36 main.c_USART2_Init 0
+37 main.c_DAC1_Init 0
+38 main.c_ADC1_Init 0
+39 main.c_ADC2_Init 0

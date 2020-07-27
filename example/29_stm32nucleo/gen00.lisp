@@ -17,7 +17,7 @@
 				     :opamp1)))
 
 (setf *features* (set-difference *features*
-				 '(:dac1
+				 '(;:dac1
 					;:adc1
 				   ;:adc2
 				   :opamp1
