@@ -311,7 +311,7 @@
 					    (setf value_dac 0))
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
-				  #+nil (HAL_ADC_Start &hadc1
+				  #-nil (HAL_ADC_Start &hadc1
 						 )
 				  #+nil ,(global-log "main.c_3 trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
