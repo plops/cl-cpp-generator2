@@ -243,12 +243,10 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (HAL_DAC_Init &hdac1)
-			    
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    (dotimes (i ,n-dac-vals)
 			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))))
 			       (setf (aref value_dac i) v)))
-			    
 			    (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
 						     DAC_ALIGN_12B_R))
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
