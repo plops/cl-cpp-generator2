@@ -86,7 +86,7 @@
   (let ((n-channels (* 16 1024)
 	  )
 	(n-tx-chars 128)
-	(n-dac-vals 4096)
+	(n-dac-vals 32)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
@@ -320,7 +320,12 @@
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  #+nil (HAL_Delay 10)
+				  (HAL_Delay 10)
+				  
+				  (do0
+				   (incf htim2.Instance->CCR2)
+				   (when (== 79 htim2.Instance->CCR2)
+				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -338,9 +343,17 @@
 					   (setf std (sqrtf var)))
 				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
-							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
+							     #+adc1
+							     (1 ;USE_HAL_UART_REGISTER_CALLBACKS
 								 (aref value_adc 0) :type "%03d"
 								 )
+							     (100
+								 (aref value_adc 100) :type "%03d"
+								 )
+							     (200
+								 (aref value_adc 200) :type "%03d"
+								 )
+							     (ccr2 htim2.Instance->CCR2 :type "%03d")
 							 (tim2 htim2.Instance->CNT :type "%4ld")
 							 (tim5 htim5.Instance->CNT :type "%9ld") 
 							 (tim6 htim6.Instance->CNT :type "%05ld")
