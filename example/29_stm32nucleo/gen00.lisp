@@ -312,13 +312,13 @@
 					    (setf value_dac 0))
 				  #+nil (HAL_DAC_SetValue &hdac1 DAC_CHANNEL_1 DAC_ALIGN_12B_R value_dac ; (aref value_dac count)
 							  )
-				  #-nil (HAL_ADC_Start &hadc1
+				  #+nil (HAL_ADC_Start &hadc1
 						 )
 				  #+nil ,(global-log "main.c_3 trigger")
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 10)
+				  #+nil (HAL_Delay 10)
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -337,12 +337,12 @@
 				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
 							 #+adc1 (1 ;USE_HAL_UART_REGISTER_CALLBACKS
-								 (aref value_adc 0) :type "%d"
+								 (aref value_adc 0) :type "%03d"
 								 )
-							 (tim2 htim2.Instance->CNT :type "%ld")
-							 (tim5 htim5.Instance->CNT :type "%ld") 
-							 (tim6 htim6.Instance->CNT :type "%ld")
-							 (log# glog_count)
+							 (tim2 htim2.Instance->CNT :type "%4ld")
+							 (tim5 htim5.Instance->CNT :type "%9ld") 
+							 (tim6 htim6.Instance->CNT :type "%05ld")
+							 (log# glog_count :type "%04d")
 							 #+danadc2
 							 (2 ;USE_HAL_UART_REGISTER_CALLBACKS
 							  (aref value_adc2 0) :type "%d"
