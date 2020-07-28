@@ -324,7 +324,7 @@
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== 79 htim2.Instance->CCR2)
+				   (when (== ,(- 8000 1) htim2.Instance->CCR2)
 				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -353,7 +353,7 @@
 							     (200
 								 (aref value_adc 200) :type "%03d"
 								 )
-							     (ccr2 htim2.Instance->CCR2 :type "%03d")
+							     (ccr2 htim2.Instance->CCR2 :type "%04d")
 							 (tim2 htim2.Instance->CNT :type "%4ld")
 							 (tim5 htim5.Instance->CNT :type "%9ld") 
 							 (tim6 htim6.Instance->CNT :type "%05ld")
