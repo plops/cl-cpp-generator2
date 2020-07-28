@@ -311,6 +311,8 @@ int i = 132;
 - https://www.st.com/resource/en/application_note/dm00042534-stm32-crossseries-timer-overview-stmicroelectronics.pdf 
 - https://community.st.com/s/question/0D50X00009XkajW/adc-trigger-on-timer-update
   - disable continuous conversion for trigger from timer to work
+- start pwm
+  - https://youtu.be/rM7QonHkh2w?t=180
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
 #+begin_example

@@ -244,7 +244,9 @@
 		    #-nil (do0 (HAL_TIM_Base_Init &htim6)
 			 (HAL_TIM_Base_Start &htim6))
 		    (do0 (HAL_TIM_Base_Init &htim2)
-			 (HAL_TIM_Base_Start &htim2))
+			 (HAL_TIM_Base_Start &htim2)
+			 (HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_1)
+			 (HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_2))
 		    (do0 (HAL_TIM_Base_Init &htim5)
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
