@@ -83,7 +83,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels 32 ;(* 16 1024)
+  (let ((n-channels (* 16 1024)
 	  )
 	(n-tx-chars 128)
 	(n-dac-vals 4096)
