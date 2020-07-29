@@ -326,7 +326,7 @@
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== ,(- 8000 1) htim2.Instance->CCR2)
+				   (when (== ,(- 40 1) htim2.Instance->CCR2)
 				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -351,7 +351,7 @@
 								 )
 							     ,@(loop for i below 8 collect
 								    `(,i 
-								  (aref value_adc ,i) :type "%03d"
+								  (aref value_adc ,i) :type "%4d"
 								  ))
 							     #+nil (100
 								 (aref value_adc 100) :type "%03d"
