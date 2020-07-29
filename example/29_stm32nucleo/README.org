@@ -316,6 +316,10 @@ int i = 132;
 ** Timer speed
   - https://community.st.com/s/question/0D50X00009Xka2mSAB/maximum-output-speed
     - fast timers shouldn't generate interrupts (otherwise they saturate cpu)
+** Clock source
+  - https://electronics.stackexchange.com/questions/334012/hsi-and-msi-applications-of-two-internal-rc-osc-in-microcontroller
+  - msi flexible, not precise, not at low temp, not in sleep mode
+  - hsi only 16MHz, less thermal drif, works in STOP modes
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
 #+begin_example
