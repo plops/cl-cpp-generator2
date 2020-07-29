@@ -83,10 +83,10 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels 16 ;(* 16 1024)
+  (let ((n-channels 40 ;(* 16 1024)
 	  )
-	(n-tx-chars 128)
-	(n-dac-vals 8)
+	(n-tx-chars (* 4 128))
+	(n-dac-vals 40)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
@@ -242,7 +242,9 @@
 	  `(main.c 2
 		   (do0
 		    #-nil (do0 (HAL_TIM_Base_Init &htim6)
-			 (HAL_TIM_Base_Start &htim6))
+			       (HAL_TIM_Base_Start &htim6))
+		    (do0 (HAL_TIM_Base_Init &htim4)
+			       (HAL_TIM_Base_Start &htim4))
 		    (do0 (HAL_TIM_Base_Init &htim2)
 			 (HAL_TIM_Base_Start &htim2)
 			 ;(HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_1)
@@ -254,7 +256,9 @@
 			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
-			    (setf (aref value_dac 0) 4095)
+			    (dotimes (i ,(floor n-dac-vals 2))
+			      (setf (aref value_dac i) 4095))
+			    
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    
@@ -326,7 +330,7 @@
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== ,(- 40 1) htim2.Instance->CCR2)
+				   (when (== ,(- 16 1) htim2.Instance->CCR2)
 				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -349,7 +353,7 @@
 							     (1 
 								 (aref value_adc 0) :type "%03d"
 								 )
-							     ,@(loop for i below 8 collect
+							     ,@(loop for i below n-channels collect
 								    `(,i 
 								  (aref value_adc ,i) :type "%4d"
 								  ))
@@ -380,8 +384,9 @@
 									      (mapcar #'(lambda (x)
 											  (destructuring-bind (name v &key (type "%d")) x
 											    (declare (ignorable v))
-											    (format nil "~a=~a"
-												    name type)))
+											    (format nil "~a"
+												    ;name
+												    type)))
 										      l)))
 							     ,@(mapcar #'(lambda (x)
 									   (destructuring-bind (name v &key (type "%d")) x
@@ -472,7 +477,7 @@
 			 (format nil "~a_MspInit 1" e)
 			 (format nil "~a_MspDeInit 1" e)
 			 ))
-		   ,@(loop for e in `(TIM2 TIM5)
+		   ,@(loop for e in `(TIM2 TIM4 TIM5 TIM6)
 		      appending
 			(list ;; MSP means mcu support package
 			 (format nil "~a_MspInit 1" e)
