@@ -83,7 +83,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels (* 16 1024)
+  (let ((n-channels 16 ;(* 16 1024)
 	  )
 	(n-tx-chars 128)
 	(n-dac-vals 8)
@@ -345,14 +345,18 @@
 					   (setf std (sqrtf var)))
 				      ,(let ((l `(#+srtadac1 (dac (aref value_dac count)
 							      )
-							     #+adc1
-							     (1 ;USE_HAL_UART_REGISTER_CALLBACKS
+							     #+staadc1
+							     (1 
 								 (aref value_adc 0) :type "%03d"
 								 )
-							     (100
+							     ,@(loop for i below 8 collect
+								    `(,i 
+								  (aref value_adc ,i) :type "%03d"
+								  ))
+							     #+nil (100
 								 (aref value_adc 100) :type "%03d"
 								 )
-							     (200
+							     #+nil (200
 								 (aref value_adc 200) :type "%03d"
 								 )
 							     (ccr2 htim2.Instance->CCR2 :type "%04d")
