@@ -86,7 +86,7 @@
   (let ((n-channels (* 16 1024)
 	  )
 	(n-tx-chars 128)
-	(n-dac-vals 32)
+	(n-dac-vals 8)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
@@ -251,8 +251,10 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
-			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))))
+			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
+				      ))
 				(setf (aref value_dac i) v)))
+			    (setf (aref value_dac 0) 4095)
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    
