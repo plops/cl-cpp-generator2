@@ -86,7 +86,7 @@
   (let ((n-channels 40 ;(* 16 1024)
 	  )
 	(n-tx-chars (* 4 128))
-	(n-dac-vals 40)
+	(n-dac-vals 10)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
@@ -244,7 +244,8 @@
 		    #-nil (do0 (HAL_TIM_Base_Init &htim6)
 			       (HAL_TIM_Base_Start &htim6))
 		    (do0 (HAL_TIM_Base_Init &htim4)
-			       (HAL_TIM_Base_Start &htim4))
+			 (HAL_TIM_Base_Start &htim4)
+			 (HAL_TIM_PWM_Start &htim4 TIM_CHANNEL_1))
 		    (do0 (HAL_TIM_Base_Init &htim2)
 			 (HAL_TIM_Base_Start &htim2)
 			 ;(HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_1)
@@ -256,7 +257,8 @@
 			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
-			    (dotimes (i ,(floor n-dac-vals 2))
+			    (setf (aref value_dac 0) 4095)
+			    #+nil (dotimes (i ,(floor n-dac-vals 2))
 			      (setf (aref value_dac i) 4095))
 			    
 			    (HAL_DAC_Init &hdac1)
@@ -328,9 +330,9 @@
 							     ,(+ -2 (length report))))
 				  (HAL_Delay 10)
 				  
-				  (do0
+				  #+Nil (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== ,(- 16 1) htim2.Instance->CCR2)
+				   (when (== ,(- 8 1) htim2.Instance->CCR2)
 				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -364,7 +366,8 @@
 								 (aref value_adc 200) :type "%03d"
 								 )
 							     (ccr2 htim2.Instance->CCR2 :type "%04d")
-							 (tim2 htim2.Instance->CNT :type "%4ld")
+							     (tim2 htim2.Instance->CNT :type "%4ld")
+							     (tim4 htim4.Instance->CNT :type "%4ld")
 							 (tim5 htim5.Instance->CNT :type "%9ld") 
 							 (tim6 htim6.Instance->CNT :type "%05ld")
 							 (log# glog_count :type "%04d")
