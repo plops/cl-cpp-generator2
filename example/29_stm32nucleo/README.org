@@ -313,6 +313,9 @@ int i = 132;
   - disable continuous conversion for trigger from timer to work
 - start pwm
   - https://youtu.be/rM7QonHkh2w?t=180
+** Timer speed
+  - https://community.st.com/s/question/0D50X00009Xka2mSAB/maximum-output-speed
+    - fast timers shouldn't generate interrupts (otherwise they saturate cpu)
 ** Protobuf
 - https://github.com/nanopb/nanopb/blob/master/docs/index.rst
 #+begin_example
