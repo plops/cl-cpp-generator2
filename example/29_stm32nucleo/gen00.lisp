@@ -141,6 +141,9 @@
 	 `(main.c Includes 
 		  (include <stdio.h>
 			   <math.h>
+			   <pb_encode.h>
+			   <pb_decode.h>
+			   "simple.pb.h"
 			   ;<stm32l4xx_hal_tim.h>
 			   )))
       (define-part
@@ -334,6 +337,20 @@
 				   (incf htim2.Instance->CCR2)
 				   (when (<= ,(- 80  3) htim2.Instance->CCR2) 
 				     (setf htim2.Instance->CCR2 2)))
+
+				  (progn
+				    (let ((message SimpleMessage_init_zero)
+					  (stream (pb_ostream_from_buffer BufferToSend (sizeof BufferToSend)))
+					  )
+				      (declare (type SimpleMessage message))
+				      (setf message.lucky_number 13)
+				      (let ((status (pb_encode &stream SimpleMessage_fields &message))
+					    (message_length stream.bytes_written))
+					(when status
+					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
+					   (Error_Handler)))))
+				   )
+				  #+nil
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -366,7 +383,7 @@
 							     #+nil (200
 								 (aref value_adc 200) :type "%03d"
 								 )
-							     (ccr2 htim2.Instance->CCR2 :type "%04d")
+							     (ccr2 htim2.Instance->CCR2 :type "%04ld")
 							     (tim2 htim2.Instance->CNT :type "%4ld")
 							     (tim4 htim4.Instance->CNT :type "%4ld")
 							 (tim5 htim5.Instance->CNT :type "%9ld") 
@@ -579,6 +596,23 @@
 				  :direction :output :if-exists :supersede :if-does-not-exist :create)
 		 (write-sequence new s))
 	       ))))
+    (let* ((pbdir "/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source/")
+	  (fn (format nil  "~a/simple.proto" pbdir)))
+      (write-source fn
+		   `(do0
+		     (setf syntax (string "proto2"))
+		     (space "message SimpleMessage"
+			    (progn
+			      (setf "required int32 lucky_number" 1)
+			      ))))
+      
+      (sb-ext:run-program "/home/martin/src/nanopb/generator/protoc" (list  (format nil "--nanopb_out=~a" pbdir)
+									    fn)
+			  )
+      (sb-ext:run-program "/bin/sh" (list  "/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source/copy_protobuf.sh")
+			  ))
+     
+    
     (with-open-file (s "/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source/messages.txt"
 		       :direction :output
 		       :if-exists :supersede
