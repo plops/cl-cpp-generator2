@@ -328,7 +328,7 @@
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 0)
+				  (HAL_Delay 10)
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
@@ -355,7 +355,7 @@
 							     (1 
 								 (aref value_adc 0) :type "%03d"
 								 )
-							     ,@(loop for i below 8 ;n-channels
+							     ,@(loop for i below n-channels
 								  collect
 								    `(,i 
 								  (aref value_adc ,i) :type "%4d"
