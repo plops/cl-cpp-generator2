@@ -332,8 +332,8 @@
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== ,(- 80 1) htim2.Instance->CCR2)
-				     (setf htim2.Instance->CCR2 1)))
+				   (when (<= ,(- 80 3) htim2.Instance->CCR2)
+				     (setf htim2.Instance->CCR2 2)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
