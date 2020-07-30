@@ -4,6 +4,8 @@
 #include "globals.h"
 
 ;
+// https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html
+;
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -16,10 +18,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "70b02c92be8bbe8a39d1567551d8a61c20adf7f7";
+  state._main_version = "540db3a7b9a12b05b1c6c8fce17d021c76bfa9e8";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "14:30:14 of Sunday, 2020-07-26 (GMT+1)";
+  state._code_generation_time = "22:33:57 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

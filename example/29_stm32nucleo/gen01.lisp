@@ -137,6 +137,7 @@
 	       (_code_generation_time :type "std::string")
 	       )
 	      (do0
+	       (comments "https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html")
 	       (include <iostream>
 			<chrono>
 			<cstdio>
@@ -160,8 +161,26 @@
 		    "using namespace std::chrono_literals;"
 		    (let ((state ,(emit-globals :init t)))
 		      (declare (type "State" state)))
-
 		    
+		   (defclass SerialReaderThread "public QThread"
+		     ;"Q_OBJECT"
+					;"public:"
+		     (defmethod SerialReaderThread (parent)
+		       (declare (values :constructor)
+				(construct ((QThread parent)))
+				(explicit)))
+		     (defmethod ~SerialReaderThread (parent)
+		       (declare (values :constructor)
+				)
+		       (m_mutex.lock)
+		       (setf m_quit true)
+		       (m_mutex.unlock)
+		       (wait))
+		     (defmethod startReader (portName waitTimeout response)
+		       (declare (type "const QString&" portName)
+				(type int waitTimeout)
+				(type "const QString&" response)))
+		     )
 		    		    
 		    (defun main (argc argv)
 		      (declare (values int)
