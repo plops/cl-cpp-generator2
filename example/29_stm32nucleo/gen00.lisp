@@ -254,7 +254,7 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
-			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
+			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* 7 i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
 			    ;(setf (aref value_dac 0) 4095)
