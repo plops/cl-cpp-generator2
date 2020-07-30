@@ -83,10 +83,10 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let ((n-channels 40 ;(* 16 1024)
+  (let* ((n-channels 40 ;(* 16 1024)
 	  )
 	(n-tx-chars (* 4 128))
-	(n-dac-vals 40)
+	(n-dac-vals (- (floor n-channels 2) 0))
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
