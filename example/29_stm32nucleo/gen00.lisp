@@ -254,18 +254,18 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
-			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
+			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
-			    (setf (aref value_dac 0) 4095)
+			    ;(setf (aref value_dac 0) 4095)
 			    #+nil (dotimes (i ,(floor n-dac-vals 2))
-			      (setf (aref value_dac i) 4095))
+				    (setf (aref value_dac i) 4095))
 			    
 			    (HAL_DAC_Init &hdac1)
 			    (HAL_DAC_Start &hdac1 DAC_CHANNEL_1)
 			    
 			    (HAL_DAC_Start_DMA &hdac1 DAC_CHANNEL_1 (cast "uint32_t*" value_dac) ,n-dac-vals
-						     DAC_ALIGN_12B_R))
+					       DAC_ALIGN_12B_R))
 		    #+opamp1 (HAL_OPAMP_Start &hopamp1)
 
 		    #+adc-interleaved (do0
