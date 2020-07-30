@@ -17,6 +17,17 @@ class SerialReaderThread : public QThread {
         explicit  SerialReaderThread (QObject* parent)  ;  ;
          ~SerialReaderThread ()  ;  ;
         void startReader (const QString& portName, int waitTimeout, const QString& response)  ;  ;
+        signals:
+        void request (const QString& s)  ;  ;
+        void error (const QString& s)  ;  ;
+        void timeout (const QString& s)  ;  ;
+        private:
+        void run ()  ;  ;
+        QString m_portName;
+        QString m_response;
+        int m_waitTimeout = 0;
+        QMutex m_mutex;
+        bool m_quit = false;
 };
 int main (int argc, char** argv)  ;  
 #endif

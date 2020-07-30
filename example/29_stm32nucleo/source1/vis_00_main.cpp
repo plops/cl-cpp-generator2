@@ -29,12 +29,16 @@ SerialReaderThread::~SerialReaderThread() {
 void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
                                      const QString &response) {
   1 = 2;
-};
+}
+void SerialReaderThread::request(const QString &s) {}
+void SerialReaderThread::error(const QString &s) {}
+void SerialReaderThread::timeout(const QString &s) {}
+void SerialReaderThread::run(){};
 int main(int argc, char **argv) {
-  state._main_version = "308d58bc46bfdfaa4442c75c146482b96cebbdd8";
+  state._main_version = "c785d3a9b535f9e02d1ec4a7bd8406d32126190a";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "22:41:34 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "23:15:10 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
