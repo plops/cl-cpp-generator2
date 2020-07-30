@@ -86,7 +86,7 @@
   (let ((n-channels 40 ;(* 16 1024)
 	  )
 	(n-tx-chars (* 4 128))
-	(n-dac-vals 10)
+	(n-dac-vals 40)
 	(log-max-entries (* 2 1024))
 	(log-max-message-length 27)
 	(global-log-message nil))
@@ -328,12 +328,12 @@
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 10)
+				  (HAL_Delay 0)
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)
 				   (when (== ,(- 80 1) htim2.Instance->CCR2)
-				     (setf htim2.Instance->CCR2 0)))
+				     (setf htim2.Instance->CCR2 1)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
