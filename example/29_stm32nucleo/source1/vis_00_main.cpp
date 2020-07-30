@@ -70,15 +70,21 @@ void SerialReaderThread::run() {
       m_mutex.lock();
       if ((currentPortName) == (m_portName)) {
         currentPortNameChanged = false;
+      } else {
+        currentPortName = m_portName;
+        currentPortNameChanged = true;
       }
+      currentWaitTimeout = m_waitTimeout;
+      currentResponse = m_response;
+      m_mutex.unlock();
     }
   }
 };
 int main(int argc, char **argv) {
-  state._main_version = "4794d9cd41ebc2d45d04d6f6cbb49abe635b241a";
+  state._main_version = "8a6e634918f4df8afc053fe417819646e98a76ec";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "23:35:30 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "23:37:07 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

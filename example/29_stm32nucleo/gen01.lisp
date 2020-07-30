@@ -239,7 +239,13 @@
 				   (m_mutex.lock)
 				   (if (== currentPortName m_portName)
 				       (do0
-					(setf currentPortNameChanged false))))))))))
+					(setf currentPortNameChanged false))
+				       (do0
+					(setf currentPortName m_portName
+					      currentPortNameChanged true)))
+				   (setf currentWaitTimeout m_waitTimeout
+					 currentResponse m_response)
+				   (m_mutex.unlock))))))))
 		     "QString m_portName;"
 		     "QString m_response;"
 		     "int m_waitTimeout = 0;"
