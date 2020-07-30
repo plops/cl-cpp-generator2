@@ -330,9 +330,9 @@
 							     ,(+ -2 (length report))))
 				  (HAL_Delay 10)
 				  
-				  #+Nil (do0
+				  (do0
 				   (incf htim2.Instance->CCR2)
-				   (when (== ,(- 8 1) htim2.Instance->CCR2)
+				   (when (== ,(- 80 1) htim2.Instance->CCR2)
 				     (setf htim2.Instance->CCR2 0)))
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
@@ -355,7 +355,8 @@
 							     (1 
 								 (aref value_adc 0) :type "%03d"
 								 )
-							     ,@(loop for i below n-channels collect
+							     ,@(loop for i below 8 ;n-channels
+								  collect
 								    `(,i 
 								  (aref value_adc ,i) :type "%4d"
 								  ))
