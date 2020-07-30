@@ -166,10 +166,13 @@
 		     ;"Q_OBJECT"
 					;"public:"
 		     (defmethod SerialReaderThread (parent)
-		       (declare (values :constructor)
+		       (declare (type QObject* parent)
+				(values :constructor)
+				
 				(construct ((QThread parent)))
-				(explicit)))
-		     (defmethod ~SerialReaderThread (parent)
+				(explicit))
+		       (setf 1 2))
+		     (defmethod ~SerialReaderThread ()
 		       (declare (values :constructor)
 				)
 		       (m_mutex.lock)
@@ -179,7 +182,8 @@
 		     (defmethod startReader (portName waitTimeout response)
 		       (declare (type "const QString&" portName)
 				(type int waitTimeout)
-				(type "const QString&" response)))
+				(type "const QString&" response))
+		       (setf 1 2))
 		     )
 		    		    
 		    (defun main (argc argv)

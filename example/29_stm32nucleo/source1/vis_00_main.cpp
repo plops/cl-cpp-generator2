@@ -17,11 +17,24 @@
 
 using namespace std::chrono_literals;
 State state = {};
+SerialReaderThread::SerialReaderThread(QObject *parent) : (QThread(parent))() {
+  1 = 2;
+}
+SerialReaderThread::~SerialReaderThread() {
+  m_mutex.lock();
+  m_quit = true;
+  m_mutex.unlock();
+  wait();
+}
+void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
+                                     const QString &response) {
+  1 = 2;
+};
 int main(int argc, char **argv) {
-  state._main_version = "540db3a7b9a12b05b1c6c8fce17d021c76bfa9e8";
+  state._main_version = "308d58bc46bfdfaa4442c75c146482b96cebbdd8";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "22:33:57 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "22:41:34 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
