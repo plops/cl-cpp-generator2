@@ -154,10 +154,20 @@
 		    (include
 			
 		     <QtWidgets/QApplication>
-		     <QtWidgets/QDialog>)
+		     <QtWidgets/QDialog>
+		     <QtSerialPort/QSerialPort>
+		     <QTime>
+		     
+		     )
 		    " "
 					;(include <yacx/main.hpp>)
-
+		    (split-header-and-code
+		     (do0
+		      (include <QMutex>
+			       <QThread>
+			       <QWaitCondition>))
+		     (include "vis_00_main.hpp"))
+		    
 		    "using namespace std::chrono_literals;"
 		    (let ((state ,(emit-globals :init t)))
 		      (declare (type "State" state)))

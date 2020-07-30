@@ -549,7 +549,8 @@ entry return-values contains a list of return values. currently supports type, v
 										while
 										include case
 										when if unless
-										let))))
+										let
+										split-header-and-code))))
 						    ""
 						    ";"))))
 				  (cdr code)))

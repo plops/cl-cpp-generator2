@@ -12,7 +12,16 @@
 ;
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
+#include <QtSerialPort/QSerialPort>
+#include <QTime>
 ;
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
+;
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>;
 class SerialReaderThread : public QThread {
         explicit  SerialReaderThread (QObject* parent)  ;  ;
          ~SerialReaderThread ()  ;  ;

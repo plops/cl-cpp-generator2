@@ -11,9 +11,12 @@
 #include <iostream>
 #include <thread>
 
+#include <QTime>
+#include <QtSerialPort/QSerialPort>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 
+#include "vis_00_main.hpp"
 using namespace std::chrono_literals;
 State state = {};
 SerialReaderThread::SerialReaderThread(QObject *parent) : QThread(parent) {}
@@ -81,10 +84,10 @@ void SerialReaderThread::run() {
   }
 };
 int main(int argc, char **argv) {
-  state._main_version = "8a6e634918f4df8afc053fe417819646e98a76ec";
+  state._main_version = "73930fa01e217579bf3271aaedfe658cac44544c";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "23:37:07 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "23:43:25 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
