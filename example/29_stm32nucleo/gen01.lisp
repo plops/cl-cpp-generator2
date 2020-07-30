@@ -206,7 +206,40 @@
 			     (setf currentPortName m_portName
 				   currentPortNameChanged true))
 			   (let ((currentWaitTimeout m_waitTimeout)
-				 (currentResponse m_response))))))
+				 (currentResponse m_response))
+			     (m_mutex.unlock)
+			     (let ((serial))
+			       (declare (type QSerialPort serial))
+			       (while (not m_quit)
+				 (when currentPortNameChanged
+				   (serial.close)
+				   (serial.setPortName currentPortName)
+				   (unless (serial.open QIODevice--ReadWrite)
+				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
+							     (arg m_portName)
+							     (arg (serial.error)))))
+				     (return))
+				   (if (serial.waitForReadyRead currentWaitTimeout)
+				       (let ((requestData (serial.readAll)))
+				       (while (serial.waitForReadyRead 10)
+					 (incf requestData (serial.readAll)))
+				       #+nil
+				       (let ((responseData (currentResponse.toUtf8)))
+					 (serial.write responseData)
+					 (if (serial.waitForBytesWritten m_waitTimeout)
+					     (let ((request (QString--fromUtf8 requestData)))
+					       (space emit (this->request request)))
+					     (space emit (timeout (dot (tr (string "Wait write response timeout %1"))
+								       (arg (dot (QTime--currentTime)
+										 (toString)))))))))
+				       (space emit (timeout (dot (tr (string "Wait read request timeout %1"))
+								       (arg (dot (QTime--currentTime)
+										 (toString))))))
+				       )
+				   (m_mutex.lock)
+				   (if (== currentPortName m_portName)
+				       (do0
+					(setf currentPortNameChanged false))))))))))
 		     "QString m_portName;"
 		     "QString m_response;"
 		     "int m_waitTimeout = 0;"

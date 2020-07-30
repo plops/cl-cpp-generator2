@@ -544,7 +544,12 @@ entry return-values contains a list of return values. currently supports type, v
 							(and (typep x 'string))
 							(and (typep x '(array character (*))))
 							(and (listp x)
-							     (member (car x) `(defun if do for for-range include dotimes while case when unless progn))))
+							     (member (car x) `(defun do do0 progn
+										for for-range dotimes
+										while
+										include case
+										when if unless
+										let))))
 						    ""
 						    ";"))))
 				  (cdr code)))

@@ -3,7 +3,6 @@
 
 #include "globals.h"
 
-;
 // https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html
 ;
 #include <cassert>
@@ -47,12 +46,39 @@ void SerialReaderThread::run() {
   }
   auto currentWaitTimeout = m_waitTimeout;
   auto currentResponse = m_response;
+  m_mutex.unlock();
+  QSerialPort serial;
+  while (!(m_quit)) {
+    if (currentPortNameChanged) {
+      serial.close();
+      serial.setPortName(currentPortName);
+      if (!(serial.open(QIODevice::ReadWrite))) {
+        emit error(tr("Cant open %1, error code %2")
+                       .arg(m_portName)
+                       .arg(serial.error()));
+        return;
+      }
+      if (serial.waitForReadyRead(currentWaitTimeout)) {
+        auto requestData = serial.readAll();
+        while (serial.waitForReadyRead(10)) {
+          (requestData) += (serial.readAll());
+        }
+      } else {
+        emit timeout(tr("Wait read request timeout %1")
+                         .arg(QTime::currentTime().toString()));
+      }
+      m_mutex.lock();
+      if ((currentPortName) == (m_portName)) {
+        currentPortNameChanged = false;
+      }
+    }
+  }
 };
 int main(int argc, char **argv) {
-  state._main_version = "54a25292f143d0cdee976744c74ea5ca87f43c54";
+  state._main_version = "4794d9cd41ebc2d45d04d6f6cbb49abe635b241a";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "23:22:15 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "23:35:30 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -79,7 +105,7 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
       << (std::setw(8)) << (" state._code_generation_time='")
       << (state._code_generation_time) << ("'") << (std::endl) << (std::flush);
-  auto app(argc, argv);
+  QApplication app(argc, argv);
 
   (std::cout)
       << (std::setw(10))
@@ -88,4 +114,4 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("end main") << (" ")
       << (std::endl) << (std::flush);
   return 0;
-};
+}

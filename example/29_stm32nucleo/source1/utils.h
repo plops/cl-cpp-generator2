@@ -7,6 +7,4 @@
 #include <iostream>
 #include <vector>
 
-;
-
 #endif
