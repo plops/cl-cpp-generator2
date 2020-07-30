@@ -18,6 +18,7 @@
 (setf (readtable-case *readtable*) :invert)
 
 (defparameter *file-hashes* (make-hash-table))
+(defparameter *auto-keyword* "auto")
 
 (defun write-source (name code &optional (dir (user-homedir-pathname))
 				 ignore-hash)
@@ -140,8 +141,9 @@ entry return-values contains a list of return values. currently supports type, v
     (cond ((null type)
 
 	   (format nil "~a ~a"
-		   #+generic-c "__auto_type"
-		    #-generic-c "auto"
+		   ;#+generic-c "__auto_type"
+					; #-generic-c "auto"
+		   *auto-keyword*
 		    (funcall emit name)))
 	  ((and (listp type)
 		(eq 'array (first type)))
@@ -156,8 +158,9 @@ entry return-values contains a list of return values. currently supports type, v
 	  (t (format nil "~a ~a"
 		(if type
 		    (funcall emit type)
-		    #+generic-c "__auto_type"
-		    #-generic-c "auto"
+		    ;#+generic-c "__auto_type"
+					;#-generic-c "auto"
+		    *auto-keyword*
 		    )
 		(funcall emit name))))
     #+nil (if (listp type)
@@ -856,8 +859,9 @@ entry return-values contains a list of return values. currently supports type, v
 				       (emit `(progn ,@statement-list)))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
 			     (emit `(for (,(format nil "~a ~a = 0"
-						   #+generic-c "__auto_type"
-						   #-generic-c "auto"
+						   ;#+generic-c "__auto_type"
+					;#-generic-c "auto"
+						   *auto-keyword*
 						   (emit i)) ;; int
 					   (< ,(emit i) ,(emit n))
 					   (incf ,(emit i) ,(emit step)))

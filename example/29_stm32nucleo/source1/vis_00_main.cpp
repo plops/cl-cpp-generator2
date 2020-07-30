@@ -17,9 +17,7 @@
 
 using namespace std::chrono_literals;
 State state = {};
-SerialReaderThread::SerialReaderThread(QObject *parent) : (QThread(parent))() {
-  1 = 2;
-}
+SerialReaderThread::SerialReaderThread(QObject *parent) : QThread(parent) {}
 SerialReaderThread::~SerialReaderThread() {
   m_mutex.lock();
   m_quit = true;
@@ -28,17 +26,33 @@ SerialReaderThread::~SerialReaderThread() {
 }
 void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
                                      const QString &response) {
-  1 = 2;
+  const QMutexLocker locker(&m_mutex);
+  m_portName = portName;
+  m_waitTimeout = waitTimeout;
+  m_response = response;
+  if (!(isRunning())) {
+    start();
+  }
 }
 void SerialReaderThread::request(const QString &s) {}
 void SerialReaderThread::error(const QString &s) {}
 void SerialReaderThread::timeout(const QString &s) {}
-void SerialReaderThread::run(){};
+void SerialReaderThread::run() {
+  bool currentPortNameChanged = false;
+  m_mutex.lock();
+  QString currentPortName;
+  if (!((currentPortName) == (m_portName))) {
+    currentPortName = m_portName;
+    currentPortNameChanged = true;
+  }
+  auto currentWaitTimeout = m_waitTimeout;
+  auto currentResponse = m_response;
+};
 int main(int argc, char **argv) {
-  state._main_version = "c785d3a9b535f9e02d1ec4a7bd8406d32126190a";
+  state._main_version = "54a25292f143d0cdee976744c74ea5ca87f43c54";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "23:15:10 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "23:22:15 of Thursday, 2020-07-30 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -65,7 +79,7 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
       << (std::setw(8)) << (" state._code_generation_time='")
       << (state._code_generation_time) << ("'") << (std::endl) << (std::flush);
-  QApplication app(argc, argv);
+  auto app(argc, argv);
 
   (std::cout)
       << (std::setw(10))

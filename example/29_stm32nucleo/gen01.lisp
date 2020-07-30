@@ -168,9 +168,8 @@
 		     (defmethod SerialReaderThread (parent)
 		       (declare (type QObject* parent)
 				(values :constructor)
-				(construct ((QThread parent)))
-				(explicit))
-		       (setf 1 2))
+				(construct (QThread parent))
+				(explicit)))
 		     (defmethod ~SerialReaderThread ()
 		       (declare (values :constructor)
 				)
@@ -182,7 +181,13 @@
 		       (declare (type "const QString&" portName)
 				(type int waitTimeout)
 				(type "const QString&" response))
-		       (setf 1 2))
+		       "const QMutexLocker locker(&m_mutex);"
+		       ,@(loop for e in `(portName waitTimeout response)
+			    collect
+			      `(setf ,(format nil "m_~a" e)
+				     ,e))
+		       (unless (isRunning)
+			 (start)))
 		     "signals:"
 		     (defmethod request (s)
 		       (declare (type "const QString&" s)))
@@ -192,7 +197,16 @@
 		       (declare (type "const QString&" s)))
 		     "private:"
 		     (defmethod run ()
-		       )
+		       (let ((currentPortNameChanged false))
+			 (declare (type bool currentPortNameChanged))
+			 (m_mutex.lock)
+			 (let ((currentPortName))
+			   (declare (type QString currentPortName))
+			   (unless (== currentPortName m_portName)
+			     (setf currentPortName m_portName
+				   currentPortNameChanged true))
+			   (let ((currentWaitTimeout m_waitTimeout)
+				 (currentResponse m_response))))))
 		     "QString m_portName;"
 		     "QString m_response;"
 		     "int m_waitTimeout = 0;"
