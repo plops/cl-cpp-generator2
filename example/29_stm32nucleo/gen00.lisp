@@ -354,7 +354,7 @@
 							     #+staadc1
 							     (1 
 								 (aref value_adc 0) :type "%03d"
-								 )
+								 ) 
 							     ,@(loop for i below n-channels
 								  collect
 								    `(,i 
