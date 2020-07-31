@@ -43,10 +43,6 @@ Dialog::Dialog(QWidget *parent)
   setWindowTitle(tr("Blocking Serial Reader"));
   m_serialPortComboBox->setFocus();
   connect(m_runButton, &QPushButton::clicked, this, &Dialog::startReader);
-  connect(&m_thread, &SerialReaderThread::request, this, &Dialog::showRequest);
-  connect(&m_thread, &SerialReaderThread::error, this, &Dialog::processError);
-  connect(&m_thread, &SerialReaderThread::timeout, this,
-          &Dialog::processTimeout);
   connect(m_serialPortComboBox,
           QOverload<const QString &>::of(&QComboBox::currentIndexChanged), this,
           &Dialog::activateRunButton);

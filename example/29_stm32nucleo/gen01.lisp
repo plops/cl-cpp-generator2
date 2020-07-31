@@ -361,7 +361,7 @@
 			  (serialPortLabel QLabel* :init (space new (QLabel (tr (string "Serial port:")))))
 			  (serialPortComboBox QComboBox* :init (space new QComboBox))
 			  (waitRequestLabel QLabel* :init (space new (QLabel (tr (string "Wait request, msec:")))))
-			  (waitRequestSpinBox QSpinBox* :init (space new QSpinBox))
+			   (waitRequestSpinBox QSpinBox* :init (space new QSpinBox))
 			  (responseLabel QLabel* :init (space new (QLabel (tr (string "Response:")))))
 			  (responseLineEdit QLineEdit* :init (space new (QLineEdit (tr (string "hello ... ")))))
 			  (trafficLabel QLabel* :init (space new (QLabel (tr (string "No traffic.")))))
@@ -409,14 +409,15 @@
 		      (m_serialPortComboBox->setFocus)
 		      ;; receiver is always this
 		      ,@(loop for e in `((m_runButton &QPushButton--clicked &Dialog--startReader)
-					 (&m_thread &SerialReaderThread--request &Dialog--showRequest)
-					 (&m_thread &SerialReaderThread--error &Dialog--processError)
-					 (&m_thread &SerialReaderThread--timeout &Dialog--processTimeout)
+					 ;(&m_thread &SerialReaderThread--request &Dialog--showRequest)
+					 ;(&m_thread &SerialReaderThread--error &Dialog--processError)
+					 ;(&m_thread &SerialReaderThread--timeout &Dialog--processTimeout)
 					 (m_serialPortComboBox ("QOverload<const QString&>::of"
 								 &QComboBox--currentIndexChanged)
 								&Dialog--activateRunButton)
 					 (m_waitRequestSpinBox &QSpinBox--textChanged &Dialog--activateRunButton)
-					 (m_responseLineEdit &QLineEdit--textChanged &Dialog--activateRunButton))
+					 (m_responseLineEdit &QLineEdit--textChanged &Dialog--activateRunButton)
+					 )
 			   collect
 			     (destructuring-bind (sender signal method) e
 			      `(connect ,sender ,signal this ,method)))))
