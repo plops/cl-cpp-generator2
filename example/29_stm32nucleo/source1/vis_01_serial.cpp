@@ -100,7 +100,7 @@ void SerialReaderThread::run() {
                   << (" ") << ("FlowControl = NoFlowControl") << (" ")
                   << (std::endl) << (std::flush);
       (serial.setFlowControl)(QSerialPort::NoFlowControl);
-      (serial.setBaudRate)(1000000);
+      (serial.setBaudRate)(2000000);
       if (!(serial.open(QIODevice::ReadWrite))) {
         emit error(tr("Cant open %1, error code %2")
                        .arg(m_portName)
