@@ -300,7 +300,7 @@
 				   ,(logprint "new port name" `())
 				   (serial.close)
 				   (serial.setPortName currentPortName)
-				   ,@(loop for (e f) in `((BaudRate Baud115200)
+				   ,@(loop for (e f) in `(;(BaudRate Baud115200)
 							  (Parity NoParity)
 							  (DataBits Data8)
 							  (StopBits OneStop)
@@ -309,6 +309,7 @@
 					  `(do0
 					    ,(logprint (format nil "~a = ~a" e f) `())
 					    ((dot serial ,(format nil "set~a" e)) ,(format nil "QSerialPort::~a" f))))
+				   ((dot serial ,(format nil "set~a" 'BaudRate)) 500000)
 				   (unless (serial.open QIODevice--ReadWrite)
 				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
 							     (arg m_portName)
@@ -319,8 +320,9 @@
 				       (let ((requestData (serial.readAll)))
 					 
 					 (while (serial.waitForReadyRead 10)
-					   ,(logprint "readAll" `((requestData.data)))
-					   (incf requestData (serial.readAll)))
+					   (let ((a (serial.readAll)))
+					     ,(logprint "readAll" `((a.data)))
+					     (incf requestData a)))
 				       
 				       #+nil
 				       (let ((responseData (currentResponse.toUtf8)))

@@ -67,16 +67,6 @@ void SerialReaderThread::run() {
                           .count())
                   << (" ") << (std::this_thread::get_id()) << (" ")
                   << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("BaudRate = Baud115200") << (" ") << (std::endl)
-                  << (std::flush);
-      (serial.setBaudRate)(QSerialPort::Baud115200);
-
-      (std::cout) << (std::setw(10))
-                  << (std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count())
-                  << (" ") << (std::this_thread::get_id()) << (" ")
-                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
                   << (" ") << ("Parity = NoParity") << (" ") << (std::endl)
                   << (std::flush);
       (serial.setParity)(QSerialPort::NoParity);
@@ -110,6 +100,7 @@ void SerialReaderThread::run() {
                   << (" ") << ("FlowControl = NoFlowControl") << (" ")
                   << (std::endl) << (std::flush);
       (serial.setFlowControl)(QSerialPort::NoFlowControl);
+      (serial.setBaudRate)(500000);
       if (!(serial.open(QIODevice::ReadWrite))) {
         emit error(tr("Cant open %1, error code %2")
                        .arg(m_portName)
@@ -127,6 +118,7 @@ void SerialReaderThread::run() {
       if (serial.waitForReadyRead(currentWaitTimeout)) {
         auto requestData = serial.readAll();
         while (serial.waitForReadyRead(10)) {
+          auto a = serial.readAll();
 
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
@@ -135,10 +127,9 @@ void SerialReaderThread::run() {
                       << (" ") << (std::this_thread::get_id()) << (" ")
                       << (__FILE__) << (":") << (__LINE__) << (" ")
                       << (__func__) << (" ") << ("readAll") << (" ")
-                      << (std::setw(8)) << (" requestData.data()='")
-                      << (requestData.data()) << ("'") << (std::endl)
-                      << (std::flush);
-          (requestData) += (serial.readAll());
+                      << (std::setw(8)) << (" a.data()='") << (a.data())
+                      << ("'") << (std::endl) << (std::flush);
+          (requestData) += (a);
         }
       } else {
         emit timeout(tr("Wait read request timeout %1")
