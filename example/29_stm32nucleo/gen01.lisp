@@ -317,9 +317,11 @@
 				   ,(logprint "open" `())
 				   (if (serial.waitForReadyRead currentWaitTimeout)
 				       (let ((requestData (serial.readAll)))
-					 ,(logprint "readAll" `())
-				       (while (serial.waitForReadyRead 10)
-					 (incf requestData (serial.readAll)))
+					 
+					 (while (serial.waitForReadyRead 10)
+					   ,(logprint "readAll" `((requestData.data)))
+					   (incf requestData (serial.readAll)))
+				       
 				       #+nil
 				       (let ((responseData (currentResponse.toUtf8)))
 					 (serial.write responseData)

@@ -126,16 +126,18 @@ void SerialReaderThread::run() {
                   << (" ") << ("open") << (" ") << (std::endl) << (std::flush);
       if (serial.waitForReadyRead(currentWaitTimeout)) {
         auto requestData = serial.readAll();
-
-        (std::cout) << (std::setw(10))
-                    << (std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count())
-                    << (" ") << (std::this_thread::get_id()) << (" ")
-                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("readAll") << (" ") << (std::endl)
-                    << (std::flush);
         while (serial.waitForReadyRead(10)) {
+
+          (std::cout) << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("readAll") << (" ")
+                      << (std::setw(8)) << (" requestData.data()='")
+                      << (requestData.data()) << ("'") << (std::endl)
+                      << (std::flush);
           (requestData) += (serial.readAll());
         }
       } else {
