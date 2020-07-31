@@ -82,10 +82,10 @@ void SerialReaderThread::run() {
   }
 };
 int main(int argc, char **argv) {
-  state._main_version = "6b19f07d520fa357a2c8b3346a9f3dc261c095e7";
+  state._main_version = "1b15346c0729cd40a7fda8db514926aca8881bfa";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "05:55:51 of Friday, 2020-07-31 (GMT+1)";
+  state._code_generation_time = "06:11:32 of Friday, 2020-07-31 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

@@ -14,12 +14,16 @@ class QComboBox;
 class QSpinBox;
 class QPushButton;
 QT_END_NAMESPACE;;
-class Dialog : public Dialog {
+class Dialog : public QDialog {
         Q_OBJECT;
         public:
         explicit  Dialog (QObject* parent = nullptr)  ;  ;
         private slots:
         void startReader ()  ;  ;
+        void showRequest (QString& s)  ;  ;
+        void processError (QString& s)  ;  ;
+        void processTimeout (QString& s)  ;  ;
+        void activateRunButton (QString& s)  ;  ;
         private:
         int m_transactionCount=0;
         QLabel* m_serialPortLabel=nullptr;

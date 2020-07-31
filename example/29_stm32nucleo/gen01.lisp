@@ -131,7 +131,7 @@
     `(dot state ,arg))
   
   (let*  ()
-   (define-module
+    (define-module
        `(main ((_main_version :type "std::string")
 	       (_code_repository :type "std::string")
 	       (_code_generation_time :type "std::string")
@@ -166,7 +166,7 @@
 		      (include <QMutex>
 			       <QThread>
 			       <QWaitCondition>))
-		     (include "vis_00_main.hpp"))
+		     (include "vis_01_serial.hpp"))
 		    
 		    "using namespace std::chrono_literals;"
 		    (let ((state ,(emit-globals :init t)))
@@ -302,7 +302,180 @@
 			(declare (type QApplication (app argc argv))))
 
 		      ,(logprint "end main" `())
-		      (return 0))))))
+		      (return 0)))))
+
+    (define-module
+       `(serial ()
+	      (do0
+	       (comments "https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html")
+	       
+	       
+		    (include
+			
+		     <QtWidgets/QApplication>
+		     <QtWidgets/QDialog>
+		     <QtSerialPort/QSerialPort>
+		     <QTime>
+		     
+		     )
+
+		    (split-header-and-code
+		     (do0
+		      (include <QMutex>
+			       <QThread>
+			       <QWaitCondition>))
+		     (include "vis_01_serial.hpp"))
+		    		    
+		   (defclass SerialReaderThread "public QThread"
+		     "Q_OBJECT"
+		     "public:"
+		     (defmethod SerialReaderThread (parent)
+		       (declare (type QObject* parent)
+				(values :constructor)
+				(construct (QThread parent))
+				(explicit)))
+		     (defmethod ~SerialReaderThread ()
+		       (declare (values :constructor)
+				)
+		       (m_mutex.lock)
+		       (setf m_quit true)
+		       (m_mutex.unlock)
+		       (wait))
+		     (defmethod startReader (portName waitTimeout response)
+		       (declare (type "const QString&" portName)
+				(type int waitTimeout)
+				(type "const QString&" response))
+		       "const QMutexLocker locker(&m_mutex);"
+		       ,@(loop for e in `(portName waitTimeout response)
+			    collect
+			      `(setf ,(format nil "m_~a" e)
+				     ,e))
+		       (unless (isRunning)
+			 (start)))
+		     "signals:"
+		     (defmethod request (s)
+		       (declare (type "const QString&" s)))
+		     (defmethod error (s)
+		       (declare (type "const QString&" s)))
+		     (defmethod timeout (s)
+		       (declare (type "const QString&" s)))
+		     "private:"
+		     (defmethod run ()
+		       (let ((currentPortNameChanged false))
+			 (declare (type bool currentPortNameChanged))
+			 (m_mutex.lock)
+			 (let ((currentPortName))
+			   (declare (type QString currentPortName))
+			   (unless (== currentPortName m_portName)
+			     (setf currentPortName m_portName
+				   currentPortNameChanged true))
+			   (let ((currentWaitTimeout m_waitTimeout)
+				 (currentResponse m_response))
+			     (m_mutex.unlock)
+			     (let ((serial))
+			       (declare (type QSerialPort serial))
+			       (while (not m_quit)
+				 (when currentPortNameChanged
+				   (serial.close)
+				   (serial.setPortName currentPortName)
+				   (unless (serial.open QIODevice--ReadWrite)
+				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
+							     (arg m_portName)
+							     (arg (serial.error)))))
+				     (return))
+				   (if (serial.waitForReadyRead currentWaitTimeout)
+				       (let ((requestData (serial.readAll)))
+				       (while (serial.waitForReadyRead 10)
+					 (incf requestData (serial.readAll)))
+				       #+nil
+				       (let ((responseData (currentResponse.toUtf8)))
+					 (serial.write responseData)
+					 (if (serial.waitForBytesWritten m_waitTimeout)
+					     (let ((request (QString--fromUtf8 requestData)))
+					       (space emit (this->request request)))
+					     (space emit (timeout (dot (tr (string "Wait write response timeout %1"))
+								       (arg (dot (QTime--currentTime)
+										 (toString)))))))))
+				       (space emit (timeout (dot (tr (string "Wait read request timeout %1"))
+								       (arg (dot (QTime--currentTime)
+										 (toString))))))
+				       )
+				   (m_mutex.lock)
+				   (if (== currentPortName m_portName)
+				       (do0
+					(setf currentPortNameChanged false))
+				       (do0
+					(setf currentPortName m_portName
+					      currentPortNameChanged true)))
+				   (setf currentWaitTimeout m_waitTimeout
+					 currentResponse m_response)
+				   (m_mutex.unlock))))))))
+		     "QString m_portName;"
+		     "QString m_response;"
+		     "int m_waitTimeout = 0;"
+		     "QMutex m_mutex;"
+		     "bool m_quit = false;"
+		     )
+		    		    
+		   )))
+
+    (define-module
+       `(dialog ()
+	      (do0
+	       (split-header-and-code
+		(do0
+		 (include <QtWidgets/QDialog>)
+		 QT_BEGIN_NAMESPACE
+		 ,@(loop for e in `(Label LineEdit ComboBox SpinBox PushButton) collect
+			(format nil "class Q~a;" e))
+		 QT_END_NAMESPACE)
+		(do0
+		 (include "vis_01_serial.hpp")
+		 (include "vis_02_dialog.hpp")
+		      (include <QComboBox>
+			       <QGridLayout>
+			       <QLabel>
+			       <QLineEdit>
+			       <QPushButton>
+			       <QSerialPortInfo>
+			       <QSpinBox>))
+		     )
+		    		    
+		   (defclass Dialog "public QDialog"
+
+		     Q_OBJECT
+		     "public:"
+		     (defmethod Dialog (&key (parent nullptr))
+		       (declare (type QObject* parent)
+				(values :constructor)
+				(construct (QThread parent))
+				(explicit)))
+		     "private slots:"
+		     (defmethod startReader ())
+		     (defmethod showRequest (s)
+		       (declare (type QString& s)))
+		     (defmethod processError (s)
+		       (declare (type QString& s)))
+		     (defmethod processTimeout (s)
+		       (declare (type QString& s)))
+		     (defmethod activateRunButton (s)
+		       (declare (type QString& s)))
+		     "private:"
+		     ,@(loop for e in `((transactionCount int 0)
+					(serialPortLabel QLabel*)
+					(serialPortComboBox QComboBox*)
+					(waitRequestLabel QLabel*)
+					(waitRequestSpinBox QSpinBox*)
+					(responseLabel QLabel*)
+					(responseLineEdit QLineEdit*)
+					(trafficLabel QLabel*)
+					(statusLabel QLabel*)
+					(runButton QPushButton*))
+			    collect
+			    (destructuring-bind (name type &optional (value 'nullptr)) e
+			      (format nil "~a m_~a~@[=~a~];" type name value))))
+		    		    
+		    ))))
   
   (progn
     (progn ;with-open-file
