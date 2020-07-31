@@ -23,15 +23,17 @@
 #include <QThread>
 #include <QWaitCondition>;
 class SerialReaderThread : public QThread {
-        explicit  SerialReaderThread (QObject* parent)  ;  ;
-         ~SerialReaderThread ()  ;  ;
-        void startReader (const QString& portName, int waitTimeout, const QString& response)  ;  ;
+        Q_OBJECT
+        public:
+        explicit  SerialReaderThread (QObject* parent)  ;  
+         ~SerialReaderThread ()  ;  
+        void startReader (const QString& portName, int waitTimeout, const QString& response)  ;  
         signals:
-        void request (const QString& s)  ;  ;
-        void error (const QString& s)  ;  ;
-        void timeout (const QString& s)  ;  ;
+        void request (const QString& s)  ;  
+        void error (const QString& s)  ;  
+        void timeout (const QString& s)  ;  
         private:
-        void run ()  ;  ;
+        void run ()  ;  
         QString m_portName;
         QString m_response;
         int m_waitTimeout = 0;

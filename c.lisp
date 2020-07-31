@@ -550,7 +550,8 @@ entry return-values contains a list of return values. currently supports type, v
 										include case
 										when if unless
 										let
-										split-header-and-code))))
+										split-header-and-code
+										defun defmethod defclass))))
 						    ""
 						    ";"))))
 				  (cdr code)))

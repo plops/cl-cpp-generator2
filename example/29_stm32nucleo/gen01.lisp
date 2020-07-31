@@ -173,8 +173,8 @@
 		      (declare (type "State" state)))
 		    
 		   (defclass SerialReaderThread "public QThread"
-		     ;"Q_OBJECT"
-					;"public:"
+		     "Q_OBJECT"
+		     "public:"
 		     (defmethod SerialReaderThread (parent)
 		       (declare (type QObject* parent)
 				(values :constructor)
@@ -440,40 +440,47 @@
 			       <QSerialPortInfo>
 			       <QSpinBox>))
 		     )
-		    		    
-		   (defclass Dialog "public QDialog"
+	       ,(let ((l `((transactionCount int :value 0)
+			  (serialPortLabel QLabel* :init (space new (QLabel (tr (string "Serial port:")))))
+			  (serialPortComboBox QComboBox* :init (space new QComboBox))
+			  (waitRequestLabel QLabel* :init (space new (QLabel (tr (string "Wait request, msec:")))))
+			  (waitRequestSpinBox QSpinBox* :init (space new QSpinBox))
+			  (responseLabel QLabel* :init (space new (QLabel (tr (string "Response:")))))
+			  (responseLineEdit QLineEdit* :init (space new (QLineEdit (tr (string "hello ... ")))))
+			  (trafficLabel QLabel* :init (space new (QLabel (tr (string "No traffic.")))))
+			  (statusLabel QLabel* :init (space new (QLabel (tr (string "Status: Not running.")))))
+			  (runButton QPushButton* :init (space new (QPushButton (tr (string "Start"))))))))
+		 `(defclass Dialog "public QDialog"
 
-		     Q_OBJECT
-		     "public:"
-		     (defmethod Dialog (&key (parent nullptr))
-		       (declare (type QObject* parent)
-				(values :constructor)
-				(construct (QThread parent))
-				(explicit)))
-		     "private slots:"
-		     (defmethod startReader ())
-		     (defmethod showRequest (s)
-		       (declare (type QString& s)))
-		     (defmethod processError (s)
-		       (declare (type QString& s)))
-		     (defmethod processTimeout (s)
-		       (declare (type QString& s)))
-		     (defmethod activateRunButton (s)
-		       (declare (type QString& s)))
-		     "private:"
-		     ,@(loop for e in `((transactionCount int 0)
-					(serialPortLabel QLabel*)
-					(serialPortComboBox QComboBox*)
-					(waitRequestLabel QLabel*)
-					(waitRequestSpinBox QSpinBox*)
-					(responseLabel QLabel*)
-					(responseLineEdit QLineEdit*)
-					(trafficLabel QLabel*)
-					(statusLabel QLabel*)
-					(runButton QPushButton*))
-			    collect
-			    (destructuring-bind (name type &optional (value 'nullptr)) e
-			      (format nil "~a m_~a~@[=~a~];" type name value))))
+		  Q_OBJECT
+		  "public:"
+		  (defmethod Dialog (&key (parent nullptr))
+		    (declare (type QWidget* parent)
+			     (values :constructor)
+			     (construct (QDialog parent)
+					,@(remove-if #'null
+						     (loop for e in l
+							collect
+							  (destructuring-bind (name type &key (value 'nullptr) init) e
+							    (when init
+							      `(,(format nil "m_~a" name)
+								 ,init))))))
+			     (explicit)))
+		  "private slots:"
+		  (defmethod startReader ())
+		  (defmethod showRequest (s)
+		    (declare (type QString& s)))
+		  (defmethod processError (s)
+		    (declare (type QString& s)))
+		  (defmethod processTimeout (s)
+		    (declare (type QString& s)))
+		  (defmethod activateRunButton (s)
+		    (declare (type QString& s)))
+		  "private:"
+		  ,@(loop for e in l
+		       collect
+			 (destructuring-bind (name type &key (value 'nullptr) init) e
+			   (format nil "~a m_~a~@[=~a~];" type name value)))))
 		    		    
 		    ))))
   

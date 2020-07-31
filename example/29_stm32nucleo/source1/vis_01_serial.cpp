@@ -74,4 +74,4 @@ void SerialReaderThread::run() {
       m_mutex.unlock();
     }
   }
-};
+}
