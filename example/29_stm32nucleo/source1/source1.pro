@@ -21,5 +21,5 @@ HEADERS += globals.h \
            vis_00_main.hpp \
            vis_01_serial.hpp \
            vis_02_dialog.hpp
-FORMS += nucleo_l476rg_adc.ui
+#FORMS += nucleo_l476rg_adc.ui
 SOURCES += vis_00_main.cpp vis_01_serial.cpp vis_02_dialog.cpp

@@ -17,75 +17,11 @@
 #include <thread>
 using namespace std::chrono_literals;
 State state = {};
-SerialReaderThread::SerialReaderThread(QObject *parent) : QThread(parent) {}
-SerialReaderThread::~SerialReaderThread() {
-  m_mutex.lock();
-  m_quit = true;
-  m_mutex.unlock();
-  wait();
-}
-void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
-                                     const QString &response) {
-  const QMutexLocker locker(&m_mutex);
-  m_portName = portName;
-  m_waitTimeout = waitTimeout;
-  m_response = response;
-  if (!(isRunning())) {
-    start();
-  }
-}
-void SerialReaderThread::request(const QString &s) {}
-void SerialReaderThread::error(const QString &s) {}
-void SerialReaderThread::timeout(const QString &s) {}
-void SerialReaderThread::run() {
-  bool currentPortNameChanged = false;
-  m_mutex.lock();
-  QString currentPortName;
-  if (!((currentPortName) == (m_portName))) {
-    currentPortName = m_portName;
-    currentPortNameChanged = true;
-  }
-  auto currentWaitTimeout = m_waitTimeout;
-  auto currentResponse = m_response;
-  m_mutex.unlock();
-  QSerialPort serial;
-  while (!(m_quit)) {
-    if (currentPortNameChanged) {
-      serial.close();
-      serial.setPortName(currentPortName);
-      if (!(serial.open(QIODevice::ReadWrite))) {
-        emit error(tr("Cant open %1, error code %2")
-                       .arg(m_portName)
-                       .arg(serial.error()));
-        return;
-      }
-      if (serial.waitForReadyRead(currentWaitTimeout)) {
-        auto requestData = serial.readAll();
-        while (serial.waitForReadyRead(10)) {
-          (requestData) += (serial.readAll());
-        }
-      } else {
-        emit timeout(tr("Wait read request timeout %1")
-                         .arg(QTime::currentTime().toString()));
-      }
-      m_mutex.lock();
-      if ((currentPortName) == (m_portName)) {
-        currentPortNameChanged = false;
-      } else {
-        currentPortName = m_portName;
-        currentPortNameChanged = true;
-      }
-      currentWaitTimeout = m_waitTimeout;
-      currentResponse = m_response;
-      m_mutex.unlock();
-    }
-  }
-}
 int main(int argc, char **argv) {
-  state._main_version = "5bb4b3364b3295b3d0f4632a53397e2fdaf3cb53";
+  state._main_version = "2c7041147eb776fc549bdd8d3a256d0ee4ff2c24";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "06:20:42 of Friday, 2020-07-31 (GMT+1)";
+  state._code_generation_time = "06:21:45 of Friday, 2020-07-31 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
