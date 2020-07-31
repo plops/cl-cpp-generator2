@@ -5,18 +5,16 @@
 
 // https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html
 ;
+#include "vis_00_main.hpp"
+#include <QTime>
+#include <QtSerialPort/QSerialPort>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QDialog>
 #include <cassert>
 #include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <thread>
-
-#include <QTime>
-#include <QtSerialPort/QSerialPort>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QDialog>
-
-#include "vis_00_main.hpp"
 using namespace std::chrono_literals;
 State state = {};
 SerialReaderThread::SerialReaderThread(QObject *parent) : QThread(parent) {}
@@ -84,10 +82,10 @@ void SerialReaderThread::run() {
   }
 };
 int main(int argc, char **argv) {
-  state._main_version = "73930fa01e217579bf3271aaedfe658cac44544c";
+  state._main_version = "aaef4d42eff50231f37680cdb50b80953ad1e607";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "23:43:25 of Thursday, 2020-07-30 (GMT+1)";
+  state._code_generation_time = "05:38:23 of Friday, 2020-07-31 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

@@ -149,8 +149,8 @@
 			;     <vector>
 			;     <experimental/iterator>
 			;     <algorithm>
-			     )
-		    " "
+			)
+	       ;" "
 		    (include
 			
 		     <QtWidgets/QApplication>
@@ -159,7 +159,7 @@
 		     <QTime>
 		     
 		     )
-		    " "
+		;    " "
 					;(include <yacx/main.hpp>)
 		    (split-header-and-code
 		     (do0
