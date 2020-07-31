@@ -281,6 +281,7 @@
 			     (declare (type "const QString&" s)))))
 		     "private:"
 		     (defmethod run ()
+		       ,(logprint "" `())
 		       (let ((currentPortNameChanged false))
 			 (declare (type bool currentPortNameChanged))
 			 (m_mutex.lock)
@@ -296,6 +297,7 @@
 			       (declare (type QSerialPort serial))
 			       (while (not m_quit)
 				 (when currentPortNameChanged
+				   ,(logprint "new port name" `())
 				   (serial.close)
 				   (serial.setPortName currentPortName)
 				   ,@(loop for (e f) in `((BaudRate Baud115200)
@@ -304,14 +306,18 @@
 							  (StopBits OneStop)
 							  (FlowControl NoFlowControl))
 					collect
-					  `((dot serial ,(format nil "set~a" e)) ,(format nil "QSerialPort::~a" f)))
+					  `(do0
+					    ,(logprint (format nil "~a = ~a" e f) `())
+					    ((dot serial ,(format nil "set~a" e)) ,(format nil "QSerialPort::~a" f))))
 				   (unless (serial.open QIODevice--ReadWrite)
 				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
 							     (arg m_portName)
 							     (arg (serial.error)))))
 				     (return))
+				   ,(logprint "open" `())
 				   (if (serial.waitForReadyRead currentWaitTimeout)
 				       (let ((requestData (serial.readAll)))
+					 ,(logprint "readAll" `())
 				       (while (serial.waitForReadyRead 10)
 					 (incf requestData (serial.readAll)))
 				       #+nil

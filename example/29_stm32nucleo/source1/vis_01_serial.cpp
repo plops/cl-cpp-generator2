@@ -29,6 +29,13 @@ void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
   }
 }
 void SerialReaderThread::run() {
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::endl) << (std::flush);
   bool currentPortNameChanged = false;
   m_mutex.lock();
   QString currentPortName;
@@ -42,12 +49,66 @@ void SerialReaderThread::run() {
   QSerialPort serial;
   while (!(m_quit)) {
     if (currentPortNameChanged) {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("new port name") << (" ") << (std::endl)
+                  << (std::flush);
       serial.close();
       serial.setPortName(currentPortName);
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("BaudRate = Baud115200") << (" ") << (std::endl)
+                  << (std::flush);
       (serial.setBaudRate)(QSerialPort::Baud115200);
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("Parity = NoParity") << (" ") << (std::endl)
+                  << (std::flush);
       (serial.setParity)(QSerialPort::NoParity);
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("DataBits = Data8") << (" ") << (std::endl)
+                  << (std::flush);
       (serial.setDataBits)(QSerialPort::Data8);
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("StopBits = OneStop") << (" ") << (std::endl)
+                  << (std::flush);
       (serial.setStopBits)(QSerialPort::OneStop);
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("FlowControl = NoFlowControl") << (" ")
+                  << (std::endl) << (std::flush);
       (serial.setFlowControl)(QSerialPort::NoFlowControl);
       if (!(serial.open(QIODevice::ReadWrite))) {
         emit error(tr("Cant open %1, error code %2")
@@ -55,8 +116,25 @@ void SerialReaderThread::run() {
                        .arg(serial.error()));
         return;
       }
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("open") << (" ") << (std::endl) << (std::flush);
       if (serial.waitForReadyRead(currentWaitTimeout)) {
         auto requestData = serial.readAll();
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("readAll") << (" ") << (std::endl)
+                    << (std::flush);
         while (serial.waitForReadyRead(10)) {
           (requestData) += (serial.readAll());
         }
