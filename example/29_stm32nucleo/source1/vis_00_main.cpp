@@ -5,7 +5,7 @@
 
 // https://doc.qt.io/qt-5/qtserialport-blockingmaster-example.html
 ;
-#include "vis_01_serial.hpp"
+#include "vis_02_dialog.hpp"
 #include <QTime>
 #include <QtSerialPort/QSerialPort>
 #include <QtWidgets/QApplication>
@@ -18,10 +18,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "3c0168720658ec592dbbc7508601927e336b69b5";
+  state._main_version = "cf82482cb1bd1b02cd09d9dfa5c2f116a517b48b";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "08:21:07 of Friday, 2020-07-31 (GMT+1)";
+  state._code_generation_time = "08:32:49 of Friday, 2020-07-31 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
@@ -49,6 +49,9 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" state._code_generation_time='")
       << (state._code_generation_time) << ("'") << (std::endl) << (std::flush);
   QApplication app(argc, argv);
+  Dialog dialog;
+  dialog.show();
+  return app.exec();
 
   (std::cout)
       << (std::setw(10))

@@ -166,7 +166,8 @@
 		      (include <QMutex>
 			       <QThread>
 			       <QWaitCondition>))
-		     (include "vis_01_serial.hpp"))
+		     ;(include "vis_01_serial.hpp")
+		     (include "vis_02_dialog.hpp"))
 		    
 		    "using namespace std::chrono_literals;"
 		    (let ((state ,(emit-globals :init t)))
@@ -210,7 +211,11 @@
 		      ,(logprint "" `(,(g `_code_generation_time)))
 
 		      (let (((app argc argv)))
-			(declare (type QApplication (app argc argv))))
+			(declare (type QApplication (app argc argv)))
+			(let ((dialog))
+			  (declare (type Dialog dialog))
+			  (dialog.show)
+			  (return (app.exec))))
 
 		      ,(logprint "end main" `())
 		      (return 0)))))
@@ -264,11 +269,11 @@
 		       (unless (isRunning)
 			 (start)))
 		     (do0 "signals:"
-			  ,@(loop for e in `(request error timeout)
+			  #+nil ,@(loop for e in `(request error timeout)
 			       collect
 				 (format nil "void ~a(const QString &s);" e))
-			  #+nil(do0
-			   (defmethod request (s)
+			  (do0
+			   #+nil (defmethod request (s)
 			     (declare (type "const QString&" s)))
 			   (defmethod error (s)
 			     (declare (type "const QString&" s)))
