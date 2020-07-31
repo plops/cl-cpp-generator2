@@ -312,7 +312,7 @@
 				   (unless (serial.open QIODevice--ReadWrite)
 				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
 							     (arg m_portName)
-							     (arg (serial.error)))))
+							     (arg (serial.error))))) 
 				     (return))
 				   ,(logprint "open" `())
 				   (if (serial.waitForReadyRead currentWaitTimeout)
