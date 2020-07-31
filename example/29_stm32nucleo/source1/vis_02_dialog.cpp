@@ -40,9 +40,43 @@ Dialog::Dialog(QWidget *parent)
   mainLayout->addWidget(m_trafficLabel, 3, 0, 1, 4);
   mainLayout->addWidget(m_statusLabel, 4, 0, 1, 5);
   setLayout(mainLayout);
+  setWindowTitle(tr("Blocking Serial Reader"));
+  m_serialPortComboBox->setFocus();
+  connect(m_runButton, &QPushButton::clicked, this, &Dialog::startReader);
+  connect(&m_thread, &SerialReaderThread::request, this, &Dialog::showRequest);
+  connect(&m_thread, &SerialReaderThread::error, this, &Dialog::processError);
+  connect(&m_thread, &SerialReaderThread::timeout, this,
+          &Dialog::processTimeout);
+  connect(m_serialPortComboBox,
+          QOverload<const QString &>::of(&QComboBox::currentIndexChanged), this,
+          &Dialog::activateRunButton);
+  connect(m_waitRequestSpinBox, &QSpinBox::textChanged, this,
+          &Dialog::activateRunButton);
+  connect(m_responseLineEdit, &QLineEdit::textChanged, this,
+          &Dialog::activateRunButton);
 }
-void Dialog::startReader() {}
-void Dialog::showRequest(QString &s) {}
-void Dialog::processError(QString &s) {}
-void Dialog::processTimeout(QString &s) {}
-void Dialog::activateRunButton(QString &s) {}
+void Dialog::startReader() {
+  m_runButton->setEnabled(false);
+  m_statusLabel->setText(tr("Status: Running, connected to port %1.")
+                             .arg(m_serialPortComboBox->currentText()));
+  m_thread.startReader(m_serialPortComboBox->currentText(),
+                       m_waitRequestSpinBox->value(),
+                       m_responseLineEdit->text());
+}
+void Dialog::showRequest(QString &s) {
+  m_trafficLabel->setText(
+      tr("Traffic, transaction #%1:\n\r-request: %2\n\r-response: %3")
+          .arg((m_transactionCount)++)
+          .arg(s)
+          .arg(m_responseLineEdit->text()));
+}
+void Dialog::processError(QString &s) {
+  activateRunButton();
+  m_statusLabel->setText(tr("Status: Not running, %1.").arg(s));
+  m_trafficLabel->setText(tr("No traffic."));
+}
+void Dialog::processTimeout(QString &s) {
+  m_statusLabel->setText(tr("Status: Running, %1.").arg(s));
+  m_trafficLabel->setText(tr("No traffic."));
+}
+void Dialog::activateRunButton() { m_runButton->setEnabled(true); }

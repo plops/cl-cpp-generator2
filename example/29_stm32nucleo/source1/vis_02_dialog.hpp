@@ -4,6 +4,8 @@
 ;
 #include "globals.h"
 ;
+#include "vis_01_serial.hpp"
+;
 #include <QtWidgets/QDialog>
 ;
 #include <QtWidgets/QDialog>
@@ -23,7 +25,7 @@ class Dialog : public QDialog {
         void showRequest (QString& s)  ;  
         void processError (QString& s)  ;  
         void processTimeout (QString& s)  ;  
-        void activateRunButton (QString& s)  ;  
+        void activateRunButton ()  ;  
         private:
         int m_transactionCount=0;
         QLabel* m_serialPortLabel=nullptr;
@@ -35,5 +37,6 @@ class Dialog : public QDialog {
         QLabel* m_trafficLabel=nullptr;
         QLabel* m_statusLabel=nullptr;
         QPushButton* m_runButton=nullptr;
+        SerialReaderThread m_thread;
 };
 #endif

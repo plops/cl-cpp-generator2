@@ -19,13 +19,13 @@
 class SerialReaderThread : public QThread {
         Q_OBJECT
         public:
-        explicit  SerialReaderThread (QObject* parent)  ;  
+        explicit  SerialReaderThread (QObject* parent = nullptr)  ;  
          ~SerialReaderThread ()  ;  
         void startReader (const QString& portName, int waitTimeout, const QString& response)  ;  
-        signals:
-        void request (const QString& s)  ;  
-        void error (const QString& s)  ;  
-        void timeout (const QString& s)  ;  
+            signals:
+    void request(const QString &s);
+    void error(const QString &s);
+    void timeout(const QString &s);
         private:
         void run ()  ;  
         QString m_portName;

@@ -240,7 +240,7 @@
 		   (defclass SerialReaderThread "public QThread"
 		     "Q_OBJECT"
 		     "public:"
-		     (defmethod SerialReaderThread (parent)
+		     (defmethod SerialReaderThread (&key (parent nullptr))
 		       (declare (type QObject* parent)
 				(values :constructor)
 				(construct (QThread parent))
@@ -263,13 +263,17 @@
 				     ,e))
 		       (unless (isRunning)
 			 (start)))
-		     "signals:"
-		     (defmethod request (s)
-		       (declare (type "const QString&" s)))
-		     (defmethod error (s)
-		       (declare (type "const QString&" s)))
-		     (defmethod timeout (s)
-		       (declare (type "const QString&" s)))
+		     (do0 "signals:"
+			  ,@(loop for e in `(request error timeout)
+			       collect
+				 (format nil "void ~a(const QString &s);" e))
+			  #+nil(do0
+			   (defmethod request (s)
+			     (declare (type "const QString&" s)))
+			   (defmethod error (s)
+			     (declare (type "const QString&" s)))
+			   (defmethod timeout (s)
+			     (declare (type "const QString&" s)))))
 		     "private:"
 		     (defmethod run ()
 		       (let ((currentPortNameChanged false))
@@ -332,7 +336,9 @@
 
     (define-module
        `(dialog ()
-	      (do0
+		(do0
+
+		 (include "vis_01_serial.hpp")
 	       (split-header-and-code
 		(do0
 		 (include <QtWidgets/QDialog>)
@@ -341,7 +347,7 @@
 			(format nil "class Q~a;" e))
 		 QT_END_NAMESPACE)
 		(do0
-		 (include "vis_01_serial.hpp")
+		 
 		 (include "vis_02_dialog.hpp")
 		      (include <QComboBox>
 			       <QGridLayout>
@@ -397,23 +403,64 @@
 			     (destructuring-bind (name &rest rest) e
 				 `(mainLayout->addWidget ,(format nil "m_~a" name)
 							 ,@rest)))
-		      (setLayout mainLayout)))
+		      (setLayout mainLayout)
+
+		      (setWindowTitle (tr (string "Blocking Serial Reader")))
+		      (m_serialPortComboBox->setFocus)
+		      ;; receiver is always this
+		      ,@(loop for e in `((m_runButton &QPushButton--clicked &Dialog--startReader)
+					 (&m_thread &SerialReaderThread--request &Dialog--showRequest)
+					 (&m_thread &SerialReaderThread--error &Dialog--processError)
+					 (&m_thread &SerialReaderThread--timeout &Dialog--processTimeout)
+					 (m_serialPortComboBox ("QOverload<const QString&>::of"
+								 &QComboBox--currentIndexChanged)
+								&Dialog--activateRunButton)
+					 (m_waitRequestSpinBox &QSpinBox--textChanged &Dialog--activateRunButton)
+					 (m_responseLineEdit &QLineEdit--textChanged &Dialog--activateRunButton))
+			   collect
+			     (destructuring-bind (sender signal method) e
+			      `(connect ,sender ,signal this ,method)))))
 		  "private slots:"
-		  (defmethod startReader ())
+		  (defmethod startReader ()
+		    (m_runButton->setEnabled false)
+		    (m_statusLabel->setText (dot (tr (string "Status: Running, connected to port %1.")
+						     )
+						 (arg (m_serialPortComboBox->currentText))))
+		    (m_thread.startReader (m_serialPortComboBox->currentText)
+					 (m_waitRequestSpinBox->value)
+					 (m_responseLineEdit->text)))
 		  (defmethod showRequest (s)
-		    (declare (type QString& s)))
+		    (declare (type QString& s))
+		    (m_trafficLabel->setText (dot (tr (string "Traffic, transaction #%1:\\n\\r-request: %2\\n\\r-response: %3"))
+						  (arg (incf m_transactionCount))
+						  (arg s)
+						  (arg (m_responseLineEdit->text)))))
 		  (defmethod processError (s)
-		    (declare (type QString& s)))
+		    (declare (type QString& s))
+		    (activateRunButton)
+		    (do0
+		     (m_statusLabel->setText (dot (tr (string "Status: Not running, %1."))
+						 
+						  (arg s)
+						  ))
+		     (m_trafficLabel->setText (tr (string "No traffic."))
+					      )))
 		  (defmethod processTimeout (s)
-		    (declare (type QString& s)))
-		  (defmethod activateRunButton (s)
-		    (declare (type QString& s)))
+		    (declare (type QString& s))
+		    (do0
+		     (m_statusLabel->setText (dot (tr (string "Status: Running, %1."))
+						  (arg s)))
+		     (m_trafficLabel->setText (tr (string "No traffic."))
+					      )))
+		  (defmethod activateRunButton ()
+		    (m_runButton->setEnabled true))
 		  "private:"
 		  ,@(loop for e in l
 		       collect
 			 (destructuring-bind (name type &key (value 'nullptr) init) e
-			   (format nil "~a m_~a~@[=~a~];" type name value)))))
-		    		    
+			   (format nil "~a m_~a~@[=~a~];" type name value)))
+		  "SerialReaderThread m_thread;"))
+	       
 		    ))))
   
   (progn

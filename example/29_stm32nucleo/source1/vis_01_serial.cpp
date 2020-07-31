@@ -28,9 +28,6 @@ void SerialReaderThread::startReader(const QString &portName, int waitTimeout,
     start();
   }
 }
-void SerialReaderThread::request(const QString &s) {}
-void SerialReaderThread::error(const QString &s) {}
-void SerialReaderThread::timeout(const QString &s) {}
 void SerialReaderThread::run() {
   bool currentPortNameChanged = false;
   m_mutex.lock();
