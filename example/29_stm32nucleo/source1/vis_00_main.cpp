@@ -18,10 +18,10 @@
 using namespace std::chrono_literals;
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "cf82482cb1bd1b02cd09d9dfa5c2f116a517b48b";
+  state._main_version = "d872a70c675911ce6fd8b1b800da68bf3e432fac";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/27_sparse_eigen_hydrogen";
-  state._code_generation_time = "08:32:49 of Friday, 2020-07-31 (GMT+1)";
+  state._code_generation_time = "18:15:48 of Friday, 2020-07-31 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
 

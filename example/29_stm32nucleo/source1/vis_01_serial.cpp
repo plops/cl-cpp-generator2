@@ -44,6 +44,11 @@ void SerialReaderThread::run() {
     if (currentPortNameChanged) {
       serial.close();
       serial.setPortName(currentPortName);
+      (serial.setBaudRate)(QSerialPort::Baud115200);
+      (serial.setParity)(QSerialPort::NoParity);
+      (serial.setDataBits)(QSerialPort::Data8);
+      (serial.setStopBits)(QSerialPort::OneStop);
+      (serial.setFlowControl)(QSerialPort::NoFlowControl);
       if (!(serial.open(QIODevice::ReadWrite))) {
         emit error(tr("Cant open %1, error code %2")
                        .arg(m_portName)

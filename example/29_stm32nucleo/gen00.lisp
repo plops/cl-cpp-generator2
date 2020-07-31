@@ -338,7 +338,7 @@
 				   (when (<= ,(- 80  3) htim2.Instance->CCR2) 
 				     (setf htim2.Instance->CCR2 2)))
 
-				  (progn
+				  #+nil(progn
 				    (let ((message SimpleMessage_init_zero)
 					  (stream (pb_ostream_from_buffer BufferToSend (sizeof BufferToSend)))
 					  )
@@ -350,7 +350,7 @@
 					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
 					   (Error_Handler)))))
 				   )
-				  #+nil
+				  #-nil
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)

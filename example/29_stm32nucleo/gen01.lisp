@@ -1,4 +1,4 @@
-(setf *features* (set-difference *features* '(:generic-c)))
+;(setf *features* (set-difference *features* '(:generic-c)))
 (declaim (optimize 
 	  (safety 3)
 	  (speed 0)
@@ -298,6 +298,13 @@
 				 (when currentPortNameChanged
 				   (serial.close)
 				   (serial.setPortName currentPortName)
+				   ,@(loop for (e f) in `((BaudRate Baud115200)
+							  (Parity NoParity)
+							  (DataBits Data8)
+							  (StopBits OneStop)
+							  (FlowControl NoFlowControl))
+					collect
+					  `((dot serial ,(format nil "set~a" e)) ,(format nil "QSerialPort::~a" f)))
 				   (unless (serial.open QIODevice--ReadWrite)
 				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
 							     (arg m_portName)
