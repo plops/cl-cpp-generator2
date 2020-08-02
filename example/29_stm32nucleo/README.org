@@ -341,3 +341,6 @@ git clone https://github.com/nanopb/nanopb/
 mkdir b; cd b
 cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
 #+end_example
+
+* Protobuf over serial port
+- https://github.com/banetl/sensor_reading/blob/master/python/sensor_reading.py
