@@ -1,9 +1,16 @@
 # sudo emerge pyserial
+import sys
 import time
 import numpy as np
 import serial
+sys.path.append("/home/martin/src/nanopb/b/")
+import simple_pb2 as pb
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=1000000, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
+msg=pb.SimpleMessage()
+time.sleep(1)
+d=con.read_all()
+pbr=msg.ParseFromString(d)
 class Uart():
     def __init__(self, connection, debug=False):
         self._con=connection

@@ -29,7 +29,7 @@
 			 (plt.ion))
 	    
 	    (imports (			;os
-					;sys
+					sys
 					time
 					;docopt
 					;pathlib
@@ -43,7 +43,9 @@
 					;scipy.ndimage
 					;scipy.optimize
 					
-		      ))
+					))
+	    (sys.path.append (string "/home/martin/src/nanopb/b/"))
+	    "import simple_pb2 as pb"
 	    
 
 	       (do0 "# %%"
@@ -59,8 +61,11 @@
                             :writeTimeout .05 ;; seconds
                             :dsrdtr False
                             :interCharTimeout .05)))
-
-	    
+	       (setf msg (pb.SimpleMessage))
+	       (time.sleep 1)
+	       (setf d (con.read_all))
+	       
+	       (setf pbr (msg.ParseFromString d))
 	    #-nil
 	    (class Uart ()
 		   (def __init__ (self        connection
