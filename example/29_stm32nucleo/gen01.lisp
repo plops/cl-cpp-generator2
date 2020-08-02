@@ -309,7 +309,7 @@
 					  `(do0
 					    ,(logprint (format nil "~a = ~a" e f) `())
 					    ((dot serial ,(format nil "set~a" e)) ,(format nil "QSerialPort::~a" f))))
-				   ((dot serial ,(format nil "set~a" 'BaudRate)) 2000000)
+				   ((dot serial ,(format nil "set~a" 'BaudRate)) 1000000)
 				   (unless (serial.open QIODevice--ReadWrite)
 				     (space emit (error (dot (tr (string "Cant open %1, error code %2"))
 							     (arg m_portName)
