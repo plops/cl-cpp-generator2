@@ -61,7 +61,7 @@
                             :interCharTimeout .05)))
 
 	    
-	    #+nil
+	    #-nil
 	    (class Uart ()
 		   (def __init__ (self        connection
 				       &key (debug False) 
@@ -100,10 +100,10 @@
 			
 			(while self._con.in_waiting
 			
-					;(print res)
+					(print res)
 			  
 			  (setf line (self._con.read_until))
-			  #+nil (print (dot (string "AW: {}") (format line)))
+			  #-nil (print (dot (string "AW: {}") (format line)))
 			  
 			  (setf res (dot line
 					 (decode (string ;"utf-8"
@@ -120,7 +120,8 @@
 		    (def close (self)
 		      (self._con.close))
 		    )
-		   )))
+		   )
+	    (setf u (Uart con))))
 	 
 	 )
 
