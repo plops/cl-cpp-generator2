@@ -288,7 +288,7 @@
 			 (let ((currentPortName))
 			   (declare (type QString currentPortName))
 			   (unless (== currentPortName m_portName)
-			     (setf currentPortName m_portName
+			     (setf currentPortName m_portName 
 				   currentPortNameChanged true))
 			   (let ((currentWaitTimeout m_waitTimeout)
 				 (currentResponse m_response))
