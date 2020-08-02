@@ -1,0 +1,1 @@
+protoc -I=/home/martin/src/nanopb/generator/proto/ -I=/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source --python_out=. /home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo/source/simple.proto 
