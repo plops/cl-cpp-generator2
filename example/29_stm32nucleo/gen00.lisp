@@ -2,13 +2,15 @@
 	  (safety 3)
 	  (speed 0)
 	  (debug 3)))
-(setf *features* (union *features* '(:generic-c)))
+; (setf *features* (union *features* '(:generic-c)))
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
      (ql:quickload "cl-ppcre"))
 
-(in-package :cl-cpp-generator2)
 
+
+(in-package :cl-cpp-generator2)
+(setf *auto-keyword* "__auto_type")
 
 
 (setf *features* (union *features* `(:dac1
@@ -338,19 +340,24 @@
 				   (when (<= ,(- 80  3) htim2.Instance->CCR2) 
 				     (setf htim2.Instance->CCR2 2)))
 
-				  #+nil(progn
+				  #-nil
+				  (progn
 				    (let ((message SimpleMessage_init_zero)
-					  (stream (pb_ostream_from_buffer BufferToSend (sizeof BufferToSend)))
-					  )
+					  (stream (pb_ostream_from_buffer BufferToSend (sizeof BufferToSend))))
 				      (declare (type SimpleMessage message))
-				      (setf message.lucky_number 13)
+				      ,(let ((str "hello"))
+					 `(do0
+					   (setf message.id 42
+					       
+						 )
+					   (strcpy message.name (string ,str))))
+				      
 				      (let ((status (pb_encode &stream SimpleMessage_fields &message))
 					    (message_length stream.bytes_written))
 					(when status
 					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
-					   (Error_Handler)))))
-				   )
-				  #-nil
+					   (Error_Handler))))))
+				  #+nil
 				  (progn
 				    ;; online statistics https://provideyourown.com/2012/statistics-on-the-arduino/
 				    (let (;(avg 0s0)
@@ -601,9 +608,13 @@
       (write-source fn
 		   `(do0
 		     (setf syntax (string "proto2"))
+		     "import \"nanopb.proto\";"
 		     (space "message SimpleMessage"
 			    (progn
-			      (setf "required int32 lucky_number" 1)
+			      
+			      (setf "required int32 id" 1)
+			      (setf "required string name" "2 [(nanopb).max_size = 40]")
+			      
 			      ))))
       
       (sb-ext:run-program "/home/martin/src/nanopb/generator/protoc" (list  (format nil "--nanopb_out=~a" pbdir)

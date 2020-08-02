@@ -335,8 +335,7 @@
 										 (toString)))))))))
 				       (space emit (timeout (dot (tr (string "Wait read request timeout %1"))
 								       (arg (dot (QTime--currentTime)
-										 (toString))))))
-				       )
+										 (toString)))))))
 				   (m_mutex.lock)
 				   (if (== currentPortName m_portName)
 				       (do0
