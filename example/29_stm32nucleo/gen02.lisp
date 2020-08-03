@@ -22,7 +22,7 @@
 	  `(do0
 	    (comments "sudo emerge pyserial")
 	    
-	    #+nil(do0
+	    (do0
 	     (imports (matplotlib))
 			      ;(matplotlib.use (string "Agg"))
 			      (imports ((plt matplotlib.pyplot)))
@@ -35,9 +35,9 @@
 					;pathlib
 		      (np numpy)
 					serial
-					;(pd pandas)
-					;(xr xarray)
-					;(xrp xarray.plot)
+					(pd pandas)
+					(xr xarray)
+					(xrp xarray.plot)
 					;skimage.restoration
 					;(u astropy.units)
 					;scipy.ndimage
@@ -51,24 +51,69 @@
 	       (do0 "# %%"
                     (setf con (serial.Serial
                                :port (string "/dev/ttyACM0")
-                               :baudrate 115200 ;1000000
+                               :baudrate ; 500000
+					115200 ;1000000
                                :bytesize serial.EIGHTBITS
-                            :parity serial.PARITY_NONE
-                            :stopbits serial.STOPBITS_ONE
-                            :timeout .5 ;; seconds
-                            :xonxoff False
-                            :rtscts False
-                            :writeTimeout .05 ;; seconds
-                            :dsrdtr False
-                            :interCharTimeout .05)))
+                               :parity serial.PARITY_NONE
+                               :stopbits serial.STOPBITS_ONE
+                               :timeout .5 ;; seconds
+                               :xonxoff False
+                               :rtscts False
+                               :writeTimeout .05 ;; seconds
+                               :dsrdtr False
+                               :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (time.sleep 1)
-	       (setf d (con.read_all))
+	       (setf d0 (con.read_all))
+	       (time.sleep .01)
+	       (setf d1 (con.read_all))
+	       (setf d d1)
 	       (print d)
 	       #+nil (setf pbr (msg.ParseDelimitedFromString d))
-	       (setf start_idx (d.find (string-b "\\x08\\xd5\\xaa")))
-	       (setf pbr (msg.ParseFromString (aref d "start_idx:") ;(aref d "1:")
-					      ))
+	       (try
+		(do0
+		 (setf start_idx (d.find (string-b "\\x08\\xd5\\xaa")))
+		 (setf d1 (aref d "start_idx:start_idx+180"))
+		 (setf pbr (msg.ParseFromString d1
+					;(aref d "1:")
+						)
+		       ))
+		("Exception as e"
+		 (print e)
+		 pass))
+	       (setf last_len (msg.ByteSize))
+	       (setf res (list))
+	       (for (i (range 10))
+		(try
+		 (do0
+		  (time.sleep .1)
+		  (setf d2 (con.read_all))
+	       
+		  (setf msg2 (pb.SimpleMessage)
+			start_idx2 (+ start_idx last_len)
+			d2 (aref d "start_idx2:start_idx2+180")
+			pbr2 (msg2.ParseFromString d2))
+		  (setf d (dict
+			   ((string "samples")
+			    (list
+			     ,@(loop for i below 40 collect
+				    (format nil "msg2.sample~2,'0d" i))))
+			   ((string "phase")
+			    msg2.phase)
+			   ))
+		  (res.append d)
+		  (setf start_idx start_idx2
+			last_len (msg2.ByteSize)))
+		 ("Exception as e"
+		  (print e)
+		  pass)))
+
+	       (setf df (pd.DataFrame res))
+	       #+nil (setf data1 (list
+			    ,@(loop for i below 40 collect
+				   (format nil "msg.sample~2,'0d" i))))
+	       #+nil (setf data2 (list
+				  ,@(loop for i below 40 collect
+				   (format nil "msg2.sample~2,'0d" i))))
 	    #-nil
 	    (class Uart ()
 		   (def __init__ (self        connection

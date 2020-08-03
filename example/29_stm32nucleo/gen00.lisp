@@ -350,7 +350,11 @@
 					   (setf message.id #x55555555)
 					   (setf message.timestamp htim5.Instance->CNT)
 					   (setf message.phase htim2.Instance->CCR2)
-					   (dotimes (i ,n-channels)
+					   ,@(loop for i below n-channels
+						collect
+						  `(setf ,(format nil "message.sample~2,'0d" i)
+							 (aref value_adc ,i)))
+					   #+nil(dotimes (i ,n-channels)
 					     (setf (aref message.samples i) (aref value_adc i)))
 					   ;(strcpy message.name (string ,str))
 					   ))
@@ -623,7 +627,11 @@
 
 			      (setf "required int32 timestamp" 2)
 			      (setf "required int32 phase" 3)
-			      (setf "repeated uint32 samples" ,(format nil "4 [packed=true, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
+			      ,@(loop for i below n-channels
+				   collect
+				     `(setf ,(format nil "required int32 sample~2,'0d" i)
+					    ,(format nil "~d" (+ 4 i))))
+			      ;(setf "repeated uint32 samples" ,(format nil "4 [packed=false, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
 			      ;(setf "required string name" "3 [(nanopb).max_size = 40]")
 			      
 			      ))))
