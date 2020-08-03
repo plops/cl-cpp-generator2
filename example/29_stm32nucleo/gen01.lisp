@@ -210,8 +210,8 @@
 		      ,(logprint "" `(,(g `_code_repository)))
 		      ,(logprint "" `(,(g `_code_generation_time)))
 
-		      (let (((app argc argv)))
-			(declare (type QApplication (app argc argv)))
+		      (let (("app(argc,argv)"))
+			(declare (type QApplication "app(argc,argv)"))
 			(let ((dialog))
 			  (declare (type Dialog dialog))
 			  (dialog.show)

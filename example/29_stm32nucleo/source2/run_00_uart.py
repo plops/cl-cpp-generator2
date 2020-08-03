@@ -11,7 +11,7 @@ msg=pb.SimpleMessage()
 time.sleep(1)
 d=con.read_all()
 print(d)
-pbr=msg.ParseFromString(d[1:])
+pbr=msg.ParseFromString(d)
 class Uart():
     def __init__(self, connection, debug=False):
         self._con=connection

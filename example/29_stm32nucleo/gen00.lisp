@@ -356,8 +356,8 @@
 					   ))
 				      
 				      (let ((status #+nil (pb_encode_ex &stream SimpleMessage_fields &message PB_ENCODE_DELIMITED )
-						    (pb_encode_delimited &stream SimpleMessage_fields &message)
-						    ;(pb_encode &stream SimpleMessage_fields &message)
+						    ;(pb_encode_delimited &stream SimpleMessage_fields &message)
+						    (pb_encode &stream SimpleMessage_fields &message)
 						    )
 					    (message_length stream.bytes_written))
 					(when status
