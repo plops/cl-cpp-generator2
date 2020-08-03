@@ -11,7 +11,8 @@ msg=pb.SimpleMessage()
 time.sleep(1)
 d=con.read_all()
 print(d)
-pbr=msg.ParseFromString(d)
+start_idx=d.find(b"\x08\xd5\xaa")
+pbr=msg.ParseFromString(d[start_idx:])
 class Uart():
     def __init__(self, connection, debug=False):
         self._con=connection

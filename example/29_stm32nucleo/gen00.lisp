@@ -350,7 +350,7 @@
 					   (setf message.id #x55555555)
 					   (setf message.timestamp htim5.Instance->CNT)
 					   (setf message.phase htim2.Instance->CCR2)
-					   #+nil (dotimes (i ,n-channels)
+					   (dotimes (i ,n-channels)
 					     (setf (aref message.samples i) (aref value_adc i)))
 					   ;(strcpy message.name (string ,str))
 					   ))
@@ -621,9 +621,9 @@
 			      (setf "required int32 id" 1)
 			      ;; If (nanopb).fixed_count is set to true and (nanopb).max_count is also set, the field for the actual number of entries will not by created as the count is always assumed to be max count.
 
-			      (setf "optional int32 timestamp" 2)
-			      (setf "optional int32 phase" 3)
-			      ;(setf "repeated uint32 samples" ,(format nil "4 [packed=true, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
+			      (setf "required int32 timestamp" 2)
+			      (setf "required int32 phase" 3)
+			      (setf "repeated uint32 samples" ,(format nil "4 [packed=true, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
 			      ;(setf "required string name" "3 [(nanopb).max_size = 40]")
 			      
 			      ))))

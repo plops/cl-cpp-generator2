@@ -66,7 +66,8 @@
 	       (setf d (con.read_all))
 	       (print d)
 	       #+nil (setf pbr (msg.ParseDelimitedFromString d))
-	       (setf pbr (msg.ParseFromString d ;(aref d "1:")
+	       (setf start_idx (d.find (string-b "\\x08\\xd5\\xaa")))
+	       (setf pbr (msg.ParseFromString (aref d "start_idx:") ;(aref d "1:")
 					      ))
 	    #-nil
 	    (class Uart ()
