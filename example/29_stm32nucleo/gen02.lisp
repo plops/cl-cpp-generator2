@@ -66,7 +66,9 @@
 	       (setf d0 (con.read (* 30 180)))
 	       (setf d d0)
 	       (setf res (list))
-	       (for (i (range 30))
+	       (setf starting_point_found False
+		     starting_point_found_again False)
+	       (while (not starting_point_found_again)
 		(try
 		 (do0
 		  ;; we search for the end of one packet and the start of the next
@@ -82,20 +84,28 @@
 		  ;; parse the protobuf stream
 		  (setf pbr (msg.ParseFromString d1
 					;(aref d "1:")
-						 )
-			)
-		  ,@(loop for i below 40 collect
-			 `(res.append
-			   (dict
-			    ((string "sample_nr")
-			     ,i)
-		    ((string "sample")
-		     ,(format nil "msg.sample~2,'0d" i)
-		     )
-		    ((string "phase")
-			    msg.phase)
-			   ))
-			 )
+						 ))
+		  (when (and (not starting_point_found)
+			     (== msg.phase 0))
+		    (setf starting_point_found True))
+		  (when (and (not starting_point_found_again)
+			     (== msg.phase 0))
+		    (setf starting_point_found_again True))
+		  (when (and starting_point_found
+			     (not starting_point_found_again))
+		   (do0
+		    ,@(loop for i below 40 collect
+			   `(res.append
+			     (dict
+			      ((string "sample_nr")
+			       ,i)
+			      ((string "sample")
+			       ,(format nil "msg.sample~2,'0d" i)
+			       )
+			      ((string "phase")
+			       msg.phase)
+			      ))
+			   )))
 		  ;(print msg)
 		  )
 		 ("Exception as e"
@@ -108,7 +118,7 @@
 	       (setf dfi (df.set_index (list (string "sample_nr")
 					     (string "phase"))))
 	       (setf xs (dfi.to_xarray))
-	       (xrp.imshow xs.sample)
+	       (xrp.imshow (np.log xs.sample))
 	       #+nil (setf data1 (list
 			    ,@(loop for i below 40 collect
 				   (format nil "msg.sample~2,'0d" i))))
