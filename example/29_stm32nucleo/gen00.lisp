@@ -255,7 +255,7 @@
 			 (HAL_TIM_Base_Start &htim2)
 			 (HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_1)
 			 (HAL_TIM_PWM_Start &htim2 TIM_CHANNEL_2))
-		    (do0 (HAL_TIM_Base_Init &htim5)
+		    (do0 (HAL_TIM_Base_Init &htim5) ;; 32bit global time
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
@@ -347,12 +347,16 @@
 				      (declare (type SimpleMessage message))
 				      ,(let ((str "hello"))
 					 `(do0
-					   (setf message.id 42
-					       
-						 )
-					   (strcpy message.name (string ,str))))
+					   (setf message.id 42)
+					   (setf message.timestamp htim5.Instance->CNT)
+					   (setf message.phase htim2.Instance->CCR2)
+					   (dotimes (i ,n-channels)
+					    (setf (aref message.samples i) (aref value_adc i)))
+					   ;(strcpy message.name (string ,str))
+					   ))
 				      
-				      (let ((status (pb_encode &stream SimpleMessage_fields &message))
+				      (let ((status #+nil (pb_encode_ex &stream SimpleMessage_fields &message PB_ENCODE_DELIMITED )
+						    (pb_encode_delimited &stream SimpleMessage_fields &message))
 					    (message_length stream.bytes_written))
 					(when status
 					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
@@ -613,8 +617,12 @@
 			    (progn
 			      
 			      (setf "required int32 id" 1)
-			      (setf "repeated uint32 samples" ,(format nil "2 [packed=true, (nanopb).max_count=~a]" n-channels))
-			      (setf "required string name" "3 [(nanopb).max_size = 40]")
+			      ;; If (nanopb).fixed_count is set to true and (nanopb).max_count is also set, the field for the actual number of entries will not by created as the count is always assumed to be max count.
+
+			      (setf "optional int32 timestamp" 2)
+			      (setf "optional int32 phase" 3)
+			      (setf "repeated uint32 samples" ,(format nil "4 [packed=true, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
+			      ;(setf "required string name" "3 [(nanopb).max_size = 40]")
 			      
 			      ))))
       

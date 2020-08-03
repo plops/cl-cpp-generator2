@@ -353,4 +353,6 @@ Nanopb provides a few helpers to facilitate implementing framing formats:
 Functions pb_encode_ex and pb_decode_ex prefix the message data with a varint-encoded length.
 Union messages and oneofs are supported in order to implement top-level container messages.
 Message IDs can be specified using the (nanopb_msgopt).msgid option and can then be accessed from the header.
+
+ PB_ENCODE_DELIMITED
 #+end_example
