@@ -16,14 +16,18 @@ con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBIT
 msg=pb.SimpleMessage()
 d0=con.read(((40)*(180)))
 d=d0
-try:
-    start_idx=d.find(b"\x55\x55\x55\x55\x55")
-    end_idx=((start_idx)+(5)+(d[start_idx+5:].find(b"\x55\x55\x55\x55\x55")))
-    d1=d[start_idx+5:end_idx]
-    pbr=msg.ParseFromString(d1)
-except Exception as e:
-    print(e)
-    pass
+for i in range(3):
+    try:
+        pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
+        start_idx=d.find(pattern)
+        d=d[((start_idx)+(len(pattern))):]
+        end_idx=d.find(pattern)
+        d1=d[0:end_idx]
+        pbr=msg.ParseFromString(d1)
+        print(msg)
+    except Exception as e:
+        print(e)
+        pass
 last_len=msg.ByteSize()
 res=[]
 for i in range(30):

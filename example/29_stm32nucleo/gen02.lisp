@@ -65,18 +65,28 @@
 	       (setf msg (pb.SimpleMessage))
 	       (setf d0 (con.read (* 40 180)))
 	       (setf d d0)
-	       (try
-		(do0
-		 (setf start_idx (d.find (string-b "\\x55\\x55\\x55\\x55\\x55")))
-		 (setf end_idx (+ start_idx 5 (dot (aref d "start_idx+5:") (find (string-b "\\x55\\x55\\x55\\x55\\x55")))))
-		 (setf d1 (aref d "start_idx+5:end_idx"))
-		 (setf pbr (msg.ParseFromString d1
+	       (for (i (range 3))
+		(try
+		 (do0
+		  ;; we search for the end of one packet and the start of the next
+		  (setf pattern (string-b "\\xff\\xff\\xff\\xff\\xff\\x55\\x55\\x55\\x55\\x55"))
+		  ;; find the packet boundary
+		  (setf start_idx (d.find pattern))
+		  ;; throw away the partial packet in the beginning and the UUUUU start sequence of the first complete packet
+		  (setf d (aref d (slice (+ start_idx (len pattern)) "")))
+		  ;; find the next packet boundary
+		  (setf end_idx (dot d (find pattern)))
+		  ;; cut out the first complet packet
+		  (setf d1 (aref d "0:end_idx"))
+		  ;; parse the protobuf stream
+		  (setf pbr (msg.ParseFromString d1
 					;(aref d "1:")
-						)
-		       ))
-		("Exception as e"
-		 (print e)
-		 pass))
+						 )
+			)
+		  (print msg))
+		 ("Exception as e"
+		  (print e)
+		  pass)))
 	       (setf last_len (msg.ByteSize))
 	       (setf res (list))
 	       (for (i (range 30))
