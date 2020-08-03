@@ -356,8 +356,9 @@
 					   ))
 				      
 				      (let ((status #+nil (pb_encode_ex &stream SimpleMessage_fields &message PB_ENCODE_DELIMITED )
-						    ;(pb_encode_delimited &stream SimpleMessage_fields &message)
-						    (pb_encode &stream SimpleMessage_fields &message))
+						    (pb_encode_delimited &stream SimpleMessage_fields &message)
+						    ;(pb_encode &stream SimpleMessage_fields &message)
+						    )
 					    (message_length stream.bytes_written))
 					(when status
 					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
