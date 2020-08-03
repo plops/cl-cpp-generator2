@@ -63,11 +63,11 @@
                                :dsrdtr False
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read_all))
+	       (setf d0 (con.read 180))
 	       (time.sleep .01)
 	       (setf d1 (con.read_all))
 	       (setf d d1)
-	       (print d)
+	       ;(print d)
 	       #+nil (setf pbr (msg.ParseDelimitedFromString d))
 	       (try
 		(do0
@@ -82,25 +82,42 @@
 		 pass))
 	       (setf last_len (msg.ByteSize))
 	       (setf res (list))
-	       (for (i (range 10))
+	       (for (i (range 30))
 		(try
 		 (do0
-		  (time.sleep .1)
-		  (setf d2 (con.read_all))
-	       
+		  (time.sleep .03)
+		  (setf d0 (con.read_all))
+		  ;(print d2)
+		  (setf start_idx2 (d0.find (string-b "\\x08\\xd5\\xaa")))
+		  
 		  (setf msg2 (pb.SimpleMessage)
-			start_idx2 (+ start_idx last_len)
-			d2 (aref d "start_idx2:start_idx2+180")
+					;start_idx2 (+ start_idx last_len)
+			d2 (aref d0 "start_idx2:start_idx2+180")
 			pbr2 (msg2.ParseFromString d2))
-		  (setf d (dict
-			   ((string "samples")
-			    (list
-			     ,@(loop for i below 40 collect
-				    (format nil "msg2.sample~2,'0d" i))))
-			   ((string "phase")
+		  #+nil(do0
+		   (setf d (dict
+			    ((string "samples")
+			     (list
+			      ,@(loop for i below 40 collect
+				     (format nil "msg2.sample~2,'0d" i))))
+			    #+nil ((string "phase")
+				   msg2.phase)
+			    ))
+		   
+		   (res.append d))
+		  ,@(loop for i below 10 collect
+			 `(res.append
+			   (dict
+			    ((string "sample_nr")
+			     ,i)
+		    ((string "sample")
+		     ,(format nil "msg2.sample~2,'0d" i)
+		     )
+		    ((string "phase")
 			    msg2.phase)
 			   ))
-		  (res.append d)
+			 )
+		  
 		  (setf start_idx start_idx2
 			last_len (msg2.ByteSize)))
 		 ("Exception as e"
@@ -108,6 +125,8 @@
 		  pass)))
 
 	       (setf df (pd.DataFrame res))
+	       (setf dfi (df.set_index (list (string "sample_nr")
+					     (string "phase"))))
 	       #+nil (setf data1 (list
 			    ,@(loop for i below 40 collect
 				   (format nil "msg.sample~2,'0d" i))))
