@@ -64,8 +64,8 @@
 	       (setf msg (pb.SimpleMessage))
 	       (time.sleep 1)
 	       (setf d (con.read_all))
-	       
-	       (setf pbr (msg.ParseFromString d))
+	       (print d)
+	       (setf pbr (msg.ParseDelimitedFromString d))
 	    #-nil
 	    (class Uart ()
 		   (def __init__ (self        connection

@@ -10,7 +10,8 @@ con=serial.Serial(port="/dev/ttyACM0", baudrate=1000000, bytesize=serial.EIGHTBI
 msg=pb.SimpleMessage()
 time.sleep(1)
 d=con.read_all()
-pbr=msg.ParseFromString(d)
+print(d)
+pbr=msg.ParseDelimitedFromString(d)
 class Uart():
     def __init__(self, connection, debug=False):
         self._con=connection
