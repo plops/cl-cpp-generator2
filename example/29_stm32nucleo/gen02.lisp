@@ -65,6 +65,7 @@
 	       (setf msg (pb.SimpleMessage))
 	       (setf d0 (con.read (* 40 180)))
 	       (setf d d0)
+	       (setf res (list))
 	       (for (i (range 3))
 		(try
 		 (do0
@@ -83,47 +84,25 @@
 					;(aref d "1:")
 						 )
 			)
-		  (print msg))
-		 ("Exception as e"
-		  (print e)
-		  pass)))
-	       (setf last_len (msg.ByteSize))
-	       (setf res (list))
-	       (for (i (range 30))
-		(try
-		 (do0
-					;(setf start_idx2 (d0.find (string-b "\\x08\\xd5\\xaa")))
-		  (setf msg2 (pb.SimpleMessage)
-			start_idx2 (dot (aref d "end_idx+5:")
-					(find (string-b "\\x55\\x55\\x55\\x55\\x55")))
-			end_idx2 (+ start_idx2 5
-				    (dot (aref d "start_idx2+5:")
-					(find (string-b "\\x55\\x55\\x55\\x55\\x55"))))
-					;start_idx2 (+ end_idx 5)
-			
-			;end_idx2 (+ end_idx last_len)
-			d2 (aref d0 "start_idx2:end_idx2")
-			pbr2 (msg2.ParseFromString d2))
 		  ,@(loop for i below 10 collect
 			 `(res.append
 			   (dict
 			    ((string "sample_nr")
 			     ,i)
 		    ((string "sample")
-		     ,(format nil "msg2.sample~2,'0d" i)
+		     ,(format nil "msg.sample~2,'0d" i)
 		     )
 		    ((string "phase")
-			    msg2.phase)
+			    msg.phase)
 			   ))
 			 )
-		  
-		  (setf start_idx start_idx2
-			end_idx end_idx2
-			last_len (msg2.ByteSize)))
+		  ;(print msg)
+		  )
 		 ("Exception as e"
-		  (print (dot (string "e={} i={}")
-			      (format e i)))
+		  (print e)
 		  pass)))
+	       (setf last_len (msg.ByteSize))
+	       
 
 	       (setf df (pd.DataFrame res))
 	       (setf dfi (df.set_index (list (string "sample_nr")

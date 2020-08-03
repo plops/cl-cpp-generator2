@@ -16,6 +16,7 @@ con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBIT
 msg=pb.SimpleMessage()
 d0=con.read(((40)*(180)))
 d=d0
+res=[]
 for i in range(3):
     try:
         pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
@@ -24,35 +25,20 @@ for i in range(3):
         end_idx=d.find(pattern)
         d1=d[0:end_idx]
         pbr=msg.ParseFromString(d1)
-        print(msg)
+        res.append({("sample_nr"):(0),("sample"):(msg.sample00),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(1),("sample"):(msg.sample01),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(2),("sample"):(msg.sample02),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(3),("sample"):(msg.sample03),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(4),("sample"):(msg.sample04),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(5),("sample"):(msg.sample05),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(6),("sample"):(msg.sample06),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(7),("sample"):(msg.sample07),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(8),("sample"):(msg.sample08),("phase"):(msg.phase)})
+        res.append({("sample_nr"):(9),("sample"):(msg.sample09),("phase"):(msg.phase)})
     except Exception as e:
         print(e)
         pass
 last_len=msg.ByteSize()
-res=[]
-for i in range(30):
-    try:
-        msg2=pb.SimpleMessage()
-        start_idx2=d[end_idx+5:].find(b"\x55\x55\x55\x55\x55")
-        end_idx2=((start_idx2)+(5)+(d[start_idx2+5:].find(b"\x55\x55\x55\x55\x55")))
-        d2=d0[start_idx2:end_idx2]
-        pbr2=msg2.ParseFromString(d2)
-        res.append({("sample_nr"):(0),("sample"):(msg2.sample00),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(1),("sample"):(msg2.sample01),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(2),("sample"):(msg2.sample02),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(3),("sample"):(msg2.sample03),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(4),("sample"):(msg2.sample04),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(5),("sample"):(msg2.sample05),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(6),("sample"):(msg2.sample06),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(7),("sample"):(msg2.sample07),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(8),("sample"):(msg2.sample08),("phase"):(msg2.phase)})
-        res.append({("sample_nr"):(9),("sample"):(msg2.sample09),("phase"):(msg2.phase)})
-        start_idx=start_idx2
-        end_idx=end_idx2
-        last_len=msg2.ByteSize()
-    except Exception as e:
-        print("e={} i={}".format(e, i))
-        pass
 df=pd.DataFrame(res)
 dfi=df.set_index(["sample_nr", "phase"])
 class Uart():
