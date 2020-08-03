@@ -14,13 +14,12 @@ import simple_pb2 as pb
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()
-d0=con.read(180)
-time.sleep((1.00e-2))
-d1=con.read_all()
-d=d1
+d0=con.read(((40)*(180)))
+d=d0
 try:
-    start_idx=d.find(b"\x08\xd5\xaa")
-    d1=d[start_idx:start_idx+180]
+    start_idx=d.find(b"\x55\x55\x55\x55\x55")
+    end_idx=((start_idx)+(5)+(d[start_idx+5:].find(b"\x55\x55\x55\x55\x55")))
+    d1=d[start_idx+5:end_idx]
     pbr=msg.ParseFromString(d1)
 except Exception as e:
     print(e)
@@ -29,11 +28,10 @@ last_len=msg.ByteSize()
 res=[]
 for i in range(30):
     try:
-        time.sleep((3.00e-2))
-        d0=con.read_all()
-        start_idx2=d0.find(b"\x08\xd5\xaa")
         msg2=pb.SimpleMessage()
-        d2=d0[start_idx2:start_idx2+180]
+        start_idx2=d[end_idx+5:].find(b"\x55\x55\x55\x55\x55")
+        end_idx2=((start_idx2)+(5)+(d[start_idx2+5:].find(b"\x55\x55\x55\x55\x55")))
+        d2=d0[start_idx2:end_idx2]
         pbr2=msg2.ParseFromString(d2)
         res.append({("sample_nr"):(0),("sample"):(msg2.sample00),("phase"):(msg2.phase)})
         res.append({("sample_nr"):(1),("sample"):(msg2.sample01),("phase"):(msg2.phase)})
@@ -46,9 +44,10 @@ for i in range(30):
         res.append({("sample_nr"):(8),("sample"):(msg2.sample08),("phase"):(msg2.phase)})
         res.append({("sample_nr"):(9),("sample"):(msg2.sample09),("phase"):(msg2.phase)})
         start_idx=start_idx2
+        end_idx=end_idx2
         last_len=msg2.ByteSize()
     except Exception as e:
-        print(e)
+        print("e={} i={}".format(e, i))
         pass
 df=pd.DataFrame(res)
 dfi=df.set_index(["sample_nr", "phase"])

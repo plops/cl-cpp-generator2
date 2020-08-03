@@ -342,8 +342,12 @@
 
 				  #-nil
 				  (progn
+				    ;; add 5 bytes with content 0x55 at the beginning of each packet
+				    ,@(loop for i below 5 collect
+					   `(setf (aref BufferToSend ,i)
+						  #x55))
 				    (let ((message SimpleMessage_init_zero)
-					  (stream (pb_ostream_from_buffer BufferToSend (sizeof BufferToSend))))
+					  (stream (pb_ostream_from_buffer (+ 5 BufferToSend) (- (sizeof BufferToSend) 5))))
 				      (declare (type SimpleMessage message))
 				      ,(let ((str "hello"))
 					 `(do0
@@ -365,7 +369,7 @@
 						    )
 					    (message_length stream.bytes_written))
 					(when status
-					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
+					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) (+ 5 message_length)))
 					   (Error_Handler))))))
 				  #+nil
 				  (progn

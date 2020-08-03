@@ -63,16 +63,13 @@
                                :dsrdtr False
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read 180))
-	       (time.sleep .01)
-	       (setf d1 (con.read_all))
-	       (setf d d1)
-	       ;(print d)
-	       #+nil (setf pbr (msg.ParseDelimitedFromString d))
+	       (setf d0 (con.read (* 40 180)))
+	       (setf d d0)
 	       (try
 		(do0
-		 (setf start_idx (d.find (string-b "\\x08\\xd5\\xaa")))
-		 (setf d1 (aref d "start_idx:start_idx+180"))
+		 (setf start_idx (d.find (string-b "\\x55\\x55\\x55\\x55\\x55")))
+		 (setf end_idx (+ start_idx 5 (dot (aref d "start_idx+5:") (find (string-b "\\x55\\x55\\x55\\x55\\x55")))))
+		 (setf d1 (aref d "start_idx+5:end_idx"))
 		 (setf pbr (msg.ParseFromString d1
 					;(aref d "1:")
 						)
@@ -85,26 +82,18 @@
 	       (for (i (range 30))
 		(try
 		 (do0
-		  (time.sleep .03)
-		  (setf d0 (con.read_all))
-		  ;(print d2)
-		  (setf start_idx2 (d0.find (string-b "\\x08\\xd5\\xaa")))
-		  
+					;(setf start_idx2 (d0.find (string-b "\\x08\\xd5\\xaa")))
 		  (setf msg2 (pb.SimpleMessage)
-					;start_idx2 (+ start_idx last_len)
-			d2 (aref d0 "start_idx2:start_idx2+180")
+			start_idx2 (dot (aref d "end_idx+5:")
+					(find (string-b "\\x55\\x55\\x55\\x55\\x55")))
+			end_idx2 (+ start_idx2 5
+				    (dot (aref d "start_idx2+5:")
+					(find (string-b "\\x55\\x55\\x55\\x55\\x55"))))
+					;start_idx2 (+ end_idx 5)
+			
+			;end_idx2 (+ end_idx last_len)
+			d2 (aref d0 "start_idx2:end_idx2")
 			pbr2 (msg2.ParseFromString d2))
-		  #+nil(do0
-		   (setf d (dict
-			    ((string "samples")
-			     (list
-			      ,@(loop for i below 40 collect
-				     (format nil "msg2.sample~2,'0d" i))))
-			    #+nil ((string "phase")
-				   msg2.phase)
-			    ))
-		   
-		   (res.append d))
 		  ,@(loop for i below 10 collect
 			 `(res.append
 			   (dict
@@ -119,9 +108,11 @@
 			 )
 		  
 		  (setf start_idx start_idx2
+			end_idx end_idx2
 			last_len (msg2.ByteSize)))
 		 ("Exception as e"
-		  (print e)
+		  (print (dot (string "e={} i={}")
+			      (format e i)))
 		  pass)))
 
 	       (setf df (pd.DataFrame res))
