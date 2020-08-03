@@ -344,3 +344,6 @@ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
 
 * Protobuf over serial port
 - https://github.com/banetl/sensor_reading/blob/master/python/sensor_reading.py
+- https://jpa.kapsi.fi/nanopb/docs/concepts.html#message-framing
+  - HDLC (high-level data link control)
+  - https://github.com/mengguang/minihdlc/blob/master/minihdlc.c
