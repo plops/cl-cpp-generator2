@@ -347,3 +347,10 @@ cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
 - https://jpa.kapsi.fi/nanopb/docs/concepts.html#message-framing
   - HDLC (high-level data link control)
   - https://github.com/mengguang/minihdlc/blob/master/minihdlc.c
+#+begin_example
+Nanopb provides a few helpers to facilitate implementing framing formats:
+
+Functions pb_encode_ex and pb_decode_ex prefix the message data with a varint-encoded length.
+Union messages and oneofs are supported in order to implement top-level container messages.
+Message IDs can be specified using the (nanopb_msgopt).msgid option and can then be accessed from the header.
+#+end_example
