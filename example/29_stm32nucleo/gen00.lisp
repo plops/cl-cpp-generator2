@@ -613,7 +613,8 @@
 			    (progn
 			      
 			      (setf "required int32 id" 1)
-			      (setf "required string name" "2 [(nanopb).max_size = 40]")
+			      (setf "repeated uint32 samples" ,(format nil "2 [packed=true, (nanopb).max_count=~a]" n-channels))
+			      (setf "required string name" "3 [(nanopb).max_size = 40]")
 			      
 			      ))))
       
