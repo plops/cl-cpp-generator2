@@ -20,8 +20,10 @@
 (defparameter *file-hashes* (make-hash-table))
 (defparameter *auto-keyword* "auto")
 
-(defun write-source (name code &optional (dir (user-homedir-pathname))
-				 ignore-hash)
+(defun write-source (name code &key
+				 (dir (user-homedir-pathname))
+				 ignore-hash
+				 (format t))
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
 	(code-str (emit-c :code code))
@@ -43,10 +45,11 @@
 	;; https://travisdowns.github.io/blog/2019/11/19/toupper.html
 	;; header reordering can affect compilation performance
 	;; FIXME: figure out how to prevent that
-	(sb-ext:run-program "/usr/bin/clang-format"
-			    (list "-i"  (namestring fn)
-					;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
-				  ))))))
+	(when format
+	 (sb-ext:run-program "/usr/bin/clang-format"
+			     (list "-i"  (namestring fn)
+				   ;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
+				   )))))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
 ;; http://clhs.lisp.se/Body/d_type.htm
