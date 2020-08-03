@@ -347,16 +347,17 @@
 				      (declare (type SimpleMessage message))
 				      ,(let ((str "hello"))
 					 `(do0
-					   (setf message.id 42)
+					   (setf message.id #x55555555)
 					   (setf message.timestamp htim5.Instance->CNT)
 					   (setf message.phase htim2.Instance->CCR2)
 					   (dotimes (i ,n-channels)
-					    (setf (aref message.samples i) (aref value_adc i)))
+					     (setf (aref message.samples i) (aref value_adc i)))
 					   ;(strcpy message.name (string ,str))
 					   ))
 				      
 				      (let ((status #+nil (pb_encode_ex &stream SimpleMessage_fields &message PB_ENCODE_DELIMITED )
-						    (pb_encode_delimited &stream SimpleMessage_fields &message))
+						    ;(pb_encode_delimited &stream SimpleMessage_fields &message)
+						    (pb_encode &stream SimpleMessage_fields &message))
 					    (message_length stream.bytes_written))
 					(when status
 					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) message_length))
