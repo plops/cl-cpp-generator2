@@ -51,8 +51,8 @@
 	       (do0 "# %%"
                     (setf con (serial.Serial
                                :port (string "/dev/ttyACM0")
-                               :baudrate 1000000
-                            :bytesize serial.EIGHTBITS
+                               :baudrate 115200 ;1000000
+                               :bytesize serial.EIGHTBITS
                             :parity serial.PARITY_NONE
                             :stopbits serial.STOPBITS_ONE
                             :timeout .5 ;; seconds

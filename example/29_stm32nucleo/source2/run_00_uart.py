@@ -6,7 +6,7 @@ import serial
 sys.path.append("/home/martin/src/nanopb/b/")
 import simple_pb2 as pb
 # %%
-con=serial.Serial(port="/dev/ttyACM0", baudrate=1000000, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
+con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()
 time.sleep(1)
 d=con.read_all()
