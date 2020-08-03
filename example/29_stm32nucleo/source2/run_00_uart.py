@@ -72,6 +72,7 @@ last_len=msg.ByteSize()
 df=pd.DataFrame(res)
 dfi=df.set_index(["sample_nr", "phase"])
 xs=dfi.to_xarray()
+xrp.imshow(xs.sample)
 class Uart():
     def __init__(self, connection, debug=False):
         self._con=connection

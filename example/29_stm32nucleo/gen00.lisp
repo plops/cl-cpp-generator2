@@ -259,10 +259,10 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
-			      (let ((v (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* 7 i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
+			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* 7 i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
-			    ;(setf (aref value_dac 0) 4095)
+			    (setf (aref value_dac 0) 4095)
 			    #+nil (dotimes (i ,(floor n-dac-vals 2))
 				    (setf (aref value_dac i) 4095))
 			    
@@ -333,7 +333,7 @@
 				  #+nil ,(let ((report (format nil "trigger\\r\\n" )))
 				     `(HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*"  (string ,report))
 							     ,(+ -2 (length report))))
-				  (HAL_Delay 10)
+				  (HAL_Delay 30)
 				  
 				  (do0
 				   (incf htim2.Instance->CCR2)

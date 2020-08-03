@@ -108,6 +108,7 @@
 	       (setf dfi (df.set_index (list (string "sample_nr")
 					     (string "phase"))))
 	       (setf xs (dfi.to_xarray))
+	       (xrp.imshow xs.sample)
 	       #+nil (setf data1 (list
 			    ,@(loop for i below 40 collect
 				   (format nil "msg.sample~2,'0d" i))))
