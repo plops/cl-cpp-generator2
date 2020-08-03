@@ -368,8 +368,13 @@
 						    (pb_encode &stream SimpleMessage_fields &message)
 						    )
 					    (message_length stream.bytes_written))
+					
 					(when status
-					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) (+ 5 message_length)))
+					  ;; append 5 0xff characters at the end
+					  ,@(loop for i below 5 collect
+					     `(setf (aref BufferToSend (+ 5 message_length ,i))
+						    #xff))
+					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) (+ 5 message_length 5)))
 					   (Error_Handler))))))
 				  #+nil
 				  (progn
