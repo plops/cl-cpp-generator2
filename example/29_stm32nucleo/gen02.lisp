@@ -63,10 +63,10 @@
                                :dsrdtr False
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read (* 40 180)))
+	       (setf d0 (con.read (* 30 180)))
 	       (setf d d0)
 	       (setf res (list))
-	       (for (i (range 3))
+	       (for (i (range 30))
 		(try
 		 (do0
 		  ;; we search for the end of one packet and the start of the next
@@ -84,7 +84,7 @@
 					;(aref d "1:")
 						 )
 			)
-		  ,@(loop for i below 10 collect
+		  ,@(loop for i below 40 collect
 			 `(res.append
 			   (dict
 			    ((string "sample_nr")
@@ -107,6 +107,7 @@
 	       (setf df (pd.DataFrame res))
 	       (setf dfi (df.set_index (list (string "sample_nr")
 					     (string "phase"))))
+	       (setf xs (dfi.to_xarray))
 	       #+nil (setf data1 (list
 			    ,@(loop for i below 40 collect
 				   (format nil "msg.sample~2,'0d" i))))
