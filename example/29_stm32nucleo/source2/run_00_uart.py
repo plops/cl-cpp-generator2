@@ -14,27 +14,31 @@ import simple_pb2 as pb
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()
-d0=con.read(((100)*(180)))
+d0=con.read(((10)*(180)))
 d=d0
 d1=d0
 res=[]
 starting_point_found=False
 starting_point_found_again=False
 count=0
-while (((not(starting_point_found_again)) and (((100)<(len(d)))))):
+while (((not(starting_point_found_again)))):
     try:
+        if ( ((200)<(len(d))) ):
+            d=con.read(((10)*(180)))
         pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
         start_idx=d.find(pattern)
         pkt_len_lsb=d[((5)+(5)+(0)+(start_idx))]
         pkt_len_msb=d[((5)+(5)+(1)+(start_idx))]
         pkt_len=((pkt_len_lsb)+(((256)*(pkt_len_msb))))
+        pktfront=d[start_idx:((start_idx)+(5)+(5)+(2))]
         d=d[((5)+(5)+(2)+(start_idx)):]
         count=((count)+(1))
         dpkt=d[0:pkt_len]
+        pktend=d[pkt_len:((pkt_len)+(5))]
         pbr=msg.ParseFromString(dpkt)
         if ( ((not(starting_point_found)) and (((msg.phase)==(3)))) ):
             starting_point_found=True
-        if ( ((not(starting_point_found_again)) and (((msg.phase)==(0)))) ):
+        if ( ((not(starting_point_found_again)) and (((msg.phase)==(3)))) ):
             starting_point_found_again=True
         if ( ((starting_point_found) and (not(starting_point_found_again))) ):
             res.append({("sample_nr"):(0),("sample"):(msg.sample00),("phase"):(msg.phase)})
@@ -81,8 +85,11 @@ while (((not(starting_point_found_again)) and (((100)<(len(d)))))):
     except Exception as e:
         print("exception while processing packet {}: {}".format(count, e))
         print("""start_idx={}
+pktfront={}
+pktend={}
 dpkt={}
-pkt_len={}""".format(start_idx, dpkt, pkt_len))
+(len dpkt)={}
+pkt_len={}""".format(start_idx, pktfront, pktend, dpkt, len(dpkt), pkt_len))
         f=open("/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo//source2/run_00_uart.py")
         content=f.readlines()
         f.close()
@@ -96,4 +103,3 @@ df=pd.DataFrame(res)
 dfi=df.set_index(["sample_nr", "phase"])
 xs=dfi.to_xarray()
 xrp.imshow(np.log(xs.sample))
-u=Uart(con)

@@ -63,7 +63,7 @@
                                :dsrdtr False
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read (* 100 180)))
+	       (setf d0 (con.read (* 10 180)))
 	       (setf d d0
 		     d1 d0)
 	       (setf res (list))
@@ -72,10 +72,12 @@
 	       (setf count 0)
 	       (while (and (not starting_point_found_again)
 			   ;(< count 10)
-			   (< 100 (len d))
+			   ;(< 100 (len d))
 			   )
 		(try
 		 (do0
+		  (when (< 200 (len d))
+		    (setf d (con.read (* 10 180))))
 		  ;; we search for the end of one packet and the start of the next
 		  (setf pattern (string-b "\\xff\\xff\\xff\\xff\\xff\\x55\\x55\\x55\\x55\\x55"))
 		  ;; find the packet boundary
@@ -86,12 +88,14 @@
 		  (setf pkt_len_lsb (aref d (+ 5 5 0 start_idx))
 			pkt_len_msb (aref d (+ 5 5 1 start_idx))
 			pkt_len (+ pkt_len_lsb (* 256 pkt_len_msb)))
+
+		  (setf pktfront (aref d (slice start_idx (+ start_idx 5 5 2))))
 		  
 		  (setf d (aref d (slice (+ 5 5 2 start_idx) "")))
 		  (setf count (+ count 1))
 		  
 		  (setf dpkt (aref d "0:pkt_len"))
-		  
+		  (setf pktend  (aref d (slice pkt_len (+ pkt_len 5))))
 		  ;; parse the protobuf stream
 		  (setf pbr (msg.ParseFromString dpkt
 					;(aref d "1:")
@@ -100,7 +104,7 @@
 			     (== msg.phase 3))
 		    (setf starting_point_found True))
 		  (when (and (not starting_point_found_again)
-			     (== msg.phase 0))
+			     (== msg.phase 3))
 		    (setf starting_point_found_again True))
 		  (when (and starting_point_found
 			     (not starting_point_found_again))
@@ -125,7 +129,8 @@
                   (print (dot (string "exception while processing packet {}: {}")
                               (format count e)))
 		  
-		  ,(let ((l `(start_idx dpkt ;d (len d) dpkt (len dpkt) pkt_len_msb pkt_len_lsb
+		  ,(let ((l `(start_idx pktfront pktend dpkt ;d (len d) dpkt (len dpkt) pkt_len_msb pkt_len_lsb
+					(len dpkt)
 					pkt_len ;msg
 					)))
 		     `(do0
@@ -224,7 +229,7 @@
 		      (self._con.close))
 		    )
 		   )
-	    (setf u (Uart con))))
+	   #+nil  (setf u (Uart con))))
 	 
 	 )
 
