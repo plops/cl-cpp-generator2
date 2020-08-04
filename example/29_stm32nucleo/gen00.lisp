@@ -378,9 +378,9 @@
 					   (setf (aref BufferToSend (+ 5 1)) (>> (& #xff00 message_length) 8)))
 					  ;; append 5 0xff characters at the end
 					  ,@(loop for i below 5 collect
-					     `(setf (aref BufferToSend (+ 5 message_length ,i))
+					     `(setf (aref BufferToSend (+ 5 2 message_length ,i))
 						    #xff))
-					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) (+ 5 message_length 5)))
+					 (unless (== HAL_OK (HAL_UART_Transmit_DMA &huart2 (cast "uint8_t*" BufferToSend) (+ 5 2 message_length 5)))
 					   (Error_Handler))))))
 				  #+nil
 				  (progn

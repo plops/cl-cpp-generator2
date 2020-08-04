@@ -14,24 +14,25 @@ import simple_pb2 as pb
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()
-d0=con.read(((30)*(180)))
+d0=con.read(((100)*(180)))
 d=d0
 d1=d0
 res=[]
 starting_point_found=False
 starting_point_found_again=False
 count=0
-while (not(starting_point_found_again)):
+while (((not(starting_point_found_again)) and (((100)<(len(d)))))):
     try:
         pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
         start_idx=d.find(pattern)
-        d=d[((5)+(start_idx)):]
-        end_idx=d.find(pattern)
-        diff_idx=((end_idx)-(start_idx))
-        dh1=d[0:end_idx+5]
-        d1=d[5:end_idx]
-        pbr=msg.ParseFromString(d1)
-        if ( ((not(starting_point_found)) and (((msg.phase)==(0)))) ):
+        pkt_len_lsb=d[((5)+(5)+(0)+(start_idx))]
+        pkt_len_msb=d[((5)+(5)+(1)+(start_idx))]
+        pkt_len=((pkt_len_lsb)+(((256)*(pkt_len_msb))))
+        d=d[((5)+(5)+(2)+(start_idx)):]
+        count=((count)+(1))
+        dpkt=d[0:pkt_len]
+        pbr=msg.ParseFromString(dpkt)
+        if ( ((not(starting_point_found)) and (((msg.phase)==(3)))) ):
             starting_point_found=True
         if ( ((not(starting_point_found_again)) and (((msg.phase)==(0)))) ):
             starting_point_found_again=True
@@ -76,18 +77,12 @@ while (not(starting_point_found_again)):
             res.append({("sample_nr"):(37),("sample"):(msg.sample37),("phase"):(msg.phase)})
             res.append({("sample_nr"):(38),("sample"):(msg.sample38),("phase"):(msg.phase)})
             res.append({("sample_nr"):(39),("sample"):(msg.sample39),("phase"):(msg.phase)})
-        count=((count)+(1))
+        print("count={} msg.phase={}".format(count, msg.phase))
     except Exception as e:
         print("exception while processing packet {}: {}".format(count, e))
         print("""start_idx={}
-end_idx={}
-diff_idx={}
-d={}
-(len d)={}
-dh1={}
-(len dh1)={}
-d1={}
-(len d1)={}""".format(start_idx, end_idx, diff_idx, d, len(d), dh1, len(dh1), d1, len(d1)))
+dpkt={}
+pkt_len={}""".format(start_idx, dpkt, pkt_len))
         f=open("/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo//source2/run_00_uart.py")
         content=f.readlines()
         f.close()

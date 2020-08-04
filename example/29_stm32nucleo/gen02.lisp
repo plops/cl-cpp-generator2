@@ -63,14 +63,17 @@
                                :dsrdtr False
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read (* 30 180)))
+	       (setf d0 (con.read (* 100 180)))
 	       (setf d d0
 		     d1 d0)
 	       (setf res (list))
 	       (setf starting_point_found False
 		     starting_point_found_again False)
 	       (setf count 0)
-	       (while (not starting_point_found_again)
+	       (while (and (not starting_point_found_again)
+			   ;(< count 10)
+			   (< 100 (len d))
+			   )
 		(try
 		 (do0
 		  ;; we search for the end of one packet and the start of the next
@@ -79,20 +82,22 @@
 		  (setf start_idx (d.find pattern))
 		  ;; throw away the partial packet in the beginning and the UUUUU start sequence of the first complete packet
 		  ;; (setf d (aref d (slice (+ start_idx (len pattern)) "")))
-		  ;; keep the start sequence 
-		  (setf d (aref d (slice (+ 5 start_idx) "")))
-		  ;; find the next packet boundary
-		  (setf end_idx (dot d (find pattern)))
-		  (setf diff_idx (- end_idx start_idx))
-		  ;; cut out the first complet packet
-		  (setf dh1 (aref d "0:end_idx+5"))
-		  (setf d1 (aref d "5:end_idx"))
+		  ;; keep the start sequence
+		  (setf pkt_len_lsb (aref d (+ 5 5 0 start_idx))
+			pkt_len_msb (aref d (+ 5 5 1 start_idx))
+			pkt_len (+ pkt_len_lsb (* 256 pkt_len_msb)))
+		  
+		  (setf d (aref d (slice (+ 5 5 2 start_idx) "")))
+		  (setf count (+ count 1))
+		  
+		  (setf dpkt (aref d "0:pkt_len"))
+		  
 		  ;; parse the protobuf stream
-		  (setf pbr (msg.ParseFromString d1
+		  (setf pbr (msg.ParseFromString dpkt
 					;(aref d "1:")
 						 ))
 		  (when (and (not starting_point_found)
-			     (== msg.phase 0))
+			     (== msg.phase 3))
 		    (setf starting_point_found True))
 		  (when (and (not starting_point_found_again)
 			     (== msg.phase 0))
@@ -112,14 +117,17 @@
 			       msg.phase)
 			      ))
 			   )))
-		  (setf count (+ count 1))
+		  (print (dot (string "count={} msg.phase={}")
+			      (format count msg.phase)))
 		  ;(print msg)
 		  )
 		 ("Exception as e"
                   (print (dot (string "exception while processing packet {}: {}")
                               (format count e)))
 		  
-		  ,(let ((l `(start_idx end_idx diff_idx d (len d) dh1 (len dh1) d1 (len d1))))
+		  ,(let ((l `(start_idx dpkt ;d (len d) dpkt (len dpkt) pkt_len_msb pkt_len_lsb
+					pkt_len ;msg
+					)))
 		     `(do0
 		       
 		       (print (dot (string3 ,(format nil "~{~a={}~^~%~}" l))
