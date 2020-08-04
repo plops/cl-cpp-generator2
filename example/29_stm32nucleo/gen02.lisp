@@ -68,6 +68,7 @@
 	       (setf res (list))
 	       (setf starting_point_found False
 		     starting_point_found_again False)
+	       (setf count 0)
 	       (while (not starting_point_found_again)
 		(try
 		 (do0
@@ -106,9 +107,28 @@
 			       msg.phase)
 			      ))
 			   )))
+		  (setf count (+ count 1))
 		  ;(print msg)
 		  )
 		 ("Exception as e"
+                   (print (dot (string "exception while processing packet {}: {}")
+                               (format count e)))
+                   (setf f (open (string  ,(format nil "~a/source2/~a.py" *path* *code-file*)))
+                         content (f.readlines))
+                   (f.close)
+                   (setf lineno (dot (aref (sys.exc_info) -1)
+                                     tb_lineno))
+                   (for (l (range (- lineno 3) (+ lineno 2)))
+                        (print (dot (string "{} {}")
+                                    (format l (aref (aref content l) (slice 0 -1))))))
+                   (print (dot (string "Error in line {}: {} '{}'")
+                               (format lineno
+                                       (dot (type e)
+                                            __name__)
+                                       e)))
+                   
+                   pass)
+		 #+nil ("Exception as e"
 		  (print e)
 		  pass)))
 	       (setf last_len (msg.ByteSize))
@@ -125,7 +145,7 @@
 	       #+nil (setf data2 (list
 				  ,@(loop for i below 40 collect
 				   (format nil "msg2.sample~2,'0d" i))))
-	    #-nil
+	    #+nil
 	    (class Uart ()
 		   (def __init__ (self        connection
 				       &key (debug False) 

@@ -19,6 +19,7 @@ d=d0
 res=[]
 starting_point_found=False
 starting_point_found_again=False
+count=0
 while (not(starting_point_found_again)):
     try:
         pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
@@ -72,36 +73,20 @@ while (not(starting_point_found_again)):
             res.append({("sample_nr"):(37),("sample"):(msg.sample37),("phase"):(msg.phase)})
             res.append({("sample_nr"):(38),("sample"):(msg.sample38),("phase"):(msg.phase)})
             res.append({("sample_nr"):(39),("sample"):(msg.sample39),("phase"):(msg.phase)})
+        count=((count)+(1))
     except Exception as e:
-        print(e)
+        print("exception while processing packet {}: {}".format(count, e))
+        f=open("/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo//source2/run_00_uart.py")
+        content=f.readlines()
+        f.close()
+        lineno=sys.exc_info()[-1].tb_lineno
+        for l in range(((lineno)-(3)), ((lineno)+(2))):
+            print("{} {}".format(l, content[l][0:-1]))
+        print("Error in line {}: {} '{}'".format(lineno, type(e).__name__, e))
         pass
 last_len=msg.ByteSize()
 df=pd.DataFrame(res)
 dfi=df.set_index(["sample_nr", "phase"])
 xs=dfi.to_xarray()
 xrp.imshow(np.log(xs.sample))
-class Uart():
-    def __init__(self, connection, debug=False):
-        self._con=connection
-        self._debug=debug
-    def _write(self, cmd):
-        
-        self._con.write("{}\n".format(cmd).encode("utf-8"))
-    def _read(self):
-        # read all response lines from uart connections
-        try:
-            line=self._con.read_until()
-            res=line.decode("ISO-8859-1")
-            while (self._con.in_waiting):
-                print(res)
-                line=self._con.read_until()
-                print("AW: {}".format(line))
-                res=line.decode("ISO-8859-1")
-        except Exception as e:
-            print("warning in _read: {}. discarding the remaining input buffer {}.".format(e, self._con.read(size=self._con.in_waiting)))
-            self._con.reset_input_buffer()
-            return np.nan
-        return res
-    def close(self):
-        self._con.close()
 u=Uart(con)
