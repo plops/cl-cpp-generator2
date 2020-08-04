@@ -25,10 +25,11 @@ while (not(starting_point_found_again)):
     try:
         pattern=b"\xff\xff\xff\xff\xff\x55\x55\x55\x55\x55"
         start_idx=d.find(pattern)
-        d=d[((start_idx)+(len(pattern))):]
+        d=d[((5)+(start_idx)):]
         end_idx=d.find(pattern)
         diff_idx=((end_idx)-(start_idx))
-        d1=d[0:end_idx]
+        dh1=d[0:end_idx+5]
+        d1=d[5:end_idx]
         pbr=msg.ParseFromString(d1)
         if ( ((not(starting_point_found)) and (((msg.phase)==(0)))) ):
             starting_point_found=True
@@ -78,7 +79,15 @@ while (not(starting_point_found_again)):
         count=((count)+(1))
     except Exception as e:
         print("exception while processing packet {}: {}".format(count, e))
-        print("start_idx={},end_idx={},diff_idx={},d1={}".format(start_idx, end_idx, diff_idx, d1))
+        print("""start_idx={}
+end_idx={}
+diff_idx={}
+d={}
+(len d)={}
+dh1={}
+(len dh1)={}
+d1={}
+(len d1)={}""".format(start_idx, end_idx, diff_idx, d, len(d), dh1, len(dh1), d1, len(d1)))
         f=open("/home/martin/stage/cl-cpp-generator2/example/29_stm32nucleo//source2/run_00_uart.py")
         content=f.readlines()
         f.close()

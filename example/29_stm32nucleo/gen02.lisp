@@ -78,12 +78,15 @@
 		  ;; find the packet boundary
 		  (setf start_idx (d.find pattern))
 		  ;; throw away the partial packet in the beginning and the UUUUU start sequence of the first complete packet
-		  (setf d (aref d (slice (+ start_idx (len pattern)) "")))
+		  ;; (setf d (aref d (slice (+ start_idx (len pattern)) "")))
+		  ;; keep the start sequence 
+		  (setf d (aref d (slice (+ 5 start_idx) "")))
 		  ;; find the next packet boundary
 		  (setf end_idx (dot d (find pattern)))
 		  (setf diff_idx (- end_idx start_idx))
 		  ;; cut out the first complet packet
-		  (setf d1 (aref d "0:end_idx"))
+		  (setf dh1 (aref d "0:end_idx+5"))
+		  (setf d1 (aref d "5:end_idx"))
 		  ;; parse the protobuf stream
 		  (setf pbr (msg.ParseFromString d1
 					;(aref d "1:")
@@ -116,10 +119,10 @@
                   (print (dot (string "exception while processing packet {}: {}")
                               (format count e)))
 		  
-		  ,(let ((l `(start_idx end_idx diff_idx d1)))
+		  ,(let ((l `(start_idx end_idx diff_idx d (len d) dh1 (len dh1) d1 (len d1))))
 		     `(do0
 		       
-		       (print (dot (string ,(format nil "~{~a={}~^,~}" l))
+		       (print (dot (string3 ,(format nil "~{~a={}~^~%~}" l))
 				  (format ,@l)))))
                    (setf f (open (string  ,(format nil "~a/source2/~a.py" *path* *code-file*)))
                          content (f.readlines))

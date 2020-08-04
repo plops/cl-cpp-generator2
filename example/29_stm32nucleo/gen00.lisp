@@ -346,8 +346,9 @@
 				    ,@(loop for i below 5 collect
 					   `(setf (aref BufferToSend ,i)
 						  #x55))
+				    
 				    (let ((message SimpleMessage_init_zero)
-					  (stream (pb_ostream_from_buffer (+ 5 BufferToSend) (- (sizeof BufferToSend) 5))))
+					  (stream (pb_ostream_from_buffer (+ 5 2 BufferToSend) (- (sizeof BufferToSend) 5))))
 				      (declare (type SimpleMessage message))
 				      ,(let ((str "hello"))
 					 `(do0
@@ -370,6 +371,11 @@
 					    (message_length stream.bytes_written))
 					
 					(when status
+					  (do0 
+					   ;; add 2 bytes with the packet length behind the five #x55 and infront of the payload
+					   ;; least significand byte first
+					   (setf (aref BufferToSend (+ 5 0)) (& #xff message_length))
+					   (setf (aref BufferToSend (+ 5 1)) (>> (& #xff00 message_length) 8)))
 					  ;; append 5 0xff characters at the end
 					  ,@(loop for i below 5 collect
 					     `(setf (aref BufferToSend (+ 5 message_length ,i))
