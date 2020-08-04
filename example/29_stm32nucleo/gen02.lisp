@@ -64,7 +64,8 @@
                                :interCharTimeout .05)))
 	       (setf msg (pb.SimpleMessage))
 	       (setf d0 (con.read (* 30 180)))
-	       (setf d d0)
+	       (setf d d0
+		     d1 d0)
 	       (setf res (list))
 	       (setf starting_point_found False
 		     starting_point_found_again False)
@@ -80,6 +81,7 @@
 		  (setf d (aref d (slice (+ start_idx (len pattern)) "")))
 		  ;; find the next packet boundary
 		  (setf end_idx (dot d (find pattern)))
+		  (setf diff_idx (- end_idx start_idx))
 		  ;; cut out the first complet packet
 		  (setf d1 (aref d "0:end_idx"))
 		  ;; parse the protobuf stream
@@ -111,8 +113,14 @@
 		  ;(print msg)
 		  )
 		 ("Exception as e"
-                   (print (dot (string "exception while processing packet {}: {}")
-                               (format count e)))
+                  (print (dot (string "exception while processing packet {}: {}")
+                              (format count e)))
+		  
+		  ,(let ((l `(start_idx end_idx diff_idx d1)))
+		     `(do0
+		       
+		       (print (dot (string ,(format nil "~{~a={}~^,~}" l))
+				  (format ,@l)))))
                    (setf f (open (string  ,(format nil "~a/source2/~a.py" *path* *code-file*)))
                          content (f.readlines))
                    (f.close)
