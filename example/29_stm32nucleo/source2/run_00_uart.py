@@ -11,11 +11,43 @@ import xarray as xr
 import xarray.plot as xrp
 sys.path.append("/home/martin/src/nanopb/b/")
 import simple_pb2 as pb
-define-automaton(quote(parse_serial_packet), quasiquote((START((current_char=con.read().decode())((if ( ((current_char)==("U")) ):
-    result=((current_char)+(con.read().decode()))
-    state=State_FSM.START_CHAR0
-else:
-    state=State_FSM.ERROR))))((FINISH((return (0,result,result_comment,))()), ERROR((raise(Exception("error in parse_module_response")))())))))
+class State_FSM(Enum):
+    START=0
+    START_CHAR0=1
+    START_CHAR1=2
+    START_CHAR2=3
+    START_CHAR3=4
+    START_CHAR4=5
+    PACKET_LEN_LSB=6
+    PACKET_LEN_MSB=7
+    PAYLOAD=8
+    END_CHAR0=9
+    END_CHAR1=10
+    END_CHAR2=11
+    END_CHAR3=12
+    END_CHAR4=13
+#  http://www.findinglisp.com/blog/2004/06/basic:automaton:macro.html
+state=State_FSM.START
+def parse_serial_packet_reset():
+    global state
+    state=State_FSM.START
+def parse_serial_packet(con):
+    # returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==:1 then FSM is in error state. Collect the comments if you want them. They can contain multiple lines. The result on the other hand will be exactly one line.
+    global state
+    result=""
+    result_comment=""
+    if ( ((state)==(State_FSM.START)) ):
+        current_char=con.read().decode()
+        if ( ((current_char)==("U")) ):
+            result=((current_char)+(con.read().decode()))
+            state=State_FSM.START_CHAR0
+        else:
+            state=State_FSM.ERROR
+    if ( ((state)==(State_FSM.FINISH)) ):
+        return (0,result,result_comment,)
+    if ( ((state)==(State_FSM.ERROR)) ):
+        raise(Exception("error in parse_module_response"))
+    return (1,result,result_comment,)
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()
