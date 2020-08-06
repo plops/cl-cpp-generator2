@@ -26,6 +26,8 @@ class State_FSM(Enum):
     END_CHAR2=11
     END_CHAR3=12
     END_CHAR4=13
+    STOP=14
+    ERROR=15
 #  http://www.findinglisp.com/blog/2004/06/basic:automaton:macro.html
 state=State_FSM.START
 def parse_serial_packet_reset():

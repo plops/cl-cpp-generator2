@@ -35,6 +35,8 @@
 				END_CHAR2
 				END_CHAR3
 				END_CHAR4
+				STOP
+				ERROR
 				)
 		    and i from 0
 		  collect
