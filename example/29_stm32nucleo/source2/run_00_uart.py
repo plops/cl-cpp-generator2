@@ -11,6 +11,11 @@ import xarray as xr
 import xarray.plot as xrp
 sys.path.append("/home/martin/src/nanopb/b/")
 import simple_pb2 as pb
+define-automaton(quote(parse_serial_packet), quasiquote((START((current_char=con.read().decode())((if ( ((current_char)==("U")) ):
+    result=((current_char)+(con.read().decode()))
+    state=State_FSM.START_CHAR0
+else:
+    state=State_FSM.ERROR))))((FINISH((return (0,result,result_comment,))()), ERROR((raise(Exception("error in parse_module_response")))())))))
 # %%
 con=serial.Serial(port="/dev/ttyACM0", baudrate=115200, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=(0.50    ), xonxoff=False, rtscts=False, writeTimeout=(5.00e-2), dsrdtr=False, interCharTimeout=(5.00e-2))
 msg=pb.SimpleMessage()

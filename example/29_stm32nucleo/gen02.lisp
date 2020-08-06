@@ -17,6 +17,45 @@
     `((10 "")))
 
   
+
+  (defun define-automaton (name states)
+    `(do0
+      (class State_FSM (Enum)
+	     ,@(loop for e in `(START
+				START_CHAR0
+				START_CHAR1
+				START_CHAR2
+				START_CHAR3
+				START_CHAR4
+				PACKET_LEN_LSB
+				PACKET_LEN_MSB
+				PAYLOAD
+				END_CHAR0
+				END_CHAR1
+				END_CHAR2
+				END_CHAR3
+				END_CHAR4
+				)
+		    and i from 0
+		  collect
+		    `(setf ,e ,i)))
+      "#  http://www.findinglisp.com/blog/2004/06/basic-automaton-macro.html"
+      (setf state State_FSM.START)
+      (def ,(format nil "~a_reset" name) ()
+        "global state"
+        (setf state State_FSM.START))
+      (def ,name (con)
+        "# returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==-1 then FSM is in error state. Collect the comments if you want them. They can contain multiple lines. The result on the other hand will be exactly one line."
+        "global state"
+        (setf
+              result (string "")
+              result_comment (string ""))
+        ,@(loop for (new-state code) in states collect
+             `(if (== state (dot State_FSM ,new-state))
+                  (do0
+                   ,@code)))
+        (return (tuple 1 result result_comment)))))
+
     
   (let* ((code
 	  `(do0
@@ -47,7 +86,28 @@
 	    (sys.path.append (string "/home/martin/src/nanopb/b/"))
 	    "import simple_pb2 as pb"
 	    
-
+	    (define-automaton 'parse_serial_packet
+                `((START ((setf current_char (dot (con.read)
+                                                    (decode)))
+                            #+nil (do0 (print current_char)
+                                       (print state))
+                            (if (== current_char (string "U"))
+                                (do0
+                                 (setf result (+ current_char
+                                                 (dot (con.read)
+                                                      (decode))))
+                                 (setf state State_FSM.START_CHAR0)
+                                 )
+				(do0
+				 (setf state State_FSM.ERROR)
+				 ))))
+                    (FINISH (#+nil (print state)
+                             (return (tuple 0 result result_comment))))
+                    (ERROR (#+nil (print state)
+                                  (raise (Exception (dot (string "error in parse_module_response"))))
+                                  ;(return (tuple -1 result result_comment))
+                                  ))))
+	    
 	       (do0 "# %%"
                     (setf con (serial.Serial
                                :port (string "/dev/ttyACM0")
