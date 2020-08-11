@@ -87,7 +87,7 @@
 					))
 	    (sys.path.append (string "/home/martin/src/nanopb/b/"))
 	    "import simple_pb2 as pb"
-	    
+	    "from enum import Enum"
 	    ,(define-automaton 'parse_serial_packet
                 `((START ((setf current_char (dot (con.read)
                                                     (decode)))

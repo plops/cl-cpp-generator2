@@ -6,6 +6,16 @@
 | source2 |   | python interface |
 |         |   |                  |
 
+
+* TODO implement serial communication protocol
+  - [X] start and end pattern for the packets
+  - [X] packet length at the beginning of the data stream
+  - [X] protobuf definition of serial packet payload
+  - [ ] CRC checksum at the beginning of the data stream
+  - [ ] finite state machine in python to parse packets
+  - [ ] bi-directional protocol (?)
+
+
 * Introduction MCU development
 
 The common lisp code modifies the boiler plate code of a STM32CubeIDE project.

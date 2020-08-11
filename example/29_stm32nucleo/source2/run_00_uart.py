@@ -11,6 +11,7 @@ import xarray as xr
 import xarray.plot as xrp
 sys.path.append("/home/martin/src/nanopb/b/")
 import simple_pb2 as pb
+from enum import Enum
 class State_FSM(Enum):
     START=0
     START_CHAR0=1
