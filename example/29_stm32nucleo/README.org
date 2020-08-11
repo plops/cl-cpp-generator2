@@ -14,6 +14,9 @@
   - [ ] CRC checksum at the beginning of the data stream
   - [ ] finite state machine in python to parse packets
   - [ ] bi-directional protocol (?)
+  - [ ] visualize supersampled DAC - ADC transfer function
+  - [ ] download log and timestamps from mcu
+  - [ ] vary clocks
 
 
 * Introduction MCU development
