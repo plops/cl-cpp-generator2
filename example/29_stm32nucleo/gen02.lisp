@@ -124,107 +124,125 @@
                                :writeTimeout .05 ;; seconds
                                :dsrdtr False
                                :interCharTimeout .05)))
-	       (setf msg (pb.SimpleMessage))
-	       (setf d0 (con.read (* 10 180)))
-	       (setf d d0
-		     d1 d0)
-	       (setf res (list))
-	       (setf starting_point_found False
-		     starting_point_found_again False)
-	       (setf count 0)
-	       (while (and (not starting_point_found_again)
-			   ;(< count 10)
-			   ;(< 100 (len d))
-			   )
-		(try
-		 (do0
-		  (when (< 200 (len d))
-		    (setf d (con.read (* 10 180))))
-		  ;; we search for the end of one packet and the start of the next
-		  (setf pattern (string-b "\\xff\\xff\\xff\\xff\\xff\\x55\\x55\\x55\\x55\\x55"))
-		  ;; find the packet boundary
-		  (setf start_idx (d.find pattern))
-		  ;; throw away the partial packet in the beginning and the UUUUU start sequence of the first complete packet
-		  ;; (setf d (aref d (slice (+ start_idx (len pattern)) "")))
-		  ;; keep the start sequence
-		  (setf pkt_len_lsb (aref d (+ 5 5 0 start_idx))
-			pkt_len_msb (aref d (+ 5 5 1 start_idx))
-			pkt_len (+ pkt_len_lsb (* 256 pkt_len_msb)))
 
-		  (setf pktfront (aref d (slice start_idx (+ start_idx 5 5 2))))
-		  
-		  (setf d (aref d (slice (+ 5 5 2 start_idx) "")))
-		  (setf count (+ count 1))
-		  
-		  (setf dpkt (aref d "0:pkt_len"))
-		  (setf pktend  (aref d (slice pkt_len (+ pkt_len 5))))
-		  ;; parse the protobuf stream
-		  (setf pbr (msg.ParseFromString dpkt
-					;(aref d "1:")
-						 ))
-		  (when (and (not starting_point_found)
-			     (== msg.phase 3))
-		    (setf starting_point_found True))
-		  (when (and (not starting_point_found_again)
-			     (== msg.phase 3))
-		    (setf starting_point_found_again True))
-		  (when (and starting_point_found
-			     (not starting_point_found_again))
-		   (do0
-		    ,@(loop for i below 40 collect
-			   `(res.append
-			     (dict
-			      ((string "sample_nr")
-			       ,i)
-			      ((string "sample")
-			       ,(format nil "msg.sample~2,'0d" i)
-			       )
-			      ((string "phase")
-			       msg.phase)
-			      ))
-			   )))
-		  (print (dot (string "count={} msg.phase={}")
-			      (format count msg.phase)))
-		  ;(print msg)
-		  )
-		 ("Exception as e"
-                  (print (dot (string "exception while processing packet {}: {}")
-                              (format count e)))
-		  
-		  ,(let ((l `(start_idx pktfront pktend dpkt ;d (len d) dpkt (len dpkt) pkt_len_msb pkt_len_lsb
-					(len dpkt)
-					pkt_len ;msg
-					)))
-		     `(do0
-		       
-		       (print (dot (string3 ,(format nil "~{~a={}~^~%~}" l))
-				  (format ,@l)))))
-                   (setf f (open (string  ,(format nil "~a/source2/~a.py" *path* *code-file*)))
-                         content (f.readlines))
-                   (f.close)
-                   (setf lineno (dot (aref (sys.exc_info) -1)
-                                     tb_lineno))
-                   (for (l (range (- lineno 3) (+ lineno 2)))
-                        (print (dot (string "{} {}")
-                                    (format l (aref (aref content l) (slice 0 -1))))))
-                   (print (dot (string "Error in line {}: {} '{}'")
-                               (format lineno
-                                       (dot (type e)
-                                            __name__)
-                                       e)))
-                   
-                   pass)
-		 #+nil ("Exception as e"
-		  (print e)
-		  pass)))
-	       (setf last_len (msg.ByteSize))
+	       (class Listener ()
+		      (def __init__ (self connection)
+			(setf self._con connection))
+		      (def _fsm_read (self)
+			(parse_serial_packet_reset)
+			(setf res (tuple 1 (string "") (string "")))
+			(while (== 1 (aref res 0))
+			  (setf res (parse_serial_packet self._con)))
+			(setf response (aref res 1))
+			(return response)))
 	       
 
-	       (setf df (pd.DataFrame res))
-	       (setf dfi (df.set_index (list (string "sample_nr")
-					     (string "phase"))))
-	       (setf xs (dfi.to_xarray))
-	       (xrp.imshow (np.log xs.sample))
+	       (setf l (Listener con))
+	       #+nil (do
+		"# %%"
+		(setf msg (pb.SimpleMessage))
+		 (setf d0 (con.read (* 10 180)))
+		 (setf d d0
+		       d1 d0)
+		 (setf res (list))
+		 (setf starting_point_found False
+		       starting_point_found_again False)
+		 (setf count 0)
+
+		 
+		 (while (and (not starting_point_found_again)
+					;(< count 10)
+					;(< 100 (len d))
+			     )
+		   (try
+		    (do0
+		     (when (< 200 (len d))
+		       (setf d (con.read (* 10 180))))
+		     ;; we search for the end of one packet and the start of the next
+		     (setf pattern (string-b "\\xff\\xff\\xff\\xff\\xff\\x55\\x55\\x55\\x55\\x55"))
+		     ;; find the packet boundary
+		     (setf start_idx (d.find pattern))
+		     ;; throw away the partial packet in the beginning and the UUUUU start sequence of the first complete packet
+		     ;; (setf d (aref d (slice (+ start_idx (len pattern)) "")))
+		     ;; keep the start sequence
+		     (setf pkt_len_lsb (aref d (+ 5 5 0 start_idx))
+			   pkt_len_msb (aref d (+ 5 5 1 start_idx))
+			   pkt_len (+ pkt_len_lsb (* 256 pkt_len_msb)))
+
+		     (setf pktfront (aref d (slice start_idx (+ start_idx 5 5 2))))
+		     
+		     (setf d (aref d (slice (+ 5 5 2 start_idx) "")))
+		     (setf count (+ count 1))
+		     
+		     (setf dpkt (aref d "0:pkt_len"))
+		     (setf pktend  (aref d (slice pkt_len (+ pkt_len 5))))
+		     ;; parse the protobuf stream
+		     (setf pbr (msg.ParseFromString dpkt
+					;(aref d "1:")
+						    ))
+		     (when (and (not starting_point_found)
+				(== msg.phase 3))
+		       (setf starting_point_found True))
+		     (when (and (not starting_point_found_again)
+				(== msg.phase 3))
+		       (setf starting_point_found_again True))
+		     (when (and starting_point_found
+				(not starting_point_found_again))
+		       (do0
+			,@(loop for i below 40 collect
+			       `(res.append
+				 (dict
+				  ((string "sample_nr")
+				   ,i)
+				  ((string "sample")
+				   ,(format nil "msg.sample~2,'0d" i)
+				   )
+				  ((string "phase")
+				   msg.phase)
+				  ))
+			       )))
+		     (print (dot (string "count={} msg.phase={}")
+				 (format count msg.phase)))
+					;(print msg)
+		     )
+		    ("Exception as e"
+                     (print (dot (string "exception while processing packet {}: {}")
+				 (format count e)))
+		     
+		     ,(let ((l `(start_idx pktfront pktend dpkt ;d (len d) dpkt (len dpkt) pkt_len_msb pkt_len_lsb
+					   (len dpkt)
+					   pkt_len ;msg
+					   )))
+			`(do0
+			  
+			  (print (dot (string3 ,(format nil "~{~a={}~^~%~}" l))
+				      (format ,@l)))))
+                     (setf f (open (string  ,(format nil "~a/source2/~a.py" *path* *code-file*)))
+                           content (f.readlines))
+                     (f.close)
+                     (setf lineno (dot (aref (sys.exc_info) -1)
+                                       tb_lineno))
+                     (for (l (range (- lineno 3) (+ lineno 2)))
+                          (print (dot (string "{} {}")
+                                      (format l (aref (aref content l) (slice 0 -1))))))
+                     (print (dot (string "Error in line {}: {} '{}'")
+				 (format lineno
+					 (dot (type e)
+                                              __name__)
+					 e)))
+                     
+                     pass)
+		    #+nil ("Exception as e"
+			   (print e)
+			   pass)))
+		 (setf last_len (msg.ByteSize))
+		 
+
+		 (setf df (pd.DataFrame res))
+		 (setf dfi (df.set_index (list (string "sample_nr")
+					       (string "phase"))))
+		 (setf xs (dfi.to_xarray))
+		 (xrp.imshow (np.log xs.sample)))
 	       #+nil (setf data1 (list
 			    ,@(loop for i below 40 collect
 				   (format nil "msg.sample~2,'0d" i))))
