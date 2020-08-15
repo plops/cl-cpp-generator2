@@ -16,17 +16,19 @@ class State_FSM(Enum):
     START=0
     START_CHAR0=1
     START_CHAR1=2
-    PACKET_LEN_LSB=3
-    PACKET_LEN_MSB=4
-    PAYLOAD=5
-    END_CHAR0=6
-    END_CHAR1=7
-    END_CHAR2=8
-    END_CHAR3=9
-    END_CHAR4=10
-    STOP=11
-    ERROR=12
-    FINISH=13
+    START_CHAR2=3
+    START_CHAR3=4
+    PACKET_LEN_LSB=5
+    PACKET_LEN_MSB=6
+    PAYLOAD=7
+    END_CHAR0=8
+    END_CHAR1=9
+    END_CHAR2=10
+    END_CHAR3=11
+    END_CHAR4=12
+    STOP=13
+    ERROR=14
+    FINISH=15
 #  http://www.findinglisp.com/blog/2004/06/basic:automaton:macro.html
 state=State_FSM.START
 def parse_serial_packet_reset():
@@ -42,7 +44,6 @@ def parse_serial_packet(con, accum={}):
         result_comment["parsed_bytes"]=0
         print("{} current_state=START next-state=START_CHAR0 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR0
         else:
             state=State_FSM.START
@@ -51,16 +52,30 @@ def parse_serial_packet(con, accum={}):
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=START_CHAR0 next-state=START_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR1
         else:
             state=State_FSM.START
     if ( ((state)==(State_FSM.START_CHAR1)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=START_CHAR1 next-state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
+        print("{} current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
+            state=State_FSM.START_CHAR2
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR2)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'U')) ):
+            state=State_FSM.START_CHAR3
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR3)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=START_CHAR3 next-state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'U')) ):
             state=State_FSM.PACKET_LEN_LSB
         else:
             state=State_FSM.START

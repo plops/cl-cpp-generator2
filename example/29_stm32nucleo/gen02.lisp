@@ -24,8 +24,8 @@
 	     ,@(loop for e in `(START
 				START_CHAR0
 				START_CHAR1
-				;START_CHAR2
-				; START_CHAR3
+				START_CHAR2
+				 START_CHAR3
 					;START_CHAR4
 				PACKET_LEN_LSB
 				PACKET_LEN_MSB
@@ -93,16 +93,16 @@
                  `(,@(loop for init-state in `(START
 					       START_CHAR0
 					        START_CHAR1
-					;START_CHAR2
-					;START_CHAR3
+					START_CHAR2
+					START_CHAR3
 					;START_CHAR4
 					       )
 			       and
 				 next-state in `(
 						 START_CHAR0
 						 START_CHAR1
-					;START_CHAR2
-					;START_CHAR3
+					START_CHAR2
+					START_CHAR3
 					;START_CHAR4
 						 PACKET_LEN_LSB
 						 )
@@ -122,7 +122,7 @@
 				     )
 				 (do0
 				  
-				  (setf result (+ current_char
+				  #+nil (setf result (+ current_char
 						  (con.read)))
 				  (setf state (dot State_FSM ,next-state)))
 				 (do0
