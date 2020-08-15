@@ -94,7 +94,7 @@ def parse_serial_packet(con, accum={}):
         state=State_FSM.PAYLOAD
     if ( ((state)==(State_FSM.PAYLOAD)) ):
         current_char=con.read()
-        print("{} current_state=PAYLOAD char={}".format(result_comment["parsed_bytes"], current_char))
+        print("{} current_state=PAYLOAD char={} packet_payload_bytes_read={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_payload_bytes_read"]))
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         result_comment["packet_payload_bytes_read"]=((result_comment["packet_payload_bytes_read"])+(1))
         if ( ((result_comment["packet_payload_bytes_read"])<(result_comment["packet_len"])) ):
@@ -105,7 +105,7 @@ def parse_serial_packet(con, accum={}):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=END_CHAR0 next-state=END_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
-        if ( ((current_char)==(b'xff')) ):
+        if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR1
         else:
             state=State_FSM.ERROR
@@ -113,7 +113,7 @@ def parse_serial_packet(con, accum={}):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=END_CHAR1 next-state=END_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
-        if ( ((current_char)==(b'xff')) ):
+        if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR2
         else:
             state=State_FSM.ERROR
@@ -121,7 +121,7 @@ def parse_serial_packet(con, accum={}):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=END_CHAR2 next-state=END_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
-        if ( ((current_char)==(b'xff')) ):
+        if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR3
         else:
             state=State_FSM.ERROR
@@ -129,7 +129,7 @@ def parse_serial_packet(con, accum={}):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=END_CHAR3 next-state=END_CHAR4 char={}".format(result_comment["parsed_bytes"], current_char))
-        if ( ((current_char)==(b'xff')) ):
+        if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR4
         else:
             state=State_FSM.ERROR
@@ -137,7 +137,7 @@ def parse_serial_packet(con, accum={}):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         print("{} current_state=END_CHAR4 next-state=FINISH char={}".format(result_comment["parsed_bytes"], current_char))
-        if ( ((current_char)==(b'xff')) ):
+        if ( ((current_char[0])==(255)) ):
             state=State_FSM.FINISH
         else:
             state=State_FSM.ERROR

@@ -152,8 +152,9 @@
 						   (aref result_comment (string "packet_len")))))
 				      (setf state (dot State_FSM PAYLOAD))))
 		     (PAYLOAD ((setf current_char (con.read))
-				      (print (dot (string ,(format nil "{} current_state=PAYLOAD char={}" ))
-						  (format (aref result_comment (string "parsed_bytes")) current_char)))
+				      (print (dot (string ,(format nil "{} current_state=PAYLOAD char={} packet_payload_bytes_read={}" ))
+						  (format (aref result_comment (string "parsed_bytes")) current_char
+							  (aref result_comment (string "packet_payload_bytes_read")))))
 			       (setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes"))))
 			       (setf (aref result_comment (string "packet_payload_bytes_read"))
@@ -185,7 +186,7 @@
 					 (+ 1 (aref result_comment (string "parsed_bytes"))))
 			     (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
 					      (format (aref result_comment (string "parsed_bytes")) current_char)))
-			     (if (== current_char "b'\xff'" ;#x55 ; (string "U")
+			     (if (== (aref current_char 0) #xff ; "b'\xff'" ;#x55 ; (string "U")
 				     )
 				 (do0
 				  
