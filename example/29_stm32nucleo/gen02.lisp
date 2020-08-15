@@ -117,6 +117,8 @@
 			     ,(if (eq init-state 'START)
 				  `(do0
 				    (setf (aref result_comment (string "parsed_bytes")) 0)
+				    (when (< 1000 (aref result_comment (string "non_starting_bytes_seen")))
+				      (setf state State_FSM.ERROR))
 				    (setf (aref result_comment (string "non_starting_bytes_seen"))
 					  (+ 1 
 					   (aref result_comment (string "non_starting_bytes_seen")))))
@@ -247,7 +249,9 @@
 			(setf res (tuple 1 (string "") (dict ((string "non_starting_bytes_seen") 0))))
 			(while (== 1 (aref res 0))
 			  (setf res (parse_serial_packet self._con :accum (aref res 2)
-							 :debug False))
+							 :debug ;False
+							 True
+							 ))
 			  ;(print res)
 			  )
 			(setf response (aref res 1))
@@ -280,7 +284,7 @@
 		(setf xdat (np.array (list ,@(loop for i below n-channels appending
 						  (loop for phase below 80 collect
 						       (+ (* 80 i) phase)))))
-		      ydat (np.zeros (* n-channels 80))		      
+		      ydat (np.zeros (* ,n-channels 80))		      
 		      )
 		,@(loop for phase below 80 collect
 		       `(try
