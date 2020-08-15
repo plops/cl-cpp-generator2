@@ -175,14 +175,16 @@ class Listener():
         return res
 l=Listener(con)
 msgs=[]
-for i in range(100):
+for i in range(300):
     try:
         res=l._fsm_read()
         if ( not(((0)==(len(res[2])))) ):
             msg=pb.SimpleMessage()
             pbr=msg.ParseFromString(res[2]["payload"])
-            msgs.append(msg)
+            d={("id"):(msg.id),("timestamp"):(msg.timestamp),("phase"):(msg.phase),("sample00"):(msg.sample00),("sample01"):(msg.sample01),("sample02"):(msg.sample02),("sample03"):(msg.sample03),("sample04"):(msg.sample04),("sample05"):(msg.sample05),("sample06"):(msg.sample06),("sample07"):(msg.sample07),("sample08"):(msg.sample08),("sample09"):(msg.sample09),("sample10"):(msg.sample10),("sample11"):(msg.sample11),("sample12"):(msg.sample12),("sample13"):(msg.sample13),("sample14"):(msg.sample14),("sample15"):(msg.sample15),("sample16"):(msg.sample16),("sample17"):(msg.sample17),("sample18"):(msg.sample18),("sample19"):(msg.sample19),("sample20"):(msg.sample20),("sample21"):(msg.sample21),("sample22"):(msg.sample22),("sample23"):(msg.sample23),("sample24"):(msg.sample24),("sample25"):(msg.sample25),("sample26"):(msg.sample26),("sample27"):(msg.sample27),("sample28"):(msg.sample28),("sample29"):(msg.sample29),("sample30"):(msg.sample30),("sample31"):(msg.sample31),("sample32"):(msg.sample32),("sample33"):(msg.sample33),("sample34"):(msg.sample34),("sample35"):(msg.sample35),("sample36"):(msg.sample36),("sample37"):(msg.sample37),("sample38"):(msg.sample38),("sample39"):(msg.sample39)}
+            msgs.append(d)
             print(msg)
     except Exception as e:
         print(e)
         pass
+df=pd.DataFrame(msgs)

@@ -247,7 +247,7 @@
 
 	       (setf l (Listener con))
 	       (setf msgs (list))
-	       (for (i (range 100))
+	       (for (i (range 300))
 		    (try
 		     (do0
 		      (setf res (l._fsm_read))
@@ -257,11 +257,15 @@
 			(setf msg (pb.SimpleMessage))
 			(setf pbr (msg.ParseFromString (aref (aref res 2)
 							     (string "payload"))))
-			(msgs.append msg)
+			(setf d (dict
+				 ,@(loop for e in `(id timestamp phase ,@(loop for i below 40 collect (format nil "sample~2,'0d" i))) collect
+					`((string ,e) (dot msg ,e)))))
+			(msgs.append d)
 			(print msg)))
 		     ("Exception as e"
 		      (print e)
 		      pass)))
+	       (setf df (pd.DataFrame msgs))
 	       #+nil (do
 		"# %%"
 		(setf msg (pb.SimpleMessage))
