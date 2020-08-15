@@ -91,32 +91,33 @@
 	    "from enum import Enum"
 	    ,(define-automaton 'parse_serial_packet
                  `(,@(loop for init-state in `(START
-						      START_CHAR0
-						      START_CHAR1
-						      ;START_CHAR2
-						      ;START_CHAR3
-						      ;START_CHAR4
-						      )
+					       START_CHAR0
+					        START_CHAR1
+					;START_CHAR2
+					;START_CHAR3
+					;START_CHAR4
+					       )
 			       and
 				 next-state in `(
-						      START_CHAR0
-						      START_CHAR1
-						      ;START_CHAR2
-						      ;START_CHAR3
-						      ;START_CHAR4
-						      PACKET_LEN_LSB
-						      )
+						 START_CHAR0
+						 START_CHAR1
+					;START_CHAR2
+					;START_CHAR3
+					;START_CHAR4
+						 PACKET_LEN_LSB
+						 )
 			        collect
 			  `(,init-state
 			    ((setf current_char (con.read)
                                    )
-
-			     (print (dot (string ,(format nil "current_state=~a next-state=~a char={}" init-state next-state))
-					      (format current_char)))
+			     
+			     
 			     ,(if (eq init-state 'START)
 				  `(setf (aref result_comment (string "parsed_bytes")) 0)
 				  `(setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes")))))
+			     (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
+					      (format (aref result_comment (string "parsed_bytes")) current_char)))
 			     (if (== current_char "b'U'" ;#x55 ; (string "U")
 				     )
 				 (do0
