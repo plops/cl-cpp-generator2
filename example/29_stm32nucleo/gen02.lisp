@@ -160,10 +160,42 @@
 				     (+ (aref result_comment (string "packet_payload_bytes_read"))
 					1))
 			       (if (< (aref result_comment (string "packet_payload_bytes_read"))
-				      (- (aref result_comment (string "packet_len"))
-					 (+ 5 5 2)))
+				      (aref result_comment (string "packet_len"))
+					 )
 				   (setf state (dot State_FSM PAYLOAD))
-				   (setf state (dot State_FSM FINISH)))))
+				   (setf state (dot State_FSM END_CHAR0)))))
+		     ,@(loop for init-state in `(END_CHAR0
+						 END_CHAR1
+						 END_CHAR2
+						 END_CHAR3
+						 END_CHAR4
+						 )
+			       and
+			  next-state in `(END_CHAR1
+					  END_CHAR2
+					  END_CHAR3
+					  END_CHAR4
+					  FINISH)
+			        collect
+			  `(,init-state
+			    ((setf current_char (con.read)
+                                   )
+			     
+			     (setf (aref result_comment (string "parsed_bytes"))
+					 (+ 1 (aref result_comment (string "parsed_bytes"))))
+			     (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
+					      (format (aref result_comment (string "parsed_bytes")) current_char)))
+			     (if (== current_char "b'\xff'" ;#x55 ; (string "U")
+				     )
+				 (do0
+				  
+				  #+nil (setf result (+ current_char
+						  (con.read)))
+				  (setf state (dot State_FSM ,next-state)))
+				 (do0
+				  (setf state State_FSM.ERROR
+					)
+				  )))))
                     (FINISH (#+nil (print state)
                              (return (tuple 0 result result_comment))))
                     (ERROR (#+nil (print state)

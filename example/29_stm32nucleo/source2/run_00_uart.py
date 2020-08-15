@@ -97,10 +97,50 @@ def parse_serial_packet(con, accum={}):
         print("{} current_state=PAYLOAD char={}".format(result_comment["parsed_bytes"], current_char))
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         result_comment["packet_payload_bytes_read"]=((result_comment["packet_payload_bytes_read"])+(1))
-        if ( ((result_comment["packet_payload_bytes_read"])<(((result_comment["packet_len"])-(((5)+(5)+(2)))))) ):
+        if ( ((result_comment["packet_payload_bytes_read"])<(result_comment["packet_len"])) ):
             state=State_FSM.PAYLOAD
         else:
+            state=State_FSM.END_CHAR0
+    if ( ((state)==(State_FSM.END_CHAR0)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=END_CHAR0 next-state=END_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'xff')) ):
+            state=State_FSM.END_CHAR1
+        else:
+            state=State_FSM.ERROR
+    if ( ((state)==(State_FSM.END_CHAR1)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=END_CHAR1 next-state=END_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'xff')) ):
+            state=State_FSM.END_CHAR2
+        else:
+            state=State_FSM.ERROR
+    if ( ((state)==(State_FSM.END_CHAR2)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=END_CHAR2 next-state=END_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'xff')) ):
+            state=State_FSM.END_CHAR3
+        else:
+            state=State_FSM.ERROR
+    if ( ((state)==(State_FSM.END_CHAR3)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=END_CHAR3 next-state=END_CHAR4 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'xff')) ):
+            state=State_FSM.END_CHAR4
+        else:
+            state=State_FSM.ERROR
+    if ( ((state)==(State_FSM.END_CHAR4)) ):
+        current_char=con.read()
+        result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        print("{} current_state=END_CHAR4 next-state=FINISH char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( ((current_char)==(b'xff')) ):
             state=State_FSM.FINISH
+        else:
+            state=State_FSM.ERROR
     if ( ((state)==(State_FSM.FINISH)) ):
         return (0,result,result_comment,)
     if ( ((state)==(State_FSM.ERROR)) ):
