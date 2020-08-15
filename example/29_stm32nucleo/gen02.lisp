@@ -47,7 +47,7 @@
       (def ,(format nil "~a_reset" name) ()
         "global state"
         (setf state State_FSM.START))
-      (def ,name (con &key (accum "{}"))
+      (def ,name (con &key (accum "{}") (debug False))
         "# returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==-1 then FSM is in error state."
         "global state"
         (setf
@@ -116,8 +116,9 @@
 				  `(setf (aref result_comment (string "parsed_bytes")) 0)
 				  `(setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes")))))
-			     (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
-					      (format (aref result_comment (string "parsed_bytes")) current_char)))
+			     (when debug
+			       (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
+					  (format (aref result_comment (string "parsed_bytes")) current_char))))
 			     (if (== current_char "b'U'" ;#x55 ; (string "U")
 				     )
 				 (do0
@@ -133,8 +134,9 @@
 		     (PACKET_LEN_LSB ((setf current_char (con.read))
 				      (setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes"))))
-				       (print (dot (string ,(format nil "{} current_state=PACKET_LEN_LSB char={}" ))
-						   (format (aref result_comment (string "parsed_bytes")) current_char)))
+				      (when debug
+					(print (dot (string ,(format nil "{} current_state=PACKET_LEN_LSB char={}" ))
+						   (format (aref result_comment (string "parsed_bytes")) current_char))))
 				      (setf (aref result_comment (string "packet_len")) (aref  current_char 0))
 				      (setf state (dot State_FSM PACKET_LEN_MSB))))
 		     (PACKET_LEN_MSB ((setf current_char (con.read))
@@ -149,16 +151,18 @@
 					    (np.zeros (aref result_comment (string "packet_len"))
 						      :dtype np.uint8)
 					    )
-				      (print (dot (string ,(format nil "{} current_state=PACKET_LEN_MSB char={} packet_len={}" ))
-						  (format
-						   (aref result_comment (string "parsed_bytes"))
-						   current_char
-						   (aref result_comment (string "packet_len")))))
+				      (when debug
+					(print (dot (string ,(format nil "{} current_state=PACKET_LEN_MSB char={} packet_len={}" ))
+						   (format
+						    (aref result_comment (string "parsed_bytes"))
+						    current_char
+						    (aref result_comment (string "packet_len"))))))
 				      (setf state (dot State_FSM PAYLOAD))))
 		     (PAYLOAD ((setf current_char (con.read))
-				      (print (dot (string ,(format nil "{} current_state=PAYLOAD char={} packet_payload_bytes_read={}" ))
-						  (format (aref result_comment (string "parsed_bytes")) current_char
-							  (aref result_comment (string "packet_payload_bytes_read")))))
+			       (when debug
+				 (print (dot (string ,(format nil "{} current_state=PAYLOAD char={} packet_payload_bytes_read={}" ))
+					    (format (aref result_comment (string "parsed_bytes")) current_char
+						    (aref result_comment (string "packet_payload_bytes_read"))))))
 			       (setf (aref result_comment (string "parsed_bytes"))
 				     (+ 1 (aref result_comment (string "parsed_bytes"))))
 			       (setf (aref (aref result_comment (string "payload")) (aref result_comment (string "packet_payload_bytes_read")))
@@ -190,8 +194,9 @@
 			     
 			     (setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes"))))
-			     (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
-					      (format (aref result_comment (string "parsed_bytes")) current_char)))
+			     (when debug
+			       (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
+					  (format (aref result_comment (string "parsed_bytes")) current_char))))
 			     (if (== (aref current_char 0) #xff ; "b'\xff'" ;#x55 ; (string "U")
 				     )
 				 (do0
@@ -238,10 +243,14 @@
 	       
 
 	       (setf l (Listener con))
-	       (setf res (l._fsm_read))
-	       (setf msg (pb.SimpleMessage))
-	       (setf pbr (msg.ParseFromString (aref (aref res 2)
-						    (string "payload"))))
+	       (for (i (range 3))
+		(do0
+		 (setf res (l._fsm_read))
+		
+		 (setf msg (pb.SimpleMessage))
+		 (setf pbr (msg.ParseFromString (aref (aref res 2)
+						      (string "payload"))))
+		 (print msg)))
 	       #+nil (do
 		"# %%"
 		(setf msg (pb.SimpleMessage))

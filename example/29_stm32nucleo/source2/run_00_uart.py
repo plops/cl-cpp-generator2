@@ -34,7 +34,7 @@ state=State_FSM.START
 def parse_serial_packet_reset():
     global state
     state=State_FSM.START
-def parse_serial_packet(con, accum={}):
+def parse_serial_packet(con, accum={}, debug=False):
     # returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==:1 then FSM is in error state.
     global state
     result=""
@@ -42,7 +42,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.START)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=0
-        print("{} current_state=START next-state=START_CHAR0 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=START next-state=START_CHAR0 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
             state=State_FSM.START_CHAR0
         else:
@@ -50,7 +51,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.START_CHAR0)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=START_CHAR0 next-state=START_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=START_CHAR0 next-state=START_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
             state=State_FSM.START_CHAR1
         else:
@@ -58,7 +60,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.START_CHAR1)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
             state=State_FSM.START_CHAR2
         else:
@@ -66,7 +69,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.START_CHAR2)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
             state=State_FSM.START_CHAR3
         else:
@@ -74,7 +78,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.START_CHAR3)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=START_CHAR3 next-state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=START_CHAR3 next-state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char)==(b'U')) ):
             state=State_FSM.PACKET_LEN_LSB
         else:
@@ -82,7 +87,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.PACKET_LEN_LSB)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=PACKET_LEN_LSB char={}".format(result_comment["parsed_bytes"], current_char))
         result_comment["packet_len"]=current_char[0]
         state=State_FSM.PACKET_LEN_MSB
     if ( ((state)==(State_FSM.PACKET_LEN_MSB)) ):
@@ -91,11 +97,13 @@ def parse_serial_packet(con, accum={}):
         result_comment["packet_len"]=((result_comment["packet_len"])+(((256)*(current_char[0]))))
         result_comment["packet_payload_bytes_read"]=0
         result_comment["payload"]=np.zeros(result_comment["packet_len"], dtype=np.uint8)
-        print("{} current_state=PACKET_LEN_MSB char={} packet_len={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_len"]))
+        if ( debug ):
+            print("{} current_state=PACKET_LEN_MSB char={} packet_len={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_len"]))
         state=State_FSM.PAYLOAD
     if ( ((state)==(State_FSM.PAYLOAD)) ):
         current_char=con.read()
-        print("{} current_state=PAYLOAD char={} packet_payload_bytes_read={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_payload_bytes_read"]))
+        if ( debug ):
+            print("{} current_state=PAYLOAD char={} packet_payload_bytes_read={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_payload_bytes_read"]))
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         result_comment["payload"][result_comment["packet_payload_bytes_read"]]=current_char[0]
         result_comment["packet_payload_bytes_read"]=((result_comment["packet_payload_bytes_read"])+(1))
@@ -106,7 +114,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.END_CHAR0)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=END_CHAR0 next-state=END_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=END_CHAR0 next-state=END_CHAR1 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR1
         else:
@@ -114,7 +123,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.END_CHAR1)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=END_CHAR1 next-state=END_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=END_CHAR1 next-state=END_CHAR2 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR2
         else:
@@ -122,7 +132,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.END_CHAR2)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=END_CHAR2 next-state=END_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=END_CHAR2 next-state=END_CHAR3 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR3
         else:
@@ -130,7 +141,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.END_CHAR3)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=END_CHAR3 next-state=END_CHAR4 char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=END_CHAR3 next-state=END_CHAR4 char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char[0])==(255)) ):
             state=State_FSM.END_CHAR4
         else:
@@ -138,7 +150,8 @@ def parse_serial_packet(con, accum={}):
     if ( ((state)==(State_FSM.END_CHAR4)) ):
         current_char=con.read()
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
-        print("{} current_state=END_CHAR4 next-state=FINISH char={}".format(result_comment["parsed_bytes"], current_char))
+        if ( debug ):
+            print("{} current_state=END_CHAR4 next-state=FINISH char={}".format(result_comment["parsed_bytes"], current_char))
         if ( ((current_char[0])==(255)) ):
             state=State_FSM.FINISH
         else:
@@ -161,6 +174,8 @@ class Listener():
         response=res[1]
         return res
 l=Listener(con)
-res=l._fsm_read()
-msg=pb.SimpleMessage()
-pbr=msg.ParseFromString(res[2]["payload"])
+for i in range(3):
+    res=l._fsm_read()
+    msg=pb.SimpleMessage()
+    pbr=msg.ParseFromString(res[2]["payload"])
+    print(msg)
