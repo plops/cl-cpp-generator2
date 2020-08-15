@@ -218,7 +218,7 @@
 	       (do0 "# %%"
                     (setf con (serial.Serial
                                :port (string "/dev/ttyACM0")
-                               :baudrate ; 500000
+                               :baudrate ; 500000 
 					115200 ;1000000
                                :bytesize serial.EIGHTBITS
                                :parity serial.PARITY_NONE
