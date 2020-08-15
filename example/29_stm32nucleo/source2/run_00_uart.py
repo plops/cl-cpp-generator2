@@ -29,6 +29,7 @@ class State_FSM(Enum):
     END_CHAR4=13
     STOP=14
     ERROR=15
+    FINISH=16
 #  http://www.findinglisp.com/blog/2004/06/basic:automaton:macro.html
 state=State_FSM.START
 def parse_serial_packet_reset():
@@ -40,12 +41,53 @@ def parse_serial_packet(con):
     result=""
     result_comment=""
     if ( ((state)==(State_FSM.START)) ):
-        current_char=con.read().decode()
-        if ( ((current_char)==("U")) ):
-            result=((current_char)+(con.read().decode()))
+        current_char=con.read()
+        # nothing
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR0
         else:
-            state=State_FSM.ERROR
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR0)) ):
+        current_char=con.read()
+        print("current_state=START_CHAR0 next-state=START_CHAR1 char={}".format(current_char))
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
+            state=State_FSM.START_CHAR1
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR1)) ):
+        current_char=con.read()
+        print("current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(current_char))
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
+            state=State_FSM.START_CHAR2
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR2)) ):
+        current_char=con.read()
+        print("current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(current_char))
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
+            state=State_FSM.START_CHAR3
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR3)) ):
+        current_char=con.read()
+        print("current_state=START_CHAR3 next-state=START_CHAR4 char={}".format(current_char))
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
+            state=State_FSM.START_CHAR4
+        else:
+            state=State_FSM.START
+    if ( ((state)==(State_FSM.START_CHAR4)) ):
+        current_char=con.read()
+        print("current_state=START_CHAR4 next-state=PACKET_LEN_LSB char={}".format(current_char))
+        if ( ((current_char)==(b'x55')) ):
+            result=((current_char)+(con.read()))
+            state=State_FSM.PACKET_LEN_LSB
+        else:
+            state=State_FSM.START
     if ( ((state)==(State_FSM.FINISH)) ):
         return (0,result,result_comment,)
     if ( ((state)==(State_FSM.ERROR)) ):

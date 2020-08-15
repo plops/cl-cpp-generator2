@@ -37,6 +37,7 @@
 				END_CHAR4
 				STOP
 				ERROR
+				FINISH
 				)
 		    and i from 0
 		  collect
@@ -89,20 +90,46 @@
 	    "import simple_pb2 as pb"
 	    "from enum import Enum"
 	    ,(define-automaton 'parse_serial_packet
-                `((START ((setf current_char (dot (con.read)
-                                                    (decode)))
+                 `(,@(loop for init-state in `(START
+						      START_CHAR0
+						      START_CHAR1
+						      START_CHAR2
+						      START_CHAR3
+						      START_CHAR4
+						      )
+			       and
+				 next-state in `(
+						      START_CHAR0
+						      START_CHAR1
+						      START_CHAR2
+						      START_CHAR3
+						      START_CHAR4
+						      PACKET_LEN_LSB
+						      )
+			        collect
+			  `(,init-state
+			    ((setf current_char (con.read)
+                                   )
+			     ,(if (eq init-state 'START)
+				  "# nothing"
+				  `(print (dot (string ,(format nil "current_state=~a next-state=~a char={}" init-state next-state))
+					      (format current_char))))
+			     (if (== current_char "b'\x55'" ;#x55 ; (string "U")
+				     )
+				 (do0
+				  
+				  (setf result (+ current_char
+						  (con.read)))
+				  (setf state (dot State_FSM ,next-state)))
+				 (do0
+				  (setf state State_FSM.START ;ERROR
+					)
+				  )))))
+
+		     #+nil (START (
                             #+nil (do0 (print current_char)
                                        (print state))
-                            (if (== current_char (string "U"))
-                                (do0
-                                 (setf result (+ current_char
-                                                 (dot (con.read)
-                                                      (decode))))
-                                 (setf state State_FSM.START_CHAR0)
-                                 )
-				(do0
-				 (setf state State_FSM.ERROR)
-				 ))))
+				  ))
                     (FINISH (#+nil (print state)
                              (return (tuple 0 result result_comment))))
                     (ERROR (#+nil (print state)
