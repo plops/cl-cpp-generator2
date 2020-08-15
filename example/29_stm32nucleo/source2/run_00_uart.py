@@ -90,12 +90,14 @@ def parse_serial_packet(con, accum={}):
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
         result_comment["packet_len"]=((result_comment["packet_len"])+(((256)*(current_char[0]))))
         result_comment["packet_payload_bytes_read"]=0
+        result_comment["payload"]=np.zeros(result_comment["packet_len"], dtype=np.uint8)
         print("{} current_state=PACKET_LEN_MSB char={} packet_len={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_len"]))
         state=State_FSM.PAYLOAD
     if ( ((state)==(State_FSM.PAYLOAD)) ):
         current_char=con.read()
         print("{} current_state=PAYLOAD char={} packet_payload_bytes_read={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_payload_bytes_read"]))
         result_comment["parsed_bytes"]=((1)+(result_comment["parsed_bytes"]))
+        result_comment["payload"][result_comment["packet_payload_bytes_read"]]=current_char[0]
         result_comment["packet_payload_bytes_read"]=((result_comment["packet_payload_bytes_read"])+(1))
         if ( ((result_comment["packet_payload_bytes_read"])<(result_comment["packet_len"])) ):
             state=State_FSM.PAYLOAD
@@ -157,6 +159,8 @@ class Listener():
         while (((1)==(res[0]))):
             res=parse_serial_packet(self._con, accum=res[2])
         response=res[1]
-        return response
+        return res
 l=Listener(con)
-l._fsm_read()
+res=l._fsm_read()
+msg=pb.SimpleMessage()
+pbr=msg.ParseFromString(res[2]["payload"])

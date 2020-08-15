@@ -145,6 +145,10 @@
 					       (* 256 (aref  current_char 0))))
 				      (setf (aref result_comment (string "packet_payload_bytes_read"))
 					    0)
+				      (setf (aref result_comment (string "payload"))
+					    (np.zeros (aref result_comment (string "packet_len"))
+						      :dtype np.uint8)
+					    )
 				      (print (dot (string ,(format nil "{} current_state=PACKET_LEN_MSB char={} packet_len={}" ))
 						  (format
 						   (aref result_comment (string "parsed_bytes"))
@@ -156,7 +160,9 @@
 						  (format (aref result_comment (string "parsed_bytes")) current_char
 							  (aref result_comment (string "packet_payload_bytes_read")))))
 			       (setf (aref result_comment (string "parsed_bytes"))
-					 (+ 1 (aref result_comment (string "parsed_bytes"))))
+				     (+ 1 (aref result_comment (string "parsed_bytes"))))
+			       (setf (aref (aref result_comment (string "payload")) (aref result_comment (string "packet_payload_bytes_read")))
+				     (aref current_char 0))
 			       (setf (aref result_comment (string "packet_payload_bytes_read"))
 				     (+ (aref result_comment (string "packet_payload_bytes_read"))
 					1))
@@ -228,11 +234,14 @@
 			(while (== 1 (aref res 0))
 			  (setf res (parse_serial_packet self._con :accum (aref res 2))))
 			(setf response (aref res 1))
-			(return response)))
+			(return res)))
 	       
 
 	       (setf l (Listener con))
-	       (l._fsm_read)
+	       (setf res (l._fsm_read))
+	       (setf msg (pb.SimpleMessage))
+	       (setf pbr (msg.ParseFromString (aref (aref res 2)
+						    (string "payload"))))
 	       #+nil (do
 		"# %%"
 		(setf msg (pb.SimpleMessage))
