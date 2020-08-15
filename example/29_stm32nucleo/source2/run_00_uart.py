@@ -16,30 +16,27 @@ class State_FSM(Enum):
     START=0
     START_CHAR0=1
     START_CHAR1=2
-    START_CHAR2=3
-    START_CHAR3=4
-    START_CHAR4=5
-    PACKET_LEN_LSB=6
-    PACKET_LEN_MSB=7
-    PAYLOAD=8
-    END_CHAR0=9
-    END_CHAR1=10
-    END_CHAR2=11
-    END_CHAR3=12
-    END_CHAR4=13
-    STOP=14
-    ERROR=15
-    FINISH=16
+    PACKET_LEN_LSB=3
+    PACKET_LEN_MSB=4
+    PAYLOAD=5
+    END_CHAR0=6
+    END_CHAR1=7
+    END_CHAR2=8
+    END_CHAR3=9
+    END_CHAR4=10
+    STOP=11
+    ERROR=12
+    FINISH=13
 #  http://www.findinglisp.com/blog/2004/06/basic:automaton:macro.html
 state=State_FSM.START
 def parse_serial_packet_reset():
     global state
     state=State_FSM.START
-def parse_serial_packet(con):
+def parse_serial_packet(con, accum={}):
     # returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==:1 then FSM is in error state.
     global state
     result=""
-    result_comment=""
+    result_comment=accum
     if ( ((state)==(State_FSM.START)) ):
         current_char=con.read()
         print("current_state=START next-state=START_CHAR0 char={}".format(current_char))
@@ -58,36 +55,31 @@ def parse_serial_packet(con):
             state=State_FSM.START
     if ( ((state)==(State_FSM.START_CHAR1)) ):
         current_char=con.read()
-        print("current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(current_char))
-        if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
-            state=State_FSM.START_CHAR2
-        else:
-            state=State_FSM.START
-    if ( ((state)==(State_FSM.START_CHAR2)) ):
-        current_char=con.read()
-        print("current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(current_char))
-        if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
-            state=State_FSM.START_CHAR3
-        else:
-            state=State_FSM.START
-    if ( ((state)==(State_FSM.START_CHAR3)) ):
-        current_char=con.read()
-        print("current_state=START_CHAR3 next-state=START_CHAR4 char={}".format(current_char))
-        if ( ((current_char)==(b'U')) ):
-            result=((current_char)+(con.read()))
-            state=State_FSM.START_CHAR4
-        else:
-            state=State_FSM.START
-    if ( ((state)==(State_FSM.START_CHAR4)) ):
-        current_char=con.read()
-        print("current_state=START_CHAR4 next-state=PACKET_LEN_LSB char={}".format(current_char))
+        print("current_state=START_CHAR1 next-state=PACKET_LEN_LSB char={}".format(current_char))
         if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.PACKET_LEN_LSB
         else:
             state=State_FSM.START
+    if ( ((state)==(State_FSM.PACKET_LEN_LSB)) ):
+        current_char=con.read()
+        print("current_state=PACKET_LEN_LSB char={}".format(current_char))
+        result_comment["packet_len"]=current_char[0]
+        state=State_FSM.PACKET_LEN_MSB
+    if ( ((state)==(State_FSM.PACKET_LEN_MSB)) ):
+        current_char=con.read()
+        result_comment["packet_len"]=((result_comment["packet_len"])+(((256)*(current_char[0]))))
+        result_comment["packet_payload_bytes_read"]=0
+        print("current_state=PACKET_LEN_MSB char={} packet_len={}".format(current_char, result_comment["packet_len"]))
+        state=State_FSM.PAYLOAD
+    if ( ((state)==(State_FSM.PAYLOAD)) ):
+        current_char=con.read()
+        print("current_state=PAYLOAD char={}".format(current_char))
+        result_comment["packet_payload_bytes_read"]=((result_comment["packet_payload_bytes_read"])+(1))
+        if ( ((result_comment["packet_payload_bytes_read"])<(result_comment["packet_len"])) ):
+            state=State_FSM.PAYLOAD
+        else:
+            state=State_FSM.FINISH
     if ( ((state)==(State_FSM.FINISH)) ):
         return (0,result,result_comment,)
     if ( ((state)==(State_FSM.ERROR)) ):
@@ -100,9 +92,10 @@ class Listener():
         self._con=connection
     def _fsm_read(self):
         parse_serial_packet_reset()
-        res=(1,"","",)
+        res=(1,"",{},)
         while (((1)==(res[0]))):
-            res=parse_serial_packet(self._con)
+            res=parse_serial_packet(self._con, accum=res[2])
         response=res[1]
         return response
 l=Listener(con)
+l._fsm_read()
