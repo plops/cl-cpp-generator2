@@ -48,7 +48,7 @@
         "global state"
         (setf state State_FSM.START))
       (def ,name (con)
-        "# returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==-1 then FSM is in error state. Collect the comments if you want them. They can contain multiple lines. The result on the other hand will be exactly one line."
+        "# returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==-1 then FSM is in error state."
         "global state"
         (setf
               result (string "")
@@ -110,11 +110,15 @@
 			  `(,init-state
 			    ((setf current_char (con.read)
                                    )
+
+			     (print (dot (string ,(format nil "current_state=~a next-state=~a char={}" init-state next-state))
+					 (format current_char)))
+			     #+nil
 			     ,(if (eq init-state 'START)
 				  "# nothing"
 				  `(print (dot (string ,(format nil "current_state=~a next-state=~a char={}" init-state next-state))
 					      (format current_char))))
-			     (if (== current_char "b'\x55'" ;#x55 ; (string "U")
+			     (if (== current_char "b'U'" ;#x55 ; (string "U")
 				     )
 				 (do0
 				  

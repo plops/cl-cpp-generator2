@@ -36,14 +36,14 @@ def parse_serial_packet_reset():
     global state
     state=State_FSM.START
 def parse_serial_packet(con):
-    # returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==:1 then FSM is in error state. Collect the comments if you want them. They can contain multiple lines. The result on the other hand will be exactly one line.
+    # returns tuple with 3 values (val, result, comment). If val==1 call again, if val==0 then fsm is in finish state. If val==:1 then FSM is in error state.
     global state
     result=""
     result_comment=""
     if ( ((state)==(State_FSM.START)) ):
         current_char=con.read()
-        # nothing
-        if ( ((current_char)==(b'x55')) ):
+        print("current_state=START next-state=START_CHAR0 char={}".format(current_char))
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR0
         else:
@@ -51,7 +51,7 @@ def parse_serial_packet(con):
     if ( ((state)==(State_FSM.START_CHAR0)) ):
         current_char=con.read()
         print("current_state=START_CHAR0 next-state=START_CHAR1 char={}".format(current_char))
-        if ( ((current_char)==(b'x55')) ):
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR1
         else:
@@ -59,7 +59,7 @@ def parse_serial_packet(con):
     if ( ((state)==(State_FSM.START_CHAR1)) ):
         current_char=con.read()
         print("current_state=START_CHAR1 next-state=START_CHAR2 char={}".format(current_char))
-        if ( ((current_char)==(b'x55')) ):
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR2
         else:
@@ -67,7 +67,7 @@ def parse_serial_packet(con):
     if ( ((state)==(State_FSM.START_CHAR2)) ):
         current_char=con.read()
         print("current_state=START_CHAR2 next-state=START_CHAR3 char={}".format(current_char))
-        if ( ((current_char)==(b'x55')) ):
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR3
         else:
@@ -75,7 +75,7 @@ def parse_serial_packet(con):
     if ( ((state)==(State_FSM.START_CHAR3)) ):
         current_char=con.read()
         print("current_state=START_CHAR3 next-state=START_CHAR4 char={}".format(current_char))
-        if ( ((current_char)==(b'x55')) ):
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.START_CHAR4
         else:
@@ -83,7 +83,7 @@ def parse_serial_packet(con):
     if ( ((state)==(State_FSM.START_CHAR4)) ):
         current_char=con.read()
         print("current_state=START_CHAR4 next-state=PACKET_LEN_LSB char={}".format(current_char))
-        if ( ((current_char)==(b'x55')) ):
+        if ( ((current_char)==(b'U')) ):
             result=((current_char)+(con.read()))
             state=State_FSM.PACKET_LEN_LSB
         else:
