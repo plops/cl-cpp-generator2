@@ -266,6 +266,27 @@
 		      (print e)
 		      pass)))
 	       (setf df (pd.DataFrame msgs))
+	       (do0
+		(setf xdat (np.array (list ,@(loop for i below 40 appending
+						  (loop for phase below 80 collect
+						       (+ (* 80 i) phase)))))
+		      ydat (np.zeros (* 40 80))		      
+		      )
+		,@(loop for phase below 80 collect
+		       `(try
+			 (do0
+			  (setf df1 (aref df (== df.phase ,phase)))
+		     	  ,@(loop for i below 40 collect
+			       `(setf (aref ydat (+ (* 80 ,i) ,phase))
+				      (aref (aref df1.iloc 0)
+					    (string ,(format nil "sample~2,'0d" i))))))
+			 ("Exception as e"
+			  (print e)
+			  pass)))
+		)
+	       (plt.plot xdat ydat)
+	       
+	       
 	       #+nil (do
 		"# %%"
 		(setf msg (pb.SimpleMessage))
