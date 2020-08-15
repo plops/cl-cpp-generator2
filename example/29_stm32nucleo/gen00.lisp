@@ -85,7 +85,7 @@
       (destructuring-bind (file part-name part-code) args
 	(push `(:name ,part-name :file ,file :code ,part-code)
 	      *parts*))))
-  (let* ((n-channels 40 ;(* 16 1024)
+  (let* ((n-channels 60 ;(* 16 1024)
 	  )
 	(n-tx-chars (* 4 128))
 	(n-dac-vals (- (floor n-channels 2) 0))
@@ -259,10 +259,12 @@
 			 (HAL_TIM_Base_Start &htim5))
 		    #+dac1 (do0
 			    (dotimes (i ,n-dac-vals)
-			      (let ((v 0 ;(cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* 7 i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
+			      (let ((v 0;  (cast uint16_t (rint (* ,(/ 4095s0 2) (+ 1s0 (sinf (* 7 i ,(coerce (/ (* 2 pi) n-dac-vals) 'single-float)))))))
 				      ))
 				(setf (aref value_dac i) v)))
 			    (setf (aref value_dac 0) 4095)
+			    (setf (aref value_dac 1) 0)
+			    (setf (aref value_dac 2) 4095)
 			    #+nil (dotimes (i ,(floor n-dac-vals 2))
 				    (setf (aref value_dac i) 4095))
 			    

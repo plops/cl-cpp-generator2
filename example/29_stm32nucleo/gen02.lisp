@@ -60,7 +60,9 @@
         (return (tuple 1 result result_comment)))))
 
     
-  (let* ((code
+  (let*
+      ((n-channels 60)
+       (code
 	  `(do0
 	    (comments "sudo emerge pyserial")
 	    
@@ -113,12 +115,17 @@
 			     
 			     
 			     ,(if (eq init-state 'START)
-				  `(setf (aref result_comment (string "parsed_bytes")) 0)
+				  `(do0
+				    (setf (aref result_comment (string "parsed_bytes")) 0)
+				    (setf (aref result_comment (string "non_starting_bytes_seen"))
+					  (+ 1 
+					   (aref result_comment (string "non_starting_bytes_seen")))))
 				  `(setf (aref result_comment (string "parsed_bytes"))
 					 (+ 1 (aref result_comment (string "parsed_bytes")))))
 			     (when debug
-			       (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={}" init-state next-state))
-					  (format (aref result_comment (string "parsed_bytes")) current_char))))
+			       (print (dot (string ,(format nil "{} current_state=~a next-state=~a char={} non_starting_bytes={}" init-state next-state))
+					   (format (aref result_comment (string "parsed_bytes")) current_char
+						   (aref result_comment (string "non_starting_bytes_seen"))))))
 			     (if (== current_char "b'U'" ;#x55 ; (string "U")
 				     )
 				 (do0
@@ -208,7 +215,8 @@
 				  (setf state State_FSM.ERROR
 					)
 				  )))))
-                    (FINISH (#+nil (print state)
+                     (FINISH (#+nil (print state)
+				    (setf (aref result_comment (string "non_starting_bytes_seen")) 0)
                              (return (tuple 0 result result_comment))))
                     (ERROR (#+nil (print state)
                                   (raise (Exception (dot (string "error in parse_module_response"))))
@@ -220,6 +228,7 @@
                                :port (string "/dev/ttyACM0")
                                :baudrate ; 500000 
 					115200 ;1000000
+					;2000000
                                :bytesize serial.EIGHTBITS
                                :parity serial.PARITY_NONE
                                :stopbits serial.STOPBITS_ONE
@@ -235,7 +244,7 @@
 			(setf self._con connection))
 		      (def _fsm_read (self)
 			(parse_serial_packet_reset)
-			(setf res (tuple 1 (string "") "{}"))
+			(setf res (tuple 1 (string "") (dict ((string "non_starting_bytes_seen") 0))))
 			(while (== 1 (aref res 0))
 			  (setf res (parse_serial_packet self._con :accum (aref res 2)
 							 :debug False))
@@ -247,7 +256,8 @@
 
 	       (setf l (Listener con))
 	       (setf msgs (list))
-	       (for (i (range 300))
+	       
+	       (for (i (range 320))
 		    (try
 		     (do0
 		      (setf res (l._fsm_read))
@@ -258,7 +268,7 @@
 			(setf pbr (msg.ParseFromString (aref (aref res 2)
 							     (string "payload"))))
 			(setf d (dict
-				 ,@(loop for e in `(id timestamp phase ,@(loop for i below 40 collect (format nil "sample~2,'0d" i))) collect
+				 ,@(loop for e in `(id timestamp phase ,@(loop for i below n-channels collect (format nil "sample~2,'0d" i))) collect
 					`((string ,e) (dot msg ,e)))))
 			(msgs.append d)
 			(print msg)))
@@ -267,16 +277,16 @@
 		      pass)))
 	       (setf df (pd.DataFrame msgs))
 	       (do0
-		(setf xdat (np.array (list ,@(loop for i below 40 appending
+		(setf xdat (np.array (list ,@(loop for i below n-channels appending
 						  (loop for phase below 80 collect
 						       (+ (* 80 i) phase)))))
-		      ydat (np.zeros (* 40 80))		      
+		      ydat (np.zeros (* n-channels 80))		      
 		      )
 		,@(loop for phase below 80 collect
 		       `(try
 			 (do0
 			  (setf df1 (aref df (== df.phase ,phase)))
-		     	  ,@(loop for i below 40 collect
+		     	  ,@(loop for i below n-channels collect
 			       `(setf (aref ydat (+ (* 80 ,i) ,phase))
 				      (aref (aref df1.iloc 0)
 					    (string ,(format nil "sample~2,'0d" i))))))
@@ -284,7 +294,9 @@
 			  (print e)
 			  pass)))
 		)
-	       (plt.plot xdat ydat)
+	       (do0
+		(plt.plot xdat ydat)
+		(plt.grid))
 	       
 	       
 	       #+nil (do
