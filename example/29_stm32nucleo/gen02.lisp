@@ -238,7 +238,9 @@
 			(setf res (tuple 1 (string "") "{}"))
 			(while (== 1 (aref res 0))
 			  (setf res (parse_serial_packet self._con :accum (aref res 2)
-							 :debug True)))
+							 :debug False))
+			  ;(print res)
+			  )
 			(setf response (aref res 1))
 			(return res)))
 	       
@@ -246,14 +248,20 @@
 	       (setf l (Listener con))
 	       (setf msgs (list))
 	       (for (i (range 100))
-		(do0
-		 (setf res (l._fsm_read))
+		    (try
+		     (do0
+		      (setf res (l._fsm_read))
 		
-		 (setf msg (pb.SimpleMessage))
-		 (setf pbr (msg.ParseFromString (aref (aref res 2)
-						      (string "payload"))))
-		 (msgs.append msg)
-		 (print msg)))
+		 
+		      (unless (== 0 (len (aref res 2)))
+			(setf msg (pb.SimpleMessage))
+			(setf pbr (msg.ParseFromString (aref (aref res 2)
+							     (string "payload"))))
+			(msgs.append msg)
+			(print msg)))
+		     ("Exception as e"
+		      (print e)
+		      pass)))
 	       #+nil (do
 		"# %%"
 		(setf msg (pb.SimpleMessage))

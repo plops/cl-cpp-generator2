@@ -170,14 +170,19 @@ class Listener():
         parse_serial_packet_reset()
         res=(1,"",{},)
         while (((1)==(res[0]))):
-            res=parse_serial_packet(self._con, accum=res[2], debug=True)
+            res=parse_serial_packet(self._con, accum=res[2], debug=False)
         response=res[1]
         return res
 l=Listener(con)
 msgs=[]
 for i in range(100):
-    res=l._fsm_read()
-    msg=pb.SimpleMessage()
-    pbr=msg.ParseFromString(res[2]["payload"])
-    msgs.append(msg)
-    print(msg)
+    try:
+        res=l._fsm_read()
+        if ( not(((0)==(len(res[2])))) ):
+            msg=pb.SimpleMessage()
+            pbr=msg.ParseFromString(res[2]["payload"])
+            msgs.append(msg)
+            print(msg)
+    except Exception as e:
+        print(e)
+        pass
