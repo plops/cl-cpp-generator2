@@ -204,7 +204,15 @@
 	    ;; should be  defined to 0 in  stm32l4xx_hal_conf.h but it is not there
 	    `(main.c 0
 		     (do0
-		      ,@(loop for e in l appending
+		      (defun encode_int32 (stream field arg)
+			(declare (type pb_ostream_t* stream)
+				 (type "const pb_field_t*" field)
+				 (type "void *const*" arg)
+				 (values bool))
+			(unless (pb_encode_tag_for_field stream field)
+			  (return false))
+			(return (pb_encode_varint stream 42)))
+		      ,@(loop for e in l appending 
 			     (destructuring-bind (module irqs &key (channels `(""))) e
 			       (loop for ch in channels append
 				    (loop for irq in irqs collect
@@ -650,7 +658,7 @@
 
 			      (setf "required uint32 timestamp" 2)
 			      (setf "required uint32 phase" 3)
-			      (setf "repeated uint32 uint32value" 4)
+			      (setf "repeated int32 uint32value" 4)
 			      
 			      ,@(loop for i below n-channels
 				   collect
