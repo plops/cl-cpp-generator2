@@ -1,10 +1,10 @@
 * Overview
 
-| folder  |   | comment          |
-| source  |   | MCU firmware     |
-| source1 |   | c++ qt gui       |
-| source2 |   | python interface |
-|         |   |                  |
+| folder  |   | comment                                                     |
+| source  |   | MCU firmware                                                |
+| source1 |   | c++ qt gui      (unfinished, i first concentrate on python) |
+| source2 |   | python interface                                            |
+|         |   |                                                             |
 
 
 * TODO implement serial communication protocol
@@ -13,7 +13,7 @@
   - [X] protobuf definition of serial packet payload
   - [X] visualize supersampled DAC - ADC transfer function
   - [X] finite state machine in python to parse packets
-  - [ ] variable length arrays with nanopb
+  - [X] variable length arrays with nanopb
   - [ ] download log and timestamps from mcu
   - [ ] CRC checksum at the beginning of the data stream
   - [ ] compression, huffman encoding

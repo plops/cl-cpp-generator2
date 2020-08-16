@@ -71,25 +71,26 @@ extern UART_HandleTypeDef huart2;
 /**
   * @brief This function handles Non maskable interrupt.
   */
-void NMI_Handler(void)
+void
+NMI_Handler (void)
 {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=27;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 27;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
 
@@ -99,28 +100,28 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-void HardFault_Handler(void)
+void
+HardFault_Handler (void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=26;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
-/* USER CODE END HardFault_IRQn 0 */
-  while (1)
   {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 26;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
+/* USER CODE END HardFault_IRQn 0 */
+  while (1) {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
@@ -129,28 +130,28 @@ void HardFault_Handler(void)
 /**
   * @brief This function handles Memory management fault.
   */
-void MemManage_Handler(void)
+void
+MemManage_Handler (void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=25;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
-/* USER CODE END MemoryManagement_IRQn 0 */
-  while (1)
   {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 25;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
+/* USER CODE END MemoryManagement_IRQn 0 */
+  while (1) {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
@@ -159,28 +160,28 @@ void MemManage_Handler(void)
 /**
   * @brief This function handles Prefetch fault, memory access fault.
   */
-void BusFault_Handler(void)
+void
+BusFault_Handler (void)
 {
   /* USER CODE BEGIN BusFault_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=24;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
-/* USER CODE END BusFault_IRQn 0 */
-  while (1)
   {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 24;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
+/* USER CODE END BusFault_IRQn 0 */
+  while (1) {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
@@ -189,28 +190,28 @@ void BusFault_Handler(void)
 /**
   * @brief This function handles Undefined instruction or illegal state.
   */
-void UsageFault_Handler(void)
+void
+UsageFault_Handler (void)
 {
   /* USER CODE BEGIN UsageFault_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=23;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
-/* USER CODE END UsageFault_IRQn 0 */
-  while (1)
   {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 23;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
+/* USER CODE END UsageFault_IRQn 0 */
+  while (1) {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
@@ -219,25 +220,26 @@ void UsageFault_Handler(void)
 /**
   * @brief This function handles System service call via SWI instruction.
   */
-void SVC_Handler(void)
+void
+SVC_Handler (void)
 {
   /* USER CODE BEGIN SVCall_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=22;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 22;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END SVCall_IRQn 0 */
   /* USER CODE BEGIN SVCall_IRQn 1 */
 
@@ -247,25 +249,26 @@ void SVC_Handler(void)
 /**
   * @brief This function handles Debug monitor.
   */
-void DebugMon_Handler(void)
+void
+DebugMon_Handler (void)
 {
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=21;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 21;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END DebugMonitor_IRQn 0 */
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
@@ -275,25 +278,26 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles Pendable request for system service.
   */
-void PendSV_Handler(void)
+void
+PendSV_Handler (void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=20;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 20;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
 
@@ -303,33 +307,34 @@ void PendSV_Handler(void)
 /**
   * @brief This function handles System tick timer.
   */
-void SysTick_Handler(void)
+void
+SysTick_Handler (void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-{
-                static int count  = 0;
+  {
+    static int count = 0;
     (count)++;
-    if ( (0)==(count%1000) ) {
-                        {
-                                    extern TIM_HandleTypeDef htim5 ;
-                        {
-                                                __auto_type prim  = __get_PRIMASK();
-                __disable_irq();
-                                                glog_ts[glog_count]=htim5.Instance->CNT;
-                                glog_msg[glog_count]=19;
-                                (glog_count)++;
-                if ( (2048)<=(glog_count) ) {
-                                                                                glog_count=0;
-}
-                if ( !(prim) ) {
-                                                            __enable_irq();
-}
-}
-}
-}
-}
+    if ((0) == (count % 1000)) {
+      {
+	extern TIM_HandleTypeDef htim5;
+	{
+	  __auto_type prim = __get_PRIMASK ();
+	  __disable_irq ();
+	  glog_ts[glog_count] = htim5.Instance->CNT;
+	  glog_msg[glog_count] = 19;
+	  (glog_count)++;
+	  if ((2048) <= (glog_count)) {
+	    glog_count = 0;
+	  }
+	  if (!(prim)) {
+	    __enable_irq ();
+	  }
+	}
+      }
+    }
+  }
 /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+  HAL_IncTick ();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -345,27 +350,28 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles DMA1 channel1 global interrupt.
   */
-void DMA1_Channel1_IRQHandler(void)
+void
+DMA1_Channel1_IRQHandler (void)
 {
   /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=16;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 16;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END DMA1_Channel1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_adc1);
+  HAL_DMA_IRQHandler (&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
 
   /* USER CODE END DMA1_Channel1_IRQn 1 */
@@ -374,27 +380,28 @@ void DMA1_Channel1_IRQHandler(void)
 /**
   * @brief This function handles DMA1 channel3 global interrupt.
   */
-void DMA1_Channel3_IRQHandler(void)
+void
+DMA1_Channel3_IRQHandler (void)
 {
   /* USER CODE BEGIN DMA1_Channel3_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=17;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 17;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END DMA1_Channel3_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_dac_ch1);
+  HAL_DMA_IRQHandler (&hdma_dac_ch1);
   /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
 
   /* USER CODE END DMA1_Channel3_IRQn 1 */
@@ -403,27 +410,28 @@ void DMA1_Channel3_IRQHandler(void)
 /**
   * @brief This function handles DMA1 channel7 global interrupt.
   */
-void DMA1_Channel7_IRQHandler(void)
+void
+DMA1_Channel7_IRQHandler (void)
 {
   /* USER CODE BEGIN DMA1_Channel7_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=14;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 14;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END DMA1_Channel7_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_tx);
+  HAL_DMA_IRQHandler (&hdma_usart2_tx);
   /* USER CODE BEGIN DMA1_Channel7_IRQn 1 */
 
   /* USER CODE END DMA1_Channel7_IRQn 1 */
@@ -432,27 +440,28 @@ void DMA1_Channel7_IRQHandler(void)
 /**
   * @brief This function handles USART2 global interrupt.
   */
-void USART2_IRQHandler(void)
+void
+USART2_IRQHandler (void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-{
-            extern TIM_HandleTypeDef htim5 ;
-        {
-                        __auto_type prim  = __get_PRIMASK();
-        __disable_irq();
-                        glog_ts[glog_count]=htim5.Instance->CNT;
-                glog_msg[glog_count]=13;
-                (glog_count)++;
-        if ( (2048)<=(glog_count) ) {
-                                                glog_count=0;
-}
-        if ( !(prim) ) {
-                                    __enable_irq();
-}
-}
-}
+  {
+    extern TIM_HandleTypeDef htim5;
+    {
+      __auto_type prim = __get_PRIMASK ();
+      __disable_irq ();
+      glog_ts[glog_count] = htim5.Instance->CNT;
+      glog_msg[glog_count] = 13;
+      (glog_count)++;
+      if ((2048) <= (glog_count)) {
+	glog_count = 0;
+      }
+      if (!(prim)) {
+	__enable_irq ();
+      }
+    }
+  }
 /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
+  HAL_UART_IRQHandler (&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
