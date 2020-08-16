@@ -263,7 +263,7 @@
 	       (setf l (Listener con))
 	       (setf msgs (list))
 	       
-	       (for (i (range 320))
+	       (for (i (range 1320))
 		    (try
 		     (do0
 		      (setf res (l._fsm_read))
@@ -286,23 +286,37 @@
 		(setf xdat (np.array (list ,@(loop for i below n-channels appending
 						  (loop for phase below 80 collect
 						       (+ (* 80 i) phase)))))
-		      ydat (np.zeros (* ,n-channels 80))		      
+		      ydat_min (np.zeros (* ,n-channels 80))
+		      ydat_max (np.zeros (* ,n-channels 80))
+		      ydat_mean (np.zeros (* ,n-channels 80))
+		      ydat_median (np.zeros (* ,n-channels 80))
+		      ydat_std (np.zeros (* ,n-channels 80))		      
 		      )
 		,@(loop for phase below 80 collect
 		       `(try
 			 (do0
 			  (setf df1 (aref df (== df.phase ,phase)))
 		     	  ,@(loop for i below n-channels collect
-			       `(setf (aref ydat (+ (* 80 ,i) ,phase))
-				      (aref (aref df1.iloc 0)
-					    (string ,(format nil "sample~2,'0d" i))))))
+				 `(do0
+				   ,@(loop for e in `(min max mean median std) collect
+					  `(setf (aref ,(format nil "ydat_~a" e)
+						       (+ (* 80 ,i) ,phase))
+						 (dot (aref df1
+							    (string ,(format nil "sample~2,'0d" i))
+							    )
+						      (,e))))
+				   )))
 			 ("Exception as e"
 			  (print e)
 			  pass)))
 		)
 	       (do0
-		(plt.plot xdat ydat)
-		(plt.grid))
+		(plt.plot xdat ydat_mean :label (string "mean"))
+		(plt.plot xdat ydat_median :label (string "median"))
+		(plt.plot xdat ydat_min :label (string "min"))
+		(plt.plot xdat ydat_max :label (string "max"))
+		(plt.grid)
+		(plt.legend))
 	       
 	       
 	       #+nil (do
