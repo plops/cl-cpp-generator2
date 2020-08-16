@@ -1,10 +1,14 @@
 * Overview
 
+A blog post describing this project:
+http://fourierlisp.blogspot.com/2020/08/google-protocol-buffers-for-serial.html
+
 | folder  |   | comment                                                     |
 | source  |   | MCU firmware                                                |
 | source1 |   | c++ qt gui      (unfinished, i first concentrate on python) |
 | source2 |   | python interface                                            |
 |         |   |                                                             |
+
 
 
 * TODO implement serial communication protocol
