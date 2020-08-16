@@ -371,6 +371,7 @@
 					   (setf message.id #x55555555)
 					   (setf message.timestamp htim5.Instance->CNT)
 					   (setf message.phase htim2.Instance->CCR2)
+					   (setf message.int32value.funcs.encode &encode_int32)
 					   ,@(loop for i below n-channels
 						collect
 						  `(setf ,(format nil "message.sample~2,'0d" i)
@@ -658,7 +659,7 @@
 
 			      (setf "required uint32 timestamp" 2)
 			      (setf "required uint32 phase" 3)
-			      (setf "repeated int32 uint32value" 4)
+			      (setf "repeated int32 int32value" 4)
 			      
 			      ,@(loop for i below n-channels
 				   collect
