@@ -209,9 +209,13 @@
 				 (type "const pb_field_t*" field)
 				 (type "void *const*" arg)
 				 (values bool))
-			(unless (pb_encode_tag_for_field stream field)
-			  (return false))
-			(return (pb_encode_varint stream 42)))
+			(dotimes (i 10)
+			  (do0
+				     (unless (pb_encode_tag_for_field stream field)
+				       (return false))
+				     (unless (pb_encode_varint stream (+ i 42))
+				       (return false))))
+			(return true))
 		      ,@(loop for e in l appending 
 			     (destructuring-bind (module irqs &key (channels `(""))) e
 			       (loop for ch in channels append
