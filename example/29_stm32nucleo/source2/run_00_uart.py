@@ -102,6 +102,8 @@ def parse_serial_packet(con, accum={}, debug=False):
         result_comment["payload"]=np.zeros(result_comment["packet_len"], dtype=np.uint8)
         if ( debug ):
             print("{} current_state=PACKET_LEN_MSB char={} packet_len={}".format(result_comment["parsed_bytes"], current_char, result_comment["packet_len"]))
+        if ( ((10000)<(result_comment["packet_len"])) ):
+            raise(Exception("packet to long"))
         state=State_FSM.PAYLOAD
     if ( ((state)==(State_FSM.PAYLOAD)) ):
         current_char=con.read()
@@ -174,7 +176,7 @@ class Listener():
         parse_serial_packet_reset()
         res=(1,"",{("non_starting_bytes_seen"):(0)},)
         while (((1)==(res[0]))):
-            res=parse_serial_packet(self._con, accum=res[2], debug=True)
+            res=parse_serial_packet(self._con, accum=res[2], debug=False)
         response=res[1]
         return res
 l=Listener(con)

@@ -166,6 +166,8 @@
 						    (aref result_comment (string "parsed_bytes"))
 						    current_char
 						    (aref result_comment (string "packet_len"))))))
+				      (when (< 10000 (aref result_comment (string "packet_len")))
+					(raise (Exception (dot (string "packet to long")))))
 				      (setf state (dot State_FSM PAYLOAD))))
 		     (PAYLOAD ((setf current_char (con.read))
 			       (when debug
@@ -249,8 +251,8 @@
 			(setf res (tuple 1 (string "") (dict ((string "non_starting_bytes_seen") 0))))
 			(while (== 1 (aref res 0))
 			  (setf res (parse_serial_packet self._con :accum (aref res 2)
-							 :debug ;False
-							 True
+							 :debug False
+							 ;True
 							 ))
 			  ;(print res)
 			  )

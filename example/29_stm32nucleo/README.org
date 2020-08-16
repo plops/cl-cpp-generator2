@@ -11,10 +11,12 @@
   - [X] start and end pattern for the packets
   - [X] packet length at the beginning of the data stream
   - [X] protobuf definition of serial packet payload
-  - [ ] visualize supersampled DAC - ADC transfer function
-  - [ ] finite state machine in python to parse packets
+  - [X] visualize supersampled DAC - ADC transfer function
+  - [X] finite state machine in python to parse packets
+  - [ ] variable length arrays with nanopb
   - [ ] download log and timestamps from mcu
   - [ ] CRC checksum at the beginning of the data stream
+  - [ ] compression, huffman encoding
   - [ ] bi-directional protocol (?)
   - [ ] vary clocks
 
