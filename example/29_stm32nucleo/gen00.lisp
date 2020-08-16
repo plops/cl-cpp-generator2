@@ -650,10 +650,12 @@
 
 			      (setf "required uint32 timestamp" 2)
 			      (setf "required uint32 phase" 3)
+			      (setf "repeated uint32 uint32value" 4)
+			      
 			      ,@(loop for i below n-channels
 				   collect
 				     `(setf ,(format nil "required int32 sample~2,'0d" i)
-					    ,(format nil "~d" (+ 4 i))))
+					    ,(format nil "~d" (+ 5 i))))
 			      ;(setf "repeated uint32 samples" ,(format nil "4 [packed=false, (nanopb).max_count=~a, (nanopb).fixed_count=true]" n-channels))
 			      ;(setf "required string name" "3 [(nanopb).max_size = 40]")
 			      
