@@ -645,11 +645,11 @@
 		     (space "message SimpleMessage"
 			    (progn
 			      
-			      (setf "required int32 id" 1)
+			      (setf "required uint32 id" 1)
 			      ;; If (nanopb).fixed_count is set to true and (nanopb).max_count is also set, the field for the actual number of entries will not by created as the count is always assumed to be max count.
 
-			      (setf "required int32 timestamp" 2)
-			      (setf "required int32 phase" 3)
+			      (setf "required uint32 timestamp" 2)
+			      (setf "required uint32 phase" 3)
 			      ,@(loop for i below n-channels
 				   collect
 				     `(setf ,(format nil "required int32 sample~2,'0d" i)
