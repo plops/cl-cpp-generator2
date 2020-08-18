@@ -78,6 +78,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(explicit-p nil)
 	(inline-p nil)
 	(static-p nil)
+	(virtual-p nil)
 	(template nil)
 	(template-instance nil)
 	(looking-p t) 
@@ -109,6 +110,8 @@ entry return-values contains a list of return values. currently supports type, v
 			    (setf explicit-p t))
 			  (when (eq (first declaration) 'inline)
 			    (setf inline-p t))
+			  (when (eq (first declaration) 'virtual)
+			    (setf virtual-p t))
 			  (when (eq (first declaration) 'static)
 			    (setf static-p t))
 			  (when (eq (first declaration) 'template)
@@ -133,7 +136,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p explicit-p inline-p static-p template template-instance)))
+    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p explicit-p inline-p static-p virtual-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -191,7 +194,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -211,7 +214,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -235,6 +238,9 @@ entry return-values contains a list of return values. currently supports type, v
 		  (when (and inline-p
 			     header-only)
 		    "inline")
+		  (when (and virtual-p
+			     header-only)
+		    "virtual")
 		  
 		  ;; return value
 		  (let ((r (gethash 'return-values env)))
@@ -299,7 +305,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defmethod (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)

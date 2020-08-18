@@ -157,10 +157,12 @@
 		      (defmethod ~cApp ()
 			(declare (values :constructor)))
 		      "public:"
-		      (space virtual
-		       (defmethod OnInit ()
-			 (declare (values "bool"))
-			 (return true))))
+		      
+		      (defmethod OnInit ()
+			(declare
+			 (virtual)
+			 (values "bool"))
+			(return true)))
 
 		    
 		    )))

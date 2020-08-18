@@ -15,6 +15,6 @@ class cApp : public wxApp {
          cApp ()  ;  
          ~cApp ()  ;  
         public:
-        virtual bool OnInit ()  ;  ;
+        bool OnInit ()  ;  
 };
 #endif
