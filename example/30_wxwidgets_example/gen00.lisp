@@ -209,22 +209,37 @@
 		      "// implementation"
 		      (include "vis_01_cMain.hpp"))
 		     )
-		    
-		    (defclass cMain "public wxFrame"
-		      "public:"
-		      (defmethod cMain ()
-			(declare
-			 (construct (wxFrame nullptr wxID_ANY (string "title")))
-			 (values :constructor)))
-		      (defmethod ~cMain ()
-			(declare (values :constructor)))
-		      "public:"
-		      ,@(loop for (e f) in `((wxButton btn1)
-					     (wxTextCtrl txt1)
-					     (wxListBox list1)
-					     )
-			   collect
-			     `(setf ,(format nil "~a *m_~a" e f) nullptr)))
+		    ,(let ((components
+			    `((wxButton btn1 ((string "click me")
+						  (wxPoint 10 10)
+						  (wxSize 150 50)))
+			      (wxTextCtrl txt1 ((string "")
+						  (wxPoint 10 70)
+						  (wxSize 300 30)))
+			      (wxListBox list1 (
+						  (wxPoint 10 110)
+						  (wxSize 300 300)))
+			      )))
+		      `(defclass cMain "public wxFrame"
+			"public:"
+			(defmethod cMain ()
+			  (declare
+			   (construct (wxFrame nullptr wxID_ANY (string "title")
+					       (wxPoint 30 30)
+					       (wxSize 800 600)))
+			   (values :constructor))
+			  ,@(loop for (e f g) in components collect
+				 `(setf ,(format nil "m_~a" f)
+					(new (,e this
+						 wxID_ANY
+						 ,@g
+						 )))))
+			(defmethod ~cMain ()
+			  (declare (values :constructor)))
+			"public:"
+			,@(loop for (e f g) in components
+			     collect
+			       `(setf ,(format nil "~a *m_~a" e f) nullptr))))
 
 		    
 	      ))))
