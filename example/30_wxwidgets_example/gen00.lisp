@@ -134,14 +134,33 @@
 			     <chrono>
 			     
 			     )
+
+		    (do0
+		     ;"#pragma once"
+		     (include <wx/wx.h>))
 		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      )
+		     (do0
+		      "// implementation"
+		      (include "vis_00_cApp.hpp")
+		      (wxIMPLEMENT_APP cApp))
+		     )
 		
-		    (defclass cApp ()
+		    (defclass cApp "public wxApp"
 		      "public:"
 		      (defmethod cApp ()
 			(declare (values :constructor)))
 		      (defmethod ~cApp ()
-			(declare (values :constructor))))
+			(declare (values :constructor)))
+		      "public:"
+		      (space virtual
+		       (defmethod OnInit ()
+			 (declare (values "bool"))
+			 (return true))))
 
 		    
 		    )))
@@ -164,11 +183,27 @@
 			     <algorithm>
 			     )
 		    " "
-		
-		    (defclass cMain ()
+
+		    (do0
+		     ;"#pragma once"
+		     (include <wx/wx.h>))
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      )
+		     (do0
+		      "// implementation"
+		      (include "vis_01_cMain.hpp"))
+		     )
+		    
+		    (defclass cMain "public wxFrame"
 		      "public:"
 		      (defmethod cMain ()
-			(declare (values :constructor)))
+			(declare
+			 (construct (wxFrame nullptr wxID_ANY (string "title")))
+			 (values :constructor)))
 		      (defmethod ~cMain ()
 			(declare (values :constructor))))
 

@@ -15,7 +15,10 @@
 #include <experimental/iterator>
 #include <algorithm>
 ;
-class cMain  {
+#include <wx/wx.h>
+;
+// header;
+class cMain : public wxFrame {
         public:
          cMain ()  ;  
          ~cMain ()  ;  

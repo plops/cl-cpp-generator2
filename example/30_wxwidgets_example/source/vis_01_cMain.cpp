@@ -14,5 +14,9 @@
 #include <thread>
 #include <vector>
 
-cMain::cMain() {}
+#include <wx/wx.h>
+
+// implementation
+#include "vis_01_cMain.hpp"
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "title") {}
 cMain::~cMain() {}

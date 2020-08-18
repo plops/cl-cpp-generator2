@@ -7,9 +7,14 @@
 #include <iostream>
 #include <chrono>
 ;
-class cApp  {
+#include <wx/wx.h>
+;
+// header;
+class cApp : public wxApp {
         public:
          cApp ()  ;  
          ~cApp ()  ;  
+        public:
+        virtual bool OnInit ()  ;  ;
 };
 #endif
