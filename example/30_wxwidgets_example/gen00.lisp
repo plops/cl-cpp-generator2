@@ -217,7 +217,14 @@
 			 (construct (wxFrame nullptr wxID_ANY (string "title")))
 			 (values :constructor)))
 		      (defmethod ~cMain ()
-			(declare (values :constructor))))
+			(declare (values :constructor)))
+		      "public:"
+		      ,@(loop for (e f) in `((wxButton btn1)
+					     (wxTextCtrl txt1)
+					     (wxListBox list1)
+					     )
+			   collect
+			     `(setf ,(format nil "~a *m_~a" e f) nullptr)))
 
 		    
 	      ))))
