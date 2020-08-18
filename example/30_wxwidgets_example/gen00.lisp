@@ -209,37 +209,61 @@
 		      "// implementation"
 		      (include "vis_01_cMain.hpp"))
 		     )
+		    
 		    ,(let ((components
-			    `((wxButton btn1 ((string "click me")
+			    `((wxButton btn1 (10001
+					      (string "click me")
 						  (wxPoint 10 10)
 						  (wxSize 150 50)))
-			      (wxTextCtrl txt1 ((string "")
+			      (wxTextCtrl txt1 (wxID_ANY
+						(string "")
 						  (wxPoint 10 70)
 						  (wxSize 300 30)))
-			      (wxListBox list1 (
+			      (wxListBox list1 (wxID_ANY
 						  (wxPoint 10 110)
 						  (wxSize 300 300)))
 			      )))
-		      `(defclass cMain "public wxFrame"
-			"public:"
-			(defmethod cMain ()
-			  (declare
-			   (construct (wxFrame nullptr wxID_ANY (string "title")
-					       (wxPoint 30 30)
-					       (wxSize 800 600)))
-			   (values :constructor))
-			  ,@(loop for (e f g) in components collect
-				 `(setf ,(format nil "m_~a" f)
-					(new (,e this
-						 wxID_ANY
-						 ,@g
-						 )))))
-			(defmethod ~cMain ()
-			  (declare (values :constructor)))
-			"public:"
-			,@(loop for (e f g) in components
-			     collect
-			       `(setf ,(format nil "~a *m_~a" e f) nullptr))))
+		       `(do0
+
+			 (split-header-and-code
+			  (do0
+			   "// header"
+			   )
+			  (do0
+			   "// implementation"
+			   (do0
+			    (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
+				   (EVT_BUTTON 10001 OnButtonClicked)
+				   (wxEND_EVENT_TABLE))))
+			  )
+			 
+			 
+			 (defclass cMain "public wxFrame"
+			  "public:"
+			  (defmethod cMain ()
+			    (declare
+			     (construct (wxFrame nullptr wxID_ANY (string "title")
+						 (wxPoint 30 30)
+						 (wxSize 800 600)))
+			     (values :constructor))
+			    ,@(loop for (e f g) in components collect
+				   `(setf ,(format nil "m_~a" f)
+					  (new (,e this
+						   
+						   ,@g
+						   )))))
+			  (defmethod ~cMain ()
+			    (declare (values :constructor)))
+			  "public:"
+			  ,@(loop for (e f g) in components
+			       collect
+				 `(setf ,(format nil "~a *m_~a" e f) nullptr))
+			  (defmethod OnButtonClicked (evt)
+			    (declare (type wxCommandEvent& evt))
+			    (m_list1->AppendString (m_txt1->GetValue))
+			    (evt.Skip)
+			    )
+			  (wxDECLARE_EVENT_TABLE))))
 
 		    
 	      ))))
