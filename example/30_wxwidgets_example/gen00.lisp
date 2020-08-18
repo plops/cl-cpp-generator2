@@ -140,6 +140,8 @@
 		     (include <wx/wx.h>))
 		    " "
 
+		    (include "vis_01_cMain.hpp")
+		    
 		    (split-header-and-code
 		     (do0
 		      "// header"
@@ -147,6 +149,7 @@
 		     (do0
 		      "// implementation"
 		      (include "vis_00_cApp.hpp")
+		      
 		      (wxIMPLEMENT_APP cApp))
 		     )
 		
@@ -156,12 +159,19 @@
 			(declare (values :constructor)))
 		      (defmethod ~cApp ()
 			(declare (values :constructor)))
+
+		      "private:"
+		      (setf "cMain* m_frame1" nullptr)
+		      
 		      "public:"
 		      
 		      (defmethod OnInit ()
 			(declare
 			 (virtual)
 			 (values "bool"))
+			(setf m_frame1 (new cMain)
+			      )
+			(m_frame1->Show)
 			(return true)))
 
 		    

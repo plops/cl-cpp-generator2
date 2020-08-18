@@ -1,6 +1,6 @@
 CXX = $(shell wx-config --cxx)
 LDFLAGS=`wx-config --libs`
-CXXFLAGS=-march=native -O2 -mtune=native \
+CXXFLAGS=-march=native -O0 -mtune=native \
 `wx-config --cxxflags`
 
 PROGRAM = vis
