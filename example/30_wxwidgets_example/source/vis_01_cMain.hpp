@@ -24,6 +24,9 @@ class cMain : public wxFrame {
          cMain ()  ;  
          ~cMain ()  ;  
         public:
+            wxButton *m_btn1=nullptr;
+            wxTextCtrl *m_txt1=nullptr;
+            wxListBox *m_list1=nullptr;
                 int button_field_n=10;
     int button_field_m=10;
     wxButton** btn=nullptr;

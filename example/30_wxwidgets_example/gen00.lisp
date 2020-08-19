@@ -211,7 +211,7 @@
 		     )
 		    
 		    ,(let ((components
-			    `() #+nil ((wxButton btn1 (10001
+			    `((wxButton btn1 (10001
 						 (string "click me")
 						 (wxPoint 10 10)
 						 (wxSize 150 50)))
@@ -234,8 +234,8 @@
 			  (do0
 			   "// implementation"
 			   (do0
-			    #+nil ,(format nil "wxBEGIN_EVENT_TABLE(cMain,wxFrame)~%EVT_BUTTON(10001,&cMain::OnButtonClicked)~%wxEND_EVENT_TABLE()~%")
-			    #-nil (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
+			    
+			    (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
 				   	 (EVT_BUTTON 10001 cMain--OnButtonClicked)
 				   	 (wxEND_EVENT_TABLE)
 					 )))
@@ -270,11 +270,15 @@
 				    (setf (aref btn pos)
 					  (new (wxButton this (+ 20000 pos))))
 				    (grid->Add (aref btn pos)
-					       (logior wxEXPAND wxALL)))))
-			      (this->SetSizer grid)))
+					       (logior wxEXPAND wxALL))
+				    (-> (aref btn pos)
+					(Bind wxEVT_COMMAND_BUTTON_CLICKED &cMain--OnButtonClicked this)))))
+			      (this->SetSizer grid)
+			      (grid->Layout)))
 			    )
 			  (defmethod ~cMain ()
-			    (declare (values :constructor)))
+			    (declare (values :constructor))
+			    "delete[]btn;")
 			  "public:"
 			  ,@(loop for (e f g) in components
 			       collect
@@ -285,7 +289,7 @@
 				   "wxButton** btn" nullptr))
 			  (defmethod OnButtonClicked (evt)
 			    (declare (type wxCommandEvent& evt))
-			   #+nil  (m_list1->AppendString (m_txt1->GetValue))
+			    (m_list1->AppendString (m_txt1->GetValue))
 			    (evt.Skip)
 			    )
 			  (wxDECLARE_EVENT_TABLE))))
