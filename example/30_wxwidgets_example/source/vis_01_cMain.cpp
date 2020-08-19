@@ -43,6 +43,13 @@ cMain::cMain()
 }
 cMain::~cMain() { delete[] btn; }
 void cMain::OnButtonClicked(wxCommandEvent &evt) {
-  m_list1->AppendString(m_txt1->GetValue());
+  auto id = evt.GetId();
+  if ((id) < (19000)) {
+    m_list1->AppendString(m_txt1->GetValue());
+  } else {
+    auto x = ((id) - (20000)) % button_field_n;
+    auto y = ((((id) - (20000))) / (button_field_m));
+    m_list1->AppendString("button");
+  }
   evt.Skip();
 }
