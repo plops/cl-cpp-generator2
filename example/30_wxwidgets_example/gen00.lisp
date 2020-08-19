@@ -211,18 +211,20 @@
 		     )
 		    
 		    ,(let ((components
-			    `((wxButton btn1 (10001
-					      (string "click me")
-						  (wxPoint 10 10)
-						  (wxSize 150 50)))
-			      (wxTextCtrl txt1 (wxID_ANY
-						(string "")
-						  (wxPoint 10 70)
-						  (wxSize 300 30)))
-			      (wxListBox list1 (wxID_ANY
-						  (wxPoint 10 110)
-						  (wxSize 300 300)))
-			      )))
+			    `() #+nil ((wxButton btn1 (10001
+						 (string "click me")
+						 (wxPoint 10 10)
+						 (wxSize 150 50)))
+				 (wxTextCtrl txt1 (wxID_ANY
+						   (string "")
+						   (wxPoint 10 70)
+						   (wxSize 300 30)))
+				 (wxListBox list1 (wxID_ANY
+						   (wxPoint 10 110)
+						   (wxSize 300 300)))
+				 ))
+			   (button-field-n 10)
+			   (button-field-m 10))
 		       `(do0
 
 			 (split-header-and-code
@@ -253,16 +255,37 @@
 					  (new (,e this
 						   
 						   ,@g
-						   )))))
+						   ))))
+			    (do0
+			     (setf btn (new (aref wxButton* (* button_field_n
+							       button_field_m))))
+			     
+			     (let ((grid (new (wxGridSizer
+					       button_field_n
+					       button_field_m
+					       0 0))))
+			      (dotimes (i button_field_n)
+				(dotimes (j button_field_m)
+				  (let ((pos (+ i (* j button_field_n))))
+				    (setf (aref btn pos)
+					  (new (wxButton this (+ 20000 pos))))
+				    (grid->Add (aref btn pos)
+					       (logior wxEXPAND wxALL)))))
+			      (this->SetSizer grid)))
+			    )
 			  (defmethod ~cMain ()
 			    (declare (values :constructor)))
 			  "public:"
 			  ,@(loop for (e f g) in components
 			       collect
 				 `(setf ,(format nil "~a *m_~a" e f) nullptr))
+			  (do0
+			     (setf "int button_field_n" ,button-field-n
+				   "int button_field_m" ,button-field-m
+				   "wxButton** btn" nullptr))
 			  (defmethod OnButtonClicked (evt)
 			    (declare (type wxCommandEvent& evt))
-			    (m_list1->AppendString (m_txt1->GetValue))
+			   #+nil  (m_list1->AppendString (m_txt1->GetValue))
 			    (evt.Skip)
 			    )
 			  (wxDECLARE_EVENT_TABLE))))
