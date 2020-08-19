@@ -232,9 +232,11 @@
 			  (do0
 			   "// implementation"
 			   (do0
-			    (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
-				   (EVT_BUTTON 10001 OnButtonClicked)
-				   (wxEND_EVENT_TABLE))))
+			    #+nil ,(format nil "wxBEGIN_EVENT_TABLE(cMain,wxFrame)~%EVT_BUTTON(10001,&cMain::OnButtonClicked)~%wxEND_EVENT_TABLE()~%")
+			    #-nil (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
+				   	 (EVT_BUTTON 10001 cMain--OnButtonClicked)
+				   	 (wxEND_EVENT_TABLE)
+					 )))
 			  )
 			 
 			 

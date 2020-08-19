@@ -19,7 +19,7 @@
 // implementation
 #include "vis_01_cMain.hpp"
 // implementation
-wxBEGIN_EVENT_TABLE(cMain, wxFrame) EVT_BUTTON(10001, OnButtonClicked)
+wxBEGIN_EVENT_TABLE(cMain, wxFrame) EVT_BUTTON(10001, cMain::OnButtonClicked)
     wxEND_EVENT_TABLE();
 cMain::cMain()
     : wxFrame(nullptr, wxID_ANY, "title", wxPoint(30, 30), wxSize(800, 600)) {
