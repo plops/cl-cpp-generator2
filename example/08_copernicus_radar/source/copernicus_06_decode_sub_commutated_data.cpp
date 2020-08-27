@@ -4,20 +4,20 @@
 #include "globals.h"
 
 #include "proto2.h"
-;
+
 extern State state;
 #include <cassert>
 #include <cstring>
 #include <fstream>
 
-void init_sub_commutated_data_decoder() {
+nil void init_sub_commutated_data_decoder() {
   state._ancillary_data_index = 0;
-  for (int i = 0; i < state._ancillary_data_valid.size(); (i) += (1)) {
+  for (auto i = 0; (i) < (state._ancillary_data_valid.size()); (i) += (1)) {
     state._ancillary_data_valid.at(i) = false;
   }
 }
-bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
-                                      int space_packet_count) {
+nil bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
+                                          int space_packet_count) {
   state._ancillary_data_index = idx;
   state._ancillary_data.at(state._ancillary_data_index) = word;
   state._ancillary_data_valid.at(state._ancillary_data_index) = true;
@@ -25,196 +25,196 @@ bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
       (((state._ancillary_data.size()) - (1)))) {
     if (!(state._ancillary_data_valid.at(1))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(2))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(3))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(4))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(5))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(6))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(7))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(8))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(9))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(10))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(11))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(12))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(13))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(14))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(15))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(16))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(17))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(18))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(19))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(20))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(21))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(22))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(23))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(24))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(25))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(26))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(27))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(28))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(29))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(30))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(31))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(32))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(33))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(34))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(35))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(36))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(37))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(38))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(39))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(40))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(41))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(42))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(43))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(44))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(45))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(46))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(47))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(48))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(49))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(50))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(51))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(52))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(53))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(54))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(55))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(56))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(57))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(58))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(59))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(60))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(61))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(62))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(63))) {
       return false;
-    };
+    }
     if (!(state._ancillary_data_valid.at(64))) {
       return false;
-    };
+    }
     memcpy(reinterpret_cast<void *>(&(state._ancillary_decoded)),
            reinterpret_cast<void *>(state._ancillary_data.data()),
            sizeof(state._ancillary_data));
@@ -402,7 +402,7 @@ bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
                 "temperature,tile_14_efe_v_temperature,tile_14_active_ta_"
                 "temperature,tile_15_efe_h_ta_temperature,tgu_temperature")
             << (std::endl);
-      };
+      }
       (outfile)
           << (space_packet_count) << (",") << (x_axis_position) << (",")
           << (y_axis_position) << (",") << (z_axis_position) << (",")
@@ -460,9 +460,9 @@ bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
           << (tile_15_efe_h_ta_temperature) << (",") << (tgu_temperature)
           << (std::endl);
       outfile.close();
-    };
+    }
     return true;
   } else {
     return false;
   }
-};
+}

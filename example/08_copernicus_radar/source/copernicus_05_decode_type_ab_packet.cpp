@@ -4,10 +4,10 @@
 #include "globals.h"
 
 #include "proto2.h"
-;
+
 extern State state;
 #include <cassert>
-inline int get_data_type_a_or_b(sequential_bit_t *s) {
+nil inline int get_data_type_a_or_b(sequential_bit_t *s) {
   return ((((0x200) * (get_sequential_bit(s)))) +
           (((0x100) * (get_sequential_bit(s)))) +
           (((0x80) * (get_sequential_bit(s)))) +
@@ -18,9 +18,9 @@ inline int get_data_type_a_or_b(sequential_bit_t *s) {
           (((0x4) * (get_sequential_bit(s)))) +
           (((0x2) * (get_sequential_bit(s)))) +
           (((0x1) * (get_sequential_bit(s)))));
-};
-int init_decode_packet_type_a_or_b(int packet_idx,
-                                   std::complex<float> *output) {
+}
+nil int init_decode_packet_type_a_or_b(int packet_idx,
+                                       std::complex<float> *output) {
   // packet_idx .. index of space packet 0 ..
   // mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest
   // delay in samples between tx pulse start and data acquisition and will be
@@ -66,11 +66,11 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   auto data_start = s.data;
   auto decoded_ie_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_ie_symbols_a;
-  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+  for (auto i = 0; (i) < (MAX_NUMBER_QUADS); (i) += (1)) {
     decoded_ie_symbols_a[i] = (0.f);
-  };
+  }
   // parse ie data
-  for (int i = 0; i < number_of_quads; (i) += (1)) {
+  for (auto i = 0; (i) < (number_of_quads); (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
@@ -81,11 +81,11 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   consume_padding_bits(&s);
   auto decoded_io_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_io_symbols_a;
-  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+  for (auto i = 0; (i) < (MAX_NUMBER_QUADS); (i) += (1)) {
     decoded_io_symbols_a[i] = (0.f);
-  };
+  }
   // parse io data
-  for (int i = 0; i < number_of_quads; (i) += (1)) {
+  for (auto i = 0; (i) < (number_of_quads); (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
@@ -96,11 +96,11 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   consume_padding_bits(&s);
   auto decoded_qe_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qe_symbols_a;
-  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+  for (auto i = 0; (i) < (MAX_NUMBER_QUADS); (i) += (1)) {
     decoded_qe_symbols_a[i] = (0.f);
-  };
+  }
   // parse qe data
-  for (int i = 0; i < number_of_quads; (i) += (1)) {
+  for (auto i = 0; (i) < (number_of_quads); (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
@@ -111,11 +111,11 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   consume_padding_bits(&s);
   auto decoded_qo_symbols = 0;
   std::array<float, MAX_NUMBER_QUADS> decoded_qo_symbols_a;
-  for (int i = 0; i < MAX_NUMBER_QUADS; (i) += (1)) {
+  for (auto i = 0; (i) < (MAX_NUMBER_QUADS); (i) += (1)) {
     decoded_qo_symbols_a[i] = (0.f);
-  };
+  }
   // parse qo data
-  for (int i = 0; i < number_of_quads; (i) += (1)) {
+  for (auto i = 0; (i) < (number_of_quads); (i) += (1)) {
     auto smcode = get_data_type_a_or_b(&s);
     int sign_bit = ((1) & ((smcode) >> (9)));
     auto mcode = ((smcode) & (0x1FF));
@@ -127,7 +127,7 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   assert((decoded_ie_symbols) == (decoded_io_symbols));
   assert((decoded_ie_symbols) == (decoded_qe_symbols));
   assert((decoded_qo_symbols) == (decoded_qe_symbols));
-  for (int i = 0; i < decoded_ie_symbols; (i) += (1)) {
+  for (auto i = 0; (i) < (decoded_ie_symbols); (i) += (1)) {
     output[((2) * (i))].real(decoded_ie_symbols_a[i]);
     output[((2) * (i))].imag(decoded_qe_symbols_a[i]);
     output[((1) + (((2) * (i))))].real(decoded_io_symbols_a[i]);
@@ -135,4 +135,4 @@ int init_decode_packet_type_a_or_b(int packet_idx,
   }
   auto n = ((decoded_ie_symbols) + (decoded_io_symbols));
   return n;
-};
+}

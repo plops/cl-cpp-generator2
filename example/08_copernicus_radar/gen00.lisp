@@ -938,10 +938,7 @@
 		     (values "inline int"))
 	    (return (+ ,@(loop for j below 8 collect
 			      `(* (hex ,(expt 2 (- 7 j)))
-				  (get_sequential_bit s)))))
-	    )
-	      
-	      ))
+				  (get_sequential_bit s))))))))
 
 
 	   (defun consume_padding_bits (s)

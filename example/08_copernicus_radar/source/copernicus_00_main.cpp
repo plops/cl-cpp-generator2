@@ -4,7 +4,7 @@
 #include "globals.h"
 
 #include "proto2.h"
-;
+
 #include <cassert>
 #include <chrono>
 #include <cstdio>
@@ -13,7 +13,7 @@
 #include <string>
 #include <unordered_map>
 State state = {};
-int main() {
+nil int main() {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
@@ -101,10 +101,10 @@ int main() {
   for (auto &elevation : map_ele) {
     auto number_of_Mquads = ((elevation.second) / ((1.0e+6)));
     auto elevation_beam_address = elevation.first;
-    if (ma < number_of_Mquads) {
+    if ((ma) < (number_of_Mquads)) {
       ma = number_of_Mquads;
       ma_ele = elevation_beam_address;
-    };
+    }
     std::setprecision(3);
     (std::cout) << (std::setw(10))
                 << (((std::chrono::high_resolution_clock::now()
@@ -148,19 +148,19 @@ int main() {
       if (!(cal_p)) {
         if ((ele) == (ma_ele)) {
           (ele_number_echoes)++;
-          if (data_delay < mi_data_delay) {
+          if ((data_delay) < (mi_data_delay)) {
             mi_data_delay = data_delay;
-          };
-          if (ma_data_delay < data_delay) {
+          }
+          if ((ma_data_delay) < (data_delay)) {
             ma_data_delay = data_delay;
-          };
+          }
           auto v = ((data_delay) + (((2) * (number_of_quads))));
-          if (ma_data_end < v) {
+          if ((ma_data_end) < (v)) {
             ma_data_end = v;
-          };
+          }
           (map_azi[azi]) += (number_of_quads);
-        };
-      };
+        }
+      }
       (packet_idx)++;
     };
     std::setprecision(3);
@@ -192,7 +192,7 @@ int main() {
                   << (" number_of_Mquads=") << (number_of_Mquads)
                   << (std::endl);
     };
-  };
+  }
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()
@@ -385,7 +385,7 @@ int main() {
                     "idx,pol,rgdec,rx,signal_type,swath,swl,swst,tstmod,txpl,"
                     "txpl_,txprr,txprr_,txpsf")
                 << (std::endl);
-          };
+          }
           (outfile) << (packet_version_number) << (",") << (packet_type)
                     << (",") << (secondary_header_flag) << (",")
                     << (application_process_id_process_id) << (",")
@@ -432,8 +432,8 @@ int main() {
                     << (",") << (txpl_) << (",") << (txprr) << (",") << (txprr_)
                     << (",") << (txpsf) << (std::endl);
           outfile.close();
-        };
-      };
+        }
+      }
       try {
         if (cal_p) {
           init_decode_packet_type_a_or_b(
@@ -449,7 +449,7 @@ int main() {
                       "pri_count,rank,rgdec,rx,signal_type,space_packet_count,"
                       "swath,swl,swst,tstmod,txpl,txpl_,txprr,txprr_,txpsf")
                   << (std::endl);
-            };
+            }
             (outfile) << (azi) << (",") << (baq_n) << (",") << (baqmod) << (",")
                       << (cal_iter) << (",") << (ele_count) << (",")
                       << (cal_mode) << (",") << (cal_p) << (",") << (cal_type)
@@ -463,7 +463,7 @@ int main() {
                       << (",") << (txprr) << (",") << (txprr_) << (",")
                       << (txpsf) << (std::endl);
             outfile.close();
-          };
+          }
           (cal_iter)++;
         } else {
           if ((ele) == (ma_ele)) {
@@ -484,7 +484,7 @@ int main() {
                           << (std::setw(8)) << (" n=") << (n) << (std::setw(8))
                           << (" number_of_quads=") << (number_of_quads)
                           << (std::endl);
-            };
+            }
             {
               std::ofstream outfile;
               outfile.open("./o_range.csv",
@@ -496,7 +496,7 @@ int main() {
                               "type,space_packet_count,swath,swl,swst,tstmod,"
                               "txpl,txpl_,txprr,txprr_,txpsf")
                           << (std::endl);
-              };
+              }
               (outfile) << (azi) << (",") << (baq_n) << (",") << (baqmod)
                         << (",") << (cal_iter) << (",") << (cal_mode) << (",")
                         << (cal_p) << (",") << (data_delay) << (",") << (ele)
@@ -510,9 +510,9 @@ int main() {
                         << (txpl_) << (",") << (txprr) << (",") << (txprr_)
                         << (",") << (txpsf) << (std::endl);
               outfile.close();
-            };
+            }
             (ele_count)++;
-          };
+          }
         }
       } catch (std::out_of_range e) {
         std::setprecision(3);
@@ -553,7 +553,7 @@ int main() {
                 << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
                 << (__func__) << (" ") << ("store echo finished") << (" ")
                 << (std::endl);
-  };
+  }
   delete[](sar_image);
   auto fn = ((std::string("/media/sdb4/sar/o_cal_range")) +
              (std::to_string(cal_n0)) + (std::string("_echoes")) +
@@ -581,4 +581,4 @@ int main() {
               << (std::endl);
   delete[](cal_image);
   destroy_mmap();
-};
+}
