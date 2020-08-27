@@ -477,6 +477,7 @@ entry return-values contains a list of return values. currently supports type, v
 (progn
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
+    ;(format t "~a~%" code)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
 		       (hook-class hook-defclass))
 	     "change the indentation level. this is used in do"
@@ -695,6 +696,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defun
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)
+			#+nil (format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
 			(when hook-defun ;(and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))

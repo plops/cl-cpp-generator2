@@ -17,9 +17,8 @@ nil int main() {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
-      "/media/sdb4/sar/singapore/"
-      "S1A_IW_RAW__0SDV_20200413T224752_20200413T224825_032115_03B64B_FDA8."
-      "SAFE/s1a-iw-raw-s-vv-20200413t224752-20200413t224825-032115-03b64b.dat";
+      "/media/sdb4/sar/sao_paulo/"
+      "s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto packet_idx = 0;

@@ -338,6 +338,9 @@
 		       <fstream>)
 	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
+
+	     
+	      
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -346,7 +349,9 @@
 					;(vkprint "main" )
 		(setf ,(g `_filename)
 		      (string
-		       "/media/sdb4/sar/singapore/S1A_IW_RAW__0SDV_20200413T224752_20200413T224825_032115_03B64B_FDA8.SAFE/s1a-iw-raw-s-vv-20200413t224752-20200413t224825-032115-03b64b.dat" ;; singapore
+		       "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
+		       
+		       ;"/media/sdb4/sar/singapore/S1A_IW_RAW__0SDV_20200413T224752_20200413T224825_032115_03B64B_FDA8.SAFE/s1a-iw-raw-s-vv-20200413t224752-20200413t224825-032115-03b64b.dat" ;; singapore
 		       ; "/home/martin/Downloads/s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat" ;; stripmap with 2 islands https://scihub.copernicus.eu/dhus/odata/v1/Products(%2742030b2d-07d3-4fe0-9104-2ba800de184d%27)/Nodes(%27S1B_S3_RAW__0SDV_20191212T150115_20191212T150141_019333_024829_9492.SAFE%27)/Nodes(%27s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat%27)/$value
 		       
 		       ;;"/home/martin/Downloads/s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat" ;; australia retro reflectors ; https://scihub.copernicus.eu/dhus/odata/v1/Products(%27a43207a0-c3bb-47e2-a819-0885468cf16f%27)/Nodes(%27S1A_IW_RAW__0SDV_20191205T192200_20191205T192233_030217_03743D_C3C8.SAFE%27)/Nodes(%27s1a-iw-raw-s-vv-20191205t192200-20191205t192233-030217-03743d.dat%27)/$value
@@ -1984,7 +1989,7 @@
 		       :if-does-not-exist :create)
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e  
-	     (emit-c :code code :hook-defun 
+	     #+nil (emit-c :code code :hook-defun 
 		     #'(lambda (str)
 			 (format s "~a~%" str)))
 	     
@@ -2011,7 +2016,7 @@
 		    (do0
 		     
 		    " "
-		    ,@(loop for e in (reverse *utils-code*) collect
+		    #+nil ,@(loop for e in (reverse *utils-code*) collect
 			 e)
 		    ;"#define length(a) (sizeof((a))/sizeof(*(a)))"
 					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
