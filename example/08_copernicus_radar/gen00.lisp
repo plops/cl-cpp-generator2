@@ -465,11 +465,12 @@
 				       (azi_beam_address azi.first))
 				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
 		(do0
-		 ,(logprint "start big allocation" `())
+		 (setf ele_number_echoes 10)
+		 ,(logprint "start big allocation" `((+ ma_data_end (- ma_data_delay mi_data_delay))
+						     ele_number_echoes))
 		 (let
-
 		     ((n0 (+ ma_data_end (- ma_data_delay mi_data_delay)))
-		       (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
+		      (sar_image (new (aref "std::complex<float>" (* n0 ele_number_echoes)))))
 		   ,(logprint "end big allocation" `((* 1e-6 n0 ele_number_echoes)))
 		   (do0
 		    (remove (string  "./o_all.csv"))

@@ -192,6 +192,7 @@ int main() {
                   << (std::endl);
     };
   }
+  ele_number_echoes = 10;
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()
@@ -200,7 +201,11 @@ int main() {
                    (state._start_time)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("start big allocation") << (" ")
-              << (std::endl);
+              << (std::setw(8))
+              << (" ((ma_data_end)+(((ma_data_delay)-(mi_data_delay))))=")
+              << (((ma_data_end) + (((ma_data_delay) - (mi_data_delay)))))
+              << (std::setw(8)) << (" ele_number_echoes=")
+              << (ele_number_echoes) << (std::endl);
   auto n0 = ((ma_data_end) + (((ma_data_delay) - (mi_data_delay))));
   auto sar_image = new std::complex<float>[((n0) * (ele_number_echoes))];
   std::setprecision(3);
