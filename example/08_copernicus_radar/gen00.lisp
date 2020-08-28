@@ -329,18 +329,21 @@
   (define-module
       `(main ((_filename :direction 'out :type "char const *"))
 	     (do0
-	      (include <iostream>
+	      #+nil (include <iostream>
 		       <chrono>
 		       <cstdio>
 		       <cassert>
 		       <unordered_map>
 		       <string>
 		       <fstream>)
-	      (let ((state ,(emit-globals :init t)))
+	      #+nil (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
-	     
-	      
+	      (defun main0 ()
+		(declare (values int))
+		(return 0))
+
+	      #+nil
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
