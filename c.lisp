@@ -697,11 +697,9 @@ entry return-values contains a list of return values. currently supports type, v
 		       (parse-defmethod code #'emit :class current-class :header-only t)
 		       (parse-defmethod code #'emit :class current-class :header-only nil)))
 		  (defun
-		      (parse-defun code #'emit :class current-class :header-only header-only)
-		      #+nil
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)
-			#+nil (format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
+			;(format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
 			(when hook-defun ;(and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))

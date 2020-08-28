@@ -1989,7 +1989,7 @@
 		       :if-does-not-exist :create)
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e  
-	      (emit-c :code code :hook-defun 
+	     (emit-c :code code :hook-defun 
 		     #'(lambda (str)
 			 (format s "~a~%" str)))
 	     
@@ -2017,7 +2017,7 @@
 		    (do0
 		     
 		    " "
-		    #+nil ,@(loop for e in (reverse *utils-code*) collect
+		    ,@(loop for e in (reverse *utils-code*) collect
 			 e)
 		    ;"#define length(a) (sizeof((a))/sizeof(*(a)))"
 					;"#define max(a,b)  ({ __typeof__ (a) _a = (a);  __typeof__ (b) _b = (b);  _a > _b ? _a : _b; })"
