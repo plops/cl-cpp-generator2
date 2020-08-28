@@ -224,10 +224,10 @@ entry return-values contains a list of return values. currently supports type, v
 	(with-output-to-string (s)
 
 	  
-	  ;;         template          static          inline  virtual  ret   parm 
-	  ;;                                   explicit                    name  const   hdr-only  constructs
-	  ;;         1                 2       3       4       5        6  7  8  9       10        11 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~] ~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual ret   params     header-only
+	  ;;                                   explicit                   name  const             constructs
+	  ;;         1                 2       3       4       5       6  7  8  9       10        11 
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)

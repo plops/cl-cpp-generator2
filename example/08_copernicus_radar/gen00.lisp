@@ -785,6 +785,7 @@
 	(do0
 	 (include <unistd.h>)
 	 (defun init_process_packet_headers ()
+	   ;(declare (values void))
 	   (let ((p0 (dot (aref ,(g `_header_data) 0)
 			  (data)))
 		 (coarse_time0 ,(space-packet-slot-get 'coarse-time 'p0))
