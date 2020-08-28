@@ -222,99 +222,28 @@ entry return-values contains a list of return values. currently supports type, v
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
 	(with-output-to-string (s)
-	  (format t "parse-defun: ~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
-		  ;; template
-		  (when template
-		    template)
-		  ;; static
-		  (when (and static-p
-			     header-only) 
-		    "static")
-		  ;; explicit
-		  (when (and explicit-p
-			     header-only)
-		    "explicit")
-		  ;; inline
-		  (when (and inline-p
-			     header-only)
-		    "inline")
-		  (when (and virtual-p
-			     header-only)
-		    "virtual")
-		  
-		  ;; return value
-		  (let ((r (gethash 'return-values env)))
-		    (if (< 1 (length r))
-			(break "multiple return values unsupported: ~a"
-			       r)
-			(if (car r)
-			    (case (car r)
-			      (:constructor "") ;; (values :constructor) will not print anything
-			      (t (car r)))
-			    "void")))
-		  ;; function-name, add class if not header
-		  (if class
-		      (if header-only
-			  name
-			  (format nil "~a::~a" class name))
-		      name)
 
-		  ;; positional parameters, followed by key parameters
-		  (funcall emit `(paren
-				  ;; positional
-				  ,@(loop for p in req-param collect
-					 (format nil "~a ~a"
-						 (let ((type (gethash p env)))
-						   (if type
-						       (funcall emit type)
-						       (break "can't find type for positional parameter ~a in defun"
-							      p)))
-						 p))
-				  ;; key parameters
-				  ;; http://www.crategus.com/books/alexandria/pages/alexandria.0.dev_fun_parse-ordinary-lambda-list.html
-				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
-					 (progn
-					   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
-								       (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
-					  (format nil "~a ~a ~@[~a~]"
-						  (let ((type (gethash name env)))
-						    (if type
-							(funcall emit type)
-							(break "can't find type for keyword parameter ~a in defun"
-							       name)))
-						  name
-						  (when header-only ;; only in class definition
-						   (format nil "= ~a" (funcall emit init))))))
-				  ))
-		  ;; const keyword
-		  (when const-p #+nil
-		    (and const-p
-			 (not header-only))
-		    "const")
-		  
-		  ;; semicolon if header only
-		  header-only
-		  ;; constructor initializers
-		  (when (and constructs
-			 (not header-only))
-		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
-		  ;; template
+	  ;;         template          static          inline  virtual
+	  ;;                                   explicit
+	  ;;         1                 2       3       4       5 
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~] ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+		  ;; 1 template
 		  (when template
 		    template)
-		  ;; static
+		  ;; 2 static
 		  (when (and static-p
 			     header-only) 
 		    "static")
-		  ;; explicit
+		  ;; 3 explicit
 		  (when (and explicit-p
 			     header-only)
 		    "explicit")
-		  ;; inline
+		  ;; 4 inline
 		  (when (and inline-p
 			     header-only)
 		    "inline")
+		  ;; 5 virtual
 		  (when (and virtual-p
 			     header-only)
 		    "virtual")
@@ -352,28 +281,28 @@ entry return-values contains a list of return values. currently supports type, v
 				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
 					 (progn
 					   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
-								       (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
-					  (format nil "~a ~a ~@[~a~]"
-						  (let ((type (gethash name env)))
-						    (if type
-							(funcall emit type)
-							(break "can't find type for keyword parameter ~a in defun"
-							       name)))
-						  name
-						  (when header-only ;; only in class definition
-						   (format nil "= ~a" (funcall emit init))))))
+									     (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
+					   (format nil "~a ~a ~@[~a~]"
+						   (let ((type (gethash name env)))
+						     (if type
+							 (funcall emit type)
+							 (break "can't find type for keyword parameter ~a in defun"
+								name)))
+						   name
+						   (when header-only ;; only in class definition
+						     (format nil "= ~a" (funcall emit init))))))
 				  ))
 		  ;; const keyword
 		  (when const-p #+nil
-		    (and const-p
-			 (not header-only))
-		    "const")
+			(and const-p
+			     (not header-only))
+			"const")
 		  
 		  ;; semicolon if header only
 		  header-only
 		  ;; constructor initializers
 		  (when (and constructs
-			 (not header-only))
+			     (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (unless header-only
 	    (format s "~a" (funcall emit `(progn ,@body)))))))))

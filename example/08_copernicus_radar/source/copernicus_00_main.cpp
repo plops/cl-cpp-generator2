@@ -1,1 +1,1 @@
-nil int main0() { return 0; }
+int main0() { return 0; }
