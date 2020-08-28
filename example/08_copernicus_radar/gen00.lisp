@@ -704,7 +704,7 @@
 			 ,(logprint "store cal finished" '()))
 		   (delete[] cal_image)))
 		(destroy_mmap)))))
-  (define-module
+  #+nil (define-module
       `(mmap
 	((_mmap_data :direction 'out :type void*)
 	 (_mmap_filesize :direction 'out :type size_t))
@@ -744,7 +744,7 @@
 	       (assert (!= MAP_FAILED data))
 	       (setf ,(g `_mmap_filesize) filesize
 		     ,(g `_mmap_data) data)))))))
-  (define-module
+  #+nil (define-module
       `(collect_packet_headers
 	(;(_header_data :direction 'out :type void*)
 	 (_header_data :direction 'out :type "std::vector<std::array<uint8_t,62+6>>")
@@ -780,7 +780,7 @@
 		 (dot ,(g `_header_data)
 		      (push_back data_chunk))
 		 (incf offset (+ 6 1 data_length)))))))))
-  (define-module
+  #+nil (define-module
       `(process_packet_headers
 	()
 	(do0
@@ -884,7 +884,7 @@
 			   (string "\\033[2J\\033[1;1H")
 			   "std::flush"))))))))
   (let ((max-number-quads 52378))
-   (define-module
+    #+nil (define-module
        `(decode_packet
 	 ()
 	 (do0
@@ -1421,7 +1421,7 @@
 	      ))))))
 
   (let ((max-number-quads 52378))
-   (define-module
+    #+nil (define-module
        `(decode_type_ab_packet
 	 ()
 	 (do0
@@ -1569,7 +1569,7 @@
 			(,(format nil "tile_~a_active_ta_temperature" (+ 1 tile)) uint8_t)
 			(,(format nil "tile_~a_efe_h_ta_temperature" (+ 2 tile)) uint8_t)))
 	       (tgu_temperature uint16_t))))
-     (define-module
+    #+nil (define-module
 	`(decode_sub_commutated_data
 	  ((_ancillary_data :direction 'out :type "std::array<uint16_t,65>")
 	   (_ancillary_data_valid :direction 'out :type "std::array<bool,65>")
@@ -1659,7 +1659,7 @@
 		 (do0
 		  (return false))))))))
   (let  ((max-number-quads 52378))
-    (define-module
+    #+nil (define-module
      `(decode_type_c_packet
        ()
        (do0
