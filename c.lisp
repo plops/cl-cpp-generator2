@@ -224,10 +224,10 @@ entry return-values contains a list of return values. currently supports type, v
 	(with-output-to-string (s)
 
 	  
-	  ;;         template          static          inline  virtual
-	  ;;                                   explicit
-	  ;;         1                 2       3       4       5 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~] ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual  ret   parm 
+	  ;;                                   explicit                    name  const   hdr-only  constructs
+	  ;;         1                 2       3       4       5        6  7  8  9       10        11 
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~] ~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -248,7 +248,7 @@ entry return-values contains a list of return values. currently supports type, v
 			     header-only)
 		    "virtual")
 		  
-		  ;; return value
+		  ;; 6 return value
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(break "multiple return values unsupported: ~a"
@@ -258,14 +258,14 @@ entry return-values contains a list of return values. currently supports type, v
 			      (:constructor "") ;; (values :constructor) will not print anything
 			      (t (car r)))
 			    "void")))
-		  ;; function-name, add class if not header
+		  ;; 7 function-name, add class if not header
 		  (if class
 		      (if header-only
 			  name
 			  (format nil "~a::~a" class name))
 		      name)
 
-		  ;; positional parameters, followed by key parameters
+		  ;; 8 positional parameters, followed by key parameters
 		  (funcall emit `(paren
 				  ;; positional
 				  ,@(loop for p in req-param collect
@@ -292,15 +292,15 @@ entry return-values contains a list of return values. currently supports type, v
 						   (when header-only ;; only in class definition
 						     (format nil "= ~a" (funcall emit init))))))
 				  ))
-		  ;; const keyword
+		  ;; 9 const keyword
 		  (when const-p #+nil
 			(and const-p
 			     (not header-only))
 			"const")
 		  
-		  ;; semicolon if header only
+		  ;; 10 semicolon if header only
 		  header-only
-		  ;; constructor initializers
+		  ;; 11 constructor initializers
 		  (when (and constructs
 			     (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
