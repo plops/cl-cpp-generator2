@@ -681,10 +681,7 @@ entry return-values contains a list of return values. currently supports type, v
 							     (eq (car e) 'defmethod*)))
 						(format s "~@[template< ~a > ~]~a" class-template (emit e :class
 													(emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
-													:header-only-p nil))))))))
-			     
-			     )))
-		      )
+													:header-only-p nil))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
@@ -694,6 +691,8 @@ entry return-values contains a list of return values. currently supports type, v
 		       (parse-defmethod code #'emit :class current-class :header-only t)
 		       (parse-defmethod code #'emit :class current-class :header-only nil)))
 		  (defun
+		      (parse-defun code #'emit :class current-class :header-only header-only)
+		      #+nil
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)
 			#+nil (format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
