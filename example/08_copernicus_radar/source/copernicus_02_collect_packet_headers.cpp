@@ -10,8 +10,8 @@ extern State state;
 #include <cstring>
 #include <iostream>
 #include <vector>
-nil void destroy_collect_packet_headers() {}
-nil void init_collect_packet_headers() {
+void destroy_collect_packet_headers() {}
+void init_collect_packet_headers() {
   std::setprecision(3);
   (std::cout) << (std::setw(10))
               << (((std::chrono::high_resolution_clock::now()

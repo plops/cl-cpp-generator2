@@ -7,7 +7,7 @@
 
 extern State state;
 #include <cassert>
-nil inline int get_data_type_a_or_b(sequential_bit_t *s) {
+inline int get_data_type_a_or_b(sequential_bit_t *s) {
   return ((((0x200) * (get_sequential_bit(s)))) +
           (((0x100) * (get_sequential_bit(s)))) +
           (((0x80) * (get_sequential_bit(s)))) +
@@ -19,8 +19,8 @@ nil inline int get_data_type_a_or_b(sequential_bit_t *s) {
           (((0x2) * (get_sequential_bit(s)))) +
           (((0x1) * (get_sequential_bit(s)))));
 }
-nil int init_decode_packet_type_a_or_b(int packet_idx,
-                                       std::complex<float> *output) {
+int init_decode_packet_type_a_or_b(int packet_idx,
+                                   std::complex<float> *output) {
   // packet_idx .. index of space packet 0 ..
   // mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest
   // delay in samples between tx pulse start and data acquisition and will be

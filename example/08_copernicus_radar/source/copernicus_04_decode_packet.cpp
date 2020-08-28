@@ -9,13 +9,13 @@ extern State state;
 #include <cassert>
 #include <cmath>
 
-nil void init_sequential_bit_function(sequential_bit_t *seq_state,
-                                      size_t byte_pos) {
+void init_sequential_bit_function(sequential_bit_t *seq_state,
+                                  size_t byte_pos) {
   seq_state->data = &(static_cast<uint8_t *>(state._mmap_data)[byte_pos]);
   seq_state->current_bit_count = 0;
 }
 
-nil void consume_padding_bits(sequential_bit_t *s) {
+void consume_padding_bits(sequential_bit_t *s) {
   auto byte_offset = static_cast<int>(
       ((s->data) - (static_cast<uint8_t *>(state._mmap_data))));
   // make sure we are at first bit of an even byte in the next read
@@ -33,7 +33,7 @@ nil void consume_padding_bits(sequential_bit_t *s) {
     s->current_bit_count = 0;
   }
 }
-nil inline int get_bit_rate_code(sequential_bit_t *s) {
+inline int get_bit_rate_code(sequential_bit_t *s) {
   // note: evaluation order is crucial
   auto brc = ((((0x4) * (get_sequential_bit(s)))) +
               (((0x2) * (get_sequential_bit(s)))) +
@@ -57,7 +57,7 @@ nil inline int get_bit_rate_code(sequential_bit_t *s) {
   }
   return brc;
 }
-nil inline int decode_huffman_brc0(sequential_bit_t *s) {
+inline int decode_huffman_brc0(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
       if (get_sequential_bit(s)) {
@@ -72,7 +72,7 @@ nil inline int decode_huffman_brc0(sequential_bit_t *s) {
     return 0;
   }
 }
-nil inline int decode_huffman_brc1(sequential_bit_t *s) {
+inline int decode_huffman_brc1(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
       if (get_sequential_bit(s)) {
@@ -91,7 +91,7 @@ nil inline int decode_huffman_brc1(sequential_bit_t *s) {
     return 0;
   }
 }
-nil inline int decode_huffman_brc2(sequential_bit_t *s) {
+inline int decode_huffman_brc2(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
       if (get_sequential_bit(s)) {
@@ -118,7 +118,7 @@ nil inline int decode_huffman_brc2(sequential_bit_t *s) {
     return 0;
   }
 }
-nil inline int decode_huffman_brc3(sequential_bit_t *s) {
+inline int decode_huffman_brc3(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
       if (get_sequential_bit(s)) {
@@ -157,7 +157,7 @@ nil inline int decode_huffman_brc3(sequential_bit_t *s) {
     }
   }
 }
-nil inline int decode_huffman_brc4(sequential_bit_t *s) {
+inline int decode_huffman_brc4(sequential_bit_t *s) {
   if (get_sequential_bit(s)) {
     if (get_sequential_bit(s)) {
       if (get_sequential_bit(s)) {
@@ -289,7 +289,7 @@ extern const std::array<const float, 256> table_sf = {
     (238.450f), (239.70f),  (240.950f), (242.210f), (243.460f), (244.710f),
     (245.970f), (247.220f), (248.470f), (249.730f), (250.980f), (252.230f),
     (253.490f), (254.740f), (255.990f), (255.990f)};
-nil int init_decode_packet(int packet_idx, std::complex<float> *output) {
+int init_decode_packet(int packet_idx, std::complex<float> *output) {
   // packet_idx .. index of space packet 0 ..
   // mi_data_delay .. if -1, ignore; otherwise it is assumed to be the smallest
   // delay in samples between tx pulse start and data acquisition and will be

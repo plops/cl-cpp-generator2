@@ -13,12 +13,12 @@ extern State state;
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-nil size_t get_filesize(const char *filename) {
+size_t get_filesize(const char *filename) {
   struct stat st;
   stat(filename, &st);
   return st.st_size;
 }
-nil void destroy_mmap() {
+void destroy_mmap() {
   auto rc = munmap(state._mmap_data, state._mmap_filesize);
   if (!((0) == (rc))) {
     std::setprecision(3);
@@ -33,7 +33,7 @@ nil void destroy_mmap() {
   }
   assert((0) == (rc));
 }
-nil void init_mmap(const char *filename) {
+void init_mmap(const char *filename) {
   auto filesize = get_filesize(filename);
   auto fd = open(filename, O_RDONLY, 0);
   std::setprecision(3);

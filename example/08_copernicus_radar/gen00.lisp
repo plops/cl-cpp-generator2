@@ -303,7 +303,7 @@
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
       (destructuring-bind (module-name global-parameters module-code) args
 	(let ((header ()))
-	  #+nil (push `(do0
+	  (push `(do0
 		  " "
 		  (include "utils.h")
 		  " "
@@ -315,7 +315,7 @@
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
 	    (push `(do0 "extern State state;")
 		  header))
-	  (push `(:name ,module-name :code ,module-code #+nil (do0 ,@(reverse header)
+	  (push `(:name ,module-name :code (do0 ,@(reverse header)
 						,module-code))
 		*module*))
 	(loop for par in global-parameters do
@@ -329,23 +329,17 @@
     `(dot state ,arg))
   (define-module
       `(main ((_filename :direction 'out :type "char const *"))
-	     (defun main0 ()
-		(declare (values int))
-		(return 0))
-	     #+nil (do0
-	      #+nil (include <iostream>
+	     (do0
+	     (include <iostream>
 		       <chrono>
 		       <cstdio>
 		       <cassert>
 		       <unordered_map>
 		       <string>
 		       <fstream>)
-	      #+nil (let ((state ,(emit-globals :init t)))
+	      (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
-	      
-
-	      #+nil
 	      (defun main ()
 		(declare (values int))
 		(setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
@@ -709,7 +703,7 @@
 			 ,(logprint "store cal finished" '()))
 		   (delete[] cal_image)))
 		(destroy_mmap)))))
-  #+nil (define-module
+  (define-module
       `(mmap
 	((_mmap_data :direction 'out :type void*)
 	 (_mmap_filesize :direction 'out :type size_t))
@@ -749,7 +743,7 @@
 	       (assert (!= MAP_FAILED data))
 	       (setf ,(g `_mmap_filesize) filesize
 		     ,(g `_mmap_data) data)))))))
-  #+nil (define-module
+  (define-module
       `(collect_packet_headers
 	(;(_header_data :direction 'out :type void*)
 	 (_header_data :direction 'out :type "std::vector<std::array<uint8_t,62+6>>")
@@ -785,7 +779,7 @@
 		 (dot ,(g `_header_data)
 		      (push_back data_chunk))
 		 (incf offset (+ 6 1 data_length)))))))))
-  #+nil (define-module
+  (define-module
       `(process_packet_headers
 	()
 	(do0
@@ -889,7 +883,7 @@
 			   (string "\\033[2J\\033[1;1H")
 			   "std::flush"))))))))
   (let ((max-number-quads 52378))
-    #+nil (define-module
+    (define-module
        `(decode_packet
 	 ()
 	 (do0
@@ -1426,7 +1420,7 @@
 	      ))))))
 
   (let ((max-number-quads 52378))
-    #+nil (define-module
+    (define-module
        `(decode_type_ab_packet
 	 ()
 	 (do0
@@ -1574,7 +1568,7 @@
 			(,(format nil "tile_~a_active_ta_temperature" (+ 1 tile)) uint8_t)
 			(,(format nil "tile_~a_efe_h_ta_temperature" (+ 2 tile)) uint8_t)))
 	       (tgu_temperature uint16_t))))
-    #+nil (define-module
+    (define-module
 	`(decode_sub_commutated_data
 	  ((_ancillary_data :direction 'out :type "std::array<uint16_t,65>")
 	   (_ancillary_data_valid :direction 'out :type "std::array<bool,65>")
@@ -1664,7 +1658,7 @@
 		 (do0
 		  (return false))))))))
   (let  ((max-number-quads 52378))
-    #+nil (define-module
+    (define-module
      `(decode_type_c_packet
        ()
        (do0
@@ -1995,7 +1989,7 @@
 		       :if-does-not-exist :create)
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e  
-	     #+nil (emit-c :code code :hook-defun 
+	      (emit-c :code code :hook-defun 
 		     #'(lambda (str)
 			 (format s "~a~%" str)))
 	     
@@ -2005,7 +1999,7 @@
 				    "~a/copernicus_~2,'0d_~a.cpp"
 				    *source-dir* i name))
 			   code))))
-    #+nil
+    
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
@@ -2037,7 +2031,7 @@
 		    " "
 		    "#endif"
 		    " "))
-    #+nil
+    
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
 								     #P"globals.h"
 								     *source-dir*))

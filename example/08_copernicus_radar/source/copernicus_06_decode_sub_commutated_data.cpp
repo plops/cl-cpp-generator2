@@ -10,14 +10,14 @@ extern State state;
 #include <cstring>
 #include <fstream>
 
-nil void init_sub_commutated_data_decoder() {
+void init_sub_commutated_data_decoder() {
   state._ancillary_data_index = 0;
   for (auto i = 0; (i) < (state._ancillary_data_valid.size()); (i) += (1)) {
     state._ancillary_data_valid.at(i) = false;
   }
 }
-nil bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
-                                          int space_packet_count) {
+bool feed_sub_commutated_data_decoder(uint16_t word, int idx,
+                                      int space_packet_count) {
   state._ancillary_data_index = idx;
   state._ancillary_data.at(state._ancillary_data_index) = word;
   state._ancillary_data_valid.at(state._ancillary_data_index) = true;

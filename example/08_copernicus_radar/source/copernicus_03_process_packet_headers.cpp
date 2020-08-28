@@ -7,7 +7,7 @@
 
 extern State state;
 #include <unistd.h>
-nil void init_process_packet_headers() {
+void init_process_packet_headers() {
   auto p0 = state._header_data[0].data();
   auto coarse_time0 =
       ((((0x1) * (p0[9]))) + (((0x100) * (p0[8]))) + (((0x10000) * (p0[7]))) +
