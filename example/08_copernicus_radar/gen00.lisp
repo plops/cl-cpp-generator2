@@ -303,7 +303,7 @@
       "each module will be written into a c file with module-name. the global-parameters the module will write to will be specified with their type in global-parameters. a file global.h will be written that contains the parameters that were defined in all modules. global parameters that are accessed read-only or have already been specified in another module need not occur in this list (but can). the prototypes of functions that are specified in a module are collected in functions.h. i think i can (ab)use gcc's warnings -Wmissing-declarations to generate this header. i split the code this way to reduce the amount of code that needs to be recompiled during iterative/interactive development. if the module-name contains vulkan, include vulkan headers. if it contains glfw, include glfw headers."
       (destructuring-bind (module-name global-parameters module-code) args
 	(let ((header ()))
-	  (push `(do0
+	  #+nil (push `(do0
 		  " "
 		  (include "utils.h")
 		  " "
@@ -315,7 +315,8 @@
 	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
 	    (push `(do0 "extern State state;")
 		  header))
-	  (push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
+	  (push `(:name ,module-name :code ,module-code #+nil (do0 ,@(reverse header)
+						,module-code))
 		*module*))
 	(loop for par in global-parameters do
 	     (destructuring-bind (parameter-name
@@ -328,7 +329,10 @@
     `(dot state ,arg))
   (define-module
       `(main ((_filename :direction 'out :type "char const *"))
-	     (do0
+	     (defun main0 ()
+		(declare (values int))
+		(return 0))
+	     #+nil (do0
 	      #+nil (include <iostream>
 		       <chrono>
 		       <cstdio>
@@ -339,9 +343,7 @@
 	      #+nil (let ((state ,(emit-globals :init t)))
 		(declare (type "State" state)))
 
-	      (defun main0 ()
-		(declare (values int))
-		(return 0))
+	      
 
 	      #+nil
 	      (defun main ()
@@ -1984,6 +1986,7 @@
 		    (return n))))))))))
   
   (progn
+    
     (with-open-file (s (asdf:system-relative-pathname 'cl-cpp-generator2
 						 (merge-pathnames #P"proto2.h"
 								  *source-dir*))
@@ -2002,6 +2005,7 @@
 				    "~a/copernicus_~2,'0d_~a.cpp"
 				    *source-dir* i name))
 			   code))))
+    #+nil
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"utils.h"
@@ -2033,6 +2037,7 @@
 		    " "
 		    "#endif"
 		    " "))
+    #+nil
     (write-source (asdf:system-relative-pathname 'cl-cpp-generator2 (merge-pathnames
 								     #P"globals.h"
 								     *source-dir*))
