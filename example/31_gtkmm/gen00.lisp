@@ -179,8 +179,12 @@
 			(dot m_button
 			     (signal_clicked)
 			     (connect
+			      (lambda ()
+				,(logprint "button" `()))
+			      #+nil
 			      (sigc--mem_fun *this
-					     &HelloWorld--on_button_clicked))
+					     &HelloWorld--on_button_clicked
+					     ))
 			     )
 			(add m_button)
 			(m_button.show))
@@ -188,7 +192,7 @@
 			(declare (values :constructor)))
 
 		      "protected:"
-		      (defmethod on_button_clicked ()
+		      #+nil (defmethod on_button_clicked ()
 			,(logprint "button" `()))
 		      
 		      "Gtk::Button m_button;"

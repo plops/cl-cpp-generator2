@@ -20,7 +20,6 @@ class HelloWorld : public Gtk::Window {
          HelloWorld ()  ;  
          ~HelloWorld ()  ;  
         protected:
-        void on_button_clicked ()  ;  
         Gtk::Button m_button;
 };
 int main (int argc, char** argv)  ;  
