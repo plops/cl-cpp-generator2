@@ -174,7 +174,7 @@
 		      "public:"
 		      (defmethod HelloWorld ()
 			(declare (values :constructor)
-				 (constr (m_button (string "Hello World"))))
+				 (construct (m_button (string "Hello World"))))
 			(set_border_width 10)
 			(dot m_button
 			     (signal_clicked)
