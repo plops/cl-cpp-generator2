@@ -11,7 +11,7 @@ extern State state;
 // implementation
 #include "vis_00_base.hpp"
 
-HelloWorld::HelloWorld() : m_button("Hello World") {
+HelloWorld::HelloWorld() : m_button("_Hello World", true) {
   set_border_width(10);
   m_button.signal_clicked().connect(
       sigc::mem_fun(*this, &HelloWorld::on_button_clicked));
