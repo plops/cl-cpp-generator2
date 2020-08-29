@@ -6,9 +6,22 @@
 ;
 #include <iostream>
 #include <chrono>
+#include <thread>
 ;
-#include <gtkmm.h>
+#include <gtkmm/button.h>
+#include <gtkmm/window.h>
 ;
-// header;
+// header
+#include <gtkmm/button.h>
+#include <gtkmm/window.h>
+ ;
+class HelloWorld : public Gtk::Window {
+        public:
+         HelloWorld ()  ;  
+         ~HelloWorld ()  ;  
+        protected:
+        void on_button_clicked ()  ;  
+        Gtk::Button m_button;
+};
 int main (int argc, char** argv)  ;  
 #endif

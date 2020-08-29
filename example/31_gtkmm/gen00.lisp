@@ -137,10 +137,11 @@
 	       ;; https://www.murrayc.com/permalink/2015/07/31/gtkmm-now-uses-c11/
 		    (include <iostream>
 			     <chrono>
+			     <thread>
 			     
 			     )
 
-		    (include <gtkmm.h>)
+		    ;(include <gtkmm.h>)
 		    " "
 
 		    
@@ -148,13 +149,17 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
+		      (include <gtkmm/button.h>
+			       <gtkmm/window.h>)
+		      " "
 		      )
 		     (do0
 		      "// implementation"
 		      (include "vis_00_base.hpp")
+		      " "
 		      ))
 
-		    (defun main (argc argv)
+		    #+nil (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
@@ -164,155 +169,46 @@
 			(declare (type Gtk--Window win))
 			(win.set_default_size 200 200)
 			(app->run win)))
-		    #+nil
-		    (defclass cApp "public wxApp"
+		    
+		    (defclass HelloWorld "public Gtk::Window"
 		      "public:"
-		      (defmethod cApp ()
-			(declare (values :constructor)))
-		      (defmethod ~cApp ()
+		      (defmethod HelloWorld ()
+			(declare (values :constructor)
+				 (constr (m_button (string "Hello World"))))
+			(set_border_width 10)
+			(dot m_button
+			     (signal_clicked)
+			     (connect
+			      (sigc--mem_fun *this
+					     &HelloWorld--on_button_clicked))
+			     )
+			(add m_button)
+			(m_button.show))
+		      (defmethod ~HelloWorld ()
 			(declare (values :constructor)))
 
-		      "private:"
-		      (setf "cMain* m_frame1" nullptr)
+		      "protected:"
+		      (defmethod on_button_clicked ()
+			,(logprint "button" `()))
 		      
-		      "public:"
+		      "Gtk::Button m_button;"
 		      
-		      (defmethod OnInit ()
-			(declare
-			 (virtual)
-			 (values "bool"))
-			(setf m_frame1 (new cMain)
-			      )
-			(m_frame1->Show)
-			(return true)))
+		      )
+
+		    (defun main (argc argv)
+		      (declare (type int argc)
+			       (type char** argv)
+			       (values int))
+		      (let ((app (Gtk--Application--create argc argv
+							   (string "org.gtkmm.example")))
+			    (hw))
+			(declare (type HelloWorld hw))
+			;(win.set_default_size 200 200)
+			(app->run hw)))
 
 		    
 		    )))
-    #+nil (define-module
-	`(cMain (   )
-		   (do0
-		    (include <iostream>
-			     <chrono>
-			     <cstdio>
-			     <cassert>
-					;<unordered_map>
-			     <string>
-			     <fstream>
-			     <thread>
-			     <vector>
-			     <experimental/iterator>
-			     <algorithm>
-			     )
-		    " "
-
-		    (do0
-		     ;"#pragma once"
-		     (include <wx/wx.h>))
-		    " "
-
-		    (split-header-and-code
-		     (do0
-		      "// header"
-		      )
-		     (do0
-		      "// implementation"
-		      (include "vis_01_cMain.hpp"))
-		     )
-		    
-		    ,(let ((components
-			    `((wxButton btn1 (10001
-						 (string "click me")
-						 (wxPoint 10 10)
-						 (wxSize 150 50)))
-				 (wxTextCtrl txt1 (wxID_ANY
-						   (string "")
-						   (wxPoint 10 70)
-						   (wxSize 300 30)))
-				 (wxListBox list1 (wxID_ANY
-						   (wxPoint 10 110)
-						   (wxSize 300 300)))
-				 ))
-			   (button-field-n 10)
-			   (button-field-m 10))
-		       `(do0
-
-			 (split-header-and-code
-			  (do0
-			   "// header"
-			   )
-			  (do0
-			   "// implementation"
-			   (do0
-			    
-			    (space (wxBEGIN_EVENT_TABLE cMain wxFrame)
-				   	 (EVT_BUTTON 10001 cMain--OnButtonClicked)
-				   	 (wxEND_EVENT_TABLE)
-					 )))
-			  )
-			 
-			 
-			 (defclass cMain "public wxFrame"
-			  "public:"
-			  (defmethod cMain ()
-			    (declare
-			     (construct (wxFrame nullptr wxID_ANY (string "title")
-						 (wxPoint 30 30)
-						 (wxSize 800 600)))
-			     (values :constructor))
-			    ,@(loop for (e f g) in components collect
-				   `(setf ,(format nil "m_~a" f)
-					  (new (,e this
-						   
-						   ,@g
-						   ))))
-			    (do0
-			     (setf btn (new (aref wxButton* (* button_field_n
-							       button_field_m))))
-			     
-			     (let ((grid (new (wxGridSizer
-					       button_field_n
-					       button_field_m
-					       0 0))))
-			      (dotimes (i button_field_n)
-				(dotimes (j button_field_m)
-				  (let ((pos (+ i (* j button_field_n))))
-				    (setf (aref btn pos)
-					  (new (wxButton this (+ 20000 pos))))
-				    (grid->Add (aref btn pos)
-					       (logior wxEXPAND wxALL))
-				    (-> (aref btn pos)
-					(Bind wxEVT_COMMAND_BUTTON_CLICKED &cMain--OnButtonClicked this)))))
-			      (this->SetSizer grid)
-			      (grid->Layout)))
-			    )
-			  (defmethod ~cMain ()
-			    (declare (values :constructor))
-			    "delete[]btn;")
-			  "public:"
-			  ,@(loop for (e f g) in components
-			       collect
-				 `(setf ,(format nil "~a *m_~a" e f) nullptr))
-			  (do0
-			     (setf "int button_field_n" ,button-field-n
-				   "int button_field_m" ,button-field-m
-				   "wxButton** btn" nullptr))
-			  (defmethod OnButtonClicked (evt)
-			    (declare (type wxCommandEvent& evt))
-			    (let ((id (evt.GetId)))
-			      (if (< id 19000)
-				  (do0
-				   (m_list1->AppendString (m_txt1->GetValue)))
-				  (let ((x (% (- id 20000)
-					      button_field_n))
-					(y (/ (- id 20000)
-					      button_field_m)))
-				    (m_list1->AppendString (string "button")))))
-			    (evt.Skip)
-			    )
-			  (wxDECLARE_EVENT_TABLE))))
-
-		    
-	      ))))
+  )
   
   (progn
     (progn ;with-open-file
