@@ -169,6 +169,44 @@
 			(declare (type Gtk--Window win))
 			(win.set_default_size 200 200)
 			(app->run win)))
+
+
+		    ;; https://github.com/GNOME/gtkmm/blob/master/demos/gtk-demo/example_treeview_liststore.cc
+		    (defclass CellItem_Bug ()
+			"public:"
+		      (defmethod CellItem_Bug ()
+			(declare
+			 (construct (m_fixed false)
+				    (m_number 0))
+			 (values :constructor)))
+		      (defmethod ~CellItem_Bug ()
+			(declare (values :constructor)))
+		      (defmethod CellItem_Bug (src)
+			(declare (values :constructor)
+				 (type "const CellItem_Bug&" src))
+			(operator= src))
+		      (defmethod CellItem_Bug (fixed number severity description)
+			(declare (values :constructor)
+				 (construct (m_fixed fixed)
+					    (m_number number)
+					    (m_severity severity)
+					    (m_description description))
+				 (type bool fixed)
+				 (type guint number)
+				 (type "const Glib::ustring&" severity)
+				 (type "const Glib::ustring&" description)))
+		      (defmethod operator= (src)
+			(declare (values CellItem_Bug&)
+				 (type "const CellItem_Bug&" src))
+			,@(loop for e in `(m_fixed m_number m_severity m_description) collect
+			       `(setf ,e (dot src ,e)))
+			(return *this))
+		      "bool m_fixed;"
+		      "guint m_number;"
+		      "Glib::ustring m_severity;"
+		      "Glib::ustring m_description;"
+		      
+		      )
 		    
 		    (defclass HelloWorld "public Gtk::Window"
 		      "public:"
@@ -218,7 +256,7 @@
     (progn ;with-open-file
       #+nil (s (asdf:system-relative-pathname 'cl-cpp-generator2
 					(merge-pathnames #P"proto2.h"
-							 *source-dir*))
+							 *source-dir*))..
 	 :direction :output
 	 :if-exists :supersede
 	 :if-does-not-exist :create)

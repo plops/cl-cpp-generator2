@@ -11,6 +11,21 @@ extern State state;
 // implementation
 #include "vis_00_base.hpp"
 
+CellItem_Bug::CellItem_Bug() : m_fixed(false), m_number(0) {}
+CellItem_Bug::~CellItem_Bug() {}
+CellItem_Bug::CellItem_Bug(const CellItem_Bug &src) { operator=(src); }
+CellItem_Bug::CellItem_Bug(bool fixed, guint number,
+                           const Glib::ustring &severity,
+                           const Glib::ustring &description)
+    : m_fixed(fixed), m_number(number), m_severity(severity),
+      m_description(description) {}
+CellItem_Bug &CellItem_Bug::operator=(const CellItem_Bug &src) {
+  m_fixed = src.m_fixed;
+  m_number = src.m_number;
+  m_severity = src.m_severity;
+  m_description = src.m_description;
+  return *this;
+}
 HelloWorld::HelloWorld() : m_button("_Hello World", true) {
   set_border_width(10);
   m_button.signal_clicked().connect([]() {
