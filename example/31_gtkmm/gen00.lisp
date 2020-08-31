@@ -149,8 +149,10 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
+		      #+nil 
 		      (include <gtkmm/button.h>
 			       <gtkmm/window.h>)
+		      (include <gtkmm.h>)
 		      " "
 		      )
 		     (do0
@@ -204,9 +206,78 @@
 		      "bool m_fixed;"
 		      "guint m_number;"
 		      "Glib::ustring m_severity;"
-		      "Glib::ustring m_description;"
+		      "Glib::ustring m_description;")
+
+
+		    (defclass Example_TreeView_ListStore "public Gtk::Window"
+		      "public:"
+		      (defmethod Example_TreeView_ListStore ()
+			(declare (values :constructor)
+				 (construct (m_VBox Gtk--ORIENTATION_VERTICAL 8)
+					    (m_Label (string "This is the bug list."))))
+			(set_title (string "Gtk::ListStore demo"))
+			(set_border_width 8)
+			(set_default_size 280 250)
+			(add m_VBox)
+			(m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
+			(m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
+			(m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
+			(m_VBox.pack_start m_ScrolledWindow)
+			;-(create_model)
+			)
+		      (defmethod ~Example_TreeView_ListStore ()
+			(declare (values :constructor)
+				 ;; override
+				 ))
+		      "protected:"
+		      (defmethod create_model ()
+			(declare (virtual))
+			(setf m_refListStore (Gtk--ListStore--create m_columns))
+			(add_items)
+			(std--for_each
+			 (m_vecItems.begin)
+			 (m_vecItems.end)
+			 (sigc--mem_fun *this
+					&Example_TreeView_ListStore--liststore_add_item)))
+		      (defmethod add_columns ()
+			(declare (virtual)))
+		      (defmethod add_items ()
+			(declare (virtual)))
+		      (defmethod liststore_add_item (foo)
+			(declare (virtual)
+				 (type "const CellItem_Bug&" foo))
+			(let ((row (deref (m_refListStore->append))))
+			  ,@(loop for e in `(fixed number severity description) collect
+				 `(setf (aref row (dot m_columns ,e))
+					(dot foo ,(format nil "m_~a" e))))))
+		      "Gtk::Box m_VBox;"
+		      "Gtk::ScrolledWindow m_ScrolledWindow;"
+		      "Gtk::Label m_Label;"
+		      "Gtk::TreeView m_TreeView;"
+		      "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
+
+		      "typedef std::vector<CellItem_Bug> type_vecITems;"
+		      "type_vecItems m_vecItems;"
+		      ,(let ((l `((bool fixed)
+				  ("unsigned int" number)
+				  ("Glib::ustring" severity)
+				  ("Glib::usrting" description))))
+			 `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+				 (progn
+				   ,@(loop for (e f) in l collect
+					  (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
+				   (defun+ ModelColumns ()
+				     (declare (values :constructor))
+				     ,@(loop for (e f) in l collect
+					    `(add ,f))))))
+		      "const ModelColumns m_columns;"
 		      
 		      )
+
+
+		    (defun do_treeview_liststore ()
+		      (declare (values "Gtk::Window*"))
+		      (return (new (Example_TreeView_ListStore))))
 		    
 		    (defclass HelloWorld "public Gtk::Window"
 		      "public:"

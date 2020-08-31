@@ -26,6 +26,37 @@ CellItem_Bug &CellItem_Bug::operator=(const CellItem_Bug &src) {
   m_description = src.m_description;
   return *this;
 }
+Example_TreeView_ListStore::Example_TreeView_ListStore()
+    : m_VBox(Gtk::ORIENTATION_VERTICAL, 8), m_Label("This is the bug list.") {
+  set_title("Gtk::ListStore demo");
+  set_border_width(8);
+  set_default_size(280, 250);
+  add(m_VBox);
+  m_VBox.pack_start(m_Label, Gtk::PACK_SHRINK);
+  m_ScrolledWindow.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+  m_ScrolledWindow.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+  m_VBox.pack_start(m_ScrolledWindow);
+}
+Example_TreeView_ListStore::~Example_TreeView_ListStore() {}
+void Example_TreeView_ListStore::create_model() {
+  m_refListStore = Gtk::ListStore::create(m_columns);
+  add_items();
+  std::for_each(
+      m_vecItems.begin(), m_vecItems.end(),
+      sigc::mem_fun(*this, &Example_TreeView_ListStore::liststore_add_item));
+}
+void Example_TreeView_ListStore::add_columns() {}
+void Example_TreeView_ListStore::add_items() {}
+void Example_TreeView_ListStore::liststore_add_item(const CellItem_Bug &foo) {
+  auto row = *(m_refListStore->append());
+  row[m_columns.fixed] = foo.m_fixed;
+  row[m_columns.number] = foo.m_number;
+  row[m_columns.severity] = foo.m_severity;
+  row[m_columns.description] = foo.m_description;
+}
+Gtk::Window *do_treeview_liststore() {
+  return new Example_TreeView_ListStore();
+}
 HelloWorld::HelloWorld() : m_button("_Hello World", true) {
   set_border_width(10);
   m_button.signal_clicked().connect([]() {
