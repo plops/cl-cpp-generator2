@@ -45,7 +45,17 @@ void Example_TreeView_ListStore::create_model() {
       m_vecItems.begin(), m_vecItems.end(),
       sigc::mem_fun(*this, &Example_TreeView_ListStore::liststore_add_item));
 }
-void Example_TreeView_ListStore::add_columns() {}
+void Example_TreeView_ListStore::add_columns() {
+  auto cols_count =
+      m_TreeView.append_column_editable("Fixed?", m_columns.fixed);
+  auto pColumn = m_TreeView.get_column(((cols_count) - (1)));
+  pColumn->set_sizing(Gtk::TREE_VIEW_COLUMN_FIXED);
+  pColumn->set_fixed_width(50);
+  pColumn->set_clickable();
+  m_TreeView.append_column("Bug Number", m_columns.number);
+  m_TreeView.append_column("Severity", m_columns.severity);
+  m_TreeView.append_column("Description", m_columns.description);
+}
 void Example_TreeView_ListStore::add_items() {}
 void Example_TreeView_ListStore::liststore_add_item(const CellItem_Bug &foo) {
   auto row = *(m_refListStore->append());

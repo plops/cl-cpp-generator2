@@ -240,7 +240,21 @@
 			 (sigc--mem_fun *this
 					&Example_TreeView_ListStore--liststore_add_item)))
 		      (defmethod add_columns ()
-			(declare (virtual)))
+			(declare (virtual))
+			(let ((cols_count (m_TreeView.append_column_editable (string "Fixed?")
+									     m_columns.fixed))
+			      (pColumn (m_TreeView.get_column (- cols_count 1))))
+			  ;; set to fixed 50 pixel size
+			  (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
+			  (pColumn->set_fixed_width 50)
+			  (pColumn->set_clickable))
+			(m_TreeView.append_column (string "Bug Number")
+						  m_columns.number)
+			(m_TreeView.append_column (string "Severity")
+						  m_columns.severity)
+			(m_TreeView.append_column (string "Description")
+						  m_columns.description)
+			)
 		      (defmethod add_items ()
 			(declare (virtual)))
 		      (defmethod liststore_add_item (foo)
@@ -256,21 +270,22 @@
 		      "Gtk::TreeView m_TreeView;"
 		      "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
 
-		      "typedef std::vector<CellItem_Bug> type_vecITems;"
+		      "typedef std::vector<CellItem_Bug> type_vecItems;"
 		      "type_vecItems m_vecItems;"
-		      ,(let ((l `((bool fixed)
-				  ("unsigned int" number)
-				  ("Glib::ustring" severity)
-				  ("Glib::usrting" description))))
-			 `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
-				 (progn
-				   ,@(loop for (e f) in l collect
-					  (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
-				   (defun+ ModelColumns ()
-				     (declare (values :constructor))
-				     ,@(loop for (e f) in l collect
-					    `(add ,f))))))
-		      "const ModelColumns m_columns;"
+		      (do0
+		       ,(let ((l `((bool fixed)
+				   ("unsigned int" number)
+				   ("Glib::ustring" severity)
+				   ("Glib::ustring" description))))
+			  `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+				  (progn
+				    ,@(loop for (e f) in l collect
+					   (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
+				    (defun+ ModelColumns ()
+				      (declare (values :constructor))
+				      ,@(loop for (e f) in l collect
+					     `(add ,f))))))
+		       "const ModelColumns m_columns;")
 		      
 		      )
 

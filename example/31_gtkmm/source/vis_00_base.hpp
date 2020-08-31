@@ -39,13 +39,13 @@ class Example_TreeView_ListStore : public Gtk::Window {
         Gtk::Label m_Label;
         Gtk::TreeView m_TreeView;
         Glib::RefPtr<Gtk::ListStore> m_refListStore;
-        typedef std::vector<CellItem_Bug> type_vecITems;
+        typedef std::vector<CellItem_Bug> type_vecItems;
         type_vecItems m_vecItems;
-        struct ModelColumns : public Gtk::TreeModelColumnRecord {
+            struct ModelColumns : public Gtk::TreeModelColumnRecord {
                 Gtk::TreeModelColumn<bool> fixed;
                 Gtk::TreeModelColumn<unsigned int> number;
                 Gtk::TreeModelColumn<Glib::ustring> severity;
-                Gtk::TreeModelColumn<Glib::usrting> description;
+                Gtk::TreeModelColumn<Glib::ustring> description;
                  ModelColumns ()    {
                         add(fixed);
                         add(number);
@@ -53,7 +53,7 @@ class Example_TreeView_ListStore : public Gtk::Window {
                         add(description);
 };
 };
-        const ModelColumns m_columns;
+    const ModelColumns m_columns;
 };
 Gtk::Window* do_treeview_liststore ()  ;  
 class HelloWorld : public Gtk::Window {
