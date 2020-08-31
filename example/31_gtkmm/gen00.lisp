@@ -223,7 +223,12 @@
 			(m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
 			(m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
 			(m_VBox.pack_start m_ScrolledWindow)
-			;-(create_model)
+			(create_model)
+			(m_TreeView.set_model m_refListStore)
+			(m_TreeView.set_search_column (m_columns.description.index))
+			(add_columns)
+			(m_ScrolledWindow.add m_TreeView)
+			(show_all)
 			)
 		      (defmethod ~Example_TreeView_ListStore ()
 			(declare (values :constructor)
@@ -256,7 +261,13 @@
 						  m_columns.description)
 			)
 		      (defmethod add_items ()
-			(declare (virtual)))
+			(declare (virtual))
+			,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
+					   (false 60539 Major "trisatin"))
+			     collect
+			       (destructuring-bind (b n type str) e
+				`(dot m_vecItems
+				      (push_back (CellItem_Bug ,b ,n (string ,type) (string ,str)))))))
 		      (defmethod liststore_add_item (foo)
 			(declare (virtual)
 				 (type "const CellItem_Bug&" foo))
@@ -330,7 +341,8 @@
 		      (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
-			(declare (type HelloWorld hw))
+			(declare (type Example_TreeView_ListStore ;HelloWorld
+				       hw))
 			;(win.set_default_size 200 200)
 			(app->run hw)))
 

@@ -36,6 +36,12 @@ Example_TreeView_ListStore::Example_TreeView_ListStore()
   m_ScrolledWindow.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
   m_ScrolledWindow.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
   m_VBox.pack_start(m_ScrolledWindow);
+  create_model();
+  m_TreeView.set_model(m_refListStore);
+  m_TreeView.set_search_column(m_columns.description.index());
+  add_columns();
+  m_ScrolledWindow.add(m_TreeView);
+  show_all();
 }
 Example_TreeView_ListStore::~Example_TreeView_ListStore() {}
 void Example_TreeView_ListStore::create_model() {
@@ -56,7 +62,11 @@ void Example_TreeView_ListStore::add_columns() {
   m_TreeView.append_column("Severity", m_columns.severity);
   m_TreeView.append_column("Description", m_columns.description);
 }
-void Example_TreeView_ListStore::add_items() {}
+void Example_TreeView_ListStore::add_items() {
+  m_vecItems.push_back(
+      CellItem_Bug(false, 60482, "Normal", "scrollable notebuooks"));
+  m_vecItems.push_back(CellItem_Bug(false, 60539, "Major", "trisatin"));
+}
 void Example_TreeView_ListStore::liststore_add_item(const CellItem_Bug &foo) {
   auto row = *(m_refListStore->append());
   row[m_columns.fixed] = foo.m_fixed;
@@ -84,6 +94,6 @@ HelloWorld::HelloWorld() : m_button("_Hello World", true) {
 HelloWorld::~HelloWorld() {}
 int main(int argc, char **argv) {
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
-  HelloWorld hw;
+  Example_TreeView_ListStore hw;
   app->run(hw);
 }
