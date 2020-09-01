@@ -129,9 +129,11 @@
   (define-module
       `(fake_intel ()
 		   (do0
-		    (defun mkl_serv_intel_cpu_true ()
-		      (declare (values int))
-		      (return 1)))))
+		    (space "extern \"C\""
+		     (progn 
+		       (defun mkl_serv_intel_cpu_true ()
+			 (declare (values int))
+			 (return 1)))))))
 
   (define-module
       `(base ((_main_version :type "std::string")
@@ -142,10 +144,52 @@
 	      (include <iostream>
 		       <chrono>
 		       <thread>)
+
+	      (include "mkl.h")
+
+
+	      (defun init_matrix (a m n )
+		(declare (type double* a)
+			 (type int m n)
+			 (type double value)
+			 )
+		(dotimes (i (* m n))
+		  (setf (aref a i) (static_cast<double> (% (rand) 100))))
+		)
+
+	      (defun get_time ()
+		(declare (values "std::chrono::high_resolution_clock::time_point"))
+		(return (std--chrono--high_resolution_clock--now)))
+	      
+	      "//  https://github.com/CoffeeBeforeArch/hp_cpp/blob/master/libraries/mkl/dgemm.cpp"
 	      (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      "double *A,*B,*C;"
+		      ,(let ((l `((A m k)
+				 (B k n)
+				 (C m n))))
+		       `(let ((m 2000)
+			     (k 200)
+			     (n 1000)
+			     (alpha 1d0)
+			     (beta 0d0))
+			 ,@(loop for (M i j) in l collect
+				`(do0
+				  (setf ,M (static_cast<double*> (mkl_malloc (* ,i ,j (sizeof double))
+									     64)))
+				  (init_matrix ,M ,i ,j)
+				  ))
+			 (cblas_dgemm CblasRowMajor
+				      CblasNoTrans
+				      CblasNoTrans
+				      m n k
+				      alpha
+				      A k B n beta C n)
+			 ,@(loop for (M i j) in l collect
+				`(mkl_free ,M))
+			 ))
 		      ))))
   
   

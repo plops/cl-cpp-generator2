@@ -56,7 +56,7 @@ void Example_TreeView_ListStore::add_columns() {
       m_TreeView.append_column_editable("Fixed?", m_columns.fixed);
   auto pColumn = m_TreeView.get_column(((cols_count) - (1)));
   pColumn->set_sizing(Gtk::TREE_VIEW_COLUMN_FIXED);
-  pColumn->set_fixed_width(50);
+  pColumn->set_fixed_width(60);
   pColumn->set_clickable();
   m_TreeView.append_column("Bug Number", m_columns.number);
   m_TreeView.append_column("Severity", m_columns.severity);
@@ -74,24 +74,6 @@ void Example_TreeView_ListStore::liststore_add_item(const CellItem_Bug &foo) {
   row[m_columns.severity] = foo.m_severity;
   row[m_columns.description] = foo.m_description;
 }
-Gtk::Window *do_treeview_liststore() {
-  return new Example_TreeView_ListStore();
-}
-HelloWorld::HelloWorld() : m_button("_Hello World", true) {
-  set_border_width(10);
-  m_button.signal_clicked().connect([]() {
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("button") << (" ") << (std::endl) << (std::flush);
-  });
-  add(m_button);
-  m_button.show();
-}
-HelloWorld::~HelloWorld() {}
 int main(int argc, char **argv) {
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
   Example_TreeView_ListStore hw;

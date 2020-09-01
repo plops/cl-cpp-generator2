@@ -55,13 +55,5 @@ class Example_TreeView_ListStore : public Gtk::Window {
 };
     const ModelColumns m_columns;
 };
-Gtk::Window* do_treeview_liststore ()  ;  
-class HelloWorld : public Gtk::Window {
-        public:
-         HelloWorld ()  ;  
-         ~HelloWorld ()  ;  
-        protected:
-        Gtk::Button m_button;
-};
 int main (int argc, char** argv)  ;  
 #endif

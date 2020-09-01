@@ -251,7 +251,7 @@
 			      (pColumn (m_TreeView.get_column (- cols_count 1))))
 			  ;; set to fixed 50 pixel size
 			  (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
-			  (pColumn->set_fixed_width 50)
+			  (pColumn->set_fixed_width 60)
 			  (pColumn->set_clickable))
 			(m_TreeView.append_column (string "Bug Number")
 						  m_columns.number)
@@ -301,10 +301,11 @@
 		      )
 
 
-		    (defun do_treeview_liststore ()
+		    #+nil (defun do_treeview_liststore ()
 		      (declare (values "Gtk::Window*"))
 		      (return (new (Example_TreeView_ListStore))))
-		    
+
+		    #+nil
 		    (defclass HelloWorld "public Gtk::Window"
 		      "public:"
 		      (defmethod HelloWorld ()
