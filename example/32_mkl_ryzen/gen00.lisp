@@ -181,12 +181,17 @@
 									     64)))
 				  (init_matrix ,M ,i ,j)
 				  ))
-			 (cblas_dgemm CblasRowMajor
-				      CblasNoTrans
-				      CblasNoTrans
-				      m n k
-				      alpha
-				      A k B n beta C n)
+			 (let ((start (get_time)))
+			  (cblas_dgemm CblasRowMajor
+				       CblasNoTrans
+				       CblasNoTrans
+				       m n k
+				       alpha
+				       A k B n beta C n)
+			  (let ((end (get_time))
+				(duration (std--chrono--duration_cast<std--chrono--duration<double>> (- end start))))
+			    ,(logprint "cblas_dgemm" `((duration.count)))
+			    ))
 			 ,@(loop for (M i j) in l collect
 				`(mkl_free ,M))
 			 ))

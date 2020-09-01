@@ -30,8 +30,20 @@ int main(int argc, char **argv) {
   init_matrix(B, k, n);
   C = static_cast<double *>(mkl_malloc(((m) * (n) * (sizeof(double))), 64));
   init_matrix(C, m, n);
+  auto start = get_time();
   cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, A, k,
               B, n, beta, C, n);
+  auto end = get_time();
+  auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(
+      ((end) - (start)));
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("cblas_dgemm") << (" ")
+      << (std::setw(8)) << (" duration.count()='") << (duration.count())
+      << ("'") << (std::endl) << (std::flush);
   mkl_free(A);
   mkl_free(B);
   mkl_free(C);
