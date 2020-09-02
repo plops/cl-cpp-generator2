@@ -1219,12 +1219,13 @@
 		  (return n)))
 	      )))))
 
-    #+nil (define-module
+    (define-module
        `(decode_type_ab_packet
 	 ()
 	 (do0
 	  (do0
 	   (include <cassert>)
+	   (include "vis_04_decode_packet.hpp")
 	   (defun get_data_type_a_or_b (s)
 	     (declare (type sequential_bit_t* s)
 		      (values "inline int"))
@@ -1251,8 +1252,8 @@
 		  (number_of_words (static_cast<int> (round (ceil (/ (static_cast<double> (* 10d0 number_of_quads))
 								     16)))))
 		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
-		  (fref 37.53472224)
-		  (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'header)
+		  (fref 37.53472224d0)
+		  (swst (/ (static_cast<double> ,(space-packet-slot-get 'sampling-window-start-time 'header))
 			   fref))
 		  (delta_t_suppressed (/ 320d0 (* 8 fref)))
 		  (data_delay_us (+ swst delta_t_suppressed))
@@ -1297,8 +1298,8 @@
 				      (mcode (logand smcode (hex ,(loop for i below 9 sum
 								       (expt 2 i)))
 						     #+nil (hex #b1 1111 1111)))
-				      (scode (* (powf -1s0 sign_bit)
-							     mcode)))
+				      (scode (* (powf -1s0 (static_cast<float> sign_bit))
+							     (static_cast<float> mcode))))
 				  (declare (type int sign_bit)
 					   (type float scode))
 				  (setf (aref ,sym-a ,sym) scode)
