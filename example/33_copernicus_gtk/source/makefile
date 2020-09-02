@@ -5,6 +5,7 @@ CXXFLAGS=-Os -g3 -ggdb \
 -Wall -Wextra -Werror \
 -Wshadow -Wdouble-promotion -fno-common -Wconversion  \
 -ffunction-sections -fdata-sections \
+-Wno-error=unused-variable \
 -pipe \
 `pkg-config gtkmm-3.0 --cflags` \
 -march=native -mtune=native 
