@@ -736,10 +736,10 @@
 		 (return res)))
 	      (defun get_threshold_index (s)
 	    (declare (type sequential_bit_t* s)
-		     (values "inline int"))
-	    (return (+ ,@(loop for j below 8 collect
-			      `(* (hex ,(expt 2 (- 7 j)))
-				  (get_sequential_bit s))))))))
+		     (values "inline uint8_t"))
+	    (return (static_cast<uint8_t> (+ ,@(loop for j below 8 collect
+			       `(* (hex ,(expt 2 (- 7 j)))
+				   (get_sequential_bit s)))))))))
 
 
 	   (defun consume_padding_bits (s)
@@ -787,7 +787,7 @@
 	   
 	   (defun get_bit_rate_code (s)
 	    (declare (type sequential_bit_t* s)
-		     (values "inline int"))
+		     (values "inline uint8_t"))
 	    "// note: evaluation order is crucial"
 	    #+nil(let ((a (get_sequential_bit s))
 		       (b (get_sequential_bit s))
@@ -799,9 +799,9 @@
 			(loop for j from (1- bits) downto 0 collect
 			     `(static_cast<int> (logand 1 (>> v ,j)))))
 		   "std::endl")
-	    (let ((brc (+ ,@(loop for j below 3 collect
-			       `(* (hex ,(expt 2 (- 2 j)))
-				   (get_sequential_bit s))))))
+	    (let ((brc (static_cast<uint8_t> (+ ,@(loop for j below 3 collect
+				   `(* (hex ,(expt 2 (- 2 j)))
+				       (get_sequential_bit s)))))))
 	      #+safety
 	      (unless (or ,@(loop for e below 5 collect `(== ,e brc)))
 		,(logprint "brc out of range" `(s->current_bit_count
@@ -911,13 +911,13 @@
 		  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
 		  (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
 		  
-		  (number_of_baq_blocks (static_cast<int> (round (ceil (/ (* 2.0 number_of_quads)
+		  (number_of_baq_blocks (static_cast<int> (round (ceil (/ (static_cast<double> (* 2d0 number_of_quads))
 							 256)))))
 		  (brcs)
 		  (thidxs)
 		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
-		  (fref 37.53472224)
-		  (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'header)
+		  (fref 37.53472224d0)
+		  (swst (/ (static_cast<double> ,(space-packet-slot-get 'sampling-window-start-time 'header))
 			   fref))
 		  (delta_t_suppressed (/ 320d0 (* 8 fref)))
 		  (data_delay_us (+ swst delta_t_suppressed))
@@ -1023,7 +1023,7 @@
 									      ))
 								      (incf i))
 								     (let ((sign_bit (get_sequential_bit &s))
-									   (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
+									   (mcode (static_cast<float> (,(format nil "decode_huffman_brc~a" brc-value) &s)))
 									   (symbol_sign 1s0)
 									   )
 								       #+nil ,(logprint (format nil "huff brc=~a block=~a"
@@ -1245,7 +1245,7 @@
 		  (offset (aref ,(g `_header_offset) packet_idx))
 		  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'header))
 		  (baq_block_length (* 8 (+ 1 ,(space-packet-slot-get 'baq-block-length 'header))))
-		  (number_of_words (static_cast<int> (round (ceil (/ (* 10.0 number_of_quads)
+		  (number_of_words (static_cast<int> (round (ceil (/ (static_cast<double> (* 10d0 number_of_quads))
 								     16)))))
 		  (baq_mode ,(space-packet-slot-get 'baq-mode 'header))
 		  (fref 37.53472224)

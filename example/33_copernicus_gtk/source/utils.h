@@ -25,15 +25,15 @@ inline bool get_sequential_bit(sequential_bit_t *seq_state) {
   }
   return res;
 }
-inline int get_threshold_index(sequential_bit_t *s) {
-  return ((((0x80) * (get_sequential_bit(s)))) +
-          (((0x40) * (get_sequential_bit(s)))) +
-          (((0x20) * (get_sequential_bit(s)))) +
-          (((0x10) * (get_sequential_bit(s)))) +
-          (((0x8) * (get_sequential_bit(s)))) +
-          (((0x4) * (get_sequential_bit(s)))) +
-          (((0x2) * (get_sequential_bit(s)))) +
-          (((0x1) * (get_sequential_bit(s)))));
+inline uint8_t get_threshold_index(sequential_bit_t *s) {
+  return static_cast<uint8_t>(((((0x80) * (get_sequential_bit(s)))) +
+                               (((0x40) * (get_sequential_bit(s)))) +
+                               (((0x20) * (get_sequential_bit(s)))) +
+                               (((0x10) * (get_sequential_bit(s)))) +
+                               (((0x8) * (get_sequential_bit(s)))) +
+                               (((0x4) * (get_sequential_bit(s)))) +
+                               (((0x2) * (get_sequential_bit(s)))) +
+                               (((0x1) * (get_sequential_bit(s))))));
 }
 
 #endif
