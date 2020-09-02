@@ -344,11 +344,13 @@
 		     (do0
 		      "// header"
 		      
-		      (include <gtkmm/treeview.h>
-			       <gtkmm/liststore.h>
-			       <gtkmm/box.h>
-			       <gtkmm/scrolledwindow.h>
-			       <gtkmm/window.h>
+		      (include <gtkmm-3.0/gtkmm/treeview.h>
+			       <gtkmm-3.0/gtkmm/liststore.h>
+			       <gtkmm-3.0/gtkmm/box.h>
+			       <gtkmm-3.0/gtkmm/scrolledwindow.h>
+			       <gtkmm-3.0/gtkmm/window.h>
+			       ;<glibmm-2.4/glibmm/ustring.h>
+			       ;<glibmm-2.4/glibmm/value_basictypes.h>
 			       )
 		      #+nil (include <gtkmm.h>)
 		      " "

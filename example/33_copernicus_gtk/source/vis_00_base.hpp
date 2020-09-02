@@ -9,18 +9,18 @@
 #include <thread>
 #include <unordered_map>
 ;
-#include <gtkmm/treeview.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/box.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/window.h>
+#include <gtkmm-3.0/gtkmm/treeview.h>
+#include <gtkmm-3.0/gtkmm/liststore.h>
+#include <gtkmm-3.0/gtkmm/box.h>
+#include <gtkmm-3.0/gtkmm/scrolledwindow.h>
+#include <gtkmm-3.0/gtkmm/window.h>
 ;
 // header
-#include <gtkmm/treeview.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/box.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/window.h>
+#include <gtkmm-3.0/gtkmm/treeview.h>
+#include <gtkmm-3.0/gtkmm/liststore.h>
+#include <gtkmm-3.0/gtkmm/box.h>
+#include <gtkmm-3.0/gtkmm/scrolledwindow.h>
+#include <gtkmm-3.0/gtkmm/window.h>
  ;
 class CellItem_Bug  {
         public:
