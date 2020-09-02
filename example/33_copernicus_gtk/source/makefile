@@ -1,12 +1,29 @@
-CXXFLAGS=-O2 \
+# https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
+# -Wundef .. not working with gtkmm
+# ;-g3 -ggdb 
+CXXFLAGS=-Os \
+-Wall -Wextra -Werror \
+-Wshadow -Wdouble-promotion -fno-common -Wconversion  \
+-ffunction-sections -fdata-sections \
 -pipe \
-`pkg-config gtkmm-3.0 --cflags --libs` \
+`pkg-config gtkmm-3.0 --cflags` \
 -march=native -mtune=native 
+
+LDFLAGS= \
+`pkg-config gtkmm-3.0 --libs` \
+-Wl,--gc-sections \
+-Wl,--print-gc-sections
+
+CFILES:=$(shell find .| grep .cpp$)
+OBJ:=$(CFILES:%.cpp=%.o)
 
 all: vis
 
-vis: *.cpp
-	g++ $^ -o $@ $(CXXFLAGS)
+%.o: %.cpp globals.h
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+vis: $(OBJ)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
-	rm vis
+	rm vis *.o

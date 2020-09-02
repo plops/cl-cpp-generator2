@@ -23,6 +23,176 @@
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday"))
+
+
+  (progn
+    (defun next-power-of-two (n)
+      (let ((i 1))
+	(loop while (< i n) do
+	     (setf i (* i 2)))
+	i))
+
+    (defparameter *space-packet* ;; byte-order big-endion
+      `(
+	;; start of packet primary header
+	(packet-version-number 0 :bits 3)
+	(packet-type 0 :bits 1)
+	(secondary-header-flag 0 :bits 1)
+	(application-process-id-process-id 0 :bits 7)
+	(application-process-id-packet-category 0 :bits 4) 
+	(sequence-flags 0 :bits 2)
+	(sequence-count 0 :bits 14) ;; 0 at start of measurement, wraps after 16383
+	(data-length 0 :bits 16) ;; (number of octets in packet data field)
+	;; - 1, includes 62 octets of secondary
+	;; header and the user data field of
+	;; variable length start of packet data
+	;; field datation service p. 15
+	(coarse-time 0 :bits 32)
+	(fine-time 0 :bits 16)
+	;; fixed ancillary data service
+	(sync-marker #x352EF853
+		     :bits 32)
+	(data-take-id 0 :bits 32)
+	(ecc-number 0 :bits 8)
+	(ignore-0 0 :bits 1)
+	(test-mode 0 :bits 3)
+	(rx-channel-id 0 :bits 4)
+	(instrument-configuration-id 0 :bits 32)
+	;; sub-commutation ancillary data service
+	(sub-commutated-index 0 :bits 8) ;; 1..64 slowly fills datastructure
+	;; on p23,24,25 0 indicates invalid data word consistent set only
+	;; after contiguous sequence 1..22 (pvt), 23..41 (attitude) or
+	;; 42..64 (temperatures)
+	(sub-commutated-data 0 :bits 16) 
+	;; counters service
+	(space-packet-count 0 :bits 32) ;; from beginning of data take
+	(pri-count 0 :bits 32)
+	;; radar configuration support service
+	(error-flag 0 :bits 1)
+	(ignore-1 0 :bits 2)
+	(baq-mode 0 :bits 5)
+	(baq-block-length 0 :bits 8)
+	(ignore-2 0 :bits 8)
+	(range-decimation 0 :bits 8)
+	(rx-gain 0 :bits 8)
+	;;(tx-ramp-rate 0 :bits 16)
+	(tx-ramp-rate-polarity 0 :bits 1)
+	(tx-ramp-rate-magnitude 0 :bits 15)
+	(tx-pulse-start-frequency-polarity 0 :bits 1)
+	(tx-pulse-start-frequency-magnitude 0 :bits 15)
+	(tx-pulse-length 0 :bits 24)
+	(ignore-3 0 :bits 3)
+	(rank 0 :bits 5)
+	(pulse-repetition-interval 0 :bits 24)
+	(sampling-window-start-time 0 :bits 24)
+	(sampling-window-length 0 :bits 24)
+	;;(sab-ssb-message 0 :bits 24)
+	(sab-ssb-calibration-p 0 :bits 1)
+	(sab-ssb-polarisation 0 :bits 3)
+	(sab-ssb-temp-comp 0 :bits 2)
+	(sab-ssb-ignore-0 0 :bits 2)
+	(sab-ssb-elevation-beam-address 0 :bits 4) ;; if calibration-p=1 sastest caltype
+	(sab-ssb-ignore-1 0 :bits 2)
+	(sab-ssb-azimuth-beam-address 0 :bits 10)
+	;;(ses-ssb-message 0 :bits 24)
+	(ses-ssb-cal-mode 0 :bits 2)
+	(ses-ssb-ignore-0 0 :bits 1)
+	(ses-ssb-tx-pulse-number 0 :bits 5)
+	(ses-ssb-signal-type 0 :bits 4) ;; 0 echo, 1 noise, 8 txcal, 9 rxcal
+	(ses-ssb-ignore-1 0 :bits 3)
+	(ses-ssb-swap 0 :bits 1)
+	(ses-ssb-swath-number 0 :bits 8)
+	;; radar sample count service
+	(number-of-quads 0 :bits 16)
+	(ignore-4 0 :bits 8)
+	))
+
+    ;;(defparameter slot-idx (position 'data-length *space-packet* :key #'first))
+    (defun space-packet-slot-get (slot-name data8)
+      (let* ((slot-idx (position slot-name *space-packet* :key #'first))
+	     (preceding-slots (subseq *space-packet* 0 slot-idx))
+	     (sum-preceding-bits (reduce #'+
+					 (mapcar #'(lambda (x)
+						     (destructuring-bind (name_ default-value &key bits) x
+						       bits))
+						 preceding-slots)))
+	     )
+	(multiple-value-bind (preceding-octets preceding-bits) (floor sum-preceding-bits 8)
+	  (destructuring-bind (name_ default-value &key bits) (elt *space-packet* slot-idx)
+	    (assert (<= 0 preceding-bits 7))
+	    (assert (<= 0 preceding-octets))
+	    ;(format t "~a ~a ~a ~a~%" preceding-octets preceding-bits bits default-value)
+	    (if (<= (+ preceding-bits bits) 8)
+		(let ((mask 0)
+		      (following-bits (- 8 (+ preceding-bits bits))))
+		  (declare (type (unsigned-byte 8) mask))
+		  (assert (<= 0 following-bits 8))
+
+		  (setf (ldb (byte bits 0 ;(- 8 (+ bits preceding-bits))
+				   ) mask) #xff)
+		  (values
+		   
+		   `(&
+		   #+nil  (string ,(format nil "single mask=~x following-bits=~d bits=~d preceding-bits=~d"
+				      mask following-bits bits preceding-bits))
+		     (hex ,mask)
+		     (>> (aref ,data8 ,preceding-octets)
+			 ,following-bits))
+		   'uint8_t
+		   ))
+		
+		(multiple-value-bind (bytes rest-bits) (floor (+ preceding-bits bits) 8)
+		  (let* ((firstmask 0)
+			 (lastmask 0)
+			 (following-bits (- 8 rest-bits))
+			 (first-bits (- 8 preceding-bits))
+			 (last-bits (mod (- bits first-bits) 8)))
+		    (assert (<= 1 first-bits 8))
+		    (assert (<= 0 last-bits 8))
+		    #+nil
+		    (break "following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+			   following-bits rest-bits bits preceding-bits bytes first-bits last-bits)
+		    (setf (ldb (byte first-bits 0) firstmask) #xff
+			  (ldb (byte last-bits (- 8 last-bits)) lastmask) #xff)
+		    (values
+		     (if (= lastmask 0)
+			 `(+
+			   #+nil  (string ,(format nil "nolast firstmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+						   firstmask  following-bits rest-bits bits preceding-bits bytes
+						   first-bits last-bits)
+					  )
+			   ,@(loop for byte from (- bytes 1) downto 1 collect
+				  `(* (hex ,(expt 256 (- bytes byte 1)))
+				      (aref ,data8 ,(+ preceding-octets 0 byte))))
+			   (* (hex ,(expt 256 (- bytes 1))) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))
+							       )))
+			 `(+
+			   #+nil  (string ,(format nil "both firstmask=~x lastmask=~x following-bits=~d rest-bits=~d bits=~d preceding-bits=~d bytes=~d first-bits=~d last-bits=~d"
+						   firstmask lastmask following-bits rest-bits bits preceding-bits bytes first-bits last-bits))
+			   (>> (& (hex ,lastmask) (aref ,data8 ,(+ preceding-octets 0 bytes)))
+			       ,following-bits)
+			   ,@(loop for byte from (- bytes 1) downto 1 collect
+				  `(* (hex ,(expt 256 (- bytes byte)))
+				      (aref ,data8 ,(+ preceding-octets 0 byte))))
+			   (* (hex ,(expt 2 (1- preceding-bits))	;,(expt 256 bytes)
+			       ) (& (hex ,firstmask) (aref ,data8 ,(+ preceding-octets 0))))))
+		     (format nil "uint~a_t" (next-power-of-two bits)))))))))))
+
+  (defun gen-huffman-decoder (name huffman-tree)
+      (labels ((frob (tree)
+	     (cond ((null tree)
+		    (error "null"))
+		   ((atom tree) `(return ,tree))
+		   ((null (cdr tree))
+		    `(return ,(car tree)))
+		   (t `(if (get_sequential_bit s)
+			   ,(frob (cadr tree))
+			   ,(frob (car tree)))))))
+       `(defun ,(format nil "decode_huffman_~a" name) (s)
+	  (declare (type sequential_bit_t* s)
+		   (values "inline int"))
+	  ,(frob huffman-tree))))
+
   
   (progn
     ;; collect code that will be emitted in utils.h
@@ -127,10 +297,12 @@
     `(dot state ,arg))
 
   (let*  ()
+    
     (define-module
        `(base ((_main_version :type "std::string")
 	       (_code_repository :type "std::string")
 	       (_code_generation_time :type "std::string")
+	       (_filename :type "char const *")
 	       )
 	      (do0
 	       
@@ -160,9 +332,15 @@
 		      )
 		     (do0
 		      "// implementation"
-		      (include "vis_00_base.hpp")
+		      (include "vis_00_base.hpp"
+			       "vis_01_mmap.hpp")
+		      
 		      " "
 		      ))
+
+		    (let ((state ,(emit-globals :init t)))
+		      (declare (type "State" state)))
+		    
 		    (defclass CellItem_Bug ()
 			"public:"
 		      (defmethod CellItem_Bug ()
@@ -295,6 +473,17 @@
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+
+		      (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+					     (time_since_epoch)
+					     (count)))
+
+		      (setf ,(g `_filename)
+		      (string
+		       "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
+		       ))
+		      (init_mmap ,(g `_filename))
+		      
 		      (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
@@ -305,6 +494,48 @@
 
 		    
 		    )))
+    (define-module
+      `(mmap
+	((_mmap_data :direction 'out :type void*)
+	 (_mmap_filesize :direction 'out :type size_t))
+	(do0
+	 (include <sys/mman.h>
+		  <sys/stat.h>
+		  <sys/types.h>
+		  <fcntl.h>
+		  <cstdio>
+		  <cassert>
+		  <iostream>
+		  <thread>)
+	 (defun get_filesize (filename)
+	   (declare (type "const char*" filename)
+		    (values size_t))
+	   (let ((st))
+	     (declare (type "struct stat" st))
+	     (stat filename &st)
+	     (return st.st_size)))
+	 (defun destroy_mmap ()
+	   (let ((rc (munmap ,(g `_mmap_data)
+			     ,(g `_mmap_filesize))))  
+	     (unless (== 0 rc)
+	       ,(logprint "fail munmap" `(rc)))
+	     (assert (== 0 rc))))
+	 (defun init_mmap (filename)
+	   (declare (type "const char*" filename)
+		    )
+	   (let ((filesize (get_filesize filename))
+		 (fd (open filename O_RDONLY 0)))
+	     ,(logprint "size" `(filesize filename))
+	     (when (== -1 fd)
+	       ,(logprint "fail open" `(fd filename)))
+	     (assert (!= -1 fd))
+	     (let ((data (mmap NULL filesize PROT_READ MAP_PRIVATE fd 0)))
+	       (when (== MAP_FAILED data)
+		 ,(logprint "fail mmap"`( data)))
+	       (assert (!= MAP_FAILED data))
+	       (setf ,(g `_mmap_filesize) filesize
+		     ,(g `_mmap_data) data)))))))
+    
   )
   
   (progn

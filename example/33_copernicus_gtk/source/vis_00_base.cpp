@@ -10,7 +10,9 @@ extern State state;
 
 // implementation
 #include "vis_00_base.hpp"
+#include "vis_01_mmap.hpp"
 
+State state = {};
 CellItem_Bug::CellItem_Bug() : m_fixed(false), m_number(0) {}
 CellItem_Bug::~CellItem_Bug() {}
 CellItem_Bug::CellItem_Bug(const CellItem_Bug &src) { operator=(src); }
@@ -75,6 +77,12 @@ void Example_TreeView_ListStore::liststore_add_item(const CellItem_Bug &foo) {
   row[m_columns.description] = foo.m_description;
 }
 int main(int argc, char **argv) {
+  state._start_time =
+      std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  state._filename =
+      "/media/sdb4/sar/sao_paulo/"
+      "s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat";
+  init_mmap(state._filename);
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
   Example_TreeView_ListStore hw;
   app->run(hw);
