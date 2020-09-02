@@ -11,6 +11,7 @@ extern State state;
 // implementation
 #include "vis_00_base.hpp"
 #include "vis_01_mmap.hpp"
+#include "vis_02_collect_packet_headers.hpp"
 
 State state = {};
 CellItem_Bug::CellItem_Bug() : m_fixed(false), m_number(0) {}
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
       "/media/sdb4/sar/sao_paulo/"
       "s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat";
   init_mmap(state._filename);
+  init_collect_packet_headers();
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
   Example_TreeView_ListStore hw;
   app->run(hw);

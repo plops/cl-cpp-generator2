@@ -356,7 +356,8 @@
 		     (do0
 		      "// implementation"
 		      (include "vis_00_base.hpp"
-			       "vis_01_mmap.hpp")
+			       "vis_01_mmap.hpp"
+			       "vis_02_collect_packet_headers.hpp")
 		      
 		      " "
 		      ))
@@ -506,7 +507,7 @@
 		       "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
 		       ))
 		      (init_mmap ,(g `_filename))
-		      
+		      (init_collect_packet_headers)
 		      (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))

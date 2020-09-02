@@ -453,6 +453,8 @@ entry return-values contains a list of return values. currently supports type, v
       ;(format nil "~,v,,,,,'eGf" digits a)
       (let ((str
 	     (format nil "~,v,,,,,'eG" digits a)))
+	(format nil "~af" (string-trim '(#\Space) str))
+	#+nil
 	(if (find #\e str)
 	    str
 	    (format nil "~af" (string-trim '(#\Space) str))))))
