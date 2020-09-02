@@ -129,9 +129,9 @@
   (let*  ()
     (define-module
        `(base ((_main_version :type "std::string")
-		    (_code_repository :type "std::string")
-		    (_code_generation_time :type "std::string")
-		 )
+	       (_code_repository :type "std::string")
+	       (_code_generation_time :type "std::string")
+	       )
 	      (do0
 	       
 		    (include <iostream>
@@ -163,20 +163,6 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
-
-		    #+nil (defun main (argc argv)
-		      (declare (type int argc)
-			       (type char** argv)
-			       (values int))
-		      (let ((app (Gtk--Application--create argc argv
-							   (string "org.gtkmm.examples.base")))
-			    (win))
-			(declare (type Gtk--Window win))
-			(win.set_default_size 200 200)
-			(app->run win)))
-
-
-		    ;; https://github.com/GNOME/gtkmm/blob/master/demos/gtk-demo/example_treeview_liststore.cc
 		    (defclass CellItem_Bug ()
 			"public:"
 		      (defmethod CellItem_Bug ()
@@ -322,41 +308,13 @@
   )
   
   (progn
-    (progn ;with-open-file
-      #+nil (s (asdf:system-relative-pathname 'cl-cpp-generator2
-					(merge-pathnames #P"proto2.h"
-							 *source-dir*))..
-	 :direction :output
-	 :if-exists :supersede
-	 :if-does-not-exist :create)
-      #+nil (format s "#ifndef PROTO2_H~%#define PROTO2_H~%~a~%"
-		    (emit-c :code `(include <cuda_runtime.h>
-					    <cuda.h>
-					    <nvrtc.h>)))
-
-      ;; include file
-      ;; http://www.cplusplus.com/forum/articles/10627/
-      
+    (progn
       (loop for e in (reverse *module*) and i from 0 do
 	   (destructuring-bind (&key name code) e
 	     
 	     (let ((cuda (cl-ppcre:scan "cuda" (string-downcase (format nil "~a" name)))))
 	       
 	       (unless cuda
-		 #+nil (progn (format t "emit function declarations for ~a~%" name)
-			      (emit-c :code code
-				      :hook-defun #'(lambda (str)
-						      (format t "~a~%" str))
-				      :header-only t))
-		 #+nil (emit-c :code code
-			 :hook-defun #'(lambda (str)
-					 (format s "~a~%" str)
-					 )
-			 :hook-defclass #'(lambda (str)
-					    (format s "~a;~%" str)
-					    )
-			 :header-only t
-			 )
 		 (let* ((file (format nil
 				      "vis_~2,'0d_~a"
 				      i name
@@ -380,10 +338,7 @@
 						)
 			     :header-only t
 			     )
-		     (format sh "#endif")
-		     ))
-
-		 )
+		     (format sh "#endif"))))
 
 	       #+nil (format t "emit cpp file for ~a~%" name)
 	       (write-source (asdf:system-relative-pathname
