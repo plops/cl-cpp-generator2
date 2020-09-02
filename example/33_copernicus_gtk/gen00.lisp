@@ -535,6 +535,148 @@
 	       (assert (!= MAP_FAILED data))
 	       (setf ,(g `_mmap_filesize) filesize
 		     ,(g `_mmap_data) data)))))))
+    (define-module
+      `(collect_packet_headers
+	(;(_header_data :direction 'out :type void*)
+	 (_header_data :direction 'out :type "std::vector<std::array<uint8_t,62+6>>")
+	 (_header_offset :direction 'out :type "std::vector<size_t>"))
+	(do0
+	 (include <array>
+		  <iostream>
+		  <vector>
+		  <cstring>
+		  <thread>)
+	 #+nil (defstruct0 space_packet_header_info_t
+	   (head "std::array<uint8_t, 62+6>")
+	   (offset size_t))
+	 (defun destroy_collect_packet_headers ())
+	 (defun init_collect_packet_headers ()
+	   ,(logprint "collect" `(,(g `_mmap_data)))
+	   (let ((offset 0))
+	     (declare (type size_t offset))
+	     (while (< offset ,(g `_mmap_filesize)) ;dotimes (i 2000)
+	       (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+		     (data_length ,(space-packet-slot-get 'data-length `p)
+		       )
+		     ;(sync_marker ,(space-packet-slot-get 'sync-marker `p))
+		     (data_chunk)
+		     )
+		 (declare (type "std::array<uint8_t,62+6>" data_chunk))
+		 (memcpy (data_chunk.data)
+			 p
+			 (+ 62 6))
+		 #+nil ,(logprint "len" `(offset data_length ;sync_marker
+					 ))
+		 (dot ,(g `_header_offset)
+		      (push_back offset))
+		 (dot ,(g `_header_data)
+		      (push_back data_chunk))
+		 (incf offset (+ 6 1 data_length)))))))))
+
+    (define-module
+      `(process_packet_headers
+	()
+	(do0
+	 (include <unistd.h>)
+	 (defun init_process_packet_headers ()
+	   ;(declare (values void))
+	   (let ((p0 (dot (aref ,(g `_header_data) 0)
+			  (data)))
+		 (coarse_time0 ,(space-packet-slot-get 'coarse-time 'p0))
+		 (fine_time0 (* ,(expt 2d0 -16) (+ .5 ,(space-packet-slot-get 'fine-time 'p0))))
+		 (time0 (+ coarse_time0 fine_time0))
+		 (packet_idx 0))
+	     (foreach (e ,(g `_header_data))
+		      (let ((offset (aref ,(g `_header_offset) packet_idx))
+			      (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))
+			  (incf packet_idx))
+		     (let (;(p (e.data))
+			   (fref 37.53472224)
+			   (swst (/ ,(space-packet-slot-get 'sampling-window-start-time 'p)
+				    fref))
+			   (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
+			   (fine_time ,(space-packet-slot-get 'fine-time 'p))
+			   (ftime (* ,(expt 2d0 -16) (+ .5 fine_time)))
+			   (time (- (+ coarse_time
+				       ftime)
+				    time0))
+			   
+			   (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+			   (count ,(space-packet-slot-get 'space-packet-count 'p))
+			   (pri_count ,(space-packet-slot-get 'pri-count 'p))
+			   (pri (/ ,(space-packet-slot-get 'pulse-repetition-interval 'p)
+				   fref))
+			   (rank ,(space-packet-slot-get 'rank 'p))
+			   (rank2 (static_cast<int> (aref p (+ 49))))
+			   (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+			   (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
+			   (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+			   (sync2 (+ ,@(loop for j below 4  collect
+					    `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
+			   (baqmod2 (static_cast<int> (aref p 37))  ;(logand #x1F (>> (aref p 37) 3))
+			     )
+			   (err ,(space-packet-slot-get 'error-flag 'p))
+			   (tstmod ,(space-packet-slot-get 'test-mode 'p))
+			   (rx ,(space-packet-slot-get 'rx-channel-id 'p))
+			   (ecc ,(space-packet-slot-get 'ecc-number 'p))
+			   (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
+			   (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
+			   (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
+			   (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
+		       
+		       ,@(loop for e in *space-packet* collect
+			      (destructuring-bind (name_ default-value &key bits) e
+				
+				`(progn
+				   (let ((v (static_cast<int> ,(space-packet-slot-get name_ 'p))))
+				     (<<
+				      "std::cout"
+				      ("std::setw" 42 )
+				      (string ,(format nil "~a " name_))
+				      ("std::setw" 12)
+				      "std::dec"
+					    v
+					    
+					    ("std::setw" 12)
+					    "std::hex"
+					    v
+					    (string " ")
+					    
+					    ,@ (let ((bits (destructuring-bind (name default &key bits) (find name_  *space-packet*    :key #'first)
+							     bits)))
+						 (loop for j from (1- bits) downto 0 collect
+						      `(static_cast<int> (logand 1 (>> v ,j)))))
+					       
+					    "std::endl"
+					    )))))
+
+		       (do0 (dotimes (i (+ 6 62))
+			      "// https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal"
+			      "// dump binary"
+			      (<< "std::cout" (string "\\033[")
+				  "std::dec"
+				  (+ 30 (% (- (+ 7 6 62) i ) (- 37 30)))
+				  (string ";")
+				  (+ 40 (% i (- 47 40)))
+				  (string "m")
+				  ;"std::hex" ("std::setw" 2)
+					;(static_cast<int> (aref p i))
+				  ,@(loop for j from 7 downto 0 collect
+					 `(static_cast<int> (logand 1 (>> (aref p i) ,j))))
+				  (string "\\033[0m")
+				  (string " "))
+			      (when (== 3 (% i 4))
+				(<< "std::cout" "std::endl")))
+			    (<< "std::cout" (string "\\033[0m") "std::endl" "std::flush"))
+		      
+		       #+nil ,(logprint "" `(time "std::hex" err
+					    swst coarse_time fine_time swath count pri_count rank rank2 pri baqmod baq_n sync2 sync_marker baqmod2 tstmod azi ele
+					    rx pol ecc signal_type
+					    ))
+		       (usleep 16000)
+		       (<< "std::cout"
+			   (string "\\033[2J\\033[1;1H")
+			   "std::flush"))))))))
     
   )
   
