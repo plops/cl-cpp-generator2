@@ -332,9 +332,9 @@
 		    (include <iostream>
 			     <chrono>
 			     <thread>
-			     
+			     <unordered_map>
 			     )
-
+		    
 		    ;(include <gtkmm.h>)
 		    " "
 
@@ -357,7 +357,8 @@
 		      "// implementation"
 		      (include "vis_00_base.hpp"
 			       "vis_01_mmap.hpp"
-			       "vis_02_collect_packet_headers.hpp")
+			       "vis_02_collect_packet_headers.hpp"
+			       "vis_06_decode_sub_commutated_data.hpp")
 		      
 		      " "
 		      ))
@@ -508,6 +509,106 @@
 		       ))
 		      (init_mmap ,(g `_filename))
 		      (init_collect_packet_headers)
+
+
+		      (do0
+		 (let ((packet_idx 0)
+		       (map_ele)
+		       (map_cal)
+		       (map_sig)
+		       (cal_count 0))
+		   (declare (type "std::unordered_map<int,int>" map_ele map_cal map_sig))
+		   (init_sub_commutated_data_decoder)
+		   (remove (string  "./o_anxillary.csv"))
+		   (foreach (e ,(g `_header_data))
+			    (let ((offset (aref ,(g `_header_offset) packet_idx))
+				  (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				  (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
+				  (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				  (cal_type (logand ele #x7))
+				  (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				  (baq_mode ,(space-packet-slot-get 'baq-mode 'p))
+				  (test_mode ,(space-packet-slot-get 'test-mode 'p))
+				  (space_packet_count ,(space-packet-slot-get 'space-packet-count 'p))
+				  (sub_index ,(space-packet-slot-get 'sub-commutated-index 'p))
+				  (sub_data ,(space-packet-slot-get 'sub-commutated-data 'p))
+				  (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p)))
+			      
+			      
+			      (feed_sub_commutated_data_decoder (static_cast<uint16_t> sub_data) sub_index space_packet_count)
+			      (incf (aref map_sig signal_type))
+			      (if cal_p
+				  (do0
+				   (incf cal_count)
+				   (incf (aref map_cal
+					       (logand ele #x7)))
+				   ,(logprint "cal" `(cal_p cal_type number_of_quads baq_mode test_mode)))
+				  (do0
+				   (incf (aref map_ele ele) number_of_quads)))
+			      (incf packet_idx)))
+
+		   (foreach (cal map_cal)
+			    (let ((number_of_cal cal.second)
+				  (cal_type cal.first))
+			      ,(logprint "map_ele" `(cal_type number_of_cal))))
+		   (foreach (sig map_sig)
+			    (let ((number_of_sig sig.second)
+				  (sig_type sig.first))
+			      ,(logprint "map_sig" `(sig_type number_of_sig))))
+		   
+
+		   (let ((ma -1s0)
+			 (ma_ele -1))
+		     #-nil (foreach (elevation map_ele)
+			      (let ((number_of_Mquads (/ (static_cast<float> elevation.second) 1e6))
+				    (elevation_beam_address elevation.first))
+				(when (< ma number_of_Mquads)
+				  (setf ma number_of_Mquads
+					ma_ele elevation_beam_address))
+				,(logprint "map_ele" `(elevation_beam_address number_of_Mquads))))
+		     ,(logprint "largest ele" `(ma_ele ma cal_count)))
+
+
+		   
+		   (let ((mi_data_delay 10000000) ;; minimum number of samples before data is stored
+			 (ma_data_delay -1) ;; maximum number of samples before data is stored
+			 (ma_data_end -1) ;; maximum number of samples
+			 ;; earliest echos are ma_data_delay-mi_data_delay samples earlier than the latest
+			 ;; at most we may need to store ma_data_delay - mi_data_delay + ma_data_end samples
+			 (ele_number_echoes 0))
+		    (progn
+		      (let ((map_azi)
+			    (packet_idx2 0))
+			(declare (type "std::unordered_map<int,int>" map_azi))
+			(foreach (e ,(g `_header_data))
+				 (let ((offset (aref ,(g `_header_offset) packet_idx2))
+				       (p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data))))
+				       (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p))
+				       (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+				       (number_of_quads ,(space-packet-slot-get 'number-of-quads 'p))
+				       (cal_p ,(space-packet-slot-get 'sab-ssb-calibration-p 'p) )
+				       (data_delay (+ ,(/ 320 8)
+						      ,(space-packet-slot-get 'sampling-window-start-time 'p))))
+				   (unless cal_p
+				    (when (== ele ma_ele)
+				      (incf ele_number_echoes)
+				      (when (< data_delay mi_data_delay)
+					(setf mi_data_delay data_delay))
+				      (when (< ma_data_delay data_delay )
+					(setf ma_data_delay data_delay))
+				      (let ((v (+ data_delay (* 2 number_of_quads))))
+					(when (< ma_data_end v)
+					  (setf ma_data_end v)))
+				      (incf (aref map_azi azi) number_of_quads)))
+				   (incf packet_idx2)))
+			,(logprint "data_delay" `(mi_data_delay ma_data_delay ma_data_end ele_number_echoes))
+			(foreach (azi map_azi)
+				 (let ((number_of_Mquads (/ (static_cast<float> azi.second) 1e6))
+				       (azi_beam_address azi.first))
+				   ,(logprint "map_azi" `(azi_beam_address number_of_Mquads)))))))))
+
+		      
+		      
 		      (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
