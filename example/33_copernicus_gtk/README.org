@@ -1,0 +1,3 @@
+
+- https://github.com/rizsotto/scan-build
+- pip3 install --user scan-build

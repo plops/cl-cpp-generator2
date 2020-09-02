@@ -1,0 +1,3 @@
+* references
+- https://danieldk.eu/Posts/2020-08-31-MKL-Zen.html
+- https://www.youtube.com/watch?v=PxMCthwZ8pw C++ Crash Course: Intel MKL DGEMM (CoffeeBeforeArch)
