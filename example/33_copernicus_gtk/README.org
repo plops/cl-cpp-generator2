@@ -1,3 +1,8 @@
 
 - https://github.com/rizsotto/scan-build
 - pip3 install --user scan-build
+- https://blog.jetbrains.com/clion/2020/02/dealing-with-makefiles/
+
+- pip3 install --user compiledb
+- ~/.local/bin/compiledb make -j12
+ 
