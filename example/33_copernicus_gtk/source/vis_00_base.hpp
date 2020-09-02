@@ -8,10 +8,18 @@
 #include <chrono>
 #include <thread>
 ;
-#include <gtkmm.h>
+#include <gtkmm/treeview.h>
+#include <gtkmm/liststore.h>
+#include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/window.h>
 ;
 // header
-#include <gtkmm.h>
+#include <gtkmm/treeview.h>
+#include <gtkmm/liststore.h>
+#include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/window.h>
  ;
 class CellItem_Bug  {
         public:

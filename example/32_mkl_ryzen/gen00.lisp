@@ -171,27 +171,28 @@
 				 (B k n)
 				 (C m n))))
 		       `(let ((m 2000)
-			     (k 200)
+			     (k 2000)
 			     (n 1000)
 			     (alpha 1d0)
-			     (beta 0d0))
+			     (beta .1d0))
 			 ,@(loop for (M i j) in l collect
 				`(do0
 				  (setf ,M (static_cast<double*> (mkl_malloc (* ,i ,j (sizeof double))
 									     64)))
 				  (init_matrix ,M ,i ,j)
 				  ))
-			 (let ((start (get_time)))
-			  (cblas_dgemm CblasRowMajor
-				       CblasNoTrans
-				       CblasNoTrans
-				       m n k
-				       alpha
-				       A k B n beta C n)
-			  (let ((end (get_time))
-				(duration (std--chrono--duration_cast<std--chrono--duration<double>> (- end start))))
-			    ,(logprint "cblas_dgemm" `((duration.count)))
-			    ))
+			 (dotimes (i 300)
+			  (let ((start (get_time)))
+			    (cblas_dgemm CblasRowMajor
+					 CblasNoTrans
+					 CblasNoTrans
+					 m n k
+					 alpha
+					 A k B n beta C n)
+			    (let ((end (get_time))
+				  (duration (std--chrono--duration_cast<std--chrono--duration<double>> (- end start))))
+			      ,(logprint "cblas_dgemm" `((duration.count)))
+			      )))
 			 ,@(loop for (M i j) in l collect
 				`(mkl_free ,M))
 			 ))
@@ -250,13 +251,10 @@
 		     
 		     (emit-c :code code
 			     :hook-defun #'(lambda (str)
-					     (format sh "~a~%" str)
-					     )
+					     (format sh "~a~%" str))
 			     :hook-defclass #'(lambda (str)
-						(format sh "~a;~%" str)
-						)
-			     :header-only t
-			     )
+						(format sh "~a;~%" str))
+			     :header-only t)
 		     (format sh "#endif")
 		     ))
 

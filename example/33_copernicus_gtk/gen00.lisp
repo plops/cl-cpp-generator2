@@ -148,10 +148,14 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      #+nil 
-		      (include <gtkmm/button.h>
-			       <gtkmm/window.h>)
-		      (include <gtkmm.h>)
+		      
+		      (include <gtkmm/treeview.h>
+			       <gtkmm/liststore.h>
+			       <gtkmm/box.h>
+			       <gtkmm/scrolledwindow.h>
+			       <gtkmm/window.h>
+			       )
+		      #+nil (include <gtkmm.h>)
 		      " "
 		      )
 		     (do0
