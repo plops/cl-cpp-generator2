@@ -1023,7 +1023,8 @@
 									      ))
 								      (incf i))
 								     (let ((sign_bit (get_sequential_bit &s))
-									   (mcode (static_cast<float> (,(format nil "decode_huffman_brc~a" brc-value) &s)))
+									   (mcode (,(format nil "decode_huffman_brc~a" brc-value) &s))
+									   (mcode_f (static_cast<float> mcode))
 									   (symbol_sign 1s0)
 									   )
 								       #+nil ,(logprint (format nil "huff brc=~a block=~a"
@@ -1053,7 +1054,7 @@
 											 `(handler-case
 											     (do0
 											      (if (< mcode ,th-mcode)
-												   (setf v (* symbol_sign mcode))
+												   (setf v (* symbol_sign mcode_f))
 												   (if (== mcode ,th-mcode)
 												       (setf v (* symbol_sign
 														  (dot
@@ -1063,7 +1064,7 @@
 												       (do0
 													,(logprint "mcode too large" `(mcode))
 													(assert 0)))))
-											   ("std::out_of_range" (e)
+											   ("std::out_of_range&" (e)
 											     ,(logprint
 											       (format nil "exception simple brc=~a"
 												       brc-value)
@@ -1078,13 +1079,13 @@
 															brc-value)
 													       (at mcode))
 													  (dot table_sf (at thidx)))))
-											   ("std::out_of_range" (e)
+											   ("std::out_of_range&" (e)
 											     ,(logprint
 											       (format nil "exception normal nrl or sf brc=~a"
 												       brc-value)
 													`(thidx packet_idx))
 											     (assert 0))))))))
-									     `(let ((v (* symbol_sign mcode)))
+									     `(let ((v (* symbol_sign mcode_f)))
 										"// in ie and io we don't have thidx yet, will be processed later"))
 									
 									(setf (aref ,sym-a ,sym)
@@ -1137,8 +1138,10 @@
 								    (incf i)) ;dotimes (i 128)
 								   (let ((pos
 									  (+ i (* 128 block)))
-								      (scode (aref ,sym-a pos))
-								      (mcode (static_cast<int> (fabsf scode)))
+									 (scode (aref ,sym-a pos))
+									 (mcode_f (fabsf scode))
+									 (mcode (static_cast<int> mcode_f))
+									 
 								      (symbol_sign (copysignf 1s0 scode)))
 								  (do0
 								   ,(format nil "// decode ~a p.74 reconstruction law right side" e)
@@ -1154,7 +1157,7 @@
 									     `
 									     (handler-case
 									      (do0 (if (< mcode ,th-mcode)
-										       (setf v (* symbol_sign mcode))
+										       (setf v (* symbol_sign mcode_f))
 										       (if (== mcode ,th-mcode)
 											   (setf v (* symbol_sign
 												      (dot
@@ -1164,7 +1167,7 @@
 											   (do0
 											    #-nolog ,(logprint "mcode too large" `(mcode))
 											    (assert 0)))))
-									       ("std::out_of_range" (e)
+									       ("std::out_of_range&" (e)
 											     ,(logprint
 											       (format nil "exception simple block=~a brc=~a"
 												       e brc-value)
@@ -1179,7 +1182,7 @@
 													    brc-value)
 												   (at mcode))
 											      (dot table_sf (at thidx)))))
-									       ("std::out_of_range" (e)
+									       ("std::out_of_range&" (e)
 											     ,(logprint
 											       (format nil "exception normal nrl or sf block=~a brc=~a"
 												       e brc-value)
