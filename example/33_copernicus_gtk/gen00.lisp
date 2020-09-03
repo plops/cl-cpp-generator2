@@ -373,7 +373,7 @@
 		       (defun item (name members)
 			 (let* (
 				(class-name (format nil "CellItem_~a" name))
-				(class-type (format nil "CellItem_~a&" class-name))
+				(class-type (format nil "~a&" class-name))
 				(const-class (format nil "const ~a&" class-name)))
 			  `(defclass ,class-name ()
 			     "public:"
@@ -383,7 +383,7 @@
 							(loop for e in members collect
 							     (destructuring-bind (var-name var-type &optional var-default) e
 							       (when var-default
-								 `(,(format nil "m_~a" var-name) var-default))))))
+								 `(,(format nil "m_~a" var-name) ,var-default))))))
 				(values :constructor)))
 			     (defmethod ,(format nil "~~~a" class-name) ()
 			       (declare (values :constructor)))
@@ -417,7 +417,7 @@
 			       (return *this))
 			     ,@(loop for e in members collect
 				 (destructuring-bind (var-name var-type &optional var-default) e
-				   (format nil "~a ~a;" var-type var-name)))
+				   (format nil "~a m_~a;" var-type var-name)))
 			     )))
 		       (item "SpacePacket" `((swst guint 0))))
 

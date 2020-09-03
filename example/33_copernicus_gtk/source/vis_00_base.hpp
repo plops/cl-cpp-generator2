@@ -28,8 +28,8 @@ class CellItem_SpacePacket  {
          ~CellItem_SpacePacket ()  ;  
          CellItem_SpacePacket (const CellItem_SpacePacket& src)  ;  
          CellItem_SpacePacket (guint swst)  ;  
-        CellItem_CellItem_SpacePacket& operator= (const CellItem_SpacePacket& src)  ;  
-        guint swst;
+        CellItem_SpacePacket& operator= (const CellItem_SpacePacket& src)  ;  
+        guint m_swst;
 };
 class CellItem_Bug  {
         public:

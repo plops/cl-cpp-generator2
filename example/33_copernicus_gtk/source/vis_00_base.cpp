@@ -16,13 +16,13 @@ extern State state;
 #include "vis_06_decode_sub_commutated_data.hpp"
 
 State state = {};
-CellItem_SpacePacket::CellItem_SpacePacket() : m_swst(var - default) {}
+CellItem_SpacePacket::CellItem_SpacePacket() : m_swst(0) {}
 CellItem_SpacePacket::~CellItem_SpacePacket() {}
 CellItem_SpacePacket::CellItem_SpacePacket(const CellItem_SpacePacket &src) {
   operator=(src);
 }
 CellItem_SpacePacket::CellItem_SpacePacket(guint swst) : m_swst(swst) {}
-CellItem_CellItem_SpacePacket &
+CellItem_SpacePacket &
 CellItem_SpacePacket::operator=(const CellItem_SpacePacket &src) {
   m_swst = src.m_swst;
   return *this;
