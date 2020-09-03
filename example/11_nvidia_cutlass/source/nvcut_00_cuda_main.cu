@@ -4,7 +4,7 @@
 #include "globals.h"
 
 #include "proto2.h"
-;
+
 /*
   export
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/src/cutlass/build/tools/library/
@@ -36,11 +36,11 @@ int main() {
   auto M = 512;
   auto N = 256;
   auto K = 128;
-  auto alpha = float((1.250));
-  auto beta = float((-1.250));
-  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> A({M, K});
-  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> B({K, N});
-  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> C({M, N});
+  auto alpha = float((1.250f));
+  auto beta = float((-1.250f));
+  auto A({M, K});
+  auto B({K, N});
+  auto C({M, N});
   auto *ptrA = static_cast<cutlass::half_t const *>(A.device_data());
   auto *ptrB = static_cast<cutlass::half_t const *>(B.device_data());
   auto *ptrC = static_cast<cutlass::half_t const *>(C.device_data());
@@ -57,6 +57,6 @@ int main() {
                     {alpha, beta}});
   if (!((status) == (cutlass::Status::kSuccess))) {
     return -1;
-  };
+  }
   return 0;
-};
+}

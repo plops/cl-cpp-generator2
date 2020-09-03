@@ -4,6 +4,4 @@
 
 #include <iostream>
 
-;
-
 #endif

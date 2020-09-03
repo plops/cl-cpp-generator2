@@ -22,6 +22,15 @@
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 #include <gtkmm-3.0/gtkmm/window.h>
  ;
+class CellItem_SpacePacket  {
+        public:
+         CellItem_SpacePacket ()  ;  
+         ~CellItem_SpacePacket ()  ;  
+         CellItem_SpacePacket (const CellItem_SpacePacket& src)  ;  
+         CellItem_SpacePacket (guint swst)  ;  
+        CellItem_CellItem_SpacePacket& operator= (const CellItem_SpacePacket& src)  ;  
+        guint swst;
+};
 class CellItem_Bug  {
         public:
          CellItem_Bug ()  ;  

@@ -367,6 +367,60 @@
 
 		    (let ((state ,(emit-globals :init t)))
 		      (declare (type "State" state)))
+
+		    ,(progn
+		       
+		       (defun item (name members)
+			 (let* (
+				(class-name (format nil "CellItem_~a" name))
+				(class-type (format nil "CellItem_~a&" class-name))
+				(const-class (format nil "const ~a&" class-name)))
+			  `(defclass ,class-name ()
+			     "public:"
+			     (defmethod ,class-name ()
+			       (declare
+				(construct ,@(remove-if #'null
+							(loop for e in members collect
+							     (destructuring-bind (var-name var-type &optional var-default) e
+							       (when var-default
+								 `(,(format nil "m_~a" var-name) var-default))))))
+				(values :constructor)))
+			     (defmethod ,(format nil "~~~a" class-name) ()
+			       (declare (values :constructor)))
+			     (defmethod ,class-name (src)
+			       (declare (values :constructor)
+					(type ,const-class src))
+			       (operator= src))
+			     (defmethod ,class-name (,@(loop for e in members collect
+							     (destructuring-bind (var-name var-type &optional var-default) e
+							       var-name)))
+			       (declare (values :constructor)
+					(construct ,@(loop for e in members collect
+							     (destructuring-bind (var-name var-type &optional var-default) e
+							       `(,(format nil "m_~a" var-name)
+								 ,var-name))))
+					,@(loop for e in members collect
+							     (destructuring-bind (var-name var-type &optional var-default) e
+							       `(type
+								 ,var-type
+								 ,var-name
+								 )))))
+			     (defmethod operator= (src)
+			       (declare (values ,class-type)
+					(type ,const-class src))
+			       ,@(loop for e in (loop for e in members collect
+							     (destructuring-bind (var-name var-type &optional var-default) e
+							       (format nil "m_~a" var-name)
+							       ))
+				    collect
+				      `(setf ,e (dot src ,e)))
+			       (return *this))
+			     ,@(loop for e in members collect
+				 (destructuring-bind (var-name var-type &optional var-default) e
+				   (format nil "~a ~a;" var-type var-name)))
+			     )))
+		       (item "SpacePacket" `((swst guint 0))))
+
 		    
 		    (defclass CellItem_Bug ()
 			"public:"

@@ -107,8 +107,12 @@
 	      )
 		  (do0
 		   "/*"
-		   "  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/src/cutlass/build/tools/library/"
-		   "  export PATH=$PATH:/opt/cuda/nvvm/bin/"
+		   "  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/src/cutlass/build/tools/library/
+"
+		   " git clone https://github.com/NVIDIA/cutlass/"
+		   " mkdir build"
+		   " cmake -DCMAKE_BUILD_TYPE=Release .."
+		   "  export PATH=$PATH:/media/sdb4/cuda/11.0.1/bin/"
 		   "  /opt/cuda/bin/nvcc nvcut_00_cuda_main.cu  -I /home/martin/src/cutlass/include/ -I /opt/cuda/include/ -I/home/martin/src/cutlass/tools/util/include/ -I/home/martin/src/tools/library/include -L/home/martin/src/cutlass/build/tools/library/ -lcutlass --std=c++14 -O1 -g -Xcompiler=-march=native --compiler-bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/8.4.0"
 		   "*/"
 	      "// https://github.com/NVIDIA/cutlass/blob/master/media/docs/quickstart.md"
