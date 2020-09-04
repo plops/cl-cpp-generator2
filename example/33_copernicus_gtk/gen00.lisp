@@ -404,7 +404,63 @@
 						 (destructuring-bind (var-name var-type &optional var-default) e
 						   `(type
 						     ,var-type
-						     ,var-name)))))
+						     ,var-name))))
+
+				 (let ((p (+ offset (static_cast<uint8_t*> ,(g `_mmap_data)))))
+
+				   ,@(loop for e in *space-packet* collect
+					    (destructuring-bind (name_ default-value &key bits) e
+					      (let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					       `(setf ,(format nil "m_~a" cname)
+						      (static_cast<int> ,(space-packet-slot-get name_ 'p))))))
+
+				   
+				   #+nil (let (
+					 (fref 37.53472224d0)
+					 (swst (/ (static_cast<double> ,(space-packet-slot-get 'sampling-window-start-time 'p))
+						  fref))
+					 (coarse_time ,(space-packet-slot-get 'coarse-time 'p))
+					 (fine_time ,(space-packet-slot-get 'fine-time 'p))
+					 (ftime (* ,(expt 2d0 -16) (+ .5d0 fine_time)))
+					 (time0 0)
+					 (time (- (+ coarse_time
+						     ftime)
+						  time0))
+					 
+					 (azi ,(space-packet-slot-get 'sab-ssb-azimuth-beam-address 'p))
+					 (count ,(space-packet-slot-get 'space-packet-count 'p))
+					 (pri_count ,(space-packet-slot-get 'pri-count 'p))
+					 (pri (/ (static_cast<double> ,(space-packet-slot-get 'pulse-repetition-interval 'p))
+						 fref))
+					 (rank ,(space-packet-slot-get 'rank 'p))
+					 (rank2 (static_cast<int> (aref p (+ 49))))
+					 (baqmod ,(space-packet-slot-get 'baq-mode 'p))
+					 (baq_n ,(space-packet-slot-get 'baq-block-length 'p))
+					 (sync_marker ,(space-packet-slot-get 'sync-marker 'p))
+					 (sync2 (+ ,@(loop for j below 4  collect
+							  `(* ,(expt 256 (- 3 j)) (logand #xff (static_cast<int> (aref p (+ 12 ,j))))))))
+					 (baqmod2 (static_cast<int> (aref p 37)) ;(logand #x1F (>> (aref p 37) 3))
+					   )
+					 (err ,(space-packet-slot-get 'error-flag 'p))
+					 (tstmod ,(space-packet-slot-get 'test-mode 'p))
+					 (rx ,(space-packet-slot-get 'rx-channel-id 'p))
+					 (ecc ,(space-packet-slot-get 'ecc-number 'p))
+					 (pol ,(space-packet-slot-get 'sab-ssb-polarisation 'p))
+					 (signal_type ,(space-packet-slot-get 'ses-ssb-signal-type 'p))
+					 (swath ,(space-packet-slot-get 'ses-ssb-swath-number 'p))
+					 (ele ,(space-packet-slot-get 'sab-ssb-elevation-beam-address 'p)))
+				     
+				     
+
+
+
+
+
+				     ))
+
+
+				 )
+			       
 			       (defmethod operator= (src)
 				 (declare (values ,class-type)
 					  (type ,const-class src))
@@ -418,6 +474,10 @@
 			       ,@(loop for e in members collect
 				      (destructuring-bind (var-name var-type &optional var-default) e
 					(format nil "~a m_~a;" var-type var-name)))
+			       ,@(loop for e in *space-packet* collect
+				      (destructuring-bind (name_ default-value &key bits) e
+					(let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					  (format nil "gint m_~a;" cname))))
 			       )
 			     (defclass ,list-store-name "public Gtk::Window"
 			       "public:"
@@ -455,26 +515,26 @@
 			       (defmethod add_columns ()
 				 (declare (virtual))
 				 #+nil (let ((cols_count (m_TreeView.append_column_editable (string "offset")
-										      m_columns.offset))
-				       (pColumn (m_TreeView.get_column (- cols_count 1))))
-				   ;; set to fixed 50 pixel size
-				   (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
-				   (pColumn->set_fixed_width 60)
-				   (pColumn->set_clickable))
+											    m_columns.offset))
+					     (pColumn (m_TreeView.get_column (- cols_count 1))))
+					 ;; set to fixed 50 pixel size
+					 (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
+					 (pColumn->set_fixed_width 60)
+					 (pColumn->set_clickable))
 				 #+nil (m_TreeView.append_column (string "Bug Number")
-							   m_columns.number)
+								 m_columns.number)
 				 ,@(loop for e in members collect
-				      (destructuring-bind (var-name var-type &optional var-default) e
-					`(m_TreeView.append_column
-					  (string ,var-name)
-					  (dot m_columns ,var-name)))))
+					(destructuring-bind (var-name var-type &optional var-default) e
+					  `(m_TreeView.append_column
+					    (string ,var-name)
+					    (dot m_columns ,var-name)))))
 			       (defmethod add_items ()
 				 (declare (virtual))
 				 (for-range (val ,(g `_header_offset))
-				  (dot m_vecItems
-				       (push_back (,class-name val #+nil ,@(loop for e in members collect
-								      (destructuring-bind (var-name var-type &optional var-default) e
-									var-name))))))
+					    (dot m_vecItems
+						 (push_back (,class-name val #+nil ,@(loop for e in members collect
+											  (destructuring-bind (var-name var-type &optional var-default) e
+											    var-name))))))
 				 
 				 #+nil
 				 ,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
@@ -490,11 +550,11 @@
 				   ,@(loop for e in members collect
 					  (destructuring-bind (var-name var-type &optional var-default) e
 					    `(setf (aref row (dot m_columns ,var-name))
-						 (dot foo ,(format nil "m_~a" var-name)))))
+						   (dot foo ,(format nil "m_~a" var-name)))))
 				   
 				   #+nil,@(loop for e in `(fixed number severity description) collect
 					       `(setf (aref row (dot m_columns ,e))
-						 (dot foo ,(format nil "m_~a" e))))))
+						      (dot foo ,(format nil "m_~a" e))))))
 			       "Gtk::Box m_VBox;"
 			       "Gtk::ScrolledWindow m_ScrolledWindow;"
 			       "Gtk::Label m_Label;"
@@ -507,13 +567,13 @@
 				(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
 				       (progn
 					 ,@(loop for e in members collect
-				       (destructuring-bind (var-name var-type &optional var-default) e
-					 (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+						(destructuring-bind (var-name var-type &optional var-default) e
+						  (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
 					 (defun+ ModelColumns ()
 					   (declare (values :constructor))
 					   ,@(loop for e in members collect
-				       (destructuring-bind (var-name var-type &optional var-default) e
-					 `(add ,var-name))))))
+						  (destructuring-bind (var-name var-type &optional var-default) e
+						    `(add ,var-name))))))
 				
 				"const ModelColumns m_columns;")))))
 		       
