@@ -56,12 +56,6 @@ void ListStore_SpacePacketHeader0::create_model() {
       sigc::mem_fun(*this, &ListStore_SpacePacketHeader0::liststore_add_item));
 }
 void ListStore_SpacePacketHeader0::add_columns() {
-  auto cols_count =
-      m_TreeView.append_column_editable("offset", m_columns.offset);
-  auto pColumn = m_TreeView.get_column(((cols_count) - (1)));
-  pColumn->set_sizing(Gtk::TREE_VIEW_COLUMN_FIXED);
-  pColumn->set_fixed_width(60);
-  pColumn->set_clickable();
   m_TreeView.append_column("offset", m_columns.offset);
 }
 void ListStore_SpacePacketHeader0::add_items() {

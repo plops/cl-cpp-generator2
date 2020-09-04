@@ -454,7 +454,7 @@
 						 ,(format nil "&~a::liststore_add_item" list-store-name))))
 			       (defmethod add_columns ()
 				 (declare (virtual))
-				 (let ((cols_count (m_TreeView.append_column_editable (string "offset")
+				 #+nil (let ((cols_count (m_TreeView.append_column_editable (string "offset")
 										      m_columns.offset))
 				       (pColumn (m_TreeView.get_column (- cols_count 1))))
 				   ;; set to fixed 50 pixel size
