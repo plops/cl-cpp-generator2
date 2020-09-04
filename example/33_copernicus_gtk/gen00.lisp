@@ -534,9 +534,10 @@
 					    (dot m_columns ,var-name))))
 				 ,@(loop for e in *space-packet* collect
 				      (destructuring-bind (name_ default-value &key bits) e
-					(let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					(let ((cname (substitute #\_ #\- (format nil "~a" name_)))
+					      )
 					  `(m_TreeView.append_column
-					    (string ,cname)
+					    (string ,name_)
 					    (dot m_columns ,cname))
 					  ))))
 			       (defmethod add_items ()
@@ -564,7 +565,8 @@
 						   (dot foo ,(format nil "m_~a" var-name)))))
 				   ,@(loop for e in *space-packet* collect
 					  (destructuring-bind (name_ default-value &key bits) e
-					    (let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					    (let ((cname (substitute #\_ #\- (format nil "~a" name_)))
+						  )
 					      `(setf (aref row (dot m_columns ,cname))
 						     (dot foo ,(format nil "m_~a" cname)))
 					      
