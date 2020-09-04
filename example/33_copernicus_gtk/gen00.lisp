@@ -541,10 +541,22 @@
 				 ,@(loop for e in *space-packet* collect
 				      (destructuring-bind (name_ default-value &key bits) e
 					(let ((cname (substitute #\_ #\- (format nil "~a" name_)))
-					      )
+					      (short-name
+					       (let* ((s (format nil "~a" name_))
+						     (l (list (aref s 0)))
+						     (add-the-next nil))
+						 (loop for c across (subseq s 1)
+						    do
+						      (if (eq c #\-)
+							  (setf add-the-next t)
+							  (when add-the-next
+							    (setf add-the-next nil)
+							    (push c l)))
+						      )
+						 (format nil "~{~a~}" (reverse l)))))
 					  `(do0
 					    (m_TreeView.append_column
-					     (string ,name_)
+					     (string ,short-name)
 					     (dot m_columns ,cname))
 					    #+nil (m_TreeView.set_tooltip_cell (string ,name_)
 									 nullptr
