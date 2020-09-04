@@ -369,184 +369,282 @@
 		      (declare (type "State" state)))
 
 		    ,(progn
-		       
 		       (defun item (name members)
 			 (let* (
 				(class-name (format nil "CellItem_~a" name))
+				(list-store-name (format nil "ListStore_~a" name))
 				(class-type (format nil "~a&" class-name))
 				(const-class (format nil "const ~a&" class-name)))
-			  `(defclass ,class-name ()
-			     "public:"
-			     (defmethod ,class-name ()
-			       (declare
-				(construct ,@(remove-if #'null
-							(loop for e in members collect
-							     (destructuring-bind (var-name var-type &optional var-default) e
-							       (when var-default
-								 `(,(format nil "m_~a" var-name) ,var-default))))))
-				(values :constructor)))
-			     (defmethod ,(format nil "~~~a" class-name) ()
-			       (declare (values :constructor)))
-			     (defmethod ,class-name (src)
-			       (declare (values :constructor)
-					(type ,const-class src))
-			       (operator= src))
-			     (defmethod ,class-name (,@(loop for e in members collect
-							     (destructuring-bind (var-name var-type &optional var-default) e
-							       var-name)))
-			       (declare (values :constructor)
-					(construct ,@(loop for e in members collect
-							     (destructuring-bind (var-name var-type &optional var-default) e
-							       `(,(format nil "m_~a" var-name)
+			   `(do0
+			     (defclass ,class-name ()
+			       "public:"
+			       (defmethod ,class-name ()
+				 (declare
+				  (construct ,@(remove-if #'null
+							  (loop for e in members collect
+							       (destructuring-bind (var-name var-type &optional var-default) e
+								 (when var-default
+								   `(,(format nil "m_~a" var-name) ,var-default))))))
+				  (values :constructor)))
+			       (defmethod ,(format nil "~~~a" class-name) ()
+				 (declare (values :constructor)))
+			       (defmethod ,class-name (src)
+				 (declare (values :constructor)
+					  (type ,const-class src))
+				 (operator= src))
+			       (defmethod ,class-name (,@(loop for e in members collect
+							      (destructuring-bind (var-name var-type &optional var-default) e
+								var-name)))
+				 (declare (values :constructor)
+					  (construct ,@(loop for e in members collect
+							    (destructuring-bind (var-name var-type &optional var-default) e
+							      `(,(format nil "m_~a" var-name)
 								 ,var-name))))
-					,@(loop for e in members collect
-							     (destructuring-bind (var-name var-type &optional var-default) e
-							       `(type
-								 ,var-type
-								 ,var-name
-								 )))))
-			     (defmethod operator= (src)
-			       (declare (values ,class-type)
-					(type ,const-class src))
-			       ,@(loop for e in (loop for e in members collect
-							     (destructuring-bind (var-name var-type &optional var-default) e
-							       (format nil "m_~a" var-name)
-							       ))
-				    collect
-				      `(setf ,e (dot src ,e)))
-			       (return *this))
-			     ,@(loop for e in members collect
-				 (destructuring-bind (var-name var-type &optional var-default) e
-				   (format nil "~a m_~a;" var-type var-name)))
-			     )))
-		       (item "SpacePacket" `((swst guint 0))))
+					  ,@(loop for e in members collect
+						 (destructuring-bind (var-name var-type &optional var-default) e
+						   `(type
+						     ,var-type
+						     ,var-name)))))
+			       (defmethod operator= (src)
+				 (declare (values ,class-type)
+					  (type ,const-class src))
+				 ,@(loop for e in (loop for e in members collect
+						       (destructuring-bind (var-name var-type &optional var-default) e
+							 (format nil "m_~a" var-name)
+							 ))
+				      collect
+					`(setf ,e (dot src ,e)))
+				 (return *this))
+			       ,@(loop for e in members collect
+				      (destructuring-bind (var-name var-type &optional var-default) e
+					(format nil "~a m_~a;" var-type var-name)))
+			       )
+			     (defclass ,list-store-name "public Gtk::Window"
+			       "public:"
+			       (defmethod ,list-store-name ()
+				 (declare (values :constructor)
+					  (construct (m_VBox Gtk--ORIENTATION_VERTICAL 8)
+						     (m_Label (string ,list-store-name))))
+				 (set_title (string ,(format nil "Gtk::ListStore ~a" list-store-name)))
+				 (set_border_width 8)
+				 (set_default_size 280 250)
+				 (add m_VBox)
+				 (m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
+				 (m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
+				 (m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
+				 (m_VBox.pack_start m_ScrolledWindow)
+				 (create_model)
+				 (m_TreeView.set_model m_refListStore)
+				 (m_TreeView.set_search_column (m_columns.offset.index))
+				 (add_columns)
+				 (m_ScrolledWindow.add m_TreeView)
+				 (show_all)
+				 )
+			       (defmethod ,(format nil "~~~a" list-store-name) ()
+				 (declare (values :constructor)))
+			       "protected:"
+			       (defmethod create_model ()
+				 (declare (virtual))
+				 (setf m_refListStore (Gtk--ListStore--create m_columns))
+				 (add_items)
+				 (std--for_each
+				  (m_vecItems.begin)
+				  (m_vecItems.end)
+				  (sigc--mem_fun *this
+						 ,(format nil "&~a::liststore_add_item" list-store-name))))
+			       (defmethod add_columns ()
+				 (declare (virtual))
+				 (let ((cols_count (m_TreeView.append_column_editable (string "offset")
+										      m_columns.offset))
+				       (pColumn (m_TreeView.get_column (- cols_count 1))))
+				   ;; set to fixed 50 pixel size
+				   (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
+				   (pColumn->set_fixed_width 60)
+				   (pColumn->set_clickable))
+				 #+nil (m_TreeView.append_column (string "Bug Number")
+							   m_columns.number)
+				 ,@(loop for e in members collect
+				      (destructuring-bind (var-name var-type &optional var-default) e
+					`(m_TreeView.append_column
+					  (string ,var-name)
+					  (dot m_columns ,var-name)))))
+			       (defmethod add_items ()
+				 (declare (virtual))
+				 (for-range (val ,(g `_header_offset))
+				  (dot m_vecItems
+				       (push_back (,class-name val #+nil ,@(loop for e in members collect
+								      (destructuring-bind (var-name var-type &optional var-default) e
+									var-name))))))
+				 
+				 #+nil
+				 ,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
+						    (false 60539 Major "trisatin"))
+				      collect
+					(destructuring-bind (b n type str) e
+					  `(dot m_vecItems
+						(push_back (CellItem_Bug ,b ,n (string ,type) (string ,str)))))))
+			       (defmethod liststore_add_item (foo)
+				 (declare (virtual)
+					  (type ,const-class foo))
+				 (let ((row (deref (m_refListStore->append))))
+				   ,@(loop for e in members collect
+					  (destructuring-bind (var-name var-type &optional var-default) e
+					    `(setf (aref row (dot m_columns ,var-name))
+						 (dot foo ,(format nil "m_~a" var-name)))))
+				   
+				   #+nil,@(loop for e in `(fixed number severity description) collect
+					       `(setf (aref row (dot m_columns ,e))
+						 (dot foo ,(format nil "m_~a" e))))))
+			       "Gtk::Box m_VBox;"
+			       "Gtk::ScrolledWindow m_ScrolledWindow;"
+			       "Gtk::Label m_Label;"
+			       "Gtk::TreeView m_TreeView;"
+			       "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
 
-		    
-		    (defclass CellItem_Bug ()
-			"public:"
-		      (defmethod CellItem_Bug ()
-			(declare
-			 (construct (m_fixed false)
-				    (m_number 0))
-			 (values :constructor)))
-		      (defmethod ~CellItem_Bug ()
-			(declare (values :constructor)))
-		      (defmethod CellItem_Bug (src)
-			(declare (values :constructor)
-				 (type "const CellItem_Bug&" src))
-			(operator= src))
-		      (defmethod CellItem_Bug (fixed number severity description)
-			(declare (values :constructor)
-				 (construct (m_fixed fixed)
-					    (m_number number)
-					    (m_severity severity)
-					    (m_description description))
-				 (type bool fixed)
-				 (type guint number)
-				 (type "const Glib::ustring&" severity)
-				 (type "const Glib::ustring&" description)))
-		      (defmethod operator= (src)
-			(declare (values CellItem_Bug&)
-				 (type "const CellItem_Bug&" src))
-			,@(loop for e in `(m_fixed m_number m_severity m_description) collect
-			       `(setf ,e (dot src ,e)))
-			(return *this))
-		      "bool m_fixed;"
-		      "guint m_number;"
-		      "Glib::ustring m_severity;"
-		      "Glib::ustring m_description;")
+			       ,(format nil "typedef std::vector<~a> type_vecItems;" class-name)
+			       "type_vecItems m_vecItems;"
+			       (do0
+				(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+				       (progn
+					 ,@(loop for e in members collect
+				       (destructuring-bind (var-name var-type &optional var-default) e
+					 (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+					 (defun+ ModelColumns ()
+					   (declare (values :constructor))
+					   ,@(loop for e in members collect
+				       (destructuring-bind (var-name var-type &optional var-default) e
+					 `(add ,var-name))))))
+				
+				"const ModelColumns m_columns;")))))
+		       
+		       (item "SpacePacketHeader0" `((offset gsize 0))))
+
+		    #+nil (do0
+		     (defclass CellItem_Bug ()
+		       "public:"
+		       (defmethod CellItem_Bug ()
+			 (declare
+			  (construct (m_fixed false)
+				     (m_number 0))
+			  (values :constructor)))
+		       (defmethod ~CellItem_Bug ()
+			 (declare (values :constructor)))
+		       (defmethod CellItem_Bug (src)
+			 (declare (values :constructor)
+				  (type "const CellItem_Bug&" src))
+			 (operator= src))
+		       (defmethod CellItem_Bug (fixed number severity description)
+			 (declare (values :constructor)
+				  (construct (m_fixed fixed)
+					     (m_number number)
+					     (m_severity severity)
+					     (m_description description))
+				  (type bool fixed)
+				  (type guint number)
+				  (type "const Glib::ustring&" severity)
+				  (type "const Glib::ustring&" description)))
+		       (defmethod operator= (src)
+			 (declare (values CellItem_Bug&)
+				  (type "const CellItem_Bug&" src))
+			 ,@(loop for e in `(m_fixed m_number m_severity m_description) collect
+				`(setf ,e (dot src ,e)))
+			 (return *this))
+		       "bool m_fixed;"
+		       "guint m_number;"
+		       "Glib::ustring m_severity;"
+		       "Glib::ustring m_description;")
 
 
-		    (defclass Example_TreeView_ListStore "public Gtk::Window"
-		      "public:"
-		      (defmethod Example_TreeView_ListStore ()
-			(declare (values :constructor)
-				 (construct (m_VBox Gtk--ORIENTATION_VERTICAL 8)
-					    (m_Label (string "This is the bug list."))))
-			(set_title (string "Gtk::ListStore demo"))
-			(set_border_width 8)
-			(set_default_size 280 250)
-			(add m_VBox)
-			(m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
-			(m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
-			(m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
-			(m_VBox.pack_start m_ScrolledWindow)
-			(create_model)
-			(m_TreeView.set_model m_refListStore)
-			(m_TreeView.set_search_column (m_columns.description.index))
-			(add_columns)
-			(m_ScrolledWindow.add m_TreeView)
-			(show_all)
-			)
-		      (defmethod ~Example_TreeView_ListStore ()
-			(declare (values :constructor)
-				 ;; override
-				 ))
-		      "protected:"
-		      (defmethod create_model ()
-			(declare (virtual))
-			(setf m_refListStore (Gtk--ListStore--create m_columns))
-			(add_items)
-			(std--for_each
-			 (m_vecItems.begin)
-			 (m_vecItems.end)
-			 (sigc--mem_fun *this
-					&Example_TreeView_ListStore--liststore_add_item)))
-		      (defmethod add_columns ()
-			(declare (virtual))
-			(let ((cols_count (m_TreeView.append_column_editable (string "Fixed?")
-									     m_columns.fixed))
-			      (pColumn (m_TreeView.get_column (- cols_count 1))))
-			  ;; set to fixed 50 pixel size
-			  (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
-			  (pColumn->set_fixed_width 60)
-			  (pColumn->set_clickable))
-			(m_TreeView.append_column (string "Bug Number")
-						  m_columns.number)
-			(m_TreeView.append_column (string "Severity")
-						  m_columns.severity)
-			(m_TreeView.append_column (string "Description")
-						  m_columns.description)
-			)
-		      (defmethod add_items ()
-			(declare (virtual))
-			,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
-					   (false 60539 Major "trisatin"))
-			     collect
-			       (destructuring-bind (b n type str) e
-				`(dot m_vecItems
-				      (push_back (CellItem_Bug ,b ,n (string ,type) (string ,str)))))))
-		      (defmethod liststore_add_item (foo)
-			(declare (virtual)
-				 (type "const CellItem_Bug&" foo))
-			(let ((row (deref (m_refListStore->append))))
-			  ,@(loop for e in `(fixed number severity description) collect
-				 `(setf (aref row (dot m_columns ,e))
-					(dot foo ,(format nil "m_~a" e))))))
-		      "Gtk::Box m_VBox;"
-		      "Gtk::ScrolledWindow m_ScrolledWindow;"
-		      "Gtk::Label m_Label;"
-		      "Gtk::TreeView m_TreeView;"
-		      "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
+		     (defclass Example_TreeView_ListStore "public Gtk::Window"
+		       "public:"
+		       (defmethod Example_TreeView_ListStore ()
+			 (declare (values :constructor)
+				  (construct (m_VBox Gtk--ORIENTATION_VERTICAL 8)
+					     (m_Label (string "This is the bug list."))))
+			 (set_title (string "Gtk::ListStore demo"))
+			 (set_border_width 8)
+			 (set_default_size 280 250)
+			 (add m_VBox)
+			 (m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
+			 (m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
+			 (m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
+			 (m_VBox.pack_start m_ScrolledWindow)
+			 (create_model)
+			 (m_TreeView.set_model m_refListStore)
+			 (m_TreeView.set_search_column (m_columns.description.index))
+			 (add_columns)
+			 (m_ScrolledWindow.add m_TreeView)
+			 (show_all)
+			 )
+		       (defmethod ~Example_TreeView_ListStore ()
+			 (declare (values :constructor)
+				  ;; override
+				  ))
+		       "protected:"
+		       (defmethod create_model ()
+			 (declare (virtual))
+			 (setf m_refListStore (Gtk--ListStore--create m_columns))
+			 (add_items)
+			 (std--for_each
+			  (m_vecItems.begin)
+			  (m_vecItems.end)
+			  (sigc--mem_fun *this
+					 &Example_TreeView_ListStore--liststore_add_item)))
+		       (defmethod add_columns ()
+			 (declare (virtual))
+			 (let ((cols_count (m_TreeView.append_column_editable (string "Fixed?")
+									      m_columns.fixed))
+			       (pColumn (m_TreeView.get_column (- cols_count 1))))
+			   ;; set to fixed 50 pixel size
+			   (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
+			   (pColumn->set_fixed_width 60)
+			   (pColumn->set_clickable))
+			 (m_TreeView.append_column (string "Bug Number")
+						   m_columns.number)
+			 (m_TreeView.append_column (string "Severity")
+						   m_columns.severity)
+			 (m_TreeView.append_column (string "Description")
+						   m_columns.description)
+			 )
+		       (defmethod add_items ()
+			 (declare (virtual))
+			 ,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
+					    (false 60539 Major "trisatin"))
+			      collect
+				(destructuring-bind (b n type str) e
+				  `(dot m_vecItems
+					(push_back (CellItem_Bug ,b ,n (string ,type) (string ,str)))))))
+		       (defmethod liststore_add_item (foo)
+			 (declare (virtual)
+				  (type "const CellItem_Bug&" foo))
+			 (let ((row (deref (m_refListStore->append))))
+			   ,@(loop for e in `(fixed number severity description) collect
+				  `(setf (aref row (dot m_columns ,e))
+					 (dot foo ,(format nil "m_~a" e))))))
+		       "Gtk::Box m_VBox;"
+		       "Gtk::ScrolledWindow m_ScrolledWindow;"
+		       "Gtk::Label m_Label;"
+		       "Gtk::TreeView m_TreeView;"
+		       "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
 
-		      "typedef std::vector<CellItem_Bug> type_vecItems;"
-		      "type_vecItems m_vecItems;"
-		      (do0
-		       ,(let ((l `((bool fixed)
-				   ("unsigned int" number)
-				   ("Glib::ustring" severity)
-				   ("Glib::ustring" description))))
-			  `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
-				  (progn
-				    ,@(loop for (e f) in l collect
-					   (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
-				    (defun+ ModelColumns ()
-				      (declare (values :constructor))
-				      ,@(loop for (e f) in l collect
-					     `(add ,f))))))
-		       "const ModelColumns m_columns;")
-		      
-		      )
+		       "typedef std::vector<CellItem_Bug> type_vecItems;"
+		       "type_vecItems m_vecItems;"
+		       (do0
+			,(let ((l `((bool fixed)
+				    ("unsigned int" number)
+				    ("Glib::ustring" severity)
+				    ("Glib::ustring" description))))
+			   `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+				   (progn
+				     ,@(loop for (e f) in l collect
+					    (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
+				     (defun+ ModelColumns ()
+				       (declare (values :constructor))
+				       ,@(loop for (e f) in l collect
+					      `(add ,f))))))
+			"const ModelColumns m_columns;")
+		       
+		       ))
 
 		    
 
@@ -566,9 +664,9 @@
 		      (init_mmap ,(g `_filename))
 		      (init_collect_packet_headers)
 
-
-		      (do0
-		 (let ((packet_idx 0)
+		      
+		      #+nil (do0
+		       (let ((packet_idx 0)
 		       (map_ele)
 		       (map_cal)
 		       (map_sig)
@@ -668,9 +766,8 @@
 		      (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
-			(declare (type Example_TreeView_ListStore ;HelloWorld
+			(declare (type ListStore_SpacePacketHeader0 ;Example_TreeView_ListStore
 				       hw))
-			;(win.set_default_size 200 200)
 			(app->run hw)))
 
 		    

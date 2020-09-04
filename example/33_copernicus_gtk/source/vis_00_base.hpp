@@ -22,53 +22,35 @@
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 #include <gtkmm-3.0/gtkmm/window.h>
  ;
-class CellItem_SpacePacket  {
+class CellItem_SpacePacketHeader0  {
         public:
-         CellItem_SpacePacket ()  ;  
-         ~CellItem_SpacePacket ()  ;  
-         CellItem_SpacePacket (const CellItem_SpacePacket& src)  ;  
-         CellItem_SpacePacket (guint swst)  ;  
-        CellItem_SpacePacket& operator= (const CellItem_SpacePacket& src)  ;  
-        guint m_swst;
+         CellItem_SpacePacketHeader0 ()  ;  
+         ~CellItem_SpacePacketHeader0 ()  ;  
+         CellItem_SpacePacketHeader0 (const CellItem_SpacePacketHeader0& src)  ;  
+         CellItem_SpacePacketHeader0 (gsize offset)  ;  
+        CellItem_SpacePacketHeader0& operator= (const CellItem_SpacePacketHeader0& src)  ;  
+        gsize m_offset;
 };
-class CellItem_Bug  {
+class ListStore_SpacePacketHeader0 : public Gtk::Window {
         public:
-         CellItem_Bug ()  ;  
-         ~CellItem_Bug ()  ;  
-         CellItem_Bug (const CellItem_Bug& src)  ;  
-         CellItem_Bug (bool fixed, guint number, const Glib::ustring& severity, const Glib::ustring& description)  ;  
-        CellItem_Bug& operator= (const CellItem_Bug& src)  ;  
-        bool m_fixed;
-        guint m_number;
-        Glib::ustring m_severity;
-        Glib::ustring m_description;
-};
-class Example_TreeView_ListStore : public Gtk::Window {
-        public:
-         Example_TreeView_ListStore ()  ;  
-         ~Example_TreeView_ListStore ()  ;  
+         ListStore_SpacePacketHeader0 ()  ;  
+         ~ListStore_SpacePacketHeader0 ()  ;  
         protected:
         void create_model ()  ;  
         void add_columns ()  ;  
         void add_items ()  ;  
-        void liststore_add_item (const CellItem_Bug& foo)  ;  
+        void liststore_add_item (const CellItem_SpacePacketHeader0& foo)  ;  
         Gtk::Box m_VBox;
         Gtk::ScrolledWindow m_ScrolledWindow;
         Gtk::Label m_Label;
         Gtk::TreeView m_TreeView;
         Glib::RefPtr<Gtk::ListStore> m_refListStore;
-        typedef std::vector<CellItem_Bug> type_vecItems;
+        typedef std::vector<CellItem_SpacePacketHeader0> type_vecItems;
         type_vecItems m_vecItems;
             struct ModelColumns : public Gtk::TreeModelColumnRecord {
-                Gtk::TreeModelColumn<bool> fixed;
-                Gtk::TreeModelColumn<unsigned int> number;
-                Gtk::TreeModelColumn<Glib::ustring> severity;
-                Gtk::TreeModelColumn<Glib::ustring> description;
+                Gtk::TreeModelColumn<gsize> offset;
                  ModelColumns ()    {
-                        add(fixed);
-                        add(number);
-                        add(severity);
-                        add(description);
+                        add(offset);
 };
 };
     const ModelColumns m_columns;
