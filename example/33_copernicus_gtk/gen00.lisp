@@ -470,6 +470,10 @@
 							 ))
 				      collect
 					`(setf ,e (dot src ,e)))
+				 ,@(loop for e in *space-packet* collect
+				      (destructuring-bind (name_ default-value &key bits) e
+					(let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					  `(setf ,(format nil "m_~a" cname) (dot src ,(format nil "m_~a" cname))))))
 				 (return *this))
 			       ,@(loop for e in members collect
 				      (destructuring-bind (var-name var-type &optional var-default) e
@@ -551,6 +555,13 @@
 					  (destructuring-bind (var-name var-type &optional var-default) e
 					    `(setf (aref row (dot m_columns ,var-name))
 						   (dot foo ,(format nil "m_~a" var-name)))))
+				   ,@(loop for e in *space-packet* collect
+					  (destructuring-bind (name_ default-value &key bits) e
+					    (let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					      `(setf (aref row (dot m_columns ,cname))
+						     (dot foo ,(format nil "m_~a" cname)))
+					      
+						)))
 				   
 				   #+nil,@(loop for e in `(fixed number severity description) collect
 					       `(setf (aref row (dot m_columns ,e))
@@ -569,11 +580,21 @@
 					 ,@(loop for e in members collect
 						(destructuring-bind (var-name var-type &optional var-default) e
 						  (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+					 ,@(loop for e in *space-packet* collect
+					    (destructuring-bind (name_ default-value &key bits) e
+					      (let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+						(format nil "Gtk::TreeModelColumn<gint> ~a;" cname)
+						)))
 					 (defun+ ModelColumns ()
 					   (declare (values :constructor))
 					   ,@(loop for e in members collect
 						  (destructuring-bind (var-name var-type &optional var-default) e
-						    `(add ,var-name))))))
+						    `(add ,var-name)))
+					   ,@(loop for e in *space-packet* collect
+					    (destructuring-bind (name_ default-value &key bits) e
+					      (let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+						`(add ,cname)
+						))))))
 				
 				"const ModelColumns m_columns;")))))
 		       

@@ -115,6 +115,62 @@ CellItem_SpacePacketHeader0::CellItem_SpacePacketHeader0(gsize offset)
 CellItem_SpacePacketHeader0 &
 CellItem_SpacePacketHeader0::operator=(const CellItem_SpacePacketHeader0 &src) {
   m_offset = src.m_offset;
+  m_packet_version_number = src.m_packet_version_number;
+  m_packet_type = src.m_packet_type;
+  m_secondary_header_flag = src.m_secondary_header_flag;
+  m_application_process_id_process_id = src.m_application_process_id_process_id;
+  m_application_process_id_packet_category =
+      src.m_application_process_id_packet_category;
+  m_sequence_flags = src.m_sequence_flags;
+  m_sequence_count = src.m_sequence_count;
+  m_data_length = src.m_data_length;
+  m_coarse_time = src.m_coarse_time;
+  m_fine_time = src.m_fine_time;
+  m_sync_marker = src.m_sync_marker;
+  m_data_take_id = src.m_data_take_id;
+  m_ecc_number = src.m_ecc_number;
+  m_ignore_0 = src.m_ignore_0;
+  m_test_mode = src.m_test_mode;
+  m_rx_channel_id = src.m_rx_channel_id;
+  m_instrument_configuration_id = src.m_instrument_configuration_id;
+  m_sub_commutated_index = src.m_sub_commutated_index;
+  m_sub_commutated_data = src.m_sub_commutated_data;
+  m_space_packet_count = src.m_space_packet_count;
+  m_pri_count = src.m_pri_count;
+  m_error_flag = src.m_error_flag;
+  m_ignore_1 = src.m_ignore_1;
+  m_baq_mode = src.m_baq_mode;
+  m_baq_block_length = src.m_baq_block_length;
+  m_ignore_2 = src.m_ignore_2;
+  m_range_decimation = src.m_range_decimation;
+  m_rx_gain = src.m_rx_gain;
+  m_tx_ramp_rate_polarity = src.m_tx_ramp_rate_polarity;
+  m_tx_ramp_rate_magnitude = src.m_tx_ramp_rate_magnitude;
+  m_tx_pulse_start_frequency_polarity = src.m_tx_pulse_start_frequency_polarity;
+  m_tx_pulse_start_frequency_magnitude =
+      src.m_tx_pulse_start_frequency_magnitude;
+  m_tx_pulse_length = src.m_tx_pulse_length;
+  m_ignore_3 = src.m_ignore_3;
+  m_rank = src.m_rank;
+  m_pulse_repetition_interval = src.m_pulse_repetition_interval;
+  m_sampling_window_start_time = src.m_sampling_window_start_time;
+  m_sampling_window_length = src.m_sampling_window_length;
+  m_sab_ssb_calibration_p = src.m_sab_ssb_calibration_p;
+  m_sab_ssb_polarisation = src.m_sab_ssb_polarisation;
+  m_sab_ssb_temp_comp = src.m_sab_ssb_temp_comp;
+  m_sab_ssb_ignore_0 = src.m_sab_ssb_ignore_0;
+  m_sab_ssb_elevation_beam_address = src.m_sab_ssb_elevation_beam_address;
+  m_sab_ssb_ignore_1 = src.m_sab_ssb_ignore_1;
+  m_sab_ssb_azimuth_beam_address = src.m_sab_ssb_azimuth_beam_address;
+  m_ses_ssb_cal_mode = src.m_ses_ssb_cal_mode;
+  m_ses_ssb_ignore_0 = src.m_ses_ssb_ignore_0;
+  m_ses_ssb_tx_pulse_number = src.m_ses_ssb_tx_pulse_number;
+  m_ses_ssb_signal_type = src.m_ses_ssb_signal_type;
+  m_ses_ssb_ignore_1 = src.m_ses_ssb_ignore_1;
+  m_ses_ssb_swap = src.m_ses_ssb_swap;
+  m_ses_ssb_swath_number = src.m_ses_ssb_swath_number;
+  m_number_of_quads = src.m_number_of_quads;
+  m_ignore_4 = src.m_ignore_4;
   return *this;
 }
 ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
@@ -155,6 +211,67 @@ void ListStore_SpacePacketHeader0::liststore_add_item(
     const CellItem_SpacePacketHeader0 &foo) {
   auto row = *(m_refListStore->append());
   row[m_columns.offset] = foo.m_offset;
+  row[m_columns.packet_version_number] = foo.m_packet_version_number;
+  row[m_columns.packet_type] = foo.m_packet_type;
+  row[m_columns.secondary_header_flag] = foo.m_secondary_header_flag;
+  row[m_columns.application_process_id_process_id] =
+      foo.m_application_process_id_process_id;
+  row[m_columns.application_process_id_packet_category] =
+      foo.m_application_process_id_packet_category;
+  row[m_columns.sequence_flags] = foo.m_sequence_flags;
+  row[m_columns.sequence_count] = foo.m_sequence_count;
+  row[m_columns.data_length] = foo.m_data_length;
+  row[m_columns.coarse_time] = foo.m_coarse_time;
+  row[m_columns.fine_time] = foo.m_fine_time;
+  row[m_columns.sync_marker] = foo.m_sync_marker;
+  row[m_columns.data_take_id] = foo.m_data_take_id;
+  row[m_columns.ecc_number] = foo.m_ecc_number;
+  row[m_columns.ignore_0] = foo.m_ignore_0;
+  row[m_columns.test_mode] = foo.m_test_mode;
+  row[m_columns.rx_channel_id] = foo.m_rx_channel_id;
+  row[m_columns.instrument_configuration_id] =
+      foo.m_instrument_configuration_id;
+  row[m_columns.sub_commutated_index] = foo.m_sub_commutated_index;
+  row[m_columns.sub_commutated_data] = foo.m_sub_commutated_data;
+  row[m_columns.space_packet_count] = foo.m_space_packet_count;
+  row[m_columns.pri_count] = foo.m_pri_count;
+  row[m_columns.error_flag] = foo.m_error_flag;
+  row[m_columns.ignore_1] = foo.m_ignore_1;
+  row[m_columns.baq_mode] = foo.m_baq_mode;
+  row[m_columns.baq_block_length] = foo.m_baq_block_length;
+  row[m_columns.ignore_2] = foo.m_ignore_2;
+  row[m_columns.range_decimation] = foo.m_range_decimation;
+  row[m_columns.rx_gain] = foo.m_rx_gain;
+  row[m_columns.tx_ramp_rate_polarity] = foo.m_tx_ramp_rate_polarity;
+  row[m_columns.tx_ramp_rate_magnitude] = foo.m_tx_ramp_rate_magnitude;
+  row[m_columns.tx_pulse_start_frequency_polarity] =
+      foo.m_tx_pulse_start_frequency_polarity;
+  row[m_columns.tx_pulse_start_frequency_magnitude] =
+      foo.m_tx_pulse_start_frequency_magnitude;
+  row[m_columns.tx_pulse_length] = foo.m_tx_pulse_length;
+  row[m_columns.ignore_3] = foo.m_ignore_3;
+  row[m_columns.rank] = foo.m_rank;
+  row[m_columns.pulse_repetition_interval] = foo.m_pulse_repetition_interval;
+  row[m_columns.sampling_window_start_time] = foo.m_sampling_window_start_time;
+  row[m_columns.sampling_window_length] = foo.m_sampling_window_length;
+  row[m_columns.sab_ssb_calibration_p] = foo.m_sab_ssb_calibration_p;
+  row[m_columns.sab_ssb_polarisation] = foo.m_sab_ssb_polarisation;
+  row[m_columns.sab_ssb_temp_comp] = foo.m_sab_ssb_temp_comp;
+  row[m_columns.sab_ssb_ignore_0] = foo.m_sab_ssb_ignore_0;
+  row[m_columns.sab_ssb_elevation_beam_address] =
+      foo.m_sab_ssb_elevation_beam_address;
+  row[m_columns.sab_ssb_ignore_1] = foo.m_sab_ssb_ignore_1;
+  row[m_columns.sab_ssb_azimuth_beam_address] =
+      foo.m_sab_ssb_azimuth_beam_address;
+  row[m_columns.ses_ssb_cal_mode] = foo.m_ses_ssb_cal_mode;
+  row[m_columns.ses_ssb_ignore_0] = foo.m_ses_ssb_ignore_0;
+  row[m_columns.ses_ssb_tx_pulse_number] = foo.m_ses_ssb_tx_pulse_number;
+  row[m_columns.ses_ssb_signal_type] = foo.m_ses_ssb_signal_type;
+  row[m_columns.ses_ssb_ignore_1] = foo.m_ses_ssb_ignore_1;
+  row[m_columns.ses_ssb_swap] = foo.m_ses_ssb_swap;
+  row[m_columns.ses_ssb_swath_number] = foo.m_ses_ssb_swath_number;
+  row[m_columns.number_of_quads] = foo.m_number_of_quads;
+  row[m_columns.ignore_4] = foo.m_ignore_4;
 }
 int main(int argc, char **argv) {
   state._start_time =
