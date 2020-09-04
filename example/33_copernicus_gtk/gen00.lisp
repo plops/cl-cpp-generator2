@@ -532,16 +532,20 @@
 								 m_columns.number)
 				 ,@(loop for e in members collect
 					(destructuring-bind (var-name var-type &optional var-default) e
-					  `(m_TreeView.append_column
-					    (string ,var-name)
-					    (dot m_columns ,var-name))))
+					  `(do0
+					    (m_TreeView.append_column
+					     (string ,var-name)
+					     (dot m_columns ,var-name))
+					    (m_TreeView.set_tooltip_text (string ,var-name)))))
 				 ,@(loop for e in *space-packet* collect
 				      (destructuring-bind (name_ default-value &key bits) e
 					(let ((cname (substitute #\_ #\- (format nil "~a" name_)))
 					      )
-					  `(m_TreeView.append_column
-					    (string ,name_)
-					    (dot m_columns ,cname))
+					  `(do0
+					    (m_TreeView.append_column
+					     (string ,name_)
+					     (dot m_columns ,cname))
+					    (m_TreeView.set_tooltip_text (string ,name_)))
 					  ))))
 			       (defmethod add_items ()
 				 (declare (virtual))

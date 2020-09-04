@@ -201,81 +201,136 @@ void ListStore_SpacePacketHeader0::create_model() {
 }
 void ListStore_SpacePacketHeader0::add_columns() {
   m_TreeView.append_column("offset", m_columns.offset);
+  m_TreeView.set_tooltip_text("offset");
   m_TreeView.append_column("packet-version-number",
                            m_columns.packet_version_number);
+  m_TreeView.set_tooltip_text("packet-version-number");
   m_TreeView.append_column("packet-type", m_columns.packet_type);
+  m_TreeView.set_tooltip_text("packet-type");
   m_TreeView.append_column("secondary-header-flag",
                            m_columns.secondary_header_flag);
+  m_TreeView.set_tooltip_text("secondary-header-flag");
   m_TreeView.append_column("application-process-id-process-id",
                            m_columns.application_process_id_process_id);
+  m_TreeView.set_tooltip_text("application-process-id-process-id");
   m_TreeView.append_column("application-process-id-packet-category",
                            m_columns.application_process_id_packet_category);
+  m_TreeView.set_tooltip_text("application-process-id-packet-category");
   m_TreeView.append_column("sequence-flags", m_columns.sequence_flags);
+  m_TreeView.set_tooltip_text("sequence-flags");
   m_TreeView.append_column("sequence-count", m_columns.sequence_count);
+  m_TreeView.set_tooltip_text("sequence-count");
   m_TreeView.append_column("data-length", m_columns.data_length);
+  m_TreeView.set_tooltip_text("data-length");
   m_TreeView.append_column("coarse-time", m_columns.coarse_time);
+  m_TreeView.set_tooltip_text("coarse-time");
   m_TreeView.append_column("fine-time", m_columns.fine_time);
+  m_TreeView.set_tooltip_text("fine-time");
   m_TreeView.append_column("sync-marker", m_columns.sync_marker);
+  m_TreeView.set_tooltip_text("sync-marker");
   m_TreeView.append_column("data-take-id", m_columns.data_take_id);
+  m_TreeView.set_tooltip_text("data-take-id");
   m_TreeView.append_column("ecc-number", m_columns.ecc_number);
+  m_TreeView.set_tooltip_text("ecc-number");
   m_TreeView.append_column("ignore-0", m_columns.ignore_0);
+  m_TreeView.set_tooltip_text("ignore-0");
   m_TreeView.append_column("test-mode", m_columns.test_mode);
+  m_TreeView.set_tooltip_text("test-mode");
   m_TreeView.append_column("rx-channel-id", m_columns.rx_channel_id);
+  m_TreeView.set_tooltip_text("rx-channel-id");
   m_TreeView.append_column("instrument-configuration-id",
                            m_columns.instrument_configuration_id);
+  m_TreeView.set_tooltip_text("instrument-configuration-id");
   m_TreeView.append_column("sub-commutated-index",
                            m_columns.sub_commutated_index);
+  m_TreeView.set_tooltip_text("sub-commutated-index");
   m_TreeView.append_column("sub-commutated-data",
                            m_columns.sub_commutated_data);
+  m_TreeView.set_tooltip_text("sub-commutated-data");
   m_TreeView.append_column("space-packet-count", m_columns.space_packet_count);
+  m_TreeView.set_tooltip_text("space-packet-count");
   m_TreeView.append_column("pri-count", m_columns.pri_count);
+  m_TreeView.set_tooltip_text("pri-count");
   m_TreeView.append_column("error-flag", m_columns.error_flag);
+  m_TreeView.set_tooltip_text("error-flag");
   m_TreeView.append_column("ignore-1", m_columns.ignore_1);
+  m_TreeView.set_tooltip_text("ignore-1");
   m_TreeView.append_column("baq-mode", m_columns.baq_mode);
+  m_TreeView.set_tooltip_text("baq-mode");
   m_TreeView.append_column("baq-block-length", m_columns.baq_block_length);
+  m_TreeView.set_tooltip_text("baq-block-length");
   m_TreeView.append_column("ignore-2", m_columns.ignore_2);
+  m_TreeView.set_tooltip_text("ignore-2");
   m_TreeView.append_column("range-decimation", m_columns.range_decimation);
+  m_TreeView.set_tooltip_text("range-decimation");
   m_TreeView.append_column("rx-gain", m_columns.rx_gain);
+  m_TreeView.set_tooltip_text("rx-gain");
   m_TreeView.append_column("tx-ramp-rate-polarity",
                            m_columns.tx_ramp_rate_polarity);
+  m_TreeView.set_tooltip_text("tx-ramp-rate-polarity");
   m_TreeView.append_column("tx-ramp-rate-magnitude",
                            m_columns.tx_ramp_rate_magnitude);
+  m_TreeView.set_tooltip_text("tx-ramp-rate-magnitude");
   m_TreeView.append_column("tx-pulse-start-frequency-polarity",
                            m_columns.tx_pulse_start_frequency_polarity);
+  m_TreeView.set_tooltip_text("tx-pulse-start-frequency-polarity");
   m_TreeView.append_column("tx-pulse-start-frequency-magnitude",
                            m_columns.tx_pulse_start_frequency_magnitude);
+  m_TreeView.set_tooltip_text("tx-pulse-start-frequency-magnitude");
   m_TreeView.append_column("tx-pulse-length", m_columns.tx_pulse_length);
+  m_TreeView.set_tooltip_text("tx-pulse-length");
   m_TreeView.append_column("ignore-3", m_columns.ignore_3);
+  m_TreeView.set_tooltip_text("ignore-3");
   m_TreeView.append_column("rank", m_columns.rank);
+  m_TreeView.set_tooltip_text("rank");
   m_TreeView.append_column("pulse-repetition-interval",
                            m_columns.pulse_repetition_interval);
+  m_TreeView.set_tooltip_text("pulse-repetition-interval");
   m_TreeView.append_column("sampling-window-start-time",
                            m_columns.sampling_window_start_time);
+  m_TreeView.set_tooltip_text("sampling-window-start-time");
   m_TreeView.append_column("sampling-window-length",
                            m_columns.sampling_window_length);
+  m_TreeView.set_tooltip_text("sampling-window-length");
   m_TreeView.append_column("sab-ssb-calibration-p",
                            m_columns.sab_ssb_calibration_p);
+  m_TreeView.set_tooltip_text("sab-ssb-calibration-p");
   m_TreeView.append_column("sab-ssb-polarisation",
                            m_columns.sab_ssb_polarisation);
+  m_TreeView.set_tooltip_text("sab-ssb-polarisation");
   m_TreeView.append_column("sab-ssb-temp-comp", m_columns.sab_ssb_temp_comp);
+  m_TreeView.set_tooltip_text("sab-ssb-temp-comp");
   m_TreeView.append_column("sab-ssb-ignore-0", m_columns.sab_ssb_ignore_0);
+  m_TreeView.set_tooltip_text("sab-ssb-ignore-0");
   m_TreeView.append_column("sab-ssb-elevation-beam-address",
                            m_columns.sab_ssb_elevation_beam_address);
+  m_TreeView.set_tooltip_text("sab-ssb-elevation-beam-address");
   m_TreeView.append_column("sab-ssb-ignore-1", m_columns.sab_ssb_ignore_1);
+  m_TreeView.set_tooltip_text("sab-ssb-ignore-1");
   m_TreeView.append_column("sab-ssb-azimuth-beam-address",
                            m_columns.sab_ssb_azimuth_beam_address);
+  m_TreeView.set_tooltip_text("sab-ssb-azimuth-beam-address");
   m_TreeView.append_column("ses-ssb-cal-mode", m_columns.ses_ssb_cal_mode);
+  m_TreeView.set_tooltip_text("ses-ssb-cal-mode");
   m_TreeView.append_column("ses-ssb-ignore-0", m_columns.ses_ssb_ignore_0);
+  m_TreeView.set_tooltip_text("ses-ssb-ignore-0");
   m_TreeView.append_column("ses-ssb-tx-pulse-number",
                            m_columns.ses_ssb_tx_pulse_number);
+  m_TreeView.set_tooltip_text("ses-ssb-tx-pulse-number");
   m_TreeView.append_column("ses-ssb-signal-type",
                            m_columns.ses_ssb_signal_type);
+  m_TreeView.set_tooltip_text("ses-ssb-signal-type");
   m_TreeView.append_column("ses-ssb-ignore-1", m_columns.ses_ssb_ignore_1);
+  m_TreeView.set_tooltip_text("ses-ssb-ignore-1");
   m_TreeView.append_column("ses-ssb-swap", m_columns.ses_ssb_swap);
+  m_TreeView.set_tooltip_text("ses-ssb-swap");
   m_TreeView.append_column("ses-ssb-swath-number",
                            m_columns.ses_ssb_swath_number);
+  m_TreeView.set_tooltip_text("ses-ssb-swath-number");
   m_TreeView.append_column("number-of-quads", m_columns.number_of_quads);
+  m_TreeView.set_tooltip_text("number-of-quads");
   m_TreeView.append_column("ignore-4", m_columns.ignore_4);
+  m_TreeView.set_tooltip_text("ignore-4");
 }
 void ListStore_SpacePacketHeader0::add_items() {
   for (auto val : state._header_offset) {
