@@ -495,7 +495,10 @@
 				 (add m_VBox)
 				 (m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
 				 (m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
-				 (m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
+				 (m_ScrolledWindow.set_policy
+				  ; Gtk--POLICY_NEVER
+				  Gtk--POLICY_AUTOMATIC
+				  Gtk--POLICY_AUTOMATIC)
 				 (m_VBox.pack_start m_ScrolledWindow)
 				 (create_model)
 				 (m_TreeView.set_model m_refListStore)
