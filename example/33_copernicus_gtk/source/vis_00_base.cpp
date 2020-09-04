@@ -201,6 +201,81 @@ void ListStore_SpacePacketHeader0::create_model() {
 }
 void ListStore_SpacePacketHeader0::add_columns() {
   m_TreeView.append_column("offset", m_columns.offset);
+  m_TreeView.append_column("packet_version_number",
+                           m_columns.packet_version_number);
+  m_TreeView.append_column("packet_type", m_columns.packet_type);
+  m_TreeView.append_column("secondary_header_flag",
+                           m_columns.secondary_header_flag);
+  m_TreeView.append_column("application_process_id_process_id",
+                           m_columns.application_process_id_process_id);
+  m_TreeView.append_column("application_process_id_packet_category",
+                           m_columns.application_process_id_packet_category);
+  m_TreeView.append_column("sequence_flags", m_columns.sequence_flags);
+  m_TreeView.append_column("sequence_count", m_columns.sequence_count);
+  m_TreeView.append_column("data_length", m_columns.data_length);
+  m_TreeView.append_column("coarse_time", m_columns.coarse_time);
+  m_TreeView.append_column("fine_time", m_columns.fine_time);
+  m_TreeView.append_column("sync_marker", m_columns.sync_marker);
+  m_TreeView.append_column("data_take_id", m_columns.data_take_id);
+  m_TreeView.append_column("ecc_number", m_columns.ecc_number);
+  m_TreeView.append_column("ignore_0", m_columns.ignore_0);
+  m_TreeView.append_column("test_mode", m_columns.test_mode);
+  m_TreeView.append_column("rx_channel_id", m_columns.rx_channel_id);
+  m_TreeView.append_column("instrument_configuration_id",
+                           m_columns.instrument_configuration_id);
+  m_TreeView.append_column("sub_commutated_index",
+                           m_columns.sub_commutated_index);
+  m_TreeView.append_column("sub_commutated_data",
+                           m_columns.sub_commutated_data);
+  m_TreeView.append_column("space_packet_count", m_columns.space_packet_count);
+  m_TreeView.append_column("pri_count", m_columns.pri_count);
+  m_TreeView.append_column("error_flag", m_columns.error_flag);
+  m_TreeView.append_column("ignore_1", m_columns.ignore_1);
+  m_TreeView.append_column("baq_mode", m_columns.baq_mode);
+  m_TreeView.append_column("baq_block_length", m_columns.baq_block_length);
+  m_TreeView.append_column("ignore_2", m_columns.ignore_2);
+  m_TreeView.append_column("range_decimation", m_columns.range_decimation);
+  m_TreeView.append_column("rx_gain", m_columns.rx_gain);
+  m_TreeView.append_column("tx_ramp_rate_polarity",
+                           m_columns.tx_ramp_rate_polarity);
+  m_TreeView.append_column("tx_ramp_rate_magnitude",
+                           m_columns.tx_ramp_rate_magnitude);
+  m_TreeView.append_column("tx_pulse_start_frequency_polarity",
+                           m_columns.tx_pulse_start_frequency_polarity);
+  m_TreeView.append_column("tx_pulse_start_frequency_magnitude",
+                           m_columns.tx_pulse_start_frequency_magnitude);
+  m_TreeView.append_column("tx_pulse_length", m_columns.tx_pulse_length);
+  m_TreeView.append_column("ignore_3", m_columns.ignore_3);
+  m_TreeView.append_column("rank", m_columns.rank);
+  m_TreeView.append_column("pulse_repetition_interval",
+                           m_columns.pulse_repetition_interval);
+  m_TreeView.append_column("sampling_window_start_time",
+                           m_columns.sampling_window_start_time);
+  m_TreeView.append_column("sampling_window_length",
+                           m_columns.sampling_window_length);
+  m_TreeView.append_column("sab_ssb_calibration_p",
+                           m_columns.sab_ssb_calibration_p);
+  m_TreeView.append_column("sab_ssb_polarisation",
+                           m_columns.sab_ssb_polarisation);
+  m_TreeView.append_column("sab_ssb_temp_comp", m_columns.sab_ssb_temp_comp);
+  m_TreeView.append_column("sab_ssb_ignore_0", m_columns.sab_ssb_ignore_0);
+  m_TreeView.append_column("sab_ssb_elevation_beam_address",
+                           m_columns.sab_ssb_elevation_beam_address);
+  m_TreeView.append_column("sab_ssb_ignore_1", m_columns.sab_ssb_ignore_1);
+  m_TreeView.append_column("sab_ssb_azimuth_beam_address",
+                           m_columns.sab_ssb_azimuth_beam_address);
+  m_TreeView.append_column("ses_ssb_cal_mode", m_columns.ses_ssb_cal_mode);
+  m_TreeView.append_column("ses_ssb_ignore_0", m_columns.ses_ssb_ignore_0);
+  m_TreeView.append_column("ses_ssb_tx_pulse_number",
+                           m_columns.ses_ssb_tx_pulse_number);
+  m_TreeView.append_column("ses_ssb_signal_type",
+                           m_columns.ses_ssb_signal_type);
+  m_TreeView.append_column("ses_ssb_ignore_1", m_columns.ses_ssb_ignore_1);
+  m_TreeView.append_column("ses_ssb_swap", m_columns.ses_ssb_swap);
+  m_TreeView.append_column("ses_ssb_swath_number",
+                           m_columns.ses_ssb_swath_number);
+  m_TreeView.append_column("number_of_quads", m_columns.number_of_quads);
+  m_TreeView.append_column("ignore_4", m_columns.ignore_4);
 }
 void ListStore_SpacePacketHeader0::add_items() {
   for (auto val : state._header_offset) {

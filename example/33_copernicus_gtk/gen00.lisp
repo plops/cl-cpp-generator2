@@ -531,7 +531,14 @@
 					(destructuring-bind (var-name var-type &optional var-default) e
 					  `(m_TreeView.append_column
 					    (string ,var-name)
-					    (dot m_columns ,var-name)))))
+					    (dot m_columns ,var-name))))
+				 ,@(loop for e in *space-packet* collect
+				      (destructuring-bind (name_ default-value &key bits) e
+					(let ((cname (substitute #\_ #\- (format nil "~a" name_))))
+					  `(m_TreeView.append_column
+					    (string ,cname)
+					    (dot m_columns ,cname))
+					  ))))
 			       (defmethod add_items ()
 				 (declare (virtual))
 				 (for-range (val ,(g `_header_offset))
