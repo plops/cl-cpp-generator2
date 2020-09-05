@@ -187,6 +187,12 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
   create_model();
   m_TreeView.set_model(m_refListStore);
   m_TreeView.set_search_column(m_columns.offset.index());
+  m_TreeView.set_has_tooltip(true);
+  m_TreeView.signal_query_tooltip().connect(
+      [this](int x, int y, bool keyboard_tooltip,
+             const Glib::RefPtr<Gtk::Tooltip> &tooltip) -> bool {
+        return true;
+      });
   add_columns();
   m_ScrolledWindow.add(m_TreeView);
   show_all();
