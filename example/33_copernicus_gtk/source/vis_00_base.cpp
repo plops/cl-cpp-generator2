@@ -217,24 +217,24 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
           int cy = 0;
           m_TreeView.get_path_at_pos(bx, by, path, column, cx, cy);
 
-          (std::cout) << (std::setw(10))
-                      << (std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count())
-                      << (" ") << (std::this_thread::get_id()) << (" ")
-                      << (__FILE__) << (":") << (__LINE__) << (" ")
-                      << (__func__) << (" ") << ("mouse") << (" ")
-                      << (std::setw(8)) << (" x='") << (x) << ("'")
-                      << (std::setw(8)) << (" y='") << (y) << ("'")
-                      << (std::setw(8)) << (" bx='") << (bx) << ("'")
-                      << (std::setw(8)) << (" by='") << (by) << ("'")
-                      << (std::setw(8)) << (" cx='") << (cx) << ("'")
-                      << (std::setw(8)) << (" cy='") << (cy) << ("'")
-                      << (std::setw(8)) << (" path.to_string()='")
-                      << (path.to_string()) << ("'") << (std::setw(8))
-                      << (" path.begin()[0]='") << (path.begin()[0]) << ("'")
-                      << (std::setw(8)) << (" column='") << (column) << ("'")
-                      << (std::endl) << (std::flush);
+          (std::cout)
+              << (std::setw(10))
+              << (std::chrono::high_resolution_clock::now()
+                      .time_since_epoch()
+                      .count())
+              << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+              << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+              << ("mouse") << (" ") << (std::setw(8)) << (" x='") << (x)
+              << ("'") << (std::setw(8)) << (" y='") << (y) << ("'")
+              << (std::setw(8)) << (" bx='") << (bx) << ("'") << (std::setw(8))
+              << (" by='") << (by) << ("'") << (std::setw(8)) << (" cx='")
+              << (cx) << ("'") << (std::setw(8)) << (" cy='") << (cy) << ("'")
+              << (std::setw(8)) << (" path.to_string()='") << (path.to_string())
+              << ("'") << (std::setw(8))
+              << (" ((nullptr)==(path.begin())) ? (-1) : (path.begin()[0])='")
+              << (((nullptr) == (path.begin())) ? (-1) : (path.begin()[0]))
+              << ("'") << (std::setw(8)) << (" column='") << (column) << ("'")
+              << (std::endl) << (std::flush);
         }
         return true;
       });

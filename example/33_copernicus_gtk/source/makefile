@@ -1,7 +1,7 @@
 # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
 # -Wundef .. not working with gtkmm
 # ;-g3 -ggdb 
-CXXFLAGS=-Os -g3 -ggdb \
+CXXFLAGS=-Og -g3 -ggdb \
 -Wall -Wextra -Werror \
 -Wshadow -Wdouble-promotion -fno-common -Wconversion  \
 -ffunction-sections -fdata-sections \
