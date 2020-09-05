@@ -546,6 +546,7 @@
 										    -1
 										    (aref (path.begin) 0))
 										 column
+										 (column->get_title)
 										 ;(column->get_sort_column_id)
 										 ))))))
 						 (return true))))

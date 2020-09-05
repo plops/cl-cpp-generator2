@@ -234,7 +234,8 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
               << (" ((nullptr)==(path.begin())) ? (-1) : (path.begin()[0])='")
               << (((nullptr) == (path.begin())) ? (-1) : (path.begin()[0]))
               << ("'") << (std::setw(8)) << (" column='") << (column) << ("'")
-              << (std::endl) << (std::flush);
+              << (std::setw(8)) << (" column->get_title()='")
+              << (column->get_title()) << ("'") << (std::endl) << (std::flush);
         }
         return true;
       });

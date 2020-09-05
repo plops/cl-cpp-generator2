@@ -18,3 +18,14 @@
 
 - c++14 lambdas with gtkmm
   - https://www.murrayc.com/permalink/2015/07/31/gtkmm-now-uses-c11/
+
+- gtkinspector
+  - https://wiki.gnome.org/action/show/Projects/GTK/Inspector?action=show&redirect=Projects%2FGTK%2B%2FInspector
+  
+#+begin_example
+gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
+#+end_example 
+  - press C-shift-d or run with
+#+begin_example
+GTK_DEBUG=interactive GOBJECT_DEBUG=instance-count ./vis
+#+end_example
