@@ -512,7 +512,8 @@
 							  (type bool keyboard_tooltip)
 							  (type "const Glib::RefPtr<Gtk::Tooltip>&" tooltip)
 							  (values bool))
-						 #+nil (if keyboard_tooltip
+						 (tooltip->set_text (string "hello"))
+						 (if keyboard_tooltip
 						     ,(logprint "keyboard" `())
 						     ,(logprint "mouse" `(x y)))
 						 (return true))))

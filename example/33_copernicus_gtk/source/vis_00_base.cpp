@@ -191,6 +191,30 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
   m_TreeView.signal_query_tooltip().connect(
       [this](int x, int y, bool keyboard_tooltip,
              const Glib::RefPtr<Gtk::Tooltip> &tooltip) -> bool {
+        tooltip->set_text("hello");
+        if (keyboard_tooltip) {
+
+          (std::cout) << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("keyboard") << (" ")
+                      << (std::endl) << (std::flush);
+        } else {
+
+          (std::cout) << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mouse") << (" ")
+                      << (std::setw(8)) << (" x='") << (x) << ("'")
+                      << (std::setw(8)) << (" y='") << (y) << ("'")
+                      << (std::endl) << (std::flush);
+        }
         return true;
       });
   add_columns();
