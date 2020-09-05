@@ -11,3 +11,4 @@
 
 - how to scroll the treeview while keeping the table header visible:
   - https://stackoverflow.com/questions/7147489/how-to-show-column-headers-in-a-gtktreeview-inside-a-gtk-scrolledwindow
+  - apparently, i do this correctly already
