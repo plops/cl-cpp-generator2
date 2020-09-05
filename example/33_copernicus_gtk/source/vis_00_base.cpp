@@ -202,7 +202,17 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (__FILE__) << (":") << (__LINE__) << (" ")
                       << (__func__) << (" ") << ("keyboard") << (" ")
                       << (std::endl) << (std::flush);
+          Gtk::TreeModel::Path path;
+          Gtk::TreeViewColumn *focus_column;
         } else {
+          int bx = 0;
+          int by = 0;
+          m_TreeView.convert_widget_to_bin_window_coords(x, y, bx, by);
+          Gtk::TreeModel::Path path;
+          Gtk::TreeViewColumn *column;
+          int cx = 0;
+          int cy = 0;
+          m_TreeView.get_path_at_pos(bx, by, path, column, cx, cy);
 
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
@@ -213,6 +223,12 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (__func__) << (" ") << ("mouse") << (" ")
                       << (std::setw(8)) << (" x='") << (x) << ("'")
                       << (std::setw(8)) << (" y='") << (y) << ("'")
+                      << (std::setw(8)) << (" bx='") << (bx) << ("'")
+                      << (std::setw(8)) << (" by='") << (by) << ("'")
+                      << (std::setw(8)) << (" cx='") << (cx) << ("'")
+                      << (std::setw(8)) << (" cy='") << (cy) << ("'")
+                      << (std::setw(8)) << (" path='") << (path) << ("'")
+                      << (std::setw(8)) << (" column='") << (column) << ("'")
                       << (std::endl) << (std::flush);
         }
         return true;

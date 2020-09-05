@@ -10,6 +10,7 @@
 
 - gtk treeview tooltips in the columns:
   - https://lazka.github.io/pgi-docs/Gtk-3.0/classes/Tooltip.html#Gtk.Tooltip
+  - https://www.reddit.com/r/learnpython/comments/b6dva1/gtk3_adding_tooltips_to_treeview_cells/
 
 - how to scroll the treeview while keeping the table header visible:
   - https://stackoverflow.com/questions/7147489/how-to-show-column-headers-in-a-gtktreeview-inside-a-gtk-scrolledwindow
