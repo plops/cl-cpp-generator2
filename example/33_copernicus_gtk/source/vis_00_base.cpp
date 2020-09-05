@@ -232,8 +232,9 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (std::setw(8)) << (" cy='") << (cy) << ("'")
                       << (std::setw(8)) << (" path.to_string()='")
                       << (path.to_string()) << ("'") << (std::setw(8))
-                      << (" column='") << (column) << ("'") << (std::endl)
-                      << (std::flush);
+                      << (" path.begin()[0]='") << (path.begin()[0]) << ("'")
+                      << (std::setw(8)) << (" column='") << (column) << ("'")
+                      << (std::endl) << (std::flush);
         }
         return true;
       });

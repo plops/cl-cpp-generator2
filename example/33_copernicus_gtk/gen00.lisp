@@ -539,7 +539,7 @@
 								   (type "Gtk::TreeViewColumn*" column)
 								   (type int cx cy))
 							  (m_TreeView.get_path_at_pos bx by path column cx cy)
-							 ,(logprint "mouse" `(x y bx by cx cy (path.to_string) column))))))
+							 ,(logprint "mouse" `(x y bx by cx cy (path.to_string) (aref (path.begin) 0) column))))))
 						 (return true))))
 				 (add_columns)
 				 (m_ScrolledWindow.add m_TreeView)
