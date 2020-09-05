@@ -539,16 +539,18 @@
 								   (type "Gtk::TreeViewColumn*" column)
 								   (type int cx cy))
 							  (m_TreeView.get_path_at_pos bx by path column cx cy)
-							  
-							  ,(logprint "mouse" `(x y bx by cx cy
-										 (path.to_string)
-										 (? (== nullptr (path.begin))
-										    -1
-										    (aref (path.begin) 0))
-										 column
-										 (column->get_title)
-										 ;(column->get_sort_column_id)
-										 ))))))
+							  (let ((col_title (? (== nullptr column)
+										    (Glib--ustring (string "None"))
+										    (column->get_title))))
+							   ,(logprint "mouse" `(x y bx by cx cy
+										  (path.to_string)
+										  (? (== nullptr (path.begin))
+										     -1
+										     (aref (path.begin) 0))
+										  column
+										  col_title 
+					;(column->get_sort_column_id)
+										  )))))))
 						 (return true))))
 				 (add_columns)
 				 (m_ScrolledWindow.add m_TreeView)

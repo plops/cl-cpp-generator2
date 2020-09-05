@@ -216,6 +216,8 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
           int cx = 0;
           int cy = 0;
           m_TreeView.get_path_at_pos(bx, by, path, column, cx, cy);
+          auto col_title = ((nullptr) == (column)) ? (Glib::ustring("None"))
+                                                   : (column->get_title());
 
           (std::cout)
               << (std::setw(10))
@@ -234,8 +236,8 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
               << (" ((nullptr)==(path.begin())) ? (-1) : (path.begin()[0])='")
               << (((nullptr) == (path.begin())) ? (-1) : (path.begin()[0]))
               << ("'") << (std::setw(8)) << (" column='") << (column) << ("'")
-              << (std::setw(8)) << (" column->get_title()='")
-              << (column->get_title()) << ("'") << (std::endl) << (std::flush);
+              << (std::setw(8)) << (" col_title='") << (col_title) << ("'")
+              << (std::endl) << (std::flush);
         }
         return true;
       });
