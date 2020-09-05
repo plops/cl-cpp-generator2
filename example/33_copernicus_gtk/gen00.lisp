@@ -515,13 +515,14 @@
 						 (tooltip->set_text (string "hello"))
 						 (if keyboard_tooltip
 						     (do0
-						      ,(logprint "keyboard" `())
+						      
 						      (let ((path)
 							    (focus_column)
 							    )
 							(declare (type "Gtk::TreeModel::Path" path)
 								 (type "Gtk::TreeViewColumn*" focus_column))
-							;(m_TreeView.get_cursor &path &focus_column)
+							(m_TreeView.get_cursor path focus_column)
+							,(logprint "keyboard" `(path focus_column))
 							))
 						     (do0
 						      

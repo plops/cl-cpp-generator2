@@ -193,6 +193,9 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
              const Glib::RefPtr<Gtk::Tooltip> &tooltip) -> bool {
         tooltip->set_text("hello");
         if (keyboard_tooltip) {
+          Gtk::TreeModel::Path path;
+          Gtk::TreeViewColumn *focus_column;
+          m_TreeView.get_cursor(path, focus_column);
 
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
@@ -201,9 +204,9 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (" ") << (std::this_thread::get_id()) << (" ")
                       << (__FILE__) << (":") << (__LINE__) << (" ")
                       << (__func__) << (" ") << ("keyboard") << (" ")
-                      << (std::endl) << (std::flush);
-          Gtk::TreeModel::Path path;
-          Gtk::TreeViewColumn *focus_column;
+                      << (std::setw(8)) << (" path='") << (path) << ("'")
+                      << (std::setw(8)) << (" focus_column='") << (focus_column)
+                      << ("'") << (std::endl) << (std::flush);
         } else {
           int bx = 0;
           int by = 0;
