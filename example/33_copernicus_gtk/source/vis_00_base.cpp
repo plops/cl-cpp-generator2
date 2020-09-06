@@ -191,7 +191,7 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
   m_TreeView.signal_query_tooltip().connect(
       [this](int x, int y, bool keyboard_tooltip,
              const Glib::RefPtr<Gtk::Tooltip> &tooltip) -> bool {
-        tooltip->set_text("hello");
+        Glib::ustring column_title;
         if (keyboard_tooltip) {
           Gtk::TreeModel::Path path;
           Gtk::TreeViewColumn *focus_column;
@@ -207,6 +207,9 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (std::setw(8)) << (" path='") << (path) << ("'")
                       << (std::setw(8)) << (" focus_column='") << (focus_column)
                       << ("'") << (std::endl) << (std::flush);
+          if (!((nullptr) == (focus_column))) {
+            column_title = focus_column->get_title();
+          }
         } else {
           int bx = 0;
           int by = 0;
@@ -233,7 +236,11 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
                       << (std::setw(8)) << (" path='") << (path) << ("'")
                       << (std::setw(8)) << (" column='") << (column) << ("'")
                       << (std::endl) << (std::flush);
+          if (!((nullptr) == (column))) {
+            column_title = column->get_title();
+          }
         }
+        tooltip->set_text(column_title);
         return true;
       });
   add_columns();
