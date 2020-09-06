@@ -6,6 +6,7 @@
 extern State state;
 #include <chrono>
 #include <iostream>
+#include <map>
 #include <thread>
 #include <unordered_map>
 
@@ -191,22 +192,14 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
   m_TreeView.signal_query_tooltip().connect(
       [this](int x, int y, bool keyboard_tooltip,
              const Glib::RefPtr<Gtk::Tooltip> &tooltip) -> bool {
-        tooltip->set_text("hello");
+        Glib::ustring column_title;
         if (keyboard_tooltip) {
           Gtk::TreeModel::Path path;
           Gtk::TreeViewColumn *focus_column;
           m_TreeView.get_cursor(path, focus_column);
-
-          (std::cout) << (std::setw(10))
-                      << (std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count())
-                      << (" ") << (std::this_thread::get_id()) << (" ")
-                      << (__FILE__) << (":") << (__LINE__) << (" ")
-                      << (__func__) << (" ") << ("keyboard") << (" ")
-                      << (std::setw(8)) << (" path='") << (path) << ("'")
-                      << (std::setw(8)) << (" focus_column='") << (focus_column)
-                      << ("'") << (std::endl) << (std::flush);
+          if (!((nullptr) == (focus_column))) {
+            column_title = focus_column->get_title();
+          }
         } else {
           int bx = 0;
           int by = 0;
@@ -216,29 +209,67 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
           int cx = 0;
           int cy = 0;
           m_TreeView.get_path_at_pos(bx, by, path, column, cx, cy);
-          auto col_title = ((nullptr) == (column)) ? (Glib::ustring("None"))
-                                                   : (column->get_title());
-
-          (std::cout)
-              << (std::setw(10))
-              << (std::chrono::high_resolution_clock::now()
-                      .time_since_epoch()
-                      .count())
-              << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-              << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-              << ("mouse") << (" ") << (std::setw(8)) << (" x='") << (x)
-              << ("'") << (std::setw(8)) << (" y='") << (y) << ("'")
-              << (std::setw(8)) << (" bx='") << (bx) << ("'") << (std::setw(8))
-              << (" by='") << (by) << ("'") << (std::setw(8)) << (" cx='")
-              << (cx) << ("'") << (std::setw(8)) << (" cy='") << (cy) << ("'")
-              << (std::setw(8)) << (" path.to_string()='") << (path.to_string())
-              << ("'") << (std::setw(8))
-              << (" ((nullptr)==(path.begin())) ? (-1) : (path.begin()[0])='")
-              << (((nullptr) == (path.begin())) ? (-1) : (path.begin()[0]))
-              << ("'") << (std::setw(8)) << (" column='") << (column) << ("'")
-              << (std::setw(8)) << (" col_title='") << (col_title) << ("'")
-              << (std::endl) << (std::flush);
+          if (!((nullptr) == (column))) {
+            column_title = column->get_title();
+          }
         }
+        std::map<std::string, std::string> short_to_long_column_name = {
+            {"pvn", "packet_version_number"},
+            {"pt", "packet_type"},
+            {"shf", "secondary_header_flag"},
+            {"apipi", "application_process_id_process_id"},
+            {"apipc", "application_process_id_packet_category"},
+            {"sf", "sequence_flags"},
+            {"sc", "sequence_count"},
+            {"dl", "data_length"},
+            {"ct", "coarse_time"},
+            {"ft", "fine_time"},
+            {"sm", "sync_marker"},
+            {"dti", "data_take_id"},
+            {"en", "ecc_number"},
+            {"i0", "ignore_0"},
+            {"tm", "test_mode"},
+            {"rci", "rx_channel_id"},
+            {"ici", "instrument_configuration_id"},
+            {"sci", "sub_commutated_index"},
+            {"scd", "sub_commutated_data"},
+            {"spc", "space_packet_count"},
+            {"pc", "pri_count"},
+            {"ef", "error_flag"},
+            {"i1", "ignore_1"},
+            {"bm", "baq_mode"},
+            {"bbl", "baq_block_length"},
+            {"i2", "ignore_2"},
+            {"rd", "range_decimation"},
+            {"rg", "rx_gain"},
+            {"trrp", "tx_ramp_rate_polarity"},
+            {"trrm", "tx_ramp_rate_magnitude"},
+            {"tpsfp", "tx_pulse_start_frequency_polarity"},
+            {"tpsfm", "tx_pulse_start_frequency_magnitude"},
+            {"tpl", "tx_pulse_length"},
+            {"i3", "ignore_3"},
+            {"r", "rank"},
+            {"pri", "pulse_repetition_interval"},
+            {"swst", "sampling_window_start_time"},
+            {"swl", "sampling_window_length"},
+            {"sscp", "sab_ssb_calibration_p"},
+            {"ssp", "sab_ssb_polarisation"},
+            {"sstc", "sab_ssb_temp_comp"},
+            {"ssi0", "sab_ssb_ignore_0"},
+            {"sseba", "sab_ssb_elevation_beam_address"},
+            {"ssi1", "sab_ssb_ignore_1"},
+            {"ssaba", "sab_ssb_azimuth_beam_address"},
+            {"sscm", "ses_ssb_cal_mode"},
+            {"ssi0", "ses_ssb_ignore_0"},
+            {"sstpn", "ses_ssb_tx_pulse_number"},
+            {"ssst", "ses_ssb_signal_type"},
+            {"ssi1", "ses_ssb_ignore_1"},
+            {"sss", "ses_ssb_swap"},
+            {"sssn", "ses_ssb_swath_number"},
+            {"noq", "number_of_quads"},
+            {"i4", "ignore_4"}};
+        auto long_column_name = short_to_long_column_name[column_title];
+        tooltip->set_text(long_column_name);
         return true;
       });
   add_columns();
