@@ -197,17 +197,6 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
           Gtk::TreeModel::Path path;
           Gtk::TreeViewColumn *focus_column;
           m_TreeView.get_cursor(path, focus_column);
-
-          (std::cout) << (std::setw(10))
-                      << (std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count())
-                      << (" ") << (std::this_thread::get_id()) << (" ")
-                      << (__FILE__) << (":") << (__LINE__) << (" ")
-                      << (__func__) << (" ") << ("keyboard") << (" ")
-                      << (std::setw(8)) << (" path='") << (path) << ("'")
-                      << (std::setw(8)) << (" focus_column='") << (focus_column)
-                      << ("'") << (std::endl) << (std::flush);
           if (!((nullptr) == (focus_column))) {
             column_title = focus_column->get_title();
           }
@@ -220,23 +209,6 @@ ListStore_SpacePacketHeader0::ListStore_SpacePacketHeader0()
           int cx = 0;
           int cy = 0;
           m_TreeView.get_path_at_pos(bx, by, path, column, cx, cy);
-
-          (std::cout) << (std::setw(10))
-                      << (std::chrono::high_resolution_clock::now()
-                              .time_since_epoch()
-                              .count())
-                      << (" ") << (std::this_thread::get_id()) << (" ")
-                      << (__FILE__) << (":") << (__LINE__) << (" ")
-                      << (__func__) << (" ") << ("mouse") << (" ")
-                      << (std::setw(8)) << (" x='") << (x) << ("'")
-                      << (std::setw(8)) << (" y='") << (y) << ("'")
-                      << (std::setw(8)) << (" bx='") << (bx) << ("'")
-                      << (std::setw(8)) << (" by='") << (by) << ("'")
-                      << (std::setw(8)) << (" cx='") << (cx) << ("'")
-                      << (std::setw(8)) << (" cy='") << (cy) << ("'")
-                      << (std::setw(8)) << (" path='") << (path) << ("'")
-                      << (std::setw(8)) << (" column='") << (column) << ("'")
-                      << (std::endl) << (std::flush);
           if (!((nullptr) == (column))) {
             column_title = column->get_title();
           }

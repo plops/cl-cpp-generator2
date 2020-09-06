@@ -524,7 +524,7 @@
 							  (declare (type "Gtk::TreeModel::Path" path)
 								   (type "Gtk::TreeViewColumn*" focus_column))
 							  (m_TreeView.get_cursor path focus_column)
-							  ,(logprint "keyboard" `(path focus_column))
+							  ;,(logprint "keyboard" `(path focus_column))
 							  (unless (== nullptr focus_column)
 							    (setf column_title (focus_column->get_title)))
 							  ))
@@ -542,7 +542,7 @@
 								     (type "Gtk::TreeViewColumn*" column)
 								     (type int cx cy))
 							    (m_TreeView.get_path_at_pos bx by path column cx cy)
-							    ,(logprint "mouse" `(x y bx by cx cy path column))
+							    ;,(logprint "mouse" `(x y bx by cx cy path column))
 							    (unless (== nullptr column)
 							      (setf column_title (column->get_title)))))))
 						   (let ((short_to_long_column_name
