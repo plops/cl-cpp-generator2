@@ -333,7 +333,7 @@
 			     <chrono>
 			     <thread>
 			     <unordered_map>
-			     )
+			     <map>)
 		    
 		    ;(include <gtkmm.h>)
 		    " "
@@ -526,7 +526,7 @@
 							  (m_TreeView.get_cursor path focus_column)
 							  ,(logprint "keyboard" `(path focus_column))
 							  (unless (== nullptr focus_column)
-							      (setf column_title (focus_column->get_title)))
+							    (setf column_title (focus_column->get_title)))
 							  ))
 						       (do0
 							(let ((bx 0)
@@ -545,8 +545,34 @@
 							    ,(logprint "mouse" `(x y bx by cx cy path column))
 							    (unless (== nullptr column)
 							      (setf column_title (column->get_title)))))))
-
-						   (tooltip->set_text column_title))
+						   (let ((short_to_long_column_name
+							  (curly
+							   ,@(loop for e in *space-packet* collect
+								  (destructuring-bind (name_ default-value &key bits) e
+								    (let ((cname (substitute #\_ #\- (format nil "~a" name_)))
+									  (short-name
+									   (let* ((s (format nil "~a" name_))
+										  (l (list (aref s 0)))
+										  (add-the-next nil))
+									     (loop for c across (subseq s 1)
+										do
+										  (if (eq c #\-)
+										      (setf add-the-next t)
+										      (when add-the-next
+											(setf add-the-next nil)
+											(push c l))))
+									     (format nil "~{~a~}" (reverse l)))))
+								      `(curly
+									(string ,short-name)
+									(string ,cname)))))))
+							 (long_column_name (aref short_to_long_column_name column_title)))
+						     (declare (type ;"std::map<const Glib::ustring,const Glib::ustring>"
+							       "std::map<std::string,std::string>"
+								    short_to_long_column_name))
+						     
+						     
+						     
+						     (tooltip->set_text long_column_name)))
 						 (return true))))
 				 (add_columns)
 				 (m_ScrolledWindow.add m_TreeView)
