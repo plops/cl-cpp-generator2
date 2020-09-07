@@ -416,6 +416,12 @@ void ListStore_SpacePacketHeader0::liststore_add_item(
   row[m_columns.number_of_quads] = foo.m_number_of_quads;
   row[m_columns.ignore_4] = foo.m_ignore_4;
 }
+void create_draw_area() {
+  Gtk::DrawingArea area;
+  auto ctx = area.get_window()->create_cairo_context();
+  ctx->set_source_rgb((1.0f), (0.f), (0.f));
+  ctx->set_line_width((2.0f));
+}
 int main(int argc, char **argv) {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();

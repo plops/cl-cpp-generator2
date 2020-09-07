@@ -218,5 +218,6 @@ class ListStore_SpacePacketHeader0 : public Gtk::Window {
 };
     const ModelColumns m_columns;
 };
+void create_draw_area ()  ;  
 int main (int argc, char** argv)  ;  
 #endif

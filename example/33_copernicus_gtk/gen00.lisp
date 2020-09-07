@@ -832,7 +832,27 @@
 		       
 		       ))
 
-		    
+		    (defun create_draw_area ()
+		      (let ((area)
+			    (ctx (-> (area.get_window)
+				     (create_cairo_context))))
+			(declare (type "Gtk::DrawingArea" area))
+			;(ctx->set_source_rgb 1.0 .0 .0)
+			;(ctx->set_line_width 2.0)
+			,@(loop for (e f) in `((source_rgb (1.0 .0 .0))
+					       (line_width (2.0))
+					       ;(dash )
+					       ;(line_cap)
+					       ;(line_join )
+					       ;(font_face )
+					       ;(font_size)
+					       )
+			     collect
+			       `(,(format nil "ctx->set_~a" e) ,@f))
+
+			;; ctx->save restore
+			
+			))
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
