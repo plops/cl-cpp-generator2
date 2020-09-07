@@ -29,3 +29,5 @@ gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
 #+begin_example
 GTK_DEBUG=interactive GOBJECT_DEBUG=instance-count ./vis
 #+end_example
+
+- GtkScrolledWindow GtkViewport GtkDrawingArea
