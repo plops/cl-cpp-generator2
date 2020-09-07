@@ -15,6 +15,9 @@
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 #include <gtkmm-3.0/gtkmm/window.h>
+#include <gtkmm-3.0/gtkmm/drawingarea.h>
+;
+#include <cairomm/context.h>
 ;
 // header
 #include <gtkmm-3.0/gtkmm/treeview.h>
@@ -22,6 +25,8 @@
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
 #include <gtkmm-3.0/gtkmm/window.h>
+#include <gtkmm-3.0/gtkmm/drawingarea.h>
+#include <cairomm/context.h>
  ;
 class CellItem_SpacePacketHeader0  {
         public:
@@ -218,6 +223,12 @@ class ListStore_SpacePacketHeader0 : public Gtk::Window {
 };
     const ModelColumns m_columns;
 };
-void create_draw_area ()  ;  
+class TimeChart : public Gtk::DrawingArea {
+        public:
+         TimeChart ()  ;  
+         ~TimeChart ()  ;  
+        protected:
+        bool on_draw (const Cairo::RefPtr<Cairo::Context>& cr)  ;  
+};
 int main (int argc, char** argv)  ;  
 #endif

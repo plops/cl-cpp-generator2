@@ -349,10 +349,12 @@
 			       <gtkmm-3.0/gtkmm/box.h>
 			       <gtkmm-3.0/gtkmm/scrolledwindow.h>
 			       <gtkmm-3.0/gtkmm/window.h>
+			       <gtkmm-3.0/gtkmm/drawingarea.h>
 			       ;<glibmm-2.4/glibmm/ustring.h>
 			       ;<glibmm-2.4/glibmm/value_basictypes.h>
 			       )
 		      #+nil (include <gtkmm.h>)
+		      (include <cairomm/context.h>)
 		      " "
 		      )
 		     (do0
@@ -361,6 +363,8 @@
 			       "vis_01_mmap.hpp"
 			       "vis_02_collect_packet_headers.hpp"
 			       "vis_06_decode_sub_commutated_data.hpp")
+
+		     
 		      
 		      " "
 		      ))
@@ -832,7 +836,39 @@
 		       
 		       ))
 
-		    (defun create_draw_area ()
+		    (defclass TimeChart "public Gtk::DrawingArea"
+		      "public:"
+		      (defmethod TimeChart ()
+			(declare (values :constructor)))
+		      (defmethod ~TimeChart ()
+			(declare (values :constructor)
+				 (virtual)))
+		      "protected:"
+		      (defmethod on_draw (cr)
+			(declare (values bool)
+				 (override)
+				 (type "const Cairo::RefPtr<Cairo::Context>&" cr))
+			(let ((allocation (get_allocation))
+			      (width (allocation.get_width))
+			      (height (allocation.get_height))
+			      (xc (/ width 2))
+			      (yc (/ height 2))
+			      )
+			  ,@(loop for e in `((set_line_width 10.0)
+					     (set_source_rgb .8 .0 .0)
+					     (move_to 0 0)
+					     (line_to xc yc)
+					     (line_to 0 height)
+					     (move_to xc yc)
+					     (line_to width yc)
+					     (stroke))
+			       collect
+				 (destructuring-bind (cmd &rest rest) e
+				   `(-> cr (,cmd ,@rest)))))
+			(return true)))
+
+		    #+nil (defun create_draw_area ()
+		      "//  https://developer.gnome.org/gtkmm-tutorial/stable/sec-cairo-drawing-model.html.en"
 		      (let ((area)
 			    (ctx (-> (area.get_window)
 				     (create_cairo_context))))
@@ -850,7 +886,15 @@
 			     collect
 			       `(,(format nil "ctx->set_~a" e) ,@f))
 
-			;; ctx->save restore
+			;; ctx->save restore not required in on_draw callback
+
+			;; origin in upper left, positive y goes down
+
+			;; ctx->scale user-space to device-space mapping
+			;; ctx->line_to move_to stroke clip fill
+			;; rel_line_to
+			;; stroke_preserve keeps the path
+			
 			
 			))
 
@@ -969,12 +1013,21 @@
 
 		      
 		      
-		      (let ((app (Gtk--Application--create argc argv
+		      #+nil (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
 			(declare (type ListStore_SpacePacketHeader0 ;Example_TreeView_ListStore
 				       hw))
-			(app->run hw)))
+			(app->run hw))
+		      (let ((app (Gtk--Application--create argc argv
+							   (string "org.gtkmm.example")))
+			    (win )
+			    (timechart))
+			(declare (type "Gtk::Window" win)
+				 (type "TimeChart" timechart))
+			(win.add timechart)
+			(timechart.show)
+			(app->run win)))
 
 		    
 		    )))

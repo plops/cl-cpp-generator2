@@ -416,11 +416,23 @@ void ListStore_SpacePacketHeader0::liststore_add_item(
   row[m_columns.number_of_quads] = foo.m_number_of_quads;
   row[m_columns.ignore_4] = foo.m_ignore_4;
 }
-void create_draw_area() {
-  Gtk::DrawingArea area;
-  auto ctx = area.get_window()->create_cairo_context();
-  ctx->set_source_rgb((1.0f), (0.f), (0.f));
-  ctx->set_line_width((2.0f));
+TimeChart::TimeChart() {}
+TimeChart::~TimeChart() {}
+bool TimeChart::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {
+  auto allocation = get_allocation();
+  auto width = allocation.get_width();
+  auto height = allocation.get_height();
+  auto xc = ((width) / (2));
+  auto yc = ((height) / (2));
+  cr->set_line_width((10.f));
+  cr->set_source_rgb((0.80f), (0.f), (0.f));
+  cr->move_to(0, 0);
+  cr->line_to(xc, yc);
+  cr->line_to(0, height);
+  cr->move_to(xc, yc);
+  cr->line_to(width, yc);
+  cr->stroke();
+  return true;
 }
 int main(int argc, char **argv) {
   state._start_time =
@@ -431,6 +443,9 @@ int main(int argc, char **argv) {
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
-  ListStore_SpacePacketHeader0 hw;
-  app->run(hw);
+  Gtk::Window win;
+  TimeChart timechart;
+  win.add(timechart);
+  timechart.show();
+  app->run(win);
 }
