@@ -16,7 +16,6 @@
 #include <gtkmm.h>
 #include <gtkmm-plplot.h>
  ;
-int main (int argc, char** argv)  ;  
 class Window : public Gtk::Window {
         public:
          Window ()  ;  

@@ -153,6 +153,7 @@
 		      (include <gtkmm/button.h>
 			       <gtkmm/window.h>)
 		      (include <gtkmm.h>)
+		      (include <gtkmm-plplot.h>)
 		      " "
 		      )
 		     (do0
@@ -160,192 +161,73 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
+		    
 
-		    #+nil (defun main (argc argv)
-		      (declare (type int argc)
-			       (type char** argv)
-			       (values int))
-		      (let ((app (Gtk--Application--create argc argv
-							   (string "org.gtkmm.examples.base")))
-			    (win))
-			(declare (type Gtk--Window win))
-			(win.set_default_size 200 200)
-			(app->run win)))
-
-
-		    ;; https://github.com/GNOME/gtkmm/blob/master/demos/gtk-demo/example_treeview_liststore.cc
-		    (defclass CellItem_Bug ()
+		    
+		    
+		    (defclass Window "public Gtk::Window"
+		      
 			"public:"
-		      (defmethod CellItem_Bug ()
+		      (defmethod Window ()
 			(declare
-			 (construct (m_fixed false)
-				    (m_number 0))
-			 (values :constructor)))
-		      (defmethod ~CellItem_Bug ()
-			(declare (values :constructor)))
-		      (defmethod CellItem_Bug (src)
-			(declare (values :constructor)
-				 (type "const CellItem_Bug&" src))
-			(operator= src))
-		      (defmethod CellItem_Bug (fixed number severity description)
-			(declare (values :constructor)
-				 (construct (m_fixed fixed)
-					    (m_number number)
-					    (m_severity severity)
-					    (m_description description))
-				 (type bool fixed)
-				 (type guint number)
-				 (type "const Glib::ustring&" severity)
-				 (type "const Glib::ustring&" description)))
-		      (defmethod operator= (src)
-			(declare (values CellItem_Bug&)
-				 (type "const CellItem_Bug&" src))
-			,@(loop for e in `(m_fixed m_number m_severity m_description) collect
-			       `(setf ,e (dot src ,e)))
-			(return *this))
-		      "bool m_fixed;"
-		      "guint m_number;"
-		      "Glib::ustring m_severity;"
-		      "Glib::ustring m_description;")
-
-
-		    (defclass Example_TreeView_ListStore "public Gtk::Window"
-		      "public:"
-		      (defmethod Example_TreeView_ListStore ()
-			(declare (values :constructor)
-				 (construct (m_VBox Gtk--ORIENTATION_VERTICAL 8)
-					    (m_Label (string "This is the bug list."))))
-			(set_title (string "Gtk::ListStore demo"))
-			(set_border_width 8)
-			(set_default_size 280 250)
-			(add m_VBox)
-			(m_VBox.pack_start m_Label Gtk--PACK_SHRINK)
-			(m_ScrolledWindow.set_shadow_type Gtk--SHADOW_ETCHED_IN)
-			(m_ScrolledWindow.set_policy Gtk--POLICY_NEVER Gtk--POLICY_AUTOMATIC)
-			(m_VBox.pack_start m_ScrolledWindow)
-			(create_model)
-			(m_TreeView.set_model m_refListStore)
-			(m_TreeView.set_search_column (m_columns.description.index))
-			(add_columns)
-			(m_ScrolledWindow.add m_TreeView)
-			(show_all)
-			)
-		      (defmethod ~Example_TreeView_ListStore ()
-			(declare (values :constructor)
-				 ;; override
-				 ))
-		      "protected:"
-		      (defmethod create_model ()
-			(declare (virtual))
-			(setf m_refListStore (Gtk--ListStore--create m_columns))
-			(add_items)
-			(std--for_each
-			 (m_vecItems.begin)
-			 (m_vecItems.end)
-			 (sigc--mem_fun *this
-					&Example_TreeView_ListStore--liststore_add_item)))
-		      (defmethod add_columns ()
-			(declare (virtual))
-			(let ((cols_count (m_TreeView.append_column_editable (string "Fixed?")
-									     m_columns.fixed))
-			      (pColumn (m_TreeView.get_column (- cols_count 1))))
-			  ;; set to fixed 50 pixel size
-			  (pColumn->set_sizing Gtk--TREE_VIEW_COLUMN_FIXED)
-			  (pColumn->set_fixed_width 60)
-			  (pColumn->set_clickable))
-			(m_TreeView.append_column (string "Bug Number")
-						  m_columns.number)
-			(m_TreeView.append_column (string "Severity")
-						  m_columns.severity)
-			(m_TreeView.append_column (string "Description")
-						  m_columns.description)
-			)
-		      (defmethod add_items ()
-			(declare (virtual))
-			,@(loop for e in `((false 60482 Normal "scrollable notebuooks")
-					   (false 60539 Major "trisatin"))
-			     collect
-			       (destructuring-bind (b n type str) e
-				`(dot m_vecItems
-				      (push_back (CellItem_Bug ,b ,n (string ,type) (string ,str)))))))
-		      (defmethod liststore_add_item (foo)
-			(declare (virtual)
-				 (type "const CellItem_Bug&" foo))
-			(let ((row (deref (m_refListStore->append))))
-			  ,@(loop for e in `(fixed number severity description) collect
-				 `(setf (aref row (dot m_columns ,e))
-					(dot foo ,(format nil "m_~a" e))))))
-		      "Gtk::Box m_VBox;"
-		      "Gtk::ScrolledWindow m_ScrolledWindow;"
-		      "Gtk::Label m_Label;"
-		      "Gtk::TreeView m_TreeView;"
-		      "Glib::RefPtr<Gtk::ListStore> m_refListStore;"
-
-		      "typedef std::vector<CellItem_Bug> type_vecItems;"
-		      "type_vecItems m_vecItems;"
-		      (do0
-		       ,(let ((l `((bool fixed)
-				   ("unsigned int" number)
-				   ("Glib::ustring" severity)
-				   ("Glib::ustring" description))))
-			  `(space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
-				  (progn
-				    ,@(loop for (e f) in l collect
-					   (format nil "Gtk::TreeModelColumn<~a> ~a;" e f))
-				    (defun+ ModelColumns ()
-				      (declare (values :constructor))
-				      ,@(loop for (e f) in l collect
-					     `(add ,f))))))
-		       "const ModelColumns m_columns;")
-		      
-		      )
-
-
-		    #+nil (defun do_treeview_liststore ()
-		      (declare (values "Gtk::Window*"))
-		      (return (new (Example_TreeView_ListStore))))
-
-		    #+nil
-		    (defclass HelloWorld "public Gtk::Window"
-		      "public:"
-		      (defmethod HelloWorld ()
-			(declare (values :constructor)
-				 (construct (m_button (string "_Hello World") true)))
+			 (construct (canvas)
+				    )
+			 (values :constructor))
+			(set_default_size 720 580)
+			(let ((geom )
+			      (aspect (/ 720d0 580d0)))
+			  (declare (type "Gdk--Geometry" geom))
+			  (setf geom.min_aspect aspect
+				geom.max_aspect aspect)
+			  (set_geometry_hints *this geom Gdk--HINT_ASPECT)
+			  )
+			(set_title (string "plplot test"))
+			(canvas.set_hexpand true)
+			(canvas.set_vexpand true)
+			(add_plot_1)
+			(grid.attach canvas 0 0 1 1)
+			(grid.set_row_spacing 5)
+			(grid.set_column_spacing 5)
+			(grid.set_column_homogeneous false)
+			(add grid)
 			(set_border_width 10)
-			(dot m_button
-			     (signal_clicked)
-			     (connect
-			      (lambda ()
-				,(logprint "button" `()))
-			      #+nil
-			      (sigc--mem_fun *this
-					     &HelloWorld--on_button_clicked
-					     ))
-			     )
-			(add m_button)
-			(m_button.show))
-		      (defmethod ~HelloWorld ()
+			(grid.show_all))
+		      (defmethod ~Window ()
 			(declare (values :constructor)))
-
-		      "protected:"
-		      #+nil (defmethod on_button_clicked ()
-			,(logprint "button" `()))
+		      "private:"
+		      "Gtk::PLplot::Canvas canvas;"
+		      "Gtk::Grid grid;"
+		      "Gtk::PLplot::Plot2D *plot=nullptr;"
 		      
-		      "Gtk::Button m_button;"
-		      
-		      )
+		      "Glib::ustring m_severity;"
+		      "Glib::ustring m_description;"
+		      (defmethod add_plot_1 ()
+			(unless (== nullptr plot)
+			  (canvas.remove_plot *plot)
+			  (setf plot nullptr))
+			(let ((npts 73)
+			      (x_va (std--valarray<double> npts))
+			      (y_va (std--valarray<double> npts))
+			      (xmin 0)
+			      (xmax (* 60 60 24))
+			      (ymin 10)
+			      (ymax 20))
+			  ())))
+		    
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      (Glib--set_application_name (string "gtkmm-plplot-test13"))
 		      (let ((app (Gtk--Application--create argc argv
-							   (string "org.gtkmm.example")))
-			    (hw))
-			(declare (type Example_TreeView_ListStore ;HelloWorld
-				       hw))
-			;(win.set_default_size 200 200)
-			(app->run hw)))
+							   (string "org.gtkmm-plplot.example")))
+			    (win))
+			(declare (type Window
+				       win))
+					;(win.set_default_size 200 200)
+			
+			(app->run win)))
 
 		    
 		    )))
