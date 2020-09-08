@@ -39,16 +39,25 @@ Example_ListView_AppLauncher::create_application_list() {
 }
 void Example_ListView_AppLauncher::setup_listitem(
     const Glib::RefPtr<Gtk::ListItem> &item) {
+  auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 12);
+  auto image = Gtk::make_managed<Gtk::Image>();
   auto label = Gtk::make_managed<Gtk::Label>();
-  item->set_child(*label);
+  image->set_icon_size(Gtk::IconSize::LARGE);
+  box->append(*image);
+  box->append(*label);
+  item->set_child(*box);
 }
 void Example_ListView_AppLauncher::bind_listitem(
     const Glib::RefPtr<Gtk::ListItem> &item) {
-  auto label = dynamic_cast<Gtk::Label *>(item->get_child());
-  if (label) {
-    auto app_info = std::dynamic_pointer_cast<Gio::AppInfo>(item->get_item());
-    if (app_info) {
-      label->set_label(app_info->get_display_name());
+  auto image = dynamic_cast<Gtk::Image *>(item->get_child()->get_first_child());
+  if (image) {
+    auto label = dynamic_cast<Gtk::Label *>(image->get_next_sibling());
+    if (label) {
+      auto app_info = std::dynamic_pointer_cast<Gio::AppInfo>(item->get_item());
+      if (app_info) {
+        image->set(app_info->get_icon());
+        label->set_label(app_info->get_display_name());
+      }
     }
   }
 }

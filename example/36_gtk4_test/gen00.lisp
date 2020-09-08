@@ -199,16 +199,29 @@
 
 		      (defmethod setup_listitem (item)
 			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
-			(let ((label (Gtk--make_managed<Gtk--Label>)))
-			  (item->set_child *label)))
+			(let ((box (Gtk--make_managed<Gtk--Box> Gtk--Orientation--HORIZONTAL 12))
+			      (image (Gtk--make_managed<Gtk--Image>))
+			      (label (Gtk--make_managed<Gtk--Label>)))
+			  (image->set_icon_size Gtk--IconSize--LARGE)
+			  (box->append *image)
+			  (box->append *label)
+			  (item->set_child *box)))
 		      (defmethod bind_listitem (item)
 			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
-			(let ((label (dynamic_cast<Gtk--Label*> (item->get_child))))
-			  (when label
-			    (let ((app_info (std--dynamic_pointer_cast<Gio--AppInfo>
-					     (item->get_item))))
-			      (when app_info
-				(label->set_label (app_info->get_display_name)))))))
+			(let ((image (dynamic_cast<Gtk--Image*> (-> (item->get_child)
+								    (get_first_child))
+								))
+			      )
+			  (when image
+			   (let ((label (dynamic_cast<Gtk--Label*> (-> image
+								       (get_next_sibling))
+								   )))
+			     (when label
+			       (let ((app_info (std--dynamic_pointer_cast<Gio--AppInfo>
+						(item->get_item))))
+				 (when app_info
+				   (image->set (app_info->get_icon))
+				   (label->set_label (app_info->get_display_name)))))))))
 		      (defmethod activate (position)
 			(declare (type guint position))
 			(let ((item (->
