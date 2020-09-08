@@ -163,10 +163,11 @@
 		      ))
 		    
 
+		    ;; https://gist.github.com/alex-eri/53518825b2a8a50dd1695c69ee5058cc
 		    
-		    
-		    (defclass Window "public Gtk::Widget"
-		      
+		    (defclass Browser "public Gtk::Window"
+		      "private:"
+		      "Web"
 			"public:"
 		      (defmethod Window ()
 			(declare
@@ -178,7 +179,7 @@
 		      (defmethod "operator WebKitWebView*" ()
 			  (declare (values :constructor))
 			(return (WEBKIT_WEB_VIEW (gobj))))
-		      ;"private:"
+		      
 
 		      (defmethod load_uri (uri)
 			(declare (type "const gchar*" uri))
@@ -199,11 +200,21 @@
 			      (win))
 			  (declare (type Gtk--Window
 					 win))
-			  (let ((webview (new Window)))
-			    (win.add *webview)
-			    ,(logprint "start" `(uri))
-			    (webview->load_uri uri)
-			    (win.show_all))
+			  (let (
+				(webview (new Window))
+				(setting (webkit_web_view_get_settings (WEBKIT_WEB_VIEW webview)
+								       )))
+			    (g_object_set (G_OBJECT setting)
+					  (string "enable-developer-extras")
+					  true
+					  nullptr)
+			    (let ((inspector (webkit_web_view_get_inspector (WEBKIT_WEB_VIEW webview))))
+			      (webkit_web_inspector_show (WEBKIT_WEB_INSPECTOR inspector))
+			      (win.add *webview)
+			      
+			      ,(logprint "start" `(uri))
+			      (webview->load_uri uri)
+			      (win.show_all)))
 			  (app->run win))))))))
   
   (progn

@@ -27,6 +27,10 @@ int main(int argc, char **argv) {
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm-plplot.example");
   Gtk::Window win;
   auto webview = new Window;
+  auto setting = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
+  g_object_set(G_OBJECT(setting), "enable-developer-extras", true, nullptr);
+  auto inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
+  webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
   win.add(*webview);
 
   (std::cout)
