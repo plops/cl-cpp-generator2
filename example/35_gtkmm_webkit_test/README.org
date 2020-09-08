@@ -1,1 +1,2 @@
 - https://stackoverflow.com/questions/17039942/example-of-using-webkitgtk-with-gtkmm-3-0
+- sudo emerge -av gst-plugins-base gst-plugins-good gst-plugins-libav
