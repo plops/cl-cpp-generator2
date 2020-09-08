@@ -176,7 +176,7 @@
 			(set_default_size 720 580)
 			(let ((geom )
 			      (aspect (/ 720d0 580d0)))
-			  (declare (type "Gdk--Geometry" geom))
+			  (declare (type "Gdk::Geometry" geom))
 			  (setf geom.min_aspect aspect
 				geom.max_aspect aspect)
 			  (set_geometry_hints *this geom Gdk--HINT_ASPECT)
@@ -212,7 +212,21 @@
 			      (xmax (* 60 60 24))
 			      (ymin 10)
 			      (ymax 20))
-			  ())))
+			  (dotimes (i npts)
+			    (setf (aref x_va i) (/ (static_cast<double> (* xmax i))
+						   (static_cast<double> npts))
+				  (aref y_va i) (- 15d0 (* 5d0 (cos (* 2d0 ,pi (/ (static_cast<double> i)
+										  (static_cast<double> npts))))))))
+			  (let ((plot_data (Gtk--manage
+					    (new (Gtk--PLplot--PlotData2D x_va
+									  y_va
+									  (Gdk--RGBA (string "blue"))
+									  Gtk--PLplot--LineStyle--LONG_DASH_LONG_GAP
+									  5d0)))))
+			    (setf plot (Gtk--manage (new (Gtk--PLplot--Plot2D *plot_data))))
+			    (plot->set_axis_time_format_x (string "%H:%M"))
+			    (canvas.add_plot *plot)
+			    (plot->hide_legend)))))
 		    
 
 		    (defun main (argc argv)

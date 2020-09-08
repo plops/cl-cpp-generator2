@@ -26,6 +26,7 @@ class Window : public Gtk::Window {
         Gtk::PLplot::Plot2D *plot=nullptr;
         Glib::ustring m_severity;
         Glib::ustring m_description;
+        void add_plot_1 ()  ;  
 };
 int main (int argc, char** argv)  ;  
 #endif
