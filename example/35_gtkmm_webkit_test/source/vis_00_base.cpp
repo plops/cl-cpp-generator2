@@ -13,13 +13,17 @@ extern State state;
 
 Window::Window() : Gtk::Widget(webkit_web_view_new()) {}
 Window::~Window() {}
+Window::operator WebKitWebView *() { return WEBKIT_WEB_VIEW(gobj()); }
 void Window::load_uri(const gchar *uri) {
   webkit_web_view_load_uri(*this, uri);
 }
 int main(int argc, char **argv) {
   Glib::set_application_name("gtkmm-plplot-test13");
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm-plplot.example");
-  Window win;
-  win.load_uri("https://www.google.com");
+  Gtk::Window win;
+  auto webview = new Window;
+  win.add(*webview);
+  webview->load_uri("https://www.youtube.com");
+  win.show_all();
   app->run(win);
 }

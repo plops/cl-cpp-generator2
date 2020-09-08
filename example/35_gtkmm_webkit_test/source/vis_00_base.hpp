@@ -20,6 +20,7 @@ class Window : public Gtk::Widget {
         public:
          Window ()  ;  
          ~Window ()  ;  
+         operator WebKitWebView* ()  ;  
         void load_uri (const gchar* uri)  ;  
 };
 int main (int argc, char** argv)  ;  

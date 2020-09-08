@@ -197,7 +197,7 @@
 				       win))
 			(let ((webview (new Window)))
 			  (win.add *webview)
-			  (webview->load_uri (string "https://www.google.com"))
+			  (webview->load_uri (string "https://www.youtube.com"))
 			  (win.show_all))
 			(app->run win)))))))
   

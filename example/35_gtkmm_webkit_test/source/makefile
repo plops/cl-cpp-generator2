@@ -1,8 +1,5 @@
 all: vis
 
-#vis: *.cpp
-#	g++ $^ -o $@ `pkg-config gtkmm-3.0 --cflags --libs` `pkg-config --cflags --libs gtkmm-plplot-2.0`
-
 
 CXXFLAGS=-Og -g3 -ggdb \
 -Wall -Wextra -Werror \
@@ -12,12 +9,12 @@ CXXFLAGS=-Og -g3 -ggdb \
 -Wno-error=unused-variable \
 -pipe \
 `pkg-config gtkmm-3.0 --cflags` \
-`pkg-config --cflags gtkmm-plplot-2.0` \
+`pkg-config webkit2gtk-4.0 --cflags`
 -march=native -mtune=native 
 
 LDFLAGS= \
 `pkg-config gtkmm-3.0 --libs` \
-`pkg-config --libs gtkmm-plplot-2.0` \
+`pkg-config webkit2gtk-4.0 --libs` \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections
 
