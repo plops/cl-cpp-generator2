@@ -43,3 +43,16 @@
       drawing
     - if your drawing needs a certain size, you should implement the
       measure() function too
+  - https://blog.gtk.org/2020/04/27/custom-widgets-in-gtk-4-layout/
+    - main responsibility for a custom widget is to arrange the child
+      widgets as required. use layout manager (BoxLayout,
+      CenterLayout, GridLayout, ConstraintLayout)
+    - https://developer.gnome.org/gtk4/3.98/GtkConstraintLayout.html
+  - https://blog.gtk.org/2020/04/29/custom-widgets-in-gtk-4-input/
+  - https://blog.gtk.org/2020/06/07/scalable-lists-in-gtk-4/
+    - treeview works fine with 100000 items
+    - treeview renderers don't support CSS and animations
+    - ListBox and FlowBox do have support but only support 1000 items
+      well
+    - GTK4 ListView addresses scalability limitation similar to
+      android recycler
