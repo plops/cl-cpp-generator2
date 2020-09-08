@@ -1,0 +1,7 @@
+
+- git clone https://github.com/tschoonj/gtkmm-plplot
+#+begin_example
+[ebuild  N     ] sci-libs/plplot-5.15.0-r1:0/14::gentoo  USE="X cairo cxx dynamic jpeg pdf png threads -doc -examples -fortran -gd -java -latex -lua -ocaml -octave -python -qhull -qt5 -shapefile -svg -tcl -test -tk -truetype -wxwidgets" PYTHON_SINGLE_TARGET="python3_7 -python3_6 -python3_8" 15020 KiB
+#+end_example
+
+
