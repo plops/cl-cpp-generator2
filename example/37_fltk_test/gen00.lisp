@@ -145,7 +145,7 @@
 			     <FL/Fl_Box.h>
 			     <FL/Fl_Window.h>)
 		    " "
-
+		    ;; https://www.stroustrup.com/Programming/PPP2code/Window.h
 		    
 		    #+nil
 		    (split-header-and-code
@@ -163,9 +163,67 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
-		    
 
-		    ;; https://gist.github.com/alex-eri/53518825b2a8a50dd1695c69ee5058cc
+		    (defclass Window "public Fl_Window"
+		      "public:"
+		      (defmethod Window (w h title)
+			(declare (type int w h)
+				 (type "const string&" title)
+				 
+				 
+				 (values :constructor)))
+		      (defmethod Window (xy w h title)
+			  (declare
+			   (type Point xy)
+			   (type int w h)
+			   (type "const string&" title)
+				 
+				 
+			   (values :constructor)))
+		      (defmethod ~Window ()
+			  (declare (virtualw.h)				 
+				 (values :constructor))))
+		    
+		    (defclass Widget ()
+		      "public:"
+		      (defmethod Widget (xy w h s; cb
+					 )
+			(declare (type Point xy)
+				 (type int w h)
+				 (type "const string&" s)
+				 (type Callback cb)
+				 (constr (loc xy)
+					 (width w)
+					 (height h)
+					 (label s)
+					 ;(do_it cb)
+					 )
+				 (values :constructor)))
+		      (defmethod ~Widget ()
+			(declare (values :constructor)
+				 (virtual)))
+		      (defmethod move (dx dy)
+			(declare (virtual)
+				 (type int dx dy))
+			(hide)
+			(pw->position (incf loc.x dx)
+				      (incf loc.y dy))
+			(show))
+		      (defmethod hide ()
+			(declare (virtual))
+			(pw->hide))
+		      (defmethod show ()
+			(declare (virtual))
+			(pw->show))
+		      "virtual void attach(Window&)=0;"
+		      #+nil
+		      (defmethod attach (Window&)
+			(declare (virtual))
+			(pw->show))
+		      "protected:"
+		      "Window* own;"
+		      "Fl_Widget* pw;"
+		      )
 		    
 		    (defun main (argc argv)
 		      (declare (type int argc)

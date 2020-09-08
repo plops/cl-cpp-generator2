@@ -11,6 +11,18 @@ extern State state;
 #include <iostream>
 #include <thread>
 
+Window::Window(int w, int h, const string &title) {}
+Window::Window(Point xy, int w, int h, const string &title) {}
+Window::~Window() {}
+Widget::Widget(Point xy, int w, int h, const string &s) {}
+Widget::~Widget() {}
+void Widget::move(int dx, int dy) {
+  hide();
+  pw->position((loc.x) += (dx), (loc.y) += (dy));
+  show();
+}
+void Widget::hide() { pw->hide(); }
+void Widget::show() { pw->show(); }
 int main(int argc, char **argv) {
 
   (std::cout)
