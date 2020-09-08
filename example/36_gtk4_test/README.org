@@ -54,5 +54,14 @@
     - treeview renderers don't support CSS and animations
     - ListBox and FlowBox do have support but only support 1000 items
       well
-    - GTK4 ListView addresses scalability limitation similar to
+    - GTK4 {List,Grid,Column}View addresses scalability limitation similar to
       android recycler
+    - model is GListModel instead of GtkTreeModel
+      - items with properties
+      - GtkFilter, GtkSorter, GtkSelectionModel
+      - GtkDirectoryList, PangoFontMap
+      - create widgets on demand with GtkListItemFactory
+	- GtkBuilderListItemFactory uses ui files as templates
+        - GtkSignalListItemFactory callbacks setup, teardown, bind,
+          unbind
+        - GtkExpression 
