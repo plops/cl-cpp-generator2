@@ -35,3 +35,11 @@
 - cd glade; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
 - cd _build; ninja; ninja install
 - hmm, this doesn't seem to use gtk4
+
+- custom widgets
+  - https://blog.gtk.org/2020/04/23/custom-widgets-in-gtk-4-introduction/
+  - https://blog.gtk.org/2020/04/24/custom-widgets-in-gtk-4-drawing/
+    - the snapshot() function that creates the render nodes for your
+      drawing
+    - if your drawing needs a certain size, you should implement the
+      measure() function too
