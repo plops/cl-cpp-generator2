@@ -2,3 +2,4 @@
 - sudo emerge -av gst-plugins-base gst-plugins-good gst-plugins-libav
 - i want the webinspector ui time chart webkitgtk-2.28.4/Source/WebInspectorUI/UserInterface/Views/ResourceTimingBreakdownView.js
 - https://blogs.igalia.com/dpino/2015/12/31/Architecture-of-the-Web-Inspector/
+- https://brrian.tumblr.com/post/3505661753/bkab-web-inspectors-high-level-architecture

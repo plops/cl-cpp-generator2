@@ -1,0 +1,30 @@
+- git clone https://gitlab.gnome.org/GNOME/gtk/
+- https://developer.gnome.org/gtk4/stable/gtk-building.html
+- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; meson configure -Dwayland-backend=false
+- ninja install
+- 140MB in /opt/gtk
+- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/gtk/lib64
+
+
+- git clone https://github.com/libsigcplusplus/libsigcplusplus
+- export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/gtk/lib64/pkgconfig/
+- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
+
+- git clone https://gitlab.freedesktop.org/cairo/cairomm
+- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
+
+- git clone https://gitlab.gnome.org/GNOME/glibmm
+- cd glibmm; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
+
+
+- git clone https://gitlab.gnome.org/GNOME/pangomm
+- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
+
+- git clone https://gitlab.gnome.org/GNOME/gtkmm
+- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
