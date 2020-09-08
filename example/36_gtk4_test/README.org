@@ -30,3 +30,7 @@
 - cd _build; ninja; ninja install
 
 - 421M in /opt/gtk
+
+- git clone https://gitlab.gnome.org/GNOME/glade
+- cd glade; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd _build; ninja; ninja install
