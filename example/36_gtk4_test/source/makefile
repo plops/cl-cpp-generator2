@@ -2,11 +2,13 @@ all: vis
 
 
 CXXFLAGS=-Og -g3 -ggdb \
+-std=gnu++20 \
 -Wall -Wextra -Werror \
 -Wshadow -Wdouble-promotion -fno-common -Wconversion  \
 -ffunction-sections -fdata-sections \
 -Wno-error=inaccessible-base \
 -Wno-error=unused-variable \
+-Wno-error=double-promotion \
 -pipe \
 `pkg-config gtkmm-4.0 --cflags` \
 -march=native -mtune=native 

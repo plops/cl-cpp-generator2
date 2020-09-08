@@ -145,7 +145,7 @@
 		    " "
 
 		    
-		    
+		    ;; gtk-demo/example_listview_applauncher.cc
 		    (split-header-and-code
 		     (do0
 		      "// header"
@@ -162,20 +162,78 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
-		    (defun main (argc argv)
+
+		    (defclass Example_ListView_AppLauncher "public Gtk::Window"
+		      "public:"
+		      (defmethod Example_ListView_AppLauncher ()
+			(declare (values :constructor))
+			(set_default_size 640 320)
+			(set_title (string "app-launcher")
+				   )
+			(let ((factory (Gtk--SignalListItemFactory--create)))
+			  (dot (factory->signal_setup)
+			       (connect (sigc--mem_fun *this
+						       &Example_ListView_AppLauncher--setup_listitem)))
+			  (dot (factory->signal_bind)
+			       (connect (sigc--mem_fun *this
+						       &Example_ListView_AppLauncher--setup_listitem)))
+			  (let ((model (create_application_list)))
+			    (setf m_list (Gtk--make_managed<Gtk--ListView> (Gtk--SingleSelection--create model)
+									   factory))
+			    (dot (m_list->signal_activate)
+				 (connect (sigc--mem_fun *this
+							 &Example_ListView_AppLauncher--activate)))
+			    (let ((sw (Gtk--make_managed<Gtk--ScrolledWindow>)))
+			      (set_child *sw)
+			      (sw->set_child *m_list)))))
+		      (defmethod ~Example_ListView_AppLauncher ()
+			(declare (values :constructor)
+				 (override)))
+		      "protected:"
+		      (defmethod create_application_list ()
+			(declare (values "Glib::RefPtr<Gio::ListModel>"))
+			(let ((store (Gio--ListStore<Gio--AppInfo>--create)))
+			  (for-range (app (Gio--AppInfo--get_all))
+				     (store->append app))
+			  (return store)))
+
+		      (defmethod setup_listitem (item)
+			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
+			(let ((label (Gtk--make_managed<Gtk--Label>)))
+			  (item->set_child *label)))
+		      (defmethod bind_listitem (item)
+			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
+			(let ((label (dynamic_cast<Gtk--Label*> (item->get_child))))
+			  (when label
+			    (let ((app_info (std--dynamic_pointer_cast<Gio--AppInfo>
+					     (item->get_item))))
+			      (when app_info
+				(label->set_label (app_info->get_display_name)))))))
+		      (defmethod activate (position)
+			(declare (type guint position))
+			(let ((item (->
+				     (std--dynamic_pointer_cast<Gio--ListModel> 
+				      (m_list->get_model)
+				      )
+				     (get_object position)))
+			      (app_info (std--dynamic_pointer_cast<Gio--AppInfo> item)))
+			  (when app_info
+			    ,(logprint "launch" `((app_info->get_display_name))))))
+		      "Gtk::ListView* m_list;"
+		      )
+		    
+		    (defun main (argc argv
+				 )
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
-		      (let ((app (Gtk--Application--create argc argv
-							   (string "org.gtkmm.example")))
+		      ,(logprint "start" `(argc (aref argv 0)))
+		      (let ((app (Gtk--Application--create ; argc argv
+							  ; (string "org.gtkmm.example")
+				  ))
 			    (hw))
-			(declare (type Example_TreeView_ListStore ;HelloWorld
-				       hw))
-			;(win.set_default_size 200 200)
-			(app->run hw)))
-
-		    
-		    )))
+			(declare (type Example_ListView_AppLauncher hw))
+			(app->run hw))))))
   )
   
   (progn
