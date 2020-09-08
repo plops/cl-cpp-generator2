@@ -12,9 +12,11 @@ extern State state;
 #include "vis_00_base.hpp"
 
 Window::Window() : canvas() {
-  set_default_size(720, 580);
+  auto w = 320;
+  auto h = 240;
   Gdk::Geometry geom;
-  auto aspect = (((7.20e+2)) / ((5.80e+2)));
+  auto aspect = ((static_cast<double>(w)) / (static_cast<double>(h)));
+  set_default_size(w, h);
   geom.min_aspect = aspect;
   geom.max_aspect = aspect;
   set_geometry_hints(*this, geom, Gdk::HINT_ASPECT);

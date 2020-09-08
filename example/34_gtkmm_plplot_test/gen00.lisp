@@ -173,10 +173,14 @@
 			 (construct (canvas)
 				    )
 			 (values :constructor))
-			(set_default_size 720 580)
-			(let ((geom )
-			      (aspect (/ 720d0 580d0)))
+			
+			(let ((w 320)
+			      (h 240)
+			      (geom )
+			      (aspect (/ (static_cast<double> w)
+					 (static_cast<double> h))))
 			  (declare (type "Gdk::Geometry" geom))
+			  (set_default_size w h)
 			  (setf geom.min_aspect aspect
 				geom.max_aspect aspect)
 			  (set_geometry_hints *this geom Gdk--HINT_ASPECT)
