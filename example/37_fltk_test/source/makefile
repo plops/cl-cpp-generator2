@@ -8,7 +8,8 @@ CXXFLAGS=-Og -g3 -ggdb \
 -Wno-error=inaccessible-base \
 -Wno-error=unused-variable \
 -pipe \
--march=native -mtune=native 
+-march=native -mtune=native \
+-I/usr/include/fltk
 
 LDFLAGS= \
 -lfltk \
