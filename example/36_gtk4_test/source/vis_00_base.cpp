@@ -18,7 +18,7 @@ Example_ListView_AppLauncher::Example_ListView_AppLauncher() {
   factory->signal_setup().connect(
       sigc::mem_fun(*this, &Example_ListView_AppLauncher::setup_listitem));
   factory->signal_bind().connect(
-      sigc::mem_fun(*this, &Example_ListView_AppLauncher::setup_listitem));
+      sigc::mem_fun(*this, &Example_ListView_AppLauncher::bind_listitem));
   auto model = create_application_list();
   m_list = Gtk::make_managed<Gtk::ListView>(Gtk::SingleSelection::create(model),
                                             factory);
@@ -45,6 +45,14 @@ void Example_ListView_AppLauncher::setup_listitem(
   image->set_icon_size(Gtk::IconSize::LARGE);
   box->append(*image);
   box->append(*label);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("setup") << (" ")
+      << (std::setw(8)) << (" box='") << (box) << ("'") << (std::endl)
+      << (std::flush);
   item->set_child(*box);
 }
 void Example_ListView_AppLauncher::bind_listitem(
@@ -55,6 +63,17 @@ void Example_ListView_AppLauncher::bind_listitem(
     if (label) {
       auto app_info = std::dynamic_pointer_cast<Gio::AppInfo>(item->get_item());
       if (app_info) {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("bind") << (" ") << (std::setw(8))
+                    << (" app_info->get_display_name()='")
+                    << (app_info->get_display_name()) << ("'") << (std::endl)
+                    << (std::flush);
         image->set(app_info->get_icon());
         label->set_label(app_info->get_display_name());
       }

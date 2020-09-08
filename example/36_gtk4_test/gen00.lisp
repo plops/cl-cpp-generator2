@@ -176,7 +176,7 @@
 						       &Example_ListView_AppLauncher--setup_listitem)))
 			  (dot (factory->signal_bind)
 			       (connect (sigc--mem_fun *this
-						       &Example_ListView_AppLauncher--setup_listitem)))
+						       &Example_ListView_AppLauncher--bind_listitem)))
 			  (let ((model (create_application_list)))
 			    (setf m_list (Gtk--make_managed<Gtk--ListView> (Gtk--SingleSelection--create model)
 									   factory))
@@ -205,13 +205,12 @@
 			  (image->set_icon_size Gtk--IconSize--LARGE)
 			  (box->append *image)
 			  (box->append *label)
+			  ,(logprint "setup" `(box))
 			  (item->set_child *box)))
 		      (defmethod bind_listitem (item)
 			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
 			(let ((image (dynamic_cast<Gtk--Image*> (-> (item->get_child)
-								    (get_first_child))
-								))
-			      )
+								    (get_first_child)))))
 			  (when image
 			   (let ((label (dynamic_cast<Gtk--Label*> (-> image
 								       (get_next_sibling))
@@ -220,6 +219,7 @@
 			       (let ((app_info (std--dynamic_pointer_cast<Gio--AppInfo>
 						(item->get_item))))
 				 (when app_info
+				   ,(logprint "bind" `((app_info->get_display_name)))
 				   (image->set (app_info->get_icon))
 				   (label->set_label (app_info->get_display_name)))))))))
 		      (defmethod activate (position)
