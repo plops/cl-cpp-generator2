@@ -20,11 +20,11 @@
 - cd glibmm; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
 - cd _build; ninja; ninja install
 
-
 - git clone https://gitlab.gnome.org/GNOME/pangomm
-- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- sudo ln -s /opt/gtk/lib64/libglibmm_generate_extra_defs-2.66.so /usr/lib
+- cd pangomm; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
 - cd _build; ninja; ninja install
 
 - git clone https://gitlab.gnome.org/GNOME/gtkmm
-- meson setup --prefix /opt/gtk _build -Dwayland-backend=false
+- cd gtkmm; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
 - cd _build; ninja; ninja install
