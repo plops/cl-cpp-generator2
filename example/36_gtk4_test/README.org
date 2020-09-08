@@ -34,3 +34,4 @@
 - git clone https://gitlab.gnome.org/GNOME/glade
 - cd glade; meson setup --prefix /opt/gtk _build -Dwayland-backend=false
 - cd _build; ninja; ninja install
+- hmm, this doesn't seem to use gtk4
