@@ -18,12 +18,25 @@ void Window::load_uri(const gchar *uri) {
   webkit_web_view_load_uri(*this, uri);
 }
 int main(int argc, char **argv) {
+  auto uri = "https://www.youtube.com";
+  if ((2) == (argc)) {
+    uri = argv[1];
+    argc = 1;
+  }
   Glib::set_application_name("gtkmm-plplot-test13");
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm-plplot.example");
   Gtk::Window win;
   auto webview = new Window;
   win.add(*webview);
-  webview->load_uri("https://www.youtube.com");
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
+      << (std::setw(8)) << (" uri='") << (uri) << ("'") << (std::endl)
+      << (std::flush);
+  webview->load_uri(uri);
   win.show_all();
   app->run(win);
 }

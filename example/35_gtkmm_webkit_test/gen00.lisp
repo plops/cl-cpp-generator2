@@ -189,17 +189,22 @@
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
-		      (Glib--set_application_name (string "gtkmm-plplot-test13"))
-		      (let ((app (Gtk--Application--create argc argv
-							   (string "org.gtkmm-plplot.example")))
-			    (win))
-			(declare (type Gtk--Window
-				       win))
-			(let ((webview (new Window)))
-			  (win.add *webview)
-			  (webview->load_uri (string "https://www.youtube.com"))
-			  (win.show_all))
-			(app->run win)))))))
+		      (let ((uri (string "https://www.youtube.com")))
+			(when (== 2 argc)
+			  (setf uri (aref argv 1))
+			  (setf argc 1))
+			  (Glib--set_application_name (string "gtkmm-plplot-test13"))
+			(let ((app (Gtk--Application--create argc argv
+							     (string "org.gtkmm-plplot.example")))
+			      (win))
+			  (declare (type Gtk--Window
+					 win))
+			  (let ((webview (new Window)))
+			    (win.add *webview)
+			    ,(logprint "start" `(uri))
+			    (webview->load_uri uri)
+			    (win.show_all))
+			  (app->run win))))))))
   
   (progn
     (progn ;with-open-file
