@@ -10,4 +10,4 @@
 - https://tschoonj.github.io/gtkmm-plplot/examples.html
 
 #+ATTR_HTML: title="screenshot"
-https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/34_gtkmm_plplot_test/source/2020-09-08-052935_278x211_scrot.png
+[[screenshot][https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/34_gtkmm_plplot_test/source/2020-09-08-052935_278x211_scrot.png]]
