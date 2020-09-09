@@ -18,6 +18,33 @@
 
 // implementation
 #include "vis_01_cMain.hpp"
+Widget::Widget(wxPanel *parent, int id)
+    : wxPanel(parent, id, wxDefaultPosition, wxSize(-1, 30), wxSUNKEN_BORDER),
+      m_parent(parent) {
+  Connect(wxEVT_PAINT, wxPaintEventHandler(Widget::OnPaint));
+  Connect(wxEVT_SIZE, wxSizeEventHandler(Widget::OnSize));
+}
+void Widget::OnSize(wxSizeEvent &event) {
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("size") << (" ")
+      << (std::setw(8)) << (" event.GetId()='") << (event.GetId()) << ("'")
+      << (std::endl) << (std::flush);
+  Refresh();
+}
+void Widget::OnPaint(wxPaintEvent &event) {
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("paint") << (" ")
+      << (std::setw(8)) << (" event.GetId()='") << (event.GetId()) << ("'")
+      << (std::endl) << (std::flush);
+}
 // implementation
 wxBEGIN_EVENT_TABLE(cMain, wxFrame) EVT_BUTTON(10001, cMain::OnButtonClicked)
     wxEND_EVENT_TABLE();

@@ -209,6 +209,46 @@
 		      "// implementation"
 		      (include "vis_01_cMain.hpp"))
 		     )
+
+		    (defclass Widget "public wxPanel"
+		      "public:"
+		      (defmethod Widget (parent id)
+			(declare (type wxPanel* parent)
+				 (type int id)
+				 (construct 
+					    (wxPanel parent id wxDefaultPosition
+						     (wxSize -1 30)
+						     wxSUNKEN_BORDER)
+					    (m_parent parent))
+				 (values :constructor))
+			
+
+
+
+			(Connect wxEVT_PAINT (wxPaintEventHandler Widget--OnPaint))
+			(Connect wxEVT_SIZE (wxSizeEventHandler Widget--OnSize)))
+
+
+		      (defmethod OnSize (event)
+			(declare (type wxSizeEvent& event))
+			,(logprint "size" `((event.GetId)))
+			(Refresh))
+
+		      (defmethod OnPaint (event)
+			(declare (type wxPaintEvent& event)
+				 )
+			,(logprint "paint" `((event.GetId)))
+			#+nil (let (#+nil (font (wxFont 9 wxFONTFAMILY_DEFAULT wxFONTSTYLE_NORMAL
+					    wxFONTWEIGHT_NORMAL
+					    false
+					    (wxT (string "Courier 10 Pitch"))))
+				    (dc (wxPaintDC this))
+				    (size (GetSize)
+				      )
+				    (widgth (size.GetWidth)))
+			  ))
+		      "wxPanel *m_parent;"
+		      )
 		    
 		    ,(let ((components
 			    `((wxButton btn1 (10001

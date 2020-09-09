@@ -9,6 +9,11 @@ CXXFLAGS=-Og -g3 -ggdb \
 -ffunction-sections -fdata-sections \
 -Wno-error=inaccessible-base \
 -Wno-error=unused-variable \
+-Wno-error=deprecated-copy \
+-Wno-error=float-conversion \
+-Wno-error=shadow \
+-Wno-error=conversion \
+-Wno-error=double-promotion \
 -pipe \
 `wx-config --cxxflags` \
 -march=native -mtune=native 
@@ -24,11 +29,11 @@ OBJ:=$(CFILES:%.cpp=%.o)
 all: vis
 
 %.o: %.cpp globals.h
-        $(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 vis: $(OBJ)
-        $(CXX) $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
-        rm vis *.o
+	rm vis *.o
 

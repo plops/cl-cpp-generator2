@@ -18,6 +18,13 @@
 #include <wx/wx.h>
 ;
 // header;
+class Widget : public wxPanel {
+        public:
+         Widget (wxPanel* parent, int id)  ;  
+        void OnSize (wxSizeEvent& event)  ;  
+        void OnPaint (wxPaintEvent& event)  ;  
+        wxPanel *m_parent;
+};
 // header;
 class cMain : public wxFrame {
         public:
