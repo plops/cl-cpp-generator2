@@ -209,7 +209,7 @@
 		      "// implementation"
 		      (include "vis_01_cMain.hpp"))
 		     )
-
+		    ;; http://zetcode.com/gui/wxwidgets/customwidgets
 		    (defclass Widget "public wxPanel"
 		      "public:"
 		      (defmethod Widget (parent id)
