@@ -8,7 +8,9 @@
 #include <chrono>
 #include <thread>
 ;
-#include <gtkmm.h>
+#include <gtkmm/window.h>
+#include <gtkmm/grid.h>
+;
 #include <gtkmm/widget.h>
 #include <gtkmm/cssprovider.h>
 ;
@@ -16,7 +18,8 @@
 #include <glibmm/ustring.h>
 ;
 // header
-#include <gtkmm.h>
+#include <gtkmm/window.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/widget.h>
 #include <gtkmm/cssprovider.h>
 #include <glibmm/extraclassinit.h>

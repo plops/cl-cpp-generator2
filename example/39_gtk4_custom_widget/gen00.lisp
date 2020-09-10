@@ -149,10 +149,11 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      #+nil 
-		      (include <gtkmm/button.h>
-			       <gtkmm/window.h>)
-		      (include <gtkmm.h>
+		       
+		      (include ;<gtkmm/button.h>
+		       <gtkmm/window.h>
+		       <gtkmm/grid.h>)
+		      (include ;<gtkmm.h>
 			       <gtkmm/widget.h>
 			       <gtkmm/cssprovider.h>
 			       )
@@ -200,7 +201,27 @@
 					    ))
 			(set_hexpand true)
 			(set_vexpand true)
-			,(logprint "gtype name" `((G_OBJECT_TYPE_NAME (gobj)))))
+			,(logprint "gtype name" `((G_OBJECT_TYPE_NAME (gobj))))
+			(setf m_refCssProvider (Gtk--CssProvider--create))
+			(let ((style (get_style_context)))
+			  (style->add_provider m_refCssProvider
+					       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)
+			  (dot (m_refCssProvider->signal_parsing_error)
+			       (connect
+				(sigc--mem_fun *this
+					       &PenroseWidget--on_parsing_error)
+			       #+nil
+				(lambda (section error)
+			(declare (type "const Glib::RefPtr<Gtk::CssSection>&" section)
+				 (type "const Glib::Error&" error))
+			,(logprint "parse" `((error.what) (-> section
+							      (get_file)
+							      (get_uri))
+					     (-> section
+						 (get_start_location))
+					     (-> section
+						 (get_end_location)))))))
+			  (m_refCssProvider->load_from_path (string "custom_gtk.css"))))
 		      (defmethod ~PenroseWidget ()
 			(declare (virtual)
 				 (values :constructor)))
@@ -212,17 +233,46 @@
 			(declare (type Gtk--Orientation orientation)
 				 (type int for_size)
 				 (type int& minimum natural minimum_baseline natural_baseline))
-			)
+			(if (== Gtk--Orientation--HORIZONTAL orientation)
+			    (setf minimum 60
+				  natural 100)
+			    (setf minimum 50
+				  natural 70))
+			(setf minimum_baseline -1
+			      natural_baseline -1))
 		      
-		      (defmethod on_map ())
-		      (defmethod on_unmap ())
-		      (defmethod on_realize ())
-		      (defmethod on_unrealize ())
+		      (defmethod on_map ()
+			(Gtk--Widget--on_map))
+		      (defmethod on_unmap ()
+			(Gtk--Widget--on_unmap))
+		      (defmethod on_realize ()
+			(Gtk--Widget--on_realize))
+		      (defmethod on_unrealize ()
+			(Gtk--Widget--on_unrealize))
 		      (defmethod snapshot_vfunc (snapshot)
-			(declare (type "const Glib::RefPtr<Gtk::Snapshot>&" snapshot)))
+			(declare (type "const Glib::RefPtr<Gtk::Snapshot>&" snapshot))
+			(let ((allocation (get_allocation))
+			      (rect (Gdk--Rectangle 0 0 (allocation.get_width)
+						    (allocation.get_height)))
+			      (style (get_style_context))
+			      (cr (snapshot->append_cairo rect)))
+			  (style->render_background cr
+						    0 0 ;; FIXME padding
+						    (allocation.get_width)
+						    (allocation.get_height))
+			  (cr->move_to 0 0)
+			  (cr->line_to 0 100)
+			  (cr->stroke)))
 		      (defmethod on_parsing_error (section error)
 			(declare (type "const Glib::RefPtr<Gtk::CssSection>&" section)
-				 (type "const Glib::Error&" error)))
+				 (type "const Glib::Error&" error))
+			,(logprint "parse" `((error.what) (-> section
+							      (get_file)
+							      (get_uri))
+					     (-> section
+						 (get_start_location))
+					     (-> section
+						 (get_end_location)))))
 		      "Gtk::Border m_padding;"
 		      "Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;" 
 		      )
