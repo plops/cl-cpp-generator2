@@ -1,1 +1,3 @@
 - https://developer.gnome.org/gtkmm-tutorial/stable/sec-custom-widgets.html.en
+
+[[screenshot][https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/40_gtk3_custom_widget/source/2020-09-10-222805_614x450_scrot.png]]
