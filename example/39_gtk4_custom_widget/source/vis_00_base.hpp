@@ -52,7 +52,6 @@ class ExampleWindow : public Gtk::Window {
          ExampleWindow ()  ;  
          ~ExampleWindow ()  ;  
         protected:
-        void on_button_quit ()  ;  
         Gtk::Grid m_grid;
         PenroseWidget m_penrose;
 };

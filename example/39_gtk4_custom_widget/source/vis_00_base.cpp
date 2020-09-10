@@ -40,8 +40,6 @@ PenroseWidget::PenroseWidget()
   auto style = get_style_context();
   style->add_provider(m_refCssProvider,
                       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-  m_refCssProvider->signal_parsing_error().connect(
-      sigc::mem_fun(*this, &PenroseWidget::on_parsing_error));
   m_refCssProvider->load_from_path("custom_gtk.css");
 }
 PenroseWidget::~PenroseWidget() {}
@@ -69,15 +67,9 @@ void PenroseWidget::on_unrealize() { Gtk::Widget::on_unrealize(); }
 void PenroseWidget::snapshot_vfunc(
     const Glib::RefPtr<Gtk::Snapshot> &snapshot) {
   auto allocation = get_allocation();
-  auto rect =
-      Gdk::Rectangle(0, 0, allocation.get_width(), allocation.get_height());
+  const Gdk::Rectangle rect(0, 0, allocation.get_width(),
+                            allocation.get_height());
   auto style = get_style_context();
-  auto cr = snapshot->append_cairo(rect);
-  style->render_background(cr, 0, 0, allocation.get_width(),
-                           allocation.get_height());
-  cr->move_to(0, 0);
-  cr->line_to(0, 100);
-  cr->stroke();
 }
 void PenroseWidget::on_parsing_error(
     const Glib::RefPtr<Gtk::CssSection> &section, const Glib::Error &error) {
@@ -89,10 +81,8 @@ void PenroseWidget::on_parsing_error(
       << (__LINE__) << (" ") << (__func__) << (" ") << ("parse") << (" ")
       << (std::setw(8)) << (" error.what()='") << (error.what()) << ("'")
       << (std::setw(8)) << (" section->get_file()->get_uri()='")
-      << (section->get_file()->get_uri()) << ("'") << (std::setw(8))
-      << (" section->get_start_location()='") << (section->get_start_location())
-      << ("'") << (std::setw(8)) << (" section->get_end_location()='")
-      << (section->get_end_location()) << ("'") << (std::endl) << (std::flush);
+      << (section->get_file()->get_uri()) << ("'") << (std::endl)
+      << (std::flush);
 }
 ExampleWindow::ExampleWindow() {
   set_title("custom widget example");
@@ -100,11 +90,9 @@ ExampleWindow::ExampleWindow() {
   m_grid.set_margin(6);
   m_grid.set_row_spacing(10);
   m_grid.set_column_spacing(10);
-  add(m_grid);
-  m_grid.attach(m_penrose, 0, 0);
+  add(m_penrose);
 }
 ExampleWindow::~ExampleWindow() {}
-void ExampleWindow::on_button_quit() { hide(); }
 int main(int argc, char **argv) {
 
   (std::cout)

@@ -206,7 +206,7 @@
 			(let ((style (get_style_context)))
 			  (style->add_provider m_refCssProvider
 					       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)
-			  (dot (m_refCssProvider->signal_parsing_error)
+			  #+nil (dot (m_refCssProvider->signal_parsing_error)
 			       (connect
 				(sigc--mem_fun *this
 					       &PenroseWidget--on_parsing_error)
@@ -252,26 +252,29 @@
 		      (defmethod snapshot_vfunc (snapshot)
 			(declare (type "const Glib::RefPtr<Gtk::Snapshot>&" snapshot))
 			(let ((allocation (get_allocation))
-			      (rect (Gdk--Rectangle 0 0 (allocation.get_width)
+			      #+nil (rect (Gdk--Rectangle 0 0 (allocation.get_width)
 						    (allocation.get_height)))
-			      (style (get_style_context))
-			      (cr (snapshot->append_cairo rect)))
-			  (style->render_background cr
-						    0 0 ;; FIXME padding
-						    (allocation.get_width)
-						    (allocation.get_height))
-			  (cr->move_to 0 0)
-			  (cr->line_to 0 100)
-			  (cr->stroke)))
+			      )
+			  "const Gdk::Rectangle rect(0, 0, allocation.get_width(), allocation.get_height());"
+			  (let ((style (get_style_context))
+				#+nil (cr (snapshot->append_cairo rect))
+			      )
+			    #+nil (do0 (style->render_background cr
+						       0 0 ;; FIXME padding
+						       (allocation.get_width)
+						       (allocation.get_height))
+				 (cr->move_to 0 0)
+				 (cr->line_to 0 100)
+				 (cr->stroke)))))
 		      (defmethod on_parsing_error (section error)
 			(declare (type "const Glib::RefPtr<Gtk::CssSection>&" section)
 				 (type "const Glib::Error&" error))
 			,(logprint "parse" `((error.what) (-> section
 							      (get_file)
 							      (get_uri))
-					     (-> section
+					     #+nil(-> section
 						 (get_start_location))
-					     (-> section
+					     #+nil (-> section
 						 (get_end_location)))))
 		      "Gtk::Border m_padding;"
 		      "Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;" 
@@ -286,13 +289,16 @@
 			(m_grid.set_margin 6)
 			(m_grid.set_row_spacing 10)
 			(m_grid.set_column_spacing 10)
-			(add m_grid)
-			(m_grid.attach m_penrose 0 0))
+			;;(Gtk--Container--add m_grid)
+			(add m_penrose)
+			;;(this->add m_grid)
+			;(m_grid.attach m_penrose 0 0)
+			)
 		      (defmethod ~ExampleWindow ()
 			(declare (values :constructor)
 				 (virtual)))
 		      "protected:"
-		      (defmethod on_button_quit ()
+		      #+nil (defmethod on_button_quit ()
 			(hide))
 		      "Gtk::Grid m_grid;"
 		      "PenroseWidget m_penrose;"
