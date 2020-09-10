@@ -153,8 +153,11 @@
 		      (include <gtkmm/button.h>
 			       <gtkmm/window.h>)
 		      (include <gtkmm.h>
-			       <giomm/appinfo.h>
-			       <giomm/liststore.h>)
+			       <gtkmm/widget.h>
+			       <gtkmm/cssprovider.h>
+			       )
+		      (include <glibmm/extraclassinit.h>
+			       <glibmm/ustring.h>)
 		      " "
 		      )
 		     (do0
@@ -162,78 +165,92 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
-
-		    (defclass Example_ListView_AppLauncher "public Gtk::Window"
+		    (defclass PenroseExtraInit "public Glib::ExtraClassInit"
 		      "public:"
-		      (defmethod Example_ListView_AppLauncher ()
-			(declare (values :constructor))
-			(set_default_size 640 320)
-			(set_title (string "app-launcher")
-				   )
-			(let ((factory (Gtk--SignalListItemFactory--create)))
-			  (dot (factory->signal_setup)
-			       (connect (sigc--mem_fun *this
-						       &Example_ListView_AppLauncher--setup_listitem)))
-			  (dot (factory->signal_bind)
-			       (connect (sigc--mem_fun *this
-						       &Example_ListView_AppLauncher--bind_listitem)))
-			  (let ((model (create_application_list)))
-			    (setf m_list (Gtk--make_managed<Gtk--ListView> (Gtk--SingleSelection--create model)
-									   factory))
-			    (dot (m_list->signal_activate)
-				 (connect (sigc--mem_fun *this
-							 &Example_ListView_AppLauncher--activate)))
-			    (let ((sw (Gtk--make_managed<Gtk--ScrolledWindow>)))
-			      (set_child *sw)
-			      (sw->set_child *m_list)))))
-		      (defmethod ~Example_ListView_AppLauncher ()
+		      (defmethod PenroseExtraInit (css_name)
 			(declare (values :constructor)
-				 (override)))
-		      "protected:"
-		      (defmethod create_application_list ()
-			(declare (values "Glib::RefPtr<Gio::ListModel>"))
-			(let ((store (Gio--ListStore<Gio--AppInfo>--create)))
-			  (for-range (app (Gio--AppInfo--get_all))
-				     (store->append app))
-			  (return store)))
+				 (construct (Glib--ExtraClassInit ;class_init_function
+					     (lambda (g_class class_data)
+					       (declare (type void* g_class class_data)
+							)
+					       (g_return_if_fail (GTK_IS_WIDGET_CLASS g_class))
+					       (let ((klass (static_cast<GtkWidgetClass*> g_class))
+						     (css_name2 (static_cast<Glib--ustring*> class_data)))
+						 (gtk_widget_class_set_css_name klass (css_name2->c_str))))
+					     &m_css_name
+					     ;; instance_init_function
+					     (lambda (instance g_class)
+					       (declare (type void* g_class)
+							(type GTypeInstance* instance)
+							)
+					       (g_return_if_fail (GTK_IS_WIDGET instance)))
+					     ))
+				 (type "const Glib::ustring&" css_name)))
+		      "private:"
+		      "Glib::ustring m_css_name;")
 
-		      (defmethod setup_listitem (item)
-			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
-			(let ((box (Gtk--make_managed<Gtk--Box> Gtk--Orientation--HORIZONTAL 12))
-			      (image (Gtk--make_managed<Gtk--Image>))
-			      (label (Gtk--make_managed<Gtk--Label>)))
-			  (image->set_icon_size Gtk--IconSize--LARGE)
-			  (box->append *image)
-			  (box->append *label)
-			  ,(logprint "setup" `(box))
-			  (item->set_child *box)))
-		      (defmethod bind_listitem (item)
-			(declare (type "const Glib::RefPtr<Gtk::ListItem>&" item))
-			(let ((image (dynamic_cast<Gtk--Image*> (-> (item->get_child)
-								    (get_first_child)))))
-			  (when image
-			   (let ((label (dynamic_cast<Gtk--Label*> (-> image
-								       (get_next_sibling))
-								   )))
-			     (when label
-			       (let ((app_info (std--dynamic_pointer_cast<Gio--AppInfo>
-						(item->get_item))))
-				 (when app_info
-				   ,(logprint "bind" `((app_info->get_display_name)))
-				   (image->set (app_info->get_icon))
-				   (label->set_label (app_info->get_display_name)))))))))
-		      (defmethod activate (position)
-			(declare (type guint position))
-			(let ((item (->
-				     (std--dynamic_pointer_cast<Gio--ListModel> 
-				      (m_list->get_model)
-				      )
-				     (get_object position)))
-			      (app_info (std--dynamic_pointer_cast<Gio--AppInfo> item)))
-			  (when app_info
-			    ,(logprint "launch" `((app_info->get_display_name))))))
-		      "Gtk::ListView* m_list;"
+		    (defclass PenroseWidget "public PenroseExtraInit, public Gtk::Widget"
+		      "public:"
+		      (defmethod PenroseWidget ()
+			(declare (values :constructor)
+				 (construct (Glib--ObjectBase (string "PenroseWidget"))
+					    (PenroseExtraInit (string "penrose-widget")) ;; name in css file
+					    (Gtk--Widget)
+					    (m_padding)
+					    ))
+			(set_hexpand true)
+			(set_vexpand true)
+			,(logprint "gtype name" `((G_OBJECT_TYPE_NAME (gobj)))))
+		      (defmethod ~PenroseWidget ()
+			(declare (virtual)
+				 (values :constructor)))
+		      "protected:"
+		      (defmethod get_request_mode_vfunc ()
+			(declare (values "Gtk::SizeRequestMode"))
+			(return (Gtk--Widget--get_request_mode_vfunc)))
+		      (defmethod measure_vfunc (orientation for_size minimum natural minimum_baseline natural_baseline)
+			(declare (type Gtk--Orientation orientation)
+				 (type int for_size)
+				 (type int& minimum natural minimum_baseline natural_baseline))
+			)
+		      
+		      (defmethod on_map ())
+		      (defmethod on_unmap ())
+		      (defmethod on_realize ())
+		      (defmethod on_unrealize ())
+		      (defmethod snapshot_vfunc (snapshot)
+			(declare (type "const Glib::RefPtr<Gtk::Snapshot>&" snapshot)))
+		      (defmethod on_parsing_error (section error)
+			(declare (type "const Glib::RefPtr<Gtk::CssSection>&" section)
+				 (type "const Glib::Error&" error)))
+		      "Gtk::Border m_padding;"
+		      "Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;" 
 		      )
+		    (defclass ExampleWindow "public Gtk::Window"
+		      "public:"
+		      (defmethod ExampleWindow ()
+			(declare (values :constructor)
+				 )
+			(set_title (string "custom widget example"))
+			(set_default_size 600 400)
+			(m_grid.set_margin 6)
+			(m_grid.set_row_spacing 10)
+			(m_grid.set_column_spacing 10)
+			(add m_grid)
+			(m_grid.attach m_penrose 0 0))
+		      (defmethod ~ExampleWindow ()
+			(declare (values :constructor)
+				 (virtual)))
+		      "protected:"
+		      (defmethod on_button_quit ()
+			(hide))
+		      "Gtk::Grid m_grid;"
+		      "PenroseWidget m_penrose;"
+		      )
+
+		    
+
+		    
 		    
 		    (defun main (argc argv
 				 )
@@ -244,9 +261,11 @@
 		      (let ((app (Gtk--Application--create ; argc argv
 							  ; (string "org.gtkmm.example")
 				  ))
-			    (hw))
-			(declare (type Example_ListView_AppLauncher hw))
-			(app->run hw))))))
+			    (hw)
+			    )
+			(declare (type ExampleWindow hw))
+			(app->run hw)
+			)))))
   )
   
   (progn

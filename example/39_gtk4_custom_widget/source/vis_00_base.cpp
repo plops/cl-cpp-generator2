@@ -11,93 +11,59 @@ extern State state;
 // implementation
 #include "vis_00_base.hpp"
 
-Example_ListView_AppLauncher::Example_ListView_AppLauncher() {
-  set_default_size(640, 320);
-  set_title("app-launcher");
-  auto factory = Gtk::SignalListItemFactory::create();
-  factory->signal_setup().connect(
-      sigc::mem_fun(*this, &Example_ListView_AppLauncher::setup_listitem));
-  factory->signal_bind().connect(
-      sigc::mem_fun(*this, &Example_ListView_AppLauncher::bind_listitem));
-  auto model = create_application_list();
-  m_list = Gtk::make_managed<Gtk::ListView>(Gtk::SingleSelection::create(model),
-                                            factory);
-  m_list->signal_activate().connect(
-      sigc::mem_fun(*this, &Example_ListView_AppLauncher::activate));
-  auto sw = Gtk::make_managed<Gtk::ScrolledWindow>();
-  set_child(*sw);
-  sw->set_child(*m_list);
-}
-Example_ListView_AppLauncher::~Example_ListView_AppLauncher() {}
-Glib::RefPtr<Gio::ListModel>
-Example_ListView_AppLauncher::create_application_list() {
-  auto store = Gio::ListStore<Gio::AppInfo>::create();
-  for (auto app : Gio::AppInfo::get_all()) {
-    store->append(app);
-  }
-  return store;
-}
-void Example_ListView_AppLauncher::setup_listitem(
-    const Glib::RefPtr<Gtk::ListItem> &item) {
-  auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 12);
-  auto image = Gtk::make_managed<Gtk::Image>();
-  auto label = Gtk::make_managed<Gtk::Label>();
-  image->set_icon_size(Gtk::IconSize::LARGE);
-  box->append(*image);
-  box->append(*label);
+PenroseExtraInit::PenroseExtraInit(const Glib::ustring &css_name)
+    : Glib::ExtraClassInit(
+          [](void *g_class, void *class_data) {
+            g_return_if_fail(GTK_IS_WIDGET_CLASS(g_class));
+            auto klass = static_cast<GtkWidgetClass *>(g_class);
+            auto css_name2 = static_cast<Glib::ustring *>(class_data);
+            gtk_widget_class_set_css_name(klass, css_name2->c_str());
+          },
+          &m_css_name,
+          [](GTypeInstance *instance, void *g_class) {
+            g_return_if_fail(GTK_IS_WIDGET(instance));
+          }) {}
+PenroseWidget::PenroseWidget()
+    : Glib::ObjectBase("PenroseWidget"),
+      PenroseExtraInit("penrose-widget"), Gtk::Widget(), m_padding() {
+  set_hexpand(true);
+  set_vexpand(true);
 
   (std::cout)
       << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("setup") << (" ")
-      << (std::setw(8)) << (" box='") << (box) << ("'") << (std::endl)
-      << (std::flush);
-  item->set_child(*box);
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("gtype name") << (" ")
+      << (std::setw(8)) << (" G_OBJECT_TYPE_NAME(gobj())='")
+      << (G_OBJECT_TYPE_NAME(gobj())) << ("'") << (std::endl) << (std::flush);
 }
-void Example_ListView_AppLauncher::bind_listitem(
-    const Glib::RefPtr<Gtk::ListItem> &item) {
-  auto image = dynamic_cast<Gtk::Image *>(item->get_child()->get_first_child());
-  if (image) {
-    auto label = dynamic_cast<Gtk::Label *>(image->get_next_sibling());
-    if (label) {
-      auto app_info = std::dynamic_pointer_cast<Gio::AppInfo>(item->get_item());
-      if (app_info) {
-
-        (std::cout) << (std::setw(10))
-                    << (std::chrono::high_resolution_clock::now()
-                            .time_since_epoch()
-                            .count())
-                    << (" ") << (std::this_thread::get_id()) << (" ")
-                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                    << (" ") << ("bind") << (" ") << (std::setw(8))
-                    << (" app_info->get_display_name()='")
-                    << (app_info->get_display_name()) << ("'") << (std::endl)
-                    << (std::flush);
-        image->set(app_info->get_icon());
-        label->set_label(app_info->get_display_name());
-      }
-    }
-  }
+PenroseWidget::~PenroseWidget() {}
+Gtk::SizeRequestMode PenroseWidget::get_request_mode_vfunc() {
+  return Gtk::Widget::get_request_mode_vfunc();
 }
-void Example_ListView_AppLauncher::activate(guint position) {
-  auto item = std::dynamic_pointer_cast<Gio::ListModel>(m_list->get_model())
-                  ->get_object(position);
-  auto app_info = std::dynamic_pointer_cast<Gio::AppInfo>(item);
-  if (app_info) {
-
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("launch") << (" ") << (std::setw(8))
-                << (" app_info->get_display_name()='")
-                << (app_info->get_display_name()) << ("'") << (std::endl)
-                << (std::flush);
-  }
+void PenroseWidget::measure_vfunc(Gtk::Orientation orientation, int for_size,
+                                  int &minimum, int &natural,
+                                  int &minimum_baseline,
+                                  int &natural_baseline) {}
+void PenroseWidget::on_map() {}
+void PenroseWidget::on_unmap() {}
+void PenroseWidget::on_realize() {}
+void PenroseWidget::on_unrealize() {}
+void PenroseWidget::snapshot_vfunc(
+    const Glib::RefPtr<Gtk::Snapshot> &snapshot) {}
+void PenroseWidget::on_parsing_error(
+    const Glib::RefPtr<Gtk::CssSection> &section, const Glib::Error &error) {}
+ExampleWindow::ExampleWindow() {
+  set_title("custom widget example");
+  set_default_size(600, 400);
+  m_grid.set_margin(6);
+  m_grid.set_row_spacing(10);
+  m_grid.set_column_spacing(10);
+  add(m_grid);
+  m_grid.attach(m_penrose, 0, 0);
 }
+ExampleWindow::~ExampleWindow() {}
+void ExampleWindow::on_button_quit() { hide(); }
 int main(int argc, char **argv) {
 
   (std::cout)
@@ -108,6 +74,6 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
   auto app = Gtk::Application::create();
-  Example_ListView_AppLauncher hw;
+  ExampleWindow hw;
   app->run(hw);
 }

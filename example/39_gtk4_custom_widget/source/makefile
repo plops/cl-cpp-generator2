@@ -8,6 +8,7 @@ CXXFLAGS=-Og -g3 -ggdb \
 -ffunction-sections -fdata-sections \
 -Wno-error=inaccessible-base \
 -Wno-error=unused-variable \
+-Wno-error=unused-parameter \
 -Wno-error=double-promotion \
 -pipe \
 `pkg-config gtkmm-4.0 --cflags` \

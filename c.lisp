@@ -66,7 +66,7 @@
 
 
 
-
+;; FIXME: misses const override
 (defun consume-declare (body)
   "take a list of instructions from body, parse type declarations,
 return the body without them and a hash table with an environment. the

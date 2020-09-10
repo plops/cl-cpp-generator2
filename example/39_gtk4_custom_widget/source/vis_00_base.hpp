@@ -9,24 +9,49 @@
 #include <thread>
 ;
 #include <gtkmm.h>
-#include <giomm/appinfo.h>
-#include <giomm/liststore.h>
+#include <gtkmm/widget.h>
+#include <gtkmm/cssprovider.h>
+;
+#include <glibmm/extraclassinit.h>
+#include <glibmm/ustring.h>
 ;
 // header
 #include <gtkmm.h>
-#include <giomm/appinfo.h>
-#include <giomm/liststore.h>
+#include <gtkmm/widget.h>
+#include <gtkmm/cssprovider.h>
+#include <glibmm/extraclassinit.h>
+#include <glibmm/ustring.h>
  ;
-class Example_ListView_AppLauncher : public Gtk::Window {
+class PenroseExtraInit : public Glib::ExtraClassInit {
         public:
-         Example_ListView_AppLauncher ()  ;  
-         ~Example_ListView_AppLauncher ()  ;  
+         PenroseExtraInit (const Glib::ustring& css_name)  ;  
+        private:
+        Glib::ustring m_css_name;
+};
+class PenroseWidget : public PenroseExtraInit, public Gtk::Widget {
+        public:
+         PenroseWidget ()  ;  
+         ~PenroseWidget ()  ;  
         protected:
-        Glib::RefPtr<Gio::ListModel> create_application_list ()  ;  
-        void setup_listitem (const Glib::RefPtr<Gtk::ListItem>& item)  ;  
-        void bind_listitem (const Glib::RefPtr<Gtk::ListItem>& item)  ;  
-        void activate (guint position)  ;  
-        Gtk::ListView* m_list;
+        Gtk::SizeRequestMode get_request_mode_vfunc ()  ;  
+        void measure_vfunc (Gtk::Orientation orientation, int for_size, int& minimum, int& natural, int& minimum_baseline, int& natural_baseline)  ;  
+        void on_map ()  ;  
+        void on_unmap ()  ;  
+        void on_realize ()  ;  
+        void on_unrealize ()  ;  
+        void snapshot_vfunc (const Glib::RefPtr<Gtk::Snapshot>& snapshot)  ;  
+        void on_parsing_error (const Glib::RefPtr<Gtk::CssSection>& section, const Glib::Error& error)  ;  
+        Gtk::Border m_padding;
+        Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;
+};
+class ExampleWindow : public Gtk::Window {
+        public:
+         ExampleWindow ()  ;  
+         ~ExampleWindow ()  ;  
+        protected:
+        void on_button_quit ()  ;  
+        Gtk::Grid m_grid;
+        PenroseWidget m_penrose;
 };
 int main (int argc, char** argv)  ;  
 #endif
