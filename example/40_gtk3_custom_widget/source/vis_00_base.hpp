@@ -46,7 +46,7 @@ class PenroseWidget : public Gtk::Widget {
         void on_realize ()  ;  
         void on_unrealize ()  ;  
         bool on_draw (const Cairo::RefPtr<Cairo::Context>& cr)  ;  
-        void on_parsing_error (const Glib::RefPtr<Gtk::CssSection>& section, const Glib::Error& error)  ;  
+        void on_parsing_error (const Glib::RefPtr<const Gtk::CssSection>& section, const Glib::Error& error)  ;  
         Gtk::StyleProperty<int> m_scale_prop;
         Glib::RefPtr<Gdk::Window> m_refGdkWindow;
         Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;

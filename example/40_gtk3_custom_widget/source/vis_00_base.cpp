@@ -94,9 +94,25 @@ void PenroseWidget::on_unrealize() {
   }
   Gtk::Widget::on_unrealize();
 }
-bool PenroseWidget::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {}
+bool PenroseWidget::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {
+  auto allocation = get_allocation();
+  auto scale_x = ((static_cast<double>(allocation.get_width())) / (m_scale));
+  auto scale_y = ((static_cast<double>(allocation.get_height())) / (m_scale));
+  auto style = get_style_context();
+  style->render_background(cr, allocation.get_x(), allocation.get_y(),
+                           allocation.get_width(), allocation.get_height());
+  auto state2 = style->get_state();
+  Gdk::Cairo::set_source_rgba(cr, style->get_color(state2));
+  cr->move_to((((155.)) * (scale_x)), (((165.)) * (scale_y)));
+  cr->line_to((((155.)) * (scale_x)), (((838.)) * (scale_y)));
+  cr->line_to((((265.)) * (scale_x)), (((9.00e+2)) * (scale_y)));
+  cr->line_to((((849.)) * (scale_x)), (((564.)) * (scale_y)));
+  cr->stroke();
+  return true;
+}
 void PenroseWidget::on_parsing_error(
-    const Glib::RefPtr<Gtk::CssSection> &section, const Glib::Error &error) {
+    const Glib::RefPtr<const Gtk::CssSection> &section,
+    const Glib::Error &error) {
 
   (std::cout)
       << (std::setw(10))
@@ -112,11 +128,7 @@ ExampleWindow::ExampleWindow() {
   set_title("custom widget example");
   set_border_width(6);
   set_default_size(600, 400);
-  m_grid.set_margin(6);
-  m_grid.set_row_spacing(10);
-  m_grid.set_column_spacing(10);
-  add(m_grid);
-  m_grid.attach(m_penrose, 0, 0);
+  add(m_penrose);
   m_penrose.show();
   show_all_children();
 }
