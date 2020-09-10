@@ -400,7 +400,7 @@
 		      ; "protected:"
 		      #+nil (defmethod on_button_quit ()
 			      (hide))
-		      "Gtk::Grid m_grid;"
+		      ;"Gtk::Grid m_grid;"
 		      "PenroseWidget m_penrose;"
 		      )
 

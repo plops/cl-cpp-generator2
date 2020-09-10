@@ -56,7 +56,6 @@ class ExampleWindow : public Gtk::Window {
         public:
          ExampleWindow ()  ;  
          ~ExampleWindow ()  ;  
-        Gtk::Grid m_grid;
         PenroseWidget m_penrose;
 };
 int main (int argc, char** argv)  ;  

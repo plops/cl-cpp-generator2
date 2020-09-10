@@ -1,7 +1,8 @@
 all: vis
 
-CXX=g++-10.2.0
-CXXFLAGS=-Og -g3 -ggdb \
+#CXX=g++-10.2.0
+# -Og -g3 -ggdb 
+CXXFLAGS=-O2 \
 -std=gnu++20 \
 -Wall -Wextra -Werror \
 -Wshadow -Wdouble-promotion -fno-common -Wconversion  \
