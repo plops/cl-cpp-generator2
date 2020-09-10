@@ -107,6 +107,20 @@ bool PenroseWidget::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {
   cr->line_to((((155.)) * (scale_x)), (((838.)) * (scale_y)));
   cr->line_to((((265.)) * (scale_x)), (((9.00e+2)) * (scale_y)));
   cr->line_to((((849.)) * (scale_x)), (((564.)) * (scale_y)));
+  cr->line_to((((849.)) * (scale_x)), (((438.)) * (scale_y)));
+  cr->line_to((((265.)) * (scale_x)), (((1.00e+2)) * (scale_y)));
+  cr->line_to((((155.)) * (scale_x)), (((165.)) * (scale_y)));
+  cr->line_to((((265.)) * (scale_x)), (((1.00e+2)) * (scale_y)));
+  cr->line_to((((265.)) * (scale_x)), (((652.)) * (scale_y)));
+  cr->line_to((((526.)) * (scale_x)), (((502.)) * (scale_y)));
+  cr->line_to((((369.)) * (scale_x)), (((411.)) * (scale_y)));
+  cr->line_to((((633.)) * (scale_x)), (((564.)) * (scale_y)));
+  cr->line_to((((369.)) * (scale_x)), (((286.)) * (scale_y)));
+  cr->line_to((((369.)) * (scale_x)), (((592.)) * (scale_y)));
+  cr->line_to((((369.)) * (scale_x)), (((286.)) * (scale_y)));
+  cr->line_to((((849.)) * (scale_x)), (((564.)) * (scale_y)));
+  cr->line_to((((633.)) * (scale_x)), (((564.)) * (scale_y)));
+  cr->line_to((((155.)) * (scale_x)), (((838.)) * (scale_y)));
   cr->stroke();
   return true;
 }
