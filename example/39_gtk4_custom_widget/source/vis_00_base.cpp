@@ -70,6 +70,7 @@ void PenroseWidget::snapshot_vfunc(
   const Gdk::Rectangle rect(0, 0, allocation.get_width(),
                             allocation.get_height());
   auto style = get_style_context();
+  auto cr = snapshot->append_cairo(rect);
 }
 void PenroseWidget::on_parsing_error(
     const Glib::RefPtr<Gtk::CssSection> &section, const Glib::Error &error) {

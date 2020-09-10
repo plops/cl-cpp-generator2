@@ -257,7 +257,7 @@
 			      )
 			  "const Gdk::Rectangle rect(0, 0, allocation.get_width(), allocation.get_height());"
 			  (let ((style (get_style_context))
-				#+nil (cr (snapshot->append_cairo rect))
+				(cr (snapshot->append_cairo rect))
 			      )
 			    #+nil (do0 (style->render_background cr
 						       0 0 ;; FIXME padding
