@@ -29,20 +29,71 @@ Gtk::SizeRequestMode PenroseWidget::get_request_mode_vfunc() {
   return Gtk::Widget::get_request_mode_vfunc();
 }
 void PenroseWidget::get_preferred_width_vfunc(int &minimum_width,
-                                              int &natural_width) {}
+                                              int &natural_width) {
+  minimum_width = 60;
+  natural_width = 100;
+}
 void PenroseWidget::get_preferred_height_for_width_vfunc(int width,
                                                          int &minimum_height,
-                                                         int &natural_height) {}
+                                                         int &natural_height) {
+  minimum_height = 50;
+  natural_height = 70;
+}
 void PenroseWidget::get_preferred_height_vfunc(int &minimum_height,
-                                               int &natural_height) {}
+                                               int &natural_height) {
+  minimum_height = 50;
+  natural_height = 70;
+}
 void PenroseWidget::get_preferred_width_for_height_vfunc(int height,
                                                          int &minimum_height,
-                                                         int &natural_height) {}
-void PenroseWidget::on_size_allocate(Gtk::Allocation &allocation) {}
+                                                         int &natural_height) {
+  minimum_height = 60;
+  natural_height = 100;
+}
+void PenroseWidget::on_size_allocate(Gtk::Allocation &allocation) {
+  set_allocation(allocation);
+  if (m_refGdkWindow) {
+    m_refGdkWindow->move_resize(allocation.get_x(), allocation.get_y(),
+                                allocation.get_width(),
+                                allocation.get_height());
+  }
+}
 void PenroseWidget::on_map() { Gtk::Widget::on_map(); }
 void PenroseWidget::on_unmap() { Gtk::Widget::on_unmap(); }
-void PenroseWidget::on_realize() { Gtk::Widget::on_realize(); }
-void PenroseWidget::on_unrealize() { Gtk::Widget::on_unrealize(); }
+void PenroseWidget::on_realize() {
+  set_realized();
+  m_scale = m_scale_prop.get_value();
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" m_scale='") << (m_scale) << ("'") << (std::endl)
+      << (std::flush);
+  if (!(m_refGdkWindow)) {
+    GdkWindowAttr attr;
+    memset(&attr, 0, sizeof(attr));
+    auto allocation = get_allocation();
+    attr.x = allocation.get_x();
+    attr.y = allocation.get_y();
+    attr.width = allocation.get_width();
+    attr.height = allocation.get_height();
+    attr.event_mask = ((get_events()) | (Gdk::EXPOSURE_MASK));
+    attr.window_type = GDK_WINDOW_CHILD;
+    attr.wclass = GDK_INPUT_OUTPUT;
+    m_refGdkWindow = Gdk::Window::create(get_parent_window(), &attr,
+                                         ((GDK_WA_X) | (GDK_WA_Y)));
+    set_window(m_refGdkWindow);
+    m_refGdkWindow->set_user_data(gobj());
+  }
+}
+void PenroseWidget::on_unrealize() {
+  if (m_refGdkWindow) {
+    m_refGdkWindow.reset();
+  }
+  Gtk::Widget::on_unrealize();
+}
 bool PenroseWidget::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {}
 void PenroseWidget::on_parsing_error(
     const Glib::RefPtr<Gtk::CssSection> &section, const Glib::Error &error) {
@@ -59,12 +110,15 @@ void PenroseWidget::on_parsing_error(
 }
 ExampleWindow::ExampleWindow() {
   set_title("custom widget example");
+  set_border_width(6);
   set_default_size(600, 400);
   m_grid.set_margin(6);
   m_grid.set_row_spacing(10);
   m_grid.set_column_spacing(10);
   add(m_grid);
   m_grid.attach(m_penrose, 0, 0);
+  m_penrose.show();
+  show_all_children();
 }
 ExampleWindow::~ExampleWindow() {}
 int main(int argc, char **argv) {

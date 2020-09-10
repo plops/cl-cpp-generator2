@@ -234,17 +234,31 @@
 			(declare (values "Gtk::SizeRequestMode"))
 			(return (Gtk--Widget--get_request_mode_vfunc)))
 		      (defmethod get_preferred_width_vfunc (minimum_width natural_width)
-			(declare (type int& minimum_width natural_width)))
+			(declare (type int& minimum_width natural_width))
+			(setf minimum_width 60
+			      natural_width 100))
 		      (defmethod get_preferred_height_for_width_vfunc (width minimum_height natural_height)
 			(declare (type int& minimum_height natural_height)
-				 (type int width)))
+				 (type int width))
+			(setf minimum_height 50
+			      natural_height 70))
 		      (defmethod get_preferred_height_vfunc (minimum_height natural_height)
-			(declare (type int& minimum_height natural_height)))
+			(declare (type int& minimum_height natural_height))
+			(setf minimum_height 50
+			      natural_height 70))
 		      (defmethod get_preferred_width_for_height_vfunc (height minimum_height natural_height)
 			(declare (type int& minimum_height natural_height)
-				 (type int height)))
+				 (type int height))
+			(setf minimum_height 60
+			      natural_height 100))
 		      (defmethod on_size_allocate (allocation)
-			(declare (type Gtk--Allocation& allocation)))
+			(declare (type Gtk--Allocation& allocation))
+			(set_allocation allocation)
+			(when m_refGdkWindow
+			  (m_refGdkWindow->move_resize (allocation.get_x)
+						       (allocation.get_y)
+						       (allocation.get_width)
+						       (allocation.get_height))))
 		      #+nil
 		      (defmethod measure_vfunc (orientation for_size minimum natural minimum_baseline natural_baseline)
 			(declare (type Gtk--Orientation orientation)
@@ -263,8 +277,34 @@
 		      (defmethod on_unmap ()
 			(Gtk--Widget--on_unmap))
 		      (defmethod on_realize ()
-			(Gtk--Widget--on_realize))
+					; (Gtk--Widget--on_realize) ;; only call this when set_has_window false
+			(set_realized)
+			(setf m_scale (m_scale_prop.get_value))
+			,(logprint "" `(m_scale))
+			(unless m_refGdkWindow
+			  (let ((attr))
+			    (declare (type GdkWindowAttr attr))
+			    (memset &attr 0 (sizeof attr))
+			    (let ((allocation (get_allocation)))
+			      ,@(loop for e in `(x y width height) collect
+				     `(setf ,(format nil "attr.~a" e)
+					   (,(format nil "allocation.get_~a" e)))))
+			    (setf attr.event_mask (logior (get_events)
+								Gdk--EXPOSURE_MASK)
+				  attr.window_type GDK_WINDOW_CHILD
+				  attr.wclass GDK_INPUT_OUTPUT
+				  m_refGdkWindow (Gdk--Window--create
+						  (get_parent_window)
+						  &attr
+						  (logior GDK_WA_X
+							  GDK_WA_Y)
+						  ))
+			    (set_window m_refGdkWindow)
+			    (m_refGdkWindow->set_user_data (gobj))))
+			)
 		      (defmethod on_unrealize ()
+			(when m_refGdkWindow
+			 (m_refGdkWindow.reset))
 			(Gtk--Widget--on_unrealize))
 		      (defmethod on_draw (cr)
 			(declare (type "const Cairo::RefPtr<Cairo::Context>&" cr)
@@ -291,6 +331,7 @@
 			(declare (values :constructor)
 				 )
 			(set_title (string "custom widget example"))
+			(set_border_width 6)
 			(set_default_size 600 400)
 			(m_grid.set_margin 6)
 			(m_grid.set_row_spacing 10)
@@ -299,7 +340,10 @@
 			;;(add m_penrose)
 			(add m_grid)
 			;;(this->add m_grid)
-					(m_grid.attach m_penrose 0 0)
+			(m_grid.attach m_penrose 0 0)
+			(m_penrose.show)
+			(show_all_children)
+			
 			)
 		      (defmethod ~ExampleWindow ()
 			(declare (values :constructor)
