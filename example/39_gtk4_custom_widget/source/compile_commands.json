@@ -2,7 +2,7 @@
  {
   "directory": "/home/martin/stage/cl-cpp-generator2/example/39_gtk4_custom_widget/source",
   "arguments": [
-   "c++",
+   "g++-10.2.0",
    "-c",
    "-o",
    "vis_00_base.o",

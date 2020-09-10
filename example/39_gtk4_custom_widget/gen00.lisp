@@ -290,16 +290,17 @@
 			(m_grid.set_row_spacing 10)
 			(m_grid.set_column_spacing 10)
 			;;(Gtk--Container--add m_grid)
-			(add m_penrose)
+			;;(add m_penrose)
+			(set_child m_grid)
 			;;(this->add m_grid)
-			;(m_grid.attach m_penrose 0 0)
+					(m_grid.attach m_penrose 0 0)
 			)
 		      (defmethod ~ExampleWindow ()
 			(declare (values :constructor)
 				 (virtual)))
-		      "protected:"
+		      ; "protected:"
 		      #+nil (defmethod on_button_quit ()
-			(hide))
+			      (hide))
 		      "Gtk::Grid m_grid;"
 		      "PenroseWidget m_penrose;"
 		      )
@@ -319,7 +320,14 @@
 				  ))
 			    (hw)
 			    )
-			(declare (type ExampleWindow hw))
+			(declare (type ExampleWindow
+				  ;Gtk--Window
+				  hw))
+			#+nil(let ((p)
+			      )
+			  (declare (type PenroseWidget p))
+			  ;(hw.add p)
+			  )
 			(app->run hw)
 			)))))
   )

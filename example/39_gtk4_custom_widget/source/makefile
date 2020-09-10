@@ -1,6 +1,6 @@
 all: vis
 
-
+CXX=g++-10.2.0
 CXXFLAGS=-Og -g3 -ggdb \
 -std=gnu++20 \
 -Wall -Wextra -Werror \

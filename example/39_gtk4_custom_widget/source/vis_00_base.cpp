@@ -90,7 +90,8 @@ ExampleWindow::ExampleWindow() {
   m_grid.set_margin(6);
   m_grid.set_row_spacing(10);
   m_grid.set_column_spacing(10);
-  add(m_penrose);
+  set_child(m_grid);
+  m_grid.attach(m_penrose, 0, 0);
 }
 ExampleWindow::~ExampleWindow() {}
 int main(int argc, char **argv) {

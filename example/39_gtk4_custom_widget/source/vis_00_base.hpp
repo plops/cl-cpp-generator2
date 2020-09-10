@@ -51,7 +51,6 @@ class ExampleWindow : public Gtk::Window {
         public:
          ExampleWindow ()  ;  
          ~ExampleWindow ()  ;  
-        protected:
         Gtk::Grid m_grid;
         PenroseWidget m_penrose;
 };
