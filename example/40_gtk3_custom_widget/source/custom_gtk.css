@@ -1,0 +1,15 @@
+/* Example of a CSS style sheet with a custom style property.
+ *
+ * The name of the style property must have its canonical form, i.e. characters
+ * other than ASCII letters, digits, and hyphens must be replaced by hyphens.
+*/
+
+* {
+  /* -<widget class name>-<style property canonical name>: <value>; */
+  -gtkmm__CustomObject_mywidget-example-scale: 920;
+}
+
+#penrose-widget {
+  background-color: rgb(255,0,0);
+  color:            rgb(0,0,255);
+}
