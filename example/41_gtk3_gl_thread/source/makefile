@@ -18,6 +18,7 @@ CXXFLAGS=-O2 \
 LDFLAGS= \
 `pkg-config gtkmm-3.0 --libs` \
 -lpthread \
+-lepoxy \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections
 

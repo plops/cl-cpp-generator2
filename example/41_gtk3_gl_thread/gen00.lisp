@@ -180,8 +180,18 @@
 			(declare (values :constructor))
 			(set_title (string "graphics-area"))
 			(set_default_size 640 360)
-			(set_has_window true)
-
+			(add vbox)
+			(area.set_hexpand true)
+			(area.set_vexpand true)
+			(area.set_auto_render true)
+			(vbox.add area)
+			(dot area
+			     (signal_render)
+			     (connect
+			      (sigc--mem_fun *this
+					     &GraphicsArea--render)))
+			(area.show)
+			(vbox.show)
 			)
 		      (defmethod ~GraphicsArea ()
 			(declare (virtual)
@@ -198,6 +208,10 @@
 			(declare (type "const Glib::RefPtr<Gdk::GLContext>&" ctx)
 				 (values bool)
 				 (virtual))
+			(area.throw_if_error)
+			(glClearColor .5 .5 .5 1.0)
+			(glClear GL_COLOR_BUFFER_BIT)
+			(glFlush)
 			(return true))
 		      "public:"
 		      "Gtk::GLArea area;"

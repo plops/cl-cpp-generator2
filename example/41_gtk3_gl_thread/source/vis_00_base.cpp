@@ -14,7 +14,14 @@ extern State state;
 GraphicsArea::GraphicsArea() {
   set_title("graphics-area");
   set_default_size(640, 360);
-  set_has_window(true);
+  add(vbox);
+  area.set_hexpand(true);
+  area.set_vexpand(true);
+  area.set_auto_render(true);
+  vbox.add(area);
+  area.signal_render().connect(sigc::mem_fun(*this, &GraphicsArea::render));
+  area.show();
+  vbox.show();
 }
 GraphicsArea::~GraphicsArea() {}
 void GraphicsArea::run() {
@@ -34,6 +41,10 @@ void GraphicsArea::onNotifcationFromThread() {
   queue_draw();
 }
 bool GraphicsArea::render(const Glib::RefPtr<Gdk::GLContext> &ctx) {
+  area.throw_if_error();
+  glClearColor((0.50f), (0.50f), (0.50f), (1.0f));
+  glClear(GL_COLOR_BUFFER_BIT);
+  glFlush();
   return true;
 }
 int main(int argc, char **argv) {
