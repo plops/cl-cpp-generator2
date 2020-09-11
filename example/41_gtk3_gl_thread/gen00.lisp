@@ -17,7 +17,7 @@
 				 '()))
 
 (progn
-  (defparameter *source-dir* #P"example/40_gtk3_custom_widget/source/")
+  (defparameter *source-dir* #P"example/41_gtk3_gl_thread/source/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
@@ -150,17 +150,21 @@
 		     (do0
 		      "// header"
 		       
-		      (include ;<gtkmm/button.h>
+		      #+nil (include ;<gtkmm/button.h>
 		       <gtkmm/window.h>
 		       <gtkmm/grid.h>)
-		      (include ;<gtkmm.h>
-			       <gtkmm/widget.h>
-			       <gtkmm/cssprovider.h>
-			       <gtkmm/styleproperty.h>
+		      (include <gtkmm.h>
+			       ;<gtkmm/widget.h>
+			       ;<gtkmm/cssprovider.h>
+			       ;<gtkmm/styleproperty.h>
 			       )
-		      (include <glibmm/extraclassinit.h>
+		      (include <epoxy/gl.h>
+			       <gtk/gtk.h>
+			       <gdk/gdkx.h>
+			       <GL/gl.h>)
+		      #+nil (include <glibmm/extraclassinit.h>
 			       <glibmm/ustring.h>)
-		      (include <gdkmm/general.h>)
+		      #+nil (include <gdkmm/general.h>)
 		      " "
 		      )
 		     (do0
@@ -168,265 +172,51 @@
 		      (include "vis_00_base.hpp")
 		      " "
 		      ))
-		    #+nil (defclass PenroseExtraInit "public Glib::ExtraClassInit"
-		      "public:"
-		      (defmethod PenroseExtraInit (css_name)
-			(declare (values :constructor)
-				 (construct (Glib--ExtraClassInit ;class_init_function
-					     (lambda (g_class class_data)
-					       (declare (type void* g_class class_data)
-							)
-					       (g_return_if_fail (GTK_IS_WIDGET_CLASS g_class))
-					       (let ((klass (static_cast<GtkWidgetClass*> g_class))
-						     (css_name2 (static_cast<Glib--ustring*> class_data)))
-						 (gtk_widget_class_set_css_name klass (css_name2->c_str))))
-					     &m_css_name
-					     ;; instance_init_function
-					     (lambda (instance g_class)
-					       (declare (type void* g_class)
-							(type GTypeInstance* instance)
-							)
-					       (g_return_if_fail (GTK_IS_WIDGET instance)))
-					     ))
-				 (type "const Glib::ustring&" css_name)))
-		      "private:"
-		      "Glib::ustring m_css_name;")
+		    
 
-		    (defclass PenroseWidget "public Gtk::Widget"
+		    (defclass GraphicsArea "public Gtk::Window"
 		      "public:"
-		      (defmethod PenroseWidget ()
-			(declare (values :constructor)
-				 (construct (Glib--ObjectBase (string "PenroseWidget"))
-					    ;(PenroseExtraInit (string "penrose-widget")) ;; name in css file
-					    (Gtk--Widget)
-					    (m_scale_prop *this (string "example_scale") 500)
-					    (m_scale 1000)
-					    ))
+		      (defmethod GraphicsArea ()
+			(declare (values :constructor))
+			(set_title (string "graphics-area"))
+			(set_default_size 640 360)
 			(set_has_window true)
-			(set_name (string "penrose-widget"))
-			#+nil
-			,(logprint "gtype name" `((G_OBJECT_TYPE_NAME (gobj))))
-			(setf m_refCssProvider (Gtk--CssProvider--create))
-			(let ((style (get_style_context)))
-			  (style->add_provider m_refCssProvider
-					       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)
-			  (dot (m_refCssProvider->signal_parsing_error)
-			       (connect
-				(sigc--mem_fun *this
-					       &PenroseWidget--on_parsing_error)
-			       #+nil
-				(lambda (section error)
-			(declare (type "const Glib::RefPtr<Gtk::CssSection>&" section)
-				 (type "const Glib::Error&" error))
-			,(logprint "parse" `((error.what) (-> section
-							      (get_file)
-							      (get_uri))
-					     (-> section
-						 (get_start_location))
-					     (-> section
-						 (get_end_location)))))))
-			  (m_refCssProvider->load_from_path (string "custom_gtk.css"))))
-		      (defmethod ~PenroseWidget ()
+
+			)
+		      (defmethod ~GraphicsArea ()
 			(declare (virtual)
 				 (values :constructor)))
-		      "protected:"
-		      (defmethod get_request_mode_vfunc ()
-			(declare (values "Gtk::SizeRequestMode"))
-			(return (Gtk--Widget--get_request_mode_vfunc)))
-		      (defmethod get_preferred_width_vfunc (minimum_width natural_width)
-			(declare (type int& minimum_width natural_width))
-			(setf minimum_width 60
-			      natural_width 100))
-		      (defmethod get_preferred_height_for_width_vfunc (width minimum_height natural_height)
-			(declare (type int& minimum_height natural_height)
-				 (type int width))
-			(setf minimum_height 50
-			      natural_height 70))
-		      (defmethod get_preferred_height_vfunc (minimum_height natural_height)
-			(declare (type int& minimum_height natural_height))
-			(setf minimum_height 50
-			      natural_height 70))
-		      (defmethod get_preferred_width_for_height_vfunc (height minimum_height natural_height)
-			(declare (type int& minimum_height natural_height)
-				 (type int height))
-			(setf minimum_height 60
-			      natural_height 100))
-		      (defmethod on_size_allocate (allocation)
-			(declare (type Gtk--Allocation& allocation))
-			(set_allocation allocation)
-			(when m_refGdkWindow
-			  (m_refGdkWindow->move_resize (allocation.get_x)
-						       (allocation.get_y)
-						       (allocation.get_width)
-						       (allocation.get_height))))
-		      #+nil
-		      (defmethod measure_vfunc (orientation for_size minimum natural minimum_baseline natural_baseline)
-			(declare (type Gtk--Orientation orientation)
-				 (type int for_size)
-				 (type int& minimum natural minimum_baseline natural_baseline))
-			(if (== Gtk--Orientation--HORIZONTAL orientation)
-			    (setf minimum 60
-				  natural 100)
-			    (setf minimum 50
-				  natural 70))
-			(setf minimum_baseline -1
-			      natural_baseline -1))
-		      
-		      (defmethod on_map ()
-			(Gtk--Widget--on_map))
-		      (defmethod on_unmap ()
-			(Gtk--Widget--on_unmap))
-		      (defmethod on_realize ()
-					; (Gtk--Widget--on_realize) ;; only call this when set_has_window false
-			(set_realized)
-			(setf m_scale (m_scale_prop.get_value))
-			,(logprint "" `(m_scale))
-			(unless m_refGdkWindow
-			  (let ((attr))
-			    (declare (type GdkWindowAttr attr))
-			    (memset &attr 0 (sizeof attr))
-			    (let ((allocation (get_allocation)))
-			      ,@(loop for e in `(x y width height) collect
-				     `(setf ,(format nil "attr.~a" e)
-					   (,(format nil "allocation.get_~a" e)))))
-			    (setf attr.event_mask (logior (get_events)
-								Gdk--EXPOSURE_MASK)
-				  attr.window_type GDK_WINDOW_CHILD
-				  attr.wclass GDK_INPUT_OUTPUT
-				  m_refGdkWindow (Gdk--Window--create
-						  (get_parent_window)
-						  &attr
-						  (logior GDK_WA_X
-							  GDK_WA_Y)
-						  ))
-			    (set_window m_refGdkWindow)
-			    (m_refGdkWindow->set_user_data (gobj))))
-			)
-		      (defmethod on_unrealize ()
-			(when m_refGdkWindow
-			 (m_refGdkWindow.reset))
-			(Gtk--Widget--on_unrealize))
-		      (defmethod on_draw (cr)
-			(declare (type "const Cairo::RefPtr<Cairo::Context>&" cr)
-				 (values bool))
-			(let ((allocation (get_allocation))
-			      (scale_x (/ (static_cast<double> (allocation.get_width))
-					  m_scale))
-			      (scale_y (/ (static_cast<double> (allocation.get_height))
-					  m_scale))
-			      (style (get_style_context)))
-			  (style->render_background cr
-						    ,@(loop for e in `(x y width height) collect
-							   `(,(format nil "allocation.get_~a" e))))
-			  (let ((state2 (style->get_state))
-				)
-			    (Gdk--Cairo--set_source_rgba cr (style->get_color state2))
-			    ,@(loop for (cmd x y) in `((m 155 165)
-						       (l 155 838)
-						       (l 265 900)
-						       (l 849 564)
-						       (l 849 438)
-						       (l 265 100)
-						       (l 155 165)
-						       (m 265 100)
-						       (l 265 652)
-						       (l 526 502)
-						       (m 369 411)
-						       (l 633 564)
-						       (m 369 286)
-						       (l 369 592)
-						       (m 369 286)
-						       (l 849 564)
-						       (m 633 564)
-						       (l
-							155 838)
-						       )
-				 collect
-				   `(,(format nil "cr->~a_to" (ecase cmd
-								(m "move")
-								(l "line")))
-				      (* ,(coerce x 'double-float)
-					 scale_x)
-				      (* ,(coerce y 'double-float)
-					 scale_y)))
-			    ,@(loop for (x y) in `()
-				 collect
-				   `(,(format nil "cr->line_to" )
-				      (* ,(coerce x 'double-float)
-					 scale_x)
-				      (* ,(coerce y 'double-float)
-					 scale_y)))
-			    (cr->stroke)))
-			(return true)
-			)
-		      (defmethod on_parsing_error (section error)
-			(declare (type "const Glib::RefPtr<const Gtk::CssSection>&" section)
-				 (type "const Glib::Error&" error))
-			,(logprint "parse" `((error.what) (-> section
-							      (get_file)
-							      (get_uri))
-					     #+nil(-> section
-						 (get_start_location))
-					     #+nil (-> section
-						 (get_end_location)))))
-		      "Gtk::StyleProperty<int> m_scale_prop;"
-		      "Glib::RefPtr<Gdk::Window> m_refGdkWindow;"
-		      "Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;"
-		      "int m_scale;"
-		      )
-		    (defclass ExampleWindow "public Gtk::Window"
+		      (defmethod run ()
+			(while true
+			  (dispatcher.emit)
+			  (std--this_thread--sleep_for
+			   (std--chrono--milliseconds 50))))
+		      (defmethod onNotifcationFromThread ()
+			,(logprint "" `())
+			(queue_draw))
+		      (defmethod render (ctx)
+			(declare (type "const Glib::RefPtr<Gdk::GLContext>&" ctx)
+				 (values bool)
+				 (virtual))
+			(return true))
 		      "public:"
-		      (defmethod ExampleWindow ()
-			(declare (values :constructor)
-				 )
-			(set_title (string "custom widget example"))
-			(set_border_width 6)
-			(set_default_size 600 400)
-			;(m_grid.set_margin 6)
-			;(m_grid.set_row_spacing 10)
-			;(m_grid.set_column_spacing 10)
-			;;(Gtk--Container--add m_grid)
-			(add m_penrose)
-			;(add m_grid)
-			;;(this->add m_grid)
-			;(m_grid.attach m_penrose 0 0)
-			(m_penrose.show)
-			(show_all_children)
-			
-			)
-		      (defmethod ~ExampleWindow ()
-			(declare (values :constructor)
-				 (virtual)))
-		      ; "protected:"
-		      #+nil (defmethod on_button_quit ()
-			      (hide))
-		      ;"Gtk::Grid m_grid;"
-		      "PenroseWidget m_penrose;"
-		      )
-
-		    
-
-		    
-		    
-		    (defun main (argc argv
-				 )
+		      "Gtk::GLArea area;"
+		      "Gtk::Box vbox{Gtk::ORIENTATION_VERTICAL,false};"
+		      "private:"
+		      "Glib::Dispatcher dispatcher;")
+		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
-		      (let ((app (Gtk--Application--create ; argc argv
-							  ; (string "org.gtkmm.example")
-				  ))
+		      (let ((app (Gtk--Application--create
+				  argc argv
+				  (string "gtk3-gl-threads")))
 			    (hw)
+			    
 			    )
-			(declare (type ExampleWindow
-				  ;Gtk--Window
-				  hw))
-			#+nil(let ((p)
-			      )
-			  (declare (type PenroseWidget p))
-			  ;(hw.add p)
-			  )
+			(declare (type GraphicsArea hw))
+			"std::thread th(&GraphicsArea::run, &hw);"
 			(app->run hw)
 			)))))
   )

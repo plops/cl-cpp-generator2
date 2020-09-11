@@ -8,55 +8,32 @@
 #include <chrono>
 #include <thread>
 ;
-#include <gtkmm/window.h>
-#include <gtkmm/grid.h>
+#include <gtkmm.h>
 ;
-#include <gtkmm/widget.h>
-#include <gtkmm/cssprovider.h>
-#include <gtkmm/styleproperty.h>
-;
-#include <glibmm/extraclassinit.h>
-#include <glibmm/ustring.h>
-;
-#include <gdkmm/general.h>
+#include <epoxy/gl.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <GL/gl.h>
 ;
 // header
-#include <gtkmm/window.h>
-#include <gtkmm/grid.h>
-#include <gtkmm/widget.h>
-#include <gtkmm/cssprovider.h>
-#include <gtkmm/styleproperty.h>
-#include <glibmm/extraclassinit.h>
-#include <glibmm/ustring.h>
-#include <gdkmm/general.h>
+#include <gtkmm.h>
+#include <epoxy/gl.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <GL/gl.h>
  ;
-class PenroseWidget : public Gtk::Widget {
+class GraphicsArea : public Gtk::Window {
         public:
-         PenroseWidget ()  ;  
-         ~PenroseWidget ()  ;  
-        protected:
-        Gtk::SizeRequestMode get_request_mode_vfunc ()  ;  
-        void get_preferred_width_vfunc (int& minimum_width, int& natural_width)  ;  
-        void get_preferred_height_for_width_vfunc (int width, int& minimum_height, int& natural_height)  ;  
-        void get_preferred_height_vfunc (int& minimum_height, int& natural_height)  ;  
-        void get_preferred_width_for_height_vfunc (int height, int& minimum_height, int& natural_height)  ;  
-        void on_size_allocate (Gtk::Allocation& allocation)  ;  
-        void on_map ()  ;  
-        void on_unmap ()  ;  
-        void on_realize ()  ;  
-        void on_unrealize ()  ;  
-        bool on_draw (const Cairo::RefPtr<Cairo::Context>& cr)  ;  
-        void on_parsing_error (const Glib::RefPtr<const Gtk::CssSection>& section, const Glib::Error& error)  ;  
-        Gtk::StyleProperty<int> m_scale_prop;
-        Glib::RefPtr<Gdk::Window> m_refGdkWindow;
-        Glib::RefPtr<Gtk::CssProvider> m_refCssProvider;
-        int m_scale;
-};
-class ExampleWindow : public Gtk::Window {
+         GraphicsArea ()  ;  
+         ~GraphicsArea ()  ;  
+        void run ()  ;  
+        void onNotifcationFromThread ()  ;  
+        bool render (const Glib::RefPtr<Gdk::GLContext>& ctx)  ;  
         public:
-         ExampleWindow ()  ;  
-         ~ExampleWindow ()  ;  
-        PenroseWidget m_penrose;
+        Gtk::GLArea area;
+        Gtk::Box vbox{Gtk::ORIENTATION_VERTICAL,false};
+        private:
+        Glib::Dispatcher dispatcher;
 };
 int main (int argc, char** argv)  ;  
 #endif

@@ -17,6 +17,7 @@ CXXFLAGS=-O2 \
 
 LDFLAGS= \
 `pkg-config gtkmm-3.0 --libs` \
+-lpthread \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections
 
