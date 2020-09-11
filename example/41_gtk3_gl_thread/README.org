@@ -1,0 +1,1 @@
+- https://stackoverflow.com/questions/57941190/how-to-do-gtkmm-thread-safe-queue-draw
