@@ -44,6 +44,16 @@ bool GraphicsArea::render(const Glib::RefPtr<Gdk::GLContext> &ctx) {
   area.throw_if_error();
   glClearColor((0.50f), (0.50f), (0.50f), (1.0f));
   glClear(GL_COLOR_BUFFER_BIT);
+  glColor3f((0.80f), (0.90f), (0.70f));
+  static float a = (0.10f);
+  (a) += ((0.10f));
+  glTranslatef(a, a, (0.f));
+  glBegin(GL_QUADS);
+  glVertex2f((0.f), (-1.0f));
+  glVertex2f((0.f), (1.0f));
+  glVertex2f((0.50f), (1.0f));
+  glVertex2f((0.50f), (-1.0f));
+  glEnd();
   glFlush();
   return true;
 }

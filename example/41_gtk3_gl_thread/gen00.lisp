@@ -211,6 +211,23 @@
 			(area.throw_if_error)
 			(glClearColor .5 .5 .5 1.0)
 			(glClear GL_COLOR_BUFFER_BIT)
+			(do0
+			 (glColor3f .8 .9 .7)
+			 (let ((a .1s0))
+			   (declare (type "static float" a))
+			   (incf a .1s0)
+			  (glTranslatef a 0 .0))
+			 (glBegin GL_QUADS)
+
+
+			 ,@(loop for (x y) in `((0 -1)
+						(0 1)
+						(.5 1)
+						(.5 -1))
+			      collect
+				`(glVertex2f ,(coerce x 'single-float)
+					     ,(coerce y 'single-float)))
+			 (glEnd))
 			(glFlush)
 			(return true))
 		      "public:"
