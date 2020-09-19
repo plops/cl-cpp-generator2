@@ -508,9 +508,11 @@
 		      #+nil (include ;<gtkmm/button.h>
 		       ;<gtkmm/window.h>
 		       <gtkmm/grid.h>)
-		      (include <gtkmm.h>
+		      (include ;<gtkmm.h>
 					; <gtkmm/widget.h>
-		       ;<gtkmm/treeview.h>
+		       <gtkmm/treeview.h>
+		       <gtkmm/liststore.h>
+		       <gtkmm/menu.h>
 		       ;<gtkmm/liststore.h>
 			 ;      <gtkmm/cssprovider.h>
 			  ;     <gtkmm/styleproperty.h>
@@ -560,7 +562,7 @@
 			      ,@(loop for (e) in l collect
 				     `(progn
 					(let ((item (Gtk--make_managed<Gtk--MenuItem> (string ,e) true)))
-					  (dot (item->signal_activate)
+					  #+nil (dot (item->signal_activate)
 					       (connect *this
 							&TreeView_WithPopup--on_menu_file_popup_generic))
 					  (m_Menu_Popup.append *item)
@@ -597,18 +599,21 @@
 		      ,(let ((members `((m_col_id "unsigned int" 0)
 					(m_col_name "Glib::ustring"))))
 			`(do0
-			 (space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+			 (space "class ModelColumns : public Gtk::TreeModelColumnRecord"
 				(progn
-				  ,@(loop for e in members collect
-					 (destructuring-bind (var-name var-type &optional var-default) e
-					   (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+				  "public:"
+				  
 				  
 				  (defun+ ModelColumns ()
 				    (declare (values :constructor))
 				    ,@(loop for e in members collect
 					   (destructuring-bind (var-name var-type &optional var-default) e
 					     `(add ,var-name)))
-				    )))
+				    )
+				  ,@(loop for e in members collect
+					 (destructuring-bind (var-name var-type &optional var-default) e
+					   (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+				  ))
 				
 			 "const ModelColumns m_Columns;"))
 		      "Glib::RefPtr<Gtk::ListStore> m_refTreeModel;"
