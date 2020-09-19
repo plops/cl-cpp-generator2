@@ -533,7 +533,24 @@
 					    ;(m_scale 1000)
 				  ))
 			(setf m_refTreeModel (Gtk--ListStore--create m_Columns))
-			(set_model m_refTreeModel))
+			(set_model m_refTreeModel)
+			,(let ((l `((1 "right-click on this")
+				   (2 "or this")
+				    (3 "or this, for popup context menu"))
+				 
+				 ))
+			   
+			   `(do0
+			     ,@(loop for (e f) in l collect
+				    `(progn
+				       (let ((row (deref (m_refTreeModel->append))))
+					 (setf (aref row m_Columns.m_col_id) ,e
+					       (aref row m_Columns.m_col_name) (string ,f)))
+				       ))))
+			(do0
+
+			 (append_column (string "id") m_Columns.m_col_id)
+			 (append_column (string "name") m_Columns.m_col_name)))
 		      (defmethod ~TreeView_WithPopup ()
 			(declare (virtual)
 				 (values :constructor)))
