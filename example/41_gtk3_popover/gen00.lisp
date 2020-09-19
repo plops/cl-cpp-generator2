@@ -550,7 +550,27 @@
 			(do0
 
 			 (append_column (string "id") m_Columns.m_col_id)
-			 (append_column (string "name") m_Columns.m_col_name)))
+			 (append_column (string "name") m_Columns.m_col_name))
+
+			(do0
+			 ,(let ((l `(("_Edit" )
+				     ("_Process")
+				     ("_Remove"))))
+			    `(do0
+			      ,@(loop for (e) in l collect
+				     `(progn
+					(let ((item (Gtk--make_managed<Gtk--MenuItem> (string ,e) true)))
+					  (dot (item->signal_activate)
+					       (connect *this
+							&TreeView_WithPopup--on_menu_file_popup_generic))
+					  (m_Menu_Popup.append *item)
+					  )))
+			      ))
+			 
+			 (m_Menu_Popup.accelerate *this)
+			 (m_Menu_Popup.show_all))
+
+			)
 		      (defmethod ~TreeView_WithPopup ()
 			(declare (virtual)
 				 (values :constructor)))
@@ -559,10 +579,19 @@
 			(declare (values bool)
 				 (type "GdkEventButton*" event))
 			(let ((return_value false))
+			  (setf return_value (TreeView--on_button_press_event event))
+			  (when (and (== GDK_BUTTON_PRESS event->type)
+				     (== 3 event->button))
+			    (m_Menu_Popup.popup_at_pointer (reinterpret_cast<GdkEvent*> event)))
 			  (return return_value))
 			)
 		      (defmethod  on_menu_file_popup_generic ()
-			
+			(let ((sel (get_selection)))
+			  (when sel
+			    (let ((iter (sel->get_selected)))
+			      (when iter
+				(let ((id (aref "(*iter)" m_Columns.m_col_id)))
+				  ,(logprint "popup was selected" `(id)))))))
 			)
 
 		      ,(let ((members `((m_col_id "unsigned int" 0)
