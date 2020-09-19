@@ -562,9 +562,9 @@
 			      ,@(loop for (e) in l collect
 				     `(progn
 					(let ((item (Gtk--make_managed<Gtk--MenuItem> (string ,e) true)))
-					  #+nil (dot (item->signal_activate)
-					       (connect *this
-							&TreeView_WithPopup--on_menu_file_popup_generic))
+					  #-nil (dot (item->signal_activate)
+						     (connect (sigc--mem_fun *this
+									     &TreeView_WithPopup--on_menu_file_popup_generic)))
 					  (m_Menu_Popup.append *item)
 					  )))
 			      ))
