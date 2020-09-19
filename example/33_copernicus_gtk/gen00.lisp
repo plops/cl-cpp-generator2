@@ -456,7 +456,7 @@
 				     
 				     
 
-
+					   
 
 
 
@@ -1013,13 +1013,13 @@
 
 		      
 		      
-		      #+nil (let ((app (Gtk--Application--create argc argv
+		       (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (hw))
 			(declare (type ListStore_SpacePacketHeader0 ;Example_TreeView_ListStore
 				       hw))
 			(app->run hw))
-		      (let ((app (Gtk--Application--create argc argv
+		      #+nil (let ((app (Gtk--Application--create argc argv
 							   (string "org.gtkmm.example")))
 			    (win )
 			    (timechart))

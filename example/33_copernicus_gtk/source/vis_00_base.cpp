@@ -443,9 +443,6 @@ int main(int argc, char **argv) {
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto app = Gtk::Application::create(argc, argv, "org.gtkmm.example");
-  Gtk::Window win;
-  TimeChart timechart;
-  win.add(timechart);
-  timechart.show();
-  app->run(win);
+  ListStore_SpacePacketHeader0 hw;
+  app->run(hw);
 }

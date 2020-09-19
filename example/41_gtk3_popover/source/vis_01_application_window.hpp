@@ -8,9 +8,13 @@
 #include <chrono>
 #include <thread>
 ;
+#include "vis_03_treeview_with_popup.hpp"
+;
 #include <gtkmm/window.h>
 #include <gtkmm/grid.h>
 ;
+#include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/widget.h>
 #include <gtkmm/cssprovider.h>
 #include <gtkmm/styleproperty.h>
@@ -23,6 +27,8 @@
 // header
 #include <gtkmm/window.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/widget.h>
 #include <gtkmm/cssprovider.h>
 #include <gtkmm/styleproperty.h>
@@ -34,5 +40,8 @@ class ExampleWindow : public Gtk::Window {
         public:
          ExampleWindow ()  ;  
          ~ExampleWindow ()  ;  
+        Gtk::Box m_VBox;
+        Gtk::ScrolledWindow m_ScrolledWindow;
+        TreeView_WithPopup m_TreeView;
 };
 #endif

@@ -201,16 +201,21 @@
 			<chrono>
 			<thread>
 			)
+
+	       (include "vis_03_treeview_with_popup.hpp")
 	       
 	       (split-header-and-code
 		     (do0
 		      "// header"
 		       
 		      (include ;<gtkmm/button.h>
+		       
 		       <gtkmm/window.h>
 		       <gtkmm/grid.h>)
 		      (include ;<gtkmm.h>
-			       <gtkmm/widget.h>
+		       <gtkmm/box.h>
+		       <gtkmm/scrolledwindow.h>
+		       <gtkmm/widget.h>
 			       <gtkmm/cssprovider.h>
 			       <gtkmm/styleproperty.h>
 			       )
@@ -221,17 +226,24 @@
 		      )
 		     (do0
 		      "// implementation"
-		      (include "vis_01_application_window.hpp")
+		      (include "vis_01_application_window.hpp"
+			       )
 		      " "
 		      ))
 		    (defclass ExampleWindow "public Gtk::Window"
 		      "public:"
 		      (defmethod ExampleWindow ()
 			(declare (values :constructor)
-				 )
-			(set_title (string "custom widget example"))
+				 (construct (m_VBox Gtk--ORIENTATION_VERTICAL)
+					    ))
+			(set_title (string "Gtk::TreeView example with popup"))
 			(set_border_width 6)
 			(set_default_size 600 400)
+			(add m_VBox)
+			(m_ScrolledWindow.add m_TreeView)
+			(m_ScrolledWindow.set_policy Gtk--POLICY_AUTOMATIC
+						     Gtk--POLICY_AUTOMATIC)
+			(m_VBox.pack_start m_ScrolledWindow)
 					;(m_grid.set_margin 6)
 					;(m_grid.set_row_spacing 10)
 					;(m_grid.set_column_spacing 10)
@@ -251,7 +263,11 @@
 		      #+nil (defmethod on_button_quit ()
 			      (hide))
 		      ;"Gtk::Grid m_grid;"
-		      ;"PenroseWidget m_penrose;"
+					;"PenroseWidget m_penrose;"
+		      "Gtk::Box m_VBox;"
+		      "Gtk::ScrolledWindow m_ScrolledWindow;"
+		      "TreeView_WithPopup m_TreeView;"
+		      
 		      )
 
 		    
@@ -475,7 +491,86 @@
 		    
 
 		    
-		    )))
+	       )))
+
+    (define-module
+       `(treeview_with_popup ()
+	      (do0
+	       (include <iostream>
+			<chrono>
+			<thread>
+			)
+	       
+	       (split-header-and-code
+		     (do0
+		      "// header"
+		       
+		      #+nil (include ;<gtkmm/button.h>
+		       ;<gtkmm/window.h>
+		       <gtkmm/grid.h>)
+		      (include <gtkmm.h>
+					; <gtkmm/widget.h>
+		       ;<gtkmm/treeview.h>
+		       ;<gtkmm/liststore.h>
+			 ;      <gtkmm/cssprovider.h>
+			  ;     <gtkmm/styleproperty.h>
+			       )
+		      
+		      " "
+		      )
+		     (do0
+		      "// implementation"
+		      (include "vis_03_treeview_with_popup.hpp")
+		      " "
+		      ))
+
+	       (defclass TreeView_WithPopup "public Gtk::TreeView"
+		      "public:"
+		      (defmethod TreeView_WithPopup ()
+			(declare (values :constructor)
+				 (construct 
+					    ;(m_scale_prop *this (string "example_scale") 500)
+					    ;(m_scale 1000)
+				  ))
+			(setf m_refTreeModel (Gtk--ListStore--create m_Columns))
+			(set_model m_refTreeModel))
+		      (defmethod ~TreeView_WithPopup ()
+			(declare (virtual)
+				 (values :constructor)))
+		      "protected:"
+		      (defmethod  on_button_press_event (event)
+			(declare (values bool)
+				 (type "GdkEventButton*" event))
+			(let ((return_value false))
+			  (return return_value))
+			)
+		      (defmethod  on_menu_file_popup_generic ()
+			
+			)
+
+		      ,(let ((members `((m_col_id "unsigned int" 0)
+					(m_col_name "Glib::ustring"))))
+			`(do0
+			 (space "struct ModelColumns : public Gtk::TreeModelColumnRecord"
+				(progn
+				  ,@(loop for e in members collect
+					 (destructuring-bind (var-name var-type &optional var-default) e
+					   (format nil "Gtk::TreeModelColumn<~a> ~a;" var-type var-name)))
+				  
+				  (defun+ ModelColumns ()
+				    (declare (values :constructor))
+				    ,@(loop for e in members collect
+					   (destructuring-bind (var-name var-type &optional var-default) e
+					     `(add ,var-name)))
+				    )))
+				
+			 "const ModelColumns m_Columns;"))
+		      "Glib::RefPtr<Gtk::ListStore> m_refTreeModel;"
+		      "Gtk::Menu m_Menu_Popup;"
+		      
+		      ))))
+    
+    
   )
   
   (progn
