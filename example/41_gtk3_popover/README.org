@@ -1,1 +1,9 @@
 - https://developer.gnome.org/gtkmm-tutorial/stable/sec-treeview-examples.html.en#treeview-popup-menu-example
+#+begin_example
+git clone https://gitlab.gnome.org/GNOME/gtkmm-documentation
+cd gtkmm-documentation
+meson build
+cd build
+meson configure -Dbuild-examples=true -Dbuild-pdf=true
+ninja
+#+end_example
