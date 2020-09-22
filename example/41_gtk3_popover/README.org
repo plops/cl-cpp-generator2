@@ -2,8 +2,10 @@
 #+begin_example
 git clone https://gitlab.gnome.org/GNOME/gtkmm-documentation
 cd gtkmm-documentation
+git checkout gtkmm-3-24
 meson build
 cd build
+sudo pacman -S dblatex itstool # on arch linux
 meson configure -Dbuild-examples=true -Dbuild-pdf=true
 ninja
 #+end_example
