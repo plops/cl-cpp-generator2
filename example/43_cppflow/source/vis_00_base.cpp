@@ -25,13 +25,14 @@ int main(int argc, char **argv) {
   input = cppflow::expand_dims(input, 0);
   cppflow::model model("./model");
   auto output = model(input);
+  auto res = cppflow::arg_max(output, 1);
 
   (std::cout)
       << (std::setw(10))
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("cat:") << (" ")
-      << (std::setw(8)) << (" cppflow::arg_max(output, 1)='")
-      << (cppflow::arg_max(output, 1)) << ("'") << (std::endl) << (std::flush);
+      << (std::setw(8)) << (" res='") << (res) << ("'") << (std::endl)
+      << (std::flush);
   return 0;
 }

@@ -167,9 +167,10 @@
 			      input (cppflow--expand_dims input 0))
 			"cppflow::model model(\"./model\");"
 			(let (;(model (cppflow--model (string "./model")))
-			      (output (model input)))
+			      (output (model input))
+			      (res (cppflow--arg_max output 1)))
 			  ,(logprint "cat:"
-				     `((cppflow--arg_max output 1)))
+				     `(res))
 			  (return 0)))))))
     
     
