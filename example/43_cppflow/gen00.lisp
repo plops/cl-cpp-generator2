@@ -165,7 +165,8 @@
 				      (string "/home/martin/src/cppflow/examples/efficientnet/my_cat.jpg"))))))
 			(setf input (cppflow--cast input TF_UINT8 TF_FLOAT)
 			      input (cppflow--expand_dims input 0))
-			(let ((model (cppflow--model (string "./model")))
+			"cppflow::model model(\"./model\");"
+			(let (;(model (cppflow--model (string "./model")))
 			      (output (model input)))
 			  ,(logprint "cat:"
 				     `((cppflow--arg_max output 1)))

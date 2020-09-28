@@ -3,18 +3,18 @@ all: vis
 #CXX=g++-10.2.0
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
-# -Wshadow
+# -Wshadow -Wdouble-promotion -fno-common -Wconversion 
 CXXFLAGS=-O2 \
 -std=gnu++2a \
 -Wall -Wextra -Werror \
- -Wdouble-promotion -fno-common -Wconversion  \
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \
 -Wno-error=unused-parameter \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--I/home/martin/src/cppflow/include
+-I/home/martin/src/cppflow/include \
+-I/usr/local/include/tensorflow/c
 
 LDFLAGS= \
 -L/usr/local/lib \
