@@ -1,0 +1,23 @@
+#+BEGIN_EXAMPLE
+cd ~/Downloads
+wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.3.0.tar.gz
+sudo tar -C /usr/local -xzf libtensorflow-cpu-linux-x86_64-2.3.0.tar.gz 
+cd ~/src
+git clone https://github.com/serizba/cppflow
+cd cppflow
+git checkout cppflow2
+
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+pip3 install --user tensorflow
+cd source
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+python3
+import tensorflow as tf
+model = tf.keras.applications.EfficientNetB0()
+# Export the model to a SavedModel
+model.save('model', save_format='tf')
+#+END_EXAMPLE
