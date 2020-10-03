@@ -13,12 +13,10 @@ CXXFLAGS=-O2 \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--I/home/martin/src/cppflow/include \
--I/usr/local/include/tensorflow/c
+-DASIO_STANDALONE 
 
 LDFLAGS= \
 -L/usr/local/lib \
--ltensorflow -ltensorflow_framework \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections
 
