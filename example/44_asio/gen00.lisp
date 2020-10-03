@@ -168,7 +168,10 @@
 			(declare (type "asio::error_code" ec)
 				 (type "asio::io_context" context))
 			(let ((endpoint (asio--ip--tcp--endpoint
-					 (asio--ip--make_address (string "192.168.2.1") ec)
+					 (asio--ip--make_address (string ;"192.168.2.1"
+								  "93.184.216.34"
+								  ;"127.0.0.1"
+								  ) ec)
 					 80))
 			      (socket (asio--ip--tcp--socket context)))
 			  (socket.connect endpoint ec)

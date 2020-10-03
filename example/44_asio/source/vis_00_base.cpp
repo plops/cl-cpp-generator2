@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   asio::error_code ec;
   asio::io_context context;
   auto endpoint =
-      asio::ip::tcp::endpoint(asio::ip::make_address("192.168.2.1", ec), 80);
+      asio::ip::tcp::endpoint(asio::ip::make_address("93.184.216.34", ec), 80);
   auto socket = asio::ip::tcp::socket(context);
   socket.connect(endpoint, ec);
   if (ec) {
