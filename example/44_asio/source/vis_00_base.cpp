@@ -48,5 +48,21 @@ int main(int argc, char **argv) {
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("connected") << (" ") << (std::endl) << (std::flush);
   }
+  if (socket.is_open()) {
+    auto request = std::string("GET /index.html HTTP/1.1\r\nHost: "
+                               "example.com\r\nConnection: close\r\n\r\n");
+    socket.write_some(asio::buffer(request.data(), request.size()), ec);
+    auto bytes = socket.available();
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("bytes available") << (" ") << (std::setw(8))
+                << (" bytes='") << (bytes) << ("'") << (std::endl)
+                << (std::flush);
+  }
   return 0;
 }

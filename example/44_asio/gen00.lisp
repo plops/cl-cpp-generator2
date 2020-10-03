@@ -177,7 +177,19 @@
 			  (socket.connect endpoint ec)
 			  (if ec
 			      ,(logprint "failed to connect to address" `((ec.message)))
-			      ,(logprint "connected" `())))
+			      ,(logprint "connected" `()))
+			  (when (socket.is_open)
+			    (let ((request ("std::string"
+					    (string
+					     ,(concatenate 'string
+							   "GET /index.html HTTP/1.1\\r\\n"
+							   "Host: example.com\\r\\n"
+							   "Connection: close\\r\\n\\r\\n")))))
+			      (socket.write_some (asio--buffer (request.data) (request.size))
+						 
+						 ec)
+			      (let ((bytes (socket.available)))
+				,(logprint "bytes available" `(bytes))))))
 			)
 		      (return 0)))))
     
