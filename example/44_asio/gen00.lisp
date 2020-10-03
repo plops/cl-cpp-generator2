@@ -147,6 +147,7 @@
 		    (include <asio.hpp>
 			     <asio/ts/buffer.hpp>
 			     <asio/ts/internet.hpp>)
+		    "using namespace std::chrono_literals;"
 		    " "
 
 		    (split-header-and-code
@@ -156,6 +157,27 @@
 		     (do0
 		      "// implementation"
 		      ))
+
+		    "std::vector<char> buffer(20*1024);"
+
+		    (defun grab_some_data (socket)
+		      (declare (type "asio::ip::tcp::socket&" socket))
+		      (socket.async_read_some
+		       (asio--buffer (buffer.data)
+				     (buffer.size)
+				     )
+		       (lambda (ec length)
+			 (declare (type "std::error_code" ec)
+				  (type "std::size_t" length)
+				  (capture "&")) 
+			 (unless ec
+			   ,(logprint "read bytes:" `(length))
+			   (for ("size_t i=0"
+				 (< i length)
+				 (incf i))
+			     (<< std--cout (aref buffer i)))
+			   (grab_some_data socket)))
+		       ))
 		    
 		    (defun main (argc argv
 				 )
@@ -164,7 +186,11 @@
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
 		      (let ((ec )
-			    (context))
+			    (context)
+			    (context_thread (std--thread
+					     (lambda ()
+					       (declare (capture "&"))
+					       (context.run)))))
 			(declare (type "asio::error_code" ec)
 				 (type "asio::io_context" context))
 			(let ((endpoint (asio--ip--tcp--endpoint
@@ -179,6 +205,8 @@
 			      ,(logprint "failed to connect to address" `((ec.message)))
 			      ,(logprint "connected" `()))
 			  (when (socket.is_open)
+
+			    (grab_some_data socket)
 			    (let ((request ("std::string"
 					    (string
 					     ,(concatenate 'string
@@ -188,17 +216,22 @@
 			      (socket.write_some (asio--buffer (request.data) (request.size))
 						 
 						 ec)
-			      (socket.wait socket.wait_read)
-			      (let ((bytes (socket.available)))
-				(when (< 0 bytes)
-				  ,(logprint "bytes available" `(bytes))
-				  (let ((buffer (std--vector<char> bytes)))
-				    (socket.read_some (asio--buffer (buffer.data)
-								    (buffer.size))
-						      ec)
-				    
-				    (for-range (c buffer)
-					      (<< std--cout c))))))))
+
+			      (std--this_thread--sleep_for 2000ms)
+			      
+
+			      #+nil (do0 
+			       (socket.wait socket.wait_read)
+			       (let ((bytes (socket.available)))
+				 (when (< 0 bytes)
+				   ,(logprint "bytes available" `(bytes))
+				   (let ((buffer (std--vector<char> bytes)))
+				     (socket.read_some (asio--buffer (buffer.data)
+								     (buffer.size))
+						       ec)
+				     
+				     (for-range (c buffer)
+						(<< std--cout c)))))))))
 			)
 		      (return 0)))))
     

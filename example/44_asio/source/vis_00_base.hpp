@@ -13,5 +13,6 @@
 #include <asio/ts/internet.hpp>
 ;
 // header;
+void grab_some_data (asio::ip::tcp::socket& socket)  ;  
 int main (int argc, char** argv)  ;  
 #endif
