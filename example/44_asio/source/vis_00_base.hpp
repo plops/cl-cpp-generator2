@@ -9,6 +9,8 @@
 #include <thread>
 ;
 #include <asio.hpp>
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
 ;
 // header;
 int main (int argc, char** argv)  ;  

@@ -5,6 +5,8 @@
 
 extern State state;
 #include <asio.hpp>
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -19,5 +21,32 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
+  asio::error_code ec;
+  asio::io_context context;
+  auto endpoint =
+      asio::ip::tcp::endpoint(asio::ip::make_address("192.168.2.1", ec), 80);
+  auto socket = asio::ip::tcp::socket(context);
+  socket.connect(endpoint, ec);
+  if (ec) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("failed to connect to address") << (" ") << (std::setw(8))
+                << (" ec.message()='") << (ec.message()) << ("'") << (std::endl)
+                << (std::flush);
+  } else {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("connected") << (" ") << (std::endl) << (std::flush);
+  }
   return 0;
 }

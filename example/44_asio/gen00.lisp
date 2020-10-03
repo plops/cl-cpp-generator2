@@ -144,7 +144,9 @@
 			     
 			     )
 
-		    (include <asio.hpp>)
+		    (include <asio.hpp>
+			     <asio/ts/buffer.hpp>
+			     <asio/ts/internet.hpp>)
 		    " "
 
 		    (split-header-and-code
@@ -161,6 +163,19 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
+		      (let ((ec )
+			    (context))
+			(declare (type "asio::error_code" ec)
+				 (type "asio::io_context" context))
+			(let ((endpoint (asio--ip--tcp--endpoint
+					 (asio--ip--make_address (string "192.168.2.1") ec)
+					 80))
+			      (socket (asio--ip--tcp--socket context)))
+			  (socket.connect endpoint ec)
+			  (if ec
+			      ,(logprint "failed to connect to address" `((ec.message)))
+			      ,(logprint "connected" `())))
+			)
 		      (return 0)))))
     
     

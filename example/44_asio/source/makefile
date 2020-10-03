@@ -18,7 +18,8 @@ CXXFLAGS=-O2 \
 LDFLAGS= \
 -L/usr/local/lib \
 -Wl,--gc-sections \
--Wl,--print-gc-sections
+-Wl,--print-gc-sections \
+-lpthread
 
 CFILES:=$(shell find .| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
