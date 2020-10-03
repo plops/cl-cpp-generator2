@@ -188,8 +188,17 @@
 			      (socket.write_some (asio--buffer (request.data) (request.size))
 						 
 						 ec)
+			      (socket.wait socket.wait_read)
 			      (let ((bytes (socket.available)))
-				,(logprint "bytes available" `(bytes))))))
+				(when (< 0 bytes)
+				  ,(logprint "bytes available" `(bytes))
+				  (let ((buffer (std--vector<char> bytes)))
+				    (socket.read_some (asio--buffer (buffer.data)
+								    (buffer.size))
+						      ec)
+				    
+				    (for-range (c buffer)
+					      (<< std--cout c))))))))
 			)
 		      (return 0)))))
     
