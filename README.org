@@ -170,7 +170,7 @@ time on.
 | 42_gtk3_popover            |   50% | popover example, i would like a graph to appear                                                                                                                                                                                        |          |
 | 43_cppflow                 |    3% | load tensorflow models and run in c++, i don't have any yet.                                                                                                                                                                           |          |
 | 44_asio                    |   20% | async networking, wait until more videos of the series are finished                                                                                                                                                                    |          |
-| 45_nanogui                 |       |                                                                                                                                                                                                                                        |          |
+| 45_nanogui                 |   60% | i have a window but i want to see how to implement realtime graphing                                                                                                                                                                   |          |
 | 46_enoki                   |       |                                                                                                                                                                                                                                        |          |
 * FAQ
 
