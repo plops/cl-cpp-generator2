@@ -49,6 +49,19 @@ int main(int argc, char **argv) {
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("button") << (" ") << (std::endl) << (std::flush);
   });
+  auto panel = new Widget(window);
+  panel->set_layout(
+      new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
+  auto slider = new Slider(panel);
+  auto textbox = new TextBox(panel);
+  slider->set_value((0.50f));
+  slider->set_fixed_width(80);
+  slider->set_callback([textbox](float value) {
+    textbox->set_value(std::to_string(static_cast<int>(((100) * (value)))));
+  });
+  textbox->set_fixed_size(Vector2i(60, 25));
+  textbox->set_value("50");
+  textbox->set_units("%");
   screen->set_visible(true);
   screen->perform_layout();
   window->center();

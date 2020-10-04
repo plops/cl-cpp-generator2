@@ -215,6 +215,27 @@
 			 (gui->add_button (string "button")
 					  (lambda ()
 					    ,(logprint "button" `()))))
+			(do0
+			 (let ((panel (new (Widget window))))
+			   (panel->set_layout (new (BoxLayout
+						     Orientation--Horizontal
+						     Alignment--Middle
+						     0 20)))
+			  (let ((slider (new (Slider panel)))
+				(textbox (new (TextBox panel))))
+			    
+			    (slider->set_value .5s0)
+			    (slider->set_fixed_width 80)
+			    (slider->set_callback (lambda (value)
+						    (declare (type float value)
+							     (capture textbox
+								      ))
+						    (textbox->set_value (std--to_string (static_cast<int> (* 100 value))))))
+			    (textbox->set_fixed_size (Vector2i 60 25))
+			    (textbox->set_value (string "50"))
+			    (textbox->set_units (string "%"))
+			   
+			    )))
 			
 			(do0
 			 (screen->set_visible true)
