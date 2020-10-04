@@ -145,6 +145,7 @@
 			     )
 
 		    (include <nanogui/nanogui.h>)
+
 		    
 		    " "
 
@@ -156,7 +157,7 @@
 		      "// implementation"
 		      ))
 
-		    "std::vector<char> buffer(20*1024);"
+		    "using namespace nanogui;"
 		    		    
 		    (defun main (argc argv
 				 )
@@ -164,7 +165,7 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
-		      
+		      (nanogui--init)
 		      (return 0)))))
     
     

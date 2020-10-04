@@ -10,7 +10,7 @@ extern State state;
 #include <thread>
 
 // implementation
-std::vector<char> buffer(20 * 1024);
+using namespace nanogui;
 int main(int argc, char **argv) {
 
   (std::cout)
@@ -20,5 +20,6 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
+  nanogui::init();
   return 0;
 }

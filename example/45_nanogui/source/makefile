@@ -13,13 +13,15 @@ CXXFLAGS=-O2 \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--DASIO_STANDALONE 
+-I/usr/local/include
 
 LDFLAGS= \
 -L/usr/local/lib \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections \
--lpthread
+-lpthread \
+-lnanogui \
+-Wl,-rpath=/usr/local/lib
 
 CFILES:=$(shell find .| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
