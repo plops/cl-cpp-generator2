@@ -126,7 +126,7 @@
   (defun g (arg)
     `(dot state ,arg))
 
-  (let*  ()
+  (let*  ((test-enum `(Item1 Item2 Item3)))
 
     
     
@@ -160,16 +160,15 @@
 		    "using namespace nanogui;"
 
 		    (space enum test_enum
-			   (progn
-			     "Item1=0,"
-			     "Item2,"
-			     "Item3,"))
+			   (curly ,@test-enum)
+			   )
 		    
 		    (do0
 		     "bool bvar = true;"
 		     "int ivar = 1234;"
 		     "double dvar = 21.34929e-3;"
-		     "std::string strval =\"a string\";")		    
+		     "std::string strval =\"a string\";"
+		     "test_enum enumval = Item2;")		    
 		    
 		    (defun main (argc argv
 				 )
@@ -195,11 +194,24 @@
 						     (string "form helper"))))
 			(do0
 			 (gui->add_group (string "basic types"))
-			 ,@(loop for e in `(bvar ivar dvar strval) collect
-				`(gui->add_variable (string ,e) ,e)))
+			 ,@(loop for e in `(ivar dvar) collect
+				`(-> (gui->add_variable (string ,e) ,e)
+				     (set_spinnable true)))
+			 ,@(loop for e in `(bvar strval) collect
+				`(gui->add_variable (string ,e) ,e))
+
+			 ,@(loop for e in `(enumval) collect
+				(let ((v (format nil "~a_enabled" e)))
+				 `(let ((,v true))
+				    (declare (type bool ,v))
+				    (-> gui
+					(add_variable (string ,e) ,e ,v)
+					(set_items (curly ,@(mapcar #'(lambda (x) `(string ,x)) test-enum)))
+					)))))
 
 			(do0
 			 (gui->add_group (string "other widgets"))
+			 
 			 (gui->add_button (string "button")
 					  (lambda ()
 					    ,(logprint "button" `()))))

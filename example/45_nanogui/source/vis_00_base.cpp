@@ -11,15 +11,12 @@ extern State state;
 
 // implementation
 using namespace nanogui;
-enum test_enum {
-  Item1 = 0,
-  Item2,
-  Item3,
-};
+enum test_enum { Item1, Item2, Item3 };
 bool bvar = true;
 int ivar = 1234;
 double dvar = 21.34929e-3;
 std::string strval = "a string";
+test_enum enumval = Item2;
 int main(int argc, char **argv) {
 
   (std::cout)
@@ -35,10 +32,13 @@ int main(int argc, char **argv) {
   auto gui = new FormHelper(screen);
   auto window = gui->add_window(Vector2i(10, 10), "form helper");
   gui->add_group("basic types");
+  gui->add_variable("ivar", ivar)->set_spinnable(true);
+  gui->add_variable("dvar", dvar)->set_spinnable(true);
   gui->add_variable("bvar", bvar);
-  gui->add_variable("ivar", ivar);
-  gui->add_variable("dvar", dvar);
   gui->add_variable("strval", strval);
+  bool enumval_enabled = true;
+  gui->add_variable("enumval", enumval, enumval_enabled)
+      ->set_items({"Item1", "Item2", "Item3"});
   gui->add_group("other widgets");
   gui->add_button("button", []() {
     (std::cout) << (std::setw(10))
