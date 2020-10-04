@@ -158,7 +158,19 @@
 		      ))
 
 		    "using namespace nanogui;"
-		    		    
+
+		    (space enum test_enum
+			   (progn
+			     "Item1=0,"
+			     "Item2,"
+			     "Item3,"))
+		    
+		    (do0
+		     "bool bvar = true;"
+		     "int ivar = 1234;"
+		     "double dvar = 21.34929e-3;"
+		     "std::string strval =\"a string\";")		    
+		    
 		    (defun main (argc argv
 				 )
 		      (declare (type int argc)
@@ -181,10 +193,21 @@
 			    (gui (new (FormHelper screen)))
 			    (window (gui->add_window (Vector2i 10 10)
 						     (string "form helper"))))
+			(do0
+			 (gui->add_group (string "basic types"))
+			 ,@(loop for e in `(bvar ivar dvar strval) collect
+				`(gui->add_variable (string ,e) ,e)))
+
+			(do0
+			 (gui->add_group (string "other widgets"))
+			 (gui->add_button (string "button")
+					  (lambda ()
+					    ,(logprint "button" `()))))
 			
 			(do0
 			 (screen->set_visible true)
 			 (screen->perform_layout)
+			 (window->center)
 			 (nanogui--mainloop -1)))
 		      (nanogui--shutdown)
 		      (return 0)))))
