@@ -39,6 +39,13 @@ int main(int argc, char **argv) {
   bool enumval_enabled = true;
   gui->add_variable("enumval", enumval, enumval_enabled)
       ->set_items({"Item1", "Item2", "Item3"});
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("other widgets")
+      << (" ") << (std::endl) << (std::flush);
   gui->add_group("other widgets");
   gui->add_button("button", []() {
     (std::cout) << (std::setw(10))
@@ -49,23 +56,24 @@ int main(int argc, char **argv) {
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("button") << (" ") << (std::endl) << (std::flush);
   });
-  auto panel = new Widget(window);
-  panel->set_layout(
-      new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
-  auto slider = new Slider(panel);
-  auto textbox = new TextBox(panel);
-  slider->set_value((0.50f));
-  slider->set_fixed_width(80);
-  slider->set_callback([textbox](float value) {
-    textbox->set_value(std::to_string(static_cast<int>(((100) * (value)))));
-  });
-  textbox->set_fixed_size(Vector2i(60, 25));
-  textbox->set_value("50");
-  textbox->set_units("%");
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("set_visible") << (" ")
+      << (std::endl) << (std::flush);
   screen->set_visible(true);
   screen->perform_layout();
   window->center();
   nanogui::mainloop(-1);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("exit mainloop")
+      << (" ") << (std::endl) << (std::flush);
   nanogui::shutdown();
   return 0;
 }
