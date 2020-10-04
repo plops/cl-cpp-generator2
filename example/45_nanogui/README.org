@@ -1,0 +1,9 @@
+- gui library for mitsuba renderer by wenzel jakob
+
+  #+begin_example
+ cd src
+ git clone https://github.com/mitsuba-renderer/nanogui
+ cd nanogui
+ git submodule update --init --recursive
+  #+end_example
+
