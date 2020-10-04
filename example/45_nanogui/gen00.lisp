@@ -166,6 +166,23 @@
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
 		      (nanogui--init)
+		      (let ((screen (new (Screen
+					  (Vector2i
+					   500 700)
+					  (string "nanogui test gl4.1")
+					  true ;; resize
+					  false ;; fullscreen
+					  true ;; depth buffer
+					  true ;; stencil
+					  false ;; float buf
+					  4 ;; gl major
+					  1 ;; gl minor
+					  ))))
+			(do0
+			 (screen->set_visible true)
+			 (screen->perform_layout)
+			 (nanogui--mainloop -1)))
+		      (nanogui--shutdown)
 		      (return 0)))))
     
     

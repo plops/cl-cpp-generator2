@@ -21,5 +21,11 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
   nanogui::init();
+  auto screen = new Screen(Vector2i(500, 700), "nanogui test gl4.1", true,
+                           false, true, true, false, 4, 1);
+  screen->set_visible(true);
+  screen->perform_layout();
+  nanogui::mainloop(-1);
+  nanogui::shutdown();
   return 0;
 }
