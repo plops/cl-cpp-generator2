@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
   nanogui::init();
   auto screen = new Screen(Vector2i(500, 700), "nanogui test gl4.1", true,
                            false, true, true, false, 4, 1);
+  auto gui = new FormHelper(screen);
+  auto window = gui->add_window(Vector2i(10, 10), "form helper");
   screen->set_visible(true);
   screen->perform_layout();
   nanogui::mainloop(-1);

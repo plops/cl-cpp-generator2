@@ -177,7 +177,11 @@
 					  false ;; float buf
 					  4 ;; gl major
 					  1 ;; gl minor
-					  ))))
+					  )))
+			    (gui (new (FormHelper screen)))
+			    (window (gui->add_window (Vector2i 10 10)
+						     (string "form helper"))))
+			
 			(do0
 			 (screen->set_visible true)
 			 (screen->perform_layout)
