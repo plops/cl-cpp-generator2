@@ -159,12 +159,12 @@
 		      ))
 
 		    "std::vector<char> buffer(20*1024);"
-		    #+nil
+		    
 		    
 		    (defun grab_some_data (socket)
-		      (declare (type "asio::ip::tcp::socket&" socket))
+		      (declare (type "boost::asio::ip::tcp::socket&" socket))
 		      (socket.async_read_some
-		       (asio--buffer (buffer.data)
+		       (boost--asio--buffer (buffer.data)
 				     (buffer.size)
 				     )
 		       (lambda (ec length)
@@ -176,7 +176,8 @@
 			   (for ("size_t i=0"
 				 (< i length)
 				 (incf i))
-			     (<< std--cout (aref buffer i)))
+				(<< std--cout (aref buffer i)))
+			   "// will wait until some data available"
 			   (grab_some_data socket)))
 		       ))
 		    
@@ -187,7 +188,12 @@
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
 		      (let ((ec )
+			    ;; this is where asio will do its work
 			    (context)
+			    ;; some fake work for context to prevent
+			    ;; that asio exits early
+			    (idle_work (boost--asio--io_context--work context))
+			    ;; create asio thread so that it doesn't block the main thread while waiting
 			    (context_thread (std--thread
 					     (lambda ()
 					       (declare (capture "&"))
@@ -208,7 +214,8 @@
 			      ,(logprint "connected" `()))
 			  (when (socket.is_open)
 
-			    ;(grab_some_data socket)
+			    ;; start waiting for data
+			    (grab_some_data socket)
 			    (let ((request ("std::string"
 					    (string
 					     ,(concatenate
@@ -216,6 +223,7 @@
 					       "GET /index.html HTTP/1.1\\r\\n"
 					       "Host: example.com\\r\\n"
 					       "Connection: close\\r\\n\\r\\n")))))
+			      ;; issue the request
 			      (socket.write_some
 			       (boost--asio--buffer (request.data)
 					     (request.size))
