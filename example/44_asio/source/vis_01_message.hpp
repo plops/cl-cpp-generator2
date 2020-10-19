@@ -14,14 +14,8 @@
 #include <boost/asio/ts/internet.hpp>
 ;
 // header;
-class message_header  {
+template<<typename T>> class message_header  {
         T id{};
         uint32_t size = 0;
-};
-class message  {
-        message_header<T> header{};
-        std::vector<uint8_t> body;
-        size_t size () const ;  
-        template<typename DataType> friend message<T>& operator<< (message<T>& msg, const DataType& data)  ;  
 };
 #endif

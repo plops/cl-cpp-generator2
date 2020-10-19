@@ -26,4 +26,14 @@ friend message<T> &message::operator<<(message<T> &msg, const DataType &data) {
   std::memcpy(((msg.body.data()) + (i)), &data, sizeof(DataType));
   msg.header.size = msg.size();
   return msg;
+}
+template <typename DataType>
+friend message<T> &message::operator>>(message<T> &msg, DataType &data) {
+  static_assert(std::is_standard_layout<DataType>::value,
+                "data is too complicated");
+  auto i = ((msg.body.size()) - (sizeof(DataType)));
+  std::memcpy(&data, ((msg.body.data()) + (i)), sizeof(DataType));
+  msg.body.resize(i);
+  msg.header.size = msg.size();
+  return msg;
 };
