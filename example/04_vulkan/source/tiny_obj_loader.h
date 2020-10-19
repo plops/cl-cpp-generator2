@@ -26,6 +26,8 @@ THE SOFTWARE.
 // version 2.0.0 : Add new object oriented API. 1.x API is still provided.
 //                 * Support line primitive.
 //                 * Support points primitive.
+//                 * Support multiple search path for .mtl(v1 API).
+//                 * Support vertex weight `vw`(as an tinyobj extension)
 // version 1.4.0 : Modifed ParseTextureNameAndOption API
 // version 1.3.1 : Make ParseTextureNameAndOption API public
 // version 1.3.0 : Separate warning and error message(breaking API of LoadObj)
@@ -61,6 +63,13 @@ THE SOFTWARE.
 #include <vector>
 
 namespace tinyobj {
+
+// TODO(syoyo): Better C++11 detection for older compiler
+#if __cplusplus > 199711L
+#define TINYOBJ_OVERRIDE override
+#else
+#define TINYOBJ_OVERRIDE
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -146,7 +155,7 @@ typedef enum {
   TEXTURE_TYPE_CUBE_RIGHT
 } texture_type_t;
 
-typedef struct {
+struct texture_option_t {
   texture_type_t type;      // -type (default TEXTURE_TYPE_NONE)
   real_t sharpness;         // -boost (default 1.0?)
   real_t brightness;        // base_value in -mm option (default 0)
@@ -154,8 +163,9 @@ typedef struct {
   real_t origin_offset[3];  // -o u [v [w]] (default 0 0 0)
   real_t scale[3];          // -s u [v [w]] (default 1 1 1)
   real_t turbulence[3];     // -t u [v [w]] (default 0 0 0)
-  // int   texture_resolution; // -texres resolution (default = ?) TODO
-  bool clamp;    // -clamp (default false)
+  int texture_resolution;   // -texres resolution (No default value in the spec.
+                            // We'll use -1)
+  bool clamp;               // -clamp (default false)
   char imfchan;  // -imfchan (the default for bump is 'l' and for decal is 'm')
   bool blendu;   // -blendu (default on)
   bool blendv;   // -blendv (default on)
@@ -164,9 +174,9 @@ typedef struct {
   // extension
   std::string colorspace;  // Explicitly specify color space of stored texel
                            // value. Usually `sRGB` or `linear` (default empty).
-} texture_option_t;
+};
 
-typedef struct {
+struct material_t {
   std::string name;
 
   real_t ambient[3];
@@ -308,26 +318,37 @@ typedef struct {
   }
 
 #endif
+};
 
-} material_t;
-
-typedef struct {
+struct tag_t {
   std::string name;
 
   std::vector<int> intValues;
   std::vector<real_t> floatValues;
   std::vector<std::string> stringValues;
-} tag_t;
+};
+
+struct joint_and_weight_t {
+  int joint_id;
+  real_t weight;
+};
+
+struct skin_weight_t {
+  int vertex_id;  // Corresponding vertex index in `attrib_t::vertices`.
+                  // Compared to `index_t`, this index must be positive and
+                  // start with 0(does not allow relative indexing)
+  std::vector<joint_and_weight_t> weightValues;
+};
 
 // Index struct to support different indices for vtx/normal/texcoord.
 // -1 means not used.
-typedef struct {
+struct index_t {
   int vertex_index;
   int normal_index;
   int texcoord_index;
-} index_t;
+};
 
-typedef struct {
+struct mesh_t {
   std::vector<index_t> indices;
   std::vector<unsigned char>
       num_face_vertices;          // The number of vertices per
@@ -338,28 +359,28 @@ typedef struct {
                                                   // ID(0 = off. positive value
                                                   // = group id)
   std::vector<tag_t> tags;                        // SubD tag
-} mesh_t;
+};
 
-// typedef struct {
+// struct path_t {
 //  std::vector<int> indices;  // pairs of indices for lines
-//} path_t;
+//};
 
-typedef struct {
+struct lines_t {
   // Linear flattened indices.
   std::vector<index_t> indices;        // indices for vertices(poly lines)
   std::vector<int> num_line_vertices;  // The number of vertices per line.
-} lines_t;
+};
 
-typedef struct {
+struct points_t {
   std::vector<index_t> indices;  // indices for points
-} points_t;
+};
 
-typedef struct {
+struct shape_t {
   std::string name;
   mesh_t mesh;
   lines_t lines;
   points_t points;
-} shape_t;
+};
 
 // Vertex attributes
 struct attrib_t {
@@ -375,6 +396,16 @@ struct attrib_t {
   std::vector<real_t> texcoord_ws;  // 'vt'(w)
   std::vector<real_t> colors;       // extension: vertex colors
 
+  //
+  // TinyObj extension.
+  //
+
+  // NOTE(syoyo): array index is based on the appearance order.
+  // To get a corresponding skin weight for a specific vertex id `vid`,
+  // Need to reconstruct a look up table: `skin_weight_t::vertex_id` == `vid`
+  // (e.g. using std::map, std::unordered_map)
+  std::vector<skin_weight_t> skin_weights;
+
   attrib_t() {}
 
   //
@@ -385,7 +416,7 @@ struct attrib_t {
   const std::vector<real_t> &GetVertexWeights() const { return vertex_weights; }
 };
 
-typedef struct callback_t_ {
+struct callback_t {
   // W is optional and set to 1 if there is no `w` item in `v` line
   void (*vertex_cb)(void *user_data, real_t x, real_t y, real_t z, real_t w);
   void (*normal_cb)(void *user_data, real_t x, real_t y, real_t z);
@@ -409,7 +440,7 @@ typedef struct callback_t_ {
   void (*group_cb)(void *user_data, const char **names, int num_names);
   void (*object_cb)(void *user_data, const char *name);
 
-  callback_t_()
+  callback_t()
       : vertex_cb(NULL),
         normal_cb(NULL),
         texcoord_cb(NULL),
@@ -418,7 +449,7 @@ typedef struct callback_t_ {
         mtllib_cb(NULL),
         group_cb(NULL),
         object_cb(NULL) {}
-} callback_t;
+};
 
 class MaterialReader {
  public:
@@ -436,13 +467,14 @@ class MaterialReader {
 ///
 class MaterialFileReader : public MaterialReader {
  public:
+  // Path could contain separator(';' in Windows, ':' in Posix)
   explicit MaterialFileReader(const std::string &mtl_basedir)
       : m_mtlBaseDir(mtl_basedir) {}
-  virtual ~MaterialFileReader() {}
+  virtual ~MaterialFileReader() TINYOBJ_OVERRIDE {}
   virtual bool operator()(const std::string &matId,
                           std::vector<material_t> *materials,
                           std::map<std::string, int> *matMap, std::string *warn,
-                          std::string *err);
+                          std::string *err) TINYOBJ_OVERRIDE;
 
  private:
   std::string m_mtlBaseDir;
@@ -455,11 +487,11 @@ class MaterialStreamReader : public MaterialReader {
  public:
   explicit MaterialStreamReader(std::istream &inStream)
       : m_inStream(inStream) {}
-  virtual ~MaterialStreamReader() {}
+  virtual ~MaterialStreamReader() TINYOBJ_OVERRIDE {}
   virtual bool operator()(const std::string &matId,
                           std::vector<material_t> *materials,
                           std::map<std::string, int> *matMap, std::string *warn,
-                          std::string *err);
+                          std::string *err) TINYOBJ_OVERRIDE;
 
  private:
   std::istream &m_inStream;
@@ -616,11 +648,10 @@ bool ParseTextureNameAndOption(std::string *texname, texture_option_t *texopt,
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <limits>
-#include <utility>
-
 #include <fstream>
+#include <limits>
 #include <sstream>
+#include <utility>
 
 namespace tinyobj {
 
@@ -1192,6 +1223,10 @@ bool ParseTextureNameAndOption(std::string *texname, texture_option_t *texopt,
     } else if ((0 == strncmp(token, "-type", 5)) && IS_SPACE((token[5]))) {
       token += 5;
       texopt->type = parseTextureType((&token), TEXTURE_TYPE_NONE);
+    } else if ((0 == strncmp(token, "-texres", 7)) && IS_SPACE((token[7]))) {
+      token += 7;
+      // TODO(syoyo): Check if arg is int type.
+      texopt->texture_resolution = parseInt(&token);
     } else if ((0 == strncmp(token, "-imfchan", 8)) && IS_SPACE((token[8]))) {
       token += 9;
       token += strspn(token, " \t");
@@ -1256,6 +1291,7 @@ static void InitTexOpt(texture_option_t *texopt, const bool is_bump) {
   texopt->turbulence[0] = static_cast<real_t>(0.0);
   texopt->turbulence[1] = static_cast<real_t>(0.0);
   texopt->turbulence[2] = static_cast<real_t>(0.0);
+  texopt->texture_resolution = -1;
   texopt->type = TEXTURE_TYPE_NONE;
 }
 
@@ -1634,6 +1670,21 @@ static void SplitString(const std::string &s, char delim,
   }
 }
 
+static std::string JoinPath(const std::string &dir,
+                            const std::string &filename) {
+  if (dir.empty()) {
+    return filename;
+  } else {
+    // check '/'
+    char lastChar = *dir.rbegin();
+    if (lastChar != '/') {
+      return dir + std::string("/") + filename;
+    } else {
+      return dir + filename;
+    }
+  }
+}
+
 void LoadMtl(std::map<std::string, int> *material_map,
              std::vector<material_t> *materials, std::istream *inStream,
              std::string *warning, std::string *err) {
@@ -1646,6 +1697,10 @@ void LoadMtl(std::map<std::string, int> *material_map,
   // Issue 43. `d` wins against `Tr` since `Tr` is not in the MTL specification.
   bool has_d = false;
   bool has_tr = false;
+
+  // has_kd is used to set a default diffuse value when map_Kd is present
+  // and Kd is not.
+  bool has_kd = false;
 
   std::stringstream warn_ss;
 
@@ -1728,6 +1783,7 @@ void LoadMtl(std::map<std::string, int> *material_map,
       material.diffuse[0] = r;
       material.diffuse[1] = g;
       material.diffuse[2] = b;
+      has_kd = true;
       continue;
     }
 
@@ -1880,6 +1936,15 @@ void LoadMtl(std::map<std::string, int> *material_map,
       token += 7;
       ParseTextureNameAndOption(&(material.diffuse_texname),
                                 &(material.diffuse_texopt), token);
+
+      // Set a decent diffuse default value if a diffuse texture is specified
+      // without a matching Kd value.
+      if (!has_kd) {
+        material.diffuse[0] = static_cast<real_t>(0.6);
+        material.diffuse[1] = static_cast<real_t>(0.6);
+        material.diffuse[2] = static_cast<real_t>(0.6);
+      }
+
       continue;
     }
 
@@ -2015,27 +2080,59 @@ bool MaterialFileReader::operator()(const std::string &matId,
                                     std::vector<material_t> *materials,
                                     std::map<std::string, int> *matMap,
                                     std::string *warn, std::string *err) {
-  std::string filepath;
-
   if (!m_mtlBaseDir.empty()) {
-    filepath = std::string(m_mtlBaseDir) + matId;
-  } else {
-    filepath = matId;
-  }
+#ifdef _WIN32
+    char sep = ';';
+#else
+    char sep = ':';
+#endif
 
-  std::ifstream matIStream(filepath.c_str());
-  if (!matIStream) {
+    // https://stackoverflow.com/questions/5167625/splitting-a-c-stdstring-using-tokens-e-g
+    std::vector<std::string> paths;
+    std::istringstream f(m_mtlBaseDir);
+
+    std::string s;
+    while (getline(f, s, sep)) {
+      paths.push_back(s);
+    }
+
+    for (size_t i = 0; i < paths.size(); i++) {
+      std::string filepath = JoinPath(paths[i], matId);
+
+      std::ifstream matIStream(filepath.c_str());
+      if (matIStream) {
+        LoadMtl(matMap, materials, &matIStream, warn, err);
+
+        return true;
+      }
+    }
+
     std::stringstream ss;
-    ss << "Material file [ " << filepath << " ] not found." << std::endl;
+    ss << "Material file [ " << matId
+       << " ] not found in a path : " << m_mtlBaseDir << std::endl;
     if (warn) {
       (*warn) += ss.str();
     }
     return false;
+
+  } else {
+    std::string filepath = matId;
+    std::ifstream matIStream(filepath.c_str());
+    if (matIStream) {
+      LoadMtl(matMap, materials, &matIStream, warn, err);
+
+      return true;
+    }
+
+    std::stringstream ss;
+    ss << "Material file [ " << filepath
+       << " ] not found in a path : " << m_mtlBaseDir << std::endl;
+    if (warn) {
+      (*warn) += ss.str();
+    }
+
+    return false;
   }
-
-  LoadMtl(matMap, materials, &matIStream, warn, err);
-
-  return true;
 }
 
 bool MaterialStreamReader::operator()(const std::string &matId,
@@ -2105,6 +2202,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   std::vector<real_t> vn;
   std::vector<real_t> vt;
   std::vector<real_t> vc;
+  std::vector<skin_weight_t> vw;
   std::vector<tag_t> tags;
   PrimGroup prim_group;
   std::string name;
@@ -2196,6 +2294,53 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
       vt.push_back(x);
       vt.push_back(y);
       continue;
+    }
+
+    // skin weight. tinyobj extension
+    if (token[0] == 'v' && token[1] == 'w' && IS_SPACE((token[2]))) {
+      token += 3;
+
+      // vw <vid> <joint_0> <weight_0> <joint_1> <weight_1> ...
+      // example:
+      // vw 0 0 0.25 1 0.25 2 0.5
+
+      // TODO(syoyo): Add syntax check
+      int vid = 0;
+      vid = parseInt(&token);
+
+      skin_weight_t sw;
+
+      sw.vertex_id = vid;
+
+      while (!IS_NEW_LINE(token[0])) {
+        real_t j, w;
+        // joint_id should not be negative, weight may be negative
+        // TODO(syoyo): # of elements check
+        parseReal2(&j, &w, &token, -1.0);
+
+        if (j < 0.0) {
+          if (err) {
+            std::stringstream ss;
+            ss << "Failed parse `vw' line. joint_id is negative. "
+                  "line "
+               << line_num << ".)\n";
+            (*err) += ss.str();
+          }
+          return false;
+        }
+
+        joint_and_weight_t jw;
+
+        jw.joint_id = int(j);
+        jw.weight = w;
+
+        sw.weightValues.push_back(jw);
+
+        size_t n = strspn(token, " \t\r");
+        token += n;
+      }
+
+      vw.push_back(sw);
     }
 
     // line
@@ -2304,17 +2449,19 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
     }
 
     // use mtl
-    if ((0 == strncmp(token, "usemtl", 6)) && IS_SPACE((token[6]))) {
-      token += 7;
-      std::stringstream ss;
-      ss << token;
-      std::string namebuf = ss.str();
+    if ((0 == strncmp(token, "usemtl", 6))) {
+      token += 6;
+      std::string namebuf = parseString(&token);
 
       int newMaterialId = -1;
-      if (material_map.find(namebuf) != material_map.end()) {
-        newMaterialId = material_map[namebuf];
+      std::map<std::string, int>::const_iterator it = material_map.find(namebuf);
+      if (it != material_map.end()) {
+        newMaterialId = it->second;
       } else {
         // { error!! material not found }
+        if (warn) {
+          (*warn) += "material [ '" + namebuf + "' ] not found in .mtl\n";
+        }
       }
 
       if (newMaterialId != material) {
@@ -2438,7 +2585,10 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
       // flush previous face group.
       bool ret = exportGroupsToShape(&shape, prim_group, tags, material, name,
                                      triangulate, v);
-      if (ret) {
+      (void)ret;  // return value not used.
+
+      if (shape.mesh.indices.size() > 0 || shape.lines.indices.size() > 0 ||
+          shape.points.indices.size() > 0) {
         shapes->push_back(shape);
       }
 
@@ -2522,10 +2672,9 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
         continue;
       }
 
-      if (strlen(token) >= 3) {
-        if (token[0] == 'o' && token[1] == 'f' && token[2] == 'f') {
-          current_smoothing_id = 0;
-        }
+      if (strlen(token) >= 3 && token[0] == 'o' && token[1] == 'f' &&
+          token[2] == 'f') {
+        current_smoothing_id = 0;
       } else {
         // assume number
         int smGroupId = parseInt(&token);
@@ -2596,6 +2745,7 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
   attrib->texcoords.swap(vt);
   attrib->texcoord_ws.swap(vt);
   attrib->colors.swap(vc);
+  attrib->skin_weights.swap(vw);
 
   return true;
 }
@@ -2714,10 +2864,14 @@ bool LoadObjWithCallback(std::istream &inStream, const callback_t &callback,
       std::string namebuf = ss.str();
 
       int newMaterialId = -1;
-      if (material_map.find(namebuf) != material_map.end()) {
-        newMaterialId = material_map[namebuf];
+      std::map<std::string, int>::const_iterator it = material_map.find(namebuf);
+      if (it != material_map.end()) {
+        newMaterialId = it->second;
       } else {
-        // { error!! material not found }
+        // { warn!! material not found }
+        if (warn && (!callback.usemtl_cb)) {
+          (*warn) += "material [ " + namebuf + " ] not found in .mtl\n";
+        }
       }
 
       if (newMaterialId != material_id) {
@@ -2888,8 +3042,9 @@ bool ObjReader::ParseFromFile(const std::string &filename,
     // split at last '/'(for unixish system) or '\\'(for windows) to get
     // the base directory of .obj file
     //
-    if (filename.find_last_of("/\\") != std::string::npos) {
-      mtl_search_path = filename.substr(0, filename.find_last_of("/\\"));
+    size_t pos = filename.find_last_of("/\\");
+    if (pos != std::string::npos) {
+      mtl_search_path = filename.substr(0, pos);
     }
   } else {
     mtl_search_path = config.mtl_search_path;

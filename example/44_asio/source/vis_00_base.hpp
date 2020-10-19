@@ -8,11 +8,10 @@
 #include <chrono>
 #include <thread>
 ;
-#include <asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ts/buffer.hpp>
+#include <boost/asio/ts/internet.hpp>
 ;
 // header;
-void grab_some_data (asio::ip::tcp::socket& socket)  ;  
 int main (int argc, char** argv)  ;  
 #endif

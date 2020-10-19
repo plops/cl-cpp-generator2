@@ -144,9 +144,9 @@
 			     
 			     )
 
-		    (include <asio.hpp>
-			     <asio/ts/buffer.hpp>
-			     <asio/ts/internet.hpp>)
+		    (include <boost/asio.hpp>
+			     <boost/asio/ts/buffer.hpp>
+			     <boost/asio/ts/internet.hpp>)
 		    "using namespace std::chrono_literals;"
 		    " "
 
@@ -159,7 +159,8 @@
 		      ))
 
 		    "std::vector<char> buffer(20*1024);"
-
+		    #+nil
+		    
 		    (defun grab_some_data (socket)
 		      (declare (type "asio::ip::tcp::socket&" socket))
 		      (socket.async_read_some
@@ -191,31 +192,34 @@
 					     (lambda ()
 					       (declare (capture "&"))
 					       (context.run)))))
-			(declare (type "asio::error_code" ec)
-				 (type "asio::io_context" context))
-			(let ((endpoint (asio--ip--tcp--endpoint
-					 (asio--ip--make_address (string ;"192.168.2.1"
-								  "93.184.216.34"
-								  ;"127.0.0.1"
-								  ) ec)
+			(declare (type "boost::system::error_code" ec)
+				 (type "boost::asio::io_context" context))
+			(let ((endpoint (boost--asio--ip--tcp--endpoint
+					 (boost--asio--ip--make_address
+					  (string ;"192.168.2.1"
+					   "93.184.216.34"
+					;"127.0.0.1"
+					   ) ec)
 					 80))
-			      (socket (asio--ip--tcp--socket context)))
+			      (socket (boost--asio--ip--tcp--socket context)))
 			  (socket.connect endpoint ec)
 			  (if ec
 			      ,(logprint "failed to connect to address" `((ec.message)))
 			      ,(logprint "connected" `()))
 			  (when (socket.is_open)
 
-			    (grab_some_data socket)
+			    ;(grab_some_data socket)
 			    (let ((request ("std::string"
 					    (string
-					     ,(concatenate 'string
-							   "GET /index.html HTTP/1.1\\r\\n"
-							   "Host: example.com\\r\\n"
-							   "Connection: close\\r\\n\\r\\n")))))
-			      (socket.write_some (asio--buffer (request.data) (request.size))
-						 
-						 ec)
+					     ,(concatenate
+					       'string
+					       "GET /index.html HTTP/1.1\\r\\n"
+					       "Host: example.com\\r\\n"
+					       "Connection: close\\r\\n\\r\\n")))))
+			      (socket.write_some
+			       (boost--asio--buffer (request.data)
+					     (request.size))
+			       ec)
 
 			      (std--this_thread--sleep_for 2000ms)
 			      

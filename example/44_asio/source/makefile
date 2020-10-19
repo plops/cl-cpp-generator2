@@ -13,7 +13,7 @@ CXXFLAGS=-O2 \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--DASIO_STANDALONE 
+-DASIO_STANDALONE
 
 LDFLAGS= \
 -L/usr/local/lib \
