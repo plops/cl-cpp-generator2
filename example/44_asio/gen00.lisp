@@ -127,7 +127,7 @@
     `(dot state ,arg))
 
   (let*  ()
-
+    
     
     
     (define-module
@@ -231,10 +231,86 @@
 
 			      (std--this_thread--sleep_for 2000ms)
 
-
+			      ;; message<T>
+			      ;; header -> id (enumclass T), size (bytes)
+			      ;; body (0 + bytes)
 			      )))
 			)
 		      (return 0)))))
+
+    (define-module
+       `(message ()
+	      (do0
+	       
+	       
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     <vector>
+			     )
+
+		    (include <boost/asio.hpp>
+			     <boost/asio/ts/buffer.hpp>
+			     <boost/asio/ts/internet.hpp>)
+	
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+		    (do0
+		     ;; https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/Parts1%262/net_message.h
+		     ;; message<GAME> msg
+		     ;; msg << x << y
+		     ;; msg >> y >> x
+		     (space template
+			    "<typename T>"
+
+			    (defclass message_header ()
+			      "T id{};"
+			      "uint32_t size = 0;"))
+		     (space template
+			    "<typename T>"
+			    (defclass message ()
+			      "message_header<T> header{};"
+			      "std::vector<uint8_t> body;"
+			      (defmethod size ()
+				(declare (const)
+					 (values size_t))
+				(return (sizeof (+ (sizeof message_header<T>)
+						   (body.size)))))
+			      (defmethod operator<< (msg data)
+				(declare (values "template<typename DataType> friend message<T>&")
+					 (type "message<T>&" msg)
+					 (type "const DataType&" data))
+				;; simple types can be pushed in
+				;; some types can't be trivially serialized
+				;; e.g. classes with static variables
+				;; complex arrangements of pointers
+				(static_assert
+				 "std::is_standard_layout<DataType>::value"
+				 (string "data is too complicated"))
+				(let ((i (msg.body.size))
+				      )
+				  (msg.body.resize (+ (msg.body.size)
+						      (sizeof DataType)))
+				  (std--memcpy
+				   (+ (msg.body.data) i)
+				   &data
+				   (sizeof DataType)
+				   )
+				  (setf msg.header.size (msg.size))
+				  ;; arbitrary objects of arbitrary
+				  ;; types can be chained and pushed
+				  ;; into the vector
+				  (return msg))
+				))))
+		    )))
     
     
   )
