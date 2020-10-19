@@ -82,25 +82,6 @@ int main(int argc, char **argv) {
                                "example.com\r\nConnection: close\r\n\r\n");
     socket.write_some(boost::asio::buffer(request.data(), request.size()), ec);
     std::this_thread::sleep_for(2000ms);
-    socket.wait(socket.wait_read);
-    auto bytes = socket.available();
-    if ((0) < (bytes)) {
-
-      (std::cout) << (std::setw(10))
-                  << (std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count())
-                  << (" ") << (std::this_thread::get_id()) << (" ")
-                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("bytes available") << (" ") << (std::setw(8))
-                  << (" bytes='") << (bytes) << ("'") << (std::endl)
-                  << (std::flush);
-      auto buffer = std::vector<char>(bytes);
-      socket.read_some(boost::asio::buffer(buffer.data(), buffer.size()), ec);
-      for (auto c : buffer) {
-        (std::cout) << (c);
-      }
-    }
   }
   return 0;
 }
