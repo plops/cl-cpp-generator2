@@ -224,13 +224,13 @@
 			      (std--this_thread--sleep_for 2000ms)
 			      
 
-			      #+nil (do0 
+			      (do0 
 			       (socket.wait socket.wait_read)
 			       (let ((bytes (socket.available)))
 				 (when (< 0 bytes)
 				   ,(logprint "bytes available" `(bytes))
 				   (let ((buffer (std--vector<char> bytes)))
-				     (socket.read_some (asio--buffer (buffer.data)
+				     (socket.read_some (boost--asio--buffer (buffer.data)
 								     (buffer.size))
 						       ec)
 				     
