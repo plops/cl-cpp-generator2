@@ -258,25 +258,11 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      
-		      )
-		     (do0
-		      "// implementation"
-		      ))
-
-
-		    ;; FIXME
-		    (defclass (message_header :template "<typename T>") ()
+		      (defclass (message_header :template "typename T") ()
 		       "T id{};"
 		      "uint32_t size = 0;")
-		    
-		    #+nil (do0
-		     ;; https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/Parts1%262/net_message.h
-		     ;; message<GAME> msg
-		     ;; msg << x << y
-		     ;; msg >> y >> x
-		     
-		     #+nil (defclass (message :template "<typename T>") ()
+
+		       (defclass+ (message :template "typename T") ()
 		       "message_header<T> header{};"
 		       "std::vector<uint8_t> body;"
 		       (defmethod size ()
@@ -336,7 +322,23 @@
 			   (setf msg.header.size (msg.size))
 			   
 			   (return msg))
-			 )))
+			 ))
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+
+
+		   
+		    
+		    
+		    #+nil (do0
+		     ;; https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/Parts1%262/net_message.h
+		     ;; message<GAME> msg
+		     ;; msg << x << y
+		     ;; msg >> y >> x
+		     
+		     )
 		    )))
     
     
