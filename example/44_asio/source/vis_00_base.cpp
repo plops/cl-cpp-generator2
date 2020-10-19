@@ -4,6 +4,7 @@
 #include "globals.h"
 
 extern State state;
+#include "vis_01_message.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
@@ -14,6 +15,7 @@ using namespace std::chrono_literals;
 
 // implementation
 std::vector<char> buffer(20 * 1024);
+enum class CustomMsgTypes : uint32_t { FireBullet, MovePlayer };
 void grab_some_data(boost::asio::ip::tcp::socket &socket) {
   socket.async_read_some(boost::asio::buffer(buffer.data(), buffer.size()),
                          [&](std::error_code ec, std::size_t length) {
@@ -47,6 +49,25 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
+  auto msg = message<CustomMsgTypes>();
+  msg.header.id = CustomMsgTypes::FireBullet;
+  int a = 1;
+  bool b = true;
+  float c = 3.14f;
+  (msg) << (a) << (b) << (c);
+  int a2;
+  bool b2;
+  float c2;
+  (msg) >> (c2) >> (b2) >> (a2);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("out") << (" ")
+      << (std::setw(8)) << (" a2='") << (a2) << ("'") << (std::setw(8))
+      << (" b2='") << (b2) << ("'") << (std::setw(8)) << (" c2='") << (c2)
+      << ("'") << (std::endl) << (std::flush);
   boost::system::error_code ec;
   boost::asio::io_context context;
   auto idle_work = boost::asio::io_context::work(context);

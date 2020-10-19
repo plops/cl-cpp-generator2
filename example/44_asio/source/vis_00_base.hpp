@@ -12,6 +12,8 @@
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 ;
+#include "vis_01_message.hpp"
+;
 // header;
 void grab_some_data (boost::asio::ip::tcp::socket& socket)  ;  
 int main (int argc, char** argv)  ;  

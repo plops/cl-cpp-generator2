@@ -14,12 +14,14 @@
 #include <boost/asio/ts/internet.hpp>
 ;
 template<typename T> class message_header  {
+        public:
         T id{};
         uint32_t size = 0;
 };
 // header
  
 template<typename T> class message  {
+        public:
         message_header<T> header{};
         std::vector<uint8_t> body;
         size_t size () const   {

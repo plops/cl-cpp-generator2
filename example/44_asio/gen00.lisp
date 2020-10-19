@@ -147,6 +147,8 @@
 		    (include <boost/asio.hpp>
 			     <boost/asio/ts/buffer.hpp>
 			     <boost/asio/ts/internet.hpp>)
+
+		    (include "vis_01_message.hpp")
 		    "using namespace std::chrono_literals;"
 		    " "
 
@@ -159,7 +161,12 @@
 		      ))
 
 		    "std::vector<char> buffer(20*1024);"
-		    
+
+
+		    (space enum class CustomMsgTypes ":uint32_t"
+			   (progn
+			     "FireBullet,MovePlayer"
+			  ))
 		    
 		    (defun grab_some_data (socket)
 		      (declare (type "boost::asio::ip::tcp::socket&" socket))
@@ -187,6 +194,15 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
+		      (let ((msg (message<CustomMsgTypes>)))
+			(setf msg.header.id CustomMsgTypes--FireBullet)
+			"int a=1;"
+			"bool b = true;"
+			"float c=3.14f;"
+			(<< msg a b c)
+			"int a2; bool b2; float c2;"
+			(>> msg c2 b2 a2)
+			,(logprint "out" `(a2 b2 c2)))
 		      (let ((ec )
 			    ;; this is where asio will do its work
 			    (context)
@@ -259,11 +275,13 @@
 		     (do0
 		      "// header"
 		      (defclass (message_header :template "typename T") ()
-		       "T id{};"
+			"public:"
+			"T id{};"
 		      "uint32_t size = 0;")
 
 		       (defclass+ (message :template "typename T") ()
-		       "message_header<T> header{};"
+			 "public:"
+			 "message_header<T> header{};"
 		       "std::vector<uint8_t> body;"
 		       (defmethod size ()
 			 (declare (const)
