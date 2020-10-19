@@ -263,14 +263,19 @@
 		     (do0
 		      "// implementation"
 		      ))
-		    (do0
+
+
+		    ;; FIXME
+		    (defclass (message_header :template "<typename T>") ()
+		       "T id{};"
+		      "uint32_t size = 0;")
+		    
+		    #+nil (do0
 		     ;; https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/Networking/Parts1%262/net_message.h
 		     ;; message<GAME> msg
 		     ;; msg << x << y
 		     ;; msg >> y >> x
-		     (defclass (message_header :template "<typename T>") ()
-		       "T id{};"
-		       "uint32_t size = 0;")
+		     
 		     #+nil (defclass (message :template "<typename T>") ()
 		       "message_header<T> header{};"
 		       "std::vector<uint8_t> body;"

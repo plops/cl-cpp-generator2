@@ -648,8 +648,10 @@ entry return-values contains a list of return values. currently supports type, v
 			;; template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
 			(destructuring-bind (name parents &rest body) (cdr code)
 			  (let ((class-name (if (listp name)
-							       (car name)
-							       name))
+						(progn
+						  (format t "template-class: ~a~%" name)
+						  (car name))
+						name))
 				(class-template nil)
 				(class-template-instance nil))
 			    (when (listp name)
@@ -657,6 +659,7 @@ entry return-values contains a list of return values. currently supports type, v
 				(setf class-name name
 				      class-template template
 				      class-template-instance template-instance)))
+			    
 			   (prog1
 			       (if hook-defclass
 				   (progn
