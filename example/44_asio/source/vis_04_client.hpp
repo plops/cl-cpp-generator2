@@ -37,7 +37,7 @@ template<typename T> class client_interface  {
                 return true;
 }
         void disconnect ()    {
-                if ( is_connected_p() ) {
+                if ( is_connected() ) {
                                     m_connection->disconnect();
 }
                 m_asio_context.stop();
@@ -46,15 +46,15 @@ template<typename T> class client_interface  {
 }
                 m_connection.release();
 }
-        bool is_connected_p ()    {
+        bool is_connected ()    {
                 if ( m_connection ) {
-                        return m_connection->is_connected_p();
+                        return m_connection->is_connected();
 } else {
                         return false;
 }
 }
         void send (const message<T>& msg)    {
-                if ( is_connected_p() ) {
+                if ( is_connected() ) {
                                     m_connection->send(msg);
 }
 }

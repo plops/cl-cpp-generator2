@@ -483,41 +483,191 @@
 		      ;; like *this, but shared
 		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
-			
-			(defmethod connection ()
+			(space enum class owner
+			       (progn
+				 "server, client"))
+			(defmethod connection (parent asio_context
+					       socket q_in)
 			  (declare (values :constructor)
-				   (virtual))
+				   (type owner parent)
+				   (type boost--asio--io_context& asio_context)
+				   (type boost--asio--ip--tcp--socket socket)
+				   (type tsqueue<owned_message<T>>& q_in)
+				   (virtual)
+				   (construct (m_asio_context asio_context)
+					      (m_socket (std--move socket))
+					      (m_q_messages_in q_in)
+					      (m_owner_type parent)
+					      
+					      ))
 			  )
 			(defmethod ~connection ()
 			  (declare
 			   (values :constructor)
 			   (virtual))
 			  )
+			(defmethod get_id ()
+			  (declare (const)
+				   (values uint32_t))
+			  (return id))
+			(defmethod connect_to_client (uid=0)
+			  (declare (type uint32_t uid=0))
+			  (when (== owner--server
+				    m_owner_type)
+			    (when (m_socket.is_open)
+			      (setf id uid))))
 			(defmethod connect_to_server ()
 			  (declare (values bool))
 			  (return false))
 			(defmethod disconnect ()
 			  (declare (values bool))
 			  (return false))
-			(defmethod is_connected_p ()
+			(defmethod is_connected ()
 			  (declare (values bool)
-				   (const)) 
-			  (return false))
+				   (const))
+			  (return (m_socket.is_open)))
 
 			(defmethod send (msg)
 			  (declare (values bool)
 				   (type "const message<T>&" msg)
 				   (const))
 			  (return false))
+			"private:"
+			;; async
+			(defmethod read_header ()
+			  (boost--asio--async_read
+			   m_socket
+			   (boost--asio--buffer
+			    &m_msg_temporary_in.header
+			    (sizeof message_header<T>))
+			   (lambda (ec length)
+			     (declare (capture this)
+				      (type std--error_code ec)
+				      (type std--size_t length))
+			     (if ec
+				 (do0
+				  ,(logprint "read header fail"
+					     `(id))
+				  ;; this close will be detected by
+				  ;; server and client
+				  (m_socket.close))
+				 (do0
+				  (if (< 0 m_msg_temporary_in.header.size)
+				      (do0
+				       (m_msg_temporary_in.body.resize
+					m_msg_temporary_in.size)
+				       (read_body)
+				       )
+				      (do0
+				       ;; message is complete (no body)
+				       (add_to_incoming_message_queue)
+				       ))
+				  )))
+			 )
+			  )
+			(defmethod read_body ()
+			  (boost--asio--async_read
+			   m_socket
+			   (boost--asio--buffer
+			    (m_msg_temporary_in.body.data)
+			    (m_msg_temporary_in.body.size))
+			   (lambda (ec length)
+			     (declare (capture this)
+				      (type std--error_code ec)
+				      (type std--size_t length))
+			     (if ec
+				 (do0
+				  ,(logprint "read body fail"
+					     `(id))
+				  (m_socket.close))
+				 (do0
+				  (add_to_incoming_message_queue))))
+			   )
+			  )
+			(defmethod write_header ()
+			  (boost--asio--async_write
+			   m_socket
+			   (boost--asio--buffer
+			    (dot &m_q_messages_out
+				 (front)
+				 header)
+			    (sizeof message_header<T>))
+			   (lambda (ec length)
+			     (declare (capture this)
+				      (type std--error_code ec)
+				      (type std--size_t length))
+			     (if ec
+				 (do0
+				  ,(logprint "write header fail"
+					     `(id))
+				  (m_socket.close))
+				 (do0
+				  (if (< 0 (dot m_q_messages_out
+						(front)
+						body
+						(size)))
+				      (write_body)
+				      (do0
+				       (m_q_messages_out.pop_front)
+				       ;; if q not empty we need to
+				       ;; send more messages by
+				       ;; issueing the next header
+				       (unless (m_q_messages.empty)
+					 (write_header))))))))
+			  )
+			(defmethod write_body ()
+			  (defmethod write_header ()
+			  (boost--asio--async_write
+			   m_socket
+			   (boost--asio--buffer
+			    (dot m_q_messages_out
+				 (front)
+				 body
+				 (data))
+			    (dot m_q_messages_out
+				 (front)
+				 body
+				 (size)))
+			   (lambda (ec length)
+			     (declare (capture this)
+				      (type std--error_code ec)
+				      (type std--size_t length))
+			     (if ec
+				 (do0
+				  ,(logprint "write body fail"
+					     `(id))
+				  (m_socket.close))
+				 (do0
+				  (m_q_messages_out.pop_front)
+				  (unless (m_q_messages_out.empy)
+				    (write_header))))))
+			  ))
 
+			(defmethod add_to_incoming_message_queue ()
+			  (if (== owner--server
+				  m_owner_type)
+			      (m_q_messages_in.push_back
+			       (curly (this->shared_from_this)
+				      m_msg_temporary_in))
+			      (m_q_messages_in.push_back
+			       (curly nullptr
+				      m_msg_temporary_in)))
+			  (read_header)
+			  )
+			
 			"protected:"
 			;; each connection has a socket
 			"boost::asio::ip::tcp::socket m_socket;"
 			;; shared context, server uses only one
 			"boost::asio::io_context& m_asio_context;"
 			"tsqueue<message<T>> m_q_messages_out;"
+
+			"message<T> m_msg_temporary_in;"
 			;; input queue is owned by server or client 
-			;"tsqueue<owned_message>& m_q_messages_in;"
+			"tsqueue<owned_message>& m_q_messages_in;"
+			"owner m_owner_type = owner::server"
+			"uint32_t id=0;"
+			
 			)
 		      )
 		     (do0
@@ -589,7 +739,7 @@
 			   )
 			  (return true))
 			(defmethod disconnect ()
-			  (when (is_connected_p)
+			  (when (is_connected)
 			    (m_connection->disconnect))
 			  (m_asio_context.stop)
 			  (when (m_thread_asio.joinable)
@@ -598,17 +748,17 @@
 			  (m_connection.release)
 			  )
 
-			(defmethod is_connected_p ()
+			(defmethod is_connected ()
 			  (declare (values bool)
 				   )
 			  (if m_connection
-			      (return (m_connection->is_connected_p))
+			      (return (m_connection->is_connected))
 			      (return false)))
 
 
 			(defmethod send (msg)
 			  (declare (type "const message<T>&" msg))
-			  (when (is_connected_p)
+			  (when (is_connected)
 			    (m_connection->send msg)))
 			(defmethod incoming ()
 			  (declare (values "tsqueue<owned_message<T>>&"))
@@ -659,96 +809,161 @@
 			(defmethod server_interface (port)
 			  (declare (values :constructor)
 				   (type uint16_t port)
-				   (construct (m_socket m_asio_context))
+				   (construct (m_asio_context
+					       (boost--asio--ip--tcp--endpoint
+						(boost--asio--ip--tpc--v4)
+						port)))
 				   (virtual))
 			  )
 			(defmethod ~server_interface ()
 			  (declare
 			   (values :constructor)
 			   (virtual))
-			  ;(disconnect)
+			  (stop)
 			  )
 
 			(defmethod start ()
-			  (declare (values bool)))
-
-			(defmethod stop ())
-
-			;; async
-			(defmethod wait_for_client_connection ())
-			(defmethod message_client (client msg)
-			  (declare (type std--shared_ptr<connection<T>> client)
-				   (type "const message<T>&" msg)))
-			(defmethod message_all_clients (msg
-							&key (ignore_client
-							      nullptr))
-			  (declare (type std--shared_ptr<connection<T>> ignore_client)
-				   (type "const message<T>&" msg)))
-
-			
-			(defmethod connect (host port)
-			  (declare (values bool)
-				   (type "const std::string&" host)
-				   (type "const uint16_t" port))
+			  (declare (values bool))
 			  (handler-case
 			      (progn
-				(setf m_connection ;; TODO
-				      (std--make_unique<connection<T>>))
-				(let ((resolver (boost--asio--ip--tcp--resolver
-						 m_asio_context))
-				      (endpoints (resolver.resolve
-						     host
-						     (std--to_string port))))
-				  
-				  (m_connection->connect_to_server
-				   endpoints)
-				  (setf m_thread_asio
-					(std--thread (lambda ()
-						       (declare (capture this))
-						       (m_asio_context.run)))))
-			       )
+				;; make sure asio is having before
+				;; context starts
+				(wait_for_client_connection)
+				(setf m_thread_context
+				      (std--thread
+				       (lambda ()
+					 (declare (capture this))
+					 (m_asio_context.run)))))
 			    ("std::exception&" (e)
-			      ,(logprint "client exception" `((e.what)))
-			      (return false))
-			   )
+			      ,(logprint "server exception"
+					 `((e.what)))
+			      (return false)))
+			  ,(logprint "server started")
 			  (return true))
-			(defmethod disconnect ()
-			  (when (is_connected_p)
-			    (m_connection->disconnect))
-			  (m_asio_context.stop)
-			  (when (m_thread_asio.joinable)
-			    (m_thread_asio.join))
 
-			  (m_connection.release)
+			(defmethod stop ()
+			  (m_asio_context.stop)
+			  (when (m_thread_context.joinable)
+			    (m_thread_context.join)
+			    )
+			  ,(logprint "server stopped")
 			  )
 
-			(defmethod is_connected_p ()
-			  (declare (values bool)
+			;; async
+			(defmethod wait_for_client_connection ()
+			  (m_asio_acceptor.async_accept
+			   (lambda (ec socket)
+			     (declare (capture this)
+				      (type std--error_code ec)
+				      (type boost--asio--ip--tcp--socket socket))
+			     (if ec
+			       ,(logprint "server connection error"
+					  `((ec.message)))
+			       (do0
+				,(logprint "server new connection"
+					   `((socket.remote_endpoint)))
+				(let ((newconn (std--make_shared<connection<T>>
+						connection<T>--owner--server
+						m_asio_context
+						(std--move socket)
+						m_q_messages_in)))
+				  (if (on_client_connect newconn)
+				      (do0
+				       (m_deq_connections.push_back (std--move newconn))
+				       (incf n_id_counter)
+				       (-> (m_deq_connections.back)
+					   (connect_to_client n_id_counter))
+				       ,(logprint "server connection approved"
+						  `((-> (m_deq_connections.back)
+							(GetID))))
+				       )
+				      (do0
+				       ,(logprint "server connection denied"))))))
+			     ;; keep working
+			     (wait_for_client_connection)
+
+			     )))
+			(defmethod message_client (client msg)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   (type "const message<T>&" msg))
+			  (if (and client (client->is_connected))
+			      (do0 (client->send msg ))
+			      (do0
+			       (on_client_disconnect client )
+			       (client.reset)
+			       ;; following can be expensive for many clients
+			       (m_deq_connections.erase
+				(std--remove (m_deq_connections.begin)
+					     (m_deq_connections.end)
+					     client)
+				(m_deq_connections.end)))
+			    ))
+			(defmethod message_all_clients (msg
+							ignore_client=nullptr)
+			  (declare (type std--shared_ptr<connection<T>> ignore_client=nullptr)
+				   (type "const message<T>&" msg))
+			  (let ((invalid_client_exists false))
+			   (for-range (&client m_deq_connections)
+				      (if (and client (client->is_connected))
+					  (unless (== client ignore_client)
+					    (client->send msg ))
+					  (do0
+					   (on_client_disconnect client )
+					   (client.reset)
+					   (setf invalid_client_exists true)
+					   )
+					  ))
+			    ;; faster and not changing the deq in iteration
+			    (when invalid_client_exists
+			      (m_deq_connections.erase
+			       (std--remove (m_deq_connections.begin)
+					    (m_deq_connections.end)
+					    client)
+			       (m_deq_connections.end)))))
+
+			(defmethod update (,(intern
+					     (string-upcase
+					      (format nil "n_max_messages=0x~x"
+							    (- (expt 2 64) 1)))))
+			  (declare (type size_t ,(intern
+						  (string-upcase
+						   (format nil "n_max_messages=0x~x"
+							   (- (expt 2 64) 1)))))
 				   )
-			  (if m_connection
-			      (return (m_connection->is_connected_p))
-			      (return false)))
-
-
-			(defmethod send (msg)
-			  (declare (type "const message<T>&" msg))
-			  (when (is_connected_p)
-			    (m_connection->send msg)))
-			(defmethod incoming ()
-			  (declare (values "tsqueue<owned_message<T>>&"))
-			  (return m_q_messages_in))
-
-			"protected:"
-			"boost::asio::io_context m_asio_context;"
-			"std::thread m_thread_asio;"
-			;; initial socket, when connected this is
-			;; handed over as unique pointer to connection
-			"boost::asio::ip::tcp::socket m_socket;"
-			"std::unique_ptr<connection<T>> m_connection;"
+			  (let ((n_message_count (size_t 0)))
+			    (while (and
+				    (< n_message_count
+				       n_max_messages)
+				    (not (m_q_messages_in.empty)))
+				   (let ((msg (m_q_messages_in.pop_front)))
+				     (on_message msg.remote
+						 msg.msg)
+				     (incf n_message_count))))
+			  )
 			
-			"private:"
+			"protected:"
+			(defmethod on_client_connected (client)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   (virtual)
+				   (values bool))
+			  (return false))
+			(defmethod on_client_disconnected (client)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   (virtual)
+				   ))
+			(defmethod on_message (client msg)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   (type message<T>& msg)
+				   (virtual)
+				   ))
 			
 			"tsqueue<owned_message<T>> m_q_messages_in;"
+			"std::deque<std::shared_ptr<connection<T>>> m_deq_connections;"
+			"boost::asio::io_context m_asio_context;"
+			"std::thread m_thread_context;"
+			"boost::asio::ip::tcp::acceptor m_asio_acceptor;"
+			;; consistent id in system (client knows)
+			"uint32_t n_id_counter=10000;"
 			)
 		      )
 		     (do0
