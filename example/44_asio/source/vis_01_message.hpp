@@ -43,5 +43,11 @@ template<typename T> class message  {
                 msg.header.size=msg.size();
         return msg;
 }
+};
+template <typename T> class connection;
+template<typename T> class owned_message  {
+        public:
+        std::shared_ptr<connection<T>> remote = nullptr;
+        message<T> msg;
 };;
 #endif

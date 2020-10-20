@@ -341,6 +341,13 @@
 			   
 			   (return msg))
 			 ))
+
+		       "template <typename T> class connection;"
+		       
+		       (defclass+ (owned_message :template "typename T") ()
+			 "public:"
+			 "std::shared_ptr<connection<T>> remote = nullptr;"
+			 "message<T> msg;")
 		      )
 		     (do0
 		      "// implementation"
@@ -384,6 +391,10 @@
 			"public:"
 			"tsqueue() = default;"
 			"tsqueue(const tsqueue<T>&) = delete;"
+			(defmethod ~tsqueue ()
+			  (declare (virtual)
+				   (values :constructor))
+			  (clear))
 			,@(loop for e in
 				`((front "const T&")
 				  (back "const T&")
@@ -422,6 +433,139 @@
 			"protected:"
 			"std::mutex mux_deq"
 			"std::deque<T> deq;")
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+		    )))
+
+    (define-module
+       `(connection ()
+	      (do0
+	       
+	       
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     
+			     )
+		    (include <vis_01_message.hpp>
+			     <vis_02_tsqueue.hpp>)
+	
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      ;; we can create shared pointer from within this obj
+		      ;; like *this, but shared
+		      (defclass+ (connection :template "typename T") ("public std::enable_shared_from_this<connection<T>>")
+			"public:"
+			
+			(defmethod connection ()
+			  (declare (values :constructor)
+				   (virtual))
+			  )
+			(defmethod ~connection ()
+			  (declare
+			   (values :constructor)
+			   (virtual))
+			  )
+			(defmethod connect_to_server ()
+			  (declare (values bool)))
+			(defmethod disconnect ()
+			  (declare (values bool)))
+			(defmethod is_connected_p ()
+			  (declare (values bool)
+				   (const)))
+
+			(defmethod send (msg)
+			  (declare (values bool)
+				   (type "const message<T>&" msg)
+				   (const)))
+
+			"protected:"
+			;; each connection has a socket
+			"boost::asio::tcp::socket m_socket;"
+			;; shared context, server uses only one
+			"boost::asio::io_context& m_asio_context;"
+			"tsqueue<message<T>> m_q_messages_out;"
+			;; input queue is owned by server or client 
+			"tsqueue<owned_message>& m_q_messages_in;"
+			)
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+		    )))
+
+    (define-module
+       `(client ()
+	      (do0
+	       
+	       
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     
+			     )
+		    (include <vis_01_message.hpp>
+			     <vis_02_tsqueue.hpp>
+			     <vis_03_connection.hpp>)
+	
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      ;; we can create shared pointer from within this obj
+		      ;; like *this, but shared
+		      (defclass+ (client_interface :template "typename T") ()
+			"public:"
+			
+			(defmethod client_interface ()
+			  (declare (values :constructor)
+				   (constructs ((m_socket m_context)))
+				   (virtual))
+			  )
+			(defmethod ~client_interface ()
+			  (declare
+			   (values :constructor)
+			   (virtual))
+			  (disconnect)
+			  )
+
+			(defmethod connect (host port)
+			  (declare (values bool)
+				   (type "const std::string&" host)
+				   (type "const uint16_t" port))
+			  (return false))
+			(defmethod disconnect ()
+			  )
+
+			(defmethod is_connected_p ()
+			  (declare (values bool)
+				   )
+			  (if m_connection
+			      (return (m_connection->is_connected_p))
+			      (return false)))
+
+			(defmethod incoming ()
+			  (declare (values "tsqueue<owned_messages<T>>&"))
+			  (return m_q_messages_in))
+
+			"protected:"
+			"boost::asio::io_context m_asio_context;"
+			"std::thread m_thread_asio;"
+			;; initial socket, when connected this is
+			;; handed over as unique pointer to connection
+			"boost::asio::ip::tcp::socket m_socket;"
+			"std::unique_ptr<connection<T>> m_connection;"
+			
+			"private:"
+			
+			"tsqueue<owned_message<T>> m_q_messages_in;"
+			)
 		      )
 		     (do0
 		      "// implementation"

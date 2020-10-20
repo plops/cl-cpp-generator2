@@ -24,5 +24,12 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
 }
         bool is_connected_p () const   {
 }
+        bool send (const message<T>& msg) const   {
+}
+        protected:
+        boost::asio::tcp::socket m_socket;
+        boost::asio::io_context& m_asio_context;
+        tsqueue<message<T>> m_q_messages_out;
+        tsqueue<owned_message>& m_q_messages_in;
 };;
 #endif

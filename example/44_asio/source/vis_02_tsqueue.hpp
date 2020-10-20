@@ -19,6 +19,9 @@ template<typename T> class tsqueue  {
         public:
         tsqueue() = default;
         tsqueue(const tsqueue<T>&) = delete;
+         ~tsqueue ()    {
+                clear();
+}
         const T& front ()    {
                         auto lock  = std::scoped_lock(mux_deq);
         return deq.front();
