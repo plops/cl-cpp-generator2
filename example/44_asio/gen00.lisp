@@ -179,7 +179,9 @@
 			(declare (type float x y))
 			(let ((msg (message<CustomMsgTypes>)))
 			  (setf msg.header.id
-				CustomMsgTypes--FireBullet))))
+				CustomMsgTypes--FireBullet)
+			  (<< msg x y)
+			  (send msg))))
 		    
 		    (defun grab_some_data (socket)
 		      (declare (type "boost::asio::ip::tcp::socket&" socket))
@@ -207,7 +209,11 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
-		      (let ((msg (message<CustomMsgTypes>)))
+		      (let ((c (CustomClient)))
+			(c.connect (string "community.onelonecoder.com")
+				   60000)
+			(c.FireBullet 2s0 5s0))
+		     #+nil (let ((msg (message<CustomMsgTypes>)))
 			(setf msg.header.id CustomMsgTypes--FireBullet)
 			"int a=1;"
 			"bool b = true;"
@@ -216,7 +222,7 @@
 			"int a2; bool b2; float c2;"
 			(>> msg c2 b2 a2)
 			,(logprint "out" `(a2 b2 c2)))
-		      (let ((ec )
+		     #+nil  (let ((ec )
 			    ;; this is where asio will do its work
 			    (context)
 			    ;; some fake work for context to prevent
@@ -599,6 +605,11 @@
 			      (return (m_connection->is_connected_p))
 			      (return false)))
 
+
+			(defmethod send (msg)
+			  (declare (type "const message<T>&" msg))
+			  (when (is_connected_p)
+			    (m_connection->send msg)))
 			(defmethod incoming ()
 			  (declare (values "tsqueue<owned_message<T>>&"))
 			  (return m_q_messages_in))

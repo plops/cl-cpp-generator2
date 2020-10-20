@@ -53,6 +53,11 @@ template<typename T> class client_interface  {
                         return false;
 }
 }
+        void send (const message<T>& msg)    {
+                if ( is_connected_p() ) {
+                                    m_connection->send(msg);
+}
+}
         tsqueue<owned_message<T>>& incoming ()    {
                 return m_q_messages_in;
 }
