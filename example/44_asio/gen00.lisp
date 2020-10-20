@@ -358,6 +358,75 @@
 		     
 		     )
 		    )))
+
+        (define-module
+       `(tsqueue ()
+	      (do0
+	       
+	       
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     <deque>
+			     <mutex>
+			     )
+
+		    (include <boost/asio.hpp>
+			     <boost/asio/ts/buffer.hpp>
+			     <boost/asio/ts/internet.hpp>)
+	
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      (defclass+ (tsqueue :template "typename T") ()
+			"public:"
+			"tsqueue() = default;"
+			"tsqueue(const tsqueue<T>&) = delete;"
+			,@(loop for e in
+				`((front "const T&")
+				  (back "const T&")
+				  (empty bool)
+				  (size size_t)
+				  (clear void)
+				  (pop_front "T" :code (let ((el (std--move
+								  (deq.front))))
+							 (deq.pop_front)
+							 (return el)))
+				  (pop_back "T" :code (let ((el (std--move
+								  (deq.back))))
+							 (deq.pop_back)
+							(return el)))
+				  
+				   (push_back "T"
+					    :params ((item "const T&"))
+					    :code (do0
+						   (deq.emplace_back
+						    (std--move item))
+						   (std--))))
+				collect
+				(destructuring-bind (name type &key params code)
+				    e
+				 `(defmethod ,name ,(mapcar #'first params)
+				    (declare (values ,type)
+					     ,@(loop for (e f) in params
+						     collect
+						     `(type ,f ,e)))
+				    (let ((lock (std--scoped_lock mux_deq)))
+				      ,(if code
+					   `(do0
+					     ,@code)
+					   `(return (dot deq (,name))))))))
+			
+			"protected:"
+			"std::mutex mux_deq"
+			"std::deque<T> deq;")
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+		    )))
     
     
   )

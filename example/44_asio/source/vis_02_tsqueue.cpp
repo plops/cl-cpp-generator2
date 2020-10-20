@@ -8,8 +8,9 @@ extern State state;
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 #include <chrono>
+#include <deque>
 #include <iostream>
+#include <mutex>
 #include <thread>
-#include <vector>
 
 // implementation
