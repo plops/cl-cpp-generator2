@@ -525,6 +525,7 @@
 			
 			(defmethod client_interface ()
 			  (declare (values :constructor)
+				   ;; fixme initializer missing
 				   (constructs ((m_socket m_context)))
 				   (virtual))
 			  )
@@ -539,8 +540,33 @@
 			  (declare (values bool)
 				   (type "const std::string&" host)
 				   (type "const uint16_t" port))
-			  (return false))
+			  (handler-case
+			      (progn
+				(setf m_connection ;; TODO
+				      (std--make_unique<connection<T>>))
+				(let ((resolver (boost--asio--ip--tcp--resolver
+						 m_asio_context)))
+				  (setf m_endpoints (resolver.resolve
+						     host
+						     (std--to_string port)))
+				  (m_connection->connect_to_server
+				   m_endpoints)
+				  (setf m_thread_asio
+					(std--thread (lambda ()
+						       (declare (capture this))
+						       (m_asio_context.run)))))
+			       )
+			    ("std::exception&" (e)
+			      ,(logprint "client exception" `((e.what)))
+			      (return false))
+			   )
+			  (return true))
 			(defmethod disconnect ()
+			  (when (is_connected_p)
+			    (m_connection->disconnect))
+			  (m_asio_context.stop)
+			  (when (m_thread_asio.joinable)
+			    (m_thread_asio.join))
 			  )
 
 			(defmethod is_connected_p ()

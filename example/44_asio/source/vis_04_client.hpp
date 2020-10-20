@@ -21,9 +21,29 @@ template<typename T> class client_interface  {
                 disconnect();
 }
         bool connect (const std::string& host, const uint16_t port)    {
-                return false;
+                try {
+                                    m_connection=std::make_unique<connection<T>>();
+                                    auto resolver  = boost::asio::ip::tcp::resolver(m_asio_context);
+                        m_endpoints=resolver.resolve(host, std::to_string(port));
+            m_connection->connect_to_server(m_endpoints);
+                        m_thread_asio=std::thread([this] (){
+                                m_asio_context.run();
+});
+}catch (std::exception& e) {
+                                     
+                        (std::cout)<<(std::setw(10))<<(std::chrono::high_resolution_clock::now().time_since_epoch().count())<<(" ")<<(std::this_thread::get_id())<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" ")<<("client exception")<<(" ")<<(std::setw(8))<<(" e.what()='")<<(e.what())<<("'")<<(std::endl)<<(std::flush);
+                        return false;
+};
+                return true;
 }
         void disconnect ()    {
+                if ( is_connected_p() ) {
+                                    m_connection->disconnect();
+}
+                m_asio_context.stop();
+                if ( m_thread_asio.joinable() ) {
+                                    m_thread_asio.join();
+}
 }
         bool is_connected_p ()    {
                 if ( m_connection ) {
