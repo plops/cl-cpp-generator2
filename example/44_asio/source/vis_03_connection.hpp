@@ -36,8 +36,14 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
 }
 }
 }
-        bool connect_to_server ()    {
-                return false;
+        void connect_to_server (const boost::asio::ip::tcp::resolver::results_type& endpoints)    {
+                if ( (owner::client)==(m_owner_type) ) {
+                                    boost::asio::async_connect(m_socket, endpoints, [this] (std::error_code ec, boost::asio::ip::tcp::endpoint endpoint){
+                                if ( !(ec) ) {
+                                                            read_header();
+}
+});
+}
 }
         bool disconnect ()    {
                 return false;

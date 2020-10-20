@@ -19,12 +19,9 @@
 // header
 #include "vis_04_client.hpp"
  
-enum class CustomMsgTypes :uint32_t {
-        FireBullet,MovePlayer
-};;
+enum class CustomMsgTypes :uint32_t {ServerAccept, ServerDeny, ServerPing, MessagesAll, ServerMessage};;
 class CustomClient : public client_interface<CustomMsgTypes> {
         public:
-        void FireBullet (float x, float y)  ;  
 };
 void grab_some_data (boost::asio::ip::tcp::socket& socket)  ;  
 int main (int argc, char** argv)  ;  

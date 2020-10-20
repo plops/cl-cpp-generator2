@@ -22,9 +22,9 @@ template<typename T> class client_interface  {
 }
         bool connect (const std::string& host, const uint16_t port)    {
                 try {
-                                    m_connection=std::make_unique<connection<T>>();
                                     auto resolver  = boost::asio::ip::tcp::resolver(m_asio_context);
             auto endpoints  = resolver.resolve(host, std::to_string(port));
+                        m_connection=std::make_unique<connection<T>>(connection<T>::owner::client, m_asio_context, boost::asio::ip::tcp::socket(m_asio_context), m_q_messages_in);
             m_connection->connect_to_server(endpoints);
                         m_thread_asio=std::thread([this] (){
                                 m_asio_context.run();

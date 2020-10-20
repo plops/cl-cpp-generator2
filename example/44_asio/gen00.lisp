@@ -158,9 +158,12 @@
 		      (include "vis_04_client.hpp")
 		      " "
 		      (space enum class CustomMsgTypes ":uint32_t"
-			   (progn
-			     "FireBullet,MovePlayer"
-			     ))
+			     (curly
+			      ServerAccept
+			      ServerDeny
+			      ServerPing
+			      MessagesAll
+			      ServerMessage))
 		      )
 		     (do0
 		      "// implementation"
@@ -175,13 +178,7 @@
 		    (defclass CustomClient
 			"public client_interface<CustomMsgTypes>"
 		      "public:"
-		      (defmethod FireBullet (x y)
-			(declare (type float x y))
-			(let ((msg (message<CustomMsgTypes>)))
-			  (setf msg.header.id
-				CustomMsgTypes--FireBullet)
-			  (<< msg x y)
-			  (send msg))))
+		      )
 		    
 		    (defun grab_some_data (socket)
 		      (declare (type "boost::asio::ip::tcp::socket&" socket))
@@ -517,9 +514,20 @@
 			    (when (m_socket.is_open)
 			      (setf id uid)
 			      (read_header))))
-			(defmethod connect_to_server ()
-			  (declare (values bool))
-			  (return false))
+			(defmethod connect_to_server (endpoints)
+			  (declare 
+			   (type "const boost::asio::ip::tcp::resolver::results_type&" endpoints))
+			  (when (== owner--client
+				    m_owner_type)
+			    (boost--asio--async_connect
+			     m_socket endpoints
+			     (lambda (ec endpoint)
+			       (declare (capture this)
+					(type std--error_code ec)
+					(type boost--asio--ip--tcp--endpoint endpoint))
+			       (unless ec
+				 (read_header))
+			       ))))
 			(defmethod disconnect ()
 			  (declare (values bool))
 			  (return false))
@@ -536,6 +544,8 @@
 			   m_asio_context
 			   (lambda ()
 			     (declare (capture this msg))
+			     ;; if message is currently being sent
+			     ;; dont add second write_header work
 			     (let ((write_message (not (m_q_messages_out.empty))))
 			       (m_q_messages_out.push_back msg)
 			       (unless write_message
@@ -726,14 +736,20 @@
 				   (type "const uint16_t" port))
 			  (handler-case
 			      (progn
-				(setf m_connection ;; TODO
-				      (std--make_unique<connection<T>>))
+				
 				(let ((resolver (boost--asio--ip--tcp--resolver
 						 m_asio_context))
 				      (endpoints (resolver.resolve
 						     host
 						     (std--to_string port))))
 				  
+				  (setf m_connection
+					(std--make_unique<connection<T>>
+					 connection<T>--owner--client
+					 m_asio_context
+					 (boost--asio--ip--tcp--socket
+					  m_asio_context)
+					 m_q_messages_in))
 				  (m_connection->connect_to_server
 				   endpoints)
 				  (setf m_thread_asio
