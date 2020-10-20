@@ -515,7 +515,8 @@
 			  (when (== owner--server
 				    m_owner_type)
 			    (when (m_socket.is_open)
-			      (setf id uid))))
+			      (setf id uid)
+			      (read_header))))
 			(defmethod connect_to_server ()
 			  (declare (values bool))
 			  (return false))
@@ -531,7 +532,14 @@
 			  (declare (values bool)
 				   (type "const message<T>&" msg)
 				   (const))
-			  (return false))
+			  (boost--asio--post
+			   m_asio_context
+			   (lambda ()
+			     (declare (capture this msg))
+			     (let ((write_message (not (m_q_messages_out.empty))))
+			       (m_q_messages_out.push_back msg)
+			       (unless write_message
+				 (write_header))))))
 			"private:"
 			;; async
 			(defmethod read_header ()
@@ -604,7 +612,7 @@
 				 (do0
 				  (if (< 0 (dot m_q_messages_out
 						(front)
-						body
+ 						body
 						(size)))
 				      (write_body)
 				      (do0

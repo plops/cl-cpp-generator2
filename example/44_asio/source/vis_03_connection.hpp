@@ -32,6 +32,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
                 if ( (owner::server)==(m_owner_type) ) {
                                     if ( m_socket.is_open() ) {
                                                                 id=uid;
+                read_header();
 }
 }
 }
@@ -45,7 +46,13 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
                 return m_socket.is_open();
 }
         bool send (const message<T>& msg) const   {
-                return false;
+                boost::asio::post(m_asio_context, [this,msg] (){
+                                    auto write_message  = !(m_q_messages_out.empty());
+            m_q_messages_out.push_back(msg);
+            if ( !(write_message) ) {
+                                                write_header();
+}
+});
 }
         private:
         void read_header ()    {
