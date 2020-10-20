@@ -386,7 +386,7 @@
 		    )))
 
         (define-module
-       `(tsqueue ()
+       `(tsqueue () ;; thread safe queue
 	      (do0
 	       
 	       
@@ -501,7 +501,7 @@
 			  (return false))
 			(defmethod is_connected_p ()
 			  (declare (values bool)
-				   (const))
+				   (const)) 
 			  (return false))
 
 			(defmethod send (msg)
@@ -562,6 +562,130 @@
 			  (disconnect)
 			  )
 
+			(defmethod connect (host port)
+			  (declare (values bool)
+				   (type "const std::string&" host)
+				   (type "const uint16_t" port))
+			  (handler-case
+			      (progn
+				(setf m_connection ;; TODO
+				      (std--make_unique<connection<T>>))
+				(let ((resolver (boost--asio--ip--tcp--resolver
+						 m_asio_context))
+				      (endpoints (resolver.resolve
+						     host
+						     (std--to_string port))))
+				  
+				  (m_connection->connect_to_server
+				   endpoints)
+				  (setf m_thread_asio
+					(std--thread (lambda ()
+						       (declare (capture this))
+						       (m_asio_context.run)))))
+			       )
+			    ("std::exception&" (e)
+			      ,(logprint "client exception" `((e.what)))
+			      (return false))
+			   )
+			  (return true))
+			(defmethod disconnect ()
+			  (when (is_connected_p)
+			    (m_connection->disconnect))
+			  (m_asio_context.stop)
+			  (when (m_thread_asio.joinable)
+			    (m_thread_asio.join))
+
+			  (m_connection.release)
+			  )
+
+			(defmethod is_connected_p ()
+			  (declare (values bool)
+				   )
+			  (if m_connection
+			      (return (m_connection->is_connected_p))
+			      (return false)))
+
+
+			(defmethod send (msg)
+			  (declare (type "const message<T>&" msg))
+			  (when (is_connected_p)
+			    (m_connection->send msg)))
+			(defmethod incoming ()
+			  (declare (values "tsqueue<owned_message<T>>&"))
+			  (return m_q_messages_in))
+
+			"protected:"
+			"boost::asio::io_context m_asio_context;"
+			"std::thread m_thread_asio;"
+			;; initial socket, when connected this is
+			;; handed over as unique pointer to connection
+			"boost::asio::ip::tcp::socket m_socket;"
+			"std::unique_ptr<connection<T>> m_connection;"
+			
+			"private:"
+			
+			"tsqueue<owned_message<T>> m_q_messages_in;"
+			)
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+		    )))
+
+    (define-module
+       `(server ()
+	      (do0
+	       
+	       
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     
+			     )
+		    (include "vis_01_message.hpp"
+			     "vis_02_tsqueue.hpp"
+			     "vis_03_connection.hpp")
+	
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		      ;; we can create shared pointer from within this obj
+		      ;; like *this, but shared
+		      (defclass+ (client_interface :template "typename T") ()
+			"public:"
+			
+			(defmethod server_interface (port)
+			  (declare (values :constructor)
+				   (type uint16_t port)
+				   (construct (m_socket m_asio_context))
+				   (virtual))
+			  )
+			(defmethod ~server_interface ()
+			  (declare
+			   (values :constructor)
+			   (virtual))
+			  ;(disconnect)
+			  )
+
+			(defmethod start ()
+			  (declare (values bool)))
+
+			(defmethod stop ())
+
+			;; async
+			(defmethod wait_for_client_connection ())
+			(defmethod message_client (client msg)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   (type "const message<T>&" msg)))
+			(defmethod message_all_clients (msg
+							&key (ignore_client
+							      nullptr))
+			  (declare (type std--shared_ptr<connection<T>> ignore_client)
+				   (type "const message<T>&" msg)))
+
+			
 			(defmethod connect (host port)
 			  (declare (values bool)
 				   (type "const std::string&" host)
