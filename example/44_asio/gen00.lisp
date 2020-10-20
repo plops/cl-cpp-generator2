@@ -155,9 +155,12 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
+		      (include "vis_04_client.hpp")
+		      " "
 		      )
 		     (do0
 		      "// implementation"
+		      (include "vis_00_base.hpp")
 		      ))
 
 		    "std::vector<char> buffer(20*1024);"
@@ -166,7 +169,16 @@
 		    (space enum class CustomMsgTypes ":uint32_t"
 			   (progn
 			     "FireBullet,MovePlayer"
-			  ))
+			     ))
+
+		    (defclass CustomClient
+			"public client_interface<CustomMsgTypes>"
+		      "public:"
+		      (defmethod FireBullet (x y)
+			(declare (type float x y))
+			(let ((msg (message<CustomMsgTypes>)))
+			  (setf msg.header.id
+				CustomMsgTypes--FireBullet))))
 		    
 		    (defun grab_some_data (socket)
 		      (declare (type "boost::asio::ip::tcp::socket&" socket))
@@ -427,11 +439,11 @@
 				    (let ((lock (std--scoped_lock mux_deq)))
 				      ,(if code
 					   `(do0
-					     ,@code)
+					     ,code)
 					   `(return (dot deq (,name))))))))
 			
 			"protected:"
-			"std::mutex mux_deq"
+			"std::mutex mux_deq;"
 			"std::deque<T> deq;")
 		      )
 		     (do0
@@ -449,8 +461,8 @@
 			     <thread>
 			     
 			     )
-		    (include <vis_01_message.hpp>
-			     <vis_02_tsqueue.hpp>)
+		    (include "vis_01_message.hpp"
+			     "vis_02_tsqueue.hpp")
 	
 		    " "
 
@@ -509,9 +521,9 @@
 			     <thread>
 			     
 			     )
-		    (include <vis_01_message.hpp>
-			     <vis_02_tsqueue.hpp>
-			     <vis_03_connection.hpp>)
+		    (include "vis_01_message.hpp"
+			     "vis_02_tsqueue.hpp"
+			     "vis_03_connection.hpp")
 	
 		    " "
 
@@ -525,8 +537,8 @@
 			
 			(defmethod client_interface ()
 			  (declare (values :constructor)
-				   ;; fixme initializer missing
-				   (constructs ((m_socket m_context)))
+				  
+				   (construct (m_socket m_context))
 				   (virtual))
 			  )
 			(defmethod ~client_interface ()
@@ -567,6 +579,8 @@
 			  (m_asio_context.stop)
 			  (when (m_thread_asio.joinable)
 			    (m_thread_asio.join))
+
+			  (m_connection.release)
 			  )
 
 			(defmethod is_connected_p ()
@@ -577,7 +591,7 @@
 			      (return false)))
 
 			(defmethod incoming ()
-			  (declare (values "tsqueue<owned_messages<T>>&"))
+			  (declare (values "tsqueue<owned_message<T>>&"))
 			  (return m_q_messages_in))
 
 			"protected:"

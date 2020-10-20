@@ -44,26 +44,23 @@ template<typename T> class tsqueue  {
 }
         T pop_front ()    {
                         auto lock  = std::scoped_lock(mux_deq);
-                let;
-        (el(std::move(deq.front())))();
+                        auto el  = std::move(deq.front());
         deq.pop_front();
         return el;
 }
         T pop_back ()    {
                         auto lock  = std::scoped_lock(mux_deq);
-                let;
-        (el(std::move(deq.back())))();
+                        auto el  = std::move(deq.back());
         deq.pop_back();
         return el;
 }
         T push_back (const T& item)    {
                         auto lock  = std::scoped_lock(mux_deq);
-                do0;
-        deq.emplace_back(std::move(item));
+                        deq.emplace_back(std::move(item));
         std::();
 }
         protected:
-        std::mutex mux_deq
+        std::mutex mux_deq;
         std::deque<T> deq;
 };;
 #endif

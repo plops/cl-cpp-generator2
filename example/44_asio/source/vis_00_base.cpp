@@ -14,8 +14,13 @@ extern State state;
 using namespace std::chrono_literals;
 
 // implementation
+#include "vis_00_base.hpp"
 std::vector<char> buffer(20 * 1024);
 enum class CustomMsgTypes : uint32_t { FireBullet, MovePlayer };
+void CustomClient::FireBullet(float x, float y) {
+  auto msg = message<CustomMsgTypes>();
+  msg.header.id = CustomMsgTypes::FireBullet;
+}
 void grab_some_data(boost::asio::ip::tcp::socket &socket) {
   socket.async_read_some(boost::asio::buffer(buffer.data(), buffer.size()),
                          [&](std::error_code ec, std::size_t length) {

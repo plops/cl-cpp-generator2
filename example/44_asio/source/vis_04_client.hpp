@@ -8,14 +8,14 @@
 #include <chrono>
 #include <thread>
 ;
-#include <vis_01_message.hpp>
-#include <vis_02_tsqueue.hpp>
-#include <vis_03_connection.hpp>
+#include "vis_01_message.hpp"
+#include "vis_02_tsqueue.hpp"
+#include "vis_03_connection.hpp"
 ;
 // header
 template<typename T> class client_interface  {
         public:
-         client_interface ()    {
+         client_interface ()    : m_socket(m_context){
 }
          ~client_interface ()    {
                 disconnect();
@@ -44,6 +44,7 @@ template<typename T> class client_interface  {
                 if ( m_thread_asio.joinable() ) {
                                     m_thread_asio.join();
 }
+                m_connection.release();
 }
         bool is_connected_p ()    {
                 if ( m_connection ) {
@@ -52,7 +53,7 @@ template<typename T> class client_interface  {
                         return false;
 }
 }
-        tsqueue<owned_messages<T>>& incoming ()    {
+        tsqueue<owned_message<T>>& incoming ()    {
                 return m_q_messages_in;
 }
         protected:

@@ -14,7 +14,15 @@
 ;
 #include "vis_01_message.hpp"
 ;
-// header;
+#include "vis_04_client.hpp"
+;
+// header
+#include "vis_04_client.hpp"
+ ;
+class CustomClient : public client_interface<CustomMsgTypes> {
+        public:
+        void FireBullet (float x, float y)  ;  
+};
 void grab_some_data (boost::asio::ip::tcp::socket& socket)  ;  
 int main (int argc, char** argv)  ;  
 #endif
