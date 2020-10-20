@@ -157,6 +157,10 @@
 		      "// header"
 		      (include "vis_04_client.hpp")
 		      " "
+		      (space enum class CustomMsgTypes ":uint32_t"
+			   (progn
+			     "FireBullet,MovePlayer"
+			     ))
 		      )
 		     (do0
 		      "// implementation"
@@ -166,10 +170,7 @@
 		    "std::vector<char> buffer(20*1024);"
 
 
-		    (space enum class CustomMsgTypes ":uint32_t"
-			   (progn
-			     "FireBullet,MovePlayer"
-			     ))
+		    
 
 		    (defclass CustomClient
 			"public client_interface<CustomMsgTypes>"
@@ -422,7 +423,7 @@
 							 (deq.pop_back)
 							(return el)))
 				  
-				   (push_back "T"
+				   #+nil (push_back "T"
 					    :params ((item "const T&"))
 					    :code (do0
 						   (deq.emplace_back
@@ -461,6 +462,9 @@
 			     <thread>
 			     
 			     )
+		    (include <boost/asio.hpp>
+			     <boost/asio/ts/buffer.hpp>
+			     <boost/asio/ts/internet.hpp>)
 		    (include "vis_01_message.hpp"
 			     "vis_02_tsqueue.hpp")
 	
@@ -471,7 +475,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass+ (connection :template "typename T") ("public std::enable_shared_from_this<connection<T>>")
+		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			
 			(defmethod connection ()
@@ -484,26 +488,30 @@
 			   (virtual))
 			  )
 			(defmethod connect_to_server ()
-			  (declare (values bool)))
+			  (declare (values bool))
+			  (return false))
 			(defmethod disconnect ()
-			  (declare (values bool)))
+			  (declare (values bool))
+			  (return false))
 			(defmethod is_connected_p ()
 			  (declare (values bool)
-				   (const)))
+				   (const))
+			  (return false))
 
 			(defmethod send (msg)
 			  (declare (values bool)
 				   (type "const message<T>&" msg)
-				   (const)))
+				   (const))
+			  (return false))
 
 			"protected:"
 			;; each connection has a socket
-			"boost::asio::tcp::socket m_socket;"
+			"boost::asio::ip::tcp::socket m_socket;"
 			;; shared context, server uses only one
 			"boost::asio::io_context& m_asio_context;"
 			"tsqueue<message<T>> m_q_messages_out;"
 			;; input queue is owned by server or client 
-			"tsqueue<owned_message>& m_q_messages_in;"
+			;"tsqueue<owned_message>& m_q_messages_in;"
 			)
 		      )
 		     (do0
@@ -538,7 +546,7 @@
 			(defmethod client_interface ()
 			  (declare (values :constructor)
 				  
-				   (construct (m_socket m_context))
+				   (construct (m_socket m_asio_context))
 				   (virtual))
 			  )
 			(defmethod ~client_interface ()
@@ -557,12 +565,13 @@
 				(setf m_connection ;; TODO
 				      (std--make_unique<connection<T>>))
 				(let ((resolver (boost--asio--ip--tcp--resolver
-						 m_asio_context)))
-				  (setf m_endpoints (resolver.resolve
+						 m_asio_context))
+				      (endpoints (resolver.resolve
 						     host
-						     (std--to_string port)))
+						     (std--to_string port))))
+				  
 				  (m_connection->connect_to_server
-				   m_endpoints)
+				   endpoints)
 				  (setf m_thread_asio
 					(std--thread (lambda ()
 						       (declare (capture this))

@@ -18,7 +18,10 @@
 ;
 // header
 #include "vis_04_client.hpp"
- ;
+ 
+enum class CustomMsgTypes :uint32_t {
+        FireBullet,MovePlayer
+};;
 class CustomClient : public client_interface<CustomMsgTypes> {
         public:
         void FireBullet (float x, float y)  ;  

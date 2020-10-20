@@ -15,7 +15,7 @@
 // header
 template<typename T> class client_interface  {
         public:
-         client_interface ()    : m_socket(m_context){
+         client_interface ()    : m_socket(m_asio_context){
 }
          ~client_interface ()    {
                 disconnect();
@@ -24,8 +24,8 @@ template<typename T> class client_interface  {
                 try {
                                     m_connection=std::make_unique<connection<T>>();
                                     auto resolver  = boost::asio::ip::tcp::resolver(m_asio_context);
-                        m_endpoints=resolver.resolve(host, std::to_string(port));
-            m_connection->connect_to_server(m_endpoints);
+            auto endpoints  = resolver.resolve(host, std::to_string(port));
+            m_connection->connect_to_server(endpoints);
                         m_thread_asio=std::thread([this] (){
                                 m_asio_context.run();
 });

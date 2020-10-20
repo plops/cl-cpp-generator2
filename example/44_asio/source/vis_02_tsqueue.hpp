@@ -54,11 +54,6 @@ template<typename T> class tsqueue  {
         deq.pop_back();
         return el;
 }
-        T push_back (const T& item)    {
-                        auto lock  = std::scoped_lock(mux_deq);
-                        deq.emplace_back(std::move(item));
-        std::();
-}
         protected:
         std::mutex mux_deq;
         std::deque<T> deq;
