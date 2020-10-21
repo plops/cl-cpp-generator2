@@ -9,6 +9,9 @@ struct State {
   std::string _code_generation_time;
   std::string _code_repository;
   std::string _main_version;
+  std::string _code_generation_time;
+  std::string _code_repository;
+  std::string _main_version;
 };
 typedef struct State State;
 

@@ -238,6 +238,112 @@
 		    
 		      (return 0)))))
 
+    (define-module
+       `(server ((_main_version :type "std::string")
+		    (_code_repository :type "std::string")
+		    (_code_generation_time :type "std::string")
+		 )
+	      (do0
+	       
+	    
+		    (include <iostream>
+			     <chrono>
+			     <thread>)
+
+		    (include <boost/asio.hpp>
+			     <boost/asio/ts/buffer.hpp>
+			     <boost/asio/ts/internet.hpp>)
+
+
+		    (include ;"vis_00_base.hpp"
+			       "vis_01_message.hpp"
+			       "vis_02_tsqueue.hpp"
+			       "vis_03_connection.hpp"
+			       "vis_04_client.hpp"
+					;"vis_05_server.hpp"
+			       "simple_00_client.hpp"
+			       )
+		    
+		    "using namespace std::chrono_literals;"
+		    " "
+
+		    (split-header-and-code
+		     (do0
+		      "// header"
+		    
+		      " "
+		      (space enum class CustomMsgTypes ":uint32_t"
+			     (curly
+			      ServerAccept
+			      ServerDeny
+			      ServerPing
+			      MessageAll
+			      ServerMessage))
+		      )
+		     (do0
+		      "// implementation"
+		      
+		      ))
+		    
+
+		    (defclass CustomServer
+			"public server_interface<CustomMsgTypes>"
+		      "public:"
+		      (defmethod CustomServer (port)
+			(declare (values :constructor)
+				 (type uint16_t port)
+				 (construct (server_interface<CustomMsgTypes> port))))
+		      (defmethod on_client_connect (client)
+			(declare (values bool)
+				 (type connection<CustomMsgTypes> client)
+				 (virtual))
+			(let ((msg (message<CustomMsgTypes>)))
+			  (setf msg.header.id CustomMsgTypes--ServerAccept)
+			  (client->send msg)
+			  (return true)))
+		      (defmethod on_client_disconnect (client)
+			(declare (values bool)
+				 (type connection<CustomMsgTypes> client)
+				 (virtual))
+			,(logprint "removing" `((client->id))))
+		      (defmethod on_message (client msg)
+			(declare (values bool)
+				 (type message<CustomMsgTypes>& msg)
+				 (type connection<CustomMsgTypes> client)
+				 (virtual))
+			(switch msg.header.id
+			  (CustomMsgTypes--ServerPing
+			   (progn
+			     (client->send msg)
+			     ,(logprint "ping" `((client->id)))
+			     break))
+			  (CustomMsgTypes--MessageAll
+			   (progn
+			     
+			     (let ((msg (message<CustomMsgTypes>)))
+			       (setf msg.header.id CustomMsgTypes--ServerMessage)
+			       (<< msg (client->id))
+			       (message_all_clients msg client)
+			       )
+			     ,(logprint "message all" `((client->id)))			     
+			     
+			     break)))))
+		    
+		    
+		    
+		    (defun main (argc argv
+				 )
+		      (declare (type int argc)
+			       (type char** argv)
+			       (values int))
+		      (let ((server (CustomServer 60000)))
+			(server.start)
+			(while true
+			  (server.update -1 true)
+			  )
+		       )		    
+		      (return 0)))))
+
     
     
   )
