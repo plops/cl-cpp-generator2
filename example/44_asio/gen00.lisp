@@ -849,7 +849,8 @@
 			(defmethod server_interface (port)
 			  (declare (values :constructor)
 				   (type uint16_t port)
-				   (construct (m_asio_context
+				  (construct (m_asio_acceptor
+					       m_asio_context
 					       (boost--asio--ip--tcp--endpoint
 						(boost--asio--ip--tcp--v4)
 						port)))
@@ -915,7 +916,7 @@
 					   (connect_to_client n_id_counter))
 				       ,(logprint "server connection approved"
 						  `((-> (m_deq_connections.back)
-							(GetID))))
+							(get_id))))
 				       )
 				      (do0
 				       ,(logprint "server connection denied"))))))
@@ -964,12 +965,16 @@
 			(defmethod update (,(intern
 					     (string-upcase
 					      (format nil "n_max_messages=0x~x"
-							    (- (expt 2 64) 1)))))
+						      (- (expt 2 64) 1))))
+					   wait=false)
 			  (declare (type size_t ,(intern
 						  (string-upcase
 						   (format nil "n_max_messages=0x~x"
 							   (- (expt 2 64) 1)))))
+				   (type bool wait=false)
 				   )
+			  #+nil(when wait
+			    (m_q_messages_in.wait))
 			  (let ((n_message_count (size_t 0)))
 			    (while (and
 				    (< n_message_count
@@ -982,12 +987,12 @@
 			  )
 			
 			"protected:"
-			(defmethod on_client_connected (client)
+			(defmethod on_client_connect (client)
 			  (declare (type std--shared_ptr<connection<T>> client)
 				   (virtual)
 				   (values bool))
 			  (return false))
-			(defmethod on_client_disconnected (client)
+			(defmethod on_client_disconnect (client)
 			  (declare (type std--shared_ptr<connection<T>> client)
 				   (virtual)
 				   ))

@@ -16,8 +16,9 @@
 template <typename T> class server_interface {
 public:
   server_interface(uint16_t port)
-      : m_asio_context(
-            boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
+      : m_asio_acceptor(m_asio_context, boost::asio::ip::tcp::endpoint(
+                                            boost::asio::ip::tcp::v4(), port)) {
+  }
   ~server_interface() { stop(); }
   bool start() {
     try {
@@ -102,8 +103,8 @@ public:
                       << (__FILE__) << (":") << (__LINE__) << (" ")
                       << (__func__) << (" ") << ("server connection approved")
                       << (" ") << (std::setw(8))
-                      << (" m_deq_connections.back()->GetID()='")
-                      << (m_deq_connections.back()->GetID()) << ("'")
+                      << (" m_deq_connections.back()->get_id()='")
+                      << (m_deq_connections.back()->get_id()) << ("'")
                       << (std::endl) << (std::flush);
         } else {
 
@@ -153,7 +154,7 @@ public:
                               m_deq_connections.end());
     }
   }
-  void update(size_t n_max_messages = 0xffffffffffffffff) {
+  void update(size_t n_max_messages = 0xffffffffffffffff, bool wait = false) {
     auto n_message_count = size_t(0);
     while ((((n_message_count) < (n_max_messages)) &&
             (!(m_q_messages_in.empty())))) {
@@ -164,10 +165,10 @@ public:
   }
 
 protected:
-  bool on_client_connected(std::shared_ptr<connection<T>> client) {
+  bool on_client_connect(std::shared_ptr<connection<T>> client) {
     return false;
   }
-  void on_client_disconnected(std::shared_ptr<connection<T>> client) {}
+  void on_client_disconnect(std::shared_ptr<connection<T>> client) {}
   void on_message(std::shared_ptr<connection<T>> client, message<T> &msg) {}
   tsqueue<owned_message<T>> m_q_messages_in;
   std::deque<std::shared_ptr<connection<T>>> m_deq_connections;

@@ -307,11 +307,11 @@
 				 (virtual))
 			,(logprint "removing" `((client->get_id))))
 		      (defmethod on_message (client msg)
-			(declare (values bool)
+			(declare 
 				 (type message<CustomMsgTypes>& msg)
 				 (type std--shared_ptr<connection<CustomMsgTypes>> client)
 				 (virtual))
-			(switch msg.header.id
+			(case msg.header.id
 			  (CustomMsgTypes--ServerPing
 			   (progn
 			     (client->send msg)
@@ -327,6 +327,10 @@
 			       )
 			     ,(logprint "message all" `((client->get_id)))			     
 			     
+			     break))
+			  (t
+			   (progn
+			     ,(logprint "unsupported message")
 			     break)))))
 		    
 		    

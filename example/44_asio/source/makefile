@@ -6,7 +6,7 @@ all: vis
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
 CXXFLAGS=-O2 \
 -std=gnu++17 \
--Wall -Wextra -Werror \
+-Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \
 -Wno-error=unused-parameter \
