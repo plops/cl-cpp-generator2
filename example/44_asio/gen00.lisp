@@ -843,7 +843,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass+ (client_interface :template "typename T") ()
+		      (defclass+ (server_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod server_interface (port)
@@ -851,7 +851,7 @@
 				   (type uint16_t port)
 				   (construct (m_asio_context
 					       (boost--asio--ip--tcp--endpoint
-						(boost--asio--ip--tpc--v4)
+						(boost--asio--ip--tcp--v4)
 						port)))
 				   (virtual))
 			  )

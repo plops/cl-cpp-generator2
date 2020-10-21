@@ -239,9 +239,9 @@
 		      (return 0)))))
 
     (define-module
-       `(server ((_main_version :type "std::string")
-		    (_code_repository :type "std::string")
-		    (_code_generation_time :type "std::string")
+       `(server (;;(_main_version :type "std::string")
+		 ;   (_code_repository :type "std::string")
+		 ;   (_code_generation_time :type "std::string")
 		 )
 	      (do0
 	       
@@ -259,9 +259,9 @@
 			       "vis_01_message.hpp"
 			       "vis_02_tsqueue.hpp"
 			       "vis_03_connection.hpp"
-			       "vis_04_client.hpp"
-					;"vis_05_server.hpp"
-			       "simple_00_client.hpp"
+			       ;"vis_04_client.hpp"
+			       "vis_05_server.hpp"
+			       "simple_01_server.hpp"
 			       )
 		    
 		    "using namespace std::chrono_literals;"

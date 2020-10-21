@@ -13,11 +13,11 @@
 #include "vis_03_connection.hpp"
 ;
 // header
-template <typename T> class client_interface {
+template <typename T> class server_interface {
 public:
   server_interface(uint16_t port)
       : m_asio_context(
-            boost::asio::ip::tcp::endpoint(boost::asio::ip::tpc::v4(), port)) {}
+            boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
   ~server_interface() { stop(); }
   bool start() {
     try {
