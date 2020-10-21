@@ -21,7 +21,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
         enum class owner {
                 server, client
 };
-         connection (owner parent, boost::asio::io_context& asio_context, boost::asio::ip::tcp::socket socket, tsqueue<owned_message<T>>& q_in)    : m_asio_context(asio_context), m_socket(std::move(socket)), m_q_messages_in(q_in), m_owner_type(parent){
+         connection (owner parent, boost::asio::io_context& asio_context, boost::asio::ip::tcp::socket socket, tsqueue<owned_message<T>>& q_in)    : m_socket(std::move(socket)), m_asio_context(asio_context), m_q_messages_in(q_in), m_owner_type(parent){
 }
          ~connection ()    {
 }
@@ -53,7 +53,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
 }
         void send (const message<T>& msg) const   {
                 boost::asio::post(m_asio_context, [this,msg] (){
-                                    const auto idle  = m_q_messages_out.empty();
+                                    auto idle  = m_q_messages_out.empty();
             m_q_messages_out.push_back(msg);
             if ( idle ) {
                                                 write_header();

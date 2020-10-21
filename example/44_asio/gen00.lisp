@@ -416,12 +416,25 @@
 							 (deq.pop_back)
 							(return el)))
 				  
-				   #+nil (push_back "T"
+				  (push_back void
 					    :params ((item "const T&"))
 					    :code (do0
 						   (deq.emplace_back
 						    (std--move item))
-						   (std--))))
+						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
+						     (cv_blocking.notify_one))))
+				  (push_front void
+					    :params ((item "const T&"))
+					    :code (do0
+						   (deq.emplace_front
+						    (std--move item))
+						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
+						     (cv_blocking.notify_one))))
+				  (wait void
+					    :params ((item "const T&"))
+					    :code (while (empty)
+						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
+						     (cv_blocking.wait ul)))))
 				collect
 				(destructuring-bind (name type &key params code)
 				    e
@@ -438,6 +451,8 @@
 			
 			"protected:"
 			"std::mutex mux_deq;"
+			"std::mutex mux_blocking;"
+			"std::condition_variable cv_blocking;"
 			"std::deque<T> deq;")
 		      )
 		     (do0
@@ -481,8 +496,9 @@
 				   (type boost--asio--ip--tcp--socket socket)
 				   (type tsqueue<owned_message<T>>& q_in)
 				   (virtual)
-				   (construct (m_asio_context asio_context)
+				   (construct 
 					      (m_socket (std--move socket))
+					      (m_asio_context asio_context)
 					      (m_q_messages_in q_in)
 					      (m_owner_type parent)
 					      
@@ -537,7 +553,7 @@
 			     ;; if message is currently being sent
 			     ;; dont add second write_header work
 			     (let ((idle (m_q_messages_out.empty)))
-			       (declare (type "const auto" idle))
+			       ;(declare (type "const auto" idle))
 			       (m_q_messages_out.push_back msg)
 			       (when idle
 				 (write_header))))))
