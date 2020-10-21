@@ -149,7 +149,8 @@
 			       "vis_02_tsqueue.hpp"
 			       "vis_03_connection.hpp"
 			       "vis_04_client.hpp"
-			       ;"vis_05_server.hpp"
+					;"vis_05_server.hpp"
+			       "simple_00_client.hpp"
 			       )
 		    
 		    "using namespace std::chrono_literals;"
@@ -165,7 +166,7 @@
 			      ServerAccept
 			      ServerDeny
 			      ServerPing
-			      MessagesAll
+			      MessageAll
 			      ServerMessage))
 		      )
 		     (do0
@@ -229,7 +230,10 @@
 				     (declare (type uint32_t from_client_id))
 				     (>> msg from_client_id)
 				     ,(logprint "hello" `(from_client_id)))
-				  break))
+				   break))
+				(t (progn
+				     ;,(logprint "unsupported packet" `(msg.header.id))
+				     break))
 				)))))
 		    
 		      (return 0)))))
@@ -275,7 +279,7 @@
 			 :header-only t
 			 )
 		 (let* ((file (format nil
-				      "vis_~2,'0d_~a"
+				      "simple_~2,'0d_~a"
 				      i name
 				      ))
 			(file-h (string-upcase (format nil "~a_H" file))))

@@ -527,7 +527,7 @@
 			  (return (m_socket.is_open)))
 
 			(defmethod send (msg)
-			  (declare (values bool)
+			  (declare ;(values bool)
 				   (type "const message<T>&" msg)
 				   (const))
 			  (boost--asio--post
@@ -620,11 +620,10 @@
 				       ;; if q not empty we need to
 				       ;; send more messages by
 				       ;; issueing the next header
-				       (unless (m_q_messages.empty)
+				       (unless (m_q_messages_out.empty)
 					 (write_header))))))))
 			  )
 			(defmethod write_body ()
-			  (defmethod write_header ()
 			  (boost--asio--async_write
 			   m_socket
 			   (boost--asio--buffer
@@ -649,7 +648,7 @@
 				  (m_q_messages_out.pop_front)
 				  (unless (m_q_messages_out.empy)
 				    (write_header))))))
-			  ))
+			  )
 
 			(defmethod add_to_incoming_message_queue ()
 			  (if (== owner--server
@@ -672,7 +671,7 @@
 
 			"message<T> m_msg_temporary_in;"
 			;; input queue is owned by server or client 
-			"tsqueue<owned_message>& m_q_messages_in;"
+			"tsqueue<owned_message<T>>& m_q_messages_in;"
 			"owner m_owner_type = owner::server;"
 			"uint32_t id=0;"
 			

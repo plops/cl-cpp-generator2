@@ -51,7 +51,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
         bool is_connected () const   {
                 return m_socket.is_open();
 }
-        bool send (const message<T>& msg) const   {
+        void send (const message<T>& msg) const   {
                 boost::asio::post(m_asio_context, [this,msg] (){
                                     auto write_message  = !(m_q_messages_out.empty());
             m_q_messages_out.push_back(msg);
@@ -99,7 +99,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
                                         write_body();
 } else {
                                                             m_q_messages_out.pop_front();
-                    if ( !(m_q_messages.empty()) ) {
+                    if ( !(m_q_messages_out.empty()) ) {
                                                                         write_header();
 }
 }
@@ -107,20 +107,18 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
 });
 }
         void write_body ()    {
-                void write_header ()    {
-                        boost::asio::async_write(m_socket, boost::asio::buffer(m_q_messages_out.front().body.data(), m_q_messages_out.front().body.size()), [this] (std::error_code ec, std::size_t length){
-                                if ( ec ) {
-                                                                                 
-                                        (std::cout)<<(std::setw(10))<<(std::chrono::high_resolution_clock::now().time_since_epoch().count())<<(" ")<<(std::this_thread::get_id())<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" ")<<("write body fail")<<(" ")<<(std::setw(8))<<(" id='")<<(id)<<("'")<<(std::endl)<<(std::flush);
-                    m_socket.close();
+                boost::asio::async_write(m_socket, boost::asio::buffer(m_q_messages_out.front().body.data(), m_q_messages_out.front().body.size()), [this] (std::error_code ec, std::size_t length){
+                        if ( ec ) {
+                                                                 
+                                (std::cout)<<(std::setw(10))<<(std::chrono::high_resolution_clock::now().time_since_epoch().count())<<(" ")<<(std::this_thread::get_id())<<(" ")<<(__FILE__)<<(":")<<(__LINE__)<<(" ")<<(__func__)<<(" ")<<("write body fail")<<(" ")<<(std::setw(8))<<(" id='")<<(id)<<("'")<<(std::endl)<<(std::flush);
+                m_socket.close();
 } else {
-                                                            m_q_messages_out.pop_front();
-                    if ( !(m_q_messages_out.empy()) ) {
-                                                                        write_header();
+                                                m_q_messages_out.pop_front();
+                if ( !(m_q_messages_out.empy()) ) {
+                                                            write_header();
 }
 }
 });
-}
 }
         void add_to_incoming_message_queue ()    {
                 if ( (owner::server)==(m_owner_type) ) {
@@ -135,7 +133,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
         boost::asio::io_context& m_asio_context;
         tsqueue<message<T>> m_q_messages_out;
         message<T> m_msg_temporary_in;
-        tsqueue<owned_message>& m_q_messages_in;
+        tsqueue<owned_message<T>>& m_q_messages_in;
         owner m_owner_type = owner::server;
         uint32_t id=0;
 };;
