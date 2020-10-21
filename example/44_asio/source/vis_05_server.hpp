@@ -90,7 +90,7 @@ public:
         auto newconn = std::make_shared<connection<T>>(
             connection<T>::owner::server, m_asio_context, std::move(socket),
             m_q_messages_in);
-        if (on_client_connect(newconn)) {
+        if (!(on_client_connect(newconn))) {
           m_deq_connections.push_back(std::move(newconn));
           (n_id_counter)++;
           m_deq_connections.back()->connect_to_client(n_id_counter);
