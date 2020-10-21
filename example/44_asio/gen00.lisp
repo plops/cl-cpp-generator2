@@ -536,9 +536,10 @@
 			     (declare (capture this msg))
 			     ;; if message is currently being sent
 			     ;; dont add second write_header work
-			     (let ((write_message (not (m_q_messages_out.empty))))
+			     (let ((idle (m_q_messages_out.empty)))
+			       (declare (type "const auto" idle))
 			       (m_q_messages_out.push_back msg)
-			       (unless write_message
+			       (when idle
 				 (write_header))))))
 			"private:"
 			;; async

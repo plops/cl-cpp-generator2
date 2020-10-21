@@ -53,9 +53,9 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
 }
         void send (const message<T>& msg) const   {
                 boost::asio::post(m_asio_context, [this,msg] (){
-                                    auto write_message  = !(m_q_messages_out.empty());
+                                    const auto idle  = m_q_messages_out.empty();
             m_q_messages_out.push_back(msg);
-            if ( !(write_message) ) {
+            if ( idle ) {
                                                 write_header();
 }
 });
