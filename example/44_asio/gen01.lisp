@@ -285,7 +285,7 @@
 		      
 		      ))
 		    
-
+ 
 		    (defclass CustomServer
 			"public server_interface<CustomMsgTypes>"
 		      "public:"
@@ -295,37 +295,37 @@
 				 (construct (server_interface<CustomMsgTypes> port))))
 		      (defmethod on_client_connect (client)
 			(declare (values bool)
-				 (type connection<CustomMsgTypes> client)
+				 (type std--shared_ptr<connection<CustomMsgTypes>> client)
 				 (virtual))
 			(let ((msg (message<CustomMsgTypes>)))
 			  (setf msg.header.id CustomMsgTypes--ServerAccept)
 			  (client->send msg)
 			  (return true)))
 		      (defmethod on_client_disconnect (client)
-			(declare (values bool)
-				 (type connection<CustomMsgTypes> client)
+			(declare 
+				 (type std--shared_ptr<connection<CustomMsgTypes>> client)
 				 (virtual))
-			,(logprint "removing" `((client->id))))
+			,(logprint "removing" `((client->get_id))))
 		      (defmethod on_message (client msg)
 			(declare (values bool)
 				 (type message<CustomMsgTypes>& msg)
-				 (type connection<CustomMsgTypes> client)
+				 (type std--shared_ptr<connection<CustomMsgTypes>> client)
 				 (virtual))
 			(switch msg.header.id
 			  (CustomMsgTypes--ServerPing
 			   (progn
 			     (client->send msg)
-			     ,(logprint "ping" `((client->id)))
+			     ,(logprint "ping" `((client->get_id)))
 			     break))
 			  (CustomMsgTypes--MessageAll
 			   (progn
 			     
 			     (let ((msg (message<CustomMsgTypes>)))
 			       (setf msg.header.id CustomMsgTypes--ServerMessage)
-			       (<< msg (client->id))
+			       (<< msg (client->get_id))
 			       (message_all_clients msg client)
 			       )
-			     ,(logprint "message all" `((client->id)))			     
+			     ,(logprint "message all" `((client->get_id)))			     
 			     
 			     break)))))
 		    

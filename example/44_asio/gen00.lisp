@@ -958,7 +958,7 @@
 			      (m_deq_connections.erase
 			       (std--remove (m_deq_connections.begin)
 					    (m_deq_connections.end)
-					    client)
+					    nullptr)
 			       (m_deq_connections.end)))))
 
 			(defmethod update (,(intern

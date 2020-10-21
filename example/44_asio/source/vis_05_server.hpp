@@ -149,7 +149,7 @@ public:
     }
     if (invalid_client_exists) {
       m_deq_connections.erase(std::remove(m_deq_connections.begin(),
-                                          m_deq_connections.end(), client),
+                                          m_deq_connections.end(), nullptr),
                               m_deq_connections.end());
     }
   }
