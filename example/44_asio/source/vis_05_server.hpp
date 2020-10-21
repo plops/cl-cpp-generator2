@@ -155,6 +155,9 @@ public:
     }
   }
   void update(size_t n_max_messages = 0xffffffffffffffff, bool wait = false) {
+    if (wait) {
+      m_q_messages_in.wait_while_empty();
+    }
     auto n_message_count = size_t(0);
     while ((((n_message_count) < (n_max_messages)) &&
             (!(m_q_messages_in.empty())))) {

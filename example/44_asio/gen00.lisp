@@ -435,7 +435,7 @@
 						    (std--move item))
 						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
 						     (cv_blocking.notify_one))))
-				  (wait void
+				  (wait_while_empty void
 					    :params ((item "const T&"))
 					    :code (while (empty)
 						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
@@ -973,8 +973,8 @@
 							   (- (expt 2 64) 1)))))
 				   (type bool wait=false)
 				   )
-			  #+nil(when wait
-			    (m_q_messages_in.wait))
+			  (when wait
+			    (m_q_messages_in.wait_while_empty))
 			  (let ((n_message_count (size_t 0)))
 			    (while (and
 				    (< n_message_count
