@@ -25,12 +25,18 @@ CFILES:=simple_00_client.cpp
 #$(shell find simple*.| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
-all: vis
+all: server client
 
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 vis: $(OBJ)
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+server: simple_01_server.o
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+client: simple_00_client.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
