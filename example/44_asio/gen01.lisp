@@ -300,6 +300,7 @@
 			(let ((msg (message<CustomMsgTypes>)))
 			  (setf msg.header.id CustomMsgTypes--ServerAccept)
 			  (client->send msg)
+			  ,(logprint "connect" `((client->get_id)))
 			  (return true)))
 		      (defmethod on_client_disconnect (client)
 			(declare 
