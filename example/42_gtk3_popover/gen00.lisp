@@ -17,7 +17,7 @@
 				 '()))
 
 (progn
-  (defparameter *source-dir* #P"example/41_gtk3_popover/source/")
+  (defparameter *source-dir* #P"example/42_gtk3_popover/source/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"

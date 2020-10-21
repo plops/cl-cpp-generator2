@@ -1,2 +1,9 @@
 - https://www.youtube.com/watch?v=2hNdkYInj4g
 
+#+BEGIN_EXAMPLE
+on arch linux
+sudo pacman -S boost
+but -std=gnu++17
+asio breaks with c++2a
+https://github.com/boostorg/asio/issues/312
+#+END_EXAMPLE
