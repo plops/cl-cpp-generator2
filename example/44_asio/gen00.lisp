@@ -1044,10 +1044,11 @@
 				      "vis_~2,'0d_~a"
 				      i name
 				      ))
-			(file-h (string-upcase (format nil "~a_H" file))))
-		   (with-open-file (sh (asdf:system-relative-pathname 'cl-cpp-generator2
+			(file-h (string-upcase (format nil "~a_H" file)))
+			(fn-h (asdf:system-relative-pathname 'cl-cpp-generator2
 								      (format nil "~a/~a.hpp"
-									      *source-dir* file))
+									      *source-dir* file))))
+		   (with-open-file (sh fn-h
 				       :direction :output
 				       :if-exists :supersede
 				       :if-does-not-exist :create)
@@ -1064,10 +1065,16 @@
 			     :header-only t
 			     )
 		     (format sh "#endif")
-		     ))
+		     )
+		   (sb-ext:run-program "/usr/bin/clang-format"
+				       (list "-i"  (namestring fn-h)
+				   
+				   ))
+		   )
+		 
 
 		 )
-
+	       
 	       #+nil (format t "emit cpp file for ~a~%" name)
 	       (write-source (asdf:system-relative-pathname
 			      'cl-cpp-generator2

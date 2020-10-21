@@ -4,8 +4,8 @@
 ;
 #include "globals.h"
 ;
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <thread>
 ;
 #include <boost/asio.hpp>
@@ -18,8 +18,15 @@
 ;
 // header
 #include "vis_04_client.hpp"
- 
-enum class CustomMsgTypes :uint32_t {ServerAccept, ServerDeny, ServerPing, MessagesAll, ServerMessage};;
-void grab_some_data (boost::asio::ip::tcp::socket& socket)  ;  
-int main (int argc, char** argv)  ;  
+
+enum class CustomMsgTypes : uint32_t {
+  ServerAccept,
+  ServerDeny,
+  ServerPing,
+  MessagesAll,
+  ServerMessage
+};
+;
+void grab_some_data(boost::asio::ip::tcp::socket &socket);
+int main(int argc, char **argv);
 #endif
