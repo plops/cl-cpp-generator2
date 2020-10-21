@@ -401,7 +401,7 @@
 			  (declare (virtual)
 				   (values :constructor))
 			  (clear))
-			(defmethod empty ()
+			#+nil(defmethod empty ()
 				    (declare (values bool)
 					     (const))
 				    (let ((lock (std--scoped_lock mux_deq)))
@@ -409,7 +409,7 @@
 			,@(loop for e in
 				`((front "const T&")
 				  (back "const T&")
-				  ;(empty bool)
+				  (empty bool)
 				  ;(size size_t)
 				  (clear void)
 				  (pop_front "T" :code (let ((el (std--move
@@ -549,8 +549,8 @@
 
 			(defmethod send (msg)
 			  (declare ;(values bool)
-			   (type ;"const message<T>&"
-			    "message<T>&"
+			   (type "const message<T>&"
+			    ;"message<T>&"
 				 msg)
 				   ;(const)
 			   )
@@ -588,7 +588,7 @@
 				  (if (< 0 m_msg_temporary_in.header.size)
 				      (do0
 				       (m_msg_temporary_in.body.resize
-					m_msg_temporary_in.size)
+					(m_msg_temporary_in.size))
 				       (read_body)
 				       )
 				      (do0
@@ -671,7 +671,7 @@
 				  (m_socket.close))
 				 (do0
 				  (m_q_messages_out.pop_front)
-				  (unless (m_q_messages_out.empy)
+				  (unless (m_q_messages_out.empty)
 				    (write_header))))))
 			  )
 
@@ -795,8 +795,8 @@
 
 
 			(defmethod send (msg)
-			  (declare (type ;"const message<T>&"
-				    "message<T>&"
+			  (declare (type "const message<T>&"
+				    ;"message<T>&"
 					 msg))
 			  (when (is_connected)
 			    (m_connection->send msg)))

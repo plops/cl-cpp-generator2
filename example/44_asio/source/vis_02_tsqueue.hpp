@@ -20,10 +20,6 @@ public:
   tsqueue() = default;
   tsqueue(const tsqueue<T> &) = delete;
   ~tsqueue() { clear(); }
-  bool empty() const {
-    auto lock = std::scoped_lock(mux_deq);
-    return deq.empty();
-  }
   const T &front() {
     auto lock = std::scoped_lock(mux_deq);
     return deq.front();
@@ -31,6 +27,10 @@ public:
   const T &back() {
     auto lock = std::scoped_lock(mux_deq);
     return deq.back();
+  }
+  bool empty() {
+    auto lock = std::scoped_lock(mux_deq);
+    return deq.empty();
   }
   void clear() {
     auto lock = std::scoped_lock(mux_deq);

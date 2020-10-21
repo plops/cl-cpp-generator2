@@ -49,7 +49,7 @@ public:
   }
   bool disconnect() { return false; }
   bool is_connected() const { return m_socket.is_open(); }
-  void send(message<T> &msg) {
+  void send(const message<T> &msg) {
     boost::asio::post(m_asio_context, [this, msg]() {
       auto idle = m_q_messages_out.empty();
       m_q_messages_out.push_back(msg);
@@ -80,7 +80,7 @@ private:
             m_socket.close();
           } else {
             if ((0) < (m_msg_temporary_in.header.size)) {
-              m_msg_temporary_in.body.resize(m_msg_temporary_in.size);
+              m_msg_temporary_in.body.resize(m_msg_temporary_in.size());
               read_body();
             } else {
               add_to_incoming_message_queue();
@@ -161,7 +161,7 @@ private:
             m_socket.close();
           } else {
             m_q_messages_out.pop_front();
-            if (!(m_q_messages_out.empy())) {
+            if (!(m_q_messages_out.empty())) {
               write_header();
             }
           }
