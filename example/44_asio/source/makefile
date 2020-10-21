@@ -21,7 +21,8 @@ LDFLAGS= \
 -Wl,--print-gc-sections \
 -lpthread
 
-CFILES:=$(shell find .| grep .cpp$)
+CFILES:=simple_00_client.cpp
+#$(shell find simple*.| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
 all: vis

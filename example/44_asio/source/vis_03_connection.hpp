@@ -136,7 +136,7 @@ template<typename T> class connection : public std::enable_shared_from_this<conn
         tsqueue<message<T>> m_q_messages_out;
         message<T> m_msg_temporary_in;
         tsqueue<owned_message>& m_q_messages_in;
-        owner m_owner_type = owner::server
+        owner m_owner_type = owner::server;
         uint32_t id=0;
 };;
 #endif

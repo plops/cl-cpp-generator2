@@ -16,12 +16,6 @@ using namespace std::chrono_literals;
 // implementation
 #include "vis_00_base.hpp"
 std::vector<char> buffer(20 * 1024);
-void CustomClient::FireBullet(float x, float y) {
-  auto msg = message<CustomMsgTypes>();
-  msg.header.id = CustomMsgTypes::FireBullet;
-  (msg) << (x) << (y);
-  send(msg);
-}
 void grab_some_data(boost::asio::ip::tcp::socket &socket) {
   socket.async_read_some(boost::asio::buffer(buffer.data(), buffer.size()),
                          [&](std::error_code ec, std::size_t length) {
@@ -55,8 +49,5 @@ int main(int argc, char **argv) {
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
-  auto c = CustomClient();
-  c.connect("community.onelonecoder.com", 60000);
-  c.FireBullet((2.0f), (5.0f));
   return 0;
 }

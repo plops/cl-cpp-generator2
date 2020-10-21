@@ -173,13 +173,6 @@
 		    "std::vector<char> buffer(20*1024);"
 
 
-		    
-
-		    (defclass CustomClient
-			"public client_interface<CustomMsgTypes>"
-		      "public:"
-		      )
-		    
 		    (defun grab_some_data (socket)
 		      (declare (type "boost::asio::ip::tcp::socket&" socket))
 		      (socket.async_read_some
@@ -206,11 +199,8 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
-		      (let ((c (CustomClient)))
-			(c.connect (string "community.onelonecoder.com")
-				   60000)
-			(c.FireBullet 2s0 5s0))
-		     #+nil (let ((msg (message<CustomMsgTypes>)))
+	       
+		      #+nil (let ((msg (message<CustomMsgTypes>)))
 			(setf msg.header.id CustomMsgTypes--FireBullet)
 			"int a=1;"
 			"bool b = true;"
@@ -683,7 +673,7 @@
 			"message<T> m_msg_temporary_in;"
 			;; input queue is owned by server or client 
 			"tsqueue<owned_message>& m_q_messages_in;"
-			"owner m_owner_type = owner::server"
+			"owner m_owner_type = owner::server;"
 			"uint32_t id=0;"
 			
 			)
