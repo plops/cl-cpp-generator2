@@ -340,6 +340,7 @@
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      ,(logprint "start" `(argc (aref argv 0)))
 		      (let ((server (CustomServer 60000)))
 			(server.start)
 			(while true

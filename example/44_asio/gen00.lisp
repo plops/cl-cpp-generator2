@@ -436,7 +436,7 @@
 						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
 						     (cv_blocking.notify_one))))
 				  (wait_while_empty void
-					    :params ((item "const T&"))
+					    :params ()
 					    :code (while (empty)
 						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
 						     (cv_blocking.wait ul)))))

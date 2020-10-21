@@ -60,7 +60,7 @@ public:
     auto ul = std::unique_lock<std::mutex>(mux_blocking);
     cv_blocking.notify_one();
   }
-  void wait_while_empty(const T &item) {
+  void wait_while_empty() {
     auto lock = std::scoped_lock(mux_deq);
     while (empty()) {
       auto ul = std::unique_lock<std::mutex>(mux_blocking);
