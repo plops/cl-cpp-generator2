@@ -401,11 +401,16 @@
 			  (declare (virtual)
 				   (values :constructor))
 			  (clear))
+			(defmethod empty ()
+				    (declare (values bool)
+					     (const))
+				    (let ((lock (std--scoped_lock mux_deq)))
+				      (return (dot deq (empty)))))
 			,@(loop for e in
 				`((front "const T&")
 				  (back "const T&")
-				  (empty bool)
-				  (size size_t)
+				  ;(empty bool)
+				  ;(size size_t)
 				  (clear void)
 				  (pop_front "T" :code (let ((el (std--move
 								  (deq.front))))
@@ -544,8 +549,11 @@
 
 			(defmethod send (msg)
 			  (declare ;(values bool)
-				   (type "const message<T>&" msg)
-				   (const))
+			   (type ;"const message<T>&"
+			    "message<T>&"
+				 msg)
+				   ;(const)
+			   )
 			  (boost--asio--post
 			   m_asio_context
 			   (lambda ()
@@ -787,7 +795,9 @@
 
 
 			(defmethod send (msg)
-			  (declare (type "const message<T>&" msg))
+			  (declare (type ;"const message<T>&"
+				    "message<T>&"
+					 msg))
 			  (when (is_connected)
 			    (m_connection->send msg)))
 			(defmethod incoming ()

@@ -58,7 +58,7 @@ public:
       return false;
     }
   }
-  void send(const message<T> &msg) {
+  void send(message<T> &msg) {
     if (is_connected()) {
       m_connection->send(msg);
     }

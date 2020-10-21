@@ -49,7 +49,7 @@ public:
   }
   bool disconnect() { return false; }
   bool is_connected() const { return m_socket.is_open(); }
-  void send(const message<T> &msg) const {
+  void send(message<T> &msg) {
     boost::asio::post(m_asio_context, [this, msg]() {
       auto idle = m_q_messages_out.empty();
       m_q_messages_out.push_back(msg);
