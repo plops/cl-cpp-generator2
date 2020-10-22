@@ -14,10 +14,11 @@ using namespace std::chrono_literals;
 
 // implementation
 #include "simple_01_server.hpp"
-CustomServer::CustomServer(uint16_t port)
-    : server_interface<CustomMsgTypes>(port) {}
-bool CustomServer::on_client_connect(
-    std::shared_ptr<connection<CustomMsgTypes>> client) {
+*721 *
+    CustomServer::CustomServer(uint16_t port)
+    : server_interface<CustomMsgTypes>(port){} * 721 *
+      virtual bool CustomServer::on_client_connect(
+          std::shared_ptr<connection<CustomMsgTypes>> client) {
 
   (std::cout)
       << (std::setw(10))
@@ -38,8 +39,8 @@ bool CustomServer::on_client_connect(
       << ("'") << (std::endl) << (std::flush);
   return true;
 }
-void CustomServer::on_client_disconnect(
-    std::shared_ptr<connection<CustomMsgTypes>> client) {
+*721 * virtual void CustomServer::on_client_disconnect(
+           std::shared_ptr<connection<CustomMsgTypes>> client) {
 
   (std::cout)
       << (std::setw(10))
@@ -49,9 +50,10 @@ void CustomServer::on_client_disconnect(
       << (std::setw(8)) << (" client->get_id()='") << (client->get_id())
       << ("'") << (std::endl) << (std::flush);
 }
-void CustomServer::on_message(
-    std::shared_ptr<connection<CustomMsgTypes>> client,
-    message<CustomMsgTypes> &msg) {
+*721 *
+    virtual void
+    CustomServer::on_message(std::shared_ptr<connection<CustomMsgTypes>> client,
+                             message<CustomMsgTypes> &msg) {
   switch (msg.header.id) {
   case CustomMsgTypes::ServerPing: {
     client->send(msg);

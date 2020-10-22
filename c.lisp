@@ -348,8 +348,13 @@ entry return-values contains a list of return values. currently supports type, v
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
-			     (not in-class-p)
-			     header-only
+			     (not
+				       (eq in-class-p 'defclass-cpp))
+			    #+nil (or 
+				 ;(eq in-class-p 'defclass+)
+				 ;(eq in-class-p 'defclass-hpp)
+				 )
+			     
 			    ;(or in-class-p header-only)
 			     )
 		    ;(format t "virtual defmethod~%")
@@ -503,7 +508,7 @@ entry return-values contains a list of return values. currently supports type, v
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil) (in-class nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
 					;(format t "~a~%" code)
-    (format t "*502* header-only=~a~%" header-only)
+    ;(format t "header-only=~a~%" header-only)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
 			 (hook-class hook-defclass) (in-class-p in-class))
 	     "change the indentation level. this is used in do"
@@ -657,7 +662,7 @@ entry return-values contains a list of return values. currently supports type, v
 				     :hook-fun nil
 				     :hook-class hook-defclass
 				     :header-only-p nil
-				     :in-class-p t))))
+				     :in-class-p 'defclass+))))
 		   )
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
@@ -670,7 +675,7 @@ entry return-values contains a list of return values. currently supports type, v
 			(destructuring-bind (name parents &rest body) (cdr code)
 			  (let ((class-name (if (listp name)
 						(progn
-						  (format t "template-class: ~a~%" name)
+						  ;(format t "template-class: ~a~%" name)
 						  (car name))
 						name))
 				(class-template nil)
@@ -700,7 +705,8 @@ entry return-values contains a list of return values. currently supports type, v
 							     :hook-fun nil
 							     :hook-class hook-defclass
 							     :header-only-p t
-							     :in-class-p nil)))
+							     ;:in-class-p 'defclass-cpp
+							     )))
 				      " ")
 				    (progn
 				      ;; only create function definitions of the class
@@ -712,10 +718,13 @@ entry return-values contains a list of return values. currently supports type, v
 					    (when (and (listp e)
 						       (or (eq (car e) 'defmethod)
 							   (eq (car e) 'defmethod*)))
-					      (format s "~@[template< ~a > ~]~a" class-template (emit e :class
-												      (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
-													:header-only-p nil
-													:in-class-p nil))))))))))))
+					      (format s "*721*~@[template< ~a > ~]~a"
+						      class-template
+						      (emit e
+							    :class
+							    (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
+							    :header-only-p nil
+							    :in-class-p 'defclass-cpp))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod

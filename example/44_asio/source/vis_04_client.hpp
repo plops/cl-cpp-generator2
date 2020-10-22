@@ -16,7 +16,7 @@
 template <typename T> class client_interface {
 public:
   client_interface() : m_socket(m_asio_context) {}
-  ~client_interface() { disconnect(); }
+  virtual ~client_interface() { disconnect(); }
   bool connect(const std::string &host, const uint16_t port) {
     try {
       auto resolver = boost::asio::ip::tcp::resolver(m_asio_context);

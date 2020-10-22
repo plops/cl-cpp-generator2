@@ -14,14 +14,14 @@ using namespace std::chrono_literals;
 
 // implementation
 #include "simple_00_client.hpp"
-void CustomClient::ping_server() {
+*721 * void CustomClient::ping_server() {
   auto msg = message<CustomMsgTypes>();
   msg.header.id = CustomMsgTypes::ServerPing;
   auto now = std::chrono::system_clock::now();
   (msg) << (now);
   send(msg);
 }
-void CustomClient::message_all() {
+*721 * void CustomClient::message_all() {
   auto msg = message<CustomMsgTypes>();
   msg.header.id = CustomMsgTypes::MessageAll;
   send(msg);
