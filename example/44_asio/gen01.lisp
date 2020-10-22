@@ -126,7 +126,13 @@
   (defun g (arg)
     `(dot state ,arg))
 
-  (let*  ()
+  (let*  ((custom-msg `(space enum class CustomMsgTypes ":uint32_t"
+			     (curly
+			      ServerAccept
+			      ServerDeny
+			      ServerPing
+			      MessageAll
+			      ServerMessage))))
     (define-module
        `(client ((_main_version :type "std::string")
 		    (_code_repository :type "std::string")
@@ -161,13 +167,7 @@
 			       
 			       )
 		      " "
-		      (space enum class CustomMsgTypes ":uint32_t"
-			     (curly
-			      ServerAccept
-			      ServerDeny
-			      ServerPing
-			      MessageAll
-			      ServerMessage))
+		      ,custom-msg
 		      )
 		     (do0
 		      "// implementation"
@@ -201,41 +201,46 @@
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
 		      (let ((c (CustomClient)))
+			,(logprint "connect")
 			(c.connect (string "127.0.0.1")
 				   60000)
-			(c.ping_server)
-			(when (c.is_connected)
-			  (unless (dot c
-				       (incoming)
-				       (empty))
-			    (let ((msg (dot c (incoming) (pop_front) msg)))
-			      (case msg.header.id
-				(CustomMsgTypes--ServerAccept
-				 (progn
-				   ,(logprint "server accepted connection")
-				   break)
-				 )
-				(CustomMsgTypes--ServerPing
-				 (progn
-				  (let ((now (std--chrono--system_clock--now))
-					(then now))
-				    (>> msg then)
-				    (let ((duration (dot (std--chrono--duration<double> (- now then))
-							 (count))))
-				      ,(logprint "ping" `(duration)))
-				    break)))
-				(CustomMsgTypes--ServerMessage
-				 (progn
-				   (let ((from_client_id 0))
-				     (declare (type uint32_t from_client_id))
-				     (>> msg from_client_id)
-				     ,(logprint "hello" `(from_client_id)))
-				   break))
-				(t (progn
-				     ;,(logprint "unsupported packet" `(msg.header.id))
-				     break))
-				)))))
-		    
+			;,(logprint "ping")
+
+			(while true
+			 (when (c.is_connected)
+			  
+			   (c.ping_server)
+			   (unless (dot c
+					(incoming)
+					(empty))
+			     (let ((msg (dot c (incoming) (pop_front) msg)))
+			       (case msg.header.id
+				 (CustomMsgTypes--ServerAccept
+				  (progn
+				    ,(logprint "server accepted connection")
+				    break)
+				  )
+				 (CustomMsgTypes--ServerPing
+				  (progn
+				    (let ((now (std--chrono--system_clock--now))
+					  (then now))
+				      (>> msg then)
+				      (let ((duration (dot (std--chrono--duration<double> (- now then))
+							   (count))))
+					,(logprint "ping" `(duration)))
+				      break)))
+				 (CustomMsgTypes--ServerMessage
+				  (progn
+				    (let ((from_client_id 0))
+				      (declare (type uint32_t from_client_id))
+				      (>> msg from_client_id)
+				      ,(logprint "hello" `(from_client_id)))
+				    break))
+				 (t (progn
+				      ,(logprint "unsupported packet" )
+				      break))
+				 ))))))
+		      ,(logprint "quit")
 		      (return 0)))))
 
     (define-module
@@ -269,14 +274,9 @@
 			       "vis_05_server.hpp"
 			       ;"simple_01_server.hpp"
 			       )
-		      " "
-		      (space enum class CustomMsgTypes ":uint32_t"
-			     (curly
-			      ServerAccept
-			      ServerDeny
-			      ServerPing
-			      MessageAll
-			      ServerMessage))
+		    " "
+		    ,custom-msg
+		      
 		      )
 		     (do0
 		      "// implementation"
@@ -296,10 +296,11 @@
 			(declare (values bool)
 				 (type std--shared_ptr<connection<CustomMsgTypes>> client)
 				 (virtual))
+			,(logprint "on_client_connect")
 			(let ((msg (message<CustomMsgTypes>)))
 			  (setf msg.header.id CustomMsgTypes--ServerAccept)
 			  (client->send msg)
-			  ;,(logprint "connect" `((client->get_id)))
+			  ,(logprint "connect" `((client->get_id)))
 			  (return true)))
 		      (defmethod on_client_disconnect (client)
 			(declare 

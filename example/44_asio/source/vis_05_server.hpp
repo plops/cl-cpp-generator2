@@ -90,7 +90,7 @@ public:
         auto newconn = std::make_shared<connection<T>>(
             connection<T>::owner::server, m_asio_context, std::move(socket),
             m_q_messages_in);
-        if (!(on_client_connect(newconn))) {
+        if (on_client_connect(newconn)) {
           m_deq_connections.push_back(std::move(newconn));
           (n_id_counter)++;
           m_deq_connections.back()->connect_to_client(n_id_counter);
@@ -154,7 +154,7 @@ public:
                               m_deq_connections.end());
     }
   }
-  void update(size_t n_max_messages = 0xffffffffffffffff, bool wait = false) {
+  void update(size_t n_max_messages = 0xffffffffffffffff, bool wait = true) {
     if (wait) {
       m_q_messages_in.wait_while_empty();
     }
@@ -169,6 +169,15 @@ public:
 
 protected:
   bool on_client_connect(std::shared_ptr<connection<T>> client) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("virtual on_client_connect") << (" ") << (std::endl)
+                << (std::flush);
     return false;
   }
   void on_client_disconnect(std::shared_ptr<connection<T>> client) {}

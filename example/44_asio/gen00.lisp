@@ -580,7 +580,7 @@
 			     (if ec
 				 (do0
 				  ,(logprint "read header fail"
-					     `(id))
+					     `(id length))
 				  ;; this close will be detected by
 				  ;; server and client
 				  (m_socket.close))
@@ -966,12 +966,12 @@
 					     (string-upcase
 					      (format nil "n_max_messages=0x~x"
 						      (- (expt 2 64) 1))))
-					   wait=false)
+					   wait=true)
 			  (declare (type size_t ,(intern
 						  (string-upcase
 						   (format nil "n_max_messages=0x~x"
 							   (- (expt 2 64) 1)))))
-				   (type bool wait=false)
+				   (type bool wait=true)
 				   )
 			  (when wait
 			    (m_q_messages_in.wait_while_empty))
@@ -991,6 +991,7 @@
 			  (declare (type std--shared_ptr<connection<T>> client)
 				   (virtual)
 				   (values bool))
+			  ,(logprint "virtual on_client_connect")
 			  (return false))
 			(defmethod on_client_disconnect (client)
 			  (declare (type std--shared_ptr<connection<T>> client)

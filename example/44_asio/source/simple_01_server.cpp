@@ -18,9 +18,24 @@ CustomServer::CustomServer(uint16_t port)
     : server_interface<CustomMsgTypes>(port) {}
 bool CustomServer::on_client_connect(
     std::shared_ptr<connection<CustomMsgTypes>> client) {
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("on_client_connect")
+      << (" ") << (std::endl) << (std::flush);
   auto msg = message<CustomMsgTypes>();
   msg.header.id = CustomMsgTypes::ServerAccept;
   client->send(msg);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("connect") << (" ")
+      << (std::setw(8)) << (" client->get_id()='") << (client->get_id())
+      << ("'") << (std::endl) << (std::flush);
   return true;
 }
 void CustomServer::on_client_disconnect(

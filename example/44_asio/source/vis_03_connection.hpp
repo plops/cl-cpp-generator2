@@ -76,6 +76,7 @@ private:
                         << (__FILE__) << (":") << (__LINE__) << (" ")
                         << (__func__) << (" ") << ("read header fail") << (" ")
                         << (std::setw(8)) << (" id='") << (id) << ("'")
+                        << (std::setw(8)) << (" length='") << (length) << ("'")
                         << (std::endl) << (std::flush);
             m_socket.close();
           } else {
