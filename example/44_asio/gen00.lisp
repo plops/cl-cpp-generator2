@@ -278,7 +278,7 @@
 		    " "
 
 		    (split-header-and-code
-		     (do0
+		     (do0 
 		      "// header"
 		      (include "vis_03_connection.hpp")
 		      " "
