@@ -239,6 +239,7 @@
 				     ,(logprint "unsupported packet" )
 				     break))
 				)))))
+		      (std--this_thread--sleep_for 2s)
 		      ,(logprint "quit")
 		      (return 0)))))
 
