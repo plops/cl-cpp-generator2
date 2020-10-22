@@ -321,7 +321,12 @@ entry return-values contains a list of return values. currently supports type, v
 	(when (and inline-p (not header-only))
 	  (return-from parse-defmethod ""))
 	(with-output-to-string (s)
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual ret   params     header-only
+	  ;;                                   explicit                   name  const             constructs
+	  ;;         1                 2       3       4       5       6  7  8  9       10        11 
+	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; template
 		  (when template
 		    template)
@@ -337,6 +342,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (when (and inline-p
 			     header-only)
 		    "inline")
+		  ;; 5 virtual
+		  (when (and virtual-p
+			     header-only)
+		    "virtual")
 		  
 		  ;; return value
 		  (let ((r (gethash 'return-values env)))
