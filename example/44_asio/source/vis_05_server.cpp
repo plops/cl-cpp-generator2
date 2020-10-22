@@ -12,16 +12,12 @@ extern State state;
 #include <thread>
 
 // implementation
-*707 * template <typename T>
-       * 332 *
-    server_interface::server_interface(uint16_t port)
+template <typename T>
+server_interface::server_interface(uint16_t port)
     : m_asio_acceptor(m_asio_context, boost::asio::ip::tcp::endpoint(
-                                          boost::asio::ip::tcp::v4(), port)) *
-      411 * {} * 707 * template <typename T>
-                       * 332 * server_interface::~server_interface() * 411 * {
-  stop();
-}
-*707 * template <typename T> * 332 * bool server_interface::start() * 411 * {
+                                          boost::asio::ip::tcp::v4(), port)) {}
+template <typename T> server_interface::~server_interface() { stop(); }
+template <typename T> bool server_interface::start() {
   try {
     wait_for_client_connection();
     m_thread_context = std::thread([this]() { m_asio_context.run(); });
@@ -47,7 +43,7 @@ extern State state;
       << (" ") << (std::endl) << (std::flush);
   return true;
 }
-*707 * template <typename T> * 332 * void server_interface::stop() * 411 * {
+template <typename T> void server_interface::stop() {
   m_asio_context.stop();
   if (m_thread_context.joinable()) {
     m_thread_context.join();
@@ -60,8 +56,7 @@ extern State state;
       << (__LINE__) << (" ") << (__func__) << (" ") << ("server stopped")
       << (" ") << (std::endl) << (std::flush);
 }
-*707 * template <typename T>
-       * 332 * void server_interface::wait_for_client_connection() * 411 * {
+template <typename T> void server_interface::wait_for_client_connection() {
   m_asio_acceptor.async_accept([this](std::error_code ec,
                                       boost::asio::ip::tcp::socket socket) {
     if (ec) {
@@ -121,11 +116,9 @@ extern State state;
     wait_for_client_connection();
   });
 }
-*707 * template <typename T>
-       * 332 *
-    void server_interface::message_client(std::shared_ptr<connection<T>> client,
-                                          const message<T> &msg) *
-    411 * {
+template <typename T>
+void server_interface::message_client(std::shared_ptr<connection<T>> client,
+                                      const message<T> &msg) {
   if (((client) && (client->is_connected()))) {
     client->send(msg);
   } else {
@@ -136,12 +129,10 @@ extern State state;
         m_deq_connections.end());
   }
 }
-*707 * template <typename T>
-       * 332 *
-    void server_interface::message_all_clients(
-        const message<T> &msg,
-        std::shared_ptr<connection<T>> ignore_client = nullptr) *
-    411 * {
+template <typename T>
+void server_interface::message_all_clients(
+    const message<T> &msg,
+    std::shared_ptr<connection<T>> ignore_client = nullptr) {
   auto invalid_client_exists = false;
   for (auto &client : m_deq_connections) {
     if (((client) && (client->is_connected()))) {
@@ -160,11 +151,9 @@ extern State state;
                             m_deq_connections.end());
   }
 }
-*707 * template <typename T>
-       * 332 *
-    void server_interface::update(size_t n_max_messages = 0xffffffffffffffff,
-                                  bool wait = true) *
-    411 * {
+template <typename T>
+void server_interface::update(size_t n_max_messages = 0xffffffffffffffff,
+                              bool wait = true) {
   if (wait) {
     m_q_messages_in.wait_while_empty();
   }
@@ -176,11 +165,9 @@ extern State state;
     (n_message_count)++;
   }
 }
-*707 * template <typename T>
-       * 332 *
-    bool
-    server_interface::on_client_connect(std::shared_ptr<connection<T>> client) *
-    411 * {
+template <typename T>
+bool server_interface::on_client_connect(
+    std::shared_ptr<connection<T>> client) {
 
   (std::cout)
       << (std::setw(10))
@@ -190,12 +177,9 @@ extern State state;
       << ("virtual on_client_connect") << (" ") << (std::endl) << (std::flush);
   return false;
 }
-*707 * template <typename T>
-       * 332 *
-    void server_interface::on_client_disconnect(
-        std::shared_ptr<connection<T>> client) *
-    411 * {} * 707 * template <typename T>
-                     * 332 *
-    void server_interface::on_message(std::shared_ptr<connection<T>> client,
-                                      message<T> &msg) *
-    411 * {}
+template <typename T>
+void server_interface::on_client_disconnect(
+    std::shared_ptr<connection<T>> client) {}
+template <typename T>
+void server_interface::on_message(std::shared_ptr<connection<T>> client,
+                                  message<T> &msg) {}

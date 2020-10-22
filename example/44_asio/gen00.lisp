@@ -280,84 +280,89 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      (defclass (message_header :template "typename T") ()
-			"public:"
-			"T id{};"
-		      "uint32_t size = 0;")
+		      (include "vis_03_connection.hpp")
+		      " "
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+
+		    (defclass (message_header :template "typename T") ()
+			 "public:"
+			 "T id{};"
+			 "uint32_t size = 0;")
+		    #+nil(do0
+		       
 
 		       (defclass (message :template "typename T") ()
 			 "public:"
 			 "message_header<T> header{};"
-		       "std::vector<uint8_t> body;"
-		       (defmethod size ()
-			 (declare (const)
-				  (values size_t))
-			 (return (sizeof (+ (sizeof message_header<T>)
-					    (body.size)))))
-		       (defmethod operator<< (msg data)
-			 (declare (values "template<typename DataType> friend message<T>&")
-				  (type "message<T>&" msg)
-				  (type "const DataType&" data))
-			 ;; simple types can be pushed in
-			 ;; some types can't be trivially serialized
-			 ;; e.g. classes with static variables
-			 ;; complex arrangements of pointers
-			 (static_assert
-			  "std::is_standard_layout<DataType>::value"
-			  (string "data is too complicated"))
-			 (let ((i (msg.body.size))
-			       )
-			   (msg.body.resize (+ (msg.body.size)
-					       (sizeof DataType)))
-			   (std--memcpy
-			    (+ (msg.body.data) i)
-			    &data
-			    (sizeof DataType)
-			    )
-			   (setf msg.header.size (msg.size))
-			   ;; arbitrary objects of arbitrary
-			   ;; types can be chained and pushed
-			   ;; into the vector
-			   (return msg))
-			 )
-		       (defmethod operator>> (msg data)
-			 (declare (values "template<typename DataType> friend message<T>&")
-				  (type "message<T>&" msg)
-				  (type "DataType&" data))
-			 
-			 (static_assert
-			  "std::is_standard_layout<DataType>::value"
-			  (string "data is too complicated"))
-			 (let ((i (- (msg.body.size)
-				     (sizeof DataType )))
-			       )
-			   ;; copy data from vector into users
-			   ;; variable treat vector as a stack
-			   ;; for performance of resize op
-			   (std--memcpy
-			    &data
-			    
-			    (+ (msg.body.data) i)
-			    
-			    (sizeof DataType)
-			    )
-			   (msg.body.resize i)
+			 "std::vector<uint8_t> body;"
+			 (defmethod size ()
+			   (declare (const)
+				    (values size_t))
+			   (return (sizeof (+ (sizeof message_header<T>)
+					      (body.size)))))
+			 (defmethod operator<< (msg data)
+			   (declare (values "template<typename DataType> friend message<T>&")
+				    (type "message<T>&" msg)
+				    (type "const DataType&" data))
+			   ;; simple types can be pushed in
+			   ;; some types can't be trivially serialized
+			   ;; e.g. classes with static variables
+			   ;; complex arrangements of pointers
+			   (static_assert
+			    "std::is_standard_layout<DataType>::value"
+			    (string "data is too complicated"))
+			   (let ((i (msg.body.size))
+				 )
+			     (msg.body.resize (+ (msg.body.size)
+						 (sizeof DataType)))
+			     (std--memcpy
+			      (+ (msg.body.data) i)
+			      &data
+			      (sizeof DataType)
+			      )
+			     (setf msg.header.size (msg.size))
+			     ;; arbitrary objects of arbitrary
+			     ;; types can be chained and pushed
+			     ;; into the vector
+			     (return msg))
+			   )
+			 (defmethod operator>> (msg data)
+			   (declare (values "template<typename DataType> friend message<T>&")
+				    (type "message<T>&" msg)
+				    (type "DataType&" data))
 			   
-			   (setf msg.header.size (msg.size))
-			   
-			   (return msg))
-			 ))
+			   (static_assert
+			    "std::is_standard_layout<DataType>::value"
+			    (string "data is too complicated"))
+			   (let ((i (- (msg.body.size)
+				       (sizeof DataType )))
+				 )
+			     ;; copy data from vector into users
+			     ;; variable treat vector as a stack
+			     ;; for performance of resize op
+			     (std--memcpy
+			      &data
+			      
+			      (+ (msg.body.data) i)
+			      
+			      (sizeof DataType)
+			      )
+			     (msg.body.resize i)
+			     
+			     (setf msg.header.size (msg.size))
+			     
+			     (return msg))
+			   ))
 
 		       "template <typename T> class connection;"
 		       
 		       (defclass (owned_message :template "typename T") ()
 			 "public:"
 			 "std::shared_ptr<connection<T>> remote = nullptr;"
-			 "message<T> msg;")
-		      )
-		     (do0
-		      "// implementation"
-		      ))
+			 "message<T> msg;"))
 
 
 		   
@@ -1075,10 +1080,10 @@
 		     
 		     (emit-c :code code
 			     :hook-defun #'(lambda (str)
-					     (format sh "*1076*~a~%" str)
+					     (format sh "~a~%" str)
 					     )
 			     :hook-defclass #'(lambda (str)
-						(format sh "*1079*~a;~%" str)
+						(format sh "~a;~%" str)
 						)
 			     :header-only t
 			     )

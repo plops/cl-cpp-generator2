@@ -329,7 +329,7 @@ entry return-values contains a list of return values. currently supports type, v
 	  ;;         1                 2       3       4       5       6  7  8  9       10        11 
 	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 	
-	  (format s "*332*~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -408,7 +408,7 @@ entry return-values contains a list of return values. currently supports type, v
 			 (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (when (or inline-p (not header-only))
-	   (format s "*411*~a" (funcall emit `(progn ,@body)))))))))
+	   (format s "~a" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-lambda (code emit)
   ;;  lambda lambda-list [declaration*] form*
@@ -680,7 +680,7 @@ entry return-values contains a list of return values. currently supports type, v
 				    (progn
 				      ;; create class declaration with function headers
 				      (funcall hook-defclass
-					       (format nil "*682*~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+					       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 						       
 						       class-template
 						       (emit class-name)
@@ -705,7 +705,7 @@ entry return-values contains a list of return values. currently supports type, v
 					    (when (and (listp e)
 						       (or (eq (car e) 'defmethod)
 							   (eq (car e) 'defmethod*)))
-					      (format s "*707*~@[template< ~a > ~]~a" class-template (emit e :class
+					      (format s "~@[template< ~a > ~]~a" class-template (emit e :class
 												      (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
 												      :header-only-p nil))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
