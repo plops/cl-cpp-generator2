@@ -16,7 +16,7 @@ using namespace std::chrono_literals;
 #include "simple_01_server.hpp"
 CustomServer::CustomServer(uint16_t port)
     : server_interface<CustomMsgTypes>(port) {}
-bool CustomServer::on_client_connect(
+virtual bool CustomServer::on_client_connect(
     std::shared_ptr<connection<CustomMsgTypes>> client) {
 
   (std::cout)
@@ -38,7 +38,7 @@ bool CustomServer::on_client_connect(
       << ("'") << (std::endl) << (std::flush);
   return true;
 }
-void CustomServer::on_client_disconnect(
+virtual void CustomServer::on_client_disconnect(
     std::shared_ptr<connection<CustomMsgTypes>> client) {
 
   (std::cout)
@@ -49,9 +49,9 @@ void CustomServer::on_client_disconnect(
       << (std::setw(8)) << (" client->get_id()='") << (client->get_id())
       << ("'") << (std::endl) << (std::flush);
 }
-void CustomServer::on_message(
-    std::shared_ptr<connection<CustomMsgTypes>> client,
-    message<CustomMsgTypes> &msg) {
+virtual void
+CustomServer::on_message(std::shared_ptr<connection<CustomMsgTypes>> client,
+                         message<CustomMsgTypes> &msg) {
   switch (msg.header.id) {
   case CustomMsgTypes::ServerPing: {
     client->send(msg);

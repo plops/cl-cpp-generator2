@@ -247,7 +247,8 @@ entry return-values contains a list of return values. currently supports type, v
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
-			     header-only)
+			     header-only
+			     )
 		    ;(format t "virtual defun~%")
 		    "virtual")
 		  
@@ -347,7 +348,8 @@ entry return-values contains a list of return values. currently supports type, v
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
-			     header-only)
+			     ;header-only
+			     )
 		    ;(format t "virtual defmethod~%")
 		    "virtual")
 		  

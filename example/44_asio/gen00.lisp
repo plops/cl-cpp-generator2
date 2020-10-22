@@ -280,89 +280,89 @@
 		    (split-header-and-code
 		     (do0 
 		      "// header"
-		      (include "vis_03_connection.hpp")
+		      ;(include "vis_03_connection.hpp")
 		      " "
-		      )
+		      
+		      (defclass+ (message_header :template "typename T") ()
+			"public:"
+			"T id{};"
+			"uint32_t size = 0;")
+
+		      (defclass+ (message :template "typename T") ()
+			"public:"
+			"message_header<T> header{};"
+			"std::vector<uint8_t> body;"
+			(defmethod size ()
+			  (declare (const)
+				   (values size_t))
+			  (return (sizeof (+ (sizeof message_header<T>)
+					     (body.size)))))
+			(defmethod operator<< (msg data)
+			  (declare (values "template<typename DataType> friend message<T>&")
+				   (type "message<T>&" msg)
+				   (type "const DataType&" data))
+			  ;; simple types can be pushed in
+			  ;; some types can't be trivially serialized
+			  ;; e.g. classes with static variables
+			  ;; complex arrangements of pointers
+			  (static_assert
+			   "std::is_standard_layout<DataType>::value"
+			   (string "data is too complicated"))
+			  (let ((i (msg.body.size))
+				)
+			    (msg.body.resize (+ (msg.body.size)
+						(sizeof DataType)))
+			    (std--memcpy
+			     (+ (msg.body.data) i)
+			     &data
+			     (sizeof DataType)
+			     )
+			    (setf msg.header.size (msg.size))
+			    ;; arbitrary objects of arbitrary
+			    ;; types can be chained and pushed
+			    ;; into the vector
+			    (return msg))
+			  )
+			(defmethod operator>> (msg data)
+			  (declare (values "template<typename DataType> friend message<T>&")
+				   (type "message<T>&" msg)
+				   (type "DataType&" data))
+			  
+			  (static_assert
+			   "std::is_standard_layout<DataType>::value"
+			   (string "data is too complicated"))
+			  (let ((i (- (msg.body.size)
+				      (sizeof DataType )))
+				)
+			    ;; copy data from vector into users
+			    ;; variable treat vector as a stack
+			    ;; for performance of resize op
+			    (std--memcpy
+			     &data
+			     
+			     (+ (msg.body.data) i)
+			     
+			     (sizeof DataType)
+			     )
+			    (msg.body.resize i)
+			    
+			    (setf msg.header.size (msg.size))
+			    
+			    (return msg))
+			  ))
+
+		      "template <typename T> class connection;"
+		      
+		      (defclass+ (owned_message :template "typename T") ()
+			"public:"
+			"std::shared_ptr<connection<T>> remote = nullptr;"
+			"message<T> msg;"))
 		     (do0
 		      "// implementation"
 		      ))
 
-		    (defclass (message_header :template "typename T") ()
-			 "public:"
-			 "T id{};"
-			 "uint32_t size = 0;")
-		    #+nil(do0
-		       
-
-		       (defclass (message :template "typename T") ()
-			 "public:"
-			 "message_header<T> header{};"
-			 "std::vector<uint8_t> body;"
-			 (defmethod size ()
-			   (declare (const)
-				    (values size_t))
-			   (return (sizeof (+ (sizeof message_header<T>)
-					      (body.size)))))
-			 (defmethod operator<< (msg data)
-			   (declare (values "template<typename DataType> friend message<T>&")
-				    (type "message<T>&" msg)
-				    (type "const DataType&" data))
-			   ;; simple types can be pushed in
-			   ;; some types can't be trivially serialized
-			   ;; e.g. classes with static variables
-			   ;; complex arrangements of pointers
-			   (static_assert
-			    "std::is_standard_layout<DataType>::value"
-			    (string "data is too complicated"))
-			   (let ((i (msg.body.size))
-				 )
-			     (msg.body.resize (+ (msg.body.size)
-						 (sizeof DataType)))
-			     (std--memcpy
-			      (+ (msg.body.data) i)
-			      &data
-			      (sizeof DataType)
-			      )
-			     (setf msg.header.size (msg.size))
-			     ;; arbitrary objects of arbitrary
-			     ;; types can be chained and pushed
-			     ;; into the vector
-			     (return msg))
-			   )
-			 (defmethod operator>> (msg data)
-			   (declare (values "template<typename DataType> friend message<T>&")
-				    (type "message<T>&" msg)
-				    (type "DataType&" data))
-			   
-			   (static_assert
-			    "std::is_standard_layout<DataType>::value"
-			    (string "data is too complicated"))
-			   (let ((i (- (msg.body.size)
-				       (sizeof DataType )))
-				 )
-			     ;; copy data from vector into users
-			     ;; variable treat vector as a stack
-			     ;; for performance of resize op
-			     (std--memcpy
-			      &data
-			      
-			      (+ (msg.body.data) i)
-			      
-			      (sizeof DataType)
-			      )
-			     (msg.body.resize i)
-			     
-			     (setf msg.header.size (msg.size))
-			     
-			     (return msg))
-			   ))
-
-		       "template <typename T> class connection;"
-		       
-		       (defclass (owned_message :template "typename T") ()
-			 "public:"
-			 "std::shared_ptr<connection<T>> remote = nullptr;"
-			 "message<T> msg;"))
+		    
+		    
 
 
 		   
@@ -398,7 +398,7 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      (defclass (tsqueue :template "typename T") ()
+		      (defclass+ (tsqueue :template "typename T") ()
 			"public:"
 			"tsqueue() = default;"
 			"tsqueue(const tsqueue<T>&) = delete;"
@@ -483,8 +483,7 @@
 		    (include <boost/asio.hpp>
 			     <boost/asio/ts/buffer.hpp>
 			     <boost/asio/ts/internet.hpp>)
-		    (include "vis_01_message.hpp"
-			     "vis_02_tsqueue.hpp")
+		   
 	
 		    " "
 
@@ -493,7 +492,9 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
+		       (include "vis_01_message.hpp"
+			     "vis_02_tsqueue.hpp")
+		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
 			       (progn
@@ -505,7 +506,7 @@
 				   (type boost--asio--io_context& asio_context)
 				   (type boost--asio--ip--tcp--socket socket)
 				   (type tsqueue<owned_message<T>>& q_in)
-				   (virtual)
+				   ;(virtual)
 				   (construct 
 					      (m_socket (std--move socket))
 					      (m_asio_context asio_context)
@@ -733,14 +734,15 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass (client_interface :template "typename T") ()
+		      (defclass+ (client_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod client_interface ()
 			  (declare (values :constructor)
 				  
 				   (construct (m_socket m_asio_context))
-				   (virtual))
+				   ;(virtual)
+				   )
 			  )
 			(defmethod ~client_interface ()
 			  (declare
@@ -848,13 +850,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      
-		      )
-		     (do0
-		      "// implementation"
-		      ))
-
-		    (defclass (server_interface :template "typename T") ()
+		      (defclass+ (server_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod server_interface (port)
@@ -865,7 +861,8 @@
 					       (boost--asio--ip--tcp--endpoint
 						(boost--asio--ip--tcp--v4)
 						port)))
-				   (virtual))
+				   ;(virtual)
+				  )
 			  )
 			(defmethod ~server_interface ()
 			  (declare
@@ -1022,6 +1019,12 @@
 			;; consistent id in system (client knows)
 			"uint32_t n_id_counter=10000;"
 			)
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+
+		    
 		    )))
     
     

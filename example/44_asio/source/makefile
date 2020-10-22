@@ -33,10 +33,12 @@ all: server client
 vis: $(OBJ)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-server: simple_01_server.o vis_05_server.o vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o
+# vis_05_server.o vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o
+server: simple_01_server.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-client: simple_00_client.o vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o vis_04_client.o
+# vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o vis_04_client.o
+client: simple_00_client.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:

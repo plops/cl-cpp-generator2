@@ -206,40 +206,39 @@
 				   60000)
 			;,(logprint "ping")
 
-			(while true
-			 (when (c.is_connected)
+			(when (c.is_connected)
 			  
-			   (c.ping_server)
-			   (unless (dot c
-					(incoming)
-					(empty))
-			     (let ((msg (dot c (incoming) (pop_front) msg)))
-			       (case msg.header.id
-				 (CustomMsgTypes--ServerAccept
-				  (progn
-				    ,(logprint "server accepted connection")
-				    break)
-				  )
-				 (CustomMsgTypes--ServerPing
-				  (progn
-				    (let ((now (std--chrono--system_clock--now))
-					  (then now))
-				      (>> msg then)
-				      (let ((duration (dot (std--chrono--duration<double> (- now then))
-							   (count))))
-					,(logprint "ping" `(duration)))
-				      break)))
-				 (CustomMsgTypes--ServerMessage
-				  (progn
-				    (let ((from_client_id 0))
-				      (declare (type uint32_t from_client_id))
-				      (>> msg from_client_id)
-				      ,(logprint "hello" `(from_client_id)))
-				    break))
-				 (t (progn
-				      ,(logprint "unsupported packet" )
-				      break))
-				 ))))))
+			  (c.ping_server)
+			  (unless (dot c
+				       (incoming)
+				       (empty))
+			    (let ((msg (dot c (incoming) (pop_front) msg)))
+			      (case msg.header.id
+				(CustomMsgTypes--ServerAccept
+				 (progn
+				   ,(logprint "server accepted connection")
+				   break)
+				 )
+				(CustomMsgTypes--ServerPing
+				 (progn
+				   (let ((now (std--chrono--system_clock--now))
+					 (then now))
+				     (>> msg then)
+				     (let ((duration (dot (std--chrono--duration<double> (- now then))
+							  (count))))
+				       ,(logprint "ping" `(duration)))
+				     break)))
+				(CustomMsgTypes--ServerMessage
+				 (progn
+				   (let ((from_client_id 0))
+				     (declare (type uint32_t from_client_id))
+				     (>> msg from_client_id)
+				     ,(logprint "hello" `(from_client_id)))
+				   break))
+				(t (progn
+				     ,(logprint "unsupported packet" )
+				     break))
+				)))))
 		      ,(logprint "quit")
 		      (return 0)))))
 
