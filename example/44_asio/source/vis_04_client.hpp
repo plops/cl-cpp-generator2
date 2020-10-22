@@ -13,7 +13,7 @@
 #include "vis_03_connection.hpp"
 ;
 // header
-*649 * template <typename T> class client_interface {
+template <typename T> class client_interface {
 public:
   client_interface() : m_socket(m_asio_context) {}
   virtual ~client_interface() { disconnect(); }
@@ -74,4 +74,5 @@ protected:
 private:
   tsqueue<owned_message<T>> m_q_messages_in;
 };
+;
 #endif

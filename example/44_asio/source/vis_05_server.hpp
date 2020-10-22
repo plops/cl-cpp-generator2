@@ -13,7 +13,7 @@
 #include "vis_03_connection.hpp"
 ;
 // header
-*649 * template <typename T> class server_interface {
+template <typename T> class server_interface {
 public:
   server_interface(uint16_t port)
       : m_asio_acceptor(m_asio_context, boost::asio::ip::tcp::endpoint(
@@ -190,4 +190,5 @@ protected:
   boost::asio::ip::tcp::acceptor m_asio_acceptor;
   uint32_t n_id_counter = 10000;
 };
+;
 #endif

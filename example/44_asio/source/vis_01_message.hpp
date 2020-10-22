@@ -15,11 +15,12 @@
 ;
 // header
 
-*649 * template <typename T> class message_header {
+template <typename T> class message_header {
 public:
   T id{};
   uint32_t size = 0;
-} * 649 * template <typename T> class message {
+};
+template <typename T> class message {
 public:
   message_header<T> header{};
   std::vector<uint8_t> body;
@@ -46,10 +47,12 @@ public:
     msg.header.size = msg.size();
     return msg;
   }
-} template <typename T> class connection;
-*649 * template <typename T> class owned_message {
+};
+template <typename T> class connection;
+template <typename T> class owned_message {
 public:
   std::shared_ptr<connection<T>> remote = nullptr;
   message<T> msg;
 };
+;
 #endif

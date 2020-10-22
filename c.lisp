@@ -45,7 +45,7 @@
 	;; https://travisdowns.github.io/blog/2019/11/19/toupper.html
 	;; header reordering can affect compilation performance
 	;; FIXME: figure out how to prevent that
-       #+nil(when format
+       (when format
 	 (sb-ext:run-program "/usr/bin/clang-format"
 			     (list "-i"  (namestring fn)
 				   ;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
@@ -591,7 +591,7 @@ entry return-values contains a list of return values. currently supports type, v
 										when if unless
 										let
 										split-header-and-code
-										defun defmethod defclass defclass+))))
+										defun defmethod defclass))))
 						    ""
 						    ";"))))
 				  (cdr code)))
@@ -646,7 +646,7 @@ entry return-values contains a list of return values. currently supports type, v
 			   (setf class-name name
 				 class-template template
 				 class-template-instance template-instance)))
-		       (format nil "*649*~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+		       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 			       
 			       class-template
 			       (emit class-name)
@@ -689,7 +689,7 @@ entry return-values contains a list of return values. currently supports type, v
 				    (progn
 				      ;; create class declaration with function headers
 				      (funcall hook-defclass
-					       (format nil "*692*~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+					       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 						       
 						       class-template
 						       (emit class-name)
@@ -716,11 +716,11 @@ entry return-values contains a list of return values. currently supports type, v
 					    (when (and (listp e)
 						       (or (eq (car e) 'defmethod)
 							   (eq (car e) 'defmethod*)))
-					      (format s "*721*~@[template< ~a > ~]~a"
+					      (format s "~@[template< ~a > ~]~a"
 						      class-template
 						      (emit e
 							    :class
-							    (emit (format nil "*723*~a~@[<~a>~]" class-name class-template-instance))
+							    (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
 							    :header-only-p nil
 							    :in-class-p 'defclass-cpp))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))

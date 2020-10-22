@@ -31,7 +31,7 @@ enum class CustomMsgTypes : uint32_t {
   ServerMessage
 };
 ;
-*692 * class CustomClient : public client_interface<CustomMsgTypes> {
+class CustomClient : public client_interface<CustomMsgTypes> {
 public:
   void ping_server();
   void message_all();

@@ -15,7 +15,7 @@
 #include <boost/asio/ts/internet.hpp>
 ;
 // header
-*649 * template <typename T> class tsqueue {
+template <typename T> class tsqueue {
 public:
   tsqueue() = default;
   tsqueue(const tsqueue<T> &) = delete;
@@ -74,4 +74,5 @@ protected:
   std::condition_variable cv_blocking;
   std::deque<T> deq;
 };
+;
 #endif

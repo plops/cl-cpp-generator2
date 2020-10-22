@@ -18,8 +18,8 @@
 // header
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
-*649 * template <typename T>
-       class connection : public std::enable_shared_from_this<connection<T>> {
+template <typename T>
+class connection : public std::enable_shared_from_this<connection<T>> {
 public:
   enum class owner { server, client };
   connection(owner parent, boost::asio::io_context &asio_context,
@@ -188,4 +188,5 @@ protected:
   owner m_owner_type = owner::server;
   uint32_t id = 0;
 };
+;
 #endif
