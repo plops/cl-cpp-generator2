@@ -34,12 +34,10 @@ enum class CustomMsgTypes : uint32_t {
 class CustomServer : public server_interface<CustomMsgTypes> {
 public:
   CustomServer(uint16_t port);
-  virtual bool
-  on_client_connect(std::shared_ptr<connection<CustomMsgTypes>> client);
-  virtual void
-  on_client_disconnect(std::shared_ptr<connection<CustomMsgTypes>> client);
-  virtual void on_message(std::shared_ptr<connection<CustomMsgTypes>> client,
-                          message<CustomMsgTypes> &msg);
+  bool on_client_connect(std::shared_ptr<connection<CustomMsgTypes>> client);
+  void on_client_disconnect(std::shared_ptr<connection<CustomMsgTypes>> client);
+  void on_message(std::shared_ptr<connection<CustomMsgTypes>> client,
+                  message<CustomMsgTypes> &msg);
 };
 int main(int argc, char **argv);
 #endif

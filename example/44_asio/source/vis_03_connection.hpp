@@ -27,7 +27,7 @@ public:
              tsqueue<owned_message<T>> &q_in)
       : m_socket(std::move(socket)), m_asio_context(asio_context),
         m_q_messages_in(q_in), m_owner_type(parent) {}
-  virtual ~connection() {}
+  ~connection() {}
   uint32_t get_id() const { return id; }
   void connect_to_client(uint32_t uid = 0) {
     if ((owner::server) == (m_owner_type)) {

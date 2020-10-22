@@ -19,7 +19,7 @@ public:
       : m_asio_acceptor(m_asio_context, boost::asio::ip::tcp::endpoint(
                                             boost::asio::ip::tcp::v4(), port)) {
   }
-  virtual ~server_interface() { stop(); }
+  ~server_interface() { stop(); }
   bool start() {
     try {
       wait_for_client_connection();
@@ -168,7 +168,7 @@ public:
   }
 
 protected:
-  virtual bool on_client_connect(std::shared_ptr<connection<T>> client) {
+  bool on_client_connect(std::shared_ptr<connection<T>> client) {
 
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
@@ -180,9 +180,8 @@ protected:
                 << (std::flush);
     return false;
   }
-  virtual void on_client_disconnect(std::shared_ptr<connection<T>> client) {}
-  virtual void on_message(std::shared_ptr<connection<T>> client,
-                          message<T> &msg) {}
+  void on_client_disconnect(std::shared_ptr<connection<T>> client) {}
+  void on_message(std::shared_ptr<connection<T>> client, message<T> &msg) {}
   tsqueue<owned_message<T>> m_q_messages_in;
   std::deque<std::shared_ptr<connection<T>>> m_deq_connections;
   boost::asio::io_context m_asio_context;
