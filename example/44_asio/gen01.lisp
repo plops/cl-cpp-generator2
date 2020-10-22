@@ -143,15 +143,8 @@
 			     <boost/asio/ts/buffer.hpp>
 			     <boost/asio/ts/internet.hpp>)
 
-
-		    (include ;"vis_00_base.hpp"
-			       "vis_01_message.hpp"
-			       "vis_02_tsqueue.hpp"
-			       "vis_03_connection.hpp"
-			       "vis_04_client.hpp"
-					;"vis_05_server.hpp"
-			       "simple_00_client.hpp"
-			       )
+		    
+		    
 		    
 		    "using namespace std::chrono_literals;"
 		    " "
@@ -159,7 +152,14 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		    
+		      (include ;"vis_00_base.hpp"
+			       "vis_01_message.hpp"
+			       "vis_02_tsqueue.hpp"
+			       "vis_03_connection.hpp"
+			       "vis_04_client.hpp"
+					;"vis_05_server.hpp"
+			       
+			       )
 		      " "
 		      (space enum class CustomMsgTypes ":uint32_t"
 			     (curly
@@ -171,7 +171,7 @@
 		      )
 		     (do0
 		      "// implementation"
-		      
+		      (include "simple_00_client.hpp")
 		      ))
 		    
 
@@ -253,16 +253,7 @@
 		    (include <boost/asio.hpp>
 			     <boost/asio/ts/buffer.hpp>
 			     <boost/asio/ts/internet.hpp>)
-
-
-		    (include ;"vis_00_base.hpp"
-			       "vis_01_message.hpp"
-			       "vis_02_tsqueue.hpp"
-			       "vis_03_connection.hpp"
-			       ;"vis_04_client.hpp"
-			       "vis_05_server.hpp"
-			       "simple_01_server.hpp"
-			       )
+		    
 		    
 		    "using namespace std::chrono_literals;"
 		    " "
@@ -270,7 +261,14 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		    
+		    (include ;"vis_00_base.hpp"
+			       "vis_01_message.hpp"
+			       "vis_02_tsqueue.hpp"
+			       "vis_03_connection.hpp"
+			       ;"vis_04_client.hpp"
+			       "vis_05_server.hpp"
+			       ;"simple_01_server.hpp"
+			       )
 		      " "
 		      (space enum class CustomMsgTypes ":uint32_t"
 			     (curly
@@ -282,7 +280,8 @@
 		      )
 		     (do0
 		      "// implementation"
-		      
+		      (include "simple_01_server.hpp"
+			       )
 		      ))
 		    
  

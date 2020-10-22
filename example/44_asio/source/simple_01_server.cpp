@@ -4,11 +4,6 @@
 #include "globals.h"
 
 extern State state;
-#include "simple_01_server.hpp"
-#include "vis_01_message.hpp"
-#include "vis_02_tsqueue.hpp"
-#include "vis_03_connection.hpp"
-#include "vis_05_server.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
@@ -18,6 +13,7 @@ extern State state;
 using namespace std::chrono_literals;
 
 // implementation
+#include "simple_01_server.hpp"
 CustomServer::CustomServer(uint16_t port)
     : server_interface<CustomMsgTypes>(port) {}
 bool CustomServer::on_client_connect(

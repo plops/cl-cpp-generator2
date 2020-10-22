@@ -12,13 +12,16 @@
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 ;
-#include "simple_01_server.hpp"
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
 #include "vis_03_connection.hpp"
 #include "vis_05_server.hpp"
 ;
 // header
+#include "vis_01_message.hpp"
+#include "vis_02_tsqueue.hpp"
+#include "vis_03_connection.hpp"
+#include "vis_05_server.hpp"
 
 enum class CustomMsgTypes : uint32_t {
   ServerAccept,
