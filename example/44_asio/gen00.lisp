@@ -586,7 +586,7 @@
 			     (if ec
 				 (do0
 				  ,(logprint "read header fail"
-					     `(id length))
+					     `(id length (sizeof message_header<T>)))
 				  ;; this close will be detected by
 				  ;; server and client
 				  (m_socket.close))

@@ -79,7 +79,9 @@ private:
                         << (__func__) << (" ") << ("read header fail") << (" ")
                         << (std::setw(8)) << (" id='") << (id) << ("'")
                         << (std::setw(8)) << (" length='") << (length) << ("'")
-                        << (std::endl) << (std::flush);
+                        << (std::setw(8)) << (" sizeof(message_header<T>)='")
+                        << (sizeof(message_header<T>)) << ("'") << (std::endl)
+                        << (std::flush);
             m_socket.close();
           } else {
             if ((0) < (m_msg_temporary_in.header.size)) {
