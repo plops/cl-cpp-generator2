@@ -31,7 +31,7 @@ enum class CustomMsgTypes : uint32_t {
   ServerMessage
 };
 ;
-class CustomServer : public server_interface<CustomMsgTypes> {
+*694 * class CustomServer : public server_interface<CustomMsgTypes> {
 public:
   CustomServer(uint16_t port);
   virtual bool

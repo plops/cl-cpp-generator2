@@ -691,7 +691,7 @@ entry return-values contains a list of return values. currently supports type, v
 				    (progn
 				      ;; create class declaration with function headers
 				      (funcall hook-defclass
-					       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+					       (format nil "*694* ~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 						       
 						       class-template
 						       (emit class-name)
