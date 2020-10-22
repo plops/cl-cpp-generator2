@@ -26,7 +26,7 @@
 				 (format t))
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
-	(code-str (emit-c :code code))
+	(code-str (emit-c :code code :header-only nil))
 	(fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
     (format t "write code into file: '~a'~%" fn)
@@ -499,6 +499,7 @@ entry return-values contains a list of return values. currently supports type, v
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
 					;(format t "~a~%" code)
+    (format t "*502* header-only=~a~%" header-only)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
 			 (hook-class hook-defclass))
 	     "change the indentation level. this is used in do"

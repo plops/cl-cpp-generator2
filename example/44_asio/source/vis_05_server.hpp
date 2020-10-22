@@ -10,7 +10,10 @@
 #include "vis_02_tsqueue.hpp"
 #include "vis_03_connection.hpp"
     ;
-*1079 * *682 * template <typename T> class server_interface {
+*1079 * // header;
+    *1079 * *682 *
+    template <typename T>
+    class server_interface {
 public:
   *332 * virtual server_interface(uint16_t port);
   *332 * virtual ~server_interface();
@@ -38,6 +41,4 @@ protected:
   boost::asio::ip::tcp::acceptor m_asio_acceptor;
   uint32_t n_id_counter = 10000;
 };
-*1079 * // header
-    ;
 #endif

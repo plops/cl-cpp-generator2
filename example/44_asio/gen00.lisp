@@ -843,7 +843,13 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass (server_interface :template "typename T") ()
+		      
+		      )
+		     (do0
+		      "// implementation"
+		      ))
+
+		    (defclass (server_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod server_interface (port)
@@ -1011,10 +1017,6 @@
 			;; consistent id in system (client knows)
 			"uint32_t n_id_counter=10000;"
 			)
-		      )
-		     (do0
-		      "// implementation"
-		      ))
 		    )))
     
     
