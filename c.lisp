@@ -498,9 +498,9 @@ entry return-values contains a list of return values. currently supports type, v
 (progn
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
-    ;(format t "~a~%" code)
+					;(format t "~a~%" code)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
-		       (hook-class hook-defclass))
+			 (hook-class hook-defclass))
 	     "change the indentation level. this is used in do"
 	     (emit-c :code code
 		     :level (+ dl level)
@@ -555,10 +555,10 @@ entry return-values contains a list of return values. currently supports type, v
 		   (let ((args (cdr code)))
 		     (destructuring-bind (arg0 arg1) args
 		       (if hook-defclass
-			  (funcall hook-defclass (format nil "~a" (emit `(do0 ,arg0))))
-			  (format nil "~a" (emit `(do0 ,arg1))))
+			   (funcall hook-defclass (format nil "~a" (emit `(do0 ,arg0))))
+			   (format nil "~a" (emit `(do0 ,arg1))))
 		       
-		      )))
+		       )))
 		  (do0 (with-output-to-string (s)
 			 ;; do0 {form}*
 			 ;; write each form into a newline, keep current indentation level
@@ -607,12 +607,12 @@ entry return-values contains a list of return values. currently supports type, v
 			     ;; (include <stdio.h>)   => #include <stdio.h>
 			     ;; (include interface.h) => #include "interface.h"
 			     (let ((str (with-output-to-string (s)
-				      (loop for e in args do
-					 ;; emit string if first character is not <
-					   (format s "~&#include ~a"
-						   (emit (if (eq #\< (aref (format nil "~a" e) 0))
-							     e
-							     `(string ,e))))))))
+					  (loop for e in args do
+					    ;; emit string if first character is not <
+					    (format s "~&#include ~a"
+						    (emit (if (eq #\< (aref (format nil "~a" e) 0))
+							      e
+							      `(string ,e))))))))
 			       (when hook-defclass
 				 (funcall hook-defclass (format nil "~a~%" str)))
 			       str)))
@@ -627,30 +627,30 @@ entry return-values contains a list of return values. currently supports type, v
 		  (defclass+
 		   ;; for writing directly into header with all code in class
 		   (destructuring-bind (name parents &rest body) (cdr code)
-			  (let ((class-name (if (listp name)
-							       (car name)
-							       name))
-				(class-template nil)
-				(class-template-instance nil))
-			    (when (listp name)
-			      (destructuring-bind (name &key (template nil) (template-instance nil)) name
-				(setf class-name name
-				      class-template template
-				      class-template-instance template-instance)))
-			    (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
-						
-						 class-template
-						 (emit class-name)
+		     (let ((class-name (if (listp name)
+					   (car name)
+					   name))
+			   (class-template nil)
+			   (class-template-instance nil))
+		       (when (listp name)
+			 (destructuring-bind (name &key (template nil) (template-instance nil)) name
+			   (setf class-name name
+				 class-template template
+				 class-template-instance template-instance)))
+		       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+			       
+			       class-template
+			       (emit class-name)
 
-						 class-template-instance
-						
-						 (when parents
-						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body)
-						       :class nil ;(emit name)
-						       :hook-fun nil
-						       :hook-class hook-defclass
-						       :header-only-p nil))))
+			       class-template-instance
+			       
+			       (when parents
+				 (emit `(comma ,parents)))
+			       (emit `(progn ,@body)
+				     :class nil ;(emit name)
+				     :hook-fun nil
+				     :hook-class hook-defclass
+				     :header-only-p nil))))
 		   )
 		  (defclass
 			;; defclass class-name ({superclass-name}*) ({slot-specifier}*) [[class-option]]
@@ -674,51 +674,51 @@ entry return-values contains a list of return values. currently supports type, v
 				      class-template template
 				      class-template-instance template-instance)))
 			    
-			   (prog1
-			       (if hook-defclass
-				   (progn
-				;; create class declaration with function headers
-				(funcall hook-defclass
-					 (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
-						
-						 class-template
-						 (emit class-name)
+			    (prog1
+				(if hook-defclass
+				    (progn
+				      ;; create class declaration with function headers
+				      (funcall hook-defclass
+					       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+						       
+						       class-template
+						       (emit class-name)
 
-						 class-template-instance
-						
-						 (when parents
-						   (emit `(comma ,parents)))
-						 (emit `(progn ,@body)
-						       :class nil ;(emit name)
-						       :hook-fun nil
-						       :hook-class hook-defclass
-						       :header-only-p t)))
-				" ")
-				   (progn
-				     ;; only create function definitions of the class
-				     ;; expand defun but non of the other commands
-				     (destructuring-bind (name parents &rest body) (cdr code)
-				       (declare (ignorable parents))
-				       (with-output-to-string (s)
-					 (loop for e in body do
-					      (when (and (listp e)
-							 (or (eq (car e) 'defmethod)
-							     (eq (car e) 'defmethod*)))
-						(format s "~@[template< ~a > ~]~a" class-template (emit e :class
-													(emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
-													:header-only-p nil))))))))))))
+						       class-template-instance
+						       
+						       (when parents
+							 (emit `(comma ,parents)))
+						       (emit `(progn ,@body)
+							     :class nil ;(emit name)
+							     :hook-fun nil
+							     :hook-class hook-defclass
+							     :header-only-p t)))
+				      " ")
+				    (progn
+				      ;; only create function definitions of the class
+				      ;; expand defun but non of the other commands
+				      (destructuring-bind (name parents &rest body) (cdr code)
+					(declare (ignorable parents))
+					(with-output-to-string (s)
+					  (loop for e in body do
+					    (when (and (listp e)
+						       (or (eq (car e) 'defmethod)
+							   (eq (car e) 'defmethod*)))
+					      (format s "~@[template< ~a > ~]~a" class-template (emit e :class
+												      (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
+												      :header-only-p nil))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
 		      (parse-defmethod code #'emit :class current-class :header-only header-only))
 		  #+nil (defmethod*
-		   (if hook-defclass
-		       (parse-defmethod code #'emit :class current-class :header-only t)
-		       (parse-defmethod code #'emit :class current-class :header-only nil)))
+			 (if hook-defclass
+			     (parse-defmethod code #'emit :class current-class :header-only t)
+			     (parse-defmethod code #'emit :class current-class :header-only nil)))
 		  (defun
 		      (prog1
 			  (parse-defun code #'emit :class current-class :header-only header-only)
-			;(format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
+					;(format t "defun ~a~%" (subseq code 0 (min 4 (length code))))
 			(when hook-defun ;(and hook-defun (not current-class))
 			  ;; only emit function headers when we are not currently in defclass
 			  (funcall hook-defun (parse-defun code #'emit :header-only t :class current-class)))))
@@ -743,9 +743,9 @@ entry return-values contains a list of return values. currently supports type, v
 			     (emit
 			      `(do0 
 				,@(loop for i below (length args) by 2 collect
-				       (let ((a (elt args i))
-					     (b (elt args (+ 1 i))))
-					 `(= ,a ,b))))))))
+								       (let ((a (elt args i))
+									     (b (elt args (+ 1 i))))
+									 `(= ,a ,b))))))))
 		  (not (format nil "!(~a)" (emit (car (cdr code)))))
 		  (deref (format nil "*(~a)" (emit (car (cdr code)))))
 		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
@@ -792,10 +792,10 @@ entry return-values contains a list of return values. currently supports type, v
 				    (emit b) (emit c))
 			    (format nil "(~a)<=(~a)" (emit a) (emit b)))))
 		  (< (destructuring-bind (a b &optional c) (cdr code)
-			(if c
-			    (format nil "(((~a)<(~a)) && ((~a)<(~a)))" (emit a) (emit b)
-				    (emit b) (emit c))
-			    (format nil "(~a)<(~a)" (emit a) (emit b)))))
+		       (if c
+			   (format nil "(((~a)<(~a)) && ((~a)<(~a)))" (emit a) (emit b)
+				   (emit b) (emit c))
+			   (format nil "(~a)<(~a)" (emit a) (emit b)))))
 		  (!= (destructuring-bind (a b) (cdr code)
 			(format nil "(~a)!=(~a)" (emit a) (emit b))))
 		  (== (destructuring-bind (a b) (cdr code)
@@ -823,9 +823,9 @@ entry return-values contains a list of return values. currently supports type, v
 		  (hex (destructuring-bind (number) (cdr code)
 			 (format nil "0x~x" number)))
 		  (? (destructuring-bind (a b &optional c) (cdr code)
-			(if c
-			    (format nil "(~a) ? (~a) : (~a)" (emit a) (emit b) (emit c))
-			    (format nil "(~a) ? (~a)" (emit a) (emit b)))))
+		       (if c
+			   (format nil "(~a) ? (~a) : (~a)" (emit a) (emit b) (emit c))
+			   (format nil "(~a) ? (~a)" (emit a) (emit b)))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
@@ -848,7 +848,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  
 
 		  (aref (destructuring-bind (name &rest indices) (cdr code)
-			  ;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
+					;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
 			  (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
 		  
 		  (-> (let ((args (cdr code)))
@@ -869,19 +869,19 @@ entry return-values contains a list of return values. currently supports type, v
 			 (emit
 			  `(progn
 			     ,@(loop for c in clauses collect
-				    (destructuring-bind (key &rest forms) c
-				      (if (eq key t)
-					  (format nil "default: ~a"
-						  (emit
-						   `(do0
-						     ,@(mapcar #'emit
-							       forms))))
-					  (format nil "case ~a: ~a"
-						  (emit key)
-						  (emit
-						   `(do0
-						     ,@(mapcar #'emit
-							       forms))))))))))))
+						      (destructuring-bind (key &rest forms) c
+							(if (eq key t)
+							    (format nil "default: ~a"
+								    (emit
+								     `(do0
+								       ,@(mapcar #'emit
+										 forms))))
+							    (format nil "case ~a: ~a"
+								    (emit key)
+								    (emit
+								     `(do0
+								       ,@(mapcar #'emit
+										 forms))))))))))))
 		  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
 			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
 				 (emit start)
@@ -899,12 +899,12 @@ entry return-values contains a list of return values. currently supports type, v
 				       (emit `(progn ,@statement-list)))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
 			     (emit `(for (,(format nil "~a ~a = 0"
-						   ;#+generic-c "__auto_type"
+					;#+generic-c "__auto_type"
 					;#-generic-c "auto"
 						   *auto-keyword*
 						   (emit i)) ;; int
-					   (< ,(emit i) ,(emit n))
-					   (incf ,(emit i) ,(emit step)))
+					  (< ,(emit i) ,(emit n))
+					  (incf ,(emit i) ,(emit step)))
 					 ,@body))))
 		  #-generic-c
 		  (foreach (destructuring-bind ((item collection) &rest body) (cdr code)
@@ -923,11 +923,11 @@ entry return-values contains a list of return values. currently supports type, v
 						       (sizeof (deref ,collection))))
 				   (let ((,item (aref ,collection ,itemidx)))
 				     (progn ,@body))))))))
-		  (while  ;; while condition {forms}*
-		      (destructuring-bind (condition &rest body) (cdr code)
-			(format nil "while (~a) ~a"
-				(emit condition)
-				(emit `(progn ,@body)))))
+		  (while ;; while condition {forms}*
+		   (destructuring-bind (condition &rest body) (cdr code)
+		     (format nil "while (~a) ~a"
+			     (emit condition)
+			     (emit `(progn ,@body)))))
 		  (deftype
 		      ;; deftype name lambda-list {form}*
 		      ;; only the first form of the body is used, lambda list is ignored
@@ -968,13 +968,13 @@ entry return-values contains a list of return values. currently supports type, v
 					      (emit
 					       `(progn
 						  ,@(loop for desc in slot-descriptions collect
-							 (destructuring-bind (slot-name &optional type value) desc
-							   (declare (ignorable value))
-							   (format nil "~a ~a;" (emit type) (emit slot-name)))))))
+											(destructuring-bind (slot-name &optional type value) desc
+											  (declare (ignorable value))
+											  (format nil "~a ~a;" (emit type) (emit slot-name)))))))
 				     (deftype ,name () (struct ,name)))))))
 		  (handler-case
 		      ;; handler-case expression [[{error-clause}*]]
-		    ;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
+;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
 		      ;; error-clause::= (typespec ([var]) form*)
 		      ;; if typespec is t, catch any kind of exception
 
@@ -1002,13 +1002,13 @@ entry return-values contains a list of return values. currently supports type, v
 				      (emit expr)
 				      (emit `(progn ,expr))))
 			  (loop for clause in clauses do
-			       (destructuring-bind (typespec (var) &rest forms) clause
-				 (format s "catch (~a) ~a"
-					 (if (and (eq 't typespec)
-						  (null var))
-					     (format nil "...")
-					     (format nil "~a ~a" typespec var))
-					 (emit `(progn ,@forms))))))))
+			    (destructuring-bind (typespec (var) &rest forms) clause
+			      (format s "catch (~a) ~a"
+				      (if (and (eq 't typespec)
+					       (null var))
+					  (format nil "...")
+					  (format nil "~a ~a" typespec var))
+				      (emit `(progn ,@forms))))))))
 		  (t (destructuring-bind (name &rest args) code
 
 		       (if (listp name)
@@ -1034,7 +1034,7 @@ entry return-values contains a list of return values. currently supports type, v
 		((symbolp code)
 					;(cl-ppcre::regex-replace-all "--" "bla--fub" "::")
 		 (cl-ppcre::regex-replace-all "--" (format nil "~a" code) "::")
-		 ;(substitute #\: #\- (format nil "~a" code))
+					;(substitute #\: #\- (format nil "~a" code))
 		 )
 		((stringp code) ;; print variable
 		 (format nil "~a" code))
