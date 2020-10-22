@@ -659,6 +659,7 @@ entry return-values contains a list of return values. currently supports type, v
 			;; template<T> class TA...
 			;; defclass (class-name :template "T,y" :template-instance "std::integral_constant<T,y>") ...
 			;; template<typename T, T y> class NameExtractor<std::integral_constant<T, y>>  {
+			;; FIXME template stuff doesn't get emitted into cpp 
 			(destructuring-bind (name parents &rest body) (cdr code)
 			  (let ((class-name (if (listp name)
 						(progn

@@ -285,7 +285,7 @@
 			"T id{};"
 		      "uint32_t size = 0;")
 
-		       (defclass+ (message :template "typename T") ()
+		       (defclass (message :template "typename T") ()
 			 "public:"
 			 "message_header<T> header{};"
 		       "std::vector<uint8_t> body;"
@@ -350,7 +350,7 @@
 
 		       "template <typename T> class connection;"
 		       
-		       (defclass+ (owned_message :template "typename T") ()
+		       (defclass (owned_message :template "typename T") ()
 			 "public:"
 			 "std::shared_ptr<connection<T>> remote = nullptr;"
 			 "message<T> msg;")
@@ -393,7 +393,7 @@
 		    (split-header-and-code
 		     (do0
 		      "// header"
-		      (defclass+ (tsqueue :template "typename T") ()
+		      (defclass (tsqueue :template "typename T") ()
 			"public:"
 			"tsqueue() = default;"
 			"tsqueue(const tsqueue<T>&) = delete;"
@@ -488,7 +488,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
+		      (defclass (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
 			       (progn
@@ -728,7 +728,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass+ (client_interface :template "typename T") ()
+		      (defclass (client_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod client_interface ()
@@ -843,7 +843,7 @@
 		      "// header"
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
-		      (defclass+ (server_interface :template "typename T") ()
+		      (defclass (server_interface :template "typename T") ()
 			"public:"
 			
 			(defmethod server_interface (port)
