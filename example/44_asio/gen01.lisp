@@ -230,7 +230,7 @@
 				     break)))
 				(CustomMsgTypes--ServerMessage
 				 (progn
-				   (let ((from_client_id 0))
+				   (let ((from_client_id 0)) 
 				     (declare (type uint32_t from_client_id))
 				     (>> msg from_client_id)
 				     ,(logprint "hello" `(from_client_id)))
