@@ -45,7 +45,7 @@
 	;; https://travisdowns.github.io/blog/2019/11/19/toupper.html
 	;; header reordering can affect compilation performance
 	;; FIXME: figure out how to prevent that
-	(when format
+       #+nil(when format
 	 (sb-ext:run-program "/usr/bin/clang-format"
 			     (list "-i"  (namestring fn)
 				   ;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
@@ -311,7 +311,6 @@ entry return-values contains a list of return values. currently supports type, v
 	  (unless header-only
 	    (format s "~a" (funcall emit `(progn ,@body)))))))))
 
-
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
@@ -348,8 +347,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
-			     (not
-				       (eq in-class-p 'defclass-cpp))
+			     (not (eq in-class-p 'defclass-cpp))
 			    #+nil (or 
 				 ;(eq in-class-p 'defclass+)
 				 ;(eq in-class-p 'defclass-hpp)
@@ -593,7 +591,7 @@ entry return-values contains a list of return values. currently supports type, v
 										when if unless
 										let
 										split-header-and-code
-										defun defmethod defclass))))
+										defun defmethod defclass defclass+))))
 						    ""
 						    ";"))))
 				  (cdr code)))
@@ -648,7 +646,7 @@ entry return-values contains a list of return values. currently supports type, v
 			   (setf class-name name
 				 class-template template
 				 class-template-instance template-instance)))
-		       (format nil "~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+		       (format nil "*649*~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 			       
 			       class-template
 			       (emit class-name)
@@ -691,7 +689,7 @@ entry return-values contains a list of return values. currently supports type, v
 				    (progn
 				      ;; create class declaration with function headers
 				      (funcall hook-defclass
-					       (format nil "*694* ~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
+					       (format nil "*692*~@[template<~a> ~]class ~a~@[<~a>~] ~@[: ~a~] ~a"
 						       
 						       class-template
 						       (emit class-name)
@@ -722,13 +720,13 @@ entry return-values contains a list of return values. currently supports type, v
 						      class-template
 						      (emit e
 							    :class
-							    (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
+							    (emit (format nil "*723*~a~@[<~a>~]" class-name class-template-instance))
 							    :header-only-p nil
 							    :in-class-p 'defclass-cpp))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
-		      (parse-defmethod code #'emit :class current-class :header-only header-only))
+		      (parse-defmethod code #'emit :class current-class :header-only header-only :in-class-p in-class))
 		  #+nil (defmethod*
 			 (if hook-defclass
 			     (parse-defmethod code #'emit :class current-class :header-only t)
