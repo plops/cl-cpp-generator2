@@ -348,7 +348,8 @@ entry return-values contains a list of return values. currently supports type, v
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
-			     in-class-p
+			     (not in-class-p)
+			     header-only
 			    ;(or in-class-p header-only)
 			     )
 		    ;(format t "virtual defmethod~%")
@@ -714,7 +715,7 @@ entry return-values contains a list of return values. currently supports type, v
 					      (format s "~@[template< ~a > ~]~a" class-template (emit e :class
 												      (emit (format nil "~a~@[<~a>~]" class-name class-template-instance))
 													:header-only-p nil
-													:in-class-p t))))))))))))
+													:in-class-p nil))))))))))))
 		  (protected (format nil "protected ~a" (emit (cadr code))))
 		  (public (format nil "public ~a" (emit (cadr code))))
 		  (defmethod
