@@ -111,7 +111,8 @@ entry return-values contains a list of return values. currently supports type, v
 			  (when (eq (first declaration) 'inline)
 			    (setf inline-p t))
 			  (when (eq (first declaration) 'virtual)
-			    (setf virtual-p t))
+			    (setf virtual-p t)
+			    )
 			  (when (eq (first declaration) 'static)
 			    (setf static-p t))
 			  (when (eq (first declaration) 'template)
@@ -136,7 +137,8 @@ entry return-values contains a list of return values. currently supports type, v
 		   (setf looking-p nil)
 		   (push e new-body)))
 	     (push e new-body)))
-    (values (reverse new-body) env (reverse captures) (reverse constructs) const-p explicit-p inline-p static-p virtual-p template template-instance)))
+    (values (reverse new-body) env (reverse captures) (reverse constructs)
+	    const-p explicit-p inline-p static-p virtual-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -246,6 +248,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  ;; 5 virtual
 		  (when (and virtual-p
 			     header-only)
+		    ;(format t "virtual defun~%")
 		    "virtual")
 		  
 		  ;; 6 return value
@@ -327,27 +330,28 @@ entry return-values contains a list of return values. currently supports type, v
 	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
 	
 	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
-		  ;; template
+		  ;; 1 template
 		  (when template
 		    template)
-		  ;; static
+		  ;; 2 static
 		  (when (and static-p
 			     header-only) 
 		    "static")
-		  ;; explicit
+		  ;; 3 explicit
 		  (when (and explicit-p
 			     header-only)
 		    "explicit")
-		  ;; inline
+		  ;; 4 inline
 		  (when (and inline-p
 			     header-only)
 		    "inline")
 		  ;; 5 virtual
 		  (when (and virtual-p
 			     header-only)
+		    ;(format t "virtual defmethod~%")
 		    "virtual")
 		  
-		  ;; return value
+		  ;; 6 return value
 		  (let ((r (gethash 'return-values env)))
 		    (if (< 1 (length r))
 			(break "multiple return values unsupported: ~a"
@@ -357,7 +361,7 @@ entry return-values contains a list of return values. currently supports type, v
 			      (:constructor "") ;; (values :constructor) will not print anything
 			      (t (car r)))
 			    "void")))
-		  ;; function-name, add class if not header
+		  ;; 7 function-name, add class if not header
 		  (if class
 		      (if header-only
 			  name
