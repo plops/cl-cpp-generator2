@@ -14,20 +14,20 @@
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 ;
-template <typename T> class tsqueue {
+*682 * template <typename T> class tsqueue {
 public:
   tsqueue() = default;
   tsqueue(const tsqueue<T> &) = delete;
-  virtual ~tsqueue();
-  const T &front();
-  const T &back();
-  bool empty();
-  void clear();
-  T pop_front();
-  T pop_back();
-  void push_back(const T &item);
-  void push_front(const T &item);
-  void wait_while_empty();
+  *332 * virtual ~tsqueue();
+  *332 *const T &front();
+  *332 *const T &back();
+  *332 * bool empty();
+  *332 * void clear();
+  *332 * T pop_front();
+  *332 * T pop_back();
+  *332 * void push_back(const T &item);
+  *332 * void push_front(const T &item);
+  *332 * void wait_while_empty();
 
 protected:
   std::mutex mux_deq;

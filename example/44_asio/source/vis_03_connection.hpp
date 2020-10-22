@@ -15,28 +15,28 @@
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
 ;
-template <typename T>
-class connection : public std::enable_shared_from_this<connection<T>> {
+*682 * template <typename T>
+       class connection : public std::enable_shared_from_this<connection<T>> {
 public:
   enum class owner { server, client };
-  virtual connection(owner parent, boost::asio::io_context &asio_context,
-                     boost::asio::ip::tcp::socket socket,
-                     tsqueue<owned_message<T>> &q_in);
-  virtual ~connection();
-  uint32_t get_id() const;
-  void connect_to_client(uint32_t uid = 0);
-  void connect_to_server(
-      const boost::asio::ip::tcp::resolver::results_type &endpoints);
-  bool disconnect();
-  bool is_connected() const;
-  void send(const message<T> &msg);
+  *332 * virtual connection(owner parent, boost::asio::io_context &asio_context,
+                            boost::asio::ip::tcp::socket socket,
+                            tsqueue<owned_message<T>> &q_in);
+  *332 * virtual ~connection();
+  *332 * uint32_t get_id() const;
+  *332 * void connect_to_client(uint32_t uid = 0);
+  *332 * void connect_to_server(
+             const boost::asio::ip::tcp::resolver::results_type &endpoints);
+  *332 * bool disconnect();
+  *332 * bool is_connected() const;
+  *332 * void send(const message<T> &msg);
 
 private:
-  void read_header();
-  void read_body();
-  void write_header();
-  void write_body();
-  void add_to_incoming_message_queue();
+  *332 * void read_header();
+  *332 * void read_body();
+  *332 * void write_header();
+  *332 * void write_body();
+  *332 * void add_to_incoming_message_queue();
 
 protected:
   boost::asio::ip::tcp::socket m_socket;

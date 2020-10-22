@@ -12,15 +12,15 @@
 #include "vis_02_tsqueue.hpp"
 #include "vis_03_connection.hpp"
 ;
-template <typename T> class client_interface {
+*682 * template <typename T> class client_interface {
 public:
-  virtual client_interface();
-  virtual ~client_interface();
-  bool connect(const std::string &host, const uint16_t port);
-  void disconnect();
-  bool is_connected();
-  void send(const message<T> &msg);
-  tsqueue<owned_message<T>> &incoming();
+  *332 * virtual client_interface();
+  *332 * virtual ~client_interface();
+  *332 * bool connect(const std::string &host, const uint16_t port);
+  *332 * void disconnect();
+  *332 * bool is_connected();
+  *332 * void send(const message<T> &msg);
+  *332 * tsqueue<owned_message<T>> &incoming();
 
 protected:
   boost::asio::io_context m_asio_context;
