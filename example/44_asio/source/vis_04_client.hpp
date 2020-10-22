@@ -1,18 +1,16 @@
 #ifndef VIS_04_CLIENT_H
 #define VIS_04_CLIENT_H
-#include "utils.h"
-;
-#include "globals.h"
-;
+*1079 * #include "utils.h";
+*1079 * #include "globals.h";
+*1079 * #include<iostream>
 #include <chrono>
-#include <iostream>
 #include <thread>
-;
-#include "vis_01_message.hpp"
+    ;
+*1079 * #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
 #include "vis_03_connection.hpp"
-;
-*682 * template <typename T> class client_interface {
+    ;
+*1079 * *682 * template <typename T> class client_interface {
 public:
   *332 * virtual client_interface();
   *332 * virtual ~client_interface();
@@ -31,6 +29,6 @@ protected:
 private:
   tsqueue<owned_message<T>> m_q_messages_in;
 };
-// header
-;
+*1079 * // header
+    ;
 #endif

@@ -1,20 +1,18 @@
 #ifndef VIS_02_TSQUEUE_H
 #define VIS_02_TSQUEUE_H
-#include "utils.h"
-;
-#include "globals.h"
-;
+*1079 * #include "utils.h";
+*1079 * #include "globals.h";
+*1079 * #include<iostream>
 #include <chrono>
 #include <deque>
-#include <iostream>
 #include <mutex>
 #include <thread>
-;
-#include <boost/asio.hpp>
+    ;
+*1079 * #include<boost / asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
-;
-*682 * template <typename T> class tsqueue {
+    ;
+*1079 * *682 * template <typename T> class tsqueue {
 public:
   tsqueue() = default;
   tsqueue(const tsqueue<T> &) = delete;
@@ -35,6 +33,6 @@ protected:
   std::condition_variable cv_blocking;
   std::deque<T> deq;
 };
-// header
-;
+*1079 * // header
+    ;
 #endif

@@ -1073,10 +1073,10 @@
 		     
 		     (emit-c :code code
 			     :hook-defun #'(lambda (str)
-					     (format sh "~a~%" str)
+					     (format sh "*1076*~a~%" str)
 					     )
 			     :hook-defclass #'(lambda (str)
-						(format sh "~a;~%" str)
+						(format sh "*1079*~a;~%" str)
 						)
 			     :header-only t
 			     )

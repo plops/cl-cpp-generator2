@@ -1,22 +1,21 @@
 #ifndef VIS_03_CONNECTION_H
 #define VIS_03_CONNECTION_H
-#include "utils.h"
-;
-#include "globals.h"
-;
+*1079 * #include "utils.h";
+*1079 * #include "globals.h";
+*1079 * #include<iostream>
 #include <chrono>
-#include <iostream>
 #include <thread>
-;
-#include <boost/asio.hpp>
+    ;
+*1079 * #include<boost / asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
-;
-#include "vis_01_message.hpp"
+    ;
+*1079 * #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
-;
-*682 * template <typename T>
-       class connection : public std::enable_shared_from_this<connection<T>> {
+    ;
+*1079 * *682 *
+    template <typename T>
+    class connection : public std::enable_shared_from_this<connection<T>> {
 public:
   enum class owner { server, client };
   *332 * virtual connection(owner parent, boost::asio::io_context &asio_context,
@@ -47,6 +46,6 @@ protected:
   owner m_owner_type = owner::server;
   uint32_t id = 0;
 };
-// header
-;
+*1079 * // header
+    ;
 #endif

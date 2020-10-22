@@ -1,24 +1,22 @@
 #ifndef VIS_01_MESSAGE_H
 #define VIS_01_MESSAGE_H
-#include "utils.h"
-;
-#include "globals.h"
-;
+*1079 * #include "utils.h";
+*1079 * #include "globals.h";
+*1079 * #include<iostream>
 #include <chrono>
-#include <iostream>
 #include <thread>
 #include <vector>
-;
-#include <boost/asio.hpp>
+    ;
+*1079 * #include<boost / asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
-;
-*682 * template <typename T> class message_header {
+    ;
+*1079 * *682 * template <typename T> class message_header {
 public:
   T id{};
   uint32_t size = 0;
 };
-*682 * template <typename T> class message {
+*1079 * *682 * template <typename T> class message {
 public:
   message_header<T> header{};
   std::vector<uint8_t> body;
@@ -28,13 +26,14 @@ public:
   *332 * template <typename DataType>
          friend message<T> &operator>>(message<T> &msg, DataType &data);
 };
-*682 * template <typename T> class owned_message {
+*1079 * *682 * template <typename T> class owned_message {
 public:
   std::shared_ptr<connection<T>> remote = nullptr;
   message<T> msg;
 };
-// header
+*1079 * // header
 
-template <typename T> class connection;
+    template <typename T>
+    class connection;
 ;
 #endif
