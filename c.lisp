@@ -835,6 +835,7 @@ entry return-values contains a list of return values. currently supports type, v
 			      (format nil "(~a)--" (emit a)))))
 		  (string (format nil "\"~a\"" (cadr code)))
 		  (string-r (format nil "R\"(~a)\"" (cadr code)))
+		  (string-u8 (format nil "u8\"(~a)\"" (cadr code)))
 		  (char (format nil "'~a'" (cadr code)))
 		  (hex (destructuring-bind (number) (cdr code)
 			 (format nil "0x~x" number)))
