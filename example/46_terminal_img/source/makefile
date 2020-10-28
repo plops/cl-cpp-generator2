@@ -4,7 +4,7 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
-CXXFLAGS=-Og -g3 -ggdb \
+CXXFLAGS=-O3 -ffast-math \
 -std=gnu++17 \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
@@ -13,32 +13,22 @@ CXXFLAGS=-Og -g3 -ggdb \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--DASIO_STANDALONE
+-I.
 
 LDFLAGS= \
 -L/usr/local/lib \
 -Wl,--gc-sections \
--Wl,--print-gc-sections \
--lpthread
+-Wl,--print-gc-sections
 
-CFILES:=simple_00_client.cpp
-#$(shell find simple*.| grep .cpp$)
+CFILES:=$(shell find *.cpp| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
-all: server client
+all: vis
 
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 vis: $(OBJ)
-	$(CXX) $^ -o $@ $(LDFLAGS)
-
-# vis_05_server.o vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o
-server: simple_01_server.o 
-	$(CXX) $^ -o $@ $(LDFLAGS)
-
-# vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o vis_04_client.o
-client: simple_00_client.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:

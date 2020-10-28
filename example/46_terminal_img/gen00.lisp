@@ -130,11 +130,13 @@
 		    (include <iostream>
 			     <chrono>
 			     <thread>
-			     
+			     <sys/mman.h>
+			     <fcntl.h>
+			     <unistd.h>
 			     )
 
 
-		    (include "vis_01_message.hpp")
+		    
 		    "using namespace std::chrono_literals;"
 		    " "
 
@@ -150,6 +152,8 @@
 
 		      ))
 
+
+		    "uint8_t *img;"
 		    
 		    (defun main (argc argv
 				 )
@@ -157,6 +161,19 @@
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
+		      (let ((fd (--open (string "img.raw")
+					O_RDONLY))
+			    (img (reinterpret_cast<uint8_t*>
+				  (mmap nullptr
+					(* 170 240 3)
+					PROT_READ
+					(logior MAP_FILE MAP_SHARED)
+					fd 0)))
+			    )
+			(munmap img (* 170 240 3)
+				)
+			(--close fd)
+			)
 		      (return 0)))))
 
 
