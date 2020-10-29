@@ -46,15 +46,11 @@ CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
   }
   // average color for each bucket
   ;
-  if (!((0) == (bg_count))) {
-    for (auto i = 0; (i) < (3); (i) += (1)) {
-      result.bgColor[i] = ((result.bgColor[i]) / (bg_count));
-    }
+  for (auto i = 0; (i) < (3); (i) += (1)) {
+    result.bgColor[i] = ((result.bgColor[i]) / (bg_count));
   }
-  if (!((0) == (fg_count))) {
-    for (auto i = 0; (i) < (3); (i) += (1)) {
-      result.fgColor[i] = ((result.fgColor[i]) / (fg_count));
-    }
+  for (auto i = 0; (i) < (3); (i) += (1)) {
+    result.fgColor[i] = ((result.fgColor[i]) / (fg_count));
   }
   return result;
 }
