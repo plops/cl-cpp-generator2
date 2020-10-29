@@ -18,6 +18,12 @@ using namespace std::chrono_literals;
 
 // bla
 uint8_t *img;
+const int COLOR_STEPS[6] = {0x0, 0x5F, 0x87, 0xAF, 0xD7, 0xFF};
+const int COLOR_STEP_COUNT = 6;
+const int GRAYSCALE_STEP_COUNT = 24;
+const int GRAYSCALE_STEPS[24] = {
+    0x8,  0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
+    0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE};
 int clamp_byte(int value) {
   if ((0) < (value)) {
     if ((value) < (255)) {
@@ -30,10 +36,19 @@ int clamp_byte(int value) {
   }
 }
 void emit_color(int r, int g, int b, bool bg) {
-  auto r = clamp_byte(r);
-  auto g = clamp_byte(g);
-  auto b = clamp_byte(b);
-  ((1) + (2));
+  r = clamp_byte(r);
+  g = clamp_byte(g);
+  b = clamp_byte(b);
+  auto ri = best_index(r, COLOR_STEPS, COLOR_STEP_COUNT);
+  auto gi = best_index(g, COLOR_STEPS, COLOR_STEP_COUNT);
+  auto bi = best_index(b, COLOR_STEPS, COLOR_STEP_COUNT);
+  auto rq = COLOR_STEPS[ri];
+  auto gq = COLOR_STEPS[gi];
+  auto bq = COLOR_STEPS[bi];
+  auto gray = static_cast<int>(std::round((
+      ((((0.29890f)) * (r))) + ((((0.5870f)) * (g))) + ((((0.1140f)) * (b))))));
+  auto gri = best_index(grey, GRAYSCALE_STEPS, GRAYSCALE_STEP_COUNT);
+  auto grq = GRAYSCALE_STEPS[gri];
 }
 int best_index(int value, array(const int) data[], int count) {
   auto result = 0;

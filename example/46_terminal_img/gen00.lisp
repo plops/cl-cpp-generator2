@@ -219,6 +219,25 @@
 
 		(do0
 		 "uint8_t *img;"
+		 ;"const int COLOR_STEP_COUNT = 6;"
+		 ;"const int COLOR_STEPS[COLOR_STEP_COUNT]={0,0x5f,0x87,0xaf,0xd7,0xff};"
+
+		 ,(let ((color (append (list 0)
+				(loop for i from #x5f upto #xff by 40 collect
+				      i)))
+
+		       (gray (loop for i from #x08 upto #xee by 10 collect i)))
+		    `(let ((COLOR_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) color)))
+			   (COLOR_STEP_COUNT ,(length color))
+			   (GRAYSCALE_STEP_COUNT ,(length gray))
+			   (GRAYSCALE_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) gray))))
+		       (declare (type "const int" COLOR_STEP_COUNT GRAYSCALE_STEP_COUNT)
+				(type (array "const int" ,(length color)) COLOR_STEPS)
+				(type (array "const int" ,(length gray)) GRAYSCALE_STEPS))))
+
+
+
+		 
 
 
 		 #+nil (defclass CharData ()
@@ -246,17 +265,26 @@
 					 (extra (string "")))
 				(loop for c in prefixes
 				      collect
-				      (let ((cnew "bla" ;(format nil "~a~a" c extra)
+				      (let ((cnew (format nil "~a~a" c extra)
 						  ))
 					(funcall fun c cnew)))))
 			 `(do0
 			   
-			   #+nil ,@(iter :fun #'(lambda (c cnew)
-					   `(setf ,c (clamp_byte ,c))))
-			   (let (,@(iter :fun #'(lambda (c cnew)
-					   `(,c (clamp_byte ,c)))))
-			     (+ 1 2)
-			     ))))
+			   ,@(iter :fun #'(lambda (c cnew)
+					    `(setf ,c (clamp_byte ,c))))
+			   (let (,@(iter :extra "i"
+					 :fun #'(lambda (c cnew)
+						  `(,cnew (best_index ,c COLOR_STEPS COLOR_STEP_COUNT))))
+				 ,@(iter :extra "q"
+					 :fun #'(lambda (c cnew)
+						  `(,cnew (aref COLOR_STEPS ,(format nil "~ai" c)))))
+				 (gray (static_cast<int> (std--round (+ (* .2989s0 r)
+									(* .587s0 g)
+									(* .114s0 b)))))
+				 (gri (best_index grey GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
+				 (grq (aref GRAYSCALE_STEPS gri))))
+			   
+			  )))
 
 		   (defun best_index (value data[] count)
 		      (declare (type int value count)
@@ -456,5 +484,3 @@
 		    " "))))
 
 
-
- 
