@@ -157,7 +157,7 @@
 		      ))
 
 
-	         ,(let ((l `((#x00000000 #x00a0)
+	         #+nil ,(let ((l `((#x00000000 #x00a0)
 			       (#x0000000f #x2581)
 			       (#x000000ff #x2582)
 			       (#x00000fff #x2583)
@@ -272,7 +272,7 @@
 				   (incf bg_count)))
 			  (dotimes (i 3)
 			    (incf (aref avg i)
-				  (aref img (+ i (* 3 (+ (* x0 x (* w (+ y0 y))))))))
+				  (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))
 
 			    )
 			  (setf mask (>> mask 1)))))
@@ -296,7 +296,7 @@
 		   (declare (values float)
 			    (type float x))
 		   (return (* x x)))
-		 (defun best_index (value data[] count)
+		 #+nil (defun best_index (value data[] count)
 		   (declare (type int value count)
 			    (type "const int" data[])
 			    (values int))
@@ -414,9 +414,9 @@
 			   (<= y (- h 8))
 			   (incf y 8))
 			  (for ((= "int x" 0)
-				(<= x (- h 4))
-				(incf y 4))
-			       (let ((charData (createCharData img w h x y #x2584 #x0000ffff)))
+				(<= x (- w 4))
+				(incf x 4))
+			       (let ((charData (createCharData img w h x y (hex #x2584) (hex #x0000ffff))))
 				 (when (or (== 0 x)
 					   (!= charData.bgColor
 					       lastCharData.bgColor))
@@ -427,9 +427,9 @@
 				 (when (or (== 0 x)
 					   (!= charData.fgColor
 					       lastCharData.fgColor))
-				   (emit_color (aref charData.bgColor 0)
-					       (aref charData.bgColor 1)
-					       (aref charData.bgColor 2)
+				   (emit_color (aref charData.fgColor 0)
+					       (aref charData.fgColor 1)
+					       (aref charData.fgColor 2)
 					       false))
 				 (emitCodepoint charData.codePoint)
 				 (setf lastCharData charData)

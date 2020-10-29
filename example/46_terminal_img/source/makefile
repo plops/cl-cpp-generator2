@@ -4,7 +4,7 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
-CXXFLAGS=-O3 -ffast-math \
+CXXFLAGS=-Og -ggdb3 -ffast-math \
 -std=gnu++17 \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \

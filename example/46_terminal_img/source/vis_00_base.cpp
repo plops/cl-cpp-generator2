@@ -18,7 +18,6 @@ using namespace std::chrono_literals;
 
 // implementation
 #include "vis_00_base.hpp"
-// bla
 uint8_t *img;
 CharData::CharData(int codepoint) : codePoint(codepoint) {}
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
@@ -38,8 +37,8 @@ CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
         (bg_count)++;
       }
       for (auto i = 0; (i) < (3); (i) += (1)) {
-        (avg[i]) += (img[(
-            (i) + (((3) * (((((x0) * (x) * (((w) * (((y0) + (y))))))))))))]);
+        (avg[i]) +=
+            (img[((i) + (((3) * (((x0) + (x) + (((w) * (((y0) + (y))))))))))]);
       }
       mask = (mask) >> (1);
     }
@@ -57,18 +56,6 @@ CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
   return result;
 }
 float sqr(float x) { return ((x) * (x)); }
-int best_index(int value, const int data[], int count) {
-  auto result = 0;
-  auto best_diff = std::abs(((data[0]) - (value)));
-  for (int i = 1; (i) < (count); (i)++) {
-    auto diff = std::abs(((data[i]) - (value)));
-    if ((diff) < (best_diff)) {
-      result = i;
-      best_diff = diff;
-    }
-  }
-  return result;
-}
 int clamp_byte(int value) {
   if ((0) < (value)) {
     if ((value) < (255)) {
@@ -120,15 +107,15 @@ void emitCodepoint(int codepoint) {
 void emit_image(uint8_t *img, int w, int h) {
   auto lastCharData = CharData(0);
   for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
-    for (int x = 0; (x) <= (((h) - (4))); (y) += (4)) {
-      auto charData = createCharData(img, w, h, x, y, 9604, 65535);
+    for (int x = 0; (x) <= (((w) - (4))); (x) += (4)) {
+      auto charData = createCharData(img, w, h, x, y, 0x2584, 0xFFFF);
       if ((((0) == (x)) || ((charData.bgColor) != (lastCharData.bgColor)))) {
         emit_color(charData.bgColor[0], charData.bgColor[1],
                    charData.bgColor[2], true);
       }
       if ((((0) == (x)) || ((charData.fgColor) != (lastCharData.fgColor)))) {
-        emit_color(charData.bgColor[0], charData.bgColor[1],
-                   charData.bgColor[2], false);
+        emit_color(charData.fgColor[0], charData.fgColor[1],
+                   charData.fgColor[2], false);
       }
       emitCodepoint(charData.codePoint);
       lastCharData = charData;
