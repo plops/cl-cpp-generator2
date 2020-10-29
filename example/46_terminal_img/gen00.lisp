@@ -157,7 +157,8 @@
 		      ))
 
 
-	         #+nil ,(let ((l `((#x00000000 #x00a0)
+	       
+  #+nil ,(let ((l `((#x00000000 #x00a0)
 			       (#x0000000f #x2581)
 			       (#x000000ff #x2582)
 			       (#x00000fff #x2583)
@@ -216,7 +217,6 @@
 			 "// bla")
 
 		      )
-
 		(do0
 		 "uint8_t *img;"
 		 ;"const int COLOR_STEP_COUNT = 6;"
@@ -296,23 +296,7 @@
 		   (declare (values float)
 			    (type float x))
 		   (return (* x x)))
-		 #+nil (defun best_index (value data[] count)
-		   (declare (type int value count)
-			    (type "const int" data[])
-			    (values int))
-		   (let ((result 0)
-			 (best_diff (std--abs (- (aref data 0)
-						 value))))
-		     (for ((= "int i" 1)
-			   (< i count)
-			   (incf i))
-			  (let ((diff (std--abs (- (aref data i)
-						   value))))
-			    (when (< diff best_diff)
-			      (setf result i
-				    best_diff diff))))
-		     
-		     (return result)))
+	
 		 (defun clamp_byte (value)
 		   (declare (inline)
 			    (type int value)
@@ -337,50 +321,7 @@
 			   r (string ";")
 			   g (string ";")
 			   b (string "m")))
-		   #+nil ,(flet ((iter (&key
-				    (prefixes `(r g b))
-				    fun
-				    (extra (string "")))
-			     (loop for c in prefixes
-				   collect
-				   (let ((cnew (format nil "~a~a" c extra)
-					       ))
-				     (funcall fun c cnew)))))
-		      `(do0
-			
-			,@(iter :fun #'(lambda (c cnew)
-					 `(setf ,c (clamp_byte ,c))))
-			(let (,@(iter :extra "i"
-				      :fun #'(lambda (c cnew)
-					       `(,cnew (best_index ,c COLOR_STEPS COLOR_STEP_COUNT))))
-			      ,@(iter :extra "q"
-				      :fun #'(lambda (c cnew)
-					       `(,cnew (aref COLOR_STEPS ,(format nil "~ai" c)))))
-			      (gray (static_cast<int> (std--round (+ (* .2989s0 r)
-								     (* .587s0 g)
-								     (* .114s0 b)))))
-			      (gri (best_index gray GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
-			      (grq (aref GRAYSCALE_STEPS gri))
-			      (color_index 0))
-			  (if (< (+ (* .2989s0 (sqr (- rq r)))
-				    (* .587s0 (sqr (- gq g)))
-				    (* .114s0 (sqr (- bq b))))
-				 (+ (* .2989s0 (sqr (- grq r)))
-				    (* .587s0 (sqr (- grq g)))
-				    (* .114s0 (sqr (- grq b)))))
-			      (setf color_index (+ 16
-						   (* 36 ri)
-						   (* 6 gi)
-						   bi))
-			      (setf color_index (+ 232 gri)))
-			  )
-			(if bg
-			    (<< std--cout (string "\\x1B[48;5;")
-				color_index (string "m"))
-			    (<< std--cout (string "\\x001B[38;5;")
-				color_index (string "m")))
-			
-			)))
+		)
 
 		 
 
@@ -463,6 +404,146 @@
 			(--close fd)
 			)
 		      (return 0)))))
+
+    (define-module
+       `(complex ((_main_version :type "std::string")
+	       (_code_repository :type "std::string")
+	       (_code_generation_time :type "std::string")
+	       )
+	      (do0
+	       
+	    
+		    (include <iostream>
+			     <chrono>
+			     <thread>
+			     <sys/mman.h>
+			     <fcntl.h>
+			     <unistd.h>
+			     <array>
+			     <bitset>
+			     <cmath>
+			     <map>
+			     )
+
+
+		    
+		    "using namespace std::chrono_literals;"
+		    " "
+
+		     (split-header-and-code
+		     (do0
+		      "// header"
+
+		      " "
+
+		      )
+		     (do0
+		      "// implementation"
+		      (include "vis_00_base.hpp")
+		      ))
+
+
+	       
+  #+nil ,(let ((l `((#x00000000 #x00a0)
+			       (#x0000000f #x2581)
+			       (#x000000ff #x2582)
+			       (#x00000fff #x2583)
+			       (#x0000ffff #x2584)
+			       (#x000fffff #x2585)
+			       (#x00ffffff #x2586)
+			       (#x0fffffff #x2587)
+			       (#xeeeeeeee #x258a)
+			       (#xcccccccc #x258c)
+			       (#x88888888 #x258e)
+			       (#x0000cccc #x2596)
+			       (#x00003333 #x2597)
+			       (#xcccc0000 #x2598)
+			       (#xcccc3333 #x259a)
+			       (#x33330000 #x259d)
+			       (#x3333cccc #x259e)
+			       (#x3333ffff #x259f)
+			       (#x000ff000 #x2501)
+			       (#x66666666 #x2503)
+			       (#x00077666 #x250f)
+			       (#x000ee666 #x2513)
+			       (#x66677000 #x2517)
+			       (#x666ee000 #x251b)
+			       (#x66677666 #x2523)
+			       (#x666ee666 #x252b)
+			       (#x000ff666 #x2533)
+			       (#x666ff000 #x253b)
+			       (#x666ff666 #x254b)
+			       (#x000cc000 #x2578)
+			       (#x00066000 #x2579)
+			       (#x00033000 #x257a)
+			       (#x00066000 #x257b)
+			       (#x06600660 #x254f)
+			       (#x000f0000 #x2500)
+			       (#x0000f000 #x2500)
+			       (#x44444444 #x2502)
+			       (#x22222222 #x2502)
+			       (#x000e0000 #x2574)
+			       (#x0000e000 #x2574)
+			       (#x44440000 #x2575)
+			       (#x22220000 #x2575)
+			       (#x00030000 #x2576)
+			       (#x00003000 #x2576)
+			       (#x00004444 #x2577)
+			       (#x00002222 #x2577)
+			       (#x44444444 #x23a2)
+			       (#x22222222 #x23a5)
+			       (#x0f000000 #x23ba)
+			       (#x00f00000 #x23bb)
+			       (#x00000f00 #x23bc)
+			       (#x000000f0 #x23bd)
+			       (#x00066000 #x25aa)))
+			  )
+
+		       `(do0
+			 "// bla")
+
+		      )
+	
+
+		(defun createCharData (img w h x0 y0 codepoint pattern)
+		  (declare (type uint8_t* img)
+			   (type int w h x0 y0 codepoint pattern)
+			   (values CharData))
+		  (let ((result (CharData codepoint))
+			(fg_count 0)
+			(bg_count 0)
+			(mask (hex #x80000000)))
+		    (dotimes (y 8)
+		      (dotimes (x 4)
+			(let ((avg))
+			  (declare (type int* avg))
+			  (if (logand pattern mask)
+			      (do0 (setf avg (result.fgColor.data))
+				   (incf fg_count))
+			      (do0 (setf avg (result.bgColor.data))
+				   (incf bg_count)))
+			  (dotimes (i 3)
+			    (incf (aref avg i)
+				  (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))
+
+			    )
+			  (setf mask (>> mask 1)))))
+		    (comments "average color for each bucket")
+		    (dotimes (i 3)
+		      (unless (== 0 bg_count)
+			(setf (aref result.bgColor i)
+			      (/ (aref result.bgColor i)
+				 bg_count)
+			      ))
+		      (unless (== 0 fg_count)
+			(setf (aref result.fgColor i)
+			      (/ (aref result.fgColor i)
+				 fg_count)
+			      )))
+		    (return result)))
+		
+
+	)))
 
 
     
