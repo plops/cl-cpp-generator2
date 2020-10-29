@@ -20,12 +20,6 @@ using namespace std::chrono_literals;
 #include "vis_00_base.hpp"
 // bla
 uint8_t *img;
-const int COLOR_STEPS[6] = {0x0, 0x5F, 0x87, 0xAF, 0xD7, 0xFF};
-const int COLOR_STEP_COUNT = 6;
-const int GRAYSCALE_STEP_COUNT = 24;
-const int GRAYSCALE_STEPS[24] = {
-    0x8,  0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
-    0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE};
 CharData::CharData(int codepoint) : codePoint(codepoint) {}
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
                         int codepoint, int pattern) {
@@ -87,34 +81,12 @@ int clamp_byte(int value) {
   }
 }
 void emit_color(int r, int g, int b, bool bg) {
-  r = clamp_byte(r);
-  g = clamp_byte(g);
-  b = clamp_byte(b);
-  auto ri = best_index(r, COLOR_STEPS, COLOR_STEP_COUNT);
-  auto gi = best_index(g, COLOR_STEPS, COLOR_STEP_COUNT);
-  auto bi = best_index(b, COLOR_STEPS, COLOR_STEP_COUNT);
-  auto rq = COLOR_STEPS[ri];
-  auto gq = COLOR_STEPS[gi];
-  auto bq = COLOR_STEPS[bi];
-  auto gray = static_cast<int>(std::round((
-      ((((0.29890f)) * (r))) + ((((0.5870f)) * (g))) + ((((0.1140f)) * (b))))));
-  auto gri = best_index(gray, GRAYSCALE_STEPS, GRAYSCALE_STEP_COUNT);
-  auto grq = GRAYSCALE_STEPS[gri];
-  auto color_index = 0;
-  if (((((((0.29890f)) * (sqr(((rq) - (r)))))) +
-        ((((0.5870f)) * (sqr(((gq) - (g)))))) +
-        ((((0.1140f)) * (sqr(((bq) - (b)))))))) <
-      ((((((0.29890f)) * (sqr(((grq) - (r)))))) +
-        ((((0.5870f)) * (sqr(((grq) - (g)))))) +
-        ((((0.1140f)) * (sqr(((grq) - (b))))))))) {
-    color_index = ((16) + (((36) * (ri))) + (((6) * (gi))) + (bi));
-  } else {
-    color_index = ((232) + (gri));
-  }
   if (bg) {
-    (std::cout) << ("\x1B[48;5;") << (color_index) << ("m");
+    (std::cout) << ("\x1b[48;2;") << (r) << (";") << (g) << (";") << (b)
+                << ("m");
   } else {
-    (std::cout) << ("\x001B[38;5;") << (color_index) << ("m");
+    (std::cout) << ("\x1b[38;2;") << (r) << (";") << (g) << (";") << (b)
+                << ("m");
   }
 }
 void emitCodepoint(int codepoint) {
@@ -165,14 +137,6 @@ void emit_image(uint8_t *img, int w, int h) {
   }
 }
 int main(int argc, char **argv) {
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
-      << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
-      << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
   auto fd = ::open("img.raw", O_RDONLY);
   auto const w = 170;
   auto const h = 240;

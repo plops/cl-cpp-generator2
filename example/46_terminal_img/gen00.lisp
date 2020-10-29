@@ -222,7 +222,7 @@
 		 ;"const int COLOR_STEP_COUNT = 6;"
 		 ;"const int COLOR_STEPS[COLOR_STEP_COUNT]={0,0x5f,0x87,0xaf,0xd7,0xff};"
 
-		 ,(let ((color (append (list 0)
+		#+nil ,(let ((color (append (list 0)
 				(loop for i from #x5f upto #xff by 40 collect
 				      i)))
 
@@ -326,7 +326,18 @@
 		   (declare (type int r g b)
 			    (type bool bg)
 			    )
-		   ,(flet ((iter (&key
+		   (if bg
+		       (<< std--cout (string
+				      "\\x1b[48;2;")
+			   r (string ";")
+			   g (string ";")
+			   b (string "m"))
+		       (<< std--cout (string
+				      "\\x1b[38;2;")
+			   r (string ";")
+			   g (string ";")
+			   b (string "m")))
+		   #+nil ,(flet ((iter (&key
 				    (prefixes `(r g b))
 				    fun
 				    (extra (string "")))
@@ -435,7 +446,7 @@
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
-		      ,(logprint "start" `(argc (aref argv 0)))
+		      ;,(logprint "start" `(argc (aref argv 0)))
 		      (let ((fd (--open (string "img.raw")
 					O_RDONLY))
 			    ("const w" 170)
