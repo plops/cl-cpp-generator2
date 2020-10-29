@@ -24,6 +24,20 @@ const int GRAYSCALE_STEP_COUNT = 24;
 const int GRAYSCALE_STEPS[24] = {
     0x8,  0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE};
+CharData::CharData() {}
+float sqr(float x) { return ((x) * (x)); }
+int best_index(int value, array(const int) data[], int count) {
+  auto result = 0;
+  auto best_diff = std::abs(((data[0]) - (value)));
+  for (int i = 1; (i) < (count); (i)++) {
+    auto diff = std::abs(((data[i]) - (value)));
+    if ((diff) < (best_diff)) {
+      result = i;
+      best_diff = diff;
+    }
+  }
+  return result;
+}
 int clamp_byte(int value) {
   if ((0) < (value)) {
     if ((value) < (255)) {
@@ -49,18 +63,22 @@ void emit_color(int r, int g, int b, bool bg) {
       ((((0.29890f)) * (r))) + ((((0.5870f)) * (g))) + ((((0.1140f)) * (b))))));
   auto gri = best_index(grey, GRAYSCALE_STEPS, GRAYSCALE_STEP_COUNT);
   auto grq = GRAYSCALE_STEPS[gri];
-}
-int best_index(int value, array(const int) data[], int count) {
-  auto result = 0;
-  auto best_diff = std::abs(((data[0]) - (value)));
-  for (int i = 1; (i) < (count); (i)++) {
-    auto diff = std::abs(((data[i]) - (value)));
-    if ((diff) < (best_diff)) {
-      result = i;
-      best_diff = diff;
-    }
+  auto color_index = 0;
+  if (((((((0.29890f)) * (sqr(((rq) - (r)))))) +
+        ((((0.5870f)) * (sqr(((gq) - (g)))))) +
+        ((((0.1140f)) * (sqr(((bq) - (b)))))))) <
+      ((((((0.29890f)) * (sqr(((grq) - (r)))))) +
+        ((((0.5870f)) * (sqr(((grq) - (g)))))) +
+        ((((0.1140f)) * (sqr(((grq) - (b))))))))) {
+    color_index = ((16) + (((36) * (ri))) + (((6) * (gi))) + (bi));
+  } else {
+    color_index = ((232) + (gri));
   }
-  return result;
+  if (bg) {
+    (std::cout) << ("\x1B[48;5;") << (color_index) << ("m");
+  } else {
+    (std::cout) << ("\x001B[38;5;") << (color_index) << ("m");
+  }
 }
 void emit_image(uint8_t *img, int w, int h) {
   auto lastCharData = CharData();

@@ -240,12 +240,38 @@
 		 
 
 
-		 #+nil (defclass CharData ()
-		   "std::array<int,3> fgColor = std::array<int,3>{0,0,0};"
+		  (defclass CharData ()
+		    "public:"
+		    (defmethod CharData ()
+		      (declare (values :constructor)))
+		    "std::array<int,3> fgColor = std::array<int,3>{0,0,0};"
 		   "std::array<int,3> bgColor = std::array<int,3>{0,0,0};"
-		   "int codePoint;"))
+					 "int codePoint;"
+		    
+		    ))
 
-		(do0 
+		(do0
+		 (defun sqr (x)
+		   (declare (values float)
+			    (type float x))
+		   (return (* x x)))
+		 (defun best_index (value data[] count)
+		      (declare (type int value count)
+			       (type (array "const int") data[])
+			       (values int))
+		      (let ((result 0)
+			    (best_diff (std--abs (- (aref data 0)
+						    value))))
+			(for ((= "int i" 1)
+			      (< i count)
+			      (incf i))
+			     (let ((diff (std--abs (- (aref data i)
+						      value))))
+			       (when (< diff best_diff)
+				 (setf result i
+				       best_diff diff))))
+			
+			(return result)))
 		 (defun clamp_byte (value)
 		   (declare (inline)
 			    (type int value)
@@ -282,27 +308,29 @@
 									(* .587s0 g)
 									(* .114s0 b)))))
 				 (gri (best_index grey GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
-				 (grq (aref GRAYSCALE_STEPS gri))))
+				 (grq (aref GRAYSCALE_STEPS gri))
+				 (color_index 0))
+			     (if (< (+ (* .2989s0 (sqr (- rq r)))
+				       (* .587s0 (sqr (- gq g)))
+				       (* .114s0 (sqr (- bq b))))
+				    (+ (* .2989s0 (sqr (- grq r)))
+				       (* .587s0 (sqr (- grq g)))
+				       (* .114s0 (sqr (- grq b)))))
+				 (setf color_index (+ 16
+						      (* 36 ri)
+						      (* 6 gi)
+						      bi))
+				 (setf color_index (+ 232 gri)))
+			     )
+			   (if bg
+			       (<< std--cout (string "\\x1B[48;5;")
+				   color_index (string "m"))
+			       (<< std--cout (string "\\x001B[38;5;")
+				   color_index (string "m")))
 			   
 			  )))
 
-		   (defun best_index (value data[] count)
-		      (declare (type int value count)
-			       (type (array "const int") data[])
-			       (values int))
-		      (let ((result 0)
-			    (best_diff (std--abs (- (aref data 0)
-						    value))))
-			(for ((= "int i" 1)
-			      (< i count)
-			      (incf i))
-			     (let ((diff (std--abs (- (aref data i)
-						      value))))
-			       (when (< diff best_diff)
-				 (setf result i
-				       best_diff diff))))
-			
-			(return result)))
+		   
 
 		   
 		 (defun emit_image (img w h)

@@ -15,9 +15,17 @@
 #include <thread>
 #include <unistd.h>
 ;
+class CharData {
+public:
+  CharData();
+  std::array<int, 3> fgColor = std::array<int, 3>{0, 0, 0};
+  std::array<int, 3> bgColor = std::array<int, 3>{0, 0, 0};
+  int codePoint;
+};
+float sqr(float x);
+int best_index(int value, array(const int) data[], int count);
 inline int clamp_byte(int value);
 void emit_color(int r, int g, int b, bool bg);
-int best_index(int value, array(const int) data[], int count);
 void emit_image(uint8_t *img, int w, int h);
 int main(int argc, char **argv);
 #endif
