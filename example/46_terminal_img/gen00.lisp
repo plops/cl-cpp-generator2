@@ -449,8 +449,8 @@
 		      ;,(logprint "start" `(argc (aref argv 0)))
 		      (let ((fd (--open (string "img.raw")
 					O_RDONLY))
-			    ("const w" 170)
-			    ("const h" 240)
+			    ("const w" 512)
+			    ("const h" 285)
 			    (img (reinterpret_cast<uint8_t*>
 				  (mmap nullptr
 					(* w h 3)
