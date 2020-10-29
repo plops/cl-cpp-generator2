@@ -26,6 +26,7 @@ float sqr(float x);
 int best_index(int value, array(const int) data[], int count);
 inline int clamp_byte(int value);
 void emit_color(int r, int g, int b, bool bg);
+void emitCodepoint(int codepoint);
 void emit_image(uint8_t *img, int w, int h);
 int main(int argc, char **argv);
 #endif

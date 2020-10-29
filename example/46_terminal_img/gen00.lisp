@@ -248,7 +248,9 @@
 		   "std::array<int,3> bgColor = std::array<int,3>{0,0,0};"
 					 "int codePoint;"
 		    
-		    ))
+					 ))
+
+		
 
 		(do0
 		 (defun sqr (x)
@@ -256,22 +258,22 @@
 			    (type float x))
 		   (return (* x x)))
 		 (defun best_index (value data[] count)
-		      (declare (type int value count)
-			       (type (array "const int") data[])
-			       (values int))
-		      (let ((result 0)
-			    (best_diff (std--abs (- (aref data 0)
-						    value))))
-			(for ((= "int i" 1)
-			      (< i count)
-			      (incf i))
-			     (let ((diff (std--abs (- (aref data i)
-						      value))))
-			       (when (< diff best_diff)
-				 (setf result i
-				       best_diff diff))))
-			
-			(return result)))
+		   (declare (type int value count)
+			    (type (array "const int") data[])
+			    (values int))
+		   (let ((result 0)
+			 (best_diff (std--abs (- (aref data 0)
+						 value))))
+		     (for ((= "int i" 1)
+			   (< i count)
+			   (incf i))
+			  (let ((diff (std--abs (- (aref data i)
+						   value))))
+			    (when (< diff best_diff)
+			      (setf result i
+				    best_diff diff))))
+		     
+		     (return result)))
 		 (defun clamp_byte (value)
 		   (declare (inline)
 			    (type int value)
@@ -281,58 +283,79 @@
 			   (return value)
 			   (return 255))
 		       (return 0)))
-		      (defun emit_color (r g b bg)
-		      (declare (type int r g b)
-			       (type bool bg)
-			       )
-			,(flet ((iter (&key
-					 (prefixes `(r g b))
-					 fun
-					 (extra (string "")))
-				(loop for c in prefixes
-				      collect
-				      (let ((cnew (format nil "~a~a" c extra)
-						  ))
-					(funcall fun c cnew)))))
-			 `(do0
-			   
-			   ,@(iter :fun #'(lambda (c cnew)
-					    `(setf ,c (clamp_byte ,c))))
-			   (let (,@(iter :extra "i"
-					 :fun #'(lambda (c cnew)
-						  `(,cnew (best_index ,c COLOR_STEPS COLOR_STEP_COUNT))))
-				 ,@(iter :extra "q"
-					 :fun #'(lambda (c cnew)
-						  `(,cnew (aref COLOR_STEPS ,(format nil "~ai" c)))))
-				 (gray (static_cast<int> (std--round (+ (* .2989s0 r)
-									(* .587s0 g)
-									(* .114s0 b)))))
-				 (gri (best_index grey GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
-				 (grq (aref GRAYSCALE_STEPS gri))
-				 (color_index 0))
-			     (if (< (+ (* .2989s0 (sqr (- rq r)))
-				       (* .587s0 (sqr (- gq g)))
-				       (* .114s0 (sqr (- bq b))))
-				    (+ (* .2989s0 (sqr (- grq r)))
-				       (* .587s0 (sqr (- grq g)))
-				       (* .114s0 (sqr (- grq b)))))
-				 (setf color_index (+ 16
-						      (* 36 ri)
-						      (* 6 gi)
-						      bi))
-				 (setf color_index (+ 232 gri)))
-			     )
-			   (if bg
-			       (<< std--cout (string "\\x1B[48;5;")
-				   color_index (string "m"))
-			       (<< std--cout (string "\\x001B[38;5;")
-				   color_index (string "m")))
-			   
-			  )))
+		 (defun emit_color (r g b bg)
+		   (declare (type int r g b)
+			    (type bool bg)
+			    )
+		   ,(flet ((iter (&key
+				    (prefixes `(r g b))
+				    fun
+				    (extra (string "")))
+			     (loop for c in prefixes
+				   collect
+				   (let ((cnew (format nil "~a~a" c extra)
+					       ))
+				     (funcall fun c cnew)))))
+		      `(do0
+			
+			,@(iter :fun #'(lambda (c cnew)
+					 `(setf ,c (clamp_byte ,c))))
+			(let (,@(iter :extra "i"
+				      :fun #'(lambda (c cnew)
+					       `(,cnew (best_index ,c COLOR_STEPS COLOR_STEP_COUNT))))
+			      ,@(iter :extra "q"
+				      :fun #'(lambda (c cnew)
+					       `(,cnew (aref COLOR_STEPS ,(format nil "~ai" c)))))
+			      (gray (static_cast<int> (std--round (+ (* .2989s0 r)
+								     (* .587s0 g)
+								     (* .114s0 b)))))
+			      (gri (best_index grey GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
+			      (grq (aref GRAYSCALE_STEPS gri))
+			      (color_index 0))
+			  (if (< (+ (* .2989s0 (sqr (- rq r)))
+				    (* .587s0 (sqr (- gq g)))
+				    (* .114s0 (sqr (- bq b))))
+				 (+ (* .2989s0 (sqr (- grq r)))
+				    (* .587s0 (sqr (- grq g)))
+				    (* .114s0 (sqr (- grq b)))))
+			      (setf color_index (+ 16
+						   (* 36 ri)
+						   (* 6 gi)
+						   bi))
+			      (setf color_index (+ 232 gri)))
+			  )
+			(if bg
+			    (<< std--cout (string "\\x1B[48;5;")
+				color_index (string "m"))
+			    (<< std--cout (string "\\x001B[38;5;")
+				color_index (string "m")))
+			
+			)))
 
-		   
+		 
 
-		   
+		 (defun emitCodepoint (codepoint)
+		   (declare (type int codepoint)
+			    )
+		   (when (< codepoint 128)
+		     (<< std--cout (static_cast<char> codepoint))
+		     return)
+		   (when (< codepoint 0x7ff)
+		     (<< std--cout (static_cast<char> (logior #xc0 (>> codepoint 6))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand codepoint #x3f))))
+		     return)
+		   (when (< codepoint 0xffff)
+		     (<< std--cout (static_cast<char> (logior #xe0 (>> codepoint 12))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand (>> codepoint 6) #x3f))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand codepoint #x3f))))
+		     return)
+		   (when (< codepoint 0x10ffff)
+		     (<< std--cout (static_cast<char> (logior #xf0 (>> codepoint 18))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand (>> codepoint 12) #x3f))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand (>> codepoint 6) #x3f))))
+		     (<< std--cout (static_cast<char> (logior #x80 (logand codepoint #x3f))))
+		     return)
+		   (std--err (string "error")))
 		 (defun emit_image (img w h)
 		   (declare (type uint8_t* img)
 			    (type int w h))
@@ -344,7 +367,28 @@
 				(<= x (- h 4))
 				(incf y 4))
 			       (let ((charData (createCharData img w h x y #x2584 #x0000ffff)))
-				 ()))))))
+				 (when (or (== 0 x)
+					   (!= charData.bgColor
+					       lastCharData.bgColor))
+				   (emit_color (aref charData.bgColor 0)
+					       (aref charData.bgColor 1)
+					       (aref charData.bgColor 2)
+					       true))
+				 (when (or (== 0 x)
+					   (!= charData.fgColor
+					       lastCharData.fgColor))
+				   (emit_color (aref charData.bgColor 0)
+					       (aref charData.bgColor 1)
+					       (aref charData.bgColor 2)
+					       false))
+				 (emitCodepoint charData.codePoint)
+				 (setf lastCharData charData)
+				 
+				 )
+			       )
+			  (<< std--cout (string "\\x1b[0m")
+			      std--endl)
+			  ))))
 
 		    
 		    (defun main (argc argv

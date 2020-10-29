@@ -80,13 +80,51 @@ void emit_color(int r, int g, int b, bool bg) {
     (std::cout) << ("\x001B[38;5;") << (color_index) << ("m");
   }
 }
+void emitCodepoint(int codepoint) {
+  if ((codepoint) < (128)) {
+    (std::cout) << (static_cast<char>(codepoint));
+    return;
+  }
+  if ((codepoint) < (0x7ff)) {
+    (std::cout) << (static_cast<char>(((192) | ((codepoint) >> (6)))));
+    (std::cout) << (static_cast<char>(((128) | (((codepoint) & (63))))));
+    return;
+  }
+  if ((codepoint) < (0xffff)) {
+    (std::cout) << (static_cast<char>(((224) | ((codepoint) >> (12)))));
+    (std::cout) << (static_cast<char>(
+        ((128) | ((((codepoint) >> (6)) & (63))))));
+    (std::cout) << (static_cast<char>(((128) | (((codepoint) & (63))))));
+    return;
+  }
+  if ((codepoint) < (0x10ffff)) {
+    (std::cout) << (static_cast<char>(((240) | ((codepoint) >> (18)))));
+    (std::cout) << (static_cast<char>(
+        ((128) | ((((codepoint) >> (12)) & (63))))));
+    (std::cout) << (static_cast<char>(
+        ((128) | ((((codepoint) >> (6)) & (63))))));
+    (std::cout) << (static_cast<char>(((128) | (((codepoint) & (63))))));
+    return;
+  }
+  std::err("error");
+}
 void emit_image(uint8_t *img, int w, int h) {
   auto lastCharData = CharData();
   for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
     for (int x = 0; (x) <= (((h) - (4))); (y) += (4)) {
       auto charData = createCharData(img, w, h, x, y, 9604, 65535);
-      ;
+      if ((((0) == (x)) || ((charData.bgColor) != (lastCharData.bgColor)))) {
+        emit_color(charData.bgColor[0], charData.bgColor[1],
+                   charData.bgColor[2], true);
+      }
+      if ((((0) == (x)) || ((charData.fgColor) != (lastCharData.fgColor)))) {
+        emit_color(charData.bgColor[0], charData.bgColor[1],
+                   charData.bgColor[2], false);
+      }
+      emitCodepoint(charData.codePoint);
+      lastCharData = charData;
     }
+    (std::cout) << ("\x1b[0m") << (std::endl);
   }
 }
 int main(int argc, char **argv) {
