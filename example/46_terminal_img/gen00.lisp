@@ -161,10 +161,6 @@
   
 		(do0
 		 "uint8_t *img;"
-	
-
-		 
-
 
 		  (defclass CharData ()
 		    "public:"
@@ -323,7 +319,8 @@
 					PROT_READ
 					(logior MAP_FILE MAP_SHARED)
 					fd 0))))
-			(emit_image img w h)
+			(dotimes (i 1000)
+			  (emit_image img w h))
 			(munmap img (* w h 3)
 				)
 			(--close fd)

@@ -24,7 +24,7 @@ LDFLAGS= \
 CFILES:=$(shell find *.cpp| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
-all: vis vis1 run vis2
+all: vis vis1 run vis2 vispg
 
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
@@ -33,13 +33,16 @@ vis: $(OBJ)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 vis1: vis_00_base.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-generate=./gmon.out $(LDFLAGS) -lgcov
+	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-generate=./prof_gmon.out $(LDFLAGS) -lgcov
 
 run: vis1
-	./vis1
+	./vis1 > vis1.out
 
 vis2: vis_00_base.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-use=./gmon.out $(LDFLAGS) 
+	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-use=./prof_gmon.out $(LDFLAGS) 
+
+vispg: vis_00_base.cpp
+	$(CXX) -pg $(CXXFLAGS) $^ -o $@  $(LDFLAGS) -lgcov -fprofile-use=./prof_gmon.out
 
 clean:
-	rm -rf gmon.out vis *.o vis1 vis2
+	rm -rf gmon.out vis *.o vis1 vis2 vispg prof_gmon.out vis1.out
