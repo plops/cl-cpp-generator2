@@ -4,7 +4,7 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
-CXXFLAGS=-O3 -ffast-math \
+CXXFLAGS=-O1 -ffast-math \
 -std=gnu++17 \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
@@ -24,7 +24,7 @@ LDFLAGS= \
 CFILES:=$(shell find *.cpp| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
-all: vis vis1 run vis2 vispg
+all: vis vis1 run vis2 vispg runpg
 
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
@@ -44,5 +44,9 @@ vis2: vis_00_base.cpp
 vispg: vis_00_base.cpp
 	$(CXX) -pg $(CXXFLAGS) $^ -o $@  $(LDFLAGS) -lgcov -fprofile-use=./prof_gmon.out
 
+runpg: vispg
+	./vispg > vispg.out
+	gprof vispg gmon.out > vispg_analysis.txt
+
 clean:
-	rm -rf gmon.out vis *.o vis1 vis2 vispg prof_gmon.out vis1.out
+	rm -rf gmon.out vis *.o vis1 vis2 vispg prof_gmon.out vis1.out vispg.out
