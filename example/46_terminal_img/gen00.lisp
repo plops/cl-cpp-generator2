@@ -133,6 +133,10 @@
 			     <sys/mman.h>
 			     <fcntl.h>
 			     <unistd.h>
+			     <array>
+			     <bitset>
+			     <cmath>
+			     <map>
 			     )
 
 
@@ -140,7 +144,7 @@
 		    "using namespace std::chrono_literals;"
 		    " "
 
-		    (split-header-and-code
+		    #+nil (split-header-and-code
 		     (do0
 		      "// header"
 
@@ -153,7 +157,7 @@
 		      ))
 
 
-		    (let ((l `((#x00000000 #x00a0)
+	         ,(let ((l `((#x00000000 #x00a0)
 			       (#x0000000f #x2581)
 			       (#x000000ff #x2582)
 			       (#x00000fff #x2583)
@@ -208,12 +212,83 @@
 			       (#x00066000 #x25aa)))
 			  )
 
-
+		       `(do0
+			 "// bla")
 
 		      )
-		    
-		    "uint8_t *img;"
 
+		(do0
+		 "uint8_t *img;"
+
+
+		 #+nil (defclass CharData ()
+		   "std::array<int,3> fgColor = std::array<int,3>{0,0,0};"
+		   "std::array<int,3> bgColor = std::array<int,3>{0,0,0};"
+		   "int codePoint;"))
+
+		(do0 
+		 (defun clamp_byte (value)
+		   (declare (inline)
+			    (type int value)
+			    (values int))
+		   (if (< 0 value)
+		       (if (< value 255)
+			   (return value)
+			   (return 255))
+		       (return 0)))
+		      (defun emit_color (r g b bg)
+		      (declare (type int r g b)
+			       (type bool bg)
+			       )
+			,(flet ((iter (&key
+					 (prefixes `(r g b))
+					 fun
+					 (extra (string "")))
+				(loop for c in prefixes
+				      collect
+				      (let ((cnew "bla" ;(format nil "~a~a" c extra)
+						  ))
+					(funcall fun c cnew)))))
+			 `(do0
+			   
+			   #+nil ,@(iter :fun #'(lambda (c cnew)
+					   `(setf ,c (clamp_byte ,c))))
+			   (let (,@(iter :fun #'(lambda (c cnew)
+					   `(,c (clamp_byte ,c)))))
+			     (+ 1 2)
+			     ))))
+
+		   (defun best_index (value data[] count)
+		      (declare (type int value count)
+			       (type (array "const int") data[])
+			       (values int))
+		      (let ((result 0)
+			    (best_diff (std--abs (- (aref data 0)
+						    value))))
+			(for ((= "int i" 1)
+			      (< i count)
+			      (incf i))
+			     (let ((diff (std--abs (- (aref data i)
+						      value))))
+			       (when (< diff best_diff)
+				 (setf result i
+				       best_diff diff))))
+			
+			(return result)))
+
+		   
+		 (defun emit_image (img w h)
+		   (declare (type uint8_t* img)
+			    (type int w h))
+		   (let ((lastCharData (CharData)))
+		     (for ((= "int y" 0)
+			   (<= y (- h 8))
+			   (incf y 8))
+			  (for ((= "int x" 0)
+				(<= x (- h 4))
+				(incf y 4))
+			       (let ((charData (createCharData img w h x y #x2584 #x0000ffff)))
+				 ()))))))
 
 		    
 		    (defun main (argc argv
@@ -224,14 +299,15 @@
 		      ,(logprint "start" `(argc (aref argv 0)))
 		      (let ((fd (--open (string "img.raw")
 					O_RDONLY))
+			    ("const w" 170)
+			    ("const h" 240)
 			    (img (reinterpret_cast<uint8_t*>
 				  (mmap nullptr
-					(* 170 240 3)
+					(* w h 3)
 					PROT_READ
 					(logior MAP_FILE MAP_SHARED)
-					fd 0)))
-			    )
-			(munmap img (* 170 240 3)
+					fd 0))))
+			(munmap img (* w h 3)
 				)
 			(--close fd)
 			)

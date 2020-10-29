@@ -4,29 +4,58 @@
 #include "globals.h"
 
 extern State state;
+#include <array>
+#include <bitset>
 #include <chrono>
+#include <cmath>
 #include <fcntl.h>
 #include <iostream>
+#include <map>
 #include <sys/mman.h>
 #include <thread>
 #include <unistd.h>
 using namespace std::chrono_literals;
 
-// implementation
-auto l = quasiquote((0(160))(
-    15(9601), 255(9602), 4095(9603), 65535(9604), 1048575(9605), 16777215(9606),
-    268435455(9607), 4008636142(9610), 3435973836(9612), 2290649224(9614),
-    52428(9622), 13107(9623), 3435921408(9624), 3435934515(9626),
-    858980352(9629), 859032780(9630), 859045887(9631), 1044480(9473),
-    1717986918(9475), 489062(9487), 976486(9491), 1718054912(9495),
-    1718542336(9499), 1718056550(9507), 1718543974(9515), 1046118(9523),
-    1718611968(9531), 1718613606(9547), 835584(9592), 417792(9593),
-    208896(9594), 417792(9595), 106956384(9551), 983040(9472), 61440(9472),
-    1145324612(9474), 572662306(9474), 917504(9588), 57344(9588),
-    1145307136(9589), 572653568(9589), 196608(9590), 12288(9590), 17476(9591),
-    8738(9591), 1145324612(9122), 572662306(9125), 251658240(9146),
-    15728640(9147), 3840(9148), 240(9149), 417792(9642)));
+// bla
 uint8_t *img;
+int clamp_byte(int value) {
+  if ((0) < (value)) {
+    if ((value) < (255)) {
+      return value;
+    } else {
+      return 255;
+    }
+  } else {
+    return 0;
+  }
+}
+void emit_color(int r, int g, int b, bool bg) {
+  auto r = clamp_byte(r);
+  auto g = clamp_byte(g);
+  auto b = clamp_byte(b);
+  ((1) + (2));
+}
+int best_index(int value, array(const int) data[], int count) {
+  auto result = 0;
+  auto best_diff = std::abs(((data[0]) - (value)));
+  for (int i = 1; (i) < (count); (i)++) {
+    auto diff = std::abs(((data[i]) - (value)));
+    if ((diff) < (best_diff)) {
+      result = i;
+      best_diff = diff;
+    }
+  }
+  return result;
+}
+void emit_image(uint8_t *img, int w, int h) {
+  auto lastCharData = CharData();
+  for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
+    for (int x = 0; (x) <= (((h) - (4))); (y) += (4)) {
+      auto charData = createCharData(img, w, h, x, y, 9604, 65535);
+      ;
+    }
+  }
+}
 int main(int argc, char **argv) {
 
   (std::cout)
@@ -37,10 +66,12 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
   auto fd = ::open("img.raw", O_RDONLY);
-  auto img = reinterpret_cast<uint8_t *>(
-      mmap(nullptr, ((170) * (240) * (3)), PROT_READ,
-           ((MAP_FILE) | (MAP_SHARED)), fd, 0));
-  munmap(img, ((170) * (240) * (3)));
+  auto const w = 170;
+  auto const h = 240;
+  auto img =
+      reinterpret_cast<uint8_t *>(mmap(nullptr, ((w) * (h) * (3)), PROT_READ,
+                                       ((MAP_FILE) | (MAP_SHARED)), fd, 0));
+  munmap(img, ((w) * (h) * (3)));
   ::close(fd);
   return 0;
 }
