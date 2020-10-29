@@ -242,14 +242,22 @@
 
 		  (defclass CharData ()
 		    "public:"
-		    (defmethod CharData ()
-		      (declare (values :constructor)))
+		    (defmethod CharData (codepoint)
+		      (declare
+		       (type int codepoint)
+		       (construct (codePoint codepoint))
+		       (values :constructor)))
 		    "std::array<int,3> fgColor = std::array<int,3>{0,0,0};"
 		   "std::array<int,3> bgColor = std::array<int,3>{0,0,0};"
 					 "int codePoint;"
 		    
 					 ))
 
+		(defun createCharData (img w h x0 y0 codepoint pattern)
+		  (declare (type uint8_t* img)
+			   (type int w h x0 y0 codepoint pattern)
+			   (values CharData))
+		  (let ((result (CharData codepoint)))))
 		
 
 		(do0

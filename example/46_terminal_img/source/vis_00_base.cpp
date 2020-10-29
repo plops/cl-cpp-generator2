@@ -24,7 +24,11 @@ const int GRAYSCALE_STEP_COUNT = 24;
 const int GRAYSCALE_STEPS[24] = {
     0x8,  0x12, 0x1C, 0x26, 0x30, 0x3A, 0x44, 0x4E, 0x58, 0x62, 0x6C, 0x76,
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE};
-CharData::CharData() {}
+CharData::CharData(int codepoint) : codePoint(codepoint) {}
+CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
+                        int codepoint, int pattern) {
+  auto result = CharData(codepoint);
+}
 float sqr(float x) { return ((x) * (x)); }
 int best_index(int value, array(const int) data[], int count) {
   auto result = 0;

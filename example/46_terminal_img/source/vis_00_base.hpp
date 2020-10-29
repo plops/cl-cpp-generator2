@@ -17,11 +17,13 @@
 ;
 class CharData {
 public:
-  CharData();
+  CharData(int codepoint);
   std::array<int, 3> fgColor = std::array<int, 3>{0, 0, 0};
   std::array<int, 3> bgColor = std::array<int, 3>{0, 0, 0};
   int codePoint;
 };
+CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
+                        int codepoint, int pattern);
 float sqr(float x);
 int best_index(int value, array(const int) data[], int count);
 inline int clamp_byte(int value);
