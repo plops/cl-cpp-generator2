@@ -446,6 +446,7 @@
 					PROT_READ
 					(logior MAP_FILE MAP_SHARED)
 					fd 0))))
+			(emit_image img w h)
 			(munmap img (* w h 3)
 				)
 			(--close fd)
