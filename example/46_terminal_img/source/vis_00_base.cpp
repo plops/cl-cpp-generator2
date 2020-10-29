@@ -26,7 +26,7 @@ CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
   const int fg_count = ((4) * (4));
   const int bg_count = ((4) * (4));
   auto mask = 0x80000000;
-  auto *avg = result.fgColor.data();
+  auto *avg = result.bgColor.data();
   for (auto y = 0; (y) < (4); (y) += (1)) {
     for (auto x = 0; (x) < (4); (x) += (1)) {
       for (auto i = 0; (i) < (3); (i) += (1)) {
@@ -35,7 +35,7 @@ CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
       }
     }
   }
-  auto *avg1 = result.bgColor.data();
+  auto *avg1 = result.fgColor.data();
   for (auto y = 0; (y) < (4); (y) += (1)) {
     for (auto x = 0; (x) < (4); (x) += (1)) {
       for (auto i = 0; (i) < (3); (i) += (1)) {
