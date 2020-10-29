@@ -158,84 +158,10 @@
 
 
 	       
-  #+nil ,(let ((l `((#x00000000 #x00a0)
-			       (#x0000000f #x2581)
-			       (#x000000ff #x2582)
-			       (#x00000fff #x2583)
-			       (#x0000ffff #x2584)
-			       (#x000fffff #x2585)
-			       (#x00ffffff #x2586)
-			       (#x0fffffff #x2587)
-			       (#xeeeeeeee #x258a)
-			       (#xcccccccc #x258c)
-			       (#x88888888 #x258e)
-			       (#x0000cccc #x2596)
-			       (#x00003333 #x2597)
-			       (#xcccc0000 #x2598)
-			       (#xcccc3333 #x259a)
-			       (#x33330000 #x259d)
-			       (#x3333cccc #x259e)
-			       (#x3333ffff #x259f)
-			       (#x000ff000 #x2501)
-			       (#x66666666 #x2503)
-			       (#x00077666 #x250f)
-			       (#x000ee666 #x2513)
-			       (#x66677000 #x2517)
-			       (#x666ee000 #x251b)
-			       (#x66677666 #x2523)
-			       (#x666ee666 #x252b)
-			       (#x000ff666 #x2533)
-			       (#x666ff000 #x253b)
-			       (#x666ff666 #x254b)
-			       (#x000cc000 #x2578)
-			       (#x00066000 #x2579)
-			       (#x00033000 #x257a)
-			       (#x00066000 #x257b)
-			       (#x06600660 #x254f)
-			       (#x000f0000 #x2500)
-			       (#x0000f000 #x2500)
-			       (#x44444444 #x2502)
-			       (#x22222222 #x2502)
-			       (#x000e0000 #x2574)
-			       (#x0000e000 #x2574)
-			       (#x44440000 #x2575)
-			       (#x22220000 #x2575)
-			       (#x00030000 #x2576)
-			       (#x00003000 #x2576)
-			       (#x00004444 #x2577)
-			       (#x00002222 #x2577)
-			       (#x44444444 #x23a2)
-			       (#x22222222 #x23a5)
-			       (#x0f000000 #x23ba)
-			       (#x00f00000 #x23bb)
-			       (#x00000f00 #x23bc)
-			       (#x000000f0 #x23bd)
-			       (#x00066000 #x25aa)))
-			  )
-
-		       `(do0
-			 "// bla")
-
-		      )
+  
 		(do0
 		 "uint8_t *img;"
-		 ;"const int COLOR_STEP_COUNT = 6;"
-		 ;"const int COLOR_STEPS[COLOR_STEP_COUNT]={0,0x5f,0x87,0xaf,0xd7,0xff};"
-
-		#+nil ,(let ((color (append (list 0)
-				(loop for i from #x5f upto #xff by 40 collect
-				      i)))
-
-		       (gray (loop for i from #x08 upto #xee by 10 collect i)))
-		    `(let ((COLOR_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) color)))
-			   (COLOR_STEP_COUNT ,(length color))
-			   (GRAYSCALE_STEP_COUNT ,(length gray))
-			   (GRAYSCALE_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) gray))))
-		       (declare (type "const int" COLOR_STEP_COUNT GRAYSCALE_STEP_COUNT)
-				(type (array "const int" ,(length color)) COLOR_STEPS)
-				(type (array "const int" ,(length gray)) GRAYSCALE_STEPS))))
-
-
+	
 
 		 
 
@@ -253,41 +179,42 @@
 		    
 					 ))
 
-		(defun createCharData (img w h x0 y0 codepoint pattern)
+		(defun createCharData_simple (img w h x0 y0 codepoint pattern
+					      )
 		  (declare (type uint8_t* img)
 			   (type int w h x0 y0 codepoint pattern)
 			   (values CharData))
 		  (let ((result (CharData codepoint))
-			(fg_count 0)
-			(bg_count 0)
+			(fg_count (* 4 4))
+			(bg_count (* 4 4))
 			(mask (hex #x80000000)))
-		    (dotimes (y 8)
-		      (dotimes (x 4)
-			(let ((avg))
-			  (declare (type int* avg))
-			  (if (logand pattern mask)
-			      (do0 (setf avg (result.fgColor.data))
-				   (incf fg_count))
-			      (do0 (setf avg (result.bgColor.data))
-				   (incf bg_count)))
-			  (dotimes (i 3)
-			    (incf (aref avg i)
-				  (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))
-
-			    )
-			  (setf mask (>> mask 1)))))
-		    (comments "average color for each bucket")
-		    (dotimes (i 3)
-		      (unless (== 0 bg_count)
-			(setf (aref result.bgColor i)
-			      (/ (aref result.bgColor i)
-				 bg_count)
-			      ))
-		      (unless (== 0 fg_count)
-			(setf (aref result.fgColor i)
-			      (/ (aref result.fgColor i)
-				 fg_count)
-			      )))
+		    (declare (type "const int" fg_count bg_count))
+		    (let ((*avg (result.fgColor.data)))
+		     (dotimes (y 4)
+		       (dotimes (x 4)
+			 (dotimes (i 3)
+			   (incf (aref avg i)
+				 (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))))))
+		    (let ((*avg1 (result.bgColor.data)))
+		     (dotimes (y 4)
+		       (dotimes (x 4)
+			 (dotimes (i 3)
+			   (incf (aref avg1 i)
+				 (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y 4)))))))))))
+		    (do0 (comments "average color for each bucket")
+			 
+			 (unless (== 0 bg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.bgColor i)
+				   (/ (aref result.bgColor i)
+				      bg_count)
+				   )))
+			 (unless (== 0 fg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.fgColor i)
+				   (/ (aref result.fgColor i)
+				      fg_count)
+				   ))))
 		    (return result)))
 		
 
@@ -357,7 +284,7 @@
 			  (for ((= "int x" 0)
 				(<= x (- w 4))
 				(incf x 4))
-			       (let ((charData (createCharData img w h x y (hex #x2584) (hex #x0000ffff))))
+			       (let ((charData (createCharData_simple img w h x y (hex #x2584) (hex #x0000ffff))))
 				 (when (or (== 0 x)
 					   (!= charData.bgColor
 					       lastCharData.bgColor))
@@ -406,9 +333,7 @@
 		      (return 0)))))
 
     (define-module
-       `(complex ((_main_version :type "std::string")
-	       (_code_repository :type "std::string")
-	       (_code_generation_time :type "std::string")
+       `(complex (
 	       )
 	      (do0
 	       
@@ -445,7 +370,7 @@
 
 	       
   #+nil ,(let ((l `((#x00000000 #x00a0)
-			       (#x0000000f #x2581)
+			       (#x0000000f #x2581) ;; lower 1/8
 			       (#x000000ff #x2582)
 			       (#x00000fff #x2583)
 			       (#x0000ffff #x2584)

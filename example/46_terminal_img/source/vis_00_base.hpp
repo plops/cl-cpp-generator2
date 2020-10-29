@@ -24,8 +24,8 @@ public:
   std::array<int, 3> bgColor = std::array<int, 3>{0, 0, 0};
   int codePoint;
 };
-CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
-                        int codepoint, int pattern);
+CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
+                               int codepoint, int pattern);
 float sqr(float x);
 inline int clamp_byte(int value);
 void emit_color(int r, int g, int b, bool bg);

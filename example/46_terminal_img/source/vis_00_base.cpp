@@ -20,36 +20,39 @@ using namespace std::chrono_literals;
 #include "vis_00_base.hpp"
 uint8_t *img;
 CharData::CharData(int codepoint) : codePoint(codepoint) {}
-CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
-                        int codepoint, int pattern) {
+CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
+                               int codepoint, int pattern) {
   auto result = CharData(codepoint);
-  auto fg_count = 0;
-  auto bg_count = 0;
+  const int fg_count = ((4) * (4));
+  const int bg_count = ((4) * (4));
   auto mask = 0x80000000;
-  for (auto y = 0; (y) < (8); (y) += (1)) {
+  auto *avg = result.fgColor.data();
+  for (auto y = 0; (y) < (4); (y) += (1)) {
     for (auto x = 0; (x) < (4); (x) += (1)) {
-      int *avg;
-      if (((pattern) & (mask))) {
-        avg = result.fgColor.data();
-        (fg_count)++;
-      } else {
-        avg = result.bgColor.data();
-        (bg_count)++;
-      }
       for (auto i = 0; (i) < (3); (i) += (1)) {
         (avg[i]) +=
             (img[((i) + (((3) * (((x0) + (x) + (((w) * (((y0) + (y))))))))))]);
       }
-      mask = (mask) >> (1);
+    }
+  }
+  auto *avg1 = result.bgColor.data();
+  for (auto y = 0; (y) < (4); (y) += (1)) {
+    for (auto x = 0; (x) < (4); (x) += (1)) {
+      for (auto i = 0; (i) < (3); (i) += (1)) {
+        (avg1[i]) += (img[(
+            (i) + (((3) * (((x0) + (x) + (((w) * (((y0) + (y) + (4))))))))))]);
+      }
     }
   }
   // average color for each bucket
   ;
-  for (auto i = 0; (i) < (3); (i) += (1)) {
-    if (!((0) == (bg_count))) {
+  if (!((0) == (bg_count))) {
+    for (auto i = 0; (i) < (3); (i) += (1)) {
       result.bgColor[i] = ((result.bgColor[i]) / (bg_count));
     }
-    if (!((0) == (fg_count))) {
+  }
+  if (!((0) == (fg_count))) {
+    for (auto i = 0; (i) < (3); (i) += (1)) {
       result.fgColor[i] = ((result.fgColor[i]) / (fg_count));
     }
   }
@@ -108,7 +111,7 @@ void emit_image(uint8_t *img, int w, int h) {
   auto lastCharData = CharData(0);
   for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
     for (int x = 0; (x) <= (((w) - (4))); (x) += (4)) {
-      auto charData = createCharData(img, w, h, x, y, 0x2584, 0xFFFF);
+      auto charData = createCharData_simple(img, w, h, x, y, 0x2584, 0xFFFF);
       if ((((0) == (x)) || ((charData.bgColor) != (lastCharData.bgColor)))) {
         emit_color(charData.bgColor[0], charData.bgColor[1],
                    charData.bgColor[2], true);

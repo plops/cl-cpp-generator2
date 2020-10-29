@@ -1,4 +1,39 @@
-		 (defun emit_color (r g b bg)
+(do0 (comments "average color for each bucket")
+			 
+			 (unless (== 0 bg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.bgColor i)
+				   (/ (aref result.bgColor i)
+				      bg_count)
+				   )))
+			 (unless (== 0 fg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.fgColor i)
+				   (/ (aref result.fgColor i)
+				      fg_count)
+				   ))))
+
+
+
+					;"const int COLOR_STEP_COUNT = 6;"
+		 ;"const int COLOR_STEPS[COLOR_STEP_COUNT]={0,0x5f,0x87,0xaf,0xd7,0xff};"
+
+		#+nil ,(let ((color (append (list 0)
+				(loop for i from #x5f upto #xff by 40 collect
+				      i)))
+
+		       (gray (loop for i from #x08 upto #xee by 10 collect i)))
+		    `(let ((COLOR_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) color)))
+			   (COLOR_STEP_COUNT ,(length color))
+			   (GRAYSCALE_STEP_COUNT ,(length gray))
+			   (GRAYSCALE_STEPS (curly ,@ (mapcar #'(lambda (x) `(hex ,x)) gray))))
+		       (declare (type "const int" COLOR_STEP_COUNT GRAYSCALE_STEP_COUNT)
+				(type (array "const int" ,(length color)) COLOR_STEPS)
+				(type (array "const int" ,(length gray)) GRAYSCALE_STEPS))))
+
+
+
+(defun emit_color (r g b bg)
 		   (declare (type int r g b)
 			    (type bool bg)
 			    )
