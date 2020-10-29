@@ -15,6 +15,8 @@
 #include <thread>
 #include <unistd.h>
 ;
+// header
+;
 class CharData {
 public:
   CharData(int codepoint);
@@ -25,7 +27,7 @@ public:
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
                         int codepoint, int pattern);
 float sqr(float x);
-int best_index(int value, array(const int) data[], int count);
+int best_index(int value, const int data[], int count);
 inline int clamp_byte(int value);
 void emit_color(int r, int g, int b, bool bg);
 void emitCodepoint(int codepoint);

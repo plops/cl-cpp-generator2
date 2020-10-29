@@ -144,7 +144,7 @@
 		    "using namespace std::chrono_literals;"
 		    " "
 
-		    #+nil (split-header-and-code
+		     (split-header-and-code
 		     (do0
 		      "// header"
 
@@ -153,7 +153,7 @@
 		      )
 		     (do0
 		      "// implementation"
-
+		      (include "vis_00_base.hpp")
 		      ))
 
 
@@ -257,7 +257,38 @@
 		  (declare (type uint8_t* img)
 			   (type int w h x0 y0 codepoint pattern)
 			   (values CharData))
-		  (let ((result (CharData codepoint)))))
+		  (let ((result (CharData codepoint))
+			(fg_count 0)
+			(bg_count 0)
+			(mask (hex #x80000000)))
+		    (dotimes (y 8)
+		      (dotimes (x 4)
+			(let ((avg))
+			  (declare (type int* avg))
+			  (if (logand pattern mask)
+			      (do0 (setf avg (result.fgColor.data))
+				   (incf fg_count))
+			      (do0 (setf avg (result.bgColor.data))
+				   (incf bg_count)))
+			  (dotimes (i 3)
+			    (incf (aref avg i)
+				  (aref img (+ i (* 3 (+ (* x0 x (* w (+ y0 y))))))))
+
+			    )
+			  (setf mask (>> mask 1)))))
+		    (comments "average color for each bucket")
+		    (dotimes (i 3)
+		      (unless (== 0 bg_count)
+			(setf (aref result.bgColor i)
+			      (/ (aref result.bgColor i)
+				 bg_count)
+			      ))
+		      (unless (== 0 fg_count)
+			(setf (aref result.fgColor i)
+			      (/ (aref result.fgColor i)
+				 fg_count)
+			      )))
+		    (return result)))
 		
 
 		(do0
@@ -267,7 +298,7 @@
 		   (return (* x x)))
 		 (defun best_index (value data[] count)
 		   (declare (type int value count)
-			    (type (array "const int") data[])
+			    (type "const int" data[])
 			    (values int))
 		   (let ((result 0)
 			 (best_diff (std--abs (- (aref data 0)
@@ -317,7 +348,7 @@
 			      (gray (static_cast<int> (std--round (+ (* .2989s0 r)
 								     (* .587s0 g)
 								     (* .114s0 b)))))
-			      (gri (best_index grey GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
+			      (gri (best_index gray GRAYSCALE_STEPS GRAYSCALE_STEP_COUNT))
 			      (grq (aref GRAYSCALE_STEPS gri))
 			      (color_index 0))
 			  (if (< (+ (* .2989s0 (sqr (- rq r)))
@@ -363,11 +394,11 @@
 		     (<< std--cout (static_cast<char> (logior #x80 (logand (>> codepoint 6) #x3f))))
 		     (<< std--cout (static_cast<char> (logior #x80 (logand codepoint #x3f))))
 		     return)
-		   (std--err (string "error")))
+		   (<< std--cerr (string "error")))
 		 (defun emit_image (img w h)
 		   (declare (type uint8_t* img)
 			    (type int w h))
-		   (let ((lastCharData (CharData)))
+		   (let ((lastCharData (CharData 0)))
 		     (for ((= "int y" 0)
 			   (<= y (- h 8))
 			   (incf y 8))

@@ -16,6 +16,8 @@ extern State state;
 #include <unistd.h>
 using namespace std::chrono_literals;
 
+// implementation
+#include "vis_00_base.hpp"
 // bla
 uint8_t *img;
 const int COLOR_STEPS[6] = {0x0, 0x5F, 0x87, 0xAF, 0xD7, 0xFF};
@@ -28,9 +30,40 @@ CharData::CharData(int codepoint) : codePoint(codepoint) {}
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
                         int codepoint, int pattern) {
   auto result = CharData(codepoint);
+  auto fg_count = 0;
+  auto bg_count = 0;
+  auto mask = 0x80000000;
+  for (auto y = 0; (y) < (8); (y) += (1)) {
+    for (auto x = 0; (x) < (4); (x) += (1)) {
+      int *avg;
+      if (((pattern) & (mask))) {
+        avg = result.fgColor.data();
+        (fg_count)++;
+      } else {
+        avg = result.bgColor.data();
+        (bg_count)++;
+      }
+      for (auto i = 0; (i) < (3); (i) += (1)) {
+        (avg[i]) += (img[(
+            (i) + (((3) * (((((x0) * (x) * (((w) * (((y0) + (y))))))))))))]);
+      }
+      mask = (mask) >> (1);
+    }
+  }
+  // average color for each bucket
+  ;
+  for (auto i = 0; (i) < (3); (i) += (1)) {
+    if (!((0) == (bg_count))) {
+      result.bgColor[i] = ((result.bgColor[i]) / (bg_count));
+    }
+    if (!((0) == (fg_count))) {
+      result.fgColor[i] = ((result.fgColor[i]) / (fg_count));
+    }
+  }
+  return result;
 }
 float sqr(float x) { return ((x) * (x)); }
-int best_index(int value, array(const int) data[], int count) {
+int best_index(int value, const int data[], int count) {
   auto result = 0;
   auto best_diff = std::abs(((data[0]) - (value)));
   for (int i = 1; (i) < (count); (i)++) {
@@ -65,7 +98,7 @@ void emit_color(int r, int g, int b, bool bg) {
   auto bq = COLOR_STEPS[bi];
   auto gray = static_cast<int>(std::round((
       ((((0.29890f)) * (r))) + ((((0.5870f)) * (g))) + ((((0.1140f)) * (b))))));
-  auto gri = best_index(grey, GRAYSCALE_STEPS, GRAYSCALE_STEP_COUNT);
+  auto gri = best_index(gray, GRAYSCALE_STEPS, GRAYSCALE_STEP_COUNT);
   auto grq = GRAYSCALE_STEPS[gri];
   auto color_index = 0;
   if (((((((0.29890f)) * (sqr(((rq) - (r)))))) +
@@ -110,10 +143,10 @@ void emitCodepoint(int codepoint) {
     (std::cout) << (static_cast<char>(((128) | (((codepoint) & (63))))));
     return;
   }
-  std::err("error");
+  (std::cerr) << ("error");
 }
 void emit_image(uint8_t *img, int w, int h) {
-  auto lastCharData = CharData();
+  auto lastCharData = CharData(0);
   for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
     for (int x = 0; (x) <= (((h) - (4))); (y) += (4)) {
       auto charData = createCharData(img, w, h, x, y, 9604, 65535);
