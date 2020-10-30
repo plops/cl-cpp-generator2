@@ -425,8 +425,9 @@
 						       appending
 						       `((hex ,e)
 							 (hex ,f)))))
-			       )
-			   (declare (type (array "const unsigned int" ,(* 2 (length l))) BITMAPS))))
+			       (BITMAPS_COUNT ,(* 2 (length l))))
+			   (declare (type (array "const unsigned int" ,(* 2 (length l))) BITMAPS)
+				    (type "const int" BITMAPS_COUNT))))
 
 		      )
 	
@@ -506,7 +507,110 @@
 				    kv->second
 				    kv->first)
 				   ("std::pair<int,long>"
-				    v k)))))))
+				    v k)))))
+
+		    (do0
+		     ;; what is this? some kind of histogram?
+		     (let ((iter (color_per_count.rbegin))
+			   (count2 iter->first)
+			   (max_count_color1 iter->second)
+			   (max_count_color2 max_count_color1))
+		       (unless (== "(++iter)"
+				   (color_per_count.rend))
+			 (incf count2 iter->first)
+			 (setf max_count_color2 iter->second))))
+
+		    (do0
+		     (let ((bits 0)
+			   (direct (< (/ (* 8 4) 2) count2)))
+		       (if direct
+			   (dotimes (y 8)
+			     (dotimes (x 4)
+			       (setf bits (<< bits 1))
+			       (let ((d1 0)
+				     (d2 0))
+				 (dotimes (i 3)
+				   (let ((shift (- 16 (* 8 i)))
+					 (c1 (logand (>> max_count_color1
+							 shift)
+						     255))
+					 (c2 (logand (>> max_count_color2
+							 shift)
+						     255))
+					 (c (aref img (+ i (* 3 (+ x0 x
+								   (* w (+ y0 y))) ))))
+					 )
+				     (incf d1 (* (- c1 c)
+						 (- c1 c)))
+				     (incf df (* (- c2 c)
+						 (- c2 c)))))
+				 (when (< d2 d1)
+				   (setf bits (logior bits 1))))))
+			   (do0
+			    (comments "determine channel with greatest range")
+			    (let ((splitIndex 0)
+				  (bestSplit 0))
+			      (dotimes (i 3)
+				(let ((delta (- (aref max i)
+						       (aref min i))))
+				 (when (< bestSplit delta)
+				   (setf bestSplit delta
+					 splitIndex i))))
+			      (comments "split at middle instead of median")
+			      (let ((splitValue
+				      (+ (aref min splitIndex)
+					 (/ bestSplit 2))))
+				(comments "bitmap using split and sum the color for both buckets")
+				(dotimes (y 8)
+				  (dotimes (x 4)
+				    (setf bits (<< bits 1))
+				    (when (< splitValue
+					     (aref img (+ splitIndex
+							  (* 3 (+ x0 x
+								  (* w (+ y0 y)))))))
+				      (setf bits (logior 1 bits)))))))))))
+
+		    (do0
+		     (comments "find the best bitmap match by counting bits that don't match, including the inverted bitmaps")
+		     (let ((best_diff 8)
+			   (best_pattern (hex #xffff))
+			   (codepoint (hex #x2584))
+			   (inverted false))
+		       (dotimes (ii (/ BITMAPS_COUNT 2))
+			 (let ((i (* 2 ii))
+			       (pattern (aref BITMAPS i)))
+			   (dotimes (j 2)
+			     (let ((diff (dot (std--bitset<32>
+					       (logxor pattern
+						       bits))
+					      (count))))
+			       (when (< diff best_diff)
+				 (comments "pattern might be inverted")
+				 (setf best_pattern (aref BITMAPS i)
+				       codepoint (aref BITMAPS (+ i 1))
+				       best_diff diff
+				       inverted (!= best_pattern pattern)))
+			       (setf pattern ~pattern)))
+			   ))
+		       (when direct
+			 (let ((result (CharData 0)))
+			   (when inverted
+			     (let ((tmp max_count_color1))
+			       (setf max_count_color1 max_count_color2
+				     max_count_color2 tmp))
+			     )
+			   (dotimes (i 3)
+			     (let ((shift (- 16 (* 8 i))))
+			       (setf (dot result (aref fgColor i))
+				     (logand (>> max_count_color2 255)))
+			       (setf (dot result (aref bgColor i))
+				     (logand (>> max_count_color1 255)))
+			       ))
+			   (setf result.codePoint codepoint)
+			   (return result)))
+		       (return (createCharData img w x0 y0 codepoint best_pattern))
+		       ))
+		    ))
 		
 
 	)))

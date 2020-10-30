@@ -37,6 +37,7 @@ const unsigned int BITMAPS[106] = {
     0x2222,     0x2577, 0x44444444, 0x23A2, 0x22222222, 0x23A5,
     0xF000000,  0x23BA, 0xF00000,   0x23BB, 0xF00,      0x23BC,
     0xF0,       0x23BD, 0x66000,    0x25AA};
+const int BITMAPS_COUNT = 106;
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
                         int codepoint, int pattern) {
   auto result = CharData(codepoint);
@@ -97,4 +98,101 @@ CharData findCharData(uint8_t *img, int w, int x0, int y0) {
   for (const auto &[k, v] : count_per_color) {
     color_per_count.insert(std::pair<int, long>(v, k));
   }
+  auto iter = color_per_count.rbegin();
+  auto count2 = iter->first;
+  auto max_count_color1 = iter->second;
+  auto max_count_color2 = max_count_color1;
+  if (!(((++iter)) == (color_per_count.rend()))) {
+    (count2) += (iter->first);
+    max_count_color2 = iter->second;
+  }
+  auto bits = 0;
+  auto direct = (((((8) * (4))) / (2))) < (count2);
+  if (direct) {
+    for (auto y = 0; (y) < (8); (y) += (1)) {
+      for (auto x = 0; (x) < (4); (x) += (1)) {
+        bits = (bits) << (1);
+        auto d1 = 0;
+        auto d2 = 0;
+        for (auto i = 0; (i) < (3); (i) += (1)) {
+          auto shift = ((16) - (((8) * (i))));
+          auto c1 = (((max_count_color1) >> (shift)) & (255));
+          auto c2 = (((max_count_color2) >> (shift)) & (255));
+          auto c =
+              img[((i) + (((3) * (((x0) + (x) + (((w) * (((y0) + (y))))))))))];
+          (d1) += (((((c1) - (c))) * (((c1) - (c)))));
+          (df) += (((((c2) - (c))) * (((c2) - (c)))));
+        }
+        if ((d2) < (d1)) {
+          bits = ((bits) | (1));
+        }
+      }
+    }
+  } else {
+    // determine channel with greatest range
+    ;
+    auto splitIndex = 0;
+    auto bestSplit = 0;
+    for (auto i = 0; (i) < (3); (i) += (1)) {
+      auto delta = ((max[i]) - (min[i]));
+      if ((bestSplit) < (delta)) {
+        bestSplit = delta;
+        splitIndex = i;
+      }
+    }
+    // split at middle instead of median
+    ;
+    auto splitValue = ((min[splitIndex]) + (((bestSplit) / (2))));
+    // bitmap using split and sum the color for both buckets
+    ;
+    for (auto y = 0; (y) < (8); (y) += (1)) {
+      for (auto x = 0; (x) < (4); (x) += (1)) {
+        bits = (bits) << (1);
+        if ((splitValue) <
+            (img[((splitIndex) +
+                  (((3) * (((x0) + (x) + (((w) * (((y0) + (y))))))))))])) {
+          bits = ((1) | (bits));
+        }
+      }
+    }
+  }
+  // find the best bitmap match by counting bits that don't match, including the
+  // inverted bitmaps
+  ;
+  auto best_diff = 8;
+  auto best_pattern = 0xFFFF;
+  auto codepoint = 0x2584;
+  auto inverted = false;
+  for (auto ii = 0; (ii) < (((BITMAPS_COUNT) / (2))); (ii) += (1)) {
+    auto i = ((2) * (ii));
+    auto pattern = BITMAPS[i];
+    for (auto j = 0; (j) < (2); (j) += (1)) {
+      auto diff = std::bitset<32>(((pattern) ^ (bits))).count();
+      if ((diff) < (best_diff)) {
+        // pattern might be inverted
+        ;
+        best_pattern = BITMAPS[i];
+        codepoint = BITMAPS[((i) + (1))];
+        best_diff = diff;
+        inverted = (best_pattern) != (pattern);
+      }
+      pattern = ~pattern;
+    }
+  }
+  if (direct) {
+    auto result = CharData(0);
+    if (inverted) {
+      auto tmp = max_count_color1;
+      max_count_color1 = max_count_color2;
+      max_count_color2 = tmp;
+    }
+    for (auto i = 0; (i) < (3); (i) += (1)) {
+      auto shift = ((16) - (((8) * (i))));
+      result.fgColor[i] = (((max_count_color2) >> (255)));
+      result.bgColor[i] = (((max_count_color1) >> (255)));
+    }
+    result.codePoint = codepoint;
+    return result;
+  }
+  return createCharData(img, w, x0, y0, codepoint, best_pattern);
 }
