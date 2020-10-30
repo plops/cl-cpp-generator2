@@ -364,9 +364,10 @@
 
 
 	       
-  #+nil ,(let ((l `((#x00000000 #x00a0)
-			       (#x0000000f #x2581) ;; lower 1/8
-			       (#x000000ff #x2582)
+		     #-nil
+		     ,(let ((l `((#x00000000 #x00a0)
+				       (#x0000000f #x2581) ;; lower 1/8
+				       (#x000000ff #x2582)
 			       (#x00000fff #x2583)
 			       (#x0000ffff #x2584)
 			       (#x000fffff #x2585)
@@ -420,7 +421,12 @@
 			  )
 
 		       `(do0
-			 "// bla")
+			 (let ((BITMAPS (curly ,@(loop for (e f) in l
+						       appending
+						       `((hex ,e)
+							 (hex ,f)))))
+			       )
+			   (declare (type (array "const unsigned int" ,(* 2 (length l))) BITMAPS))))
 
 		      )
 	
@@ -448,19 +454,59 @@
 
 			    )
 			  (setf mask (>> mask 1)))))
-		    (comments "average color for each bucket")
-		    (dotimes (i 3)
-		      (unless (== 0 bg_count)
-			(setf (aref result.bgColor i)
-			      (/ (aref result.bgColor i)
-				 bg_count)
-			      ))
-		      (unless (== 0 fg_count)
-			(setf (aref result.fgColor i)
-			      (/ (aref result.fgColor i)
-				 fg_count)
-			      )))
+		   (do0 (comments "average color for each bucket")
+			 
+			 (unless (== 0 bg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.bgColor i)
+				   (/ (aref result.bgColor i)
+				      bg_count)
+				   )))
+			 (unless (== 0 fg_count)
+			   (dotimes (i 3)
+			     (setf (aref result.fgColor i)
+				   (/ (aref result.fgColor i)
+				      fg_count)
+				   ))))
 		    (return result)))
+
+		(defun findCharData (img w x0 y0 )
+		  (declare (values CharData)
+			   (type uint8_t* img)
+			   (type int w x0 y0))
+		  (let ((min (curly 255 255 255))
+			(max (curly  0 0 0))
+			(count_per_color ("std::map<long,int>")))
+		    (declare (type (array int 3) min max))
+		    (do0
+		     (comments "max and min value for each color channel")
+		     (dotimes (y 8)
+		       (dotimes (x 4)
+			 (let ((color 0))
+			   (dotimes (i 3)
+			     (let ((d (static_cast<int> (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))))
+			       (setf (aref min i)
+				     (std--min (aref min i)
+					       d))
+			       (setf (aref max i)
+				     (std--max (aref max i)
+					       d))
+			       ;; create 32bit rgb value
+			       (setf color (logior (<< color 8)
+						   d))))
+			   (incf (aref count_per_color color))))))
+
+		    (do0
+		     (let ((color_per_count ("std::multimap<int,long>")))
+		       (for-range (;(kv :type "const auto&")
+				   ("[k,v]" :type "const auto&")
+				   count_per_color)
+				  (color_per_count.insert
+				   #+nil("std::pair<int,long>"
+				    kv->second
+				    kv->first)
+				   ("std::pair<int,long>"
+				    v k)))))))
 		
 
 	)))

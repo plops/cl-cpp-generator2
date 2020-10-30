@@ -4,7 +4,7 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
-CXXFLAGS=-O1 -ffast-math \
+CXXFLAGS=-O2 -ffast-math \
 -std=gnu++17 \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
@@ -16,10 +16,9 @@ CXXFLAGS=-O1 -ffast-math \
 -I. 
 
 LDFLAGS= \
--L/usr/local/lib
-
-#-Wl,--gc-sections 
-#-Wl,--print-gc-sections
+-L/usr/local/lib \
+-Wl,--gc-sections \
+-Wl,--print-gc-sections
 
 CFILES:=$(shell find *.cpp| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
