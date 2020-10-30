@@ -19,5 +19,5 @@
 ;
 CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
                         int codepoint, int pattern);
-CharData findCharData(uint8_t *img, int w, int x0, int y0);
+CharData findCharData(uint8_t *img, int w, int h, int x0, int y0);
 #endif

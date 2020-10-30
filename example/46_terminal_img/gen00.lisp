@@ -471,10 +471,10 @@
 				   ))))
 		    (return result)))
 
-		(defun findCharData (img w x0 y0 )
+		(defun findCharData (img w h x0 y0 )
 		  (declare (values CharData)
 			   (type uint8_t* img)
-			   (type int w x0 y0))
+			   (type int w h x0 y0))
 		  (let ((min (curly 255 255 255))
 			(max (curly  0 0 0))
 			(count_per_color ("std::map<long,int>")))
@@ -542,7 +542,7 @@
 					 )
 				     (incf d1 (* (- c1 c)
 						 (- c1 c)))
-				     (incf df (* (- c2 c)
+				     (incf d2 (* (- c2 c)
 						 (- c2 c)))))
 				 (when (< d2 d1)
 				   (setf bits (logior bits 1))))))
@@ -572,18 +572,19 @@
 
 		    (do0
 		     (comments "find the best bitmap match by counting bits that don't match, including the inverted bitmaps")
-		     (let ((best_diff 8)
-			   (best_pattern (hex #xffff))
+		     (let ((best_diff (int 8))
+			   (best_pattern ("static_cast<unsigned int>" (hex #xffff)))
 			   (codepoint (hex #x2584))
 			   (inverted false))
+		       
 		       (dotimes (ii (/ BITMAPS_COUNT 2))
 			 (let ((i (* 2 ii))
 			       (pattern (aref BITMAPS i)))
 			   (dotimes (j 2)
-			     (let ((diff (dot (std--bitset<32>
-					       (logxor pattern
-						       bits))
-					      (count))))
+			     (let ((diff (int (dot (std--bitset<32>
+						(logxor pattern
+							bits))
+					       (count)))))
 			       (when (< diff best_diff)
 				 (comments "pattern might be inverted")
 				 (setf best_pattern (aref BITMAPS i)
@@ -602,13 +603,13 @@
 			   (dotimes (i 3)
 			     (let ((shift (- 16 (* 8 i))))
 			       (setf (dot result (aref fgColor i))
-				     (logand (>> max_count_color2 255)))
+				     (logand (>> max_count_color2 shift) 255))
 			       (setf (dot result (aref bgColor i))
-				     (logand (>> max_count_color1 255)))
+				     (logand (>> max_count_color1 shift) 255))
 			       ))
 			   (setf result.codePoint codepoint)
 			   (return result)))
-		       (return (createCharData img w x0 y0 codepoint best_pattern))
+		       (return (createCharData img w h x0 y0 codepoint best_pattern))
 		       ))
 		    ))
 		

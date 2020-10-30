@@ -75,7 +75,7 @@ CharData createCharData(uint8_t *img, int w, int h, int x0, int y0,
   }
   return result;
 }
-CharData findCharData(uint8_t *img, int w, int x0, int y0) {
+CharData findCharData(uint8_t *img, int w, int h, int x0, int y0) {
   int min[3] = {255, 255, 255};
   int max[3] = {0, 0, 0};
   auto count_per_color = std::map<long, int>();
@@ -121,7 +121,7 @@ CharData findCharData(uint8_t *img, int w, int x0, int y0) {
           auto c =
               img[((i) + (((3) * (((x0) + (x) + (((w) * (((y0) + (y))))))))))];
           (d1) += (((((c1) - (c))) * (((c1) - (c)))));
-          (df) += (((((c2) - (c))) * (((c2) - (c)))));
+          (d2) += (((((c2) - (c))) * (((c2) - (c)))));
         }
         if ((d2) < (d1)) {
           bits = ((bits) | (1));
@@ -159,15 +159,15 @@ CharData findCharData(uint8_t *img, int w, int x0, int y0) {
   // find the best bitmap match by counting bits that don't match, including the
   // inverted bitmaps
   ;
-  auto best_diff = 8;
-  auto best_pattern = 0xFFFF;
+  auto best_diff = int(8);
+  auto best_pattern = static_cast<unsigned int>(0xFFFF);
   auto codepoint = 0x2584;
   auto inverted = false;
   for (auto ii = 0; (ii) < (((BITMAPS_COUNT) / (2))); (ii) += (1)) {
     auto i = ((2) * (ii));
     auto pattern = BITMAPS[i];
     for (auto j = 0; (j) < (2); (j) += (1)) {
-      auto diff = std::bitset<32>(((pattern) ^ (bits))).count();
+      auto diff = int(std::bitset<32>(((pattern) ^ (bits))).count());
       if ((diff) < (best_diff)) {
         // pattern might be inverted
         ;
@@ -188,11 +188,11 @@ CharData findCharData(uint8_t *img, int w, int x0, int y0) {
     }
     for (auto i = 0; (i) < (3); (i) += (1)) {
       auto shift = ((16) - (((8) * (i))));
-      result.fgColor[i] = (((max_count_color2) >> (255)));
-      result.bgColor[i] = (((max_count_color1) >> (255)));
+      result.fgColor[i] = (((max_count_color2) >> (shift)) & (255));
+      result.bgColor[i] = (((max_count_color1) >> (shift)) & (255));
     }
     result.codePoint = codepoint;
     return result;
   }
-  return createCharData(img, w, x0, y0, codepoint, best_pattern);
+  return createCharData(img, w, h, x0, y0, codepoint, best_pattern);
 }
