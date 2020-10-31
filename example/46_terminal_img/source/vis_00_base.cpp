@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
   auto img =
       reinterpret_cast<uint8_t *>(mmap(nullptr, ((w) * (h) * (3)), PROT_READ,
                                        ((MAP_FILE) | (MAP_SHARED)), fd, 0));
-  for (auto i = 0; (i) < (1); (i) += (1)) {
+  for (auto i = 0; (i) < (10); (i) += (1)) {
     emit_image(img, w, h);
   }
   munmap(img, ((w) * (h) * (3)));
