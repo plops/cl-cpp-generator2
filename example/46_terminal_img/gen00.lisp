@@ -311,15 +311,15 @@
 		      ;,(logprint "start" `(argc (aref argv 0)))
 		      (let ((fd (--open (string "img.raw")
 					O_RDONLY))
-			    ("const w" 512)
-			    ("const h" 285)
+			    ("const w" 300)
+			    ("const h" 200)
 			    (img (reinterpret_cast<uint8_t*>
 				  (mmap nullptr
 					(* w h 3)
 					PROT_READ
 					(logior MAP_FILE MAP_SHARED)
 					fd 0))))
-			(dotimes (i 1000)
+			(dotimes (i 1)
 			  (emit_image img w h))
 			(munmap img (* w h 3)
 				)
@@ -450,7 +450,7 @@
 			      (do0 (setf avg (result.bgColor.data))
 				   (incf bg_count)))
 			  (dotimes (i 3)
-			    (incf (aref avg i)
+			    (incf  (aref avg i)
 				  (aref img (+ i (* 3 (+ x0 x (* w (+ y0 y)))))))
 
 			    )

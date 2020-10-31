@@ -124,12 +124,12 @@ void emit_image(uint8_t *img, int w, int h) {
 }
 int main(int argc, char **argv) {
   auto fd = ::open("img.raw", O_RDONLY);
-  auto const w = 512;
-  auto const h = 285;
+  auto const w = 300;
+  auto const h = 200;
   auto img =
       reinterpret_cast<uint8_t *>(mmap(nullptr, ((w) * (h) * (3)), PROT_READ,
                                        ((MAP_FILE) | (MAP_SHARED)), fd, 0));
-  for (auto i = 0; (i) < (1000); (i) += (1)) {
+  for (auto i = 0; (i) < (1); (i) += (1)) {
     emit_image(img, w, h);
   }
   munmap(img, ((w) * (h) * (3)));
