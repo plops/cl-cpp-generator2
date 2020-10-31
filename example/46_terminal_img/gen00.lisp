@@ -154,6 +154,7 @@
 		     (do0
 		      "// implementation"
 		      (include "vis_00_base.hpp")
+		      (include "vis_01_complex.hpp")
 		      ))
 
 
@@ -278,7 +279,9 @@
 			  (for ((= "int x" 0)
 				(<= x (- w 4))
 				(incf x 4))
-			       (let ((charData (createCharData_simple img w h x y (hex #x2584) (hex #x0000ffff))))
+			       (let ((charData
+				      (findCharData img w h x y)
+				      #+nil (createCharData_simple img w h x y (hex #x2584) (hex #x0000ffff))))
 				 (when (or (== 0 x)
 					   (!= charData.bgColor
 					       lastCharData.bgColor))

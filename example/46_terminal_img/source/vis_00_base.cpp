@@ -18,6 +18,7 @@ using namespace std::chrono_literals;
 
 // implementation
 #include "vis_00_base.hpp"
+#include "vis_01_complex.hpp"
 uint8_t *img;
 CharData::CharData(int codepoint) : codePoint(codepoint) {}
 CharData createCharData_simple(uint8_t *img, int w, int h, int x0, int y0,
@@ -107,7 +108,7 @@ void emit_image(uint8_t *img, int w, int h) {
   auto lastCharData = CharData(0);
   for (int y = 0; (y) <= (((h) - (8))); (y) += (8)) {
     for (int x = 0; (x) <= (((w) - (4))); (x) += (4)) {
-      auto charData = createCharData_simple(img, w, h, x, y, 0x2584, 0xFFFF);
+      auto charData = findCharData(img, w, h, x, y);
       if ((((0) == (x)) || ((charData.bgColor) != (lastCharData.bgColor)))) {
         emit_color(charData.bgColor[0], charData.bgColor[1],
                    charData.bgColor[2], true);
