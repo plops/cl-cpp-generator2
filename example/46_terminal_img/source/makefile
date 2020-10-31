@@ -31,16 +31,16 @@ all: vis vis1 run vis2 vispg runpg
 vis: $(OBJ)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-vis1: vis_00_base.cpp
+vis1: vis_00_base.cpp vis_01_complex.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-generate=./prof_gmon.out $(LDFLAGS) -lgcov
 
 run: vis1
 	./vis1 > vis1.out
 
-vis2: vis_00_base.cpp
+vis2: vis_00_base.cpp vis_01_complex.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ -fprofile-use=./prof_gmon.out $(LDFLAGS) 
 
-vispg: vis_00_base.cpp
+vispg: vis_00_base.cpp vis_01_complex.cpp
 	$(CXX) -pg $(CXXFLAGS) $^ -o $@  $(LDFLAGS) -lgcov -fprofile-use=./prof_gmon.out
 
 runpg: vispg
