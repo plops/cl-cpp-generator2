@@ -172,7 +172,8 @@
 		      (do0
 		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 3)
 		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MINOR_VERSION 0)
-		       (let ((ctx (SDL_GLContext nullptr)))
+		       (let (;(ctx (SDL_GLContext nullptr))
+			     )
 			 (SDL_GL_SetAttribute SDL_GL_CONTEXT_PROFILE_MASK
 					      SDL_GL_CONTEXT_PROFILE_CORE)
 			 (let ((windowFlags (logior SDL_WINDOW_OPENGL
@@ -198,7 +199,12 @@
 							 SDL_WINDOWPOS_CENTERED
 							 512 200 windowFlags)))
 			   (unless window
-			     ,(logprint "window error")))))
+			     ,(logprint "window error"))
+			   (let ((ctx (SDL_GL_CreateContext window)))
+			     (unless ctx
+			       ,(logprint "ctx error"))
+			     (when (== 0 (SDL_GL_MakeCurrent window ctx))
+			       ,(logprint "makecurrent error"))))))
 		      #+nil
 		      (let (;(ag (SkAutoGraphics))
 			    (path (SkString (string "skhello.png")))

@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
       << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  auto ctx = SDL_GLContext(nullptr);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   auto windowFlags = ((SDL_WINDOW_OPENGL) | (SDL_WINDOW_RESIZABLE));
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -61,6 +60,28 @@ int main(int argc, char **argv) {
                 << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("window error") << (" ") << (std::endl) << (std::flush);
+  }
+  auto ctx = SDL_GL_CreateContext(window);
+  if (!(ctx)) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("ctx error") << (" ") << (std::endl) << (std::flush);
+  }
+  if ((0) == (SDL_GL_MakeCurrent(window, ctx))) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("makecurrent error") << (" ") << (std::endl)
+                << (std::flush);
   }
   return 0;
 }
