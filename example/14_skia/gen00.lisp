@@ -203,8 +203,33 @@
 			   (let ((ctx (SDL_GL_CreateContext window)))
 			     (unless ctx
 			       ,(logprint "ctx error"))
-			     (when (== 0 (SDL_GL_MakeCurrent window ctx))
-			       ,(logprint "makecurrent error"))))))
+			     (let ((success (SDL_GL_MakeCurrent window ctx)))
+			      (unless (== 0 success )
+				,(logprint "makecurrent error"))
+			       (let ((windowFormat (SDL_GetWindowPixelFormat window))
+				     (dw (int 0))
+				     (dh dw)
+				     (contextType dw)
+				     
+				     )
+				 (SDL_GL_GetAttribute SDL_GL_CONTEXT_PROFILE_MASK &contextType)
+				 (SDL_GL_GetDrawableSize window &dw &dh)
+				 ,(logprint "" `(windowFormat contextType dw dh)
+					    )
+				 (glViewport 0 0 dw dh)
+				 (glClearColor 1 1 1 1)
+				 (glClearStencil 0)
+				 (glClear (logior GL_COLOR_BUFFER_BIT
+						  GL_STENCIL_BUFFER_BIT))
+				 (let ((interface (GrGLMakeNativeInterface))
+				       (grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL; interface
+									   )))
+				       )
+				   ;"sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));"
+				   (SkASSERT grContext)
+				   )))
+			     (SDL_DestroyWindow window)
+			     (SDL_Quit)))))
 		      #+nil
 		      (let (;(ag (SkAutoGraphics))
 			    (path (SkString (string "skhello.png")))
