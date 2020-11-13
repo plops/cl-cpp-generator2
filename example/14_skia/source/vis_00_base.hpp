@@ -8,10 +8,14 @@
 #include <chrono>
 #include <thread>
 ;
+#include <include/gpu/GrBackendSurface.h>
+#include <include/gpu/GrDirectContext.h>
+#include <SDL2/SDL.h>
 #include <include/core/SkCanvas.h>
 #include <include/core/SkGraphics.h>
-#include <include/core/SkString.h>
-#include <include/core/SkImageEncoder.h>
+#include <include/core/SkSurface.h>
+#include <include/gpu/gl/GrGLInterface.h>
+#include <GL/gl.h>
 ;
 // header;
 int main (int argc, char** argv)  ;  

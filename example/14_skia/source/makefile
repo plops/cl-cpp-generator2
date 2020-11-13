@@ -17,7 +17,7 @@ CXXFLAGS=-O2 \
 
 LDFLAGS= \
 -L/home/martin/src/skia/out/Shared \
--lskia \
+-lskia -lSDL2 -lGL \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections \
 -Wl,--rpath=/home/martin/src/skia/out/Shared

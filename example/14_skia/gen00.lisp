@@ -140,10 +140,18 @@
 			     <thread>
 			     
 			     )
-		    (include <include/core/SkCanvas.h>
-			      <include/core/SkGraphics.h>
-			      <include/core/SkString.h>
-			      <include/core/SkImageEncoder.h>)
+		    (include <include/gpu/GrBackendSurface.h>
+			     <include/gpu/GrDirectContext.h>
+			     <SDL2/SDL.h>
+			     <include/core/SkCanvas.h>
+			     <include/core/SkGraphics.h>
+			     <include/core/SkSurface.h>
+			      ;<include/core/SkString.h>
+					;<include/core/SkImageEncoder.h>
+			     <include/gpu/gl/GrGLInterface.h>
+					;<src/gpu/gl/GrGLUtil.h>
+			     <GL/gl.h>
+			      )
 		    " "
 
 		    (split-header-and-code
@@ -154,17 +162,49 @@
 		      "// implementation"
 		      ))
 		    ;; https://skia.googlesource.com/skia/+/master/example/SkiaSDLExample.cpp
-		    ;; https://gist.github.com/zester/1177738/16f3e6a5fe20086f8db3359173d613bd5d154901
+		    
 		    (defun main (argc argv
 				 )
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
+		      (do0
+		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 3)
+		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MINOR_VERSION 0)
+		       (let ((ctx (SDL_GLContext nullptr)))
+			 (SDL_GL_SetAttribute SDL_GL_CONTEXT_PROFILE_MASK
+					      SDL_GL_CONTEXT_PROFILE_CORE)
+			 (let ((windowFlags (logior SDL_WINDOW_OPENGL
+						    SDL_WINDOW_RESIZABLE))
+			       )
+			   ,@(loop for (e f) in `((red_size 8)
+						  (green_size 8)
+						  (blue_size 8)
+						  (doublebuffer 1)
+						  (depth_size 0)
+						  (stencil_size 8)
+						  (accelerated_visual 1)
+						  (multisamplebuffers 1)
+						  (multisamplesamples 4))
+				   collect
+				   `(SDL_GL_SetAttribute ,(string-upcase (format nil "SDL_GL_~a" e))
+							 ,f)
+				   ))
+			 (unless (== 0 (SDL_Init (logior SDL_INIT_VIDEO SDL_INIT_EVENTS)))
+			   ,(logprint "init error"))
+			 (let ((window (SDL_CreateWindow (string "sdl window")
+							 SDL_WINDOWPOS_CENTERED
+							 SDL_WINDOWPOS_CENTERED
+							 512 200 windowFlags)))
+			   (unless window
+			     ,(logprint "window error")))))
+		      #+nil
 		      (let (;(ag (SkAutoGraphics))
 			    (path (SkString (string "skhello.png")))
 			    (paint (SkPaint))
 			    )
+			;; https://gist.github.com/zester/1177738/16f3e6a5fe20086f8db3359173d613bd5d154901
 			(paint.setARGB 255 255 255 255)
 			(paint.setAntiAlias true)
 			;(paint.setTextSize (SkIntToScalar 30))
