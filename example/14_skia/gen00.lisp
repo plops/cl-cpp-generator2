@@ -150,7 +150,7 @@
 			      ;<include/core/SkString.h>
 					;<include/core/SkImageEncoder.h>
 			     <include/gpu/gl/GrGLInterface.h>
-			    ; <src/gpu/gl/GrGLUtil.h>
+			     <src/gpu/gl/GrGLUtil.h>
 			     <GL/gl.h>
 			      )
 		    " "
@@ -228,6 +228,21 @@
 				       )
 				   ;"sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));"
 				   (SkASSERT grContext)
+				   (let ((buffer (GrGLint 0)))
+				     (GR_GL_GetIntegerv (interface.get)
+							GR_GL_FRAMEBUFFER_BINDING
+							&buffer)
+				     #+nil (GR_GL_CALL (interface.get) (GetIntegerv GR_GL_FRAMEBUFFER_BINDING
+										    &buffer))
+				     #+nil (-> (interface.get)
+					 (dot fFunctions
+					      ))
+				     (let ((info (GrGLFramebufferInfo)))
+				       (setf info.fFBOID (static_cast<GrGLuint> buffer))
+				       ,(logprint "" `((SDL_GetPixelFormatName windowFormat)))
+				       )
+				    (dotimes (i 1000) ; while true
+					   (SDL_GL_SwapWindow window)))
 				   )))
 			     (SDL_DestroyWindow window)
 			     (SDL_Quit)))))

@@ -16,6 +16,7 @@ extern State state;
 #include <include/gpu/GrBackendSurface.h>
 #include <include/gpu/GrDirectContext.h>
 #include <include/gpu/gl/GrGLInterface.h>
+#include <src/gpu/gl/GrGLUtil.h>
 
 // implementation
 int main(int argc, char **argv) {
@@ -108,6 +109,22 @@ int main(int argc, char **argv) {
   auto interface = GrGLMakeNativeInterface();
   auto grContext = sk_sp<GrDirectContext>(GrDirectContext::MakeGL());
   SkASSERT(grContext);
+  auto buffer = GrGLint(0);
+  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
+  auto info = GrGLFramebufferInfo();
+  info.fFBOID = static_cast<GrGLuint>(buffer);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" SDL_GetPixelFormatName(windowFormat)='")
+      << (SDL_GetPixelFormatName(windowFormat)) << ("'") << (std::endl)
+      << (std::flush);
+  for (auto i = 0; (i) < (1000); (i) += (1)) {
+    SDL_GL_SwapWindow(window);
+  }
   SDL_DestroyWindow(window);
   SDL_Quit();
   return 0;

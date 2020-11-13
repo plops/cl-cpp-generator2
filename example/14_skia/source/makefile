@@ -4,9 +4,10 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
+# -Werror
 CXXFLAGS=-O2 \
 -std=gnu++2a \
--Wall -Wextra -Werror \
+-Wall -Wextra \
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \
 -Wno-error=unused-parameter \
