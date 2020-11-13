@@ -140,7 +140,10 @@
 			     <thread>
 			     
 			     )
-		    (include <include/core/SkCanvas.h>)
+		    (include <include/core/SkCanvas.h>
+			      <include/core/SkGraphics.h>
+			      <include/core/SkString.h>
+			      <include/core/SkImageEncoder.h>)
 		    " "
 
 		    (split-header-and-code
@@ -150,13 +153,33 @@
 		     (do0
 		      "// implementation"
 		      ))
-		    
+		    ;; https://skia.googlesource.com/skia/+/master/example/SkiaSDLExample.cpp
+		    ;; https://gist.github.com/zester/1177738/16f3e6a5fe20086f8db3359173d613bd5d154901
 		    (defun main (argc argv
 				 )
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      ,(logprint "start" `(argc (aref argv 0)))
+		      (let (;(ag (SkAutoGraphics))
+			    (path (SkString (string "skhello.png")))
+			    (paint (SkPaint))
+			    )
+			(paint.setARGB 255 255 255 255)
+			(paint.setAntiAlias true)
+			;(paint.setTextSize (SkIntToScalar 30))
+			(let ((width (SkScalar 800))
+			      (height (SkScalar 600))
+			      (bitmap (SkBitmap)))
+			  (bitmap.allocPixels (SkImageInfo--MakeN32Premul width height))
+			  
+			  (let ((canvas (SkCanvas bitmap)))
+			    (canvas.drawColor SK_ColorWHITE)
+			    )
+			  (let ((src (SkEncodeBitmap
+					 bitmap
+					 SkEncodedImageFormat--kPNG 100))
+				(img (src.get))))))
 		      (return 0)))))
     
     
