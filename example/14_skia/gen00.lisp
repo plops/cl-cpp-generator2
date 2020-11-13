@@ -140,6 +140,7 @@
 			     <thread>
 			     
 			     )
+		    (include <include/core/SkCanvas.h>)
 		    " "
 
 		    (split-header-and-code

@@ -8,6 +8,8 @@
 #include <chrono>
 #include <thread>
 ;
+#include <include/core/SkCanvas.h>
+;
 // header;
 int main (int argc, char** argv)  ;  
 #endif

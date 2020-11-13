@@ -13,14 +13,14 @@ CXXFLAGS=-O2 \
 -Wno-error=double-promotion \
 -pipe \
 -march=native -mtune=native \
--I/home/martin/src/cppflow/include \
--I/usr/local/include/tensorflow/c
+-I/home/martin/src/skia/
 
 LDFLAGS= \
--L/usr/local/lib \
--ltensorflow -ltensorflow_framework \
+-L/home/martin/src/skia/out/Shared \
+-lskia \
 -Wl,--gc-sections \
--Wl,--print-gc-sections
+-Wl,--print-gc-sections \
+-Wl,--rpath=/home/martin/src/skia/out/Shared
 
 CFILES:=$(shell find .| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)

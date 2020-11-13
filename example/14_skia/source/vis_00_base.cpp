@@ -5,6 +5,7 @@
 
 extern State state;
 #include <chrono>
+#include <include/core/SkCanvas.h>
 #include <iostream>
 #include <thread>
 
