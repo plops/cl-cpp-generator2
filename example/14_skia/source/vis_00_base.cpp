@@ -4,17 +4,18 @@
 #include "globals.h"
 
 extern State state;
+#include <chrono>
+#include <iostream>
+#include <thread>
+#define SK_GL
 #include <GL/gl.h>
 #include <SDL2/SDL.h>
-#include <chrono>
 #include <include/core/SkCanvas.h>
 #include <include/core/SkGraphics.h>
 #include <include/core/SkSurface.h>
 #include <include/gpu/GrBackendSurface.h>
 #include <include/gpu/GrDirectContext.h>
 #include <include/gpu/gl/GrGLInterface.h>
-#include <iostream>
-#include <thread>
 
 // implementation
 int main(int argc, char **argv) {

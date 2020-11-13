@@ -140,6 +140,7 @@
 			     <thread>
 			     
 			     )
+		    "#define SK_GL"
 		    (include <include/gpu/GrBackendSurface.h>
 			     <include/gpu/GrDirectContext.h>
 			     <SDL2/SDL.h>
@@ -149,7 +150,7 @@
 			      ;<include/core/SkString.h>
 					;<include/core/SkImageEncoder.h>
 			     <include/gpu/gl/GrGLInterface.h>
-					;<src/gpu/gl/GrGLUtil.h>
+			    ; <src/gpu/gl/GrGLUtil.h>
 			     <GL/gl.h>
 			      )
 		    " "
