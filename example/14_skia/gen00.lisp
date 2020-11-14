@@ -143,16 +143,17 @@
 		    "#define SK_GL"
 		    (include <include/gpu/GrBackendSurface.h>
 			     <include/gpu/GrDirectContext.h>
+			     ;<include/gpu/GrContext.h>
 			     <SDL2/SDL.h>
 			     <include/core/SkCanvas.h>
 			     <include/core/SkGraphics.h>
 			     <include/core/SkSurface.h>
-			      ;<include/core/SkString.h>
+					;<include/core/SkString.h>
 					;<include/core/SkImageEncoder.h>
 			     <include/gpu/gl/GrGLInterface.h>
-			     <src/gpu/gl/GrGLUtil.h>
+			    ; <src/gpu/gl/GrGLUtil.h>
 			     <GL/gl.h>
-			      )
+			     )
 		    " "
 
 		    (split-header-and-code
@@ -219,12 +220,46 @@
 				 (glClearStencil 0)
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
-				 (let ((interface (GrGLMakeNativeInterface))
+				 (let ((options (GrContextOptions))
+				       (sContext (dot (GrDirectContext--MakeGL nullptr options)
+						      (release))
+						 ))
+				   (let ((fb_info (GrGLFramebufferInfo))
+					 (colorType kRGBA_8888_SkColorType))
+				     (setf fb_info.fFBOID 0 ;; default framebuffer
+					   fb_info.fFormat GL_RGBA8
+					   )
+				     (let ((render_target (GrBackendRenderTarget dw dh
+										 4 ;; msaa
+										 8 ;; stencil
+										 fb_info
+										 ))
+					   (sSurface (dot (SkSurface--MakeFromBackendRenderTarget
+							   sContext render_target
+							   kBottomLeft_GrSurfaceOrigin
+							   colorType
+							   nullptr
+							   nullptr)
+							  (release)))
+					   (canvas (sSurface->getCanvas)))
+				       (dotimes (i (* 60 3)) ; while true
+					 ;(glClear GL_COLOR_BUFFER_BIT)
+					 (let ((paint (SkPaint)))
+					   (paint.setColor SK_ColorWHITE)
+					   (canvas->drawPaint paint)
+					   (paint.setColor SK_ColorBLUE)
+					   (canvas->drawRect (curly 10 20 30 50)
+							     paint)
+					   (sContext->flush))
+					 (SDL_GL_SwapWindow window))
+				       )))
+				 #+ni(let ((interface (GrGLMakeNativeInterface))
 				       (grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL interface)))
 				       )
 				   
-				   (SkASSERT grContext)
-				   (let ((buffer (GrGLint 0)))
+				   
+				   ;(SkASSERT grContext)
+				   #+nil (let ((buffer (GrGLint 0)))
 				     (GR_GL_GetIntegerv (interface.get)
 							GR_GL_FRAMEBUFFER_BINDING
 							&buffer)
@@ -243,8 +278,13 @@
 				       (glClear GL_COLOR_BUFFER_BIT)
 				       (SDL_GL_SwapWindow window)))
 				   ,(logprint "shutdown")
-				   )))
+				       )))
 			     (do0
+			      "delete sSurface;"
+			      "delete sContext;"
+			      )
+			     (do0
+			      
 			      ,(logprint "destroy gl ctx")
 			      (when ctx
 				    (SDL_GL_DeleteContext ctx)))

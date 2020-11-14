@@ -16,7 +16,6 @@ extern State state;
 #include <include/gpu/GrBackendSurface.h>
 #include <include/gpu/GrDirectContext.h>
 #include <include/gpu/gl/GrGLInterface.h>
-#include <src/gpu/gl/GrGLUtil.h>
 
 // implementation
 int main(int argc, char **argv) {
@@ -115,25 +114,29 @@ int main(int argc, char **argv) {
   glClearColor(1, 1, 1, 1);
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
-  auto interface = GrGLMakeNativeInterface();
-  auto grContext = sk_sp<GrDirectContext>(GrDirectContext::MakeGL(interface));
-  SkASSERT(grContext);
-  auto buffer = GrGLint(0);
-  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
-  auto info = GrGLFramebufferInfo();
-  info.fFBOID = static_cast<GrGLuint>(buffer);
-  auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
+  auto options = GrContextOptions();
+  auto sContext = GrDirectContext::MakeGL(nullptr, options).release();
+  auto fb_info = GrGLFramebufferInfo();
+  auto colorType = kRGBA_8888_SkColorType;
+  fb_info.fFBOID = 0;
+  fb_info.fFormat = GL_RGBA8;
+  auto render_target = GrBackendRenderTarget(dw, dh, 4, 8, fb_info);
+  auto sSurface = SkSurface::MakeFromBackendRenderTarget(
+                      sContext, render_target, kBottomLeft_GrSurfaceOrigin,
+                      colorType, nullptr, nullptr)
+                      .release();
+  auto canvas = sSurface->getCanvas();
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
-    glClear(GL_COLOR_BUFFER_BIT);
+    auto paint = SkPaint();
+    paint.setColor(SK_ColorWHITE);
+    canvas->drawPaint(paint);
+    paint.setColor(SK_ColorBLUE);
+    canvas->drawRect({10, 20, 30, 50}, paint);
+    sContext->flush();
     SDL_GL_SwapWindow(window);
   }
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("shutdown") << (" ")
-      << (std::endl) << (std::flush);
+  delete sSurface;
+  delete sContext;
 
   (std::cout)
       << (std::setw(10))
