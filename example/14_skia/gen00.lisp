@@ -216,7 +216,7 @@
 				 ,(logprint "" `(windowFormat contextType dw dh))
 				 ,(logprint "" `((SDL_GetPixelFormatName windowFormat)))
 				 (glViewport 0 0 dw dh)
-				 (glClearColor 1 1 1 1)
+				 (glClearColor 1 0 1 1)
 				 (glClearStencil 0)
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
@@ -224,22 +224,28 @@
 				 (let ((options (GrContextOptions))
 				      #+nil (interface  ;(GrGLMakeNativeInterface)
 					 )
-				      (sContext (dot (GrDirectContext--MakeGL ;interface
-						      nullptr
-						      ;	      options
-						      )
-						      (release))
+				      (sContext (GrDirectContext--MakeGL ;interface
+						 nullptr
+					;	      options
+						 )
+					;  (release)
+						
 						)
 				       (image_info (SkImageInfo--MakeN32Premul dw dh))
-				       (gpu_surface (SkSurface--MakeRenderTarget sContext
-										 SkBudgeted--kNo
-										 image_info
-										 )))
-				   (unless gpu_surface
-				     ,(logprint "sksurface error"))
-				   (let ((canvas (gpu_surface->getCanvas)))
-				     (dotimes (i (* 60 3)) ; while true
-					 ;(glClear GL_COLOR_BUFFER_BIT)
+				       )
+				   ;(declare (type "sk_sp<GrContext>" sContext))
+				  #+nil (setf image_info.fFBOID 0 ;; default framebuffer
+					   image_info.fFormat GL_RGBA8
+					   )
+				   (let ((gpu_surface (SkSurface--MakeRenderTarget sContext
+										   SkBudgeted--kNo
+										   image_info
+										   )))
+				     (unless gpu_surface
+					  ,(logprint "sksurface error"))
+				     (let ((canvas (gpu_surface->getCanvas)))
+				       (dotimes (i (* 60 3)) ; while true
+					;(glClear GL_COLOR_BUFFER_BIT)
 					 (let ((paint (SkPaint)))
 					   (paint.setColor SK_ColorWHITE)
 					   (canvas->drawPaint paint)
@@ -247,7 +253,7 @@
 					   (canvas->drawRect (curly 10 20 30 50)
 							     paint)
 					   (sContext->flush))
-					 (SDL_GL_SwapWindow window)))
+					 (SDL_GL_SwapWindow window))))
 				   #+nil(let ((fb_info (GrGLFramebufferInfo))
 					 (colorType kRGBA_8888_SkColorType))
 				     (setf fb_info.fFBOID 0 ;; default framebuffer

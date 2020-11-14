@@ -111,12 +111,12 @@ int main(int argc, char **argv) {
       << (SDL_GetPixelFormatName(windowFormat)) << ("'") << (std::endl)
       << (std::flush);
   glViewport(0, 0, dw, dh);
-  glClearColor(1, 1, 1, 1);
+  glClearColor(1, 0, 1, 1);
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
   SDL_GL_SetSwapInterval(1);
   auto options = GrContextOptions();
-  auto sContext = GrDirectContext::MakeGL(nullptr).release();
+  auto sContext = GrDirectContext::MakeGL(nullptr);
   auto image_info = SkImageInfo::MakeN32Premul(dw, dh);
   auto gpu_surface =
       SkSurface::MakeRenderTarget(sContext, SkBudgeted::kNo, image_info);
