@@ -53,3 +53,19 @@ https://skia.org/user/api/skcanvas_creation
 #+begin_example
 clang++ SkiaSDLExample.cpp  -I ../ -I /usr/include/SDL2/ --std=c++17 -L ../out/Release-x64/ -lskia -lGL -lSDL2  -DGR_GL_LOG_CALLS=0  -DGR_GL_CHECK_ERROR=0 -DGL_SK
 #+end_example
+
+- show types in log (make human readable with c++filt)
+#+begin_example
+[martin@localhost source]$ ./vis | c++filt -t
+1605361011009405144 139623262424768 vis_00_base.cpp:31 main start   argc='1::int' argv[0]='./vis::char*'
+1605361011153691868 139623262424768 vis_00_base.cpp:105 main   windowFormat='370546692::unsigned int' contextType='0::int'    dw='512::int'    dh='200::int'
+1605361011153716173 139623262424768 vis_00_base.cpp:118 main   SDL_GetPixelFormatName(windowFormat)='SDL_PIXELFORMAT_RGB888::char const*'
+1605361011156745333 139623262424768 vis_00_base.cpp:136 main   grContext='0x1882120::sk_sp<GrDirectContext>'
+1605361011156766628 139623262424768 vis_00_base.cpp:146 main   buffer='0::int'
+1605361011156778970 139623262424768 vis_00_base.cpp:157 main   target.width()='512::int'
+1605361011156799282 139623262424768 vis_00_base.cpp:170 main   surface='0::sk_sp<SkSurface>'
+1605361012653364498 139623262424768 vis_00_base.cpp:182 main shutdown 
+1605361012653447387 139623262424768 vis_00_base.cpp:189 main destroy gl ctx 
+1605361012655465262 139623262424768 vis_00_base.cpp:199 main destroy window 
+1605361012655919373 139623262424768 vis_00_base.cpp:207 main quit 
+#+end_example
