@@ -234,12 +234,13 @@
 										 8 ;; stencil
 										 fb_info
 										 ))
+					   (props (SkSurfaceProps))
 					   (sSurface (dot (SkSurface--MakeFromBackendRenderTarget
 							   sContext render_target
 							   kBottomLeft_GrSurfaceOrigin
 							   colorType
 							   nullptr
-							   nullptr)
+							   &props)
 							  (release)))
 					   (canvas (sSurface->getCanvas)))
 				       (dotimes (i (* 60 3)) ; while true

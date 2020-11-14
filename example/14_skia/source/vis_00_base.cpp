@@ -121,9 +121,10 @@ int main(int argc, char **argv) {
   fb_info.fFBOID = 0;
   fb_info.fFormat = GL_RGBA8;
   auto render_target = GrBackendRenderTarget(dw, dh, 4, 8, fb_info);
+  auto props = SkSurfaceProps();
   auto sSurface = SkSurface::MakeFromBackendRenderTarget(
                       sContext, render_target, kBottomLeft_GrSurfaceOrigin,
-                      colorType, nullptr, nullptr)
+                      colorType, nullptr, &props)
                       .release();
   auto canvas = sSurface->getCanvas();
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
