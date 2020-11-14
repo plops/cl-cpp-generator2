@@ -47,3 +47,9 @@ ninja -C out/Release-x64 skia modules
 https://gist.github.com/ad8e/dd150b775ae6aa4d5cf1a092e4713add#file-glfw_ship-cpp-L34
 https://skia.org/user/api/skcanvas_creation
 #+end_example
+
+- compile sdl example in skia source
+
+#+begin_example
+clang++ SkiaSDLExample.cpp  -I ../ -I /usr/include/SDL2/ --std=c++17 -L ../out/Release-x64/ -lskia -lGL -lSDL2  -DGR_GL_LOG_CALLS=0  -DGR_GL_CHECK_ERROR=0 -DGL_SK
+#+end_example

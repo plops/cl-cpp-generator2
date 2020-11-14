@@ -5,8 +5,9 @@ CXX=clang++
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
 # -Werror
+# gnu++2a
 CXXFLAGS=-Og -g3 -ggdb \
--std=gnu++2a \
+-std=c++17  \
 -Wall -Wextra \
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \

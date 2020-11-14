@@ -141,6 +141,7 @@
 			     
 			     )
 		    "#define SK_GL"
+		    "#define GR_GL_LOG_CALLS 0"
 		    (include <include/gpu/GrBackendSurface.h>
 			     <include/gpu/GrDirectContext.h>
 			     ;<include/gpu/GrContext.h>
@@ -237,7 +238,7 @@
 				  #+nil (setf image_info.fFBOID 0 ;; default framebuffer
 					   image_info.fFormat GL_RGBA8
 					   )
-				   (let ((gpu_surface (SkSurface--MakeRenderTarget sContext
+				   #+nil (let ((gpu_surface (SkSurface--MakeRenderTarget sContext
 										   SkBudgeted--kNo
 										   image_info
 										   )))

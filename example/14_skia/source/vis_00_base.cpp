@@ -8,6 +8,7 @@ extern State state;
 #include <iostream>
 #include <thread>
 #define SK_GL
+#define GR_GL_LOG_CALLS 0
 #include <GL/gl.h>
 #include <SDL2/SDL.h>
 #include <include/core/SkCanvas.h>
@@ -118,28 +119,6 @@ int main(int argc, char **argv) {
   auto options = GrContextOptions();
   auto sContext = GrDirectContext::MakeGL(nullptr);
   auto image_info = SkImageInfo::MakeN32Premul(dw, dh);
-  auto gpu_surface =
-      SkSurface::MakeRenderTarget(sContext, SkBudgeted::kNo, image_info);
-  if (!(gpu_surface)) {
-
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("sksurface error") << (" ") << (std::endl) << (std::flush);
-  }
-  auto canvas = gpu_surface->getCanvas();
-  for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
-    auto paint = SkPaint();
-    paint.setColor(SK_ColorWHITE);
-    canvas->drawPaint(paint);
-    paint.setColor(SK_ColorBLUE);
-    canvas->drawRect({10, 20, 30, 50}, paint);
-    sContext->flush();
-    SDL_GL_SwapWindow(window);
-  }
 
   (std::cout)
       << (std::setw(10))
