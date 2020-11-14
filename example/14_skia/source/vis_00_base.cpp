@@ -162,6 +162,7 @@ int main(int argc, char **argv) {
   auto surface = SkSurface::MakeFromBackendRenderTarget(
       grContext.get(), target, kBottomLeft_GrSurfaceOrigin,
       kRGBA_8888_SkColorType, nullptr, &props);
+  auto canvas = surface->getCanvas();
 
   (std::cout)
       << (std::setw(10))

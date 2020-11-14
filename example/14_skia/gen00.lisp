@@ -321,7 +321,7 @@
 						      kRGBA_8888_SkColorType ;;colorType
 						      nullptr
 						      &props))
-					    ;(canvas (surface->getCanvas))
+					    (canvas (surface->getCanvas))
 					    )
 					,(logprint "" `(surface))
 				      (dotimes (i (* 60 3)) ; while true
