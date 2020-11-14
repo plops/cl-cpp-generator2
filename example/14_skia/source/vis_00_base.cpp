@@ -123,21 +123,31 @@ int main(int argc, char **argv) {
   SkASSERT(grContext);
   auto buffer = GrGLint(0);
   GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" buffer='") << (buffer) << ("'") << (std::endl)
+      << (std::flush);
   auto info = GrGLFramebufferInfo();
   info.fFBOID = static_cast<GrGLuint>(buffer);
   auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
+  auto props = SkSurfaceProps();
   auto surface = SkSurface::MakeFromBackendRenderTarget(
       grContext.get(), target, kBottomLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType, nullptr, nullptr);
-  auto canvas = surface->getCanvas();
+      kRGBA_8888_SkColorType, nullptr, &props);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" surface='") << (surface) << ("'") << (std::endl)
+      << (std::flush);
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
     glClear(GL_COLOR_BUFFER_BIT);
-    auto paint = SkPaint();
-    paint.setColor(SK_ColorWHITE);
-    canvas->drawPaint(paint);
-    paint.setColor(SK_ColorBLUE);
-    canvas->drawRect({10, 20, 30, 50}, paint);
-    grContext->flush();
     SDL_GL_SwapWindow(window);
   }
 

@@ -292,13 +292,15 @@
 				   
 				   
 				   (SkASSERT grContext)
-				    (let ((buffer (GrGLint 0)))
-				     (GR_GL_GetIntegerv (interface.get)
-							GR_GL_FRAMEBUFFER_BINDING
-							&buffer)
-				    
+				    (let (#-nil (buffer (GrGLint 0)))
+				     #-nil (do0 (GR_GL_GetIntegerv (interface.get)
+							       GR_GL_FRAMEBUFFER_BINDING
+							       &buffer)
+						,(logprint "" `(buffer)))
+				      
 				     (let ((info (GrGLFramebufferInfo)))
-				       (setf info.fFBOID (static_cast<GrGLuint> buffer))
+				       (setf info.fFBOID (static_cast<GrGLuint> buffer)
+					     )
 				       
 				       )
 				     (let ((target (GrBackendRenderTarget dw dh
@@ -306,17 +308,21 @@
 									  8 ;; stencil
 									  info
 									  ))))
-				      (let ((surface (SkSurface--MakeFromBackendRenderTarget
+				      ;,(logprint "" `(target))
+				      (let ((props (SkSurfaceProps))
+					    (surface (SkSurface--MakeFromBackendRenderTarget
 						      (grContext.get)
 						      target
 						      kBottomLeft_GrSurfaceOrigin
 						      kRGBA_8888_SkColorType ;;colorType
 						      nullptr
-						      nullptr))
-					    (canvas (surface->getCanvas)))
+						      &props))
+					    ;(canvas (surface->getCanvas))
+					    )
+					,(logprint "" `(surface))
 				      (dotimes (i (* 60 3)) ; while true
 					(glClear GL_COLOR_BUFFER_BIT)
-					(let ((paint (SkPaint)))
+					#+nil (let ((paint (SkPaint)))
 					  (paint.setColor SK_ColorWHITE)
 					  (canvas->drawPaint paint)
 					  (paint.setColor SK_ColorBLUE)
