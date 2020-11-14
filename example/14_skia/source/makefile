@@ -1,11 +1,11 @@
 all: vis
 
-#CXX=g++-10.2.0
+CXX=clang++
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
 # -Werror
-CXXFLAGS=-O2 \
+CXXFLAGS=-Og -g3 -ggdb \
 -std=gnu++2a \
 -Wall -Wextra \
 -ffunction-sections -fdata-sections \
@@ -17,7 +17,7 @@ CXXFLAGS=-O2 \
 -I/home/martin/src/skia/
 
 LDFLAGS= \
--L/home/martin/src/skia/out/Shared \
+-L/home/martin/src/skia/out/Release-x64 \
 -lskia -lSDL2 -lGL \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections \

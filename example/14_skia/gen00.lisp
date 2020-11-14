@@ -173,8 +173,7 @@
 		      (do0
 		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 3)
 		       (SDL_GL_SetAttribute SDL_GL_CONTEXT_MINOR_VERSION 0)
-		       (let (;(ctx (SDL_GLContext nullptr))
-			     )
+		       (do0 
 			 (SDL_GL_SetAttribute SDL_GL_CONTEXT_PROFILE_MASK
 					      SDL_GL_CONTEXT_PROFILE_CORE)
 			 (let ((windowFlags (logior SDL_WINDOW_OPENGL
@@ -210,42 +209,50 @@
 			       (let ((windowFormat (SDL_GetWindowPixelFormat window))
 				     (dw (int 0))
 				     (dh dw)
-				     (contextType dw)
-				     
-				     )
+				     (contextType dw))
 				 (SDL_GL_GetAttribute SDL_GL_CONTEXT_PROFILE_MASK &contextType)
 				 (SDL_GL_GetDrawableSize window &dw &dh)
-				 ,(logprint "" `(windowFormat contextType dw dh)
-					    )
+				 ,(logprint "" `(windowFormat contextType dw dh))
+				 ,(logprint "" `((SDL_GetPixelFormatName windowFormat)))
 				 (glViewport 0 0 dw dh)
 				 (glClearColor 1 1 1 1)
 				 (glClearStencil 0)
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
 				 (let ((interface (GrGLMakeNativeInterface))
-				       (grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL; interface
-									   )))
+				       ;(grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL interface)))
 				       )
-				   ;"sk_sp<GrDirectContext> grContext(GrDirectContext::MakeGL(interface));"
-				   (SkASSERT grContext)
+				   
+				   ;(SkASSERT grContext)
 				   (let ((buffer (GrGLint 0)))
-				     (GR_GL_GetIntegerv (interface.get)
+				   #+nil  (GR_GL_GetIntegerv (interface.get)
 							GR_GL_FRAMEBUFFER_BINDING
 							&buffer)
-				     #+nil (GR_GL_CALL (interface.get) (GetIntegerv GR_GL_FRAMEBUFFER_BINDING
-										    &buffer))
-				     #+nil (-> (interface.get)
-					 (dot fFunctions
-					      ))
-				     (let ((info (GrGLFramebufferInfo)))
+				    
+				    #+nil (let ((info (GrGLFramebufferInfo)))
 				       (setf info.fFBOID (static_cast<GrGLuint> buffer))
-				       ,(logprint "" `((SDL_GetPixelFormatName windowFormat)))
+				       
 				       )
-				    (dotimes (i 1000) ; while true
-					   (SDL_GL_SwapWindow window)))
+				     #+nil (let ((target (GrBackendRenderTarget dw dh
+									  4 ;; msaa
+									  8 ;; stencil
+									  info
+									  ))))
+				     
+				     (dotimes (i (* 60 3)) ; while true
+				       (glClear GL_COLOR_BUFFER_BIT)
+				       (SDL_GL_SwapWindow window)))
+				   ,(logprint "shutdown")
 				   )))
-			     (SDL_DestroyWindow window)
-			     (SDL_Quit)))))
+			     (do0
+			      ,(logprint "destroy gl ctx")
+			      (when ctx
+				    (SDL_GL_DeleteContext ctx)))
+			     (do0 ,(logprint "destroy window")
+				  (SDL_DestroyWindow window))
+			     (do0 ,(logprint "quit")
+				  (SDL_Quit)))
+			   )))
 		      #+nil
 		      (let (;(ag (SkAutoGraphics))
 			    (path (SkString (string "skhello.png")))

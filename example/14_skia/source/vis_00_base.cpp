@@ -102,17 +102,6 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" contextType='") << (contextType) << ("'")
       << (std::setw(8)) << (" dw='") << (dw) << ("'") << (std::setw(8))
       << (" dh='") << (dh) << ("'") << (std::endl) << (std::flush);
-  glViewport(0, 0, dw, dh);
-  glClearColor(1, 1, 1, 1);
-  glClearStencil(0);
-  glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
-  auto interface = GrGLMakeNativeInterface();
-  auto grContext = sk_sp<GrDirectContext>(GrDirectContext::MakeGL());
-  SkASSERT(grContext);
-  auto buffer = GrGLint(0);
-  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
-  auto info = GrGLFramebufferInfo();
-  info.fFBOID = static_cast<GrGLuint>(buffer);
 
   (std::cout)
       << (std::setw(10))
@@ -122,10 +111,48 @@ int main(int argc, char **argv) {
       << (std::setw(8)) << (" SDL_GetPixelFormatName(windowFormat)='")
       << (SDL_GetPixelFormatName(windowFormat)) << ("'") << (std::endl)
       << (std::flush);
-  for (auto i = 0; (i) < (1000); (i) += (1)) {
+  glViewport(0, 0, dw, dh);
+  glClearColor(1, 1, 1, 1);
+  glClearStencil(0);
+  glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
+  auto interface = GrGLMakeNativeInterface();
+  auto buffer = GrGLint(0);
+  for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
+    glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(window);
   }
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("shutdown") << (" ")
+      << (std::endl) << (std::flush);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("destroy gl ctx")
+      << (" ") << (std::endl) << (std::flush);
+  if (ctx) {
+    SDL_GL_DeleteContext(ctx);
+  }
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("destroy window")
+      << (" ") << (std::endl) << (std::flush);
   SDL_DestroyWindow(window);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("quit") << (" ")
+      << (std::endl) << (std::flush);
   SDL_Quit();
   return 0;
 }

@@ -9,3 +9,34 @@ gn gen out/Static --args='is_debug=false is_official_build=true cc="clang-10" cx
 ninja -C out/Release
 ninja -C out/Static
 #+end_example
+
+
+
+#+begin_example
+export PATH=$PATH:/home/martin/src/depot_tools
+
+gn gen out/Release-x64 --args="\
+cc=\"clang\" cxx=\"clang++\" \
+is_debug=true \
+is_component_build=true \
+is_official_build=false  \
+skia_use_system_harfbuzz=true \
+skia_use_system_expat=true \
+skia_use_system_icu=true \
+skia_use_system_libjpeg_turbo=true \
+skia_use_system_libpng=true \
+skia_use_system_libwebp=true \
+skia_use_system_zlib=true \
+skia_enable_android_utils=false \
+skia_use_lua=false \
+skia_enable_fontmgr_android=false \
+"
+
+ninja -C out/Release-x64 skia modules
+#+end_example
+
+- explanation of arguments
+- https://news.ycombinator.com/item?id=19586159
+#+begin_example
+ gn args out/Release-x64 --list --short
+#+end_example
