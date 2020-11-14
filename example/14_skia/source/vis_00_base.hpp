@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <typeinfo>
 ;
 #include <include/gpu/GrBackendSurface.h>
 #include <include/gpu/GrDirectContext.h>

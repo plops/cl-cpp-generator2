@@ -7,6 +7,7 @@ extern State state;
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <typeinfo>
 #define SK_GL
 #define GR_GL_LOG_CALLS 0
 #define GR_GL_CHECK_ERROR 0
@@ -28,8 +29,10 @@ int main(int argc, char **argv) {
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("start") << (" ")
-      << (std::setw(8)) << (" argc='") << (argc) << ("'") << (std::setw(8))
-      << (" argv[0]='") << (argv[0]) << ("'") << (std::endl) << (std::flush);
+      << (std::setw(8)) << (" argc='") << (argc) << ("::")
+      << (typeid(argc).name()) << ("'") << (std::setw(8)) << (" argv[0]='")
+      << (argv[0]) << ("::") << (typeid(argv[0]).name()) << ("'") << (std::endl)
+      << (std::flush);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -100,10 +103,13 @@ int main(int argc, char **argv) {
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" windowFormat='") << (windowFormat) << ("'")
-      << (std::setw(8)) << (" contextType='") << (contextType) << ("'")
-      << (std::setw(8)) << (" dw='") << (dw) << ("'") << (std::setw(8))
-      << (" dh='") << (dh) << ("'") << (std::endl) << (std::flush);
+      << (std::setw(8)) << (" windowFormat='") << (windowFormat) << ("::")
+      << (typeid(windowFormat).name()) << ("'") << (std::setw(8))
+      << (" contextType='") << (contextType) << ("::")
+      << (typeid(contextType).name()) << ("'") << (std::setw(8)) << (" dw='")
+      << (dw) << ("::") << (typeid(dw).name()) << ("'") << (std::setw(8))
+      << (" dh='") << (dh) << ("::") << (typeid(dh).name()) << ("'")
+      << (std::endl) << (std::flush);
 
   (std::cout)
       << (std::setw(10))
@@ -111,8 +117,9 @@ int main(int argc, char **argv) {
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
       << (std::setw(8)) << (" SDL_GetPixelFormatName(windowFormat)='")
-      << (SDL_GetPixelFormatName(windowFormat)) << ("'") << (std::endl)
-      << (std::flush);
+      << (SDL_GetPixelFormatName(windowFormat)) << ("::")
+      << (typeid(SDL_GetPixelFormatName(windowFormat)).name()) << ("'")
+      << (std::endl) << (std::flush);
   glViewport(0, 0, dw, dh);
   glClearColor(1, 0, 1, 1);
   glClearStencil(0);
@@ -121,6 +128,14 @@ int main(int argc, char **argv) {
   auto interface = GrGLMakeNativeInterface();
   auto grContext = GrDirectContext::MakeGL(interface);
   SkASSERT(grContext);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" grContext='") << (grContext) << ("::")
+      << (typeid(grContext).name()) << ("'") << (std::endl) << (std::flush);
   auto buffer = GrGLint(0);
   GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
 
@@ -129,11 +144,20 @@ int main(int argc, char **argv) {
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" buffer='") << (buffer) << ("'") << (std::endl)
-      << (std::flush);
+      << (std::setw(8)) << (" buffer='") << (buffer) << ("::")
+      << (typeid(buffer).name()) << ("'") << (std::endl) << (std::flush);
   auto info = GrGLFramebufferInfo();
   info.fFBOID = static_cast<GrGLuint>(buffer);
   auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
+      << (std::setw(8)) << (" target.width()='") << (target.width()) << ("::")
+      << (typeid(target.width()).name()) << ("'") << (std::endl)
+      << (std::flush);
   auto props = SkSurfaceProps();
   auto surface = SkSurface::MakeFromBackendRenderTarget(
       grContext.get(), target, kBottomLeft_GrSurfaceOrigin,
@@ -144,8 +168,8 @@ int main(int argc, char **argv) {
       << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
       << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
       << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" surface='") << (surface) << ("'") << (std::endl)
-      << (std::flush);
+      << (std::setw(8)) << (" surface='") << (surface) << ("::")
+      << (typeid(surface).name()) << ("'") << (std::endl) << (std::flush);
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
     glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(window);

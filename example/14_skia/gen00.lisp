@@ -68,6 +68,9 @@
 					;("std::width" 8)
 		      (string ,(format nil " ~a='" (emit-c :code e)))
 		      ,e
+		      (string "::")
+		      (dot (typeid ,e)
+			   (name))
 		      (string "'")))
 	     "std::endl"
 	     "std::flush"))))
@@ -138,7 +141,7 @@
 		    (include <iostream>
 			     <chrono>
 			     <thread>
-			     
+			     <typeinfo>
 			     )
 		    "#define SK_GL"
 		    "#define GR_GL_LOG_CALLS 0"
@@ -292,6 +295,7 @@
 				   
 				   
 				   (SkASSERT grContext)
+				   ,(logprint "" `(grContext))
 				    (let (#-nil (buffer (GrGLint 0)))
 				     #-nil (do0 (GR_GL_GetIntegerv (interface.get)
 							       GR_GL_FRAMEBUFFER_BINDING
@@ -308,7 +312,7 @@
 									  8 ;; stencil
 									  info
 									  ))))
-				      ;,(logprint "" `(target))
+				      ,(logprint "" `((target.width)))
 				      (let ((props (SkSurfaceProps))
 					    (surface (SkSurface--MakeFromBackendRenderTarget
 						      (grContext.get)
