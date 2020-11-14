@@ -220,20 +220,20 @@
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
 				 (let ((interface (GrGLMakeNativeInterface))
-				       ;(grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL interface)))
+				       (grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL interface)))
 				       )
 				   
-				   ;(SkASSERT grContext)
+				   (SkASSERT grContext)
 				   (let ((buffer (GrGLint 0)))
-				   #+nil  (GR_GL_GetIntegerv (interface.get)
+				     (GR_GL_GetIntegerv (interface.get)
 							GR_GL_FRAMEBUFFER_BINDING
 							&buffer)
 				    
-				    #+nil (let ((info (GrGLFramebufferInfo)))
+				     (let ((info (GrGLFramebufferInfo)))
 				       (setf info.fFBOID (static_cast<GrGLuint> buffer))
 				       
 				       )
-				     #+nil (let ((target (GrBackendRenderTarget dw dh
+				     (let ((target (GrBackendRenderTarget dw dh
 									  4 ;; msaa
 									  8 ;; stencil
 									  info

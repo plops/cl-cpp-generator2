@@ -116,7 +116,13 @@ int main(int argc, char **argv) {
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
   auto interface = GrGLMakeNativeInterface();
+  auto grContext = sk_sp<GrDirectContext>(GrDirectContext::MakeGL(interface));
+  SkASSERT(grContext);
   auto buffer = GrGLint(0);
+  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
+  auto info = GrGLFramebufferInfo();
+  info.fFBOID = static_cast<GrGLuint>(buffer);
+  auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
     glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(window);
