@@ -17,13 +17,16 @@ CXXFLAGS=-Og -g3 -ggdb \
 -march=native -mtune=native \
 -I/home/martin/src/skia/
 
+SKIA=/home/martin/src/skia/out/Release-x64
+#SKIA=/home/martin/src/skia/out/Release_lowdeps
+
 LDFLAGS= \
--L/home/martin/src/skia/out/Release-x64 \
+-L$(SKIA) \
 -lskia \
 -lSDL2 -lGL \
 -Wl,--gc-sections \
 -Wl,--print-gc-sections \
--Wl,--rpath=/home/martin/src/skia/out/Shared
+-Wl,--rpath=$(SKIA)
 
 #-lskottie -lskparagraph -lsksg -lskshaper \
 #-ldng_sdk -lparticles -lpiex -lsfntly -lskresources -lspvtools -lspvtools_val \
