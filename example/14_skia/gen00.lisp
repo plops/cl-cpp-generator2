@@ -142,6 +142,8 @@
 			     )
 		    "#define SK_GL"
 		    "#define GR_GL_LOG_CALLS 0"
+		    "#define GR_GL_CHECK_ERROR 0"
+		    
 		    (include <include/gpu/GrBackendSurface.h>
 			     <include/gpu/GrDirectContext.h>
 			     ;<include/gpu/GrContext.h>
@@ -152,7 +154,7 @@
 					;<include/core/SkString.h>
 					;<include/core/SkImageEncoder.h>
 			     <include/gpu/gl/GrGLInterface.h>
-			    ; <src/gpu/gl/GrGLUtil.h>
+			     <src/gpu/gl/GrGLUtil.h>
 			     <GL/gl.h>
 			     )
 		    " "
@@ -222,12 +224,11 @@
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
 				 (SDL_GL_SetSwapInterval 1)
-				 (let ((options (GrContextOptions))
-				      #+nil (interface  ;(GrGLMakeNativeInterface)
-					 )
-				      (sContext (GrDirectContext--MakeGL ;interface
-						 nullptr
-					;	      options
+				 #+nil (let ((options (GrContextOptions))
+				      (interface  (GrGLMakeNativeInterface))
+				      (sContext (GrDirectContext--MakeGL interface
+									 ;nullptr
+						      options
 						 )
 					;  (release)
 						
@@ -285,13 +286,13 @@
 					   (sContext->flush))
 					 (SDL_GL_SwapWindow window))
 				       )))
-				 #+ni(let ((interface (GrGLMakeNativeInterface))
-				       (grContext (sk_sp<GrDirectContext> (GrDirectContext--MakeGL interface)))
+				 (let ((interface (GrGLMakeNativeInterface))
+				       (grContext (GrDirectContext--MakeGL interface))
 				       )
 				   
 				   
-				   ;(SkASSERT grContext)
-				   #+nil (let ((buffer (GrGLint 0)))
+				   (SkASSERT grContext)
+				    (let ((buffer (GrGLint 0)))
 				     (GR_GL_GetIntegerv (interface.get)
 							GR_GL_FRAMEBUFFER_BINDING
 							&buffer)
@@ -305,10 +306,24 @@
 									  8 ;; stencil
 									  info
 									  ))))
-				     
-				     (dotimes (i (* 60 3)) ; while true
-				       (glClear GL_COLOR_BUFFER_BIT)
-				       (SDL_GL_SwapWindow window)))
+				      (let ((surface (SkSurface--MakeFromBackendRenderTarget
+						      (grContext.get)
+						      target
+						      kBottomLeft_GrSurfaceOrigin
+						      kRGBA_8888_SkColorType ;;colorType
+						      nullptr
+						      nullptr))
+					    (canvas (surface->getCanvas)))
+				      (dotimes (i (* 60 3)) ; while true
+					(glClear GL_COLOR_BUFFER_BIT)
+					(let ((paint (SkPaint)))
+					  (paint.setColor SK_ColorWHITE)
+					  (canvas->drawPaint paint)
+					  (paint.setColor SK_ColorBLUE)
+					  (canvas->drawRect (curly 10 20 30 50)
+							    paint)
+					  (grContext->flush))
+					(SDL_GL_SwapWindow window))))
 				   ,(logprint "shutdown")
 				       )))
 			     #+nil (do0

@@ -9,6 +9,7 @@ extern State state;
 #include <thread>
 #define SK_GL
 #define GR_GL_LOG_CALLS 0
+#define GR_GL_CHECK_ERROR 0
 #include <GL/gl.h>
 #include <SDL2/SDL.h>
 #include <include/core/SkCanvas.h>
@@ -17,6 +18,7 @@ extern State state;
 #include <include/gpu/GrBackendSurface.h>
 #include <include/gpu/GrDirectContext.h>
 #include <include/gpu/gl/GrGLInterface.h>
+#include <src/gpu/gl/GrGLUtil.h>
 
 // implementation
 int main(int argc, char **argv) {
@@ -116,9 +118,35 @@ int main(int argc, char **argv) {
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
   SDL_GL_SetSwapInterval(1);
-  auto options = GrContextOptions();
-  auto sContext = GrDirectContext::MakeGL(nullptr);
-  auto image_info = SkImageInfo::MakeN32Premul(dw, dh);
+  auto interface = GrGLMakeNativeInterface();
+  auto grContext = GrDirectContext::MakeGL(interface);
+  SkASSERT(grContext);
+  auto buffer = GrGLint(0);
+  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
+  auto info = GrGLFramebufferInfo();
+  info.fFBOID = static_cast<GrGLuint>(buffer);
+  auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
+  auto surface = SkSurface::MakeFromBackendRenderTarget(
+      grContext.get(), target, kBottomLeft_GrSurfaceOrigin,
+      kRGBA_8888_SkColorType, nullptr, nullptr);
+  auto canvas = surface->getCanvas();
+  for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
+    glClear(GL_COLOR_BUFFER_BIT);
+    auto paint = SkPaint();
+    paint.setColor(SK_ColorWHITE);
+    canvas->drawPaint(paint);
+    paint.setColor(SK_ColorBLUE);
+    canvas->drawRect({10, 20, 30, 50}, paint);
+    grContext->flush();
+    SDL_GL_SwapWindow(window);
+  }
+
+  (std::cout)
+      << (std::setw(10))
+      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
+      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
+      << (__LINE__) << (" ") << (__func__) << (" ") << ("shutdown") << (" ")
+      << (std::endl) << (std::flush);
 
   (std::cout)
       << (std::setw(10))

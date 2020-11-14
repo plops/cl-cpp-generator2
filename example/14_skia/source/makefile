@@ -7,7 +7,7 @@ CXX=clang++
 # -Werror
 # gnu++2a
 CXXFLAGS=-Og -g3 -ggdb \
--std=c++17  \
+-std=gnu++2a  \
 -Wall -Wextra \
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \
