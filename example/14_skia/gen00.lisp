@@ -220,11 +220,35 @@
 				 (glClearStencil 0)
 				 (glClear (logior GL_COLOR_BUFFER_BIT
 						  GL_STENCIL_BUFFER_BIT))
+				 (SDL_GL_SetSwapInterval 1)
 				 (let ((options (GrContextOptions))
-				       (sContext (dot (GrDirectContext--MakeGL nullptr options)
+				      #+nil (interface  ;(GrGLMakeNativeInterface)
+					 )
+				      (sContext (dot (GrDirectContext--MakeGL ;interface
+						      nullptr
+						      ;	      options
+						      )
 						      (release))
-						 ))
-				   (let ((fb_info (GrGLFramebufferInfo))
+						)
+				       (image_info (SkImageInfo--MakeN32Premul dw dh))
+				       (gpu_surface (SkSurface--MakeRenderTarget sContext
+										 SkBudgeted--kNo
+										 image_info
+										 )))
+				   (unless gpu_surface
+				     ,(logprint "sksurface error"))
+				   (let ((canvas (gpu_surface->getCanvas)))
+				     (dotimes (i (* 60 3)) ; while true
+					 ;(glClear GL_COLOR_BUFFER_BIT)
+					 (let ((paint (SkPaint)))
+					   (paint.setColor SK_ColorWHITE)
+					   (canvas->drawPaint paint)
+					   (paint.setColor SK_ColorBLUE)
+					   (canvas->drawRect (curly 10 20 30 50)
+							     paint)
+					   (sContext->flush))
+					 (SDL_GL_SwapWindow window)))
+				   #+nil(let ((fb_info (GrGLFramebufferInfo))
 					 (colorType kRGBA_8888_SkColorType))
 				     (setf fb_info.fFBOID 0 ;; default framebuffer
 					   fb_info.fFormat GL_RGBA8
@@ -280,8 +304,9 @@
 				       (SDL_GL_SwapWindow window)))
 				   ,(logprint "shutdown")
 				       )))
-			     (do0
-			      "delete sSurface;"
+			     #+nil (do0
+					;"delete sSurface;"
+			      ;"delete gpu_surface;"
 			      "delete sContext;"
 			      )
 			     (do0

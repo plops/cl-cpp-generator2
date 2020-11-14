@@ -45,4 +45,5 @@ ninja -C out/Release-x64 skia modules
 
 #+begin_example
 https://gist.github.com/ad8e/dd150b775ae6aa4d5cf1a092e4713add#file-glfw_ship-cpp-L34
+https://skia.org/user/api/skcanvas_creation
 #+end_example

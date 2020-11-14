@@ -114,19 +114,23 @@ int main(int argc, char **argv) {
   glClearColor(1, 1, 1, 1);
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
+  SDL_GL_SetSwapInterval(1);
   auto options = GrContextOptions();
-  auto sContext = GrDirectContext::MakeGL(nullptr, options).release();
-  auto fb_info = GrGLFramebufferInfo();
-  auto colorType = kRGBA_8888_SkColorType;
-  fb_info.fFBOID = 0;
-  fb_info.fFormat = GL_RGBA8;
-  auto render_target = GrBackendRenderTarget(dw, dh, 4, 8, fb_info);
-  auto props = SkSurfaceProps();
-  auto sSurface = SkSurface::MakeFromBackendRenderTarget(
-                      sContext, render_target, kBottomLeft_GrSurfaceOrigin,
-                      colorType, nullptr, &props)
-                      .release();
-  auto canvas = sSurface->getCanvas();
+  auto sContext = GrDirectContext::MakeGL(nullptr).release();
+  auto image_info = SkImageInfo::MakeN32Premul(dw, dh);
+  auto gpu_surface =
+      SkSurface::MakeRenderTarget(sContext, SkBudgeted::kNo, image_info);
+  if (!(gpu_surface)) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("sksurface error") << (" ") << (std::endl) << (std::flush);
+  }
+  auto canvas = gpu_surface->getCanvas();
   for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
     auto paint = SkPaint();
     paint.setColor(SK_ColorWHITE);
@@ -136,8 +140,6 @@ int main(int argc, char **argv) {
     sContext->flush();
     SDL_GL_SwapWindow(window);
   }
-  delete sSurface;
-  delete sContext;
 
   (std::cout)
       << (std::setw(10))
