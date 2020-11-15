@@ -22,6 +22,29 @@ extern State state;
 #include <src/gpu/gl/GrGLUtil.h>
 
 // implementation
+defclass *(SkiaGLPrivate, , public:, sk_sp<GrContext> context = nullptr;
+           , sk_sp<SkSurface> gpu_surface = nullptr;, SkImageInfo info;
+           , int old_w;, int old_h;);
+void skia_init(SkiaGLPrivate &s, int w, int h) {
+  s->context = GrDirectContext::MakeGL();
+  SkASSERT(s->context);
+  s->info = SkImageInfo::MakeN32Premul(w, h);
+  s->gpu_surface =
+      SkSurface::MakeRenderTarget(s->context.get(), SkBudgeted::kNo, s->info);
+  if (!(s->gpu_surface)) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("surface failed") << (" ") << (std::endl) << (std::flush);
+  }
+  glViewport(0, 0, w, h);
+  s->old_w = w;
+  s->old_h = h;
+}
 int main(int argc, char **argv) {
 
   (std::cout)
@@ -45,7 +68,7 @@ int main(int argc, char **argv) {
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
   SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
   if (!((0) == (SDL_Init(((SDL_INIT_VIDEO) | (SDL_INIT_EVENTS)))))) {
 
     (std::cout) << (std::setw(10))
@@ -125,63 +148,8 @@ int main(int argc, char **argv) {
   glClearStencil(0);
   glClear(((GL_COLOR_BUFFER_BIT) | (GL_STENCIL_BUFFER_BIT)));
   SDL_GL_SetSwapInterval(1);
-  auto interface = GrGLMakeNativeInterface();
-  auto grContext = GrDirectContext::MakeGL(interface);
-  SkASSERT(grContext);
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" grContext='") << (grContext) << ("::")
-      << (typeid(grContext).name()) << ("'") << (std::endl) << (std::flush);
-  auto buffer = GrGLint(0);
-  GR_GL_GetIntegerv(interface.get(), GR_GL_FRAMEBUFFER_BINDING, &buffer);
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" buffer='") << (buffer) << ("::")
-      << (typeid(buffer).name()) << ("'") << (std::endl) << (std::flush);
-  auto info = GrGLFramebufferInfo();
-  info.fFBOID = static_cast<GrGLuint>(buffer);
-  auto target = GrBackendRenderTarget(dw, dh, 4, 8, info);
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" target.width()='") << (target.width()) << ("::")
-      << (typeid(target.width()).name()) << ("'") << (std::endl)
-      << (std::flush);
-  auto props = SkSurfaceProps();
-  auto surface = SkSurface::MakeFromBackendRenderTarget(
-      grContext.get(), target, kBottomLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType, nullptr, &props);
-  auto canvas = surface->getCanvas();
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("") << (" ")
-      << (std::setw(8)) << (" surface='") << (surface) << ("::")
-      << (typeid(surface).name()) << ("'") << (std::endl) << (std::flush);
-  for (auto i = 0; (i) < (((60) * (3))); (i) += (1)) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    SDL_GL_SwapWindow(window);
-  }
-
-  (std::cout)
-      << (std::setw(10))
-      << (std::chrono::high_resolution_clock::now().time_since_epoch().count())
-      << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-      << (__LINE__) << (" ") << (__func__) << (" ") << ("shutdown") << (" ")
-      << (std::endl) << (std::flush);
+  auto state = SkiaGLPrivate();
+  skia_init(&state, dw, dh);
 
   (std::cout)
       << (std::setw(10))

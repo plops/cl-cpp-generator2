@@ -170,6 +170,37 @@
 		      "// implementation"
 		      ))
 		    ;; https://skia.googlesource.com/skia/+/master/example/SkiaSDLExample.cpp
+		    ;; https://github.com/QtSkia/QtSkia/blob/master/QtSkia/QtSkiaGui/QSkiaOpenGLWindow.cpp
+		    (defclass* SkiaGLPrivate ()
+		      "public:"
+		      "sk_sp<GrContext> context=nullptr;"
+		      "sk_sp<SkSurface> gpu_surface=nullptr;"
+		      "SkImageInfo info;"
+		      "int old_w;"
+		      "int old_h;"
+		      )
+		    (defun skia_init (s w h)
+		      (declare (type int w h)
+			       (type SkiaGLPrivate& s))
+		      
+		      (let (;(interface (GrGLMakeNativeInterface))
+			    
+			    )
+			(setf s->context (GrDirectContext--MakeGL))
+			
+			(SkASSERT s->context)
+			)
+		      (setf s->info (SkImageInfo--MakeN32Premul w h))
+		      (setf s->gpu_surface (SkSurface--MakeRenderTarget (dot s->context
+									     (get))
+									SkBudgeted--kNo
+									s->info))
+		      (unless s->gpu_surface
+			,(logprint "surface failed"))
+		      (glViewport 0 0 w h)
+		      (setf s->old_w w
+			    s->old_h h))
+
 		    
 		    (defun main (argc argv
 				 )
@@ -194,7 +225,7 @@
 						  (stencil_size 8)
 						  (accelerated_visual 1)
 						  (multisamplebuffers 1)
-						  (multisamplesamples 4))
+						  (multisamplesamples 0))
 				   collect
 				   `(SDL_GL_SetAttribute ,(string-upcase (format nil "SDL_GL_~a" e))
 							 ,f)
@@ -265,7 +296,7 @@
 					   fb_info.fFormat GL_RGBA8
 					   )
 				     (let ((render_target (GrBackendRenderTarget dw dh
-										 4 ;; msaa
+										 0 ;; msaa
 										 8 ;; stencil
 										 fb_info
 										 ))
@@ -289,7 +320,10 @@
 					   (sContext->flush))
 					 (SDL_GL_SwapWindow window))
 				       )))
-				 (let ((interface (GrGLMakeNativeInterface))
+				 (let ((state (SkiaGLPrivate)))
+				   (skia_init &state dw dh))
+				 
+				 #+nil (let ((interface (GrGLMakeNativeInterface))
 				       (grContext (GrDirectContext--MakeGL interface))
 				       )
 				   
@@ -308,7 +342,7 @@
 				       
 				       )
 				     (let ((target (GrBackendRenderTarget dw dh
-									  4 ;; msaa
+									  0 ;; msaa
 									  8 ;; stencil
 									  info
 									  ))))

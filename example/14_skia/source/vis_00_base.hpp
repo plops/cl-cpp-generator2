@@ -20,5 +20,6 @@
 #include <GL/gl.h>
 ;
 // header;
+void skia_init (SkiaGLPrivate& s, int w, int h)  ;  
 int main (int argc, char** argv)  ;  
 #endif

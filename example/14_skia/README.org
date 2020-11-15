@@ -211,3 +211,5 @@ clang++ SkiaSDLExample.cpp  -I ../ -I /usr/include/SDL2/ --std=c++17 -L ../out/R
 1605361012655465262 139623262424768 vis_00_base.cpp:199 main destroy window 
 1605361012655919373 139623262424768 vis_00_base.cpp:207 main quit 
 #+end_example
+
+- current state: i managed to compile skia but i haven't figured out how to write a simple example with sdl or glfw
