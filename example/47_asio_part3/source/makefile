@@ -4,7 +4,7 @@ all: vis
 # -Og -g3 -ggdb 
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
-CXXFLAGS=-Og -g3 -ggdb \
+CXXFLAGS=-O0 -g3 -ggdb \
 -std=gnu++17 \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
@@ -25,6 +25,14 @@ CFILES:=simple_00_client.cpp
 #$(shell find simple*.| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
+depend: .depend
+
+.depend: simple_00_client.cpp simple_01_server.cpp  
+	rm -f ./.depend
+	$(CXX) $(CXXFLAGS) -MM $^ > ./.depen d
+
+include .depend
+
 all: server client
 
 %.o: %.cpp globals.h
@@ -42,4 +50,4 @@ client: simple_00_client.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
-	rm vis *.o
+	rm vis *.o .depend

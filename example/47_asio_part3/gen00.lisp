@@ -512,9 +512,19 @@
 					      (m_socket (std--move socket))
 					      (m_asio_context asio_context)
 					      (m_q_messages_in q_in)
-					      (m_owner_type parent)
-					      
-					      ))
+					      (m_owner_type parent)))
+			  (if (== m_owner_type owner--server)
+			      (do0 (setf m_handshake_out
+					 (static_cast<uint64_t>
+					  (dot (std--chrono--system_clock--now)
+					       (time_since_epoch)
+					       (count)))
+					 m_handshake_in 0
+					 m_handshake_check (scramble m_handshake_out)))
+			      (do0
+			       (setf m_handshake_in 0
+				     m_handshake_out 0)
+			       ))
 			  )
 			(defmethod ~connection ()
 			  (declare
@@ -693,6 +703,17 @@
 				      m_msg_temporary_in)))
 			  (read_header)
 			  )
+
+			(defmethod scramble (input)
+			  (declare (type uint64_t input)
+				   (values uint64_t))
+			  (comments "https://youtu.be/hHowZ3bWsio?t=1057")
+			  (let ((out (logxor input 0xdeadbeefc0decafellu)))
+			    (setf out (logior (>> (& out "0xf0f0f0f0f0f0f0llu")
+						  4)
+					      (<< (& out "0x0f0f0f0f0f0f0fllu")
+						  4)))
+			    (return (logxor out 0xc0deface12345678llu))))
 			
 			"protected:"
 			;; each connection has a socket
@@ -706,7 +727,11 @@
 			"tsqueue<owned_message<T>>& m_q_messages_in;"
 			"owner m_owner_type = owner::server;"
 			"uint32_t id=0;"
-			
+
+
+			"uint64_t m_handshake_out = 0;"
+			"uint64_t m_handshake_in = 0;"
+			"uint64_t m_handshake_check = 0;"
 			)
 		      )
 		     (do0

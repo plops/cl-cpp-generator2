@@ -135,8 +135,8 @@
 			      ServerMessage))))
     (define-module
        `(client ((_main_version :type "std::string")
-		    (_code_repository :type "std::string")
-		    (_code_generation_time :type "std::string")
+		 (_code_repository :type "std::string")
+		 (_code_generation_time :type "std::string")
 		 )
 	      (do0
 	       

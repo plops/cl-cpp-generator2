@@ -26,7 +26,17 @@ public:
              boost::asio::ip::tcp::socket socket,
              tsqueue<owned_message<T>> &q_in)
       : m_socket(std::move(socket)), m_asio_context(asio_context),
-        m_q_messages_in(q_in), m_owner_type(parent) {}
+        m_q_messages_in(q_in), m_owner_type(parent) {
+    if ((m_owner_type) == (owner::server)) {
+      m_handshake_out = static_cast<uint64_t>(
+          std::chrono::system_clock::now().time_since_epoch().count());
+      m_handshake_in = 0;
+      m_handshake_check = scramble(m_handshake_out);
+    } else {
+      m_handshake_in = 0;
+      m_handshake_out = 0;
+    }
+  }
   virtual ~connection() {}
   uint32_t get_id() const { return id; }
   void connect_to_client(uint32_t uid = 0) {
@@ -180,6 +190,14 @@ private:
     }
     read_header();
   }
+  uint64_t scramble(uint64_t input) {
+    // https://youtu.be/hHowZ3bWsio?t=1057
+    ;
+    auto out = ((input) ^ (0xdeadbeefc0decafellu));
+    out = (((((out) & (0xf0f0f0f0f0f0f0llu))) >> (4)) |
+           ((((out) & (0x0f0f0f0f0f0f0fllu))) << (4)));
+    return ((out) ^ (0xc0deface12345678llu));
+  }
 
 protected:
   boost::asio::ip::tcp::socket m_socket;
@@ -189,6 +207,9 @@ protected:
   tsqueue<owned_message<T>> &m_q_messages_in;
   owner m_owner_type = owner::server;
   uint32_t id = 0;
+  uint64_t m_handshake_out = 0;
+  uint64_t m_handshake_in = 0;
+  uint64_t m_handshake_check = 0;
 };
 ;
 #endif
