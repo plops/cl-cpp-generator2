@@ -93,7 +93,7 @@ public:
         if (on_client_connect(newconn)) {
           m_deq_connections.push_back(std::move(newconn));
           (n_id_counter)++;
-          m_deq_connections.back()->connect_to_client(n_id_counter);
+          m_deq_connections.back()->connect_to_client(this, n_id_counter);
 
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
@@ -183,6 +183,11 @@ protected:
   virtual void on_client_disconnect(std::shared_ptr<connection<T>> client) {}
   virtual void on_message(std::shared_ptr<connection<T>> client,
                           message<T> &msg) {}
+
+public:
+  virtual void on_client_validated(std::shared_ptr<connection<T>> client) {}
+
+protected:
   tsqueue<owned_message<T>> m_q_messages_in;
   std::deque<std::shared_ptr<connection<T>>> m_deq_connections;
   boost::asio::io_context m_asio_context;

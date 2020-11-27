@@ -536,8 +536,9 @@
 			  (declare (const)
 				   (values uint32_t))
 			  (return id))
-			(defmethod connect_to_client (uid=0)
-			  (declare (type uint32_t uid=0))
+			(defmethod connect_to_client (server uid=0)
+			  (declare (type uint32_t uid=0)
+				   (type server_interface<T>* server))
 			  (comments "only called by servers")
 			  (when (== owner--server
 				    m_owner_type)
@@ -725,8 +726,8 @@
 			    (return (logxor out 0xc0deface12345678llu))))
 
 			(defun write_validation ()
-			  (asio--async_write m_socket
-					     (asio--buffer &m_handshake_out
+			  (boost--asio--async_write m_socket
+					     (boost--asio--buffer &m_handshake_out
 							   (sizeof m_handshake_out)
 							   )
 					     (lambda (ec length)
@@ -743,8 +744,8 @@
 			(defun read_validation (server=nullptr)
 			  (declare (type server_interface<T>* server=nullptr))
 			  (comments "argument can inform server that a client has been validated")
-			  (asio--async_read m_socket
-					     (asio--buffer &m_handshake_in
+			  (boost--asio--async_read m_socket
+					     (boost--asio--buffer &m_handshake_in
 							   (sizeof m_handshake_out)
 							   )
 					     (lambda (ec length)
@@ -754,9 +755,22 @@
 					       (when ec
 						 (m_socket.close)
 						 (return))
-					       (comments "validation sent, client should wait for response")
-					       (when (== owner--client m_owner_type)
-						 (read_header)))))
+					       (case m_owner_type
+						 (owner--server
+						  (if (== m_handshake_check m_handshake_in)
+						      (do0 (comments "client has provided valid solution")
+							   ,(logprint "client validated")
+							   (server->on_client_validated (this->shared_from_this))
+							   (read_header))
+						      (do0
+						       ,(logprint "client failed validation. disconnect.")
+						       (m_socket.close)))
+						  )
+						 (owner--client
+						  (comments "we are a client so we solve the puzzle")
+						  (setf m_handshake_out (scramble m_handshake_in))
+						  
+						  )))))
 			
 			"protected:"
 			;; each connection has a socket
@@ -990,7 +1004,7 @@
 				       (m_deq_connections.push_back (std--move newconn))
 				       (incf n_id_counter)
 				       (-> (m_deq_connections.back)
-					   (connect_to_client n_id_counter))
+					   (connect_to_client this n_id_counter))
 				       ,(logprint "server connection approved"
 						  `((-> (m_deq_connections.back)
 							(get_id))))
@@ -1079,6 +1093,14 @@
 				   (type message<T>& msg)
 				   (virtual)
 				   ))
+			"public:"
+			(defmethod on_client_validated (client)
+			  (declare (type std--shared_ptr<connection<T>> client)
+				   
+				   (virtual)
+				   ))
+
+			"protected:"
 			
 			"tsqueue<owned_message<T>> m_q_messages_in;"
 			"std::deque<std::shared_ptr<connection<T>>> m_deq_connections;"

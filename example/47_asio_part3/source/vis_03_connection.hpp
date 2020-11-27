@@ -41,7 +41,7 @@ public:
   }
   virtual ~connection() {}
   uint32_t get_id() const { return id; }
-  void connect_to_client(uint32_t uid = 0) {
+  void connect_to_client(server_interface<T> *server, uint32_t uid = 0) {
     // only called by servers
     ;
     if ((owner::server) == (m_owner_type)) {
@@ -209,36 +209,69 @@ private:
     return ((out) ^ (0xc0deface12345678llu));
   }
   void write_validation() {
-    asio::async_write(m_socket,
-                      asio::buffer(&m_handshake_out, sizeof(m_handshake_out)),
-                      [this](std::error_code ec, std::size_t length) {
-                        if (ec) {
-                          m_socket.close();
-                          return;
-                        }
-                        // validation sent, client should wait for response
-                        ;
-                        if ((owner::client) == (m_owner_type)) {
-                          read_header();
-                        }
-                      });
+    boost::asio::async_write(
+        m_socket,
+        boost::asio::buffer(&m_handshake_out, sizeof(m_handshake_out)),
+        [this](std::error_code ec, std::size_t length) {
+          if (ec) {
+            m_socket.close();
+            return;
+          }
+          // validation sent, client should wait for response
+          ;
+          if ((owner::client) == (m_owner_type)) {
+            read_header();
+          }
+        });
   }
   void read_validation(server_interface<T> *server = nullptr) {
     // argument can inform server that a client has been validated
     ;
-    asio::async_read(m_socket,
-                     asio::buffer(&m_handshake_in, sizeof(m_handshake_out)),
-                     [this, server](std::error_code ec, std::size_t length) {
-                       if (ec) {
-                         m_socket.close();
-                         return;
-                       }
-                       // validation sent, client should wait for response
-                       ;
-                       if ((owner::client) == (m_owner_type)) {
-                         read_header();
-                       }
-                     });
+    boost::asio::async_read(
+        m_socket, boost::asio::buffer(&m_handshake_in, sizeof(m_handshake_out)),
+        [this, server](std::error_code ec, std::size_t length) {
+          if (ec) {
+            m_socket.close();
+            return;
+          }
+          switch (m_owner_type) {
+          case owner::server: {
+            if ((m_handshake_check) == (m_handshake_in)) {
+              // client has provided valid solution
+              ;
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("client validated")
+                          << (" ") << (std::endl) << (std::flush);
+              server->on_client_validated(this->shared_from_this());
+              read_header();
+            } else {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("client failed validation. disconnect.") << (" ")
+                          << (std::endl) << (std::flush);
+              m_socket.close();
+            }
+            break;
+          }
+          case owner::client: {
+            // we are a client so we solve the puzzle
+            m_handshake_out = scramble(m_handshake_in);
+            break;
+          }
+          }
+        });
   }
 
 protected:
