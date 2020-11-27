@@ -498,7 +498,7 @@
 				;"vis_05_server.hpp"
 				)
 		       (comments "forward declare server_interface")
-		       "template <typename T> class server_interface;"
+		       "template<typename T> class server_interface;"
 		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
