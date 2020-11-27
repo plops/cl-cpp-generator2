@@ -268,8 +268,10 @@ private:
           }
           case owner::client: {
             // we are a client so we solve the puzzle
+            ;
             m_handshake_out = scramble(m_handshake_in);
-            write_validation() break;
+            write_validation();
+            break;
           }
           }
         });

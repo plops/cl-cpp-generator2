@@ -891,15 +891,15 @@ entry return-values contains a list of return values. currently supports type, v
 							    (format nil "default: ~a"
 								    (emit
 								     `(progn
-								       (do0 ,@(mapcar #'emit
-										  forms))
+								       ,@forms #+nil (mapcar #'emit
+										 forms)
 								       break)))
 							    (format nil "case ~a: ~a"
 								    (emit key)
 								    (emit
 								     `(progn
-								       (do0 ,@(mapcar #'emit
-										  forms))
+								       ,@forms #+nil (mapcar #'emit
+										 forms)
 								       break)))))))))))
 		  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
 			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
