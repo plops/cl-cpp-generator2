@@ -14,10 +14,12 @@
 ;
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
+#include "vis_05_server.hpp"
 ;
 // header
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
+#include "vis_05_server.hpp"
 template <typename T>
 class connection : public std::enable_shared_from_this<connection<T>> {
 public:
@@ -40,21 +42,29 @@ public:
   virtual ~connection() {}
   uint32_t get_id() const { return id; }
   void connect_to_client(uint32_t uid = 0) {
+    // only called by servers
+    ;
     if ((owner::server) == (m_owner_type)) {
       if (m_socket.is_open()) {
         id = uid;
-        read_header();
+        // client attempted to connect, write out handshake data and wait
+        // asynchronously for response
+        ;
+        write_validation();
+        read_validation(server);
       }
     }
   }
   void connect_to_server(
       const boost::asio::ip::tcp::resolver::results_type &endpoints) {
+    // this is only called by clients
+    ;
     if ((owner::client) == (m_owner_type)) {
       boost::asio::async_connect(
           m_socket, endpoints,
           [this](std::error_code ec, boost::asio::ip::tcp::endpoint endpoint) {
             if (!(ec)) {
-              read_header();
+              read_validation();
             }
           });
     }
@@ -197,6 +207,38 @@ private:
     out = (((((out) & (0xf0f0f0f0f0f0f0llu))) >> (4)) |
            ((((out) & (0x0f0f0f0f0f0f0fllu))) << (4)));
     return ((out) ^ (0xc0deface12345678llu));
+  }
+  void write_validation() {
+    asio::async_write(m_socket,
+                      asio::buffer(&m_handshake_out, sizeof(m_handshake_out)),
+                      [this](std::error_code ec, std::size_t length) {
+                        if (ec) {
+                          m_socket.close();
+                          return;
+                        }
+                        // validation sent, client should wait for response
+                        ;
+                        if ((owner::client) == (m_owner_type)) {
+                          read_header();
+                        }
+                      });
+  }
+  void read_validation(server_interface<T> *server = nullptr) {
+    // argument can inform server that a client has been validated
+    ;
+    asio::async_read(m_socket,
+                     asio::buffer(&m_handshake_in, sizeof(m_handshake_out)),
+                     [this, server](std::error_code ec, std::size_t length) {
+                       if (ec) {
+                         m_socket.close();
+                         return;
+                       }
+                       // validation sent, client should wait for response
+                       ;
+                       if ((owner::client) == (m_owner_type)) {
+                         read_header();
+                       }
+                     });
   }
 
 protected:

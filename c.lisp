@@ -890,15 +890,17 @@ entry return-values contains a list of return values. currently supports type, v
 							(if (eq key t)
 							    (format nil "default: ~a"
 								    (emit
-								     `(do0
+								     `(progn
 								       ,@(mapcar #'emit
-										 forms))))
+										 forms)
+								       break)))
 							    (format nil "case ~a: ~a"
 								    (emit key)
 								    (emit
-								     `(do0
+								     `(progn
 								       ,@(mapcar #'emit
-										 forms))))))))))))
+										 forms)
+								       break)))))))))))
 		  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
 			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
 				 (emit start)

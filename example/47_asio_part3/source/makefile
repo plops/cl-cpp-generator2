@@ -29,7 +29,7 @@ depend: .depend
 
 .depend: simple_00_client.cpp simple_01_server.cpp  
 	rm -f ./.depend
-	$(CXX) $(CXXFLAGS) -MM $^ > ./.depen d
+	$(CXX) $(CXXFLAGS) -MM $^ > ./.depend
 
 include .depend
 

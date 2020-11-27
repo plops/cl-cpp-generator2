@@ -494,7 +494,8 @@
 		      ;; we can create shared pointer from within this obj
 		      ;; like *this, but shared
 		       (include "vis_01_message.hpp"
-			     "vis_02_tsqueue.hpp")
+				"vis_02_tsqueue.hpp"
+				"vis_05_server.hpp")
 		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
@@ -537,14 +538,20 @@
 			  (return id))
 			(defmethod connect_to_client (uid=0)
 			  (declare (type uint32_t uid=0))
+			  (comments "only called by servers")
 			  (when (== owner--server
 				    m_owner_type)
 			    (when (m_socket.is_open)
 			      (setf id uid)
-			      (read_header))))
+					;(read_header)
+			      (comments "client attempted to connect, write out handshake data and wait asynchronously for response")
+			      (write_validation)
+			      (read_validation server) ;; fixme: server is not defined
+			      )))
 			(defmethod connect_to_server (endpoints)
 			  (declare 
 			   (type "const boost::asio::ip::tcp::resolver::results_type&" endpoints))
+			  (comments "this is only called by clients")
 			  (when (== owner--client
 				    m_owner_type)
 			    (boost--asio--async_connect
@@ -554,7 +561,9 @@
 					(type std--error_code ec)
 					(type boost--asio--ip--tcp--endpoint endpoint))
 			       (unless ec
-				 (read_header))
+					;(read_header)
+				 (read_validation)
+				 )
 			       ))))
 			(defmethod disconnect ()
 			  (declare (values bool))
@@ -714,6 +723,40 @@
 					      (<< (& out "0x0f0f0f0f0f0f0fllu")
 						  4)))
 			    (return (logxor out 0xc0deface12345678llu))))
+
+			(defun write_validation ()
+			  (asio--async_write m_socket
+					     (asio--buffer &m_handshake_out
+							   (sizeof m_handshake_out)
+							   )
+					     (lambda (ec length)
+					       (declare (capture this)
+							(type std--error_code ec)
+							(type std--size_t length))
+					       (when ec
+						 (m_socket.close)
+						 (return))
+					       (comments "validation sent, client should wait for response")
+					       (when (== owner--client m_owner_type)
+						 (read_header)))))
+
+			(defun read_validation (server=nullptr)
+			  (declare (type server_interface<T>* server=nullptr))
+			  (comments "argument can inform server that a client has been validated")
+			  (asio--async_read m_socket
+					     (asio--buffer &m_handshake_in
+							   (sizeof m_handshake_out)
+							   )
+					     (lambda (ec length)
+					       (declare (capture this server)
+							(type std--error_code ec)
+							(type std--size_t length))
+					       (when ec
+						 (m_socket.close)
+						 (return))
+					       (comments "validation sent, client should wait for response")
+					       (when (== owner--client m_owner_type)
+						 (read_header)))))
 			
 			"protected:"
 			;; each connection has a socket
