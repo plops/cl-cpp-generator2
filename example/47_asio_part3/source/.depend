@@ -1,0 +1,6 @@
+simple_00_client.o: simple_00_client.cpp utils.h globals.h \
+ simple_00_client.hpp vis_01_message.hpp vis_02_tsqueue.hpp \
+ vis_03_connection.hpp vis_04_client.hpp
+simple_01_server.o: simple_01_server.cpp utils.h globals.h \
+ simple_01_server.hpp vis_01_message.hpp vis_02_tsqueue.hpp \
+ vis_03_connection.hpp vis_05_server.hpp
