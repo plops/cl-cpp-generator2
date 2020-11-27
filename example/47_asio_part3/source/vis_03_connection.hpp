@@ -14,13 +14,12 @@
 ;
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
+#include "vis_05_server.hpp"
 ;
 // header
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
-// forward declare server_interface
-;
-template <typename T> class server_interface;
+#include "vis_05_server.hpp"
 template <typename T>
 class connection : public std::enable_shared_from_this<connection<T>> {
 public:

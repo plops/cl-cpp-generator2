@@ -495,10 +495,10 @@
 		      ;; like *this, but shared
 		       (include "vis_01_message.hpp"
 				"vis_02_tsqueue.hpp"
-				;"vis_05_server.hpp"
+				"vis_05_server.hpp"
 				)
-		       (comments "forward declare server_interface")
-		       "template<typename T> class server_interface;"
+		       #+nil (do0 (comments "forward declare server_interface")
+			    "template<typename T> class server_interface;")
 		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
@@ -758,7 +758,8 @@
 					       (when ec
 						 (m_socket.close)
 						 (return))
-					       (case m_owner_type
+					       
+					        (case m_owner_type
 						 (owner--server
 						  (if (== m_handshake_check m_handshake_in)
 						      (do0 (comments "client has provided valid solution")
