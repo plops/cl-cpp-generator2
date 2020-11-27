@@ -541,7 +541,7 @@
 				   (type server_interface<T>* server))
 			  (comments "only called by servers")
 			  (when (== owner--server
-				    m_owner_type)
+				    m_owner_type) 
 			    (when (m_socket.is_open)
 			      (setf id uid)
 					;(read_header)
