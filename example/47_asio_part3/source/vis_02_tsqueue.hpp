@@ -51,6 +51,8 @@ public:
   void push_back(const T &item) {
     auto lock = std::scoped_lock(mux_deq);
     deq.emplace_back(std::move(item));
+    // signal condition variable to wake up
+    ;
     auto ul = std::unique_lock<std::mutex>(mux_blocking);
     cv_blocking.notify_one();
   }

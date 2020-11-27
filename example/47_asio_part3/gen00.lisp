@@ -431,6 +431,7 @@
 					    :code (do0
 						   (deq.emplace_back
 						    (std--move item))
+						   (comments "signal condition variable to wake up")
 						   (let ((ul (std--unique_lock<std--mutex> mux_blocking)))
 						     (cv_blocking.notify_one))))
 				  (push_front void
