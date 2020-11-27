@@ -547,7 +547,7 @@
 					;(read_header)
 			      (comments "client attempted to connect, write out handshake data and wait asynchronously for response")
 			      (write_validation)
-			      (read_validation server) ;; fixme: server is not defined
+			      (read_validation server) 
 			      )))
 			(defmethod connect_to_server (endpoints)
 			  (declare 
