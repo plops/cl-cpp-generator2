@@ -1,0 +1,2 @@
+- Networking in C++ Part #3: MMO Client/Server Framework, Tweaks & Client Validation
+- https://www.youtube.com/watch?v=hHowZ3bWsio
