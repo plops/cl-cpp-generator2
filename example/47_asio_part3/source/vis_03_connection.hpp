@@ -14,12 +14,13 @@
 ;
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
-#include "vis_05_server.hpp"
 ;
 // header
 #include "vis_01_message.hpp"
 #include "vis_02_tsqueue.hpp"
-#include "vis_05_server.hpp"
+// forward declare server_interface
+;
+template <typename T> class server_interface;
 template <typename T>
 class connection : public std::enable_shared_from_this<connection<T>> {
 public:
@@ -268,7 +269,7 @@ private:
           case owner::client: {
             // we are a client so we solve the puzzle
             m_handshake_out = scramble(m_handshake_in);
-            break;
+            write_validation() break;
           }
           }
         });

@@ -495,7 +495,10 @@
 		      ;; like *this, but shared
 		       (include "vis_01_message.hpp"
 				"vis_02_tsqueue.hpp"
-				"vis_05_server.hpp")
+				;"vis_05_server.hpp"
+				)
+		       (comments "forward declare server_interface")
+		       "template <typename T> class server_interface;"
 		      (defclass+ (connection :template "typename T") "public std::enable_shared_from_this<connection<T>>"
 			"public:"
 			(space enum class owner
@@ -769,7 +772,7 @@
 						 (owner--client
 						  (comments "we are a client so we solve the puzzle")
 						  (setf m_handshake_out (scramble m_handshake_in))
-						  
+						  (write_validation)
 						  )))))
 			
 			"protected:"
