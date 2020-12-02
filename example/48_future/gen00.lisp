@@ -142,8 +142,8 @@
 			     <chrono>
 			     <thread>
 			     
-			     )
-
+			     <future>)
+		    
 		    "using namespace std::chrono_literals;"
 		    " "
 
@@ -157,6 +157,8 @@
 
 		      ))
 
+		    (let ((state ,(emit-globals :init t)))
+		     (declare (type "State" state)))
 		    (defun main (argc argv
 				 )
 		      (declare (type int argc)
@@ -201,7 +203,17 @@
 		 
 		 ,(logprint "start" `(argc (aref argv 0))))
 
-
+		      (do0
+		       (let ((task ("std::packaged_task<int()>"
+				    (lambda ()
+				      (return 7))))
+			     (result (task.get_future)))
+			 (dot (std--thread (std--move task))
+			      (detach))
+			 ,(logprint "waiting...")
+			 (result.wait)
+			 ,(logprint "" `((result.get)))
+			 ))
 		      
 
 		      (return 0)))))

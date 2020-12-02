@@ -5,6 +5,7 @@
 #include "globals.h"
 ;
 #include <chrono>
+#include <future>
 #include <iostream>
 #include <thread>
 ;

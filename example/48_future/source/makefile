@@ -12,8 +12,7 @@ CXXFLAGS=-O0 -g3 -ggdb \
 -Wno-error=unused-parameter \
 -Wno-error=double-promotion \
 -pipe \
--march=native -mtune=native \
--DASIO_STANDALONE
+-march=native -mtune=native 
 
 LDFLAGS= \
 -L/usr/local/lib \
@@ -21,32 +20,23 @@ LDFLAGS= \
 -Wl,--print-gc-sections \
 -lpthread
 
-CFILES:=simple_00_client.cpp
-#$(shell find simple*.| grep .cpp$)
+CFILES:=$(shell find .| grep .cpp$)
 OBJ:=$(CFILES:%.cpp=%.o)
 
 depend: .depend
 
-.depend: simple_00_client.cpp simple_01_server.cpp  
+.depend: $(CFILES)
 	rm -f ./.depend
 	$(CXX) $(CXXFLAGS) -MM $^ > ./.depend
 
 include .depend
 
-all: server client
+all: vis
 
 %.o: %.cpp globals.h
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 vis: $(OBJ)
-	$(CXX) $^ -o $@ $(LDFLAGS)
-
-# vis_05_server.o vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o
-server: simple_01_server.o 
-	$(CXX) $^ -o $@ $(LDFLAGS)
-
-# vis_01_message.o  vis_02_tsqueue.o  vis_03_connection.o vis_04_client.o
-client: simple_00_client.o 
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
