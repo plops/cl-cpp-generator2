@@ -39,38 +39,41 @@
     (defparameter *module-global-parameters* nil)
     (defparameter *module* nil)
     (defun logprint (msg &optional rest)
-      `(do0
+      `(progn ;do0
 	" "
 	#-nolog
-	(do0
+	(let (;(lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+	      )
+	 
+	 (do0
 					;("std::setprecision" 3)
-	 (<< "std::cout"
-	     ;;"std::endl"
-	     ("std::setw" 10)
-	     (dot ("std::chrono::high_resolution_clock::now")
-		  (time_since_epoch)
-		  (count))
+	  (<< "std::cout"
+	      ;;"std::endl"
+	      ("std::setw" 10)
+	      (dot ("std::chrono::high_resolution_clock::now")
+		   (time_since_epoch)
+		   (count))
 					;,(g `_start_time)
 	     
-	     (string " ")
-	     ("std::this_thread::get_id")
-	     (string " ")
-	     __FILE__
-	     (string ":")
-	     __LINE__
-	     (string " ")
-	     __func__
-	     (string " ")
-	     (string ,msg)
-	     (string " ")
-	     ,@(loop for e in rest appending
-		    `(("std::setw" 8)
+	      (string " ")
+	      ("std::this_thread::get_id")
+	      (string " ")
+	      __FILE__
+	      (string ":")
+	      __LINE__
+	      (string " ")
+	      __func__
+	      (string " ")
+	      (string ,msg)
+	      (string " ")
+	      ,@(loop for e in rest appending
+		     `(("std::setw" 8)
 					;("std::width" 8)
-		      (string ,(format nil " ~a='" (emit-c :code e)))
-		      ,e
-		      (string "'")))
-	     "std::endl"
-	     "std::flush"))))
+		       (string ,(format nil " ~a='" (emit-c :code e)))
+		       ,e
+		       (string "'")))
+	      "std::endl"
+	      "std::flush")))))
     (defun emit-globals (&key init)
       (let ((l `((_start_time ,(emit-c :code `(typeof (dot ("std::chrono::high_resolution_clock::now")
 							   (time_since_epoch)
@@ -133,7 +136,8 @@
     (define-module
        `(base ((_main_version :type "std::string")
 		    (_code_repository :type "std::string")
-		    (_code_generation_time :type "std::string")
+	       (_code_generation_time :type "std::string")
+	       (_stdout_mutex :type "std::mutex")
 		 )
 	      (do0
 	       
@@ -204,9 +208,12 @@
 		 ,(logprint "start" `(argc (aref argv 0))))
 
 		      (do0
-		       (let ((task ("std::packaged_task<int()>"
-				    (lambda ()
-				      (return 7))))
+		       (let ((v 7)
+			     (task ("std::packaged_task<int()>"
+				       (lambda ()
+					 (declare (capture &v))
+					 ,(logprint "bla" `(v))
+					 (return v))))
 			     (result (task.get_future)))
 			 (dot (std--thread (std--move task))
 			      (detach))
@@ -339,10 +346,10 @@
 		    #+nil (include <deque>
 			     <map>
 			     <string>)
-		    #+nil (include <thread>
-			     <mutex>
-			     <queue>
-			     <condition_variable>
+		     (include ;<thread>
+			      <mutex>
+			     ;<queue>
+			     ;<condition_variable>
 			     )
 		    " "
 
