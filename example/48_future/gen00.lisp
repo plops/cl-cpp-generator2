@@ -165,8 +165,7 @@
 
 		    (let ((state ,(emit-globals :init t)))
 		     (declare (type "State" state)))
-		    (defun main (argc argv
-				 )
+		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
@@ -178,10 +177,7 @@
 				  (subseq str 0 (1- (length str))))))
 
 		 (setf
-		  
-		  
 		  ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
-		  
 		  ,(g `_code_generation_time) 
 		  (string ,(multiple-value-bind
 				 (second minute hour date month year day-of-week dst-p tz)
@@ -217,7 +213,7 @@
 			     (let (
 				   (task ("std::packaged_task<int()>"
 					  (lambda ()
-					    (declare (capture &v))
+					    (declare (capture v))
 					    ,(logprint "bla" `(v))
 					    (return v))))
 				   (result (task.get_future)))
