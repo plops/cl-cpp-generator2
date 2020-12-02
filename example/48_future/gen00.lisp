@@ -146,7 +146,8 @@
 			     <chrono>
 			     <thread>
 			     
-			     <future>)
+			     <future>
+			     <experimental/future>)
 		    
 		    "using namespace std::chrono_literals;"
 		    " "
@@ -207,19 +208,44 @@
 		 
 		 ,(logprint "start" `(argc (aref argv 0))))
 
-		      (do0
-		       (let ((v 7)
+		      (let ((results (std--vector<std--future<int>>)))
+			(dotimes (i 12)
+			  (results.push_back
+			   ((lambda (v)
+			      (declare (type int v))
+			     (let (
+				   (task ("std::packaged_task<int()>"
+					  (lambda ()
+					    (declare (capture &v))
+					    ,(logprint "bla" `(v))
+					    (return v))))
+				   (result (task.get_future)))
+			       (comments "spawn thread")
+			       (let ((th (std--thread (std--move task))))
+				 (dot th
+				      (detach))
+				 (return result))
+			       ))
+			   i)))
+			(dot (std--experimental--when_all results)
+			     (then (lambda ()
+				     ,(logprint "finished"))))
+		       #+nil(let ((v 7)
 			     (task ("std::packaged_task<int()>"
 				       (lambda ()
 					 (declare (capture &v))
 					 ,(logprint "bla" `(v))
 					 (return v))))
 			     (result (task.get_future)))
-			 (dot (std--thread (std--move task))
-			      (detach))
-			 ,(logprint "waiting...")
-			 (result.wait)
-			 ,(logprint "" `((result.get)))
+			 (comments "spawn thread")
+			 (let ((th (std--thread (std--move task))))
+			  (dot th
+			       (detach))
+			  ,(logprint "waiting...")
+			  (result.wait)
+			  ,(logprint "" `((result.get)))
+			 ; (th.join)
+			  )
 			 ))
 		      
 

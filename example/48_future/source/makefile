@@ -5,7 +5,7 @@ all: vis
 # -Wno-error=inaccessible-base
 # -Wshadow -Wdouble-promotion -fno-common -Wconversion 
 CXXFLAGS=-O0 -g3 -ggdb \
--std=gnu++17 \
+-std=gnu++2a \
 -Wall -Wextra -Werror -Wfatal-errors\
 -ffunction-sections -fdata-sections \
 -Wno-error=unused-variable \
