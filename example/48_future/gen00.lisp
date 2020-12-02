@@ -42,7 +42,7 @@
       `(progn ;do0
 	" "
 	#-nolog
-	(let (;(lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+	(let ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
 	      )
 	 
 	 (do0
@@ -147,7 +147,8 @@
 			     <thread>
 			     
 			     <future>
-			     <experimental/future>)
+			    ; <experimental/future>
+			     )
 		    
 		    "using namespace std::chrono_literals;"
 		    " "
@@ -226,7 +227,12 @@
 				      (detach))
 				 (return result))
 			       ))
-			   i)))
+			    i)))
+			(for-range (&r results)
+				   (r.wait ;then
+				    #+nil(lambda ()
+				      ,(logprint "finished"))))
+			#+nil
 			(dot (std--experimental--when_all results)
 			     (then (lambda ()
 				     ,(logprint "finished"))))

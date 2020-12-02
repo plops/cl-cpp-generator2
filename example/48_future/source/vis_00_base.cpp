@@ -5,7 +5,6 @@
 
 extern State state;
 #include <chrono>
-#include <experimental/future>
 #include <future>
 #include <iostream>
 #include <thread>
@@ -14,14 +13,15 @@ using namespace std::chrono_literals;
 // implementation
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "6732e320dde7d5ebed0c6da249887847f797b3ab";
+  state._main_version = "66bc103e674f8144bd8d8036f51cc29247b6ab25";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "08:33:41 of Wednesday, 2020-12-02 (GMT+1)";
+  state._code_generation_time = "08:41:56 of Wednesday, 2020-12-02 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
 
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
   }
   {
 
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
       auto task = std::packaged_task<int()>([&v]() {
         {
 
+          auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
           (std::cout) << (std::setw(10))
                       << (std::chrono::high_resolution_clock::now()
                               .time_since_epoch()
@@ -74,18 +76,8 @@ int main(int argc, char **argv) {
       return result;
     })(i));
   }
-  std::experimental::when_all(results).then([]() {
-    {
-
-      (std::cout) << (std::setw(10))
-                  << (std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count())
-                  << (" ") << (std::this_thread::get_id()) << (" ")
-                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("finished") << (" ") << (std::endl)
-                  << (std::flush);
-    }
-  });
+  for (auto &r : results) {
+    r.wait();
+  }
   return 0;
 }
