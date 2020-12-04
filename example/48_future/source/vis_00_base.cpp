@@ -13,10 +13,10 @@ using namespace std::chrono_literals;
 // implementation
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "7c25691410604c7c7eb0c86cfb611e9578231952";
+  state._main_version = "208a658f25fb56beee9f50f23298edfdb2be096b";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "08:44:07 of Wednesday, 2020-12-02 (GMT+1)";
+  state._code_generation_time = "21:29:12 of Friday, 2020-12-04 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
