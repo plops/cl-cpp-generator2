@@ -207,8 +207,12 @@
 
 		      (progn
 			"pybind11::scoped_interpreter guard{};"
-		       (pybind11--exec (string-r "import sys
-print('hello world from PYTHON {}'.format(sys.version))")))
+		       (pybind11--exec (string-r "
+import sys
+import IPython 
+print('hello world from PYTHON {}'.format(sys.version))
+IPython.start_ipython()
+")))
 		      
 
 		      (return 0)))))
