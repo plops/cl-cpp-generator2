@@ -4,3 +4,6 @@
 
 - https://www.youtube.com/watch?v=-R5sgnHuTFs
   - 2020 pybind11 simple example
+
+- https://www.youtube.com/watch?v=74yr6hEV-fQ
+  - compare python and c++ for testing of a kalman filter
