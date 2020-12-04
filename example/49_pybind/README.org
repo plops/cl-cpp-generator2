@@ -7,3 +7,4 @@
 
 - https://www.youtube.com/watch?v=74yr6hEV-fQ
   - compare python and c++ for testing of a kalman filter
+  - pybind11 allows named function parameters but he doesn't show that
