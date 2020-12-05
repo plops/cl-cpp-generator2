@@ -187,8 +187,8 @@
 			   (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
 			   
 			   
-			   ;(Triangulation_conformer_2)
-			   ;(lloyd_optimize_mesh_2)
+			   (Triangulation_conformer_2)
+			   (lloyd_optimize_mesh_2)
 			   )))
 		  `(do0
 
@@ -361,7 +361,16 @@
 		  (do0 
 		   ,(logprint "before2"
 			      `((cdt.number_of_vertices)))))
-		 #+nil (do0
+		 
+		 #-nil  (let (((mesher cdt))
+		        (seeds (std--vector<Point> (curly (Point 505 325)
+				       (Point 379 172)))))
+		   (declare (type Mesher (mesher cdt))
+			    ;(type "std::vector<Point>" seeds)
+			    )
+		   #-nil (mesher.set_seeds (seeds.begin)
+					   (seeds.end))
+			  #-nil (do0
 		  (comments "modify the triangulation to be more conforming by introducing steiner vertices on constrained edges")
 		  (do0 (CGAL--make_conforming_Delaunay_2 cdt)
 		       ,(logprint "after conforming delaunay"
@@ -370,16 +379,12 @@
 		       ,(logprint "after conforming gabriel"
 				  `((cdt.number_of_vertices))))
 
-		  (do0 (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
-		       ,(logprint "after meshing"
-				  `((cdt.number_of_vertices)))))
-		 #-nil  (let (((mesher cdt))
-		       #+nil (seeds (curly (Point 505 325)
-					   (Point 379 172))))
-		   (declare (type Mesher (mesher cdt))
-			    (type "std::vector<Point>" seeds))
-		   #-nil (mesher.set_seeds (seeds.begin)
-					   (seeds.end)))    
+		   (do0 #+nil (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
+			(mesher.set_criteria (Criteria .125 30))
+			(mesher.refine_mesh)
+			,(logprint "after meshing"
+				  `((cdt.number_of_vertices))))
+		  ))    
 		 #+nil
 		 (progn
 		   "pybind11::scoped_interpreter guard{};"
@@ -447,53 +452,41 @@ IPython.start_ipython()
 			(fn-hash (sxhash fn-h))
 			(code-hash (sxhash code-str)))
 		   (multiple-value-bind (old-code-hash exists) (gethash fn-hash *header-file-hashes*)
-		     (when (or (not exists) ignore-hash (/= code-hash old-code-hash)
+		     (when (or (not exists)
+			       (/= code-hash old-code-hash)
 			       (not (probe-file fn-h)))
 		       ;; store the sxhash of the header source in the hash table
 		       ;; *header-file-hashes* with the key formed by the sxhash of the full
 		       ;; pathname
-		       (setf (gethash fn-hash *file-hashes*) code-hash)
+		       (setf (gethash fn-hash *header-file-hashes*) code-hash)
+		       (format t "~&write header: ~a ~a old=~a~%" fn-h code-hash old-code-hash)
 		       (with-open-file (sh fn-h
-				       :direction :output
-				       :if-exists :supersede
-				       :if-does-not-exist :create)
-		     (format sh "#ifndef ~a~%" file-h)
-		     (format sh "#define ~a~%" file-h)
-		     
-		     (emit-c :code code
-			     :hook-defun #'(lambda (str)
-					     (format sh "~a~%" str)
-					     )
-			     :hook-defclass #'(lambda (str)
-						(format sh "~a;~%" str)
-						)
-			     :header-only t
-			     )
-		     (format sh "#endif")
-			 )
+					   :direction :output
+					   :if-exists :supersede
+					   :if-does-not-exist :create)
+			 (format sh "#ifndef ~a~%" file-h)
+			 (format sh "#define ~a~%" file-h)
+			 
+			 (emit-c :code code
+				 :hook-defun #'(lambda (str)
+						 (format sh "~a~%" str))
+				 :hook-defclass #'(lambda (str)
+						    (format sh "~a;~%" str))
+				 :header-only t)
+			 (format sh "#endif"))
 		       (sb-ext:run-program "/usr/bin/clang-format"
-				       (list "-i"  (namestring fn-h)
-				   
-				   ))
-		       ))
-		   
-		   
-		   
-		   )
-		 
-
-		 )
-	       
-	       #+nil (format t "emit cpp file for ~a~%" name)
-	       (write-source (asdf:system-relative-pathname
-			      'cl-cpp-generator2
-			      (format nil
-				      "~a/vis_~2,'0d_~a.~a"
-				      *source-dir* i name
-				      (if cuda
-					  "cu"
-					  "cpp")))
-			     code))))
+					   (list "-i"  (namestring fn-h)))))))
+	       (progn
+		#+nil (format t "emit cpp file for ~a~%" name)
+		(write-source (asdf:system-relative-pathname
+			       'cl-cpp-generator2
+			       (format nil
+				       "~a/vis_~2,'0d_~a.~a"
+				       *source-dir* i name
+				       (if cuda
+					   "cu"
+					   "cpp")))
+			      code)))))
       #+nil (format s "#endif"))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2

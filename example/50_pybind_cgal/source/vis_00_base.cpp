@@ -23,10 +23,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "a24613899cc32718d665ebf733b4674c35357bd2";
+  state._main_version = "d71bc1f755d75c3f6846bf015ad71c15a9f1a650";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "19:48:37 of Saturday, 2020-12-05 (GMT+1)";
+  state._code_generation_time = "20:03:29 of Saturday, 2020-12-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -117,6 +117,53 @@ int main(int argc, char **argv) {
                 << ("'") << (std::endl) << (std::flush);
   }
   Mesher mesher(cdt);
+  auto seeds = std::vector<Point>({Point(505, 325), Point(379, 172)});
   mesher.set_seeds(seeds.begin(), seeds.end());
+  // modify the triangulation to be more conforming by introducing steiner
+  // vertices on constrained edges
+  ;
+  CGAL::make_conforming_Delaunay_2(cdt);
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after conforming delaunay") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
+  CGAL::make_conforming_Gabriel_2(cdt);
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after conforming gabriel") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
+  mesher.set_criteria(Criteria((0.1250f), 30));
+  mesher.refine_mesh();
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after meshing") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
   return 0;
 }
