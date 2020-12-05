@@ -23,5 +23,18 @@ namespace py = pybind11;
 using namespace std::chrono_literals;
 
 PYBIND11_MODULE(cgal_mesher, m) {
+  py::class_<Point>(m, "Point")
+      .def(py::init<int, int>(), py::arg("x"), py::arg("y"))
+      .def(py::init<double, double>(), py::arg("x"), py::arg("y"))
+      .def_property_readonly("x", &Point::x)
+      .def_property_readonly("y", &Point::y)
+      .def("__repr__", [](const Point &p) {
+        auto r = std::string("Point(");
+        (r) += (std::to_string(p.x()));
+        (r) += (", ");
+        (r) += (std::to_string(p.x()));
+        (r) += (")");
+        return r;
+      });
   py::class_<CDT>(m, "ConstrainedDelaunayTriangulation").def(py::init());
 };
