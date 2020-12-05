@@ -15,7 +15,7 @@
 
 (setf *features* (set-difference *features*
 				 '()))
-(defparameter *header-file-hashes* (make-hash-table))
+(defvar *header-file-hashes* (make-hash-table))
 
 (progn
   (defparameter *source-dir* #P"example/50_pybind_cgal/source/")
@@ -448,7 +448,17 @@ IPython.start_ipython()
 								      (format nil "~a/~a.hpp"
 									      *source-dir* file)))
 			
-			(code-str (emit-c :code code :header-only nil))
+			(code-str (with-output-to-string (sh)
+				    (format sh "#ifndef ~a~%" file-h)
+				    (format sh "#define ~a~%" file-h)
+			 
+				    (emit-c :code code
+								    :hook-defun #'(lambda (str)
+										    (format sh "~a~%" str))
+								    :hook-defclass #'(lambda (str)
+										       (format sh "~a;~%" str))
+					    :header-only t)
+				    (format sh "#endif")))
 			(fn-hash (sxhash fn-h))
 			(code-hash (sxhash code-str)))
 		   (multiple-value-bind (old-code-hash exists) (gethash fn-hash *header-file-hashes*)
@@ -459,7 +469,8 @@ IPython.start_ipython()
 		       ;; *header-file-hashes* with the key formed by the sxhash of the full
 		       ;; pathname
 		       (setf (gethash fn-hash *header-file-hashes*) code-hash)
-		       (format t "~&write header: ~a ~a old=~a~%" fn-h code-hash old-code-hash)
+		       (format t "~&write header: ~a fn-hash=~a ~a old=~a~%" fn-h fn-hash code-hash old-code-hash
+			       )
 		       (with-open-file (sh fn-h
 					   :direction :output
 					   :if-exists :supersede
