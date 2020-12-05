@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 3.4 )
 project( mytest )
-set( CMAKE_CXX_STANDARD 20 )
+set( CMAKE_VERBOSE_MAKEFILE ON )
+set( CMAKE_CXX_STANDARD 14 )
 find_package( pybind11 REQUIRED )
 find_package( CGAL QUIET COMPONENTS Core )
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/50_pybind_cgal/source/vis_00_base.cpp )

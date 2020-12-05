@@ -277,7 +277,7 @@
 		  )
 
 		 (let ((cdt (CDT)))
-		   ,(let ((l `((a -4 0)
+		   ,(let #+nil ((l `((a -4 0)
 			       (b 0 -1)
 			       (c 4 0)
 			       (d 0 1)))
@@ -285,7 +285,7 @@
 				(b c)
 				(c d)
 				(d a))))
-		      #+nil ((l `((a 100 269)
+		      #-nil ((l `((a 100 269)
 				       (b 246 269)
 				       (c 246 223)
 				       (d 303 223)
@@ -372,12 +372,12 @@
 		  (do0 (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
 		       ,(logprint "after meshing"
 				  `((cdt.number_of_vertices)))))
-		 #+nil  (let (((mesher cdt))
+		 #-nil  (let (((mesher cdt))
 		       #+nil (seeds (curly (Point 505 325)
 					   (Point 379 172))))
 		   (declare (type Mesher (mesher cdt))
 			    (type "std::vector<Point>" seeds))
-		   #+nil (mesher.set_seeds (seeds.begin)
+		   #-nil (mesher.set_seeds (seeds.begin)
 					   (seeds.end)))    
 		 #+nil
 		 (progn
@@ -440,7 +440,12 @@ IPython.start_ipython()
 			(file-h (string-upcase (format nil "~a_H" file)))
 			(fn-h (asdf:system-relative-pathname 'cl-cpp-generator2
 								      (format nil "~a/~a.hpp"
-									      *source-dir* file))))
+									      *source-dir* file)))
+			(fn (merge-pathnames (format nil "~a" name)
+					     dir))
+			(code-str (emit-c :code code :header-only nil))
+			(fn-hash (sxhash fn))
+			(code-hash (sxhash code-str)))
 		   (with-open-file (sh fn-h
 				       :direction :output
 				       :if-exists :supersede
@@ -540,7 +545,8 @@ IPython.start_ipython()
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	(out "cmake_minimum_required( VERSION 3.4 )")
 	(out "project( mytest )")
-	(out "set( CMAKE_CXX_STANDARD 20 )")
+	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+	(out "set( CMAKE_CXX_STANDARD 14 )")
 
 	(out "find_package( pybind11 REQUIRED )")
 

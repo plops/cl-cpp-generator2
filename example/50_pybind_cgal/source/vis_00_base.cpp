@@ -23,10 +23,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "13aa748a69ccd9c2f35f02999c63e7308f923dde";
+  state._main_version = "438af42c326e88d3caabedd14431a1ccac1fbb10";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "18:27:36 of Saturday, 2020-12-05 (GMT+1)";
+  state._code_generation_time = "18:40:04 of Saturday, 2020-12-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -47,14 +47,62 @@ int main(int argc, char **argv) {
                 << (std::flush);
   }
   auto cdt = CDT();
-  auto va = cdt.insert(Point(-4, 0));
-  auto vb = cdt.insert(Point(0, -1));
-  auto vc = cdt.insert(Point(4, 0));
-  auto vd = cdt.insert(Point(0, 1));
+  auto va = cdt.insert(Point(100, 269));
+  auto vb = cdt.insert(Point(246, 269));
+  auto vc = cdt.insert(Point(246, 223));
+  auto vd = cdt.insert(Point(303, 223));
+  auto ve = cdt.insert(Point(303, 298));
+  auto vf = cdt.insert(Point(246, 298));
+  auto vg = cdt.insert(Point(246, 338));
+  auto vh = cdt.insert(Point(355, 338));
+  auto vi = cdt.insert(Point(355, 519));
+  auto vj = cdt.insert(Point(551, 519));
+  auto vk = cdt.insert(Point(551, 445));
+  auto vl = cdt.insert(Point(463, 445));
+  auto vm = cdt.insert(Point(463, 377));
+  auto vn = cdt.insert(Point(708, 377));
+  auto vo = cdt.insert(Point(708, 229));
+  auto vp = cdt.insert(Point(435, 229));
+  auto vq = cdt.insert(Point(435, 100));
+  auto vr = cdt.insert(Point(100, 100));
+  auto vs = cdt.insert(Point(349, 236));
+  auto vt = cdt.insert(Point(370, 236));
+  auto vu = cdt.insert(Point(370, 192));
+  auto vv = cdt.insert(Point(403, 192));
+  auto vw = cdt.insert(Point(403, 158));
+  auto vx = cdt.insert(Point(349, 158));
+  auto vy = cdt.insert(Point(501, 336));
+  auto vz = cdt.insert(Point(533, 336));
+  auto v1 = cdt.insert(Point(519, 307));
+  auto v2 = cdt.insert(Point(484, 307));
   cdt.insert_constraint(va, vb);
   cdt.insert_constraint(vb, vc);
   cdt.insert_constraint(vc, vd);
-  cdt.insert_constraint(vd, va);
+  cdt.insert_constraint(vd, ve);
+  cdt.insert_constraint(ve, vf);
+  cdt.insert_constraint(vf, vg);
+  cdt.insert_constraint(vg, vh);
+  cdt.insert_constraint(vh, vi);
+  cdt.insert_constraint(vi, vj);
+  cdt.insert_constraint(vj, vk);
+  cdt.insert_constraint(vk, vl);
+  cdt.insert_constraint(vl, vm);
+  cdt.insert_constraint(vm, vn);
+  cdt.insert_constraint(vn, vo);
+  cdt.insert_constraint(vo, vp);
+  cdt.insert_constraint(vp, vq);
+  cdt.insert_constraint(vq, vr);
+  cdt.insert_constraint(vr, va);
+  cdt.insert_constraint(vs, vt);
+  cdt.insert_constraint(vt, vu);
+  cdt.insert_constraint(vu, vv);
+  cdt.insert_constraint(vv, vw);
+  cdt.insert_constraint(vw, vx);
+  cdt.insert_constraint(vx, vs);
+  cdt.insert_constraint(vy, vz);
+  cdt.insert_constraint(vz, v1);
+  cdt.insert_constraint(v1, v2);
+  cdt.insert_constraint(v2, vy);
   {
 
     auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
@@ -68,5 +116,7 @@ int main(int argc, char **argv) {
                 << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
                 << ("'") << (std::endl) << (std::flush);
   }
+  Mesher mesher(cdt);
+  mesher.set_seeds(seeds.begin(), seeds.end());
   return 0;
 }
