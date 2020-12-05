@@ -482,8 +482,37 @@ IPython.start_ipython()
 				     (incf r (std--to_string (p.x)))
 				     (incf r (string ")"))
 				     (return r)))))
+			(dot (py--class_<Vertex_handle> m (string "VertexHandle")))
 			(dot (py--class_<CDT> m (string "ConstrainedDelaunayTriangulation"))
-			     (def (py--init))))))))
+			     (def (py--init))
+			     #+nil (def (string "insert")
+				 (lambda (cdt p)
+				   (declare (type "CDT&" cdt)
+					    (type "const Point&" p))
+				   (return (cdt.insert p))))
+			     #+nil (def (string "insert_constraint")
+				 (lambda (cdt a b)
+				   (declare (type "CDT&" cdt)
+					    (type Vertex_handle a b))
+				   (return (cdt.insert_constraint a b))))
+			     #-nil ,@(loop for e in `((insert ((CDT& cdt) ("const Point&" p)))
+						      (insert_constraint ((CDT& cdt) (Vertex_handle a)
+									  (Vertex_handle b)))
+						      )
+				     collect
+				     (destructuring-bind (name params) e
+				       `(def (string ,name)
+					    (lambda ,(mapcar #'second params)
+					      (declare ,@(loop for (type var) in params
+							       collect
+							       `(type ,type ,var)))
+					      (return (dot ,(second (first params))
+							   (,name ,@(mapcar #'second (cdr params)))))))))
+			     ,@(loop for e in `(number_of_vertices
+						number_of_faces)
+				     collect
+				     `(def (string ,e)
+					  ,(format nil "&CDT::~a" e)))))))))
     
     
   )

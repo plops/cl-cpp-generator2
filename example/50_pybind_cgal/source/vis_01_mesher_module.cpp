@@ -36,5 +36,14 @@ PYBIND11_MODULE(cgal_mesher, m) {
         (r) += (")");
         return r;
       });
-  py::class_<CDT>(m, "ConstrainedDelaunayTriangulation").def(py::init());
+  py::class_<Vertex_handle>(m, "VertexHandle");
+  py::class_<CDT>(m, "ConstrainedDelaunayTriangulation")
+      .def(py::init())
+      .def("insert", [](CDT &cdt, const Point &p) { return cdt.insert(p); })
+      .def("insert_constraint",
+           [](CDT &cdt, Vertex_handle a, Vertex_handle b) {
+             return cdt.insert_constraint(a, b);
+           })
+      .def("number_of_vertices", &CDT::number_of_vertices)
+      .def("number_of_faces", &CDT::number_of_faces);
 };
