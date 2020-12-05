@@ -480,7 +480,7 @@ IPython.start_ipython()
 					;(out "set( CMAKE_CXX_FLAGS )")
 	(out "set( SRCS ~{~a~^~%~} )" (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_link_libraries( mytest PRIVATE pybind11::embed )"))
+	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )"))
       )))
 
 

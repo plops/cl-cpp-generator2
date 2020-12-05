@@ -87,10 +87,10 @@ int main(int argc, char **argv) {
   cdt.insert_constraint(vz, v1);
   cdt.insert_constraint(v1, v2);
   cdt.insert_constraint(v2, vy);
-  state._main_version = "0a5850b1275e996193ea50c14946f04c43e10820";
+  state._main_version = "27ade0cb4e2ab6450a1874f43fc4c5c2d5ebace9";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "09:54:47 of Saturday, 2020-12-05 (GMT+1)";
+  state._code_generation_time = "13:33:07 of Saturday, 2020-12-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
