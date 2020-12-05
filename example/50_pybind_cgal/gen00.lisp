@@ -15,6 +15,7 @@
 
 (setf *features* (set-difference *features*
 				 '()))
+(defparameter *header-file-hashes* (make-hash-table))
 
 (progn
   (defparameter *source-dir* #P"example/50_pybind_cgal/source/")
@@ -441,12 +442,18 @@ IPython.start_ipython()
 			(fn-h (asdf:system-relative-pathname 'cl-cpp-generator2
 								      (format nil "~a/~a.hpp"
 									      *source-dir* file)))
-			(fn (merge-pathnames (format nil "~a" name)
-					     dir))
+			
 			(code-str (emit-c :code code :header-only nil))
-			(fn-hash (sxhash fn))
+			(fn-hash (sxhash fn-h))
 			(code-hash (sxhash code-str)))
-		   (with-open-file (sh fn-h
+		   (multiple-value-bind (old-code-hash exists) (gethash fn-hash *header-file-hashes*)
+		     (when (or (not exists) ignore-hash (/= code-hash old-code-hash)
+			       (not (probe-file fn-h)))
+		       ;; store the sxhash of the header source in the hash table
+		       ;; *header-file-hashes* with the key formed by the sxhash of the full
+		       ;; pathname
+		       (setf (gethash fn-hash *file-hashes*) code-hash)
+		       (with-open-file (sh fn-h
 				       :direction :output
 				       :if-exists :supersede
 				       :if-does-not-exist :create)
@@ -463,11 +470,15 @@ IPython.start_ipython()
 			     :header-only t
 			     )
 		     (format sh "#endif")
-		     )
-		   (sb-ext:run-program "/usr/bin/clang-format"
+			 )
+		       (sb-ext:run-program "/usr/bin/clang-format"
 				       (list "-i"  (namestring fn-h)
 				   
 				   ))
+		       ))
+		   
+		   
+		   
 		   )
 		 
 
