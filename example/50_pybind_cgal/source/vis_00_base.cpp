@@ -23,10 +23,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "82f8a7b0eda591d6982bb084ef73464f398fa3cf";
+  state._main_version = "2cd5ff23056d93128db747427a36e1f3ef913772";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "20:10:07 of Saturday, 2020-12-05 (GMT+1)";
+  state._code_generation_time = "20:12:39 of Saturday, 2020-12-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -162,6 +162,20 @@ int main(int argc, char **argv) {
                 << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
                 << (":") << (__LINE__) << (" ") << (__func__) << (" ")
                 << ("after meshing") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
+  CGAL::lloyd_optimize_mesh_2(cdt, CGAL::parameters::max_iteration_number = 10);
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after lloyd optimization") << (" ") << (std::setw(8))
                 << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
                 << ("'") << (std::endl) << (std::flush);
   }

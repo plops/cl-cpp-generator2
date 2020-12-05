@@ -383,7 +383,14 @@
 			(mesher.set_criteria (Criteria .125 30))
 			(mesher.refine_mesh)
 			,(logprint "after meshing"
-				  `((cdt.number_of_vertices))))
+				   `((cdt.number_of_vertices))))
+
+
+		   (do0
+		    (CGAL--lloyd_optimize_mesh_2 cdt
+						 "CGAL::parameters::max_iteration_number=10")
+		    ,(logprint "after lloyd optimization"
+				   `((cdt.number_of_vertices))))
 		  ))    
 		 #+nil
 		 (progn
