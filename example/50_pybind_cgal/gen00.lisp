@@ -137,35 +137,65 @@
        `(base ((_main_version :type "std::string")
 	       (_code_repository :type "std::string")
 	       (_code_generation_time :type "std::string")
-	       (_stdout_mutex :type "std::mutex")
-		 )
+	       (_stdout_mutex :type "std::mutex"))
 	      (do0
+	       (include <iostream>
+			<chrono>
+			<thread>
+			
+					;<future>
+					; <experimental/future>
+			<pybind11/embed.h>
+			)
+
+	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
+			  (Delaunay_mesh_face_base_2 <K> Fb)
+			  (Delaunay_mesh_vertex_base_2 <K> Vb)
+			  (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
+			  (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT)
+			  
+			  (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
+			  (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
+			  (Triangulation_conformer_2)
+			  (lloyd_optimize_mesh_2))))
+		 `(do0
+		   (include ,@(remove-if
+			       #'null
+			       (loop for e in l
+				     collect
+				     (destructuring-bind (name &optional f g new-name) e
+				       (when name
+					 (format nil "<CGAL/~a.h>" name))))))
+		   ,@(remove-if #'null
+				(loop for e in l
+				      collect
+				      (destructuring-bind (name &optional template short new-name) e
+					(when short
+					  (format nil "typedef CGAL::~a~a ~a;"
+						 (if name
+						     name
+						     new-name)
+						 (if template
+						     template
+						     "")
+						 short
+						 )))))))
 	       
-	    
-		    (include <iostream>
-			     <chrono>
-			     <thread>
-			     
-			     ;<future>
-			    ; <experimental/future>
-			     <pybind11/embed.h>
-			     )
-		    
-		    "using namespace std::chrono_literals;"
-		    " "
-
-		    (split-header-and-code
-		     (do0
-		      "// header"
-
-		      )
-		     (do0
-		      "// implementation"
-
-		      ))
-
-		    (let ((state ,(emit-globals :init t)))
-		     (declare (type "State" state)))
+	       "using namespace std::chrono_literals;"
+	       " "
+	       
+	       (split-header-and-code
+		(do0
+		 "// header"
+		 
+		 )
+		(do0
+		 "// implementation"
+		 
+		 ))
+	       
+	       (let ((state ,(emit-globals :init t)))
+		 (declare (type "State" state)))
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
