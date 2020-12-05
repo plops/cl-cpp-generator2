@@ -6,6 +6,7 @@
 ;
 #include <chrono>
 #include <iostream>
+#include <pybind11/embed.h>
 #include <thread>
 ;
 int main(int argc, char **argv);

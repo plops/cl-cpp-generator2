@@ -143,7 +143,7 @@
 			
 					;<future>
 					; <experimental/future>
-					;	<pybind11/embed.h>
+						<pybind11/embed.h>
 			)
 	       " "
 	       #+nil (include ; <boost/lexical_cast.hpp>
@@ -373,12 +373,13 @@
 		  )
 
 		     
-		 #+nil
+		 #-nil
 		 (progn
 		   "pybind11::scoped_interpreter guard{};"
 		   (pybind11--exec (string-r "
 import sys
 import IPython 
+import cgal_mesher
 print('hello world from PYTHON {}'.format(sys.version))
 IPython.start_ipython()
 ")))
