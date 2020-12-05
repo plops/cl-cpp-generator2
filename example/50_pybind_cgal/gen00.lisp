@@ -366,7 +366,11 @@ IPython.start_ipython()
 	(out "cmake_minimum_required( VERSION 3.4 )")
 	(out "project( mytest )")
 	(out "set( CMAKE_CXX_STANDARD 20 )")
+
 	(out "find_package( pybind11 REQUIRED )")
+
+	;; GMP MPFI
+	(out "find_package( CGAL QUIET COMPONENTS Core )")
 					;(out "set( CMAKE_CXX_FLAGS )")
 	(out "set( SRCS ~{~a~^~%~} )" (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
