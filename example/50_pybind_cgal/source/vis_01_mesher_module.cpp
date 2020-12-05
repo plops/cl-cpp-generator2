@@ -19,6 +19,9 @@ using Criteria = CGAL::Delaunay_mesh_size_criteria_2<CDT>;
 using Mesher = CGAL::Delaunay_mesher_2<CDT, Criteria>;
 using Vertex_handle = CDT::Vertex_handle;
 using Point = CDT::Point;
+namespace py = pybind11;
 using namespace std::chrono_literals;
 
-PYBIND11_MODULE(cgal_mesher, m){};
+PYBIND11_MODULE(cgal_mesher, m) {
+  py::class_<CDT>(m, "ConstrainedDelaunayTriangulation").def(py::init());
+};

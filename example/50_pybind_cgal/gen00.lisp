@@ -449,19 +449,23 @@ IPython.start_ipython()
 		 ))
 
 		     ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
-				      ("CDT::Point" Point))
+					    ("CDT::Point" Point)
+					   )
 		       collect
 		       (format nil "using ~a = ~a;" f e))
 		     ))
 
-	       
+	       "namespace py = pybind11;"
 	       
 	       "using namespace std::chrono_literals;"
+
+	      
 	       " "
 	       (space PYBIND11_MODULE
 		      (paren cgal_mesher m)
 		      (progn
-			)))))
+			(dot (py--class_<CDT> m (string "ConstrainedDelaunayTriangulation"))
+			     (def (py--init))))))))
     
     
   )
