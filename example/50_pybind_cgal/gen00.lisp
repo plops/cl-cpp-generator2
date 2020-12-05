@@ -345,7 +345,8 @@
 				   (subseq str 0 (1- (length str))))))
 
 		  (setf
-		   ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
+		   ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/~a"
+							   *source-dir*))
 		   ,(g `_code_generation_time) 
 		   (string ,(multiple-value-bind
 				  (second minute hour date month year day-of-week dst-p tz)
