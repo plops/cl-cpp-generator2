@@ -1,0 +1,10 @@
+- https://www.youtube.com/watch?v=YReJ3pSnNDo
+  - Robert Smallshire
+  - 2018, impressive binding for cgal
+
+- https://www.youtube.com/watch?v=-R5sgnHuTFs
+  - 2020 pybind11 simple example
+
+- https://www.youtube.com/watch?v=74yr6hEV-fQ
+  - compare python and c++ for testing of a kalman filter
+  - pybind11 allows named function parameters but he doesn't show that
