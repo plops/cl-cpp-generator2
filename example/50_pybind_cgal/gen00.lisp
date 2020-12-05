@@ -623,19 +623,22 @@ IPython.start_ipython()
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	(out "cmake_minimum_required( VERSION 3.4 )")
-	(out "project( mytest )")
+	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set( CMAKE_CXX_STANDARD 14 )")
 
+	(out "find_package( Python COMPONENTS Interpreter Development REQUIRED )")
 	(out "find_package( pybind11 REQUIRED )")
 
 	;; GMP MPFI
 	(out "find_package( CGAL QUIET COMPONENTS Core )")
 					;(out "set( CMAKE_CXX_FLAGS )")
-	(out "set( SRCS ~{~a~^~%~} )" (directory "source/*.cpp"))
+	(out "set( SRCS ~{~a~^~%~} )" ;(directory "source/*.cpp")
+	     `(vis_00_base.cpp))
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
-	(out "target_precompile_headers( mytest PRIVATE vis_01_mesher_module.hpp )"))
+	(out "pybind11_add_module( cgal_mesher vis_01_mesher_module.cpp )")
+	(out "target_precompile_headers( cgal_mesher PRIVATE vis_01_mesher_module.hpp )"))
       )))
 
 
