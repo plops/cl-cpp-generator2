@@ -148,7 +148,7 @@
 			<pybind11/embed.h>
 			)
 	       " "
-	       (include <boost/lexical_cast.hpp>)
+	       ;(include <boost/lexical_cast.hpp>)
 	       " "
 	       
 	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
@@ -163,23 +163,23 @@
 			   
 			   (Triangulation_conformer_2)
 			   (lloyd_optimize_mesh_2))))
-		 `(do0
-		   ,@(remove-if
-		      #'null
-		      (loop for e in l
-			    collect
-			    (destructuring-bind (name &optional f g new-name) e
-			      (when name
-				`(do0 (include ,(format nil "<CGAL/~a.h>" name))
-				      " ")))))
-		   ))
+		  `(do0
+		    ,@(remove-if
+		       #'null
+		       (loop for e in l
+			     collect
+			     (destructuring-bind (name &optional f g new-name) e
+			       (when name
+				 `(do0 (include ,(format nil "<CGAL/~a.h>" name))
+				       " ")))))
+		    ))
 
-	         ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
-			     (Delaunay_mesh_face_base_2 <K> Fb)
-			     (Delaunay_mesh_vertex_base_2 <K> Vb)
-			     (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
-			     (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT) 
-			     (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
+	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
+			   (Delaunay_mesh_face_base_2 <K> Fb)
+			   (Delaunay_mesh_vertex_base_2 <K> Vb)
+			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
+			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT) 
+			   (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
 			     
 			     
 			   
@@ -189,23 +189,23 @@
 			   
 			   (Triangulation_conformer_2)
 			   (lloyd_optimize_mesh_2))))
-		 `(do0
+		  `(do0
 		
-		   ,@(remove-if #'null
-				(loop for e in l
-				      collect
-				      (destructuring-bind (name &optional template short new-name) e
-					(when short
-					  (format nil "using ~a = CGAL::~a~a;"
-						  short
-						  (if name
-						     name
-						     new-name)
-						 (if template
-						     template
-						     "")
+		    ,@(remove-if #'null
+				 (loop for e in l
+				       collect
+				       (destructuring-bind (name &optional template short new-name) e
+					 (when short
+					   (format nil "using ~a = CGAL::~a~a;"
+						   short
+						   (if name
+						       name
+						       new-name)
+						   (if template
+						       template
+						       "")
 						 
-						 )))))))
+						   )))))))
 
 	       ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
 				      ("CDT::Point" Point))
@@ -227,127 +227,139 @@
 	       
 	       (let ((state ,(emit-globals :init t)))
 		 (declare (type "State" state)))
-		    (defun main (argc argv)
-		      (declare (type int argc)
-			       (type char** argv)
-			       (values int))
-		      (do0
-		 (setf ,(g `_main_version)
-		       (string ,(let ((str (with-output-to-string (s)
-					     (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
-				  (subseq str 0 (1- (length str))))))
+	       (defun main (argc argv)
+		 (declare (type int argc)
+			  (type char** argv)
+			  (values int))
+		 (do0
+		  (setf ,(g `_main_version)
+			(string ,(let ((str (with-output-to-string (s)
+					      (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
+				   (subseq str 0 (1- (length str))))))
 
-		 (setf
-		  ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
-		  ,(g `_code_generation_time) 
-		  (string ,(multiple-value-bind
-				 (second minute hour date month year day-of-week dst-p tz)
-			       (get-decoded-time)
-			     (declare (ignorable dst-p))
-			     (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-				     hour
-				     minute
-				     second
-				     (nth day-of-week *day-names*)
-				     year
-				     month
-				     date
-				     (- tz)))))
+		  (setf
+		   ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
+		   ,(g `_code_generation_time) 
+		   (string ,(multiple-value-bind
+				  (second minute hour date month year day-of-week dst-p tz)
+				(get-decoded-time)
+			      (declare (ignorable dst-p))
+			      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				      hour
+				      minute
+				      second
+				      (nth day-of-week *day-names*)
+				      year
+				      month
+				      date
+				      (- tz)))))
 
-		 (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
-					      (time_since_epoch)
-					      (count)))
+		  (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+					       (time_since_epoch)
+					       (count)))
 		 
-		 ,(logprint "start main" `(,(g `_main_version)
+		  ,(logprint "start main" `(,(g `_main_version)
 					    ,(g `_code_repository)
 					    ,(g `_code_generation_time)))
 		 
 		 
-		 )
+		  )
 
-		      (let ((cdt (CDT)))
-			,(let ((l `((a 100 269)
-				    (b 246 269)
-				    (c 246 223)
-				    (d 303 223)
-				    (e 303 298)
-				    (f 246 298)
-				    (g 246 338)
-				    (h 355 338)
-				    (i 355 519)
-				    (j 551 519)
-				    (k 551 445)
-				    (l 463 445)
-				    (m 463 377)
-				    (n 708 377)
-				    (o 708 229)
-				    (p 435 229)
-				    (q 435 100)
-				    (r 100 100)
+		 (let ((cdt (CDT)))
+		   ,(let ((l `((a 100 269)
+			       (b 246 269)
+			       (c 246 223)
+			       (d 303 223)
+			       (e 303 298)
+			       (f 246 298)
+			       (g 246 338)
+			       (h 355 338)
+			       (i 355 519)
+			       (j 551 519)
+			       (k 551 445)
+			       (l 463 445)
+			       (m 463 377)
+			       (n 708 377)
+			       (o 708 229)
+			       (p 435 229)
+			       (q 435 100)
+			       (r 100 100)
 
-				    (s 349 236)
-				    (t 370 236)
-				    (u 370 192)
-				    (v 403 192)
-				    (w 403 158)
-				    (x 349 158)
+			       (s 349 236)
+			       (t 370 236)
+			       (u 370 192)
+			       (v 403 192)
+			       (w 403 158)
+			       (x 349 158)
 
-				    (y 501 336)
-				    (z 533 336)
-				    (1 519 307)
-				    (2 484 307)
+			       (y 501 336)
+			       (z 533 336)
+			       (1 519 307)
+			       (2 484 307)
 
-				    ))
-			      (l2 `((    a b)
-				    (    b c)
-				    (    c d)
-				    (    d e)
-				    (    e f)
-				    (    f g)
-				    (    g h)
-				    (    h i)
-				    (    i j)
-				    (    j k)
-				    (    k l)
-				    (    l m)
-				    (    m n)
-				    (    n o)
-				    (    o p)
-				    (    p q)
-				    (    q r)
-				    (    r a)
+			       ))
+			  (l2 `((a b)
+				(b c)
+				(c d)
+				(d e)
+				(e f)
+				(f g)
+				(g h)
+				(h i)
+				(i j)
+				(j k)
+				(k l)
+				(l m)
+				(m n)
+				(n o)
+				(o p)
+				(p q)
+				(q r)
+				(r a)
 
-				    (    s t)
-				    (    t u)
-				    (    u v)
-				    (    v w)
-				    (    w x)
-				    (    x s)
+				(s t)
+				(t u)
+				(u v)
+				(v w)
+				(w x)
+				(x s)
 
-				    (    y z)
-				    (    z 1)
-				    (    1 2)
-				    (    2 y))))
-			   `(do0
-			     ,@(loop for (name e f) in l
-				     collect
-				     `(let ((,(format nil "v~a" name)
-					      (cdt.insert (Point ,e ,f))))))
-			     ,@(loop for (e f) in l2
-				     collect
-				     `(cdt.insert_constraint ,(format nil "v~a" e)
-							     ,(format nil "v~a" f))))))
-		      (let (((mesher cdt))
-			    #+nil (seeds (curly (Point 505 325)
-					  (Point 379 172))))
-			(declare (type Mesher (mesher cdt))
-				 (type "std::vector<Point>" seeds))
-			#+nil (mesher.set_seeds (seeds.begin)
-					  (seeds.end)))    
+				(y z)
+				(z 1)
+				(1 2)
+				(2 y))))
+		      `(do0
+			,@(loop for (name e f) in l
+				collect
+				`(let ((,(format nil "v~a" name)
+					 (cdt.insert (Point ,e ,f))))))
+			,@(loop for (e f) in l2
+				collect
+				`(cdt.insert_constraint ,(format nil "v~a" e)
+							,(format nil "v~a" f))))))
+		 (do0
+		  (comments "modify the triangulation to be more conforming by introducing steiner vertices on constrained edges")
+		  (do0 (CGAL--make_conforming_Delaunay_2 cdt)
+		       ,(logprint "after conforming delaunay"
+				  `((cdt.number_of_vertices))))
+		  (do0 (CGAL--make_conforming_Gabriel_2 cdt)
+		       ,(logprint "after conforming gabriel"
+				  `((cdt.number_of_vertices))))
 
-		      (progn
-			"pybind11::scoped_interpreter guard{};"
-		       (pybind11--exec (string-r "
+		  (do0 (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
+		       ,(logprint "after meshing"
+				  `((cdt.number_of_vertices)))))
+		 #+nil  (let (((mesher cdt))
+		       #+nil (seeds (curly (Point 505 325)
+					   (Point 379 172))))
+		   (declare (type Mesher (mesher cdt))
+			    (type "std::vector<Point>" seeds))
+		   #+nil (mesher.set_seeds (seeds.begin)
+					   (seeds.end)))    
+
+		 (progn
+		   "pybind11::scoped_interpreter guard{};"
+		   (pybind11--exec (string-r "
 import sys
 import IPython 
 print('hello world from PYTHON {}'.format(sys.version))
@@ -355,7 +367,7 @@ IPython.start_ipython()
 ")))
 		      
 
-		      (return 0)))))
+		 (return 0)))))
     
     
   )

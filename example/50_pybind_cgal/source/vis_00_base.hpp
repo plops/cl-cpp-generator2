@@ -9,8 +9,6 @@
 #include <pybind11/embed.h>
 #include <thread>
 ;
-#include <boost/lexical_cast.hpp>
-;
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 ;
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>

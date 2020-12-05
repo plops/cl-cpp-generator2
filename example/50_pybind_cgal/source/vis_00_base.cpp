@@ -9,8 +9,6 @@ extern State state;
 #include <pybind11/embed.h>
 #include <thread>
 
-#include <boost/lexical_cast.hpp>
-
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -41,10 +39,10 @@ using namespace std::chrono_literals;
 // implementation
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "54eee14226db46355429623b75450a42f65aa0ac";
+  state._main_version = "af50147efdbbb5b5e0d796f14f1ac0b66f5a89ae";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/48_future";
-  state._code_generation_time = "14:58:23 of Saturday, 2020-12-05 (GMT+1)";
+  state._code_generation_time = "17:20:59 of Saturday, 2020-12-05 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -121,7 +119,51 @@ int main(int argc, char **argv) {
   cdt.insert_constraint(vz, v1);
   cdt.insert_constraint(v1, v2);
   cdt.insert_constraint(v2, vy);
-  Mesher mesher(cdt);
+  // modify the triangulation to be more conforming by introducing steiner
+  // vertices on constrained edges
+  ;
+  CGAL::make_conforming_Delaunay_2(cdt);
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after conforming delaunay") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
+  CGAL::make_conforming_Gabriel_2(cdt);
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after conforming gabriel") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
+  CGAL::refine_Delaunay_mesh_2(cdt, Criteria((0.1250f), (0.50f)));
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("after meshing") << (" ") << (std::setw(8))
+                << (" cdt.number_of_vertices()='") << (cdt.number_of_vertices())
+                << ("'") << (std::endl) << (std::flush);
+  }
   {
     pybind11::scoped_interpreter guard{};
     pybind11::exec(R"(
