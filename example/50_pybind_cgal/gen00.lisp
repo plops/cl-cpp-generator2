@@ -551,7 +551,8 @@ IPython.start_ipython()
 				   (let ((it (py--iter iterable))
 					 (beg (TypedInputIterator<Point> it))
 					 (end (TypedInputIterator<Point> (py--iterator--sentinel))))
-				     (mesher.set_seeds beg end))))))))))
+				     (mesher.set_seeds beg end)
+				     )))))))))
     
     
   )
@@ -664,7 +665,7 @@ IPython.start_ipython()
 		    "#define UTILS_H"
 		    " "
 		    (include <vector>
-			     <array>
+			     ;<array>
 			     <iostream>
 			     <iomanip>)
 		    

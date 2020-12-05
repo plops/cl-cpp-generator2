@@ -77,8 +77,10 @@ PYBIND11_MODULE(cgal_mesher, m) {
       .def(py::init<CDT &>())
       .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
         auto it = py::iter(iterable);
-        auto beg = TypedInputIterator<Point>(it);
-        auto end = TypedInputIterator<Point>(py::iterator::sentinel());
+        //auto beg = TypedInputIterator<Point>(it);
+        //auto end = TypedInputIterator<Point>(py::iterator::sentinel());
+        TypedInputIterator<Point> beg(it);
+        TypedInputIterator<Point> end(py::iterator::sentinel());
         mesher.set_seeds(beg, end);
       });
 };
