@@ -1,6 +1,7 @@
 - https://www.youtube.com/watch?v=YReJ3pSnNDo
   - Integrate Python and C++ with pybind11 - Robert Smallshire
   - https://github.com/rob-smallshire/mesher
+  - https://doc.cgal.org/latest/Mesh_2/index.html
   - 2018, impressive binding for cgal
   - sudo dnf install cgal-devel
 #+begin_example

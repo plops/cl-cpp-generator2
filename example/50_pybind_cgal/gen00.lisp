@@ -148,7 +148,9 @@
 			<pybind11/embed.h>
 			)
 	       " "
-
+	       (include <boost/lexical_cast.hpp>)
+	       " "
+	       
 	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
 			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT)
 			   
@@ -173,14 +175,17 @@
 		   ))
 
 	         ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
-			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT)
+			     (Delaunay_mesh_face_base_2 <K> Fb)
+			     (Delaunay_mesh_vertex_base_2 <K> Vb)
+			     (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
+			     (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT) 
+			     (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
+			     
+			     
 			   
-			   (Delaunay_mesh_face_base_2 <K> Fb)
-			   (Delaunay_mesh_vertex_base_2 <K> Vb)
-			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
-			   
+			     
 			   (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
-			   (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
+			   
 			   
 			   (Triangulation_conformer_2)
 			   (lloyd_optimize_mesh_2))))
@@ -205,7 +210,7 @@
 	       ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
 				      ("CDT::Point" Point))
 		       collect
-		       (format nil "typedef ~a ~a;" e f))
+		       (format nil "using ~a = ~a;" f e))
 	       
 	       "using namespace std::chrono_literals;"
 	       " "
@@ -332,10 +337,11 @@
 				     collect
 				     `(cdt.insert_constraint ,(format nil "v~a" e)
 							     ,(format nil "v~a" f))))))
-		      (let ((mesher (Mesher cdt))
-			    (seeds (curly (Point 505 325)
+		      (let (((mesher cdt))
+			    #+nil (seeds (curly (Point 505 325)
 					  (Point 379 172))))
-			(declare (type "std::vector<Point>" seeds))
+			(declare (type Mesher (mesher cdt))
+				 (type "std::vector<Point>" seeds))
 			#+nil (mesher.set_seeds (seeds.begin)
 					  (seeds.end)))    
 
