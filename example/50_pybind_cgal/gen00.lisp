@@ -180,6 +180,11 @@
 						     "")
 						 short
 						 )))))))
+
+	       ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
+				      ("CDT::Point" Point))
+		       collect
+		       (format nil "typedef ~a ~a;" e f))
 	       
 	       "using namespace std::chrono_literals;"
 	       " "
@@ -200,7 +205,78 @@
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      (let ((cdt (CDT)))
+			,(let ((l `((a 100 269)
+				    (b 246 269)
+				    (c 246 223)
+				    (d 303 223)
+				    (e 303 298)
+				    (f 246 298)
+				    (g 246 338)
+				    (h 355 338)
+				    (i 355 519)
+				    (j 551 519)
+				    (k 551 445)
+				    (l 463 445)
+				    (m 463 377)
+				    (n 708 377)
+				    (o 708 229)
+				    (p 435 229)
+				    (q 435 100)
+				    (r 100 100)
 
+				    (s 349 236)
+				    (t 370 236)
+				    (u 370 192)
+				    (v 403 192)
+				    (w 403 158)
+				    (x 349 158)
+
+				    (y 501 336)
+				    (z 533 336)
+				    (1 519 307)
+				    (2 484 307)
+
+				    ))
+			      (l2 `((    a b)
+				    (    b c)
+				    (    c d)
+				    (    d e)
+				    (    e f)
+				    (    f g)
+				    (    g h)
+				    (    h i)
+				    (    i j)
+				    (    j k)
+				    (    k l)
+				    (    l m)
+				    (    m n)
+				    (    n o)
+				    (    o p)
+				    (    p q)
+				    (    q r)
+				    (    r a)
+
+				    (    s t)
+				    (    t u)
+				    (    u v)
+				    (    v w)
+				    (    w x)
+				    (    x s)
+
+				    (    y z)
+				    (    z 1)
+				    (    1 2)
+				    (    2 y))))
+			   `(do0
+			     ,@(loop for (name e f) in l
+				     collect
+				     `(let ((,(format nil "v~a" name)
+					      (cdt.insert (Point ,e ,f))))))
+			     ,@(loop for (e f) in l2
+				     collect
+				     `(cdt.insert_constraint ,(format nil "v~a" e)
+							     ,(format nil "v~a" f))))))
 		      (do0
 		 (setf ,(g `_main_version)
 		       (string ,(let ((str (with-output-to-string (s)
