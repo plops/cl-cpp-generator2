@@ -131,9 +131,6 @@
     `(dot state ,arg))
 
   (let*  ()
-    
-    
-    
     (define-module
        `(base ((_main_version :type "std::string")
 	       (_code_repository :type "std::string")
@@ -154,30 +151,9 @@
 		)
 	       " "
 	       
-	      #+nil ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
-			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT)
-			   
-			   (Delaunay_mesh_face_base_2 <K> Fb)
-			   (Delaunay_mesh_vertex_base_2 <K> Vb)
-			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
-			   
-			   (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
-			   (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
-			   
-			   (Triangulation_conformer_2)
-			   (lloyd_optimize_mesh_2))))
-		  `(do0
-		    ,@(remove-if
-		       #'null
-		       (loop for e in l
-			     collect
-			     (destructuring-bind (name &optional f g new-name) e
-			       (when name
-				 `(do0 (include ,(format nil "<CGAL/~a.h>" name))
-				       " ")))))
-		    ))
+	  
 
-	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
+	    #+nil   ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
 			   (Delaunay_mesh_face_base_2 <K> Fb)
 			   (Delaunay_mesh_vertex_base_2 <K> Vb)
 			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
@@ -239,44 +215,8 @@
 	       
 	       (let ((state ,(emit-globals :init t)))
 		 (declare (type "State" state)))
-	       (defun main (argc argv)
-		 (declare (type int argc)
-			  (type char** argv)
-			  (values int))
-		 (do0
-		  (setf ,(g `_main_version)
-			(string ,(let ((str (with-output-to-string (s)
-					      (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
-				   (subseq str 0 (1- (length str))))))
 
-		  (setf
-		   ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
-		   ,(g `_code_generation_time) 
-		   (string ,(multiple-value-bind
-				  (second minute hour date month year day-of-week dst-p tz)
-				(get-decoded-time)
-			      (declare (ignorable dst-p))
-			      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-				      hour
-				      minute
-				      second
-				      (nth day-of-week *day-names*)
-				      year
-				      month
-				      date
-				      (- tz)))))
-
-		  (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
-					       (time_since_epoch)
-					       (count)))
-		 
-		  ,(logprint "start main" `(,(g `_main_version)
-					    ,(g `_code_repository)
-					    ,(g `_code_generation_time)))
-		 
-		 
-		  )
-
+	     #+nil  (defun call_cgal_cpp ()
 		 (let ((cdt (CDT)))
 		   ,(let #+nil ((l `((a -4 0)
 			       (b 0 -1)
@@ -356,42 +296,83 @@
 			,@(loop for (e f) in l2
 				collect
 				`(cdt.insert_constraint ,(format nil "v~a" e)
-							,(format nil "v~a" f))))))
-		 (do0
-		  (do0 
-		   ,(logprint "before2"
-			      `((cdt.number_of_vertices)))))
-		 
-		 #-nil  (let (((mesher cdt))
-		        (seeds (std--vector<Point> (curly (Point 505 325)
-				       (Point 379 172)))))
-		   (declare (type Mesher (mesher cdt))
-			    ;(type "std::vector<Point>" seeds)
-			    )
-		   #-nil (mesher.set_seeds (seeds.begin)
-					   (seeds.end))
-			  #-nil (do0
-		  (comments "modify the triangulation to be more conforming by introducing steiner vertices on constrained edges")
-		  (do0 (CGAL--make_conforming_Delaunay_2 cdt)
-		       ,(logprint "after conforming delaunay"
-				  `((cdt.number_of_vertices))))
-		  (do0 (CGAL--make_conforming_Gabriel_2 cdt)
-		       ,(logprint "after conforming gabriel"
-				  `((cdt.number_of_vertices))))
-
-		   (do0 #+nil (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
-			(mesher.set_criteria (Criteria .125 30))
-			(mesher.refine_mesh)
-			,(logprint "after meshing"
-				   `((cdt.number_of_vertices))))
-
-
+							,(format nil "v~a" f)))))
 		   (do0
-		    (CGAL--lloyd_optimize_mesh_2 cdt
-						 "CGAL::parameters::max_iteration_number=10")
-		    ,(logprint "after lloyd optimization"
-				   `((cdt.number_of_vertices))))
-		  ))    
+		    (do0 
+		     ,(logprint "before2"
+				`((cdt.number_of_vertices)))))
+		   
+		   #-nil  (let (((mesher cdt))
+				(seeds (std--vector<Point> (curly (Point 505 325)
+								  (Point 379 172)))))
+			    (declare (type Mesher (mesher cdt))
+					;(type "std::vector<Point>" seeds)
+				     )
+			    #-nil (mesher.set_seeds (seeds.begin)
+						    (seeds.end))
+			    #-nil (do0
+				   (comments "modify the triangulation to be more conforming by introducing steiner vertices on constrained edges")
+				   (do0 (CGAL--make_conforming_Delaunay_2 cdt)
+					,(logprint "after conforming delaunay"
+						   `((cdt.number_of_vertices))))
+				   (do0 (CGAL--make_conforming_Gabriel_2 cdt)
+					,(logprint "after conforming gabriel"
+						   `((cdt.number_of_vertices))))
+
+				   (do0 #+nil (CGAL--refine_Delaunay_mesh_2 cdt (Criteria .125 .5))
+					(mesher.set_criteria (Criteria .125 30))
+					(mesher.refine_mesh)
+					,(logprint "after meshing"
+						   `((cdt.number_of_vertices))))
+
+
+				   (do0
+				    (CGAL--lloyd_optimize_mesh_2 cdt
+								 "CGAL::parameters::max_iteration_number=10")
+				    ,(logprint "after lloyd optimization"
+					       `((cdt.number_of_vertices))))
+				   ))))
+
+
+	       (defun main (argc argv)
+		 (declare (type int argc)
+			  (type char** argv)
+			  (values int))
+		 (do0
+		  (setf ,(g `_main_version)
+			(string ,(let ((str (with-output-to-string (s)
+					      (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
+				   (subseq str 0 (1- (length str))))))
+
+		  (setf
+		   ,(g `_code_repository) (string ,(format nil "https://github.com/plops/cl-cpp-generator2/tree/master/example/48_future"))
+		   ,(g `_code_generation_time) 
+		   (string ,(multiple-value-bind
+				  (second minute hour date month year day-of-week dst-p tz)
+				(get-decoded-time)
+			      (declare (ignorable dst-p))
+			      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				      hour
+				      minute
+				      second
+				      (nth day-of-week *day-names*)
+				      year
+				      month
+				      date
+				      (- tz)))))
+
+		  (setf ,(g `_start_time) (dot ("std::chrono::high_resolution_clock::now")
+					       (time_since_epoch)
+					       (count)))
+		 
+		  ,(logprint "start main" `(,(g `_main_version)
+					    ,(g `_code_repository)
+					    ,(g `_code_generation_time)))
+		 
+		 #+nil (call_cgal_cpp)
+		  )
+
+		     
 		 #+nil
 		 (progn
 		   "pybind11::scoped_interpreter guard{};"
@@ -404,6 +385,82 @@ IPython.start_ipython()
 		      
 
 		 (return 0)))))
+
+    (define-module
+       `(mesher_module ()
+	      (do0
+	       (include <iostream>
+			<chrono>
+			<thread>
+			
+					;<future>
+					; <experimental/future>
+			
+			)
+	       " "
+	       	       
+	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
+			   (Delaunay_mesh_face_base_2 <K> Fb)
+			   (Delaunay_mesh_vertex_base_2 <K> Vb)
+			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
+			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT) 
+			   (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
+			   			     
+			   (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
+			   
+			   
+			   (Triangulation_conformer_2)
+			   (lloyd_optimize_mesh_2)
+			   )))
+		  `(do0
+
+		     (split-header-and-code
+		(do0
+		 "// header"
+		 (include <pybind11/pybind11.h>)
+		 ,@(remove-if
+		       #'null
+		       (loop for e in l
+			     collect
+			     (destructuring-bind (name &optional f g new-name) e
+			       (when name
+				 `(do0 (include ,(format nil "<CGAL/~a.h>" name))
+				       " ")))))
+		 )
+		(do0
+		 "// implementation"
+		 (include "vis_01_mesher_module.hpp")
+		 ,@(remove-if #'null
+				 (loop for e in l
+				       collect
+				       (destructuring-bind (name &optional template short new-name) e
+					 (when short
+					   (format nil "using ~a = CGAL::~a~a;"
+						   short
+						   (if name
+						       name
+						       new-name)
+						   (if template
+						       template
+						       "")
+						 
+						   )))))
+		 ))
+
+		     ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
+				      ("CDT::Point" Point))
+		       collect
+		       (format nil "using ~a = ~a;" f e))
+		     ))
+
+	       
+	       
+	       "using namespace std::chrono_literals;"
+	       " "
+	       (space PYBIND11_MODULE
+		      (paren cgal_mesher m)
+		      (progn
+			)))))
     
     
   )
@@ -578,7 +635,7 @@ IPython.start_ipython()
 	(out "set( SRCS ~{~a~^~%~} )" (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
-	(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )"))
+	(out "target_precompile_headers( mytest PRIVATE vis_01_mesher_module.hpp )"))
       )))
 
 
