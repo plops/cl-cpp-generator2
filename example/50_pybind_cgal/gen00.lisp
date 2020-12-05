@@ -17,7 +17,7 @@
 				 '()))
 
 (progn
-  (defparameter *source-dir* #P"example/49_pybind/source/")
+  (defparameter *source-dir* #P"example/50_pybind_cgal/source/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"

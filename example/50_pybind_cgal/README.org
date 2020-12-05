@@ -1,6 +1,12 @@
 - https://www.youtube.com/watch?v=YReJ3pSnNDo
   - Robert Smallshire
   - 2018, impressive binding for cgal
+  - sudo dnf install cgal-devel
+#+begin_example
+Installed:
+  CGAL-devel-5.1.1-1.fc33.x86_64        eigen3-devel-3.3.8-2.fc33.noarch       
+  mpfr-devel-4.1.0-2.fc33.x86_64  
+#+end_example
 
 - https://www.youtube.com/watch?v=-R5sgnHuTFs
   - 2020 pybind11 simple example

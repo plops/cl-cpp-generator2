@@ -1,6 +1,7 @@
 - https://www.youtube.com/watch?v=YReJ3pSnNDo
   - Robert Smallshire
-  - 2018, binding for cgal
+  - 2018, impressive binding for cgal
+  - see ../50_pybind_cgal
 
 - https://www.youtube.com/watch?v=-R5sgnHuTFs
   - 2020 pybind11 simple example
