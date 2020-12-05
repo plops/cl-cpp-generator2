@@ -4,25 +4,34 @@
 #include "globals.h"
 
 extern State state;
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Delaunay_mesh_face_base_2.h>
-#include <CGAL/Delaunay_mesh_size_criteria_2.h>
-#include <CGAL/Delaunay_mesh_vertex_base_2.h>
-#include <CGAL/Delaunay_mesher_2.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Triangulation_conformer_2.h>
-#include <CGAL/lloyd_optimize_mesh_2.h>
 #include <chrono>
 #include <iostream>
 #include <pybind11/embed.h>
 #include <thread>
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Delaunay_mesh_face_base_2<K> Fb;
-typedef CGAL::Delaunay_mesh_vertex_base_2<K> Vb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds> CDT;
-typedef CGAL::Delaunay_mesh_size_criteria_2<CDT> Criteria;
-typedef CGAL::Delaunay_mesher_2<CDT, Criteria> Mesher;
+
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+
+#include <CGAL/Delaunay_mesh_face_base_2.h>
+
+#include <CGAL/Delaunay_mesh_vertex_base_2.h>
+
+#include <CGAL/Delaunay_mesher_2.h>
+
+#include <CGAL/Delaunay_mesh_size_criteria_2.h>
+
+#include <CGAL/Triangulation_conformer_2.h>
+
+#include <CGAL/lloyd_optimize_mesh_2.h>
+
+using K = CGAL::Exact_predicates_inexact_constructions_kernel;
+using CDT = CGAL::Constrained_Delaunay_triangulation_2<K, Tds>;
+using Fb = CGAL::Delaunay_mesh_face_base_2<K>;
+using Vb = CGAL::Delaunay_mesh_vertex_base_2<K>;
+using Tds = CGAL::Triangulation_data_structure_2<Vb, Fb>;
+using Mesher = CGAL::Delaunay_mesher_2<CDT, Criteria>;
+using Criteria = CGAL::Delaunay_mesh_size_criteria_2<CDT>;
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point Point;
 using namespace std::chrono_literals;
@@ -30,6 +39,29 @@ using namespace std::chrono_literals;
 // implementation
 State state = {};
 int main(int argc, char **argv) {
+  state._main_version = "849aff27c94467a06193c210be9d4d20c4838706";
+  state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
+                           "master/example/48_future";
+  state._code_generation_time = "14:49:57 of Saturday, 2020-12-05 (GMT+1)";
+  state._start_time =
+      std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  {
+
+    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("start main") << (" ") << (std::setw(8))
+                << (" state._main_version='") << (state._main_version) << ("'")
+                << (std::setw(8)) << (" state._code_repository='")
+                << (state._code_repository) << ("'") << (std::setw(8))
+                << (" state._code_generation_time='")
+                << (state._code_generation_time) << ("'") << (std::endl)
+                << (std::flush);
+  }
   auto cdt = CDT();
   auto va = cdt.insert(Point(100, 269));
   auto vb = cdt.insert(Point(246, 269));
@@ -87,29 +119,8 @@ int main(int argc, char **argv) {
   cdt.insert_constraint(vz, v1);
   cdt.insert_constraint(v1, v2);
   cdt.insert_constraint(v2, vy);
-  state._main_version = "27ade0cb4e2ab6450a1874f43fc4c5c2d5ebace9";
-  state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
-                           "master/example/48_future";
-  state._code_generation_time = "13:33:07 of Saturday, 2020-12-05 (GMT+1)";
-  state._start_time =
-      std::chrono::high_resolution_clock::now().time_since_epoch().count();
-  {
-
-    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("start main") << (" ") << (std::setw(8))
-                << (" state._main_version='") << (state._main_version) << ("'")
-                << (std::setw(8)) << (" state._code_repository='")
-                << (state._code_repository) << ("'") << (std::setw(8))
-                << (" state._code_generation_time='")
-                << (state._code_generation_time) << ("'") << (std::endl)
-                << (std::flush);
-  }
+  auto mesher = Mesher(cdt);
+  std::vector<Point> seeds = {Point(505, 325), Point(379, 172)};
   {
     pybind11::scoped_interpreter guard{};
     pybind11::exec(R"(

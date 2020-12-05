@@ -9,13 +9,20 @@
 #include <pybind11/embed.h>
 #include <thread>
 ;
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#include <CGAL/Delaunay_mesh_face_base_2.h>
-#include <CGAL/Delaunay_mesh_size_criteria_2.h>
-#include <CGAL/Delaunay_mesh_vertex_base_2.h>
-#include <CGAL/Delaunay_mesher_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+;
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+;
+#include <CGAL/Delaunay_mesh_face_base_2.h>
+;
+#include <CGAL/Delaunay_mesh_vertex_base_2.h>
+;
+#include <CGAL/Delaunay_mesher_2.h>
+;
+#include <CGAL/Delaunay_mesh_size_criteria_2.h>
+;
 #include <CGAL/Triangulation_conformer_2.h>
+;
 #include <CGAL/lloyd_optimize_mesh_2.h>
 ;
 // header;
