@@ -145,13 +145,15 @@
 			
 					;<future>
 					; <experimental/future>
-			<pybind11/embed.h>
+					;	<pybind11/embed.h>
 			)
 	       " "
-	       ;(include <boost/lexical_cast.hpp>)
+	       #+nil (include ; <boost/lexical_cast.hpp>
+		
+		)
 	       " "
 	       
-	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
+	      #+nil ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
 			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT)
 			   
 			   (Delaunay_mesh_face_base_2 <K> Fb)
@@ -180,18 +182,31 @@
 			   (nil "<Vb,Fb>" Tds Triangulation_data_structure_2)
 			   (Constrained_Delaunay_triangulation_2 "<K,Tds>" CDT) 
 			   (Delaunay_mesh_size_criteria_2 <CDT> Criteria)
-			     
-			     
-			   
-			     
+			   			     
 			   (Delaunay_mesher_2 "<CDT,Criteria>" Mesher)
 			   
 			   
-			   (Triangulation_conformer_2)
-			   (lloyd_optimize_mesh_2))))
+			   ;(Triangulation_conformer_2)
+			   ;(lloyd_optimize_mesh_2)
+			   )))
 		  `(do0
-		
-		    ,@(remove-if #'null
+
+		     (split-header-and-code
+		(do0
+		 "// header"
+		 ,@(remove-if
+		       #'null
+		       (loop for e in l
+			     collect
+			     (destructuring-bind (name &optional f g new-name) e
+			       (when name
+				 `(do0 (include ,(format nil "<CGAL/~a.h>" name))
+				       " ")))))
+		 )
+		(do0
+		 "// implementation"
+		 (include "vis_00_base.hpp")
+		 ,@(remove-if #'null
 				 (loop for e in l
 				       collect
 				       (destructuring-bind (name &optional template short new-name) e
@@ -205,25 +220,21 @@
 						       template
 						       "")
 						 
-						   )))))))
+						   )))))
+		 ))
 
-	       ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
+		     ,@(loop for (e f) in `(("CDT::Vertex_handle" Vertex_handle)
 				      ("CDT::Point" Point))
 		       collect
 		       (format nil "using ~a = ~a;" f e))
+		     ))
+
+	       
 	       
 	       "using namespace std::chrono_literals;"
 	       " "
 	       
-	       (split-header-and-code
-		(do0
-		 "// header"
-		 
-		 )
-		(do0
-		 "// implementation"
-		 
-		 ))
+	      
 	       
 	       (let ((state ,(emit-globals :init t)))
 		 (declare (type "State" state)))
@@ -266,68 +277,76 @@
 		  )
 
 		 (let ((cdt (CDT)))
-		   ,(let ((l `((a 100 269)
-			       (b 246 269)
-			       (c 246 223)
-			       (d 303 223)
-			       (e 303 298)
-			       (f 246 298)
-			       (g 246 338)
-			       (h 355 338)
-			       (i 355 519)
-			       (j 551 519)
-			       (k 551 445)
-			       (l 463 445)
-			       (m 463 377)
-			       (n 708 377)
-			       (o 708 229)
-			       (p 435 229)
-			       (q 435 100)
-			       (r 100 100)
-
-			       (s 349 236)
-			       (t 370 236)
-			       (u 370 192)
-			       (v 403 192)
-			       (w 403 158)
-			       (x 349 158)
-
-			       (y 501 336)
-			       (z 533 336)
-			       (1 519 307)
-			       (2 484 307)
-
-			       ))
+		   ,(let ((l `((a -4 0)
+			       (b 0 -1)
+			       (c 4 0)
+			       (d 0 1)))
 			  (l2 `((a b)
 				(b c)
 				(c d)
-				(d e)
-				(e f)
-				(f g)
-				(g h)
-				(h i)
-				(i j)
-				(j k)
-				(k l)
-				(l m)
-				(m n)
-				(n o)
-				(o p)
-				(p q)
-				(q r)
-				(r a)
+				(d a))))
+		      #+nil ((l `((a 100 269)
+				       (b 246 269)
+				       (c 246 223)
+				       (d 303 223)
+				       (e 303 298)
+				       (f 246 298)
+				       (g 246 338)
+				       (h 355 338)
+				       (i 355 519)
+				       (j 551 519)
+				       (k 551 445)
+				       (l 463 445)
+				       (m 463 377)
+				       (n 708 377)
+				       (o 708 229)
+				       (p 435 229)
+				       (q 435 100)
+				       (r 100 100)
 
-				(s t)
-				(t u)
-				(u v)
-				(v w)
-				(w x)
-				(x s)
+				       (s 349 236)
+				       (t 370 236)
+				       (u 370 192)
+				       (v 403 192)
+				       (w 403 158)
+				       (x 349 158)
 
-				(y z)
-				(z 1)
-				(1 2)
-				(2 y))))
+				       (y 501 336)
+				       (z 533 336)
+				       (1 519 307)
+				       (2 484 307)
+
+				       ))
+				  (l2 `((a b)
+					(b c)
+					(c d)
+					(d e)
+					(e f)
+					(f g)
+					(g h)
+					(h i)
+					(i j)
+					(j k)
+					(k l)
+					(l m)
+					(m n)
+					(n o)
+					(o p)
+					(p q)
+					(q r)
+					(r a)
+
+					(s t)
+					(t u)
+					(u v)
+					(v w)
+					(w x)
+					(x s)
+
+					(y z)
+					(z 1)
+					(1 2)
+					(2 y))))
 		      `(do0
 			,@(loop for (name e f) in l
 				collect
@@ -338,6 +357,10 @@
 				`(cdt.insert_constraint ,(format nil "v~a" e)
 							,(format nil "v~a" f))))))
 		 (do0
+		  (do0 
+		   ,(logprint "before2"
+			      `((cdt.number_of_vertices)))))
+		 #+nil (do0
 		  (comments "modify the triangulation to be more conforming by introducing steiner vertices on constrained edges")
 		  (do0 (CGAL--make_conforming_Delaunay_2 cdt)
 		       ,(logprint "after conforming delaunay"
@@ -356,7 +379,7 @@
 			    (type "std::vector<Point>" seeds))
 		   #+nil (mesher.set_seeds (seeds.begin)
 					   (seeds.end)))    
-
+		 #+nil
 		 (progn
 		   "pybind11::scoped_interpreter guard{};"
 		   (pybind11--exec (string-r "
@@ -526,7 +549,8 @@ IPython.start_ipython()
 					;(out "set( CMAKE_CXX_FLAGS )")
 	(out "set( SRCS ~{~a~^~%~} )" (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )"))
+	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
+	(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )"))
       )))
 
 
