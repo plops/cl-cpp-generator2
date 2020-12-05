@@ -22,6 +22,33 @@ using Point = CDT::Point;
 namespace py = pybind11;
 using namespace std::chrono_literals;
 
+template <typename T> class TypedInputIterator {
+public:
+  typedef T value_type;
+  typedef T &reference;
+  typedef T *pointer;
+  explicit TypedInputIterator(py::iterator &py_iter) : py_iter_(py_iter) {}
+  explicit TypedInputIterator(py::iterator &&py_iter) : py_iter_(py_iter) {}
+  value_type operator*() { return (*py_iter_).template cast<value_type>(); }
+  TypedInputIterator operator++(int inc) {
+    auto copy = *this;
+    ++py_iter_;
+    return copy;
+  }
+  TypedInputIterator &operator++() {
+    ++py_iter_;
+    return *this;
+  }
+  bool operator!=(TypedInputIterator &rhs) {
+    return (py_iter_) != (rhs.py_iter_);
+  }
+  bool operator==(TypedInputIterator &rhs) {
+    return (py_iter_) == (rhs.py_iter_);
+  }
+
+private:
+  py::iterator py_iter_;
+};
 PYBIND11_MODULE(cgal_mesher, m) {
   py::class_<Point>(m, "Point")
       .def(py::init<int, int>(), py::arg("x"), py::arg("y"))
@@ -46,4 +73,12 @@ PYBIND11_MODULE(cgal_mesher, m) {
            })
       .def("number_of_vertices", &CDT::number_of_vertices)
       .def("number_of_faces", &CDT::number_of_faces);
+  py::class_<Mesher>(m, "Mesher")
+      .def(py::init<CDT &>())
+      .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
+        auto it = py::iter(iterable);
+        auto beg = TypedInputIterator<Point>(it);
+        auto end = TypedInputIterator<Point>(py::iterator::sentinel());
+        mesher.set_seeds(beg, end);
+      });
 };

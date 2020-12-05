@@ -461,6 +461,44 @@ IPython.start_ipython()
 
 	      
 	       " "
+	       (defclass+ (TypedInputIterator :template "typename T") ()
+			  "public:"
+		 "typedef T value_type;"
+		 "typedef T& reference;"
+		 "typedef T* pointer;"
+		 (defmethod TypedInputIterator (py_iter)
+		   (declare (type "py::iterator&" py_iter)
+			    (construct (py_iter_ py_iter))
+			    ;( explicit)  (:constructor)
+			    (values explicit)))
+		 (defmethod TypedInputIterator (py_iter)
+		   (declare (type "py::iterator&&" py_iter)
+			    (construct (py_iter_ py_iter))
+			    (values explicit)))
+		 (defmethod operator* ()
+		   (declare (values value_type))
+		   (return (dot "(*py_iter_)" ("template cast<value_type>"))))
+		 (defmethod operator++ (inc)
+		   (declare (type int inc)
+			    (values TypedInputIterator))
+		   (let ((copy *this))
+		     ++py_iter_
+		     (return copy)))
+		 (defmethod operator++ ()
+		   (declare 
+			    (values TypedInputIterator&))
+		   ++py_iter_
+		   (return *this))
+		 (defmethod operator!= (rhs)
+		   (declare (type TypedInputIterator& rhs)
+			    (values bool))
+		   (return (!= py_iter_ rhs.py_iter_)))
+		 (defmethod operator== (rhs)
+		   (declare (type TypedInputIterator& rhs)
+			    (values bool))
+		   (return (== py_iter_ rhs.py_iter_)))
+		 "private:"
+		 "py::iterator py_iter_;")
 	       (space PYBIND11_MODULE
 		      (paren cgal_mesher m)
 		      (progn
@@ -485,16 +523,6 @@ IPython.start_ipython()
 			(dot (py--class_<Vertex_handle> m (string "VertexHandle")))
 			(dot (py--class_<CDT> m (string "ConstrainedDelaunayTriangulation"))
 			     (def (py--init))
-			     #+nil (def (string "insert")
-				 (lambda (cdt p)
-				   (declare (type "CDT&" cdt)
-					    (type "const Point&" p))
-				   (return (cdt.insert p))))
-			     #+nil (def (string "insert_constraint")
-				 (lambda (cdt a b)
-				   (declare (type "CDT&" cdt)
-					    (type Vertex_handle a b))
-				   (return (cdt.insert_constraint a b))))
 			     #-nil ,@(loop for e in `((insert ((CDT& cdt) ("const Point&" p)))
 						      (insert_constraint ((CDT& cdt) (Vertex_handle a)
 									  (Vertex_handle b)))
@@ -512,7 +540,18 @@ IPython.start_ipython()
 						number_of_faces)
 				     collect
 				     `(def (string ,e)
-					  ,(format nil "&CDT::~a" e)))))))))
+					  ,(format nil "&CDT::~a" e))))
+		
+			(dot (py--class_<Mesher> m (string "Mesher"))
+			     (def (py--init<CDT&>))
+			    (def (string "seeds_from")
+				 (lambda (mesher iterable)
+				   (declare (type "Mesher&" mesher)
+					    (type py--iterable iterable))
+				   (let ((it (py--iter iterable))
+					 (beg (TypedInputIterator<Point> it))
+					 (end (TypedInputIterator<Point> (py--iterator--sentinel))))
+				     (mesher.set_seeds beg end))))))))))
     
     
   )
