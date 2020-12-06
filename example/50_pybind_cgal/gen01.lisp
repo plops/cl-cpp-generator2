@@ -178,7 +178,7 @@
 	       )
 
 	      (do0
-	      (lloyd_optimize cdt :max_iteration_number 10)
+	      (lloyd_optimize cdt :max_iteration_number 100)
 	       (print (dot (string "number of vertices: {}")
 			   (format (cdt.number_of_vertices))))
 	       )
@@ -228,7 +228,7 @@
 					   :fill False
 					   :linewidth .2))
 		    (g.add_patch tri))
-	       (plt.plot coords_x coords_y)
+	       (plt.plot coords_x coords_y :label (string "outline"))
 	       (plt.scatter
 		    (tuple 505 379
 			   )

@@ -4,9 +4,9 @@ import matplotlib.animation as animation
 plt.ion()
 import numpy as np
 from b.cgal_mesher import *
-_code_git_version="f8c13ae8a23f28c5f61e124670b43d631fe817fb"
+_code_git_version="a82a09b198fa3a66727c5e50a77a04417bd360d8"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py"
-_code_generation_time="16:06:01 of Sunday, 2020-12-06 (GMT+1)"
+_code_generation_time="16:07:57 of Sunday, 2020-12-06 (GMT+1)"
 cdt=ConstrainedDelaunayTriangulation()
 coords_x=[]
 coords_y=[]
@@ -246,7 +246,7 @@ mesher.criteria.aspect_bound=(0.1250    )
 mesher.criteria.size_bound=(20.    )
 mesher.refine_mesh()
 print("number of vertices: {}".format(cdt.number_of_vertices()))
-lloyd_optimize(cdt, max_iteration_number=10)
+lloyd_optimize(cdt, max_iteration_number=100)
 print("number of vertices: {}".format(cdt.number_of_vertices()))
 print_faces_iterator_value_type()
 point_to_index_map={vertex.point: idx for idx, vertex in enumerate(cdt.finite_vertices())}
@@ -257,7 +257,7 @@ g=plt.gca()
 for i in range(triangles.shape[0]):
     tri=plt.Polygon(triangles[i,:,:], facecolor=None, edgecolor="k", aa=True, color=None, fill=False, linewidth=(0.20    ))
     g.add_patch(tri)
-plt.plot(coords_x, coords_y)
+plt.plot(coords_x, coords_y, label="outline")
 plt.scatter((505,379,), (325,172,), c="r", label="seed")
 plt.legend()
 plt.show()
