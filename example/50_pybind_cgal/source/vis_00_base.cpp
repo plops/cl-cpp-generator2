@@ -3,7 +3,6 @@
 
 #include "globals.h"
 
-extern State state;
 #include <chrono>
 #include <iostream>
 #include <pybind11/embed.h>
@@ -13,10 +12,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "ea26bd67f9c7253b352ff5feca9f3e8226f61845";
+  state._main_version = "a152c2522faeb42b83f62aaadb709a7ec7a7cdea";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/50_pybind_cgal/source/";
-  state._code_generation_time = "10:57:39 of Sunday, 2020-12-06 (GMT+1)";
+  state._code_generation_time = "11:23:31 of Sunday, 2020-12-06 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {

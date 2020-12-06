@@ -114,7 +114,9 @@
 		  ;(include "proto2.h")
 		  " ")
 		header)
-	  (unless (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+	  (unless (or (cl-ppcre:scan "main" (string-downcase (format nil "~a" module-name)))
+		      (cl-ppcre:scan "base" (string-downcase (format nil "~a" module-name)))
+		      (cl-ppcre:scan "mesher_module" (string-downcase (format nil "~a" module-name))))
 	    (push `(do0 "extern State state;")
 		  header))
 	  (push `(:name ,module-name :code (do0 ,@(reverse header) ,module-code))
@@ -227,7 +229,7 @@
 				(c d)
 				(d a))))
 		      #-nil ((l `((a 100 269)
-				       (b 246 269)
+				  (b 246 269)
 				       (c 246 223)
 				       (d 303 223)
 				       (e 303 298)
@@ -400,6 +402,9 @@ IPython.start_ipython()
 			
 			)
 	       " "
+
+	       (let ((state ,(emit-globals :init t)))
+		 (declare (type "State" state)))
 	       	       
 	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
 			   (Delaunay_mesh_face_base_2 <K> Fb)
@@ -556,16 +561,22 @@ IPython.start_ipython()
 			       "py::arg(\"aspect_bound\")=0.125"
 			       "py::arg(\"size_bound\")=0.0"
 			       )
+			     (def ("py::init<float,float>")
+			       "py::arg(\"aspect_bound\")=0.125"
+			       "py::arg(\"size_bound\")=0.0"
+			       )
 			     (def_property (string "size_bound")
 			       "&Criteria::size_bound"
 			       "&Criteria::set_size_bound")
 			    (def_property (string "aspect_bound")
 				 (lambda (c)
 				   (declare (type "const Criteria&" c))
-				   (c.bound))
+				   ;,(logprint "" `((c.bound)))
+				   (return (c.bound)))
 			       (lambda (c bound)
 				 (declare (type "Criteria&" c)
 					  (type double bound))
+				 ;,(logprint "" `(bound))
 				   (c.set_bound bound))))
 			(dot (py--class_<Mesher> m (string "Mesher"))
 			     (def (py--init<CDT&>))

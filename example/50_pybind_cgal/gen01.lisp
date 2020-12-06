@@ -117,8 +117,8 @@
 			   (format (cdt.number_of_vertices)))))
 
 	     (do0
-	      (setf mesher.criteria (Criteria :aspect_bounds 0.125d0
-					      :size_bound 30))
+	      (setf mesher.criteria (Criteria :aspect_bounds 0.125
+					      :size_bound 30.0))
 	      (mesher.refine_mesh)
 	       (print (dot (string "number of vertices: {}")
 			   (format (cdt.number_of_vertices))))

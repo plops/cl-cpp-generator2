@@ -3,11 +3,11 @@
 
 #include "globals.h"
 
-extern State state;
 #include <chrono>
 #include <iostream>
 #include <thread>
 
+State state = {};
 // implementation
 #include "vis_01_mesher_module.hpp"
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
@@ -78,10 +78,12 @@ PYBIND11_MODULE(cgal_mesher, m) {
   py::class_<Criteria>(m, "Criteria")
       .def(py::init<double, double>(), py::arg("aspect_bound") = 0.125,
            py::arg("size_bound") = 0.0)
+      .def(py::init<float, float>(), py::arg("aspect_bound") = 0.125,
+           py::arg("size_bound") = 0.0)
       .def_property("size_bound", &Criteria::size_bound,
                     &Criteria::set_size_bound)
       .def_property(
-          "aspect_bound", [](const Criteria &c) { c.bound(); },
+          "aspect_bound", [](const Criteria &c) { return c.bound(); },
           [](Criteria &c, double bound) { c.set_bound(bound); });
   py::class_<Mesher>(m, "Mesher")
       .def(py::init<CDT &>())
