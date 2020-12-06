@@ -78,6 +78,9 @@ PYBIND11_MODULE(cgal_mesher, m) {
   py::class_<Mesher>(m, "Mesher")
       .def(py::init<CDT &>())
       .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
+        // cast the iterator to Point, otherwise it would assume python object
+        // type
+        ;
         auto it = py::iter(iterable);
         auto beg = TypedInputIterator<Point>(it);
         auto end = TypedInputIterator<Point>(py::iterator::sentinel());
