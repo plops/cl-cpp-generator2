@@ -87,14 +87,16 @@ PYBIND11_MODULE(cgal_mesher, m) {
       .def(py::init<double, double>(), py::arg("x"), py::arg("y"))
       .def_property_readonly("x", &Point::x)
       .def_property_readonly("y", &Point::y)
-      .def("__repr__", [](const Point &p) {
-        auto r = std::string("Point(");
-        (r) += (std::to_string(p.x()));
-        (r) += (", ");
-        (r) += (std::to_string(p.x()));
-        (r) += (")");
-        return r;
-      });
+      .def("__repr__",
+           [](const Point &p) {
+             auto r = std::string("Point(");
+             (r) += (std::to_string(p.x()));
+             (r) += (", ");
+             (r) += (std::to_string(p.x()));
+             (r) += (")");
+             return r;
+           })
+      .def("__eq__", [](const Point &p, const Point &q) { return (p) == (q); });
   py::class_<Vertex_handle>(m, "VertexHandle");
   m.def("print_faces_iterator_value_type", []() {
     (std::cout) << (type_name<CDT::Finite_faces_iterator::value_type>())
