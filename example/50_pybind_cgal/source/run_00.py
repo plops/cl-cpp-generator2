@@ -72,3 +72,4 @@ lloyd_optimize(cdt, max_iteration_number=10)
 print("number of vertices: {}".format(cdt.number_of_vertices()))
 print_faces_iterator_value_type()
 point_to_index_map={vertex.point: idx for idx, vertex in enumerate(cdt.finite_vertices())}
+triangles=list(tuple(point_to_index_map[face.vertex_handle(i).point] for i in range(3)) for face in cdt.finite_faces())

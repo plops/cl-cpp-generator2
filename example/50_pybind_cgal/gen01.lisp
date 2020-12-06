@@ -134,11 +134,19 @@
 	      ;(print ("list" (cdt.finite_faces)))
 	      (setf point_to_index_map
 		    (curly
-		     
 		     (for-generator ((ntuple idx vertex)
 				     (enumerate (cdt.finite_vertices)))
 				    ,(format nil "~a: ~a" "vertex.point"
 					     "idx"))))
+	      (setf triangles
+		    ("list"
+		     (for-generator (face (cdt.finite_faces))
+				    ("tuple"
+				     (for-generator (i (range 3))
+						    (aref point_to_index_map
+							  (dot face
+							       (vertex_handle i)
+							       point)))))))
 	      )
  	   )) 
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
