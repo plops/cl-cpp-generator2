@@ -401,6 +401,9 @@ IPython.start_ipython()
 					; <experimental/future>
 			
 			)
+
+	       " "
+	       (include <cxxabi.h>)
 	       " "
 
 	    #+nil   (let ((state ,(emit-globals :init t)))
@@ -513,11 +516,22 @@ IPython.start_ipython()
 		   (return (== py_iter_ rhs.py_iter_)))
 		 "private:"
 		 "py::iterator py_iter_;")
+	       (defun demangle (name)
+		 (declare (type ;"const char*"
+			   "const std::string"
+			   name)
+			  (values "std::string"))
+		 (let ((status -4))
+		   "std::unique_ptr<char,void(*)(void*)> res {abi::__cxa_demangle(name.c_str(), nullptr,nullptr,&status),std::free};"
+		   (if (== 0 status)
+		       (return (res.get))
+		       (return name))))
 	       (defun type_name ()
 		 (declare (values "template<class T> std::string"))
 		 "typedef typename std::remove_reference<T>::type TR;"
 		 "std::unique_ptr<char,void(*)(void*)> own(nullptr,std::free);"
 		 "std::string r = (own != nullptr) ? own.get() : typeid(TR).name();"
+		 (setf r (demangle r))
 		 ,@(loop for (e f) in `(
 					(" const" std--is_const<TR>--value)
 					(" volatile" std--is_volatile<TR>--value)
@@ -844,7 +858,7 @@ IPython.start_ipython()
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set( CMAKE_CXX_STANDARD 14 )")
-	(out "set( CMAKE_CXX_COMPILER clang++ )")
+	;(out "set( CMAKE_CXX_COMPILER clang++ )")
 	(out "find_package( Python COMPONENTS Interpreter Development REQUIRED )")
 	(out "find_package( pybind11 REQUIRED )")
 

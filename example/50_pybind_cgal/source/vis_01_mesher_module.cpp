@@ -7,6 +7,8 @@
 #include <iostream>
 #include <thread>
 
+#include <cxxabi.h>
+
 // implementation
 #include "vis_01_mesher_module.hpp"
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
@@ -50,10 +52,21 @@ public:
 private:
   py::iterator py_iter_;
 };
+std::string demangle(const std::string name) {
+  auto status = -4;
+  std::unique_ptr<char, void (*)(void *)> res{
+      abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status), std::free};
+  if ((0) == (status)) {
+    return res.get();
+  } else {
+    return name;
+  }
+}
 template <class T> std::string type_name() {
   typedef typename std::remove_reference<T>::type TR;
   std::unique_ptr<char, void (*)(void *)> own(nullptr, std::free);
   std::string r = (own != nullptr) ? own.get() : typeid(TR).name();
+  r = demangle(r);
   if (std::is_const<TR>::value) {
     (r) += (" const");
   }

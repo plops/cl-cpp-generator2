@@ -8,6 +8,8 @@
 #include <iostream>
 #include <thread>
 ;
+#include <cxxabi.h>
+;
 #include <pybind11/pybind11.h>
 ;
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -44,5 +46,6 @@
 
 #include <CGAL/lloyd_optimize_mesh_2.h>
 ;
+std::string demangle(const std::string name);
 template <class T> std::string type_name();
 #endif
