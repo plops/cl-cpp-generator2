@@ -101,7 +101,28 @@
 
 	     (print (dot (string "number of vertices: {}")
 			 (format (cdt.number_of_vertices))))
+	     (do0
+	      (setf mesher (Mesher cdt)
+		    seeds (tuple (Point 505 325)
+				 (Point 379 172)))
+	      (mesher.seeds_from seeds))
 
+	     (do0
+	      (make_conforming_delaunay cdt)
+	       (print (dot (string "number of vertices: {}")
+			   (format (cdt.number_of_vertices)))))
+	     (do0
+	      (make_conforming_gabriel cdt)
+	       (print (dot (string "number of vertices: {}")
+			   (format (cdt.number_of_vertices)))))
+
+	     (do0
+	      (setf mesher.criteria (Criteria :aspect_bounds 0.125d0
+					      :size_bound 30))
+	      (mesher.refine_mesh)
+	       (print (dot (string "number of vertices: {}")
+			   (format (cdt.number_of_vertices))))
+	      )
 	    )
  	   ))
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
