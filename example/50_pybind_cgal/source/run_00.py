@@ -4,9 +4,9 @@ import matplotlib.animation as animation
 plt.ion()
 import numpy as np
 from b.cgal_mesher import *
-_code_git_version="3f44b8b0d99d47088c622e9632b2813fd3173ec9"
+_code_git_version="134a1f5da96f2af8a484d1a17fada55f5937d586"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py"
-_code_generation_time="15:47:53 of Sunday, 2020-12-06 (GMT+1)"
+_code_generation_time="15:51:25 of Sunday, 2020-12-06 (GMT+1)"
 cdt=ConstrainedDelaunayTriangulation()
 va=cdt.insert(Point(100, 269))
 vb=cdt.insert(Point(246, 269))
@@ -85,8 +85,9 @@ triangles=np.array(list(tuple((face.vertex_handle(i).point.x,face.vertex_handle(
 plt.figure()
 g=plt.gca()
 for i in range(triangles.shape[0]):
-    tri=plt.Polygon(triangles[i,:,:], facecolor=None, edgecolor="k")
+    tri=plt.Polygon(triangles[i,:,:], facecolor=None, edgecolor="k", aa=True, color=None, fill=False)
     g.add_patch(tri)
+plt.scatter((505,325,), (379,172,), c="r")
 plt.show()
 plt.grid()
 plt.xlim((0,800,))

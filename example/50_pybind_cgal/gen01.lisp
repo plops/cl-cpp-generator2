@@ -212,9 +212,17 @@
 	       (for (i (range (aref triangles.shape 0)))
 		    (setf tri (plt.Polygon (aref triangles i ":" ":")
 					   :facecolor None
-					   :edgecolor (string "k")))
+					   :edgecolor (string "k")
+					   :aa True
+					   :color None
+					   :fill False))
 		    (g.add_patch tri))
+	       (plt.scatter
+		    (tuple 505 325)
+		    (tuple 379 172)
+		    :c (string "r"))
 	       (plt.show)
+	       
 	       (plt.grid)
 	       (plt.xlim (tuple 0 800)
 			   )
