@@ -96,7 +96,13 @@ PYBIND11_MODULE(cgal_mesher, m) {
              (r) += (")");
              return r;
            })
-      .def("__eq__", [](const Point &p, const Point &q) { return (p) == (q); });
+      .def("__eq__", [](const Point &p, const Point &q) { return (p) == (q); })
+      .def("__hash__", [](const Point &p) {
+        std::hash<double> dh;
+        auto xh = dh(p.x());
+        auto yh = dh(p.y());
+        return ((((yh) ^ (xh))) + (0x9E3779B9) + ((yh) << (6)) + ((yh) >> (2)));
+      });
   py::class_<Vertex_handle>(m, "VertexHandle");
   m.def("print_faces_iterator_value_type", []() {
     (std::cout) << (type_name<CDT::Finite_faces_iterator::value_type>())
