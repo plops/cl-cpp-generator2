@@ -139,13 +139,18 @@
 			 `(do0 (setf ,(format nil "v~a" name)
 				 (cdt.insert (Point ,e ,f))
 				 )
-			       (coords_x.append ,e)
-			       (coords_y.append ,f)))
+			       ))
 		  ,@(loop for (e f) in l2
 			 collect
-			  `(cdt.insert_constraint
-			    ,(format nil "v~a" e)
-			    ,(format nil "v~a" f)))))
+			  `(do0
+			    (setf beg ,(format nil "v~a" e)
+				  end ,(format nil "v~a" f))
+			    (cdt.insert_constraint
+				 beg end)
+				(do0 (coords_x.append beg.point.x)
+				     (coords_y.append beg.point.y))
+				(do0 (coords_x.append end.point.x)
+				     (coords_y.append end.point.y))))))
 
 	     (print (dot (string "number of vertices: {}")
 			 (format (cdt.number_of_vertices))))

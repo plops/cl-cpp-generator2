@@ -4,124 +4,236 @@ import matplotlib.animation as animation
 plt.ion()
 import numpy as np
 from b.cgal_mesher import *
-_code_git_version="ad01483f5ca815e74bf3818da9daafff30a746fe"
+_code_git_version="f8c13ae8a23f28c5f61e124670b43d631fe817fb"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py"
-_code_generation_time="16:02:55 of Sunday, 2020-12-06 (GMT+1)"
+_code_generation_time="16:06:01 of Sunday, 2020-12-06 (GMT+1)"
 cdt=ConstrainedDelaunayTriangulation()
 coords_x=[]
 coords_y=[]
 va=cdt.insert(Point(100, 269))
-coords_x.append(100)
-coords_y.append(269)
 vb=cdt.insert(Point(246, 269))
-coords_x.append(246)
-coords_y.append(269)
 vc=cdt.insert(Point(246, 223))
-coords_x.append(246)
-coords_y.append(223)
 vd=cdt.insert(Point(303, 223))
-coords_x.append(303)
-coords_y.append(223)
 ve=cdt.insert(Point(303, 298))
-coords_x.append(303)
-coords_y.append(298)
 vf=cdt.insert(Point(246, 298))
-coords_x.append(246)
-coords_y.append(298)
 vg=cdt.insert(Point(246, 338))
-coords_x.append(246)
-coords_y.append(338)
 vh=cdt.insert(Point(355, 338))
-coords_x.append(355)
-coords_y.append(338)
 vi=cdt.insert(Point(355, 519))
-coords_x.append(355)
-coords_y.append(519)
 vj=cdt.insert(Point(551, 519))
-coords_x.append(551)
-coords_y.append(519)
 vk=cdt.insert(Point(551, 445))
-coords_x.append(551)
-coords_y.append(445)
 vl=cdt.insert(Point(463, 445))
-coords_x.append(463)
-coords_y.append(445)
 vm=cdt.insert(Point(463, 377))
-coords_x.append(463)
-coords_y.append(377)
 vn=cdt.insert(Point(708, 377))
-coords_x.append(708)
-coords_y.append(377)
 vo=cdt.insert(Point(708, 229))
-coords_x.append(708)
-coords_y.append(229)
 vp=cdt.insert(Point(435, 229))
-coords_x.append(435)
-coords_y.append(229)
 vq=cdt.insert(Point(435, 100))
-coords_x.append(435)
-coords_y.append(100)
 vr=cdt.insert(Point(100, 100))
-coords_x.append(100)
-coords_y.append(100)
 vs=cdt.insert(Point(349, 236))
-coords_x.append(349)
-coords_y.append(236)
 vt=cdt.insert(Point(370, 236))
-coords_x.append(370)
-coords_y.append(236)
 vu=cdt.insert(Point(370, 192))
-coords_x.append(370)
-coords_y.append(192)
 vv=cdt.insert(Point(403, 192))
-coords_x.append(403)
-coords_y.append(192)
 vw=cdt.insert(Point(403, 158))
-coords_x.append(403)
-coords_y.append(158)
 vx=cdt.insert(Point(349, 158))
-coords_x.append(349)
-coords_y.append(158)
 vy=cdt.insert(Point(501, 336))
-coords_x.append(501)
-coords_y.append(336)
 vz=cdt.insert(Point(533, 336))
-coords_x.append(533)
-coords_y.append(336)
 v1=cdt.insert(Point(519, 307))
-coords_x.append(519)
-coords_y.append(307)
 v2=cdt.insert(Point(484, 307))
-coords_x.append(484)
-coords_y.append(307)
-cdt.insert_constraint(va, vb)
-cdt.insert_constraint(vb, vc)
-cdt.insert_constraint(vc, vd)
-cdt.insert_constraint(vd, ve)
-cdt.insert_constraint(ve, vf)
-cdt.insert_constraint(vf, vg)
-cdt.insert_constraint(vg, vh)
-cdt.insert_constraint(vh, vi)
-cdt.insert_constraint(vi, vj)
-cdt.insert_constraint(vj, vk)
-cdt.insert_constraint(vk, vl)
-cdt.insert_constraint(vl, vm)
-cdt.insert_constraint(vm, vn)
-cdt.insert_constraint(vn, vo)
-cdt.insert_constraint(vo, vp)
-cdt.insert_constraint(vp, vq)
-cdt.insert_constraint(vq, vr)
-cdt.insert_constraint(vr, va)
-cdt.insert_constraint(vs, vt)
-cdt.insert_constraint(vt, vu)
-cdt.insert_constraint(vu, vv)
-cdt.insert_constraint(vv, vw)
-cdt.insert_constraint(vw, vx)
-cdt.insert_constraint(vx, vs)
-cdt.insert_constraint(vy, vz)
-cdt.insert_constraint(vz, v1)
-cdt.insert_constraint(v1, v2)
-cdt.insert_constraint(v2, vy)
+beg=va
+end=vb
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vb
+end=vc
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vc
+end=vd
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vd
+end=ve
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=ve
+end=vf
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vf
+end=vg
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vg
+end=vh
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vh
+end=vi
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vi
+end=vj
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vj
+end=vk
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vk
+end=vl
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vl
+end=vm
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vm
+end=vn
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vn
+end=vo
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vo
+end=vp
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vp
+end=vq
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vq
+end=vr
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vr
+end=va
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vs
+end=vt
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vt
+end=vu
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vu
+end=vv
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vv
+end=vw
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vw
+end=vx
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vx
+end=vs
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vy
+end=vz
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=vz
+end=v1
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=v1
+end=v2
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
+beg=v2
+end=vy
+cdt.insert_constraint(beg, end)
+coords_x.append(beg.point.x)
+coords_y.append(beg.point.y)
+coords_x.append(end.point.x)
+coords_y.append(end.point.y)
 print("number of vertices: {}".format(cdt.number_of_vertices()))
 mesher=Mesher(cdt)
 seeds=(Point(505, 325),Point(379, 172),)
