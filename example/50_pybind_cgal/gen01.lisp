@@ -132,7 +132,14 @@
 	      (print_faces_iterator_value_type)
 	      ;(print ("list" (cdt.finite_vertices)))
 	      ;(print ("list" (cdt.finite_faces)))
-	    )
+	      (setf point_to_index_map
+		    (curly
+		     
+		     (for-generator ((ntuple idx vertex)
+				     (enumerate (cdt.finite_vertices)))
+				    ,(format nil "~a: ~a" "vertex.point"
+					     "idx"))))
+	      )
  	   )) 
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
