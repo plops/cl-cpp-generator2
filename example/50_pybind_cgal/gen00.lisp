@@ -844,7 +844,7 @@ IPython.start_ipython()
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set( CMAKE_CXX_STANDARD 14 )")
-
+	(out "set( CMAKE_CXX_COMPILER clang++ )")
 	(out "find_package( Python COMPONENTS Interpreter Development REQUIRED )")
 	(out "find_package( pybind11 REQUIRED )")
 
