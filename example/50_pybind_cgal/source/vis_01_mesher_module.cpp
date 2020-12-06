@@ -105,4 +105,18 @@ PYBIND11_MODULE(cgal_mesher, m) {
         "Make a triangulation conform to the Delaunay property");
   m.def("make_conforming_gabriel", &CGAL::make_conforming_Gabriel_2<CDT>,
         py::arg("cdt"), "Make a triangulation conform to the Gabriel property");
+  // boost named argument magic
+  ;
+  m.def("lloyd_optimize", [](CDT &cdt, int max_iteration_number,
+                             double time_limit, double convergence,
+                             double freeze_bound) {
+    CGAL::lloyd_optimize_mesh_2(
+        cdt, CGAL-- parameters-- max_iteration_number = max_iteration_number;
+        , CGAL-- parameters-- time_limit = time_limit;
+        , CGAL-- parameters-- convergence = convergence;
+        , CGAL-- parameters-- freeze_bound = freeze_bound;
+        , py::arg(cdt), py::arg(max_iteration_number) = 0;
+        , py::arg(time_limit) = (0.f);, py::arg(convergence) = (1.00e-3f);
+        , py::arg(freeze_bound) = (1.00e-3f););
+  });
 };

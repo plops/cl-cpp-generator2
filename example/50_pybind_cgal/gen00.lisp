@@ -595,7 +595,38 @@ IPython.start_ipython()
 				  `(m.def (string ,pyname)
 					  ,cname
 					  (py--arg (string "cdt"))
-					  (string ,doc)))))))))
+					  (string ,doc))))
+			(do0
+			 (comments "boost named argument magic")
+			 (m.def (string "lloyd_optimize")
+				(lambda (cdt
+					 max_iteration_number
+					 time_limit
+					 convergence
+					 freeze_bound)
+				  (declare (type CDT& cdt)
+					   (type int max_iteration_number)
+					   (type double time_limit convergence freeze_bound))
+				  (CGAL--lloyd_optimize_mesh_2
+				   cdt
+				   ,@(loop for e in `(max_iteration_number
+						      time_limit
+						      convergence
+						      freeze_bound)
+					   collect
+					   `(setf ,(format nil "CGAL--parameters--~a"
+							   e)
+						  ,e))
+				   ,@(loop for e in `((cdt)
+						      (max_iteration_number 0)
+						      (time_limit 0.0)
+						      (convergence 0.001)
+						      (freeze_bound 0.001))
+					   collect
+					   (destructuring-bind (name &optional value) e 
+					     (if value
+						 `(setf (py--arg ,name) ,value)
+						 `(py--arg ,name)))))))))))))
     
     
   )
