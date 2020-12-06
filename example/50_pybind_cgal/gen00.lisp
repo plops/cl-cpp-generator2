@@ -403,7 +403,7 @@ IPython.start_ipython()
 			)
 	       " "
 
-	       (let ((state ,(emit-globals :init t)))
+	    #+nil   (let ((state ,(emit-globals :init t)))
 		 (declare (type "State" state)))
 	       	       
 	       ,(let ((l `((Exact_predicates_inexact_constructions_kernel nil K)
@@ -513,6 +513,20 @@ IPython.start_ipython()
 		   (return (== py_iter_ rhs.py_iter_)))
 		 "private:"
 		 "py::iterator py_iter_;")
+	       (defun type_name ()
+		 (declare (values "template<class T> std::string"))
+		 "typedef typename std::remove_reference<T>::type TR;"
+		 "std::unique_ptr<char,void(*)(void*)> own(nullptr,std::free);"
+		 "std::string r = (own != nullptr) ? own.get() : typeid(TR).name();"
+		 ,@(loop for (e f) in `(
+					(" const" std--is_const<TR>--value)
+					(" volatile" std--is_volatile<TR>--value)
+					("&" std--is_lvalue_reference<TR>--value)
+					("&&" std--is_rvalue_reference<TR>--value))
+			 collect
+			 `(when ,f
+			    (incf r (string ,e))))
+		 (return r))
 	       (space PYBIND11_MODULE
 		      (paren cgal_mesher m)
 		      (progn
@@ -535,7 +549,13 @@ IPython.start_ipython()
 				     (incf r (string ")"))
 				     (return r)))))
 			(dot (py--class_<Vertex_handle> m (string "VertexHandle")))
+			(m.def (string "print_faces_iterator_value_type")
+				    (lambda ()
+				      (<< std--cout
+					  (type_name<CDT--Finite_faces_iterator--value_type>)
+					  std--endl)))
 			(dot (py--class_<CDT> m (string "ConstrainedDelaunayTriangulation"))
+			     
 			     (def (py--init))
 			     #-nil ,@(loop for e in `((insert ((CDT& cdt) ("const Point&" p)))
 						      (insert_constraint ((CDT& cdt) (Vertex_handle a)
@@ -554,7 +574,26 @@ IPython.start_ipython()
 						number_of_faces)
 				     collect
 				     `(def (string ,e)
-					  ,(format nil "&CDT::~a" e))))
+					  ,(format nil "&CDT::~a" e)))
+			     
+			     ,@(loop for e in `(finite_vertices finite_faces)
+				     collect
+				     `(def (string ,e)
+					  (lambda (cdt)
+					    (declare (type CDT& cdt)
+						     (values "py::iterator"))
+					    (return
+					      (py--make_iterator
+					       (dot
+						cdt
+						
+						(,(format nil "~a_begin" e))
+						)
+					       (dot
+						cdt
+						
+						(,(format nil "~a_end" e))
+					)))))))
 
 			(dot (py--class_<Criteria> m (string "Criteria"))
 			     (def ("py::init<double,double>")

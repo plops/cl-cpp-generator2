@@ -44,4 +44,5 @@
 
 #include <CGAL/lloyd_optimize_mesh_2.h>
 ;
+template <class T> std::string type_name();
 #endif

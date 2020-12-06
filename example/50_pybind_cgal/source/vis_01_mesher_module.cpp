@@ -7,7 +7,6 @@
 #include <iostream>
 #include <thread>
 
-State state = {};
 // implementation
 #include "vis_01_mesher_module.hpp"
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
@@ -51,6 +50,24 @@ public:
 private:
   py::iterator py_iter_;
 };
+template <class T> std::string type_name() {
+  typedef typename std::remove_reference<T>::type TR;
+  std::unique_ptr<char, void (*)(void *)> own(nullptr, std::free);
+  std::string r = (own != nullptr) ? own.get() : typeid(TR).name();
+  if (std::is_const<TR>::value) {
+    (r) += (" const");
+  }
+  if (std::is_volatile<TR>::value) {
+    (r) += (" volatile");
+  }
+  if (std::is_lvalue_reference<TR>::value) {
+    (r) += ("&");
+  }
+  if (std::is_rvalue_reference<TR>::value) {
+    (r) += ("&&");
+  }
+  return r;
+}
 PYBIND11_MODULE(cgal_mesher, m) {
   py::class_<Point>(m, "Point")
       .def(py::init<int, int>(), py::arg("x"), py::arg("y"))
@@ -66,6 +83,10 @@ PYBIND11_MODULE(cgal_mesher, m) {
         return r;
       });
   py::class_<Vertex_handle>(m, "VertexHandle");
+  m.def("print_faces_iterator_value_type", []() {
+    (std::cout) << (type_name<CDT::Finite_faces_iterator::value_type>())
+                << (std::endl);
+  });
   py::class_<CDT>(m, "ConstrainedDelaunayTriangulation")
       .def(py::init())
       .def("insert", [](CDT &cdt, const Point &p) { return cdt.insert(p); })
@@ -74,7 +95,16 @@ PYBIND11_MODULE(cgal_mesher, m) {
              return cdt.insert_constraint(a, b);
            })
       .def("number_of_vertices", &CDT::number_of_vertices)
-      .def("number_of_faces", &CDT::number_of_faces);
+      .def("number_of_faces", &CDT::number_of_faces)
+      .def("finite_vertices",
+           [](CDT &cdt) -> py::iterator {
+             return py::make_iterator(cdt.finite_vertices_begin(),
+                                      cdt.finite_vertices_end());
+           })
+      .def("finite_faces", [](CDT &cdt) -> py::iterator {
+        return py::make_iterator(cdt.finite_faces_begin(),
+                                 cdt.finite_faces_end());
+      });
   py::class_<Criteria>(m, "Criteria")
       .def(py::init<double, double>(), py::arg("aspect_bound") = 0.125,
            py::arg("size_bound") = 0.0)
