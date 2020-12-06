@@ -4,9 +4,9 @@ import matplotlib.animation as animation
 plt.ion()
 import numpy as np
 from b.cgal_mesher import *
-_code_git_version="134a1f5da96f2af8a484d1a17fada55f5937d586"
+_code_git_version="91882837129aa2ed1d3507b02e6dc441d2240e67"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py"
-_code_generation_time="15:51:25 of Sunday, 2020-12-06 (GMT+1)"
+_code_generation_time="15:56:19 of Sunday, 2020-12-06 (GMT+1)"
 cdt=ConstrainedDelaunayTriangulation()
 va=cdt.insert(Point(100, 269))
 vb=cdt.insert(Point(246, 269))
@@ -73,7 +73,7 @@ print("number of vertices: {}".format(cdt.number_of_vertices()))
 make_conforming_gabriel(cdt)
 print("number of vertices: {}".format(cdt.number_of_vertices()))
 mesher.criteria.aspect_bound=(0.1250    )
-mesher.criteria.size_bound=(30.    )
+mesher.criteria.size_bound=(10.    )
 mesher.refine_mesh()
 print("number of vertices: {}".format(cdt.number_of_vertices()))
 lloyd_optimize(cdt, max_iteration_number=10)
@@ -82,12 +82,12 @@ print_faces_iterator_value_type()
 point_to_index_map={vertex.point: idx for idx, vertex in enumerate(cdt.finite_vertices())}
 triangles_idx=list(tuple(point_to_index_map[face.vertex_handle(i).point] for i in range(3)) for face in cdt.finite_faces())
 triangles=np.array(list(tuple((face.vertex_handle(i).point.x,face.vertex_handle(i).point.y,) for i in range(3)) for face in cdt.finite_faces()))
-plt.figure()
+plt.figure(0, (16,9,))
 g=plt.gca()
 for i in range(triangles.shape[0]):
-    tri=plt.Polygon(triangles[i,:,:], facecolor=None, edgecolor="k", aa=True, color=None, fill=False)
+    tri=plt.Polygon(triangles[i,:,:], facecolor=None, edgecolor="k", aa=True, color=None, fill=False, linewidth=(0.20    ))
     g.add_patch(tri)
-plt.scatter((505,325,), (379,172,), c="r")
+plt.scatter((505,379,), (325,172,), c="r")
 plt.show()
 plt.grid()
 plt.xlim((0,800,))

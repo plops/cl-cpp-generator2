@@ -161,7 +161,7 @@
 
 	     (do0
 	      (setf mesher.criteria.aspect_bound 0.125
-		    mesher.criteria.size_bound 30.0)
+		    mesher.criteria.size_bound 10.0)
 	      (mesher.refine_mesh)
 	       (print (dot (string "number of vertices: {}")
 			   (format (cdt.number_of_vertices))))
@@ -207,7 +207,7 @@
 						   y))))))))
 
 	      (do0
-	       (plt.figure)
+	       (plt.figure 0 (tuple 16 9))
 	       (setf g (plt.gca))
 	       (for (i (range (aref triangles.shape 0)))
 		    (setf tri (plt.Polygon (aref triangles i ":" ":")
@@ -215,11 +215,14 @@
 					   :edgecolor (string "k")
 					   :aa True
 					   :color None
-					   :fill False))
+					   :fill False
+					   :linewidth .2))
 		    (g.add_patch tri))
 	       (plt.scatter
-		    (tuple 505 325)
-		    (tuple 379 172)
+		    (tuple 505 379
+			   )
+		    (tuple 325 172
+			   )
 		    :c (string "r"))
 	       (plt.show)
 	       
