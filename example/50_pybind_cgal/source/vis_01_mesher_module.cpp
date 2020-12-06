@@ -85,15 +85,21 @@ PYBIND11_MODULE(cgal_mesher, m) {
           [](Criteria &c, double bound) { c.set_bound(bound); });
   py::class_<Mesher>(m, "Mesher")
       .def(py::init<CDT &>())
-      .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
-        // cast the iterator to Point, otherwise it would assume python object
-        // type
-        ;
-        auto it = py::iter(iterable);
-        auto beg = TypedInputIterator<Point>(it);
-        auto end = TypedInputIterator<Point>(py::iterator::sentinel());
-        mesher.set_seeds(beg, end);
-      });
+      .def("seeds_from",
+           [](Mesher &mesher, py::iterable iterable) {
+             // cast the iterator to Point, otherwise it would assume python
+             // object type
+             ;
+             auto it = py::iter(iterable);
+             auto beg = TypedInputIterator<Point>(it);
+             auto end = TypedInputIterator<Point>(py::iterator::sentinel());
+             mesher.set_seeds(beg, end);
+           })
+      .def("refine_mesh", &Mesher::refine_mesh)
+      .def_property("criteria", &Mesher::get_criteria,
+                    [](Mesher &mesher, const Criteria &criteria) {
+                      mesher.set_criteria(criteria);
+                    });
   m.def("make_conforming_delaunay", &CGAL::make_conforming_Delaunay_2<CDT>,
         py::arg("cdt"),
         "Make a triangulation conform to the Delaunay property");
