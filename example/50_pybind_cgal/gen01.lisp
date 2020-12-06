@@ -68,7 +68,9 @@
 			      date
 			      (- tz)))))
 
-	    (setf cdt (ConstrainedDelaunayTriangulation))
+	     (setf cdt (ConstrainedDelaunayTriangulation))
+	     (setf coords_x (list)
+		   coords_y (list))
 	     ,(let ((l `((a 100 269)
 		    (b 246 269)
 		    (c 246 223)
@@ -134,8 +136,11 @@
 		`(do0
 		  ,@(loop for (name e f) in l
 			 collect
-			 `(setf ,(format nil "v~a" name)
-				(cdt.insert (Point ,e ,f))))
+			 `(do0 (setf ,(format nil "v~a" name)
+				 (cdt.insert (Point ,e ,f))
+				 )
+			       (coords_x.append ,e)
+			       (coords_y.append ,f)))
 		  ,@(loop for (e f) in l2
 			 collect
 			  `(cdt.insert_constraint
@@ -161,7 +166,7 @@
 
 	     (do0
 	      (setf mesher.criteria.aspect_bound 0.125
-		    mesher.criteria.size_bound 10.0)
+		    mesher.criteria.size_bound 20.0)
 	      (mesher.refine_mesh)
 	       (print (dot (string "number of vertices: {}")
 			   (format (cdt.number_of_vertices))))
@@ -218,12 +223,16 @@
 					   :fill False
 					   :linewidth .2))
 		    (g.add_patch tri))
+	       (plt.plot coords_x coords_y)
 	       (plt.scatter
 		    (tuple 505 379
 			   )
 		    (tuple 325 172
 			   )
-		    :c (string "r"))
+		    :c (string "r")
+		    :label (string "seed")
+		    )
+	       (plt.legend)
 	       (plt.show)
 	       
 	       (plt.grid)
