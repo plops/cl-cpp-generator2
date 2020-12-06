@@ -1,4 +1,12 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+plt.ion()
+import numpy as np
 from b.cgal_mesher import *
+_code_git_version="977733ab6ed9d1bd7fe3d3cfe6209e8a500ece92"
+_code_repository="https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py"
+_code_generation_time="14:25:05 of Sunday, 2020-12-06 (GMT+1)"
 cdt=ConstrainedDelaunayTriangulation()
 va=cdt.insert(Point(100, 269))
 vb=cdt.insert(Point(246, 269))
@@ -73,4 +81,5 @@ print("number of vertices: {}".format(cdt.number_of_vertices()))
 print_faces_iterator_value_type()
 point_to_index_map={vertex.point: idx for idx, vertex in enumerate(cdt.finite_vertices())}
 triangles_idx=list(tuple(point_to_index_map[face.vertex_handle(i).point] for i in range(3)) for face in cdt.finite_faces())
-triangles=list(tuple(face.vertex_handle(i).point for i in range(3)) for face in cdt.finite_faces())
+triangles=np.array(list(tuple((face.vertex_handle(i).point.x,face.vertex_handle(i).point.y,) for i in range(3)) for face in cdt.finite_faces()))
+plt.figure()

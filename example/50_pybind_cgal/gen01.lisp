@@ -23,8 +23,51 @@
   (let* (
 	 
 	 (code
-	  `(do0
+	   `(do0
+	     (do0
+		  
+		  (imports (matplotlib))
+                                        ;(matplotlib.use (string "QT5Agg"))
+					;"from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)"
+					;"from matplotlib.figure import Figure"
+		  (imports ((plt matplotlib.pyplot)
+			    (animation matplotlib.animation) 
+                            ;(xrp xarray.plot)
+			    ))
+                  
+		  (plt.ion)
+					;(plt.ioff)
+		  ;;(setf font (dict ((string size) (string 6))))
+		  ;; (matplotlib.rc (string "font") **font)
+		  )
+
+	     (imports ((np numpy)))
+	     
 	    "from b.cgal_mesher import *"
+
+	     (setf
+	       _code_git_version
+		  (string ,(let ((str (with-output-to-string (s)
+					(sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
+			     (subseq str 0 (1- (length str)))))
+		  _code_repository (string ,(format nil "https://github.com/plops/cl-py-generator/tree/master/example/29_ondrejs_challenge/source/run_00_start.py")
+					   )
+
+		  _code_generation_time
+		  (string ,(multiple-value-bind
+				 (second minute hour date month year day-of-week dst-p tz)
+			       (get-decoded-time)
+			     (declare (ignorable dst-p))
+		      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+			      hour
+			      minute
+			      second
+			      (nth day-of-week *day-names*)
+			      year
+			      month
+			      date
+			      (- tz)))))
+
 	    (setf cdt (ConstrainedDelaunayTriangulation))
 	     ,(let ((l `((a 100 269)
 		    (b 246 269)
@@ -148,14 +191,23 @@
 							       (vertex_handle i)
 							       point)))))))
 	      (setf triangles
-		    ("list"
-		     (for-generator
-		      (face (cdt.finite_faces))
-		      ("tuple"
-		       (for-generator (i (range 3))
-				      (dot face
-					   (vertex_handle i)
-					   point))))))
+		    (np.array
+		     ("list"
+		      (for-generator
+		       (face (cdt.finite_faces))
+		       ("tuple"
+			(for-generator (i (range 3))
+				       (tuple (dot (dot face
+							(vertex_handle i)
+							point)
+						   x)
+					      (dot (dot face
+							(vertex_handle i)
+							point)
+						   y))))))))
+
+	      (do0
+	       (plt.figure))
 	      )
  	   )) 
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
