@@ -463,10 +463,17 @@ IPython.start_ipython()
 	      
 	       " "
 	       (defclass+ (TypedInputIterator :template "typename T") ()
-			  "public:"
-		 "typedef T value_type;"
-		 "typedef T& reference;"
-		 "typedef T* pointer;"
+		 "public:"
+		 ,@(loop for (e f) in `((iterator_category "std::input_iterator_tag")
+					(difference_type "std::ptrdiff_t")
+					(value_type T)
+					(pointer T*)
+					(reference T&))
+			 collect
+			(format nil "using ~a = ~a;" e f))
+		 #+nil (do0 "typedef T value_type;"
+		      "typedef T& reference;"
+		      "typedef T* pointer;")
 		 (defmethod TypedInputIterator (py_iter)
 		   (declare (type "py::iterator&" py_iter)
 			    (construct (py_iter_ py_iter))

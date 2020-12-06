@@ -24,9 +24,11 @@ using namespace std::chrono_literals;
 
 template <typename T> class TypedInputIterator {
 public:
-  typedef T value_type;
-  typedef T &reference;
-  typedef T *pointer;
+  using iterator_category = std::input_iterator_tag;
+  using difference_type = std::ptrdiff_t;
+  using value_type = T;
+  using pointer = T *;
+  using reference = T &;
   explicit TypedInputIterator(py::iterator &py_iter) : py_iter_(py_iter) {}
   explicit TypedInputIterator(py::iterator &&py_iter) : py_iter_(py_iter) {}
   value_type operator*() { return (*py_iter_).template cast<value_type>(); }
@@ -77,10 +79,8 @@ PYBIND11_MODULE(cgal_mesher, m) {
       .def(py::init<CDT &>())
       .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
         auto it = py::iter(iterable);
-        //auto beg = TypedInputIterator<Point>(it);
-        //auto end = TypedInputIterator<Point>(py::iterator::sentinel());
-        TypedInputIterator<Point> beg(it);
-        TypedInputIterator<Point> end(py::iterator::sentinel());
+        auto beg = TypedInputIterator<Point>(it);
+        auto end = TypedInputIterator<Point>(py::iterator::sentinel());
         mesher.set_seeds(beg, end);
       });
 };
