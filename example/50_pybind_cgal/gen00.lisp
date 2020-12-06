@@ -550,7 +550,23 @@ IPython.start_ipython()
 				     collect
 				     `(def (string ,e)
 					  ,(format nil "&CDT::~a" e))))
-		
+
+			(dot (py--class_<Criteria> m (string "Criteria"))
+			     (def ("py::init<double,double>")
+			       "py::arg(\"aspect_bound\")=0.125"
+			       "py::arg(\"size_bound\")=0.0"
+			       )
+			     (def_property (string "size_bound")
+			       "&Criteria::size_bound"
+			       "&Criteria::set_size_bound")
+			    (def_property (string "aspect_bound")
+				 (lambda (c)
+				   (declare (type "const Criteria&" c))
+				   (c.bound))
+			       (lambda (c bound)
+				 (declare (type "Criteria&" c)
+					  (type double bound))
+				   (c.set_bound bound))))
 			(dot (py--class_<Mesher> m (string "Mesher"))
 			     (def (py--init<CDT&>))
 			    (def (string "seeds_from")
@@ -562,7 +578,15 @@ IPython.start_ipython()
 					 (beg (TypedInputIterator<Point> it))
 					 (end (TypedInputIterator<Point> (py--iterator--sentinel))))
 				     (mesher.set_seeds beg end)
-				     )))))))))
+				     ))))
+			,@(loop for e in `((make_conforming_delaunay &CGAL--make_conforming_Delaunay_2<CDT> "Make a triangulation conform to the Delaunay property")
+					   (make_conforming_gabriel &CGAL--make_conforming_Gabriel_2<CDT> "Make a triangulation conform to the Gabriel property"))
+				collect
+				(destructuring-bind (pyname cname doc) e
+				  `(m.def (string ,pyname)
+					  ,cname
+					  (py--arg (string "cdt"))
+					  (string ,doc)))))))))
     
     
   )

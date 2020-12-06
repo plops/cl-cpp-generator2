@@ -75,6 +75,14 @@ PYBIND11_MODULE(cgal_mesher, m) {
            })
       .def("number_of_vertices", &CDT::number_of_vertices)
       .def("number_of_faces", &CDT::number_of_faces);
+  py::class_<Criteria>(m, "Criteria")
+      .def(py::init<double, double>(), py::arg("aspect_bound") = 0.125,
+           py::arg("size_bound") = 0.0)
+      .def_property("size_bound", &Criteria::size_bound,
+                    &Criteria::set_size_bound)
+      .def_property(
+          "aspect_bound", [](const Criteria &c) { c.bound(); },
+          [](Criteria &c, double bound) { c.set_bound(bound); });
   py::class_<Mesher>(m, "Mesher")
       .def(py::init<CDT &>())
       .def("seeds_from", [](Mesher &mesher, py::iterable iterable) {
@@ -86,4 +94,9 @@ PYBIND11_MODULE(cgal_mesher, m) {
         auto end = TypedInputIterator<Point>(py::iterator::sentinel());
         mesher.set_seeds(beg, end);
       });
+  m.def("make_conforming_delaunay", &CGAL::make_conforming_Delaunay_2<CDT>,
+        py::arg("cdt"),
+        "Make a triangulation conform to the Delaunay property");
+  m.def("make_conforming_gabriel", &CGAL::make_conforming_Gabriel_2<CDT>,
+        py::arg("cdt"), "Make a triangulation conform to the Gabriel property");
 };
