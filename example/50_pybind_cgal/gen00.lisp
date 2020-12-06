@@ -614,19 +614,21 @@ IPython.start_ipython()
 						      convergence
 						      freeze_bound)
 					   collect
-					   `(setf ,(format nil "CGAL--parameters--~a"
+					   `(= ,(format nil "CGAL::parameters::~a"
 							   e)
 						  ,e))
-				   ,@(loop for e in `((cdt)
+				   )
+				  )
+				,@(loop for e in `((cdt)
 						      (max_iteration_number 0)
-						      (time_limit 0.0)
-						      (convergence 0.001)
-						      (freeze_bound 0.001))
+						      (time_limit 0.0d0)
+						      (convergence 0.001d0)
+						      (freeze_bound 0.001d0))
 					   collect
 					   (destructuring-bind (name &optional value) e 
 					     (if value
-						 `(setf (py--arg ,name) ,value)
-						 `(py--arg ,name)))))))))))))
+						 `(= (py--arg (string ,name)) ,value)
+						 `(py--arg (string ,name))))))))))))
     
     
   )
