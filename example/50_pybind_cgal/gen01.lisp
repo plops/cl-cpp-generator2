@@ -207,7 +207,16 @@
 						   y))))))))
 
 	      (do0
-	       (plt.figure))
+	       (plt.figure)
+	       (setf g (plt.gca))
+	       (for (i (range (aref triangles.shape 0)))
+		    (setf tri (plt.Polygon (aref triangles i ":" ":")
+					   :facecolor None
+					   :edgecolor (string "k")))
+		    (g.add_patch tri))
+	       (plt.show)
+	       (plt.xlim (tuple 0 300)
+			 (tuple 0 300)))
 	      )
  	   )) 
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
