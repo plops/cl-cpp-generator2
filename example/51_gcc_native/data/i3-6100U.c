@@ -1,4 +1,5 @@
 // model name	: Intel(R) Core(TM) i3-6100U CPU @ 2.30GHz
+// gcc version 10.2.1 20201125 (Red Hat 10.2.1-9) (GCC) 
 #define __UINT_LEAST16_MAX__ 0xffff
 #define __ATOMIC_ACQUIRE 2
 #define __FLT128_MAX_10_EXP__ 4932
