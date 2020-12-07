@@ -1,4 +1,5 @@
-# model name	: AMD Ryzen 5 3600 6-Core Processor
+// model name	: AMD Ryzen 5 3600 6-Core Processor
+// gcc version 9.3.0 (Gentoo 9.3.0-r1 p3) 
 #define __SSP_STRONG__ 3
 #define __DBL_MIN_EXP__ (-1021)
 #define __FLT32X_MAX_EXP__ 1024
