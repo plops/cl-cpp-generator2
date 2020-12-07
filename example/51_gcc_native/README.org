@@ -3,3 +3,8 @@
 #+begin_example
 gcc -march=native -dM -E - < /dev/null
 #+end_example
+
+- order the lines for better comparison
+#+begin_example
+for i in *.c;do echo $i; cat $i|sort > $i"_sort" ;done
+#+end_example
