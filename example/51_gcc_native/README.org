@@ -1,0 +1,5 @@
+- find defined preprocessor macros
+  - https://blog.fefe.de/?ts=a1338ce2
+#+begin_example
+gcc -march=native -dM -E - < /dev/null
+#+end_example
