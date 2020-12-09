@@ -1,0 +1,3 @@
+- https://developer.nvidia.com/blog/generating-ray-traced-caustic-effects-in-unreal-engine-4-part-1/
+- https://developer.nvidia.com/blog/generating-ray-traced-caustic-effects-in-unreal-engine-4-part-2/
+- https://backend.orbit.dtu.dk/ws/portalfiles/portal/5504929/PhotonDifferentials.pdf
