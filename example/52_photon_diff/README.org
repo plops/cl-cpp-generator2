@@ -1,3 +1,8 @@
 - https://developer.nvidia.com/blog/generating-ray-traced-caustic-effects-in-unreal-engine-4-part-1/
 - https://developer.nvidia.com/blog/generating-ray-traced-caustic-effects-in-unreal-engine-4-part-2/
 - https://backend.orbit.dtu.dk/ws/portalfiles/portal/5504929/PhotonDifferentials.pdf
+- https://github.com/NvRTX/UnrealEngine/tree/NvRTX_Caustics
+  - Besides ray-traced caustics, this branch contains a series of new
+    RTX features and improvements over existing techniques, including
+    enhanced hybrid translucency, multi-bounce refraction
+    optimization, and a new SVGF based RTGI denoiser.
