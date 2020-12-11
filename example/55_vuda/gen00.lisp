@@ -144,7 +144,7 @@
 			<thread>
 			)
 	       " "
-	       
+	       (include <vuda_runtime.hpp>)
 	       " "
 	       
 	       "using namespace std::chrono_literals;"
@@ -156,6 +156,9 @@
 		 (declare (type "State" state)))
 
 
+	       (defun run_vuda ()
+		 (cudaSetDevice 0))
+	       
 	       (defun main (argc argv)
 		 (declare (type int argc)
 			  (type char** argv)
@@ -195,7 +198,7 @@
 		 
 		  )
 
-		      
+		 (run_vuda)
 
 		 (return 0)))))
 
@@ -404,17 +407,18 @@
 	(out "cmake_minimum_required( VERSION 3.4 )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	(out "set( CMAKE_CXX_STANDARD 14 )")
+	(out "set( CMAKE_CXX_STANDARD 17 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 		
 					;(out "set( CMAKE_CXX_FLAGS )")
+	(out "find_package( Vulkan )")
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_include_directories( mytest PUBLIC /home/martin/src/vuda )")
+	(out "target_include_directories( mytest PUBLIC /home/martin/src/vuda/inc )")
 					;(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
 	;(out "pybind11_add_module( cgal_mesher vis_01_mesher_module.cpp )")
-	;(out "target_link_libraries( cgal_mesher PRIVATE gmp )")
+	(out "target_link_libraries( mytest PRIVATE ${Vulkan_Libraries} vulkan )")
 	;(out "target_precompile_headers( cgal_mesher PRIVATE vis_01_mesher_module.hpp )")
 	)
       )))

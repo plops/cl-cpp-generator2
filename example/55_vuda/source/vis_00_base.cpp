@@ -7,14 +7,17 @@
 #include <iostream>
 #include <thread>
 
+#include <vuda_runtime.hpp>
+
 using namespace std::chrono_literals;
 
 State state = {};
+void run_vuda() { cudaSetDevice(0); }
 int main(int argc, char **argv) {
-  state._main_version = "0db397183d48745ced6ae49fce6e92f70e85db10";
+  state._main_version = "19d1a108aefa1bbc00679cb08f49000d89dbfcb7";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/55_vuda/source/";
-  state._code_generation_time = "23:37:33 of Friday, 2020-12-11 (GMT+1)";
+  state._code_generation_time = "23:48:02 of Friday, 2020-12-11 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -34,5 +37,6 @@ int main(int argc, char **argv) {
                 << (state._code_generation_time) << ("'") << (std::endl)
                 << (std::flush);
   }
+  run_vuda();
   return 0;
 }

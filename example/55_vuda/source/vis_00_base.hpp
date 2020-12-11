@@ -8,5 +8,8 @@
 #include <iostream>
 #include <thread>
 ;
+#include <vuda_runtime.hpp>
+;
+void run_vuda();
 int main(int argc, char **argv);
 #endif
