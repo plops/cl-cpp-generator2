@@ -139,12 +139,18 @@
 	       (_code_generation_time :type "std::string")
 	       (_stdout_mutex :type "std::mutex"))
 	      (do0
-	       (include <iostream>
-			<chrono>
-			<thread>
-			)
-	       " "
-	       (include <vuda_runtime.hpp>)
+	       (split-header-and-code
+		(do0 (comments "header")
+		     (do0 (include <iostream>
+			 <chrono>
+			 <thread>
+			 )
+		    " "
+		    (include <vuda_runtime.hpp>)))
+		(do0 (comments "implementation")
+		     (include <vis_00_base.hpp>)))
+
+	       
 	       " "
 	       
 	       "using namespace std::chrono_literals;"
@@ -157,7 +163,23 @@
 
 
 	       (defun run_vuda ()
-		 (cudaSetDevice 0))
+		 (cudaSetDevice 0)
+		 (let ((N 4096)
+		       )
+		   (declare (type "const int" N)
+			    )
+		   
+		   ,@(loop for e in `(a b c) collect
+			   (let ((d (format nil "dev_~a" e)))
+			    `(let ((,e)
+				   (,d (static_cast<int*> nullptr)))
+			       (declare (type (array int N) ,e))
+			       (cudaMalloc (reinterpret_cast<void**> (ref ,d))
+					   (* N (sizeof int))))))
+		   (dotimes (i N)
+		     (setf (aref a i) (* -1 i)
+			   (aref b i) (* i i))))
+		 )
 	       
 	       (defun main (argc argv)
 		 (declare (type int argc)
@@ -411,15 +433,15 @@
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 		
 					;(out "set( CMAKE_CXX_FLAGS )")
-	(out "find_package( Vulkan )")
+	;(out "find_package( Vulkan )")
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_include_directories( mytest PUBLIC /home/martin/src/vuda/inc )")
+	(out "target_include_directories( mytest PUBLIC /home/martin/src/vuda/inc /home/martin/stage/cl-cpp-generator2/example/55_vuda/source/ )")
 					;(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
 	;(out "pybind11_add_module( cgal_mesher vis_01_mesher_module.cpp )")
-	(out "target_link_libraries( mytest PRIVATE ${Vulkan_Libraries} vulkan )")
-	;(out "target_precompile_headers( cgal_mesher PRIVATE vis_01_mesher_module.hpp )")
+	(out "target_link_libraries( mytest PRIVATE vulkan )")
+	(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
 	)
       )))
 

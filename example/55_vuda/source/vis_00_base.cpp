@@ -3,21 +3,35 @@
 
 #include "globals.h"
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-#include <vuda_runtime.hpp>
+// implementation
+;
+#include <vis_00_base.hpp>
 
 using namespace std::chrono_literals;
 
 State state = {};
-void run_vuda() { cudaSetDevice(0); }
+void run_vuda() {
+  cudaSetDevice(0);
+  const int N = 4096;
+  int a[N];
+  auto dev_a = static_cast<int *>(nullptr);
+  cudaMalloc(reinterpret_cast<void **>(&(dev_a)), ((N) * (sizeof(int))));
+  int b[N];
+  auto dev_b = static_cast<int *>(nullptr);
+  cudaMalloc(reinterpret_cast<void **>(&(dev_b)), ((N) * (sizeof(int))));
+  int c[N];
+  auto dev_c = static_cast<int *>(nullptr);
+  cudaMalloc(reinterpret_cast<void **>(&(dev_c)), ((N) * (sizeof(int))));
+  for (auto i = 0; (i) < (N); (i) += (1)) {
+    a[i] = ((-1) * (i));
+    b[i] = ((i) * (i));
+  }
+}
 int main(int argc, char **argv) {
-  state._main_version = "19d1a108aefa1bbc00679cb08f49000d89dbfcb7";
+  state._main_version = "b65b7b1588a74e3385f188e699a986caf105a012";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/55_vuda/source/";
-  state._code_generation_time = "23:48:02 of Friday, 2020-12-11 (GMT+1)";
+  state._code_generation_time = "00:00:45 of Saturday, 2020-12-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
