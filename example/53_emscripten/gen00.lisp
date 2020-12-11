@@ -472,7 +472,7 @@
 
 	;; https://stackoverflow.com/questions/61590519/how-to-use-emscripten-ports-sdl2-and-freetype-with-cmake
 	(out "if( ${CMAKE_SYSTEM_NAME} MATCHES \"Emscripten\" )")
-	(out "  set( USE_FLAGS \"-s USE_SDL=2\" )")
+	(out "  set( USE_FLAGS \"-s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1 \" )")
 	(out "  set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${USE_FLAGS} )")
 	(out "  set( CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS} )")
 	(out "  set( CMAKE_EXECUTABLE_SUFFIX .html )")
