@@ -6,5 +6,12 @@ git clone https://github.com/emscripten-core/emsdk.git
 ./emsdk activate latest
 #+end_example
 
+#+begin_example
+source "/home/martin/src/emsdk/emsdk_env.sh"
+emcmake cmake ..
+
+
+#+end_example
+
 - https://developers.google.com/web/updates/2020/12/webassembly
 - https://news.ycombinator.com/item?id=25373597
