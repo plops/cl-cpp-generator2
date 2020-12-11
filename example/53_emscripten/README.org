@@ -17,3 +17,28 @@ python -m http.server
 
 - https://developers.google.com/web/updates/2020/12/webassembly
 - https://news.ycombinator.com/item?id=25373597
+
+
+- speed test native
+
+#+begin_example
+[martin@localhost b]$ time ./mytest
+1607650350796018825 139909870595456 /home/martin/stage/cl-cpp-generator2/example/53_emscripten/source/vis_00_base.cpp:36 main start main  state._main_version='da0a98f0e2c923f28b4e5a92144df87a49f95bcf' state._code_repository='https://github.com/plops/cl-cpp-generator2/tree/master/example/53_emscripten/source/' state._code_generation_time='02:29:41 of Friday, 2020-12-11 (GMT+1)'
+
+real	0m1.189s
+user	0m1.098s
+sys	0m0.056s
+[martin@localhost b]$ cd ../b_opt
+[martin@localhost b_opt]$ time ./mytest
+1607650358647779155 139927642189184 /home/martin/stage/cl-cpp-generator2/example/53_emscripten/source/vis_00_base.cpp:36 main start main  state._main_version='da0a98f0e2c923f28b4e5a92144df87a49f95bcf' state._code_repository='https://github.com/plops/cl-cpp-generator2/tree/master/example/53_emscripten/source/' state._code_generation_time='02:29:41 of Friday, 2020-12-11 (GMT+1)'
+
+real	0m0.512s
+user	0m0.409s
+sys	0m0.074s
+
+#+end_example
+
+- on firefox
+- wasm optimized 9720-2520 = 7.2s
+  - 15360ms-10240ms = 
+- wasm (debug?)  12240ms-5120ms = 7.12s

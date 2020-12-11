@@ -476,7 +476,7 @@
 	(out "  set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${USE_FLAGS} )")
 	(out "  set( CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS} )")
 	(out "  set( CMAKE_EXECUTABLE_SUFFIX .html )")
-	(out "else()")
+	(out "else()") 
 	(out "include( FindPkgConfig )")
 	(out "find_package( SDL2 REQUIRED sdl2 )")
 	(out "endif()")
