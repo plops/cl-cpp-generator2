@@ -8,7 +8,7 @@
 #include <iostream>
 #include <thread>
 ;
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <complex>
 ;
 #include <emscripten.h>

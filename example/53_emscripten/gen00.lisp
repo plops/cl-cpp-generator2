@@ -149,7 +149,7 @@
 		
 			)
 	       " "
-	       (include <SDL/SDL.h>
+	       (include <SDL2/SDL.h>
 			<complex>)
 	       " "
 	       (do0 
@@ -429,26 +429,30 @@
     (with-open-file (s "source/CMakeLists.txt" :direction :output
 					       :if-exists :supersede
 					       :if-does-not-exist :create)
+      ;; run emcmake cmake .. && make
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-	(out "cmake_minimum_required( VERSION 3.4 )")
+	(out "cmake_minimum_required( VERSION 3.15 )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set( CMAKE_CXX_STANDARD 14 )")
-	;(out "set( CMAKE_CXX_COMPILER clang++ )")
-	(out "find_package( Python COMPONENTS Interpreter Development REQUIRED )")
-	(out "find_package( pybind11 REQUIRED )")
 
-	;; GMP MPFI
-	(out "find_package( CGAL QUIET COMPONENTS Core )")
+	;; https://stackoverflow.com/questions/61590519/how-to-use-emscripten-ports-sdl2-and-freetype-with-cmake
+	(out "if( ${CMAKE_SYSTEM_NAME} MATCHES \"Emscripten\" )")
+	(out "  set( USE_FLAGS \"-s USE_SDL=2\" )")
+	(out "  set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${USE_FLAGS} )")
+	(out "  set( CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS} )")
+	(out "  set( CMAKE_EXECUTABLE_SUFFIX .html )")
+	(out "else()")
+	(out "find_package( SDL2 REQUIRED )")
+	(out "endif()")
+	
 					;(out "set( CMAKE_CXX_FLAGS )")
-	(out "set( SRCS ~{~a~^~%~} )" ;(directory "source/*.cpp")
-	     `(vis_00_base.cpp))
+	(out "set( SRCS ~{~a~^~%~} )"	;(directory "source/*.cpp")
+	     `(vis_00_base.cpp
+	       vis_01_demangle.cpp))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_link_libraries( mytest PRIVATE pybind11::embed gmp )")
-	(out "pybind11_add_module( cgal_mesher vis_01_mesher_module.cpp )")
-	(out "target_link_libraries( cgal_mesher PRIVATE gmp )")
-	(out "target_precompile_headers( cgal_mesher PRIVATE vis_01_mesher_module.hpp )"))
+	)
       )))
 
 
