@@ -10,6 +10,7 @@
 ;
 #include <SDL2/SDL.h>
 #include <complex>
+#include <unistd.h>
 ;
 #include <emscripten.h>
 ;

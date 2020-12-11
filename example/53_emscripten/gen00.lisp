@@ -150,7 +150,8 @@
 			)
 	       " "
 	       (include <SDL2/SDL.h>
-			<complex>)
+			<complex>
+			<unistd.h>)
 	       " "
 	       (do0 
 		"#ifdef __EMSCRIPTEN__"
@@ -246,6 +247,7 @@
 			       (SDL_SetRenderDrawColor renderer color.r color.g color.b color.a)
 			       (SDL_RenderDrawPoint renderer x y)))))
 		       (SDL_RenderPresent renderer)
+		       (usleep 1000000)
 		      ; (SDL_Quit)
 		       )))
 		      

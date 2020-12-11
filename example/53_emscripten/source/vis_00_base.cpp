@@ -9,6 +9,7 @@
 
 #include <SDL2/SDL.h>
 #include <complex>
+#include <unistd.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -18,10 +19,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "bb33a36076175b8d21328cdc235c88e75c9fad03";
+  state._main_version = "b0305709c3b8603d7d09f66e76124747dbef5e2a";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/53_emscripten/source/";
-  state._code_generation_time = "02:01:04 of Friday, 2020-12-11 (GMT+1)";
+  state._code_generation_time = "02:03:19 of Friday, 2020-12-11 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -77,5 +78,6 @@ int main(int argc, char **argv) {
     }
   }
   SDL_RenderPresent(renderer);
+  usleep(1000000);
   return 0;
 }
