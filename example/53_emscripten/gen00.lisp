@@ -213,7 +213,7 @@
 		   (let ((window (static_cast<SDL_Window*> nullptr))
 			 (renderer (static_cast<SDL_Renderer*> nullptr))
 			 )
-		     (SDL_CreateWindowAndRenderer window height
+		     (SDL_CreateWindowAndRenderer width height
 						  SDL_WINDOW_OPENGL
 						  &window
 						  &renderer)))
@@ -435,7 +435,7 @@
 	(out "cmake_minimum_required( VERSION 3.15 )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	(out "set( CMAKE_CXX_STANDARD 14 )")
+	(out "set( CMAKE_CXX_STANDARD 20 )")
 
 	;; https://stackoverflow.com/questions/61590519/how-to-use-emscripten-ports-sdl2-and-freetype-with-cmake
 	(out "if( ${CMAKE_SYSTEM_NAME} MATCHES \"Emscripten\" )")
@@ -444,14 +444,17 @@
 	(out "  set( CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS} )")
 	(out "  set( CMAKE_EXECUTABLE_SUFFIX .html )")
 	(out "else()")
-	(out "find_package( SDL2 REQUIRED )")
+	(out "include( FindPkgConfig )")
+	(out "find_package( SDL2 REQUIRED sdl2 )")
 	(out "endif()")
-	
-					;(out "set( CMAKE_CXX_FLAGS )")
+
+	(out "include_directories( ${SDL2_INCLUDE_DIRS}  )")
 	(out "set( SRCS ~{~a~^~%~} )"	;(directory "source/*.cpp")
 	     `(vis_00_base.cpp
 	       vis_01_demangle.cpp))
+	
 	(out "add_executable( mytest ${SRCS} )")
+	(out "target_link_libraries( mytest ${SDL2_LIBRARIES} )")
 	)
       )))
 

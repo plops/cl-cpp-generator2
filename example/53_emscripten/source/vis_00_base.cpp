@@ -18,10 +18,10 @@ using namespace std::chrono_literals;
 
 State state = {};
 int main(int argc, char **argv) {
-  state._main_version = "8b38e4f37ba384b8a670f3ad11ee838dc1c6a30c";
+  state._main_version = "42910754b58e4911f88bf6264ac3ed86f7180305";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/53_emscripten/source/";
-  state._code_generation_time = "01:43:47 of Friday, 2020-12-11 (GMT+1)";
+  state._code_generation_time = "01:52:03 of Friday, 2020-12-11 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_VIDEO);
   auto window = static_cast<SDL_Window *>(nullptr);
   auto renderer = static_cast<SDL_Renderer *>(nullptr);
-  SDL_CreateWindowAndRenderer(window, height, SDL_WINDOW_OPENGL, &window,
+  SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_OPENGL, &window,
                               &renderer);
   return 0;
 }
