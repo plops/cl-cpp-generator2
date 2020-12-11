@@ -1,0 +1,10 @@
+- https://emscripten.org/docs/getting_started/downloads.htmlhttps://emscripten.org/docs/getting_started/downloads.html
+#+begin_example
+git clone https://github.com/emscripten-core/emsdk.git
+./emsdk install latest
+# Make the "latest" SDK "active" for the current user. (writes .emscripten file)
+./emsdk activate latest
+#+end_example
+
+- https://developers.google.com/web/updates/2020/12/webassembly
+- https://news.ycombinator.com/item?id=25373597
