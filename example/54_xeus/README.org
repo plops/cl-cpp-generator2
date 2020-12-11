@@ -1,0 +1,9 @@
+
+
+- https://blog.jupyter.org/interactive-workflows-for-c-with-jupyter-fe9b54227d92
+ - blogpost
+
+- https://www.youtube.com/watch?v=iTL4iyFE_KI
+  - C++ Intermediate - Getting Started with C++ and Notebooks
+  - caleb curry
+  - 2020-12-10
