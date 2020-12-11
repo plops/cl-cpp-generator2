@@ -165,8 +165,8 @@
 	       (defun run_vuda ()
 		 (cudaSetDevice 0)
 		 (let ((N 4096)
-		       )
-		   (declare (type "const int" N)
+		       (Nbytes (* N (sizeof int))))
+		   (declare (type "const int" N Nbytes)
 			    )
 		   
 		   ,@(loop for e in `(a b c) collect
@@ -175,10 +175,30 @@
 				   (,d (static_cast<int*> nullptr)))
 			       (declare (type (array int N) ,e))
 			       (cudaMalloc (reinterpret_cast<void**> (ref ,d))
-					   (* N (sizeof int))))))
+					   Nbytes))))
 		   (dotimes (i N)
 		     (setf (aref a i) (* -1 i)
-			   (aref b i) (* i i))))
+			   (aref b i) (* i i)))
+		   ,@(loop for (a b c) in `((dev_a a cudaMemcpyHostToDevice)
+					    (dev_b b cudaMemcpyHostToDevice))
+			   collect
+			   `(cudaMemcpy ,a ,b Nbytes ,c))
+		   (let ((blocks 128)
+			 (threads 128))
+		     (let ((stream_id 0))
+		       (vuda--launchKernel (string "/home/martin/src/vuda/samples/simple/add.spv"
+						   )
+					   (string "main")
+					   stream_id
+					   blocks
+					   threads
+					   dev_a dev_b dev_c N
+					   )
+		       ,@(loop for (a b c) in `((c dev_c cudaMemcpyDeviceToHost))
+			   collect
+			       `(cudaMemcpy ,a ,b Nbytes ,c))0
+		       ,@(loop for e in `(dev_a dev_b dev_c) collect
+			       `(cudaFree ,e)))))
 		 )
 	       
 	       (defun main (argc argv)

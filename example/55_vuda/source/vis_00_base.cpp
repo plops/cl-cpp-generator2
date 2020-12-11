@@ -13,25 +13,37 @@ State state = {};
 void run_vuda() {
   cudaSetDevice(0);
   const int N = 4096;
+  const int Nbytes = ((N) * (sizeof(int)));
   int a[N];
   auto dev_a = static_cast<int *>(nullptr);
-  cudaMalloc(reinterpret_cast<void **>(&(dev_a)), ((N) * (sizeof(int))));
+  cudaMalloc(reinterpret_cast<void **>(&(dev_a)), Nbytes);
   int b[N];
   auto dev_b = static_cast<int *>(nullptr);
-  cudaMalloc(reinterpret_cast<void **>(&(dev_b)), ((N) * (sizeof(int))));
+  cudaMalloc(reinterpret_cast<void **>(&(dev_b)), Nbytes);
   int c[N];
   auto dev_c = static_cast<int *>(nullptr);
-  cudaMalloc(reinterpret_cast<void **>(&(dev_c)), ((N) * (sizeof(int))));
+  cudaMalloc(reinterpret_cast<void **>(&(dev_c)), Nbytes);
   for (auto i = 0; (i) < (N); (i) += (1)) {
     a[i] = ((-1) * (i));
     b[i] = ((i) * (i));
   }
+  cudaMemcpy(dev_a, a, Nbytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(dev_b, b, Nbytes, cudaMemcpyHostToDevice);
+  auto blocks = 128;
+  auto threads = 128;
+  auto stream_id = 0;
+  vuda::launchKernel("/home/martin/src/vuda/samples/simple/add.spv", "main",
+                     stream_id, blocks, threads, dev_a, dev_b, dev_c, N);
+  cudaMemcpy(c, dev_c, Nbytes, cudaMemcpyDeviceToHost);
+  cudaFree(dev_a);
+  cudaFree(dev_b);
+  cudaFree(dev_c);
 }
 int main(int argc, char **argv) {
-  state._main_version = "b65b7b1588a74e3385f188e699a986caf105a012";
+  state._main_version = "b735631dfe4f69dfb3997b20c19f7c0edf0e99fc";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/55_vuda/source/";
-  state._code_generation_time = "00:00:45 of Saturday, 2020-12-12 (GMT+1)";
+  state._code_generation_time = "00:08:19 of Saturday, 2020-12-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
