@@ -7,3 +7,5 @@
   - C++ Intermediate - Getting Started with C++ and Notebooks
   - caleb curry
   - 2020-12-10
+
+- https://jupyter.org/try
