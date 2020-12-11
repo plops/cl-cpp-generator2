@@ -149,10 +149,14 @@
 		
 			)
 	       " "
-	       (include ;<SDL2/SDL.h>
+	       (include <SDL/SDL.h>
 			<complex>)
 	       " "
-	       
+	       (do0 
+		"#ifdef __EMSCRIPTEN__"
+		(include <emscripten.h>)
+		"#endif")
+	       " "
 	  
 
 	    	       "using namespace std::chrono_literals;"
@@ -205,7 +209,14 @@
 
 		 (let ((width 600)
 		       (height 800))
-		   #+nil (SDL_Init SDL_INIT_VIDEO))
+		   (SDL_Init SDL_INIT_VIDEO)
+		   (let ((window (static_cast<SDL_Window*> nullptr))
+			 (renderer (static_cast<SDL_Renderer*> nullptr))
+			 )
+		     (SDL_CreateWindowAndRenderer window height
+						  SDL_WINDOW_OPENGL
+						  &window
+						  &renderer)))
 		      
 
 		 (return 0)))))

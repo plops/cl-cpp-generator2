@@ -8,7 +8,10 @@
 #include <iostream>
 #include <thread>
 ;
+#include <SDL/SDL.h>
 #include <complex>
+;
+#include <emscripten.h>
 ;
 int main(int argc, char **argv);
 #endif
