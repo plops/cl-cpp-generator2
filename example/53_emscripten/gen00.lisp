@@ -137,7 +137,7 @@
        `(base ((_main_version :type "std::string")
 	       (_code_repository :type "std::string")
 	       (_code_generation_time :type "std::string")
-	       ;(_stdout_mutex :type "std::mutex")
+	       (_stdout_mutex :type "std::mutex")
 	       )
 	      (do0
 	       (include <iostream>
@@ -149,7 +149,8 @@
 		
 			)
 	       " "
-	       
+	       (include ;<SDL2/SDL.h>
+			<complex>)
 	       " "
 	       
 	  
@@ -202,7 +203,9 @@
 	
 		  )
 
-	
+		 (let ((width 600)
+		       (height 800))
+		   #+nil (SDL_Init SDL_INIT_VIDEO))
 		      
 
 		 (return 0)))))
