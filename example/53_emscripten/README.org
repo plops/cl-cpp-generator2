@@ -42,3 +42,7 @@ sys	0m0.074s
 - wasm optimized 9720-2520 = 7.2s
   - 15360ms-10240ms = 
 - wasm (debug?)  12240ms-5120ms = 7.12s
+
+- chromium
+  - wasm opt 1.82s
+  - wasm     1.99s
