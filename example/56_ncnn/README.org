@@ -1,0 +1,5 @@
+- https://github.com/Tencent/ncnn
+  -  neural network inference computing framework optimized for mobile
+    platforms. ncnn does not have third party dependencies. it is
+    cross-platform, and runs faster than all known open source
+    frameworks on mobile phone cpu.
