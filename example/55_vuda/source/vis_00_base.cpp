@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 State state = {};
 void run_vuda() {
   cudaSetDevice(0);
-  const int N = 4096;
+  const int N = 5000;
   const int Nbytes = ((N) * (sizeof(int)));
   int a[N];
   auto dev_a = static_cast<int *>(nullptr);
@@ -40,10 +40,10 @@ void run_vuda() {
   cudaFree(dev_c);
 }
 int main(int argc, char **argv) {
-  state._main_version = "b735631dfe4f69dfb3997b20c19f7c0edf0e99fc";
+  state._main_version = "93f8df14594b61b4cd5b0c1a2b4d47e0ae86c685";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/55_vuda/source/";
-  state._code_generation_time = "00:08:19 of Saturday, 2020-12-12 (GMT+1)";
+  state._code_generation_time = "09:15:44 of Saturday, 2020-12-12 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {

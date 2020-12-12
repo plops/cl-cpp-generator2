@@ -164,7 +164,7 @@
 
 	       (defun run_vuda ()
 		 (cudaSetDevice 0)
-		 (let ((N 4096)
+		 (let ((N 5000)
 		       (Nbytes (* N (sizeof int))))
 		   (declare (type "const int" N Nbytes)
 			    )
@@ -196,7 +196,7 @@
 					   )
 		       ,@(loop for (a b c) in `((c dev_c cudaMemcpyDeviceToHost))
 			   collect
-			       `(cudaMemcpy ,a ,b Nbytes ,c))0
+			       `(cudaMemcpy ,a ,b Nbytes ,c))
 		       ,@(loop for e in `(dev_a dev_b dev_c) collect
 			       `(cudaFree ,e)))))
 		 )

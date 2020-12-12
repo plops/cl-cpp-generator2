@@ -3,3 +3,23 @@
     platforms. ncnn does not have third party dependencies. it is
     cross-platform, and runs faster than all known open source
     frameworks on mobile phone cpu.
+#+begin_example
+git submodule update --init
+dnf install protobuf-devel glslang-devel
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=ON -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON ..
+
+
+#+end_example
+
+#+begin_example
+cd /home/martin/src/ncnn/examples
+
+martin@localhost examples]$ ../b/examples/squeezenet ../images/256-ncnn.png
+[0 Intel(R) HD Graphics 520 (SKL GT2)]  queueC=0[1]  queueG=0[1]  queueT=0[1]
+[0 Intel(R) HD Graphics 520 (SKL GT2)]  bugsbn1=0  bugcopc=0  bugihfa=0
+[0 Intel(R) HD Graphics 520 (SKL GT2)]  fp16p=1  fp16s=1  fp16a=1  int8s=1  int8a=1
+[0 Intel(R) HD Graphics 520 (SKL GT2)]  subgroup=32  basic=1  vote=1  ballot=1  shuffle=1
+532 = 0.165405
+920 = 0.095764
+716 = 0.060852
+#+end_example
