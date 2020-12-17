@@ -30,7 +30,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
   - not always supported (e.g. not in torch::save and torch::load)
 #+begin_example
 (defun a (net)
-  (declare (type Net net)))
+  (declare (type Net net))) 
 (defun main ()
   (let ((net (Net))))
     (a (std--move net))))
