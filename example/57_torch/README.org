@@ -15,3 +15,4 @@
   - pair.value()
 
 - execution: net.forward( torch::ones({2,4}) )
+- c++ api docs https://pytorch.org/cppdocs/api/namespace_torch__nn.html
