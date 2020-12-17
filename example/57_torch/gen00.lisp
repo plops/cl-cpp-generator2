@@ -186,13 +186,10 @@
 				  :stride 2
 				  :padding 1
 				  :bias false)
-			   (batch_norm3 BatchNorm2d 128)
+			   (batch_norm3 BatchNorm2d c64)
 			   (conv4 ConvTranspose2d
 				  c64 1 4
-				  :bias false)
-			   (batch_norm4 BatchNorm2d 64)
-			   
-			   )))
+				  :bias false))))
 		  
 		  `(do0
 		   (defclass dcgan_generatorImpl "public torch::nn::Module"

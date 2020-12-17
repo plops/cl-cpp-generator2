@@ -22,7 +22,6 @@ public:
   torch::nn::ConvTranspose2d conv3;
   torch::nn::BatchNorm2d batch_norm3;
   torch::nn::ConvTranspose2d conv4;
-  torch::nn::BatchNorm2d batch_norm4;
   const int c256 = 256;
   const int c128 = 128;
   const int c64 = 64;
