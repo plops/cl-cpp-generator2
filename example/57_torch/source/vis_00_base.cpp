@@ -47,15 +47,14 @@ torch::Tensor dcgan_generatorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(dcgan_generator);
 int main(int argc, char **argv) {
-  state._main_version = "e6e0fb0c17808c57fa397288fc0619feb8872082";
+  state._main_version = "2df8ad0b1a192ef8eae01848bb1e8aec1a423259";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "23:44:06 of Thursday, 2020-12-17 (GMT+1)";
+  state._code_generation_time = "23:47:12 of Thursday, 2020-12-17 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
 
-    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
     (std::cout) << (std::setw(10))
                 << (std::chrono::high_resolution_clock::now()
                         .time_since_epoch()
@@ -76,7 +75,6 @@ int main(int argc, char **argv) {
     device = torch::Device(torch::kCUDA);
     {
 
-      auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
       (std::cout) << (std::setw(10))
                   << (std::chrono::high_resolution_clock::now()
                           .time_since_epoch()

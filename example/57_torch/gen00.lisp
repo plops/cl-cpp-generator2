@@ -43,7 +43,7 @@
       `(progn ;do0
 	" "
 	#-nolog
-	(let ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+	(let (;(lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
 	      )
 	 
 	 (do0
