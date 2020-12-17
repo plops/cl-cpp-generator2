@@ -22,9 +22,6 @@ public:
   torch::nn::ConvTranspose2d conv3;
   torch::nn::BatchNorm2d batch_norm3;
   torch::nn::ConvTranspose2d conv4;
-  static constexpr int c256 = 256;
-  static constexpr int c128 = 128;
-  static constexpr int c64 = 64;
 };
 int main(int argc, char **argv);
 #endif

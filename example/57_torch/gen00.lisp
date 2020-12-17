@@ -189,10 +189,40 @@
 			   (batch_norm3 BatchNorm2d c64)
 			   (conv4 ConvTranspose2d
 				  c64 1 4
-				  :bias false))))
+				  :bias false)))
+		      (l-discriminator
+			`(;; layer 1
+			  (Conv2d :opt (1 c64 4) ;; input channels, output channels, kernel size
+				  :stride 2
+				  :padding 1
+				  :bias false)
+			  (LeakyReLU :opt () :negative-slope .2)
+			  ;; layer 2
+			  (Conv2d :opt (c64 c128 4)
+				  :stride 2
+				  :padding 1
+				  :bias false)
+			  (BatchNorm2d :param c128)
+			  (LeakyReLU :opt () :negative-slope .2)
+			  ;; layer 3
+			  (Conv2d :opt (c128 c256 4)
+				  :stride 2
+				  :padding 1
+				  :bias false)
+			  (BatchNorm2d :param c256)
+			  (LeakyReLU :opt () :negative-slope .2)
+			  ;; layer 4
+			  (Conv2d :opt (c256 1 3)
+				  :stride 1
+				  :padding 0
+				  :bias false)
+			  (Sigmoid :param nil))))
 		  
 		  `(do0
-		   (defclass DCGANGeneratorImpl "public torch::nn::Module"
+		    ,@(loop for (name val) in c
+			     collect
+			     (format nil "static constexpr int ~a=~a;" name val))
+		    (defclass DCGANGeneratorImpl "public torch::nn::Module"
 		     "public:"
 		     
 		     (defmethod DCGANGeneratorImpl (k_noise_size)
@@ -242,14 +272,11 @@
 						    &key stride padding bias)
 				   e
 				 (format nil "torch::nn::~a ~a;" type name)))
-		     ,@(loop for (name val) in c
-			     collect
-			     (format nil "static constexpr int ~a=~a;" name val))
+		     
 		     )
-		   (TORCH_MODULE DCGANGenerator)))
-	       
-	    
-	       (defun main (argc argv)
+		    (TORCH_MODULE DCGANGenerator)
+
+		    (defun main (argc argv)
 		 (declare (type int argc)
 			  (type char** argv)
 			  (values int))
@@ -299,11 +326,28 @@
 		    "const int k_noise_size=100;"
 		    (let (
 			  (generator (DCGANGenerator k_noise_size)))
-		      ;(generator->to device)
-		      ))
+		      (generator->to device)
+		      (let ((discriminator
+			      (torch--nn--Sequential
+			       ,@(loop for e in l-discriminator
+				       collect
+				       (destructuring-bind (type  &key (param nil param-p) opt stride padding bias negative-slope) e
+					 `(,(format nil "torch::nn::~a" type)
+					   ,(if param-p
+					       param
+					       `(dot (,(format nil "torch::nn::~aOptions" type)
+						      ,@opt)
+						     ,(when stride `(stride ,stride))
+						     ,(when padding `(padding ,padding))
+						     ,(when bias `(bias ,bias))
+						     ,(when negative-slope `(negative_slope ,negative-slope)))))))))))))
 		  )
 
-		 (return 0)))))
+		 (return 0))
+		    ))
+	       
+	    
+	       )))
     (define-module
        `(demangle ()
 	      (do0
