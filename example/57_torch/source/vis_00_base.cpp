@@ -13,7 +13,7 @@
 using namespace std::chrono_literals;
 
 State state = {};
-dcgan_generator_impl::dcgan_generator_impl(int k_noise_size)
+dcgan_generatorImpl::dcgan_generatorImpl(int k_noise_size)
     : conv1(
           torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4).bias(false)),
       batch_norm1(c256), conv2(torch::nn::ConvTranspose2dOptions(c256, c128, 3)
@@ -36,11 +36,12 @@ dcgan_generator_impl::dcgan_generator_impl(int k_noise_size)
   register_module("conv4", conv4);
   register_module("batch_norm4", batch_norm4);
 }
+TORCH_MODULE(dcgan_generator);
 int main(int argc, char **argv) {
-  state._main_version = "58e500d8981da40b4a2f2beb770ed6439cbbcc8e";
+  state._main_version = "af95205c311916e9984101cd0d98e6f634da0458";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "23:30:57 of Thursday, 2020-12-17 (GMT+1)";
+  state._code_generation_time = "23:34:33 of Thursday, 2020-12-17 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {

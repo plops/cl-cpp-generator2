@@ -11,9 +11,10 @@
 // header
 ;
 ;
-class dcgan_generator_impl : torch::nn::Module {
+class dcgan_generatorImpl : torch::nn::Module {
 public:
-  dcgan_generator_impl(int k_noise_size);
+  dcgan_generatorImpl(int k_noise_size);
+  torch::Tensor forward(torch::Tensor x);
   torch::nn::ConvTranspose2d conv1;
   torch::nn::BatchNorm2d batch_norm1;
   torch::nn::ConvTranspose2d conv2;

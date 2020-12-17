@@ -195,9 +195,9 @@
 			   )))
 		  
 		  `(do0
-		   (defclass dcgan_generator_impl torch--nn--Module
+		   (defclass dcgan_generatorImpl torch--nn--Module
 		     "public:"
-		     (defmethod dcgan_generator_impl (k_noise_size)
+		     (defmethod dcgan_generatorImpl (k_noise_size)
 		       (declare (type int k_noise_size)
 				(values :constructor)
 				(construct
@@ -221,12 +221,23 @@
 						       )
 					       `(,name ,x))
 					   ))))
+		       
 		       ,@(loop for e in l
 			       collect
 			       (destructuring-bind (name type x &optional y z
 						    &key stride padding bias)
 				   e
 				 `(register_module (string ,name) ,name))))
+
+		     (defun forward (x)
+		       (declare (type "torch::Tensor" x)
+				(values "torch::Tensor"))
+		       (setf x (torch--relu (batch_norm1 (conv1 x))))
+		       (setf x (torch--relu (batch_norm2 (conv2 x))))
+		       (setf x (torch--relu (batch_norm3 (conv3 x))))
+		       (setf x (torch--tanh (conv4 x)))
+		       (return x))
+
 		     ,@(loop for e in l
 			       collect
 			       (destructuring-bind (name type x &optional y z
@@ -236,7 +247,8 @@
 		     ,@(loop for (name val) in c
 			     collect
 			     (format nil "const int ~a=~a;" name val))
-		     )))
+		     )
+		   (TORCH_MODULE dcgan_generator)))
 	       
 	    
 	       (defun main (argc argv)
