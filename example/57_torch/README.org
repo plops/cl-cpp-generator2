@@ -16,3 +16,23 @@
 
 - execution: net.forward( torch::ones({2,4}) )
 - c++ api docs https://pytorch.org/cppdocs/api/namespace_torch__nn.html
+- in python objects always on heap and have reference semantics
+- c++ provides either value or reference semantics
+  - value is simplest, objects on stack and are copied, moved, taken
+    by reference or pointer
+#+begin_example
+(defun a (net)
+  (declare (type Net net)))
+(defun main ()
+  (let ((net (Net))))
+    (a (std--move net))))
+#+end_example
+
+  - reference: std::shared_ptr reduces cognitive overhead
+#+begin_example
+(defun a (net)
+  (declare (type std--shared_ptr<Net> net)))
+(defun main ()
+  (let ((net (std--make_shared<Net>)))
+    (a net)))
+#+end_example
