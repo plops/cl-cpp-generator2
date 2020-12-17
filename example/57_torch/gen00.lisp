@@ -422,13 +422,15 @@
       ;; run emcmake cmake .. && make
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	
+	;; export CMAKE_PREFIX_PATH=/home/martin/.local/lib/python3.8/site-packages/torch/share/cmake/Torch/
 	(out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	;(out "set( CMAKE_CXX_STANDARD 14 )")
 
 	(out "find_package( Torch REQUIRED )")
-	
+	(out "set( Torch_DIR /home/martin/.local/lib/python3.8/site-packages/torch/share/cmake/Torch/ )")
 	(out "set( SRCS ~{~a~^~%~} )"	;(directory "source/*.cpp")
 	     `(vis_00_base.cpp
 	       vis_01_demangle.cpp))

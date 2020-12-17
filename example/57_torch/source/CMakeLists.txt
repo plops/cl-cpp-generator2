@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 project( mytest LANGUAGES CXX )
 set( CMAKE_VERBOSE_MAKEFILE ON )
 find_package( Torch REQUIRED )
+set( Torch_DIR /home/martin/.local/lib/python3.8/site-packages/torch/share/cmake/Torch/ )
 set( SRCS vis_00_base.cpp
 vis_01_demangle.cpp )
 add_executable( mytest ${SRCS} )
