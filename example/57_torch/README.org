@@ -4,3 +4,14 @@
   the parameter was created inside the constructor body. There is a
   good reason for this, which we'll touch upon this in the section on
   the C++ frontend's ownership model
+- torch::nn::Module
+- register_parameter "W" torch::randn({N,M})
+- torch::Tensor W
+- torch::nn::Linear linear
+- construct (linear (register_module "linear" torch::nn::Linear(N,M)))
+- for const auto& p : net.parameters()
+- for const auto& pair : net.named_paramters()
+  - pair.key()
+  - pair.value()
+
+- execution: net.forward( torch::ones({2,4}) )
