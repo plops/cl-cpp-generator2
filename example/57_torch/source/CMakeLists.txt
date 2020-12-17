@@ -7,4 +7,5 @@ set( SRCS vis_00_base.cpp
 vis_01_demangle.cpp )
 add_executable( mytest ${SRCS} )
 target_link_libraries( mytest ${TORCH_LIBRARIES} )
+target_precompile_headers( mytest PUBLIC globals.h )
 set_property( TARGET mytest PROPERTY CXX_STANDARD 14 )

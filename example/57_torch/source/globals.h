@@ -3,6 +3,7 @@
 #define GLOBALS_H
 
 #include <mutex>
+#include <torch/torch.h>
 
 #include <chrono>
 struct State {

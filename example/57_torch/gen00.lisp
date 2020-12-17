@@ -152,11 +152,11 @@
 
 	       
 	       " "
-	       (include <torch/torch.h>)
+	       ;(include <torch/torch.h>)
 	       " "
 	  
 
-	    	       "using namespace std::chrono_literals;"
+	    	       "using namespace std::chrono_literals; "
 	       " "
 	       
 	      
@@ -393,7 +393,7 @@
 		    " "
 		    "#define GLOBALS_H"
 		    " "
-
+		    (include <torch/torch.h>)
 		    #+nil (include <complex>)
 		    #+nil (include <deque>
 			     <map>
@@ -437,6 +437,7 @@
 	
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_link_libraries( mytest ${TORCH_LIBRARIES} )")
+	(out "target_precompile_headers( mytest PUBLIC globals.h )")
 	(out "set_property( TARGET mytest PROPERTY CXX_STANDARD 14 )")
 	)
       )))
