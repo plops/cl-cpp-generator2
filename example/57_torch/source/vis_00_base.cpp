@@ -14,10 +14,8 @@ using namespace std::chrono_literals;
 
 State state = {};
 dcgan_generator_impl::dcgan_generator_impl(int k_noise_size)
-    : conv1(torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4)
-                .stride()
-                .padding()
-                .bias(false)),
+    : conv1(
+          torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4).bias(false)),
       batch_norm1(c256), conv2(torch::nn::ConvTranspose2dOptions(c256, c128, 3)
                                    .stride(2)
                                    .padding(1)
@@ -27,9 +25,7 @@ dcgan_generator_impl::dcgan_generator_impl(int k_noise_size)
                                    .padding(1)
                                    .bias(false)),
       batch_norm3(128),
-      conv4(
-          torch::nn::ConvTranspose2dOptions(c64, 1, 4).stride().padding().bias(
-              false)),
+      conv4(torch::nn::ConvTranspose2dOptions(c64, 1, 4).bias(false)),
       batch_norm4(64) {
   register_module("conv1", conv1);
   register_module("batch_norm1", batch_norm1);
@@ -41,10 +37,10 @@ dcgan_generator_impl::dcgan_generator_impl(int k_noise_size)
   register_module("batch_norm4", batch_norm4);
 }
 int main(int argc, char **argv) {
-  state._main_version = "45a8b08951e3313ba14658636a15511598d5a630";
+  state._main_version = "58e500d8981da40b4a2f2beb770ed6439cbbcc8e";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "23:28:56 of Thursday, 2020-12-17 (GMT+1)";
+  state._code_generation_time = "23:30:57 of Thursday, 2020-12-17 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {

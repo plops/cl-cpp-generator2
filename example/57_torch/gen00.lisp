@@ -214,9 +214,9 @@
 					       `(,name (dot
 							(,(format nil "torch::nn::~aOptions" type)
 							 ,x ,y ,z)
-							(stride ,stride)
-							(padding ,padding)
-							(bias ,bias)
+							,(when stride `(stride ,stride))
+							,(when padding `(padding ,padding))
+							,(when bias `(bias ,bias))
 							)
 						       )
 					       `(,name ,x))

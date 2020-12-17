@@ -861,7 +861,8 @@ entry return-values contains a list of return values. currently supports type, v
 					,@forms)))))
 		  
 		  (dot (let ((args (cdr code)))
-			 (format nil "~{~a~^.~}" (mapcar #'emit args))))
+			 (format nil "~{~a~^.~}" (mapcar #'emit (remove-if #'null
+									   args)))))
 		  
 
 		  (aref (destructuring-bind (name &rest indices) (cdr code)
