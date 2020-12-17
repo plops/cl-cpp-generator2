@@ -244,7 +244,7 @@
 				 (format nil "torch::nn::~a ~a;" type name)))
 		     ,@(loop for (name val) in c
 			     collect
-			     (format nil "const int ~a=~a;" name val))
+			     (format nil "static constexpr int ~a=~a;" name val))
 		     )
 		   (TORCH_MODULE DCGANGenerator)))
 	       
