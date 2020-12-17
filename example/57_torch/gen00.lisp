@@ -522,6 +522,18 @@
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	;(out "set( CMAKE_CXX_STANDARD 14 )")
 
+	(loop for e in `(C CXX) do
+     (loop for (f flags) in `((DEBUG (-ggdb3 -gdwarf-4 -g3 -Og -fvar-tracking-assignments -fno-eliminate-unused-debug-symbols ))
+			      (MINSIZEREL  (-g0 -Os))
+			      (RELWITHDEBINFO  (-g2 -ggdb -O2))
+			      (RELEASE (-g0 -O2)))
+	   do
+	      (out "set( CMAKE_~a_FLAGS_~a \"~{~a~^ ~}\" )"
+		   e f (if (eq e 'CXX)
+			   (append flags )
+			   (append flags )))
+	   ))
+	
 	(out "find_package( Torch REQUIRED )")
 	(out "set( Torch_DIR /home/martin/.local/lib/python3.8/site-packages/torch/share/cmake/Torch/ )")
 	(out "set( SRCS ~{~a~^~%~} )"	;(directory "source/*.cpp")
