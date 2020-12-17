@@ -192,10 +192,10 @@
 				  :bias false))))
 		  
 		  `(do0
-		   (defclass dcgan_generatorImpl "public torch::nn::Module"
+		   (defclass DCGANGeneratorImpl "public torch::nn::Module"
 		     "public:"
 		     
-		     (defmethod dcgan_generatorImpl (k_noise_size)
+		     (defmethod DCGANGeneratorImpl (k_noise_size)
 		       (declare (type int k_noise_size)
 				(values :constructor)
 				(construct
@@ -246,7 +246,7 @@
 			     collect
 			     (format nil "const int ~a=~a;" name val))
 		     )
-		   (TORCH_MODULE dcgan_generator)))
+		   (TORCH_MODULE DCGANGenerator)))
 	       
 	    
 	       (defun main (argc argv)
@@ -298,7 +298,7 @@
 		      )
 		    "const int k_noise_size=100;"
 		    (let (
-			  (generator (dcgan_generator k_noise_size)))
+			  (generator (DCGANGenerator k_noise_size)))
 		      ;(generator->to device)
 		      ))
 		  )
