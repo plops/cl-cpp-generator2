@@ -1,1 +1,2 @@
-https://pytorch.org/tutorials/advanced/cpp_frontend.html
+- https://pytorch.org/tutorials/advanced/cpp_frontend.html
+- emerge cudnn
