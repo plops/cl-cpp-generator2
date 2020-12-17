@@ -229,7 +229,7 @@
 				   e
 				 `(register_module (string ,name) ,name))))
 
-		     (defun forward (x)
+		     (defmethod forward (x)
 		       (declare (type "torch::Tensor" x)
 				(values "torch::Tensor"))
 		       (setf x (torch--relu (batch_norm1 (conv1 x))))

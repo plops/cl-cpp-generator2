@@ -36,12 +36,19 @@ dcgan_generatorImpl::dcgan_generatorImpl(int k_noise_size)
   register_module("conv4", conv4);
   register_module("batch_norm4", batch_norm4);
 }
+torch::Tensor dcgan_generatorImpl::forward(torch::Tensor x) {
+  x = torch::relu(batch_norm1(conv1(x)));
+  x = torch::relu(batch_norm2(conv2(x)));
+  x = torch::relu(batch_norm3(conv3(x)));
+  x = torch::tanh(conv4(x));
+  return x;
+}
 TORCH_MODULE(dcgan_generator);
 int main(int argc, char **argv) {
-  state._main_version = "af95205c311916e9984101cd0d98e6f634da0458";
+  state._main_version = "fe43becfaf7cf90eb2bd305bc6b1d2d467344e68";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "23:34:33 of Thursday, 2020-12-17 (GMT+1)";
+  state._code_generation_time = "23:35:33 of Thursday, 2020-12-17 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
