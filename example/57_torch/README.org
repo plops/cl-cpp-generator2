@@ -1,6 +1,10 @@
 - https://pytorch.org/tutorials/advanced/cpp_frontend.html
 - emerge cudnn
-
+- https://download.pytorch.org/libtorch/cu110/libtorch-cxx11-abi-shared-with-deps-1.7.1%2Bcu110.zip
+#+begin_example
+ export CMAKE_PREFIX_PATH=/home/martin/stage/cl-cpp-generator2/example/57_torch/source/libtorch/share/cmake/Torch/
+cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
+#+end_example
 - torch::nn::Module
 - register_parameter "W" torch::randn({N,M})
 - torch::Tensor W
