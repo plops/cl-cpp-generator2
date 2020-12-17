@@ -1,14 +1,17 @@
 - https://pytorch.org/tutorials/advanced/cpp_frontend.html
 - emerge cudnn
-- submodule was created in the constructor's initializer list, while
-  the parameter was created inside the constructor body. There is a
-  good reason for this, which we'll touch upon this in the section on
-  the C++ frontend's ownership model
+
 - torch::nn::Module
 - register_parameter "W" torch::randn({N,M})
 - torch::Tensor W
 - torch::nn::Linear linear
 - construct (linear (register_module "linear" torch::nn::Linear(N,M)))
+  - submodule was created in the constructor's initializer list, while
+    the parameter was created inside the constructor body. There is a
+    good reason for this, which we'll touch upon this in the section on
+    the C++ frontend's ownership model
+  - TORCH_MODULE creates a typedef Linear is std::shared_ptr<LinearImpl>
+  - constructing an empty module can look weird
 - for const auto& p : net.parameters()
 - for const auto& pair : net.named_paramters()
   - pair.key()
@@ -20,6 +23,7 @@
 - c++ provides either value or reference semantics
   - value is simplest, objects on stack and are copied, moved, taken
     by reference or pointer
+  - not always supported (e.g. not in torch::save and torch::load)
 #+begin_example
 (defun a (net)
   (declare (type Net net)))
@@ -36,3 +40,4 @@
   (let ((net (std--make_shared<Net>)))
     (a net)))
 #+end_example
+ - source code https://github.com/pytorch/examples/tree/master/cpp/dcgan

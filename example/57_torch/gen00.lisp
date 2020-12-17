@@ -154,7 +154,11 @@
 	       " "
 	       ;(include <torch/torch.h>)
 	       " "
-	  
+	       (split-header-and-code
+		(do0 (comments "header"))
+		(do0 (comments "implementation")
+		     (include "vis_00_base.hpp")))
+	       ;"using namespace torch;"
 
 	    	       "using namespace std::chrono_literals; "
 	       " "
@@ -164,6 +168,76 @@
 	       (let ((state ,(emit-globals :init t)))
 		 (declare (type "State" state)))
 
+	       ,(let ((c `((c256 256)
+			   (c128 128)
+			   (c64 64)))
+		      (l `((conv1 ConvTranspose2d
+				  k_noise_size c256 4
+				  :bias false)
+			   (batch_norm1 BatchNorm2d c256)
+			   (conv2 ConvTranspose2d
+				  c256 c128 3
+				  :stride 2
+				  :padding 1
+				  :bias false)
+			   (batch_norm2 BatchNorm2d c128)
+			   (conv3 ConvTranspose2d
+				  c128 c64 4
+				  :stride 2
+				  :padding 1
+				  :bias false)
+			   (batch_norm3 BatchNorm2d 128)
+			   (conv4 ConvTranspose2d
+				  c64 1 4
+				  :bias false)
+			   (batch_norm4 BatchNorm2d 64)
+			   
+			   )))
+		  
+		  `(do0
+		   (defclass dcgan_generator_impl torch--nn--Module
+		     "public:"
+		     (defmethod dcgan_generator_impl (k_noise_size)
+		       (declare (type int k_noise_size)
+				(values :constructor)
+				(construct
+				 ,@(loop for e in l
+					 collect
+					 (destructuring-bind (name type
+							      x
+							      &optional y z
+							      &key
+								stride
+								padding
+								bias) e
+					   (if (eq type 'ConvTranspose2d)
+					       `(,name (dot
+							(,(format nil "torch::nn::~aOptions" type)
+							 ,x ,y ,z)
+							(stride ,stride)
+							(padding ,padding)
+							(bias ,bias)
+							)
+						       )
+					       `(,name ,x))
+					   ))))
+		       ,@(loop for e in l
+			       collect
+			       (destructuring-bind (name type x &optional y z
+						    &key stride padding bias)
+				   e
+				 `(register_module (string ,name) ,name))))
+		     ,@(loop for e in l
+			       collect
+			       (destructuring-bind (name type x &optional y z
+						    &key stride padding bias)
+				   e
+				 (format nil "torch::nn::~a ~a;" type name)))
+		     ,@(loop for (name val) in c
+			     collect
+			     (format nil "const int ~a=~a;" name val))
+		     )))
+	       
 	    
 	       (defun main (argc argv)
 		 (declare (type int argc)
