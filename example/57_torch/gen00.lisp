@@ -152,7 +152,7 @@
 
 	       
 	       " "
-	       
+	       (include <torch/torch.h>)
 	       " "
 	  
 
@@ -205,7 +205,9 @@
 		  )
 
 	
-		      
+		 (do0
+		  (let ((tensor (torch--eye 3)))
+		    ,(logprint "" `(tensor))))
 
 		 (return 0)))))
     (define-module
@@ -420,29 +422,20 @@
       ;; run emcmake cmake .. && make
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-	(out "cmake_minimum_required( VERSION 3.15 )")
+	(out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	(out "set( CMAKE_CXX_STANDARD 20 )")
+	;(out "set( CMAKE_CXX_STANDARD 14 )")
 
-	;; https://stackoverflow.com/questions/61590519/how-to-use-emscripten-ports-sdl2-and-freetype-with-cmake
-	(out "if( ${CMAKE_SYSTEM_NAME} MATCHES \"Emscripten\" )")
-	(out "  set( USE_FLAGS \"-s USE_SDL=2 -s ALLOW_MEMORY_GROWTH=1 \" )")
-	(out "  set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${USE_FLAGS} )")
-	(out "  set( CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS} )")
-	(out "  set( CMAKE_EXECUTABLE_SUFFIX .html )")
-	(out "else()") 
-	(out "include( FindPkgConfig )")
-	(out "find_package( SDL2 REQUIRED sdl2 )")
-	(out "endif()")
-
-	(out "include_directories( ${SDL2_INCLUDE_DIRS}  )")
+	(out "find_package( Torch REQUIRED )")
+	
 	(out "set( SRCS ~{~a~^~%~} )"	;(directory "source/*.cpp")
 	     `(vis_00_base.cpp
 	       vis_01_demangle.cpp))
 	
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_link_libraries( mytest ${SDL2_LIBRARIES} )")
+	(out "target_link_libraries( mytest ${TORCH_LIBRARIES} )")
+	(out "set_property( TARGET mytest PROPERTY CXX_STANDARD 14 )")
 	)
       )))
 
