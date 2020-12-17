@@ -11,7 +11,7 @@
 // header
 ;
 ;
-class dcgan_generatorImpl : torch::nn::Module {
+class dcgan_generatorImpl : public torch::nn::Module {
 public:
   dcgan_generatorImpl(int k_noise_size);
   torch::Tensor forward(torch::Tensor x);

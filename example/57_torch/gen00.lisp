@@ -172,7 +172,7 @@
 			   (c128 128)
 			   (c64 64)))
 		      (l `((conv1 ConvTranspose2d
-				  k_noise_size c256 4
+				  k_noise_size c256 4 ;; input channels, output channels, kernel size
 				  :bias false)
 			   (batch_norm1 BatchNorm2d c256)
 			   (conv2 ConvTranspose2d
@@ -195,8 +195,9 @@
 			   )))
 		  
 		  `(do0
-		   (defclass dcgan_generatorImpl torch--nn--Module
+		   (defclass dcgan_generatorImpl "public torch::nn::Module"
 		     "public:"
+		     
 		     (defmethod dcgan_generatorImpl (k_noise_size)
 		       (declare (type int k_noise_size)
 				(values :constructor)
@@ -221,7 +222,7 @@
 						       )
 					       `(,name ,x))
 					   ))))
-		       
+		       (comments "k_noise_size is the size of the input noise vector")
 		       ,@(loop for e in l
 			       collect
 			       (destructuring-bind (name type x &optional y z
@@ -292,8 +293,17 @@
 
 	
 		 (do0
-		  (let ((tensor (torch--eye 3)))
-		    ,(logprint "" `(tensor))))
+		  (torch--manual_seed 1)
+		  (let ((device (torch--Device torch--kCPU)))
+		    (when (torch--cuda--is_available)
+		      (setf device (torch--Device torch--kCUDA))
+		      ,(logprint "we have cuda" `(device))
+		      )
+		    "const int k_noise_size=100;"
+		    (let (
+			  (generator (dcgan_generator k_noise_size)))
+		      (generator->to device)))
+		  )
 
 		 (return 0)))))
     (define-module

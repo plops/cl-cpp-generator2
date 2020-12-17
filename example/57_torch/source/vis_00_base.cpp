@@ -27,6 +27,8 @@ dcgan_generatorImpl::dcgan_generatorImpl(int k_noise_size)
       batch_norm3(128),
       conv4(torch::nn::ConvTranspose2dOptions(c64, 1, 4).bias(false)),
       batch_norm4(64) {
+  // k_noise_size is the size of the input noise vector
+  ;
   register_module("conv1", conv1);
   register_module("batch_norm1", batch_norm1);
   register_module("conv2", conv2);
@@ -45,10 +47,10 @@ torch::Tensor dcgan_generatorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(dcgan_generator);
 int main(int argc, char **argv) {
-  state._main_version = "fe43becfaf7cf90eb2bd305bc6b1d2d467344e68";
+  state._main_version = "e6e0fb0c17808c57fa397288fc0619feb8872082";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "23:35:33 of Thursday, 2020-12-17 (GMT+1)";
+  state._code_generation_time = "23:44:06 of Thursday, 2020-12-17 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -68,18 +70,26 @@ int main(int argc, char **argv) {
                 << (state._code_generation_time) << ("'") << (std::endl)
                 << (std::flush);
   }
-  auto tensor = torch::eye(3);
-  {
+  torch::manual_seed(1);
+  auto device = torch::Device(torch::kCPU);
+  if (torch::cuda::is_available()) {
+    device = torch::Device(torch::kCUDA);
+    {
 
-    auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
-    (std::cout) << (std::setw(10))
-                << (std::chrono::high_resolution_clock::now()
-                        .time_since_epoch()
-                        .count())
-                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
-                << (":") << (__LINE__) << (" ") << (__func__) << (" ") << ("")
-                << (" ") << (std::setw(8)) << (" tensor='") << (tensor) << ("'")
-                << (std::endl) << (std::flush);
+      auto lock = std::unique_lock<std::mutex>(state._stdout_mutex);
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("we have cuda") << (" ") << (std::setw(8))
+                  << (" device='") << (device) << ("'") << (std::endl)
+                  << (std::flush);
+    }
   }
+  const int k_noise_size = 100;
+  auto generator = dcgan_generator(k_noise_size);
+  generator->to(device);
   return 0;
 }
