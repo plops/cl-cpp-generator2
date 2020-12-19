@@ -170,7 +170,8 @@
 
 	       ,(let ((c `((c256 256)
 			   (c128 128)
-			   (c64 64)))
+			   (c64 64)
+			   (kBatchSize 64)))
 		      (l `((conv1 ConvTranspose2d
 				  k_noise_size c256 4 ;; input channels, output channels, kernel size
 				  :bias false)
@@ -345,13 +346,13 @@
 					    (map (torch--data--transforms--Normalize<> .5 .5))
 					    (map (torch--data--transforms--Stack<>)))
 				       )
-			      (kBatchSize 64)
+			      ;(kBatchSize 64)
 			      (data_loader (torch--data--make_data_loader
 					    (std--move dataset))))
 			  (dot (torch--data--DataLoaderOptions)
 			       (batch_size kBatchSize)
 			       (workers 12))
-			  (for-range (batch *data_loader)
+			  (for-range (&batch *data_loader)
 				     ,(logprint "" `((batch.data.size 0)
 						     (dot batch (aref target 0)
 							  (item<int64_t>)))))))))

@@ -16,6 +16,7 @@ State state = {};
 static constexpr int c256 = 256;
 static constexpr int c128 = 128;
 static constexpr int c64 = 64;
+static constexpr int kBatchSize = 64;
 DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
     : conv1(
           torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4).bias(false)),
@@ -48,10 +49,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "2b5a89ee070497c31c60c7ad3b6f057700bc9d31";
+  state._main_version = "34a2f42c49487f1b1e170129c5c3aaa53e198889";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "10:39:42 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "10:41:51 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -118,10 +119,9 @@ int main(int argc, char **argv) {
       torch::data::datasets::MNIST("./mnist")
           .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
           .map(torch::data::transforms::Stack<>());
-  auto kBatchSize = 64;
   auto data_loader = torch::data::make_data_loader(std::move(dataset));
   torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12);
-  for (auto batch : *data_loader) {
+  for (auto &batch : *data_loader) {
     {
 
       (std::cout) << (std::setw(10))
