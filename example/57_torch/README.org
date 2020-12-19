@@ -48,3 +48,4 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
 
 - zeros, randn, empty needs to go to gpu
  
+ 
