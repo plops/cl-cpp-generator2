@@ -89,6 +89,30 @@
 		 (setf start_time (time.time))
 		 (setf fns ("list" (dot (pathlib.Path (string "b/"))
 					(glob (string "*sample*.pt")))))
-		 ,(lprint `(fns))))))
+		 
+		 (for (fn fns)
+		      ,(lprint `(fn))
+		      (setf module (torch.jit.load (str fn))
+			    images (aref ("list" (module.parameters))
+					 0))
+		      (setf dimension 3)
+		      (for (index (range (* dimension
+					    dimension)))
+			   (setf image (dot (aref images index)
+					    (detach)
+					    (cpu)
+					    (reshape 28 28)
+					    (mul 255)
+					    (to torch.uint8)))
+			   (setf array (image.numpy))
+			   (setf ax (plt.subplot dimension
+						 dimension
+						 (+ 1 index)))
+			   (plt.imshow array :cmap (string "gray"))
+			   
+			   )
+		      (plt.savefig (dot (string "{}.png")
+					(format fn.stem)))
+		      )))))
     (write-source (format nil "~a/source/~a" *path* *code-file*) code)))
 
