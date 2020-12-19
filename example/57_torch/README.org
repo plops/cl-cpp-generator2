@@ -54,3 +54,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
 
 #+end_example
  
+- mice location neurons look like the plots in the 'make cnn shift-invariant again' paper
+  - maybe biological systems do not care about shift invariance
+- what about hexagonal sampling 
+  - https://www.sciencedirect.com/science/article/pii/S2352711018302723
