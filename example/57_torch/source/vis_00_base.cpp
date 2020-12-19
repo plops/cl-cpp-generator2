@@ -48,10 +48,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "b23c2ba167247fbc74290e1f05cbb43327f103ba";
+  state._main_version = "a70e3d3ce11377eb117d8f5c16b54be036b40a2b";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "00:38:51 of Friday, 2020-12-18 (GMT+1)";
+  state._code_generation_time = "10:36:32 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -114,5 +114,28 @@ int main(int argc, char **argv) {
                             .padding(0)
                             .bias(false)),
       torch::nn::Sigmoid());
+  auto dataset =
+      torch::data::datasets::MNIST("./mnist")
+          .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
+          .map(torch::data::transforms::Stack<>());
+  auto kBatchSize = 64;
+  auto data_loader = torch::data::make_data_loader(std::move(dataset));
+  torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12);
+  for (auto batch : *data_loader) {
+    {
+
+      (std::cout) << (std::setw(10))
+                  << (std::chrono::high_resolution_clock::now()
+                          .time_since_epoch()
+                          .count())
+                  << (" ") << (std::this_thread::get_id()) << (" ")
+                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                  << (" ") << ("") << (" ") << (std::setw(8))
+                  << (" batch.data.size(0)='") << (batch.data.size(0)) << ("'")
+                  << (std::setw(8)) << (" batch.target[0].item<int64_t>()='")
+                  << (batch.target[0].item<int64_t>()) << ("'") << (std::endl)
+                  << (std::flush);
+    }
+  }
   return 0;
 }
