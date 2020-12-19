@@ -171,9 +171,12 @@
 	       ,(let ((c `((c256 256)
 			   (c128 128)
 			   (c64 64)
+			  ; (imageSize 64)
+			 ;  (ngf 64)
 			   (kNoiseSize 100)
-			   (kBatchSize 1)
-			   (kNumberOfEpochs 2)))
+			   (kBatchSize 256)
+			   (kNumberOfEpochs 2)
+			   (kCheckpointEvery 200)))
 		      (l `((conv1 ConvTranspose2d
 				  k_noise_size c256 4 ;; input channels, output channels, kernel size
 				  :bias false)
@@ -348,8 +351,10 @@
 						     ,(when negative-slope `(negative_slope ,negative-slope))))))))))
 			(discriminator->to device)
 			(let ((dataset (dot (torch--data--datasets--MNIST (string "./mnist"))
+					    ;(map (torch--data--transforms--Resize<> imageSize))
 					    (map (torch--data--transforms--Normalize<> .5 .5))
-					    (map (torch--data--transforms--Stack<>)))
+					    (map (torch--data--transforms--Stack<>))
+					    )
 				       )
 			      ;(kBatchSize 64)
 			      (data_loader (torch--data--make_data_loader
@@ -368,13 +373,15 @@
 			  (let ((generator_optimizer
 				  (torch--optim--Adam (generator->parameters)
 						      (dot (torch--optim--AdamOptions 2e-4)
-							   (betas (std--make_tuple .5 .5)))))
+							   (betas (std--make_tuple .5 .999)))))
 				(discriminator_optimizer
 				  (torch--optim--Adam (discriminator->parameters)
 						      (dot (torch--optim--AdamOptions 2e-4)
-							   (betas (std--make_tuple .5 .5))))))
+							   (betas (std--make_tuple .5 .999)))))
+				(checkpoint_counter 0))
 			    (dotimes (epoch kNumberOfEpochs)
-			      (let ((batch_index 0))
+			      (let ((batch_index 0)
+				    )
 				(for-range
 				 (&batch *data_loader)
 				 (do0
@@ -427,7 +434,28 @@
 							     (real_d_loss.item<float>)
 							     (fake_d_loss.item<float>)
 							      (d_loss.item<float>)
-							     (g_loss.item<float>))))))))))))
+							      (g_loss.item<float>)))
+					  (when (== 0 (% batch_index kCheckpointEvery))
+					    ,@(loop for e in `(generator
+							       generator_optimizer
+							       discriminator
+							       discriminator_optimizer)
+						    collect
+						    `(torch--save ,e (string
+								      ,(format nil "~a.pt" e))))
+					    (let ((samples (generator->forward
+							    (torch--randn (curly 8
+										 kNoiseSize
+										 1
+										 1)
+									  device))))
+					      (torch--save (* .5 (+ samples 1.0))
+							   (torch--str
+							    (string "dcgan-sample-")
+							    (incf checkpoint_counter)
+							    (string ".pt")))
+					      ,(logprint "" `(checkpoint_counter))
+					      )))))))))))
 			    )))))
 		  )
 

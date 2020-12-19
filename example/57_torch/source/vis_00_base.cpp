@@ -17,8 +17,9 @@ static constexpr int c256 = 256;
 static constexpr int c128 = 128;
 static constexpr int c64 = 64;
 static constexpr int kNoiseSize = 100;
-static constexpr int kBatchSize = 1;
+static constexpr int kBatchSize = 256;
 static constexpr int kNumberOfEpochs = 2;
+static constexpr int kCheckpointEvery = 200;
 DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
     : conv1(
           torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4).bias(false)),
@@ -53,10 +54,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "71bb9edf1c314a1944258f517725167328a40b31";
+  state._main_version = "44ebe27741df580babab44de643527875c993f5f";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:23:04 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:48:57 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -128,11 +129,12 @@ int main(int argc, char **argv) {
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12));
   auto generator_optimizer = torch::optim::Adam(
       generator->parameters(), torch::optim::AdamOptions((2.00e-4f))
-                                   .betas(std::make_tuple((0.50f), (0.50f))));
+                                   .betas(std::make_tuple((0.50f), (0.9990f))));
   auto discriminator_optimizer =
       torch::optim::Adam(discriminator->parameters(),
                          torch::optim::AdamOptions((2.00e-4f))
-                             .betas(std::make_tuple((0.50f), (0.50f))));
+                             .betas(std::make_tuple((0.50f), (0.9990f))));
+  auto checkpoint_counter = 0;
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = 0;
     for (auto &batch : *data_loader) {
@@ -183,6 +185,28 @@ int main(int argc, char **argv) {
                     << ("'") << (std::setw(8)) << (" g_loss.item<float>()='")
                     << (g_loss.item<float>()) << ("'") << (std::endl)
                     << (std::flush);
+      }
+      if ((0) == (batch_index % kCheckpointEvery)) {
+        torch::save(generator, "generator.pt");
+        torch::save(generator_optimizer, "generator_optimizer.pt");
+        torch::save(discriminator, "discriminator.pt");
+        torch::save(discriminator_optimizer, "discriminator_optimizer.pt");
+        auto samples =
+            generator->forward(torch::randn({8, kNoiseSize, 1, 1}, device));
+        torch::save((((0.50f)) * (((samples) + ((1.0f))))),
+                    torch::str("dcgan-sample-", (checkpoint_counter)++, ".pt"));
+        {
+
+          (std::cout) << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("") << (" ") << (std::setw(8))
+                      << (" checkpoint_counter='") << (checkpoint_counter)
+                      << ("'") << (std::endl) << (std::flush);
+        }
       }
     }
   }
