@@ -171,7 +171,9 @@
 	       ,(let ((c `((c256 256)
 			   (c128 128)
 			   (c64 64)
-			   (kBatchSize 64)))
+			   (kNoiseSize 100)
+			   (kBatchSize 64)
+			   (kNumberOfEpochs 2)))
 		      (l `((conv1 ConvTranspose2d
 				  k_noise_size c256 4 ;; input channels, output channels, kernel size
 				  :bias false)
@@ -324,9 +326,9 @@
 		      (setf device (torch--Device torch--kCUDA))
 		      ,(logprint "we have cuda" `(device))
 		      )
-		    "const int k_noise_size=100;"
+		    ;"const int k_noise_size=100;"
 		    (let (
-			  (generator (DCGANGenerator k_noise_size)))
+			  (generator (DCGANGenerator kNoiseSize)))
 		      (generator->to device)
 		      (let ((discriminator
 			      (torch--nn--Sequential
@@ -352,11 +354,70 @@
 					    (dot (torch--data--DataLoaderOptions)
 						 (batch_size kBatchSize)
 						 (workers 12)))))
-			  
-			  (for-range (&batch *data_loader)
-				     ,(logprint "" `((batch.data.size 0)
-						     (dot batch (aref target 0)
-							  (item<int64_t>)))))))))
+			  #+nil
+			  (do0
+			   (comments "print data")
+			   (for-range (&batch *data_loader)
+				      ,(logprint "" `((batch.data.size 0)
+						      (dot batch (aref target 0)
+							   (item<int64_t>))))))
+
+			  (let ((generator_optimizer
+				  (torch--optim--Adam (generator->parameters)
+						      (dot (torch--optim--AdamOptions 2e-4)
+							   (beta1 .5))))
+				(discriminator_optimizer
+				  (torch--optim--Adam (discriminator->parameters)
+						      (dot (torch--optim--AdamOptions 5e-4)
+							   (beta1 .5)))))
+			    (dotimes (epoch kNumberOfEpochs)
+			      (let ((batch_index 0))
+				(for-range
+				 (&batch *data_loader)
+				 (do0
+				  (comments "train discriminator with real images")
+				  (discriminator->zero_grad)
+				  (let ((real_images batch.data)
+					(real_labels (dot (torch--empty (batch.data.size 0))
+							  (uniform_ .8 1.0)))
+					(real_output (discriminator->forward real_images))
+					(real_d_loss (torch--binary_cross_entropy
+						      real_output
+						      real_labels)))
+				    (dot real_d_loss (backward))
+				    (do0
+				     (comments "train discriminator with fake images")
+				     (let ((noise (torch--randn (curly (batch.data.size 0)
+								       kNoiseSize
+								       1 1)))
+					   (fake_images (generator->forward noise))
+					   (fake_labels (torch--zeros (batch.data.size 0)))
+					   (fake_output (discriminator->forward
+							 (fake_images.detach)))
+					   (fake_d_loss (torch--binary_cross_entropy
+							 fake_output
+							 fake_labels))
+					   )
+				       (dot fake_d_loss (backward))
+				       (let ((d_loss (+ real_d_loss
+							fake_d_loss)))
+					 (discriminator_optimizer.step))
+				       (do0
+					(comments "train generator")
+					(generator->zero_grad)
+					(fake_labels.fill_ 1)
+					(setf fake_output (discriminator->forward
+							   fake_images))
+					(let ((g_loss (torch--binary_cross_entropy
+						       fake_output
+						       fake_labels)))
+					  (dot g_loss (backward))
+					  (generator_optimizer.step)
+					  ,(logprint ""
+						     `(epoch (incf batch_index)
+							     (d_loss.item<float>)
+							     (g_loss.item<float>))))))))))))
+			    )))))
 		  )
 
 		 (return 0))

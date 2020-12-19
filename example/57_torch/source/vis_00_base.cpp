@@ -16,7 +16,9 @@ State state = {};
 static constexpr int c256 = 256;
 static constexpr int c128 = 128;
 static constexpr int c64 = 64;
+static constexpr int kNoiseSize = 100;
 static constexpr int kBatchSize = 64;
+static constexpr int kNumberOfEpochs = 2;
 DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
     : conv1(
           torch::nn::ConvTranspose2dOptions(k_noise_size, c256, 4).bias(false)),
@@ -49,10 +51,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "7412e5d35c132e18731bf21150eee59f884d1747";
+  state._main_version = "46f46be63432ef4c78a85a87428d29e470d27667";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "10:44:06 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "10:59:25 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -88,8 +90,7 @@ int main(int argc, char **argv) {
                   << (std::flush);
     }
   }
-  const int k_noise_size = 100;
-  auto generator = DCGANGenerator(k_noise_size);
+  auto generator = DCGANGenerator(kNoiseSize);
   generator->to(device);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
@@ -122,20 +123,58 @@ int main(int argc, char **argv) {
   auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12));
-  for (auto &batch : *data_loader) {
-    {
+  auto generator_optimizer =
+      torch::optim::Adam(generator->parameters(),
+                         torch::optim::AdamOptions((2.00e-4f)).beta1((0.50f)));
+  auto discriminator_optimizer =
+      torch::optim::Adam(discriminator->parameters(),
+                         torch::optim::AdamOptions((5.00e-4f)).beta1((0.50f)));
+  for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
+    auto batch_index = 0;
+    for (auto &batch : *data_loader) {
+      // train discriminator with real images
+      ;
+      discriminator->zero_grad();
+      auto real_images = batch.data;
+      auto real_labels =
+          torch::empty(batch.data.size(0)).uniform_((0.80f), (1.0f));
+      auto real_output = discriminator->forward(real_images);
+      auto real_d_loss = torch::binary_cross_entropy(real_output, real_labels);
+      real_d_loss.backward();
+      // train discriminator with fake images
+      ;
+      auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1});
+      auto fake_images = generator->forward(noise);
+      auto fake_labels = torch::zeros(batch.data.size(0));
+      auto fake_output = discriminator->forward(fake_images.detach());
+      auto fake_d_loss = torch::binary_cross_entropy(fake_output, fake_labels);
+      fake_d_loss.backward();
+      auto d_loss = ((real_d_loss) + (fake_d_loss));
+      discriminator_optimizer.step();
+      // train generator
+      ;
+      generator->zero_grad();
+      fake_labels.fill_(1);
+      fake_output = discriminator->forward(fake_images);
+      auto g_loss = torch::binary_cross_entropy(fake_output, fake_labels);
+      g_loss.backward();
+      generator_optimizer.step();
+      {
 
-      (std::cout) << (std::setw(10))
-                  << (std::chrono::high_resolution_clock::now()
-                          .time_since_epoch()
-                          .count())
-                  << (" ") << (std::this_thread::get_id()) << (" ")
-                  << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
-                  << (" ") << ("") << (" ") << (std::setw(8))
-                  << (" batch.data.size(0)='") << (batch.data.size(0)) << ("'")
-                  << (std::setw(8)) << (" batch.target[0].item<int64_t>()='")
-                  << (batch.target[0].item<int64_t>()) << ("'") << (std::endl)
-                  << (std::flush);
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("") << (" ") << (std::setw(8)) << (" epoch='")
+                    << (epoch) << ("'") << (std::setw(8))
+                    << (" (batch_index)++='") << ((batch_index)++) << ("'")
+                    << (std::setw(8)) << (" d_loss.item<float>()='")
+                    << (d_loss.item<float>()) << ("'") << (std::setw(8))
+                    << (" g_loss.item<float>()='") << (g_loss.item<float>())
+                    << ("'") << (std::endl) << (std::flush);
+      }
     }
   }
   return 0;
