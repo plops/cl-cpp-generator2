@@ -30,8 +30,10 @@ DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
                                    .stride(2)
                                    .padding(1)
                                    .bias(false)),
-      batch_norm3(c64),
-      conv4(torch::nn::ConvTranspose2dOptions(c64, 1, 4).bias(false)) {
+      batch_norm3(c64), conv4(torch::nn::ConvTranspose2dOptions(c64, 1, 4)
+                                  .stride(2)
+                                  .padding(1)
+                                  .bias(false)) {
   // k_noise_size is the size of the input noise vector
   ;
   register_module("conv1", conv1);
@@ -51,10 +53,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "b27341d0dbbcf6fd7a74bdd56354c37323ac3b8e";
+  state._main_version = "c6532ad597b5094af631cc2b4c2884b65169da38";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:00:55 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:11:59 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -91,7 +93,6 @@ int main(int argc, char **argv) {
     }
   }
   auto generator = DCGANGenerator(kNoiseSize);
-  generator->to(device);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
           torch::nn::Conv2dOptions(1, c64, 4).stride(2).padding(1).bias(false)),
@@ -153,6 +154,7 @@ int main(int argc, char **argv) {
       auto d_loss = ((real_d_loss) + (fake_d_loss));
       discriminator_optimizer.step();
       // train generator
+      // discriminator should assign probabilities close to 1
       ;
       generator->zero_grad();
       fake_labels.fill_(1);
@@ -171,10 +173,14 @@ int main(int argc, char **argv) {
                     << (" ") << ("") << (" ") << (std::setw(8)) << (" epoch='")
                     << (epoch) << ("'") << (std::setw(8))
                     << (" (batch_index)++='") << ((batch_index)++) << ("'")
-                    << (std::setw(8)) << (" d_loss.item<float>()='")
-                    << (d_loss.item<float>()) << ("'") << (std::setw(8))
-                    << (" g_loss.item<float>()='") << (g_loss.item<float>())
-                    << ("'") << (std::endl) << (std::flush);
+                    << (std::setw(8)) << (" real_d_loss.item<float>()='")
+                    << (real_d_loss.item<float>()) << ("'") << (std::setw(8))
+                    << (" fake_d_loss.item<float>()='")
+                    << (fake_d_loss.item<float>()) << ("'") << (std::setw(8))
+                    << (" d_loss.item<float>()='") << (d_loss.item<float>())
+                    << ("'") << (std::setw(8)) << (" g_loss.item<float>()='")
+                    << (g_loss.item<float>()) << ("'") << (std::endl)
+                    << (std::flush);
       }
     }
   }

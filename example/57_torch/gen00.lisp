@@ -192,6 +192,8 @@
 			   (batch_norm3 BatchNorm2d c64)
 			   (conv4 ConvTranspose2d
 				  c64 1 4
+				  :stride 2
+				  :padding 1
 				  :bias false)))
 		      (l-discriminator
 			`(;; layer 1
@@ -326,10 +328,10 @@
 		      (setf device (torch--Device torch--kCUDA))
 		      ,(logprint "we have cuda" `(device))
 		      )
-		    ;"const int k_noise_size=100;"
+		    
 		    (let (
 			  (generator (DCGANGenerator kNoiseSize)))
-		      (generator->to device)
+		   ; (generator->to device)
 		      (let ((discriminator
 			      (torch--nn--Sequential
 			       ,@(loop for e in l-discriminator
@@ -386,7 +388,8 @@
 						      real_labels)))
 				    (dot real_d_loss (backward))
 				    (do0
-				     (comments "train discriminator with fake images")
+				     (comments "train discriminator with fake images"
+					       )
 				     (let ((noise (torch--randn (curly (batch.data.size 0)
 								       kNoiseSize
 								       1 1)))
@@ -403,7 +406,8 @@
 							fake_d_loss)))
 					 (discriminator_optimizer.step))
 				       (do0
-					(comments "train generator")
+					(comments "train generator"
+						  "discriminator should assign probabilities close to 1")
 					(generator->zero_grad)
 					(fake_labels.fill_ 1)
 					(setf fake_output (discriminator->forward
@@ -415,7 +419,9 @@
 					  (generator_optimizer.step)
 					  ,(logprint ""
 						     `(epoch (incf batch_index)
-							     (d_loss.item<float>)
+							     (real_d_loss.item<float>)
+							     (fake_d_loss.item<float>)
+							      (d_loss.item<float>)
 							     (g_loss.item<float>))))))))))))
 			    )))))
 		  )
