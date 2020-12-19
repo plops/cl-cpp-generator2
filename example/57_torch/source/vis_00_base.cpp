@@ -18,7 +18,7 @@ static constexpr int c128 = 128;
 static constexpr int c64 = 64;
 static constexpr int kNoiseSize = 100;
 static constexpr int kBatchSize = 256;
-static constexpr int kNumberOfEpochs = 2;
+static constexpr int kNumberOfEpochs = 28;
 static constexpr int kCheckpointEvery = 200;
 DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
     : conv1(
@@ -54,10 +54,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "44ebe27741df580babab44de643527875c993f5f";
+  state._main_version = "b3d53d871e23eb637a3674fd38d99e84108b7313";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:48:57 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:53:29 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -135,6 +135,12 @@ int main(int argc, char **argv) {
                          torch::optim::AdamOptions((2.00e-4f))
                              .betas(std::make_tuple((0.50f), (0.9990f))));
   auto checkpoint_counter = 0;
+  if (true) {
+    torch::load(generator, "generator.pt");
+    torch::load(generator_optimizer, "generator_optimizer.pt");
+    torch::load(discriminator, "discriminator.pt");
+    torch::load(discriminator_optimizer, "discriminator_optimizer.pt");
+  }
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = 0;
     for (auto &batch : *data_loader) {

@@ -175,7 +175,7 @@
 			 ;  (ngf 64)
 			   (kNoiseSize 100)
 			   (kBatchSize 256)
-			   (kNumberOfEpochs 2)
+			   (kNumberOfEpochs 28)
 			   (kCheckpointEvery 200)))
 		      (l `((conv1 ConvTranspose2d
 				  k_noise_size c256 4 ;; input channels, output channels, kernel size
@@ -379,6 +379,15 @@
 						      (dot (torch--optim--AdamOptions 2e-4)
 							   (betas (std--make_tuple .5 .999)))))
 				(checkpoint_counter 0))
+			    (when true ;; restore from checkpoint
+			      ,@(loop for e in `(generator
+						 generator_optimizer
+						 discriminator
+						 discriminator_optimizer)
+				      collect
+				      `(torch--load ,e (string
+							,(format nil "~a.pt" e))))
+				)
 			    (dotimes (epoch kNumberOfEpochs)
 			      (let ((batch_index 0)
 				    )
