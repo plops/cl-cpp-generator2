@@ -382,7 +382,8 @@
 				  (discriminator->zero_grad)
 				  (let ((real_images (dot batch.data
 							  (to device)))
-					(real_labels (dot (torch--empty (batch.data.size 0))
+					(real_labels (dot (torch--empty (batch.data.size 0)
+									device)
 							  (uniform_ .8 1.0)))
 					(real_output (discriminator->forward real_images))
 					(real_d_loss (torch--binary_cross_entropy
@@ -394,7 +395,8 @@
 					       )
 				     (let ((noise (torch--randn (curly (batch.data.size 0)
 								       kNoiseSize
-								       1 1)))
+								       1 1)
+								device))
 					   (fake_images (generator->forward noise))
 					   (fake_labels (torch--zeros (batch.data.size 0)
 								      device))

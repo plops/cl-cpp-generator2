@@ -45,3 +45,5 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
     (a net)))
 #+end_example
  - source code https://github.com/pytorch/examples/tree/master/cpp/dcgan
+
+- zeros, randn, empty needs to go to gpu

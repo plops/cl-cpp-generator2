@@ -53,10 +53,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "8bba3204a0c3793f4e7832539093e975c57eab1f";
+  state._main_version = "1d4a54c536501af1bcd4615d64a9c311997cf000";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:15:59 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:18:37 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -141,13 +141,13 @@ int main(int argc, char **argv) {
       discriminator->zero_grad();
       auto real_images = batch.data.to(device);
       auto real_labels =
-          torch::empty(batch.data.size(0)).uniform_((0.80f), (1.0f));
+          torch::empty(batch.data.size(0), device).uniform_((0.80f), (1.0f));
       auto real_output = discriminator->forward(real_images);
       auto real_d_loss = torch::binary_cross_entropy(real_output, real_labels);
       real_d_loss.backward();
       // train discriminator with fake images
       ;
-      auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1});
+      auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1}, device);
       auto fake_images = generator->forward(noise);
       auto fake_labels = torch::zeros(batch.data.size(0), device);
       auto fake_output = discriminator->forward(fake_images.detach());
