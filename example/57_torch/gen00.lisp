@@ -172,7 +172,7 @@
 			   (c128 128)
 			   (c64 64)
 			   (kNoiseSize 100)
-			   (kBatchSize 64)
+			   (kBatchSize 1)
 			   (kNumberOfEpochs 2)))
 		      (l `((conv1 ConvTranspose2d
 				  k_noise_size c256 4 ;; input channels, output channels, kernel size
@@ -195,7 +195,7 @@
 				  :stride 2
 				  :padding 1
 				  :bias false)))
-		      (l-discriminator
+		      (l-discriminator 
 			`(;; layer 1
 			  (Conv2d :opt (1 c64 4) ;; input channels, output channels, kernel size
 				  :stride 2

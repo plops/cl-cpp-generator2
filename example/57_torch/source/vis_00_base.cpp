@@ -17,7 +17,7 @@ static constexpr int c256 = 256;
 static constexpr int c128 = 128;
 static constexpr int c64 = 64;
 static constexpr int kNoiseSize = 100;
-static constexpr int kBatchSize = 64;
+static constexpr int kBatchSize = 1;
 static constexpr int kNumberOfEpochs = 2;
 DCGANGeneratorImpl::DCGANGeneratorImpl(int k_noise_size)
     : conv1(
@@ -53,10 +53,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "1d4a54c536501af1bcd4615d64a9c311997cf000";
+  state._main_version = "71bb9edf1c314a1944258f517725167328a40b31";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:18:37 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:23:04 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
