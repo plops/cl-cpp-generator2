@@ -47,5 +47,10 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
  - source code https://github.com/pytorch/examples/tree/master/cpp/dcgan
 
 - zeros, randn, empty needs to go to gpu
- 
+- the python example seems to be more up to date
+- https://github.com/pytorch/examples/tree/master/dcgan
+#+begin_example
+ martin@slim ~/src/examples/dcgan $ python3 -i main.py --dataset mnist --dataroot .
+
+#+end_example
  
