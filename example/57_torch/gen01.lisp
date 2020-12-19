@@ -95,7 +95,7 @@
 		      (setf module (torch.jit.load (str fn))
 			    images (aref ("list" (module.parameters))
 					 0))
-		      (setf dimension 3)
+		      (setf dimension 2)
 		      (for (index (range (* dimension
 					    dimension)))
 			   (setf image (dot (aref images index)
