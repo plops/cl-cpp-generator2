@@ -1,6 +1,7 @@
 cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
 project( mytest LANGUAGES CXX )
 set( CMAKE_VERBOSE_MAKEFILE ON )
+set( CMAKE_PREFIX_PATH /home/martin/stage/cl-cpp-generator2/example/57_torch/source/libtorch/share/cmake/Torch/ )
 set( CMAKE_C_FLAGS_DEBUG "-ggdb3 -gdwarf-4 -g3 -Og -fvar-tracking-assignments -fno-eliminate-unused-debug-symbols" )
 set( CMAKE_C_FLAGS_MINSIZEREL "-g0 -Os" )
 set( CMAKE_C_FLAGS_RELWITHDEBINFO "-g2 -ggdb -O2" )

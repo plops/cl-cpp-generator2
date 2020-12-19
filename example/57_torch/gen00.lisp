@@ -579,6 +579,7 @@
 	(out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	(out "project( mytest LANGUAGES CXX )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+	(out "set( CMAKE_PREFIX_PATH /home/martin/stage/cl-cpp-generator2/example/57_torch/source/libtorch/share/cmake/Torch/ )")
 	;(out "set( CMAKE_CXX_STANDARD 14 )")
 
 	(loop for e in `(C CXX) do

@@ -48,10 +48,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "a70e3d3ce11377eb117d8f5c16b54be036b40a2b";
+  state._main_version = "2b5a89ee070497c31c60c7ad3b6f057700bc9d31";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "10:36:32 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "10:39:42 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
