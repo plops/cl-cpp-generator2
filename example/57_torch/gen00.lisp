@@ -365,11 +365,11 @@
 			  (let ((generator_optimizer
 				  (torch--optim--Adam (generator->parameters)
 						      (dot (torch--optim--AdamOptions 2e-4)
-							   (beta1 .5))))
+							   (betas (std--make_tuple .5 .5)))))
 				(discriminator_optimizer
 				  (torch--optim--Adam (discriminator->parameters)
-						      (dot (torch--optim--AdamOptions 5e-4)
-							   (beta1 .5)))))
+						      (dot (torch--optim--AdamOptions 2e-4)
+							   (betas (std--make_tuple .5 .5))))))
 			    (dotimes (epoch kNumberOfEpochs)
 			      (let ((batch_index 0))
 				(for-range

@@ -51,10 +51,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "46f46be63432ef4c78a85a87428d29e470d27667";
+  state._main_version = "b27341d0dbbcf6fd7a74bdd56354c37323ac3b8e";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "10:59:25 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:00:55 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -123,12 +123,13 @@ int main(int argc, char **argv) {
   auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12));
-  auto generator_optimizer =
-      torch::optim::Adam(generator->parameters(),
-                         torch::optim::AdamOptions((2.00e-4f)).beta1((0.50f)));
+  auto generator_optimizer = torch::optim::Adam(
+      generator->parameters(), torch::optim::AdamOptions((2.00e-4f))
+                                   .betas(std::make_tuple((0.50f), (0.50f))));
   auto discriminator_optimizer =
       torch::optim::Adam(discriminator->parameters(),
-                         torch::optim::AdamOptions((5.00e-4f)).beta1((0.50f)));
+                         torch::optim::AdamOptions((2.00e-4f))
+                             .betas(std::make_tuple((0.50f), (0.50f))));
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = 0;
     for (auto &batch : *data_loader) {
