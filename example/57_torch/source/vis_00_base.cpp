@@ -49,10 +49,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "34a2f42c49487f1b1e170129c5c3aaa53e198889";
+  state._main_version = "7412e5d35c132e18731bf21150eee59f884d1747";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "10:41:51 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "10:44:06 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -119,8 +119,9 @@ int main(int argc, char **argv) {
       torch::data::datasets::MNIST("./mnist")
           .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
           .map(torch::data::transforms::Stack<>());
-  auto data_loader = torch::data::make_data_loader(std::move(dataset));
-  torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12);
+  auto data_loader = torch::data::make_data_loader(
+      std::move(dataset),
+      torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(12));
   for (auto &batch : *data_loader) {
     {
 

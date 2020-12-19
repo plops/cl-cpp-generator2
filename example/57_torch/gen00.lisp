@@ -348,10 +348,11 @@
 				       )
 			      ;(kBatchSize 64)
 			      (data_loader (torch--data--make_data_loader
-					    (std--move dataset))))
-			  (dot (torch--data--DataLoaderOptions)
-			       (batch_size kBatchSize)
-			       (workers 12))
+					    (std--move dataset)
+					    (dot (torch--data--DataLoaderOptions)
+						 (batch_size kBatchSize)
+						 (workers 12)))))
+			  
 			  (for-range (&batch *data_loader)
 				     ,(logprint "" `((batch.data.size 0)
 						     (dot batch (aref target 0)
