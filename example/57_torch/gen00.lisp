@@ -331,7 +331,7 @@
 		    
 		    (let (
 			  (generator (DCGANGenerator kNoiseSize)))
-		   ; (generator->to device)
+		      (generator->to device)
 		      (let ((discriminator
 			      (torch--nn--Sequential
 			       ,@(loop for e in l-discriminator
@@ -346,6 +346,7 @@
 						     ,(when padding `(padding ,padding))
 						     ,(when bias `(bias ,bias))
 						     ,(when negative-slope `(negative_slope ,negative-slope))))))))))
+			(discriminator->to device)
 			(let ((dataset (dot (torch--data--datasets--MNIST (string "./mnist"))
 					    (map (torch--data--transforms--Normalize<> .5 .5))
 					    (map (torch--data--transforms--Stack<>)))
@@ -379,7 +380,8 @@
 				 (do0
 				  (comments "train discriminator with real images")
 				  (discriminator->zero_grad)
-				  (let ((real_images batch.data)
+				  (let ((real_images (dot batch.data
+							  (to device)))
 					(real_labels (dot (torch--empty (batch.data.size 0))
 							  (uniform_ .8 1.0)))
 					(real_output (discriminator->forward real_images))
@@ -394,7 +396,8 @@
 								       kNoiseSize
 								       1 1)))
 					   (fake_images (generator->forward noise))
-					   (fake_labels (torch--zeros (batch.data.size 0)))
+					   (fake_labels (torch--zeros (batch.data.size 0)
+								      device))
 					   (fake_output (discriminator->forward
 							 (fake_images.detach)))
 					   (fake_d_loss (torch--binary_cross_entropy

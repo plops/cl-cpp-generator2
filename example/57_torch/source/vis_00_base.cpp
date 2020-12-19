@@ -53,10 +53,10 @@ torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
 }
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
-  state._main_version = "c6532ad597b5094af631cc2b4c2884b65169da38";
+  state._main_version = "8bba3204a0c3793f4e7832539093e975c57eab1f";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/57_torch/source/";
-  state._code_generation_time = "11:11:59 of Saturday, 2020-12-19 (GMT+1)";
+  state._code_generation_time = "11:15:59 of Saturday, 2020-12-19 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
     }
   }
   auto generator = DCGANGenerator(kNoiseSize);
+  generator->to(device);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
           torch::nn::Conv2dOptions(1, c64, 4).stride(2).padding(1).bias(false)),
@@ -117,6 +118,7 @@ int main(int argc, char **argv) {
                             .padding(0)
                             .bias(false)),
       torch::nn::Sigmoid());
+  discriminator->to(device);
   auto dataset =
       torch::data::datasets::MNIST("./mnist")
           .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
@@ -137,7 +139,7 @@ int main(int argc, char **argv) {
       // train discriminator with real images
       ;
       discriminator->zero_grad();
-      auto real_images = batch.data;
+      auto real_images = batch.data.to(device);
       auto real_labels =
           torch::empty(batch.data.size(0)).uniform_((0.80f), (1.0f));
       auto real_output = discriminator->forward(real_images);
@@ -147,7 +149,7 @@ int main(int argc, char **argv) {
       ;
       auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1});
       auto fake_images = generator->forward(noise);
-      auto fake_labels = torch::zeros(batch.data.size(0));
+      auto fake_labels = torch::zeros(batch.data.size(0), device);
       auto fake_output = discriminator->forward(fake_images.detach());
       auto fake_d_loss = torch::binary_cross_entropy(fake_output, fake_labels);
       fake_d_loss.backward();
