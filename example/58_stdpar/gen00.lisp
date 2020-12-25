@@ -1,3 +1,4 @@
+
 (declaim (optimize 
 	  (safety 3)
 	  (speed 0)
@@ -409,7 +410,7 @@
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	(out "cmake_minimum_required( VERSION 3.4 )")
 	(out "project( mytest LANGUAGES CXX )")
-	(out "set( CMAKE_CXX_COMPILER nvc++ )")
+	(out "set( CMAKE_CXX_COMPILER /mnt/nvidia/hpc_sdk/Linux_x86_64/20.11/compilers/bin/nvc++ )")
 	(out "set( CMAKE_CXX_FLAGS \"-stdpar\"  )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set( CMAKE_CXX_STANDARD 17 )")

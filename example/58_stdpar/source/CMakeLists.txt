@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.4 )
 project( mytest LANGUAGES CXX )
-set( CMAKE_CXX_COMPILER nvc++ )
+set( CMAKE_CXX_COMPILER /mnt/nvidia/hpc_sdk/Linux_x86_64/20.11/compilers/bin/nvc++ )
 set( CMAKE_CXX_FLAGS "-stdpar"  )
 set( CMAKE_VERBOSE_MAKEFILE ON )
 set( CMAKE_CXX_STANDARD 17 )
