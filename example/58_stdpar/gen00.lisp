@@ -18,7 +18,7 @@
 (defvar *header-file-hashes* (make-hash-table))
 
 (progn
-  (defparameter *source-dir* #P"example/57_stdpar/source/")
+  (defparameter *source-dir* #P"example/58_stdpar/source/")
   
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
@@ -420,7 +420,7 @@
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source/*.cpp"))
 	(out "add_executable( mytest ${SRCS} )")
-	(out "target_include_directories( mytest PUBLIC /home/martin/stage/cl-cpp-generator2/example/57_stdpar/source/ )")
+	(out "target_include_directories( mytest PUBLIC /home/martin/stage/cl-cpp-generator2/example/58_stdpar/source/ )")
 		
 	;(out "target_link_libraries( mytest PRIVATE vulkan )")
 	;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")

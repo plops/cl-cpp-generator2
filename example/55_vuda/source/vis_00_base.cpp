@@ -40,10 +40,10 @@ void run_vuda() {
   cudaFree(dev_c);
 }
 int main(int argc, char **argv) {
-  state._main_version = "93f8df14594b61b4cd5b0c1a2b4d47e0ae86c685";
+  state._main_version = "7070a947d23a0d2a55ac342b9670d19c8866090b";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/55_vuda/source/";
-  state._code_generation_time = "09:15:44 of Saturday, 2020-12-12 (GMT+1)";
+  state._code_generation_time = "21:52:53 of Friday, 2020-12-25 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
