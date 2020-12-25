@@ -1,0 +1,2 @@
+- https://www.youtube.com/watch?v=S4yCdvFzf3w
+  - cppcast 264 on stdpar
