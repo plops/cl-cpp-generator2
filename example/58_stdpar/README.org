@@ -1,2 +1,13 @@
 - https://www.youtube.com/watch?v=S4yCdvFzf3w
   - cppcast 264 on stdpar
+
+-https://developer.nvidia.com/blog/accelerating-standard-c-with-gpus-using-stdpar/
+
+- https://on-demand.gputechconf.com/supercomputing/2019/video/sc1912-accelerating-hpc-applications-on-arm-rome-and-v100-with-pgi-compilers/
+  - pgi
+  - 2019 gputechconf general overview
+
+- https://on-demand.gputechconf.com/supercomputing/2019/video/sc1936-gpu-programming-with-standard-c++17/
+  - pgi
+  - 2019 david olsen
+  - standard c++ execution policies
