@@ -16,5 +16,6 @@
 #include <iostream>
 #include <thread>
 ;
+int jacobi_solver(float *data, int M, int N, float max_diff);
 int main(int argc, char **argv);
 #endif

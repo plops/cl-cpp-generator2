@@ -164,6 +164,27 @@
 		 (declare (type "State" state)))
 
 
+	       (defun jacobi_solver (data M N max_diff)
+		 (declare (type float* data)
+			  (type int M N)
+			  (type float max_diff)
+			  (values int))
+		 (comments "c++: 5min49s https://on-demand.gputechconf.com/supercomputing/2019/video/sc1936-gpu-programming-with-standard-c++17/
+" "python: https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/")
+		 (let ((temp ("std::make_unique<float[]>" (* M N))))
+		   (std--copy std--execution--par
+			      data
+			      (+ data (* M N))
+			      (temp.get))
+		   (let ((iterations 0)
+			 (keep_going true)
+			 (from data)
+			 (to (temp.get)))
+		     (while keep_going
+			    (incf iterations)
+			    (std--for_each
+			     std--execution--par
+			     )))))
 	       
 	       (defun main (argc argv)
 		 (declare (type int argc)
