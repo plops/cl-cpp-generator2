@@ -172,7 +172,12 @@
 			  (type int M N)
 			  (type float max_diff)
 			  (values int))
-		 (comments "c++: 5min49s https://on-demand.gputechconf.com/supercomputing/2019/video/sc1936-gpu-programming-with-standard-c++17/
+		 (comments "The Jacobi method consists of approximating the square plate with a two-dimensional grid of points. A two-dimensional array is used to represent the temperature at each of these points. Each iteration updates the elements of the array from the values computed at the previous step, using the following update scheme:
+
+T^{n+1}_ {i, j} = 0.25 * (T^n_ {i-1, j} + T^n_{i+1, j} + T^n_{i, j-1} +T^n_{i, j+1})
+
+This is repeated until convergence is reached: when the values obtained at the end of two subsequent iterations do not differ significantly."
+			   "c++: 5min49s https://on-demand.gputechconf.com/supercomputing/2019/video/sc1936-gpu-programming-with-standard-c++17/
 " "python: https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/")
 		 (let ((temp ("std::make_unique<float[]>" (* M N))))
 		   (std--copy std--execution--par
