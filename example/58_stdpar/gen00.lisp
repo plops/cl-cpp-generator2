@@ -147,6 +147,7 @@
 				   <thread>
 				   <execution>
 				   <cmath>
+				   <vector>
 				   )
 			  (include <thrust/iterator/counting_iterator.h>)
 		    " "
@@ -172,13 +173,12 @@
 			  (type int M N)
 			  (type float max_diff)
 			  (values int))
-		 (comments "The Jacobi method consists of approximating the square plate with a two-dimensional grid of points. A two-dimensional array is used to represent the temperature at each of these points. Each iteration updates the elements of the array from the values computed at the previous step, using the following update scheme:
-
-T^{n+1}_ {i, j} = 0.25 * (T^n_ {i-1, j} + T^n_{i+1, j} + T^n_{i, j-1} +T^n_{i, j+1})
-
-This is repeated until convergence is reached: when the values obtained at the end of two subsequent iterations do not differ significantly."
+		 (comments "The Jacobi method consists of approximating the square plate with a two-dimensional grid of points. A two-dimensional array is used to represent the temperature at each of these points. Each iteration updates the elements of the array from the values computed at the previous step, using the following update scheme:"
+			   "T^{n+1}_ {i, j} = 0.25 * (T^n_ {i-1, j} + T^n_{i+1, j} + T^n_{i, j-1} +T^n_{i, j+1})"
+			   "This is repeated until convergence is reached: when the values obtained at the end of two subsequent iterations do not differ significantly. You will notice that the update is impossible to perform at the boundary grid points, i.e., the edges of the plate. There are many ways to treat boundaries, but in this simple example, we will simply assume that their temperature doesn t change (fixed or Dirichlet boundary condition)."
 			   "c++: 5min49s https://on-demand.gputechconf.com/supercomputing/2019/video/sc1936-gpu-programming-with-standard-c++17/
-" "python: https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/")
+" "python: https://developer.nvidia.com/blog/accelerating-python-on-gpus-with-nvc-and-cython/"
+" https://github.com/shwina/stdpar-cython/blob/main/jacobi.ipynb")
 		 (let ((temp ("std::make_unique<float[]>" (* M N))))
 		   (std--copy std--execution--par
 			      data
@@ -269,9 +269,28 @@ This is repeated until convergence is reached: when the values obtained at the e
 		  
 		 
 		  )
-		 
 
-		 (return 0)))))
+		 (do0
+		  (let ((M 128)
+			(N 128))
+		    (declare (type "const int" M N))
+		    (let ((data (std--vector<float>)))
+		      (data.resize (* M N))
+		      (std--fill (data.begin) (data.end) 0)
+
+		      ;; https://stackoverflow.com/questions/1727881/how-to-use-the-pi-constant-in-c
+		      (dotimes (i N)
+			   (setf (aref data (+ i (* M 0)))
+				 (std--sin  (* (static_cast<float> M_PI)
+						  (/ (static_cast<float> i
+									 )
+						     N)))))
+		      (jacobi_solver (data.data) M N 1e-5 ))
+		    ))
+
+		 (return 0))
+	       " "
+	       )))
 
     (define-module
        `(demangle ()

@@ -9,6 +9,7 @@
 #include <execution>
 #include <iostream>
 #include <thread>
+#include <vector>
 ;
 #include <thrust/iterator/counting_iterator.h>
 ;
@@ -20,6 +21,7 @@
 #include <iostream>
 #include <thread>
 #include <thrust/iterator/counting_iterator.h>
+#include <vector>
 ;
 int jacobi_solver(float *data, int M, int N, float max_diff);
 int main(int argc, char **argv);
