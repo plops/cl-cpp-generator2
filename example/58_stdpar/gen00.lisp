@@ -146,7 +146,9 @@
 				   <chrono>
 				   <thread>
 				   <execution>
-			 )
+				   <cmath>
+				   )
+			  (include <thrust/iterator/counting_iterator.h>)
 		    " "
 		))
 		(do0 (comments "implementation")
@@ -156,6 +158,7 @@
 	       " "
 	       
 	       "using namespace std::chrono_literals;"
+	       "using namespace thrust;"
 	       " "
 	       
 	      
@@ -183,8 +186,45 @@
 		     (while keep_going
 			    (incf iterations)
 			    (std--for_each
-			     std--execution--par
-			     )))))
+			     std--execution--par ;; unseq
+			     (counting_iterator<int> (+ N 1)) 
+			     (counting_iterator<int> (- (* (- M 1)
+							   N)
+							1))
+			     (lambda (i)
+			       (declare (type int i)
+					(capture "="))
+			       (when (and (!= 0 (% i N))
+					  (!= (- N 1)
+					      (% i N)))
+				 (setf (aref to i)
+				       (* .25s0
+					  (+ (aref from (- i N))
+					     (aref from (+ i N))
+					     (aref from (- i 1))
+					     (aref from (+ i 1)))))))
+			     )
+			    (setf keep_going (std--any_of
+					      std--execution--par
+					      (counting_iterator<int> (+ N 1)) 
+					      (counting_iterator<int> (- (* (- M 1)
+									    N)
+									 1))
+					       (lambda (i)
+						 (declare (type int i)
+							  (capture "="))
+						 (return (< max_diff
+							    (std--fabs
+							     (- (aref to i)
+								(aref from i))))))
+					       ))
+			    (std--swap from to))
+		     (when (== to data)
+		       (std--copy std--execution--par
+				  (temp.get)
+				  (+  (temp.get) (* M N))
+				  data))
+		     (return iterations))))
 	       
 	       (defun main (argc argv)
 		 (declare (type int argc)

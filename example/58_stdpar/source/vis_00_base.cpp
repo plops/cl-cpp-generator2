@@ -8,6 +8,7 @@
 #include <vis_00_base.hpp>
 
 using namespace std::chrono_literals;
+using namespace thrust;
 
 State state = {};
 int jacobi_solver(float *data, int M, int N, float max_diff) {
@@ -25,14 +26,32 @@ int jacobi_solver(float *data, int M, int N, float max_diff) {
   auto to = temp.get();
   while (keep_going) {
     (iterations)++;
-    std::for_each(std::execution::par);
+    std::for_each(std::execution::par, counting_iterator<int>(((N) + (1))),
+                  counting_iterator<int>(((((((M) - (1))) * (N))) - (1))),
+                  [=](int i) {
+                    if ((((0) != (i % N)) && ((((N) - (1))) != (i % N)))) {
+                      to[i] = (((0.250f)) *
+                               (((from[((i) - (N))]) + (from[((i) + (N))]) +
+                                 (from[((i) - (1))]) + (from[((i) + (1))]))));
+                    }
+                  });
+    keep_going = std::any_of(
+        std::execution::par, counting_iterator<int>(((N) + (1))),
+        counting_iterator<int>(((((((M) - (1))) * (N))) - (1))),
+        [=](int i) { return (max_diff) < (std::fabs(((to[i]) - (from[i])))); });
+    std::swap(from, to);
   }
+  if ((to) == (data)) {
+    std::copy(std::execution::par, temp.get(), ((temp.get()) + (((M) * (N)))),
+              data);
+  }
+  return iterations;
 }
 int main(int argc, char **argv) {
-  state._main_version = "0a6d69c725e26d7b8882fb5cf558ffad9ce19649";
+  state._main_version = "a3dd7b335980ae1f383fa73d2e5f7ce08c46bf52";
   state._code_repository = "https://github.com/plops/cl-cpp-generator2/tree/"
                            "master/example/58_stdpar/source/";
-  state._code_generation_time = "13:06:29 of Monday, 2020-12-28 (GMT+1)";
+  state._code_generation_time = "13:29:33 of Monday, 2020-12-28 (GMT+1)";
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   {
