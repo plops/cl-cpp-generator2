@@ -1,2 +1,3 @@
 - https://lemire.me/blog/2021/01/06/memory-access-on-the-apple-m1-processor/
 - https://news.ycombinator.com/item?id=25659615
+- https://github.com/lemire/Code-used-on-Daniel-Lemire-s-blog/tree/master/2021/01/06
