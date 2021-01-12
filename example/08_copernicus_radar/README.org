@@ -13,3 +13,16 @@
     - US GeoEye-1 WorldView-2 50cm resolution
     - Japanese iQPS 36 SAR satellites, any point within 10min, fixed
       point observations of particular areas every 10min
+  - combine two applications:
+    - track usage of parking space
+    - predict seriousness of flood damage
+      - rivers are steep in japan, rain is increasing
+  - earth surface 510_100_000 km^2
+  - with 50cm resolution, several PB raw data for whole earth
+  - potentially every 10min
+  - too much to be transmitted, compute power in the world is
+    insufficient to utilize full potential of sar satellites
+  - limit to local area
+  - pelemay: native compiler for elixir (plans to support gpu)
+    - 4.5x faster float
+    
