@@ -9,3 +9,7 @@
 - https://www.youtube.com/watch?v=9H0AsmAsxgk 
   - ElixirConf 2020 - Susumu Yamazaki - Pelemay: Real-time,
     High-Resolution Satellite Image Processing
+    - Japanese Synspective 25 SAR satellites, 1m-3m resolutino
+    - US GeoEye-1 WorldView-2 50cm resolution
+    - Japanese iQPS 36 SAR satellites, any point within 10min, fixed
+      point observations of particular areas every 10min
