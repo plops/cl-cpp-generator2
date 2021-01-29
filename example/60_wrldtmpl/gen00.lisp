@@ -262,17 +262,26 @@
 		 (defmethod Surface (w h a_Buffer)
 		   (declare (type int w h)
 			    (type uint* a_Buffer)
-			    (values :constructor)))
+			    (construct (buffer b) (width w) (height h))
+			    (values :constructor))
+		   )
 		 (defmethod Surface (w h)
 		   (declare (type int w h)
 			    
-			    (values :constructor)))
+			    (values :constructor))
+		   (setf buffer (static_cast<uint*> (MALLOC64 (* w h (sizeof uint))))))
 		 (defmethod Surface (file)
 		   (declare (type "const char*" file)
-			    
-			    (values :constructor)))
+			    (construct (buffer 0) (width 0) (height 0))
+			    (values :constructor))
+		   (let ((f (fopen file (string "rb"))))
+		     (unless f
+		       ,(logprint "file not found" `(file)))
+		     (fclose f)
+		     (LoadImage file)))
 		 (defmethod ~Surface ()
-		   (declare  (values :constructor)))
+		   (declare  (values :constructor))
+		   (FREE64 buffer))
 		 (defmethod InitCharSet ())
 		 (defmethod SetChar (c1 c2 c3 c4 c5)
 		   (declare (type "const char*" c1 c2 c3 c4 c5)))
@@ -307,6 +316,9 @@
 		   (declare (type uint color)
 			    (type int x1 y1 x2 y2)
 			    ))
+		 "uint* buffer;"
+		 "int width;"
+		 "int height;"
 		 
 		 )
 
