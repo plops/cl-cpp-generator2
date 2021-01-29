@@ -245,6 +245,75 @@
 			 `(when ,f
 			    (incf r (string ,e))))
 		 (return r)))))
+
+     (define-module
+       `(surface ()
+	      (do0
+	       (include <iostream>
+			<chrono>
+			<thread>
+		)
+
+	       " "
+
+	       (defclass Surface ()
+		 "enum { OWNER = 1 };"
+		 "public:"
+		 (defmethod Surface (w h a_Buffer)
+		   (declare (type int w h)
+			    (type uint* a_Buffer)
+			    (values :constructor)))
+		 (defmethod Surface (w h)
+		   (declare (type int w h)
+			    
+			    (values :constructor)))
+		 (defmethod Surface (file)
+		   (declare (type "const char*" file)
+			    
+			    (values :constructor)))
+		 (defmethod ~Surface ()
+		   (declare  (values :constructor)))
+		 (defmethod InitCharSet ())
+		 (defmethod SetChar (c1 c2 c3 c4 c5)
+		   (declare (type "const char*" c1 c2 c3 c4 c5)))
+		 (defmethod Print (tt x1 y1 c)
+		   (declare (type "const char*" tt)
+			    (type int x1 y1)
+			    (type uint c))
+		   )
+		 
+		 (defmethod Clear (c)
+		   (declare (type uint c)
+			    ))
+		 (defmethod Line (x1 y1 x2 y2 c)
+		   (declare (type uint c)
+			    (type float x1 y1 x2 y2)
+			    ))
+		 (defmethod Plot (x y c)
+		   (declare (type uint c)
+			    (type int x y)
+			    ))
+		 (defmethod LoadImage (file)
+		   (declare (type "const char*" file)
+			    ))
+		 (defmethod CopyTo (dst a_X a_Y)
+		   (declare (type Surface* dst)
+			    (type int a_X a_Y)
+			    ))
+		 (defmethod Box (x1 y1 x2 y2 color)
+		   (declare (type int x1 y1 x2 y2)
+			    (type uint color)))
+		 (defmethod Bar (x1 y1 x2 y2 color)
+		   (declare (type uint color)
+			    (type int x1 y1 x2 y2)
+			    ))
+		 
+		 )
+
+	       
+
+	       
+	       )))
     
     
   )
