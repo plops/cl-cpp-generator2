@@ -773,15 +773,34 @@
 		   (do0 (comments "header")
 			"#define CheckGL() {_CheckGL( __FILE__, __LINE__ ); }")
 		   (do0 (comments "implementation")))
-		  ,(defuns
+		  ,@(defuns
 		      :defs
 		       `((_CheckGL  ((f const char*)
 					  (l int))
-				 
+				    :code (let ((err (glGetError)))
+					    (unless (== GL_NO_ERROR err)
+					      (let ((errStr (string "UNKNOWN ERROR")))
+						(case err
+						  ,@(loop for (e f) in `((#x500 "INVALID ENUM")
+									 (#x502 "INVALID OPERATION")
+									 (#x501 "INVALID VALUE")
+									 (#x506 "INVALID FRAMEBUFFER OPERATION")
+									 )
+							  collect
+							  `(,e (setf errStr (string ,f)))
+							  ))
+						,(logprint "gl error" `(err errStr f l)))))
 				 )
 		       (CreateVBO ((data const GLfloat*)
 					   (size const uint))
-				  :return GLuint)
+				  :return GLuint
+				  :code (let ((id ))
+					  (declare (type GLuint id))
+					  (glGenBuffers 1 &id)
+					  (glBindBuffer GL_ARRAY_BUFFER id)
+					  (glBufferData GL_ARRAY_BUFFER size data GL_STATIC_DRAW)
+					  (CheckGL)
+					  (return id)))
 		       (BindVBO  ((idx const uint)
 					 (N)
 					 (id cont GLuint)))
