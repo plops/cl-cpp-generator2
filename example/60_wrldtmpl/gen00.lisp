@@ -766,6 +766,7 @@
 			       ))
 		       "uint vertex = 0, pixel = 0, ID =0;"
 		       ))))
+
     (define-module
 	`(gl_helper ()
 		 (do0
@@ -871,16 +872,74 @@
 					 (BindVBO 0 3 vertexBuffer)
 					 (BindVBO 1 2 UVBuffer)
 					 (glBindVertexArray 0)
-					 (CheckGL)
-					 ))
+					 (CheckGL)))
 				     (glBindVertexArray vao)
 				     (glDrawArrays GL_TRIANGLES 0 6)
-				     (glBindVertexArray 0))))
-		    )
-		  )))
-     
-    
-    
+				     (glBindVertexArray 0))))))))
+    (define-module
+	`(job ()
+	      (do0
+	       (split-header-and-code
+		(do0 (comments "header"))
+		(do0 (comments "implementation")))
+	       (defclass Job ()
+		 "public:"
+		 ;; pure virtual functions not 
+		 (defmethod Main ()
+		   (declare (virtual)))
+		 "protected:"
+		 "friend class JobThread;"
+		 (defmethod RunCodeWrapper ()))
+	       (defclass JobThread ()
+		 "public:"
+		 ,@(defmethods
+		    :defs
+		    `((CreateAndStartThread ((threadId unsigned int)))
+		      (WaitForThreadToStop ())
+		      (Go ())
+		      (BackgroundTask ())
+		      ))
+		 "HANDLE m_GoSignal, m_ThreadHandle;"
+		 "int m_ThreadID;"
+		 )
+	       (defclass JobManager ()
+		 #+nil
+		 (do0 "protected:"
+		  (defmethod JobManager (numThreads)
+		    (declare (type "unsigned int" numThreads))))
+		 ,@(defmethods
+		       :defs
+		       `((~JobManager ())
+			 (CreateJobManager ((numThreads unsigned int))
+					   :return "static void")
+			 (GetJobManager () :return "static JobManager*")
+			 (GetProcessorCount ((cores uint&)
+					     (logical uint&))
+					    :return "static void")
+			 (AddJob2 ((a_Job Job*)))
+			 (GetNumThreads ()
+					:return "unsigned int"
+					:code (return m_NumThreads))
+			 (RunJobs ())
+			 (ThreadDone ((n unsigned int)))
+			 (MaxConcurrent ()
+					:code (return m_NumThreads))
+			 ))
+		 "protected:"
+		 "friend class JobThread;"
+		 ,@(defmethods
+		       :defs
+		       `((GetNextJob ()
+				     :return Job*)
+			 (FindNextJob ()
+				      :return Job*)))
+		 "static JobManager* m_JobManager;"
+		 "Job* m_JobList[256];"
+		 "CRITICAL_SECTION m_CS;"
+		 "HANDLE m_ThreadDone[64];"
+		 "unsigned int m_NumThreads, m_JobCount;"
+		 "JobThread* m_JobThreadList;"
+		 ))))
     )
   
   (progn
