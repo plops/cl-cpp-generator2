@@ -597,13 +597,11 @@
 					(setf old-type (format nil "~{~a ~}" rest)))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
-		 ,(if nopre
-		     "// no preamble"
-		     pre)
+		 ,(unless nopre
+		    pre)
 		 ,code
-		 ,(if nopost
-		     "// no postamble"
-		     post))))
+		 ,(unless nopost
+		    post))))
       )
     (defun defuns (&key defs pre post)
       ;; same as defmethods but for defun
@@ -622,13 +620,11 @@
 					(setf old-type (format nil "~{~a ~}" rest)))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
-		 ,(if nopre
-		     "// no preamble"
-		     pre)
+		 ,(unless nopre
+		    pre)
 		 ,code
-		 ,(if nopost
-		     "// no postamble"
-		     post)))))
+		 ,(unless nopost
+		    post)))))
 
     (defun lassert (assertion)
       ;; log msg and parameters if condition fails
@@ -671,7 +667,7 @@
 						 (Compile vfile pfile)
 						 (Init vfile pfile))
 				       :nopost t)
-			       (~Shader
+			       (~Shader ()
 				:return :constructor
 				:code (do0
 					(glDetachShader ID pixel)
@@ -770,16 +766,16 @@
 			       ))
 		       "uint vertex = 0, pixel = 0, ID =0;"
 		       ))))
-    #+nil(define-module
+    (define-module
 	`(gl_helper ()
 		 (do0
 		  (split-header-and-code
 		   (do0 (comments "header")
 			"#define CheckGL() {_CheckGL( __FILE__, __LINE__ ); }")
 		   (do0 (comments "implementation")))
-		  (defuns
+		  ,(defuns
 		      :defs
-		      ((_CheckGL  ((f const char*)
+		       `((_CheckGL  ((f const char*)
 					  (l int))
 				 
 				 )
