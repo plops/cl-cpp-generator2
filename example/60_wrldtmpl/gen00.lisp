@@ -566,7 +566,20 @@
 		    "uint width=0;"
 		    "uint height=0;"))))
 
-    (defun defmethods (e)
+    (defun defmethods (defs)
+      ;; helper function to define a bunch of methods at once
+      ;; it makes it easier to create type definitions for parameters
+      ;;
+      ;; defs ::= [<name> [param] [return] [code]]*
+      ;; param ::= [<var-name> [types]*]*
+      ;; types will be concatenated with space
+      ;; if no types is given, the previous type is used
+      ;;
+      ;; returns a list of defmethod s-expressions
+      (loop for def in defs
+	    collect
+	    (destructuring-bind (name &key param return code) def
+	      ))
       )
     
      (define-module
@@ -590,28 +603,13 @@
 		      (declare 
 		       (values :constructor))
 		      )
-		    (defmethod Bind (&key (slot 0))
-		      (declare (type "const uint" slot))
-		      (glActiveTexture (+ ,(gl-upcase 'texture0)
-					  slot)
-				       )
-		      (glBindTexture GL_TEXTURE_2D ID)
-		      (CheckGL))
-		    (defmethod CopyFrom (src)
-		      (declare (type Surface* src))
-		      (do0
-		       (glBindTexture GL_TEXTURE_2D ID)
-		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA width height 0 GL_RGBA GL_UNSIGNED_BYTE src->buffer)
-		       (CheckGL)))
-		    (defmethod CopyTo (dst)
-		      (declare (type Surface* dst))
-		      (do0
-		       (glBindTexture GL_TEXTURE_2D ID)
-		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA GL_UNSIGNED_BYTE dst->buffer)
-		       (CheckGL)))q
-		    "GLuint ID = 0;"
-		    "uint width=0;"
-		    "uint height=0;"))))
+
+		    ,(defmethods
+			 `((Init :param ((vfile const char*)
+					 (pfile)))
+			   (Compile :param ((vtext const char*)
+					    (ftext)))))
+		    ))))
      
     
     
