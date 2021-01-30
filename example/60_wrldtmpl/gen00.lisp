@@ -540,13 +540,28 @@
 		      (CheckGL))
 		    (defmethod ~GLTexture ()
 		      (declare 
-		       (values :constructor)))
+		       (values :constructor))
+		      (glDeleteTextures 1 &ID)
+		      (CheckGL))
 		    (defmethod Bind (&key (slot 0))
-		      (declare (type "const uint" slot)))
+		      (declare (type "const uint" slot))
+		      (glActiveTexture (+ ,(gl-upcase 'texture0)
+					  slot)
+				       )
+		      (glBindTexture GL_TEXTURE_2D ID)
+		      (CheckGL))
 		    (defmethod CopyFrom (src)
-		      (declare (type Surface* src)))
+		      (declare (type Surface* src))
+		      (do0
+		       (glBindTexture GL_TEXTURE_2D ID)
+		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA width height 0 GL_RGBA GL_UNSIGNED_BYTE src->buffer)
+		       (CheckGL)))
 		    (defmethod CopyTo (dst)
-		      (declare (type Surface* dst)))
+		      (declare (type Surface* dst))
+		      (do0
+		       (glBindTexture GL_TEXTURE_2D ID)
+		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA GL_UNSIGNED_BYTE dst->buffer)
+		       (CheckGL)))q
 		    "GLuint ID = 0;"
 		    "uint width=0;"
 		    "uint height=0;"))))
