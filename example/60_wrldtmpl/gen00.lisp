@@ -594,6 +594,13 @@
 			  (values ,return))
 		 ,@code)))
       )
+
+    (defun lassert (assertion)
+      ;; log msg and parameters if condition fails
+      ;; assertion ::= condition [param] [msg]
+      (destructuring-bind (condition &key param msg) assertion
+	`(when ,condition
+	   ,(logprint msg param))))
     
      (define-module
 	`(gl_shader ()
@@ -622,11 +629,27 @@
 			  `((Shader :params ((vfile const char*)
 					     (pfile)
 					     (fromString bool))
-				    :return :constructor)
+				    :return :constructor
+				    :code (if fromString
+					      (Compile vfile pfile)
+					      (Init vfile pfile)))
 			    (~Shader
-				    :return :constructor)
+			     :return :constructor
+			     :code `(do0
+				     (glDetachShader ID pixel)
+				     (glDetachShader ID vertex)
+				     (glDeleteShader pixel)
+				     (glDeleteShader vertex)
+				     (glDeleteProgram ID)
+				     (CheckGL)))
 			    (Init :params ((vfile const char*)
-					 (pfile)))
+					   (pfile))
+				  :code
+				  (let ((vsText (TextFileRead vfile))
+					(fsText (TextFileRead pfile)))
+				    ,(lassert `((== 0 (vsText.size))
+						:param (vfile)
+						:msg "File not found"))))
 			   (Compile :params ((vtext const char*)
 					     (ftext)))
 			   (Bind)
