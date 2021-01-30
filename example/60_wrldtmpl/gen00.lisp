@@ -566,7 +566,7 @@
 			   "uint width=0;"
 			   "uint height=0;"))))
 
-    (defun defmethods (defs &key pre post)
+    (defun defmethods (&key defs pre post)
       ;; helper function to define a bunch of methods at once
       ;; it makes it easier to create type definitions for parameters
       ;;
@@ -584,7 +584,7 @@
       ;; returns a list of defmethod s-expressions
       (loop for def in defs
 	    collect
-	    (destructuring-bind (name &key params return code decl) def
+	    (destructuring-bind (name &key params return code decl nopre nopost) def
 	      `(defmethod ,name (,@(loop for param in params
 					 collect
 					 (destructuring-bind (var-name &rest rest) param
@@ -597,7 +597,13 @@
 					(setf old-type (format nil "~{~a ~}" rest)))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
-		 ,@code)))
+		 #+nil ,(if nopre
+		     `(comment "no preamble")
+		     pre)
+		 ,code
+		 ,(if nopost
+		     "// no postamble"
+		     post))))
       )
 
     (defun lassert (assertion)
@@ -631,24 +637,29 @@
 			 )
 
 		       ,@(defmethods
-			     `((Shader :params ((vfile const char*)
+			     :post `(CheckGL)
+			   :defs
+			   `((Shader :params ((vfile const char*)
 						(pfile)
 						(fromString bool))
 				       :return :constructor
 				       :code (if fromString
 						 (Compile vfile pfile)
-						 (Init vfile pfile)))
+						 (Init vfile pfile))
+				       :nopost t)
 			       (~Shader
 				:return :constructor
-				:code `(do0
+				:code (do0
 					(glDetachShader ID pixel)
 					(glDetachShader ID vertex)
 					(glDeleteShader pixel)
 					(glDeleteShader vertex)
 					(glDeleteProgram ID)
-					(CheckGL)))
+					;(CheckGL)
+					))
 			       (Init :params ((vfile const char*)
 					      (pfile))
+				     :nopost t
 				     :code
 				     (let ((vsText (TextFileRead vfile))
 					   (fsText (TextFileRead pfile)))
@@ -683,16 +694,18 @@
 						  `(glBindAttribLocation ID ,i (string ,e)))
 					  (glLinkProgram ID)
 					  (glCheckProgram ID vtext ftext)
-					  (CheckGL)
+					  ;(CheckGL)
 				      
 					  ))
 			       (Bind :code (do0
 					    (glUseProgram ID)
-					    (CheckGL)))
+					    ;(CheckGL)
+					    ))
 			       (Unbind :code
 				       (do0
 					(glUseProgram 0)
-					(CheckGL))
+					;(CheckGL)
+					)
 				       )
 			       (SetInputTexture :params ((slot uint)
 							 (name const char*)
@@ -713,7 +726,8 @@
 								     1
 								     GL_FALSE
 								     data)
-						 (CheckGL)))
+						 ;(CheckGL)
+						 ))
 			       (SetFloat :params ((name const char*)
 						  (v const float)))
 			       (SetInt :params ((name const char*)
