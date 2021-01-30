@@ -10,6 +10,7 @@
 
 
 
+
 (in-package :cl-cpp-generator2)
 
 
@@ -488,9 +489,14 @@
 			)
 		   (do0 (comments "implementation"))))))
 
+    (defun gl-upcase (str)
+      (string-upcase (cl-change-case:snake-case (format nil "gl-~a" str))))
     (defun tex-param (e )
+      ;; tex-param `(texture-min-filter nearest)
       (destructuring-bind (key value &key (target `texture-2d)) e
-       `(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
+	`(glTexParameteri ,(gl-upcase target)
+			  ,(gl-upcase key)
+			  ,(gl-upcase value))))
     (define-module
 	`(gl_texture ()
 		 (do0
@@ -512,7 +518,8 @@
 			(DEFAULT
 			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
 			 ,(tex-param `(min_filter nearest))
-			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
+			 ,(tex-param `(mag_filter nearest))
+			 
 			 )
 			(INITTARGET
 			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_ GL_NEAREST)
