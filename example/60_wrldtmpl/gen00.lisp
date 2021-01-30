@@ -8,9 +8,6 @@
      (ql:quickload "cl-ppcre")
      (ql:quickload "cl-change-case")) 
 
-
-
-
 (in-package :cl-cpp-generator2)
 
 
@@ -20,6 +17,8 @@
 (setf *features* (set-difference *features*
 				 '()))
 (defvar *header-file-hashes* (make-hash-table))
+
+
 
 (progn
   (defparameter *source-dir* #P"example/60_wrldtmpl/source/")
@@ -486,6 +485,25 @@
 			"#define ALIGN( x ) __attribute__( (aligned( x ) ) )"
 			"#define MALLOC64( x ) ((x)==0?0:aligned_alloc(64,(x)))"
 			"#define FREE64(x) free(x)"
+			,@(loop for e in `((8 int2 x y)
+					   (8 uint2 x y)
+					   (8 float2 x y)
+					   (16 int3 x y z dummy)
+					   (16 uint3 x y z dummy)
+					   (16 float3 x y z dummy)
+					   (16 int4 x y z w)
+					   (16 uint4 x y z w)
+					   (16 float4 x y z w)
+					   (4 uchar4 x y z w)
+					   )
+				collect
+				(destructuring-bind (bytes name &rest vars) e
+				  (let ((type (multiple-value-bind (str found)
+						  (cl-ppcre:scan-to-strings "(.*)[0-9]"
+									    (format nil "~a" name))
+						(aref found 0))))
+				   (format nil "struct ALIGN( ~a ) ~a { ~a ~{~a~^, ~}; };"
+					   bytes name type vars))))
 			)
 		   (do0 (comments "implementation"))))))
 
@@ -941,6 +959,153 @@
 		 "unsigned int m_NumThreads, m_JobCount;"
 		 "JobThread* m_JobThreadList;"
 		 ))))
+    (define-module
+	`(random ()
+		 (do0
+		  (split-header-and-code
+		    (do0 (comments "header")
+			 )
+		    (do0
+		     (comments "implementation")
+		     (do0 "static uint seed = 0x12345678;")
+		     (do0
+		      "static int numX=512,numY=512,numOctaves=7,primeIndex=0;"
+		      "static float persistence=.5f;"
+		      (let
+			  ((primes
+			     (curly
+			      ,@(loop for e in
+				    `(( 995615039 600173719 701464987 ) ( 831731269 162318869 136250887 )
+				      ( 174329291 946737083 245679977 ) ( 362489573 795918041 350777237 )
+				      ( 457025711 880830799 909678923 ) ( 787070341 177340217 593320781 )
+				      ( 405493717 291031019 391950901 ) ( 458904767 676625681 424452397 )
+				      ( 531736441 939683957 810651871 ) ( 997169939 842027887 423882827 ))
+				    collect
+				    `(curly ,@e)))))
+			    (declare (type (array "static int" 10 3) primes))))
+			 ))
+
+		  ,@(defuns
+			:defs
+			`((Noise ((i const int)
+				  (x )
+				  (y ))
+				 :return "static float"
+				 :code
+				 (let ((n (+ x (* 57 y))))
+				   (setf n (^ (<< n 13) n))
+				   (let ((a (aref primes i 0))
+					 (b (aref primes i 1))
+					 (c (aref primes i 2))
+					 (tt (& (+ (* n (+ (* n n a)
+							   b))
+						   c)
+						#x7fffffff)))
+				     (return (- 1s0
+						(/ (static_cast<float> tt)
+						   1073741824.0s0))))))
+			  (SmoothedNoise ((i const int)
+				  (x const int)
+				  (y))
+				 :return "static float"
+				 :code
+				 (let ((corners (/ (+ ,@(loop for (a b c) in `((i x-1 y-1)
+									       (i x+1 y-1)
+									       (i x-1 y+1)
+									       (i x+1 y+1))
+							      collect
+							      `(Noise ,a ,b ,c)))
+						   16))
+				       (sides (/ (+ ,@(loop for (a b c) in `((i x-1 y)
+									     (i x+1 y)
+									       (i x y-1)
+									     (i x y+1))
+							      collect
+							      `(Noise ,a ,b ,c)))
+						 8))
+				       (center (/ (Noise i x y)
+						  4)))
+				   (return (+ corners sides center))))
+			  (Interpolate ((a const float)
+					(b )
+					(x ))
+				       :return "static float"
+				       :code (let ((ft (* x 3.1415927s0))
+						   (f (* .5s0 (- 1s0 (cosf ft)))))
+					       (return (+ (* a (- 1 f))
+							  (* b f)))))
+			  (InterpolatedNoise ((i const int)
+					      (x const float)
+					      (y))
+					     :return "static float"
+					     :code (let ((integer_X (static_cast<int> x)
+								    )
+							 (integer_Y (static_cast<int> y))
+							 (fractional_X (- x integer_X))
+							 (fractional_Y (- y integer_Y))
+							 ,@(loop for (e f) in `((integer_X integer_Y)
+										(integer_X+1 integer_Y)
+										(integer_X integer_Y+1)
+										(integer_X+1 integer_Y+1))
+								 and i from 0
+								 collect
+								 `(,(format nil "v~a" i)
+								   (SmoothedNoise i ,e ,f)))
+							 (i1 (Interpolate v1 v2 fractional_X))
+							 (i2 (Interpolate v3 v4 fractional_X)))
+						     (return (Interpolate i1 i2 fractional_Y))))
+			  (noise2D ((x const float)
+				    (y ))
+				   :return float
+				   :code (let ((total 0s0)
+					       (frequency (static_cast<float> (<< 2 numOctaves)))
+					       (amplitude 1s0))
+					   (dotimes (i numOctaves)
+					     (/= frequency 2)
+					     (*= amplitude persistance)
+					     (incf total
+						   (* amplitude
+						    (InterpolatedNoise (% (+ primeIndex 1)
+									  10)
+								       (/ x frequency)
+								       (/ y frequency)))))
+					   (return (/ total frequency))))
+		))
+
+		  ,@(defuns
+		      :defs
+			`((RandomUInt ()
+				      :return uint
+				      :code (do0
+					     (^= seed (<< seed 13))
+					     (^= seed (>> seed 17))
+					     (^= seed (<< seed 5))
+					     (return seed)))
+			  (RandomUInt ((seed uint&))
+				      :return uint
+				      :code (do0
+					     (^= seed (<< seed 13))
+					     (^= seed (>> seed 17))
+					     (^= seed (<< seed 5))
+					     (return seed)))
+			  (RandomFloat ()
+				       :return float
+				       :code
+				       (return (* (RandomUInt)
+						  2.3283064365387e-10f)))
+			  (RandomFloat ((seed &uint))
+				       :return float
+				       :code
+				       (return (* (RandomUInt seed)
+						  2.3283064365387e-10f)))
+			  (Rand ((range float))
+				:return float
+				:code
+				(return (* (RandomFloat) range)))
+			  
+			  (noise2D ((x const float)
+				    (y const float))
+				   :return float))))))
     )
   
   (progn
