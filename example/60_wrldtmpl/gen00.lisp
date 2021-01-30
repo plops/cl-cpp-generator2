@@ -565,6 +565,53 @@
 		    "GLuint ID = 0;"
 		    "uint width=0;"
 		    "uint height=0;"))))
+
+    (defun defmethods (e)
+      )
+    
+     (define-module
+	`(gl_shader ()
+		 (do0
+		  (split-header-and-code
+		   (do0 (comments "header")
+			)
+		   (do0 (comments "implementation")))
+		  "class mat4;"
+		  (defclass Shader ()
+		    "public:"
+		    
+		    (defmethod Shader (vfile pfile fromString)
+		      (declare (type "const char*" vfile pfile)
+			       (type bool fromString)
+			       (construct)
+			       (values :constructor))
+		      )
+		    (defmethod ~Shader ()
+		      (declare 
+		       (values :constructor))
+		      )
+		    (defmethod Bind (&key (slot 0))
+		      (declare (type "const uint" slot))
+		      (glActiveTexture (+ ,(gl-upcase 'texture0)
+					  slot)
+				       )
+		      (glBindTexture GL_TEXTURE_2D ID)
+		      (CheckGL))
+		    (defmethod CopyFrom (src)
+		      (declare (type Surface* src))
+		      (do0
+		       (glBindTexture GL_TEXTURE_2D ID)
+		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA width height 0 GL_RGBA GL_UNSIGNED_BYTE src->buffer)
+		       (CheckGL)))
+		    (defmethod CopyTo (dst)
+		      (declare (type Surface* dst))
+		      (do0
+		       (glBindTexture GL_TEXTURE_2D ID)
+		       (glGetTexImage GL_TEXTURE_2D 0 GL_RGBA GL_UNSIGNED_BYTE dst->buffer)
+		       (CheckGL)))q
+		    "GLuint ID = 0;"
+		    "uint width=0;"
+		    "uint height=0;"))))
      
     
     
