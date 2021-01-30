@@ -584,7 +584,7 @@
       ;; returns a list of defmethod s-expressions
       (loop for def in defs
 	    collect
-	    (destructuring-bind (name &key params return code decl nopre nopost) def
+	    (destructuring-bind (name params &key return code decl nopre nopost) def
 	      `(defmethod ,name (,@(loop for param in params
 					 collect
 					 (destructuring-bind (var-name &rest rest) param
@@ -597,18 +597,42 @@
 					(setf old-type (format nil "~{~a ~}" rest)))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
-		 #+nil ,(if nopre
-		     `(comment "no preamble")
+		 ,(if nopre
+		     "// no preamble"
 		     pre)
 		 ,code
 		 ,(if nopost
 		     "// no postamble"
 		     post))))
       )
+    (defun defuns (&key defs pre post)
+      ;; same as defmethods but for defun
+      (loop for def in defs
+	    collect
+	    (destructuring-bind (name params &key return code decl nopre nopost) def
+	      `(defun ,name (,@(loop for param in params
+					 collect
+					 (destructuring-bind (var-name &rest rest) param
+					   var-name)))
+		 (declare ,@(let ((old-type nil))
+			      (loop for param in params
+				    collect
+				    (destructuring-bind (var-name &rest rest) param
+				      (when rest
+					(setf old-type (format nil "~{~a ~}" rest)))
+				      `(type ,old-type ,var-name))))
+			  (values ,return))
+		 ,(if nopre
+		     "// no preamble"
+		     pre)
+		 ,code
+		 ,(if nopost
+		     "// no postamble"
+		     post)))))
 
     (defun lassert (assertion)
       ;; log msg and parameters if condition fails
-      ;; assertion ::= condition [param] [msg]
+      ;; assertion ::= condition [param] [msg] 
       (destructuring-bind (condition &key param msg) assertion
 	`(when ,condition
 	   ,(logprint msg param))))
@@ -639,7 +663,7 @@
 		       ,@(defmethods
 			     :post `(CheckGL)
 			   :defs
-			   `((Shader :params ((vfile const char*)
+			   `((Shader  ((vfile const char*)
 						(pfile)
 						(fromString bool))
 				       :return :constructor
@@ -657,7 +681,7 @@
 					(glDeleteProgram ID)
 					;(CheckGL)
 					))
-			       (Init :params ((vfile const char*)
+			       (Init  ((vfile const char*)
 					      (pfile))
 				     :nopost t
 				     :code
@@ -672,7 +696,7 @@
 				       (let ((vertexText (vsText.c_str))
 					     (fragmentText (fsText.c_str)))
 					 (Compile vertexText fragmentText))))
-			       (Compile :params ((vtext const char*)
+			       (Compile  ((vtext const char*)
 						 (ftext))
 					:code
 					(let ((vertex (glCreateShader GL_VERTEX_SHADER))
@@ -697,17 +721,17 @@
 					  ;(CheckGL)
 				      
 					  ))
-			       (Bind :code (do0
-					    (glUseProgram ID)
-					    ;(CheckGL)
-					    ))
-			       (Unbind :code
+			       (Bind () :code (do0
+					       (glUseProgram ID)
+					;(CheckGL)
+					       ))
+			       (Unbind () :code
 				       (do0
 					(glUseProgram 0)
 					;(CheckGL)
 					)
 				       )
-			       (SetInputTexture :params ((slot uint)
+			       (SetInputTexture  ((slot uint)
 							 (name const char*)
 							 (texture GLTexture*))
 						:code
@@ -717,7 +741,7 @@
 						 (glUniform1i (glGetUniformLocation ID name)
 							      slot)
 						 (CheckGL)))
-			       (SetInputMatrix :params ((name const char*)
+			       (SetInputMatrix  ((name const char*)
 							(matrix const mat4&))
 					       :code
 					       (let ((data ("static_cast<const GLfloat*>"
@@ -728,15 +752,46 @@
 								     data)
 						 ;(CheckGL)
 						 ))
-			       (SetFloat :params ((name const char*)
-						  (v const float)))
-			       (SetInt :params ((name const char*)
-						(v const int)))
-			       (SetUInt :params ((name const char*)
-						 (v const uint)))
+			       (SetFloat  ((name const char*)
+						  (v const float))
+					 :code
+					 (glUniform1f (glGetUniformLocation ID name)
+						      v))
+			       (SetInt  ((name const char*)
+						(v const int))
+				       :code
+				       (glUniform1i (glGetUniformLocation ID name)
+						      v))
+			       (SetUInt  ((name const char*)
+						 (v const uint))
+					:code
+					(glUniform1ui (glGetUniformLocation ID name)
+						      v))
 			       ))
 		       "uint vertex = 0, pixel = 0, ID =0;"
 		       ))))
+    #+nil(define-module
+	`(gl_helper ()
+		 (do0
+		  (split-header-and-code
+		   (do0 (comments "header")
+			"#define CheckGL() {_CheckGL( __FILE__, __LINE__ ); }")
+		   (do0 (comments "implementation")))
+		  (defuns
+		      :defs
+		      ((_CheckGL  ((f const char*)
+					  (l int))
+				 
+				 )
+		       (CreateVBO ((data const GLfloat*)
+					   (size const uint))
+				  :return GLuint)
+		       (BindVBO  ((idx const uint)
+					 (N)
+					 (id cont GLuint)))
+		       (CheckShader  ()))
+		    )
+		  )))
      
     
     
