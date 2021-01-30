@@ -6,7 +6,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
      (ql:quickload "cl-ppcre")
-     (ql:quickload "cl-change-case"))
+     (ql:quickload "cl-change-case")) 
 
 
 
@@ -803,14 +803,79 @@
 					  (return id)))
 		       (BindVBO  ((idx const uint)
 					 (N)
-					 (id cont GLuint)))
+					 (id cont GLuint))
+				 :code
+				 (do0
+				  (glEnableVertexAttribArray idx)
+				  (glBindBuffer GL_ARRAY_BUFFER id)
+				  (glVertexAttribPointer idx N GL_FLOAT GL_FALSE 0 nullptr)
+				  (CheckGL)))
 			 (CheckShader  ((shader GLuint)
 					(vshader const char*)
-					(fshader)))
+					(fshader))
+				       :code
+				       (let ((buffer))
+					 (declare (type (array char 1024) buffer))
+					 (memset buffer 0 (sizeof buffer))
+					 (let ((length 0))
+					   (declare (type GLsizei length))
+					   (glGetShaderInfoLog shader (sizeof buffer)
+							       &length buffer)
+					   (CheckGL)
+					   ,(lassert `((not (and (< 0 length)
+								 (strstr buffer (string "ERROR"))))
+						       :msg "shader compile error"
+						       :param (buffer))))))
 			 (CheckProgram ((id GLuint)
 					(vshader const char*)
-					(fshader)))
-			 (DrawQuad ()))
+					(fshader))
+				       :code
+				       (let ((buffer))
+					 (declare (type (array char 1024) buffer))
+					 (memset buffer 0 (sizeof buffer))
+					 (let ((length 0))
+					   (declare (type GLsizei length))
+					   (glGetProgramInfoLog id (sizeof buffer)
+							       &length buffer)
+					   (CheckGL)
+					   ,(lassert `((< length 0)
+						       :msg "shader compile error"
+						       :param (buffer))))))
+			 (DrawQuad ()
+				   :code
+				   (let ((vao 0))
+				     (declare (type
+					       "static GLuint" vao))
+				     (unless vao
+				       (let ((verts (curly -1 1 0
+							   1 1 0
+							   -1 -1 0
+							   1 1 0
+							   -1 -1 0
+							   1 -1 0))
+					     (uvdata (curly 0 0
+							    1 0
+							    0 1
+							    1 0
+							    0 1
+							    1 1
+							    ))
+					     (vertexBuffer (CreateVBO verts (sizeof verts)))
+					     (UVBuffer (CreateVBO uvdata (sizeof uvdata))))
+					 (declare (type (array
+							 "static const GLfloat"
+							 (* 3 6)) verts)
+						  (type (array "static const GLfloat" (* 2 6) uvdata)))
+					 (glGenVertexArray 1 &vao)
+					 (glBindVertexArray vao)
+					 (BindVBO 0 3 vertexBuffer)
+					 (BindVBO 1 2 UVBuffer)
+					 (glBindVertexArray 0)
+					 (CheckGL)
+					 ))
+				     (glBindVertexArray vao)
+				     (glDrawArrays GL_TRIANGLES 0 6)
+				     (glBindVertexArray 0))))
 		    )
 		  )))
      
