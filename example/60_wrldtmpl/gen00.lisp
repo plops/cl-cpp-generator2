@@ -570,16 +570,29 @@
       ;; helper function to define a bunch of methods at once
       ;; it makes it easier to create type definitions for parameters
       ;;
-      ;; defs ::= [<name> [param] [return] [code]]*
+      ;; defs ::= [<name> [params] [decl] [return] [code]]*
       ;; param ::= [<var-name> [types]*]*
       ;; types will be concatenated with space
       ;; if no types is given, the previous type is used
+      ;; decl conveys arbitrary declarations like: ((construct (a 3)) 
       ;;
       ;; returns a list of defmethod s-expressions
       (loop for def in defs
 	    collect
-	    (destructuring-bind (name &key param return code) def
-	      ))
+	    (destructuring-bind (name &key params return code decl) def
+	      `(defmethod ,name (,@(loop for param in params
+					 collect
+					 (destructuring-bind (var-name &rest rest) param
+					   var-name)))
+		 (declare ,@(let ((old-type nil))
+			      (loop for param in params
+				    collect
+				    (destructuring-bind (var-name &rest rest) param
+				      (when rest
+					(setf old-type (format nil "~{~a ~}" rest)))
+				      `(type ,old-type ,var-name))))
+			  (values ,return))
+		 ,@code)))
       )
     
      (define-module
@@ -604,10 +617,10 @@
 		       (values :constructor))
 		      )
 
-		    ,(defmethods
-			 `((Init :param ((vfile const char*)
+		    ,@(defmethods
+			 `((Init :params ((vfile const char*)
 					 (pfile)))
-			   (Compile :param ((vtext const char*)
+			   (Compile :params ((vtext const char*)
 					    (ftext)))))
 		    ))))
      
