@@ -6,9 +6,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
      (ql:quickload "cl-ppcre")
-     (ql:quickload "cl-change-case")
-					;(ql:quickload "cffi")
-     )
+     (ql:quickload "cl-change-case"))
 
 
 
