@@ -245,19 +245,22 @@
 			 `(when ,f
 			    (incf r (string ,e))))
 		 (return r)))))
-
-     (define-module
+    (define-module
        `(surface ()
 	      (do0
 	       (include <iostream>
 			<chrono>
 			<thread>
+			
 		)
 
 	       " "
 
 	       (split-header-and-code
 		(do0 (comments "header")
+		     (comments "http://freeimage.sourceforge.net")
+		     (include <FreeImage.h>)
+		     (include <vis_03_memory.hpp>)
 		     )
 		(do0 (comments "implementation")
 		     "static char s_Font[51][5][6];"
@@ -469,14 +472,51 @@
 			    ))
 		 "uint* buffer;"
 		 "int width;"
-		 "int height;"
-		 
-		 )
+		 "int height;"))))
 
-	       
+    (define-module
+	`(memory ()
+		 (do0
+		  (split-header-and-code
+		   (do0 (comments "header")
+			"#define ALIGN( x ) __attribute__( (aligned( x ) ) )"
+			"#define MALLOC64( x ) ((x)==0?0:aligned_alloc(64,(x)))"
+			"#define FREE64(x) free(x)"
+			)
+		   (do0 (comments "implementation"))))))
 
-	       
-	       )))
+    (define-module
+	`(gl_texture ()
+		 (do0
+		  (split-header-and-code
+		   (do0 (comments "header")
+			)
+		   (do0 (comments "implementation")))
+		  (defclass GLTexture ()
+		    "public:"
+		    "enum { DEFAULT=0, FLOAT=1, INITTARGET=2 };"
+		    (defmethod GLTexture (w h &key (type DEFAULT))
+		      (declare (type uint w h type)
+			       (construct (width w)
+					  (height h))
+			       (values :constructor))
+		      (glGenTextures 1 &ID)
+		      (glBindTextures GL_TEXTURE_2D ID)
+		      (case type
+			(DEFAULT (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0))))
+		    (defmethod ~GLTexture ()
+		      (declare 
+		       (values :constructor)))
+		    (defmethod Bind (&key (slot 0))
+		      (declare (type "const uint" slot)))
+		    (defmethod CopyFrom (src)
+		      (declare (type Surface* src)))
+		    (defmethod CopyTo (dst)
+		      (declare (type Surface* dst)))
+		    "GLuint ID = 0;"
+		    "uint width=0;"
+		    "uint height=0;"))))
+     
     
     
   )
