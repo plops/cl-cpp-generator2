@@ -5,7 +5,12 @@
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
      (ql:quickload "cl-cpp-generator2")
-     (ql:quickload "cl-ppcre"))
+     (ql:quickload "cl-ppcre")
+     (ql:quickload "cl-change-case")
+					;(ql:quickload "cffi")
+     )
+
+
 
 (in-package :cl-cpp-generator2)
 
@@ -485,6 +490,9 @@
 			)
 		   (do0 (comments "implementation"))))))
 
+    (defun tex-param (e )
+      (destructuring-bind (key value &key (target `texture-2d)) e
+       `(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)))
     (define-module
 	`(gl_texture ()
 		 (do0
@@ -503,7 +511,21 @@
 		      (glGenTextures 1 &ID)
 		      (glBindTextures GL_TEXTURE_2D ID)
 		      (case type
-			(DEFAULT (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0))))
+			(DEFAULT
+			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
+			 ,(tex-param `(min_filter nearest))
+			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
+			 )
+			(INITTARGET
+			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_ GL_NEAREST)
+			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
+			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
+			 )
+			(FLOAT
+			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
+			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
+			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
+			 )))
 		    (defmethod ~GLTexture ()
 		      (declare 
 		       (values :constructor)))
