@@ -256,6 +256,16 @@
 
 	       " "
 
+	       (split-header-and-code
+		(do0 (comments "header")
+		     )
+		(do0 (comments "implementation")
+		     "static char s_Font[51][5][6];"
+		     "static bool fontInitialized = false;"
+		     "static int s_Transl[256];"
+		     
+		     ))
+	       
 	       (defclass Surface ()
 		 "enum { OWNER = 1 };"
 		 "public:"
@@ -392,11 +402,11 @@
 		     (declare (type "const int" s))
 		     (dotimes (i s)
 		       (setf (aref buffer i) c))))
-		 (defmethod Line (x1 y1 x2 y2 c)
+		 #+nil (defmethod Line (x1 y1 x2 y2 c)
 		   (declare (type uint c)
 			    (type float x1 y1 x2 y2)
 			    ))
-		 (defmethod Plot (x y c)
+		 #+nil (defmethod Plot (x y c)
 		   (declare (type uint c)
 			    (type int x y)
 			    ))
