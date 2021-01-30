@@ -657,7 +657,30 @@
 					  (fragmentText (fsText.c_str)))
 				      (Compile vertexText fragmentText))))
 			   (Compile :params ((vtext const char*)
-					     (ftext)))
+					     (ftext))
+				    :code
+				    (let ((vertex (glCreateShader GL_VERTEX_SHADER))
+					  (pixel (glCreateShader GL_FRAGMENT_SHADER)))
+
+				      ,@(loop for (name code) in `((vertex &vtext)
+								   (pixel &ftext))
+					      collect
+					      `(do0 (glShaderSource ,name 1 ,code 0)
+						    (glCompileShader ,name)
+						    (CheckShader ,name vtext ftext)))
+				      (setf ID (glCreateProgram))
+				      ,@(loop for e in `(vertex pixel)
+					      collect
+					      `(glAttachShader ID ,e))
+				      ,@(loop for e in `(pos tuv)
+					      and i from 0 
+					      collect
+					      `(glBindAttribLocation ID ,i (string ,e)))
+				      (glLinkProgram ID)
+				      (glCheckProgram ID vtext ftext)
+				      (CheckGL)
+				      
+				      ))
 			   (Bind)
 			   (SetInputTexture :params ((slot uint)
 						     (name const char*)
