@@ -605,23 +605,44 @@
 		  "class mat4;"
 		  (defclass Shader ()
 		    "public:"
-		    
+		    #+nil
 		    (defmethod Shader (vfile pfile fromString)
 		      (declare (type "const char*" vfile pfile)
 			       (type bool fromString)
 			       (construct)
 			       (values :constructor))
 		      )
+		    #+nil
 		    (defmethod ~Shader ()
 		      (declare 
 		       (values :constructor))
 		      )
 
 		    ,@(defmethods
-			 `((Init :params ((vfile const char*)
+			  `((Shader :params ((vfile const char*)
+					     (pfile)
+					     (fromString bool))
+				    :return :constructor)
+			    (~Shader
+				    :return :constructor)
+			    (Init :params ((vfile const char*)
 					 (pfile)))
 			   (Compile :params ((vtext const char*)
-					    (ftext)))))
+					     (ftext)))
+			   (Bind)
+			   (SetInputTexture :params ((slot uint)
+						     (name const char*)
+						     (texture GLTexture*)))
+			   (SetInputMatrix :params ((name const char*)
+						    (matrix const mat4&)))
+			   (SetFloat :params ((name const char*)
+					      (v const float)))
+			   (SetInt :params ((name const char*)
+					    (v const int)))
+			   (SetUInt :params ((name const char*)
+					     (v const uint)))
+			   (Unbind)))
+		    "uint vertex = 0, pixel = 0, ID =0;"
 		    ))))
      
     
