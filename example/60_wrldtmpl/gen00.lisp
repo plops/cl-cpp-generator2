@@ -882,6 +882,7 @@
 	       (split-header-and-code
 		(do0 (comments "header"))
 		(do0 (comments "implementation")))
+	       ;; hmm this is actually all windows code
 	       (defclass Job ()
 		 "public:"
 		 ;; pure virtual functions not 
