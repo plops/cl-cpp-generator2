@@ -522,15 +522,22 @@
 			 
 			 )
 			(INITTARGET
-			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_ GL_NEAREST)
-			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
-			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
+			 ,(tex-param `(texture-wrap-s clamp-to-edge))
+			 ,(tex-param `(texture-wrap-t clamp-to-edge))
+			 ,(tex-param `(min_filter nearest))
+			 ,(tex-param `(mag_filter nearest))
+			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGBA8 width height 0 GL_RGBA GL_UNSIGNED_BYTE 0)
 			 )
 			(FLOAT
-			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGB width height 0 GL_BGR GL_UNSIGNED_BYTE 0)
-			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST)
-			 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST)
-			 )))
+			 ,(tex-param `(texture-wrap-s clamp-to-edge))
+			 ,(tex-param `(texture-wrap-t clamp-to-edge))
+			 ,(tex-param `(min_filter nearest))
+			 ,(tex-param `(mag_filter nearest))
+			 
+			 (glTexImage2D GL_TEXTURE_2D 0 GL_RGBA32F width height 0 GL_RGBA FLOAT 0)
+			 ))
+		      (glBindTexture GL_TEXTURE_2D 0)
+		      (CheckGL))
 		    (defmethod ~GLTexture ()
 		      (declare 
 		       (values :constructor)))
