@@ -502,8 +502,8 @@
 						  (cl-ppcre:scan-to-strings "(.*)[0-9]"
 									    (format nil "~a" name))
 						(aref found 0))))
-				   (format nil "struct ALIGN( ~a ) ~a { ~a ~{~a~^, ~}; };"
-					   bytes name type vars))))
+				    (format nil "struct ALIGN( ~a ) ~a { ~a ~{~a~^, ~}; };"
+					    bytes name type vars))))
 			)
 		   (do0 (comments "implementation"))))))
 
@@ -589,11 +589,15 @@
       ;; it makes it easier to create type definitions for parameters
       ;;
       ;; defs ::= [<name> [params] [decl] [return] [code] [nopre] [nopost]]*
-      ;; param ::= [<var-name> [types]*]*
+      ;; param ::= [<var-name> [types]* [:default <default>]]*
       ;; types will be concatenated with space
       ;; if no types is given, the previous type is used
       ;; decl conveys arbitrary declarations like: ((construct (a 3))
+
       ;;
+      ;; :default keyword separates type declarations from default value in parameter definition
+      ;;
+      
       ;; pre and post contain code sections that will be inserted in the
       ;; beginning or end of the methods. this feature can be disabled per method
       ;; with the flags nopre and nopost.
@@ -603,16 +607,27 @@
       (loop for def in defs
 	    collect
 	    (destructuring-bind (name params &key return code decl nopre nopost) def
-	      `(defmethod ,name (,@(loop for param in params
-					 collect
-					 (destructuring-bind (var-name &rest rest) param
-					   var-name)))
+	      `(defmethod ,name (,@(let ((key-occurred nil))
+				     (loop for param in params
+					   appending
+					   (destructuring-bind (var-name &rest rest) param
+					     #+nil `(,var-name)
+					     (if (position :default  rest)
+						 (if key-occurred
+						     `((,var-name ,(cadr (subseq rest (position :default rest)))))
+						     (progn
+						       (setf key-occurred t)
+						       `(&key (,var-name ,(cadr (subseq rest (position :default rest))))
+							     )))
+						 `(,var-name))))))
 		 (declare ,@(let ((old-type nil))
 			      (loop for param in params
 				    collect
 				    (destructuring-bind (var-name &rest rest) param
-				      (when rest
-					(setf old-type (format nil "~{~a ~}" rest)))
+				      #+nil (when rest
+					(let ((types (subseq rest (position :default rest))))
+					  (setf old-type (format nil "~{~a ~}" types))))
+				      (setf old-type (format nil "~{~a ~}" rest))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
 		 ,(unless nopre
@@ -627,9 +642,9 @@
 	    collect
 	    (destructuring-bind (name params &key return code decl nopre nopost) def
 	      `(defun ,name (,@(loop for param in params
-					 collect
-					 (destructuring-bind (var-name &rest rest) param
-					   var-name)))
+				     collect
+				     (destructuring-bind (var-name &rest rest) param
+				       var-name)))
 		 (declare ,@(let ((old-type nil))
 			      (loop for param in params
 				    collect
@@ -678,222 +693,222 @@
 			     :post `(CheckGL)
 			   :defs
 			   `((Shader  ((vfile const char*)
-						(pfile)
-						(fromString bool))
-				       :return :constructor
-				       :code (if fromString
-						 (Compile vfile pfile)
-						 (Init vfile pfile))
-				       :nopost t)
-			       (~Shader ()
-				:return :constructor
-				:code (do0
-					(glDetachShader ID pixel)
-					(glDetachShader ID vertex)
-					(glDeleteShader pixel)
-					(glDeleteShader vertex)
-					(glDeleteProgram ID)
+				       (pfile)
+				       (fromString bool))
+				      :return :constructor
+				      :code (if fromString
+						(Compile vfile pfile)
+						(Init vfile pfile))
+				      :nopost t)
+			     (~Shader ()
+				      :return :constructor
+				      :code (do0
+					     (glDetachShader ID pixel)
+					     (glDetachShader ID vertex)
+					     (glDeleteShader pixel)
+					     (glDeleteShader vertex)
+					     (glDeleteProgram ID)
 					;(CheckGL)
-					))
-			       (Init  ((vfile const char*)
-					      (pfile))
-				     :nopost t
-				     :code
-				     (let ((vsText (TextFileRead vfile))
-					   (fsText (TextFileRead pfile)))
-				       ,(lassert `((== 0 (vsText.size))
-						   :param (vfile)
-						   :msg "File not found"))
-				       ,(lassert `((== 0 (fsText.size))
-						   :param (pfile)
-						   :msg "File not found"))
-				       (let ((vertexText (vsText.c_str))
-					     (fragmentText (fsText.c_str)))
-					 (Compile vertexText fragmentText))))
-			       (Compile  ((vtext const char*)
-						 (ftext))
-					:code
-					(let ((vertex (glCreateShader GL_VERTEX_SHADER))
-					      (pixel (glCreateShader GL_FRAGMENT_SHADER)))
-
-					  ,@(loop for (name code) in `((vertex &vtext)
-								       (pixel &ftext))
-						  collect
-						  `(do0 (glShaderSource ,name 1 ,code 0)
-							(glCompileShader ,name)
-							(CheckShader ,name vtext ftext)))
-					  (setf ID (glCreateProgram))
-					  ,@(loop for e in `(vertex pixel)
-						  collect
-						  `(glAttachShader ID ,e))
-					  ,@(loop for e in `(pos tuv)
-						  and i from 0 
-						  collect
-						  `(glBindAttribLocation ID ,i (string ,e)))
-					  (glLinkProgram ID)
-					  (glCheckProgram ID vtext ftext)
-					  ;(CheckGL)
-				      
-					  ))
-			       (Bind () :code (do0
-					       (glUseProgram ID)
-					;(CheckGL)
-					       ))
-			       (Unbind () :code
-				       (do0
-					(glUseProgram 0)
-					;(CheckGL)
-					)
-				       )
-			       (SetInputTexture  ((slot uint)
-							 (name const char*)
-							 (texture GLTexture*))
-						:code
-						(do0
-						 (glActiveTexture (+ GL_TEXTURE0 slot) )
-						 (glBindTexture GL_TEXTURE_2D texture->ID)
-						 (glUniform1i (glGetUniformLocation ID name)
-							      slot)
-						 (CheckGL)))
-			       (SetInputMatrix  ((name const char*)
-							(matrix const mat4&))
-					       :code
-					       (let ((data ("static_cast<const GLfloat*>"
-							    &matrix)))
-						 (glUniformMatrix4fv (glGetUniformLocation ID name)
-								     1
-								     GL_FALSE
-								     data)
-						 ;(CheckGL)
-						 ))
-			       (SetFloat  ((name const char*)
-						  (v const float))
-					 :code
-					 (glUniform1f (glGetUniformLocation ID name)
-						      v))
-			       (SetInt  ((name const char*)
-						(v const int))
+					     ))
+			     (Init  ((vfile const char*)
+				     (pfile))
+				    :nopost t
+				    :code
+				    (let ((vsText (TextFileRead vfile))
+					  (fsText (TextFileRead pfile)))
+				      ,(lassert `((== 0 (vsText.size))
+						  :param (vfile)
+						  :msg "File not found"))
+				      ,(lassert `((== 0 (fsText.size))
+						  :param (pfile)
+						  :msg "File not found"))
+				      (let ((vertexText (vsText.c_str))
+					    (fragmentText (fsText.c_str)))
+					(Compile vertexText fragmentText))))
+			     (Compile  ((vtext const char*)
+					(ftext))
 				       :code
-				       (glUniform1i (glGetUniformLocation ID name)
-						      v))
-			       (SetUInt  ((name const char*)
-						 (v const uint))
+				       (let ((vertex (glCreateShader GL_VERTEX_SHADER))
+					     (pixel (glCreateShader GL_FRAGMENT_SHADER)))
+
+					 ,@(loop for (name code) in `((vertex &vtext)
+								      (pixel &ftext))
+						 collect
+						 `(do0 (glShaderSource ,name 1 ,code 0)
+						       (glCompileShader ,name)
+						       (CheckShader ,name vtext ftext)))
+					 (setf ID (glCreateProgram))
+					 ,@(loop for e in `(vertex pixel)
+						 collect
+						 `(glAttachShader ID ,e))
+					 ,@(loop for e in `(pos tuv)
+						 and i from 0 
+						 collect
+						 `(glBindAttribLocation ID ,i (string ,e)))
+					 (glLinkProgram ID)
+					 (glCheckProgram ID vtext ftext)
+					;(CheckGL)
+				      
+					 ))
+			     (Bind () :code (do0
+					     (glUseProgram ID)
+					;(CheckGL)
+					     ))
+			     (Unbind () :code
+				     (do0
+				      (glUseProgram 0)
+					;(CheckGL)
+				      )
+				     )
+			     (SetInputTexture  ((slot uint)
+						(name const char*)
+						(texture GLTexture*))
+					       :code
+					       (do0
+						(glActiveTexture (+ GL_TEXTURE0 slot) )
+						(glBindTexture GL_TEXTURE_2D texture->ID)
+						(glUniform1i (glGetUniformLocation ID name)
+							     slot)
+						(CheckGL)))
+			     (SetInputMatrix  ((name const char*)
+					       (matrix const mat4&))
+					      :code
+					      (let ((data ("static_cast<const GLfloat*>"
+							   &matrix)))
+						(glUniformMatrix4fv (glGetUniformLocation ID name)
+								    1
+								    GL_FALSE
+								    data)
+					;(CheckGL)
+						))
+			     (SetFloat  ((name const char*)
+					 (v const float))
 					:code
-					(glUniform1ui (glGetUniformLocation ID name)
-						      v))
-			       ))
+					(glUniform1f (glGetUniformLocation ID name)
+						     v))
+			     (SetInt  ((name const char*)
+				       (v const int))
+				      :code
+				      (glUniform1i (glGetUniformLocation ID name)
+						   v))
+			     (SetUInt  ((name const char*)
+					(v const uint))
+				       :code
+				       (glUniform1ui (glGetUniformLocation ID name)
+						     v))
+			     ))
 		       "uint vertex = 0, pixel = 0, ID =0;"
 		       ))))
 
     (define-module
 	`(gl_helper ()
-		 (do0
-		  (split-header-and-code
-		   (do0 (comments "header")
-			"#define CheckGL() {_CheckGL( __FILE__, __LINE__ ); }")
-		   (do0 (comments "implementation")))
-		  ,@(defuns
-		      :defs
-		       `((_CheckGL  ((f const char*)
-					  (l int))
-				    :code (let ((err (glGetError)))
-					    (unless (== GL_NO_ERROR err)
-					      (let ((errStr (string "UNKNOWN ERROR")))
-						(case err
-						  ,@(loop for (e f) in `((#x500 "INVALID ENUM")
-									 (#x502 "INVALID OPERATION")
-									 (#x501 "INVALID VALUE")
-									 (#x506 "INVALID FRAMEBUFFER OPERATION")
-									 )
-							  collect
-							  `(,e (setf errStr (string ,f)))
-							  ))
-						,(logprint "gl error" `(err errStr f l)))))
-				 )
-		       (CreateVBO ((data const GLfloat*)
-					   (size const uint))
-				  :return GLuint
-				  :code (let ((id ))
-					  (declare (type GLuint id))
-					  (glGenBuffers 1 &id)
-					  (glBindBuffer GL_ARRAY_BUFFER id)
-					  (glBufferData GL_ARRAY_BUFFER size data GL_STATIC_DRAW)
-					  (CheckGL)
-					  (return id)))
-		       (BindVBO  ((idx const uint)
-					 (N)
-					 (id cont GLuint))
-				 :code
-				 (do0
-				  (glEnableVertexAttribArray idx)
-				  (glBindBuffer GL_ARRAY_BUFFER id)
-				  (glVertexAttribPointer idx N GL_FLOAT GL_FALSE 0 nullptr)
-				  (CheckGL)))
-			 (CheckShader  ((shader GLuint)
-					(vshader const char*)
-					(fshader))
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   "#define CheckGL() {_CheckGL( __FILE__, __LINE__ ); }")
+		      (do0 (comments "implementation")))
+		     ,@(defuns
+			   :defs
+			   `((_CheckGL  ((f const char*)
+					 (l int))
+					:code (let ((err (glGetError)))
+						(unless (== GL_NO_ERROR err)
+						  (let ((errStr (string "UNKNOWN ERROR")))
+						    (case err
+						      ,@(loop for (e f) in `((#x500 "INVALID ENUM")
+									     (#x502 "INVALID OPERATION")
+									     (#x501 "INVALID VALUE")
+									     (#x506 "INVALID FRAMEBUFFER OPERATION")
+									     )
+							      collect
+							      `(,e (setf errStr (string ,f)))
+							      ))
+						    ,(logprint "gl error" `(err errStr f l)))))
+					)
+			     (CreateVBO ((data const GLfloat*)
+					 (size const uint))
+					:return GLuint
+					:code (let ((id ))
+						(declare (type GLuint id))
+						(glGenBuffers 1 &id)
+						(glBindBuffer GL_ARRAY_BUFFER id)
+						(glBufferData GL_ARRAY_BUFFER size data GL_STATIC_DRAW)
+						(CheckGL)
+						(return id)))
+			     (BindVBO  ((idx const uint)
+					(N)
+					(id cont GLuint))
 				       :code
-				       (let ((buffer))
-					 (declare (type (array char 1024) buffer))
-					 (memset buffer 0 (sizeof buffer))
-					 (let ((length 0))
-					   (declare (type GLsizei length))
-					   (glGetShaderInfoLog shader (sizeof buffer)
-							       &length buffer)
-					   (CheckGL)
-					   ,(lassert `((not (and (< 0 length)
-								 (strstr buffer (string "ERROR"))))
-						       :msg "shader compile error"
-						       :param (buffer))))))
-			 (CheckProgram ((id GLuint)
-					(vshader const char*)
-					(fshader))
+				       (do0
+					(glEnableVertexAttribArray idx)
+					(glBindBuffer GL_ARRAY_BUFFER id)
+					(glVertexAttribPointer idx N GL_FLOAT GL_FALSE 0 nullptr)
+					(CheckGL)))
+			     (CheckShader  ((shader GLuint)
+					    (vshader const char*)
+					    (fshader))
+					   :code
+					   (let ((buffer))
+					     (declare (type (array char 1024) buffer))
+					     (memset buffer 0 (sizeof buffer))
+					     (let ((length 0))
+					       (declare (type GLsizei length))
+					       (glGetShaderInfoLog shader (sizeof buffer)
+								   &length buffer)
+					       (CheckGL)
+					       ,(lassert `((not (and (< 0 length)
+								     (strstr buffer (string "ERROR"))))
+							   :msg "shader compile error"
+							   :param (buffer))))))
+			     (CheckProgram ((id GLuint)
+					    (vshader const char*)
+					    (fshader))
+					   :code
+					   (let ((buffer))
+					     (declare (type (array char 1024) buffer))
+					     (memset buffer 0 (sizeof buffer))
+					     (let ((length 0))
+					       (declare (type GLsizei length))
+					       (glGetProgramInfoLog id (sizeof buffer)
+								    &length buffer)
+					       (CheckGL)
+					       ,(lassert `((< length 0)
+							   :msg "shader compile error"
+							   :param (buffer))))))
+			     (DrawQuad ()
 				       :code
-				       (let ((buffer))
-					 (declare (type (array char 1024) buffer))
-					 (memset buffer 0 (sizeof buffer))
-					 (let ((length 0))
-					   (declare (type GLsizei length))
-					   (glGetProgramInfoLog id (sizeof buffer)
-							       &length buffer)
-					   (CheckGL)
-					   ,(lassert `((< length 0)
-						       :msg "shader compile error"
-						       :param (buffer))))))
-			 (DrawQuad ()
-				   :code
-				   (let ((vao 0))
-				     (declare (type
-					       "static GLuint" vao))
-				     (unless vao
-				       (let ((verts (curly -1 1 0
-							   1 1 0
-							   -1 -1 0
-							   1 1 0
-							   -1 -1 0
-							   1 -1 0))
-					     (uvdata (curly 0 0
-							    1 0
-							    0 1
-							    1 0
-							    0 1
-							    1 1
-							    ))
-					     (vertexBuffer (CreateVBO verts (sizeof verts)))
-					     (UVBuffer (CreateVBO uvdata (sizeof uvdata))))
-					 (declare (type (array
-							 "static const GLfloat"
-							 (* 3 6)) verts)
-						  (type (array "static const GLfloat" (* 2 6) uvdata)))
-					 (glGenVertexArray 1 &vao)
+				       (let ((vao 0))
+					 (declare (type
+						   "static GLuint" vao))
+					 (unless vao
+					   (let ((verts (curly -1 1 0
+							       1 1 0
+							       -1 -1 0
+							       1 1 0
+							       -1 -1 0
+							       1 -1 0))
+						 (uvdata (curly 0 0
+								1 0
+								0 1
+								1 0
+								0 1
+								1 1
+								))
+						 (vertexBuffer (CreateVBO verts (sizeof verts)))
+						 (UVBuffer (CreateVBO uvdata (sizeof uvdata))))
+					     (declare (type (array
+							     "static const GLfloat"
+							     (* 3 6)) verts)
+						      (type (array "static const GLfloat" (* 2 6) uvdata)))
+					     (glGenVertexArray 1 &vao)
+					     (glBindVertexArray vao)
+					     (BindVBO 0 3 vertexBuffer)
+					     (BindVBO 1 2 UVBuffer)
+					     (glBindVertexArray 0)
+					     (CheckGL)))
 					 (glBindVertexArray vao)
-					 (BindVBO 0 3 vertexBuffer)
-					 (BindVBO 1 2 UVBuffer)
-					 (glBindVertexArray 0)
-					 (CheckGL)))
-				     (glBindVertexArray vao)
-				     (glDrawArrays GL_TRIANGLES 0 6)
-				     (glBindVertexArray 0))))))))
+					 (glDrawArrays GL_TRIANGLES 0 6)
+					 (glBindVertexArray 0))))))))
     (define-module
 	`(job ()
 	      (do0
@@ -963,27 +978,27 @@
 	`(random ()
 		 (do0
 		  (split-header-and-code
-		    (do0 (comments "header")
-			 )
+		   (do0 (comments "header")
+			)
+		   (do0
+		    (comments "implementation")
+		    (do0 "static uint seed = 0x12345678;")
 		    (do0
-		     (comments "implementation")
-		     (do0 "static uint seed = 0x12345678;")
-		     (do0
-		      "static int numX=512,numY=512,numOctaves=7,primeIndex=0;"
-		      "static float persistence=.5f;"
-		      (let
-			  ((primes
-			     (curly
-			      ,@(loop for e in
-				    `(( 995615039 600173719 701464987 ) ( 831731269 162318869 136250887 )
-				      ( 174329291 946737083 245679977 ) ( 362489573 795918041 350777237 )
-				      ( 457025711 880830799 909678923 ) ( 787070341 177340217 593320781 )
-				      ( 405493717 291031019 391950901 ) ( 458904767 676625681 424452397 )
-				      ( 531736441 939683957 810651871 ) ( 997169939 842027887 423882827 ))
-				    collect
-				    `(curly ,@e)))))
-			    (declare (type (array "static int" 10 3) primes))))
-			 ))
+		     "static int numX=512,numY=512,numOctaves=7,primeIndex=0;"
+		     "static float persistence=.5f;"
+		     (let
+			 ((primes
+			    (curly
+			     ,@(loop for e in
+				     `(( 995615039 600173719 701464987 ) ( 831731269 162318869 136250887 )
+				       ( 174329291 946737083 245679977 ) ( 362489573 795918041 350777237 )
+				       ( 457025711 880830799 909678923 ) ( 787070341 177340217 593320781 )
+				       ( 405493717 291031019 391950901 ) ( 458904767 676625681 424452397 )
+				       ( 531736441 939683957 810651871 ) ( 997169939 842027887 423882827 ))
+				     collect
+				     `(curly ,@e)))))
+		       (declare (type (array "static int" 10 3) primes))))
+		    ))
 
 		  ,@(defuns
 			:defs
@@ -1005,27 +1020,27 @@
 						(/ (static_cast<float> tt)
 						   1073741824.0s0))))))
 			  (SmoothedNoise ((i const int)
-				  (x const int)
-				  (y))
-				 :return "static float"
-				 :code
-				 (let ((corners (/ (+ ,@(loop for (a b c) in `((i x-1 y-1)
-									       (i x+1 y-1)
-									       (i x-1 y+1)
-									       (i x+1 y+1))
-							      collect
-							      `(Noise ,a ,b ,c)))
-						   16))
-				       (sides (/ (+ ,@(loop for (a b c) in `((i x-1 y)
-									     (i x+1 y)
-									       (i x y-1)
-									     (i x y+1))
-							      collect
-							      `(Noise ,a ,b ,c)))
-						 8))
-				       (center (/ (Noise i x y)
-						  4)))
-				   (return (+ corners sides center))))
+					  (x const int)
+					  (y))
+					 :return "static float"
+					 :code
+					 (let ((corners (/ (+ ,@(loop for (a b c) in `((i x-1 y-1)
+										       (i x+1 y-1)
+										       (i x-1 y+1)
+										       (i x+1 y+1))
+								      collect
+								      `(Noise ,a ,b ,c)))
+							   16))
+					       (sides (/ (+ ,@(loop for (a b c) in `((i x-1 y)
+										     (i x+1 y)
+										     (i x y-1)
+										     (i x y+1))
+								    collect
+								    `(Noise ,a ,b ,c)))
+							 8))
+					       (center (/ (Noise i x y)
+							  4)))
+					   (return (+ corners sides center))))
 			  (Interpolate ((a const float)
 					(b )
 					(x ))
@@ -1065,15 +1080,15 @@
 					     (*= amplitude persistance)
 					     (incf total
 						   (* amplitude
-						    (InterpolatedNoise (% (+ primeIndex 1)
-									  10)
-								       (/ x frequency)
-								       (/ y frequency)))))
+						      (InterpolatedNoise (% (+ primeIndex 1)
+									    10)
+									 (/ x frequency)
+									 (/ y frequency)))))
 					   (return (/ total frequency))))
-		))
+			  ))
 
 		  ,@(defuns
-		      :defs
+			:defs
 			`((RandomUInt ()
 				      :return uint
 				      :code (do0
@@ -1106,6 +1121,86 @@
 			  (noise2D ((x const float)
 				    (y const float))
 				   :return float))))))
+
+    (define-module
+	`(file_helper ()
+		      (do0
+		       (split-header-and-code
+			(do0 (comments "header")
+			     )
+			(do0
+			 (comments "implementation")
+		     
+		     
+			 ))
+		       ,@(defuns
+			     :defs
+			     `((FileExists  ((f const char*))
+					    :return bool
+					    :code (let (((s f)))
+						    (declare (type ifstream (s f)))
+						    (return (s.good))))
+			       (RemoveFile  ((f const char*))
+					    :return bool
+					    :code (if (FileExists f)
+						      (return (not (remove f)))
+						      (return false)))
+			       (FileSize  ((f string))
+					  :return uint
+					  :code (let (((s f)))
+						  (declare (type ifstream (s f)))
+						  ;; FIXME: is this really returning file size?
+						  (return (s.good))))
+			       (TextFileRead ((f const char*))
+					     :return string
+					     :code
+					     (let (((s f)))
+					       (declare (type ifstream (s f)))
+					       ;; FIXME: is this really returning file size?
+					       (return (s.good))))
+			       ))
+		       )))
+
+    (define-module
+	`(cl_buffer ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")))
+		   
+		     (defclass Buffer ()
+		       "public:"
+		       (space enum
+			(curly
+			 ,@(loop for (e f) in `((DEFAULT 0)
+						(TEXTURE 8)
+						(TARGET 16)
+						(READONLY 1)
+						(WRITEONLY 2))
+				 collect
+				 `(= ,e ,f))))
+		       ,@(defmethods
+			     :defs
+			     `((Buffer  ()
+					:decl ((construct (hostBuffer 0)))
+					:return :constructor
+				
+				      
+					)
+			       (Buffer  ((N unsigned int)
+					 (tt unsigned int :default DEFAULT)
+					 (ptr void* :default 0))
+					:decl ((construct (hostBuffer 0)))
+					:return :constructor
+				
+				      
+					)))
+		       "unsigned int* hostBuffer;"
+		       "cl_mem deviceBuffer, pinnedBuffer;"
+		       "unsigned int type, size, textureID;"
+		       "bool ownData;"
+		       ))))
     )
   
   (progn
