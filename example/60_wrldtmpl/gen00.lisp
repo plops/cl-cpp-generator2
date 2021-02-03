@@ -1383,7 +1383,7 @@
 		      (do0 (comments "header")
 			   )
 		      (do0 (comments "implementation")
-			   
+			   ;; needs textfileread helper
 			   ))
 		   
 		     (defclass Kernel ()
@@ -1396,7 +1396,16 @@
 					 (entryPoint char*))
 					:return :constructor
 					:code
-					(do0
+					(let ((size (static_cast<size_t> 0)
+						    )
+					      (pos size)
+					      (err (static_cast<cl_int> 0))
+					      (csText (TextFileRead file))
+					      (incLines 0))
+					  (unless (csText.size)
+					    ,(logprint "file not found" `(file)))
+					  (while true
+						 (setf pos (csText.find (string "#include"))))
 					 )
 					
 				      
