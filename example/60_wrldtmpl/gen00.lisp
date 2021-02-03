@@ -1191,6 +1191,8 @@
 					:return :constructor
 					:code
 					(do0
+					 (comments "// nothing" ))
+					#+nil (do0
 					 (unless Kernel--clinitialized
 					   (unless Kernel--InitCL
 					     ,(logprint "failed to initialize opencl"))
