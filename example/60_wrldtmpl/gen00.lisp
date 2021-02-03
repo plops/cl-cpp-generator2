@@ -1191,11 +1191,35 @@
 			       (Buffer  ((N unsigned int)
 					 (tt unsigned int :default DEFAULT)
 					 (ptr void* :default 0))
-					:decl ((construct (hostBuffer 0)))
+					
 					:return :constructor
 				
 				      
-					)))
+					)
+			       (~Buffer  ()
+					
+					:return :constructor
+				
+				      
+					)
+			       (GetDevicePtr ()
+					     :return cl_mem*
+					     :code (return &deviceBuffer))
+			       (GetHostPtr ()
+					   :return "unsigned int*"
+					   :code (return &hostBuffer))
+			       (CopyToDevice ((blocking bool :default true))
+					     )
+			       (CopyToDevice2 ((blocking bool)
+					       (e cl_event* :default 0)
+					       (s const size_t :default 0))
+					      
+					      )
+			       (CopyFromDevice ((blocking bool :default true))
+					       )
+			       (CopyTo ((buffer Buffer*)))
+			       (Clear ())
+			       ))
 		       "unsigned int* hostBuffer;"
 		       "cl_mem deviceBuffer, pinnedBuffer;"
 		       "unsigned int type, size, textureID;"
