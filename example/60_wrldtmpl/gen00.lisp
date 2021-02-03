@@ -1245,7 +1245,47 @@
 					 (ptr void* :default 0))
 					
 					:return :constructor
-				
+					:code
+					(do0
+					 (setf type tt
+					       ownData false)
+					 (let ((rwFlags CL_MEM_READ_WRITE))
+					   (when (& tt READONLY)
+					     (setf rwFlags CL_MEM_READ_ONLY))
+					   (when (& tt WRITEONLY)
+					     (setf rwFlags CL_MEM_WRITE_ONLY))
+					   (if (== 0 (& tt (logior TEXTURE TARGET)))
+					       (do0
+						(setf size N
+						      textureID 0
+						      deviceBuffer (clCreateBuffer
+								    (Kernel--GetContext)
+								    rwFlags (* size 4) 0 0)
+						      hostBuffer (static_cast<uint*> ptr))
+						)
+					       (do0
+						(setf textureID N)
+						(unless Kernel--candoInterop
+						  ,(logprint "didn't expect to get here"))
+						(let ((err 0))
+						  (if (== TARGET tt)
+						      (do0
+						       (setf deviceBuffer (clCreateFromGLTexture
+									   (Kernel--GetContext)
+									   CL_MEM_WRITE_ONLY
+									   GL_TEXTURE_2D
+									   0 N &err))
+						       )
+						      (do0
+						       (setf deviceBuffer (clCreateFromGLTexture
+									   (Kernel--GetContext)
+									   CL_MEM_READ_ONLY
+									   GL_TEXTURE_2D
+									   0 N &err))
+						       (CHECKCL err)
+						       (setf hostBuffer 0)
+						       )))
+						))))
 				      
 					)
 			       (~Buffer  ()
