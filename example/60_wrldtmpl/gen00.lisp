@@ -1339,9 +1339,36 @@
 					      
 					      )
 			       (CopyFromDevice ((blocking bool :default true))
-					       )
-			       (CopyTo ((buffer Buffer*)))
-			       (Clear ())
+					       :code
+					       (let ((err (static_cast<cl_int> 0)))
+					       (CHECKCL (= err
+							   (clEnqueueReadBuffer
+							    (Kernel--GetQueue)
+							    deviceBuffer
+							    blocking
+							    0
+							    (* size 4)
+							    hostBuffer
+							    0 0 0)))))
+			       (CopyTo ((buffer Buffer*))
+				       :code
+				       (clEnqueueCopyBuffer (Kernel--GetQueue)
+							    deviceBuffer
+							    buffer->deviceBuffer
+							    0 0
+							    (* size 4)
+							    0 0 0))
+			       (Clear ()
+				      :code
+				      (let ((value (static_cast<uint> 0))
+					    (err (static_cast<cl_int> 0)))
+					(CHECKCL (= err
+						    (clEnqueueFillBuffer
+						     (Kernel--GetQueue)
+						     deviceBuffer
+						     &value
+						     4 0 (* size 4)
+						     0 0 0)))))
 			       ))
 		       "unsigned int* hostBuffer;"
 		       "cl_mem deviceBuffer, pinnedBuffer;"
