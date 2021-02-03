@@ -1401,6 +1401,92 @@
 					
 				      
 					)
+			       (Kernel  ((existingProgram cl_program&)
+					 (entryPoint char*))
+					:return :constructor
+					:code
+					(do0
+					 )
+					
+				      
+					)
+			       (~Kernel  ()
+					:return :constructor
+					:code
+					(do0
+					 )
+					
+				      
+					)
+			       (GetKernel ()
+					  :return cl_kernel&
+					  :code
+					  (return kernel))
+			       (GetProgram ()
+					  :return cl_program&
+					  :code
+					  (return program))
+			       (GetQueue ()
+					  :return "static cl_command_queue&"
+					  :code
+					  (return queue))
+			       (GetQueue2 ()
+					  :return "static cl_command_queue&"
+					  :code
+					  (return queue2))
+			       (GetContext ()
+					  :return "static cl_context&"
+					  :code
+					  (return context))
+			       (GetDevice ()
+					  :return "static cl_device_id&"
+					  :code
+					  (return device))
+			       (Run ((eventToWaitFor cl_event* :default 0)
+				     (eventToSet cl_event* :default 0))
+				    :code
+				    (do0
+				     ))
+			       (Run ((buffers cl_mem*)
+				     (count int :default 1)
+				     (eventToWaitFor cl_event* :default 0)
+				     (eventToSet cl_event* :default 0)
+				     (acq cl_event* :default 0)
+				     (rel cl_event* :default 0))
+				    :code
+				    (do0
+				     ))
+			       (Run ((count const size_t)
+				     (localSize const int2 :default (make_int2 32 2))
+				     (eventToWaitFor cl_event* :default 0)
+				     (eventToSet cl_event* :default 0)
+				     )
+				    :code
+				    (do0
+				     ))
+			       (Run2D ((count const int2)
+				       (lsize const int2)
+				     (eventToWaitFor cl_event* :default 0)
+				     (eventToSet cl_event* :default 0)
+
+				       )
+				    :code
+				    (do0
+				     ))
+			       ,@(loop for e in `((buffer cl_mem*)
+						  (buffer Buffer*)
+						  (value float)
+						  (value int)
+						  (value float2)
+						  (value float3)
+						  (value float4))
+				       collect
+				       `(SetArgument ((idx int)
+						      ,e)))
+			       (InitCL ()
+				       )
+			       
+			       
 			       ))
 		       "private:"
 		       "cl_kernel kernel;"
