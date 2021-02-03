@@ -1305,10 +1305,37 @@
 					   :return "unsigned int*"
 					   :code (return &hostBuffer))
 			       (CopyToDevice ((blocking bool :default true))
-					     )
+					     :code
+					     (let ((err (static_cast<cl_int> 0)))
+					       (CHECKCL (= err
+							   (clEnqueueWriteBuffer
+							    (Kernel--GetQueue)
+							    deviceBuffer
+							    blocking
+							    0
+							    (* size 4)
+							    hostBuffer
+							    0 0 0)))))
 			       (CopyToDevice2 ((blocking bool)
 					       (e cl_event* :default 0)
 					       (s const size_t :default 0))
+					      :code
+					      (do0
+					       (comments "this uses the second queue")
+					       (let ((err (static_cast<cl_int> 0)))
+					       (CHECKCL (= err
+							   (clEnqueueWriteBuffer
+							    (Kernel--GetQueue2)
+							    deviceBuffer
+							    blocking
+							    0
+							    (? (== 0 s)
+							       (* size 4)
+							       (* s 4))
+							    hostBuffer
+							    0 0
+							    eventToSet))))
+					       )
 					      
 					      )
 			       (CopyFromDevice ((blocking bool :default true))
