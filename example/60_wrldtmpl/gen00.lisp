@@ -624,10 +624,12 @@
 			      (loop for param in params
 				    collect
 				    (destructuring-bind (var-name &rest rest) param
-				      #+nil (when rest
-					(let ((types (subseq rest (position :default rest))))
+				      (when rest
+					(let ((types (subseq rest 0 (position :default rest))))
 					  (setf old-type (format nil "~{~a ~}" types))))
-				      (setf old-type (format nil "~{~a ~}" rest))
+				      #+nil (setf old-type (format nil "~{~a ~}" (subseq rest
+										   0
+										   (position :default rest))))
 				      `(type ,old-type ,var-name))))
 			  (values ,return))
 		 ,(unless nopre
