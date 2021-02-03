@@ -1375,6 +1375,45 @@
 		       "unsigned int type, size, textureID;"
 		       "bool ownData;"
 		       ))))
+
+    (define-module
+	`(cl_kernel ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   
+			   ))
+		   
+		     (defclass Kernel ()
+		       "friend class Buffer;"
+		       "public:"
+		       
+		       ,@(defmethods
+			     :defs
+			     `((Kernel  ((file char*)
+					 (entryPoint char*))
+					:return :constructor
+					:code
+					(do0
+					 )
+					
+				      
+					)
+			       ))
+		       "private:"
+		       "cl_kernel kernel;"
+		       "cl_mem vbo_cl;"
+		       "cl_program program;"
+		       "bool arg0set = false;"
+		       "inline static cl_device_id device;"
+		       "inline static cl_context context;" ;; limits us to one device
+		       "inline static cl_command_queue queue, queue2;"
+		       "inline static char* log = 0;"
+		       "public:"
+		       "inline static bool candoInterop = false;"
+		       ))))
     )
   
   (progn
