@@ -1169,7 +1169,9 @@
 		     (split-header-and-code
 		      (do0 (comments "header")
 			   )
-		      (do0 (comments "implementation")))
+		      (do0 (comments "implementation")
+			   ;; needs cl_kernel
+			   ))
 		   
 		     (defclass Buffer ()
 		       "public:"
@@ -1187,7 +1189,55 @@
 			     `((Buffer  ()
 					:decl ((construct (hostBuffer 0)))
 					:return :constructor
-				
+					:code
+					(do0
+					 (unless Kernel--clinitialized
+					   (unless Kernel--InitCL
+					     ,(logprint "failed to initialize opencl"))
+					   (setf Kernel--clinitialized true))
+					 (let ((type tt)
+					       (ownData false)
+					       (rwFlags CL_MEM_READ_WRITE))
+					   (when (& tt READONLY)
+					     (setf rwFlags CL_MEM_READ_ONLY))
+					   (when (& tt WRITEONLY)
+					     (setf rwFlags CL_MEM_WRITE_ONLY))
+					   (if (== 0 (& tt (logior TEXTURE TARGET)))
+					       (do0
+						(setf size N
+						      textureID 0 ;; not representing a texture
+						      deviceBuffer (clCreateBuffer
+								    (Kernel--GetContext)
+								    rwFlags
+								    (* size 4)
+								    0 0)
+						      hostBuffer (static_cast<uint*> ptr)
+						      ))
+					       (do0
+						(setf textureID N)
+						(unless Kernel--candoInterop
+						  ,(logprint "didn't expect to get here"))
+						(let ((err 0))
+						  (if (== TARGET tt)
+						      (setf deviceBuffer
+							    (clCreateFromGLTexture
+							     (Kernel--GetContext)
+							     CL_MEM_WRITE_ONLY
+							     GL_TEXTURE_2D
+							     0
+							     N
+							     &error))
+						      (setf deviceBuffer
+							    (clCreateFromGLTexture
+							     (Kernel--GetContext)
+							     CL_MEM_READ_ONLY
+							     GL_TEXTURE_2D
+							     0
+							     N
+							     &error)))
+						  (CHECKCL err)
+						  (setf hostBuffer 0))
+						))))
 				      
 					)
 			       (Buffer  ((N unsigned int)
