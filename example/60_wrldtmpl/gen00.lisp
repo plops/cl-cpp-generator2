@@ -1405,7 +1405,30 @@
 					  (unless (csText.size)
 					    ,(logprint "file not found" `(file)))
 					  (while true
-						 (setf pos (csText.find (string "#include"))))
+						 (do0
+						  (setf pos (csText.find (string "#include")))
+						  (when (== pos string--npos)
+						    break))
+						 (let ((tmp))
+						   (declare (type string tmp))
+						   (when (< 0 pos)
+						     (setf tmp (csText.substr 0 (- pos 1))))
+						   (do0
+						    (setf pos (csText.find (string "\\\""))
+							  )
+						    (when (== pos string--npos)
+						      ,(lprint "expected double quote after #include in shader"))
+						    
+						    )
+						   (let ((end (csText.find (string "\\\"")
+									   (+ pos 1))))
+						     (when (== end string--npos)
+						       ,(lprint "expected second double quote after #include in shader")))
+						   (let ((file (csText.substr (+ pos 1)
+									      (- end pos 1)))
+							 (incText (TextFileRead (file.c_str)))
+							 (p (incText.c_str))))
+						   ))
 					 )
 					
 				      
