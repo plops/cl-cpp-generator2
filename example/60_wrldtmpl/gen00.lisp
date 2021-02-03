@@ -1251,7 +1251,9 @@
 			       (~Buffer  ()
 					
 					:return :constructor
-				
+					:code
+					(when ownData
+					  (delete hostBuffer))
 				      
 					)
 			       (GetDevicePtr ()
