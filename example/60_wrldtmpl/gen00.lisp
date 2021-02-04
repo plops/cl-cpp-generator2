@@ -1587,6 +1587,8 @@
 					  (unless (CHECKCL (= err (clGetDeviceIDs platform CL_DEVICE_TYPE_ALL
 										  devCount devices nullptr)))
 					    (return false))
+					  ;; deviceUsed as -1 seems to be a weird hack to identify device 0
+					  ;; why not use int here?
 					  (let ((deviceUsed (static_cast<uint> -1))
 						(endDev (static_cast<uint> (- devCount 1))))
 					    (dotimes (i endDev)
@@ -1623,7 +1625,11 @@
 									    s (devices.find (char " ")
 											    o)))
 								    while
-								    (paren (== s o))))))))))))
+								    (paren (== s o)))))
+						    (when (< -1 deviceUsed)
+						      break)))))
+					    ;; fixme: line 1030
+					    )))
 				       )
 			       
 			       
