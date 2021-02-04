@@ -1564,6 +1564,66 @@
 				       `(SetArgument ((idx int)
 						      ,e)))
 			       (InitCL ()
+				       :return bool
+				       :code (do0
+					(do0
+					 "cl_platform_id platform;"
+					 #+nil(do0 "cl_device_id* devices;"
+						   "cl_uint devCount;"
+						   "cl_int err;"))
+					(let ((err (static_cast<cl_int> 0))
+					      (devCount (static_cast<cl_uint> 0))
+					      (devices (static_cast<cl_device_id*> nullptr)))
+					  (unless (CHECKCL (= err (getPlatformID &platform)))
+					    (return false))
+					  (unless (CHECKCL (= err (clGetDeviceIDs platform
+										  CL_DEVICE_TYPE_ALL
+										  0
+										  nullptr
+										  &devCount)))
+					    (return false)
+					    )
+					  (setf devices (new (aref cl_device_id devCount)))
+					  (unless (CHECKCL (= err (clGetDeviceIDs platform CL_DEVICE_TYPE_ALL
+										  devCount devices nullptr)))
+					    (return false))
+					  (let ((deviceUsed (static_cast<uint> -1))
+						(endDev (static_cast<uint> (- devCount 1))))
+					    (dotimes (i endDev)
+					      (let ((extensionSize (static_cast<size_t> 0)))
+						(CHECKCL (= err (clGetDeviceInfo
+								 (aref devices i)
+								 CL_DEVICE_EXTENSIONS
+								 0
+								 nullptr
+								 &extensionSize)))
+						(when (< 0 extensionSize)
+						  (let ((extensions (static_cast<char*> (malloc exensionSize))))
+						    (CHECKCL (= err (clGetDeviceInfo
+								     (aref devices i)
+								     CL_DEVICE_EXTENSIONS
+								     extensionSize
+								     extensions
+								     &extensionSize)))
+						    "string devices( extensionsions );"
+						    (free extensinos))
+						  (let ((o (static_cast<size_t> 0))
+							(s (devices.find (char " ")
+									 o)))
+						    (while (!= s devices.npos)
+							   (let ((subs (devices.substr o (- s o))))
+							     ;; check if device can do gl/cl interop
+							     (unless (strcmp (string "cl_khr_gl_sharing")
+									     (subs.c_str))
+							       (setf deviceUsed 1)
+							       break)
+							     (space do
+								    (progn
+								      (setf o (+ s 1)
+									    s (devices.find (char " ")
+											    o)))
+								    while
+								    (paren (== s o))))))))))))
 				       )
 			       
 			       
