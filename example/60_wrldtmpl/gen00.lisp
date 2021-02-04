@@ -1468,9 +1468,7 @@
 					    (setf kernel (clCreateKernel program
 									 entryPoint
 									 &err))
-					    (unless kernel
-					      ,(logprint "create kernel failed: entry point not found."))
-					    (CHECKCL err))
+					    )
 					 )
 					
 				      
@@ -1479,8 +1477,12 @@
 					 (entryPoint char*))
 					:return :constructor
 					:code
-					(do0
-					 )
+					(let ((err (static_cast<cl_int>)))
+					  (setf program existingProgram
+						kernel (clCreateKernel program entryPoint &err))
+					  (do0 (unless kernel
+						   ,(logprint "create kernel failed: entry point not found."))
+						 (CHECKCL err)))
 					
 				      
 					)
@@ -1488,7 +1490,11 @@
 					:return :constructor
 					:code
 					(do0
-					 )
+					 (when kernel
+					   (clReleaseKernel kernel)
+					   )
+					 (when program
+					   (clReleaseProgram program)))
 					
 				      
 					)
