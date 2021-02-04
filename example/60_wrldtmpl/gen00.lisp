@@ -1417,18 +1417,60 @@
 						    (setf pos (csText.find (string "\\\""))
 							  )
 						    (when (== pos string--npos)
-						      ,(lprint "expected double quote after #include in shader"))
+						      ,(logprint "expected double quote after #include in shader"))
 						    
 						    )
 						   (let ((end (csText.find (string "\\\"")
 									   (+ pos 1))))
 						     (when (== end string--npos)
-						       ,(lprint "expected second double quote after #include in shader")))
+						       ,(logprint "expected second double quote after #include in shader")))
 						   (let ((file (csText.substr (+ pos 1)
 									      (- end pos 1)))
 							 (incText (TextFileRead (file.c_str)))
-							 (p (incText.c_str))))
-						   ))
+							 (p (incText.c_str)))
+						     (while p
+							    (incf incLines)
+							    (setf p (strstr (+ p 1)
+									    (string "\\n"))))
+						     (decf incLines 2)
+						     (incf tmp incText)
+						     (incf tmp (csText.substr (+ end 1)
+									      string--npos))
+						     (setf csText tmp))))
+					  (let ((source (csText.c_str))
+						(size (strlen source))
+						(program (clCreateProgramWithSource
+							  context
+							  1
+							  ("static_cast<const char**>" &source)
+							  &size
+							  &err)))
+					    (CHECKCL err)
+					    (setf err (clBuildProgram
+						       program
+						       0
+						       nullptr
+						       (string "-cl-fast-relaxed-math -cl-mad-enable  -cl-denorms-are-zero -cl-no-signed-zeros -cl-unsafe-math-optimizations")
+						       nullptr
+						       nullptr))
+					    (unless (== CL_SUCCESS err)
+					      (unless log
+						(setf log (new (aref char (* 256 1024)))))
+					      (setf (aref log 0) 0)
+					      (clGetProgramBuildInfo program
+								     (getFirstDevice context)
+								     CL_PROGRAM_BUILD_LOG
+								     (* 100 1024)
+								     log
+								     nullptr)
+					      (setf (aref log 2048) 0)
+					      ,(logprint "build error" `(log)))
+					    (setf kernel (clCreateKernel program
+									 entryPoint
+									 &err))
+					    (unless kernel
+					      ,(logprint "create kernel failed: entry point not found."))
+					    (CHECKCL err))
 					 )
 					
 				      
