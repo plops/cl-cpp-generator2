@@ -1579,6 +1579,51 @@
 					   )))
 				     
 				     ))
+			       (Run ((buffer Buffer*)
+				     (tileSize const int2)
+				     (eventToWaitFor cl_event* :default 0)
+				     (eventToSet cl_event* :default 0)
+				     (acq cl_event* :default 0)
+				     (rel cl_event* :default 0)
+				     )
+				    :code
+				    (do0
+				     (unless arg0set
+				       ,(logprint "kernel expects at least one argument, none set."))
+				     (let ((err (static_cast<cl_int> 0)))
+				      (if Kernel--candoInterop
+					  (let ((localSize (curly (static_cast<size_t> tileSize.x)
+								  (static_cast<size_t> tileSize.y)))
+						(count 1))
+					    (declare (type (array size_t 2) localSize)) (do0
+						(CHECKCL (= err (clEnqueueAcquireGLObjects
+								 queue count (buffer->GetDevicePtr) 0 0 acq)))
+						(CHECKCL (= err (clEnqueueNDRangeKernel
+								 queue
+								 kernel
+								 2 0
+								 workSize
+								 localSize
+								 (? eventToWaitFor 1 0)
+								 eventToWaitFor
+								 eventToSet)))
+						(CHECKCL (= err (clEnqueuReleaseGLObjects queue
+											  count
+											  buffers
+											  0 0 rel)))
+						))
+					  (do0
+					   (CHECKCL (= err (clEnqueueNDRangeKernel
+							    queue
+							    kernel
+							    2 0
+							    workSize
+							    localSize
+							    (? eventToWaitFor 1 0)
+							    eventToWaitFor
+							    eventToSet)))
+					   )))
+				     ))
 			       (Run ((count const size_t)
 				     (localSize const int2 :default (make_int2 32 2))
 				     (eventToWaitFor cl_event* :default 0)
@@ -1586,6 +1631,18 @@
 				     )
 				    :code
 				    (do0
+				     
+				     (let ((err (static_cast<cl_int> 0)))
+				       (CHECKCL (= err (clEnqueueNDRangeKernel
+								 queue
+								 kernel
+								 1 0
+								 &count
+								 (? (== 0 localSize)
+								    0 &localSize)
+								 (? eventToWaitFor 1 0)
+								 eventToWaitFor
+								 eventToSet))))
 				     ))
 			       (Run2D ((count const int2)
 				       (lsize const int2)
@@ -1595,6 +1652,20 @@
 				       )
 				    :code
 				    (do0
+				     (let ((localSize (curly (static_cast<size_t> lsize.x)
+							     (static_cast<size_t> lsize.y)))
+					   (workSize (curly (static_cast<size_t> count.x)
+							    (static_cast<size_t> count.y)))
+					   (err (static_cast<cl_int> 0)))
+				      (CHECKCL (= err (clEnqueueNDRangeKernel
+						       queue
+						       kernel
+						       2 0
+						       workSize
+						       localSize
+						       (? eventToWaitFor 1 0)
+						       eventToWaitFor
+						       eventToSet))))
 				     ))
 			       ,@(loop for e in `((buffer cl_mem*)
 						  (buffer Buffer*)
