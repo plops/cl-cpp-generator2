@@ -1667,16 +1667,28 @@
 						       eventToWaitFor
 						       eventToSet))))
 				     ))
-			       ,@(loop for e in `((buffer cl_mem*)
-						  (buffer Buffer*)
-						  (value float)
+			       ,@(loop for e in `((buffer cl_mem* :size cl_mem :arg buffer)
+						  (buffer Buffer* :size cl_mem :arg (buffer->GetDevicePtr))
+						  (value float )
 						  (value int)
 						  (value float2)
 						  (value float3)
 						  (value float4))
 				       collect
-				       `(SetArgument ((idx int)
-						      ,e)))
+				       (destructuring-bind (name type &key (size type) (code) (arg "&value")) e
+					`(SetArgument ((idx int)
+						       (,name ,type))
+						      :code
+						      (do0
+						       (clSetKernelArg
+							kernel idx
+							(sizeof ,size)
+							,arg)
+						       (setf arg0set
+							     (logior
+							      arg0set
+							      (== 0 idx))))
+						      )))
 			       (InitCL ()
 				       :return bool
 				       :code (do0
