@@ -26,3 +26,7 @@
   - pelemay: native compiler for elixir (plans to support gpu)
     - 4.5x faster float
     
+- https://www.mdpi.com/2072-4292/9/11/1183
+  - map C-band interference
+  - Identification of C-Band Radio Frequency Interferences from Sentinel-1 Data 
+  - found a link here: https://github.com/jmfriedt/sentinel1_level0

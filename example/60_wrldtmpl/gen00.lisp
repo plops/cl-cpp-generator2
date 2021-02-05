@@ -1628,8 +1628,66 @@
 								    (paren (== s o)))))
 						    (when (< -1 deviceUsed)
 						      break)))))
-					    ;; fixme: line 1030
-					    )))
+					    (let ((props
+						    (curly
+						     ,@(loop for (e f) in
+							     `((CL_CONTEXT_PLATFORM platform)
+							       ;; this looks like windows stuff
+					; (CL_WGL_HDC_KHR (wglGetCurrentDC))
+							       ;; fixme what to use in linux?
+							       (CL_GL_CONTEXT_KHR (glfwGetWGLContext window)))
+							     appending
+							     `(,e
+							       (static_cast<cl_context_properties> ,f))
+							     )
+						     0)))
+					      (declare (type (array cl_context_properties "") props))
+					      ;; attempt to create context with requested features
+					      (setf candoInterop true
+						    context (clCreateContext props
+									     1
+									     (ref (aref devices
+											deviceUsed))
+									     nullptr
+									     nullptr
+									     &err))
+					      (when (!= 0 err)
+						,(logprint "no capable opencl device found."))
+					      (let ((device (getFirstDevice context)))
+						;; fixme: is this err set?
+						(unless (CHECKCL err)
+						  (return false))
+						(let ((device_string)
+						      (device_platform))
+						  (declare (type (array char 1024) device_string
+								 device_platform))
+						  ,@(loop for (e f) in `((NAME device_string)
+									 (VERSION device_platform)) collect
+							  `(clGetDeviceInfo (aref devices deviceUsed)
+									    ,(format nil "CL_DEVICE_~a" e)
+									    1024
+									    (ref ,f)
+									    nullptr))
+						  ,(logprint "device" `(deviceUsed
+									device_string
+									device_platform))
+						  ;; second queue is for async copies
+						  ,@(loop for e in `(queue queue2)
+							  collect
+							  `(do0
+							    (setf ,e
+								  (clCreateCommandQueue
+								   context
+								   (aref devices deviceUsed)
+								   0 ;; profiling
+								   &err))
+							    (unless (CHECKCL err)
+							      (return false))))
+						  (delete devices)
+						  (return true)
+						  ))
+					      )
+					   					    )))
 				       )
 			       
 			       
