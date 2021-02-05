@@ -1526,6 +1526,18 @@
 				     (eventToSet cl_event* :default 0))
 				    :code
 				    (do0
+				     (glFinish)
+				     (let ((err (clEnqueueNDRangeKernel
+						 queue
+						 kernel
+						 2 0
+						 workSize
+						 localSize
+						 (? eventToWaitFor 1 0)
+						 eventToWaitFor
+						 eventToSet)))
+				       (CHECKCL err)
+				       (clFinish queue))
 				     ))
 			       (Run ((buffers cl_mem*)
 				     (count int :default 1)
@@ -1535,6 +1547,37 @@
 				     (rel cl_event* :default 0))
 				    :code
 				    (do0
+				     (let ((err (static_cast<cl_int> 0)))
+				      (if Kernel--candoInterop
+					  (do0
+					   (CHECKCL (= err (clEnqueueAcquireGLObjects
+							    queue count buffers 0 0 acq)))
+					   (CHECKCL (= err (clEnqueueNDRangeKernel
+							    queue
+							    kernel
+							    2 0
+							    workSize
+							    localSize
+							    (? eventToWaitFor 1 0)
+							    eventToWaitFor
+							    eventToSet)))
+					   (CHECKCL (= err (clEnqueuReleaseGLObjects queue
+										     count
+										     buffers
+										     0 0 rel)))
+					   )
+					  (do0
+					   (CHECKCL (= err (clEnqueueNDRangeKernel
+							    queue
+							    kernel
+							    2 0
+							    workSize
+							    localSize
+							    (? eventToWaitFor 1 0)
+							    eventToWaitFor
+							    eventToSet)))
+					   )))
+				     
 				     ))
 			       (Run ((count const size_t)
 				     (localSize const int2 :default (make_int2 32 2))
