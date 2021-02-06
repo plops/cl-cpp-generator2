@@ -1944,19 +1944,61 @@
 			   ))
 		   
 		     (defclass Texture ()
-		       
 		       "public:"
-		       
 		       ,@(defmethods
-			     :defs
-			     `((Kernel  ((file char*)
-					 (entryPoint char*))
-					:return :constructor
-					:code
-					(do0)
-					
-				      
-					)))
+			  :defs
+			  `((Texture ()
+				     :return :constructor
+				     :decl ((construct (m_B32 0)))
+				     )
+			    (Init ((a_File char*))
+				  :code
+				  (do0
+				   (setf m_B32 0)
+				   (let ((f (fopen a_File (string "rb"))))
+				     (unless f
+				       (return))
+				     (let ((fif FIF_UNKNOWN))
+				       (setf fif (FreeImage_GetFileType a_File 0))
+				       (when (== FIF_UNKNOWN fif)
+					 (setf fif (FreeImage_GetFIFFromFilename a_File)))
+				       (let ((tmp (FreeImage_Load fif a_File))
+					     (dib (FreeImage_ConvertTo32Bits tmp)))
+					 (FreeImage_Unload tmp)
+					 (let ((bits (FreeImage_GetBits dib)))
+					   (setf m_Width (FreeImage_GetWidth dib)
+						 m_Height (FreeImage_GetHeight dib)
+						 m_B32 (static_cast<uint*> (MALLOC64 (* m_Width
+											m_Height
+											(sizeof uint)))))
+					   (dotimes (y m_Height)
+					     (let ((line (FreeImage_GetScanLine dib (- m_Height 1 y))))
+					       (memcpy (+ m_B32
+							  (* y m_Width))
+						       line
+						       (* m_Width (sizeof uint)))))
+					   (FreeImage_Unload dib)))))))
+			    (GetBitmap (
+					)
+				       :decl ((const))
+				       :return "const unsigned int*"
+				       :code
+				       (do0
+					(return m_B32)))
+			    (GetWidth ()
+				       :decl ((const))
+				       :return "const unsigned int"
+				       :code
+				       (do0
+					(return m_Width)))
+			    (GetHeight ()
+				       :decl ((const))
+				       :return "const unsigned int"
+				       :code
+				       (do0
+					(return m_Height)))))
+		       "unsigned int* m_B32;"
+		       "unsigned int m_Width, m_Height;"
 		))))
     
     )
