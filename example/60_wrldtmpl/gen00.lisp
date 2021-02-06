@@ -1832,7 +1832,7 @@
 		       ))))
 
     (define-module
-	`(cl_kernel ()
+	`(cl_helper ()
 		    (do0
 		     (split-header-and-code
 		      (do0 (comments "header")
@@ -1856,6 +1856,48 @@
 			
 			 )
 		       (return false))
+		     (defun getFirstDevice (context)
+		       (declare (type cl_context context)
+				(values  cl_device_id))
+		       (let ((dataSize (static_cast<size_t> 0))
+			     (devices (static_cast<cl_device_id*> nullptr))
+			     )
+			 (clGetContextInfo context CL_CONTEXT_DEVICES 0 nullptr &dataSize)
+			 (setf devices (static_cast<cl_device_id*> (malloc dataSize)))
+			 (clGetContextInfo context CL_CONTEXT_DEVICES dataSize devices nullptr)
+			 (let ((first (aref devices 0)))
+			   (free devices)
+			   (return first))))
+		     (defun getPlatformID (platform)
+		       (declare (type cl_platform_id* platform)
+				(values  cl_int))
+		       (let ((chBuffer)
+			     (num_platforms (static_cast<cl_uint> 0))
+			     (devCount  (static_cast<cl_uint> 0))
+			     (ids (static_cast<cl_platform_id*> nullptr))
+			     (err (static_cast<cl_int> 0)))
+			 (declare (type (array char 1024) chBuffer))
+
+			 (CHECKCL (= err (clGetPlatformIDs 0 nullptr &num_platforms)))
+			 (when (== 0 num_platforms)
+			   ,(logprint "no platforms"))
+			 (setf ids (static_cast<cl_platform_id*> (malloc (* num_platforms (sizeof cl_platform_id)))))
+			 (do0
+			  (setf err (clGetPlatformIDs num_platforms ids nullptr)
+				)
+			  (let ((deviceType (curly CL_DEVICE_TYPE_GPU
+						   CL_DEVICE_TYPE_CPU))
+				(deviceOrder (curly (curly (string "NVIDIA")
+							   (string "AMD")
+							   (string ""))
+						    (curly (string "")
+							   (string "")
+							   (string "")))))
+			    (declare (type (array cl_uint 2) deviceType)
+				     (type (array char* 2 3) deviceOrder))
+			    ))
+			 (free ids)
+			 (return CL_SUCCESS)))
 		   )))
     )
   
