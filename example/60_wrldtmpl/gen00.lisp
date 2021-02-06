@@ -249,7 +249,8 @@
 				 (incf r (string ,e))))
 		      (return r)))))
     (define-module
-	`(surface ()
+	`(surface95
+	  ()
 		  (do0
 		   (include <iostream>
 			    <chrono>
@@ -1930,7 +1931,34 @@
 			    ))
 			 (free ids)
 			 (return CL_SUCCESS)))
-		   )))
+		     )))
+
+    (define-module
+	`(scene_texture ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   
+			   ))
+		   
+		     (defclass Texture ()
+		       
+		       "public:"
+		       
+		       ,@(defmethods
+			     :defs
+			     `((Kernel  ((file char*)
+					 (entryPoint char*))
+					:return :constructor
+					:code
+					(do0)
+					
+				      
+					)))
+		))))
+    
     )
   
   (progn
