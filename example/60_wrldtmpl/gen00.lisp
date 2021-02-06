@@ -1895,6 +1895,38 @@
 							   (string "")))))
 			    (declare (type (array cl_uint 2) deviceType)
 				     (type (array char* 2 3) deviceOrder))
+			    (dotimes (i num_platforms)
+			      (CHECKCL (= err (clGetPlatformInfo
+					       (aref ids i)
+					       CL_PLATFORM_NAME
+					       1024
+					       &chBuffer
+					       nullptr)))
+			      ,(logprint "opencl platform" `(i chBuffer)))
+			    (dotimes (j 2)
+			      (dotimes (k 3)
+				(dotimes (i num_platforms)
+				  (setf err (clGetDeviceIDs (aref ids i)
+							    (aref deviceType j)
+							    0 nullptr
+							    &devCount))
+				  (when (or (!= CL_SUCCESS err)
+					    (== 0 devCount))
+				    continue)
+				  (CHECKCL (= err (clGetPlatformInfo (aref ids i)
+								     CL_PLATFORM_NAME
+								     1024
+								     &chBuffer
+								     nullptr)))
+				  (when (aref deviceOrder j k 0)
+				    (unless (strstr chBuffer
+						    (aref deviceOrder j k))
+				      continue))
+				  ,(logprint "opencl device" `(chBuffer))
+				  (setf *platform (aref ids i)
+					j 2
+					k 3)
+				  break)))
 			    ))
 			 (free ids)
 			 (return CL_SUCCESS)))
