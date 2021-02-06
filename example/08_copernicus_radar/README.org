@@ -4,6 +4,8 @@
 | gen02 |        1 | try doppler decoding of raw data                        |
 | gen03 |        1 | use numba and cupy to compute convolution on gpu        |
 
+- strongest dihedral reflection from ships in horizontal-horizontal polarisation. best snr?
+
 * References
 
 - https://www.youtube.com/watch?v=9H0AsmAsxgk 
