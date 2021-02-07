@@ -2214,7 +2214,18 @@
 				     )
 			    (InitSceneState ())
 			    (InitScene ((a_File const char*))
-				       :return bool)))
+				       :return bool)
+			    (GetExtends ()
+					:return "const aabb&"
+					:code
+					(return m_Extends))
+			    (SetExtends ((a_Box aabb))
+					:code (setf m_Extends a_Box))
+			    (GetMatManager ()
+					   :return MatManager*
+					   :code (return m_MatMan))
+			    (UpdateSceneExtends ())
+			    (LoadOBJ ((filename const char*)))))
 		       "uint m_Primitives;"
 		       "uint m_MaxPrims;"
 		       "aabb m_Extends;"
