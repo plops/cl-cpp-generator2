@@ -2184,6 +2184,45 @@
 		       "private:"
 		       "Material** m_Mat;"
 		       "uint m_NrMat;"))))
+    (define-module
+	`(scene ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   ))
+
+		     
+		     (defclass  aabb ()
+		       "public:"
+		       (defmethod aabb ()
+			 (declare (values :constructor)
+				  (construct ((bmin (make_float3 0s0 0s0 0s0))
+					      (bmax (make_float3 0s0 0s0 0s0))))))
+		       "float3 bmin;"
+		       "float3 bmax;")
+		     
+		     (defclass Scene ()
+		       "public:"
+		       ,@(defmethods
+			  :defs
+			  `((Scene ()
+				      :return :constructor
+				      :code (do0
+					     return)
+				     )
+			    (InitSceneState ())
+			    (InitScene ((a_File const char*))
+				       :return bool)))
+		       "uint m_Primitives;"
+		       "uint m_MaxPrims;"
+		       "aabb m_Extends;"
+		       "MatManager* m_MatMan;"
+		       "Primitive* m_Prim;"
+		       "char *path;"
+		       "char *file;"
+		       "char *noext;"))))
     
     )
   
