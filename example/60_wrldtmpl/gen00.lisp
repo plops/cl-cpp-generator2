@@ -1186,6 +1186,34 @@
 						     `(setf (dot f ,e)
 							    ,e))
 					     (return f)))
+			(dot ((a float3)
+			      (b float3))
+			     :return float
+			     :code (return (+ ,@(loop for e in `(x y z)
+						      collect
+						      `(* (dot a ,e)
+							  (dot b ,e)))))
+			     )
+			(rsqrtf ((f float))
+				:return float)
+			(normalize ((v float3))
+				   :return float3
+				   :code
+				   (let ((invLen (rsqrtf ("dot" v v))))
+				     (return (* v invLen))))
+			(cross ((a float3)
+				(b float3))
+			       :return float3
+			       :code
+			       (return (make_float3
+					,@(loop for (e f) in `((y z)
+							       (z x)
+							       (x y))
+						collect
+						`(- (* (dot a ,e)
+						       (dot b ,f))
+						    (* (dot a ,f)
+						       (dot b ,e)))))))
 			      ))
 		)))
     (define-module
