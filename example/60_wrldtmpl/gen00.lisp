@@ -2070,7 +2070,7 @@
 		      (do0 (comments "header")
 			   )
 		      (do0 (comments "implementation")
-			   
+			   ;; uses static Scene* scene
 			   ))
 		   
 		     (defclass MatManager ()
@@ -2139,7 +2139,18 @@
 							     tname)
 						     (when (aref tname 0)
 						       ;; FIXME: how to get static Scene* scene here?
-						       (strcpy fname scene->path))))
+						       (strcpy fname scene->path)
+						       (unless (strstr tname (string "textures/"))
+							 (strcat fname (string "textures/")))
+						       (strcat fname tname)
+						       (let ((tex (new Texture)))
+							 (tex->Init fname)
+							 (unless (tex->m_B32)
+							   (strcpy fname scene->path)
+							   (strcat fname tname)
+							   (tex->Init fname))
+							 (-> (aref m_Mat curmat)
+							     (SetTexture tex))))))
 						 )
 					  ))))
 			    (FindMaterial ((a_Name char*))
