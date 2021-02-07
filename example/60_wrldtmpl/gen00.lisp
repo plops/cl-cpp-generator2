@@ -2189,7 +2189,7 @@
 		    (do0
 		     (split-header-and-code
 		      (do0 (comments "header")
-			   )
+			   "static Scene* scene;")
 		      (do0 (comments "implementation")
 			   ))
 
@@ -2198,8 +2198,8 @@
 		       "public:"
 		       (defmethod aabb ()
 			 (declare (values :constructor)
-				  (construct ((bmin (make_float3 0s0 0s0 0s0))
-					      (bmax (make_float3 0s0 0s0 0s0))))))
+				  (construct ((bmin (make_float3 1000s0 1000s0 1000s0))
+					      (bmax (make_float3 -1000s0 -1000s0 -1000s0))))))
 		       "float3 bmin;"
 		       "float3 bmax;")
 		     
@@ -2210,11 +2210,51 @@
 			  `((Scene ()
 				      :return :constructor
 				      :code (do0
-					     return)
+					     (setf m_MatMan (new MatManager)))
 				     )
-			    (InitSceneState ())
+			    (InitSceneState ()
+					    :code
+					    (setf m_Extends.bmin (make_float3 1000s0 1000s0 1000s0)
+						  m_Extends.bmax (make_float3 -1000s0 -1000s0 -1000s0)
+						  scene this))
 			    (InitScene ((a_File const char*))
-				       :return bool)
+				       :return bool
+				       :code
+				       (do0
+					(InitSceneState)
+					(setf path (new (aref char 1024)))
+					(setf file (new (aref char 1024)))
+					(setf noext (new (aref char 1024)))
+					(strcpy path a_File)
+					(let ((pos path))
+					  (do0 (while (strstr pos (string "/"))
+						  (setf pos (+ (strstr pos (string "/"))
+							       1)))
+					       (while (strstr pos (string "\\\\"))
+						      (setf pos (+ (strstr pos (string "\\\\"))
+								   1))))
+					  (setf *pos 0)
+					  (setf pos (static_cast<char*> a_File))
+					  (do0 (while (strstr pos (string "/"))
+						  (setf pos (+ (strstr pos (string "/"))
+							       1)))
+					       (while (strstr pos (string "\\\\"))
+						      (setf pos (+ (strstr pos (string "\\\\"))
+								   1))))
+					  (if (or (strstr a_File (string "/"))
+						  (strstr a_File (string "\\\\")))
+					      (strcpy file pos)
+					      (strcpy file a_File))
+					  (LoadOBJ a_File)
+					  (strcpy noext file)
+					  (setf pos noext)
+					  (while (strstr pos (string "."))
+						 ;; FIXME: why no +1 here?
+						      (setf pos (strstr pos (string "."))
+							    ))
+					  (when (== *pos (string "."))
+					    (setf *pos 0))
+					  (return true))))
 			    (GetExtends ()
 					:return "const aabb&"
 					:code
