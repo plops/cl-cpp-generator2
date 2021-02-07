@@ -2089,7 +2089,34 @@
 				     )
 			    (LoadMTL ((a_File char*))
 				     :code
-				     (do0))
+				     (do0
+				      (let ((f (fopen a_File (string "r"))))
+					(unless f
+					  return)
+					(let ((curmat (static_cast<uint> 0))
+					      (buffer)
+					      (cmd))
+					  (declare (type (array char 256) buffer)
+						   (type (array char 128) cmd))
+					  (while (not (feof f))
+						 (fgets buffer 250 f)
+						 (sscanf buffer (string "%s")
+							 cmd)
+						 (unless (_stricmp cmd (string "newmtl"))
+						   (incf m_NrMat)
+						   (setf curmat m_NrMat
+							 (aref m_Mat curmat) (new (Material)))
+						   (let ((matname))
+						     (declare (type (array char 128) matname))
+						     (sscanf (+ buffer
+								(strlen cmd))
+							     (string "%s")
+							     matname)
+						     (-> (aref m_Mat curmat)
+							 (SetName matname)))
+						   )
+						 (unless ()))
+					  ))))
 			    (FindMaterial ((a_Name char*))
 					  :return Material*
 					  :code
