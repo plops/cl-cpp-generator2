@@ -2264,7 +2264,32 @@
 			    (GetMatManager ()
 					   :return MatManager*
 					   :code (return m_MatMan))
-			    (UpdateSceneExtends ())
+			    (UpdateSceneExtends
+			     ()
+			     :code
+			     (let ((emin (make_float3 10000
+						      10000
+						      10000))
+				   (emax (make_float3 -10000
+						      -10000
+						      -10000)))
+			       (dotimes (j m_Primitives)
+				 (dotimes (v 3)
+				   (let ((pos (dot (aref m_Prim j)
+						   (GetVertex v)
+						   (->GetPos))))
+				     (dotimes (a 3)
+				       (when (< (aref pos.e a)
+						(emin.e a))
+					 (setf (aref emin.e a)
+					       (aref pos.e a)))
+				       (when (< (emax.e a)
+						(aref pos.e a)
+						)
+					 (setf (aref emax.e a)
+					       (aref pos.e a)))))))
+			       (setf m_Extends.bmin emin
+				     m_Extends.bmax emax)))
 			    (LoadOBJ ((filename const char*)))))
 		       "uint m_Primitives;"
 		       "uint m_MaxPrims;"
