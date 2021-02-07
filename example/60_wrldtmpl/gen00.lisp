@@ -2427,7 +2427,40 @@
 										      collect "%i"))))
 							 ,@(loop for i in `(0 2 3 5 6 8)
 								 collect
-								 `(ref (aref vnr ,i)))))))
+								 `(ref (aref vnr ,i))))))
+					       (dotimes (i 3)
+						 (incf vidx)
+						 (setf (aref v i)
+						       (aref &vertex vidx))
+						 (when tex
+						   ;; FIXME: potential name clash vidx
+						   (let ((vidx (- (aref vnr (+ (* i 3) 1))
+								  1)))
+						     (setf (aref cu i) (aref tu vidx)
+							   (aref cv i) (aref tv vidx))))
+						 (let ((nidx (- (aref vnr (+ 2 (* i 3)))
+								1))
+						       (vidx (- (aref vnr (* i 3))
+								1)))
+						   (-> (aref v i)
+						       (SetNormal (aref norm nidx)))
+						   (-> (aref v i)
+						       (SetPos (aref vert vidx)))))
+					       (incf m_Primitives)
+					       (let ((p (ref (aref m_Prim m_Primitives))))
+						 (when tex
+						   ,@(loop for i below 3
+							   collect
+							   `(-> (aref v ,i)
+								(SetUV
+								 (* (aref cu ,i)
+								    (tex->m_Width))
+								 (* (aref cv ,i)
+								    (tex->m_Height))))))
+						 (p->Init (aref v 0)
+							  (aref v 1)
+							  (aref v 2))
+						 (p->SetMaterial curmat)))
 					     )
 					    ((char "g")
 					     (sscanf (+ buffer 2)
