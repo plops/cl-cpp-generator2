@@ -1163,7 +1163,31 @@
 					       (return (s.good))))
 			       ))
 		       )))
-    
+    (define-module
+	`(math ()
+	       (do0
+		(split-header-and-code
+			(do0 (comments "header")
+			     )
+			(do0
+			 (comments "implementation")
+			 
+		     
+			 ))
+		,@(defuns
+			     :defs
+		      `((make_float3 ((x float)
+				      (y float)
+				      (z float))
+				     :return float3
+				     :code (let ((f))
+					     (declare (type float3 f))
+					     ,@(loop for e in `(x y z) collect
+						     `(setf (dot f ,e)
+							    ,e))
+					     (return f)))
+			      ))
+		)))
     (define-module
 	`(cl_buffer ()
 		    (do0
