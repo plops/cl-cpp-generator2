@@ -2192,6 +2192,7 @@
 		      (do0 (comments "header")
 			   )
 		      (do0 (comments "implementation")
+			   ;; needs normalize and cross
 			   ))
 
 		     
@@ -2202,14 +2203,17 @@
 			  :defs
 			  `((Primitive ()
 				      :return :constructor
-				      :code (do0
-					     )
-				     )
+				      )
 			    (Init ((a_V1 Vertex*)
 				   (a_V2 Vertex*)
 				   (a_V3 Vertex*))
 				  :code
-				  (do0))
+				  (do0
+				   ,@(loop for i below 3
+					   collect
+					   `(setf (aref m_Vertex ,i)
+						  ,(format nil "a_V~a" (+ i 1))))
+				   (UpdateNormal)))
 			    (GetMaterial ()
 					 :decl ((const))
 					:return "const Material*"
@@ -2221,7 +2225,17 @@
 			    (SetNormal ((a_N const float3&))
 				       :code
 				       (setf m_N a_N))
-			    (UpdateNormal ())
+			    (UpdateNormal ()
+					  :code
+					  (let ((c (normalize (- (-> (aref m_Vertex 1)
+								     (GetPos))
+								 (-> (aref m_Vertex 0)
+								     (GetPos)))))
+						(b (normalize (- (-> (aref m_Vertex 2)
+								     (GetPos))
+								 (-> (aref m_Vertex 0)
+								     (GetPos))))))
+					    (setf m_N (cross b c))))
 			    (GetVertex ((a_Idx const uint))
 				       :return "const Vertex*"
 				       :decl ((const))
