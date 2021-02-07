@@ -2157,6 +2157,12 @@
 					  :return Material*
 					  :code
 					  (do0
+					   (dotimes (i m_NrMat)
+					     (unless (_stricmp (-> (aref m_Mat i)
+								   (GetName))
+							       a_Name)
+					       (return (aref m_Mat i))))
+					   (return (aref m_Mat 0))
 					   ))
 			    (GetMaterial ((a_Idx int))
 					  :return Material*
