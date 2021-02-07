@@ -2391,6 +2391,43 @@
 					  (case (aref buffer 0)
 					    ((char "f")
 					     ;; face
+					     (let ((v)
+						   (cu)
+						   (cv)
+						   (tex (curmat->GetTexture))
+						   (vnr)
+						   (vars (sscanf (+ buffer 2)
+								 (string ,(format nil "~{~{~a~^/~}~^ ~}"
+										  (loop for j below 3
+											collect
+											(loop for i below 3
+											      collect "%i"))))
+								 ,@(loop for i below 9
+									 collect
+									 `(ref (aref vnr ,i))))))
+					       (declare (type (array Vertex* 3) v)
+							(type (array float 3) cu cv)
+							(type (array uint 9) vnr ))
+					       (when (< vars 9)
+						 (setf vars (sscanf (+ buffer 2)
+								 (string ,(format nil "~{~{~a~^/~}~^ ~}"
+										  (loop for j below 3
+											collect
+											(loop for i below 2
+											      collect "%i"))))
+								 ,@(loop for i in `(0 2 3 5 6 8)
+									 collect
+									 `(ref (aref vnr ,i)))))
+						 (when (< vars 6)
+						 (sscanf (+ buffer 2)
+							 (string ,(format nil "~{~{~a~^//~}~^ ~}"
+									  (loop for j below 3
+										collect
+										(loop for i below 2
+										      collect "%i"))))
+							 ,@(loop for i in `(0 2 3 5 6 8)
+								 collect
+								 `(ref (aref vnr ,i)))))))
 					     )
 					    ((char "g")
 					     (sscanf (+ buffer 2)
