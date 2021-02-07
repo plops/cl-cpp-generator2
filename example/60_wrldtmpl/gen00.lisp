@@ -2063,6 +2063,58 @@
 		       "uint m_Idx;"
 		       "float3 m_Diff;"
 		       "char* m_Name;"))))
+    (define-module
+	`(scene_matmanager ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   
+			   ))
+		   
+		     (defclass MatManager ()
+		       "public:"
+		       ,@(defmethods
+			  :defs
+			  `((MatManager ()
+				      :return :constructor
+				      :code (do0
+					     (setf m_Mat (new (aref Material* 1024)))
+					     (setf (aref m_Mat 0) (new (Material)))
+					     (-> (aref m_Mat 0)
+						 (SetName (string "DEFAULT")))
+					     (setf m_NrMat 1)
+					     )
+				     )
+			    (LoadMTL ((a_File char*))
+				     :code
+				     (do0))
+			    (FindMaterial ((a_Name char*))
+					  :return Material*
+					  :code
+					  (do0
+					   ))
+			    (GetMaterial ((a_Idx int))
+					  :return Material*
+					  :code
+					  (do0
+					   (return (aref m_Mat a_Idx))))
+			    (Reset ()
+				   :code
+				   (setf m_NrMat 0))
+			    (AddMaterial ((a_Mat Material*))
+					 :code
+					 (do0
+					  (incf m_NrMat)
+					  (setf (aref m_Mat m_NrMat)
+						a_Mat)))
+			    (GetMatCount ()
+					 :return uint
+					 :code (return m_NrMat))))
+		       "private:"
+		       "Material** m_Mat;"
+		       "uint m_NrMat;"))))
     
     )
   
