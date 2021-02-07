@@ -2184,6 +2184,63 @@
 		       "private:"
 		       "Material** m_Mat;"
 		       "uint m_NrMat;"))))
+    
+    (define-module
+	`(scene_primitive ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   ))
+
+		     
+		     
+		     (defclass Primitive ()
+		       "public:"
+		       ,@(defmethods
+			  :defs
+			  `((Primitive ()
+				      :return :constructor
+				      :code (do0
+					     )
+				     )
+			    (Init ((a_V1 Vertex*)
+				   (a_V2 Vertex*)
+				   (a_V3 Vertex*))
+				  :code
+				  (do0))
+			    (GetMaterial ()
+					 :decl ((const))
+					:return "const Material*"
+					:code
+					(return m_Material))
+			    (SetMaterial ((a_Mat const Material*))
+					 :code
+					 (setf m_Material (static_cast<Material*> a_Mat)))
+			    (SetNormal ((a_N const float3&))
+				       :code
+				       (setf m_N a_N))
+			    (UpdateNormal ())
+			    (GetVertex ((a_Idx const uint))
+				       :return "const Vertex*"
+				       :decl ((const))
+				       :code (return (aref m_Vertex a_Idx)))
+			    (SetVertex ((a_Idx const uint)
+					(a_Vertex Vertex*))
+				       :code
+				       (setf (aref m_Vertex a_Idx)
+					     a_Vertex))
+			    (GetNormal ((u float)
+					(v float))
+				       :decl ((const))
+				       :return "const float3"
+				       :code (return m_N))
+			    ))
+		       "float3 m_N;"
+		       "Vertex* m_Vertex[3];"
+		       "Material* m_Material;"))))
+
     (define-module
 	`(scene ()
 		    (do0
