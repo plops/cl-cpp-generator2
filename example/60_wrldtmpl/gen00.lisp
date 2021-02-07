@@ -2290,7 +2290,51 @@
 					       (aref pos.e a)))))))
 			       (setf m_Extends.bmin emin
 				     m_Extends.bmax emax)))
-			    (LoadOBJ ((filename const char*)))))
+			    (LoadOBJ
+			     ((filename const char*))
+			     :code
+			     (let ((f (fopen filename (string "r"))))
+			       (unless f
+				 (return))
+			       (let ((fcount (static_cast<uint> 0))
+				     (ncount (static_cast<uint> 0))
+				     (uvcount (static_cast<uint> 0))
+				     (vcount (static_cast<uint> 0))
+				     (buffer)
+				     (cmd)
+				     (objname))
+				 (declare (type (array char 256) buffer cmd objname))
+				 (while true
+					(fgets buffer 250 f)
+					(when (feof f)
+					  break)
+					(if (== (char "v")
+						(aref buffer 0))
+					    (do0
+					     (case (aref buffer 1)
+					       ((char " ") (incf vcount))
+					       ((char "t") (incf uvcount))
+					       ((char "n") (incf ncount))))
+					    (do0
+					     (when (and (== (char "f") (aref buffer 0))
+							(== (char " ") (aref buffer 1)))
+					       (incf fcount)))))
+				 (fclose f)
+				 (setf m_Prim (static_cast<Primitive*> (MALLOC64 (* fcount (sizeof Primitive)))))
+				 (setf f (fopen filename (string "r")))
+				 (let ((curmat (static_cast<Material*> nullptr))
+				       (verts (static_cast<uint> 0))
+				       (uvs (static_cast<uint> 0))
+				       (normals (static_cast<uint> 0))
+				       (vert (new (aref float3 vcount)))
+				       (norm (new (aref float3 ncount)))
+				       (tu (new (aref float uvcount)))
+				       (tv (new (aref float uvcount)))
+				       (vertex (static_cast<Vertex*> (MALLOC64 (* (sizeof Vertex)
+										  (+ 4 (* fcount 3))))))
+				       (vidx (static_cast<uint> 0))
+				       (currobject))
+				   (declare (type (array char 256) currobject))))))))
 		       "uint m_Primitives;"
 		       "uint m_MaxPrims;"
 		       "aabb m_Extends;"
