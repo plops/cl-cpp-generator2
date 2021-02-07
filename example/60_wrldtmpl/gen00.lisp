@@ -1978,8 +1978,7 @@
 						       line
 						       (* m_Width (sizeof uint)))))
 					   (FreeImage_Unload dib)))))))
-			    (GetBitmap (
-					)
+			    (GetBitmap ()
 				       :decl ((const))
 				       :return "const unsigned int*"
 				       :code
@@ -1999,7 +1998,71 @@
 					(return m_Height)))))
 		       "unsigned int* m_B32;"
 		       "unsigned int m_Width, m_Height;"
-		))))
+		       ))))
+
+    (define-module
+	`(scene_material ()
+		    (do0
+		     (split-header-and-code
+		      (do0 (comments "header")
+			   )
+		      (do0 (comments "implementation")
+			   
+			   ))
+		   
+		     (defclass Material ()
+		       "public:"
+		       ,@(defmethods
+			  :defs
+			  `((Material ()
+				      :return :constructor
+				      :code (do0
+					     (setf m_Texture 0
+						   m_Name (new (aref char 64)))
+					     (SetDiffuse
+					      (make_float3 .8s0 .8s0 .8s0))
+					     )
+				     )
+			    (~Material ()
+				       :return :constructor
+				       :code (delete m_Name)
+				     )
+			    (SetDiffuse ((a_Diff const float3&))
+				  :code
+				  (do0
+				   (setf m_Diff a_Diff)))
+			    (SetTexture ((a_Texture const Texture*))
+				  :code
+				  (do0
+				   (setf m_Texture (static_cast<Texture*> a_Texture))))
+			    (SetName ((a_Name char*))
+				  :code
+				  (do0
+				   (strcpy m_Name a_Name)))
+			    (SetIdx ((a_Idx uint))
+				  :code
+				  (do0
+				   (setf m_Idx a_Idx)))
+			    (GetDiffuse ()
+					:return "const float3"
+					:decl ((const))
+					:code (return m_Diff))
+			    (GetTexture ()
+					:return "const Texture*"
+					:decl ((const))
+					:code (return m_Texture))
+			    (GetName ()
+					:return "char*"
+					:code (return m_Name))
+			    (GetIdx ()
+					:return uint
+					:code (return m_Idx))
+			    ))
+		       "private:"
+		       "Texture* m_Texture;"
+		       "uint m_Idx;"
+		       "float3 m_Diff;"
+		       "char* m_Name;"))))
     
     )
   
