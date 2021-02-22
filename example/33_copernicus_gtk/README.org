@@ -50,3 +50,6 @@ state._filename =
       "/home/martin/Downloads/"
       "s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat";
 #+end_example
+
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto;
+[[https://github.com/plops/cl-cpp-generator2/raw/master/example/33_copernicus_gtk/screen_20210222.png]]
