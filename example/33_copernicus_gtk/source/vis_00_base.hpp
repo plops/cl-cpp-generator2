@@ -96,10 +96,10 @@ class ListStore_SpacePacketHeader0 : public Gtk::Window {
          ListStore_SpacePacketHeader0 ()  ;  
          ~ListStore_SpacePacketHeader0 ()  ;  
         protected:
-        void create_model ()  ;  
-        void add_columns ()  ;  
-        void add_items ()  ;  
-        void liststore_add_item (const CellItem_SpacePacketHeader0& foo)  ;  
+        virtual void create_model ()  ;  
+        virtual void add_columns ()  ;  
+        virtual void add_items ()  ;  
+        virtual void liststore_add_item (const CellItem_SpacePacketHeader0& foo)  ;  
         Gtk::Box m_VBox;
         Gtk::ScrolledWindow m_ScrolledWindow;
         Gtk::Label m_Label;
@@ -226,7 +226,7 @@ class ListStore_SpacePacketHeader0 : public Gtk::Window {
 class TimeChart : public Gtk::DrawingArea {
         public:
          TimeChart ()  ;  
-         ~TimeChart ()  ;  
+        virtual  ~TimeChart ()  ;  
         protected:
         bool on_draw (const Cairo::RefPtr<Cairo::Context>& cr)  ;  
 };

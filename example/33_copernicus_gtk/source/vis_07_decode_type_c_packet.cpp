@@ -66,6 +66,10 @@ int init_decode_type_c_packet_baq3(int packet_idx,
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  assert((number_of_baq_blocks) <= (256));
+  assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
+          ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
+          ((14) == (baq_mode))));
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
@@ -78,6 +82,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
   for (int block = 0; (decoded_ie_symbols) < (number_of_quads); (block)++) {
     // nothing for ie
     {
+
       // reconstruction law block=ie thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
@@ -107,6 +112,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
   for (int block = 0; (decoded_io_symbols) < (number_of_quads); (block)++) {
     // nothing for io
     {
+
       // reconstruction law block=io thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
@@ -137,6 +143,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
     auto thidx = get_threshold_index(&s);
     thidxs[block] = thidx;
     {
+
       if ((thidx) <= (3)) {
         // reconstruction law block=qe thidx-choice=simple
         for (int i = 0;
@@ -238,6 +245,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
   for (int block = 0; (decoded_qo_symbols) < (number_of_quads); (block)++) {
     auto thidx = thidxs[block];
     {
+
       if ((thidx) <= (3)) {
         // reconstruction law block=qo thidx-choice=simple
         for (int i = 0;
@@ -341,6 +349,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
       << (std::endl) << (std::flush);
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode ie p.66 reconstruction law middle choice a=3
     if ((thidx) <= (3)) {
       // decode ie p.66 reconstruction law simple a=3
@@ -437,6 +446,7 @@ int init_decode_type_c_packet_baq3(int packet_idx,
   }
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode io p.66 reconstruction law middle choice a=3
     if ((thidx) <= (3)) {
       // decode io p.66 reconstruction law simple a=3
@@ -565,6 +575,10 @@ int init_decode_type_c_packet_baq4(int packet_idx,
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  assert((number_of_baq_blocks) <= (256));
+  assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
+          ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
+          ((14) == (baq_mode))));
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
@@ -577,6 +591,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
   for (int block = 0; (decoded_ie_symbols) < (number_of_quads); (block)++) {
     // nothing for ie
     {
+
       // reconstruction law block=ie thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
@@ -606,6 +621,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
   for (int block = 0; (decoded_io_symbols) < (number_of_quads); (block)++) {
     // nothing for io
     {
+
       // reconstruction law block=io thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
@@ -636,6 +652,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
     auto thidx = get_threshold_index(&s);
     thidxs[block] = thidx;
     {
+
       if ((thidx) <= (5)) {
         // reconstruction law block=qe thidx-choice=simple
         for (int i = 0;
@@ -737,6 +754,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
   for (int block = 0; (decoded_qo_symbols) < (number_of_quads); (block)++) {
     auto thidx = thidxs[block];
     {
+
       if ((thidx) <= (5)) {
         // reconstruction law block=qo thidx-choice=simple
         for (int i = 0;
@@ -840,6 +858,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
       << (std::endl) << (std::flush);
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode ie p.66 reconstruction law middle choice a=4
     if ((thidx) <= (5)) {
       // decode ie p.66 reconstruction law simple a=4
@@ -936,6 +955,7 @@ int init_decode_type_c_packet_baq4(int packet_idx,
   }
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode io p.66 reconstruction law middle choice a=4
     if ((thidx) <= (5)) {
       // decode io p.66 reconstruction law simple a=4
@@ -1064,6 +1084,10 @@ int init_decode_type_c_packet_baq5(int packet_idx,
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  assert((number_of_baq_blocks) <= (256));
+  assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
+          ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
+          ((14) == (baq_mode))));
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
@@ -1076,6 +1100,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
   for (int block = 0; (decoded_ie_symbols) < (number_of_quads); (block)++) {
     // nothing for ie
     {
+
       // reconstruction law block=ie thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
@@ -1105,6 +1130,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
   for (int block = 0; (decoded_io_symbols) < (number_of_quads); (block)++) {
     // nothing for io
     {
+
       // reconstruction law block=io thidx-choice=thidx-unknown
       for (int i = 0;
            (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
@@ -1135,6 +1161,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
     auto thidx = get_threshold_index(&s);
     thidxs[block] = thidx;
     {
+
       if ((thidx) <= (10)) {
         // reconstruction law block=qe thidx-choice=simple
         for (int i = 0;
@@ -1236,6 +1263,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
   for (int block = 0; (decoded_qo_symbols) < (number_of_quads); (block)++) {
     auto thidx = thidxs[block];
     {
+
       if ((thidx) <= (10)) {
         // reconstruction law block=qo thidx-choice=simple
         for (int i = 0;
@@ -1339,6 +1367,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
       << (std::endl) << (std::flush);
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode ie p.66 reconstruction law middle choice a=5
     if ((thidx) <= (10)) {
       // decode ie p.66 reconstruction law simple a=5
@@ -1435,6 +1464,7 @@ int init_decode_type_c_packet_baq5(int packet_idx,
   }
   for (auto block = 0; (block) < (number_of_baq_blocks); (block) += (1)) {
     auto thidx = thidxs[block];
+
     // decode io p.66 reconstruction law middle choice a=5
     if ((thidx) <= (10)) {
       // decode io p.66 reconstruction law simple a=5
