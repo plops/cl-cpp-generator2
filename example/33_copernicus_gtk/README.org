@@ -32,6 +32,9 @@ GTK_DEBUG=interactive GOBJECT_DEBUG=instance-count ./vis
 
 - GtkScrolledWindow GtkViewport GtkDrawingArea
 
+* description
+This code was an experiment in September 2020 to create a GTK interface to the Sentinel 1 synthetic aperture radar parser.
+It is based on ../08_copernicus_radar.
 
 * install dependencies on fedora
 #+begin_example
