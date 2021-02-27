@@ -17,8 +17,8 @@ int main() {
   state._start_time =
       std::chrono::high_resolution_clock::now().time_since_epoch().count();
   state._filename =
-      "/media/sdb4/sar/sao_paulo/"
-      "s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat";
+      "/home/martin/Downloads/"
+      "s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat";
   init_mmap(state._filename);
   init_collect_packet_headers();
   auto packet_idx = 0;
@@ -98,7 +98,7 @@ int main() {
   auto ma = (-1.0f);
   auto ma_ele = -1;
   for (auto &elevation : map_ele) {
-    auto number_of_Mquads = ((elevation.second) / ((1.0e+6)));
+    auto number_of_Mquads = ((elevation.second) / ((1.0e+6f)));
     auto elevation_beam_address = elevation.first;
     if ((ma) < (number_of_Mquads)) {
       ma = number_of_Mquads;
@@ -176,7 +176,7 @@ int main() {
                 << (std::setw(8)) << (" ele_number_echoes=")
                 << (ele_number_echoes) << (std::endl);
     for (auto &azi : map_azi) {
-      auto number_of_Mquads = ((azi.second) / ((1.0e+6)));
+      auto number_of_Mquads = ((azi.second) / ((1.0e+6f)));
       auto azi_beam_address = azi.first;
       std::setprecision(3);
       (std::cout) << (std::setw(10))
@@ -216,8 +216,8 @@ int main() {
                    (state._start_time)))
               << (" ") << (__FILE__) << (":") << (__LINE__) << (" ")
               << (__func__) << (" ") << ("end big allocation") << (" ")
-              << (std::setw(8)) << (" (((1.00e-6))*(n0)*(ele_number_echoes))=")
-              << ((((1.00e-6)) * (n0) * (ele_number_echoes))) << (std::endl);
+              << (std::setw(8)) << (" (((1.00e-6f))*(n0)*(ele_number_echoes))=")
+              << ((((1.00e-6f)) * (n0) * (ele_number_echoes))) << (std::endl);
   remove("./o_all.csv");
   remove("./o_range.csv");
   remove("./o_cal_range.csv");

@@ -37,6 +37,24 @@ inline uint8_t get_bit_rate_code(sequential_bit_t *s) {
   auto brc = static_cast<uint8_t>(((((0x4) * (get_sequential_bit(s)))) +
                                    (((0x2) * (get_sequential_bit(s)))) +
                                    (((0x1) * (get_sequential_bit(s))))));
+  if (!((((0) == (brc)) || ((1) == (brc)) || ((2) == (brc)) || ((3) == (brc)) ||
+         ((4) == (brc))))) {
+
+    (std::cout) << (std::setw(10))
+                << (std::chrono::high_resolution_clock::now()
+                        .time_since_epoch()
+                        .count())
+                << (" ") << (std::this_thread::get_id()) << (" ") << (__FILE__)
+                << (":") << (__LINE__) << (" ") << (__func__) << (" ")
+                << ("brc out of range") << (" ") << (std::setw(8))
+                << (" s->current_bit_count='") << (s->current_bit_count)
+                << ("'") << (std::setw(8))
+                << (" ((s->data)-(static_cast<uint8_t*>(state._mmap_data)))='")
+                << (((s->data) - (static_cast<uint8_t *>(state._mmap_data))))
+                << ("'") << (std::setw(8)) << (" brc='") << (brc) << ("'")
+                << (std::endl) << (std::flush);
+    throw std::out_of_range("brc");
+  }
   return brc;
 }
 inline int decode_huffman_brc0(sequential_bit_t *s) {
@@ -299,6 +317,10 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
       ((40) + (((((0x1) * (header[55]))) + (((0x100) * (header[54]))) +
                 (((0x10000) * (((0xFF) & (header[53]))))))));
   auto data = ((offset) + (static_cast<uint8_t *>(state._mmap_data)));
+  assert((number_of_baq_blocks) <= (256));
+  assert((((0) == (baq_mode)) || ((3) == (baq_mode)) || ((4) == (baq_mode)) ||
+          ((5) == (baq_mode)) || ((12) == (baq_mode)) || ((13) == (baq_mode)) ||
+          ((14) == (baq_mode))));
   sequential_bit_t s;
   init_sequential_bit_function(
       &s, ((state._header_offset[packet_idx]) + (62) + (6)));
@@ -313,97 +335,134 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     brcs[block] = brc;
     switch (brc) {
     case 0: {
-      // reconstruction law block=ie thidx-choice=thidx-unknown brc=0
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc0(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=ie thidx-choice=thidx-unknown brc=0
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc0(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_ie_symbols_a[decoded_ie_symbols] = v;
-        (decoded_ie_symbols)++;
+        break;
       }
       break;
     }
     case 1: {
-      // reconstruction law block=ie thidx-choice=thidx-unknown brc=1
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc1(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=ie thidx-choice=thidx-unknown brc=1
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc1(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_ie_symbols_a[decoded_ie_symbols] = v;
-        (decoded_ie_symbols)++;
+        break;
       }
       break;
     }
     case 2: {
-      // reconstruction law block=ie thidx-choice=thidx-unknown brc=2
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc2(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=ie thidx-choice=thidx-unknown brc=2
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc2(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_ie_symbols_a[decoded_ie_symbols] = v;
-        (decoded_ie_symbols)++;
+        break;
       }
       break;
     }
     case 3: {
-      // reconstruction law block=ie thidx-choice=thidx-unknown brc=3
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc3(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=ie thidx-choice=thidx-unknown brc=3
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc3(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_ie_symbols_a[decoded_ie_symbols] = v;
-        (decoded_ie_symbols)++;
+        break;
       }
       break;
     }
     case 4: {
-      // reconstruction law block=ie thidx-choice=thidx-unknown brc=4
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc4(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=ie thidx-choice=thidx-unknown brc=4
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_ie_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc4(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_ie_symbols_a[decoded_ie_symbols] = v;
+          (decoded_ie_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_ie_symbols_a[decoded_ie_symbols] = v;
-        (decoded_ie_symbols)++;
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("error brc out of range") << (" ")
+                    << (std::setw(8)) << (" brc='") << (brc) << ("'")
+                    << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }
@@ -420,97 +479,134 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     auto brc = brcs[block];
     switch (brc) {
     case 0: {
-      // reconstruction law block=io thidx-choice=thidx-unknown brc=0
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc0(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=io thidx-choice=thidx-unknown brc=0
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc0(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_io_symbols_a[decoded_io_symbols] = v;
-        (decoded_io_symbols)++;
+        break;
       }
       break;
     }
     case 1: {
-      // reconstruction law block=io thidx-choice=thidx-unknown brc=1
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc1(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=io thidx-choice=thidx-unknown brc=1
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc1(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_io_symbols_a[decoded_io_symbols] = v;
-        (decoded_io_symbols)++;
+        break;
       }
       break;
     }
     case 2: {
-      // reconstruction law block=io thidx-choice=thidx-unknown brc=2
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc2(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=io thidx-choice=thidx-unknown brc=2
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc2(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_io_symbols_a[decoded_io_symbols] = v;
-        (decoded_io_symbols)++;
+        break;
       }
       break;
     }
     case 3: {
-      // reconstruction law block=io thidx-choice=thidx-unknown brc=3
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc3(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=io thidx-choice=thidx-unknown brc=3
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc3(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_io_symbols_a[decoded_io_symbols] = v;
-        (decoded_io_symbols)++;
+        break;
       }
       break;
     }
     case 4: {
-      // reconstruction law block=io thidx-choice=thidx-unknown brc=4
-      for (int i = 0;
-           (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
-           (i)++) {
-        auto sign_bit = get_sequential_bit(&s);
-        auto mcode = decode_huffman_brc4(&s);
-        auto mcode_f = static_cast<float>(mcode);
-        auto symbol_sign = (1.0f);
-        if (sign_bit) {
-          symbol_sign = (-1.0f);
+      {
+
+        // reconstruction law block=io thidx-choice=thidx-unknown brc=4
+        for (int i = 0;
+             (((i) < (128)) && ((decoded_io_symbols) < (number_of_quads)));
+             (i)++) {
+          auto sign_bit = get_sequential_bit(&s);
+          auto mcode = decode_huffman_brc4(&s);
+          auto mcode_f = static_cast<float>(mcode);
+          auto symbol_sign = (1.0f);
+          if (sign_bit) {
+            symbol_sign = (-1.0f);
+          }
+          auto v = ((symbol_sign) * (mcode_f));
+          // in ie and io we don't have thidx yet, will be processed later
+          decoded_io_symbols_a[decoded_io_symbols] = v;
+          (decoded_io_symbols)++;
         }
-        auto v = ((symbol_sign) * (mcode_f));
-        // in ie and io we don't have thidx yet, will be processed later
-        decoded_io_symbols_a[decoded_io_symbols] = v;
-        (decoded_io_symbols)++;
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("error brc out of range") << (" ")
+                    << (std::setw(8)) << (" brc='") << (brc) << ("'")
+                    << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }
@@ -529,447 +625,499 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     thidxs[block] = thidx;
     switch (brc) {
     case 0: {
-      if ((thidx) <= (3)) {
-        // reconstruction law block=qe thidx-choice=simple brc=0
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc0(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (3)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (3)) {
-                v = ((symbol_sign) * (table_b0.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (3)) {
+          // reconstruction law block=qe thidx-choice=simple brc=0
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc0(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (3)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (3)) {
+                  v = ((symbol_sign) * (table_b0.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=0")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qe thidx-choice=normal brc=0
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc0(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=0")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
           }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qe thidx-choice=normal brc=0
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc0(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl0.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=0") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=0") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 1: {
-      if ((thidx) <= (3)) {
-        // reconstruction law block=qe thidx-choice=simple brc=1
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc1(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (4)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (4)) {
-                v = ((symbol_sign) * (table_b1.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (3)) {
+          // reconstruction law block=qe thidx-choice=simple brc=1
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc1(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (4)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (4)) {
+                  v = ((symbol_sign) * (table_b1.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=1")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qe thidx-choice=normal brc=1
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc1(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=1")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
           }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qe thidx-choice=normal brc=1
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc1(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl1.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=1") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=1") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 2: {
-      if ((thidx) <= (5)) {
-        // reconstruction law block=qe thidx-choice=simple brc=2
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc2(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (6)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (6)) {
-                v = ((symbol_sign) * (table_b2.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (5)) {
+          // reconstruction law block=qe thidx-choice=simple brc=2
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc2(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (6)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (6)) {
+                  v = ((symbol_sign) * (table_b2.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=2")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qe thidx-choice=normal brc=2
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc2(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=2")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
           }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qe thidx-choice=normal brc=2
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc2(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl2.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=2") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=2") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 3: {
-      if ((thidx) <= (6)) {
-        // reconstruction law block=qe thidx-choice=simple brc=3
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc3(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (9)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (9)) {
-                v = ((symbol_sign) * (table_b3.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (6)) {
+          // reconstruction law block=qe thidx-choice=simple brc=3
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc3(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (9)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (9)) {
+                  v = ((symbol_sign) * (table_b3.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=3")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qe thidx-choice=normal brc=3
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc3(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=3")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
           }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qe thidx-choice=normal brc=3
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc3(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl3.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=3") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=3") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 4: {
-      if ((thidx) <= (8)) {
-        // reconstruction law block=qe thidx-choice=simple brc=4
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc4(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (15)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (15)) {
-                v = ((symbol_sign) * (table_b4.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (8)) {
+          // reconstruction law block=qe thidx-choice=simple brc=4
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc4(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (15)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (15)) {
+                  v = ((symbol_sign) * (table_b4.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=4")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qe thidx-choice=normal brc=4
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc4(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=4")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
           }
-          // decode qe p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qe thidx-choice=normal brc=4
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qe_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc4(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qe p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl4.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=4") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qe_symbols_a[decoded_qe_symbols] = v;
-          (decoded_qe_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=4") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qe_symbols_a[decoded_qe_symbols] = v;
+            (decoded_qe_symbols)++;
+          }
         }
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("error brc out of range") << (" ")
+                    << (std::setw(8)) << (" brc='") << (brc) << ("'")
+                    << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }
@@ -987,447 +1135,499 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
-      if ((thidx) <= (3)) {
-        // reconstruction law block=qo thidx-choice=simple brc=0
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc0(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (3)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (3)) {
-                v = ((symbol_sign) * (table_b0.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (3)) {
+          // reconstruction law block=qo thidx-choice=simple brc=0
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc0(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (3)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (3)) {
+                  v = ((symbol_sign) * (table_b0.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=0")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qo thidx-choice=normal brc=0
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc0(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=0")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
           }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qo thidx-choice=normal brc=0
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc0(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl0.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=0") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=0") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 1: {
-      if ((thidx) <= (3)) {
-        // reconstruction law block=qo thidx-choice=simple brc=1
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc1(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (4)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (4)) {
-                v = ((symbol_sign) * (table_b1.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (3)) {
+          // reconstruction law block=qo thidx-choice=simple brc=1
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc1(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (4)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (4)) {
+                  v = ((symbol_sign) * (table_b1.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=1")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qo thidx-choice=normal brc=1
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc1(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=1")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
           }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qo thidx-choice=normal brc=1
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc1(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl1.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=1") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=1") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 2: {
-      if ((thidx) <= (5)) {
-        // reconstruction law block=qo thidx-choice=simple brc=2
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc2(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (6)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (6)) {
-                v = ((symbol_sign) * (table_b2.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (5)) {
+          // reconstruction law block=qo thidx-choice=simple brc=2
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc2(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (6)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (6)) {
+                  v = ((symbol_sign) * (table_b2.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=2")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qo thidx-choice=normal brc=2
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc2(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=2")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
           }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qo thidx-choice=normal brc=2
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc2(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl2.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=2") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=2") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 3: {
-      if ((thidx) <= (6)) {
-        // reconstruction law block=qo thidx-choice=simple brc=3
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc3(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (9)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (9)) {
-                v = ((symbol_sign) * (table_b3.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (6)) {
+          // reconstruction law block=qo thidx-choice=simple brc=3
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc3(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (9)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (9)) {
+                  v = ((symbol_sign) * (table_b3.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=3")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qo thidx-choice=normal brc=3
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc3(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=3")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
           }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qo thidx-choice=normal brc=3
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc3(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl3.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=3") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=3") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
+          }
         }
+        break;
       }
       break;
     }
     case 4: {
-      if ((thidx) <= (8)) {
-        // reconstruction law block=qo thidx-choice=simple brc=4
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc4(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
-          }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            if ((mcode) < (15)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (15)) {
-                v = ((symbol_sign) * (table_b4.at(thidx)));
-              } else {
+      {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
-              }
+        if ((thidx) <= (8)) {
+          // reconstruction law block=qo thidx-choice=simple brc=4
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc4(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
             }
-          } catch (std::out_of_range &e) {
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              if ((mcode) < (15)) {
+                v = ((symbol_sign) * (mcode_f));
+              } else {
+                if ((mcode) == (15)) {
+                  v = ((symbol_sign) * (table_b4.at(thidx)));
+                } else {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ") << ("exception simple brc=4")
-                        << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
-                        << ("'") << (std::setw(8)) << (" packet_idx='")
-                        << (packet_idx) << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
-        }
-      } else {
-        // reconstruction law block=qo thidx-choice=normal brc=4
-        for (int i = 0;
-             (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
-             (i)++) {
-          auto sign_bit = get_sequential_bit(&s);
-          auto mcode = decode_huffman_brc4(&s);
-          auto mcode_f = static_cast<float>(mcode);
-          auto symbol_sign = (1.0f);
-          if (sign_bit) {
-            symbol_sign = (-1.0f);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
+              }
+            } catch (std::out_of_range &e) {
+
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ") << ("exception simple brc=4")
+                          << (" ") << (std::setw(8)) << (" thidx='") << (thidx)
+                          << ("'") << (std::setw(8)) << (" packet_idx='")
+                          << (packet_idx) << ("'") << (std::endl)
+                          << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
           }
-          // decode qo p.75
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+        } else {
+          // reconstruction law block=qo thidx-choice=normal brc=4
+          for (int i = 0;
+               (((i) < (128)) && ((decoded_qo_symbols) < (number_of_quads)));
+               (i)++) {
+            auto sign_bit = get_sequential_bit(&s);
+            auto mcode = decode_huffman_brc4(&s);
+            auto mcode_f = static_cast<float>(mcode);
+            auto symbol_sign = (1.0f);
+            if (sign_bit) {
+              symbol_sign = (-1.0f);
+            }
+            // decode qo p.75
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl4.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf brc=4") << (" ")
-                        << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
-                        << (std::setw(8)) << (" packet_idx='") << (packet_idx)
-                        << ("'") << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_qo_symbols_a[decoded_qo_symbols] = v;
-          (decoded_qo_symbols)++;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf brc=4") << (" ")
+                          << (std::setw(8)) << (" thidx='") << (thidx) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_qo_symbols_a[decoded_qo_symbols] = v;
+            (decoded_qo_symbols)++;
+          }
         }
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("error brc out of range") << (" ")
+                    << (std::setw(8)) << (" brc='") << (brc) << ("'")
+                    << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }
@@ -1439,487 +1639,534 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
-      // decode ie p.74 reconstruction law middle choice brc=0
-      if ((thidx) <= (3)) {
-        // decode ie p.74 reconstruction law simple brc=0
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (3)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (3)) {
-                v = ((symbol_sign) * (table_b0.at(thidx)));
+      {
+
+        // decode ie p.74 reconstruction law middle choice brc=0
+        if ((thidx) <= (3)) {
+          // decode ie p.74 reconstruction law simple brc=0
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (3)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (3)) {
+                  v = ((symbol_sign) * (table_b0.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=ie brc=0") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
-        }
-      } else {
-        // decode ie p.74 reconstruction law normal brc=0
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=ie brc=0") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
+        } else {
+          // decode ie p.74 reconstruction law normal brc=0
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl0.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=ie brc=0")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_ie_symbols='")
-                        << (decoded_ie_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=ie brc=0")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_ie_symbols='") << (decoded_ie_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 1: {
-      // decode ie p.74 reconstruction law middle choice brc=1
-      if ((thidx) <= (3)) {
-        // decode ie p.74 reconstruction law simple brc=1
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (4)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (4)) {
-                v = ((symbol_sign) * (table_b1.at(thidx)));
+      {
+
+        // decode ie p.74 reconstruction law middle choice brc=1
+        if ((thidx) <= (3)) {
+          // decode ie p.74 reconstruction law simple brc=1
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (4)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (4)) {
+                  v = ((symbol_sign) * (table_b1.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=ie brc=1") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
-        }
-      } else {
-        // decode ie p.74 reconstruction law normal brc=1
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=ie brc=1") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
+        } else {
+          // decode ie p.74 reconstruction law normal brc=1
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl1.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=ie brc=1")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_ie_symbols='")
-                        << (decoded_ie_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=ie brc=1")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_ie_symbols='") << (decoded_ie_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 2: {
-      // decode ie p.74 reconstruction law middle choice brc=2
-      if ((thidx) <= (5)) {
-        // decode ie p.74 reconstruction law simple brc=2
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (6)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (6)) {
-                v = ((symbol_sign) * (table_b2.at(thidx)));
+      {
+
+        // decode ie p.74 reconstruction law middle choice brc=2
+        if ((thidx) <= (5)) {
+          // decode ie p.74 reconstruction law simple brc=2
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (6)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (6)) {
+                  v = ((symbol_sign) * (table_b2.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=ie brc=2") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
-        }
-      } else {
-        // decode ie p.74 reconstruction law normal brc=2
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=ie brc=2") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
+        } else {
+          // decode ie p.74 reconstruction law normal brc=2
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl2.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=ie brc=2")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_ie_symbols='")
-                        << (decoded_ie_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=ie brc=2")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_ie_symbols='") << (decoded_ie_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 3: {
-      // decode ie p.74 reconstruction law middle choice brc=3
-      if ((thidx) <= (6)) {
-        // decode ie p.74 reconstruction law simple brc=3
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (9)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (9)) {
-                v = ((symbol_sign) * (table_b3.at(thidx)));
+      {
+
+        // decode ie p.74 reconstruction law middle choice brc=3
+        if ((thidx) <= (6)) {
+          // decode ie p.74 reconstruction law simple brc=3
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (9)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (9)) {
+                  v = ((symbol_sign) * (table_b3.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=ie brc=3") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
-        }
-      } else {
-        // decode ie p.74 reconstruction law normal brc=3
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=ie brc=3") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
+        } else {
+          // decode ie p.74 reconstruction law normal brc=3
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl3.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=ie brc=3")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_ie_symbols='")
-                        << (decoded_ie_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=ie brc=3")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_ie_symbols='") << (decoded_ie_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 4: {
-      // decode ie p.74 reconstruction law middle choice brc=4
-      if ((thidx) <= (8)) {
-        // decode ie p.74 reconstruction law simple brc=4
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (15)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (15)) {
-                v = ((symbol_sign) * (table_b4.at(thidx)));
+      {
+
+        // decode ie p.74 reconstruction law middle choice brc=4
+        if ((thidx) <= (8)) {
+          // decode ie p.74 reconstruction law simple brc=4
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (15)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (15)) {
+                  v = ((symbol_sign) * (table_b4.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=ie brc=4") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
-        }
-      } else {
-        // decode ie p.74 reconstruction law normal brc=4
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_ie_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_ie_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode ie p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=ie brc=4") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
+        } else {
+          // decode ie p.74 reconstruction law normal brc=4
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_ie_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_ie_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode ie p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl4.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=ie brc=4")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_ie_symbols='")
-                        << (decoded_ie_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_ie_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=ie brc=4")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_ie_symbols='") << (decoded_ie_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_ie_symbols_a[pos] = v;
+          }
         }
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("unknown brc") << (" ") << (std::setw(8))
+                    << (" static_cast<int>(brc)='") << (static_cast<int>(brc))
+                    << ("'") << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }
@@ -1930,487 +2177,534 @@ int init_decode_packet(int packet_idx, std::complex<float> *output) {
     auto thidx = thidxs[block];
     switch (brc) {
     case 0: {
-      // decode io p.74 reconstruction law middle choice brc=0
-      if ((thidx) <= (3)) {
-        // decode io p.74 reconstruction law simple brc=0
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (3)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (3)) {
-                v = ((symbol_sign) * (table_b0.at(thidx)));
+      {
+
+        // decode io p.74 reconstruction law middle choice brc=0
+        if ((thidx) <= (3)) {
+          // decode io p.74 reconstruction law simple brc=0
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (3)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (3)) {
+                  v = ((symbol_sign) * (table_b0.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=io brc=0") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
-        }
-      } else {
-        // decode io p.74 reconstruction law normal brc=0
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl0.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=io brc=0") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
+        } else {
+          // decode io p.74 reconstruction law normal brc=0
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl0.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=io brc=0")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_io_symbols='")
-                        << (decoded_io_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=io brc=0")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_io_symbols='") << (decoded_io_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 1: {
-      // decode io p.74 reconstruction law middle choice brc=1
-      if ((thidx) <= (3)) {
-        // decode io p.74 reconstruction law simple brc=1
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (4)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (4)) {
-                v = ((symbol_sign) * (table_b1.at(thidx)));
+      {
+
+        // decode io p.74 reconstruction law middle choice brc=1
+        if ((thidx) <= (3)) {
+          // decode io p.74 reconstruction law simple brc=1
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (4)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (4)) {
+                  v = ((symbol_sign) * (table_b1.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=io brc=1") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
-        }
-      } else {
-        // decode io p.74 reconstruction law normal brc=1
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl1.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=io brc=1") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
+        } else {
+          // decode io p.74 reconstruction law normal brc=1
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl1.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=io brc=1")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_io_symbols='")
-                        << (decoded_io_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=io brc=1")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_io_symbols='") << (decoded_io_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 2: {
-      // decode io p.74 reconstruction law middle choice brc=2
-      if ((thidx) <= (5)) {
-        // decode io p.74 reconstruction law simple brc=2
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (6)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (6)) {
-                v = ((symbol_sign) * (table_b2.at(thidx)));
+      {
+
+        // decode io p.74 reconstruction law middle choice brc=2
+        if ((thidx) <= (5)) {
+          // decode io p.74 reconstruction law simple brc=2
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (6)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (6)) {
+                  v = ((symbol_sign) * (table_b2.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=io brc=2") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
-        }
-      } else {
-        // decode io p.74 reconstruction law normal brc=2
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl2.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=io brc=2") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
+        } else {
+          // decode io p.74 reconstruction law normal brc=2
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl2.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=io brc=2")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_io_symbols='")
-                        << (decoded_io_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=io brc=2")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_io_symbols='") << (decoded_io_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 3: {
-      // decode io p.74 reconstruction law middle choice brc=3
-      if ((thidx) <= (6)) {
-        // decode io p.74 reconstruction law simple brc=3
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (9)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (9)) {
-                v = ((symbol_sign) * (table_b3.at(thidx)));
+      {
+
+        // decode io p.74 reconstruction law middle choice brc=3
+        if ((thidx) <= (6)) {
+          // decode io p.74 reconstruction law simple brc=3
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (9)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (9)) {
+                  v = ((symbol_sign) * (table_b3.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=io brc=3") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
-        }
-      } else {
-        // decode io p.74 reconstruction law normal brc=3
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl3.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=io brc=3") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
+        } else {
+          // decode io p.74 reconstruction law normal brc=3
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl3.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=io brc=3")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_io_symbols='")
-                        << (decoded_io_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=io brc=3")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_io_symbols='") << (decoded_io_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
         }
+        break;
       }
       break;
     }
     case 4: {
-      // decode io p.74 reconstruction law middle choice brc=4
-      if ((thidx) <= (8)) {
-        // decode io p.74 reconstruction law simple brc=4
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            if ((mcode) < (15)) {
-              v = ((symbol_sign) * (mcode_f));
-            } else {
-              if ((mcode) == (15)) {
-                v = ((symbol_sign) * (table_b4.at(thidx)));
+      {
+
+        // decode io p.74 reconstruction law middle choice brc=4
+        if ((thidx) <= (8)) {
+          // decode io p.74 reconstruction law simple brc=4
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              if ((mcode) < (15)) {
+                v = ((symbol_sign) * (mcode_f));
               } else {
+                if ((mcode) == (15)) {
+                  v = ((symbol_sign) * (table_b4.at(thidx)));
+                } else {
 
-                (std::cout) << (std::setw(10))
-                            << (std::chrono::high_resolution_clock::now()
-                                    .time_since_epoch()
-                                    .count())
-                            << (" ") << (std::this_thread::get_id()) << (" ")
-                            << (__FILE__) << (":") << (__LINE__) << (" ")
-                            << (__func__) << (" ") << ("mcode too large")
-                            << (" ") << (std::setw(8)) << (" mcode='")
-                            << (mcode) << ("'") << (std::endl) << (std::flush);
-                assert(0);
+                  (std::cout)
+                      << (std::setw(10))
+                      << (std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count())
+                      << (" ") << (std::this_thread::get_id()) << (" ")
+                      << (__FILE__) << (":") << (__LINE__) << (" ")
+                      << (__func__) << (" ") << ("mcode too large") << (" ")
+                      << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                      << (std::endl) << (std::flush);
+                  assert(0);
+                }
               }
-            }
-          } catch (std::out_of_range &e) {
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception simple block=io brc=4") << (" ")
-                        << (std::setw(8)) << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::endl) << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
-        }
-      } else {
-        // decode io p.74 reconstruction law normal brc=4
-        for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
-                                           (decoded_io_symbols)));
-             (i)++) {
-          auto pos = ((i) + (((128) * (block))));
-          auto scode = decoded_io_symbols_a[pos];
-          auto mcode_f = fabsf(scode);
-          auto mcode = static_cast<int>(mcode_f);
-          auto symbol_sign = copysignf((1.0f), scode);
-          // decode io p.74 reconstruction law right side
-          auto v = (0.f);
-          try {
-            v = ((symbol_sign) * (table_nrl4.at(mcode)) * (table_sf.at(thidx)));
-          } catch (std::out_of_range &e) {
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception simple block=io brc=4") << (" ")
+                          << (std::setw(8)) << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
+        } else {
+          // decode io p.74 reconstruction law normal brc=4
+          for (int i = 0; (((i) < (128)) && ((((i) + (((128) * (block))))) <
+                                             (decoded_io_symbols)));
+               (i)++) {
+            auto pos = ((i) + (((128) * (block))));
+            auto scode = decoded_io_symbols_a[pos];
+            auto mcode_f = fabsf(scode);
+            auto mcode = static_cast<int>(mcode_f);
+            auto symbol_sign = copysignf((1.0f), scode);
+            // decode io p.74 reconstruction law right side
+            auto v = (0.f);
+            try {
+              v = ((symbol_sign) * (table_nrl4.at(mcode)) *
+                   (table_sf.at(thidx)));
+            } catch (std::out_of_range &e) {
 
-            (std::cout) << (std::setw(10))
-                        << (std::chrono::high_resolution_clock::now()
-                                .time_since_epoch()
-                                .count())
-                        << (" ") << (std::this_thread::get_id()) << (" ")
-                        << (__FILE__) << (":") << (__LINE__) << (" ")
-                        << (__func__) << (" ")
-                        << ("exception normal nrl or sf block=io brc=4")
-                        << (" ") << (std::setw(8))
-                        << (" static_cast<int>(thidx)='")
-                        << (static_cast<int>(thidx)) << ("'") << (std::setw(8))
-                        << (" block='") << (block) << ("'") << (std::setw(8))
-                        << (" i='") << (i) << ("'") << (std::setw(8))
-                        << (" mcode='") << (mcode) << ("'") << (std::setw(8))
-                        << (" packet_idx='") << (packet_idx) << ("'")
-                        << (std::setw(8)) << (" pos='") << (pos) << ("'")
-                        << (std::setw(8)) << (" scode='") << (scode) << ("'")
-                        << (std::setw(8)) << (" symbol_sign='") << (symbol_sign)
-                        << ("'") << (std::setw(8)) << (" decoded_io_symbols='")
-                        << (decoded_io_symbols) << ("'") << (std::endl)
-                        << (std::flush);
-            assert(0);
-          };
-          decoded_io_symbols_a[pos] = v;
+              (std::cout) << (std::setw(10))
+                          << (std::chrono::high_resolution_clock::now()
+                                  .time_since_epoch()
+                                  .count())
+                          << (" ") << (std::this_thread::get_id()) << (" ")
+                          << (__FILE__) << (":") << (__LINE__) << (" ")
+                          << (__func__) << (" ")
+                          << ("exception normal nrl or sf block=io brc=4")
+                          << (" ") << (std::setw(8))
+                          << (" static_cast<int>(thidx)='")
+                          << (static_cast<int>(thidx)) << ("'")
+                          << (std::setw(8)) << (" block='") << (block) << ("'")
+                          << (std::setw(8)) << (" i='") << (i) << ("'")
+                          << (std::setw(8)) << (" mcode='") << (mcode) << ("'")
+                          << (std::setw(8)) << (" packet_idx='") << (packet_idx)
+                          << ("'") << (std::setw(8)) << (" pos='") << (pos)
+                          << ("'") << (std::setw(8)) << (" scode='") << (scode)
+                          << ("'") << (std::setw(8)) << (" symbol_sign='")
+                          << (symbol_sign) << ("'") << (std::setw(8))
+                          << (" decoded_io_symbols='") << (decoded_io_symbols)
+                          << ("'") << (std::endl) << (std::flush);
+              assert(0);
+            };
+            decoded_io_symbols_a[pos] = v;
+          }
         }
+        break;
+      }
+      break;
+    }
+    default: {
+      {
+
+        (std::cout) << (std::setw(10))
+                    << (std::chrono::high_resolution_clock::now()
+                            .time_since_epoch()
+                            .count())
+                    << (" ") << (std::this_thread::get_id()) << (" ")
+                    << (__FILE__) << (":") << (__LINE__) << (" ") << (__func__)
+                    << (" ") << ("unknown brc") << (" ") << (std::setw(8))
+                    << (" static_cast<int>(brc)='") << (static_cast<int>(brc))
+                    << ("'") << (std::endl) << (std::flush);
+        assert(0);
+        break;
       }
       break;
     }

@@ -31,3 +31,28 @@ GTK_DEBUG=interactive GOBJECT_DEBUG=instance-count ./vis
 #+end_example
 
 - GtkScrolledWindow GtkViewport GtkDrawingArea
+
+* description
+This code was an experiment in September 2020 to create a GTK interface to the Sentinel 1 synthetic aperture radar parser.
+It is based on ../08_copernicus_radar.
+
+* install dependencies on fedora
+#+begin_example
+sudo dnf install gtkmm30-devel
+#+end_example
+
+* usage
+Download a raw copernicus sentinel 1 dataset from https://scihub.copernicus.eu.
+
+I used this link (not sure if it works):
+https://scihub.copernicus.eu/dhus/odata/v1/Products(%278034f2a7-0e1c-4270-82dc-0c5bc3211cb7%27)/Nodes(%27S1A_S3_RAW__0SDH_20210221T213548_20210221T213613_036693_044FED_A100.SAFE%27)/Nodes(%27s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat%27)/$value
+
+Add the filename in vis_00_base.cpp (at the end of the file):
+#+begin_example
+state._filename =
+      "/home/martin/Downloads/"
+      "s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat";
+#+end_example
+
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto;
+[[https://github.com/plops/cl-cpp-generator2/raw/master/example/33_copernicus_gtk/screen_20210222.png]]

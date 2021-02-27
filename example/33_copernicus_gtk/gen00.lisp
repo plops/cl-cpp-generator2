@@ -909,7 +909,8 @@
 
 		      (setf ,(g `_filename)
 		      (string
-		       "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
+		       "/home/martin/Downloads/s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat"
+		       #+nil "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
 		       ))
 		      (init_mmap ,(g `_filename))
 		      (init_collect_packet_headers)

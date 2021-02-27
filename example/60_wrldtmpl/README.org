@@ -1,0 +1,2 @@
+- https://github.com/jbikker/WrldTmpl8
+- https://jacco.ompf2.com/2021/02/01/a-voxel-renderer-for-learning-c-c/
