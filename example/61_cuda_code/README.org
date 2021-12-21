@@ -40,3 +40,11 @@
 
 - set breakpoints
   - then press f5
+
+- gentoo has cuda_11.5.1_495.29.05_linux.run
+  #+begin_example
+  sudo mv /usr/bin/python3 /usr/bin/python3_weg
+sudo chmod a+x /opt/cuda/nsight-systems-2021.3.3/host-linux-x64/python/bin/python 
+sudo ln -s /opt/cuda/nsight-systems-2021.3.3/host-linux-x64/python/bin/python /usr/bin/python3
+    #+end_example
+
