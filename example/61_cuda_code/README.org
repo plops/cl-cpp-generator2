@@ -1,0 +1,3 @@
+
+- CUDA Support in Visual Studio Code with Julia Reid
+  https://www.youtube.com/watch?v=l6PgYhiQr-I
