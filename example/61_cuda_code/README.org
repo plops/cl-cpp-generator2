@@ -48,3 +48,7 @@ sudo chmod a+x /opt/cuda/nsight-systems-2021.3.3/host-linux-x64/python/bin/pytho
 sudo ln -s /opt/cuda/nsight-systems-2021.3.3/host-linux-x64/python/bin/python /usr/bin/python3
     #+end_example
 
+- while stopped in cuda click on CUDA: (0,0,0) in bottom right status
+  change focus
+
+- add condition expression to break point
