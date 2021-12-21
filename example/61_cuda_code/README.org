@@ -10,7 +10,7 @@
   - Remote - SSH
   - C/C++ (contains cuda intelli sense)
   - Nsight Visual Studio Code Edition
-  - Makefile Tools
+  - [ Makefile Tools (probably not required) ]
 
 - start ssh connection (screen with circle in bottom left in icon bar)
   - green rectangle in bottom corner contains remote host name
@@ -24,4 +24,19 @@
   - hover on variable
   - right mouse, find all references
   - right mouse, rename symbol (use shift enter for preview)
+
+- .vscode/c_cpp_properties.json
+  - /opt/cuda/bin/nvcc
   
+- .vscode/tasks.json
+  - make dbg=1 SMS=75
+
+- fix CUDA_PATH in Makefile
+
+- terminal-> run build task
+
+- launch.json
+  - contains debug settings
+
+- set breakpoints
+  - then press f5
