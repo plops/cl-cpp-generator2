@@ -18,3 +18,10 @@
 - click on the extensions tab
   - click on the cloud to install extensions on the remote side
   - C++ and nsight
+
+- open folder (e.g. cuda-samples matrixMul)
+  - intellisense works
+  - hover on variable
+  - right mouse, find all references
+  - right mouse, rename symbol (use shift enter for preview)
+  
