@@ -1,3 +1,15 @@
 
 - CUDA Support in Visual Studio Code with Julia Reid
   https://www.youtube.com/watch?v=l6PgYhiQr-I
+
+#+begin_example
+`info cuda kernels
+#+end_example
+
+- extensions (bottom icon (4 boxes) in the left icon bar):
+  - Remote - SSH
+  - C/C++ (contains cuda intelli sense)
+  - Nsight Visual Studio Code Edition
+
+- start ssh connection (screen with circle in bottom left in icon bar)
+  - green rectangle in bottom corner contains remote host name

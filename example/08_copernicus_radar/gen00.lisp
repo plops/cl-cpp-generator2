@@ -348,7 +348,8 @@
 					;(vkprint "main" )
 		(setf ,(g `_filename)
 		      (string
-		       "/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
+		       "/home/martin/Downloads/s1a-s3-raw-s-hh-20210221t213548-20210221t213613-036693-044fed.dat"
+		       ;"/media/sdb4/sar/sao_paulo/s1b-s6-raw-s-vv-20200824t214314-20200824t214345-023070-02bce0.dat"
 		       
 		       ;"/media/sdb4/sar/singapore/S1A_IW_RAW__0SDV_20200413T224752_20200413T224825_032115_03B64B_FDA8.SAFE/s1a-iw-raw-s-vv-20200413t224752-20200413t224825-032115-03b64b.dat" ;; singapore
 		       ; "/home/martin/Downloads/s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat" ;; stripmap with 2 islands https://scihub.copernicus.eu/dhus/odata/v1/Products(%2742030b2d-07d3-4fe0-9104-2ba800de184d%27)/Nodes(%27S1B_S3_RAW__0SDV_20191212T150115_20191212T150141_019333_024829_9492.SAFE%27)/Nodes(%27s1b-s3-raw-s-vv-20191212t150115-20191212t150141-019333-024829.dat%27)/$value
