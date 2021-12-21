@@ -10,6 +10,11 @@
   - Remote - SSH
   - C/C++ (contains cuda intelli sense)
   - Nsight Visual Studio Code Edition
+  - Makefile Tools
 
 - start ssh connection (screen with circle in bottom left in icon bar)
   - green rectangle in bottom corner contains remote host name
+
+- click on the extensions tab
+  - click on the cloud to install extensions on the remote side
+  - C++ and nsight
