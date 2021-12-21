@@ -2,9 +2,6 @@
 - CUDA Support in Visual Studio Code with Julia Reid
   https://www.youtube.com/watch?v=l6PgYhiQr-I
 
-#+begin_example
-`info cuda kernels
-#+end_example
 
 - extensions (bottom icon (4 boxes) in the left icon bar):
   - Remote - SSH
@@ -52,3 +49,9 @@ sudo ln -s /opt/cuda/nsight-systems-2021.3.3/host-linux-x64/python/bin/python /u
   change focus
 
 - add condition expression to break point
+#+begin_example
+`info cuda kernels
+info cuda kernels
+  Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation 
+*      0      -   0    1 Active 0xffffffff (20,10,1) (32,32,1) MatrixMulCUDA<32>(,args=[{name="C",value="0x7fffcd92c000"},{name="A",value="0x7fffcd800000"},{name="B",value="0x7fffcd864000"},{name="wA",value="320"},{name="wB",value="640"}]) 
+#+end_example
