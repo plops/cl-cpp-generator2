@@ -32,7 +32,14 @@
 			(const)
 			(values "__host__ __device__ __forceinline__ float2"))
 		       (return (make_float2 (aref m_x idx)
-					    (aref m_y idx))))))))
+					    (aref m_y idx))))
+		     (defmethod set_point (idx p)
+		       (declare
+			(type int idx)
+			(type "const float2&" p)
+			(values "__host__ __device__ __forceinline__ void"))
+		       (setf  (aref m_x idx) p.x
+			      (aref m_y idx) p.y))))))
 
     (let ((fn-h (asdf:system-relative-pathname
 			  'cl-cpp-generator2
@@ -44,6 +51,7 @@
 			 :if-does-not-exist :create)
        (emit-c :code
 	       `(do0
+		 "#pragma once"
 		 (include <thrust/random.h>
 			    <thrust/device_vector.h>
 			    <thrust/host_vector.h>
@@ -65,7 +73,12 @@
 		   (include "quadtree.h")
 		   
 		   ,type-definitions
-		  
+		   (defun main (argc argv)
+		     (declare (type int argc)
+			      (type char** argv)
+			      (values int))
+		     (return EXIT_SUCCESS)
+		     )
 		   )))
   #+nil
   (with-open-file (s "source/CMakeLists.txt" :direction :output
