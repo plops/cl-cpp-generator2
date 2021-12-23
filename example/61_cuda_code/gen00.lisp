@@ -39,7 +39,69 @@
 			(type "const float2&" p)
 			(values "__host__ __device__ __forceinline__ void"))
 		       (setf  (aref m_x idx) p.x
-			      (aref m_y idx) p.y))))))
+			      (aref m_y idx) p.y))
+		     (defmethod set (x y)
+		       (declare
+			(type float* x y)
+			
+			(values "__host__ __device__ __forceinline__ void"))
+		       (setf  m_x x
+			      m_y y)))
+
+	    (defclass Bounding_box ()
+		     "float2 m_p_min, m_p_max;"
+		     "public:"
+		     (defmethod Bounding_box ()
+		       (declare
+			(values "__host__ __device__")
+			(construct (m_p_min (make_float2 .0 .0))
+				   (m_p_max (make_float2 1.0 1.0))
+				   )))
+		     (defmethod compute_center (center)
+		       (declare
+			(type float2& center)
+			(const)
+			(values "__host__ __device__ void")
+			)
+		       ,@(loop for e in `(x y)
+			       collect
+			       `(setf (dot center ,e)
+				      (* .5 (+ (dot m_p_min ,e)
+					       (dot m_p_max ,e))))))
+		     ,@(loop for e in `(min max)
+			     collect
+			     `(defmethod ,(format nil "get_~a" e) ()
+				(declare
+				 (type float2& center)
+				 (const)
+				 (values "__host__ __device__ __forceinline__ const float2&"))
+				(return ,(format nil "m_p_~a" e))))
+		     
+		     (defmethod contains (p)
+		       (declare
+			(type "const float2&" p)
+			(const)
+			(values "__host__ __device__ bool"))
+		       (return
+			 (&& ,@(loop for e in `(x y)
+				     appending
+				     `((<= (dot m_p_min ,e)
+					   (dot p ,e))
+				       (<= (dot p ,e)
+					   (dot m_p_max ,e)
+					   )
+				       )))))
+
+		     (defmethod set (xmin ymin xmax ymax)
+		       (declare
+			(type float xmin ymin xmax ymax)
+			(values "__host__ __device__ void"))
+		       ,@(loop for e in `(min max)
+			       appending
+			       (loop for f in `(x y)
+				     collect
+				     `(setf ,(format nil "m_p_~a.~a" e f)
+					    ,(format nil "~a~a" f e)))))))))
 
     (let ((fn-h (asdf:system-relative-pathname
 			  'cl-cpp-generator2
