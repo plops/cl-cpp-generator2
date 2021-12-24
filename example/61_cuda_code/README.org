@@ -62,7 +62,7 @@ info cuda kernels
 clang++ can compile Cuda C++ to ptx
 clang++ -x cuda
 
-
+clang++ -nocudalib -nocudainc -x cuda quadtree.cu
 
 
 #+end_example
