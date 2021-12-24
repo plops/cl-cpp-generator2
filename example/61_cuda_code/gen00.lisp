@@ -101,7 +101,34 @@
 			       (loop for f in `(x y)
 				     collect
 				     `(setf ,(format nil "m_p_~a.~a" e f)
-					    ,(format nil "~a~a" f e)))))))))
+					    ,(format nil "~a~a" f e))))))
+
+	    (defclass Quadtree_node ()
+	      "int m_id, m_begin, m_end;"
+	      "Bounding_box m_bounding_box;"
+	      "public:"
+	      (defmethod Quadtree_node ()
+		       (declare
+			(values "__host__ __device__")
+			(construct (m_id 0)
+				   (m_begin 0)
+				   (m_end 0))))
+	      
+	      ,@(loop for e in `((:name id :params () :param-types () :const t :code  (return m_id) :values "__host__ __device__ int")
+				 (:name set_id :params (new_id) :param-types (int) :const nil :code  (setf m_id new_id) :values "__host__ __device__ void"))
+		      collect
+		      (destructuring-bind (&key name params param-types const code values) e
+			`(defmethod ,name ,params
+			   (declare ,@(loop for param in params and ty in param-types
+					    collect
+					    `(type ,ty ,param))
+				    (values ,values)
+				    ,(if const
+					 `(const)
+					 `())
+				    )
+			   ,code
+			   )))))))
 
     (let ((fn-h (asdf:system-relative-pathname
 			  'cl-cpp-generator2
