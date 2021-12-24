@@ -54,8 +54,8 @@
 		     (defmethod Bounding_box ()
 		       (declare
 			(values "__host__ __device__")
-			(construct (m_p_min (make_float2 .0 .0))
-				   (m_p_max (make_float2 1.0 1.0))
+			(construct (m_p_min (make_float2 0s0 0s0))
+				   (m_p_max (make_float2 1s0 1s0))
 				   )))
 		     (defmethod compute_center (center)
 		       (declare
@@ -220,13 +220,66 @@
 			 (setf (aref s_num_pts i)
 			       (cast "volatile int*"
 				     (ref (aref smem (* i NUM_WARS_PER_BLOCK))))))
-		       (let ((center)
-			     (range_begin)
-			     (range_end)
-			     (warp_counts (curly 0 0 0 0)))
-			 (declare (type float2 center)
-				  (type int range_begin range_end)
-				  (type (array int 4) warp_counts)))
+		       (do0
+			(comments "stop recursion here, points[0] contains all points")
+			(let ((center)
+			      (range_begin)
+			      (range_end)
+			      (warp_counts (curly 0 0 0 0)))
+			  (declare (type float2 center)
+				   (type int range_begin range_end)
+				   (type (array int 4) warp_counts))
+			  (when (logior (<= params.max_depth
+					    params.depth)
+					(<= num_points
+					    params.min_points_per_node))
+			    (when (== 1 params.point_selector)
+			      (let ((it (node.points_begin))
+				    (end (node.points_end)))
+				(for ((incf it threadIdx.x)
+				      (< it end)
+				      (incf it NUM_THREADS_PER_BLOCK))
+				     (when (< it end)
+				       (dot (aref points 0)
+					    (set_point it
+						       (dot (aref points 1)
+							    (get_point it)))))
+				     )))
+			    (return))))
+		       (do0
+			(comments "find number of points in each warp, and points to move to each quadrant")
+			(let ((bbox (node.bounding_box)))
+			  (declare (type "const Bounding_box&" bbox))
+			  (bbox.compute_center center)
+			  (let ((num_points_per_warp
+				  (max warpSize
+				       (/ (+ num_points
+					     NUM_WARPS_PER_BLOCK
+					     -1)
+					  NUM_WARPS_PER_BLOCK
+					  )))
+				(range_begin (+ (node.points_begin)
+						(* warp_id num_points_per_warp)))
+				(range_end (min (+ range_begin
+						   num_points_per_warp)
+						(node.points_end)))))))
+		       (do0
+			(comments "count points in each child")
+			(let ((&in_points (aref points params.point_selector))
+			      (tile32 (cg--tiled_partition<32> cta)))
+			  (for ((= range_it
+				   (+ range_begin
+				      (tile32.thread_rank)))
+				(tile32.any (< range_it
+					       range_end))
+				(incf range_it warpSize))
+			       (let ((is_active (< range_it
+						   range_end))
+				     (p (? is_active
+					   (in_points.get_points range_it)
+					   (make_float2 0s0 0s0))))
+				 ))
+			  ))
 		       )
 		     )
 		   
