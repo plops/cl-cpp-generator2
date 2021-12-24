@@ -61,5 +61,17 @@ info cuda kernels
 #+begin_example
 clang++ can compile Cuda C++ to ptx
 clang++ -x cuda
+
+
+
+
 #+end_example
-  
+- Clang only targets essential CUDA functionality, so for things like
+  textures, __managed__, etc. one will need nvcc
+- Performance-wise clang is usually on par. Sometimes a bit better (it
+  tends to have a bit better optimizer), sometimes a bit worse
+  (e.g. NVCC is much more aggressive at unrolling loops). A lot of the
+  differences are eliminated due to the fact that both NVCC and clang
+  in the end use ptxas which optimizes generated PTX and often
+  produces nearly identical SASS for somewhat different PTX from both
+  compilers.
