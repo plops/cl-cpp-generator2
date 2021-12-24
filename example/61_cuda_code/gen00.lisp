@@ -216,6 +216,7 @@
 			   (num_points (node.num_points)))
 		       (declare (type "extern __shared__ int" smem[])
 				(type (array "volatile int*" 4) s_num_pts))
+		       "#pragma unroll"
 		       (dotimes (i 4)
 			 (setf (aref s_num_pts i)
 			       (cast "volatile int*"
@@ -236,6 +237,7 @@
 			    (when (== 1 params.point_selector)
 			      (let ((it (node.points_begin))
 				    (end (node.points_end)))
+				"#pragma unroll"
 				(for ((incf it threadIdx.x)
 				      (< it end)
 				      (incf it NUM_THREADS_PER_BLOCK))
@@ -267,6 +269,7 @@
 			(comments "count points in each child")
 			(let ((&in_points (aref points params.point_selector))
 			      (tile32 (cg--tiled_partition<32> cta)))
+			  "#pragma unroll"
 			  (for ((= range_it
 				   (+ range_begin
 				      (tile32.thread_rank)))
