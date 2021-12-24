@@ -72,7 +72,8 @@ clang++ -nocudalib -nocudainc -x cuda quadtree.cu
 -fcuda-flush-denormals-to-zero=on
 -fcuda-approx-transcendentals=on # implied by -ffast-math
 
-odes:
+
+
 
 #if defined(__clang__) && defined(__CUDA__) && !defined(__CUDA_ARCH__)
 // clang compiling CUDA code, host mode.
@@ -85,6 +86,12 @@ odes:
 
 Programmers can force unrolling and inline using clang’s loop unrolling
 pragmas and __attribute__((always_inline)).
+#pragma unroll
+
+#pragma unroll 16
+
+#pragma nounroll
+
 #+end_example
 - Clang only targets essential CUDA functionality, so for things like
   textures, __managed__, etc. one will need nvcc
@@ -101,3 +108,9 @@ pragmas and __attribute__((always_inline)).
 - Programmers can force unrolling and inline using clang’s loop
   unrolling pragmas and __attribute__((always_inline)).)
   - https://clang.llvm.org/docs/AttributeReference.html#pragma-unroll-pragma-nounroll
+
+- install sdk on fedora
+#+begin_example
+wget https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux.run
+sudo sh cuda_11.5.1_495.29.05_linux.run
+#+end_example
