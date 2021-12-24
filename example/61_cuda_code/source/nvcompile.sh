@@ -1,7 +1,10 @@
-clang++ -x cuda --cuda-path=/usr/local/cuda \
+/usr/local/cuda/bin/nvcc \
 -I. \
--L/usr/local/cuda/targets/x86_64-linux/lib/ \
--lcudart -ldl -lrt -pthread \
---cuda-gpu-arch=sm_75 \
--ffp-contract=fast \
--ffast-math quadtree.cu
+ --gpu-architecture=sm_75 \
+ quadtree.cu
+
+ #-dlto -arch=sm_75
+
+#/usr/local/cuda/bin/nvcc --cbin g++ -I. quadtree.cu -dc --std=c++14 --threads 0 -gencode arch=compute_75,code=compute_75
+
+#/usr/local/cuda/bin/nvcc -ccbin g++ -I../../Common -m64 -dc --std=c++14 --threads 0 -gencode arch=compute_75,code=sm_75 -o cdpQuadtree.o -c cdpQuadtree.cu
