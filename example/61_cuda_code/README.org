@@ -1,3 +1,4 @@
+- https://github.com/NVIDIA/cuda-samples/blob/master/Samples/cdpQuadtree/cdpQuadtree.cu
 
 - CUDA Support in Visual Studio Code with Julia Reid
   https://www.youtube.com/watch?v=l6PgYhiQr-I
@@ -61,19 +62,30 @@ info cuda kernels
 - https://llvm.org/docs/CompileCudaWithLLVM.html
 #+begin_example
 clang++ can compile Cuda C++ to ptx
-clang++ -x cuda
+
+
+clang++ -x cuda --cuda-path=/usr/local/cuda \
+-I. \
+-L/usr/local/cuda/targets/x86_64-linux/lib/ \
+-lcudart -ldl -lrt -pthread \
+--cuda-gpu-arch=sm_75 \
+-ffp-contract=fast \
+-ffast-math quadtree.cu
+
+
+-lcudart_static
 
 clang++ -nocudalib -nocudainc -x cuda quadtree.cu
 -Lcudapath/lib64
 --cuda-path=/opt/cuda
 -lcudart_static -ldl -lrt -pthread
---cuda-gpu-arch=sm_35
+--cuda-gpu-arch=sm_75
 -ffp-contract=fast
 -fcuda-flush-denormals-to-zero=on
 -fcuda-approx-transcendentals=on # implied by -ffast-math
 
 
-
+wget https://raw.githubusercontent.com/NVIDIA/cuda-samples/master/Common/helper_{string,cuda}.h
 
 #if defined(__clang__) && defined(__CUDA__) && !defined(__CUDA_ARCH__)
 // clang compiling CUDA code, host mode.
@@ -113,4 +125,15 @@ pragmas and __attribute__((always_inline)).
 #+begin_example
 wget https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux.run
 sudo sh cuda_11.5.1_495.29.05_linux.run
+
+Driver:   Not Selected
+Toolkit:  Installed in /usr/local/cuda-11.5/
+Samples:  Not Selected
+
+Please make sure that
+ -   PATH includes /usr/local/cuda-11.5/bin
+ -   LD_LIBRARY_PATH includes /usr/local/cuda-11.5/lib64, or, add /usr/local/cuda-11.5/lib64 to /etc/ld.so.conf and run ldconfig as root
+
+To uninstall the CUDA Toolkit, run cuda-uninstaller in /usr/local/cuda-11.5/bin
+
 #+end_example
