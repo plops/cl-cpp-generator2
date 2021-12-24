@@ -115,7 +115,15 @@
 				   (m_end 0))))
 	      
 	      ,@(loop for e in `((:name id :params () :param-types () :const t :code  (return m_id) :values "__host__ __device__ int")
-				 (:name set_id :params (new_id) :param-types (int) :const nil :code  (setf m_id new_id) :values "__host__ __device__ void"))
+				 (:name set_id :params (new_id) :param-types (int) :const nil :code  (setf m_id new_id) :values "__host__ __device__ void")
+				 (:name bounding_box :params () :param-types () :const t :code  (return m_bounding_box) :values "__host__ __device__ __forceinline__ const Bounding_box")
+				 (:name set_bounding_box :params (xmin ymin xmax ymax) :param-types (float float float float) :const nil :code  (m_bounding_box.set   xmin ymin xmax ymax) :values "__host__ __device__ __forceinline__ void")
+				 (:name num_points :params () :param-types () :const t :code  (return (- m_end m_begin)) :values "__host__ __device__ __forceinline__ int")
+				 (:name points_begin :params () :param-types () :const t :code  (return m_begin) :values "__host__ __device__ __forceinline__ int")
+				 (:name point_end :params () :param-types () :const t :code  (return m_end) :values "__host__ __device__ __forceinline__ int")
+				 (:name set_range :params (begin end) :param-types (int int) :const nil :code  (setf m_begin begin
+														     m_end end)
+				  :values "__host__ __device__ __forceinline__ void"))
 		      collect
 		      (destructuring-bind (&key name params param-types const code values) e
 			`(defmethod ,name ,params
