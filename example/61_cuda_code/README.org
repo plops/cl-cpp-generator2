@@ -81,6 +81,10 @@ odes:
 #if defined(__clang__) && defined(__CUDA__) && defined(__CUDA_ARCH__)
 // clang compiling CUDA code, device mode.
 #endif
+
+
+Programmers can force unrolling and inline using clang’s loop unrolling
+pragmas and __attribute__((always_inline)).
 #+end_example
 - Clang only targets essential CUDA functionality, so for things like
   textures, __managed__, etc. one will need nvcc
@@ -92,3 +96,8 @@ odes:
   produces nearly identical SASS for somewhat different PTX from both
   compilers.
 - clang supports std::complex
+- clang always invokes ptxas to generate sass code
+- they have good documents describing the optimizations
+- Programmers can force unrolling and inline using clang’s loop
+  unrolling pragmas and __attribute__((always_inline)).)
+  - https://clang.llvm.org/docs/AttributeReference.html#pragma-unroll-pragma-nounroll
