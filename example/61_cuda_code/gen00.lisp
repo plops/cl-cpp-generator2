@@ -198,7 +198,10 @@
 		"#else"
 		(let ((seed (hash 0))))
 		"#endif"
-		(let (())))
+		"thrust::default_random_engine rng(seed);"
+		"thrust::random::uniform_real_distribution<float> distrib;"
+		(return (thrust--make_tuple (distrib rng)
+					    (distrib rng))))
 	      
 	      ))))
 
@@ -525,7 +528,78 @@
 			       `(do0
 				 ,@(loop for f in `(0 1)
 				       collect
-				       `(,(format nil "thrust::device_vector<float> ~a_d~a" e f) num_points ))))))
+					 `(,(format nil "thrust::device_vector<float> ~a_d~a" e f) num_points ))))
+		       "Random_generator rnd;"
+		       (thrust--generate
+			(thrust--make_zip_iterator
+			 (thrust--make_tuple
+			  (x_d0.begin)
+			  (y_d0.begin))
+			 
+			 )
+			(thrust--make_zip_iterator
+			  (thrust--make_tuple
+			   (x_d0.end)
+			   (y_d0.end)))
+			rnd)
+		     #+nil  (do0
+			(comments "host structures to analyze device structures")
+			"Points points_init[2];"
+			,@(loop for i below 2
+				collect
+				`(dot (aref points_init ,i)
+				      (set (thrust--raw_pointer_cast
+					    (ref (aref ,(format nil   "x_d~a" i) 0)))
+					   (thrust--raw_pointer_cast
+					    (ref (aref ,(format nil   "y_d~a" i) 0)))))))
+
+		       #+nil (do0
+			(comments "allocate memory to store points")
+			"Points *points;"
+			,(let ((target `points)
+			       (init `points_init)
+			       (len `(* 2 (sizeof Points))))
+			  `(do0 (checkCudaErrors (cudaMalloc
+					     (cast "void**"
+						   (ref ,target))
+					     ,len))
+			       (checkCudaErrors (cudaMemcpy
+						 ,target
+						 ,init
+						 ,len
+						 cudaMemcpyHostToDevice)))))
+		     #+nil  (do0
+			(let ((max_nodes 0)
+			      (num_nodes_at_level 1))
+			  (dotimes (i max_depth)
+			    (incf max_nodes
+				  num_nodes_at_level)
+			    (*= num_nodes_at_level 4))
+			  ))
+
+		#+nil       (do0
+			"Quadtree_node root,*nodes;"
+			(root.set_range 0 num_points)
+			,(let ((target `nodes)
+			       (init `&root)
+			       (len `(* max_nodes (sizeof Quadtree_node)))
+			       (copy-len `(sizeof Quadtree_node)))
+			  `(do0 (checkCudaErrors (cudaMalloc
+					     (cast "void**"
+						   (ref ,target))
+					     ,len))
+			       (checkCudaErrors (cudaMemcpy
+						 ,target
+						 ,init
+						 ,copy-len
+						 cudaMemcpyHostToDevice))))
+			)
+		   #+nil    (do0
+			(comments "recursion limit to max_depth")
+			(cudaDeviceSetLimit cudaLimitDevRuntimeSyncDepth max_depth))
+		       )
+
+		     )
 		   (defun main (argc argv)
 		     (declare (type int argc)
 			      (type char** argv)
