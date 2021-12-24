@@ -55,3 +55,11 @@ info cuda kernels
   Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation 
 *      0      -   0    1 Active 0xffffffff (20,10,1) (32,32,1) MatrixMulCUDA<32>(,args=[{name="C",value="0x7fffcd92c000"},{name="A",value="0x7fffcd800000"},{name="B",value="0x7fffcd864000"},{name="wA",value="320"},{name="wB",value="640"}]) 
 #+end_example
+
+
+- https://gist.github.com/ax3l/9489132
+#+begin_example
+clang++ can compile Cuda C++ to ptx
+clang++ -x cuda
+#+end_example
+  
