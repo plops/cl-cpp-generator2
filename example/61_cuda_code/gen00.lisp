@@ -229,7 +229,7 @@
 			  (declare (type float2 center)
 				   (type int range_begin range_end)
 				   (type (array int 4) warp_counts))
-			  (when (logior (<= params.max_depth
+			  (when (or (<= params.max_depth
 					    params.depth)
 					(<= num_points
 					    params.min_points_per_node))
@@ -277,8 +277,26 @@
 						   range_end))
 				     (p (? is_active
 					   (in_points.get_points range_it)
-					   (make_float2 0s0 0s0))))
+					   (make_float2 0s0 0s0)))
+				     )
+				 ,@(loop for flag in `((and (< p.x center.x) (<= center.y p.y))
+						       (and (<= center.x p.x) (<= center.y p.y))
+						       (and (< p.x center.x) (< p.y center.y))
+						       (and (<= center.x p.x) (< p.y center.y)))
+					 and i from 0
+					 collect
+					 `(let ((num_pts (__popc (tile32.ballot
+								  (and is_active ,flag)
+								  ))))
+					    (incf (aref warp_counts ,i)
+						  (tile32.shfl num_pts 0))))
 				 ))
+			  (when (== 0 (tile32.thread_rank))
+			    ,@(loop for i below 4 collect
+				    `(setf (aref (aref s_num_pts ,i)
+						 warp_id)
+					   (aref warp_cnts ,i))))
+			  (cg--sync cta)
 			  ))
 		       )
 		     )
