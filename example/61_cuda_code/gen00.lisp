@@ -196,6 +196,40 @@
 		   (include "quadtree.h")
 		   
 		   ,type-definitions
+
+		   (defun build_quadtree_kernel (nodes
+						 points
+						 params)
+		     (declare (type Quadtree_node* nodes)
+			      (type Points* points)
+			      (type Parameters params)
+			      (values "template <int NUM_THREADS_PER_BLOCK> __global__ void"))
+		     (let ((cta (cg--this_thread_block))
+			   (NUM_WARPS_PER_BLOCK (/ NUM_THREADS_PER_BLOCK
+						   warpSize))
+			   (warp_id (/ threadIdx.x warpSize))
+			   (lane_id (% threadIdx.x warpSize))
+			   (lane_mask_lt (- (<< lane_id) 1))
+			   (smem[])
+			   (s_num_pts)
+			   (&node (aref nodes blockIdx.x))
+			   (num_points (node.num_points)))
+		       (declare (type "extern __shared__ int" smem[])
+				(type (array "volatile int*" 4) s_num_pts))
+		       (dotimes (i 4)
+			 (setf (aref s_num_pts i)
+			       (cast "volatile int*"
+				     (ref (aref smem (* i NUM_WARS_PER_BLOCK))))))
+		       (let ((center)
+			     (range_begin)
+			     (range_end)
+			     (warp_counts (curly 0 0 0 0)))
+			 (declare (type float2 center)
+				  (type int range_begin range_end)
+				  (type (array int 4) warp_counts)))
+		       )
+		     )
+		   
 		   (defun main (argc argv)
 		     (declare (type int argc)
 			      (type char** argv)
