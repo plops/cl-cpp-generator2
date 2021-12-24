@@ -136,7 +136,33 @@
 					 `())
 				    )
 			   ,code
-			   )))))))
+			   ))))
+	     (defclass Parameters ()
+	       "int m_point_selector, m_num_nodes_at_this_level, m_depth;"
+	       "const int m_max_depth, m_min_points_per_node;"
+	       
+	      "public:"
+	      (defmethod Parameters (max_depth min_points_per_node)
+		(declare
+		 (type int max_depth min_points_per_node)
+			(values "__host__ __device__")
+			(construct (m_point_selector 0)
+				   (m_num_nodes_at_this_level 1)
+				   (m_depth 0)
+				   (m_max_depth max_depth)
+				   (m_min_points_per_node min_points_per_node))))
+	      (defmethod Parameters (params flag)
+		(declare
+		 (type "const Parameters&" params)
+		 (type bool flag)
+		 (values "__host__ __device__")
+		 (construct (m_point_selector (% (+ params.point_selector 1)
+						 2))
+			    (m_num_nodes_at_this_level (* 4 params.num_nodes_at_this_level))
+			    (m_depth (+ 1 params.depth))
+			    (m_max_depth params.max_depth)
+			    (m_min_points_per_node params.min_points_per_node))))
+	      ))))
 
     (let ((fn-h (asdf:system-relative-pathname
 			  'cl-cpp-generator2
