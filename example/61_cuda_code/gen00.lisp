@@ -542,7 +542,7 @@
 			   (x_d0.end)
 			   (y_d0.end)))
 			rnd)
-		     #+nil  (do0
+		       (do0
 			(comments "host structures to analyze device structures")
 			"Points points_init[2];"
 			,@(loop for i below 2
@@ -553,7 +553,7 @@
 					   (thrust--raw_pointer_cast
 					    (ref (aref ,(format nil   "y_d~a" i) 0)))))))
 
-		       #+nil (do0
+		        (do0
 			(comments "allocate memory to store points")
 			"Points *points;"
 			,(let ((target `points)
@@ -568,7 +568,7 @@
 						 ,init
 						 ,len
 						 cudaMemcpyHostToDevice)))))
-		     #+nil  (do0
+		       (do0
 			(let ((max_nodes 0)
 			      (num_nodes_at_level 1))
 			  (dotimes (i max_depth)
@@ -577,7 +577,7 @@
 			    (*= num_nodes_at_level 4))
 			  ))
 
-		#+nil       (do0
+		       (do0
 			"Quadtree_node root,*nodes;"
 			(root.set_range 0 num_points)
 			,(let ((target `nodes)
@@ -594,9 +594,22 @@
 						 ,copy-len
 						 cudaMemcpyHostToDevice))))
 			)
-		   #+nil    (do0
+		       (do0
 			(comments "recursion limit to max_depth")
 			(cudaDeviceSetLimit cudaLimitDevRuntimeSyncDepth max_depth))
+		       (do0
+			(comments "build quadtree")
+			"Parameters params(max_depth,min_points_per_node);"
+			(let ((NUM_THREADS_PER_BLOCK 128)
+			      (NUM_WARPS_PER_BLOCK (/ NUM_THREADS_PER_BLOCK warp_size))
+			      (smem_size (* 4 NUM_WARPS_PER_BLOCK (sizeof int))))
+			  (declare (type "const int" NUM_THREADS_PER_BLOCK
+					 NUM_WARPS_PER_BLOCK)
+				   (type "const size_t" smem_size))
+			  ("build_quadtree_kernel<NUM_THREADS_PER_BLOCK><<<1,NUM_THREADS_PER_BLOCK,smem_size>>>"
+			   nodes points params))
+			(checkCudaErrors (cudaGetLastError)))
+		       (return true)
 		       )
 
 		     )
