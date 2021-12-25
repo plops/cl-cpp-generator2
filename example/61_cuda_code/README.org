@@ -60,6 +60,7 @@ info cuda kernels
 
 - https://gist.github.com/ax3l/9489132
 - https://llvm.org/docs/CompileCudaWithLLVM.html
+- https://llvm.org/docs/NVPTXUsage.html
 #+begin_example
 clang++ can compile Cuda C++ to ptx
 
