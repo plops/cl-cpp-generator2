@@ -54,9 +54,12 @@
 		     (defmethod Bounding_box ()
 		       (declare
 			(values "__host__ __device__")
-			(construct (m_p_min (make_float2 0s0 0s0))
+			#+nil (construct (m_p_min (make_float2 0s0 0s0))
 				   (m_p_max (make_float2 1s0 1s0))
-				   )))
+				   ))
+		       (setf m_p_min (make_float2 0s0 0s0)
+			     m_p_max (make_float2 1s0 1s0)
+				   ))
 		     (defmethod compute_center (center)
 		       (declare
 			(type float2& center)
@@ -520,7 +523,7 @@
 		   (defun cdpQuadTree (warp_size)
 		     (declare (type int warp_size)
 			      (values bool))
-		     (let ((num_points 1000)
+		     (let ((num_points 1024)
 			   (max_depth 8)
 			   (min_points_per_node 16))
 		       ,@(loop for e in `(x y)

@@ -4,7 +4,7 @@
         {
             "label": "sample",
             "type": "shell",
-            "command": "make",
+            "command": "make clean; make",
             "problemMatcher": ["$nvcc"],
             "group": {
                 "kind": "build",

@@ -1,1 +1,1 @@
-rsync -avz Makefile *.cu *.h *.sh slim:/dev/shm
+rsync -avz Makefile *.cu *.h *.sh .vscode slim:/dev/shm
