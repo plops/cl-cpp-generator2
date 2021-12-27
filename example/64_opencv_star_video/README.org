@@ -5,4 +5,36 @@ sudo dnf install opencv-devel
 [martin@localhost source]$ opencv_version 
 3.4.12
 
+https://github.com/opencv/opencv/archive/refs/tags/4.5.5.tar.gz
+cmake .. -G Ninja
+
+-- Found ZLIB: /lib64/libz.so (found suitable version "1.2.11", minimum required is "1.2.3") 
+-- Found JPEG: /lib64/libjpeg.so (found version "62") 
+-- Found TIFF: /lib64/libtiff.so (found version "4.3.0")  
+-- Found WebP: /lib64/libwebp.so  
+-- libva: missing va.h header (VA_INCLUDE_DIR)
+-- IPPICV: Download: ippicv_2020_lnx_intel64_20191018_general.tgz
+-- found Intel IPP (ICV version): 2020.0.0 [2020.0.0 Gold]
+-- at: /home/martin/src/opencv-4.5.5/b/3rdparty/ippicv/ippicv_lnx/icv
+-- found Intel IPP Integration Wrappers sources: 2020.0.0
+-- at: /home/martin/src/opencv-4.5.5/b/3rdparty/ippicv/ippicv_lnx/iw
+-- Could not find OpenBLAS include. Turning OpenBLAS_FOUND off
+-- Could not find OpenBLAS lib. Turning OpenBLAS_FOUND off
+-- Could NOT find Atlas (missing: Atlas_CBLAS_INCLUDE_DIR Atlas_CLAPACK_INCLUDE_DIR Atlas_CBLAS_LIBRARY Atlas_BLAS_LIBRARY Atlas_LAPACK_LIBRARY) 
+-- Looking for sgemm_
+-- Looking for sgemm_ - not found
+-- Found Threads: TRUE  
+-- Could NOT find BLAS (missing: BLAS_LIBRARIES) 
+-- Could NOT find LAPACK (missing: LAPACK_LIBRARIES) 
+    Reason given by package: LAPACK could not be found because dependency BLAS could not be found.
+-- ADE: Download: v0.1.1f.zip
+-- Checking for module 'gtk+-3.0'
+--   Found gtk+-3.0, version 3.24.31
+-- Checking for module 'gtk+-2.0'
+--   Found gtk+-2.0, version 2.24.33
+-- Checking for module 'gthread-2.0'
+--   Found gthread-2.0, version 2.70.2
+[9/1421] Building CXX object CMakeFiles/ade.dir/3rdparty/ade/ade-0.1.1f/sources/ade/source/search.cpp.o
+
+
 #+end_example
