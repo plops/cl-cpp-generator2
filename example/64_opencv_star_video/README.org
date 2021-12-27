@@ -36,5 +36,33 @@ cmake .. -G Ninja
 --   Found gthread-2.0, version 2.70.2
 [9/1421] Building CXX object CMakeFiles/ade.dir/3rdparty/ade/ade-0.1.1f/sources/ade/source/search.cpp.o
 
+sudo dnf install atlas-devel blas-devel lapack-devel gtkglext-devel
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+CXX=clang++ cmake .. -G Ninja
+
+--     FFMPEG:                      YES
+--       avcodec:                   YES (59.15.101)
+--       avformat:                  YES (59.10.100)
+--       avutil:                    YES (57.13.100)
+--       swscale:                   YES (5.8.100)
+--       avresample:                NO
+--     VA:                          NO
+--     Lapack:                      YES (/lib64/liblapack.so /lib64/libblas.so)
+--     Eigen:                       YES (ver 3.3.9)
+--     Custom HAL:                  NO
+--     Protobuf:                    build (3.19.1)
+--     WEBP:                        /lib64/libwebp.so (ver encoder: 0x020f)
+       GtkGlExt:                  YES (ver 1.2.0)
+     OpenGL support:              YES (/lib64/libGL.so /lib64/libGLU.so)
+     VTK support:                 NO
+[170/1413] Building C object 3rdparty/ippiw/CMakeFiles/ippiw.dir/src/iw_own.c.o
+
+modules/videoio/src/cap_ffmpeg_impl.hpp:542:5: error: ‘AVBSFContext’ does not name a type; did you mean ‘AVIOContext
+[933/1413] Building CXX object modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/test/test_affine2d_estimator.cpp.o
+ninja: build stopped: subcommand failed.
+
+real	34m27.175s
+user	94m17.184s
+sys	5m1.103s
 
 #+end_example
