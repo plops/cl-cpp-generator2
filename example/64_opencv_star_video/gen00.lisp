@@ -5,7 +5,7 @@
      ) 
 (in-package :cl-cpp-generator2)
 (progn
-  (defparameter *source-dir* #P"example/61_cuda_code/source/")
+  (defparameter *source-dir* #P"example/64_opencv_star_video/source/")
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -76,6 +76,7 @@
 	       `(do0
 		 "#pragma once"
 		 (include <opencv2/opencv.hpp>
+			  ;<opencv2/videoio.hpp>
 			  <iostream>
 			  <chrono>
 			  <thread>)
@@ -107,7 +108,6 @@
 		     (return 0)
 		     )
 		   )))
-  #+nil
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 					     :if-exists :supersede
 					     :if-does-not-exist :create)
@@ -115,20 +115,20 @@
 		 `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
       (out "cmake_minimum_required( VERSION 3.4 )")
       (out "project( mytest LANGUAGES CXX )")
-      (out "set( CMAKE_CXX_COMPILER nvc++ )")
-      (out "set( CMAKE_CXX_FLAGS \"-stdpar\"  )")
+      (out "set( CMAKE_CXX_COMPILER clang++ )")
+      (out "set( CMAKE_CXX_FLAGS \"\"  )")
       (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
       (out "set( CMAKE_CXX_STANDARD 17 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
 					;(out "set( CMAKE_CXX_FLAGS )")
-					;(out "find_package( Vulkan )")
+      (out "find_package( OpenCV REQUIRED )")
       (out "set( SRCS ~{~a~^~%~} )"
 	   (directory "source/*.cpp"))
       (out "add_executable( mytest ${SRCS} )")
-      (out "target_include_directories( mytest PUBLIC /home/martin/stage/cl-cpp-generator2/example/58_stdpar/source/ )")
+      ;(out "target_include_directories( mytest PUBLIC /home/martin/stage/cl-cpp-generator2/example/58_stdpar/source/ )")
       
-					;(out "target_link_libraries( mytest PRIVATE vulkan )")
+      (out "target_link_libraries( mytest ${OpenCV_LIBS} )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
       )
     ))

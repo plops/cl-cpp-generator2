@@ -1,1 +1,8 @@
 https://learnopencv.com/read-write-and-display-a-video-using-opencv-cpp-python/
+
+#+begin_example
+sudo dnf install opencv-devel
+[martin@localhost source]$ opencv_version 
+3.4.12
+
+#+end_example
