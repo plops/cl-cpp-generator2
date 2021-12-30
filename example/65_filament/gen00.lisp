@@ -52,15 +52,15 @@
 	    
 	    (defclass App ()
 	      "public:"
-	      ,@(loop for (e f) in `((VertexBuffer* vb)
-				     (IndexBuffer* ib)
-				     (Material* mat)
-				     (Camera* cam)
-				     (Entity camera)
-				     (Skybox* skybox)
-				     (Entity renderable))
+	      ,@(loop for (e f) in `((filament--VertexBuffer* vb)
+				     (filament--IndexBuffer* ib)
+				     (filament--Material* mat)
+				     (filament--Camera* cam)
+				     (utils--Entity camera)
+				     (filament--Skybox* skybox)
+				     (utils--Entity renderable))
 		      collect
-		      (format nil "~a ~a;" e f)))
+		      (format nil "~a ~a;" (emit-c :code  e) f)))
 	    (defclass Vertex ()
 	      "public:"
 	      ,@(loop for (e f) in `(("filament::math::float2" position)
@@ -93,17 +93,18 @@
 					     Scene
 					     Skybox
 					     TransformManager
-					     VertexBufferView)
+					     VertexBuffer
+					     View)
 				  collect
 				  (format nil "<filament/~a.h>" e))
 			  <utils/EntityManager.h>
-			  ,@(loop for e in `(Config
+			  #+nil,@(loop for e in `(Config
 					     FilamentApp)
 				  collect
 				  (format nil "<filamentapp/~a.h>" e)))
-		 (do0 "using namespace filament;"
-		 "using utils::Entity;"
-		 "using utils::EntityManager;")
+		 #+nil(do0 "using namespace filament;"
+		      "using utils::Entity;"
+		      "using utils::EntityManager;")
 		 ,type-definitions)
 	       :hook-defun #'(lambda (str)
                                (format sh "~a~%" str))
@@ -120,15 +121,17 @@
 		  
 		 `(do0
 		   (include "star_tracker.h")
-		   
+		   (do0 "using namespace filament;"
+		 "using utils::Entity;"
+		 "using utils::EntityManager;")
 		   ;,type-definitions
-		   (let ((triangle_vertices (curly (curly (curly 1 0) "#xffff0000u")
+		   (let ((triangle_vertices (curly (curly (curly 1 0) "0xffff0000u")
 						   (curly (curly ,(cos (* 2 (/ pi 3)))
 								 ,(sin (* 2 (/ pi 3))))
-							  "#xff00ff00u")
+							  "0xff00ff00u")
 						   (curly (curly ,(cos (* 4 (/ pi 3)))
 								 ,(sin (* 4 (/ pi 3))))
-							  "#xff000000ffu")))
+							  "0xff0000ffu")))
 			 (triangle_indices (curly 0 1 2)))
 		     (declare (type (array "static const Vertex" 3)
 				    triangle_vertices)
@@ -139,7 +142,18 @@
 		     (declare (type int argc)
 			      (type char** argv)
 			      (values int))
-		     
+		     (let (;(config)
+			   (app))
+		       (declare (type Config config)
+				(type App app))
+					;(setf config.title (string "hello triangle"))
+
+		       (let ((setup (lambda (engine view scene)
+				      (declare (type Engine* engine)
+					       (type View* view)
+					       (type Scene* scene)
+					       (capture &app))))))
+		       )
 		     (return 0)
 		     )
 		   )))
