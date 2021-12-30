@@ -4,6 +4,8 @@
   - 37MB compressed
   - 128MB extracted
 
+
+
 * references
   - https://www.youtube.com/watch?v=KF_s62vEPGY create android gui romain 
   - https://www.youtube.com/watch?v=Lcq_fzet9Iw High performance
@@ -12,3 +14,11 @@
   - https://github.com/cgmb/hello-filament/blob/master/main.cxx
   - https://www.youtube.com/watch?v=gbeN4lcjJDA SIGGRAPH 2020 — High
     Quality, High Performance Rendering in Filament
+
+
+* build   filament
+
+#+begin_example
+modify CMake to not link statically with libc++
+CC=clang CXX=clang++ ./build.sh -c release 
+#+end_example

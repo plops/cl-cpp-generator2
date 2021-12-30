@@ -98,10 +98,11 @@
 				  collect
 				  (format nil "<filament/~a.h>" e))
 			  <utils/EntityManager.h>
-			  #+nil,@(loop for e in `(Config
+			  #-nil,@(loop for e in `(Config
 					     FilamentApp)
 				  collect
 				  (format nil "<filamentapp/~a.h>" e)))
+		 (include "generated/resources/resources.h")
 		 #+nil(do0 "using namespace filament;"
 		      "using utils::Entity;"
 		      "using utils::EntityManager;")
@@ -185,13 +186,18 @@
 						    (IndexBuffer--BufferDescriptor
 						     triangle_indices 6 nullptr)
 						    )
-				 ;; fixme app.mat
+				 (setf app.mat
+				       (dot (Material--Builder)
+					    (package RESOURCES_BAKEDCOLOR_DATA
+						     RESOURCES_BAKEDCOLOR_SIZE
+						     )
+					    (build *engine)))
 				 (setf app.renderable (dot (EntityManager--get)
 						      (create)))
 				 (dot (RenderableManager--Builder 1)
 				      (boundingBox (curly (curly -1 -1 -1)
 							  (curly 1   1  1)))
-				      ;(material 0 (app.mat->getDefaultInstance))
+				      (material 0 (app.mat->getDefaultInstance))
 				      (geometry 0
 						RenderableManager--PrimitiveType--TRIANGLES
 						app.vb app.ib 0 3)
