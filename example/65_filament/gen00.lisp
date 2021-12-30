@@ -99,10 +99,10 @@
 				  (format nil "<filament/~a.h>" e))
 			  <utils/EntityManager.h>
 			  #-nil,@(loop for e in `(Config
-					     FilamentApp)
+						  FilamentApp)
 				  collect
 				  (format nil "<filamentapp/~a.h>" e)))
-		 (include "generated/resources/resources.h")
+		 (include "generated/resources.h")
 		 #+nil(do0 "using namespace filament;"
 		      "using utils::Entity;"
 		      "using utils::EntityManager;")
@@ -143,11 +143,11 @@
 		     (declare (type int argc)
 			      (type char** argv)
 			      (values int))
-		     (let (;(config)
+		     (let ((config)
 			   (app))
 		       (declare (type Config config)
 				(type App app))
-					;(setf config.title (string "hello triangle"))
+		       (setf config.title (string "hello triangle"))
 
 		       (let ((setup
 			       (lambda (engine view scene)
@@ -235,9 +235,9 @@
 					  (type double now)
 					  (capture &app))
 				 (let ((zoom 1.5f)
-				       (w (dot (view->getViewPort)
+				       (w (dot (view->getViewport)
 					       width))
-				       (h (dot (view->getViewPort)
+				       (h (dot (view->getViewport)
 					       height))
 				       (aspect (/ (static_cast<float> w) h))
 				       )
@@ -251,7 +251,7 @@
 				    )
 				   (let ((&tcm (engine->getTransformManager)))
 				     (tcm.setTransform
-				      (tcm.getInstanc app.renderable)
+				      (tcm.getInstance app.renderable)
 				      (filament--math--mat4f--rotation
 				       now
 				       (space filament--math--float3 (curly 0 0 -1)))))))
