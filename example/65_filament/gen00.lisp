@@ -148,20 +148,111 @@
 				(type App app))
 					;(setf config.title (string "hello triangle"))
 
-		       (let ((setup (lambda (engine view scene)
-				      (declare (type Engine* engine)
-					       (type View* view)
-					       (type Scene* scene)
-					       (capture &app))
-				      (setf app.skybox
-					    (dot (Skybox--Builder)
-						 (color (curly .1 .125 .25 1.0))
-						 (build *engine)))
-				      (scene->setSkybox app.skybox)
-				      (view->setPostProcessingEnabled false)
-				      (static_assert (== 12 (sizeof Vertex))
-						     (string "strange vertex size"))))))
+		       (let ((setup
+			       (lambda (engine view scene)
+				 (declare (type Engine* engine)
+					  (type View* view)
+					  (type Scene* scene)
+					  (capture &app))
+				 (setf app.skybox
+				       (dot (Skybox--Builder)
+					    (color (curly .1 .125 .25 1.0))
+					    (build *engine)))
+				 (scene->setSkybox app.skybox)
+				 (view->setPostProcessingEnabled false)
+				 (static_assert (== 12 (sizeof Vertex))
+						(string "strange vertex size"))
+				 (setf app.vb
+				       (dot (VertexBuffer--Builder)
+					    (vertexCount 3)
+					    (bufferCount 1)
+					    (attribute VertexAttribute--POSITION
+						       0
+						       VertexBuffer--AttributeType--FLOAT2 0 12)
+					    (attribute VertexAttribute--COLOR
+						       0
+						       VertexBuffer--AttributeType--UBYTE4 8 12)
+					    (normalized VertexAttribute--COLOR)
+					    (build *engine)))
+				 (app.vb->setBufferAt *engine 0
+						      (VertexBuffer--BufferDescriptor
+						       triangle_vertices 36 nullptr))
+				 (setf app.ib (dot (IndexBuffer--Builder)
+						   (indexCount 3)
+						   (bufferType IndexBuffer--IndexType--USHORT)
+						   (build *engine)))
+				 (app.ib->setBuffer *engine
+						    (IndexBuffer--BufferDescriptor
+						     triangle_indices 6 nullptr)
+						    )
+				 ;; fixme app.mat
+				 (setf app.renderable (dot (EntityManager--get)
+						      (create)))
+				 (dot (RenderableManager--Builder 1)
+				      (boundingBox (curly (curly -1 -1 -1)
+							  (curly 1   1  1)))
+				      ;(material 0 (app.mat->getDefaultInstance))
+				      (geometry 0
+						RenderableManager--PrimitiveType--TRIANGLES
+						app.vb app.ib 0 3)
+				      (culling false)
+				      (receiveShadows false)
+				      (castShadows false)
+				      (build *engine app.renderable))
+				 (scene->addEntity app.renderable)
+				 (setf app.camera (dot (utils--EntityManager--get)
+						       (create)))
+				 (setf app.cam (engine->createCamera app.camera))
+				 (view->setCamera app.cam)
+				 ))
+			     (cleanup
+			       (lambda (engine view scene)
+				 (declare (type Engine* engine)
+					  (type View* view)
+					  (type Scene* scene)
+					  (capture &app))
+				 ,@(loop for e in `(skybox
+						    renderable
+						    ;mat
+						    vb
+						    ib)
+					 collect
+					 `(engine->destroy (dot app ,e)))
+				 (engine->destroyCameraComponent app.camera)
+				 (dot (utils--EntityManager--get)
+				      (destroy app.camera)))))
+			 (dot (FilamentApp--get)
+			      (animate
+			       (lambda (engine view now)
+				 (declare (type Engine* engine)
+					  (type View* view)
+					  (type double now)
+					  (capture &app))
+				 (let ((zoom 1.5f)
+				       (w (dot (view->getViewPort)
+					       width))
+				       (h (dot (view->getViewPort)
+					       height))
+				       (aspect (/ (static_cast<float> w) h))
+				       )
+				   (app.cam->setProjection
+				    Camera--Projection--ORTHO
+				    (* -1 aspect zoom)
+				    (* aspect zoom)
+				    (* -1 zoom)
+				    zoom
+				    0 1
+				    )
+				   (let ((&tcm (engine->getTransformManager)))
+				     (tcm.setTransform
+				      (tcm.getInstanc app.renderable)
+				      (filament--math--mat4f--rotation
+				       now
+				       (space filament--math--float3 (curly 0 0 -1)))))))
+			       )))
 		       )
+		     (dot (FilamentApp--get)
+			  (run config setup cleanup))
 		     (return 0)
 		     )
 		   )))
