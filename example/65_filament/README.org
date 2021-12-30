@@ -29,4 +29,31 @@ ninja install
 [martin@localhost cmake-release]$ ninja -v
 [1/1] : && /usr/bin/clang++ -std=c++17 -fstrict-aliasing -Wno-unknown-pragmas -Wno-unused-function -fPIC -fcolor-diagnostics -fvisibility=hidden -O3 -DNDEBUG -fomit-frame-pointer -ffunction-sections -fdata-sections -Wl,--gc-sections samples/CMakeFiles/hellotriangle.dir/hellotriangle.cpp.o -o samples/hellotriangle  samples/libsample-resources.a  libs/filamentapp/libfilamentapp.a  third_party/libassimp/tnt/libassimp.a  third_party/libz/tnt/libz.a  libs/iblprefilter/libfilament-iblprefilter.a  third_party/libsdl2/tnt/libsdl2.a  libs/filamat/libfilamat.a  shaders/libshaders.a  -Wl,--start-group  third_party/glslang/tnt/SPIRV/libSPIRV.a  third_party/glslang/tnt/glslang/libglslang.a  third_party/glslang/tnt/OGLCompilersDLL/libOGLCompiler.a  third_party/glslang/tnt/glslang/OSDependent/Unix/libOSDependent.a  third_party/glslang/tnt/SPIRV/libSPVRemapper.a  third_party/spirv-tools/source/opt/libSPIRV-Tools-opt.a  third_party/spirv-tools/source/libSPIRV-Tools.a  /usr/lib64/librt.a  third_party/spirv-cross/tnt/libspirv-cross-glsl.a  third_party/spirv-cross/tnt/libspirv-cross-msl.a  third_party/spirv-cross/tnt/libspirv-cross-core.a  -Wl,--end-group  third_party/getopt/libgetopt.a  libs/filagui/libfilagui.a  filament/libfilament.a  filament/backend/libbackend.a  libs/bluegl/libbluegl.a  libs/bluevk/libbluevk.a  filament/backend/libvkshaders.a  libs/filaflat/libfilaflat.a  third_party/smol-v/tnt/libsmol-v.a  libs/filabridge/libfilabridge.a  libs/ibl/libibl-lite.a  -Wl,--exclude-libs,bluegl  third_party/imgui/tnt/libimgui.a  libs/image/libimage.a  libs/camutils/libcamutils.a  libs/geometry/libgeometry.a  libs/math/libmath.a  libs/utils/libutils.a  -ldl  libs/filamentapp/libfilamentapp-resources.a && :
 
+sudo dnf install bloaty
+[martin@localhost source]$ bloaty a.out 
+    FILE SIZE        VM SIZE    
+ --------------  -------------- 
+  38.2%  1.71Mi  46.1%  1.71Mi    .text
+  35.7%  1.60Mi  43.0%  1.60Mi    .rodata
+  10.7%   491Ki   0.0%       0    .strtab
+   6.9%   316Ki   0.0%       0    .symtab
+   4.8%   221Ki   5.8%   221Ki    .eh_frame
+   1.1%  49.9Ki   1.3%  49.8Ki    .data.rel.ro
+   0.9%  41.8Ki   1.1%  41.7Ki    .eh_frame_hdr
+   0.0%       0   0.9%  35.4Ki    .bss
+   0.5%  21.8Ki   0.6%  21.8Ki    .gcc_except_table
+   0.3%  13.1Ki   0.3%  13.0Ki    .data
+   0.2%  7.19Ki   0.0%       0    [Unmapped]
+   0.2%  6.91Ki   0.2%  6.84Ki    .dynsym
+   0.1%  6.27Ki   0.2%  6.21Ki    .rela.plt
+   0.1%  5.88Ki   0.2%  5.82Ki    .dynstr
+   0.1%  4.22Ki   0.1%  4.16Ki    .plt
+   0.1%  4.21Ki   0.1%  4.15Ki    .rela.dyn
+   0.1%  2.79Ki   0.0%    1018    [18 Others]
+   0.0%  2.16Ki   0.1%  2.09Ki    .got.plt
+   0.0%     810   0.0%     810    [LOAD #2 [R]]
+   0.0%     648   0.0%     584    .gnu.version
+   0.0%     624   0.0%     560    .gnu.version_r
+ 100.0%  4.48Mi 100.0%  3.71Mi    TOTAL
+
 #+end_example

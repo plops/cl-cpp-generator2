@@ -24,7 +24,7 @@ ln -s /home/martin/src/b/filament-1.15.1/out/cmake-release/libs .
 ln -s /home/martin/src/b/filament-1.15.1/out/cmake-release/filament .
 ln -s /home/martin/src/b/filament-1.15.1/out/cmake-release/shaders .
 clang++ ../star_tracker.cpp \
-	-std=c++17 \
+	-std=c++17 -flto \
 	-I/home/martin/src/b/filament-1.15.1/out/cmake-release/libs/filamentapp/include/ \
 	-I/home/martin/src/b/filament-1.15.1/libs/filamentapp/include/ \
 	-I/home/martin/src/b/filament-1.15.1/out/release/filament/include \
