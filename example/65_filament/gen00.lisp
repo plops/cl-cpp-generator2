@@ -227,38 +227,41 @@
 				 (engine->destroyCameraComponent app.camera)
 				 (dot (utils--EntityManager--get)
 				      (destroy app.camera)))))
-			 (dot (FilamentApp--get)
-			      (animate
-			       (lambda (engine view now)
-				 (declare (type Engine* engine)
-					  (type View* view)
-					  (type double now)
-					  (capture &app))
-				 (let ((zoom 1.5f)
-				       (w (dot (view->getViewport)
-					       width))
-				       (h (dot (view->getViewport)
-					       height))
-				       (aspect (/ (static_cast<float> w) h))
-				       )
-				   (app.cam->setProjection
-				    Camera--Projection--ORTHO
-				    (* -1 aspect zoom)
-				    (* aspect zoom)
-				    (* -1 zoom)
-				    zoom
-				    0 1
-				    )
-				   (let ((&tcm (engine->getTransformManager)))
-				     (tcm.setTransform
-				      (tcm.getInstance app.renderable)
-				      (filament--math--mat4f--rotation
-				       now
-				       (space filament--math--float3 (curly 0 0 -1)))))))
-			       )))
-		       )
-		     (dot (FilamentApp--get)
-			  (run config setup cleanup))
+
+			 (let ((filament_app (FilamentApp--get)))
+			   (declare (type "static FilamentApp&" filament_app))
+			  (dot filament_app
+			       (animate
+				(lambda (engine view now)
+				  (declare (type Engine* engine)
+					   (type View* view)
+					   (type double now)
+					   (capture &app))
+				  (let ((zoom 1.5f)
+					(w (dot (view->getViewport)
+						width))
+					(h (dot (view->getViewport)
+						height))
+					(aspect (/ (static_cast<float> w) h))
+					)
+				    (app.cam->setProjection
+				     Camera--Projection--ORTHO
+				     (* -1 aspect zoom)
+				     (* aspect zoom)
+				     (* -1 zoom)
+				     zoom
+				     0 1
+				     )
+				    (let ((&tcm (engine->getTransformManager)))
+				      (tcm.setTransform
+				       (tcm.getInstance app.renderable)
+				       (filament--math--mat4f--rotation
+					now
+					(space filament--math--float3 (curly 0 0 -1)))))))
+				))
+			   
+			   (dot filament_app
+				(run config setup cleanup)))))
 		     (return 0)
 		     )
 		   )))
