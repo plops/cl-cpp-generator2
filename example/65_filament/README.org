@@ -9,3 +9,4 @@
   - https://www.youtube.com/watch?v=Lcq_fzet9Iw High performance
     (graphics) programming (Android Dev Summit '19)
     - half float
+  - https://github.com/cgmb/hello-filament/blob/master/main.cxx
