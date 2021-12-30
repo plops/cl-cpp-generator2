@@ -3,3 +3,9 @@
   - version 1.15.1
   - 37MB compressed
   - 128MB extracted
+
+* references
+  - https://www.youtube.com/watch?v=KF_s62vEPGY create android gui romain 
+  - https://www.youtube.com/watch?v=Lcq_fzet9Iw High performance
+    (graphics) programming (Android Dev Summit '19)
+    - half float
