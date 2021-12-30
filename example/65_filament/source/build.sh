@@ -1,15 +1,23 @@
+# cmgen is for environment maps
 #/home/martin/src/filament/bin/cmgen \
 # -x \
 # --quiet --format=ktx --size=256 --extract-blur=0.1 \
 
 
-mkdir generated
+
+
+
+mkdir -p generated/materials
 /home/martin/src/filament/bin/matc \
      --api all \
-     -f header \
-     -o generated/bakedColor.inc \
+     -o generated/materials/bakedColor.filamat \
      bakedColor.mat
- 
+
+# https://github.com/google/filament/blob/main/ios/samples/hello-pbr/build-resources.sh
+/home/martin/src/filament/bin/resgen \
+ --deploy=generated \
+ generated/materials/bakedColor.filamat
+
 clang++ star_tracker.cpp \
 	-std=c++17 \
 	-I/home/martin/src/b/filament-1.15.1/out/cmake-release/libs/filamentapp/include/ \
