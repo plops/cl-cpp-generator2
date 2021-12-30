@@ -5,12 +5,12 @@
      ) 
 (in-package :cl-cpp-generator2)
 (progn
-  (defparameter *source-dir* #P"example/64_opencv_star_video/source/")
+  (defparameter *source-dir* #P"example/65_filament/source/")
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday"))
-  (defun logprint (msg &optional rest)
+  #+nil (defun logprint (msg &optional rest)
       `(progn				;do0
 	 " "
 	 #-nolog
@@ -49,20 +49,25 @@
 	       "std::flush")))))
   (let ((type-definitions
 	  `(do0
-	    (defclass Points ()
-		     "float *x,*y;"
-		     "public:"
-		     (defmethod Points ()
-		       (declare
-			(values :constructor)
-			(construct (x NULL)
-				   (y NULL))))
-		     (defmethod Points (x y)
-		       (declare
-			(type float* x y)
-			(values :constructor)
-			(construct (x x)
-				   (y y))))))))
+	    
+	    (defclass App ()
+	      "public:"
+	      ,@(loop for (e f) in `((VertexBuffer* vb)
+				     (IndexBuffer* ib)
+				     (Material* mat)
+				     (Camera* cam)
+				     (Entity camera)
+				     (Skybox* skybox)
+				     (Entity renderable))
+		      collect
+		      (format nil "~a ~a;" e f)))
+	    (defclass Vertex ()
+	      "public:"
+	      ,@(loop for (e f) in `(("filament::math::float2" position)
+				     (uint32_t color))
+		      collect
+		      (format nil "~a ~a;" e f)))
+	    )))
 
     (let ((fn-h (asdf:system-relative-pathname
 			  'cl-cpp-generator2
@@ -75,11 +80,30 @@
        (emit-c :code
 	       `(do0
 		 "#pragma once"
-		 (include <opencv2/opencv.hpp>
-			  ;<opencv2/videoio.hpp>
+		 (include 
 			  <iostream>
 			  <chrono>
 			  <thread>)
+		 (include ,@(loop for e in `(Camera
+					     Engine
+					     IndexBuffer
+					     Material
+					     MaterialInstance
+					     RenderableManager
+					     Scene
+					     Skybox
+					     TransformManager
+					     VertexBufferView)
+				  collect
+				  (format nil "<filament/~a.h>" e))
+			  <utils/EntityManager.h>
+			  ,@(loop for e in `(Config
+					     FilamentApp)
+				  collect
+				  (format nil "<filamentapp/~a.h>" e)))
+		 (do0 "using namespace filament;"
+		 "using utils::Entity;"
+		 "using utils::EntityManager;")
 		 ,type-definitions)
 	       :hook-defun #'(lambda (str)
                                (format sh "~a~%" str))
@@ -93,42 +117,33 @@
 		  'cl-cpp-generator2
 		  (merge-pathnames #P"star_tracker.cpp"
 				   *source-dir*))
+		  
 		 `(do0
 		   (include "star_tracker.h")
 		   
-		   ,type-definitions
-
-		   "using namespace std;"
-		   "using namespace cv;"
+		   ;,type-definitions
+		   (let ((triangle_vertices (curly (curly (curly 1 0) "#xffff0000u")
+						   (curly (curly ,(cos (* 2 (/ pi 3)))
+								 ,(sin (* 2 (/ pi 3))))
+							  "#xff00ff00u")
+						   (curly (curly ,(cos (* 4 (/ pi 3)))
+								 ,(sin (* 4 (/ pi 3))))
+							  "#xff000000ffu")))
+			 (triangle_indices (curly 0 1 2)))
+		     (declare (type (array "static const Vertex" 3)
+				    triangle_vertices)
+			      (type (array "static constexpr uint16_t" 3)
+				    triangle_indices)))
+		  
 		   (defun main (argc argv)
 		     (declare (type int argc)
 			      (type char** argv)
 			      (values int))
-		     (let ((fn 0 ;(string "~/stars_XnRy3sJqfu4.webm")
-			       )
-			   (cap (VideoCapture fn))
-			   )
-		       ;("VideoCapture cap" fn)
-		       (unless (cap.isOpened)
-			 ,(logprint "error opening file" `(fn) )
-			 (return -1))
-		       
-		       (while 1
-			      (let ((frame))
-				(declare (type Mat frame))
-				(>> cap frame)
-				(when (frame.empty)
-				  break)
-				(imshow (string "frame")
-					frame)
-				(let ((c (static_cast<char> (waitKey 25))))
-				  (when (== 27 c)
-				    break))))
-		       (cap.release)
-		       (destroyAllWindows))
+		     
 		     (return 0)
 		     )
 		   )))
+  #+nil
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 					     :if-exists :supersede
 					     :if-does-not-exist :create)
