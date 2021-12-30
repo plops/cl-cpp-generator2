@@ -10,3 +10,5 @@
     (graphics) programming (Android Dev Summit '19)
     - half float
   - https://github.com/cgmb/hello-filament/blob/master/main.cxx
+  - https://www.youtube.com/watch?v=gbeN4lcjJDA SIGGRAPH 2020 — High
+    Quality, High Performance Rendering in Filament
