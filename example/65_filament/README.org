@@ -19,6 +19,10 @@
 * build   filament
 
 #+begin_example
+sudo dnf install libXxf86vm-devel
+
 modify CMake to not link statically with libc++
 CC=clang CXX=clang++ ./build.sh -c release 
+cd out/cmake-release
+ninja install
 #+end_example
