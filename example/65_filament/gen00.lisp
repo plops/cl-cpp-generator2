@@ -219,7 +219,7 @@
 					  (capture &app))
 				 ,@(loop for e in `(skybox
 						    renderable
-						    ;mat
+						    mat
 						    vb
 						    ib)
 					 collect
@@ -261,7 +261,8 @@
 				))
 			   
 			   (dot filament_app
-				(run config setup cleanup)))))
+				(run config setup cleanup))
+			   )))
 		     (return 0)
 		     )
 		   )))
