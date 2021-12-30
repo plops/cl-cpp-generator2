@@ -148,8 +148,8 @@
 		       (declare (type Config config)
 				(type App app))
 		       (setf config.title (string "hello triangle"))
-					;(setf config.backend Engine--Backend--VULKAN)
-		       (setf config.backend Engine--Backend--OPENGL)
+		       (setf config.backend Engine--Backend--VULKAN)
+		       ;(setf config.backend Engine--Backend--OPENGL)
 		       (let ((setup
 			       (lambda (engine view scene)
 				 (declare (type Engine* engine)
