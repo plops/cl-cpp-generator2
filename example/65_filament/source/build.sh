@@ -32,12 +32,6 @@ clang++ ../star_tracker.cpp \
 	-Wno-extern-c-compat \
 	-ffast-math \
 	resources.S \
-	-L/home/martin/src/b/filament-1.15.1/out/release/filament/lib/x86_64 \
-	-lbluevk -lfilament -lutils -lvkshaders -lbackend \
-	-L/home/martin/src/b/filament-1.15.1/out/cmake-release/libs/filamentapp \
-	-lfilamentapp \
-	-L/home/martin/src/b/filament-1.15.1/out/cmake-release/third_party/libsdl2/tnt \
-	-lsdl2 \
 	-fstrict-aliasing -Wno-unknown-pragmas -Wno-unused-function -fPIC \
 	-fcolor-diagnostics -fvisibility=hidden -O3 -DNDEBUG \
 	-fomit-frame-pointer -ffunction-sections -fdata-sections \
@@ -61,3 +55,10 @@ clang++ ../star_tracker.cpp \
 	libs/geometry/libgeometry.a  libs/math/libmath.a  libs/utils/libutils.a \
 	-ldl  libs/filamentapp/libfilamentapp-resources.a 
 mv a.out ..
+
+	# -L/home/martin/src/b/filament-1.15.1/out/release/filament/lib/x86_64 \
+	# -lbluevk -lfilament -lutils -lvkshaders -lbackend \
+	# -L/home/martin/src/b/filament-1.15.1/out/cmake-release/libs/filamentapp \
+	# -lfilamentapp \
+	# -L/home/martin/src/b/filament-1.15.1/out/cmake-release/third_party/libsdl2/tnt \
+	# -lsdl2 \
