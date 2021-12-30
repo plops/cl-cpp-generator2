@@ -1,0 +1,5 @@
+- get compiled binary/libararies from
+  - https://github.com/google/filament/releases
+  - version 1.15.1
+  - 37MB compressed
+  - 128MB extracted
