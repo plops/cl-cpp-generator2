@@ -202,7 +202,7 @@
 							  (curly 1   1  1)))
 				      (material 0 (app.mat->getDefaultInstance))
 				      (geometry 0
-						RenderableManager--PrimitiveType--TRIANGLES
+						RenderableManager--PrimitiveType--POINTS ;TRIANGLES
 						app.vb app.ib 0 3)
 				      (culling false)
 				      (receiveShadows false)
