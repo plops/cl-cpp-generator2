@@ -17,7 +17,7 @@
     `((np numpy)
       (pd pandas)
       ;(xr xarray)
-      ;matplotlib
+      matplotlib
       ;(s skyfield)
 					;(ds dataset)
       ;cv2
@@ -33,7 +33,7 @@
 	       "#export"
 	       (do0
 					;"%matplotlib notebook"
-		#+nil (do0
+		#-nil (do0
 		      
 		      (imports (matplotlib))
                                         ;(matplotlib.use (string "QT5Agg"))
@@ -97,7 +97,7 @@
 			  ))
 		
 		;"from cv2 import *"
-	      	#+nil	(imports-from (matplotlib.pyplot
+	      	#-nil	(imports-from (matplotlib.pyplot
 			       plot imshow tight_layout xlabel ylabel
 			       title subplot subplot2grid grid
 			       legend figure gcf xlim ylim))
@@ -292,7 +292,18 @@
 		       (format fn)))
 	   (dot a
 		(tofile fn))
-	   ))))))))
+	   )))
+      (python
+       (do0
+	"#export"
+	,@(loop for e in `(Vmag RAdeg DEdeg)
+		collect
+		`(do0
+		  (figure)
+		  (plt.hist (dot df ,e) :bins 120 :log True)
+		  (xlabel (string ,e))
+		  (grid)
+		  (plt.savefig (string ,(format nil "dir65_gen01_~a.png" e))))))))))))
 
 
 
