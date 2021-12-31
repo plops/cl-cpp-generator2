@@ -1,3 +1,9 @@
+|       |                                                                                              |
+| gen00 | generate cpp code to render something with filament                                          |
+| gen01 | python jupyter notebook to convert data from hipparcos star catalog for easy import with cpp |
+|       |                                                                                              |
+
+
 - get compiled binary/libararies from
   - https://github.com/google/filament/releases
   - version 1.15.1
