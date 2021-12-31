@@ -167,9 +167,15 @@
 	(setf parser (argparse.ArgumentParser))
 	(parser.add_argument (string "-i")
 			     :dest (string "filename")
-			     :required True
+			    ; :required True
 			     :default (string "/home/martin/stage/cl-py-generator/example/70_star_tracker/source/hip_main.dat")
 			     :help (string "input file")
+			     :metavar (string "FILE"))
+	(parser.add_argument (string "-o")
+			     :dest (string "ofile")
+			     ;:required True
+			     :default (string "out")
+			     :help (string "output file")
 			     :metavar (string "FILE"))
 	(setf args (parser.parse_args))
 	(print args)
@@ -263,7 +269,7 @@
 	   (setf column_names (list ,@(loop for (e f) in l
 					    collect
 					    `(string ,e))))
-	   (setf df (pd.read_csv
+	   (setf df_ (pd.read_csv
 		     args.filename
 		     :sep (string "|")
 		     :names column_names
@@ -274,7 +280,18 @@
 					 (string "       ")
 					 (string "        ")
 					 (string "            "))))
+	   (setf df (aref df_ (< df_.Vmag 6)))
 	   (print df)
+	   (comments "store binary file")
+	   (setf a (dot df values (astype np.float32)))
+	   (setf fn (dot (string "{}_{}x{}_float32.raw")
+			      (format args.ofile
+				      (aref a.shape 0)
+				      (aref a.shape 1))))
+	   (print (dot (string "store in {}.")
+		       (format fn)))
+	   (dot a
+		(tofile fn))
 	   ))))))))
 
 
