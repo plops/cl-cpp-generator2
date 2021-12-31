@@ -280,7 +280,8 @@
 					 (string "       ")
 					 (string "        ")
 					 (string "            "))))
-	   (setf df (aref df_ (< df_.Vmag 6)))
+	   (setf df df_ ; (aref df_ (< df_.Vmag 6))
+		 )
 	   (print df)
 	   (comments "store binary file")
 	   (setf a (dot df values (astype np.float32)))
@@ -303,7 +304,7 @@
 		  (plt.hist (dot df ,e) :bins 120 :log True)
 		  (xlabel (string ,e))
 		  (grid)
-		  (plt.savefig (string ,(format nil "dir65_gen01_~a.png" e))))))))))))
+		  (plt.savefig (string ,(format nil "dir65_gen01_~a.png" e)))))))))))
 
 
 

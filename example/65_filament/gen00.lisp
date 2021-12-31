@@ -133,13 +133,15 @@
 		 "using utils::EntityManager;")
 		   ;,type-definitions
 		   
-		  ,(let ((n 4995))
+		   ,(let ((n ;4995
+			    118218
+			   ))
 		   `(defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      (do0
-			 (let ((file (std--ifstream (string "/home/martin/stage/cl-cpp-generator2/example/65_filament/script/out_4995x3_float32.raw")
+			 (let ((file (std--ifstream (string ,(format nil "/home/martin/stage/cl-cpp-generator2/example/65_filament/script/out_~ax3_float32.raw" n))
 						    (logior std--ios--in
 							    std--ios--binary
 					;std--ios--trunc
