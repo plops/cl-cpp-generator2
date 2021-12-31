@@ -1,0 +1,12 @@
+    .global RESOURCES_BAKEDCOLOR_OFFSET;
+    .global RESOURCES_BAKEDCOLOR_SIZE;
+
+    .global RESOURCES_PACKAGE
+    .section .rodata
+RESOURCES_PACKAGE:
+    .incbin "resources.bin"
+RESOURCES_BAKEDCOLOR_OFFSET:
+    .int 0
+RESOURCES_BAKEDCOLOR_SIZE:
+    .int 69559
+
