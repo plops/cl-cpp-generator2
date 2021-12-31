@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/martin/src/b/filament-1.15.1/libs/filamentapp/include",
+                "/home/martin/src/b/filament-1.15.1/out/release/filament/include",
+                "/home/martin/src/b/filament-1.15.1/third_party/libsdl2/include",
+                "/home/martin/src/b/filament-1.15.1/third_party/imgui"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/lib64/ccache/clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
