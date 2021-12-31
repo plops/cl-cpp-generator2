@@ -18,6 +18,8 @@
     from kotlin
   - https://google.github.io/filament/webgl/
 
+  - https://youtu.be/M47YdERx11s?list=PLc_SZNqyhelgNDZwOlDblM2Tz2lblo_kO
+    color science
 * build   filament
 
 #+begin_example
@@ -86,6 +88,7 @@ sudo sysctl dev.i915.perf_stream_paranoid=0
 
 sudo dnf install doxygen graphviz
 cd /home/martin/src/b/filament-1.15.1/filament
-doxygen docs/doxygen/filament.doxygen 
-
+doxygen docs/doxygen/filament.doxygen
+firefox file:///home/martin/src/b/filament-1.15.1/filament/docs/html/modules.html
 #+end_example
+
