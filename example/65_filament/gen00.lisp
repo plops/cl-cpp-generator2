@@ -67,6 +67,9 @@
 				     (uint32_t color))
 		      collect
 		      (format nil "~a ~a;" e f)))
+	    (defclass StarEntry ()
+	      "public:"
+	      "float magnitude, ra, dec;")
 	    )))
 
     (let ((fn-h (asdf:system-relative-pathname
@@ -82,6 +85,7 @@
 		 "#pragma once"
 		 (include 
 			  <iostream>
+			  <fstream>
 			  <chrono>
 			  <thread>)
 		 (include ,@(loop for e in `(Camera
@@ -128,162 +132,212 @@
 		 "using utils::Entity;"
 		 "using utils::EntityManager;")
 		   ;,type-definitions
-		   (let ((triangle_vertices (curly (curly (curly 1 0) "0xffff0000u")
-						   (curly (curly ,(cos (* 2 (/ pi 3)))
-								 ,(sin (* 2 (/ pi 3))))
-							  "0xff00ff00u")
-						   (curly (curly ,(cos (* 4 (/ pi 3)))
-								 ,(sin (* 4 (/ pi 3))))
-							  "0xff0000ffu")))
-			 (triangle_indices (curly 0 1 2)))
-		     (declare (type (array "static const Vertex" 3)
-				    triangle_vertices)
-			      (type (array "static constexpr uint16_t" 3)
-				    triangle_indices)))
-		  
-		   (defun main (argc argv)
-		     (declare (type int argc)
-			      (type char** argv)
-			      (values int))
-		     (let ((config)
-			   (app))
-		       (declare (type Config config)
-				(type App app))
-		       (setf config.title (string "hello triangle"))
-		       (setf config.backend Engine--Backend--VULKAN)
-		       ;(setf config.backend Engine--Backend--OPENGL)
-		       (let ((setup
-			       (lambda (engine view scene)
-				 (declare (type Engine* engine)
-					  (type View* view)
-					  (type Scene* scene)
-					  (capture &app))
-				 (setf app.skybox
-				       (dot (Skybox--Builder)
-					    (color (curly .1 .125 .25 1.0))
-					    (build *engine)))
-				 (scene->setSkybox app.skybox)
-				 (view->setPostProcessingEnabled false)
-				 (static_assert (== 12 (sizeof Vertex))
-						(string "strange vertex size"))
-				 (setf app.vb
-				       (dot (VertexBuffer--Builder)
-					    (vertexCount 3)
-					    (bufferCount 1)
-					    (attribute VertexAttribute--POSITION
-						       0
-						       VertexBuffer--AttributeType--FLOAT2 0 12)
-					    (attribute VertexAttribute--COLOR
-						       0
-						       VertexBuffer--AttributeType--UBYTE4 8 12)
-					    (normalized VertexAttribute--COLOR)
-					    (build *engine)))
-				 (app.vb->setBufferAt *engine 0
-						      (VertexBuffer--BufferDescriptor
-						       triangle_vertices 36 nullptr))
-				 (setf app.ib (dot (IndexBuffer--Builder)
-						   (indexCount 3)
-						   (bufferType IndexBuffer--IndexType--USHORT)
-						   (build *engine)))
-				 (app.ib->setBuffer *engine
-						    (IndexBuffer--BufferDescriptor
-						     triangle_indices 6 nullptr)
-						    )
-				 (setf app.mat
-				       (dot (Material--Builder)
-					    (package RESOURCES_BAKEDCOLOR_DATA
-						     RESOURCES_BAKEDCOLOR_SIZE
-						     )
-					    (build *engine)))
-				 (setf app.renderable (dot (EntityManager--get)
-						      (create)))
-				 (dot (RenderableManager--Builder 1)
-				      (boundingBox (curly (curly -1 -1 -1)
-							  (curly 1   1  1)))
-				      (material 0 (app.mat->getDefaultInstance))
-				      (geometry 0
-						RenderableManager--PrimitiveType--POINTS ;TRIANGLES
-						app.vb app.ib 0 3)
-				      (culling false)
-				      (receiveShadows false)
-				      (castShadows false)
-				      (build *engine app.renderable))
-				 (scene->addEntity app.renderable)
-				 (setf app.camera (dot (utils--EntityManager--get)
-						       (create)))
-				 (setf app.cam (engine->createCamera app.camera))
-				 (view->setCamera app.cam)
-				 ))
-			     (cleanup
-			       (lambda (engine view scene)
-				 (declare (type Engine* engine)
-					  (type View* view)
-					  (type Scene* scene)
-					  (capture &app))
-				 ,@(loop for e in `(skybox
-						    renderable
-						    mat
-						    vb
-						    ib)
-					 collect
-					 `(engine->destroy (dot app ,e)))
-				 (engine->destroyCameraComponent app.camera)
-				 (dot (utils--EntityManager--get)
-				      (destroy app.camera))))
-			     (gui
-			       (lambda (engine view)
-				 (declare (type Engine* engine)
-					  (type View* view)
-					  (capture &app))
-				 (ImGui--Begin (string "Parameters"))
-				 (progn
-				   (let ((gain 1s0))
-				     (declare (type "static float" gain))
-				    (ImGui--SliderFloat (string "gain")
-							&gain
-							0s0 1s0)))
-				 (ImGui--End)))
-			     )
+		   
+		  ,(let ((n 4995))
+		   `(defun main (argc argv)
+		      (declare (type int argc)
+			       (type char** argv)
+			       (values int))
+		      (do0
+			 (let ((file (std--ifstream (string "/home/martin/stage/cl-cpp-generator2/example/65_filament/script/out_4995x3_float32.raw")
+						    (logior std--ios--in
+							    std--ios--binary
+					;std--ios--trunc
+							    )))
+			       (size ,n)
+			       (star_data))
+			   (declare	;(type std--ifstream file)
+			    (type std--vector<StarEntry> star_data))
+			   #+nil (file.open (string "/home/martin/stage/cl-cpp-generator2/example/65_filament/script/out_4995x3_float32.raw")
+					    (logior std--ios--in
+						    std--ios--binary
+						    std--ios--trunc))
+			   (star_data.resize size)
+			   (file.read (cast char* (star_data.data))
+				      (* size (sizeof StarEntry ;star_data.value_type
+						      )))
+			   (file.close))
 
-			 (let ((filament_app (FilamentApp--get)))
-			   (declare (type "static FilamentApp&" filament_app))
-			  (dot filament_app
-			       (animate
-				(lambda (engine view now)
+			 (let ((triangle_vertices #+nil (curly (curly (curly 1 0) "0xffff0000u")
+							 (curly (curly ,(cos (* 2 (/ pi 3)))
+								       ,(sin (* 2 (/ pi 3))))
+								"0xff00ff00u")
+							 (curly (curly ,(cos (* 4 (/ pi 3)))
+								       ,(sin (* 4 (/ pi 3))))
+								"0xff0000ffu")))
+			       (triangle_indices ;(curly 0 1 2)
+				 ))
+			   (declare (type (array "static Vertex" ,n)
+					  triangle_vertices)
+				    (type (array "static uint16_t" ,n)
+					  triangle_indices))
+			   (dotimes (i size)
+			     (setf (aref triangle_indices i) i))
+			   (dotimes (i size)
+			     (setf (dot (aref triangle_vertices i)
+					position
+					x)
+				   (/ (dot (aref star_data i)
+					   ra)
+				      360)
+				   )
+			     (setf (dot (aref triangle_vertices i)
+					position
+					y)
+				   (/ (dot (aref star_data i)
+					   dec)
+				      360)
+				   )
+			     (let ((m (static_cast<int> (* (/ 256 8) (- 8 (+ 2 (dot (aref star_data i)
+										    magnitude)))))))
+			       (setf (dot (aref triangle_vertices i)
+					  color)
+				     (+ (* m #xffffff)
+					(* m #xffff)
+					(* m #xff)
+					255
+					))))))
+
+		     
+		      (let ((config)
+			    (app))
+			(declare (type Config config)
+				 (type App app))
+			(setf config.title (string "hello triangle"))
+			(setf config.backend Engine--Backend--VULKAN)
+					;(setf config.backend Engine--Backend--OPENGL)
+			(let ((setup
+				(lambda (engine view scene)
 				  (declare (type Engine* engine)
 					   (type View* view)
-					   (type double now)
+					   (type Scene* scene)
 					   (capture &app))
-				  (let ((zoom 1.5f)
-					(w (dot (view->getViewport)
-						width))
-					(h (dot (view->getViewport)
-						height))
-					(aspect (/ (static_cast<float> w) h))
-					)
-				    (app.cam->setProjection
-				     Camera--Projection--ORTHO
-				     (* -1 aspect zoom)
-				     (* aspect zoom)
-				     (* -1 zoom)
-				     zoom
-				     0 1
-				     )
-				    (let ((&tcm (engine->getTransformManager)))
-				      (tcm.setTransform
-				       (tcm.getInstance app.renderable)
-				       (filament--math--mat4f--rotation
-					now
-					(space filament--math--float3 (curly 0 0 -1)))))))
-				))
+				  (setf app.skybox
+					(dot (Skybox--Builder)
+					     (color (curly .1 .125 .25 1.0))
+					     (build *engine)))
+				  (scene->setSkybox app.skybox)
+				  (view->setPostProcessingEnabled false)
+				  (static_assert (== 12 (sizeof Vertex))
+						 (string "strange vertex size"))
+				  (setf app.vb
+					(dot (VertexBuffer--Builder)
+					     (vertexCount ,n)
+					     (bufferCount 1)
+					     (attribute VertexAttribute--POSITION
+							0
+							VertexBuffer--AttributeType--FLOAT2 0 12)
+					     (attribute VertexAttribute--COLOR
+							0
+							VertexBuffer--AttributeType--UBYTE4 8 12)
+					     (normalized VertexAttribute--COLOR)
+					     (build *engine)))
+				  (app.vb->setBufferAt *engine 0
+						       (VertexBuffer--BufferDescriptor
+							triangle_vertices 36 nullptr))
+				  (setf app.ib (dot (IndexBuffer--Builder)
+						    (indexCount 3)
+						    (bufferType IndexBuffer--IndexType--USHORT)
+						    (build *engine)))
+				  (app.ib->setBuffer *engine
+						     (IndexBuffer--BufferDescriptor
+						      triangle_indices 6 nullptr)
+						     )
+				  (setf app.mat
+					(dot (Material--Builder)
+					     (package RESOURCES_BAKEDCOLOR_DATA
+						      RESOURCES_BAKEDCOLOR_SIZE
+						      )
+					     (build *engine)))
+				  (setf app.renderable (dot (EntityManager--get)
+							    (create)))
+				  (dot (RenderableManager--Builder 1)
+				       (boundingBox (curly (curly -1 -1 -1)
+							   (curly 1   1  1)))
+				       (material 0 (app.mat->getDefaultInstance))
+				       (geometry 0
+						 RenderableManager--PrimitiveType--POINTS ;TRIANGLES
+						 app.vb app.ib 0 3)
+				       (culling false)
+				       (receiveShadows false)
+				       (castShadows false)
+				       (build *engine app.renderable))
+				  (scene->addEntity app.renderable)
+				  (setf app.camera (dot (utils--EntityManager--get)
+							(create)))
+				  (setf app.cam (engine->createCamera app.camera))
+				  (view->setCamera app.cam)
+				  ))
+			      (cleanup
+				(lambda (engine view scene)
+				  (declare (type Engine* engine)
+					   (type View* view)
+					   (type Scene* scene)
+					   (capture &app))
+				  ,@(loop for e in `(skybox
+						     renderable
+						     mat
+						     vb
+						     ib)
+					  collect
+					  `(engine->destroy (dot app ,e)))
+				  (engine->destroyCameraComponent app.camera)
+				  (dot (utils--EntityManager--get)
+				       (destroy app.camera))))
+			      (gui
+				(lambda (engine view)
+				  (declare (type Engine* engine)
+					   (type View* view)
+					   (capture &app))
+				  (ImGui--Begin (string "Parameters"))
+				  (progn
+				    (let ((gain 1s0))
+				      (declare (type "static float" gain))
+				      (ImGui--SliderFloat (string "gain")
+							  &gain
+							  0s0 1s0)))
+				  (ImGui--End)))
+			      )
+
+			  (let ((filament_app (FilamentApp--get)))
+			    (declare (type "static FilamentApp&" filament_app))
+			    (dot filament_app
+				 (animate
+				  (lambda (engine view now)
+				    (declare (type Engine* engine)
+					     (type View* view)
+					     (type double now)
+					     (capture &app))
+				    (let ((zoom 1.5f)
+					  (w (dot (view->getViewport)
+						  width))
+					  (h (dot (view->getViewport)
+						  height))
+					  (aspect (/ (static_cast<float> w) h))
+					  )
+				      (app.cam->setProjection
+				       Camera--Projection--ORTHO
+				       (* -1 aspect zoom)
+				       (* aspect zoom)
+				       (* -1 zoom)
+				       zoom
+				       0 1
+				       )
+				      (let ((&tcm (engine->getTransformManager)))
+					(tcm.setTransform
+					 (tcm.getInstance app.renderable)
+					 (filament--math--mat4f--rotation
+					  now
+					  (space filament--math--float3 (curly 0 0 -1)))))))
+				  ))
 			   
-			   (dot filament_app
-				(run config setup cleanup
-				     gui
-				     ))
-			   )))
-		     (return 0)
-		     )
+			    (dot filament_app
+				 (run config setup cleanup
+				      gui
+				      ))
+			    )))
+		      (return 0)
+		      ))
 		   )))
   #+nil
   (with-open-file (s "source/CMakeLists.txt" :direction :output

@@ -9,7 +9,7 @@ generated/resources.S: generated/materials/bakedColor.filamat
 	--deploy=generated \
 	generated/materials/bakedColor.filamat
 CXX=clang++
-CXXFLAGS=-std=c++17 -flto \
+CXXFLAGS=-std=gnu++17 -flto \
 	-I/home/martin/src/b/filament-1.15.1/libs/filamentapp/include/ \
 	-I/home/martin/src/b/filament-1.15.1/out/release/filament/include \
 	-I/home/martin/src/b/filament-1.15.1/third_party/libsdl2/include \
