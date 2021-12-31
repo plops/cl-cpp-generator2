@@ -79,4 +79,7 @@ Missing separate debuginfos, use: dnf debuginfo-install llvm-libs-13.0.0-4.fc35.
 #8  0x000000000040a415 in FilamentApp::run(Config const&, std::function<void (filament::Engine*, filament::View*, filament::Scene*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*)>, std::function<void (filament::Engine*, filament::View*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*, filament::Renderer*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*, filament::Renderer*)>, unsigned long, unsigned long) ()
 #9  0x0000000000408ec1 in main ()
 
+
+sudo sysctl dev.i915.perf_stream_paranoid=0
+
 #+end_example
