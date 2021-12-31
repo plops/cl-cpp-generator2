@@ -102,7 +102,8 @@
 						  FilamentApp)
 				  collect
 				  (format nil "<filamentapp/~a.h>" e)))
-		 (include "generated/resources.h")
+		 (include "generated/resources.h"
+			  )
 		 #+nil(do0 "using namespace filament;"
 		      "using utils::Entity;"
 		      "using utils::EntityManager;")
@@ -122,6 +123,7 @@
 		  
 		 `(do0
 		   (include "star_tracker.h")
+		   (include <imgui.h>)
 		   (do0 "using namespace filament;"
 		 "using utils::Entity;"
 		 "using utils::EntityManager;")
@@ -227,7 +229,21 @@
 					 `(engine->destroy (dot app ,e)))
 				 (engine->destroyCameraComponent app.camera)
 				 (dot (utils--EntityManager--get)
-				      (destroy app.camera)))))
+				      (destroy app.camera))))
+			     (gui
+			       (lambda (engine view)
+				 (declare (type Engine* engine)
+					  (type View* view)
+					  (capture &app))
+				 (ImGui--Begin (string "Parameters"))
+				 (progn
+				   (let ((gain 1s0))
+				     (declare (type "static float" gain))
+				    (ImGui--SliderFloat (string "gain")
+							&gain
+							0s0 1s0)))
+				 (ImGui--End)))
+			     )
 
 			 (let ((filament_app (FilamentApp--get)))
 			   (declare (type "static FilamentApp&" filament_app))
@@ -263,7 +279,8 @@
 			   
 			   (dot filament_app
 				(run config setup cleanup
-				     (FilamentApp--ImGuiCallback)))
+				     gui
+				     ))
 			   )))
 		     (return 0)
 		     )

@@ -29,11 +29,12 @@ clang++ ../star_tracker.cpp \
 	-I/home/martin/src/b/filament-1.15.1/libs/filamentapp/include/ \
 	-I/home/martin/src/b/filament-1.15.1/out/release/filament/include \
 	-I/home/martin/src/b/filament-1.15.1/third_party/libsdl2/include \
+	-I/home/martin/src/b/filament-1.15.1/third_party/imgui \
 	-Wno-extern-c-compat \
 	-ffast-math \
 	resources.S \
 	-fstrict-aliasing -Wno-unknown-pragmas -Wno-unused-function -fPIC \
-	-fcolor-diagnostics -fvisibility=hidden -O3 -DNDEBUG \
+	-fcolor-diagnostics -fvisibility=hidden -ggdb -O0 -DDEBUG \
 	-fomit-frame-pointer -ffunction-sections -fdata-sections \
 	-Wl,--gc-sections \
 	-L/home/martin/src/b/filament-1.15.1/out/cmake-release/ libs/filamentapp/libfilamentapp.a \

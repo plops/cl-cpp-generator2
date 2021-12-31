@@ -56,4 +56,27 @@ sudo dnf install bloaty
    0.0%     624   0.0%     560    .gnu.version_r
  100.0%  4.48Mi 100.0%  3.71Mi    TOTAL
 
+gdb stop when it hangs
+
+ Thread 1 "a.out" received signal SIGTSTP, Stopped (user).
+__futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=225204, futex_word=0x7fffd1ce2910) at futex-internal.c:57
+Downloading 0.00 MB source file /usr/src/debug/glibc-2.34-12.fc35.x86_64/nptl/futex-internal.c
+57	    return INTERNAL_SYSCALL_CANCEL (futex_time64, futex_word, op, expected,
+Missing separate debuginfos, use: dnf debuginfo-install llvm-libs-13.0.0-4.fc35.x86_64 mesa-dri-drivers-21.3.2-1.fc35.x86_64
+(gdb) bt
+#0  __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=225204, futex_word=0x7fffd1ce2910) at futex-internal.c:57
+#1  __futex_abstimed_wait_common (futex_word=futex_word@entry=0x7fffd1ce2910, expected=225204, clockid=clockid@entry=0, abstime=abstime@entry=0x0, 
+    private=private@entry=128, cancel=cancel@entry=true) at futex-internal.c:87
+#2  0x00007ffff7b0a78f in __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x7fffd1ce2910, expected=<optimized out>, clockid=clockid@entry=0, 
+    abstime=abstime@entry=0x0, private=private@entry=128) at futex-internal.c:139
+#3  0x00007ffff7b0f5f4 in __pthread_clockjoin_ex (threadid=140736713336384, thread_return=0x0, clockid=0, abstime=0x0, block=<optimized out>)
+    at pthread_join_common.c:105
+#4  0x00007ffff7e5a637 in __gthread_join (__value_ptr=0x0, __threadid=<optimized out>)
+    at /usr/src/debug/gcc-11.2.1-7.fc35.x86_64/obj-x86_64-redhat-linux/x86_64-redhat-linux/libstdc++-v3/include/x86_64-redhat-linux/bits/gthr-default.h:669
+#5  std::thread::join (this=0x7fffd2ce6910) at ../../../../../libstdc++-v3/src/c++11/thread.cc:112
+#6  0x00000000004e97a0 in filament::FEngine::shutdown() ()
+#7  0x00000000004ebb2c in filament::Engine::destroy(filament::Engine**) ()
+#8  0x000000000040a415 in FilamentApp::run(Config const&, std::function<void (filament::Engine*, filament::View*, filament::Scene*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*)>, std::function<void (filament::Engine*, filament::View*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*, filament::Renderer*)>, std::function<void (filament::Engine*, filament::View*, filament::Scene*, filament::Renderer*)>, unsigned long, unsigned long) ()
+#9  0x0000000000408ec1 in main ()
+
 #+end_example
