@@ -192,10 +192,10 @@
 										    magnitude)))))))
 			       (setf (dot (aref triangle_vertices i)
 					  color)
-				     (+ (* m #xffffff)
-					(* m #xffff)
-					(* m #xff)
-					255
+				     (logior (<< m (* 3 8))
+					     (<< m (* 2 8))
+					     (<< m (* 1 8))
+					     (<< #xff (* 0 8))
 					))))))
 
 		     
@@ -234,14 +234,17 @@
 					     (build *engine)))
 				  (app.vb->setBufferAt *engine 0
 						       (VertexBuffer--BufferDescriptor
-							triangle_vertices 36 nullptr))
+							triangle_vertices (* (sizeof float) 2 ,n) ; 36
+							nullptr))
 				  (setf app.ib (dot (IndexBuffer--Builder)
-						    (indexCount 3)
+						    (indexCount ,n) ;3
 						    (bufferType IndexBuffer--IndexType--USHORT)
 						    (build *engine)))
 				  (app.ib->setBuffer *engine
 						     (IndexBuffer--BufferDescriptor
-						      triangle_indices 6 nullptr)
+						      triangle_indices (* (sizeof uint16_t) ,n) ;6
+						      nullptr
+						      )
 						     )
 				  (setf app.mat
 					(dot (Material--Builder)
@@ -257,8 +260,8 @@
 				       (material 0 (app.mat->getDefaultInstance))
 				       (geometry 0
 						 RenderableManager--PrimitiveType--POINTS ;TRIANGLES
-						 app.vb app.ib 0 3)
-				       (culling false)
+						 app.vb app.ib 0 ,n) ;
+				        (culling false)
 				       (receiveShadows false)
 				       (castShadows false)
 				       (build *engine app.renderable))
