@@ -140,7 +140,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (push e new-body)))
 	     (push e new-body)))
     (values (reverse new-body) env (reverse captures) (reverse constructs)
-	    const-p explicit-p inline-p static-p virtual-p template template-instance)))
+	    const-p explicit-p inline-p static-p virtual-p pure-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -231,7 +231,7 @@ entry return-values contains a list of return values. currently supports type, v
 	  ;;         template          static          inline  virtual ret   params     pure    header-only
 	  ;;                                   explicit                   name  const                     constructs
 	  ;;         1                 2       3       4       5       6  7  8  9a      9b      10        11 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -329,9 +329,9 @@ entry return-values contains a list of return values. currently supports type, v
 	  ;;         template          static          inline  virtual ret   params             header-only
 	  ;;                                   explicit                   name  const   pure             constructs
 	  ;;         1                 2       3       4       5       6  7  8  9       9b      10        11 
-	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
+	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
 	
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
