@@ -307,9 +307,8 @@ entry return-values contains a list of return values. currently supports type, v
 			     (not header-only))
 			"const")
 		  
-		  (when header-only
-		    pure-p)
-		  override-p
+		  nil ;; pure not applicable
+		  nil ;; override-p not applicable
 		  ;; 10 semicolon if header only
 		  header-only
 		  ;; 11 constructor initializers
@@ -415,7 +414,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    (and const-p
 			 (not header-only))
 		    "const")
-		  pure-p
+		  (when header-only pure-p)
 		  override-p
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)

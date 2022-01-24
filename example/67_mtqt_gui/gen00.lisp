@@ -79,10 +79,15 @@
 		(run_impl ("std::make_index_sequence<sizeof...(Args)>")))
 	      (defmethod run_impl (
 				   <I...>)
-		(declare (type "std::index_sequence" <I...>))
+		(declare (type "std::index_sequence" <I...>)
+			 (values "template<std::size_t... I> void"))
 		("lambda" (space (std--get<I> args)
 			 "...")))
 	      )
+	    (defun qapplication (&key (argc 0) (argv nullptr))
+	      (declare (type int argc)
+		       (type char** argv)
+		       (values QCoreApplication*)))
 	    )))
 
     (let ((fn-h (asdf:system-relative-pathname
