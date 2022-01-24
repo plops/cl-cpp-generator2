@@ -75,7 +75,13 @@
 				  )
 			  (values :constructor)))
 	       (defmethod run ()
-		 (declare (override)))
+		 (declare (override))
+		 (run_impl ("std::make_index_sequence<sizeof...(Args)>")))
+	       (defmethod run_impl (
+				    <I...>)
+		 (declare (type "std::index_sequence" <I...>))
+		 (lambda (space (std--get<I> args)
+			  "...")))
 	       ))
 	    )))
 
