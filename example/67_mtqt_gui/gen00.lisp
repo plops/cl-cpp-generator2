@@ -88,6 +88,16 @@
 	      (declare (type int argc)
 		       (type char** argv)
 		       (values QCoreApplication*)))
+	    (defun wait_for_qapp_to_finish ())
+	    (defun quit ()
+	      (let ((app (-> (qapplication_manager)
+			     app)))
+		(run_in_gui_thread_blocking
+		 (new (QAppLambda (lambda ()
+				    (declare (capture app))
+				    (-> app (quit))))))))
+	    (defun wait_key ()
+	      (declare (values "unsigned char")))
 	    )))
 
     (let ((fn-h (asdf:system-relative-pathname
