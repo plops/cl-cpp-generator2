@@ -334,6 +334,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (not header-only))
 	  (return-from parse-defmethod ""))
 
+	#+nil
 	(when (and virtual-p
 		   (not header-only))
 	  (return-from parse-defmethod (format nil "// virtual method ~a" name)))
