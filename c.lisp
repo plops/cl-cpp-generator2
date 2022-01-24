@@ -79,6 +79,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(inline-p nil)
 	(static-p nil)
 	(virtual-p nil)
+	(pure-p nil)
 	(template nil)
 	(template-instance nil)
 	(looking-p t) 
@@ -111,8 +112,9 @@ entry return-values contains a list of return values. currently supports type, v
 			  (when (eq (first declaration) 'inline)
 			    (setf inline-p t))
 			  (when (eq (first declaration) 'virtual)
-			    (setf virtual-p t)
-			    )
+			    (setf virtual-p t))
+			  (when (eq (first declaration) 'pure)
+			    (setf pure-p t))
 			  (when (eq (first declaration) 'static)
 			    (setf static-p t))
 			  (when (eq (first declaration) 'template)
@@ -196,7 +198,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -216,7 +218,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -226,10 +228,10 @@ entry return-values contains a list of return values. currently supports type, v
 	(with-output-to-string (s)
 
 	  
-	  ;;         template          static          inline  virtual ret   params     header-only
-	  ;;                                   explicit                   name  const             constructs
-	  ;;         1                 2       3       4       5       6  7  8  9       10        11 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual ret   params     pure    header-only
+	  ;;                                   explicit                   name  const                     constructs
+	  ;;         1                 2       3       4       5       6  7  8  9a      9b      10        11 
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -296,12 +298,12 @@ entry return-values contains a list of return values. currently supports type, v
 						   (when header-only ;; only in class definition
 						     (format nil "= ~a" (funcall emit init))))))
 				  ))
-		  ;; 9 const keyword
+		  ;; 9 const keyword / or '=0' for pure function
 		  (when const-p #+nil
 			(and const-p
 			     (not header-only))
 			"const")
-		  
+		  pure-p
 		  ;; 10 semicolon if header only
 		  header-only
 		  ;; 11 constructor initializers
@@ -314,7 +316,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -324,12 +326,12 @@ entry return-values contains a list of return values. currently supports type, v
 	(when (and inline-p (not header-only))
 	  (return-from parse-defmethod ""))
 	(with-output-to-string (s)
-	  ;;         template          static          inline  virtual ret   params     header-only
-	  ;;                                   explicit                   name  const             constructs
-	  ;;         1                 2       3       4       5       6  7  8  9       10        11 
-	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual ret   params             header-only
+	  ;;                                   explicit                   name  const   pure             constructs
+	  ;;         1                 2       3       4       5       6  7  8  9       9b      10        11 
+	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
 	
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~@[=0~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -407,7 +409,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    (and const-p
 			 (not header-only))
 		    "const")
-		  
+		  pure-p
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)
 		  ;; constructor initializers

@@ -5,7 +5,7 @@
      ) 
 (in-package :cl-cpp-generator2)
 (progn
-  (defparameter *source-dir* #P"example/65_filament/source/")
+  (defparameter *source-dir* #P"example/66_matx/source/")
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"

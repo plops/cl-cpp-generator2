@@ -1,2 +1,11 @@
+
 - try the code from
   - https://github.com/midjji/mlib/tree/master/plotter/mtgui
+
+- build jkqtplotter on fedor
+#+begin_example
+sudo dnf install qt5-qtsvg-devel
+git clone https://github.com/jkriege2/JKQtPlotter
+cmake .. -GNinja
+sudo ninja install
+#+end_example

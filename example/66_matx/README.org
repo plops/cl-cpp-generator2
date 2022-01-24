@@ -1,1 +1,10 @@
 - https://github.com/NVIDIA/MatX
+
+- install matx
+  #+begin_example
+git clone  https://github.com/NVIDIA/MatX
+cd MatX
+mkdir build && cd build
+cmake -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=OFF -DCMAKE_CUDA_ARCHITECTURES=";75" -G Ninja ..
+make -j8
+  #+end_example
