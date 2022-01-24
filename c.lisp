@@ -307,7 +307,8 @@ entry return-values contains a list of return values. currently supports type, v
 			     (not header-only))
 			"const")
 		  
-		  pure-p
+		  (when header-only
+		    pure-p)
 		  override-p
 		  ;; 10 semicolon if header only
 		  header-only

@@ -58,31 +58,31 @@
 	      (defmethod ~AnyQAppLambda ()
 		(declare (virtual)
 			 (values :constructor))))
-	    (space
-	     "template<class Lambda, class... Args>"
-	     (defclass QAppLambda (AnyQAppLambda)
-	       "public:"
-	       ,@(loop for (e f) in `((Lambda lambda)
-				      (std--tuple<Args...> args)
-				      )
-		       collect
-		       (format nil "~a ~a;" (emit-c :code  e) f))
-	       (defmethod QAppLambda (lambda args)
-		 (declare (type Lambda lambda)
-			  (type Args... args)
-			  (constr (lambda lambda)
-				  (args (std--make_tuple args...))
-				  )
-			  (values :constructor)))
-	       (defmethod run ()
-		 (declare (override))
-		 (run_impl ("std::make_index_sequence<sizeof...(Args)>")))
-	       (defmethod run_impl (
-				    <I...>)
-		 (declare (type "std::index_sequence" <I...>))
-		 (lambda (space (std--get<I> args)
-			  "...")))
-	       ))
+	    "template<class Lambda, class... Args>"
+	    (defclass QAppLambda (AnyQAppLambda)
+	      "public:"
+	      ,@(loop for (e f) in `((Lambda lambda)
+				     (std--tuple<Args...> args)
+				     )
+		      collect
+		      (format nil "~a ~a;" (emit-c :code  e) f))
+	      (defmethod QAppLambda (lambda args)
+		(declare (type Lambda lambda)
+			 (type Args... args)
+			 (constr (AnyQAppLambda)
+				 (lambda lambda)
+				 (args (std--make_tuple args...))
+				 )
+			 (values :constructor)))
+	      (defmethod run ()
+		(declare (override))
+		(run_impl ("std::make_index_sequence<sizeof...(Args)>")))
+	      (defmethod run_impl (
+				   <I...>)
+		(declare (type "std::index_sequence" <I...>))
+		("lambda" (space (std--get<I> args)
+			 "...")))
+	      )
 	    )))
 
     (let ((fn-h (asdf:system-relative-pathname
@@ -107,10 +107,35 @@
 	       :header-only t))
      (sb-ext:run-program "/usr/bin/clang-format"
                          (list "-i"  (namestring fn-h))))
-    
+    #+nil(let ((fn (asdf:system-relative-pathname
+			  'cl-cpp-generator2
+			  (merge-pathnames #P"mtgui.cpp"
+					   *source-dir*))))
+     (with-open-file (sh fn
+			 :direction :output
+			 :if-exists :supersede
+			 :if-does-not-exist :create)
+       (emit-c :code
+	       `
+	       :hook-defun #'(lambda (str)
+                               (format sh "~a~%" str))
+               :hook-defclass #'(lambda (str)
+                                  (format sh "~a;~%" str))
+	       :header-only nil))
+     (sb-ext:run-program "/usr/bin/clang-format"
+                         (list "-i"  (namestring fn))))
+    (write-source (asdf:system-relative-pathname
+		   'cl-cpp-generator2
+		   (merge-pathnames #P"mtgui.cpp"
+				    *source-dir*))
+		  `(do0
+		 
+		    (include <mtgui.h>)
+		    
+		    ,type-definitions))
     (write-source (asdf:system-relative-pathname
 		  'cl-cpp-generator2
-		  (merge-pathnames #P"mtgui.cpp"
+		  (merge-pathnames #P"mtgui_driver.cpp"
 				   *source-dir*))
 		  
 		  `(do0
