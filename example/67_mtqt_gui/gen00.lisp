@@ -84,6 +84,23 @@
 		("lambda" (space (std--get<I> args)
 			 "...")))
 	      )
+
+
+	    (defclass AnyQAppLambdaEvent (QEvent)
+		      "public:"
+		      "AnyQAppLambda* al=nullptr;"
+		      (defmethod AnyQAppLambdaEvent (al)
+			(declare (type AnyQAppLambda* al)
+				 ;; event id a random number between 1000 and ushort max
+				 (construct (QEvent (QEvent--Type 48301))
+					    (al al))
+				 (values :constructor)))
+		      (defmethod ~AnyQAppLambdaEvent ()
+			(declare
+			 (virtual)
+			 (values :constructor)
+				 )))
+	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
 		       (type char** argv)
@@ -122,23 +139,7 @@
 	       :header-only t))
      (sb-ext:run-program "/usr/bin/clang-format"
                          (list "-i"  (namestring fn-h))))
-    #+nil(let ((fn (asdf:system-relative-pathname
-			  'cl-cpp-generator2
-			  (merge-pathnames #P"mtgui.cpp"
-					   *source-dir*))))
-     (with-open-file (sh fn
-			 :direction :output
-			 :if-exists :supersede
-			 :if-does-not-exist :create)
-       (emit-c :code
-	       `
-	       :hook-defun #'(lambda (str)
-                               (format sh "~a~%" str))
-               :hook-defclass #'(lambda (str)
-                                  (format sh "~a;~%" str))
-	       :header-only nil))
-     (sb-ext:run-program "/usr/bin/clang-format"
-                         (list "-i"  (namestring fn))))
+    
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"mtgui.cpp"
@@ -147,7 +148,12 @@
 		 
 		    (include <mtgui.h>)
 		    
-		    ,type-definitions))
+		    
+		    ,type-definitions
+
+		    
+
+		    ))
     (write-source (asdf:system-relative-pathname
 		  'cl-cpp-generator2
 		  (merge-pathnames #P"mtgui_driver.cpp"
@@ -165,14 +171,11 @@
 		     )
 		    
 		   
-		   ,(let ((n ;4995
-			    118218
-			   ))
-		   `(defun main (argc argv)
+		   (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
-		      ))
+		      )
 		   )))
   #+nil
   (with-open-file (s "source/CMakeLists.txt" :direction :output

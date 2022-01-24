@@ -328,8 +328,16 @@ entry return-values contains a list of return values. currently supports type, v
 	  (parse-ordinary-lambda-list lambda-list)
 	(declare (ignorable req-param opt-param res-param
 			    key-param other-key-p aux-param key-exist-p))
-	(when (and inline-p (not header-only))
+	(when (and (or inline-p
+		       pure-p
+		       )
+		   (not header-only))
 	  (return-from parse-defmethod ""))
+
+	(when (and virtual-p
+		   (not header-only))
+	  (return-from parse-defmethod (format nil "// virtual method ~a" name)))
+	
 	(with-output-to-string (s)
 	  ;;         template          static          inline  virtual ret   params                                header-only
 	  ;;                                   explicit                   name  const   pure      override                       constructs
@@ -355,14 +363,14 @@ entry return-values contains a list of return values. currently supports type, v
 		  ;; 5 virtual
 		  (when (and virtual-p
 			     (not (eq in-class-p 'defclass-cpp))
-			    #+nil (or 
-				 ;(eq in-class-p 'defclass+)
-				 ;(eq in-class-p 'defclass-hpp)
-				 )
+			     #+nil (or 
+					;(eq in-class-p 'defclass+)
+					;(eq in-class-p 'defclass-hpp)
+				    )
 			     
-			    ;(or in-class-p header-only)
+					;(or in-class-p header-only)
 			     )
-		    ;(format t "virtual defmethod~%")
+					;(format t "virtual defmethod~%")
 		    "virtual")
 		  
 		  ;; 6 return value
@@ -386,41 +394,41 @@ entry return-values contains a list of return values. currently supports type, v
 		  (funcall emit `(paren
 				  ;; positional
 				  ,@(loop for p in req-param collect
-					 (format nil "~a ~a"
-						 (let ((type (gethash p env)))
-						   (if type
-						       (funcall emit type)
-						       (break "can't find type for positional parameter ~a in defun"
-							      p)))
-						 p))
+							     (format nil "~a ~a"
+								     (let ((type (gethash p env)))
+								       (if type
+									   (funcall emit type)
+									   (break "can't find type for positional parameter ~a in defun"
+										  p)))
+								     p))
 				  ;; key parameters
 				  ;; http://www.crategus.com/books/alexandria/pages/alexandria.0.dev_fun_parse-ordinary-lambda-list.html
 				  ,@(loop for ((keyword-name name) init supplied-p) in key-param collect
-					 (progn
-					   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
-								       (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
-					  (format nil "~a ~a ~@[~a~]"
-						  (let ((type (gethash name env)))
-						    (if type
-							(funcall emit type)
-							(break "can't find type for keyword parameter ~a in defun"
-							       name)))
-						  name
-						  (when header-only ;; only in class definition
-						   (format nil "= ~a" (funcall emit init))))))
+												 (progn
+												   #+nil (format t "~s~%" (list (loop for k being the hash-keys in env using (hash-value v) collect
+																							    (format nil "'~a'='~a'~%" k v)) :name name :keyword-name keyword-name :init init))
+												   (format nil "~a ~a ~@[~a~]"
+													   (let ((type (gethash name env)))
+													     (if type
+														 (funcall emit type)
+														 (break "can't find type for keyword parameter ~a in defun"
+															name)))
+													   name
+													   (when header-only ;; only in class definition
+													     (format nil "= ~a" (funcall emit init))))))
 				  ))
 		  ;; const keyword
 		  (when const-p #+nil
-		    (and const-p
-			 (not header-only))
-		    "const")
+			(and const-p
+			     (not header-only))
+			"const")
 		  (when header-only pure-p)
 		  override-p
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)
 		  ;; constructor initializers
 		  (when (and constructs
-			 (not header-only))
+			     (not header-only))
 		    (funcall emit `(comma ,@(mapcar emit constructs)))))
 	  (when (or inline-p (not header-only))
 	   (format s "~a" (funcall emit `(progn ,@body)))))))))
