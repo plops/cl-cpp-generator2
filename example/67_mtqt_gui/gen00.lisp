@@ -99,7 +99,10 @@
 			(declare
 			 (virtual)
 			 (values :constructor)
-				 )))
+			 )
+			(unless (== nullptr al)
+			  (-> al (run)))
+			(delete al)))
 	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
