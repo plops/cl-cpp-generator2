@@ -58,15 +58,25 @@
 	      (defmethod ~AnyQAppLambda ()
 		(declare (virtual)
 			 (values :constructor))))
-	    
-	    (defclass QAppLambda (AnyQAppLambda)
-	      "public:"
-	      ,@(loop for (e f) in `((Lambda lambda)
-				     (std--tuple<Args...> args)
-				     )
-		      collect
-		      (format nil "~a ~a;" (emit-c :code  e) f))
-	      )
+	    (space
+	     "template<class Lambda, class... Args>"
+	     (defclass QAppLambda (AnyQAppLambda)
+	       "public:"
+	       ,@(loop for (e f) in `((Lambda lambda)
+				      (std--tuple<Args...> args)
+				      )
+		       collect
+		       (format nil "~a ~a;" (emit-c :code  e) f))
+	       (defmethod QAppLambda (lambda args)
+		 (declare (type Lambda lambda)
+			  (type Args... args)
+			  (constr (lambda lambda)
+				  (args (std--make_tuple args...))
+				  )
+			  (values :constructor)))
+	       (defmethod run ()
+		 (declare (override)))
+	       ))
 	    )))
 
     (let ((fn-h (asdf:system-relative-pathname

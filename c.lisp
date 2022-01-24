@@ -79,6 +79,7 @@ entry return-values contains a list of return values. currently supports type, v
 	(inline-p nil)
 	(static-p nil)
 	(virtual-p nil)
+	(override-p nil)
 	(pure-p nil)
 	(template nil)
 	(template-instance nil)
@@ -113,6 +114,8 @@ entry return-values contains a list of return values. currently supports type, v
 			    (setf inline-p t))
 			  (when (eq (first declaration) 'virtual)
 			    (setf virtual-p t))
+			  (when (eq (first declaration) 'override)
+			    (setf override-p t))
 			  (when (eq (first declaration) 'pure)
 			    (setf pure-p t))
 			  (when (eq (first declaration) 'static)
@@ -140,7 +143,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (push e new-body)))
 	     (push e new-body)))
     (values (reverse new-body) env (reverse captures) (reverse constructs)
-	    const-p explicit-p inline-p static-p virtual-p pure-p template template-instance)))
+	    const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -198,7 +201,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -218,7 +221,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -228,10 +231,10 @@ entry return-values contains a list of return values. currently supports type, v
 	(with-output-to-string (s)
 
 	  
-	  ;;         template          static          inline  virtual ret   params     pure    header-only
-	  ;;                                   explicit                   name  const                     constructs
-	  ;;         1                 2       3       4       5       6  7  8  9a      9b      10        11 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
+	  ;;         template          static          inline  virtual ret   params     pure      override         header-only
+	  ;;                                   explicit                   name  const                                        constructs
+	  ;;         1                 2       3       4       5       6  7  8  9a      9b        9c               10        11 
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -303,7 +306,9 @@ entry return-values contains a list of return values. currently supports type, v
 			(and const-p
 			     (not header-only))
 			"const")
+		  
 		  pure-p
+		  override-p
 		  ;; 10 semicolon if header only
 		  header-only
 		  ;; 11 constructor initializers
@@ -316,7 +321,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p pure-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 				      key-param other-key-p
 				      aux-param key-exist-p)
@@ -326,12 +331,12 @@ entry return-values contains a list of return values. currently supports type, v
 	(when (and inline-p (not header-only))
 	  (return-from parse-defmethod ""))
 	(with-output-to-string (s)
-	  ;;         template          static          inline  virtual ret   params             header-only
-	  ;;                                   explicit                   name  const   pure             constructs
-	  ;;         1                 2       3       4       5       6  7  8  9       9b      10        11 
+	  ;;         template          static          inline  virtual ret   params                                header-only
+	  ;;                                   explicit                   name  const   pure      override                       constructs
+	  ;;         1                 2       3       4       5       6  7  8  9       9b        9c               10               11 
 	 ; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
 	
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~]  ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -410,6 +415,7 @@ entry return-values contains a list of return values. currently supports type, v
 			 (not header-only))
 		    "const")
 		  pure-p
+		  override-p
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)
 		  ;; constructor initializers
