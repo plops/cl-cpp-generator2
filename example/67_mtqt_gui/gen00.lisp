@@ -164,17 +164,18 @@
 		       ))
 	      )
 	    (do0
-	       "std::mutex QApp_mtx;"
-	       "std::shared_ptr<QApplicationManager> qm = nullptr;"
-	       (defmethod qapplication_manager (&key (argc 0) (argv nullptr))
-		 (declare (type int argc)
-			  (type char** argv)
-			  (values 
-			   "std::shared_ptr<QApplicationManager>"))
-		 "std::unique_lock<std::mutex> ul(QApp_mtx);"
-		 (when (== nullptr qm)
-		   (setf qm (QApplicationManager--create argc argv))
-		   (return qm))))
+	     (do0
+	      "std::mutex QApp_mtx;"
+	      "std::shared_ptr<QApplicationManager> qm = nullptr;"
+	      (defun qapplication_manager (&key (argc 0) (argv nullptr))
+		(declare (type int argc)
+			 (type char** argv)
+			 (values 
+			  "std::shared_ptr<QApplicationManager>"))
+		"std::unique_lock<std::mutex> ul(QApp_mtx);"
+		(when (== nullptr qm)
+		  (setf qm (QApplicationManager--create argc argv))
+		  (return qm)))))
 	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
@@ -253,7 +254,7 @@
 		  #+nil  (include <mtgui.h>
 			     )
 
-		    (defclass+ (QAppLambda :template "class Lambda, class... Args") AnyQAppLambda
+		    (defclass+ (QAppLambda :template "class Lambda, class... Args") "public AnyQAppLambda"
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
 				     (std--tuple<Args...> args)
@@ -334,7 +335,7 @@
       (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
       (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )")
       
-      (out "target_link_libraries( mytest PRIVAT Qt5::Core Qt5::Gui Qt5::Widgets )")
+      (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
       )
     ))
