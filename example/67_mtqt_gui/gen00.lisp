@@ -86,7 +86,7 @@
 	      (defmethod BlockingEvent (al  done)
 		(declare (type AnyQAppLambda* al)
 			 (type std--atomic<bool>* done)
-			 (constr (AnyQAppLambdaEvent al)
+			 (construct (AnyQAppLambdaEvent al)
 				 (done done))
 			 (values :constructor)))
 	      (defmethod ~BlockingEvent ()
