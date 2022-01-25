@@ -114,7 +114,7 @@
 				 (done done))
 			 (values :constructor)))
 	      (defmethod ~BlockingEvent ()
-		(declare 
+		(declare  
 		 (values :constructor))
 		(unless (== nullptr this->al)
 		  (-> this
