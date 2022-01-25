@@ -10,7 +10,7 @@
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday"))
-  (defun lprint (&optional rest)
+  (defun lprint (msg &optional rest)
       `(progn				;do0
 	 " "
 	 #-nolog
@@ -145,7 +145,7 @@
 		  (unless (== nullptr (QApplication--instance))
 		    (setf qm->we_own_app false
 			  qm->app (QCoreApplication--instance))
-		    ,(lprint `(string "we are not managing this qapp instance."))
+		    ,(lprint "we are not managing this qapp instance.")
 		    (-> qm
 			app
 			(postEvent qm->app
@@ -251,6 +251,7 @@
 		     <QEvent>
 		     <QApplication>
 		     <iostream>
+		     <iomanip>
 		     <chrono>
 		     <memory>
 			  )
@@ -308,7 +309,7 @@
       (out "set( CMAKE_CXX_COMPILER clang++ )")
       (out "set( CMAKE_CXX_FLAGS \"\"  )")
       (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-      (out "set( CMAKE_CXX_STANDARD 17 )")
+      ;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
 					;(out "set( CMAKE_CXX_FLAGS )")
@@ -316,7 +317,7 @@
       (out "set( SRCS ~{~a~^~%~} )"
 	   (directory "source/*.cpp"))
       (out "add_executable( mytest ${SRCS} )")
-      (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
+      (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
       (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )")
       
       (out "target_link_libraries( mytest PRIVAT Qt5::Core Qt5::Gui Qt5::Widgets )")
