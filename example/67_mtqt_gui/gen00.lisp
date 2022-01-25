@@ -58,32 +58,8 @@
 	      (defmethod ~AnyQAppLambda ()
 		(declare (virtual)
 			 (values :constructor))))
-	    ; "template<class Lambda, class... Args>"
-	    (defclass (QAppLambda :template "class Lambda, class... Args") AnyQAppLambda
-	      "public:"
-	      ,@(loop for (e f) in `((Lambda lambda)
-				     (std--tuple<Args...> args)
-				     )
-		      collect
-		      (format nil "~a ~a;" (emit-c :code  e) f))
-	      (defmethod QAppLambda (lambda args)
-		(declare (type Lambda lambda)
-			 (type Args... args)
-			 (constr (AnyQAppLambda)
-				 (lambda lambda)
-				 (args (std--make_tuple args...))
-				 )
-			 (values :constructor)))
-	      (defmethod run ()
-		(declare (override))
-		(run_impl ("std::make_index_sequence<sizeof...(Args)>")))
-	      (defmethod run_impl (
-				   <I...>)
-		(declare (type "std::index_sequence" <I...>)
-			 (values "template<std::size_t... I> void"))
-		("lambda" (space (std--get<I> args)
-			 "...")))
-	      )
+	   
+	    
 
 
 	    (defclass AnyQAppLambdaEvent "public QEvent"
@@ -186,17 +162,19 @@
 		       (std--this_thread--sleep_for
 			    (std--chrono--milliseconds 50))
 		       ))
-	      "std::mutex QApp_mtx;"
-	      "std::shared_ptr<QApplicationManager> qm = nullptr;"
-	      (defmethod qapplication_manager (&key (argc 0) (argv nullptr))
-		(declare (type int argc)
-			 (type char** argv)
-			 (values 
-			  "std::shared_ptr<QApplicationManager>"))
-		"std::unique_lock<std::mutex> ul(QApp_mtx);"
-		(when (== nullptr qm)
-		  (setf qm (QApplicationManager--create argc argv))
-		  (return qm))))
+	      )
+	    (do0
+	       "std::mutex QApp_mtx;"
+	       "std::shared_ptr<QApplicationManager> qm = nullptr;"
+	       (defmethod qapplication_manager (&key (argc 0) (argv nullptr))
+		 (declare (type int argc)
+			  (type char** argv)
+			  (values 
+			   "std::shared_ptr<QApplicationManager>"))
+		 "std::unique_lock<std::mutex> ul(QApp_mtx);"
+		 (when (== nullptr qm)
+		   (setf qm (QApplicationManager--create argc argv))
+		   (return qm))))
 	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
@@ -268,11 +246,47 @@
     
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
+		   (merge-pathnames #P"mtgui_template.h"
+				    *source-dir*))
+		  `(do0
+		 
+		  #+nil  (include <mtgui.h>
+			     )
+
+		    (defclass+ (QAppLambda :template "class Lambda, class... Args") AnyQAppLambda
+	      "public:"
+	      ,@(loop for (e f) in `((Lambda lambda)
+				     (std--tuple<Args...> args)
+				     )
+		      collect
+		      (format nil "~a ~a;" (emit-c :code  e) f))
+	      (defmethod QAppLambda (lambda args)
+		(declare (type Lambda lambda)
+			 (type Args... args)
+			 (constr (AnyQAppLambda)
+				 (lambda lambda)
+				 (args (std--make_tuple args...))
+				 )
+			 (values :constructor)))
+	      (defmethod run ()
+		(declare (override))
+		(run_impl ("std::make_index_sequence<sizeof...(Args)>")))
+	      (defmethod run_impl (
+				   <I...>)
+		(declare (type "std::index_sequence" <I...>)
+			 (values "template<std::size_t... I> void"))
+		("lambda" (space (std--get<I> args)
+			 "...")))
+	      )))
+
+    (write-source (asdf:system-relative-pathname
+		   'cl-cpp-generator2
 		   (merge-pathnames #P"mtgui.cpp"
 				    *source-dir*))
 		  `(do0
 		 
 		    (include <mtgui.h>
+			     <mtgui_template.h>
 			     )
 		    
 		    
