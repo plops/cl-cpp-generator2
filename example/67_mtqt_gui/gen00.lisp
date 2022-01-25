@@ -10,7 +10,7 @@
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday"))
-  #+nil (defun logprint (msg &optional rest)
+  (defun lprint (&optional rest)
       `(progn				;do0
 	 " "
 	 #-nolog
@@ -36,8 +36,8 @@
 	       __LINE__
 	       (string " ")
 	       __func__
-	       (string " ")
-	       (string ,msg)
+	       ;(string " ")
+	       ;(string ,msg)
 	       (string " ")
 	       ,@(loop for e in rest appending
 		       `(("std::setw" 8)
@@ -86,7 +86,7 @@
 	      )
 
 
-	    (defclass AnyQAppLambdaEvent (QEvent)
+	    (defclass AnyQAppLambdaEvent ("public QEvent")
 		      "public:"
 		      "AnyQAppLambda* al=nullptr;"
 		      (defmethod AnyQAppLambdaEvent (al)
@@ -103,12 +103,126 @@
 			(unless (== nullptr al)
 			  (-> al (run)))
 			(delete al)))
+
+	    (defclass BlockingEvent ("public AnyQAppLambdaEvent")
+	      "public:"
+	      "std::atomic<bool>* done;"
+	      (defmethod BlockingEvent (al  done)
+		(declare (type AnyQAppLambda* al)
+			 (type std--atomic<bool>* done)
+			 (constr (AnyQAppLmabdaEvent al)
+				 (done done))
+			 (values :constructor)))
+	      (defmethod ~BlockingEvent ()
+		(declare 
+		 (values :constructor))
+		(unless (== nullptr this->al)
+		  (-> this
+		      al
+		      (run)))
+		(delete al)
+		(setf al nullptr)
+		(-> done (store true))))
+
+	    (defclass QApplicationManager ()
+	      "public:"
+	      "std::shared_ptr<std::atomc<bool>> done = std::make_shared<std::atomic<bool>>(false);"
+	      "bool we_own_app = true;"
+	      "std::thread thr;"
+	      "QCoreApplication* app = nullptr;"
+	      (defmethod QApplicationManager ()
+		(declare (values :constructor))
+		(when we_own_app
+		  (quit)
+		  (when (thr.joinable)
+		    (thr.join))))
+	      (defmethod create (argc argv)
+		(declare (static)
+			 (type int argc)
+			 (type char** argv)
+			 (values "std::shared_ptr<QApplicationManager>"))
+		(let ((qm (std--make_shared<QApplicationManager>)))
+		  (unless (== nullptr (QApplication--instance))
+		    (setf qm->we_own_app false
+			  qm->app (QCoreApplication--instance))
+		    ,(lprint `(string "we are not managing this qapp instance."))
+		    (-> qm
+			app
+			(postEvent qm->app
+				   (new (AnyQAppLambdaEvent
+					 (new QAppLambda
+					      (lambda ()
+						(declare (capture qm))
+						(QObject--connect qm->app
+								  &QApplication--aboutToQuit
+								  qm->app
+								  (lambda ()
+								    (declare (capture qm))
+								    (setf *qm->done true)))))))))
+		    (return qm))
+		  (let ((ready false))
+		    (declare (type std--atomic<bool> ready))
+		    (setf qm->thr
+			  (std--thread
+			   (lambda ()
+			     (declare (capture "&"))
+			     (setf qm->app (new ("class QApplication" argc argv)))
+			     ;; qm captured by copy, continues to exist till closure is finished (QApplication is deleted)
+			     (QObject--connect qm->app
+					       &QApplication--aboutToQuit
+					       qm->app
+					       (lambda ()
+						 (declare (capture qm))
+						 (setf *qm->done true)))
+			     (setf ready true)
+			     (qm->app->exec)
+			     )))
+		    (while (not ready)
+			   (std--this_thread--sleep_for
+			    (std--chrono--milliseconds 50)))
+		    (return qm))))
+	      (defmethod wait_for_finished ()
+		(while (not *done)
+		       (std--this_thread--sleep_for
+			    (std--chrono--milliseconds 50))
+		       ))
+	      "std::mutex QApp_mtx;"
+	      "std::shared_ptr<QApplicationManager> qm = nullptr;"
+	      (defmethod qapplication_manager (&key (argc 0) (argv nullptr))
+		(declare (type int argc)
+			 (type char** argv)
+			 (values 
+			  "std::shared_ptr<QApplicationManager>"))
+		"std::unique_lock<std::mutex> ul(QApp_mtx);"
+		(when (== nullptr qm)
+		  (setf qm (QApplicationManager--create argc argv))
+		  (return qm))))
 	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
 		       (type char** argv)
-		       (values QCoreApplication*)))
-	    (defun wait_for_qapp_to_finish ())
+		       (values QCoreApplication*))
+	      (return (-> (qapplication_manager argc argv)
+			  app)))
+	    (defun wait_for_qapp_to_finish ()
+	      (-> (qapplication_manager)
+		  (wait_for_finished)))
+	    (defun run_in_gui_thread (re)
+	      (declare (type AnyQAppLambda* re))
+	      (let ((qm (qapplication)))
+		(qm->postEvent qm (new (AnyQAppLambdaEvent re)))))
+
+	    (defun run_in_gui_thread_blocking (re)
+	      (declare (type AnyQAppLambda* re))
+	      
+	      (let ((done false)
+		    (qm (qapplication)))
+		(declare (type std--atomic<bool> done))
+		(qm->postEvent qm (new (BlockingEvent re &done)))
+		(while (not done)
+		       (std--this_thread--sleep_for
+			    (std--chrono--milliseconds 50)))))
+	    
 	    (defun quit ()
 	      (let ((app (-> (qapplication_manager)
 			     app)))
@@ -131,9 +245,17 @@
        (emit-c :code
 	       `(do0
 		 "#pragma once"
-		 (include <tuple>)
-		 "struct AnyQAppLambda;"
-		 "struct QCoreApplication;"
+		 (include <tuple>
+			  <mutex>
+		     <thread>
+		     <QEvent>
+		     <QApplication>
+		     <iostream>
+		     <chrono>
+		     
+			  )
+		 "class AnyQAppLambda;"
+		 "class QCoreApplication;"
 		 ,type-definitions)
 	       :hook-defun #'(lambda (str)
                                (format sh "~a~%" str))
@@ -149,7 +271,8 @@
 				    *source-dir*))
 		  `(do0
 		 
-		    (include <mtgui.h>)
+		    (include <mtgui.h>
+			     )
 		    
 		    
 		    ,type-definitions
@@ -165,12 +288,6 @@
 		  `(do0
 		    (include
 		     <mtgui.h>
-		     <mutex>
-		     <thread>
-		     <QEvent>
-		     <QApplication>
-		     <iostream>
-					;<chrono>
 		     )
 		    
 		   
