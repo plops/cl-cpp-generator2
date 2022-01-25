@@ -58,8 +58,8 @@
 	      (defmethod ~AnyQAppLambda ()
 		(declare (virtual)
 			 (values :constructor))))
-	    "template<class Lambda, class... Args>"
-	    (defclass QAppLambda (AnyQAppLambda)
+	    ; "template<class Lambda, class... Args>"
+	    (defclass (QAppLambda :template "class Lambda, class... Args") AnyQAppLambda
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
 				     (std--tuple<Args...> args)
@@ -86,7 +86,7 @@
 	      )
 
 
-	    (defclass AnyQAppLambdaEvent ("public QEvent")
+	    (defclass AnyQAppLambdaEvent "public QEvent"
 		      "public:"
 		      "AnyQAppLambda* al=nullptr;"
 		      (defmethod AnyQAppLambdaEvent (al)
@@ -104,7 +104,7 @@
 			  (-> al (run)))
 			(delete al)))
 
-	    (defclass BlockingEvent ("public AnyQAppLambdaEvent")
+	    (defclass BlockingEvent "public AnyQAppLambdaEvent"
 	      "public:"
 	      "std::atomic<bool>* done;"
 	      (defmethod BlockingEvent (al  done)
@@ -126,7 +126,7 @@
 
 	    (defclass QApplicationManager ()
 	      "public:"
-	      "std::shared_ptr<std::atomc<bool>> done = std::make_shared<std::atomic<bool>>(false);"
+	      "std::shared_ptr<std::atomic<bool>> done = std::make_shared<std::atomic<bool>>(false);"
 	      "bool we_own_app = true;"
 	      "std::thread thr;"
 	      "QCoreApplication* app = nullptr;"
@@ -252,7 +252,7 @@
 		     <QApplication>
 		     <iostream>
 		     <chrono>
-		     
+		     <memory>
 			  )
 		 "class AnyQAppLambda;"
 		 "class QCoreApplication;"
@@ -297,7 +297,7 @@
 			       (values int))
 		      )
 		   )))
-  #+nil
+  
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 					     :if-exists :supersede
 					     :if-does-not-exist :create)
@@ -312,13 +312,14 @@
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
 					;(out "set( CMAKE_CXX_FLAGS )")
-      (out "find_package( OpenCV REQUIRED )")
+      (out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets )")
       (out "set( SRCS ~{~a~^~%~} )"
 	   (directory "source/*.cpp"))
       (out "add_executable( mytest ${SRCS} )")
-      ;(out "target_include_directories( mytest PUBLIC /home/martin/stage/cl-cpp-generator2/example/58_stdpar/source/ )")
+      (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
+      (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )")
       
-      (out "target_link_libraries( mytest ${OpenCV_LIBS} )")
+      (out "target_link_libraries( mytest PRIVAT Qt5::Core Qt5::Gui Qt5::Widgets )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
       )
     ))
