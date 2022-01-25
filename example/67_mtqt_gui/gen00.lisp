@@ -126,15 +126,15 @@
 			app
 			(postEvent qm->app
 				   (new (AnyQAppLambdaEvent
-					 (new QAppLambda
-					      (lambda ()
-						(declare (capture qm))
-						(QObject--connect qm->app
-								  &QApplication--aboutToQuit
-								  qm->app
-								  (lambda ()
-								    (declare (capture qm))
-								    (setf *qm->done true)))))))))
+					 (new (QAppLambda
+					       (lambda ()
+						 (declare (capture qm))
+						 (QObject--connect qm->app
+								   &QApplication--aboutToQuit
+								   qm->app
+								   (lambda ()
+								     (declare (capture qm))
+								     (setf *qm->done true))))))))))
 		    (return qm))
 		  (let ((ready false))
 		    (declare (type std--atomic<bool> ready))
