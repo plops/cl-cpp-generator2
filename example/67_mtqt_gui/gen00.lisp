@@ -11,8 +11,8 @@
       "Thursday" "Friday" "Saturday"
       "Sunday"))
   (defun lprint (&key (msg "") (vars nil))
-    #+nil `(comments ,msg)
-    #-nil`(progn				;do0
+    #-nil `(comments ,msg)
+    #+nil`(progn				;do0
 	 " "
 	 (do0				;let
 	  #+nil ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
