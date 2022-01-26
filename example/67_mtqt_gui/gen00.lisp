@@ -49,7 +49,6 @@
 	       "std::flush")))))
   (let ((type-definitions
 	  `(do0
-
 	    (defclass AnyQAppLambda ()
 	      "public:"
 	      (defmethod run ()
@@ -60,10 +59,6 @@
 		(declare (virtual)
 			 (values :constructor))
 		,(lprint)))
-	   
-	    
-
-
 	    (defclass AnyQAppLambdaEvent "public QEvent" 
 		      "public:"
 		      "AnyQAppLambda* al=nullptr;"
@@ -93,11 +88,11 @@
 			 (construct (AnyQAppLambdaEvent al)
 				 (done done))
 			 (values :constructor))
-		,(lprint :vars `(done)))
+		,(lprint))
 	      (defmethod ~BlockingEvent ()
 		(declare  
 		 (values :constructor))
-		,(lprint :vars `(done))
+		,(lprint)
 		(unless (== nullptr this->al)
 		  (-> this
 		      al
@@ -192,7 +187,7 @@
 	      (declare (type int argc)
 		       (type char** argv)
 		       (values QCoreApplication*))
-	      ,(lprint :vars `(argc))
+	      ,(lprint)
 	      (return (-> (qapplication_manager argc argv)
 			  app)))
 	    (defun wait_for_qapp_to_finish ()
@@ -297,17 +292,65 @@
 		   (merge-pathnames #P"mtgui.cpp"
 				    *source-dir*))
 		  `(do0
-		 
 		    (include <mtgui.h>
-			     <mtgui_template.h>
-			     )
-		    
-		    
-		    ,type-definitions
+			     <mtgui_template.h>)
+		    ,type-definitions))
 
-		    
-
-		    ))
+    (let ((class-defs `((defclass Figure ()
+			  "public:"
+			  "JKQTPlotter plot;"
+			  "std::map<std::string,JKQTPXYLineGraph*> graph;"
+			  (defun labeled_graph (label)
+			    (declare (type std--string label))
+			    (let ((it (graphs.find label)))
+			      (unless (== (graphs.end)
+					  it)
+				it->second)
+			      (let ((graph (new (JKQTPXYLineGraph &plot))))
+				(graph->setTitle (QObject--tr (label.c_str)))
+				(setf (aref graphs label)
+				      graph)
+				(return graph))))
+			  )))
+	    (source-name "plot")
+	    (includes `(mtgui.h mtgui_template.h
+				jkqtplotter/jkqtplotter.h
+				jkqtplotter/graphs/jkqtpscatter.h)))
+      (write-source (asdf:system-relative-pathname
+		       'cl-cpp-generator2
+		       (merge-pathnames (format nil "~a.cpp" source-name)
+					*source-dir*))
+		    `(do0
+		      (include ,@(loop for e in includes
+				       collect
+				       (format nil "<~a>" e)))
+		      ;;,@class-defs
+		      ))
+      (let ((fn-h (asdf:system-relative-pathname
+		    'cl-cpp-generator2
+		    (merge-pathnames
+		     (format nil "~a.h" source-name)
+		     *source-dir*))))
+	 (with-open-file (sh fn-h
+			     :direction :output
+			     :if-exists :supersede
+			     :if-does-not-exist :create)
+	   (emit-c :code
+		   `(do0
+		     "#pragma once"
+		     (include ,@(loop for e in includes
+				      collect
+				      (format nil "<~a>" e)))
+		     ,class-defs)
+		   :hook-defun #'(lambda (str)
+				   (format sh "~a~%" str))
+		   :hook-defclass #'(lambda (str)
+                                      (format sh "~a;~%" str))
+		   :header-only t))
+	 (sb-ext:run-program "/usr/bin/clang-format"
+                             (list "-i"  (namestring fn-h)))))
+    
+    
     (write-source (asdf:system-relative-pathname
 		  'cl-cpp-generator2
 		  (merge-pathnames #P"main.cpp"
@@ -387,32 +430,37 @@
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 					     :if-exists :supersede
 					     :if-does-not-exist :create)
-    (macrolet ((out (fmt &rest rest)
-		 `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-      (out "cmake_minimum_required( VERSION 3.4 )")
-      (out "project( mytest LANGUAGES CXX )")
-      (out "set( CMAKE_CXX_COMPILER clang++ )")
-      ;(out "set( CMAKE_CXX_FLAGS \"\"  )")
-      (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-      (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address \")")
-      (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address \")")
-      ;(out "set( CMAKE_CXX_STANDARD 23 )")
+    ;;https://clang.llvm.org/docs/AddressSanitizer.html
+    ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+    (let ((dbg "-O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
+     (macrolet ((out (fmt &rest rest)
+		  `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+       (out "cmake_minimum_required( VERSION 3.4 )")
+       (out "project( mytest LANGUAGES CXX )")
+       (out "set( CMAKE_CXX_COMPILER clang++ )")
+					;(out "set( CMAKE_CXX_FLAGS \"\"  )")
+       (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+       (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a \")" dbg)
+       (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a \")" dbg )
+					;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
 					;(out "set( CMAKE_CXX_FLAGS )")
-      (out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets )")
-      (out "set( SRCS ~{~a~^~%~} )"
-	   (directory "source/*.cpp"))
-      (out "add_executable( mytest ${SRCS} )")
-      (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
-      (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )")
+       (out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
+       (out "set( SRCS ~{~a~^~%~} )"
+	    (directory "source/*.cpp"))
+       (out "add_executable( mytest ${SRCS} )")
+       (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
+       (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include  )")
+       (out "target_link_directories( mytest PUBLIC /usr/local/lib )")
 
-      (out "find_package (Threads) ")
-      (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets Threads::Threads)")
+       (out "find_package (Threads) ")
+       ;; Core Gui Widgets PrintSupport Svg Xml OpenGL
+       (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads JKQTPlotterSharedLib_ )")
       
-     ; (out "target_link_libraries ( mytest Threads::Threads )")
+					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
-      )
+       ))
     ))
 
  
