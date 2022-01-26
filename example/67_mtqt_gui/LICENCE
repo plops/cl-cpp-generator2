@@ -1,0 +1,13 @@
+This library is gpl with the following additional requirement, which if neccessary supersceeds the gpl provisions. 
+
+The requirement is: The full source of any derived work must be made available freely and publically available to all, both users and non users, along with this licence. 
+
+That is, you cannot hide the sources behind only providing a cloud service which uses this library or only use it internally in an organisation.
+
+There are commercial licences available.
+Parts of this library are also available under other less restrictive open source licences. If you want to use some part in an opensource app, lets talk. 
+
+
+Any individual file may be marked with a different licence, in which case that applies only to that file.
+If such a licence would normally apply to this library as a derived work, I as copyright holder grant myself an exeption to this, meaning these licences do not propagate to the rest of the library. 
+ 
