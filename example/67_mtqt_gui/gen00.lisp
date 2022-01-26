@@ -41,7 +41,7 @@
 	       (string " ")
 	       ,@(loop for e in vars appending
 		       `(("std::setw" 8)
-					;("std::width" 8)
+					;("std::width" 8) 
 			 (string ,(format nil " ~a='" (emit-c :code e)))
 			 ,e
 			 (string "'")))
