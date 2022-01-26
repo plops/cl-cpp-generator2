@@ -112,7 +112,7 @@
 	      "bool we_own_app = true;"
 	      "std::thread thr;"
 	      "QCoreApplication* app = nullptr;"
-	      (defmethod QApplicationManager ()
+	      (defmethod ~QApplicationManager ()
 		(declare (values :constructor))
 		,(lprint :vars `(we_own_app))
 		(when we_own_app
