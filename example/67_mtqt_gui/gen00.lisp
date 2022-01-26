@@ -11,12 +11,12 @@
       "Thursday" "Friday" "Saturday"
       "Sunday"))
   (defun lprint (&key (msg "") (vars nil))
-      `(progn				;do0
+    #+nil `(comments ,msg)
+    #-nil`(progn				;do0
 	 " "
-	 #-nolog
-	 (do0 ;let
+	 (do0				;let
 	  #+nil ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
-	   )
+		 )
 	  
 	  (do0
 					;("std::setprecision" 3)
@@ -178,11 +178,13 @@
 			 (type char** argv)
 			 (values 
 			  "std::shared_ptr<QApplicationManager>"))
+		,(lprint :msg "request lock"  :vars `(argc))
 		"std::unique_lock<std::mutex> ul(QApp_mtx);"
-		,(lprint :vars `(argc))
+		,(lprint :msg "have lock")
 		(when (== nullptr qm)
 		  (setf qm (QApplicationManager--create argc argv))
-		  (return qm)))))
+		  )
+		(return qm))))
 	    
 	    (defun qapplication (&key (argc 0) (argv nullptr))
 	      (declare (type int argc)
@@ -263,6 +265,7 @@
 		   (merge-pathnames #P"mtgui_template.h"
 				    *source-dir*))
 		  `(do0
+		    "#pragma once"
 		    (defclass+ (QAppLambda :template "class Lambda, class... Args") "public AnyQAppLambda"
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
@@ -321,7 +324,7 @@
 		     <QMainWindow>
 		     )
 		    
-		    (defun typical_qt_gui_app ()
+		    #+nil (defun typical_qt_gui_app ()
 		      (let ((i 0)
 			    (qapp (QApplication i nullptr))
 			    (window (QMainWindow)))
@@ -353,11 +356,11 @@
 									  )
 								      ,(lprint :msg "show third window")
 								      (window->show))))))))))
-			,(lprint :msg "wait for thread of thrid window")
+			,(lprint :msg "wait for thread of third window")
 			(thr.join))
 		      (std--this_thread--sleep_for (std--chrono--milliseconds 3000))
 		      (wait_for_qapp_to_finish))
-		    (defun external_app_gui ()
+		    #+nil (defun external_app_gui ()
 		      ,(lprint)
 		      (let ((i 0)
 			    (qapp (QApplication i nullptr))
@@ -388,8 +391,8 @@
 		 `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
       (out "cmake_minimum_required( VERSION 3.4 )")
       (out "project( mytest LANGUAGES CXX )")
-      (out "set( CMAKE_CXX_COMPILER clang++ )")
-      (out "set( CMAKE_CXX_FLAGS \"\"  )")
+      ;(out "set( CMAKE_CXX_COMPILER clang++ )")
+      ;(out "set( CMAKE_CXX_FLAGS \"\"  )")
       (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
       ;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
