@@ -10,7 +10,7 @@
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
       "Sunday"))
-  (defun lprint (msg &optional rest)
+  (defun lprint (&key (msg "") (vars nil))
       `(progn				;do0
 	 " "
 	 #-nolog
@@ -36,10 +36,10 @@
 	       __LINE__
 	       (string " ")
 	       __func__
-	       ;(string " ")
-	       ;(string ,msg)
 	       (string " ")
-	       ,@(loop for e in rest appending
+	       (string ,msg)
+	       (string " ")
+	       ,@(loop for e in vars appending
 		       `(("std::setw" 8)
 					;("std::width" 8)
 			 (string ,(format nil " ~a='" (emit-c :code e)))
@@ -70,12 +70,14 @@
 				 ;; event id a random number between 1000 and ushort max
 				 (construct (QEvent (QEvent--Type 48301))
 					    (al al))
-				 (values :constructor)))
+				 (values :constructor))
+			,(lprint))
 		      (defmethod ~AnyQAppLambdaEvent ()
 			(declare
 			 (virtual)
 			 (values :constructor)
 			 )
+			,(lprint)
 			(unless (== nullptr al)
 			  (-> al (run)))
 			(delete al)))
@@ -88,10 +90,12 @@
 			 (type std--atomic<bool>* done)
 			 (construct (AnyQAppLambdaEvent al)
 				 (done done))
-			 (values :constructor)))
+			 (values :constructor))
+		,(lprint :vars `(done)))
 	      (defmethod ~BlockingEvent ()
 		(declare  
 		 (values :constructor))
+		,(lprint :vars `(done))
 		(unless (== nullptr this->al)
 		  (-> this
 		      al
@@ -108,6 +112,7 @@
 	      "QCoreApplication* app = nullptr;"
 	      (defmethod QApplicationManager ()
 		(declare (values :constructor))
+		,(lprint :vars `(we_own_app))
 		(when we_own_app
 		  (quit)
 		  (when (thr.joinable)
@@ -117,11 +122,12 @@
 			 (type int argc)
 			 (type char** argv)
 			 (values "std::shared_ptr<QApplicationManager>"))
+		,(lprint :msg "create" :vars `(argc))
 		(let ((qm (std--make_shared<QApplicationManager>)))
 		  (unless (== nullptr (QApplication--instance))
 		    (setf qm->we_own_app false
 			  qm->app (QCoreApplication--instance))
-		    ,(lprint "we are not managing this qapp instance.")
+		    ,(lprint :msg "we are not managing this qapp instance.")
 		    (-> qm
 			app
 			(postEvent qm->app
