@@ -250,10 +250,6 @@
 		   (merge-pathnames #P"mtgui_template.h"
 				    *source-dir*))
 		  `(do0
-		 
-		  #+nil  (include <mtgui.h>
-			     )
-
 		    (defclass+ (QAppLambda :template "class Lambda, class... Args") "public AnyQAppLambda"
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
@@ -298,19 +294,54 @@
 		    ))
     (write-source (asdf:system-relative-pathname
 		  'cl-cpp-generator2
-		  (merge-pathnames #P"mtgui_driver.cpp"
+		  (merge-pathnames #P"main.cpp"
 				   *source-dir*))
 		  
 		  `(do0
 		    (include
+		     <thread>
+		     ;<iostream>
+		     <chrono>
 		     <mtgui.h>
+		     <mtgui_template.h>
+		     <QApplication>
+		     <QMainWindow>
 		     )
 		    
-		   
+		    (defun typical_qt_gui_app ()
+		      (let ((i 0)
+			    (qapp (QApplication i nullptr))
+			    (window (QMainWindow)))
+			(window.show)
+			(qapp.exec)
+			))
+		    (defun thread_independent_qt_gui_app ()
+		      (comments "no need to initialize qt")
+		      (run_in_gui_thread
+		       (new (QAppLambda (lambda ()
+					  (let ((*window (new QMainWindow))
+						)
+					    (window->show))))))
+		      (run_in_gui_thread
+		       (new (QAppLambda (lambda ()
+					  (let ((*window (new QMainWindow))
+						)
+					    (window->show))))))
+		      (let ((thr (std--thread (lambda ()
+						(run_in_gui_thread
+						 (new (QAppLambda (lambda ()
+								    (let ((*window (new QMainWindow))
+									  )
+								      (window->show))))))))))
+			(thr.join))
+		      (std--this_thread--sleep_for (std--chrono--milliseconds 3000))
+		      (wait_for_qapp_to_finish))
 		   (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		     (thread_independent_qt_gui_app)
+		     (return 0)
 		      )
 		   )))
   
