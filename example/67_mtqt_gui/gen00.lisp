@@ -296,22 +296,25 @@
 			     <mtgui_template.h>)
 		    ,type-definitions))
 
-    (let ((class-defs `((defclass Figure ()
-			  "public:"
-			  "JKQTPlotter plot;"
-			  "std::map<std::string,JKQTPXYLineGraph*> graph;"
-			  (defun labeled_graph (label)
-			    (declare (type std--string label))
-			    (let ((it (graphs.find label)))
-			      (unless (== (graphs.end)
-					  it)
-				it->second)
-			      (let ((graph (new (JKQTPXYLineGraph &plot))))
-				(graph->setTitle (QObject--tr (label.c_str)))
-				(setf (aref graphs label)
-				      graph)
-				(return graph))))
-			  )))
+    (let ((class-defs `(do0
+		       (defclass Figure () 
+			 "public:"
+			 "JKQTPlotter plot;"
+			 "std::map<std::string,JKQTPXYLineGraph*> graph;"
+			 (defmethod labeled_graph (label)
+			   (declare (type std--string label)
+				    (values JXQTPXYLineGraph*))
+			   (let ((it (graphs.find label)))
+			     (unless (== (graphs.end)
+					 it)
+			       it->second)
+				       (let ((graph (new (JKQTPXYLineGraph &plot))))
+					 (graph->setTitle (QObject--tr (label.c_str)))
+					 (setf (aref graphs label)
+					       graph)
+					 (return graph))))
+			 ))
+		      )
 	    (source-name "plot")
 	    (includes `(mtgui.h mtgui_template.h
 				jkqtplotter/jkqtplotter.h
@@ -324,7 +327,11 @@
 		      (include ,@(loop for e in includes
 				       collect
 				       (format nil "<~a>" e)))
-		      ;;,@class-defs
+
+		      
+		      
+					,class-defs
+		      
 		      ))
       (let ((fn-h (asdf:system-relative-pathname
 		    'cl-cpp-generator2
@@ -341,7 +348,8 @@
 		     (include ,@(loop for e in includes
 				      collect
 				      (format nil "<~a>" e)))
-		     ,class-defs)
+		     ,class-defs
+		     )
 		   :hook-defun #'(lambda (str)
 				   (format sh "~a~%" str))
 		   :hook-defclass #'(lambda (str)
