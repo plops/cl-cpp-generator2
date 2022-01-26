@@ -392,6 +392,7 @@
 			       (return it->second))
 			     ,(lprint :msg "create new figure" :vars `(name))
 			     (let ((figure (std--make_shared<Figure>)))
+			       ,(lprint :msg "store figure")
 			       (setf (aref plots_ name) figure)
 			       (let ((&plot figure->plot))
 				 ,(lprint :msg "set title..")
