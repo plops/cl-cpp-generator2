@@ -297,13 +297,16 @@
 		    ,type-definitions))
 
     (let ((class-defs `(do0
+			(include ,@(loop for e in `(mutex thread memory)
+				       collect
+				       (format nil "<~a>" e)))
 		       (defclass Figure () 
 			 "public:"
 			 "JKQTPlotter plot;"
-			 "std::map<std::string,JKQTPXYLineGraph*> graph;"
+			 "std::map<std::string,JKQTPXYLineGraph*> graphs;"
 			 (defmethod labeled_graph (label)
 			   (declare (type std--string label)
-				    (values JXQTPXYLineGraph*))
+				    (values JKQTPXYLineGraph*))
 			   (let ((it (graphs.find label)))
 			     (unless (== (graphs.end)
 					 it)
@@ -313,7 +316,94 @@
 					 (setf (aref graphs label)
 					       graph)
 					 (return graph))))
-			 ))
+			 (defmethod set (xs ys label)
+			   (declare (type "const std::vector<double>&" xs ys)
+				    (type std--string label)
+				    )
+			   (let ((ds (plot.getDatastore))
+				 (X (QVector<double> (xs.size)))
+				 (Y (QVector<double> (ys.size)))
+				 (contains_nan false))
+			     (dotimes (i (std--min (xs.size)
+						   (ys.size)))
+			       (when (std--isnan (+ (aref xs i)
+						    (aref ys i)))
+				 (setf contains_nan true)
+				 continue)
+			       (<< X (aref xs i))
+			       (<< Y (aref ys i)))
+			     (let ((columnX (ds->addCopiedColumn X (string "x")))
+				   (columnY (ds->addCopiedColumn Y (string "y")))
+				   (graph (labeled_graph label)))
+			       (graph->setXColumn columnX)
+			       (graph->setYColumn columnY)
+			       (plot.addGraph graph)
+			       (plot.zoomToFit)))))
+		       (defclass Plotter ()
+			 "public:"
+			 (defmethod clear_plot (title)
+			   (declare (type std--string title))
+			   (let ((plotter (self.lock)))
+			     (run_in_gui_thread
+			      (new (QAppLambda
+				    (lambda ()
+				      (declare (capture plotter title))
+				      (plotter->clear_plot_internal title)))))))
+			 (defmethod plot (xs ys title label)
+			   (declare (type "const std::vector<double>&" xs ys)
+				    (type std--string title label))
+			   (call_plot xs ys title label))
+			 (defmethod create ()
+			   (declare (values "static std::shared_ptr<Plotter>"))
+			   (let ((plotter (std--shared_ptr<Plotter> (new Plotter))))
+			     (setf plotter->self plotter)
+			     (return plotter)))
+			 (defmethod Plotter ()
+			   (declare (values :constructor)))
+			 "std::weak_ptr<Plotter> self;"
+			 "std::mutex call_plot_mutex;"
+			 (defmethod call_plot (xs ys title label)
+			   (declare (type "const std::vector<double>&" xs ys)
+				    (type std--string title label))
+			   (let ((ul (std--unique_lock<std--mutex> call_plot_mutex))
+				 (plotter (self.lock)))
+			     ;; fixme: something about blocking and problem with opencv
+			     (run_in_gui_thread
+			      (new (QAppLambda
+				    (lambda ()
+				      (declare (capture plotter xs ys title label))
+				      (plotter->plot_internal xs ys title label))) ))
+			     ))
+			 "std::map<std::string, std::shared_ptr<Figure>> plots_;"
+			 (defmethod named_plot (name)
+			   (declare (type std--string name)
+				    (values std--shared_ptr<Figure>))
+			   (let ((it (plots_.find name)))
+			     (unless (== it (plots_.end))
+			       (return it->second))
+			     (let ((figure (std--make_shared<Figure>)))
+			       (setf (aref plots_ name) figure)
+			       (let ((&plot figure->plot))
+				 (plot.setWindowTitle (QString (name.c_str)))
+				 (plot.show)
+				 (plot.resize 600 400)
+				 (return figure)))))
+			 (defmethod clear_plot_internal (title)
+			   (declare (type std--string title))
+			   (let ((it (plots_.find title)))
+			     (unless (== it (plots_.end))
+			       (return (-> it
+					   second
+					   (plot.clearGraphs))))))
+			 "std::mutex plot_internal_mtx;"
+			 (defmethod plot_internal (xs ys title label)
+			   (declare (type "const std::vector<double>&" xs ys)
+				    (type std--string title label))
+			   (let ((ul (std--unique_lock<std--mutex> plot_internal_mtx))
+				 (figure (std--shared_ptr<Figure> (named_plot title))))
+			     (figure->set xs ys label)
+			     )
+			   )))
 		      )
 	    (source-name "plot")
 	    (includes `(mtgui.h mtgui_template.h
@@ -327,6 +417,7 @@
 		      (include ,@(loop for e in includes
 				       collect
 				       (format nil "<~a>" e)))
+		      (include ,(format nil "<~a.h>" source-name))
 
 		      
 		      
