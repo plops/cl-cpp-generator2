@@ -310,12 +310,12 @@
 			   (let ((it (graphs.find label)))
 			     (unless (== (graphs.end)
 					 it)
-			       it->second)
-				       (let ((graph (new (JKQTPXYLineGraph &plot))))
-					 (graph->setTitle (QObject--tr (label.c_str)))
-					 (setf (aref graphs label)
-					       graph)
-					 (return graph))))
+			       (return it->second))
+			     (let ((graph (new (JKQTPXYLineGraph &plot))))
+			       (graph->setTitle (QObject--tr (label.c_str)))
+			       (setf (aref graphs label)
+				     graph)
+			       (return graph))))
 			 (defmethod set (xs ys label)
 			   (declare (type "const std::vector<double>&" xs ys)
 				    (type std--string label)
@@ -354,7 +354,8 @@
 				    (type std--string title label))
 			   (call_plot xs ys title label))
 			 (defmethod create ()
-			   (declare (values "static std::shared_ptr<Plotter>"))
+			   (declare (values "std::shared_ptr<Plotter>")
+				    (static))
 			   (let ((plotter (std--shared_ptr<Plotter> (new Plotter))))
 			     (setf plotter->self plotter)
 			     (return plotter)))
@@ -377,7 +378,7 @@
 			 "std::map<std::string, std::shared_ptr<Figure>> plots_;"
 			 (defmethod named_plot (name)
 			   (declare (type std--string name)
-				    (values std--shared_ptr<Figure>))
+				    (values "std::shared_ptr<Figure>"))
 			   (let ((it (plots_.find name)))
 			     (unless (== it (plots_.end))
 			       (return it->second))
@@ -414,7 +415,8 @@
 		       (merge-pathnames (format nil "~a.cpp" source-name)
 					*source-dir*))
 		    `(do0
-		      (include ,@(loop for e in includes
+		      
+		      #+nil(include ,@(loop for e in includes
 				       collect
 				       (format nil "<~a>" e)))
 		      (include ,(format nil "<~a.h>" source-name))
@@ -433,20 +435,19 @@
 			     :direction :output
 			     :if-exists :supersede
 			     :if-does-not-exist :create)
-	   (defparameter *bla*
-	    (emit-c :code
-		    `(do0
-		      (pragma once)
-		      (include ,@(loop for e in includes
-				       collect
-				       (format nil "<~a>" e)))
-		      ,class-defs
-		      )
-		    :hook-defun #'(lambda (str)
-				    (format sh "~a~%" str))
-		    :hook-defclass #'(lambda (str)
-                                       (format sh "~a;~%" str))
-		    :header-only t)))
+	   (emit-c :code
+		   `(do0
+		     (pragma once)
+		     (include ,@(loop for e in includes
+				      collect
+				      (format nil "<~a>" e)))
+		     ,class-defs
+		     )
+		   :hook-defun #'(lambda (str)
+				   (format sh "~a~%" str))
+		   :hook-defclass #'(lambda (str)
+                                      (format sh "~a;~%" str))
+		   :header-only t))
 	 (sb-ext:run-program "/usr/bin/clang-format"
                              (list "-i"  (namestring fn-h)))))
     

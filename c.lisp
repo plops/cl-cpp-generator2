@@ -606,7 +606,7 @@ entry return-values contains a list of return values. currently supports type, v
 										while
 										include case
 										when if unless
-										let
+										let pragma
 										split-header-and-code
 										defun defmethod defclass))))
 						    ""
