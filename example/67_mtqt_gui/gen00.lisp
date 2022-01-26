@@ -54,15 +54,17 @@
 	      "public:"
 	      (defmethod run ()
 		(declare (virtual)
-			 (pure)))
+			 (pure))
+		,(lprint))
 	      (defmethod ~AnyQAppLambda ()
 		(declare (virtual)
-			 (values :constructor))))
+			 (values :constructor))
+		,(lprint)))
 	   
 	    
 
 
-	    (defclass AnyQAppLambdaEvent "public QEvent"
+	    (defclass AnyQAppLambdaEvent "public QEvent" 
 		      "public:"
 		      "AnyQAppLambda* al=nullptr;"
 		      (defmethod AnyQAppLambdaEvent (al)
@@ -215,10 +217,9 @@
 			    (std--chrono--milliseconds 50)))))
 	    
 	    (defun quit ()
-	      ,(lprint :msg "creating app")
+	      
 	      (let ((app (-> (qapplication_manager)
 			     app)))
-		,(lprint)
 		(run_in_gui_thread_blocking
 		 (new (QAppLambda (lambda ()
 				    (declare (capture app))
