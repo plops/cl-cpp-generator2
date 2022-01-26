@@ -379,7 +379,7 @@
 		     ;(external_app_gui)
 		     (return 0)
 		      )
-		   )))
+		   ))) 
   
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 					     :if-exists :supersede
