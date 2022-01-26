@@ -114,7 +114,7 @@
 	      "QCoreApplication* app = nullptr;"
 	      (defmethod ~QApplicationManager ()
 		(declare (values :constructor))
-		,(lprint :vars `(we_own_app))
+		;,(lprint :vars `(we_own_app))
 		(when we_own_app
 		  (quit)
 		  (when (thr.joinable)
