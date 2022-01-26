@@ -628,6 +628,8 @@ entry return-values contains a list of return values. currently supports type, v
 						      ""
 						      ";"))))
 				    (cddr code))))))
+		  (pragma (let ((args (cdr code)))
+			    (format nil "#pragma ~{~a~^ ~}" args)))
 		  (include (let ((args (cdr code)))
 			     ;; include {name}*
 			     ;; (include <stdio.h>)   => #include <stdio.h>

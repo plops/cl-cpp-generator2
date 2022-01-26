@@ -234,7 +234,7 @@
 			 :if-does-not-exist :create)
        (emit-c :code
 	       `(do0
-		 "#pragma once"
+		 (pragma once)
 		 (include <tuple>
 			  <mutex>
 		     <thread>
@@ -261,7 +261,7 @@
 		   (merge-pathnames #P"mtgui_template.h"
 				    *source-dir*))
 		  `(do0
-		    "#pragma once"
+		    (pragma once)
 		    (defclass+ (QAppLambda :template "class Lambda, class... Args") "public AnyQAppLambda"
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
@@ -433,19 +433,20 @@
 			     :direction :output
 			     :if-exists :supersede
 			     :if-does-not-exist :create)
-	   (emit-c :code
-		   `(do0
-		     "#pragma once"
-		     (include ,@(loop for e in includes
-				      collect
-				      (format nil "<~a>" e)))
-		     ,class-defs
-		     )
-		   :hook-defun #'(lambda (str)
-				   (format sh "~a~%" str))
-		   :hook-defclass #'(lambda (str)
-                                      (format sh "~a;~%" str))
-		   :header-only t))
+	   (defparameter *bla*
+	    (emit-c :code
+		    `(do0
+		      (pragma once)
+		      (include ,@(loop for e in includes
+				       collect
+				       (format nil "<~a>" e)))
+		      ,class-defs
+		      )
+		    :hook-defun #'(lambda (str)
+				    (format sh "~a~%" str))
+		    :hook-defclass #'(lambda (str)
+                                       (format sh "~a;~%" str))
+		    :header-only t)))
 	 (sb-ext:run-program "/usr/bin/clang-format"
                              (list "-i"  (namestring fn-h)))))
     
