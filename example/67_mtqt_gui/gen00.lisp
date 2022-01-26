@@ -179,6 +179,7 @@
 			 (values 
 			  "std::shared_ptr<QApplicationManager>"))
 		"std::unique_lock<std::mutex> ul(QApp_mtx);"
+		,(lprint :vars `(argc))
 		(when (== nullptr qm)
 		  (setf qm (QApplicationManager--create argc argv))
 		  (return qm)))))
@@ -212,6 +213,7 @@
 			    (std--chrono--milliseconds 50)))))
 	    
 	    (defun quit ()
+	      ,(lprint :msg "creating app")
 	      (let ((app (-> (qapplication_manager)
 			     app)))
 		,(lprint)
@@ -329,23 +331,29 @@
 			))
 		    (defun thread_independent_qt_gui_app ()
 		      (comments "no need to initialize qt")
-		      ,(lprint)
+		      ,(lprint :msg "first window")
 		      (run_in_gui_thread
 		       (new (QAppLambda (lambda ()
 					  (let ((*window (new QMainWindow))
 						)
+					    ,(lprint :msg "show first window")
 					    (window->show))))))
+		      ,(lprint :msg "second window")
 		      (run_in_gui_thread
 		       (new (QAppLambda (lambda ()
 					  (let ((*window (new QMainWindow))
 						)
+					    ,(lprint :msg "show second window")
 					    (window->show))))))
+		      ,(lprint :msg "third window in its own thread")
 		      (let ((thr (std--thread (lambda ()
 						(run_in_gui_thread
 						 (new (QAppLambda (lambda ()
 								    (let ((*window (new QMainWindow))
 									  )
+								      ,(lprint :msg "show third window")
 								      (window->show))))))))))
+			,(lprint :msg "wait for thread of thrid window")
 			(thr.join))
 		      (std--this_thread--sleep_for (std--chrono--milliseconds 3000))
 		      (wait_for_qapp_to_finish))
@@ -393,8 +401,11 @@
       (out "add_executable( mytest ${SRCS} )")
       (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
       (out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )")
+
+      (out "find_package (Threads) ")
+      (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets Threads::Threads)")
       
-      (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets )")
+     ; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
       )
     ))
