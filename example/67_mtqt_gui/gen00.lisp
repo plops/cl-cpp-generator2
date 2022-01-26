@@ -404,7 +404,35 @@
 				 (figure (std--shared_ptr<Figure> (named_plot title))))
 			     (figure->set xs ys label)
 			     )
-			   )))
+			   ))
+		       (do0
+		       "std::mutex plotter_mtx;"
+		       "std::shared_ptr<Plotter> plotter_ = nullptr;"
+		       (defun plotter ()
+			 (declare (values "std::shared_ptr<Plotter>"))
+			 (let ((ul (std--unique_lock<std--mutex> plotter_mtx)))
+			   (when (== nullptr plotter_)
+			     (setf plotter_ (Plotter--create)))
+			   (return plotter_)))
+		       (defun clear_plot (title)
+			 (declare (type std--string title))
+			 (-> (plotter)
+			     (clear_plot title)))
+		       (defun plot (ys title label )
+			 (declare (type "const std::vector<double>&"  ys)
+				  (type std--string title label))
+			 (let ((indexes (std--vector<double> (ys.size))))
+			   (dotimes (i (ys.size))
+			     (indexes.push_back i))
+			   (-> (plotter)
+			       (plot indexes ys title label))))
+		       (defun plot (xs ys title label )
+			 (declare (type "const std::vector<double>&" xs ys)
+				  (type std--string title label))
+			 (-> (plotter)
+			     (plot xs ys title label)))
+		       (defun initialize_plotter ()
+			 (plotter))))
 		      )
 	    (source-name "plot")
 	    (includes `(mtgui.h mtgui_template.h
@@ -417,33 +445,7 @@
 		    `(do0
 		      (include ,(format nil "<~a.h>" source-name))
 		      ,class-defs
-		      "std::mutex plotter_mtx;"
-		      "std::shared_ptr<Plotter> plotter_ = nullptr;"
-		      (defun plotter ()
-			(declare (values "std::shared_ptr<Plotter>"))
-			(let ((ul (std--unique_lock<std--mutex> plotter_mtx)))
-			  (when (== nullptr plotter_)
-			    (setf plotter_ (Plotter--create)))
-			  (return plotter_)))
-		      (defun clear_plot (title)
-			(declare (type std--string title))
-			(-> (plotter)
-			    (clear_plot title)))
-		      (defun plot (ys title label )
-			  (declare (type "const std::vector<double>&"  ys)
-				   (type std--string title label))
-			(let ((indexes (std--vector<double> (ys.size))))
-			  (dotimes (i (ys.size))
-			    (indexes.push_back i))
-			  (-> (plotter)
-			      (plot indexes ys title label))))
-		      (defun plot (xs ys title label )
-			  (declare (type "const std::vector<double>&" xs ys)
-				   (type std--string title label))
-			(-> (plotter)
-			    (plot xs ys title label)))
-		      (defun initialize_plotter ()
-			(plotter))
+		      
 		      
 		      
 		      ))
@@ -483,10 +485,12 @@
 		     <thread>
 		     ;<iostream>
 		     <chrono>
-		     <mtgui.h>
-		     <mtgui_template.h>
+		     ;<mtgui.h>
+		     ;<mtgui_template.h>
 		     <QApplication>
 		     <QMainWindow>
+		     <plot.h>
+		     <cmath>
 		     )
 		    
 		    #+nil (defun typical_qt_gui_app ()
@@ -543,7 +547,18 @@
 			       (type char** argv)
 			       (values int))
 		     ;(typical_qt_gui_app)
-		     (thread_independent_qt_gui_app)
+					;(thread_independent_qt_gui_app)
+		     (do0
+		      (initialize_plotter)
+		      ,(let ((n-points 100))
+			 `(let (
+				(xs (std--vector<double> ,n-points))
+				(ys (std--vector<double> ,n-points))
+				)
+			    (dotimes (i ,n-points)
+			      (setf (aref xs i) i
+				    (aref ys i) (sin (* .01 i))))
+			    (plot xs ys (string "bla") (string "bla2")))))
 		     ;(external_app_gui)
 		     (return 0)
 		      )
