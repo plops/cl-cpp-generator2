@@ -9,3 +9,6 @@ git clone https://github.com/jkriege2/JKQtPlotter
 cmake .. -GNinja
 sudo ninja install
 #+end_example
+
+- code that uses the plotter
+  https://github.com/midjji/shire/blob/421b6b038f90b697e55902267daf71f3a811657f/srcs/apps/show_result.cpp
