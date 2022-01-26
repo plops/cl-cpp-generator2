@@ -307,11 +307,13 @@
 			 (defmethod labeled_graph (label)
 			   (declare (type std--string label)
 				    (values JKQTPXYLineGraph*))
-			   ,(lprint)
+			   
 			   (let ((it (graphs.find label)))
 			     (unless (== (graphs.end)
 					 it)
+			       ,(lprint :msg "found" :vars `(label))
 			       (return it->second))
+			     ,(lprint :msg "create" :vars `(label))
 			     (let ((graph (new (JKQTPXYLineGraph &plot))))
 			       (graph->setTitle (QObject--tr (label.c_str)))
 			       (setf (aref graphs label)
@@ -569,7 +571,7 @@
 		     ;(typical_qt_gui_app)
 					;(thread_independent_qt_gui_app)
 		     (do0
-		      (initialize_plotter)
+		     ;;; (initialize_plotter)
 		      ,(let ((n-points 100))
 			 `(let (
 				(xs (std--vector<double> ,n-points))
@@ -578,7 +580,7 @@
 			    (dotimes (i ,n-points)
 			      (setf (aref xs i) i
 				    (aref ys i) (sin (* .01 i))))
-			    (plot xs ys (string "bla") (string "bla2")))))
+			    (plot xs ys (string "bla1") (string "bla2")))))
 		     ;(external_app_gui)
 		     (return 0)
 		      )
