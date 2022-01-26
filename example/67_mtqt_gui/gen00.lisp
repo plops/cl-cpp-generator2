@@ -11,8 +11,8 @@
       "Thursday" "Friday" "Saturday"
       "Sunday"))
   (defun lprint (&key (msg "") (vars nil))
-    #-nil `(comments ,msg)
-    #+nil`(progn				;do0
+    #+nil `(comments ,msg)
+    #-nil`(progn				;do0
 	 " "
 	 (do0				;let
 	  #+nil ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
@@ -73,13 +73,13 @@
 				 (construct (QEvent (QEvent--Type 48301))
 					    (al al))
 				 (values :constructor))
-			,(lprint))
+			)
 		      (defmethod ~AnyQAppLambdaEvent ()
 			(declare
 			 (virtual)
 			 (values :constructor)
 			 )
-			,(lprint)
+			
 			(unless (== nullptr al)
 			  (-> al (run)))
 			(delete al)))
@@ -124,7 +124,7 @@
 			 (type int argc)
 			 (type char** argv)
 			 (values "std::shared_ptr<QApplicationManager>"))
-		,(lprint :msg "create" :vars `(argc))
+		;,(lprint)
 		(let ((qm (std--make_shared<QApplicationManager>)))
 		  (unless (== nullptr (QApplication--instance))
 		    (setf qm->we_own_app false
@@ -180,7 +180,7 @@
 			 (type char** argv)
 			 (values 
 			  "std::shared_ptr<QApplicationManager>"))
-		,(lprint :msg "request lock"  :vars `(argc))
+		,(lprint :msg "request lock" )
 		"std::unique_lock<std::mutex> ul(QApp_mtx);"
 		,(lprint :msg "have lock")
 		(when (== nullptr qm)
@@ -270,8 +270,7 @@
 		    (defclass+ (QAppLambda :template "class Lambda, class... Args") "public AnyQAppLambda"
 	      "public:"
 	      ,@(loop for (e f) in `((Lambda lambda)
-				     (std--tuple<Args...> args)
-				     )
+				     (std--tuple<Args...> args))
 		      collect
 		      (format nil "~a ~a;" (emit-c :code  e) f))
 	      (defmethod QAppLambda (lambda args)
@@ -392,9 +391,11 @@
 		 `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
       (out "cmake_minimum_required( VERSION 3.4 )")
       (out "project( mytest LANGUAGES CXX )")
-      ;(out "set( CMAKE_CXX_COMPILER clang++ )")
+      (out "set( CMAKE_CXX_COMPILER clang++ )")
       ;(out "set( CMAKE_CXX_FLAGS \"\"  )")
       (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+      (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address \")")
+      (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address \")")
       ;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
