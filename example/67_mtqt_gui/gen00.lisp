@@ -415,15 +415,36 @@
 		       (merge-pathnames (format nil "~a.cpp" source-name)
 					*source-dir*))
 		    `(do0
-		      
-		      #+nil(include ,@(loop for e in includes
-				       collect
-				       (format nil "<~a>" e)))
 		      (include ,(format nil "<~a.h>" source-name))
-
+		      ,class-defs
+		      "std::mutex plotter_mtx;"
+		      "std::shared_ptr<Plotter> plotter_ = nullptr;"
+		      (defun plotter ()
+			(declare (values "std::shared_ptr<Plotter>"))
+			(let ((ul (std--unique_lock<std--mutex> plotter_mtx)))
+			  (when (== nullptr plotter_)
+			    (setf plotter_ (Plotter--create)))
+			  (return plotter_)))
+		      (defun clear_plot (title)
+			(declare (type std--string title))
+			(-> (plotter)
+			    (clear_plot title)))
+		      (defun plot (ys title label )
+			  (declare (type "const std::vector<double>&"  ys)
+				   (type std--string title label))
+			(let ((indexes (std--vector<double> (ys.size))))
+			  (dotimes (i (ys.size))
+			    (indexes.push_back i))
+			  (-> (plotter)
+			      (plot indexes ys title label))))
+		      (defun plot (xs ys title label )
+			  (declare (type "const std::vector<double>&" xs ys)
+				   (type std--string title label))
+			(-> (plotter)
+			    (plot xs ys title label)))
+		      (defun initialize_plotter ()
+			(plotter))
 		      
-		      
-					,class-defs
 		      
 		      ))
       (let ((fn-h (asdf:system-relative-pathname
