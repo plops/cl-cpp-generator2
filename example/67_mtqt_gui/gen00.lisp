@@ -409,9 +409,9 @@
 				 ,(lprint :msg "set title..")
 				 (plot.setWindowTitle (QString (name.c_str)))
 				 ,(lprint :msg "show..")
-				 (plot.show)
-				 ,(lprint :msg "resize..")
-				 (plot.resize 600 400)
+				 (do0 (plot.show)
+				      ,(lprint :msg "resize..")
+				      (plot.resize 600 400))
 				 (return figure)))))
 			 (defmethod clear_plot_internal (title)
 			   (declare (type std--string title))
@@ -606,7 +606,7 @@
 		     ;(typical_qt_gui_app)
 		     #+nil(thread_independent_qt_gui_app)
 		     #-nil(do0
-		     ;; (initialize_plotter)
+		     ;;(initialize_plotter)
 		      ,(let ((n-points 100))
 			 `(let (
 				(xs (std--vector<double> ,n-points))
@@ -616,13 +616,18 @@
 			     (do0
 			      (dotimes (i ,n-points)
 				(setf (aref xs i) i
-				      (aref ys i) (* (exp (* -.01 i)) (sin (* .4 (+ i q))))))
+				      (aref ys i) (* (exp (* -.01 i)) (sin (* .4 (+ i (* 10 q)))))))
 			      (plot xs ys (string "bla1") (string "bla2"))
-			      (std--this_thread--sleep_for (std--chrono--milliseconds 30))
-			      (clear_plot (string "bla1"))))
+			      #+nil (do0 (plot.show)
+				   
+					;(plot.resize 600 400)
+				   )
+			      (std--this_thread--sleep_for (std--chrono--milliseconds 100))
+			      ;(clear_plot (string "bla1"))
+			      ))
 			    )))
 					;(external_app_gui)
-		     (delete_plot (string "bla1"))
+		    ; (delete_plot (string "bla1"))
 		     (wait_for_qapp_to_finish)
 		     
 		     (return 0)
