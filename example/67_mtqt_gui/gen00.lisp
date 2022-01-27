@@ -412,7 +412,7 @@
 			       (-> it
 				   second
 				   (plot.clearGraphs))
-			       ;(setf (-> it second) nullptr)
+			       (setf (-> it second) nullptr)
 			       (let ((plot_use_count (dot (-> it
 							  second
 							 
@@ -590,9 +590,10 @@
 			      (setf (aref xs i) i
 				    (aref ys i) (* (exp (* -.01 i)) (sin (* .4 i)))))
 			    (plot xs ys (string "bla1") (string "bla2"))
-			    (clear_plot (string "bla1"))
+			    
 			    )))
 					;(external_app_gui)
+		     (clear_plot (string "bla1"))
 		     (wait_for_qapp_to_finish)
 		     
 		     (return 0)
