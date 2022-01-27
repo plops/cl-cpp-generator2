@@ -618,7 +618,7 @@
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
       
-					;(out "set( CMAKE_CXX_FLAGS )")
+		 			;(out "set( CMAKE_CXX_FLAGS )")
        (out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
        (out "set( SRCS ~{~a~^~%~} )"
 	    (directory "source/*.cpp"))
