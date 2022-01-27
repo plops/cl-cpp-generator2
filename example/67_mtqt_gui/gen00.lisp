@@ -409,9 +409,17 @@
 			   ,(lprint)
 			   (let ((it (plots_.find title)))
 			     (unless (== it (plots_.end))
-			       (return (-> it
-					   second
-					   (plot.clearGraphs))))))
+			       (-> it
+				   second
+				   (plot.clearGraphs))
+			       ;(setf (-> it second) nullptr)
+			       (let ((plot_use_count (dot (-> it
+							  second
+							 
+							  )
+					       		  (use_count))))
+				 ,(lprint :msg "\\033[1;31m CLEAR \\033[0m" :vars `((-> it first)
+						  plot_use_count))))))
 			 "std::mutex plot_internal_mtx;"
 			 (defmethod plot_internal (xs ys title label)
 			   (declare (type "const std::vector<double>&" xs ys)
@@ -526,7 +534,7 @@
 		    (defun thread_independent_qt_gui_app ()
 		      (comments "no need to initialize qt")
 		      ,(lprint :msg "first window")
-		      #-nil (run_in_gui_thread
+		      #+nil (run_in_gui_thread
 		       (new (QAppLambda (lambda ()
 					  (let ((*window (new QMainWindow))
 						)
@@ -539,7 +547,7 @@
 						    )
 						,(lprint :msg "show second window")
 						(window->show)))))))
-		      #-nil (do0 ,(lprint :msg "third window in its own thread")
+		      #+nil (do0 ,(lprint :msg "third window in its own thread")
 			   (let ((thr (std--thread (lambda ()
 						     (run_in_gui_thread
 						      (new (QAppLambda (lambda ()
@@ -549,7 +557,7 @@
 									   (window->show))))))))))
 			     ,(lprint :msg "wait for thread of third window")
 			     (thr.join)))
-		      (std--this_thread--sleep_for (std--chrono--milliseconds 3000))
+		      #+nil(std--this_thread--sleep_for (std--chrono--milliseconds 30))
 		      ;(wait_for_qapp_to_finish)
 		      )
 		    #+nil (defun external_app_gui ()
@@ -570,7 +578,7 @@
 			       (type char** argv)
 			       (values int))
 		     ;(typical_qt_gui_app)
-		     (thread_independent_qt_gui_app)
+		     #+nil(thread_independent_qt_gui_app)
 		     #-nil(do0
 		     ;; (initialize_plotter)
 		      ,(let ((n-points 100))
@@ -580,10 +588,13 @@
 				)
 			    (dotimes (i ,n-points)
 			      (setf (aref xs i) i
-				    (aref ys i) (sin (* .01 i))))
-			    (plot xs ys (string "bla1") (string "bla2")))))
+				    (aref ys i) (* (exp (* -.01 i)) (sin (* .4 i)))))
+			    (plot xs ys (string "bla1") (string "bla2"))
+			    (clear_plot (string "bla1"))
+			    )))
 					;(external_app_gui)
 		     (wait_for_qapp_to_finish)
+		     
 		     (return 0)
 		      )
 		   ))) 
