@@ -354,6 +354,15 @@
 				    (lambda ()
 				      (declare (capture plotter title))
 				      (plotter->clear_plot_internal title)))))))
+			 (defmethod delete_plot (title)
+			   (declare (type std--string title))
+			   ,(lprint)
+			   (let ((plotter (self.lock)))
+			     (run_in_gui_thread
+			      (new (QAppLambda
+				    (lambda ()
+				      (declare (capture plotter title))
+				      (plotter->delete_plot_internal title)))))))
 			 (defmethod plot (xs ys title label)
 			   (declare (type "const std::vector<double>&" xs ys)
 				    (type std--string title label))
@@ -412,11 +421,23 @@
 			       (-> it
 				   second
 				   (plot.clearGraphs))
-			       (setf (-> it second) nullptr)
+			       
 			       (let ((plot_use_count (dot (-> it
 							  second
 							 
 							  )
+					       		  (use_count))))
+				 ,(lprint :msg "\\033[1;31m CLEAR \\033[0m" :vars `((-> it first)
+										    plot_use_count))))))
+			 (defmethod delete_plot_internal (title)
+			   (declare (type std--string title))
+			   ,(lprint)
+			   (let ((it (plots_.find title)))
+			     (unless (== it (plots_.end))
+			       
+			       (setf (-> it second) nullptr)
+			       (let ((plot_use_count (dot (-> it
+							  second)
 					       		  (use_count))))
 				 ,(lprint :msg "\\033[1;31m CLEAR \\033[0m" :vars `((-> it first)
 						  plot_use_count))))))
@@ -445,6 +466,11 @@
 			 ,(lprint)
 			 (-> (plotter)
 			     (clear_plot title)))
+		       (defun delete_plot (title)
+			 (declare (type std--string title))
+			 ,(lprint)
+			 (-> (plotter)
+			     (delete_plot title)))
 		       (defun plot (ys title label )
 			 (declare (type "const std::vector<double>&"  ys)
 				  (type std--string title label))
@@ -586,14 +612,17 @@
 				(xs (std--vector<double> ,n-points))
 				(ys (std--vector<double> ,n-points))
 				)
-			    (dotimes (i ,n-points)
-			      (setf (aref xs i) i
-				    (aref ys i) (* (exp (* -.01 i)) (sin (* .4 i)))))
-			    (plot xs ys (string "bla1") (string "bla2"))
-			    
+			    (dotimes (q 100)
+			     (do0
+			      (dotimes (i ,n-points)
+				(setf (aref xs i) i
+				      (aref ys i) (* (exp (* -.01 i)) (sin (* .4 (+ i q))))))
+			      (plot xs ys (string "bla1") (string "bla2"))
+			      (std--this_thread--sleep_for (std--chrono--milliseconds 30))
+			      (clear_plot (string "bla1"))))
 			    )))
 					;(external_app_gui)
-		     (clear_plot (string "bla1"))
+		     (delete_plot (string "bla1"))
 		     (wait_for_qapp_to_finish)
 		     
 		     (return 0)
@@ -605,7 +634,7 @@
 					     :if-does-not-exist :create)
     ;;https://clang.llvm.org/docs/AddressSanitizer.html
     ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-    (let ((dbg "-O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
+    (let ((dbg "-ggdb -O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
      (macrolet ((out (fmt &rest rest)
 		  `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
        (out "cmake_minimum_required( VERSION 3.4 )")
