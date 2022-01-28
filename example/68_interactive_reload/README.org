@@ -1,0 +1,6 @@
+https://github.com/ddovod/jet-live
+https://github.com/Zeex/subhook
+
+https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
+
+https://github.com/root-project/NotebookPrimer/blob/6de9bdc250b8c69de1cdf30f566bcdd441002e8f/notebooks/4-Graphs.ipynb
