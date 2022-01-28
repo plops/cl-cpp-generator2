@@ -1,6 +1,22 @@
 https://github.com/ddovod/jet-live
-https://github.com/Zeex/subhook
+ - parses elf header to find functions, statics and globals
+ - not thread safe, all library methods must be called from same thread
+ - looks at compile_commands.json
+ - parses and watches dependencies
+ - https://github.com/Zeex/subhook
+   - to replace old functions with new ones
+   - functions should be at least 16 bytes appart
+   - default for clang
+   - gcc needs -falign-functions=16
+ - only works with -O0
+ - relocations of statics and globals must stay within 32bit address range
+ - force reload from editor with USR1 signal
+ - not working for lambdas with non-empty capture lists
 
 https://github.com/RuntimeCompiledCPlusPlus/RuntimeCompiledCPlusPlus
 
 https://github.com/root-project/NotebookPrimer/blob/6de9bdc250b8c69de1cdf30f566bcdd441002e8f/notebooks/4-Graphs.ipynb
+https://www.mlpack.org/ machine learning with cling
+
+https://github.com/nwoeanhinnogaehr/tinyspec-cling live coding music synth
+https://blog.llvm.org/posts/2020-12-21-interactive-cpp-for-data-science/

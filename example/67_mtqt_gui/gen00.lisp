@@ -616,13 +616,13 @@
 			     (do0
 			      (dotimes (i ,n-points)
 				(setf (aref xs i) i
-				      (aref ys i) (* (exp (* -.01 i)) (sin (* .4 (+ i (* 10 q)))))))
+				      (aref ys i) (* (exp (* -.01 i)) (sin (* .4 (+ i (* 5.0 q)))))))
 			      (plot xs ys (string "bla1") (string "bla2"))
 			      #+nil (do0 (plot.show)
 				   
 					;(plot.resize 600 400)
 				   )
-			      (std--this_thread--sleep_for (std--chrono--milliseconds 100))
+			      (std--this_thread--sleep_for (std--chrono--milliseconds 300))
 			      ;(clear_plot (string "bla1"))
 			      ))
 			    )))
