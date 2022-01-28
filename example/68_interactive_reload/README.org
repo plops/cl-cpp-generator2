@@ -20,3 +20,5 @@ https://www.mlpack.org/ machine learning with cling
 
 https://github.com/nwoeanhinnogaehr/tinyspec-cling live coding music synth
 https://blog.llvm.org/posts/2020-12-21-interactive-cpp-for-data-science/
+  - xvega for plotting
+  - supports cuda
