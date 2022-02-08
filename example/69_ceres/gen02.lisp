@@ -4,11 +4,10 @@
 (in-package :cl-cpp-generator2)
 
 ;; ceres-solver.org/nnls_tutorial.html#introduction
-;; https://github.com/ceres-solver/ceres-solver/blob/master/examples/helloworld.cc
 ;; sudo dnf install creres-solver-devel
 
 (progn
-  (defparameter *source-dir* #P"example/69_ceres/source_powell/")
+  (defparameter *source-dir* #P"example/69_ceres/source_02curve/")
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -50,22 +49,7 @@
 			    (string "'")))
 		  "std::endl"
 		  "std::flush")))))
-  (let ((powell-def
-	 `((:name F1 :params (x1 x2) :code (+ (aref x1 0)
-					      (* 10d0 (aref x2 0))))
-	   (:name F2 :params (x3 x4) :code (* (sqrt 5d0)
-					      (- (aref x3 0)
-						 (aref x4 0))))
-	   (:name F3 :params (x2 x3) :code (* (- (aref x2 0)
-						 (* 2d0 (aref x3 0)))
-					      (- (aref x2 0)
-						 (* 2d0 (aref x3 0)))))
-	   (:name F4 :params (x1 x4) :code (* (sqrt 10d0)
-					      (- (aref x1 0)
-						 (aref x4 0))
-					      (- (aref x1 0)
-						 (aref x4 0)))))
-	  ))
+  (let ()
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello_template.h"
@@ -73,22 +57,27 @@
 		  `(do0
 		    (pragma once)
 		    (include <math.h>)
-		    ,@(loop for e in powell-def
-			    collect
-			    (destructuring-bind (&key name params code) e
-			      `(defclass+ ,name ()
-				 "public:"
-				 (defmethod "operator()" (,@params residual)
-				   (declare
-				    (type "const T* const" ,@params)
-				    (type "T*" residual)
-				    (template "typename T")
-				    (const)
-				    (values bool))
-				   (setf (aref residual 0)
-					 ,code)
-				   (return true)))))
-		    ))
+		    (defclass+ ExponentialResidual ()
+		      "public:"
+		      "const double x_;"
+		      "const double y_;"
+		      (defmethod ExponentialResidual (x y)
+			(declare (type double x y)
+				 (construct (x_ x)
+					    (y_ y))
+				 (values :constructor)))
+		      (defmethod "operator()" (m c residual)
+			(declare
+			 (type "const T* const" m c)
+			 (type "T*" residual)
+			 (template "typename T")
+			 (const)
+			 (values bool))
+			(setf (aref residual 0)
+			      (- y_ (exp (+ (* (aref m 0)
+					       x_)
+					    (aref c 0)))))
+			(return true)))))
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
@@ -120,20 +109,34 @@
 			       (type char** argv)
 			       (values int))
 		      (google--InitGoogleLogging (aref argv 0))
-		      ,@(loop for e in `(3 -1 0 1)
+		      ,@(loop for (e f) in `((m 0)
+					     (c 0))
 			      and i from 1
 			      collect
-			      `(let ((,(format nil "x~a" i) ,(* 1d0 e))))
+			      `(let ((,(format nil "~a" e) ,(* 1d0 f))))
 			      )
 		      (let ((problem (Problem)))
-
-			,@(loop for e in powell-def
-				collect
-				(destructuring-bind (&key name params code) e
-				  `(problem.AddResidualBlock (new (,(format nil "AutoDiffCostFunction<~a, 1, 1, 1>" name)
-								    (new ,name)))
-							     nullptr ,@(loop for e in params collect
-									     `(ref ,e)))))
+			,(let* ((num-data 67)
+				(x (loop for i below num-data collect
+					 (* 5d0 (/ i (- num-data 1d0)))))
+				(y (loop for e in x
+					 collect
+					 (+ (* .5 .2 (- (random 2d0) 1d0)) ;; note: this is uniform random, not gaussian
+					    (exp (+ (* .3 e) .1))))))
+			   `(do0
+			     (let ((n ,num-data)
+				   (data_x (curly ,@x))
+				   (data_y (curly ,@y)))
+			       (declare (type (array double ,num-data) data_x data_y))
+			       (dotimes (i n)
+				 (problem.AddResidualBlock
+				  (new ("AutoDiffCostFunction<ExponentialResidual,1,1,1>"
+					(new (ExponentialResidual (aref data_x i)
+								  (aref data_y i))
+					     )))
+				  ;;nullptr
+				  (new (ceres--CauchyLoss .5d0))
+				  &m &c)))))
 
 			(let ((options (Solver--Options))
 			      (summary (Solver--Summary)))
@@ -141,13 +144,13 @@
 				options.max_num_iterations 100
 				options.linear_solver_type ceres--DENSE_QR)
 			  (Solve options &problem &summary)
-			  ,(lprint :vars `(x1 x2 x3 x4 (summary.BriefReport))))
+			  ,(lprint :vars `(m c (summary.BriefReport))))
 			)
 		      (return 0)
 		      )
 		    )))
 
-  (with-open-file (s "source_powell/CMakeLists.txt" :direction :output
+  (with-open-file (s "source_02curve/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
     ;;https://clang.llvm.org/docs/AddressSanitizer.html
@@ -168,7 +171,7 @@
 		 			;(out "set( CMAKE_CXX_FLAGS )")
 	(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "set( SRCS ~{~a~^~%~} )"
-	     (directory "source_powell/hello.cpp"))
+	     (directory "source_02curve/hello.cpp"))
 
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
