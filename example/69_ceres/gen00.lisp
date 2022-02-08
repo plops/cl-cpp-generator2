@@ -101,21 +101,21 @@
 			      (- 10.0d0 (aref x 0)))
 			(return true)))
 		    #+nil (defclass+ F4 ()
-		      "public:"
-		      (defmethod "operator()" (x1 x4 residual)
-			(declare
-			 (type "const T* const" x1 x4)
-			 (type "T*" residual)
-			 (template "typename T")
-			 (const)
-			 (values bool))
-			(setf (aref residual 0)
-			      (* (sqrt 10d0)
-				 (- (aref x1 0)
-				    (aref x4 0))
-				 (- (aref x1 0)
-				    (aref x4 0))))
-			(return true)))
+			    "public:"
+			    (defmethod "operator()" (x1 x4 residual)
+			      (declare
+			       (type "const T* const" x1 x4)
+			       (type "T*" residual)
+			       (template "typename T")
+			       (const)
+			       (values bool))
+			      (setf (aref residual 0)
+				    (* (sqrt 10d0)
+				       (- (aref x1 0)
+					  (aref x4 0))
+				       (- (aref x1 0)
+					  (aref x4 0))))
+			      (return true)))
 		    ))
 
     (write-source (asdf:system-relative-pathname
