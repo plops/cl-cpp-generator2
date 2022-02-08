@@ -54,33 +54,33 @@
 	 `(do0
 	   )))
 
-  #+nil    (let ((fn-h (asdf:system-relative-pathname
-		 'cl-cpp-generator2
-		 (merge-pathnames #P"hello.h"
-				  *source-dir*))))
-      (with-open-file (sh fn-h
-			  :direction :output
-			  :if-exists :supersede
-			  :if-does-not-exist :create)
-	(emit-c :code
-		`(do0
-		  (pragma once)
-		  (include <tuple>
-			   <mutex>
-			   <thread>
-		     	   <iostream>
-			   <iomanip>
-			   <chrono>
-			   <memory>
-			   )
-		  ,type-definitions)
-		:hook-defun #'(lambda (str)
-				(format sh "~a~%" str))
-		:hook-defclass #'(lambda (str)
-                                   (format sh "~a;~%" str))
-		:header-only t))
-      (sb-ext:run-program "/usr/bin/clang-format"
-                          (list "-i"  (namestring fn-h))))
+    #+nil    (let ((fn-h (asdf:system-relative-pathname
+			  'cl-cpp-generator2
+			  (merge-pathnames #P"hello.h"
+					   *source-dir*))))
+	       (with-open-file (sh fn-h
+				   :direction :output
+				   :if-exists :supersede
+				   :if-does-not-exist :create)
+		 (emit-c :code
+			 `(do0
+			   (pragma once)
+			   (include <tuple>
+				    <mutex>
+				    <thread>
+		     		    <iostream>
+				    <iomanip>
+				    <chrono>
+				    <memory>
+				    )
+			   ,type-definitions)
+			 :hook-defun #'(lambda (str)
+					 (format sh "~a~%" str))
+			 :hook-defclass #'(lambda (str)
+					    (format sh "~a;~%" str))
+			 :header-only t))
+	       (sb-ext:run-program "/usr/bin/clang-format"
+				   (list "-i"  (namestring fn-h))))
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
@@ -101,7 +101,7 @@
 			      (- 10.0d0 (aref x 0)))
 			(return true)))
 		    ))
-    
+
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello.cpp"
@@ -110,6 +110,14 @@
 		    (include "hello_template.h"
 			     <ceres/ceres.h>
 			     <glog/logging.h>)
+		    (include ;<tuple>
+				  ;  <mutex>
+		     <thread>
+		     		    <iostream>
+				    <iomanip>
+				    <chrono>
+				  ;  <memory>
+				    )
 		    ,@(loop for e in `(AutoDiffCostFunction
 				       CostFunction
 				       Problem
@@ -117,7 +125,7 @@
 				       Solver)
 			    collect
 			    (format nil "using ceres::~a;" e))
-		    ;,type-definitions
+					;,type-definitions
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
@@ -128,6 +136,13 @@
 			    (problem (Problem))
 			    (*cost_function (new ("AutoDiffCostFunction<CostFunctor, 1, 1>"
 						  (new CostFunctor)))))
+			(problem.AddResidualBlock cost_function
+						  nullptr &x)
+			(let ((options (Solver--Options))
+			      (summary (Solver--Summary)))
+			  (setf options.minimizer_progress_to_stdout true)
+			  (Solve options &problem &summary)
+			  ,(lprint :vars `(initial_x x (summary.BriefReport))))
 			)
 		      (return 0)
 		      )
@@ -155,7 +170,7 @@
 	(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source/hello.cpp"))
-	
+
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 					;(out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include  )")
@@ -163,8 +178,8 @@
 	(out "find_package ( Ceres REQUIRED ) ")
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 	(out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} )")
-	
-	
+
+
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
 					;(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads JKQTPlotterSharedLib_ )")
 
