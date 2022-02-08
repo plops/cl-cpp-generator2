@@ -52,20 +52,20 @@
 		  "std::flush")))))
   (let ((powell-def
 	 `((:name F1 :params (x1 x2) :code (+ (aref x1 0)
-									  (* 10d0 (aref x2 0))))
-				       (:name F2 :params (x3 x4) :code (* (sqrt 5d0)
-									  (- (aref x3 0)
-									     (aref x4 0))))
-				       (:name F3 :params (x2 x3) :code (* (- (aref x2 0)
-									     (* 2d0 (aref x3 0)))
-									   (- (aref x2 0)
-									       (* 2d0 (aref x3 0)))))
-				       (:name F4 :params (x1 x4) :code (* (sqrt 10d0)
-									  (- (aref x1 0)
-									     (aref x4 0))
-									  (- (aref x1 0)
-									     (aref x4 0)))))
-	 ))
+					      (* 10d0 (aref x2 0))))
+	   (:name F2 :params (x3 x4) :code (* (sqrt 5d0)
+					      (- (aref x3 0)
+						 (aref x4 0))))
+	   (:name F3 :params (x2 x3) :code (* (- (aref x2 0)
+						 (* 2d0 (aref x3 0)))
+					      (- (aref x2 0)
+						 (* 2d0 (aref x3 0)))))
+	   (:name F4 :params (x1 x4) :code (* (sqrt 10d0)
+					      (- (aref x1 0)
+						 (aref x4 0))
+					      (- (aref x1 0)
+						 (aref x4 0)))))
+	  ))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello_template.h"
@@ -76,18 +76,18 @@
 		    ,@(loop for e in powell-def
 			    collect
 			    (destructuring-bind (&key name params code) e
-			     `(defclass+ ,name ()
-			       "public:"
-			       (defmethod "operator()" (,@params residual)
-				 (declare
-				  (type "const T* const" ,@params)
-				  (type "T*" residual)
-				  (template "typename T")
-				  (const)
-				  (values bool))
-				 (setf (aref residual 0)
-				       ,code)
-				 (return true)))))
+			      `(defclass+ ,name ()
+				 "public:"
+				 (defmethod "operator()" (,@params residual)
+				   (declare
+				    (type "const T* const" ,@params)
+				    (type "T*" residual)
+				    (template "typename T")
+				    (const)
+				    (values bool))
+				   (setf (aref residual 0)
+					 ,code)
+				   (return true)))))
 		    ))
 
     (write-source (asdf:system-relative-pathname
@@ -126,15 +126,15 @@
 			      `(let ((,(format nil "x~a" i) ,(* 1d0 e))))
 			      )
 		      (let ((problem (Problem)))
-			
+
 			,@(loop for e in powell-def
-			    collect
-			    (destructuring-bind (&key name params code) e
-			     `(problem.AddResidualBlock (new (,(format nil "AutoDiffCostFunction<~a, 1, 1, 1>" name)
-							      (new ,name)))
-							nullptr ,@(loop for e in params collect
-									`(ref ,e)))))
-			
+				collect
+				(destructuring-bind (&key name params code) e
+				  `(problem.AddResidualBlock (new (,(format nil "AutoDiffCostFunction<~a, 1, 1, 1>" name)
+								    (new ,name)))
+							     nullptr ,@(loop for e in params collect
+									     `(ref ,e)))))
+
 			(let ((options (Solver--Options))
 			      (summary (Solver--Summary)))
 			  (setf options.minimizer_progress_to_stdout true
