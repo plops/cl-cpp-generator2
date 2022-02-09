@@ -78,41 +78,7 @@
 				       CubicInterpolator)
 			    collect
 			    (format nil "using ceres::~a;" e))
-		    #+nil (defclass+ Grid1D ()
-			    "enum { DATA_DIMENSIONS = 2, };"
-			    )
-
-		    ))
-
-    (write-source (asdf:system-relative-pathname
-		   'cl-cpp-generator2
-		   (merge-pathnames #P"hello.cpp"
-				    *source-dir*))
-		  `(do0
-		    (include ;"hello_template.h"
-		     <ceres/ceres.h>
-		     <ceres/cubic_interpolation.h>
-		     <glog/logging.h>)
-		    (include ;<tuple>
-					;  <mutex>
-		     <thread>
-		     <iostream>
-		     <iomanip>
-		     <chrono>
-		     <cmath>
-		     <cassert>
-					;  <memory>
-		     )
-		    ,@(loop for e in `(AutoDiffCostFunction
-				       CostFunction
-				       Problem
-				       Solve
-				       Solver
-				       Grid1D
-				       CubicInterpolator)
-			    collect
-			    (format nil "using ceres::~a;" e))
-					;,type-definitions
+		    
 		    (defclass+ ExponentialResidual ()
 		      "public:"
 		      "const double x_;"
@@ -157,11 +123,52 @@
 			     (setf (aref residual 0)
 				   (- y_ lerp)))))
 			(return true)))
+
+		    ))
+
+    (write-source (asdf:system-relative-pathname
+		   'cl-cpp-generator2
+		   (merge-pathnames #P"hello.cpp"
+				    *source-dir*))
+		  `(do0
+		    (include "hello_template.h"
+		     <ceres/ceres.h>
+		     <ceres/cubic_interpolation.h>
+		     <glog/logging.h>)
+		    (include ;<tuple>
+					;  <mutex>
+		     <thread>
+		     <iostream>
+		     <iomanip>
+		     <chrono>
+		     <cmath>
+		     <cassert>
+					;  <memory>
+		     )
+
+		    (include <QApplication>
+			     <QMainWindow>
+			     <qcustomplot.h>)
+		    ,@(loop for e in `(AutoDiffCostFunction
+				       CostFunction
+				       Problem
+				       Solve
+				       Solver
+				       Grid1D
+				       CubicInterpolator)
+			    collect
+			    (format nil "using ceres::~a;" e))
+					;,type-definitions
+		    
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      (google--InitGoogleLogging (aref argv 0))
+		      (do0
+		       "QApplication app(argc,argv);")
+
+		      
 		      ,@(loop for e in params
 			      and i from 1
 			      collect
@@ -203,7 +210,12 @@
 			  (dotimes (i ,(length params))
 			    ,(lprint :vars `((aref params i)))))
 			)
-		      (return 0)
+		      (do0
+		       
+		       "QPushButton button(\"hello world\");"
+		       (button.show))
+		      
+		      (return (app.exec))
 		      )
 		    )))
 
@@ -226,7 +238,7 @@
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 		 			;(out "set( CMAKE_CXX_FLAGS )")
-					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
+	(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source_03spline_curve/hello.cpp"))
 
@@ -238,11 +250,11 @@
 	(out "find_package ( PkgConfig REQUIRED )")
 	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
-	(out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
+	; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
 
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
-					;(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads JKQTPlotterSharedLib_ )")
+	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
