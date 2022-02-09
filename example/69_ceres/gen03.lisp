@@ -6,6 +6,10 @@
 ;; ceres-solver.org/nnls_tutorial.html#introduction
 ;; sudo dnf install creres-solver-devel
 
+;; lerp http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html
+;; https://stackoverflow.com/questions/67577625/c-efficient-interpolation-of-a-stdvector
+
+
 (progn
   (defparameter *source-dir* #P"example/69_ceres/source_03spline_curve/")
   (defparameter *day-names*
@@ -57,7 +61,7 @@
 				    *source-dir*))
 		  `(do0
 		    (pragma once)
-		    (include <math.h>
+		    (include <cmath>
 			     <ceres/ceres.h>
 			     <ceres/cubic_interpolation.h>)
 		    ,@(loop for e in `(AutoDiffCostFunction
@@ -90,7 +94,7 @@
 		     <iostream>
 		     <iomanip>
 		     <chrono>
-		     <math.h>
+		     <cmath>
 					;  <memory>
 		     )
 		    ,@(loop for e in `(AutoDiffCostFunction
@@ -112,30 +116,33 @@
 				 (construct (x_ x)
 					    (y_ y))
 				 (values :constructor)))
-		      (defmethod "operator()" (,@params residual)
+		      (defmethod "operator()" (x0 residual)
 			(declare
-			 (type "const T* const" ,@params)
+			 (type "const T* const" x0)
 			 (type "T*" residual)
 			 (template "typename T")
 			 (const)
 			 (values bool))
-			(let ((x (curly ,@params))
-			      )
-			  (declare (type (array "const double" ,(length params)) x))
-			  )
-			,(format nil "Grid1D<double> array(x,0,~a);" (length params))
-			"CubicInterpolator<Grid1D<double>> interpolator(array);"
-			(let ((f 1d0)
-					;(dfdx 1d0)
-			      )
-			  (interpolator.Evaluate x_ &f nullptr ;&dfdx
-						 )
-			  )
-			(setf (aref residual 0)
-			      (- y_ f
-				 #+nil (exp (+ (* (aref m 0)
-						  x_)
-					       (aref c 0)))))
+
+			(do0
+			 ;; https://github.com/ceres-solver/ceres-solver/blob/master/include/ceres/autodiff_cost_function.h
+			 (comments "piecewise linear interpolation of equidistant points")
+			 (let (;(data (curly ,@params))
+			       (mi 0d0)
+			       (ma 5d0)
+			       (N ,(length params))
+			       (xpos (* (/ x_ ma) N))
+			       (lo_idx (int xpos))
+			       (tau (- xpos lo_idx)) ;; is zero when interpolation asks for point at lo_idx
+			       (hi_idx (+ 1 lo_idx))
+			       (lo_val (aref x0 lo_idx))
+			       (hi_val (aref x0 hi_idx))
+			       (lerp (+ (* tau lo_val)
+					(* (- 1d0 tau)
+					   (- hi_val lo_val)))))
+			   
+			   (setf (aref residual 0)
+				 (- y_ lerp))))
 			(return true)))
 		    (defun main (argc argv)
 		      (declare (type int argc)
@@ -158,21 +165,20 @@
 			   `(do0
 			     (let ((n ,num-data)
 				   (data_x (curly ,@x))
-				   (data_y (curly ,@y)))
-			       (declare (type (array double ,num-data) data_x data_y))
+				   (data_y (curly ,@y))
+				   (params (curly ,@(loop for e in params collect 1d0))))
+			       (declare (type (array double ,num-data) data_x data_y)
+					(type (array double ,(length params)) params))
 			       (dotimes (i n)
 				 (problem.AddResidualBlock
-				  (new ("AutoDiffCostFunction<ExponentialResidual,1,1,1>"
+				  (new (,(format nil "AutoDiffCostFunction<ExponentialResidual,1,~a>"
+						 (length params))
 					(new (ExponentialResidual (aref data_x i)
 								  (aref data_y i))
 					     )))
 				  nullptr
 				  ;; (new (ceres--CauchyLoss .5d0))
-					;&m &c
-				  ,@(loop for e in params
-					  collect
-					  `(ref ,e))
-				  )))))
+					params)))))
 
 			(let ((options (Solver--Options))
 			      (summary (Solver--Summary)))
