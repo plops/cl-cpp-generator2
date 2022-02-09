@@ -9,6 +9,9 @@
 ;; lerp http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html
 ;; https://stackoverflow.com/questions/67577625/c-efficient-interpolation-of-a-stdvector
 
+;; how to plot?
+;; jkqtplotter  (not in fedora)
+;; sudo dnf install qcustomplot-qt5-devel qcustomplot-qt5
 
 (progn
   (defparameter *source-dir* #P"example/69_ceres/source_03spline_curve/")
@@ -140,10 +143,10 @@
 			       (hi_idx (+ 1 lo_idx))
 			       )
 			   #+nil (do0 ,(lprint :vars `(xrel xpos hi_idx))
-				(assert (<= hi_idx ,(- (length params) 1)))
-				(assert (<= lo_idx ,(- (length params) 2)))
-				(assert (<= 0 hi_idx))
-				(assert (<= 0 lo_idx)))
+				      (assert (<= hi_idx ,(- (length params) 1)))
+				      (assert (<= lo_idx ,(- (length params) 2)))
+				      (assert (<= 0 hi_idx))
+				      (assert (<= 0 lo_idx)))
 			   (let ((lo_val (aref x0 lo_idx))
 				 (hi_val (aref x0 hi_idx))
 				 (lerp (+ (* tau lo_val)
