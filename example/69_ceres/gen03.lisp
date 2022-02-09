@@ -12,7 +12,9 @@
 ;; how to plot?
 ;; jkqtplotter  (not in fedora)
 ;; sudo dnf install qcustomplot-qt5-devel qcustomplot-qt5
+
 ;; https://github.com/hazelnusse/cpp-plotter/tree/master/includeb
+;; https://doc.qt.io/qt-5/cmake-manual.html
 
 ;; https://github.com/filipecalasans/realTimePlot  based on qcustomplot
 ;; implot
