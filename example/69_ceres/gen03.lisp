@@ -95,6 +95,7 @@
 		     <iomanip>
 		     <chrono>
 		     <cmath>
+		     <cassert>
 					;  <memory>
 		     )
 		    ,@(loop for e in `(AutoDiffCostFunction
@@ -135,14 +136,18 @@
 			       (lo_idx (int xpos))
 			       (tau (- xpos lo_idx)) ;; is zero when interpolation asks for point at lo_idx
 			       (hi_idx (+ 1 lo_idx))
-			       (lo_val (aref x0 lo_idx))
-			       (hi_val (aref x0 hi_idx))
-			       (lerp (+ (* tau lo_val)
-					(* (- 1d0 tau)
-					   (- hi_val lo_val)))))
-			   
-			   (setf (aref residual 0)
-				 (- y_ lerp))))
+			       )
+			   (assert (< hi_idx ,(- (length params) 1)))
+			   (assert (< lo_idx ,(- (length params) 2)))
+			   (assert (<= 0 hi_idx))
+			   (assert (<= 0 lo_idx))
+			   (let ((lo_val (aref x0 lo_idx))
+				 (hi_val (aref x0 hi_idx))
+				 (lerp (+ (* tau lo_val)
+					  (* (- 1d0 tau)
+					     (- hi_val lo_val)))))
+			     (setf (aref residual 0)
+				   (- y_ lerp)))))
 			(return true)))
 		    (defun main (argc argv)
 		      (declare (type int argc)
@@ -173,12 +178,12 @@
 				 (problem.AddResidualBlock
 				  (new (,(format nil "AutoDiffCostFunction<ExponentialResidual,1,~a>"
 						 (length params))
-					(new (ExponentialResidual (aref data_x i)
-								  (aref data_y i))
-					     )))
+					 (new (ExponentialResidual (aref data_x i)
+								   (aref data_y i))
+					      )))
 				  nullptr
 				  ;; (new (ceres--CauchyLoss .5d0))
-					params)))))
+				  params)))))
 
 			(let ((options (Solver--Options))
 			      (summary (Solver--Summary)))
