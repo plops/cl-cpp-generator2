@@ -12,6 +12,8 @@
 ;; how to plot?
 ;; jkqtplotter  (not in fedora)
 ;; sudo dnf install qcustomplot-qt5-devel qcustomplot-qt5
+;; https://github.com/filipecalasans/realTimePlot  based on qcustomplot
+;; implot
 
 (progn
   (defparameter *source-dir* #P"example/69_ceres/source_03spline_curve/")
@@ -233,8 +235,10 @@
 					;(out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include  )")
 					;(out "target_link_directories( mytest PUBLIC /usr/local/lib )")
 	(out "find_package ( Ceres REQUIRED ) ")
+	(out "find_package ( PkgConfig REQUIRED )")
+	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
-	(out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} )")
+	(out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
 
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
