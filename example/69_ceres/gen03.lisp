@@ -7,7 +7,7 @@
 ;; sudo dnf install creres-solver-devel
 
 (progn
-  (defparameter *source-dir* #P"example/69_ceres/source_02curve/")
+  (defparameter *source-dir* #P"example/69_ceres/source_03spline_curve/")
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -49,44 +49,41 @@
 			    (string "'")))
 		  "std::endl"
 		  "std::flush")))))
-  (let ()
+  (let ((params (loop for e below 5 collect
+		      (make-symbol (string-upcase (format nil "x~a" e))))))
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello_template.h"
 				    *source-dir*))
 		  `(do0
 		    (pragma once)
-		    (include <math.h>)
-		    (defclass+ ExponentialResidual ()
-		      "public:"
-		      "const double x_;"
-		      "const double y_;"
-		      (defmethod ExponentialResidual (x y)
-			(declare (type double x y)
-				 (construct (x_ x)
-					    (y_ y))
-				 (values :constructor)))
-		      (defmethod "operator()" (m c residual)
-			(declare
-			 (type "const T* const" m c)
-			 (type "T*" residual)
-			 (template "typename T")
-			 (const)
-			 (values bool))
-			(setf (aref residual 0)
-			      (- y_ (exp (+ (* (aref m 0)
-					       x_)
-					    (aref c 0)))))
-			(return true)))))
+		    (include <math.h>
+			     <ceres/ceres.h>
+			     <ceres/cubic_interpolation.h>)
+		    ,@(loop for e in `(AutoDiffCostFunction
+				       CostFunction
+				       Problem
+				       Solve
+				       Solver
+				       Grid1D
+				       CubicInterpolator)
+			    collect
+			    (format nil "using ceres::~a;" e))
+		    #+nil (defclass+ Grid1D ()
+			    "enum { DATA_DIMENSIONS = 2, };"
+			    )
+
+		    ))
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello.cpp"
 				    *source-dir*))
 		  `(do0
-		    (include "hello_template.h"
-			     <ceres/ceres.h>
-			     <glog/logging.h>)
+		    (include ;"hello_template.h"
+		     <ceres/ceres.h>
+		     <ceres/cubic_interpolation.h>
+		     <glog/logging.h>)
 		    (include ;<tuple>
 					;  <mutex>
 		     <thread>
@@ -100,20 +97,55 @@
 				       CostFunction
 				       Problem
 				       Solve
-				       Solver)
+				       Solver
+				       Grid1D
+				       CubicInterpolator)
 			    collect
 			    (format nil "using ceres::~a;" e))
 					;,type-definitions
+		    (defclass+ ExponentialResidual ()
+		      "public:"
+		      "const double x_;"
+		      "const double y_;"
+		      (defmethod ExponentialResidual (x y)
+			(declare (type double x y)
+				 (construct (x_ x)
+					    (y_ y))
+				 (values :constructor)))
+		      (defmethod "operator()" (,@params residual)
+			(declare
+			 (type "const T* const" ,@params)
+			 (type "T*" residual)
+			 (template "typename T")
+			 (const)
+			 (values bool))
+			(let ((x (curly ,@params))
+			      )
+			  (declare (type (array "const double" ,(length params)) x))
+			  )
+			,(format nil "Grid1D<double> array(x,0,~a);" (length params))
+			"CubicInterpolator<Grid1D<double>> interpolator(array);"
+			(let ((f 1d0)
+					;(dfdx 1d0)
+			      )
+			  (interpolator.Evaluate x_ &f nullptr ;&dfdx
+						 )
+			  )
+			(setf (aref residual 0)
+			      (- y_ f
+				 #+nil (exp (+ (* (aref m 0)
+						  x_)
+					       (aref c 0)))))
+			(return true)))
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      (google--InitGoogleLogging (aref argv 0))
-		      ,@(loop for (e f) in `((m 0)
-					     (c 0))
+		      ,@(loop for e in params
 			      and i from 1
 			      collect
-			      `(let ((,(format nil "~a" e) ,(* 1d0 f))))
+			      `(let ((,(format nil "~a" e) ,(* 1d0 1))))
 			      )
 		      (let ((problem (Problem)))
 			,(let* ((num-data 67)
@@ -134,9 +166,13 @@
 					(new (ExponentialResidual (aref data_x i)
 								  (aref data_y i))
 					     )))
-				  ;;nullptr
-				  (new (ceres--CauchyLoss .5d0))
-				  &m &c)))))
+				  nullptr
+				  ;; (new (ceres--CauchyLoss .5d0))
+					;&m &c
+				  ,@(loop for e in params
+					  collect
+					  `(ref ,e))
+				  )))))
 
 			(let ((options (Solver--Options))
 			      (summary (Solver--Summary)))
@@ -144,13 +180,13 @@
 				options.max_num_iterations 100
 				options.linear_solver_type ceres--DENSE_QR)
 			  (Solve options &problem &summary)
-			  ,(lprint :vars `(m c (summary.BriefReport))))
+			  ,(lprint :vars `( (summary.BriefReport))))
 			)
 		      (return 0)
 		      )
 		    )))
 
-  (with-open-file (s "source_02curve/CMakeLists.txt" :direction :output
+  (with-open-file (s "source_03spline_curve/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
     ;;https://clang.llvm.org/docs/AddressSanitizer.html
@@ -171,7 +207,7 @@
 		 			;(out "set( CMAKE_CXX_FLAGS )")
 					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "set( SRCS ~{~a~^~%~} )"
-	     (directory "source_02curve/hello.cpp"))
+	     (directory "source_03spline_curve/hello.cpp"))
 
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")

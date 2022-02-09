@@ -2,3 +2,4 @@
 | gen00 | trivial optimization  |   |
 | gen01 | powell minimization   |   |
 | gen02 | exponential curve fit |   |
+| gen03 | curve fit with spline |   |
