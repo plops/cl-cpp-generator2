@@ -78,7 +78,7 @@
 				       CubicInterpolator)
 			    collect
 			    (format nil "using ceres::~a;" e))
-		    
+
 		    (defclass+ ExponentialResidual ()
 		      "public:"
 		      "const double x_;"
@@ -132,9 +132,9 @@
 				    *source-dir*))
 		  `(do0
 		    (include "hello_template.h"
-		     <ceres/ceres.h>
-		     <ceres/cubic_interpolation.h>
-		     <glog/logging.h>)
+			     <ceres/ceres.h>
+			     <ceres/cubic_interpolation.h>
+			     <glog/logging.h>)
 		    (include ;<tuple>
 					;  <mutex>
 		     <thread>
@@ -159,7 +159,7 @@
 			    collect
 			    (format nil "using ceres::~a;" e))
 					;,type-definitions
-		    
+
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
@@ -168,7 +168,7 @@
 		      (do0
 		       "QApplication app(argc,argv);")
 
-		      
+
 		      ,@(loop for e in params
 			      and i from 1
 			      collect
@@ -211,10 +211,10 @@
 			    ,(lprint :vars `((aref params i)))))
 			)
 		      (do0
-		       
+
 		       "QPushButton button(\"hello world\");"
 		       (button.show))
-		      
+
 		      (return (app.exec))
 		      )
 		    )))
@@ -250,7 +250,7 @@
 	(out "find_package ( PkgConfig REQUIRED )")
 	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
-	; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
+					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
 
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
