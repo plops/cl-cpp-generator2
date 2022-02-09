@@ -12,6 +12,8 @@
 ;; how to plot?
 ;; jkqtplotter  (not in fedora)
 ;; sudo dnf install qcustomplot-qt5-devel qcustomplot-qt5
+;; https://github.com/hazelnusse/cpp-plotter/tree/master/includeb
+
 ;; https://github.com/filipecalasans/realTimePlot  based on qcustomplot
 ;; implot
 
@@ -126,6 +128,65 @@
 
 		    ))
 
+    (let ((qt-code `(do0
+		     (defclass MainWindow "public QMainWindow"
+		       "Q_OBJECT"
+		       "public:"
+
+		       "QCustomPlot* plot_;"
+		       (defmethod MainWindow (parent)
+			 (declare (type QWidget* parent)
+				  (explicit)
+				  (construct
+				   (QMainWindow parent)
+					;(plot_ (curly (new (QCustomPlot this))))
+				   )
+				  (values :constructor))
+			 (setf plot_ (new (QCustomPlot this)))
+			 (setCentralWidget plot_)
+			 (setGeometry 400 250 542 390))
+		       (defmethod ~MainWindow ()
+			 (declare
+			  (values :constructor)))
+		       ))))
+      (let ((fn-h (asdf:system-relative-pathname
+		   'cl-cpp-generator2
+		   (merge-pathnames #P"gui.h"
+				    *source-dir*))))
+	(with-open-file (sh fn-h
+			    :direction :output
+			    :if-exists :supersede
+			    :if-does-not-exist :create)
+	  (emit-c :code
+		  `(do0
+		    (pragma once)
+		    (include
+					;<QEvent>
+
+		     <iostream>
+		     <iomanip>
+		     <chrono>
+
+		     )
+		    (include <QApplication>
+			     <QMainWindow>
+			     <qcustomplot.h>)
+		    ,qt-code)
+		  :hook-defun #'(lambda (str)
+				  (format sh "~a~%" str))
+		  :hook-defclass #'(lambda (str)
+                                     (format sh "~a;~%" str))
+		  :header-only t))
+	(sb-ext:run-program "/usr/bin/clang-format"
+                            (list "-i"  (namestring fn-h))))
+      (write-source (asdf:system-relative-pathname
+		     'cl-cpp-generator2
+		     (merge-pathnames #P"gui.cpp"
+				      *source-dir*))
+		    `(do0
+		      (include "gui.h")
+		      ,qt-code)))
+
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"hello.cpp"
@@ -149,6 +210,7 @@
 		    (include <QApplication>
 			     <QMainWindow>
 			     <qcustomplot.h>)
+		    (include "gui.h")
 		    ,@(loop for e in `(AutoDiffCostFunction
 				       CostFunction
 				       Problem
@@ -159,6 +221,8 @@
 			    collect
 			    (format nil "using ceres::~a;" e))
 					;,type-definitions
+
+
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
@@ -211,9 +275,12 @@
 			    ,(lprint :vars `((aref params i)))))
 			)
 		      (do0
-
-		       "QPushButton button(\"hello world\");"
-		       (button.show))
+		       (do0
+			"MainWindow w(0);"
+			(w.show))
+		       #+nil
+		       (do0 "QPushButton button(\"hello world\");"
+			    (button.show)))
 
 		      (return (app.exec))
 		      )
@@ -240,7 +307,7 @@
 		 			;(out "set( CMAKE_CXX_FLAGS )")
 	(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "set( SRCS ~{~a~^~%~} )"
-	     (directory "source_03spline_curve/hello.cpp"))
+	     (directory "source_03spline_curve/*.cpp"))
 
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
@@ -252,7 +319,7 @@
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
-
+	(out "set( CMAKE_AUTOMOC ON )")
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
 	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
