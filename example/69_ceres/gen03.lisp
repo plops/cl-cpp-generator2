@@ -186,7 +186,8 @@
 		     (merge-pathnames #P"gui.cpp"
 				      *source-dir*))
 		    `(do0
-		      (include "gui.h")
+		      (include ;"gui.h"
+		       "moc_gui.h")
 		      ,qt-code)))
 
     (write-source (asdf:system-relative-pathname
@@ -287,7 +288,8 @@
 		      (return (app.exec))
 		      )
 		    )))
-
+  (sb-ext:run-program "/usr/bin/sh"
+                      (list (format nil "~a" (elt (directory "source_03spline_curve/generate_moc.sh" ) 0))) )
   (with-open-file (s "source_03spline_curve/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
@@ -319,13 +321,13 @@
 	(out "find_package ( Ceres REQUIRED ) ")
 	(out "find_package ( PkgConfig REQUIRED )")
 	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
-	(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.cpp"))
+					;(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.h"))
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 	(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
-	(out "set( CMAKE_AUTOMOC ON )")
-	;(out "set( CMAKE_AUTORCC ON )")
-	;(out "set( CMAKE_AUTOUIC ON )")
+					;(out "set( CMAKE_AUTOMOC ON )")
+					;(out "set( CMAKE_AUTORCC ON )")
+					;(out "set( CMAKE_AUTOUIC ON )")
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
 	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
