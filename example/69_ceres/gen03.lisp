@@ -136,7 +136,7 @@
 		       "public:"
 
 		       "QCustomPlot* plot_;"
-		       (defmethod MainWindow (parent)
+		       (defmethod MainWindow (&key (parent 0))
 			 (declare (type QWidget* parent)
 				  (explicit)
 				  (construct
@@ -307,7 +307,8 @@
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 		 			;(out "set( CMAKE_CXX_FLAGS )")
-	(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
+					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
+	(out "find_package( Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED )")
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source_03spline_curve/*.cpp"))
 
@@ -318,10 +319,13 @@
 	(out "find_package ( Ceres REQUIRED ) ")
 	(out "find_package ( PkgConfig REQUIRED )")
 	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
+	(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.cpp"))
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
-
+	(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
 	(out "set( CMAKE_AUTOMOC ON )")
+	;(out "set( CMAKE_AUTORCC ON )")
+	;(out "set( CMAKE_AUTOUIC ON )")
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
 	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 
