@@ -136,10 +136,12 @@
 		       "public:"
 
 		       "QCustomPlot* plot_;"
+		       "int graph_count_;"
 		       (defmethod MainWindow (&key (parent 0))
 			 (declare (type QWidget* parent)
 				  (explicit)
 				  (construct
+				   (graph_count_ 0)
 				   (QMainWindow parent)
 					;(plot_ (curly (new (QCustomPlot this))))
 				   )
@@ -147,6 +149,20 @@
 			 (setf plot_ (new (QCustomPlot this)))
 			 (setCentralWidget plot_)
 			 (setGeometry 400 250 542 390))
+		       (defmethod addGraph (x y)
+			 (declare (type std--vector<double> x y))
+			 (assert (== (x.size)
+				     (y.size)))
+			 "QVector<double> qx(x.size()),qy(y.size());"
+			 (dotimes (i (x.size))
+			   (setf (aref qx i) (aref x i)))
+			 (dotimes (i (y.size))
+			   (setf (aref qy i) (aref y i)))
+			 (plot_->addGraph)
+			 (-> plot_
+			     (graph graph_count_)
+			     (setData qx qy))
+			 (incf graph_count_))
 		       (defmethod ~MainWindow ()
 			 (declare
 			  (values :constructor)))
@@ -233,7 +249,8 @@
 			       (values int))
 		      (google--InitGoogleLogging (aref argv 0))
 		      (do0
-		       "QApplication app(argc,argv);")
+		       "QApplication app(argc,argv);"
+		       "MainWindow w;")
 
 
 		      ,@(loop for e in params
@@ -251,11 +268,14 @@
 					    (exp (+ (* .3 e) .1))))))
 			   `(do0
 			     (let ((n ,num-data)
-				   (data_x (curly ,@x))
-				   (data_y (curly ,@y))
+				   (data_x (std--vector<double> (curly ,@x)))
+				   (data_y (std--vector<double> (curly ,@y)) ;(curly ,@y)
+				     )
 				   (params (curly ,@(loop for e in params collect 1d0))))
-			       (declare (type (array double ,num-data) data_x data_y)
-					(type (array double ,(length params)) params))
+
+			       (declare ;(type (array double ,num-data) data_x data_y)
+				(type (array double ,(length params)) params))
+			       (w.addGraph data_x data_y)
 			       (dotimes (i n)
 				 (problem.AddResidualBlock
 				  (new (,(format nil "AutoDiffCostFunction<ExponentialResidual,1,~a>"
@@ -279,7 +299,7 @@
 			)
 		      (do0
 		       (do0
-			"MainWindow w(0);"
+
 			(w.show))
 		       #+nil
 		       (do0 "QPushButton button(\"hello world\");"
@@ -324,7 +344,7 @@
 					;(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.h"))
 	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
-	(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
+					;(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
 					;(out "set( CMAKE_AUTOMOC ON )")
 					;(out "set( CMAKE_AUTORCC ON )")
 					;(out "set( CMAKE_AUTOUIC ON )")
