@@ -162,6 +162,14 @@
 			 (-> plot_
 			     (graph graph_count_)
 			     (setData qx qy))
+			 (-> plot_
+			     (graph graph_count_)
+			     (setLineStyle QCPGraph--lsNone)
+			     )
+			 (-> plot_
+			     (graph graph_count_)
+			     (setScatterStyle (QCPScatterStyle QCPScatterStyle--ssCircle 4))
+			     )
 			 (incf graph_count_))
 		       (defmethod ~MainWindow ()
 			 (declare
