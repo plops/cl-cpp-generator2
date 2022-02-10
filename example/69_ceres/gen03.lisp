@@ -72,14 +72,16 @@
 		    (pragma once)
 		    (include <cmath>
 			     <ceres/ceres.h>
-			     <ceres/cubic_interpolation.h>)
+					;<ceres/cubic_interpolation.h>
+			     )
 		    ,@(loop for e in `(AutoDiffCostFunction
 				       CostFunction
 				       Problem
 				       Solve
 				       Solver
-				       Grid1D
-				       CubicInterpolator)
+					; Grid1D
+					; CubicInterpolator
+				       )
 			    collect
 			    (format nil "using ceres::~a;" e))
 
@@ -149,7 +151,7 @@
 			 (setf plot_ (new (QCustomPlot this)))
 			 (setCentralWidget plot_)
 			 (setGeometry 400 250 542 390))
-		       (defmethod addGraph (x y)
+		       (defmethod plot_scatter (x y)
 			 (declare (type std--vector<double> x y))
 			 (assert (== (x.size)
 				     (y.size)))
@@ -170,6 +172,28 @@
 			     (graph graph_count_)
 			     (setScatterStyle (QCPScatterStyle QCPScatterStyle--ssCircle 4))
 			     )
+			 (incf graph_count_))
+		       (defmethod plot_line (x y)
+			 (declare (type std--vector<double> x y))
+			 (assert (== (x.size)
+				     (y.size)))
+			 "QVector<double> qx(x.size()),qy(y.size());"
+			 (dotimes (i (x.size))
+			   (setf (aref qx i) (aref x i)))
+			 (dotimes (i (y.size))
+			   (setf (aref qy i) (aref y i)))
+			 (plot_->addGraph)
+			 (-> plot_
+			     (graph graph_count_)
+			     (setData qx qy))
+	       		 #+nil(-> plot_
+				  (graph graph_count_)
+				  (setLineStyle QCPGraph--lsNone)
+				  )
+			 #+nil (-> plot_
+				   (graph graph_count_)
+				   (setScatterStyle (QCPScatterStyle QCPScatterStyle--ssCircle 4))
+				   )
 			 (incf graph_count_))
 		       (defmethod ~MainWindow ()
 			 (declare
@@ -221,7 +245,7 @@
 		  `(do0
 		    (include "hello_template.h"
 			     <ceres/ceres.h>
-			     <ceres/cubic_interpolation.h>
+					;<ceres/cubic_interpolation.h>
 			     <glog/logging.h>)
 		    (include ;<tuple>
 					;  <mutex>
@@ -243,8 +267,9 @@
 				       Problem
 				       Solve
 				       Solver
-				       Grid1D
-				       CubicInterpolator)
+					; Grid1D
+					;CubicInterpolator
+				       )
 			    collect
 			    (format nil "using ceres::~a;" e))
 					;,type-definitions
@@ -283,7 +308,7 @@
 
 			       (declare ;(type (array double ,num-data) data_x data_y)
 				(type (array double ,(length params)) params))
-			       (w.addGraph data_x data_y)
+			       (w.plot_scatter data_x data_y)
 			       (dotimes (i n)
 				 (problem.AddResidualBlock
 				  (new (,(format nil "AutoDiffCostFunction<ExponentialResidual,1,~a>"
@@ -303,7 +328,38 @@
 			  (Solve options &problem &summary)
 			  ,(lprint :vars `( (summary.BriefReport)))
 			  (dotimes (i ,(length params))
-			    ,(lprint :vars `((aref params i)))))
+			    ,(lprint :vars `((aref params i))))
+			  (do0
+			   (let ((fit_n 120)
+				 (fit_x (std--vector<double>))
+				 (fit_y (std--vector<double>)))
+			     (dotimes (i fit_n)
+			       (let (
+				     (mi 0d0)
+				     (ma 5d0)
+				     (x_ (/ (* ma i) (- fit_n 1)))
+				     (N ,(length params))
+				     (xrel (/ (- x_ mi)
+					      (- ma mi)))
+				     (xpos (* xrel (- N 2)))
+				     (lo_idx (int xpos))
+				     (tau (- xpos lo_idx)) ;; is zero when interpolation asks for point at lo_idx
+				     (hi_idx (+ 1 lo_idx))
+				     )
+				 #-nil (do0 ;,(lprint :vars `(xrel xpos hi_idx))
+					(assert (<= hi_idx ,(- (length params) 1)))
+					(assert (<= lo_idx ,(- (length params) 2)))
+					(assert (<= 0 hi_idx))
+					(assert (<= 0 lo_idx)))
+				 (let ((lo_val (aref params lo_idx))
+				       (hi_val (aref params hi_idx))
+				       (lerp (+ (* tau lo_val)
+						(* (- 1d0 tau)
+						   (- hi_val lo_val)))))
+				   (fit_x.push_back x_)
+				   (fit_y.push_back lerp)))
+			       )
+			     (w.plot_line fit_x fit_y))))
 			)
 		      (do0
 		       (do0
