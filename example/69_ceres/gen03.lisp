@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (ql:quickload "cl-cpp-generator2"))
+	   (ql:quickload "cl-cpp-generator2"))
 
 (in-package :cl-cpp-generator2)
 
@@ -207,26 +207,26 @@
 			    :direction :output
 			    :if-exists :supersede
 			    :if-does-not-exist :create)
-	  (emit-c :code
-		  `(do0
-		    (pragma once)
-		    (include
+			(emit-c :code
+				`(do0
+				  (pragma once)
+				  (include
 					;<QEvent>
 
-		     <iostream>
-		     <iomanip>
-		     <chrono>
+				   <iostream>
+				   <iomanip>
+				   <chrono>
 
-		     )
-		    (include <QApplication>
-			     <QMainWindow>
-			     <qcustomplot.h>)
-		    ,qt-code)
-		  :hook-defun #'(lambda (str)
-				  (format sh "~a~%" str))
-		  :hook-defclass #'(lambda (str)
-                                     (format sh "~a;~%" str))
-		  :header-only t))
+				   )
+				  (include <QApplication>
+					   <QMainWindow>
+					   <qcustomplot.h>)
+				  ,qt-code)
+				:hook-defun #'(lambda (str)
+						(format sh "~a~%" str))
+				:hook-defclass #'(lambda (str)
+						   (format sh "~a;~%" str))
+				:header-only t))
 	(sb-ext:run-program "/usr/bin/clang-format"
                             (list "-i"  (namestring fn-h))))
       (write-source (asdf:system-relative-pathname
@@ -303,7 +303,7 @@
 			     (let ((n ,num-data)
 				   (data_x (std--vector<double> (curly ,@x)))
 				   (data_y (std--vector<double> (curly ,@y)) ;(curly ,@y)
-				     )
+					   )
 				   (params (curly ,@(loop for e in params collect 1d0))))
 
 			       (declare ;(type (array double ,num-data) data_x data_y)
@@ -313,9 +313,9 @@
 				 (problem.AddResidualBlock
 				  (new (,(format nil "AutoDiffCostFunction<ExponentialResidual,1,~a>"
 						 (length params))
-					 (new (ExponentialResidual (aref data_x i)
-								   (aref data_y i))
-					      )))
+					(new (ExponentialResidual (aref data_x i)
+								  (aref data_y i))
+					     )))
 				  nullptr
 				  ;; (new (ceres--CauchyLoss .5d0))
 				  params)))))
@@ -377,48 +377,49 @@
   (with-open-file (s "source_03spline_curve/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
-    ;;https://clang.llvm.org/docs/AddressSanitizer.html
-    ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-    (let ((dbg "-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
-      (macrolet ((out (fmt &rest rest)
-		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-	(out "cmake_minimum_required( VERSION 3.4 )")
-	(out "project( mytest LANGUAGES CXX )")
-	(out "set( CMAKE_CXX_COMPILER clang++ )")
+		  ;;https://clang.llvm.org/docs/AddressSanitizer.html
+		  ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+		  (let ((dbg "-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
+		    (macrolet ((out (fmt &rest rest)
+				    `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+			      (out "cmake_minimum_required( VERSION 3.4 )")
+			      (out "project( mytest LANGUAGES CXX )")
+			      (out "set( CMAKE_CXX_COMPILER clang++ )")
 					;(out "set( CMAKE_CXX_FLAGS \"\"  )")
-	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a \")" dbg)
-	(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a \")" dbg )
+			      (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+			      (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a \")" dbg)
+			      (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a \")" dbg )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 		 			;(out "set( CMAKE_CXX_FLAGS )")
 					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
-	(out "find_package( Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED )")
-	(out "set( SRCS ~{~a~^~%~} )"
-	     (directory "source_03spline_curve/*.cpp"))
+			      (out "find_package( Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED )")
+			      (out "set( SRCS ~{~a~^~%~} )"
+				   (directory "source_03spline_curve/*.cpp"))
 
-	(out "add_executable( mytest ${SRCS} )")
-	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
+			      (out "add_executable( mytest ${SRCS} )")
+			      (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 					;(out "target_include_directories( mytest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} /usr/local/include  )")
 					;(out "target_link_directories( mytest PUBLIC /usr/local/lib )")
-	(out "find_package ( Ceres REQUIRED ) ")
-	(out "find_package ( PkgConfig REQUIRED )")
-	(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
+			      (out "find_package ( Ceres REQUIRED ) ")
+			      (out "find_package ( QCustomPlot REQUIRED ) ")
+					;(out "find_package ( PkgConfig REQUIRED )")
+					;(out "pkg_check_modules( QCP REQUIRED qcustomplot-qt5 )")
 					;(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.h"))
-	(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
+			      (out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
 					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
 					;(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
 					;(out "set( CMAKE_AUTOMOC ON )")
 					;(out "set( CMAKE_AUTORCC ON )")
 					;(out "set( CMAKE_AUTOUIC ON )")
-	;; Core Gui Widgets PrintSupport Svg Xml OpenGL
-	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
+			      ;; Core Gui Widgets PrintSupport Svg Xml OpenGL
+			      (out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads ${CERES_LIBRARIES} qcustomplot )") ; ${QCP_LIBRARIES}
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
-	))
-    ))
+			      ))
+		  ))
 
 
 
