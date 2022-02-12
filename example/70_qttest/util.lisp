@@ -40,8 +40,8 @@
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble. if moc is true create moc_<name>.h file from <name>.h"
   (let ((fn-h (format nil "~a/~a.h" dir name))
 	(fn-h-nodir (format nil "~a.h" name))
-	(fn-moc-h (format nil "~a/moc_~a.h" dir name))
-	(fn-moc-h-nodir (format nil "moc_~a.h" name))
+	(fn-moc-h (format nil "~a/moc_~a.cpp" dir name))
+	(fn-moc-h-nodir (format nil "moc_~a.cpp" name))
 	(fn-cpp (format nil "~a/~a.cpp" dir name)))
     (with-open-file (sh fn-h
 			:direction :output

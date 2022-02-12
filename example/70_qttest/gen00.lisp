@@ -24,7 +24,7 @@
    :header-preamble `(do0
 		      (include <vector>
 			       <QMainWindow>
-			       "moc_CpuWidget.h")
+			       "CpuWidget.h")
 		      "class QCustomPlot;"
 		      )
    :implementation-preamble `(include <qcustomplot.h>)
@@ -233,6 +233,7 @@
 	   (defclass SysInfoWidget "public QWidget"
 	     Q_OBJECT
 	     "public:"
+
 	     (defmethod SysInfoWidget (&key (parent 0) (startDelayMs 500) (updateSeriesDelayMs 500))
 	       (declare (type QWidget* parent)
 			(type int startDelayMs updateSeriesDelayMs)
@@ -277,10 +278,10 @@
    :moc t
    :headers `(QWidget QVBoxLayout QTimer
 		      )
-   :preamble `(include "moc_SysInfoWidget.h"
+   :preamble `(include "SysInfoWidget.h"
 		       "SysInfo.h"
 		       <QtCharts/QPieSeries>)
-
+					;:implementation-preamble `(include "SysInfoWidget.h")
    :code `(do0
 	   ;; Mastering Qt5 p. 73
 	   (defclass CpuWidget "public SysInfoWidget"
@@ -301,7 +302,9 @@
 		 (-> chart (addSeries series_))
 		 (-> chart (setTitle (string "CPU average load"))))
 	       )
-
+	     #+nil
+	     (defmethod ~CpuWidget ()
+	       (declare (values :constructor)))
 	     "protected slots:"
 	     (defmethod updateSeries ()
 	       (declare (override)
@@ -363,7 +366,7 @@
     ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
     ;; -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
     (let ((dbg "-ggdb -O0 ")
-	  (show-err "" ; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
+	  (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
 	    )
 	  (qt-components `(Core Gui PrintSupport Widgets Charts)))
       (macrolet ((out (fmt &rest rest)
@@ -374,7 +377,7 @@
 					;(out "set( CMAKE_CXX_FLAGS \"\"  )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a \")" dbg show-err)
-	(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a \")" dbg )
+	(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
