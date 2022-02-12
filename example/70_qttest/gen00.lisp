@@ -3,13 +3,11 @@
 
 (in-package :cl-cpp-generator2)
 
-;; for classes with templates use write-source and defclass+
-
-;; for cpp files without header use write-source
-
-;; for class definitions and implementation in separate h and cpp file
-
 (progn
+  ;; for classes with templates use write-source and defclass+
+  ;; for cpp files without header use write-source
+  ;; for class definitions and implementation in separate h and cpp file
+
   (defparameter *source-dir* #P"example/70_qttest/source/")
   (load "util.lisp")
   (write-class
@@ -24,7 +22,9 @@
    :header-preamble `(do0
 		      (include <vector>
 			       <QMainWindow>
-			       "CpuWidget.h")
+
+			       "CpuWidget.h"
+			       "MemoryWidget.h")
 		      "class QCustomPlot;"
 		      )
    :implementation-preamble `(include <qcustomplot.h>)
@@ -36,25 +36,28 @@
 	     "QCustomPlot* plot_;"
 	     "int graph_count_;"
 	     "CpuWidget cpuWidget_;"
+	     "MemoryWidget memoryWidget_;"
 	     (defmethod MainWindow (&key (parent 0))
 	       (declare (type QWidget* parent)
 			(explicit)
 			(construct
 			 (QMainWindow parent)
 			 (centralWidget_ (new (QWidget)))
-			 (plot_ (new (QCustomPlot this)))
+			 (plot_ (new (QCustomPlot)))
 			 (graph_count_ 0)
 			 (cpuWidget_ this)
+			 (memoryWidget_ this)
 			 )
 			(values :constructor))
 	       (do0
 		(setCentralWidget centralWidget_)
 		(let ((l (new (QHBoxLayout))))
 		  (-> centralWidget_ (setLayout l))
-		  (-> l (addWidget &cpuWidget_)))
+		  (-> l (addWidget &cpuWidget_))
+		  (-> l (addWidget &memoryWidget_))
+		  (-> l (addWidget plot_)))
 		)
-	       #+nil (do0 (setCentralWidget plot_)
-			  (setGeometry 400 250 542 390)))
+	       (setGeometry 400 250 542 390))
 	     #+nil (defmethod plot_line (x y)
 		     (declare (type std--vector<double> x y))
 		     (assert (== (x.size)
@@ -276,16 +279,14 @@
 	 *source-dir*)
    :name `CpuWidget
    :moc t
-   :headers `(QWidget QVBoxLayout QTimer
-		      )
+   :headers `(QWidget QVBoxLayout QTimer)
    :preamble `(include "SysInfoWidget.h"
 		       "SysInfo.h"
 		       <QtCharts/QPieSeries>)
-
    :code `(do0
 	   ;; Mastering Qt5 p. 73
 	   (defclass CpuWidget "public SysInfoWidget"
-	     Q_OBJECT
+	     Q_OBJECT ;; needed because we override slot updateSeries
 	     "public:"
 	     (defmethod CpuWidget (&key (parent 0)
 				     )
@@ -318,6 +319,61 @@
 				     (- 100.0 cpuLoadAverage)))))
 	     "private:"
 	     "QtCharts::QPieSeries* series_;")))
+
+  (write-class
+   :dir (asdf:system-relative-pathname
+	 'cl-cpp-generator2
+	 *source-dir*)
+   :name `MemoryWidget
+   :moc t
+   :headers `(QWidget QVBoxLayout QTimer)
+   :preamble `(include "SysInfoWidget.h"
+		       "SysInfo.h"
+		       <QtCharts/QLineSeries>
+		       )
+   :implementation-preamble `(include <QtCharts/QAreaSeries>)
+   :code `(do0
+	   ;; Mastering Qt5 p. 77
+	   (defclass MemoryWidget "public SysInfoWidget"
+	     Q_OBJECT ;; needed because we override slot updateSeries
+	     "public:"
+	     (defmethod MemoryWidget (&key (parent 0))
+	       (declare (type QWidget* parent)
+			(explicit)
+			(construct (SysInfoWidget parent)
+				   (series_ (new (QtCharts--QLineSeries this))
+					    )
+				   (pointPositionX_ 0))
+
+			(values :constructor))
+	       (let ((*areaSeries (new (QtCharts--QAreaSeries series_)))
+		     (chart (dot (chartView)
+				 (chart))))
+		 (-> chart (addSeries areaSeries))
+		 (-> chart (setTitle (string "Memory used")))
+		 (-> chart (createDefaultAxes))
+		 (-> chart (axisX) (setVisible false))
+		 (-> chart (axisX) (setRange 0 49))
+		 (-> chart (axisY) (setRange 0 100))
+		 )
+	       )
+	     "protected slots:"
+	     (defmethod updateSeries ()
+	       (declare (override)
+			)
+	       (let ((memoryUsed (dot (SysInfo--instance)
+				      (memoryUsed))))
+		 (incf pointPositionX_)
+		 (-> series_ (append  pointPositionX_ memoryUsed))
+		 (when (< 50 (-> series_ (count)))
+		   (let ((chart (dot (chartView) (chart))))
+		     (-> chart (scroll (/ (-> chart (dot (plotArea) (width)))
+					  49d0)
+				       0))
+		     (-> series_ (remove 0))))))
+	     "private:"
+	     "QtCharts::QLineSeries* series_;"
+	     "qint64 pointPositionX_;")))
 
 
 
