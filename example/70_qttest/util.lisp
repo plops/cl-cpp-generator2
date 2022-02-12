@@ -87,7 +87,7 @@
 		    ,@(loop for h in headers
 			    collect
 			    `(include ,(format nil "<~a>" h)))
-		    ,(if moc
+		    #+nil ,(if moc
 			 `(include ,(format nil "~a" fn-moc-h-nodir))
 			 `(include ,(format nil "~a" fn-h-nodir)))
 		    ,(if code
