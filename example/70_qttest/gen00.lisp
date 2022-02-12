@@ -31,8 +31,9 @@
 				 "MemoryWidget.h")
 			"class QCustomPlot;"
 			)
-     :implementation-preamble `(include <qcustomplot.h>
-					,@log-headers)
+     :implementation-preamble `(do0 (include <qcustomplot.h>
+					     ,@log-headers)
+				    "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")
      :code `(do0
 	     (defclass MainWindow "public QMainWindow"
 	       "Q_OBJECT"
@@ -63,7 +64,8 @@
 		    (-> l (addWidget plot_)))
 		  )
 		 (setGeometry 400 250 542 390)
-		 ,(lprint))
+		 ,(lprint)
+		 )
 	       #+nil (defmethod plot_line (x y)
 		       (declare (type std--vector<double> x y))
 		       (assert (== (x.size)
@@ -82,6 +84,7 @@
 	       (defmethod ~MainWindow ()
 		 (declare
 		  (values :constructor))))))
+
 
     (write-class
      :dir (asdf:system-relative-pathname
@@ -408,11 +411,12 @@
 			     <QMainWindow>
 					;<qcustomplot.h>
 			     )
-
+		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 		      ,(lprint)
 		      (do0
 		       "QApplication app(argc,argv);"
@@ -442,7 +446,7 @@
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a \")" dbg show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
-					;(out "set( CMAKE_CXX_STANDARD 23 )")
+					;(out "set( CMAKE_CXX_STANDARD 20 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 		 			;(out "set( CMAKE_CXX_FLAGS )")

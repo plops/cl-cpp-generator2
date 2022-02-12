@@ -8,14 +8,22 @@
 
 	   (do0
 					;("std::setprecision" 3)
+	    ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
+
+	    "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
 	    (<< "std::cout"
 		;;"std::endl"
 		("std::setw" 10)
-		(dot ("std::chrono::high_resolution_clock::now")
-		     (time_since_epoch)
+		#+nil (dot ("std::chrono::high_resolution_clock::now")
+			   (time_since_epoch)
+			   (count)
+			   )
+		(dot timestamp
 		     (count))
 					;,(g `_start_time)
 
+					;(string " ")
+					;(dot now (period))
 		(string " ")
 		("std::this_thread::get_id")
 		(string " ")
