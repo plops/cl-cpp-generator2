@@ -206,7 +206,8 @@
 		 (merge-pathnames #P"main.cpp"
 				  *source-dir*))
 		`(do0
-		  (include "MainWindow.h")
+		  (include "MainWindow.h"
+			   "SysInfo.h")
 		  (include
 					;<tuple>
 					;<mutex>
@@ -229,20 +230,20 @@
 			     (values int))
 		    (do0
 		     "QApplication app(argc,argv);"
-		     "MainWindow w;")
+		     (dot (SysInfo--instance)
+			  (init))
+		     "MainWindow w;"
+		     (w.show))
 
-		    (w.show)
-
-		    (return (app.exec))
-		    )
-		  ))
+		    (return (app.exec)))))
 
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
     ;;https://clang.llvm.org/docs/AddressSanitizer.html
     ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-    (let ((dbg "-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope "))
+    (let ((dbg "-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope ")
+	  (qt-components `(Core Gui PrintSupport Widgets Charts)))
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	(out "cmake_minimum_required( VERSION 3.4 )")
@@ -257,7 +258,7 @@
 
 		 			;(out "set( CMAKE_CXX_FLAGS )")
 					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
-	(out "find_package( Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED )")
+	(out "find_package( Qt5 COMPONENTS ~{~a~^ ~} REQUIRED )" qt-components)
 	(out "set( SRCS ~{~a~^~%~} )"
 	     (directory "source/*.cpp"))
 
@@ -277,9 +278,12 @@
 					;(out "set( CMAKE_AUTOUIC ON )")
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL ${CERES_LIBRARIES}
 	(out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	     `("Qt::Core" "Qt::Gui" "Qt::PrintSupport" "Qt::Widgets" "qcustomplot-qt5"
+	     `(,@(loop for e in qt-components
+		       collect
+		       (format nil "Qt::~a" e))
+		 "qcustomplot-qt5"
 					;${QCP_LIBRARIES}
-			  ))
+		 ))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
