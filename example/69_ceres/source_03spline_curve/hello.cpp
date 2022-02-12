@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
                   << (std::flush);
     }
   }
-  auto fit_n = 120;
+  auto fit_n = 1200;
   auto fit_x = std::vector<double>();
   auto fit_y = std::vector<double>();
   for (auto i = 0; (i) < (fit_n); (i) += (1)) {
