@@ -9,59 +9,6 @@
 
 ;; for class definitions and implementation in separate h and cpp file
 
-(defun write-class (&key name dir code headers header-preamble implementation-preamble moc)
-  "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble. if moc is true create moc_<name>.h file from <name>.h"
-  (let ((fn-h (format nil "~a/~a.h" dir name))
-	(fn-h-nodir (format nil "~a.h" name))
-	(fn-moc-h (format nil "~a/moc_~a.h" dir name))
-	(fn-moc-h-nodir (format nil "moc_~a.h" name))
-	(fn-cpp (format nil "~a/~a.cpp" dir name)))
-    (with-open-file (sh fn-h
-			:direction :output
-			:if-exists :supersede
-			:if-does-not-exist :create)
-      (loop for e in `((pragma once)
-		       ,header-preamble
-		       ,@(loop for h in headers
-			       collect
-			       ;; write forward declaration for classes
-			       (format nil "class ~a;" h)))
-	    do
-	    (when e
-	      (format sh "~a~%"
-		      (emit-c :code e))))
-
-      (when code
-	(emit-c :code
-		`(do0
-		  ,code)
-		:hook-defun #'(lambda (str)
-				(format sh "~a~%" str))
-		:hook-defclass #'(lambda (str)
-                                   (format sh "~a;~%" str))
-		:header-only t)))
-    (sb-ext:run-program "/usr/bin/clang-format"
-                        (list "-i"  (namestring fn-h)
-			      "-o"))
-    (when moc
-      (sb-ext:run-program "/usr/bin/moc-qt5"
-                          (list (namestring fn-h)
-				"-o" (namestring fn-moc-h))))
-    (write-source fn-cpp
-		  `(do0
-		    ,(if implementation-preamble
-			 implementation-preamble
-			 `(comments "no implementation preamble"))
-		    ,@(loop for h in headers
-			    collect
-			    `(include ,(format nil "<~a>" h)))
-		    ,(if moc
-			 `(include ,(format nil "~a" fn-moc-h-nodir))
-			 `(include ,(format nil "~a" fn-h-nodir)))
-		    ,(if code
-			 code
-			 `(comments "no code"))))))
-
 (progn
   (defparameter *source-dir* #P"example/70_qttest/source/")
   (load "util.lisp")
