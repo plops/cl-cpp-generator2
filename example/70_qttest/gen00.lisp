@@ -18,11 +18,12 @@
 	 *source-dir*)
    :name `MainWindow
    :moc t
-   :headers `(
+   :headers `(QHBoxLayout
 	      QWidget)
    :header-preamble `(do0
 		      (include <vector>
-			       <QMainWindow>)
+			       <QMainWindow>
+			       "CpuWidget.h")
 		      "class QCustomPlot;")
    :implementation-preamble `(include <qcustomplot.h>)
    :code `(do0
@@ -30,31 +31,41 @@
 	     "Q_OBJECT"
 	     "public:"
 	     "QCustomPlot* plot_;"
+	     "QWidget* centralWidget_;"
 	     "int graph_count_;"
+	     "CpuWidget cpuWidget_;"
 	     (defmethod MainWindow (&key (parent 0))
 	       (declare (type QWidget* parent)
 			(explicit)
 			(construct
 			 (graph_count_ 0)
 			 (QMainWindow parent)
-			 (plot_ (new (QCustomPlot this))))
+			 (centralWidget_ (new (QWidget)))
+			 (plot_ (new (QCustomPlot this)))
+			 (cpuWidget_ this))
 			(values :constructor))
-	       (setCentralWidget plot_)
-	       (setGeometry 400 250 542 390))
-	     (defmethod plot_line (x y)
-	       (declare (type std--vector<double> x y))
-	       (assert (== (x.size)
-			   (y.size)))
-	       "QVector<double> qx(x.size()),qy(y.size());"
-	       (dotimes (i (x.size))
-		 (setf (aref qx i) (aref x i)))
-	       (dotimes (i (y.size))
-		 (setf (aref qy i) (aref y i)))
-	       (plot_->addGraph)
-	       (-> plot_
-		   (graph graph_count_)
-		   (setData qx qy))
-	       (incf graph_count_))
+	       (do0
+		(setCentralWidget centralWidget_)
+		(let ((l (new (QHBoxLayout))))
+		  (-> centralWidget_ (setLayout l))
+		  (-> l (addWidget &cpuWidget_)))
+		)
+	       #+nil (do0 (setCentralWidget plot_)
+			  (setGeometry 400 250 542 390)))
+	     #+nil (defmethod plot_line (x y)
+		     (declare (type std--vector<double> x y))
+		     (assert (== (x.size)
+				 (y.size)))
+		     "QVector<double> qx(x.size()),qy(y.size());"
+		     (dotimes (i (x.size))
+		       (setf (aref qx i) (aref x i)))
+		     (dotimes (i (y.size))
+		       (setf (aref qy i) (aref y i)))
+		     (plot_->addGraph)
+		     (-> plot_
+			 (graph graph_count_)
+			 (setData qx qy))
+		     (incf graph_count_))
 	     (defmethod ~MainWindow ()
 	       (declare
 		(values :constructor))))))
@@ -260,6 +271,7 @@
    :headers `(QWidget QVBoxLayout QTimer
 		      )
    :preamble `(include "SysInfoWidget.h"
+		       "SysInfo.h"
 		       <QtCharts/QPieSeries>)
 
    :code `(do0
@@ -305,7 +317,8 @@
 				  *source-dir*))
 		`(do0
 		  (include "MainWindow.h"
-			   "SysInfo.h")
+			   "SysInfo.h"
+			   )
 		  (include
 					;<tuple>
 					;<mutex>
