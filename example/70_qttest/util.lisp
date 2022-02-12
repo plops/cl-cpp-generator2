@@ -48,12 +48,13 @@
 			:if-exists :supersede
 			:if-does-not-exist :create)
       (loop for e in `((pragma once)
-		       ,preamble
-		       ,header-preamble
 		       ,@(loop for h in headers
 			       collect
 			       ;; write forward declaration for classes
-			       (format nil "class ~a;" h)))
+			       (format nil "class ~a;" h))
+		       ,preamble
+		       ,header-preamble
+		       )
 	    do
 	    (when e
 	      (format sh "~a~%"

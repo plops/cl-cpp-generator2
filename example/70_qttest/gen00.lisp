@@ -19,30 +19,33 @@
    :name `MainWindow
    :moc t
    :headers `(QHBoxLayout
-	      QWidget)
+	      QWidget
+	      )
    :header-preamble `(do0
 		      (include <vector>
 			       <QMainWindow>
 			       "CpuWidget.h")
-		      "class QCustomPlot;")
+		      "class QCustomPlot;"
+		      )
    :implementation-preamble `(include <qcustomplot.h>)
    :code `(do0
 	   (defclass MainWindow "public QMainWindow"
 	     "Q_OBJECT"
 	     "public:"
-	     "QCustomPlot* plot_;"
 	     "QWidget* centralWidget_;"
+	     "QCustomPlot* plot_;"
 	     "int graph_count_;"
 	     "CpuWidget cpuWidget_;"
 	     (defmethod MainWindow (&key (parent 0))
 	       (declare (type QWidget* parent)
 			(explicit)
 			(construct
-			 (graph_count_ 0)
 			 (QMainWindow parent)
 			 (centralWidget_ (new (QWidget)))
 			 (plot_ (new (QCustomPlot this)))
-			 (cpuWidget_ this))
+			 (graph_count_ 0)
+			 (cpuWidget_ this)
+			 )
 			(values :constructor))
 	       (do0
 		(setCentralWidget centralWidget_)
@@ -122,6 +125,7 @@
        (defmethod operator= (rhs)
 	 (declare (type "const SysInfo&" rhs)
 		  (values SysInfo&))
+	 (return *this)
 	 ;; this is actually not used
 	 )
        )))
@@ -172,8 +176,7 @@
 	       (declare
 		(construct (SysInfo)
 			   (cpu_load_last_values_))
-		(values :constructor))
-	       )
+		(values :constructor)))
 
 
 	     ,@(loop for (e f code) in `((init void (do0 (setf cpu_load_last_values_ (cpuRawData))))
@@ -207,8 +210,8 @@
 							    ))))
 		     collect
 		     `(defmethod ,e ()
-			(declare ;(override)
-			 (values ,f))
+			(declare (override)
+				 (values ,f))
 			,code)))))
 
   (write-class
@@ -251,6 +254,8 @@
 		 (-> layout (addWidget &chartView_))
 		 (setLayout layout))
 	       )
+	     #+nil (defmethod ~SysInfoWidget ()
+		     (declare (values :constructor)))
 	     "protected:"
 	     (defmethod chartView ()
 	       (declare (values "QtCharts::QChartView&"))
@@ -333,7 +338,8 @@
 
 		  (include <QApplication>
 			   <QMainWindow>
-			   <qcustomplot.h>)
+					;<qcustomplot.h>
+			   )
 
 		  (defun main (argc argv)
 		    (declare (type int argc)
@@ -353,16 +359,18 @@
 		     :if-does-not-exist :create)
     ;;https://clang.llvm.org/docs/AddressSanitizer.html
     ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-    (let ((dbg "-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope ")
+    ;; -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
+    (let ((dbg "-ggdb -O0 ")
+	  (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused")
 	  (qt-components `(Core Gui PrintSupport Widgets Charts)))
       (macrolet ((out (fmt &rest rest)
 		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	(out "cmake_minimum_required( VERSION 3.4 )")
 	(out "project( mytest LANGUAGES CXX )")
-	(out "set( CMAKE_CXX_COMPILER clang++ )")
+					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 					;(out "set( CMAKE_CXX_FLAGS \"\"  )")
 	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a \")" dbg)
+	(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a \")" dbg show-err)
 	(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a \")" dbg )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
