@@ -18,9 +18,13 @@
 	 *source-dir*)
    :name `MainWindow
    :moc t
-   :headers `(QCustomPlot QMainWindow QWidget)
+   :headers `(
+	      QWidget)
    :header-preamble `(do0
-		      (include <vector>))
+		      (include <vector>
+			       <QMainWindow>)
+		      "class QCustomPlot;")
+   :implementation-preamble `(include <qcustomplot.h>)
    :code `(do0
 	   (defclass MainWindow "public QMainWindow"
 	     "Q_OBJECT"
@@ -114,7 +118,7 @@
 					;(out "find_package( Qt5 5.9 REQUIRED Core Gui Widgets PrintSupport )")
 	(out "find_package( Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED )")
 	(out "set( SRCS ~{~a~^~%~} )"
-	     (directory "source_03spline_curve/*.cpp"))
+	     (directory "source/*.cpp"))
 
 	(out "add_executable( mytest ${SRCS} )")
 	(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
@@ -131,7 +135,10 @@
 					;(out "set( CMAKE_AUTORCC ON )")
 					;(out "set( CMAKE_AUTOUIC ON )")
 	;; Core Gui Widgets PrintSupport Svg Xml OpenGL ${CERES_LIBRARIES}
-	(out "target_link_libraries( mytest PRIVATE Qt5::Core Qt5::Gui Qt5::PrintSupport Qt5::Widgets Threads::Threads  ${QCP_LIBRARIES} )")
+	(out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	     `("Qt::Core" "Qt::Gui" "Qt::PrintSupport" "Qt::Widgets" "qcustomplot-qt5"
+					;${QCP_LIBRARIES}
+			  ))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
