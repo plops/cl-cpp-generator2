@@ -200,6 +200,55 @@
 			 (values ,f))
 			,code)))))
 
+  (write-class
+   :dir (asdf:system-relative-pathname
+	 'cl-cpp-generator2
+	 *source-dir*)
+   :name `SysInfoWidget
+   :headers `(QWidget)
+   :header-preamble `(include <QtCharts/QChartView>
+			      <QTimer>)
+   :implementation-preamble `(include <QtCharts/QChartView>
+				      <QTimer>)
+   :code `(do0
+	   ;; Mastering Qt5 p. 71
+	   (defclass SysInfoWidget "public QWidget"
+	     Q_OBJECT
+	     "public:"
+	     (defmethod SysInfoWidget (&key (parent 0) (startDelayMs 500) (updateSeriesDelayMs 500))
+	       (declare (type QWidget* parent)
+			(type int startDelayMs updateSeriesDelayMs)
+			(explicit)
+			(construct (QWidget parent)
+				   (chartView_ this))
+			(values :constructor))
+	       (refreshTimer_.setInterval updateSeriesDelayMs)
+	       (connect &refreshTimer_
+			&QTimer--timeout
+			this
+			&SysInfoWidget--updateSeries)
+	       (refreshTimer_.start startDelayMs)
+	       (chartView_.setRenderHint QPainter--Antialiasing)
+	       (-> (dot chartView_
+			(chart))
+		   (legend)
+		   (setVisible false))
+	       (let ((layout (QVBoxLayout this)))
+		 (-> layout (addWidget &chartView_))
+		 (setLayout layout))
+	       )
+	     "protected:"
+	     (defmethod chartView ()
+	       (declare (values "QtCharts::QChartView&"))
+	       (return chartView_))
+	     "protected slots:"
+	     (defmethod updateSeries ()
+	       (declare (virtual)
+			(pure)))
+	     "private:"
+	     "QTimer refreshTimer_;"
+	     "QtCharts::QChartView chartView_;")))
+
 
   (write-source (asdf:system-relative-pathname
 		 'cl-cpp-generator2
