@@ -88,8 +88,9 @@
 			    collect
 			    `(include ,(format nil "<~a>" h)))
 		    #+nil ,(if moc
-			 `(include ,(format nil "~a" fn-moc-h-nodir))
-			 `(include ,(format nil "~a" fn-h-nodir)))
+			       `(include ,(format nil "~a" fn-moc-h-nodir))
+			       )
+		    (include ,(format nil "~a" fn-h-nodir))
 		    ,(if code
 			 code
 			 `(comments "no code"))))))

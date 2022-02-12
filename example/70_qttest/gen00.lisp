@@ -281,7 +281,7 @@
    :preamble `(include "SysInfoWidget.h"
 		       "SysInfo.h"
 		       <QtCharts/QPieSeries>)
-					;:implementation-preamble `(include "SysInfoWidget.h")
+
    :code `(do0
 	   ;; Mastering Qt5 p. 73
 	   (defclass CpuWidget "public SysInfoWidget"
