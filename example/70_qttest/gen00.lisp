@@ -59,6 +59,28 @@
 	       (declare
 		(values :constructor))))))
 
+  (write-class
+   :dir (asdf:system-relative-pathname
+	 'cl-cpp-generator2
+	 *source-dir*)
+   :name `SysInfo
+   :code `(do0
+	   ;; Mastering Qt5 p. 56
+	   (defclass SysInfo ()
+	     "public:"
+
+	     (defmethod SysInfo ()
+	       (declare (values :constructor))
+	       )
+	     (defmethod ~SysInfo ()
+	       (declare (values :constructor))
+	       )
+	     ,@(loop for e in `(init cpuLoadAverage memoryUsed)
+		     collect
+		     `(defmethod ,e ()
+			(declare (virtual)
+				 (pure)))))))
+
 
   (write-source (asdf:system-relative-pathname
 		 'cl-cpp-generator2
