@@ -75,11 +75,95 @@
 	     (defmethod ~SysInfo ()
 	       (declare (values :constructor))
 	       )
-	     ,@(loop for e in `(init cpuLoadAverage memoryUsed)
+	     ,@(loop for (e f) in `((init void) (cpuLoadAverage double) (memoryUsed double))
 		     collect
 		     `(defmethod ,e ()
 			(declare (virtual)
-				 (pure)))))))
+				 (pure)
+				 (values ,f)))))))
+  (write-class
+   :dir (asdf:system-relative-pathname
+	 'cl-cpp-generator2
+	 *source-dir*)
+   :name `SysInfoLinuxImpl
+   :header-preamble `(include <QtGlobal>
+			      <QVector>
+			      "SysInfo.h")
+   :implementation-preamble `(include <sys/types.h>
+				      <sys/sysinfo.h>
+				      <QFile>)
+   :code `(do0
+	   ;; Mastering Qt5 p. 62
+	   (defclass SysInfoLinuxImpl "public SysInfo"
+	     "public:"
+	     "QVector<qulonglong> cpu_load_last_values_;"
+	     (defmethod cpuRawData ()
+	       (declare (values "QVector<qulonglong>")
+			)
+	       (let ((file (QFile (string "/proc/stat"))))
+		 (file.open QIODevice--ReadOnly)
+		 (let ((lines (file.readLine)))
+		   (file.close)
+		   ,(let ((def-totals `(totalUser totalUserNice totalSystem totalIdle)))
+		      `(do0
+			,@(loop for e in def-totals
+				collect
+				`(let ((,e (qulonglong 0)))))
+			(std--sscanf (line.data)
+				     (string ,(format nil "cpu ~{~a~^ ~}" (loop for e in def-totals
+										collect
+										"%llu")))
+				     ,@(loop for e in def-totals
+					     collect
+					     `(ref ,e)))
+			"QVector<qulonglong> rawData;"
+			,@ (loop for e in def-totals
+				 and i from 0
+				 collect
+				 `(dot rawData (append ,e)))
+			(return rawData))))))
+	     (defmethod SysInfoLinuxImpl ()
+	       (declare
+		(construct (SysInfo)
+			   (cpu_load_last_values_))
+		(values :constructor))
+	       )
+
+
+	     ,@(loop for (e f code) in `((init void (do0 (setf cpu_load_last_values_ (cpuRawData))))
+					 (cpuLoadAverage double
+							 (do0
+							  (let ((firstSample cpu_load_last_values_)
+								(secondSample (cpuRawData)))
+							    (setf cpu_load_last_values_ secondSample)
+							    (let ((overall (+ ,@(loop for i below 2 collect
+										      `(- (aref secondSample ,i)
+											  (aref firstSample ,i)))))
+								  (total (+ overall (- (aref secondSample 3)
+										       (aref firstSample 3))))
+								  (percent (/ (* 100d0 overall)
+									      total)))
+							      (return (qBound 0d0 percent 100d0))))))
+					 (memoryUsed double
+						     (do0 "struct sysinfo memInfo;"
+							  (sysinfo &memInfo)
+							  (let ((totalMemory (* (+ (qulonglong memInfo.totalram)
+										   memInfo.totalswap)
+										memInfo.mem_unit))
+								(totalMemoryUsed (* (+ (qulonglong (- memInfo.totalram
+												      memInfo.freeram))
+										       (- memInfo.totalswap
+											  memInfo.freeswap))
+										    memInfo.mem_unit))
+								(percent (/ (* 100d0 totalMemoryUsed)
+									    totalMemory)))
+							    (return (qBound 0d0 percent 100d0))
+							    ))))
+		     collect
+		     `(defmethod ,e ()
+			(declare ;(override)
+			 (values ,f))
+			,code)))))
 
 
   (write-source (asdf:system-relative-pathname
