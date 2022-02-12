@@ -64,23 +64,56 @@
 	 'cl-cpp-generator2
 	 *source-dir*)
    :name `SysInfo
-   :code `(do0
-	   ;; Mastering Qt5 p. 56
-	   (defclass SysInfo ()
-	     "public:"
+   :implementation-preamble `(include "SysInfoLinuxImpl.h")
+   :code #+nil `(do0
+		 ;; Mastering Qt5 p. 56
+		 (defclass SysInfo ()
+		   "public:"
 
-	     (defmethod SysInfo ()
-	       (declare (values :constructor))
-	       )
-	     (defmethod ~SysInfo ()
-	       (declare (values :constructor))
-	       )
-	     ,@(loop for (e f) in `((init void) (cpuLoadAverage double) (memoryUsed double))
-		     collect
-		     `(defmethod ,e ()
-			(declare (virtual)
-				 (pure)
-				 (values ,f)))))))
+		   (defmethod SysInfo ()
+		     (declare (values :constructor))
+		     )
+		   (defmethod ~SysInfo ()
+		     (declare (values :constructor))
+		     )
+		   ,@(loop for (e f) in `((init void) (cpuLoadAverage double) (memoryUsed double))
+			   collect
+			   `(defmethod ,e ()
+			      (declare (virtual)
+				       (pure)
+				       (values ,f))))))
+   `(do0
+     ;; Mastering Qt5 p. 69
+     (defclass SysInfo ()
+       "public:"
+       (defmethod instance ()
+	 (declare (static) (values "SysInfo&"))
+	 "static SysInfoLinuxImpl singleton;"
+	 (return singleton))
+       (defmethod ~SysInfo ()
+	 (declare (values :constructor))
+	 )
+       ,@(loop for (e f) in `((init void) (cpuLoadAverage double) (memoryUsed double))
+	       collect
+	       `(defmethod ,e ()
+		  (declare (virtual)
+			   (pure)
+			   (values ,f))))
+       "protected:"
+       (defmethod SysInfo ()
+	 (declare (values :constructor))
+	 )
+       "private:"
+       (defmethod SysInfo (rhs)
+	 (declare (type "const SysInfo&" rhs)
+		  (values :constructor))
+	 )
+       (defmethod operator= (rhs)
+	 (declare (type "const SysInfo&" rhs)
+		  (values SysInfo&))
+	 ;; this is actually not used
+	 )
+       )))
   (write-class
    :dir (asdf:system-relative-pathname
 	 'cl-cpp-generator2
@@ -100,9 +133,11 @@
 	     (defmethod cpuRawData ()
 	       (declare (values "QVector<qulonglong>")
 			)
-	       (let ((file (QFile (string "/proc/stat"))))
+	       (let (;(file (QFile (string "/proc/stat")))
+		     )
+		 "QFile file(\"/proc/stat\");"
 		 (file.open QIODevice--ReadOnly)
-		 (let ((lines (file.readLine)))
+		 (let ((line (file.readLine)))
 		   (file.close)
 		   ,(let ((def-totals `(totalUser totalUserNice totalSystem totalIdle)))
 		      `(do0
@@ -136,7 +171,7 @@
 							  (let ((firstSample cpu_load_last_values_)
 								(secondSample (cpuRawData)))
 							    (setf cpu_load_last_values_ secondSample)
-							    (let ((overall (+ ,@(loop for i below 2 collect
+							    (let ((overall (+ ,@(loop for i below 3 collect
 										      `(- (aref secondSample ,i)
 											  (aref firstSample ,i)))))
 								  (total (+ overall (- (aref secondSample 3)
