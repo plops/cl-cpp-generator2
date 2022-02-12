@@ -420,7 +420,7 @@
 			    (init))
 		       "MainWindow w;"
 		       (w.show))
-
+		      ,(lprint :msg "window shown, start event loop")
 		      (return (app.exec)))))
 
     (with-open-file (s "source/CMakeLists.txt" :direction :output
