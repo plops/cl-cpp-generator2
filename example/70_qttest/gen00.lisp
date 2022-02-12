@@ -205,11 +205,14 @@
 	 'cl-cpp-generator2
 	 *source-dir*)
    :name `SysInfoWidget
-   :headers `(QWidget)
+   :headers `(QWidget QVBoxLayout QTimer
+		      )
    :header-preamble `(include <QtCharts/QChartView>
-			      <QTimer>)
+			      <QTimer>
+			      )
    :implementation-preamble `(include <QtCharts/QChartView>
-				      <QTimer>)
+					;<QTimer>
+				      )
    :code `(do0
 	   ;; Mastering Qt5 p. 71
 	   (defclass SysInfoWidget "public QWidget"
@@ -233,7 +236,7 @@
 			(chart))
 		   (legend)
 		   (setVisible false))
-	       (let ((layout (QVBoxLayout this)))
+	       (let ((*layout (new (QVBoxLayout this))))
 		 (-> layout (addWidget &chartView_))
 		 (setLayout layout))
 	       )
@@ -248,6 +251,52 @@
 	     "private:"
 	     "QTimer refreshTimer_;"
 	     "QtCharts::QChartView chartView_;")))
+
+  (write-class
+   :dir (asdf:system-relative-pathname
+	 'cl-cpp-generator2
+	 *source-dir*)
+   :name `CpuWidget
+   :headers `(QWidget QVBoxLayout QTimer
+		      )
+   :preamble `(include "SysInfoWidget.h"
+		       <QtCharts/QPieSeries>)
+
+   :code `(do0
+	   ;; Mastering Qt5 p. 73
+	   (defclass CpuWidget "public SysInfoWidget"
+	     Q_OBJECT
+	     "public:"
+	     (defmethod CpuWidget (&key (parent 0)
+				     )
+	       (declare (type QWidget* parent)
+			(explicit)
+			(construct (SysInfoWidget parent)
+				   (series_ (new (QtCharts--QPieSeries this))))
+			(values :constructor))
+	       (-> series_ (setHoleSize .35))
+	       (-> series_ (append (string "CPU Load") 30.0))
+	       (-> series_ (append (string "CPU Free") 70.0))
+	       (let ((chart (dot (chartView)
+				 (chart))))
+		 (-> chart (addSeries series_))
+		 (-> chart (setTitle (string "CPU average load"))))
+	       )
+
+	     "protected slots:"
+	     (defmethod updateSeries ()
+	       (declare (override)
+			)
+	       (let ((cpuLoadAverage (dot (SysInfo--instance)
+					  (cpuLoadAverage))))
+		 (-> series_ (clear))
+		 (-> series_ (append (string "Load")
+				     cpuLoadAverage))
+		 (-> series_ (append (string "Free")
+				     (- 100.0 cpuLoadAverage)))))
+	     "private:"
+	     "QtCharts::QPieSeries* series_;")))
+
 
 
   (write-source (asdf:system-relative-pathname
