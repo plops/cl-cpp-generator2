@@ -18,8 +18,12 @@ git clone https://github.com/Microsoft/vcpkg.git
   #+end_example
 - install imgui
   - https://vcpkg.info/port/imgui
+- install implot
+  - https://github.com/epezent/implot
+  - note that you should enable 32-bit indices if plotting heatmaps
     #+begin_example
 ~/src/vcpkg/vcpkg install imgui[docking-experimental,glfw-binding,opengl3-binding]
+~/src/vcpkg/vcpkg install implot
     #+end_example
 - files are installed here: /home/martin/src/vcpkg/packages/glfw3_x64-linux/lib/pkgconfig/glfw3.pc
 #+begin_example
@@ -32,6 +36,17 @@ The package imgui provides CMake targets:
 
     find_package(imgui CONFIG REQUIRED)
     target_link_libraries(main PRIVATE imgui::imgui)
+
+Using source at /home/martin/src/vcpkg/buildtrees/implot/src/v0.12-10fbb8cc87.clean
+
+Total elapsed time: 2.381 min
+
+The package implot provides CMake targets:
+
+    find_package(implot CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE implot::implot)
+
+
 #+end_example
 
   
