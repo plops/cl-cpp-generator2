@@ -139,13 +139,14 @@
 			 ,(lprint :msg "setup ImGUI style")
 					;(ImGui--StyleColorsDark)
 			 (ImGui--StyleColorsClassic)
-			 (let ((style (ImGui--GetStyle)))
-			   (when (logand
-				  io.ConfigFlags
-				  ImGuiConfigFlags_ViewportsEnable)
-			     (setf style.WindowRounding 0s0
-				   (dot style (aref Colors ImGuiCol_WindowBg)
-					w) 1s0)))
+			 #+nil (let ((style (ImGui--GetStyle)))
+				 (when (logand
+					io.ConfigFlags
+					ImGuiConfigFlags_ViewportsEnable)
+				   (setf style.WindowRounding 0s0
+					 (dot style (aref Colors ImGuiCol_WindowBg)
+					      w)
+					 1s0)))
 			 (ImGui_ImplGlfw_InitForOpenGL (window.get) true)
 			 (ImGui_ImplOpenGL3_Init glsl_version)
 			 (let ((font_fn (string
@@ -159,15 +160,7 @@
 				 ,(lprint :msg "loading font failed" :vars `(font_fn font_size))
 				 ,(lprint :msg "loaded font" :vars `(font_fn font_size)))))))
 		       (let ((show_demo_window true))
-			 #+nil (do0
-				(comments "dockspace")
-				(ImGui--DockSpaceOverViewport)
-				#+nil (let ((dockspace_id
-					     (ImGui--GetID (string "mydockspace")))
-					    (dockspace_flags ImGuiDockNodeFlags_None))
-					(ImGui--DockSpace dockspace_id
-							  (ImVec2 0s0 0s0)
-							  dockspace_flags)))
+
 			 (while (!glfwWindowShouldClose (window.get))
 			   (do0
 			    (glfwPollEvents)
@@ -216,14 +209,14 @@
 				  (ImGui--GetDrawData))
 				 (do0
 				  (comments "update and render additional platform windows")
-				  (when (logand
-					 io.ConfigFlags
-					 ImGuiConfigFlags_ViewportsEnable)
-				    (let ((*backup_current_context
-					   (glfwGetCurrentContext)))
-				      (ImGui--UpdatePlatformWindows)
-				      (ImGui--RenderPlatformWindowsDefault)
-				      (glfwMakeContextCurrent backup_current_context))))
+				  #+nil (when (logand
+					       io.ConfigFlags
+					       ImGuiConfigFlags_ViewportsEnable)
+					  (let ((*backup_current_context
+						 (glfwGetCurrentContext)))
+					    (ImGui--UpdatePlatformWindows)
+					    (ImGui--RenderPlatformWindowsDefault)
+					    (glfwMakeContextCurrent backup_current_context))))
 				 (glfwSwapBuffers (window.get)))))))))
 		      (do0
 		       ,(lprint :msg "cleanup")
