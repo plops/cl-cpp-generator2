@@ -164,7 +164,17 @@
 			     (ImGui--NewFrame)
 
 			     (when show_demo_window
-			       (ImGui--ShowDemoWindow &show_demo_window)))
+			       (ImGui--ShowDemoWindow &show_demo_window))
+
+			     (progn
+			       (ImGui--Begin (string "hello"))
+			       (ImGui--CheckBox (string "demo window")
+						&show_demo_window)
+			       (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
+					    (/ 1000s0 (dot (ImGui--GetIO) Framerate))
+					    (dot (ImGui--GetIO) Framerate))
+			       (ImGui--End)
+			       ))
 			    (do0
 			     (comments "Rendering")
 			     (ImGui--Render)
