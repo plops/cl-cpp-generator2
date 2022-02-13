@@ -282,11 +282,14 @@
 			    (>> cap img3)
 					;(cv--split img spl)
 			    ,(lprint :msg "received camera image")
+
 			    (cv--cvtColor img3 img cv--COLOR_RGB2RGBA)
 			    ,(lprint :msg "converted camera image")
 			    )
 			  )
 			)
+
+
 
 		       "MainWindow M;"
 		       (M.Init (window.get) glsl_version)
@@ -303,18 +306,23 @@
 						   GL_LINEAR))
 			 (glPixelStorei GL_UNPACK_ROW_LENGTH
 					0)
-			 (glTexImage2D GL_TEXTURE_2D
-				       0
-				       GL_RGBA
-				       img.cols
-				       img.rows
-				       0
-				       GL_RGBA
-				       GL_UNSIGNED_BYTE
-				       img.data)
+			 (glTexImage2D GL_TEXTURE_2D ;; target
+				       0 ;; level
+				       GL_RGBA ;; internalformat
+				       img.cols ;; width
+				       img.rows ;; height
+				       0 ;; border
+				       GL_RGBA ;; format
+				       GL_UNSIGNED_BYTE ;; type
+				       img.data ;; data pointer
+				       )
 			 ,(lprint :msg "uploaded texture"))
 		       (while (!glfwWindowShouldClose (window.get))
 			 (do0
+			  (do0
+			   (>> cap img3)
+			   (cv--cvtColor img3 img cv--COLOR_RGB2RGBA)
+			   )
 			  (glfwPollEvents)
 			  (M.NewFrame)
 			  (M.Update
@@ -322,7 +330,19 @@
 			     (declare (capture texture &img))
 			     (do0
 			      (ImGui--Begin (string "camera"))
-			      (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+
+			      (glTexSubImage2D GL_TEXTURE_2D ;; target
+					       0 ;; level
+					       0 ;; xoffset
+					       0 ;; yoffset
+					       img.cols ;; width
+					       img.rows ;; height
+					       GL_RGBA ;; format
+					       GL_UNSIGNED_BYTE ;; type
+					       img.data ;; data pointer
+					       )
+			      (ImGui--Image (reinterpret_cast<void*> texture ;(static_cast<intptr_t> texture)
+								     )
 					    (ImVec2 img.cols
 						    img.rows))
 			      (ImGui--End))))
