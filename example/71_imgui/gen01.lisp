@@ -136,7 +136,7 @@
 		 (do0
 		  (when show_demo_window_
 		    (ImGui--ShowDemoWindow &show_demo_window_)
-		    ;;(ImPlot--ShowDemoWindow)
+		    (ImPlot--ShowDemoWindow)
 		    )
 		  (progn
 		    (ImGui--Begin (string "hello"))
@@ -207,6 +207,8 @@
 		     <cassert>
 					;  <memory>
 		     )
+		    (include <opencv2/core.hpp>
+			     <opencv2/videoio.hpp>)
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (do0
 		     (include "imgui_impl_opengl3_loader.h"
@@ -216,8 +218,7 @@
 			      "imgui_impl_opengl3.h"
 
 			      <GLFW/glfw3.h>)
-		     (include "implot.h"
-			      )
+		     (include "implot.h")
 		     (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
 		     (defclass+ DestroyGLFWwindow ()
 		       "public:"
@@ -233,6 +234,15 @@
 			       (values int))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+
+		      (do0
+		       (comments "opencv initialization")
+
+		       (let ((cap_fn (string "/dev/video3"))
+			     (cap (cv--VideoCapture cap_fn)))
+			 ,(lprint :msg "opened video device" :vars `(cap_fn)))
+		       )
+
 		      (do0
 		       (comments "glfw initialization")
 		       (comments "https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp")
@@ -302,21 +312,20 @@
 	       (append
 		(directory "01source/*.cpp")
 					;(directory "/home/martin/src/vcpkg/buildtrees/implot/src/*/implot_demo.cpp")
-					;(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
+		(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
-	  (loop for e in `(imgui implot OpenCV )
+	  (loop for e in `(imgui implot)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
-
+	  (out "find_package( OpenCV REQUIRED core videoio )")
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `("imgui::imgui"
 		 "implot::implot"
-		 "OpenCVls
-"))
+		 "${OpenCV_LIBS}"))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
