@@ -273,7 +273,7 @@
 			(let ((board_dict (cv--aruco--getPredefinedDictionary
 					   cv--aruco--DICT_6X6_250))
 			      (board (cv--aruco--CharucoBoard--create
-				      5 7 .04s0 .02s0 board_dict))
+				      7 5 .04s0 .02s0 board_dict))
 			      (params (cv--aruco--DetectorParameters--create)))
 			  "cv::Mat board_img3,board_img;"
 			  (board->draw (cv--Size 600 500)
@@ -355,21 +355,18 @@
 			       (do0
 				(do0
 				 (>> cap img3)
+				 (do0
+				  (comments "detect charuco board")
+				  "std::vector<int> markerIds;"
+				  "std::vector<std::vector<cv::Point2f> > markerCorners;"
+				  (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
+				  (when (< 0 (markerIds.size))
+				    (cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)))
 				 (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 				 )
 				(glfwPollEvents)
 				(M.NewFrame)
-				#+nil
-				(glTexSubImage2D GL_TEXTURE_2D ;; target
-						 0    ;; level
-						 0    ;; xoffset
-						 0    ;; yoffset
-						 img.cols ;; width
-						 img.rows ;; height
-						 GL_RGBA ;; format
-						 GL_UNSIGNED_BYTE ;; type
-						 img.data ;; data pointer
-						 )
+
 				(M.Update
 				 (lambda ()
 				   (declare (capture &textures &img &board_img))

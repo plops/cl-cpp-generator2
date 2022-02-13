@@ -68,3 +68,4 @@ cmake --build b
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
 #+end_example
 - sudo dnf install opencv-devel
+- charuco board example https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html
