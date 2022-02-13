@@ -249,19 +249,21 @@
 	       Q_OBJECT
 	       "public:"
 
-	       (defmethod SysInfoWidget (&key (parent 0) (startDelayMs 31) (updateSeriesDelayMs 31))
+	       (defmethod SysInfoWidget (&key (parent 0) ; (startDelayMs 1500)
+					   (updateSeriesDelayMs 31))
 		 (declare (type QWidget* parent)
 			  (type int startDelayMs updateSeriesDelayMs)
 			  (explicit)
 			  (construct (QWidget parent)
 				     (chartView_ this))
 			  (values :constructor))
-		 (refreshTimer_.setInterval updateSeriesDelayMs)
+		 (refreshTimer_.setInterval ;startDelayMs
+		  updateSeriesDelayMs)
 		 (connect &refreshTimer_
 			  &QTimer--timeout
 			  this
 			  &SysInfoWidget--updateSeries)
-		 (refreshTimer_.start startDelayMs)
+		 (refreshTimer_.start  updateSeriesDelayMs)
 		 (chartView_.setRenderHint QPainter--Antialiasing)
 		 (-> (dot chartView_
 			  (chart))
