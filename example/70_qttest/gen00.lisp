@@ -3,10 +3,11 @@
 
 (in-package :cl-cpp-generator2)
 
-(let ((log-headers `(<iostream>
-		     <iomanip>
-		     <chrono>
-		     )))
+(let ((log-preamble `(do0 (include <iostream>
+				   <iomanip>
+				   <chrono>
+				   )
+			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
@@ -32,8 +33,9 @@
 			"class QCustomPlot;"
 			)
      :implementation-preamble `(do0 (include <qcustomplot.h>
-					     ,@log-headers)
-				    "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")
+					     )
+				    ,log-preamble
+				    )
      :code `(do0
 	     (defclass MainWindow "public QMainWindow"
 	       "Q_OBJECT"
@@ -362,9 +364,11 @@
 		   (-> chart (addSeries areaSeries))
 		   (-> chart (setTitle (string "Memory used")))
 		   (-> chart (createDefaultAxes))
-		   (-> chart (axisX) (setVisible false))
-		   (-> chart (axisX) (setRange 0 49))
-		   (-> chart (axisY) (setRange 0 100))
+		   (let ((axisX (-> chart (dot (axes Qt--Horizontal) (back))))
+			 (axisY (-> chart (dot (axes Qt--Vertical) (back)))))
+		     (-> axisX (setVisible false))
+		     (-> axisX (setRange 0 49))
+		     (-> axisY (setRange 0 100)))
 		   )
 		 )
 	       "protected slots:"
@@ -434,7 +438,7 @@
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;; -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
       (let ((dbg "-ggdb -O0 ")
-	    (show-err  ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
+	    (show-err   " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
 	      )
 	    (qt-components `(Core Gui PrintSupport Widgets Charts)))
 	(macrolet ((out (fmt &rest rest)
