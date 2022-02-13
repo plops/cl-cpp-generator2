@@ -24,20 +24,36 @@
      :headers `()
      :header-preamble `(do0
 			(include <vector>
+				 ;;;<GLFW/glfw3.h>
 				 )
+			"class GLFWwindow;"
+			"class ImVec4;"
 
 			)
      :implementation-preamble `(do0
 				,log-preamble
+				(include "imgui_impl_opengl3_loader.h"
+
+					 "imgui.h"
+					 "imgui_impl_glfw.h"
+					 "imgui_impl_opengl3.h"
+
+					 <GLFW/glfw3.h>)
 				)
      :code `(do0
 	     (defclass MainWindow ()
 	       "public:"
-
+	       "bool show_demo_window_;"
+	       "ImVec4* clear_color_;"
 	       (defmethod MainWindow ()
 		 (declare
 		  (explicit)
 		  (construct
+		   (show_demo_window_ true)
+		   (clear_color_ (new (ImVec4 .45s0
+					      .55s0
+					      .6s0
+					      1s0)))
 		   )
 		  (values :constructor))
 
@@ -45,7 +61,119 @@
 		 )
 	       (defmethod ~MainWindow ()
 		 (declare
-		  (values :constructor))))))
+		  (values :constructor))
+		 ,(lprint))
+	       (defmethod Init (window glsl_version )
+		 (declare (type GLFWwindow* window)
+			  (type "const char*" glsl_version))
+		 ,(lprint)
+		 (do0
+		  (IMGUI_CHECKVERSION)
+		  (ImGui--CreateContext)
+		  (let ((&io (ImGui--GetIO)))
+		    (comments "enable keyboard controls, docking multi-viewport")
+		    ,@(loop for e in `(NavEnableKeyboard
+				       DockingEnable
+					;ViewportsEnable
+				       )
+			    collect
+			    `(do0
+			      (setf io.ConfigFlags
+				    (logior io.ConfigFlags
+					    ,(format nil "ImGuiConfigFlags_~a" e)))
+			      ,(lprint :msg (format nil "~a" e)
+				       :vars `(,(format nil "ImGuiConfigFlags_~a" e)
+						io.ConfigFlags
+						(dot (ImGui--GetIO)
+						     ConfigFlags)))))
+		    )
+		  (do0
+		   ,(lprint :msg "setup ImGUI style")
+		   (ImGui--StyleColorsDark)
+					;(ImGui--StyleColorsClassic)
+		   #+nil (let ((style (ImGui--GetStyle)))
+			   (when (logand
+				  io.ConfigFlags
+				  ImGuiConfigFlags_ViewportsEnable)
+			     (setf style.WindowRounding 0s0
+				   (dot style (aref Colors ImGuiCol_WindowBg)
+					w)
+				   1s0)))
+		   (ImGui_ImplGlfw_InitForOpenGL window true)
+		   (ImGui_ImplOpenGL3_Init glsl_version)
+		   (let ((font_fn (string
+				   ,(format nil "~a"
+					    (elt
+					     (directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/misc/fonts/DroidSans.ttf")
+					     0))))
+			 (font_size 16s0))
+		     (let ((*font (-> io.Fonts (AddFontFromFileTTF font_fn font_size))))
+		       (if (== font nullptr)
+			   ,(lprint :msg "loading font failed" :vars `(font_fn font_size))
+			   ,(lprint :msg "loaded font" :vars `(font_fn font_size)))))))
+		 )
+	       (defmethod Update (window)
+		 (declare (type GLFWwindow* window))
+		 ,(lprint)
+		 (do0
+		  (ImGui_ImplOpenGL3_NewFrame)
+		  (ImGui_ImplGlfw_NewFrame)
+		  (ImGui--NewFrame)
+
+		  (ImGui--DockSpaceOverViewport)
+		  (when show_demo_window_
+		    (ImGui--ShowDemoWindow &show_demo_window_))
+
+		  (progn
+		    (ImGui--Begin (string "hello"))
+
+		    (ImGui--Checkbox (string "demo window")
+				     &show_demo_window_)
+		    (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
+				 (/ 1000s0 (dot (ImGui--GetIO) Framerate))
+				 (dot (ImGui--GetIO) Framerate))
+		    (ImGui--End)
+		    )
+		  (let ((screen_width (int 0))
+			(screen_height (int 0)))
+		    (glfwGetFramebufferSize window
+					    &screen_width
+					    &screen_height)
+					;,(lprint :msg "framebuffer" :vars `(screen_width screen_height))
+		    (glViewport 0 0 screen_width screen_height)
+		    (glClearColor (* clear_color_->x clear_color_->w)
+				  (* clear_color_->y clear_color_->w)
+				  (* clear_color_->z clear_color_->w)
+				  clear_color_->w)
+		    (glClear GL_COLOR_BUFFER_BIT)
+		    (ImGui_ImplOpenGL3_RenderDrawData
+		     (ImGui--GetDrawData))
+		    ))
+		 )
+	       (defmethod Render ()
+		 (do0
+		  (comments "Rendering")
+		  (ImGui--Render)
+
+		  #+nil
+		  (do0
+		   (comments "update and render additional platform windows")
+		   (when (logand
+			  io.ConfigFlags
+			  ImGuiConfigFlags_ViewportsEnable)
+		     (let ((*backup_current_context
+			    (glfwGetCurrentContext)))
+		       (ImGui--UpdatePlatformWindows)
+		       (ImGui--RenderPlatformWindowsDefault)
+		       (glfwMakeContextCurrent backup_current_context)))))
+		 )
+	       (defmethod Shutdown ()
+		 (do0
+		  ,(lprint)
+		  (ImGui_ImplOpenGL3_Shutdown)
+		  (ImGui_ImplGlfw_Shutdown)
+		  (ImGui--DestroyContext))
+		 ))))
 
 
     (write-source (asdf:system-relative-pathname
@@ -70,6 +198,7 @@
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (do0
 		     (include "imgui_impl_opengl3_loader.h"
+
 			      "imgui.h"
 			      "imgui_impl_glfw.h"
 			      "imgui_impl_opengl3.h"
@@ -115,114 +244,23 @@
 		       (comments "imgui brings its own opengl loader"
 				 "https://github.com/ocornut/imgui/issues/4445")
 
-		       (do0
-			(IMGUI_CHECKVERSION)
-			(ImGui--CreateContext)
-			(let ((&io (ImGui--GetIO)))
-			  (comments "enable keyboard controls, docking multi-viewport")
-			  ,@(loop for e in `(NavEnableKeyboard
-					     DockingEnable
-					;ViewportsEnable
-					     )
-				  collect
-				  `(do0
-				    (setf io.ConfigFlags
-					  (logior io.ConfigFlags
-						  ,(format nil "ImGuiConfigFlags_~a" e)))
-				    ,(lprint :msg (format nil "~a" e)
-					     :vars `(,(format nil "ImGuiConfigFlags_~a" e)
-						      io.ConfigFlags
-						      (dot (ImGui--GetIO)
-							   ConfigFlags)))))
-			  )
-			(do0
-			 ,(lprint :msg "setup ImGUI style")
-					;(ImGui--StyleColorsDark)
-			 (ImGui--StyleColorsClassic)
-			 #+nil (let ((style (ImGui--GetStyle)))
-				 (when (logand
-					io.ConfigFlags
-					ImGuiConfigFlags_ViewportsEnable)
-				   (setf style.WindowRounding 0s0
-					 (dot style (aref Colors ImGuiCol_WindowBg)
-					      w)
-					 1s0)))
-			 (ImGui_ImplGlfw_InitForOpenGL (window.get) true)
-			 (ImGui_ImplOpenGL3_Init glsl_version)
-			 (let ((font_fn (string
-					 ,(format nil "~a"
-						  (elt
-						   (directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/misc/fonts/DroidSans.ttf")
-						   0))))
-			       (font_size 16s0))
-			   (let ((*font (-> io.Fonts (AddFontFromFileTTF font_fn font_size))))
-			     (if (== font nullptr)
-				 ,(lprint :msg "loading font failed" :vars `(font_fn font_size))
-				 ,(lprint :msg "loaded font" :vars `(font_fn font_size)))))))
-		       (let ((show_demo_window true))
+		       "MainWindow M;"
+		       (M.Init (window.get) glsl_version)
 
-			 (while (!glfwWindowShouldClose (window.get))
-			   (do0
-			    (glfwPollEvents)
+		       (while (!glfwWindowShouldClose (window.get))
+			 (do0
+			  (glfwPollEvents)
 
-			    (do0
-			     (ImGui_ImplOpenGL3_NewFrame)
-			     (ImGui_ImplGlfw_NewFrame)
-			     (ImGui--NewFrame)
+			  (M.Update (window.get))
 
-			     (ImGui--DockSpaceOverViewport)
 
-			     (when show_demo_window
-			       (ImGui--ShowDemoWindow &show_demo_window))
+			  (M.Render)
 
-			     (progn
-			       (ImGui--Begin (string "hello"))
-
-			       (ImGui--Checkbox (string "demo window")
-						&show_demo_window)
-			       (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
-					    (/ 1000s0 (dot (ImGui--GetIO) Framerate))
-					    (dot (ImGui--GetIO) Framerate))
-			       (ImGui--End)
-			       ))
-			    (do0
-			     (comments "Rendering")
-			     (ImGui--Render)
-
-			     (let ((screen_width (int 0))
-				   (screen_height (int 0)))
-			       (glfwGetFramebufferSize (window.get)
-						       &screen_width
-						       &screen_height)
-					;,(lprint :msg "framebuffer" :vars `(screen_width screen_height))
-			       (glViewport 0 0 screen_width screen_height)
-			       (let ((clear_color (ImVec4 .45s0
-							  .55s0
-							  .6s0
-							  1s0)))
-				 (glClearColor (* clear_color.x clear_color.w)
-					       (* clear_color.y clear_color.w)
-					       (* clear_color.z clear_color.w)
-					       clear_color.w)
-				 (glClear GL_COLOR_BUFFER_BIT)
-				 (ImGui_ImplOpenGL3_RenderDrawData
-				  (ImGui--GetDrawData))
-				 (do0
-				  (comments "update and render additional platform windows")
-				  #+nil (when (logand
-					       io.ConfigFlags
-					       ImGuiConfigFlags_ViewportsEnable)
-					  (let ((*backup_current_context
-						 (glfwGetCurrentContext)))
-					    (ImGui--UpdatePlatformWindows)
-					    (ImGui--RenderPlatformWindowsDefault)
-					    (glfwMakeContextCurrent backup_current_context))))
-				 (glfwSwapBuffers (window.get)))))))))
+			  (glfwSwapBuffers (window.get)))))
 		      (do0
 		       ,(lprint :msg "cleanup")
-		       (ImGui_ImplOpenGL3_Shutdown)
-		       (ImGui_ImplGlfw_Shutdown)
-		       (ImGui--DestroyContext)
+		       (M.Shutdown)
+
 		       #+nil (do0 (glfwDestroyWindow window)
 				  (glfwTerminate)))
 		      ,(lprint :msg "leave program")
