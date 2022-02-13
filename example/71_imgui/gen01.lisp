@@ -271,10 +271,15 @@
 			(comments "opencv initialization")
 
 			(let ((board_dict (cv--aruco--getPredefinedDictionary
-					   cv--aruco--DICT_6x6_250))
+					   cv--aruco--DICT_6X6_250))
 			      (board (cv--aruco--CharucoBoard--create
 				      5 7 .04s0 .02s0 board_dict))
-			      (params (cv--aruco--DetectorParameters--create))))
+			      (params (cv--aruco--DetectorParameters--create)))
+			  "cv::Mat board_img;"
+			  (board->draw (cv--Size 600 500)
+				       board_img
+				       10 1
+				       ))
 
 			(let ((cap_fn (string "/dev/video2"))
 			      (cap (cv--VideoCapture cap_fn)))
@@ -312,73 +317,85 @@
 
 		       "MainWindow M;"
 		       (M.Init (window.get) glsl_version)
-		       (let ((texture (GLuint 0))
-			     )
+		       ,(let* ((def-tex `((:width img.cols :height img.rows :data img.data)
+					  (:width board_img.cols :height board_img.rows :data board_img.data)))
+			       (num-tex 2))
+			  `(let ((textures (curly ,@(loop for e below num-tex collect 0))))
+			     (declare (type (array GLuint ,num-tex) textures))
 					;"GLuint texture;"
-			 ,(lprint :msg "prepare texture")
-			 (glGenTextures 1 &texture)
-			 ,(lprint :msg "genTextures" :vars `(texture))
-			 (glBindTexture GL_TEXTURE_2D texture)
-			 ,@(loop for e in `(MIN MAG) collect
-				 `(glTexParameteri GL_TEXTURE_2D
-						   ,(format nil "GL_TEXTURE_~a_FILTER" e)
-						   GL_LINEAR))
-			 (glPixelStorei GL_UNPACK_ROW_LENGTH
-					0)
-			 (glTexImage2D GL_TEXTURE_2D ;; target
-				       0 ;; level
-				       GL_RGBA ;; internalformat
-				       img.cols ;; width
-				       img.rows ;; height
-				       0 ;; border
-				       GL_RGBA ;; format
-				       GL_UNSIGNED_BYTE ;; type
-				       img.data ;; data pointer
-				       )
-			 ,(lprint :msg "uploaded texture"))
-		       (while (!glfwWindowShouldClose (window.get))
-			 (do0
-			  (do0
-			   (>> cap img3)
-			   (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-			   )
-			  (glfwPollEvents)
-			  (M.NewFrame)
-			  (M.Update
-			   (lambda ()
-			     (declare (capture texture &img))
-			     (do0
-			      (ImGui--Begin (string "camera"))
 
-			      (glTexImage2D GL_TEXTURE_2D ;; target
-					    0 ;; level
-					    GL_RGBA ;; internalformat
-					    img.cols ;; width
-					    img.rows ;; height
-					    0 ;; border
-					    GL_RGBA ;; format
-					    GL_UNSIGNED_BYTE ;; type
-					    img.data ;; data pointer
-					    )
-			      #+nil
-			      (glTexSubImage2D GL_TEXTURE_2D ;; target
-					       0 ;; level
-					       0 ;; xoffset
-					       0 ;; yoffset
-					       img.cols ;; width
-					       img.rows ;; height
-					       GL_RGBA ;; format
-					       GL_UNSIGNED_BYTE ;; type
-					       img.data ;; data pointer
-					       )
-			      (ImGui--Image (reinterpret_cast<void*> texture ;(static_cast<intptr_t> texture)
-								     )
-					    (ImVec2 img.cols
-						    img.rows))
-			      (ImGui--End))))
+			     (glGenTextures ,num-tex textures)
+			     ,@(loop for e in def-tex
+				     and e-i from 0
+				     collect
+				     (destructuring-bind (&key width height data) e
+				       `(progn
+					  ,(lprint :msg (format nil "prepare texture ~a" data))
+					  (let ((texture (aref textures ,e-i)))
+					    (glBindTexture GL_TEXTURE_2D texture)
+					    ,@(loop for e in `(MIN MAG) collect
+						    `(glTexParameteri GL_TEXTURE_2D
+								      ,(format nil "GL_TEXTURE_~a_FILTER" e)
+								      GL_LINEAR))
+					    (glPixelStorei GL_UNPACK_ROW_LENGTH
+							   0)
+					    (glTexImage2D GL_TEXTURE_2D ;; target
+							  0 ;; level
+							  GL_RGBA ;; internalformat
+							  ,width  ;; width
+							  ,height ;; height
+							  0	    ;; border
+							  GL_RGBA ;; format
+							  GL_UNSIGNED_BYTE ;; type
+							  ,data ;; data pointer
+							  )))))
+			     ,(lprint :msg "uploaded texture")
+			     (while (!glfwWindowShouldClose (window.get))
+			       (do0
+				(do0
+				 (>> cap img3)
+				 (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+				 )
+				(glfwPollEvents)
+				(M.NewFrame)
+				#+nil
+				(glTexSubImage2D GL_TEXTURE_2D ;; target
+						 0    ;; level
+						 0    ;; xoffset
+						 0    ;; yoffset
+						 img.cols ;; width
+						 img.rows ;; height
+						 GL_RGBA ;; format
+						 GL_UNSIGNED_BYTE ;; type
+						 img.data ;; data pointer
+						 )
+				(M.Update
+				 (lambda ()
+				   (declare (capture &textures &img &board_img))
+				   ,@(loop for e in def-tex
+					   and e-i from 0
+					   collect
+					   (destructuring-bind (&key width height data) e
+					     `(do0
+					       (ImGui--Begin (string "camera"))
+					       (glBindTexture GL_TEXTURE_2D (aref textures ,e-i))
+					       (glTexImage2D GL_TEXTURE_2D ;; target
+							     0 ;; level
+							     GL_RGBA ;; internalformat
+							     ,width ;; width
+							     ,height ;; height
+							     0 ;; border
+							     GL_RGBA ;; format
+							     GL_UNSIGNED_BYTE ;; type
+							     ,data ;; data pointer
+							     )
 
-			  (M.Render  (window.get))
-			  )))
+					       (ImGui--Image (reinterpret_cast<void*> (aref textures ,e-i))
+							     (ImVec2 ,width ,height))
+					       (ImGui--End))))))
+
+				(M.Render  (window.get))
+				)))))
 		      (do0
 		       ,(lprint :msg "cleanup")
 		       (M.Shutdown)
@@ -423,7 +440,8 @@
 	  (loop for e in `(imgui implot)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
-	  (out "find_package( OpenCV REQUIRED core videoio imgproc )")
+	  ;; module definitions /usr/lib64/cmake/OpenCV/OpenCVModules.cmake
+	  (out "find_package( OpenCV REQUIRED core videoio imgproc aruco )")
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `("imgui::imgui"
 		 "implot::implot"
