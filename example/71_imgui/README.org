@@ -3,3 +3,9 @@
 
  - The Cherno: "BEST WAY to make Desktop Applications in C++"
    - https://www.youtube.com/watch?v=vWXrFetSH8w
+
+ - Why and How To Use ImGui For Your Coding Projects | Tutorial & Case Study
+   - https://www.youtube.com/watch?v=U1BnzWX194Q
+   - use vcpgk to install glad, glfw and imgui
+     - seems to support imgui docking branch: https://github.com/microsoft/vcpkg/issues/18609
+       
