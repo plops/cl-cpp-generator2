@@ -25,6 +25,7 @@
      :header-preamble `(do0
 			(include <vector>
 ;;;<GLFW/glfw3.h>
+				 <functional>
 				 )
 			"class GLFWwindow;"
 			"class ImVec4;"
@@ -132,7 +133,8 @@
 		      (ImGui_ImplGlfw_NewFrame)
 		      (ImGui--NewFrame)
 		      (ImGui--DockSpaceOverViewport)))
-	       (defmethod Update ()
+	       (defmethod Update (fun)
+		 (declare (type "std::function<void(void)>" fun))
 		 (do0
 		  (when show_demo_window_
 		    (ImGui--ShowDemoWindow &show_demo_window_)
@@ -146,6 +148,7 @@
 				 (/ 1000s0 (dot (ImGui--GetIO) Framerate))
 				 (dot (ImGui--GetIO) Framerate))
 		    (ImGui--End))
+		  (fun)
 		  )
 		 (ImGui--EndFrame)
 		 )
@@ -208,7 +211,8 @@
 					;  <memory>
 		     )
 		    (include <opencv2/core.hpp>
-			     <opencv2/videoio.hpp>)
+			     <opencv2/videoio.hpp>
+			     <opencv2/imgproc.hpp>)
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (do0
 		     (include "imgui_impl_opengl3_loader.h"
@@ -235,18 +239,7 @@
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
 
-		      (do0
-		       (comments "opencv initialization")
 
-		       (let ((cap_fn (string "/dev/video2"))
-			     (cap (cv--VideoCapture cap_fn)))
-			 (if (cap.isOpened)
-			     ,(lprint :msg "opened video device" :vars `(cap_fn))
-			     ,(lprint :msg "failed to open video device" :vars `(cap_fn)))
-			 (let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
-			       (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT)))
-			   ,(lprint :vars `(cam_w cam_h))))
-		       )
 
 		      (do0
 		       (comments "glfw initialization")
@@ -273,13 +266,67 @@
 		       (comments "imgui brings its own opengl loader"
 				 "https://github.com/ocornut/imgui/issues/4445")
 
+		       (do0
+			(comments "opencv initialization")
+
+			(let ((cap_fn (string "/dev/video2"))
+			      (cap (cv--VideoCapture cap_fn)))
+			  (if (cap.isOpened)
+			      ,(lprint :msg "opened video device" :vars `(cap_fn))
+			      ,(lprint :msg "failed to open video device" :vars `(cap_fn)))
+			  (let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
+				(cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT)))
+			    ,(lprint :vars `(cam_w cam_h))
+			    "cv::Mat img3,img;"
+					;"std::vector<cv::Mat> spl;"
+			    (>> cap img3)
+					;(cv--split img spl)
+			    ,(lprint :msg "received camera image")
+			    (cv--cvtColor img3 img cv--COLOR_RGB2RGBA)
+			    ,(lprint :msg "converted camera image")
+			    )
+			  )
+			)
+
 		       "MainWindow M;"
 		       (M.Init (window.get) glsl_version)
+		       (let ((texture (GLuint 0))
+			     )
+					;"GLuint texture;"
+			 ,(lprint :msg "prepare texture")
+			 (glGenTextures 1 &texture)
+			 ,(lprint :msg "genTextures" :vars `(texture))
+			 (glBindTexture GL_TEXTURE_2D texture)
+			 ,@(loop for e in `(MIN MAG) collect
+				 `(glTexParameteri GL_TEXTURE_2D
+						   ,(format nil "GL_TEXTURE_~a_FILTER" e)
+						   GL_LINEAR))
+			 (glPixelStorei GL_UNPACK_ROW_LENGTH
+					0)
+			 (glTexImage2D GL_TEXTURE_2D
+				       0
+				       GL_RGBA
+				       img.cols
+				       img.rows
+				       0
+				       GL_RGBA
+				       GL_UNSIGNED_BYTE
+				       img.data)
+			 ,(lprint :msg "uploaded texture"))
 		       (while (!glfwWindowShouldClose (window.get))
 			 (do0
 			  (glfwPollEvents)
 			  (M.NewFrame)
-			  (M.Update)
+			  (M.Update
+			   (lambda ()
+			     (declare (capture texture &img))
+			     (do0
+			      (ImGui--Begin (string "camera"))
+			      (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+					    (ImVec2 img.cols
+						    img.rows))
+			      (ImGui--End))))
+
 			  (M.Render  (window.get))
 			  )))
 		      (do0
@@ -326,7 +373,7 @@
 	  (loop for e in `(imgui implot)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
-	  (out "find_package( OpenCV REQUIRED core videoio )")
+	  (out "find_package( OpenCV REQUIRED core videoio imgproc )")
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `("imgui::imgui"
 		 "implot::implot"

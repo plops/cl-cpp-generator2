@@ -62,7 +62,8 @@ cmake --build b
   #+end_example
 
 - try to also use opencv (and maybe later ceres)
-  - https://gist.github.com/UnaNancyOwen/acfc71de5b157d2ba22c090b420030e4
+  - opencv with imgui  https://gist.github.com/UnaNancyOwen/acfc71de5b157d2ba22c090b420030e4
+  - how to read video with opencv https://docs.opencv.org/3.4/d3/d9c/samples_2cpp_2tutorial_code_2videoio_2video-write_2video-write_8cpp-example.html
 #+begin_example
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
 #+end_example
