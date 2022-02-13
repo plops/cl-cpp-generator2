@@ -88,6 +88,7 @@
 			       (type char** argv)
 			       (values int))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
+		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
 		      (do0
 		       (comments "glfw initialization")
 		       (comments "https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp")
@@ -130,18 +131,20 @@
 		       :if-does-not-exist :create)
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-      ;; -fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
+      ;;
       (let ((dbg "-ggdb -O0 ")
-	    (show-err   " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused"
-	      )
-	    (qt-components `(Core Gui PrintSupport Widgets Charts)))
+	    (asan "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope")
+	    (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+
+	      ))
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "cmake_minimum_required( VERSION 3.4 )")
 	  (out "project( mytest LANGUAGES CXX )")
-					;(out "set( CMAKE_CXX_COMPILER clang++ )")
+	  (out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a \")" dbg show-err)
+	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 20 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
@@ -149,7 +152,8 @@
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
 		(directory "source/*.cpp")
-		(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")))
+					;(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
+		))
 
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
