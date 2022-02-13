@@ -27,20 +27,19 @@
 				 )
 
 			)
-     :implementation-preamble `(do0 (include <qcustomplot.h>
-					     )
-				    ,log-preamble
-				    )
+     :implementation-preamble `(do0
+				,log-preamble
+				)
      :code `(do0
 	     (defclass MainWindow ()
 	       "public:"
 
-	       (defmethod MainWindow (&key (parent 0))
-		 (declare (type QWidget* parent)
-			  (explicit)
-			  (construct
-			   )
-			  (values :constructor))
+	       (defmethod MainWindow ()
+		 (declare
+		  (explicit)
+		  (construct
+		   )
+		  (values :constructor))
 
 		 ,(lprint)
 		 )
@@ -105,14 +104,9 @@
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
-					;(out "qt5_generate_moc( ~{~a~^ ~} gui.moc TARGET mytest )" (directory "source_03spline_curve/gui.h"))
-					;(out "target_include_directories( mytest PRIVATE ${CERES_INCLUDE_DIRS} )")
-					; (out "target_link_libraries( mytest PRIVATE ${CERES_LIBRARIES} ${QCP_LIBRARIES} )")
-					;(out "set_target_properties( Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_DEBUG \"RELEASE\" )")
-					;(out "set( CMAKE_AUTOMOC ON )")
-					;(out "set( CMAKE_AUTORCC ON )")
-					;(out "set( CMAKE_AUTOUIC ON )")
-	  ;; Core Gui Widgets PrintSupport Svg Xml OpenGL ${CERES_LIBRARIES}
+	  (loop for e in `(imgui)
+		do
+		(out "find_package( ~a CONFIG REQUIRED )" e))
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `("imgui::imgui"))
