@@ -212,7 +212,8 @@
 		     )
 		    (include <opencv2/core.hpp>
 			     <opencv2/videoio.hpp>
-			     <opencv2/imgproc.hpp>)
+			     <opencv2/imgproc.hpp>
+			     <opencv2/aruco/charuco.hpp>)
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (do0
 		     (include "imgui_impl_opengl3_loader.h"
@@ -269,12 +270,20 @@
 		       (do0
 			(comments "opencv initialization")
 
+			(let ((board_dict (cv--aruco--getPredefinedDictionary
+					   cv--aruco--DICT_6x6_250))
+			      (board (cv--aruco--CharucoBoard--create
+				      5 7 .04s0 .02s0 board_dict))
+			      (params (cv--aruco--DetectorParameters--create))))
+
 			(let ((cap_fn (string "/dev/video2"))
 			      (cap (cv--VideoCapture cap_fn)))
 			  (if (cap.isOpened)
 			      ,(lprint :msg "opened video device" :vars `(cap_fn (cap.getBackendName)))
 			      ,(lprint :msg "failed to open video device" :vars `(cap_fn )))
-			  ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE)))
+			  ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE
+							 MONOCHROME SHARPNESS AUTO_EXPOSURE GAMMA
+							 BACKLIGHT TEMPERATURE AUTO_WB WB_TEMPERATURE)))
 			     `(let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
 				    (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT))
 				    (cam_fps (cap.get cv--CAP_PROP_FPS))
