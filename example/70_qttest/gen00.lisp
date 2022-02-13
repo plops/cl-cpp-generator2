@@ -331,63 +331,79 @@
 				       (- 100.0 cpuLoadAverage)))))
 	       "private:"
 	       "QtCharts::QPieSeries* series_;")))
+    (let ((chart-range 49)
+	  (pen-width 3)
+	  (color-dark `(hex #x209fdf))
+	  (color-light `(hex #xbfdfef)))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name `MemoryWidget
+       :moc t
+       :headers `(QWidget QVBoxLayout QTimer)
+       :preamble `(include "SysInfoWidget.h"
+			   "SysInfo.h"
+			   <QtCharts/QLineSeries>
+			   )
+       :implementation-preamble `(include <QtCharts/QAreaSeries>
+					  <QLinearGradient>
+					  <QPen>)
+       :code `(do0
+	       ;; Mastering Qt5 p. 77
+	       (defclass MemoryWidget "public SysInfoWidget"
+		 Q_OBJECT ;; needed because we override slot updateSeries
+		 "public:"
+		 (defmethod MemoryWidget (&key (parent 0))
+		   (declare (type QWidget* parent)
+			    (explicit)
+			    (construct (SysInfoWidget parent)
+				       (series_ (new (QtCharts--QLineSeries this))
+						)
+				       (pointPositionX_ 0))
 
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name `MemoryWidget
-     :moc t
-     :headers `(QWidget QVBoxLayout QTimer)
-     :preamble `(include "SysInfoWidget.h"
-			 "SysInfo.h"
-			 <QtCharts/QLineSeries>
+			    (values :constructor))
+		   (let ((pen (QPen ,color-dark))
+			 (gradient (QLinearGradient (QPointF 0 0)
+						    (QPointF 0 1)))
+			 (*areaSeries (new (QtCharts--QAreaSeries series_)))
+
 			 )
-     :implementation-preamble `(include <QtCharts/QAreaSeries>)
-     :code `(do0
-	     ;; Mastering Qt5 p. 77
-	     (defclass MemoryWidget "public SysInfoWidget"
-	       Q_OBJECT ;; needed because we override slot updateSeries
-	       "public:"
-	       (defmethod MemoryWidget (&key (parent 0))
-		 (declare (type QWidget* parent)
-			  (explicit)
-			  (construct (SysInfoWidget parent)
-				     (series_ (new (QtCharts--QLineSeries this))
-					      )
-				     (pointPositionX_ 0))
-
-			  (values :constructor))
-		 (let ((*areaSeries (new (QtCharts--QAreaSeries series_)))
-		       (chart (dot (chartView)
-				   (chart))))
-		   (-> chart (addSeries areaSeries))
-		   (-> chart (setTitle (string "Memory used")))
-		   (-> chart (createDefaultAxes))
-		   (let ((axisX (-> chart (dot (axes Qt--Horizontal) (back))))
-			 (axisY (-> chart (dot (axes Qt--Vertical) (back)))))
-		     (-> axisX (setVisible false))
-		     (-> axisX (setRange 0 49))
-		     (-> axisY (setRange 0 100)))
+		     (pen.setWidth ,pen-width)
+		     (gradient.setColorAt 1d0 ,color-dark)
+		     (gradient.setColorAt 0d0 ,color-light)
+		     (gradient.setCoordinateMode QGradient--ObjectBoundingMode)
+		     (-> areaSeries (setPen pen))
+		     (-> areaSeries (setBrush gradient))
+		     (let ((chart (dot (chartView)
+				       (chart))))
+		       (-> chart (addSeries areaSeries))
+		       (-> chart (setTitle (string "Memory used")))
+		       (-> chart (createDefaultAxes))
+		       (let ((axisX (-> chart (dot (axes Qt--Horizontal) (back))))
+			     (axisY (-> chart (dot (axes Qt--Vertical) (back)))))
+			 (-> axisX (setVisible false))
+			 (-> axisX (setRange 0 ,chart-range))
+			 (-> axisY (setRange 0 100))))
+		     )
 		   )
-		 )
-	       "protected slots:"
-	       (defmethod updateSeries ()
-		 (declare (override)
-			  )
-		 (let ((memoryUsed (dot (SysInfo--instance)
-					(memoryUsed))))
-		   (incf pointPositionX_)
-		   (-> series_ (append  pointPositionX_ memoryUsed))
-		   (when (< 50 (-> series_ (count)))
-		     (let ((chart (dot (chartView) (chart))))
-		       (-> chart (scroll (/ (-> chart (dot (plotArea) (width)))
-					    49d0)
-					 0))
-		       (-> series_ (remove 0))))))
-	       "private:"
-	       "QtCharts::QLineSeries* series_;"
-	       "qint64 pointPositionX_;")))
+		 "protected slots:"
+		 (defmethod updateSeries ()
+		   (declare (override)
+			    )
+		   (let ((memoryUsed (dot (SysInfo--instance)
+					  (memoryUsed))))
+		     (incf pointPositionX_)
+		     (-> series_ (append  pointPositionX_ memoryUsed))
+		     (when (< ,(+ 1 chart-range) (-> series_ (count)))
+		       (let ((chart (dot (chartView) (chart))))
+			 (-> chart (scroll (/ (-> chart (dot (plotArea) (width)))
+					      ,(* 1d0 chart-range))
+					   0))
+			 (-> series_ (remove 0))))))
+		 "private:"
+		 "QtCharts::QLineSeries* series_;"
+		 "qint64 pointPositionX_;"))))
 
 
 
