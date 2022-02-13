@@ -24,10 +24,11 @@
      :headers `()
      :header-preamble `(do0
 			(include <vector>
-				 ;;;<GLFW/glfw3.h>
+;;;<GLFW/glfw3.h>
 				 )
 			"class GLFWwindow;"
 			"class ImVec4;"
+			"class ImGuiIO;"
 
 			)
      :implementation-preamble `(do0
@@ -40,17 +41,25 @@
 
 					 <GLFW/glfw3.h>
 					 )
+				(include "implot.h")
 				)
      :code `(do0
 	     (defclass MainWindow ()
 	       "public:"
 	       "bool show_demo_window_;"
 					;"ImVec4* clear_color_;"
+	       "ImGuiIO& io;"
 	       (defmethod MainWindow ()
 		 (declare
 		  (explicit)
 		  (construct
 		   (show_demo_window_ true)
+		   (io ((lambda ()
+			  (declare (values ImGuiIO&))
+			  (do0 (IMGUI_CHECKVERSION)
+			       (ImGui--CreateContext)
+			       (ImPlot--CreateContext)
+			       (return (ImGui--GetIO))))))
 		   #+nil (clear_color_ (new (ImVec4 .45s0
 						    .55s0
 						    .6s0
@@ -63,43 +72,48 @@
 	       (defmethod ~MainWindow ()
 		 (declare
 		  (values :constructor))
-		 ,(lprint))
+		 ,(lprint)
+		 #+nil (do0
+			(ImPlot--DestroyContext)
+			(ImGui--DestroyContext)))
 	       (defmethod Init (window glsl_version )
 		 (declare (type GLFWwindow* window)
 			  (type "const char*" glsl_version))
 		 ,(lprint)
 		 (do0
-		  (IMGUI_CHECKVERSION)
-		  (ImGui--CreateContext)
-		  (let ((&io (ImGui--GetIO)))
-		    (comments "enable keyboard controls, docking multi-viewport")
-		    ,@(loop for e in `(NavEnableKeyboard
-				       DockingEnable
+		  #+nil(do0 (IMGUI_CHECKVERSION)
+			    (ImGui--CreateContext)
+			    (ImGui--GetIO))
+		  (do0			;let ((&io (ImGui--GetIO)))
+		   (comments "enable keyboard controls, docking multi-viewport")
+		   ,@(loop for e in `(NavEnableKeyboard
+				      DockingEnable
 					;ViewportsEnable
-				       )
-			    collect
-			    `(do0
-			      (setf io.ConfigFlags
-				    (logior io.ConfigFlags
-					    ,(format nil "ImGuiConfigFlags_~a" e)))
-			      ,(lprint :msg (format nil "~a" e)
-				       :vars `(,(format nil "ImGuiConfigFlags_~a" e)
-						io.ConfigFlags
-						(dot (ImGui--GetIO)
-						     ConfigFlags)))))
-		    )
+				      )
+			   collect
+			   `(do0
+			     (setf io.ConfigFlags
+				   (logior io.ConfigFlags
+					   ,(format nil "ImGuiConfigFlags_~a" e)))
+			     ,(lprint :msg (format nil "~a" e)
+				      :vars `(,(format nil "ImGuiConfigFlags_~a" e)
+					       io.ConfigFlags
+					       (dot (ImGui--GetIO)
+						    ConfigFlags)))))
+		   )
 		  (do0
 		   ,(lprint :msg "setup ImGUI style")
 		   (ImGui--StyleColorsDark)
 					;(ImGui--StyleColorsClassic)
-		   #+nil (let ((style (ImGui--GetStyle)))
-			   (when (logand
-				  io.ConfigFlags
-				  ImGuiConfigFlags_ViewportsEnable)
-			     (setf style.WindowRounding 0s0
-				   (dot style (aref Colors ImGuiCol_WindowBg)
-					w)
-				   1s0)))
+		   (let ((style (ImGui--GetStyle)))
+		     (when
+			 (logand
+			  io.ConfigFlags
+			  ImGuiConfigFlags_ViewportsEnable)
+		       (setf style.WindowRounding 0s0
+			     (dot style (aref Colors ImGuiCol_WindowBg)
+				  w)
+			     1s0)))
 		   (ImGui_ImplGlfw_InitForOpenGL window true)
 		   (ImGui_ImplOpenGL3_Init glsl_version)
 		   (let ((font_fn (string
@@ -119,16 +133,12 @@
 		      (ImGui--NewFrame)
 		      (ImGui--DockSpaceOverViewport)))
 	       (defmethod Update ()
-
-		 ,(lprint)
 		 (do0
-
 		  (when show_demo_window_
-		    (ImGui--ShowDemoWindow &show_demo_window_))
-
+		    (ImGui--ShowDemoWindow &show_demo_window_)
+		    (ImPlot--ShowDemoWindow))
 		  (progn
 		    (ImGui--Begin (string "hello"))
-
 		    (ImGui--Checkbox (string "demo window")
 				     &show_demo_window_)
 		    (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
@@ -136,11 +146,12 @@
 				 (dot (ImGui--GetIO) Framerate))
 		    (ImGui--End))
 		  )
+		 (ImGui--EndFrame)
 		 )
 	       (defmethod Render (window)
 		 (declare (type GLFWwindow* window))
 		 (do0
-		  ,(lprint)
+
 		  (let ((screen_width (int 0))
 			(screen_height (int 0)))
 		    (glfwGetFramebufferSize window
@@ -153,26 +164,21 @@
 				       (* clear_color_->z clear_color_->w)
 				       clear_color_->w)
 		    (glClear GL_COLOR_BUFFER_BIT)
-
 		    (ImGui--Render)
-
 		    (ImGui_ImplOpenGL3_RenderDrawData
-		     (ImGui--GetDrawData))
-		    )
-
-
-
-		  #+nil
+		     (ImGui--GetDrawData)))
 		  (do0
 		   (comments "update and render additional platform windows")
-		   (when (logand
-			  io.ConfigFlags
-			  ImGuiConfigFlags_ViewportsEnable)
+		   (when
+		       (logand
+			io.ConfigFlags
+			ImGuiConfigFlags_ViewportsEnable)
 		     (let ((*backup_current_context
 			    (glfwGetCurrentContext)))
 		       (ImGui--UpdatePlatformWindows)
 		       (ImGui--RenderPlatformWindowsDefault)
 		       (glfwMakeContextCurrent backup_current_context)))))
+		 (glfwSwapBuffers window)
 		 )
 	       (defmethod Shutdown ()
 		 (do0
@@ -188,9 +194,7 @@
 		   (merge-pathnames #P"main.cpp"
 				    *source-dir*))
 		  `(do0
-		    (include "MainWindow.h"
-
-			     )
+		    (include "MainWindow.h")
 		    (include
 					;<tuple>
 					;<mutex>
@@ -211,6 +215,8 @@
 			      "imgui_impl_opengl3.h"
 
 			      <GLFW/glfw3.h>)
+		     (include "implot.h"
+			      )
 		     (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
 		     (defclass+ DestroyGLFWwindow ()
 		       "public:"
@@ -259,7 +265,7 @@
 			  (M.NewFrame)
 			  (M.Update)
 			  (M.Render  (window.get))
-			  (glfwSwapBuffers (window.get)))))
+			  )))
 		      (do0
 		       ,(lprint :msg "cleanup")
 		       (M.Shutdown)
@@ -276,7 +282,7 @@
       ;;
       (let ((dbg "-ggdb -O0 ")
 	    (asan "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope")
-	    (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+	    (show-err ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
 	      ))
@@ -294,18 +300,20 @@
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
 		(directory "source/*.cpp")
+		(directory "/home/martin/src/vcpkg/buildtrees/implot/src/*/implot_demo.cpp")
 					;(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
-	  (loop for e in `(imgui)
+	  (loop for e in `(imgui implot)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `("imgui::imgui"))
+	       `("imgui::imgui"
+		 "implot::implot"))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
