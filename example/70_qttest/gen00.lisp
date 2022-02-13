@@ -6,6 +6,7 @@
 (let ((log-preamble `(do0 (include <iostream>
 				   <iomanip>
 				   <chrono>
+				   <thread>
 				   )
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn
@@ -295,6 +296,8 @@
      :preamble `(include "SysInfoWidget.h"
 			 "SysInfo.h"
 			 <QtCharts/QPieSeries>)
+     :implementation-preamble `(do0
+				,log-preamble)
      :code `(do0
 	     ;; Mastering Qt5 p. 73
 	     (defclass CpuWidget "public SysInfoWidget"
@@ -322,6 +325,7 @@
 	       (defmethod updateSeries ()
 		 (declare (override)
 			  )
+		 ,(lprint)
 		 (let ((cpuLoadAverage (dot (SysInfo--instance)
 					    (cpuLoadAverage))))
 		   (-> series_ (clear))
@@ -346,9 +350,10 @@
 			   "SysInfo.h"
 			   <QtCharts/QLineSeries>
 			   )
-       :implementation-preamble `(include <QtCharts/QAreaSeries>
-					  <QLinearGradient>
-					  <QPen>)
+       :implementation-preamble `(do0 (include <QtCharts/QAreaSeries>
+					       <QLinearGradient>
+					       <QPen>)
+				      ,log-preamble)
        :code `(do0
 	       ;; Mastering Qt5 p. 77
 	       (defclass MemoryWidget "public SysInfoWidget"
@@ -391,6 +396,7 @@
 		 (defmethod updateSeries ()
 		   (declare (override)
 			    )
+		   ,(lprint)
 		   (let ((memoryUsed (dot (SysInfo--instance)
 					  (memoryUsed))))
 		     (incf pointPositionX_)
