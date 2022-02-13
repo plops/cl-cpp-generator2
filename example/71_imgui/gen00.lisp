@@ -118,22 +118,26 @@
 		       (do0
 			(IMGUI_CHECKVERSION)
 			(ImGui--CreateContext)
-			(let ((io (ImGui--GetIO)))
+			(let ((&io (ImGui--GetIO)))
 			  (comments "enable keyboard controls, docking multi-viewport")
 			  ,@(loop for e in `(NavEnableKeyboard
 					     DockingEnable
 					     ViewportsEnable)
 				  collect
 				  `(do0
-				    ,(lprint :msg (format nil "~a" e))
 				    (setf io.ConfigFlags
 					  (logior io.ConfigFlags
-						  ,(format nil "ImGuiConfigFlags_~a" e))
-					  )))
+						  ,(format nil "ImGuiConfigFlags_~a" e)))
+				    ,(lprint :msg (format nil "~a" e)
+					     :vars `(,(format nil "ImGuiConfigFlags_~a" e)
+						      io.ConfigFlags
+						      (dot (ImGui--GetIO)
+							   ConfigFlags)))))
 			  )
 			(do0
 			 ,(lprint :msg "setup ImGUI style")
-			 (ImGui--StyleColorsDark)
+					;(ImGui--StyleColorsDark)
+			 (ImGui--StyleColorsClassic)
 			 (let ((style (ImGui--GetStyle)))
 			   (when (logand
 				  io.ConfigFlags
@@ -168,7 +172,7 @@
 
 			     (progn
 			       (ImGui--Begin (string "hello"))
-			       (ImGui--CheckBox (string "demo window")
+			       (ImGui--Checkbox (string "demo window")
 						&show_demo_window)
 			       (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
 					    (/ 1000s0 (dot (ImGui--GetIO) Framerate))
