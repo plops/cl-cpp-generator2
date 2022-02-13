@@ -1,3 +1,7 @@
+|       |                          |
+| gen00 | imgui and implot demo    |
+| gen01 | imgui, implot and opencv |
+|       |                          |
 * references
  - kosarevsky: "3d graphics rendering cookbook"
 
@@ -56,3 +60,10 @@ mkdir b
 cmake -B b -S . -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build b
   #+end_example
+
+- try to also use opencv (and maybe later ceres)
+  - https://gist.github.com/UnaNancyOwen/acfc71de5b157d2ba22c090b420030e4
+#+begin_example
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+#+end_example
+- sudo dnf install opencv-devel

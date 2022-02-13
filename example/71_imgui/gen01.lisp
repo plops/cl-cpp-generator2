@@ -238,9 +238,14 @@
 		      (do0
 		       (comments "opencv initialization")
 
-		       (let ((cap_fn (string "/dev/video3"))
+		       (let ((cap_fn (string "/dev/video2"))
 			     (cap (cv--VideoCapture cap_fn)))
-			 ,(lprint :msg "opened video device" :vars `(cap_fn)))
+			 (if (cap.isOpened)
+			     ,(lprint :msg "opened video device" :vars `(cap_fn))
+			     ,(lprint :msg "failed to open video device" :vars `(cap_fn)))
+			 (let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
+			       (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT)))
+			   ,(lprint :vars `(cam_w cam_h))))
 		       )
 
 		      (do0
