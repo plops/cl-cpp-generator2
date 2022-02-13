@@ -15,16 +15,13 @@
 cd ~/src
 git clone https://github.com/Microsoft/vcpkg.git
 ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-
-
-
   #+end_example
 - install imgui
   - https://vcpkg.info/port/imgui
     #+begin_example
 ~/src/vcpkg/vcpkg install imgui[docking-experimental,glfw-binding,opengl3-binding]
     #+end_example
-- files are installed here ~/src/vcpkg/vcpkg install imgui[docking-experimental,glfw-binding,opengl3-binding]
+- files are installed here: /home/martin/src/vcpkg/packages/glfw3_x64-linux/lib/pkgconfig/glfw3.pc
 #+begin_example
 Installing package imgui[core,docking-experimental,glfw-binding,opengl3-binding]:x64-linux...
 Elapsed time for package imgui:x64-linux: 22.9 s
@@ -40,5 +37,6 @@ The package imgui provides CMake targets:
   
 - configure cmake using vcpkg
   #+begin_example
-cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake 
+mkdir b
+cmake -B b -S . -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake 
   #+end_example
