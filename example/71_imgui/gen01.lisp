@@ -275,11 +275,12 @@
 			      (board (cv--aruco--CharucoBoard--create
 				      5 7 .04s0 .02s0 board_dict))
 			      (params (cv--aruco--DetectorParameters--create)))
-			  "cv::Mat board_img;"
+			  "cv::Mat board_img3,board_img;"
 			  (board->draw (cv--Size 600 500)
-				       board_img
+				       board_img3
 				       10 1
-				       ))
+				       )
+			  (cv--cvtColor board_img3 board_img cv--COLOR_BGR2RGBA))
 
 			(let ((cap_fn (string "/dev/video2"))
 			      (cap (cv--VideoCapture cap_fn)))
@@ -377,7 +378,7 @@
 					   collect
 					   (destructuring-bind (&key width height data) e
 					     `(do0
-					       (ImGui--Begin (string "camera"))
+					       (ImGui--Begin (string ,(format nil "~a" data)))
 					       (glBindTexture GL_TEXTURE_2D (aref textures ,e-i))
 					       (glTexImage2D GL_TEXTURE_2D ;; target
 							     0 ;; level
