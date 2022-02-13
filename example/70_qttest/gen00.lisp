@@ -28,7 +28,6 @@
      :header-preamble `(do0
 			(include <vector>
 				 <QMainWindow>
-
 				 "CpuWidget.h"
 				 "MemoryWidget.h")
 			"class QCustomPlot;"
@@ -250,7 +249,7 @@
 	       Q_OBJECT
 	       "public:"
 
-	       (defmethod SysInfoWidget (&key (parent 0) (startDelayMs 500) (updateSeriesDelayMs 500))
+	       (defmethod SysInfoWidget (&key (parent 0) (startDelayMs 31) (updateSeriesDelayMs 31))
 		 (declare (type QWidget* parent)
 			  (type int startDelayMs updateSeriesDelayMs)
 			  (explicit)
