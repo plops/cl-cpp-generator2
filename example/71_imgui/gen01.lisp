@@ -376,7 +376,15 @@
 									  distCoeffs)
 				    (when (< 0 (charucoIds.size))
 				      (let ((color (cv--Scalar 255 0 255)))
-					(cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)))
+					(cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
+					#+nil (do0 "cv::Vec3d rvec, tvec;"
+						   (let ((valid (cv--aruco--estimatePoseCharucoBoard
+								 charucoCorners
+								 charucoIds
+								 board cameraMatrix distCoeffs
+								 rvec tvec)))
+						     (when valid
+						       (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
 				    ))
 				 (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 				 )
