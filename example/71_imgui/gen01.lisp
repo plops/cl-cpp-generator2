@@ -255,7 +255,7 @@
 		       (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
 		       (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 		       "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
-		       (let ((w (glfwCreateWindow 1280 720
+		       (let ((w (glfwCreateWindow 1800 1000
 						  (string "dear imgui example")
 						  nullptr nullptr)))
 			 (when (== nullptr w)
@@ -273,10 +273,10 @@
 			(let ((board_dict (cv--aruco--getPredefinedDictionary
 					   cv--aruco--DICT_6X6_250))
 			      (board (cv--aruco--CharucoBoard--create
-				      7 5 .04s0 .02s0 board_dict))
+				      8 4 .04s0 .02s0 board_dict))
 			      (params (cv--aruco--DetectorParameters--create)))
 			  "cv::Mat board_img3,board_img;"
-			  (board->draw (cv--Size 800 700)
+			  (board->draw (cv--Size 1600 800)
 				       board_img3
 				       10 1
 				       )
@@ -351,6 +351,8 @@
 							  ,data ;; data pointer
 							  )))))
 			     ,(lprint :msg "uploaded texture")
+			     (do0
+			      "cv::Mat cameraMatrix, distCoeffs;")
 			     (while (!glfwWindowShouldClose (window.get))
 			       (do0
 				(do0
@@ -361,7 +363,21 @@
 				  "std::vector<std::vector<cv::Point2f> > markerCorners;"
 				  (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
 				  (when (< 0 (markerIds.size))
-				    (cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)))
+					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
+				    "std::vector<cv::Point2f> charucoCorners;"
+				    "std::vector<int> charucoIds;"
+				    (cv--aruco--interpolateCornersCharuco markerCorners
+									  markerIds
+									  img3
+									  board
+									  charucoCorners
+									  charucoIds
+									  cameraMatrix
+									  distCoeffs)
+				    (when (< 0 (charucoIds.size))
+				      (let ((color (cv--Scalar 255 0 255)))
+					(cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)))
+				    ))
 				 (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 				 )
 				(glfwPollEvents)
