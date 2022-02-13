@@ -272,20 +272,30 @@
 			(let ((cap_fn (string "/dev/video2"))
 			      (cap (cv--VideoCapture cap_fn)))
 			  (if (cap.isOpened)
-			      ,(lprint :msg "opened video device" :vars `(cap_fn))
-			      ,(lprint :msg "failed to open video device" :vars `(cap_fn)))
-			  (let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
-				(cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT)))
-			    ,(lprint :vars `(cam_w cam_h))
-			    "cv::Mat img3,img;"
+			      ,(lprint :msg "opened video device" :vars `(cap_fn (cap.getBackendName)))
+			      ,(lprint :msg "failed to open video device" :vars `(cap_fn )))
+			  ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE)))
+			     `(let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
+				    (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT))
+				    (cam_fps (cap.get cv--CAP_PROP_FPS))
+		       		    (cam_format (cap.get cv--CAP_PROP_FORMAT))
+				    ,@(loop for e in cam-props
+					    collect
+					    `(,(string-downcase (format nil "cam_~a" e))
+					       (dot cap (get ,(format nil "cv::CAP_PROP_~a" e))))))
+				,(lprint :vars `(cam_w cam_h cam_fps cam_format
+						       ,@(loop for e in cam-props
+							       collect
+							       (string-downcase (format nil "cam_~a" e)))))
+				"cv::Mat img3,img;"
 					;"std::vector<cv::Mat> spl;"
-			    (>> cap img3)
+				(>> cap img3)
 					;(cv--split img spl)
-			    ,(lprint :msg "received camera image")
+				,(lprint :msg "received camera image")
 
-			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-			    ,(lprint :msg "converted camera image")
-			    )
+				(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+				,(lprint :msg "converted camera image")
+				))
 			  )
 			)
 
@@ -321,7 +331,7 @@
 			 (do0
 			  (do0
 			   (>> cap img3)
-			   (cv--cvtColor img3 img cv--COLOR_RGB2RGBA)
+			   (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 			   )
 			  (glfwPollEvents)
 			  (M.NewFrame)
