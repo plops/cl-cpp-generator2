@@ -283,7 +283,7 @@
 					;(cv--split img spl)
 			    ,(lprint :msg "received camera image")
 
-			    (cv--cvtColor img3 img cv--COLOR_RGB2RGBA)
+			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 			    ,(lprint :msg "converted camera image")
 			    )
 			  )
@@ -331,6 +331,17 @@
 			     (do0
 			      (ImGui--Begin (string "camera"))
 
+			      (glTexImage2D GL_TEXTURE_2D ;; target
+					    0 ;; level
+					    GL_RGBA ;; internalformat
+					    img.cols ;; width
+					    img.rows ;; height
+					    0 ;; border
+					    GL_RGBA ;; format
+					    GL_UNSIGNED_BYTE ;; type
+					    img.data ;; data pointer
+					    )
+			      #+nil
 			      (glTexSubImage2D GL_TEXTURE_2D ;; target
 					       0 ;; level
 					       0 ;; xoffset
