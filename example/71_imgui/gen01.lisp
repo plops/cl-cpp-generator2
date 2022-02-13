@@ -276,7 +276,7 @@
 				      7 5 .04s0 .02s0 board_dict))
 			      (params (cv--aruco--DetectorParameters--create)))
 			  "cv::Mat board_img3,board_img;"
-			  (board->draw (cv--Size 600 500)
+			  (board->draw (cv--Size 800 700)
 				       board_img3
 				       10 1
 				       )
