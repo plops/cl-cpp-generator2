@@ -38,22 +38,23 @@
 					 "imgui_impl_glfw.h"
 					 "imgui_impl_opengl3.h"
 
-					 <GLFW/glfw3.h>)
+					 <GLFW/glfw3.h>
+					 )
 				)
      :code `(do0
 	     (defclass MainWindow ()
 	       "public:"
 	       "bool show_demo_window_;"
-	       "ImVec4* clear_color_;"
+					;"ImVec4* clear_color_;"
 	       (defmethod MainWindow ()
 		 (declare
 		  (explicit)
 		  (construct
 		   (show_demo_window_ true)
-		   (clear_color_ (new (ImVec4 .45s0
-					      .55s0
-					      .6s0
-					      1s0)))
+		   #+nil (clear_color_ (new (ImVec4 .45s0
+						    .55s0
+						    .6s0
+						    1s0)))
 		   )
 		  (values :constructor))
 
@@ -112,15 +113,16 @@
 			   ,(lprint :msg "loading font failed" :vars `(font_fn font_size))
 			   ,(lprint :msg "loaded font" :vars `(font_fn font_size)))))))
 		 )
-	       (defmethod Update (window)
-		 (declare (type GLFWwindow* window))
+	       (defmethod NewFrame ()
+		 (do0 (ImGui_ImplOpenGL3_NewFrame)
+		      (ImGui_ImplGlfw_NewFrame)
+		      (ImGui--NewFrame)
+		      (ImGui--DockSpaceOverViewport)))
+	       (defmethod Update ()
+
 		 ,(lprint)
 		 (do0
-		  (ImGui_ImplOpenGL3_NewFrame)
-		  (ImGui_ImplGlfw_NewFrame)
-		  (ImGui--NewFrame)
 
-		  (ImGui--DockSpaceOverViewport)
 		  (when show_demo_window_
 		    (ImGui--ShowDemoWindow &show_demo_window_))
 
@@ -132,8 +134,13 @@
 		    (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
 				 (/ 1000s0 (dot (ImGui--GetIO) Framerate))
 				 (dot (ImGui--GetIO) Framerate))
-		    (ImGui--End)
-		    )
+		    (ImGui--End))
+		  )
+		 )
+	       (defmethod Render (window)
+		 (declare (type GLFWwindow* window))
+		 (do0
+		  ,(lprint)
 		  (let ((screen_width (int 0))
 			(screen_height (int 0)))
 		    (glfwGetFramebufferSize window
@@ -141,19 +148,19 @@
 					    &screen_height)
 					;,(lprint :msg "framebuffer" :vars `(screen_width screen_height))
 		    (glViewport 0 0 screen_width screen_height)
-		    (glClearColor (* clear_color_->x clear_color_->w)
-				  (* clear_color_->y clear_color_->w)
-				  (* clear_color_->z clear_color_->w)
-				  clear_color_->w)
+		    #+nil(glClearColor (* clear_color_->x clear_color_->w)
+				       (* clear_color_->y clear_color_->w)
+				       (* clear_color_->z clear_color_->w)
+				       clear_color_->w)
 		    (glClear GL_COLOR_BUFFER_BIT)
+
+		    (ImGui--Render)
+
 		    (ImGui_ImplOpenGL3_RenderDrawData
 		     (ImGui--GetDrawData))
-		    ))
-		 )
-	       (defmethod Render ()
-		 (do0
-		  (comments "Rendering")
-		  (ImGui--Render)
+		    )
+
+
 
 		  #+nil
 		  (do0
@@ -246,25 +253,19 @@
 
 		       "MainWindow M;"
 		       (M.Init (window.get) glsl_version)
-
 		       (while (!glfwWindowShouldClose (window.get))
 			 (do0
 			  (glfwPollEvents)
-
-			  (M.Update (window.get))
-
-
-			  (M.Render)
-
+			  (M.NewFrame)
+			  (M.Update)
+			  (M.Render  (window.get))
 			  (glfwSwapBuffers (window.get)))))
 		      (do0
 		       ,(lprint :msg "cleanup")
 		       (M.Shutdown)
-
 		       #+nil (do0 (glfwDestroyWindow window)
 				  (glfwTerminate)))
 		      ,(lprint :msg "leave program")
-
 		      (return 0))))
 
     (with-open-file (s "source/CMakeLists.txt" :direction :output
