@@ -1,0 +1,8 @@
+
+- comment about smart pointers
+  - i just read the part about smart pointers in the book. i would
+    like to use them but qt can't support them
+  - https://stackoverflow.com/questions/10334511/why-do-c-libraries-and-frameworks-never-use-smart-pointers
+    biggest reason is probably the lack of a standard C++ Application
+    Binary Interface (ABI).
+- maybe i should look into imgui again
