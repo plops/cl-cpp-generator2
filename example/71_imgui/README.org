@@ -38,5 +38,6 @@ The package imgui provides CMake targets:
 - configure cmake using vcpkg
   #+begin_example
 mkdir b
-cmake -B b -S . -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake 
+cmake -B b -S . -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build b
   #+end_example

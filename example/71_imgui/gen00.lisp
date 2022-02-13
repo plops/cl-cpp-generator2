@@ -47,6 +47,7 @@
 		 (declare
 		  (values :constructor))))))
 
+
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"main.cpp"
@@ -66,13 +67,34 @@
 		     <cassert>
 					;  <memory>
 		     )
-
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
+		    (do0
+		     (include <GLFW/glfw3.h>)
+		     (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
+		     (defclass+ DestroyGLFWwindow ()
+		       "public:"
+		       (defmethod "operator()" (ptr)
+			 (declare (type GLFWwindow* ptr))
+			 ,(lprint :msg "Destroy GLFW window context.")
+			 (glfwDestroyWindow ptr))))
+
+
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
+		      (do0
+		       (comments "glfw initialization")
+		       (unless (glfwInit)
+			 ,(lprint :msg "glfwInit failed."))
+		       (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+		       (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
+		       "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
+		       (window.reset (glfwCreateWindow 1280 720
+						       (string "dear imgui example")
+						       nullptr nullptr)))
+
 		      ,(lprint)
 
 		      (return 0))))
