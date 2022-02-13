@@ -122,7 +122,8 @@
 			  (comments "enable keyboard controls, docking multi-viewport")
 			  ,@(loop for e in `(NavEnableKeyboard
 					     DockingEnable
-					     ViewportsEnable)
+					;ViewportsEnable
+					     )
 				  collect
 				  `(do0
 				    (setf io.ConfigFlags
@@ -158,6 +159,15 @@
 				 ,(lprint :msg "loading font failed" :vars `(font_fn font_size))
 				 ,(lprint :msg "loaded font" :vars `(font_fn font_size)))))))
 		       (let ((show_demo_window true))
+			 #+nil (do0
+				(comments "dockspace")
+				(ImGui--DockSpaceOverViewport)
+				#+nil (let ((dockspace_id
+					     (ImGui--GetID (string "mydockspace")))
+					    (dockspace_flags ImGuiDockNodeFlags_None))
+					(ImGui--DockSpace dockspace_id
+							  (ImVec2 0s0 0s0)
+							  dockspace_flags)))
 			 (while (!glfwWindowShouldClose (window.get))
 			   (do0
 			    (glfwPollEvents)
@@ -167,11 +177,14 @@
 			     (ImGui_ImplGlfw_NewFrame)
 			     (ImGui--NewFrame)
 
+			     (ImGui--DockSpaceOverViewport)
+
 			     (when show_demo_window
 			       (ImGui--ShowDemoWindow &show_demo_window))
 
 			     (progn
 			       (ImGui--Begin (string "hello"))
+
 			       (ImGui--Checkbox (string "demo window")
 						&show_demo_window)
 			       (ImGui--Text (string "Application average %.3f ms/frame (%.1f FPS)")
