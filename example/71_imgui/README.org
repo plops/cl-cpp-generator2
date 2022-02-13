@@ -1,0 +1,5 @@
+* references
+ - kosarevsky: "3d graphics rendering cookbook"
+
+ - The Cherno: "BEST WAY to make Desktop Applications in C++"
+   - https://www.youtube.com/watch?v=vWXrFetSH8w
