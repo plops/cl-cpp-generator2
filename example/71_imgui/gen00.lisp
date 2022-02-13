@@ -69,7 +69,12 @@
 		     )
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    (do0
-		     (include <GLFW/glfw3.h>)
+		     (include "imgui_impl_opengl3_loader.h"
+			      "imgui.h"
+			      "imgui_impl_glfw.h"
+			      "imgui_impl_opengl3.h"
+
+			      <GLFW/glfw3.h>)
 		     (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
 		     (defclass+ DestroyGLFWwindow ()
 		       "public:"
@@ -78,7 +83,6 @@
 			 ,(lprint :msg "Destroy GLFW window context.")
 			 (glfwDestroyWindow ptr))))
 
-
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
@@ -86,16 +90,38 @@
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 		      (do0
 		       (comments "glfw initialization")
+		       (comments "https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp")
+		       (glfwSetErrorCallback (lambda (err description)
+					       (declare (type int err)
+							(type "const char*" description))
+					       ,(lprint :msg "glfw error" :vars `(err description))))
 		       (unless (glfwInit)
 			 ,(lprint :msg "glfwInit failed."))
+		       "const char* glsl_version = \"#version 130\";"
 		       (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
 		       (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
 		       "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
-		       (window.reset (glfwCreateWindow 1280 720
-						       (string "dear imgui example")
-						       nullptr nullptr)))
+		       (let ((w (glfwCreateWindow 1280 720
+						  (string "dear imgui example")
+						  nullptr nullptr)))
+			 (when (== nullptr w)
+			   ,(lprint :msg "glfwCreatWindow failed."))
+			 (window.reset w)
+			 (glfwMakeContextCurrent (window.get))
+			 (glfwSwapInterval 1))
+		       (comments "imgui brings its own opengl loader"
+				 "https://github.com/ocornut/imgui/issues/4445")
 
-		      ,(lprint)
+		       (let ((screen_width (int 0))
+			     (screen_height (int 0)))
+			 (glfwGetFramebufferSize (window.get)
+						 &screen_width
+						 &screen_height)
+			 ,(lprint :msg "framebuffer" :vars `(screen_width screen_height))
+			 (glViewport 0 0 screen_width screen_height)))
+
+
+		      ,(lprint :msg "leave program")
 
 		      (return 0))))
 
@@ -121,7 +147,9 @@
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 	  (out "set( SRCS ~{~a~^~%~} )"
-	       (directory "source/*.cpp"))
+	       (append
+		(directory "source/*.cpp")
+		(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")))
 
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
