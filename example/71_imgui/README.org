@@ -78,6 +78,24 @@ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/s
   - main, start two threads, set stopSig when user quits, display
     results
 #+begin_example
+class keyframe_processor
+  process()
+    while(run)
+      sleep(1ms)
+      event = eventQueue->receive
+      process_event(event)
+  process_event(event)
+    gray = rgb2gray(event.get_rgb)
+    for (sub: subframe(gray))
+      median[sub] = median(sub)
+    msg = processed_fame_message(event.batch_idx,event.frame_idx,event.seconds, median)
+    std::async(std::launch::async, &message_queue<processed_frame_message>::send, msgQueue, std::move(msg))
+
+  id : int
+  run : bool
+  std::shared_ptr<message_queue<process_frame_event> > eventQueue     (<- input)
+  std::shared_ptr<message_queue<processed_frame_message> > msgQueue   (-> output>
+
 class message_queue<T>
   T receive()
     lock(mutex)
@@ -100,15 +118,32 @@ class process_frame_event
   frame : Mat
   fps, seconds : real
 
-class process_frame_message
+class processed_frame_message
   batch_idx, frame_idx : int
   seconds : real
   medians : vector<int>
 
-	std::shared_ptr<message_queue<process_frame_event>> _eventQueue = std::make_shared<message_queue<process_frame_event>>();
-	std::shared_ptr<message_queue<processed_frame_message>> _msgQueue = std::make_shared<message_queue<processed_frame_message>>();
+std::shared_ptr<message_queue<process_frame_event>> eventQueue = std::make_shared<message_queue<process_frame_event>>();
+std::shared_ptr<message_queue<processed_frame_message>> msgQueue = std::make_shared<message_queue<processed_frame_message>>();
+  
+int num_threads = 4;
+std::vector<keyframe_processor> kfps;
+std::vector<std::thread> kfp_threads;
 
-	int num_threads = 4;
-	std::vector<keyframe_processor> kfps;
-	std::vector<std::thread> kfp_threads;
+dotimes i num_threads
+  kfp = keyframe_processor(i,eventQueue,msgQueue)
+  kfps.push_back(kfp)
+  kfp_threads.push_back(std::thread(&keyframe_processor::process, kfp))
+
+for-each keyframe keyframes
+  frame = cap.read()
+  event = process_frame_event(i frame_idx frame dim fps seconds)
+  async(launch::async &message_queue<process_frame_event>::send eventQueu std::move(event))
+
+while True
+  sleep(1ms)
+  msg = msgQueue->receive()
+  print msg.get_seconds()
+  print msg.get_median()
+
 #+end_example
