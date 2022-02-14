@@ -1,7 +1,7 @@
-|       |                          |
-| gen00 | imgui and implot demo    |
-| gen01 | imgui, implot and opencv |
-|       |                          |
+|       |                                      |
+| gen00 | imgui and implot demo                |
+| gen01 | imgui, implot and opencv, no threads |
+| gen02 | like 01 but use parallel workers     |
 * references
  - kosarevsky: "3d graphics rendering cookbook"
 

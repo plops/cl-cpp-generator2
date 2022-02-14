@@ -14,7 +14,7 @@
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
 
-    (defparameter *source-dir* #P"example/71_imgui/01source/")
+    (defparameter *source-dir* #P"example/71_imgui/02source/")
     (load "util.lisp")
     (write-class
      :dir (asdf:system-relative-pathname
@@ -426,7 +426,7 @@
 		      ,(lprint :msg "leave program")
 		      (return 0))))
 
-    (with-open-file (s "01source/CMakeLists.txt" :direction :output
+    (with-open-file (s "02source/CMakeLists.txt" :direction :output
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
@@ -451,7 +451,7 @@
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
-		(directory "01source/*.cpp")
+		(directory "02source/*.cpp")
 					;(directory "/home/martin/src/vcpkg/buildtrees/implot/src/*/implot_demo.cpp")
 		(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
 		))
