@@ -199,8 +199,10 @@
      :name `ProcessFrameEvent
      :headers `()
      :header-preamble `(do0
-			(include <memory>)
-			"namespace cv { class Mat; }"
+			(include ;<memory>
+			 <opencv2/core/core.hpp>
+			 )
+					;"namespace cv { class Mat; }"
 			)
      :implementation-preamble `(do0
 					;,log-preamble
@@ -212,6 +214,7 @@
 				(dim int)
 				(fps float)
 				(seconds double)
+				(frame "cv::Mat")
 				)))
 	     `(do0
 	       (defclass ProcessFrameEvent ()
@@ -219,29 +222,30 @@
 		 ,@(loop for (e f) in def-members
 			 collect
 			 (format nil "~a ~a;" f e))
-		 "std::unique_ptr<cv::Mat> frame;"
+					;"std::unique_ptr<cv::Mat> frame;"
 		 (defmethod ProcessFrameEvent (,@(loop for (e f) in def-members
 						       collect
 						       (intern (string-upcase (format nil "~a_" e))))
 
-					       frame_)
+					;  frame_
+					       )
 		   (declare
 		    ,@(loop for (e f) in def-members
 			    collect
 			    `(type ,f ,(intern (string-upcase (format nil "~a_" e)))))
 
-		    (type "std::unique_ptr<cv::Mat>" frame_)
+					;(type "std::unique_ptr<cv::Mat>" frame_)
 		    (construct
 		     ,@(loop for (e f) in def-members
 			     collect
 			     `(,e ,(format nil "~a_" e)))
-		     (frame (std--move frame_))
+					;(frame (std--move frame_))
 		     )
 		    (values :constructor))
 		   )
-		 (defmethod get_frame ()
-		   (declare (values "std::unique_ptr<cv::Mat>"))
-		   (return (std--move frame)))
+		 #+nil (defmethod get_frame ()
+			 (declare (values "std::unique_ptr<cv::Mat>"))
+			 (return (std--move frame)))
 		 ,@(loop for (e f) in def-members
 			 collect
 			 `(defmethod ,(format nil "get_~a" e) ()
