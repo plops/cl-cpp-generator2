@@ -252,6 +252,47 @@
 			    (declare (values ,f))
 			    (return ,e)))))))
 
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `ProcessedFrameMessage
+     :headers `()
+     :header-preamble `()
+     :implementation-preamble `(do0
+				(include "ProcessedFrameMessage.h")
+				)
+     :code (let ((def-members `((batch_idx int)
+				(frame_idx int)
+				(seconds double)
+				;; i need to add the checkerboard corners herer
+				)))
+	     `(do0
+	       (defclass ProcessedFrameMessage ()
+		 "public:"
+		 ,@(loop for (e f) in def-members
+			 collect
+			 (format nil "~a ~a;" f e))
+		 (defmethod ProcessedFrameMessage (,@(loop for (e f) in def-members
+							   collect
+							   (intern (string-upcase (format nil "~a_" e))))
+						   )
+		   (declare
+		    ,@(loop for (e f) in def-members
+			    collect
+			    `(type ,f ,(intern (string-upcase (format nil "~a_" e)))))
+		    (construct
+		     ,@(loop for (e f) in def-members
+			     collect
+			     `(,e ,(format nil "~a_" e))))
+		    (values :constructor))
+		   )
+		 ,@(loop for (e f) in def-members
+			 collect
+			 `(defmethod ,(format nil "get_~a" e) ()
+			    (declare (values ,f))
+			    (return ,e)))))))
+
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
