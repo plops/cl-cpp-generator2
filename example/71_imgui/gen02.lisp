@@ -306,9 +306,12 @@
 				     <vector>
 				     <future>))
      :implementation-preamble `(do0
+				,log-preamble
 				(include "ProcessedFrameMessage.h")
 				(include <chrono>
 					 <thread>
+					;<opencv2/core/core.hpp>
+					 <opencv2/imgproc/imgproc.hpp>
 					 )
 				)
      :code (let ((def-members `((id int)
@@ -349,9 +352,31 @@
 		   (while run
 		     "using namespace std::chrono_literals;"
 		     (std--this_thread--sleep_for 1ms)
-		     ))
+		     (let ((event (events->receive)))
+		       (processEvent event))
+		     )
+		   ,(lprint :msg "stopping BoardProcessor" :vars `(id)))
 		 (defmethod processEvent (event)
-		   (declare (type ProcessFrameEvent event)))
+		   (declare (type ProcessFrameEvent event))
+
+
+		   (let ((dim (event.get_dim))
+			 (frame (event.get_frame))
+			 )
+		     "cv::Mat gray;"
+		     (cv--cvtColor frame
+				   gray
+				   cv--COLOR_RGB2GRAY)
+		     (let ((msg (ProcessedFrameMessage (event.get_batch_idx)
+						       (event.get_frame_idx)
+						       (event.get_seconds)))
+			   (sentCondition
+			    (std--async
+			     std--launch--async
+			     "&MessageQueue<ProcessedFrameMessage>::send"
+			     msgs
+			     (std--move msg))))))
+		   )
 		 (defmethod stop ()
 		   (setf run false))))))
 
