@@ -192,6 +192,25 @@
 		  (ImGui--DestroyContext))
 		 ))))
 
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"message_queue.h"
+		       *source-dir*))
+     `(do0
+       (pragma once)
+       (include <deque> <mutex> <condition_variable>)
+       (include "implot.h")
+       (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
+       (defclass+ DestroyGLFWwindow ()
+	 "public:"
+	 (defmethod "operator()" (ptr)
+	   (declare (type GLFWwindow* ptr))
+	   ,(lprint :msg "Destroy GLFW window context.")
+	   (glfwDestroyWindow ptr)
+	   (glfwTerminate)))
+
+       ))
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
