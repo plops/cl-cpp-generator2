@@ -293,6 +293,68 @@
 			    (declare (values ,f))
 			    (return ,e)))))))
 
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `BoardProcessor
+     :headers `()
+     :header-preamble `(do0 (include <mutex>
+				     "MessageQueue.h"
+				     "ProcessFrameEvent.h"
+				     "ProcessedFrameMessage.h"
+				     <vector>
+				     <future>))
+     :implementation-preamble `(do0
+				(include "ProcessedFrameMessage.h")
+				(include <chrono>
+					 <thread>
+					 )
+				)
+     :code (let ((def-members `((id int)
+				(run bool)
+				(events "std::shared_ptr<MessageQueue<ProcessFrameEvent> >")
+				(msgs "std::shared_ptr<MessageQueue<ProcessedFrameMessage> >")
+				)))
+	     `(do0
+	       (defclass BoardProcessor ()
+		 "public:"
+		 ,@(loop for (e f) in def-members
+			 collect
+			 (format nil "~a ~a;" f e))
+		 (defmethod BoardProcessor (,@(remove-if
+					       #'null
+					       (loop for (e f) in def-members
+						     collect
+						     (unless (eq e 'run)
+						       (intern (string-upcase (format nil "~a_" e))))))
+					    )
+		   (declare
+		    ,@(loop for (e f) in def-members
+			    collect
+			    `(type ,f ,(intern (string-upcase (format nil "~a_" e)))))
+		    (construct
+		     (run true)
+		     ,@(remove-if #'null (loop for (e f) in def-members
+					       collect
+					       (unless (eq e 'run)
+						 `(,e ,(format nil "~a_" e))))))
+		    (values :constructor)))
+		 ,@(loop for (e f) in def-members
+			 collect
+			 `(defmethod ,(format nil "get_~a" e) ()
+			    (declare (values ,f))
+			    (return ,e)))
+		 (defmethod process ()
+		   (while run
+		     "using namespace std::chrono_literals;"
+		     (std--this_thread--sleep_for 1ms)
+		     ))
+		 (defmethod processEvent (event)
+		   (declare (type ProcessFrameEvent event)))
+		 (defmethod stop ()
+		   (setf run false))))))
+
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -304,11 +366,13 @@
        (defclass+ (MessageQueue :template "typename T") ()
 	 "public:"
 	 "std::mutex mutex_;"
-	 "std--deque<T> queue_;"
-	 "std--condition_variable condition_;"
+	 "std::deque<T> queue_;"
+	 "std::condition_variable condition_;"
 	 (defmethod receive ()
 	   (declare (values T))
-	   (let ((lock (std--unique_lock<std--mutex> mutex_)))
+	   (let (;(lock (std--unique_lock<std--mutex> mutex_))
+		 )
+	     "std::unique_lock<std::mutex> lock(mutex_);"
 	     (dot condition_
 		  (wait lock (lambda ()
 			       (declare (capture this))
@@ -319,7 +383,9 @@
 	       (return msg))))
 	 (defmethod send (msg)
 	   (declare (type T&& msg))
-	   (let ((lock (std--lock_guard<std--mutex> mutex_)))
+	   (let (;(lock (std--lock_guard<std--mutex> mutex_))
+		 )
+	     "std::lock_guard<std::mutex> lock(mutex_);"
 	     (dot queue_ (push_back (std--move msg)))
 	     (dot condition_ (notify_one)))))))
 
@@ -603,5 +669,4 @@
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
 	  ))
       )))
-
 
