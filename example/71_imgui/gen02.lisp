@@ -192,25 +192,91 @@
 		  (ImGui--DestroyContext))
 		 ))))
 
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `ProcessFrameEvent
+     :headers `()
+     :header-preamble `(do0
+			(include <memory>)
+			"namespace cv { class Mat; }"
+			)
+     :implementation-preamble `(do0
+					;,log-preamble
+					;(include (include <opencv2/core/core.hpp>))
+				(include "ProcessFrameEvent.h")
+				)
+     :code (let ((def-members `((batch_idx int)
+				(frame_idx int)
+				(dim int)
+				(fps float)
+				(seconds double)
+				)))
+	     `(do0
+	       (defclass ProcessFrameEvent ()
+		 "public:"
+		 ,@(loop for (e f) in def-members
+			 collect
+			 (format nil "~a ~a;" f e))
+		 "std::unique_ptr<cv::Mat> frame;"
+		 (defmethod ProcessFrameEvent (,@(loop for (e f) in def-members
+						       collect
+						       (intern (string-upcase (format nil "~a_" e))))
+
+					       frame_)
+		   (declare
+		    ,@(loop for (e f) in def-members
+			    collect
+			    `(type ,f ,(intern (string-upcase (format nil "~a_" e)))))
+
+		    (type "std::unique_ptr<cv::Mat>" frame_)
+		    (construct
+		     ,@(loop for (e f) in def-members
+			     collect
+			     `(,e ,(format nil "~a_" e)))
+		     (frame (std--move frame_))
+		     )
+		    (values :constructor))
+		   )
+		 (defmethod get_frame ()
+		   (declare (values "std::unique_ptr<cv::Mat>"))
+		   (return (std--move frame)))
+		 ,@(loop for (e f) in def-members
+			 collect
+			 `(defmethod ,(format nil "get_~a" e) ()
+			    (declare (values ,f))
+			    (return ,e)))))))
+
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
-      (merge-pathnames #P"message_queue.h"
+      (merge-pathnames #P"MessageQueue.h"
 		       *source-dir*))
      `(do0
        (pragma once)
        (include <deque> <mutex> <condition_variable>)
-       (include "implot.h")
-       (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
-       (defclass+ DestroyGLFWwindow ()
+       (defclass+ (MessageQueue :template "typename T") ()
 	 "public:"
-	 (defmethod "operator()" (ptr)
-	   (declare (type GLFWwindow* ptr))
-	   ,(lprint :msg "Destroy GLFW window context.")
-	   (glfwDestroyWindow ptr)
-	   (glfwTerminate)))
-
-       ))
+	 "std::mutex mutex_;"
+	 "std--deque<T> queue_;"
+	 "std--condition_variable condition_;"
+	 (defmethod receive ()
+	   (declare (values T))
+	   (let ((lock (std--unique_lock<std--mutex> mutex_)))
+	     (dot condition_
+		  (wait lock (lambda ()
+			       (declare (capture this))
+			       (return (not (dot queue_ (empty)))))))
+	     (comments "remove last vector from queue")
+	     (let ((msg (std--move (dot queue_ (back)))))
+	       (queue_.pop_back)
+	       (return msg))))
+	 (defmethod send (msg)
+	   (declare (type T&& msg))
+	   (let ((lock (std--lock_guard<std--mutex> mutex_)))
+	     (dot queue_ (push_back (std--move msg)))
+	     (dot condition_ (notify_one)))))))
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
@@ -492,6 +558,5 @@
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
 	  ))
       )))
-
 
 
