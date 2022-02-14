@@ -69,3 +69,46 @@ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/s
 #+end_example
 - sudo dnf install opencv-devel
 - charuco board example https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html
+- parallel processing with opencv https://github.com/dwood3/cppnd-capstone/blob/master/src/main.cpp
+  - https://www.manmade2.com/concurrent-c-opencv-video-streaming/
+  - grabframe symbolized as conveyor belt, stores frames in
+    frameStack, clears when stack flows over
+  - processFrame another conveyor, read last frame from stack, some
+    image processing, store in contourStack
+  - main, start two threads, set stopSig when user quits, display
+    results
+#+begin_example
+class message_queue<T>
+  T receive()
+    lock(mutex)
+    condition.wait()
+    msg = move(queue.back)
+    queue.pop_back
+    return msg
+    
+  send(T&&)
+    lock(mutex)
+    queue.push_back(std::move(msg))
+    condition.notify_one()
+    
+  queue : deque<T>
+  mutex : mutex
+  condition : condition_variable
+  
+class process_frame_event
+  batch_idx, frame_idx, idm : int
+  frame : Mat
+  fps, seconds : real
+
+class process_frame_message
+  batch_idx, frame_idx : int
+  seconds : real
+  medians : vector<int>
+
+	std::shared_ptr<message_queue<process_frame_event>> _eventQueue = std::make_shared<message_queue<process_frame_event>>();
+	std::shared_ptr<message_queue<processed_frame_message>> _msgQueue = std::make_shared<message_queue<processed_frame_message>>();
+
+	int num_threads = 4;
+	std::vector<keyframe_processor> kfps;
+	std::vector<std::thread> kfp_threads;
+#+end_example
