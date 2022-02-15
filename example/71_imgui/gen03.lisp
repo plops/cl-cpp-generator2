@@ -900,7 +900,27 @@
 				  (declare (capture &msgQueue))
 					;(charuco.Render)
 				  (let ((msg (msgQueue->receive)))
-				    ,(lprint :vars `((msg.get_seconds))))
+				    "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+				    (let ((queue_delay (- (_timestamp.count) (msg.get_seconds))))
+				      ,(lprint :vars `(queue_delay)))
+				    #+nil (let ((texture (aref textures ,e-i)))
+					    (glBindTexture GL_TEXTURE_2D texture)
+					    ,@(loop for e in `(MIN MAG) collect
+						    `(glTexParameteri GL_TEXTURE_2D
+								      ,(format nil "GL_TEXTURE_~a_FILTER" e)
+								      GL_LINEAR))
+					    (glPixelStorei GL_UNPACK_ROW_LENGTH
+							   0)
+					    (glTexImage2D GL_TEXTURE_2D ;; target
+							  0 ;; level
+							  GL_RGBA ;; internalformat
+							  ,width ;; width
+							  ,height ;; height
+							  0 ;; border
+							  GL_RGBA ;; format
+							  GL_UNSIGNED_BYTE ;; type
+							  ,data ;; data pointer
+							  )))
 				  )
 				)
 
