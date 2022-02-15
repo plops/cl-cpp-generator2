@@ -79,7 +79,8 @@
 			(ImGui--DestroyContext)))
 	       (defmethod Init (window glsl_version )
 		 (declare (type GLFWwindow* window)
-			  (type "const char*" glsl_version))
+			  (type "const char*" glsl_version)
+			  )
 		 ,(lprint)
 		 (do0
 		  #+nil(do0 (IMGUI_CHECKVERSION)
@@ -414,6 +415,110 @@
 	     (dot queue_ (push_back (std--move msg)))
 	     (dot condition_ (notify_one)))))))
 
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `GraphicsFramework
+     :headers `()
+     :header-preamble `(do0 (include ;"imgui_impl_opengl3_loader.h"
+			     <GLFW/glfw3.h>))
+     :implementation-preamble `(do0
+				,log-preamble
+				(include "imgui_impl_opengl3_loader.h"
+
+					 "imgui.h"
+					 "imgui_impl_glfw.h"
+					 "imgui_impl_opengl3.h"
+
+					 <GLFW/glfw3.h>))
+     :code (let ((def-members `(#+nil (window "std::unique_ptr<GLFWwindow,DestroyGLFWwindow>"
+					      )
+
+				      )))
+	     `(do0
+	       (do0
+		(defclass DestroyGLFWwindow ()
+		  (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
+		  "public:"
+		  (defmethod "operator()" (ptr)
+		    (declare (type GLFWwindow* ptr))
+		    ,(lprint :msg "Destroy GLFW window context.")
+		    (glfwDestroyWindow ptr)
+		    (glfwTerminate))))
+	       (defclass GraphicsFramework ()
+		 "public:"
+		 "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
+		 ,@(loop for (e f) in def-members
+			 collect
+			 (format nil "~a ~a;" f e))
+		 (defmethod GraphicsFramework (,@(remove-if
+						  #'null
+						  (loop for (e f) in def-members
+							collect
+							(unless (eq e 'run)
+							  (intern (string-upcase (format nil "~a_" e))))))
+					       )
+		   (declare
+		    ,@(loop for (e f) in def-members
+			    collect
+			    `(type ,f ,(intern (string-upcase (format nil "~a_" e)))))
+		    (construct
+
+		     ,@(remove-if #'null (loop for (e f) in def-members
+					       collect
+					       (unless (eq e 'run)
+						 `(,e ,(format nil "~a_" e))))))
+		    (values :constructor))
+
+
+		   )
+		 ,@(loop for (e f) in def-members
+			 collect
+			 `(defmethod ,(format nil "get_~a" e) ()
+			    (declare (values ,f))
+			    (return ,e)))
+		 (defmethod Init ()
+		   (do0
+		    (glfwSetErrorCallback (lambda (err description)
+					    (declare (type int err)
+						     (type "const char*" description))
+					    ,(lprint :msg "glfw error" :vars `(err description))))
+		    (comments "glfw initialization")
+		    (comments "https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp")
+
+		    (unless (glfwInit)
+		      ,(lprint :msg "glfwInit failed."))
+
+		    (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+		    (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
+					;"std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
+		    (let ((w (glfwCreateWindow 1800 1000
+					       (string "dear imgui example")
+					       nullptr nullptr)))
+		      (when (== nullptr w)
+			,(lprint :msg "glfwCreatWindow failed."))
+		      (window.reset w)
+		      (glfwMakeContextCurrent (window.get))
+		      ,(lprint :msg "enable vsync")
+		      (glfwSwapInterval 1))
+		    (comments "imgui brings its own opengl loader"
+			      "https://github.com/ocornut/imgui/issues/4445")))
+		 (defmethod WindowShouldClose ()
+		   (declare (values bool))
+		   (return (glfwWindowShouldClose (window.get))))
+		 (defmethod PollEvents ()
+		   (glfwPollEvents))
+		 (defmethod Shutdown ()
+					;(glfwDestroyWindow window)
+		   (glfwTerminate))
+		 (defmethod getWindow ()
+		   (declare (values GLFWwindow*))
+		   (comments "FIXME: how to handle this pointer as a smart pointer?"
+			     "https://stackoverflow.com/questions/6012157/is-stdunique-ptrt-required-to-know-the-full-definition-of-t")
+		   (return ( window.get)))
+		 ))))
+
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"main.cpp"
@@ -436,192 +541,100 @@
 			     <opencv2/imgproc.hpp>
 			     <opencv2/aruco/charuco.hpp>)
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
-		    (do0
-		     (include "imgui_impl_opengl3_loader.h"
 
-			      "imgui.h"
-			      "imgui_impl_glfw.h"
-			      "imgui_impl_opengl3.h"
-
-			      <GLFW/glfw3.h>)
-		     (include "implot.h")
-		     (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
-		     (defclass+ DestroyGLFWwindow ()
-		       "public:"
-		       (defmethod "operator()" (ptr)
-			 (declare (type GLFWwindow* ptr))
-			 ,(lprint :msg "Destroy GLFW window context.")
-			 (glfwDestroyWindow ptr)
-			 (glfwTerminate))))
+		    (include "implot.h")
+		    (include "GraphicsFramework.h")
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
-		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+		      (let ((framework (GraphicsFramework)))
+			(do0
 
 
+			 ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+			 (framework.Init)
 
-		      (do0
-		       (comments "glfw initialization")
-		       (comments "https://github.com/ocornut/imgui/blob/docking/examples/example_glfw_opengl3/main.cpp")
-		       (glfwSetErrorCallback (lambda (err description)
-					       (declare (type int err)
-							(type "const char*" description))
-					       ,(lprint :msg "glfw error" :vars `(err description))))
-		       (unless (glfwInit)
-			 ,(lprint :msg "glfwInit failed."))
-		       "const char* glsl_version = \"#version 130\";"
-		       (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
-		       (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0)
-		       "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
-		       (let ((w (glfwCreateWindow 1800 1000
-						  (string "dear imgui example")
-						  nullptr nullptr)))
-			 (when (== nullptr w)
-			   ,(lprint :msg "glfwCreatWindow failed."))
-			 (window.reset w)
-			 (glfwMakeContextCurrent (window.get))
-			 ,(lprint :msg "enable vsync")
-			 (glfwSwapInterval 1))
-		       (comments "imgui brings its own opengl loader"
-				 "https://github.com/ocornut/imgui/issues/4445")
 
-		       (do0
-			(comments "opencv initialization")
+			 (do0
 
-			(let ((board_dict (cv--aruco--getPredefinedDictionary
-					   cv--aruco--DICT_6X6_250))
-			      (board (cv--aruco--CharucoBoard--create
-				      8 4 .04s0 .02s0 board_dict))
-			      (params (cv--aruco--DetectorParameters--create)))
-			  "cv::Mat board_img3,board_img;"
-			  (board->draw (cv--Size 1600 800)
-				       board_img3
-				       10 1
-				       )
-			  (cv--cvtColor board_img3 board_img cv--COLOR_BGR2RGBA))
 
-			(let ((cap_fn (string "/dev/video2"))
-			      (cap (cv--VideoCapture cap_fn)))
-			  (if (cap.isOpened)
-			      ,(lprint :msg "opened video device" :vars `(cap_fn (cap.getBackendName)))
-			      ,(lprint :msg "failed to open video device" :vars `(cap_fn )))
-			  ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE
-							 MONOCHROME SHARPNESS AUTO_EXPOSURE GAMMA
-							 BACKLIGHT TEMPERATURE AUTO_WB WB_TEMPERATURE)))
-			     `(let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
-				    (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT))
-				    (cam_fps (cap.get cv--CAP_PROP_FPS))
-		       		    (cam_format (cap.get cv--CAP_PROP_FORMAT))
-				    ,@(loop for e in cam-props
-					    collect
-					    `(,(string-downcase (format nil "cam_~a" e))
-					       (dot cap (get ,(format nil "cv::CAP_PROP_~a" e))))))
-				,(lprint :vars `(cam_w cam_h cam_fps cam_format
-						       ,@(loop for e in cam-props
-							       collect
-							       (string-downcase (format nil "cam_~a" e)))))
-				"cv::Mat img3,img;"
+			  (do0
+			   (comments "opencv initialization")
+
+			   (let ((board_dict (cv--aruco--getPredefinedDictionary
+					      cv--aruco--DICT_6X6_250))
+				 (board (cv--aruco--CharucoBoard--create
+					 8 4 .04s0 .02s0 board_dict))
+				 (params (cv--aruco--DetectorParameters--create)))
+			     "cv::Mat board_img3,board_img;"
+			     (board->draw (cv--Size 1600 800)
+					  board_img3
+					  10 1
+					  )
+			     (cv--cvtColor board_img3 board_img cv--COLOR_BGR2RGBA))
+
+			   (let ((cap_fn (string "/dev/video0" ;"/dev/video2"
+						 ))
+				 (cap (cv--VideoCapture cap_fn)))
+			     (if (cap.isOpened)
+				 ,(lprint :msg "opened video device" :vars `(cap_fn (cap.getBackendName)))
+				 ,(lprint :msg "failed to open video device" :vars `(cap_fn )))
+			     ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE
+							    MONOCHROME SHARPNESS AUTO_EXPOSURE GAMMA
+							    BACKLIGHT TEMPERATURE AUTO_WB WB_TEMPERATURE)))
+				`(let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
+				       (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT))
+				       (cam_fps (cap.get cv--CAP_PROP_FPS))
+		       		       (cam_format (cap.get cv--CAP_PROP_FORMAT))
+				       ,@(loop for e in cam-props
+					       collect
+					       `(,(string-downcase (format nil "cam_~a" e))
+						  (dot cap (get ,(format nil "cv::CAP_PROP_~a" e))))))
+				   ,(lprint :vars `(cam_w cam_h cam_fps cam_format
+							  ,@(loop for e in cam-props
+								  collect
+								  (string-downcase (format nil "cam_~a" e)))))
+				   "cv::Mat img3,img;"
 					;"std::vector<cv::Mat> spl;"
-				(>> cap img3)
+				   (>> cap img3)
 					;(cv--split img spl)
-				,(lprint :msg "received camera image")
+				   ,(lprint :msg "received camera image")
 
-				(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-				,(lprint :msg "converted camera image")
-				))
-			  )
-			)
+				   (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+				   ,(lprint :msg "converted camera image")
+				   ))
+			     )
+			   )
 
 
 
-		       "MainWindow M;"
-		       (M.Init (window.get) glsl_version)
-		       ,(let* ((def-tex `((:width img.cols :height img.rows :data img.data)
-					  (:width board_img.cols :height board_img.rows :data board_img.data)))
-			       (num-tex 2))
-			  `(let ((textures (curly ,@(loop for e below num-tex collect 0))))
-			     (declare (type (array GLuint ,num-tex) textures))
+			  "MainWindow M;"
+			  (M.Init (framework.getWindow) (string "#version 130"))
+			  ,(let* ((def-tex `((:width img.cols :height img.rows :data img.data)
+					     (:width board_img.cols :height board_img.rows :data board_img.data)))
+				  (num-tex 2))
+			     `(let ((textures (curly ,@(loop for e below num-tex collect 0))))
+				(declare (type (array GLuint ,num-tex) textures))
 					;"GLuint texture;"
 
-			     (glGenTextures ,num-tex textures)
-			     ,@(loop for e in def-tex
-				     and e-i from 0
-				     collect
-				     (destructuring-bind (&key width height data) e
-				       `(progn
-					  ,(lprint :msg (format nil "prepare texture ~a" data))
-					  (let ((texture (aref textures ,e-i)))
-					    (glBindTexture GL_TEXTURE_2D texture)
-					    ,@(loop for e in `(MIN MAG) collect
-						    `(glTexParameteri GL_TEXTURE_2D
-								      ,(format nil "GL_TEXTURE_~a_FILTER" e)
-								      GL_LINEAR))
-					    (glPixelStorei GL_UNPACK_ROW_LENGTH
-							   0)
-					    (glTexImage2D GL_TEXTURE_2D ;; target
-							  0 ;; level
-							  GL_RGBA ;; internalformat
-							  ,width  ;; width
-							  ,height ;; height
-							  0	    ;; border
-							  GL_RGBA ;; format
-							  GL_UNSIGNED_BYTE ;; type
-							  ,data ;; data pointer
-							  )))))
-			     ,(lprint :msg "uploaded texture")
-			     (do0
-			      "cv::Mat cameraMatrix, distCoeffs;")
-			     (while (!glfwWindowShouldClose (window.get))
-			       (do0
-				(do0
-				 (>> cap img3)
-				 (do0
-				  (comments "detect charuco board")
-				  "std::vector<int> markerIds;"
-				  "std::vector<std::vector<cv::Point2f> > markerCorners;"
-				  (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
-				  (when (< 0 (markerIds.size))
-					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
-				    "std::vector<cv::Point2f> charucoCorners;"
-				    "std::vector<int> charucoIds;"
-				    (cv--aruco--interpolateCornersCharuco markerCorners
-									  markerIds
-									  img3
-									  board
-									  charucoCorners
-									  charucoIds
-									  cameraMatrix
-									  distCoeffs)
-				    (when (< 0 (charucoIds.size))
-				      (let ((color (cv--Scalar 255 0 255)))
-					(cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
-					#+nil (do0 "cv::Vec3d rvec, tvec;"
-						   (let ((valid (cv--aruco--estimatePoseCharucoBoard
-								 charucoCorners
-								 charucoIds
-								 board cameraMatrix distCoeffs
-								 rvec tvec)))
-						     (when valid
-						       (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
-				    ))
-				 (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-				 )
-				(glfwPollEvents)
-				(M.NewFrame)
-
-				(M.Update
-				 (lambda ()
-				   (declare (capture &textures &img &board_img))
-				   ,@(loop for e in def-tex
-					   and e-i from 0
-					   collect
-					   (destructuring-bind (&key width height data) e
-					     `(do0
-					       (ImGui--Begin (string ,(format nil "~a" data)))
-					       (glBindTexture GL_TEXTURE_2D (aref textures ,e-i))
+				(glGenTextures ,num-tex textures)
+				,@(loop for e in def-tex
+					and e-i from 0
+					collect
+					(destructuring-bind (&key width height data) e
+					  `(progn
+					     ,(lprint :msg (format nil "prepare texture ~a" data))
+					     (let ((texture (aref textures ,e-i)))
+					       (glBindTexture GL_TEXTURE_2D texture)
+					       ,@(loop for e in `(MIN MAG) collect
+						       `(glTexParameteri GL_TEXTURE_2D
+									 ,(format nil "GL_TEXTURE_~a_FILTER" e)
+									 GL_LINEAR))
+					       (glPixelStorei GL_UNPACK_ROW_LENGTH
+							      0)
 					       (glTexImage2D GL_TEXTURE_2D ;; target
 							     0 ;; level
 							     GL_RGBA ;; internalformat
@@ -631,21 +644,82 @@
 							     GL_RGBA ;; format
 							     GL_UNSIGNED_BYTE ;; type
 							     ,data ;; data pointer
-							     )
+							     )))))
+				,(lprint :msg "uploaded texture")
+				(do0
+				 "cv::Mat cameraMatrix, distCoeffs;")
+				(while (!framework.WindowShouldClose)
+				  (do0
+				   (do0
+				    (>> cap img3)
+				    (do0
+				     (comments "detect charuco board")
+				     "std::vector<int> markerIds;"
+				     "std::vector<std::vector<cv::Point2f> > markerCorners;"
+				     (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
+				     (when (< 0 (markerIds.size))
+					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
+				       "std::vector<cv::Point2f> charucoCorners;"
+				       "std::vector<int> charucoIds;"
+				       (cv--aruco--interpolateCornersCharuco markerCorners
+									     markerIds
+									     img3
+									     board
+									     charucoCorners
+									     charucoIds
+									     cameraMatrix
+									     distCoeffs)
+				       (when (< 0 (charucoIds.size))
+					 (let ((color (cv--Scalar 255 0 255)))
+					   (cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
+					   #+nil (do0 "cv::Vec3d rvec, tvec;"
+						      (let ((valid (cv--aruco--estimatePoseCharucoBoard
+								    charucoCorners
+								    charucoIds
+								    board cameraMatrix distCoeffs
+								    rvec tvec)))
+							(when valid
+							  (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
+				       ))
+				    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+				    )
+				   (framework.PollEvents)
+				   (M.NewFrame)
 
-					       (ImGui--Image (reinterpret_cast<void*> (aref textures ,e-i))
-							     (ImVec2 ,width ,height))
-					       (ImGui--End))))))
+				   (M.Update
+				    (lambda ()
+				      (declare (capture &textures &img &board_img))
+				      ,@(loop for e in def-tex
+					      and e-i from 0
+					      collect
+					      (destructuring-bind (&key width height data) e
+						`(do0
+						  (ImGui--Begin (string ,(format nil "~a" data)))
+						  (glBindTexture GL_TEXTURE_2D (aref textures ,e-i))
+						  (glTexImage2D GL_TEXTURE_2D ;; target
+								0 ;; level
+								GL_RGBA ;; internalformat
+								,width ;; width
+								,height ;; height
+								0 ;; border
+								GL_RGBA ;; format
+								GL_UNSIGNED_BYTE ;; type
+								,data ;; data pointer
+								)
 
-				(M.Render  (window.get))
-				)))))
-		      (do0
-		       ,(lprint :msg "cleanup")
-		       (M.Shutdown)
-		       #+nil (do0 (glfwDestroyWindow window)
-				  (glfwTerminate)))
-		      ,(lprint :msg "leave program")
-		      (return 0))))
+						  (ImGui--Image (reinterpret_cast<void*> (aref textures ,e-i))
+								(ImVec2 ,width ,height))
+						  (ImGui--End))))))
+
+				   (M.Render  (framework.getWindow))
+				   )))))
+			 (do0
+			  ,(lprint :msg "cleanup")
+			  (M.Shutdown)
+			  (framework.Shutdown)
+			  )
+			 ,(lprint :msg "leave program")
+			 (return 0))))))
 
     (with-open-file (s "02source/CMakeLists.txt" :direction :output
 		       :if-exists :supersede
