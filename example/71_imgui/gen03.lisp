@@ -438,24 +438,27 @@
 	 "std::condition_variable condition_;"
 	 (defmethod receive ()
 	   (declare (values T))
-	   (let (;(lock (std--unique_lock<std--mutex> mutex_))
-		 )
-	     "std::unique_lock<std::mutex> lock(mutex_);"
-	     (dot condition_
-		  (wait lock (lambda ()
-			       (declare (capture this))
-			       (return (not (dot queue_ (empty)))))))
-	     (comments "remove last vector from queue")
-	     (let ((msg (std--move (dot queue_ (back)))))
-	       (queue_.pop_back)
-	       (return msg))))
+	   (do0
+	    "std::unique_lock<std::mutex> lock(mutex_);"
+	    (comments "block current thread until condition variable is notified or spurious wakeup occurs. loop until queue has at least one element.")
+	    (dot condition_
+		 (wait lock (lambda ()
+			      (declare (capture this))
+			      (return (not (dot queue_ (empty)))))))
+	    (comments "remove last vector from queue")
+	    (let ((msg (std--move (dot queue_ (back)))))
+	      (queue_.pop_back)
+	      (return msg))))
 	 (defmethod send (msg)
 	   (declare (type T&& msg))
-	   (let (;(lock (std--lock_guard<std--mutex> mutex_))
-		 )
-	     "std::lock_guard<std::mutex> lock(mutex_);"
-	     (dot queue_ (push_back (std--move msg)))
-	     (dot condition_ (notify_one)))))))
+	   (do0
+	    (progn
+	      ;; "std::lock_guard<std::mutex> lock(mutex_);" ; in C++17 we should use std::scoped_lock
+	      ;; https://stackoverflow.com/questions/43019598/stdlock-guard-or-stdscoped-lock
+	      "std::scoped_lock lock(mutex_);"
+	      (dot queue_ (push_back (std--move msg))))
+	    (comments "lock does not need to be held for notification")
+	    (dot condition_ (notify_one)))))))
 
     (write-class
      :dir (asdf:system-relative-pathname
@@ -900,8 +903,7 @@
 				(lambda ()
 				  (declare (capture &msgQueue))
 					;(charuco.Render)
-				  (let ((msg (msgQueue->receive))
-					)
+				  (let ((msg (msgQueue->receive)))
 				    "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
 				    (let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
 					  (unit (string "ms")))
@@ -1009,7 +1011,7 @@
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
-					;(out "set( CMAKE_CXX_STANDARD 20 )")
+	  (out "set( CMAKE_CXX_STANDARD 17 )")
 					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 
 	  (out "set( SRCS ~{~a~^~%~} )"
@@ -1020,7 +1022,7 @@
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
-	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
+					;(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
 	  (loop for e in `(imgui implot)
 		do
