@@ -807,11 +807,13 @@
 			 (include  <GLFW/glfw3.h>)
 			 )
 
+		    (include <future>)
 
 
 		    (include "MainWindow.h")
 		    (include "ProcessedFrameMessage.h"
 			     "ProcessFrameEvent.h"
+			     "BoardProcessor.h"
 			     "MessageQueue.h")
 		    (include
 					;<tuple>
@@ -850,10 +852,17 @@
 			   (do0
 			    (let ((eventQueue (std--make_shared<MessageQueue<ProcessFrameEvent>>))
 				  (msgQueue (std--make_shared<MessageQueue<ProcessedFrameMessage>>)))
+
+			      (let ((processor_thread_should_run true)
+				    (board_processor (BoardProcessor 0 eventQueue msgQueue))
+				    (processor_thread (std--thread
+						       &BoardProcessor--process
+						       board_processor))))
 			      (let ((capture_thread_should_run true)
 				    (capture_thread (std--thread
 						     (lambda ()
-						       (declare (capture &capture_thread_should_run))
+						       (declare (capture &capture_thread_should_run
+									 &eventQueue))
 						       (let ((charuco (Charuco)))
 							 (charuco.Capture)
 							 (charuco.Init)
@@ -869,7 +878,7 @@
 										     std--launch--async
 										     &MessageQueue<ProcessFrameEvent>--send
 										     eventQueue
-										     (std--move event))))
+										     (std--move process_frame_event))))
 
 								 ,(lprint :vars `(frame_count (dot _timestamp (count))))
 								 (incf frame_count)))))
@@ -887,7 +896,11 @@
 			       (M.NewFrame)
 
 			       (M.Update
-				(lambda () ;(declare (capture &charuco)) (charuco.Render)
+				(lambda ()
+				  (declare (capture &msgQueue))
+					;(charuco.Render)
+				  (let ((msg (msgQueue->receive)))
+				    ,(lprint :vars `((msg.get_seconds))))
 				  )
 				)
 
