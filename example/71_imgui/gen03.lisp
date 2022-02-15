@@ -359,6 +359,7 @@
 			    (declare (values ,f))
 			    (return ,e)))
 		 (defmethod process ()
+		   ,(lprint)
 		   (while run
 		     "using namespace std::chrono_literals;"
 		     (std--this_thread--sleep_for 1ms)
@@ -368,7 +369,7 @@
 		   ,(lprint :msg "stopping BoardProcessor" :vars `(id)))
 		 (defmethod processEvent (event)
 		   (declare (type ProcessFrameEvent event))
-
+		   ,(lprint)
 
 		   (let (;;(dim (event.get_dim))
 			 (frame (event.get_frame))
@@ -856,15 +857,23 @@
 						       (let ((charuco (Charuco)))
 							 (charuco.Capture)
 							 (charuco.Init)
+							 ,(lprint :msg "started capture thread")
 							 (let ((frame_count 0))
 							   (while capture_thread_should_run
 							     (let ((gray (charuco.Capture)))
 							       "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
 							       (let ((process_frame_event (ProcessFrameEvent frame_count
 													     (_timestamp.count)
-													     gray)))
+													     gray))
+								     (sentCondition (std--async
+										     std--launch--async
+										     &MessageQueue<ProcessFrameEvent>--send
+										     eventQueue
+										     (std--move event))))
+
 								 ,(lprint :vars `(frame_count (dot _timestamp (count))))
 								 (incf frame_count)))))
+							 ,(lprint :msg "shutdown capture thread")
 							 (charuco.Shutdown))))))
 				)))
 
