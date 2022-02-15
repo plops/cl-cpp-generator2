@@ -26,6 +26,7 @@
 			(include <vector>
 ;;;<GLFW/glfw3.h>
 				 <functional>
+				 <memory>
 				 )
 			"class GLFWwindow;"
 			"class ImVec4;"
@@ -78,9 +79,10 @@
 			(ImPlot--DestroyContext)
 			(ImGui--DestroyContext)))
 	       (defmethod Init (window glsl_version )
-		 (declare (type GLFWwindow* window)
-			  (type "const char*" glsl_version)
-			  )
+		 (declare ;(type GLFWwindow* window)
+		  (type "std::shared_ptr< GLFWwindow >" window)
+		  (type "const char*" glsl_version)
+		  )
 		 ,(lprint)
 		 (do0
 		  #+nil(do0 (IMGUI_CHECKVERSION)
@@ -116,7 +118,7 @@
 			     (dot style (aref Colors ImGuiCol_WindowBg)
 				  w)
 			     1s0)))
-		   (ImGui_ImplGlfw_InitForOpenGL window true)
+		   (ImGui_ImplGlfw_InitForOpenGL (window.get) true)
 		   (ImGui_ImplOpenGL3_Init glsl_version)
 		   (let ((font_fn (string
 				   ,(format nil "~a"
@@ -154,12 +156,14 @@
 		 (ImGui--EndFrame)
 		 )
 	       (defmethod Render (window)
-		 (declare (type GLFWwindow* window))
+		 (declare ; (type GLFWwindow* window)
+		  (type "std::shared_ptr< GLFWwindow >" window)
+		  )
 		 (do0
 
 		  (let ((screen_width (int 0))
 			(screen_height (int 0)))
-		    (glfwGetFramebufferSize window
+		    (glfwGetFramebufferSize (window.get)
 					    &screen_width
 					    &screen_height)
 					;,(lprint :msg "framebuffer" :vars `(screen_width screen_height))
@@ -183,7 +187,7 @@
 		       (ImGui--UpdatePlatformWindows)
 		       (ImGui--RenderPlatformWindowsDefault)
 		       (glfwMakeContextCurrent backup_current_context)))))
-		 (glfwSwapBuffers window)
+		 (glfwSwapBuffers (window.get))
 		 )
 	       (defmethod Shutdown ()
 		 (do0
@@ -422,33 +426,37 @@
      :name `GraphicsFramework
      :headers `()
      :header-preamble `(do0 (include ;"imgui_impl_opengl3_loader.h"
-			     <GLFW/glfw3.h>))
+					;<GLFW/glfw3.h>
+			     <memory>)
+			    "class GLFWwindow;"
+			    )
      :implementation-preamble `(do0
-				,log-preamble
 				(include "imgui_impl_opengl3_loader.h"
 
 					 "imgui.h"
 					 "imgui_impl_glfw.h"
 					 "imgui_impl_opengl3.h"
 
-					 <GLFW/glfw3.h>))
+					 <GLFW/glfw3.h>)
+				,log-preamble
+				)
      :code (let ((def-members `(#+nil (window "std::unique_ptr<GLFWwindow,DestroyGLFWwindow>"
 					      )
 
 				      )))
 	     `(do0
-	       (do0
-		(defclass DestroyGLFWwindow ()
-		  (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
-		  "public:"
-		  (defmethod "operator()" (ptr)
-		    (declare (type GLFWwindow* ptr))
-		    ,(lprint :msg "Destroy GLFW window context.")
-		    (glfwDestroyWindow ptr)
-		    (glfwTerminate))))
+	       #+nil (defclass DestroyGLFWwindow ()
+		       (comments "https://gist.github.com/TheOpenDevProject/1662fa2bfd8ef087d94ad4ed27746120")
+		       "public:"
+		       (defmethod "operator()" (ptr)
+			 (declare (type GLFWwindow* ptr))
+			 ,(lprint :msg "Destroy GLFW window context.")
+			 (glfwDestroyWindow ptr)
+			 (glfwTerminate)))
 	       (defclass GraphicsFramework ()
 		 "public:"
-		 "std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
+					;"std::unique_ptr<GLFWwindow,DestroyGLFWwindow> window;"
+		 "std::shared_ptr<GLFWwindow> window;"
 		 ,@(loop for (e f) in def-members
 			 collect
 			 (format nil "~a ~a;" f e))
@@ -498,7 +506,7 @@
 					       nullptr nullptr)))
 		      (when (== nullptr w)
 			,(lprint :msg "glfwCreatWindow failed."))
-		      (window.reset w)
+		      (dot window (reset w))
 		      (glfwMakeContextCurrent (window.get))
 		      ,(lprint :msg "enable vsync")
 		      (glfwSwapInterval 1))
@@ -510,13 +518,16 @@
 		 (defmethod PollEvents ()
 		   (glfwPollEvents))
 		 (defmethod Shutdown ()
-					;(glfwDestroyWindow window)
+		   (glfwDestroyWindow (window.get))
 		   (glfwTerminate))
 		 (defmethod getWindow ()
-		   (declare (values GLFWwindow*))
+		   (declare (values ;GLFWwindow*
+			     "std::shared_ptr<GLFWwindow>"))
 		   (comments "FIXME: how to handle this pointer as a smart pointer?"
-			     "https://stackoverflow.com/questions/6012157/is-stdunique-ptrt-required-to-know-the-full-definition-of-t")
-		   (return ( window.get)))
+			     "https://stackoverflow.com/questions/6012157/is-stdunique-ptrt-required-to-know-the-full-definition-of-t"
+			     "maybe use this: https://github.com/janekb04/glfwpp/")
+		   (return ;( window.get)
+		     window))
 		 ))))
 
     (write-source (asdf:system-relative-pathname
@@ -524,6 +535,14 @@
 		   (merge-pathnames #P"main.cpp"
 				    *source-dir*))
 		  `(do0
+		    #+nil (include "imgui_impl_opengl3_loader.h"
+
+				   "imgui.h"
+				   "imgui_impl_glfw.h"
+				   "imgui_impl_opengl3.h"
+
+				   <GLFW/glfw3.h>)
+
 		    (include "MainWindow.h")
 		    (include
 					;<tuple>
@@ -544,6 +563,8 @@
 
 		    (include "implot.h")
 		    (include "GraphicsFramework.h")
+
+
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
@@ -711,7 +732,7 @@
 								(ImVec2 ,width ,height))
 						  (ImGui--End))))))
 
-				   (M.Render  (framework.getWindow))
+				   (M.Render (framework.getWindow))
 				   )))))
 			 (do0
 			  ,(lprint :msg "cleanup")
