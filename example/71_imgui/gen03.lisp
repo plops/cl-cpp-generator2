@@ -774,9 +774,10 @@
 					;(cv--split img spl)
 					;,(lprint :msg "received camera image")
 					;(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+		      (cv--cvtColor img3 img cv--COLOR_BGR2GRAY)
 					;,(lprint :msg "converted camera image")
 		      )
-		     (return img3))
+		     (return img))
 		   ,@(remove-if
 		      #'null
 		      (loop for e in def-members
@@ -909,11 +910,11 @@
 					  (w frame.cols)
 					  (h frame.rows)
 					  (format (hex
-						   #x80e0 ;; bgr
+						   ;; #x80e0 ;; bgr
 						   ;; #x80e1 ;; bgra
 						   ;; #x1907 ;; rgb
 						   ;; #x1908 ;; rgba
-						   ;; #x1909 ;; GL_LUMINANCE
+						   #x1909 ;; GL_LUMINANCE
 						   ;; #x8040 ;; luminance 8
 						   )
 					    ))
