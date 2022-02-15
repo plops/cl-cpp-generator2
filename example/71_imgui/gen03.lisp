@@ -7,7 +7,9 @@
 				   <iomanip>
 				   <chrono>
 				   <thread>
+				   <mutex>
 				   )
+			  "extern std::mutex g_stdout_mutex;"
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn
     ;; for classes with templates use write-source and defclass+
@@ -30,9 +32,7 @@
 				 )
 			"class GLFWwindow;"
 			"class ImVec4;"
-			"class ImGuiIO;"
-
-			)
+			"class ImGuiIO;")
      :implementation-preamble `(do0
 				,log-preamble
 				(include "imgui_impl_opengl3_loader.h"
@@ -216,10 +216,10 @@
 					;(include (include <opencv2/core/core.hpp>))
 				(include "ProcessFrameEvent.h")
 				)
-     :code (let ((def-members `((batch_idx int)
+     :code (let ((def-members `(;(batch_idx int)
 				(frame_idx int)
-				(dim int)
-				(fps float)
+					;(dim int)
+					;(fps float)
 				(seconds double)
 				(frame "cv::Mat")
 				)))
@@ -265,14 +265,15 @@
 	   *source-dir*)
      :name `ProcessedFrameMessage
      :headers `()
-     :header-preamble `()
+     :header-preamble `(include <opencv2/core/mat.hpp>)
      :implementation-preamble `(do0
 				(include "ProcessedFrameMessage.h")
 				)
-     :code (let ((def-members `((batch_idx int)
+     :code (let ((def-members `(;(batch_idx int)
 				(frame_idx int)
 				(seconds double)
-				;; i need to add the checkerboard corners herer
+				;; i need to add the checkerboard corners here
+				(frame "cv::Mat")
 				)))
 	     `(do0
 	       (defclass ProcessedFrameMessage ()
@@ -310,15 +311,16 @@
 				     "MessageQueue.h"
 				     "ProcessFrameEvent.h"
 				     "ProcessedFrameMessage.h"
+				     <opencv2/core/mat.hpp>
 				     <vector>
 				     <future>))
      :implementation-preamble `(do0
 				,log-preamble
-				(include "ProcessedFrameMessage.h")
+
 				(include <chrono>
 					 <thread>
 					;<opencv2/core/core.hpp>
-					 <opencv2/imgproc/imgproc.hpp>
+					;<opencv2/imgproc/imgproc.hpp>
 					 )
 				)
      :code (let ((def-members `((run bool)
@@ -368,16 +370,48 @@
 		   (declare (type ProcessFrameEvent event))
 
 
-		   (let ((dim (event.get_dim))
+		   (let (;;(dim (event.get_dim))
 			 (frame (event.get_frame))
 			 )
-		     "cv::Mat gray;"
-		     (cv--cvtColor frame
-				   gray
-				   cv--COLOR_RGB2GRAY)
-		     (let ((msg (ProcessedFrameMessage (event.get_batch_idx)
-						       (event.get_frame_idx)
-						       (event.get_seconds)))
+
+		     #+nil (do0
+			    (>> cap img3)
+			    (do0
+			     (comments "detect charuco board")
+			     "std::vector<int> markerIds;"
+			     "std::vector<std::vector<cv::Point2f> > markerCorners;"
+			     (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
+			     (when (< 0 (markerIds.size))
+					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
+			       "std::vector<cv::Point2f> charucoCorners;"
+			       "std::vector<int> charucoIds;"
+			       (cv--aruco--interpolateCornersCharuco markerCorners
+								     markerIds
+								     img3
+								     board
+								     charucoCorners
+								     charucoIds
+								     cameraMatrix
+								     distCoeffs)
+			       (when (< 0 (charucoIds.size))
+				 (let ((color (cv--Scalar 255 0 255)))
+				   (cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
+				   #+nil (do0 "cv::Vec3d rvec, tvec;"
+					      (let ((valid (cv--aruco--estimatePoseCharucoBoard
+							    charucoCorners
+							    charucoIds
+							    board cameraMatrix distCoeffs
+							    rvec tvec)))
+						(when valid
+						  (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
+			       ))
+			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+			    )
+
+		     (let ((msg (ProcessedFrameMessage ;(event.get_batch_idx)
+				 (event.get_frame_idx)
+				 (event.get_seconds)
+				 frame))
 			   (sentCondition
 			    (std--async
 			     std--launch--async
@@ -600,6 +634,7 @@
 				  (:name img3 :type "cv::Mat" :no-construct t)
 				  (:name textures :type "std::vector<uint32_t>" ;"GLuint[2]"
 					 :init-form (curly 0 0))
+				  (:name textures_dirty :type "std::vector<bool>" :init-form (curly true true))
 				  (:name camera_matrix :type "cv::Mat" :no-construct t)
 				  (:name dist_coeffs :type "cv::Mat" :no-construct t)
 				  (:name cap_fn :type "std::string" :default (string "/dev/video2") )
@@ -713,16 +748,19 @@
 			       `(do0
 				 (ImGui--Begin (string ,(format nil "~a" data)))
 				 (glBindTexture GL_TEXTURE_2D (aref textures ,e-i))
-				 (glTexImage2D GL_TEXTURE_2D ;; target
-					       0	     ;; level
-					       GL_RGBA ;; internalformat
-					       ,width  ;; width
-					       ,height ;; height
-					       0       ;; border
-					       GL_RGBA ;; format
-					       GL_UNSIGNED_BYTE ;; type
-					       ,data ;; data pointer
-					       )
+				 (when (aref textures_dirty ,e-i)
+				   (glTexImage2D GL_TEXTURE_2D ;; target
+						 0	      ;; level
+						 GL_RGBA ;; internalformat
+						 ,width  ;; width
+						 ,height ;; height
+						 0       ;; border
+						 GL_RGBA ;; format
+						 GL_UNSIGNED_BYTE ;; type
+						 ,data ;; data pointer
+						 )
+				   ,(when (eq e-i 1) ;; second texture is the board and doesn't change often
+				      `(setf (aref textures_dirty ,e-i) false)))
 
 				 (ImGui--Image (reinterpret_cast<void*> (aref textures ,e-i))
 					       (ImVec2 ,width ,height))
@@ -734,10 +772,10 @@
 		      (>> cap img3)
 					;(cv--split img spl)
 					;,(lprint :msg "received camera image")
-		      (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+					;(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
 					;,(lprint :msg "converted camera image")
 		      )
-		     (return img))
+		     (return img3))
 		   ,@(remove-if
 		      #'null
 		      (loop for e in def-members
@@ -768,14 +806,20 @@
 			 (include  <GLFW/glfw3.h>)
 			 )
 
+
+
 		    (include "MainWindow.h")
+		    (include "ProcessedFrameMessage.h"
+			     "ProcessFrameEvent.h"
+			     "MessageQueue.h")
 		    (include
 					;<tuple>
-					;<mutex>
+
 		     <thread>
 		     <iostream>
 		     <iomanip>
 		     <chrono>
+		     <mutex>
 		     <cmath>
 		     <cassert>
 					;  <memory>
@@ -786,7 +830,7 @@
 			     <opencv2/imgproc.hpp>
 			     <opencv2/aruco/charuco.hpp>)
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
-
+		    "std::mutex g_stdout_mutex;"
 		    (include "implot.h")
 		    (include "GraphicsFramework.h")
 
@@ -801,82 +845,66 @@
 			,(lprint :msg "start" :vars `(argc (aref argv 0)))
 			(let ((framework (GraphicsFramework)))
 					;(framework.Init)
-			  (let (
-				(charuco (Charuco)))
-			    (do0
+			  (do0
+			   (do0
+			    (let ((eventQueue (std--make_shared<MessageQueue<ProcessFrameEvent>>))
+				  (msgQueue (std--make_shared<MessageQueue<ProcessedFrameMessage>>)))
+			      (let ((capture_thread_should_run true)
+				    (capture_thread (std--thread
+						     (lambda ()
+						       (declare (capture &capture_thread_should_run))
+						       (let ((charuco (Charuco)))
+							 (charuco.Capture)
+							 (charuco.Init)
+							 (let ((frame_count 0))
+							   (while capture_thread_should_run
+							     (let ((gray (charuco.Capture)))
+							       "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+							       (let ((process_frame_event (ProcessFrameEvent frame_count
+													     (_timestamp.count)
+													     gray)))
+								 ,(lprint :vars `(frame_count (dot _timestamp (count))))
+								 (incf frame_count)))))
+							 (charuco.Shutdown))))))
+				)))
 
+			   (do0
+			    "MainWindow M;"
+			    (M.Init (framework.getWindow) (string "#version 130"))
+			    (while (!framework.WindowShouldClose)
+			      (do0
 
+			       (framework.PollEvents)
+			       (M.NewFrame)
 
-
-
-			     (do0
-			      "MainWindow M;"
-			      (M.Init (framework.getWindow) (string "#version 130"))
-			      (charuco.Capture)
-			      (charuco.Init)
-
-			      (while (!framework.WindowShouldClose)
-				(do0
-				 (charuco.Capture)
-				 #+nil (do0
-					(>> cap img3)
-					(do0
-					 (comments "detect charuco board")
-					 "std::vector<int> markerIds;"
-					 "std::vector<std::vector<cv::Point2f> > markerCorners;"
-					 (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
-					 (when (< 0 (markerIds.size))
-					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
-					   "std::vector<cv::Point2f> charucoCorners;"
-					   "std::vector<int> charucoIds;"
-					   (cv--aruco--interpolateCornersCharuco markerCorners
-										 markerIds
-										 img3
-										 board
-										 charucoCorners
-										 charucoIds
-										 cameraMatrix
-										 distCoeffs)
-					   (when (< 0 (charucoIds.size))
-					     (let ((color (cv--Scalar 255 0 255)))
-					       (cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
-					       #+nil (do0 "cv::Vec3d rvec, tvec;"
-							  (let ((valid (cv--aruco--estimatePoseCharucoBoard
-									charucoCorners
-									charucoIds
-									board cameraMatrix distCoeffs
-									rvec tvec)))
-							    (when valid
-							      (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
-					   ))
-					(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-					)
-				 (framework.PollEvents)
-				 (M.NewFrame)
-
-				 (M.Update
-				  (lambda () (declare (capture &charuco)) (charuco.Render))
+			       (M.Update
+				(lambda () ;(declare (capture &charuco)) (charuco.Render)
 				  )
+				)
 
-				 (M.Render (framework.getWindow))
-				 ))
+			       (M.Render (framework.getWindow))
+			       ))
 
-			      )
-			     (do0
-			      ,(lprint :msg "run various cleanup functions")
-			      (charuco.Shutdown)
+			    )
+			   (do0
+			    ,(lprint :msg "run various cleanup functions")
+			    (do0
+			     ,(lprint :msg "wait for capture thread to exit")
+			     (setf capture_thread_should_run false)
+			     (dot capture_thread (join)))
 
-			      (M.Shutdown)
+
+			    (M.Shutdown)
 					;(framework.Shutdown)
 
 
-			      )
+			    )
 
-			     )
+			   )
 
-			    ,(lprint :msg "leave program")
+			  ,(lprint :msg "leave program")
 
-			    (return 0)))))))
+			  (return 0))))))
 
     (with-open-file (s "03source/CMakeLists.txt" :direction :output
 		       :if-exists :supersede

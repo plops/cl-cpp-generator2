@@ -1,7 +1,8 @@
 |       |                                      |
 | gen00 | imgui and implot demo                |
 | gen01 | imgui, implot and opencv, no threads |
-| gen02 | like 01 but use parallel workers     |
+| gen02 | like 01 but split into more classes  |
+| gen03 | like 02 but use parallel workers     |
 * references
  - kosarevsky: "3d graphics rendering cookbook"
 
@@ -147,3 +148,6 @@ while True
   print msg.get_median()
 
 #+end_example
+
+- https://www.khronos.org/opengl/wiki/Common_Mistakes
+  don't use opengl objects without context (sometimes you can't handle them in destructors)
