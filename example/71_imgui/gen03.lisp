@@ -907,67 +907,79 @@
 				(lambda ()
 				  (declare (capture &msgQueue))
 					;(charuco.Render)
-				  (unless (msgQueue->empty)
-				    (let ((msg (msgQueue->receive)))
-				      "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-				      (let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
-					    (unit (string "ms")))
-					,(lprint :vars `(queue_delay unit)))
-				      (let ((frame (msg.get_frame))
-					    (w frame.cols)
-					    (h frame.rows)
-					    (format (hex
-						     ;; #x80e0 ;; bgr
-						     ;; #x80e1 ;; bgra
-						     ;; #x1907 ;; rgb
-						     ;; #x1908 ;; rgba
-						     #x1909 ;; GL_LUMINANCE
-						     ;; #x8040 ;; luminance 8
-						     )
-					      ))
-					"static bool texture_is_initialized = false;"
-					"static std::vector<GLuint> textures({0});"
-					(unless texture_is_initialized
-					  (glGenTextures (textures.size)
-							 (textures.data))
-					  (let ((texture (aref textures 0)))
-					    (do0
-					     (glBindTexture GL_TEXTURE_2D texture)
-					     ,@(loop for e in `(MIN MAG) collect
-						     `(glTexParameteri GL_TEXTURE_2D
-								       ,(format nil "GL_TEXTURE_~a_FILTER" e)
-								       GL_LINEAR))
-					     (glPixelStorei GL_UNPACK_ROW_LENGTH
-							    0)
-					     (glTexImage2D GL_TEXTURE_2D ;; target
-							   0 ;; level
-							   GL_RGBA ;; internalformat
-							   w ;; width
-							   h ;; height
-							   0 ;; border
-							   format ;; format
-							   GL_UNSIGNED_BYTE ;; type
-							   frame.data ;; data pointer
-							   )
-					     (setf texture_is_initialized true))
+				  (do0 "static int w = 0;"
+				       "static int h = 0;"
+				       "static bool texture_is_initialized = false;"
+				       "static std::vector<GLuint> textures({0});")
 
-					    ))
+				  (if (msgQueue->empty)
+				      (when texture_is_initialized
 					(do0
 					 (ImGui--Begin (string "camera"))
 					 (glBindTexture GL_TEXTURE_2D (aref textures 0))
-					 (glTexImage2D GL_TEXTURE_2D ;; target
-						       0	;; level
-						       GL_RGBA ;; internalformat
-						       w	      ;; width
-						       h	    ;; height
-						       0	    ;; border
-						       format ;; format
-						       GL_UNSIGNED_BYTE ;; type
-						       frame.data ;; data pointer
-						       )
 					 (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
 						       (ImVec2 w h))
-					 (ImGui--End)))))
+					 (ImGui--End)))
+				      (let ((msg (msgQueue->receive)))
+					"std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+					(let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
+					      (unit (string "ms")))
+					  ,(lprint :vars `(queue_delay unit)))
+					(let ((frame (msg.get_frame))
+					;(w frame.cols)
+					;(h frame.rows)
+					      (format (hex
+						       ;; #x80e0 ;; bgr
+						       ;; #x80e1 ;; bgra
+						       ;; #x1907 ;; rgb
+						       ;; #x1908 ;; rgba
+						       #x1909 ;; GL_LUMINANCE
+						       ;; #x8040 ;; luminance 8
+						       )
+						))
+					  (setf w frame.cols
+						h frame.rows)
+					  (unless texture_is_initialized
+					    (glGenTextures (textures.size)
+							   (textures.data))
+					    (let ((texture (aref textures 0)))
+					      (do0
+					       (glBindTexture GL_TEXTURE_2D texture)
+					       ,@(loop for e in `(MIN MAG) collect
+						       `(glTexParameteri GL_TEXTURE_2D
+									 ,(format nil "GL_TEXTURE_~a_FILTER" e)
+									 GL_LINEAR))
+					       (glPixelStorei GL_UNPACK_ROW_LENGTH
+							      0)
+					       (glTexImage2D GL_TEXTURE_2D ;; target
+							     0 ;; level
+							     GL_RGBA ;; internalformat
+							     w ;; width
+							     h ;; height
+							     0 ;; border
+							     format ;; format
+							     GL_UNSIGNED_BYTE ;; type
+							     frame.data ;; data pointer
+							     )
+					       (setf texture_is_initialized true))
+
+					      ))
+					  (do0
+					   (ImGui--Begin (string "camera"))
+					   (glBindTexture GL_TEXTURE_2D (aref textures 0))
+					   (glTexImage2D GL_TEXTURE_2D ;; target
+							 0	;; level
+							 GL_RGBA ;; internalformat
+							 w	      ;; width
+							 h	    ;; height
+							 0	    ;; border
+							 format ;; format
+							 GL_UNSIGNED_BYTE ;; type
+							 frame.data ;; data pointer
+							 )
+					   (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
+							 (ImVec2 w h))
+					   (ImGui--End)))))
 				  )
 				)
 
