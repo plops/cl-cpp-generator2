@@ -908,7 +908,14 @@
 				    (let ((frame (msg.get_frame))
 					  (w frame.cols)
 					  (h frame.rows)
-					  (format (hex #x1909) ;; GL_LUMINANCE
+					  (format (hex
+						   #x80e0 ;; bgr
+						   ;; #x80e1 ;; bgra
+						   ;; #x1907 ;; rgb
+						   ;; #x1908 ;; rgba
+						   ;; #x1909 ;; GL_LUMINANCE
+						   ;; #x8040 ;; luminance 8
+						   )
 					    ))
 				      "static bool texture_is_initialized = false;"
 				      "static std::vector<GLuint> textures({0});"
