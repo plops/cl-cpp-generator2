@@ -208,7 +208,7 @@
      :header-preamble `(do0
 			(include ;<memory>
 			 <opencv2/core/core.hpp>
-			 )
+			 <chrono>)
 					;"namespace cv { class Mat; }"
 			)
      :implementation-preamble `(do0
@@ -221,7 +221,10 @@
 					;(dim int)
 					;(fps float)
 				(seconds double)
+				(time_point_00_capture "std::chrono::high_resolution_clock::time_point")
+				(time_point_01_conversion "std::chrono::high_resolution_clock::time_point")
 				(frame "cv::Mat")
+
 				)))
 	     `(do0
 	       (defclass ProcessFrameEvent ()
@@ -265,14 +268,20 @@
 	   *source-dir*)
      :name `ProcessedFrameMessage
      :headers `()
-     :header-preamble `(include <opencv2/core/mat.hpp>)
+     :header-preamble `(include <opencv2/core/mat.hpp>
+				<chrono>)
      :implementation-preamble `(do0
 				(include "ProcessedFrameMessage.h")
+
 				)
      :code (let ((def-members `(;(batch_idx int)
 				(frame_idx int)
 				(seconds double)
 				;; i need to add the checkerboard corners here
+				(time_point_00_capture "std::chrono::high_resolution_clock::time_point")
+				(time_point_01_conversion "std::chrono::high_resolution_clock::time_point")
+				(time_point_02_processed "std::chrono::high_resolution_clock::time_point")
+
 				(frame "cv::Mat")
 				)))
 	     `(do0
@@ -412,6 +421,9 @@
 		     (let ((msg (ProcessedFrameMessage ;(event.get_batch_idx)
 				 (event.get_frame_idx)
 				 (event.get_seconds)
+				 (event.get_time_point_00_capture)
+				 (event.get_time_point_01_conversion)
+				 ("std::chrono::high_resolution_clock::now")
 				 frame))
 			   (sentCondition
 			    (std--async
@@ -877,10 +889,14 @@
 							 ,(lprint :msg "started capture thread")
 							 (let ((frame_count 0))
 							   (while capture_thread_should_run
-							     (let ((gray (charuco.Capture)))
+							     (let ((time_point_00_capture ("std::chrono::high_resolution_clock::now"))
+								   (gray (charuco.Capture))
+								   (time_point_01_conversion ("std::chrono::high_resolution_clock::now")))
 							       "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
 							       (let ((process_frame_event (ProcessFrameEvent frame_count
 													     (_timestamp.count)
+													     time_point_00_capture
+													     time_point_01_conversion
 													     gray))
 								     (sentCondition (std--async
 										     std--launch--async
@@ -1035,7 +1051,7 @@
 	       (append
 		(directory "03source/*.cpp")
 					;(directory "/home/martin/src/vcpkg/buildtrees/implot/src/*/implot_demo.cpp")
-		(directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
+					; (directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/backends/imgui_impl_opengl3.cpp")
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
