@@ -983,136 +983,177 @@
 			   (do0
 			    "MainWindow M;"
 			    (M.Init (framework.getWindow) (string "#version 130"))
-			    (while (!framework.WindowShouldClose)
-			      (do0
+			    ,(let ((time-plot-def `((:id "00" :name capture)
+						    (:id "01" :name conversion)
+						    (:id "02" :name processed))))
+			       `(while (!framework.WindowShouldClose)
+				  (do0
 
-			       (framework.PollEvents)
-			       (M.NewFrame)
+				   (framework.PollEvents)
+				   (M.NewFrame)
 
-			       (M.Update
-				(lambda ()
-				  (declare (capture &msgQueue))
+				   (M.Update
+				    (lambda ()
+				      (declare (capture &msgQueue))
 					;(charuco.Render)
-				  (do0 "static int w = 0;"
-				       "static int h = 0;"
-				       "static bool texture_is_initialized = false;"
-				       "static std::vector<GLuint> textures({0});")
+				      (do0 "static int w = 0;"
+					   "static int h = 0;"
+					   "static bool texture_is_initialized = false;"
+					   "static std::vector<GLuint> textures({0});")
 
-				  (if (msgQueue->empty)
-				      (when texture_is_initialized
-					(do0
-					 (ImGui--Begin (string "camera"))
-					 (glBindTexture GL_TEXTURE_2D (aref textures 0))
-					 (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
-						       (ImVec2 w h))
-					 (ImGui--End)))
-				      (let ((msg (msgQueue->receive)))
-					"std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-					(let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
-					      (unit (string "ms")))
-					  ,(lprint :vars `(queue_delay unit)))
-					(let ((frame (msg.get_frame))
-					      (format (hex
-						       ;; #x80e0 ;; bgr
-						       ;; #x80e1 ;; bgra
-						       ;; #x1907 ;; rgb
-						       ;; #x1908 ;; rgba
-						       #x1909 ;; GL_LUMINANCE
-						       ;; #x8040 ;; luminance 8
-						       )
-						))
-					  (setf w frame.cols
-						h frame.rows)
-					  (if texture_is_initialized
-					      (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
-						   (glPixelStorei GL_UNPACK_ROW_LENGTH
-								  0)
-						   (glTexImage2D GL_TEXTURE_2D ;; target
-								 0	;; level
-								 GL_RGBA ;; internalformat
-								 w	      ;; width
-								 h	    ;; height
-								 0	    ;; border
-								 format ;; format
-								 GL_UNSIGNED_BYTE ;; type
-								 frame.data ;; data pointer
-								 ))
+				      (do0
+				       "static ImPlotAxisFlags timeplot_flags = ImPlotAxisFlags_NoTickLabels;"
+				       "static float  history=10.0f;"
+				       "static float time = 0;"
+				       (incf time (dot (ImGui--GetIO)
+						       DeltaTime))
+				       ,@(loop for e in time-plot-def
+					       and e-i from 0
+					       collect
+					       (destructuring-bind (&key id name) e
+						 (let ((data (format nil "data_~a" id)))
+						   `(do0
+						     ,(format nil "static ScrollingBuffer ~a;" data)))))
+				       )
+
+
+
+
+				      (if (msgQueue->empty)
+					  (when texture_is_initialized
+					    (do0
+					     (do0
+					      (ImGui--Begin (string "camera"))
+					      (glBindTexture GL_TEXTURE_2D (aref textures 0))
+					      (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
+							    (ImVec2 w h))
+					      (ImGui--End))
+					     (do0
+					      (ImGui--Begin (string "timestamps"))
+					      ,@(loop for e in time-plot-def
+						      and e-i from 0
+						      collect
+						      (destructuring-bind (&key id name) e
+							(let ((data (format nil "data_~a" id)))
+							  `(when (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
+										    nullptr
+										    nullptr
+										    (ImVec2 -1 150)
+										    0
+										    timeplot_flags
+										    timeplot_flags)
+							     #+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
+										    (ref (dot ,data (aref data 0) x))
+										    (ref (dot ,data (aref data 0) y))
+										    (dot ,data data (size))
+										    -INFINITY
+										    (dot ,data offset)
+										    (* 2 (sizeof float)))
+							     (ImPlot--EndPlot))
+							  )))
+					      (ImGui--End))))
+					  (let ((msg (msgQueue->receive)))
+					    "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+					    (let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
+						  (unit (string "ms")))
+					      ,(lprint :vars `(queue_delay unit)))
+					    (let ((frame (msg.get_frame))
+						  (format (hex
+							   ;; #x80e0 ;; bgr
+							   ;; #x80e1 ;; bgra
+							   ;; #x1907 ;; rgb
+							   ;; #x1908 ;; rgba
+							   #x1909 ;; GL_LUMINANCE
+							   ;; #x8040 ;; luminance 8
+							   )))
+
 					      (do0
-					       (glGenTextures (textures.size)
-							      (textures.data))
-					       (let ((texture (aref textures 0)))
-						 (do0
-						  (glBindTexture GL_TEXTURE_2D texture)
-						  ,@(loop for e in `(MIN MAG) collect
-							  `(glTexParameteri GL_TEXTURE_2D
-									    ,(format nil "GL_TEXTURE_~a_FILTER" e)
-									    GL_LINEAR))
-						  (glPixelStorei GL_UNPACK_ROW_LENGTH
-								 0)
-						  (glTexImage2D GL_TEXTURE_2D ;; target
-								0 ;; level
-								GL_RGBA ;; internalformat
-								w ;; width
-								h ;; height
-								0 ;; border
-								format ;; format
-								GL_UNSIGNED_BYTE ;; type
-								frame.data ;; data pointer
-								)
-						  (setf texture_is_initialized true)))))
-
-					  (do0
-					   (ImGui--Begin (string "camera"))
-					   (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
-							 (ImVec2 w h))
-					   (progn
-					     "static float  history=10.0f;"
-					     "static float time = 0;"
-					     (incf time (dot (ImGui--GetIO)
-							     DeltaTime))
-					     ,@(loop for e in `((:id "00" :name capture)
-								(:id "01" :name conversion)
-								(:id "02" :name processed))
-						     and e-i from 0
-						     collect
-						     (destructuring-bind (&key id name) e
-						       (let ((data (format nil "data_~a" id)))
-							 `(progn
-							    ,(format nil "static ScrollingBuffer ~a;" data)
-							    (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name))))
-								  )
-							      "std::chrono::duration<float> y = p - g_start_time;"
-							      (dot ,data (AddPoint time (y.count)))
-					;(setf (dot ,data Span) history)
+					       (ImGui--Begin (string "timestamps"))
+					       ,@(loop for e in time-plot-def
+						       and e-i from 0
+						       collect
+						       (destructuring-bind (&key id name) e
+							 (let ((data (format nil "data_~a" id)))
+							   `(progn
 							      (do0
-							       "static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;"
-							       (ImPlot--SetNextPlotLimitsX (- time history)
-											   time
-											   ImGuiCond_Always)
-					;(ImPlot--SetNextPlotLimitsY )
-							       (when
-								   (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
-										      nullptr
-										      nullptr
-										      (ImVec2 -1 150)
-										      0
-										      flags
-										      flags)
-								 #+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
-											(ref (dot ,data (aref data 0) x))
-											(ref (dot ,data (aref data 0) y))
-											(dot ,data data (size))
-											-INFINITY
-											(dot ,data offset)
-											(* 2 (sizeof float)))
-								 (ImPlot--EndPlot))
-							       )))))))
-					   (ImGui--End)))))
-				  )
-				)
+							       (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name)))))
+								 "std::chrono::duration<float> y = p - g_start_time;"
+								 (dot ,data (AddPoint time (y.count)))
+								 (do0
+								  (ImPlot--SetNextPlotLimitsX (- time history)
+											      time
+											      ImGuiCond_Always)
+								  ;;(ImPlot--SetNextPlotLimitsY )
+								  )))
+							      (when
+								  (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
+										     nullptr
+										     nullptr
+										     (ImVec2 -1 150)
+										     0
+										     timeplot_flags
+										     timeplot_flags)
+								#+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
+										       (ref (dot ,data (aref data 0) x))
+										       (ref (dot ,data (aref data 0) y))
+										       (dot ,data data (size))
+										       -INFINITY
+										       (dot ,data offset)
+										       (* 2 (sizeof float)))
+								(ImPlot--EndPlot))))))
+					       (ImGui--End))
+					      (do0
+					       (setf w frame.cols
+						     h frame.rows)
+					       (if texture_is_initialized
+						   (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
+							(glPixelStorei GL_UNPACK_ROW_LENGTH
+								       0)
+							(glTexImage2D GL_TEXTURE_2D ;; target
+								      0 ;; level
+								      GL_RGBA ;; internalformat
+								      w ;; width
+								      h ;; height
+								      0 ;; border
+								      format ;; format
+								      GL_UNSIGNED_BYTE ;; type
+								      frame.data ;; data pointer
+								      ))
+						   (do0
+						    (glGenTextures (textures.size)
+								   (textures.data))
+						    (let ((texture (aref textures 0)))
+						      (do0
+						       (glBindTexture GL_TEXTURE_2D texture)
+						       ,@(loop for e in `(MIN MAG) collect
+							       `(glTexParameteri GL_TEXTURE_2D
+										 ,(format nil "GL_TEXTURE_~a_FILTER" e)
+										 GL_LINEAR))
+						       (glPixelStorei GL_UNPACK_ROW_LENGTH
+								      0)
+						       (glTexImage2D GL_TEXTURE_2D ;; target
+								     0 ;; level
+								     GL_RGBA ;; internalformat
+								     w ;; width
+								     h ;; height
+								     0 ;; border
+								     format ;; format
+								     GL_UNSIGNED_BYTE ;; type
+								     frame.data ;; data pointer
+								     )
+						       (setf texture_is_initialized true))))))
 
-			       (M.Render (framework.getWindow))
-			       ))
+					      (do0
+					       (ImGui--Begin (string "camera"))
+					       (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
+							     (ImVec2 w h))
+
+					       (ImGui--End)))))
+				      )
+				    )
+
+				   (M.Render (framework.getWindow))
+				   )))
 
 			    )
 			   (do0
