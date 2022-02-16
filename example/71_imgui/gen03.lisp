@@ -328,20 +328,16 @@
 				     <future>))
      :implementation-preamble `(do0
 				,log-preamble
-
 				(include <chrono>
 					 <thread>
 					;<opencv2/core/core.hpp>
 					;<opencv2/imgproc/imgproc.hpp>
-					 )
-				)
+					 ))
      :code (let ((def-members `((run bool)
 				(id int)
-
 				(events "std::shared_ptr<MessageQueue<ProcessFrameEvent> >")
 				(msgs "std::shared_ptr<MessageQueue<ProcessedFrameMessage> >")
-				(charuco Charuco)
-				)))
+				(charuco Charuco))))
 	     `(do0
 	       (defclass BoardProcessor ()
 		 "public:"
@@ -353,8 +349,7 @@
 					       (loop for (e f) in def-members
 						     collect
 						     (unless (eq e 'run)
-						       (intern (string-upcase (format nil "~a_" e))))))
-					    )
+						       (intern (string-upcase (format nil "~a_" e)))))))
 		   (declare
 		    ,@(loop for (e f) in def-members
 			    collect
@@ -377,30 +372,21 @@
 		     "using namespace std::chrono_literals;"
 		     (std--this_thread--sleep_for 1ms)
 		     (let ((event (events->receive)))
-		       (processEvent event))
-		     )
+		       (processEvent event)))
 		   ,(lprint :msg "stopping BoardProcessor" :vars `(id)))
 		 (defmethod processEvent (event)
 		   (declare (type ProcessFrameEvent event))
-					;,(lprint)
-
-		   (let (;;(dim (event.get_dim))
-			 (frame (event.get_frame))
-			 )
+		   (let ((frame (event.get_frame)))
 		     (do0
 		      (comments "detect charuco board")
 		      "std::vector<int> markerIds;"
 		      "std::vector<std::vector<cv::Point2f> > markerCorners;"
 		      (cv--aruco--detectMarkers frame charuco.board->dictionary markerCorners markerIds charuco.params)
-		      )
-
+		      (when (< 0 (markerIds.size))
+			(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)))
 		     #+nil (do0
 			    (>> cap img3)
 			    (do0
-
-
-
-
 			     (when (< 0 (markerIds.size))
 					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
 			       "std::vector<cv::Point2f> charucoCorners;"
@@ -425,8 +411,7 @@
 						(when valid
 						  (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
 			       ))
-			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-			    )
+			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA))
 
 		     (let ((msg (ProcessedFrameMessage ;(event.get_batch_idx)
 				 (event.get_frame_idx)
@@ -1053,7 +1038,7 @@
 							(ImGui--Begin (string ,name))
 							(glBindTexture ,target (aref textures ,tex-id))
 							(ImGui--Image (reinterpret_cast<void*> (aref textures ,tex-id))
-								      (ImVec2 w h))
+								      (ImVec2 board_w board_h))
 							(ImGui--End))))
 					       `(do0
 						 (when board_texture_is_initialized
