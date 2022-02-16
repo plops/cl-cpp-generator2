@@ -717,15 +717,20 @@
        :implementation-preamble `(do0
 
 				  ,log-preamble
-				  ,@(loop for e in `( core/cvstd core/mat videoio  ; core imgproc
+				  ,@(loop for e in `( core/cvstd core/mat videoio
 						      aruco/charuco
+						      aruco
+						      aruco/dictionary
+						      core/types
+						      imgproc
 						      )
 					  collect
 					  `(include ,(format nil "<opencv2/~a.hpp>" e)))
 				  (do0
+				   (include<> imgui.h)
 				   (include "imgui_impl_opengl3_loader.h")
-				   (include "imgui_impl_glfw.h")
-				   (include "imgui_impl_opengl3.h")
+					;(include "imgui_impl_glfw.h")
+					;(include "imgui_impl_opengl3.h")
 
 				   ))
        :code (let ((def-members `((:name squares_x :type int :default 8)
