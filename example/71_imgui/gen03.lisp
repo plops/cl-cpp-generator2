@@ -911,13 +911,13 @@
 		   (merge-pathnames #P"main.cpp"
 				    *source-dir*))
 		  `(do0
-					;(include <GL/glew.h>)
+		    (include <GL/glew.h>)
 		    (do0
 
-		     (include "imgui_impl_opengl3_loader.h")
-		     (include "imgui.h")
-		     (include "imgui_impl_glfw.h")
-		     (include "imgui_impl_opengl3.h")
+					;(include "imgui_impl_opengl3_loader.h")
+					; (include "imgui.h")
+					;(include "imgui_impl_glfw.h")
+					;(include "imgui_impl_opengl3.h")
 		     (include  <GLFW/glfw3.h>)
 		     )
 
@@ -1110,14 +1110,14 @@
 							    (unit (string "ms")))
 							,(lprint :vars `(queue_delay unit)))
 						(let ((frame (msg.get_frame))
-						      (format (hex
-							       ;; #x80e0 ;; bgr
-							       ;; #x80e1 ;; bgra
-							       ;; #x1907 ;; rgb
-							       ;; #x1908 ;; rgba
-							       #x1909 ;; GL_LUMINANCE
-							       ;; #x8040 ;; luminance 8
-							       )))
+						      (format GL_LUMINANCE
+							;; #x80e0 ;; bgr
+							;; #x80e1 ;; bgra
+							;; #x1907 ;; rgb
+							;; #x1908 ;; rgba
+							;; #x1909 ;; GL_LUMINANCE
+							;; #x8040 ;; luminance 8
+							))
 
 						  (do0
 						   ,(draw-time-window :extra-code-gen (lambda (&key data id name e-i)
@@ -1224,7 +1224,8 @@
       ;;
       (let ((dbg "-ggdb -O0 ")
 	    (asan "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope")
-	    (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef -Werror -Wno-unused"
+	    (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef -Werror  -Wno-unused -Wno-unused-parameter"
+	      ;;
 	      ;; -Wold-style-cast -Wsign-conversion
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 

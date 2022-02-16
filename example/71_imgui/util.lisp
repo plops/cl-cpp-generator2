@@ -1,6 +1,6 @@
 (defun lprint (&key (msg "") (vars nil))
-  #+nil `(comments ,msg)
-  #-nil`(progn				;do0
+  #-nil `(comments ,msg)
+  #+nil`(progn				;do0
 	  " "
 	  (let
 	      ((lock (std--unique_lock<std--mutex> g_stdout_mutex))
