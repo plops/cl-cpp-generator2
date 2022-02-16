@@ -310,6 +310,8 @@
 			    (declare (values ,f))
 			    (return ,e)))))))
 
+
+
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -605,6 +607,73 @@
 		   (return ;( window.get)
 		     window))
 		 ))))
+
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `ScrollingBuffer
+     :headers `()
+     :header-preamble `(do0 (include "imgui.h"))
+     :implementation-preamble `()
+     :code (let ((def-members `((:name max_size :type int :default 2000)
+				(:name offset :type int :init-form 0)
+				(:name data :type ImVector<ImVec2> :no-construct t))))
+	     `(do0
+	       (defclass ScrollingBuffer ()
+		 "public:"
+		 ,@(loop for e in def-members
+			 collect
+			 (destructuring-bind (&key name type init-form default no-construct) e
+			   (format nil "~a ~a;" type name)))
+
+		 (defmethod ScrollingBuffer (&key
+					       ,@(remove-if
+						  #'null
+						  (loop for e in def-members
+							collect
+							(destructuring-bind (&key name type init-form default no-construct) e
+							  (when default
+							    `(,(intern (string-upcase (format nil "~a_" name)))
+							       ,default))))))
+		   (declare
+		    ,@(remove-if
+		       #'null
+		       (loop for e in def-members
+			     collect
+			     (destructuring-bind (&key name type init-form default no-construct) e
+			       (when default
+				 `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+		    (construct
+		     ,@(remove-if
+			#'null
+			(loop for e in def-members
+			      collect
+			      (destructuring-bind (&key name type init-form default no-construct) e
+				(if init-form
+				    `(,name ,init-form)
+				    (unless no-construct
+				      `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+		     )
+		    (values :constructor))
+		   (do0
+		    (data.reserve max_size)))
+		 (defmethod AddPoint (x y)
+		   (declare (type float x y))
+		   (let ((v (ImVec2 x y)))
+		     (if (< (data.size)
+			    max_size)
+			 (do0
+			  (data.push_back v))
+			 (do0
+			  (setf (aref data offset) v
+				offset (% (+ offset 1)
+					  max_size))))))
+		 (defmethod Erase ()
+		   (when (< 0 (data.size))
+		     (data.shrink 0)
+		     (setf offset 0)))))))
 
     (let* ((def-tex `((:width img.cols :height img.rows :data img.data)
 		      (:width board_img.cols :height board_img.rows :data board_img.data)))
