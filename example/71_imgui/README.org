@@ -179,7 +179,7 @@ sudo ninja install
   #+begin_example
     
 
-  mkdir build && cd build
+  mkdir bi && cd bi
   CC="clang" CXX="clang++" cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use -G Ninja ..
   #+end_example
   - alternative way

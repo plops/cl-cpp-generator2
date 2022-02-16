@@ -645,6 +645,18 @@ entry return-values contains a list of return values. currently supports type, v
 			       (when hook-defclass
 				 (funcall hook-defclass (format nil "~a~%" str)))
 			       str)))
+		  (include<> (let ((args (cdr code)))
+			       ;; include {name}*
+			       ;; (include<> stdio.h stddef.h)   => #include <stdio.h>\n #include<stddef.h>
+			       
+			     (let ((str (with-output-to-string (s)
+					  (loop for e in args do
+						
+					    (format s "~&#include <~a>"
+						    (emit e))))))
+			       (when hook-defclass
+				 (funcall hook-defclass (format nil "~a~%" str)))
+			       str)))
 		  (progn (with-output-to-string (s)
 			   ;; progn {form}*
 			   ;; like do but surrounds forms with braces.

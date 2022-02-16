@@ -207,7 +207,7 @@
      :headers `()
      :header-preamble `(do0
 			(include ;<memory>
-			 <opencv2/core/core.hpp>
+			 <opencv2/core/mat.hpp>
 			 <chrono>)
 					;"namespace cv { class Mat; }"
 			)
@@ -704,9 +704,11 @@
 	     *source-dir*)
        :name `Charuco
        :headers `()
-       :header-preamble `(do0 ,@(loop for e in `(core videoio imgproc aruco/charuco)
+       :header-preamble `(do0 ,@(loop for e in `( core/cvstd core/mat videoio   core imgproc   aruco/charuco
+						  )
 				      collect
 				      `(include ,(format nil "<opencv2/~a.hpp>" e)))
+			      "namespace cv { namespace aruco { class CharucoBoard;class Dictionary; struct DetectorParameters; }}"
 			      #+nil (do0 (include
 					  <opencv2/core/cvstd.hpp>
 					  <opencv2/core/mat.hpp>)
@@ -715,6 +717,11 @@
        :implementation-preamble `(do0
 
 				  ,log-preamble
+				  ,@(loop for e in `( core/cvstd core/mat videoio  ; core imgproc
+						      aruco/charuco
+						      )
+					  collect
+					  `(include ,(format nil "<opencv2/~a.hpp>" e)))
 				  (do0
 				   (include "imgui_impl_opengl3_loader.h")
 				   (include "imgui_impl_glfw.h")
@@ -913,14 +920,14 @@
 				    *source-dir*))
 		  `(do0
 		    (include <GL/glew.h>)
-		    (do0
+		    #+nil (do0
 
 					;(include "imgui_impl_opengl3_loader.h")
 					; (include "imgui.h")
 					;(include "imgui_impl_glfw.h")
 					;(include "imgui_impl_opengl3.h")
-		     (include  <GLFW/glfw3.h>)
-		     )
+					;(include  <GLFW/glfw3.h>)
+			   )
 
 		    (include <future>)
 
@@ -933,21 +940,33 @@
 			     "ScrollingBuffer.h")
 		    (include
 		     <thread>
-		     <iostream>
-		     <iomanip>
+					;<iostream>
+					;<iomanip>
 		     <chrono>
 		     <mutex>
-		     <cmath>
-		     <cassert>)
+					; <cmath>
+					;<cassert>
+		     )
 		    (include "Charuco.h")
-		    (include <opencv2/core.hpp>
-			     <opencv2/videoio.hpp>
-			     <opencv2/imgproc.hpp>
-			     <opencv2/aruco/charuco.hpp>)
+		    #+nil (include; <opencv2/core.hpp>
+					;<opencv2/videoio.hpp>
+					;<opencv2/imgproc.hpp>
+					;<opencv2/aruco/charuco.hpp>
+			   )
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    "std::mutex g_stdout_mutex;"
 		    (include "implot.h")
 		    (include "GraphicsFramework.h")
+
+		    (include<> cxxabi.h
+			       imgui.h
+			       algorithm
+			       memory
+			       opencv2/core/mat.hpp
+			       ratio
+			       system_error
+			       utility
+			       vector)
 
 		    (defun main (argc argv)
 		      (declare (type int argc)
