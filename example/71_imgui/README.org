@@ -195,4 +195,7 @@ sudo ninja install
 # usage:
 mkdir bc; cd bc; cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cppinclude --compile_commands=bc/compile_commands.json
+
+cppinclude --report=unresolved --compile_commands=bc/compile_commands.json|grep --color -E '^|Charu'
 #+end_example
+

@@ -632,7 +632,9 @@
 	   *source-dir*)
      :name `ScrollingBuffer
      :headers `()
-     :header-preamble `(do0 (include "imgui.h"))
+     :header-preamble `(do0
+			(include "imgui.h")
+			)
      :implementation-preamble `()
      :code (let ((def-members `((:name max_size :type int :default 200)
 				(:name offset :type int :init-form 0)
@@ -711,14 +713,13 @@
 					 ,(format nil "namespace cv { ~{class ~a;~} }" `(Dictionary CharucoBoard DetectorParameters)))
 			      )
        :implementation-preamble `(do0
-					;(include <GL/glew.h>)
+
 				  ,log-preamble
 				  (do0
 				   (include "imgui_impl_opengl3_loader.h")
-				   (include "imgui.h")
 				   (include "imgui_impl_glfw.h")
 				   (include "imgui_impl_opengl3.h")
-				   (include  <GLFW/glfw3.h>)
+
 				   ))
        :code (let ((def-members `((:name squares_x :type int :default 8)
 				  (:name squares_y :type int :default 4)
