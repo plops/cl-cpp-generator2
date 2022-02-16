@@ -173,4 +173,25 @@ git checkout clang_13
 mkdir b && cd b
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja
+sudo ninja install
   #+end_example
+  - call it
+  #+begin_example
+    
+
+  mkdir build && cd build
+  CC="clang" CXX="clang++" cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use -G Ninja ..
+  #+end_example
+- another tool
+  
+#+begin_example
+git clone https://github.com/cppinclude/cppinclude
+cd cppinclude
+cd build
+cmake .. -G Ninja
+ninja
+sudo ninja install
+# usage:
+mkdir bc; cd bc; cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cppinclude --compile_commands=bc/compile_commands.json
+#+end_example
