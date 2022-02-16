@@ -383,35 +383,30 @@
 		      "std::vector<std::vector<cv::Point2f> > markerCorners;"
 		      (cv--aruco--detectMarkers frame charuco.board->dictionary markerCorners markerIds charuco.params)
 		      (when (< 0 (markerIds.size))
-			(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)))
-		     #+nil (do0
-			    (>> cap img3)
-			    (do0
-			     (when (< 0 (markerIds.size))
-					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
-			       "std::vector<cv::Point2f> charucoCorners;"
-			       "std::vector<int> charucoIds;"
-			       (cv--aruco--interpolateCornersCharuco markerCorners
-								     markerIds
-								     img3
-								     board
-								     charucoCorners
-								     charucoIds
-								     cameraMatrix
-								     distCoeffs)
-			       (when (< 0 (charucoIds.size))
-				 (let ((color (cv--Scalar 255 0 255)))
-				   (cv--aruco--drawDetectedCornersCharuco img3 charucoCorners charucoIds color)
-				   #+nil (do0 "cv::Vec3d rvec, tvec;"
-					      (let ((valid (cv--aruco--estimatePoseCharucoBoard
-							    charucoCorners
-							    charucoIds
-							    board cameraMatrix distCoeffs
-							    rvec tvec)))
-						(when valid
-						  (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
-			       ))
-			    (cv--cvtColor img3 img cv--COLOR_BGR2RGBA))
+					;(cv--aruco--drawDetectedMarkers frame markerCorners markerIds)
+			"std::vector<cv::Point2f> charucoCorners;"
+			"std::vector<int> charucoIds;"
+			(cv--aruco--interpolateCornersCharuco markerCorners
+							      markerIds
+							      frame
+							      charuco.board
+							      charucoCorners
+							      charucoIds
+							      charuco.camera_matrix
+							      charuco.dist_coeffs)
+			(when (< 0 (charucoIds.size))
+			  (let ((color (cv--Scalar 255 0 255)))
+			    (cv--aruco--drawDetectedCornersCharuco frame charucoCorners charucoIds color)
+			    #+nil (do0 "cv::Vec3d rvec, tvec;"
+				       (let ((valid (cv--aruco--estimatePoseCharucoBoard
+						     charucoCorners
+						     charucoIds
+						     board cameraMatrix distCoeffs
+						     rvec tvec)))
+					 (when valid
+					   (cv--aruco--drawAxis img3 cameraMatrix distCoeffs rvec tvec .1s0))))))
+			))
+
 
 		     (let ((msg (ProcessedFrameMessage ;(event.get_batch_idx)
 				 (event.get_frame_idx)
@@ -882,10 +877,10 @@
 					;(cv--split img spl)
 					;,(lprint :msg "received camera image")
 					;(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
-		      (cv--cvtColor img3 img cv--COLOR_BGR2GRAY)
+					;(cv--cvtColor img3 img cv--COLOR_BGR2GRAY)
 					;,(lprint :msg "converted camera image")
 		      )
-		     (return img))
+		     (return img3))
 		   ,@(remove-if
 		      #'null
 		      (loop for e in def-members
@@ -1108,7 +1103,7 @@
 						       ,(format nil "static ScrollingBuffer ~a;" data))))))
 
 					,(let ((def-tex-el `(:name camera :w frame.cols :h frame.rows
-								   :target GL_TEXTURE_2D :format GL_LUMINANCE
+								   :target GL_TEXTURE_2D :format GL_BGR ;LUMINANCE
 								   :data frame.data
 								   :tex-id 0))
 					       )
