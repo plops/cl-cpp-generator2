@@ -183,7 +183,8 @@ sudo ninja install
   CC="clang" CXX="clang++" cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use -G Ninja ..
   #+end_example
 - another tool
-  
+  https://www.youtube.com/watch?v=DXil_ahLTyg
+  cppinclude - Tool for analyzing includes in C++ - Oleg Fedorenko - CppCon 2020
 #+begin_example
 git clone https://github.com/cppinclude/cppinclude
 cd cppinclude
