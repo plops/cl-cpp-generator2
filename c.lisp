@@ -44,7 +44,8 @@
 	  (write-sequence code-str s))
 	;; https://travisdowns.github.io/blog/2019/11/19/toupper.html
 	;; header reordering can affect compilation performance
-	;; FIXME: figure out how to prevent that
+	;; https://stackoverflow.com/questions/60334299/clang-format-disable-ordering-includes
+	;; SortIncludes: false    in .clang-format
        (when format
 	 (sb-ext:run-program "/usr/bin/clang-format"
 			     (list "-i"  (namestring fn)

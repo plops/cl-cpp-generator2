@@ -29,6 +29,8 @@ git clone https://github.com/Microsoft/vcpkg.git
     #+begin_example
 ~/src/vcpkg/vcpkg install imgui[docking-experimental,glfw-binding,opengl3-binding]
 ~/src/vcpkg/vcpkg install implot
+~/src/vcpkg/vcpkg install glew
+# requires apt-get install libxmu-dev libxi-dev libgl-dev
     #+end_example
 - files are installed here: /home/martin/src/vcpkg/packages/glfw3_x64-linux/lib/pkgconfig/glfw3.pc
 #+begin_example
@@ -53,6 +55,18 @@ The package implot provides CMake targets:
 
 
 #+end_example
+
+- update vcpkg
+  #+begin_example
+cd ~/src/vcpkg
+git pull
+~/src/vcpkg/vcpkg update
+#The following packages differ from their port versions:
+#    imgui:x64-linux                  1.86 -> 1.87
+#    implot:x64-linux                 0.12 -> 0.13
+~/src/vcpkg/vcpkg upgrade
+~/src/vcpkg/vcpkg remove --outdated
+  #+end_example
 
   
 - configure cmake using vcpkg
