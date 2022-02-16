@@ -121,7 +121,7 @@
 		   (let ((font_fn (string
 				   ,(format nil "~a"
 					    (elt
-					     (directory "/home/martin/src/vcpkg/buildtrees/imgui/src/*/misc/fonts/DroidSans.ttf")
+					     (directory "/home/martin/stage/cl-cpp-generator2/example/71_imgui/03source/DroidSans.ttf")
 					     0))))
 			 (font_size 16s0))
 		     (let ((*font (-> io.Fonts (AddFontFromFileTTF font_fn font_size))))
@@ -322,6 +322,7 @@
 				     "MessageQueue.h"
 				     "ProcessFrameEvent.h"
 				     "ProcessedFrameMessage.h"
+				     "Charuco.h"
 				     <opencv2/core/mat.hpp>
 				     <vector>
 				     <future>))
@@ -339,6 +340,7 @@
 
 				(events "std::shared_ptr<MessageQueue<ProcessFrameEvent> >")
 				(msgs "std::shared_ptr<MessageQueue<ProcessedFrameMessage> >")
+				(charuco Charuco)
 				)))
 	     `(do0
 	       (defclass BoardProcessor ()
@@ -380,19 +382,25 @@
 		   ,(lprint :msg "stopping BoardProcessor" :vars `(id)))
 		 (defmethod processEvent (event)
 		   (declare (type ProcessFrameEvent event))
-		   ,(lprint)
+					;,(lprint)
 
 		   (let (;;(dim (event.get_dim))
 			 (frame (event.get_frame))
 			 )
+		     (do0
+		      (comments "detect charuco board")
+		      "std::vector<int> markerIds;"
+		      "std::vector<std::vector<cv::Point2f> > markerCorners;"
+		      (cv--aruco--detectMarkers frame charuco.board->dictionary markerCorners markerIds charuco.params)
+		      )
 
 		     #+nil (do0
 			    (>> cap img3)
 			    (do0
-			     (comments "detect charuco board")
-			     "std::vector<int> markerIds;"
-			     "std::vector<std::vector<cv::Point2f> > markerCorners;"
-			     (cv--aruco--detectMarkers img3 board->dictionary markerCorners markerIds params)
+
+
+
+
 			     (when (< 0 (markerIds.size))
 					;(cv--aruco--drawDetectedMarkers img3 markerCorners markerIds)
 			       "std::vector<cv::Point2f> charucoCorners;"
@@ -490,17 +498,19 @@
 			    "class GLFWwindow;"
 			    )
      :implementation-preamble `(do0
-				(do0 (include "imgui_impl_opengl3_loader.h")
-				     (include "imgui.h")
-				     (include "imgui_impl_glfw.h")
-				     (include "imgui_impl_opengl3.h")
-				     (include
+				(do0
+				 (include <GL/glew.h>)
+					;(include "imgui_impl_opengl3_loader.h")
+				 (include "imgui.h")
+					;(include "imgui_impl_glfw.h")
+					;(include "imgui_impl_opengl3.h")
+				 (include
 
 
 
 
-				      <GLFW/glfw3.h>)
-				     ,log-preamble)
+				  <GLFW/glfw3.h>)
+				 ,log-preamble)
 				)
      :code (let ((def-members `(#+nil (window "std::unique_ptr<GLFWwindow,DestroyGLFWwindow>"
 					      )
@@ -565,8 +575,16 @@
 					     (declare (type GLFWwindow* ptr))
 					     (glfwDestroyWindow ptr))))
 		      (glfwMakeContextCurrent (window.get))
+
+
 		      ,(lprint :msg "enable vsync")
-		      (glfwSwapInterval 1))
+		      (glfwSwapInterval 1)
+
+		      (do0
+		       ,(lprint :msg "load OpenGL with glew")
+		       (let ((err (glewInit)))
+			 (unless (== GLEW_OK err)
+			   ,(lprint :msg "glewInit failed" :vars `((glewGetErrorString err)))))))
 		    (comments "imgui brings its own opengl loader"
 			      "https://github.com/ocornut/imgui/issues/4445"))
 
@@ -616,7 +634,7 @@
      :headers `()
      :header-preamble `(do0 (include "imgui.h"))
      :implementation-preamble `()
-     :code (let ((def-members `((:name max_size :type int :default 2000)
+     :code (let ((def-members `((:name max_size :type int :default 200)
 				(:name offset :type int :init-form 0)
 				(:name data :type ImVector<ImVec2> :no-construct t))))
 	     `(do0
@@ -693,13 +711,15 @@
 					 ,(format nil "namespace cv { ~{class ~a;~} }" `(Dictionary CharucoBoard DetectorParameters)))
 			      )
        :implementation-preamble `(do0
+					;(include <GL/glew.h>)
 				  ,log-preamble
-				  (do0 (include "imgui_impl_opengl3_loader.h")
-				       (include "imgui.h")
-				       (include "imgui_impl_glfw.h")
-				       (include "imgui_impl_opengl3.h")
-				       (include  <GLFW/glfw3.h>)
-				       ))
+				  (do0
+				   (include "imgui_impl_opengl3_loader.h")
+				   (include "imgui.h")
+				   (include "imgui_impl_glfw.h")
+				   (include "imgui_impl_opengl3.h")
+				   (include  <GLFW/glfw3.h>)
+				   ))
        :code (let ((def-members `((:name squares_x :type int :default 8)
 				  (:name squares_y :type int :default 4)
 				  (:name square_length :type float :default .04s0)
@@ -726,7 +746,9 @@
 				  (:name textures_dirty :type "std::vector<bool>" :init-form (curly true true))
 				  (:name camera_matrix :type "cv::Mat" :no-construct t)
 				  (:name dist_coeffs :type "cv::Mat" :no-construct t)
-				  (:name cap_fn :type "std::string" :default (string "/dev/video2") )
+				  (:name cap_fn :type "std::string" :default (string "/dev/video2"
+					;"/dev/video0"
+										     ) )
 				  (:name cap :type "cv::VideoCapture" :init-form (cv--VideoCapture cap_fn))
 				  )))
 	       `(do0
@@ -889,12 +911,15 @@
 		   (merge-pathnames #P"main.cpp"
 				    *source-dir*))
 		  `(do0
-		    (do0 (include "imgui_impl_opengl3_loader.h")
-			 (include "imgui.h")
-			 (include "imgui_impl_glfw.h")
-			 (include "imgui_impl_opengl3.h")
-			 (include  <GLFW/glfw3.h>)
-			 )
+					;(include <GL/glew.h>)
+		    (do0
+
+		     (include "imgui_impl_opengl3_loader.h")
+		     (include "imgui.h")
+		     (include "imgui_impl_glfw.h")
+		     (include "imgui_impl_opengl3.h")
+		     (include  <GLFW/glfw3.h>)
+		     )
 
 		    (include <future>)
 
@@ -943,8 +968,9 @@
 			    (let ((eventQueue (std--make_shared<MessageQueue<ProcessFrameEvent>>))
 				  (msgQueue (std--make_shared<MessageQueue<ProcessedFrameMessage>>)))
 
-			      (let ((processor_thread_should_run true)
-				    (board_processor (BoardProcessor 0 eventQueue msgQueue))
+			      (let ((charuco (Charuco))
+				    (processor_thread_should_run true)
+				    (board_processor (BoardProcessor 0 eventQueue msgQueue charuco))
 				    (processor_thread (std--thread
 						       &BoardProcessor--process
 						       board_processor))))
@@ -952,8 +978,10 @@
 				    (capture_thread (std--thread
 						     (lambda ()
 						       (declare (capture &capture_thread_should_run
-									 &eventQueue))
-						       (let ((charuco (Charuco)))
+									 &eventQueue
+									 &charuco))
+						       (let (;(charuco (Charuco))
+							     )
 							 (charuco.Capture)
 							 (charuco.Init)
 							 ,(lprint :msg "started capture thread")
@@ -974,7 +1002,7 @@
 										     eventQueue
 										     (std--move process_frame_event))))
 
-								 ,(lprint :vars `(frame_count (dot _timestamp (count))))
+					;,(lprint :vars `(frame_count (dot _timestamp (count))))
 								 (incf frame_count)))))
 							 ,(lprint :msg "shutdown capture thread")
 							 (charuco.Shutdown))))))
@@ -1002,7 +1030,8 @@
 					   "static std::vector<GLuint> textures({0});")
 
 				      (do0
-				       "static ImPlotAxisFlags timeplot_flags = ImPlotAxisFlags_NoTickLabels;"
+				       "static ImPlotAxisFlags timeplot_flags_x = ImPlotAxisFlags_NoTickLabels;"
+				       "static ImPlotAxisFlags timeplot_flags_y = ImPlotAxisFlags_AutoFit;"
 				       "static float  history=10.0f;"
 				       "static float time = 0;"
 				       (incf time (dot (ImGui--GetIO)
@@ -1018,144 +1047,155 @@
 
 
 
+				      ,(flet ((draw-camera-window ()
+						`(do0
+						  (ImGui--Begin (string "camera"))
+						  (glBindTexture GL_TEXTURE_2D (aref textures 0))
+						  (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
+								(ImVec2 w h))
+						  (ImGui--End)))
+					      (draw-time-window (&key extra-code-gen)
+						`(do0
+						  (ImGui--Begin (string "time durations [ms]"))
+						  ,@(loop for e in time-plot-def
+							  and e-i from 0
+							  collect
+							  (destructuring-bind (&key id name) e
+							    (let ((data (format nil "data_~a" id)))
+							      `(progn
+								 ,(if extra-code-gen
+								      (funcall extra-code-gen :id id :name name :e-i e-i :data data)
+								      `(comments "no extra code"))
+								 (when (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
+											  (ImVec2 -1 150)
+											  )
+								   (ImPlot--SetupAxes nullptr
+										      nullptr
+										      ,(if (eq e-i 2)
+											   0
+											   `timeplot_flags_x)
+										      timeplot_flags_y)
+								   (ImPlot--SetupAxisLimits ImAxis_X1
+											    (- time history)
+											    time
+											    ImGuiCond_Always)
+								   ,(ecase e-i
+								      (0
+								       `(ImPlot--SetupAxisLimits ImAxis_Y1
+												 40 60))
+								      (1
+								       `(ImPlot--SetupAxisLimits ImAxis_Y1
+												 0 3))
+								      (2
+								       `(ImPlot--SetupAxisLimits ImAxis_Y1
+												 0 60)))
+								   (ImPlot--PlotLine (string ,(format nil "~a" name))
+										     (dot (ref ,data) (aref data 0) x)
+										     (dot (ref ,data) (aref data 0) y)
+										     (dot ,data data (size))
+										     (dot ,data offset)
+										     (* 2 (sizeof float)))
+								   (ImPlot--EndPlot)))
+							      )))
+						  (ImGui--End))))
+					 `(if (msgQueue->empty)
+					      (when texture_is_initialized
+						(do0
+						 ,(draw-camera-window)
+						 ,(draw-time-window)
+						 ))
+					      (let ((msg (msgQueue->receive)))
+						"std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+						#+nil (let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
+							    (unit (string "ms")))
+							,(lprint :vars `(queue_delay unit)))
+						(let ((frame (msg.get_frame))
+						      (format (hex
+							       ;; #x80e0 ;; bgr
+							       ;; #x80e1 ;; bgra
+							       ;; #x1907 ;; rgb
+							       ;; #x1908 ;; rgba
+							       #x1909 ;; GL_LUMINANCE
+							       ;; #x8040 ;; luminance 8
+							       )))
 
-				      (if (msgQueue->empty)
-					  (when texture_is_initialized
-					    (do0
-					     (do0
-					      (ImGui--Begin (string "camera"))
-					      (glBindTexture GL_TEXTURE_2D (aref textures 0))
-					      (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
-							    (ImVec2 w h))
-					      (ImGui--End))
-					     (do0
-					      (ImGui--Begin (string "timestamps"))
-					      ,@(loop for e in time-plot-def
-						      and e-i from 0
-						      collect
-						      (destructuring-bind (&key id name) e
-							(let ((data (format nil "data_~a" id)))
-							  `(when (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
-										    nullptr
-										    nullptr
-										    (ImVec2 -1 150)
-										    0
-										    timeplot_flags
-										    timeplot_flags)
-							     #+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
-										    (ref (dot ,data (aref data 0) x))
-										    (ref (dot ,data (aref data 0) y))
-										    (dot ,data data (size))
-										    -INFINITY
-										    (dot ,data offset)
-										    (* 2 (sizeof float)))
-							     (ImPlot--EndPlot))
-							  )))
-					      (ImGui--End))))
-					  (let ((msg (msgQueue->receive)))
-					    "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-					    (let ((queue_delay (* 1000 (- (_timestamp.count) (msg.get_seconds))))
-						  (unit (string "ms")))
-					      ,(lprint :vars `(queue_delay unit)))
-					    (let ((frame (msg.get_frame))
-						  (format (hex
-							   ;; #x80e0 ;; bgr
-							   ;; #x80e1 ;; bgra
-							   ;; #x1907 ;; rgb
-							   ;; #x1908 ;; rgba
-							   #x1909 ;; GL_LUMINANCE
-							   ;; #x8040 ;; luminance 8
-							   )))
+						  (do0
+						   ,(draw-time-window :extra-code-gen (lambda (&key data id name e-i)
+											`(do0
+											  (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name))))
+												,@(loop for e in time-plot-def
+													and e-i from 0
+													collect
+													(destructuring-bind (&key id name) e
+													  (let ((data (format nil "data_~a" id)))
+													    `(,(format nil "p~a" e-i)
+													       (dot msg (,(format nil "get_time_point_~a_~a" id name))))
+													    ))))
 
-					      (do0
-					       (ImGui--Begin (string "timestamps"))
-					       ,@(loop for e in time-plot-def
-						       and e-i from 0
-						       collect
-						       (destructuring-bind (&key id name) e
-							 (let ((data (format nil "data_~a" id)))
-							   `(progn
-							      (do0
-							       (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name)))))
-								 "std::chrono::duration<float> y = p - g_start_time;"
-								 (dot ,data (AddPoint time (y.count)))
-								 (do0
-								  (ImPlot--SetNextPlotLimitsX (- time history)
-											      time
-											      ImGuiCond_Always)
-								  ;;(ImPlot--SetNextPlotLimitsY )
-								  )))
-							      (when
-								  (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
-										     nullptr
-										     nullptr
-										     (ImVec2 -1 150)
-										     0
-										     timeplot_flags
-										     timeplot_flags)
-								#+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
-										       (ref (dot ,data (aref data 0) x))
-										       (ref (dot ,data (aref data 0) y))
-										       (dot ,data data (size))
-										       -INFINITY
-										       (dot ,data offset)
-										       (* 2 (sizeof float)))
-								(ImPlot--EndPlot))))))
-					       (ImGui--End))
-					      (do0
-					       (setf w frame.cols
-						     h frame.rows)
-					       (if texture_is_initialized
-						   (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
-							(glPixelStorei GL_UNPACK_ROW_LENGTH
-								       0)
-							(glTexImage2D GL_TEXTURE_2D ;; target
-								      0 ;; level
-								      GL_RGBA ;; internalformat
-								      w ;; width
-								      h ;; height
-								      0 ;; border
-								      format ;; format
-								      GL_UNSIGNED_BYTE ;; type
-								      frame.data ;; data pointer
-								      ))
-						   (do0
-						    (glGenTextures (textures.size)
-								   (textures.data))
-						    (let ((texture (aref textures 0)))
-						      (do0
-						       (glBindTexture GL_TEXTURE_2D texture)
-						       ,@(loop for e in `(MIN MAG) collect
-							       `(glTexParameteri GL_TEXTURE_2D
-										 ,(format nil "GL_TEXTURE_~a_FILTER" e)
-										 GL_LINEAR))
-						       (glPixelStorei GL_UNPACK_ROW_LENGTH
-								      0)
-						       (glTexImage2D GL_TEXTURE_2D ;; target
-								     0 ;; level
-								     GL_RGBA ;; internalformat
-								     w ;; width
-								     h ;; height
-								     0 ;; border
-								     format ;; format
-								     GL_UNSIGNED_BYTE ;; type
-								     frame.data ;; data pointer
-								     )
-						       (setf texture_is_initialized true))))))
+											    ,(if (eq 0 e-i)
+												 `(do0
+												   (comments "compute time derivative of acquisition time stamps")
+												   (do0 "static float old_x = time;"
+													"static auto old_y = p;")
+												   (let ((y (* 1000 (- p old_y))
+													   #+nil (/ (- p old_y)
+														    (- time old_x))))
+												     (declare (type "std::chrono::duration<float>" y))
+												     (dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count)))))
+												   (do0
+												    (setf old_x time
+													  old_y p)))
+												 `(do0
+												   (comments "compute time difference")
+												   (let ((y (* 1000 (- ,(format nil "p~a" e-i)
+														       ,(format nil "p~a" (- e-i 1))))))
+												     (declare (type "std::chrono::duration<float>" y))
+												     (dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count)))))))
 
-					      (do0
-					       (ImGui--Begin (string "camera"))
-					       (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
-							     (ImVec2 w h))
-
-					       (ImGui--End)))))
-				      )
-				    )
-
+											    )))))
+						  (do0
+						   (setf w frame.cols
+							 h frame.rows)
+						   (if texture_is_initialized
+						       (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
+							    (glPixelStorei GL_UNPACK_ROW_LENGTH
+									   0)
+							    (glTexImage2D GL_TEXTURE_2D ;; target
+									  0 ;; level
+									  GL_RGBA ;; internalformat
+									  w ;; width
+									  h ;; height
+									  0 ;; border
+									  format ;; format
+									  GL_UNSIGNED_BYTE ;; type
+									  frame.data ;; data pointer
+									  ))
+						       (do0
+							(glGenTextures (textures.size)
+								       (textures.data))
+							(let ((texture (aref textures 0)))
+							  (do0
+							   (glBindTexture GL_TEXTURE_2D texture)
+							   ,@(loop for e in `(MIN MAG) collect
+								   `(glTexParameteri GL_TEXTURE_2D
+										     ,(format nil "GL_TEXTURE_~a_FILTER" e)
+										     GL_LINEAR))
+							   (glPixelStorei GL_UNPACK_ROW_LENGTH
+									  0)
+							   (glTexImage2D GL_TEXTURE_2D ;; target
+									 0 ;; level
+									 GL_RGBA ;; internalformat
+									 w ;; width
+									 h ;; height
+									 0 ;; border
+									 format ;; format
+									 GL_UNSIGNED_BYTE ;; type
+									 frame.data ;; data pointer
+									 )
+							   (setf texture_is_initialized true))))))
+						  ,(draw-camera-window)))))))
 				   (M.Render (framework.getWindow))
-				   )))
-
-			    )
+				   ))))
 			   (do0
 			    ,(lprint :msg "run various cleanup functions")
 			    (do0
@@ -1192,7 +1232,10 @@
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "cmake_minimum_required( VERSION 3.4 )")
+
 	  (out "project( mytest LANGUAGES CXX )")
+	  ;; (out "set ( CMAKE_TOOLCHAIN_FILE /home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake )")
+	  (out "set ( CMAKE_PREFIX_PATH /home/martin/src/vcpkg/installed/x64-linux/share/ )")
 	  (out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
@@ -1210,7 +1253,7 @@
 	  (out "add_executable( mytest ${SRCS} )")
 					;(out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
-	  (loop for e in `(imgui implot)
+	  (loop for e in `(imgui implot GLEW)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
 	  ;; module definitions /usr/lib64/cmake/OpenCV/OpenCVModules.cmake
@@ -1218,6 +1261,7 @@
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `("imgui::imgui"
 		 "implot::implot"
+		 "GLEW::GLEW"
 		 "${OpenCV_LIBS}"))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
