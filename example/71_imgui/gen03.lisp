@@ -1057,141 +1057,145 @@
 						   `(do0
 						     ,(format nil "static ScrollingBuffer ~a;" data))))))
 
-				      ,(let ((def-tex `((:name camera :w frame.cols :h frame.rows :format GL_LUMINANCE :data frame.data))))
-					 (flet ((draw-texture-window (&key name)
-						  `(do0
-						    (ImGui--Begin (string ,name))
-						    (glBindTexture GL_TEXTURE_2D (aref textures 0))
-						    (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
-								  (ImVec2 w h))
-						    (ImGui--End)))
-						(draw-time-window (&key extra-code-gen)
-						  `(do0
-						    (ImGui--Begin (string "time durations [ms]"))
-						    ,@(loop for e in time-plot-def
-							    and e-i from 0
-							    collect
-							    (destructuring-bind (&key id name) e
-							      (let ((data (format nil "data_~a" id)))
-								`(progn
-								   ,(if extra-code-gen
-									(funcall extra-code-gen :id id :name name :e-i e-i :data data)
-									`(comments "no extra code"))
-								   (when (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
-											    (ImVec2 -1 150)
-											    )
-								     (ImPlot--SetupAxes nullptr
-											nullptr
-											,(if (eq e-i 2)
-											     0
-											     `timeplot_flags_x)
-											timeplot_flags_y)
-								     (ImPlot--SetupAxisLimits ImAxis_X1
-											      (- time history)
-											      time
-											      ImGuiCond_Always)
-								     ,(ecase e-i
-									(0
-									 `(ImPlot--SetupAxisLimits ImAxis_Y1
-												   40 60))
-									(1
-									 `(ImPlot--SetupAxisLimits ImAxis_Y1
-												   0 3))
-									(2
-									 `(ImPlot--SetupAxisLimits ImAxis_Y1
-												   0 60)))
-								     (ImPlot--PlotLine (string ,(format nil "~a" name))
-										       (dot (ref ,data) (aref data 0) x)
-										       (dot (ref ,data) (aref data 0) y)
-										       (dot ,data data (size))
-										       (dot ,data offset)
-										       (* 2 (sizeof float)))
-								     (ImPlot--EndPlot)))
-								)))
-						    (ImGui--End))))
-					   `(if (msgQueue->empty)
-						(when texture_is_initialized
-						  (do0
-						   ,(draw-texture-window :name "camera")
-						   ,(draw-time-window)
-						   ))
-						(let ((msg (msgQueue->receive)))
-						  "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-						  (let ((frame (msg.get_frame))
-							(format GL_LUMINANCE))
+				      ,(let ((def-tex-el `(:name camera :w frame.cols :h frame.rows
+								 :target GL_TEXTURE_2D :format GL_LUMINANCE
+								 :data frame.data
+								 :tex-id 0))
+					     )
+					 (destructuring-bind (&key name w h target format data tex-id) def-tex-el
+					   (flet ((draw-texture-window (&key name)
+						    `(do0
+						      (ImGui--Begin (string ,name))
+						      (glBindTexture ,target (aref textures ,tex-id))
+						      (ImGui--Image (reinterpret_cast<void*> (aref textures ,tex-id))
+								    (ImVec2 w h))
+						      (ImGui--End)))
+						  (draw-time-window (&key extra-code-gen)
+						    `(do0
+						      (ImGui--Begin (string "time durations [ms]"))
+						      ,@(loop for e in time-plot-def
+							      and e-i from 0
+							      collect
+							      (destructuring-bind (&key id name) e
+								(let ((data (format nil "data_~a" id)))
+								  `(progn
+								     ,(if extra-code-gen
+									  (funcall extra-code-gen :id id :name name :e-i e-i :data data)
+									  `(comments "no extra code"))
+								     (when (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
+											      (ImVec2 -1 150)
+											      )
+								       (ImPlot--SetupAxes nullptr
+											  nullptr
+											  ,(if (eq e-i 2)
+											       0
+											       `timeplot_flags_x)
+											  timeplot_flags_y)
+								       (ImPlot--SetupAxisLimits ImAxis_X1
+												(- time history)
+												time
+												ImGuiCond_Always)
+								       ,(ecase e-i
+									  (0
+									   `(ImPlot--SetupAxisLimits ImAxis_Y1
+												     40 60))
+									  (1
+									   `(ImPlot--SetupAxisLimits ImAxis_Y1
+												     0 3))
+									  (2
+									   `(ImPlot--SetupAxisLimits ImAxis_Y1
+												     0 60)))
+								       (ImPlot--PlotLine (string ,(format nil "~a" name))
+											 (dot (ref ,data) (aref data 0) x)
+											 (dot (ref ,data) (aref data 0) y)
+											 (dot ,data data (size))
+											 (dot ,data offset)
+											 (* 2 (sizeof float)))
+								       (ImPlot--EndPlot)))
+								  )))
+						      (ImGui--End))))
+					     `(if (msgQueue->empty)
+						  (when texture_is_initialized
 						    (do0
-						     ,(draw-time-window
-						       :extra-code-gen
-						       (lambda (&key data id name e-i)
-							 `(do0
-							   (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name))))
-								 ,@(loop for e in time-plot-def
-									 and e-i from 0
-									 collect
-									 (destructuring-bind (&key id name) e
-									   (let ((data (format nil "data_~a" id)))
-									     `(,(format nil "p~a" e-i)
-										(dot msg (,(format nil "get_time_point_~a_~a" id name))))))))
-							     ,(if (eq 0 e-i)
-								  `(do0
-								    (comments "compute time derivative of acquisition time stamps")
-								    (do0 "static float old_x = time;"
-									 "static auto old_y = p;")
-								    (let ((y (* 1000 (- p old_y))
-									    #+nil (/ (- p old_y)
-										     (- time old_x))))
-								      (declare (type "std::chrono::duration<float>" y))
-								      (dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count)))))
-								    (do0
-								     (setf old_x time
-									   old_y p)))
-								  `(do0
-								    (comments "compute time difference")
-								    (let ((y (* 1000 (- ,(format nil "p~a" e-i)
-											,(format nil "p~a" (- e-i 1))))))
-								      (declare (type "std::chrono::duration<float>" y))
-								      (dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count))))))))))))
-						    (do0
-						     (setf w frame.cols
-							   h frame.rows)
-						     (if texture_is_initialized
-							 (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
-							      (glPixelStorei GL_UNPACK_ROW_LENGTH
-									     0)
-							      (glTexImage2D GL_TEXTURE_2D ;; target
-									    0 ;; level
-									    GL_RGBA ;; internalformat
-									    w ;; width
-									    h ;; height
-									    0 ;; border
-									    format ;; format
-									    GL_UNSIGNED_BYTE ;; type
-									    frame.data ;; data pointer
-									    ))
-							 (do0
-							  (glGenTextures (textures.size)
-									 (textures.data))
-							  (let ((texture (aref textures 0)))
+						     ,(draw-texture-window :name "camera")
+						     ,(draw-time-window)
+						     ))
+						  (let ((msg (msgQueue->receive)))
+						    "std::chrono::duration<double>  _timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+						    (let ((frame (msg.get_frame))
+							  )
+						      (do0
+						       ,(draw-time-window
+							 :extra-code-gen
+							 (lambda (&key data id name e-i)
+							   `(do0
+							     (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name))))
+								   ,@(loop for e in time-plot-def
+									   and e-i from 0
+									   collect
+									   (destructuring-bind (&key id name) e
+									     (let ((data (format nil "data_~a" id)))
+									       `(,(format nil "p~a" e-i)
+										  (dot msg (,(format nil "get_time_point_~a_~a" id name))))))))
+							       ,(if (eq 0 e-i)
+								    `(do0
+								      (comments "compute time derivative of acquisition time stamps")
+								      (do0 "static float old_x = time;"
+									   "static auto old_y = p;")
+								      (let ((y (* 1000 (- p old_y))
+									      #+nil (/ (- p old_y)
+										       (- time old_x))))
+									(declare (type "std::chrono::duration<float>" y))
+									(dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count)))))
+								      (do0
+								       (setf old_x time
+									     old_y p)))
+								    `(do0
+								      (comments "compute time difference")
+								      (let ((y (* 1000 (- ,(format nil "p~a" e-i)
+											  ,(format nil "p~a" (- e-i 1))))))
+									(declare (type "std::chrono::duration<float>" y))
+									(dot ,data (AddPoint (static_cast<float> time) (static_cast<float> (y.count))))))))))))
+						      (do0
+						       (setf w ,w
+							     h ,h)
+						       (if texture_is_initialized
+							   (do0 (glBindTexture ,target (aref textures ,tex-id))
+								(glPixelStorei GL_UNPACK_ROW_LENGTH
+									       0)
+								(glTexImage2D ,target ;; target
+									      0 ;; level
+									      GL_RGBA ;; internalformat
+									      ,w ;; width
+									      ,h ;; height
+									      0 ;; border
+									      ,format ;; format
+									      GL_UNSIGNED_BYTE ;; type
+									      ,data ;; data pointer
+									      ))
+							   (do0
+							    (glGenTextures (textures.size)
+									   (textures.data))
 							    (do0
-							     (glBindTexture GL_TEXTURE_2D texture)
+							     (glBindTexture ,target (aref textures ,tex-id))
 							     ,@(loop for e in `(MIN MAG) collect
-								     `(glTexParameteri GL_TEXTURE_2D
+								     `(glTexParameteri ,target
 										       ,(format nil "GL_TEXTURE_~a_FILTER" e)
 										       GL_LINEAR))
 							     (glPixelStorei GL_UNPACK_ROW_LENGTH
 									    0)
-							     (glTexImage2D GL_TEXTURE_2D ;; target
+							     (glTexImage2D ,target ;; target
 									   0 ;; level
 									   GL_RGBA ;; internalformat
-									   w ;; width
-									   h ;; height
+									   ,w ;; width
+									   ,h ;; height
 									   0 ;; border
-									   format ;; format
+									   ,format ;; format
 									   GL_UNSIGNED_BYTE ;; type
-									   frame.data ;; data pointer
+									   ,data ;; data pointer
 									   )
-							     (setf texture_is_initialized true))))))
-						    ,(draw-texture-window :name "camera"))))))))
+							     (setf texture_is_initialized true)))))
+						      ,(draw-texture-window :name "camera")))))))))
 				   (M.Render (framework.getWindow))
 				   ))))
 			   (do0
