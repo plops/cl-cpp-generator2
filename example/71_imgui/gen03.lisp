@@ -903,7 +903,8 @@
 		    (include "ProcessedFrameMessage.h"
 			     "ProcessFrameEvent.h"
 			     "BoardProcessor.h"
-			     "MessageQueue.h")
+			     "MessageQueue.h"
+			     "ScrollingBuffer.h")
 		    (include
 					;<tuple>
 
@@ -1011,8 +1012,6 @@
 					      (unit (string "ms")))
 					  ,(lprint :vars `(queue_delay unit)))
 					(let ((frame (msg.get_frame))
-					;(w frame.cols)
-					;(h frame.rows)
 					      (format (hex
 						       ;; #x80e0 ;; bgr
 						       ;; #x80e1 ;; bgra
@@ -1024,46 +1023,90 @@
 						))
 					  (setf w frame.cols
 						h frame.rows)
-					  (unless texture_is_initialized
-					    (glGenTextures (textures.size)
-							   (textures.data))
-					    (let ((texture (aref textures 0)))
+					  (if texture_is_initialized
+					      (do0 (glBindTexture GL_TEXTURE_2D (aref textures 0))
+						   (glPixelStorei GL_UNPACK_ROW_LENGTH
+								  0)
+						   (glTexImage2D GL_TEXTURE_2D ;; target
+								 0	;; level
+								 GL_RGBA ;; internalformat
+								 w	      ;; width
+								 h	    ;; height
+								 0	    ;; border
+								 format ;; format
+								 GL_UNSIGNED_BYTE ;; type
+								 frame.data ;; data pointer
+								 ))
 					      (do0
-					       (glBindTexture GL_TEXTURE_2D texture)
-					       ,@(loop for e in `(MIN MAG) collect
-						       `(glTexParameteri GL_TEXTURE_2D
-									 ,(format nil "GL_TEXTURE_~a_FILTER" e)
-									 GL_LINEAR))
-					       (glPixelStorei GL_UNPACK_ROW_LENGTH
-							      0)
-					       (glTexImage2D GL_TEXTURE_2D ;; target
-							     0 ;; level
-							     GL_RGBA ;; internalformat
-							     w ;; width
-							     h ;; height
-							     0 ;; border
-							     format ;; format
-							     GL_UNSIGNED_BYTE ;; type
-							     frame.data ;; data pointer
-							     )
-					       (setf texture_is_initialized true))
+					       (glGenTextures (textures.size)
+							      (textures.data))
+					       (let ((texture (aref textures 0)))
+						 (do0
+						  (glBindTexture GL_TEXTURE_2D texture)
+						  ,@(loop for e in `(MIN MAG) collect
+							  `(glTexParameteri GL_TEXTURE_2D
+									    ,(format nil "GL_TEXTURE_~a_FILTER" e)
+									    GL_LINEAR))
+						  (glPixelStorei GL_UNPACK_ROW_LENGTH
+								 0)
+						  (glTexImage2D GL_TEXTURE_2D ;; target
+								0 ;; level
+								GL_RGBA ;; internalformat
+								w ;; width
+								h ;; height
+								0 ;; border
+								format ;; format
+								GL_UNSIGNED_BYTE ;; type
+								frame.data ;; data pointer
+								)
+						  (setf texture_is_initialized true)))))
 
-					      ))
 					  (do0
 					   (ImGui--Begin (string "camera"))
-					   (glBindTexture GL_TEXTURE_2D (aref textures 0))
-					   (glTexImage2D GL_TEXTURE_2D ;; target
-							 0	;; level
-							 GL_RGBA ;; internalformat
-							 w	      ;; width
-							 h	    ;; height
-							 0	    ;; border
-							 format ;; format
-							 GL_UNSIGNED_BYTE ;; type
-							 frame.data ;; data pointer
-							 )
 					   (ImGui--Image (reinterpret_cast<void*> (aref textures 0))
 							 (ImVec2 w h))
+					   (progn
+					     "static float  history=10.0f;"
+					     "static float time = 0;"
+					     (incf time (dot (ImGui--GetIO)
+							     DeltaTime))
+					     ,@(loop for e in `((:id "00" :name capture)
+								(:id "01" :name conversion)
+								(:id "02" :name processed))
+						     and e-i from 0
+						     collect
+						     (destructuring-bind (&key id name) e
+						       (let ((data (format nil "data_~a" id)))
+							 `(progn
+							    ,(format nil "static ScrollingBuffer ~a;" data)
+							    (let ((p (dot msg (,(format nil "get_time_point_~a_~a" id name))))
+								  )
+							      "std::chrono::duration<float> y = p - g_start_time;"
+							      (dot ,data (AddPoint time (y.count)))
+					;(setf (dot ,data Span) history)
+							      (do0
+							       "static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;"
+							       (ImPlot--SetNextPlotLimitsX (- time history)
+											   time
+											   ImGuiCond_Always)
+					;(ImPlot--SetNextPlotLimitsY )
+							       (when
+								   (ImPlot--BeginPlot (string ,(format nil "##Scrolling_~a" name))
+										      nullptr
+										      nullptr
+										      (ImVec2 -1 150)
+										      0
+										      flags
+										      flags)
+								 #+nil(ImPlot--PlotLine (string ,(format nil "~a" name))
+											(ref (dot ,data (aref data 0) x))
+											(ref (dot ,data (aref data 0) y))
+											(dot ,data data (size))
+											-INFINITY
+											(dot ,data offset)
+											(* 2 (sizeof float)))
+								 (ImPlot--EndPlot))
+							       )))))))
 					   (ImGui--End)))))
 				  )
 				)
