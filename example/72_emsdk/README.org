@@ -1,0 +1,34 @@
+- install emsdk
+#+begin_example
+git clone https://github.com/emscripten-core/emsdk.git
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+# Configure emsdk in your shell startup scripts by running:
+echo 'source "/home/martin/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
+
+#+end_example
+
+- reading
+  - i want to read camera in browser
+  - perform aruco detection with opencv in browser
+
+https://emscripten.org/docs/porting/asyncify.html
+
+
+https://web.dev/fugu-status/
+https://www.chromium.org/teams/web-capabilities-fugu/
+https://fugu-tracker.web.app/
+
+pan/tilt for camera
+
+
+http://aggregate.org/DIT/KREMY/ image denoise
+
+http://aggregate.org/DIT/KREMY/noisy220209.pdf
+https://learn.sparkfun.com/tutorials/working-with-wire/how-to-use-a-wire-wrap-tool learn wirewrap
+
+8 Color Wrapping Wire AWG30 Cable OK Line PCB Flying Jumper Wire Electrical Wire + WSU Wire Wrap Strip Unwrap Tool BUY (23EUR)
+
+
+http://earth.google.com/web webassembly based
