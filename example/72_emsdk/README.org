@@ -88,4 +88,8 @@ http://earth.google.com/web webassembly based
 
 - sdl
   - https://github.com/emscripten-core/emscripten/blob/main/tests/hello_world_sdl.cpp
-  - 
+  - Another option is to use Asyncify which will rewrite the program
+    so that it can return to the browser’s main event loop by just
+    calling emscripten_sleep(). Note that this rewriting causes size
+    and speed overhead while emscripten_request_animation_frame_loop /
+    emscripten_set_main_loop as described earlier do not.
