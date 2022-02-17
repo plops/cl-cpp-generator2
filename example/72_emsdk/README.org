@@ -3,7 +3,9 @@
 git clone https://github.com/emscripten-core/emsdk.git
 ./emsdk install latest
 ./emsdk activate latest
-source ./emsdk_env.sh
+
+source "/home/martin/src/emsdk/emsdk_env.sh"
+
 # Configure emsdk in your shell startup scripts by running:
 echo 'source "/home/martin/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
 
@@ -23,6 +25,19 @@ echo 'source "/home/martin/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
 source ./emsdk_env.sh
   #+end_example
 
+
+- compile opencv with emscripten
+#+begin_example
+source "/home/martin/src/emsdk/emsdk_env.sh"
+cd ~/src
+git clone https://github.com/opencv/opencv.git
+cd opencv
+source "/home/martin/src/emsdk/emsdk_env.sh"
+export EMSCRIPTEN=$EMSDK
+ln -s ~/src/opencv/platforms/ /home/martin/src/opencv/build_wasm/./platforms
+emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --simd
+
+#+end_example
 
 - reading
   - i want to read camera in browser
@@ -47,3 +62,30 @@ https://learn.sparkfun.com/tutorials/working-with-wire/how-to-use-a-wire-wrap-to
 
 
 http://earth.google.com/web webassembly based
+
+- https://github.com/serghov/OpencvFaceDetectWasm
+  - index.html in /web loads a video in a <video> tag and runs a small
+    script that copies each frame of that video onto a canvas, runs
+    getImageData on that canvas and passes the resulted pixel array to
+    c++.
+
+  - main.cpp in /cpp grabs the pixel array passed by js, wraps it in
+    an opencv Mat and runs haar face detection on it. Afterwards the
+    image is displayed using emscripten's port of SDL.
+
+- webgl
+  - https://emscripten.org/docs/porting/multimedia_and_graphics/OpenGL-support.html#opengl-support
+  - To only target WebGL 2 and drop support for WebGL 1 altogether to
+    save code size, pass the linker flags -s MIN_WEBGL_VERSION=2 and
+    -s MAX_WEBGL_VERSION=2.
+- EMSCRIPTEN_GENERATE_BITCODE_STATIC_LIBRARIES sounds interesting
+- https://github.com/emscripten-core/emscripten/blob/main/site/source/docs/compiling/Building-Projects.rst
+
+- egl
+  - https://emscripten.org/docs/porting/multimedia_and_graphics/EGL-Support-in-Emscripten.html#egl-support-in-emscripten
+  - https://github.com/emscripten-core/emscripten/blob/main/tests/third_party/glbook/Common/esUtil.c
+
+
+- sdl
+  - https://github.com/emscripten-core/emscripten/blob/main/tests/hello_world_sdl.cpp
+  - 
