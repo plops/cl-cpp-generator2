@@ -220,3 +220,45 @@ cppinclude --report=most_impact --compile_commands=bc/compile_commands.json
 
 #+end_example
 
+
+
+- try a class diagram
+  - mermaid.live
+#+begin_example
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Charuco{
+      +Mat board_img
+      +Init()
+      +ShutDown()
+      +Render()
+      +Mat Capture()
+    }
+    class GraphicsFramework{
+      +window
+      +bool WindowShouldClose()
+      +PollEvents()
+    }
+    class MessageQueue {
+        +mutex
+        +queue
+        +condition
+        +T receive()
+        +bool empty()
+        +send(T)
+    }
+    class MainWindow {
+        +Init()
+        +NewFrame()
+        +Update()
+        +Render()
+        +Shutdown()
+    } 
+
+#+end_example
