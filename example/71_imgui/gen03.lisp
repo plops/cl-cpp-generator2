@@ -121,7 +121,7 @@
 		   (let ((font_fn (string
 				   ,(format nil "~a"
 					    (elt
-					     (directory "/home/martin/stage/cl-cpp-generator2/example/71_imgui/03source/DroidSans.ttf")
+					     (directory "/usr/share/fonts/google-droid-sans-fonts/DroidSans-Bold.ttf")
 					     0))))
 			 (font_size 16s0))
 		     (let ((*font (-> io.Fonts (AddFontFromFileTTF font_fn font_size))))
@@ -739,9 +739,11 @@
 				  (:name textures_dirty :type "std::vector<bool>" :init-form (curly true true))
 				  (:name camera_matrix :type "cv::Mat" :no-construct t)
 				  (:name dist_coeffs :type "cv::Mat" :no-construct t)
-				  (:name cap_fn :type "std::string" :default (string "/dev/video2"
-					;"/dev/video0"
-										     ) )
+				  (:name cap_fn :type "std::string"
+					 :default (string
+						   ;;"/dev/video2"
+						   "/dev/video0"
+						   ))
 				  (:name cap :type "cv::VideoCapture" :init-form (cv--VideoCapture cap_fn))
 				  )))
 	       `(do0
