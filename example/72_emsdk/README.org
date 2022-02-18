@@ -93,3 +93,6 @@ http://earth.google.com/web webassembly based
     calling emscripten_sleep(). Note that this rewriting causes size
     and speed overhead while emscripten_request_animation_frame_loop /
     emscripten_set_main_loop as described earlier do not.
+
+- example of a face detector
+  https://github.com/serghov/OpencvFaceDetectWasm/blob/master/cpp/main.cpp
