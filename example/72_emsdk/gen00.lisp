@@ -34,7 +34,8 @@
 			(values int))
 					;(setf g_start_time ("std::chrono::high_resolution_clock::now"))
 	       (progn
-		 ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+		 ;;,(lprint :msg "start" :vars `(argc (aref argv 0)))
+		 (<< std--cout (string "hello world") std--endl)
 		 (return 0)))
 	     ))
 
