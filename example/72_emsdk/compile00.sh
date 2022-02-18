@@ -1,9 +1,10 @@
 export NUM="00"
 export ODIR=/home/martin/stage/cl-cpp-generator2/example/72_emsdk/$NUM"source/"
 
-cd $ODIR
+mkdir -p $ODIR/b
 
-mkdir b
+cd $ODIR/b
 
 source "/home/martin/src/emsdk/emsdk_env.sh"
-emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug
+emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build .
