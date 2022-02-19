@@ -17,6 +17,162 @@
     (defparameter *source* "02source")
     (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
     (load "util.lisp")
+
+
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `Charuco
+     :headers `()
+     :header-preamble `(do0 ,@(loop for e in `( core/cvstd core/mat ;videoio
+						core imgproc   aruco/charuco
+						)
+				    collect
+				    `(include ,(format nil "<opencv2/~a.hpp>" e)))
+			    "namespace cv { namespace aruco { class CharucoBoard;class Dictionary; struct DetectorParameters; }}"
+			    #+nil (do0 (include
+					<opencv2/core/cvstd.hpp>
+					<opencv2/core/mat.hpp>)
+				       ,(format nil "namespace cv { ~{class ~a;~} }" `(Dictionary CharucoBoard DetectorParameters)))
+			    )
+     :implementation-preamble `(do0
+
+				,log-preamble
+				,@(loop for e in `( core/cvstd core/mat; videoio
+						    aruco/charuco
+						    aruco
+						    aruco/dictionary
+						    core/types
+						    imgproc
+						    )
+					collect
+					`(include ,(format nil "<opencv2/~a.hpp>" e)))
+				)
+     :code (let ((def-members `((:name squares_x :type int :default 8)
+				(:name squares_y :type int :default 4)
+				(:name square_length :type float :default .04s0)
+				(:name marker_length :type float :default .02s0)
+				(:name dict_int :type int :init-form cv--aruco--DICT_6X6_250)
+				(:name board_dict :type "cv::Ptr<cv::aruco::Dictionary>"
+				       :init-form (cv--aruco--getPredefinedDictionary
+						   dict_int))
+				(:name board :type "cv::Ptr<cv::aruco::CharucoBoard> " :init-form
+				       (cv--aruco--CharucoBoard--create
+					squares_x
+					squares_y
+					square_length
+					marker_length
+					board_dict))
+				(:name params :type "cv::Ptr<cv::aruco::DetectorParameters>"
+				       :init-form  (cv--aruco--DetectorParameters--create))
+				(:name board_img :type "cv::Mat" :no-construct t)
+				(:name board_img3 :type "cv::Mat" :no-construct t)
+				(:name camera_matrix :type "cv::Mat" :no-construct t)
+				(:name dist_coeffs :type "cv::Mat" :no-construct t)
+				#+nil (:name cap_fn :type "std::string"
+					     :default (string
+						       ;;"/dev/video2"
+						       "/dev/video0"
+						       ))
+				#+nil (:name cap :type "cv::VideoCapture" :init-form (cv--VideoCapture cap_fn))
+				)))
+	     `(do0
+	       (defclass Charuco ()
+		 "public:"
+		 ,@(loop for e in def-members
+			 collect
+			 (destructuring-bind (&key name type init-form default no-construct) e
+			   (format nil "~a ~a;" type name)))
+
+		 (defmethod Charuco (&key
+				       ,@(remove-if
+					  #'null
+					  (loop for e in def-members
+						collect
+						(destructuring-bind (&key name type init-form default no-construct) e
+						  (when default
+						    `(,(intern (string-upcase (format nil "~a_" name)))
+						       ,default))))))
+		   (declare
+		    ,@(remove-if
+		       #'null
+		       (loop for e in def-members
+			     collect
+			     (destructuring-bind (&key name type init-form default no-construct) e
+			       (when default
+				 `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+		    (construct
+		     ,@(remove-if
+			#'null
+			(loop for e in def-members
+			      collect
+			      (destructuring-bind (&key name type init-form default no-construct) e
+				(if init-form
+				    `(,name ,init-form)
+				    (unless no-construct
+				      `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+		     )
+		    (values :constructor))
+		   (do0
+		    ,(lprint :msg "opencv initialization")
+		    (board->draw (cv--Size 1600 800)
+				 board_img3
+				 10 1
+				 )
+		    (cv--cvtColor board_img3 board_img cv--COLOR_BGR2RGBA)
+		    ,(lprint :msg "charuco board has been converted to RGBA")
+		    #+nil (if (cap.isOpened)
+			      ,(lprint :msg "opened video device" :vars `(cap_fn (cap.getBackendName)))
+			      ,(lprint :msg "failed to open video device" :vars `(cap_fn )))
+		    ))
+		 #+nil (defmethod PrintProperties ()
+			 ,(let ((cam-props `(BRIGHTNESS CONTRAST SATURATION HUE GAIN EXPOSURE
+							MONOCHROME SHARPNESS AUTO_EXPOSURE GAMMA
+							BACKLIGHT TEMPERATURE AUTO_WB WB_TEMPERATURE)))
+			    `(let ((cam_w (cap.get cv--CAP_PROP_FRAME_WIDTH))
+				   (cam_h (cap.get cv--CAP_PROP_FRAME_HEIGHT))
+				   (cam_fps (cap.get cv--CAP_PROP_FPS))
+		       		   (cam_format (cap.get cv--CAP_PROP_FORMAT))
+				   ,@(loop for e in cam-props
+					   collect
+					   `(,(string-downcase (format nil "cam_~a" e))
+					      (dot cap (get ,(format nil "cv::CAP_PROP_~a" e))))))
+			       ,(lprint :vars `(cam_w cam_h cam_fps cam_format
+						      ,@(loop for e in cam-props
+							      collect
+							      (string-downcase (format nil "cam_~a" e)))))
+
+			       )))
+
+		 #+nil(defmethod Capture ()
+			(declare (values "cv::Mat"))
+			(do0; "cv::Mat img3,img;"
+			 (>> cap img3)
+					;(cv--split img spl)
+					;,(lprint :msg "received camera image")
+					;(cv--cvtColor img3 img cv--COLOR_BGR2RGBA)
+					;(cv--cvtColor img3 img cv--COLOR_BGR2GRAY)
+					;,(lprint :msg "converted camera image")
+			 )
+			(return img3))
+		 ,@(remove-if
+		    #'null
+		    (loop for e in def-members
+			  collect
+			  (destructuring-bind (&key name type init-form default no-construct) e
+			    `(defmethod ,(format nil "get_~a" name) ()
+			       (declare (values ,type))
+			       (return ,name)))))
+		 (defmethod Shutdown ()
+		   #+nil
+		   (do0 ,(lprint :msg "release video capture device (should be done implicitly)")
+			(cap.release))
+		   )
+
+		 ))))
+
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -31,7 +187,8 @@
      :implementation-preamble `(do0
 				,log-preamble
 				(include<>
-				 opencv2/imgproc.hpp))
+				 opencv2/imgproc.hpp)
+				(include "Charuco.h"))
      :code `(do0
 	     (do0 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		  "std::mutex g_stdout_mutex;")
@@ -42,7 +199,8 @@
 	       (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 	       (progn
 		 ,(lprint :msg "enter program" :vars `(argc (aref argv)))
-		 (let ((m (cv--Mat))))
+		 (let ((ch (Charuco)))
+		   (ch.Shutdown))
 		 ,(lprint :msg "exit program")
 		 (return 0)))
 	     ))
