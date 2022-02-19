@@ -45,13 +45,18 @@ cd ~/src
 git clone https://github.com/opencv/opencv.git
 cd opencv
 source "/home/martin/src/emsdk/emsdk_env.sh"
-export EMSCRIPTEN=$EMSDK
+# export EMSCRIPTEN=$EMSDK
 ln -s ~/src/opencv/platforms/ /home/martin/src/opencv/build_wasm/./platforms
 emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --simd
 # this really only works with 2.0.10, i tried 2.0.34 and latest
 
 ### next time add this
---cmake_option="-DOPENCV_EXTRA_MODULES_PATH=opencv_contrib/modules" --webnn
+
+emcmake python  ./platforms/js/build_js.py build_wasm  --build_wasm \
+  --threads --simd  --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=opencv_contrib/modules
+ 
+--webnn
+
 #+end_example
 - test the opencv in browser
   #+begin_example
