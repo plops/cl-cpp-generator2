@@ -172,6 +172,9 @@ time on.
 | 44_asio                    |   20% | async networking, wait until more videos of the series are finished                                                                                                                                                                    |          |
 | 45_nanogui                 |   60% | i have a window but i want to see how to implement realtime graphing                                                                                                                                                                   |          |
 | 46_enoki                   |       |                                                                                                                                                                                                                                        |          |
+|                            |       |                                                                                                                                                                                                                                        |          |
+| 71_imgui                   |       | gui with std::thread                                                                                                                                                                                                                   |          |
+| 72_emsdk                   |       | webassembly, beautify bash and cmake files                                                                                                                                                                                             |          |
 * FAQ
 
 ** There is no such language as c/C++. (https://news.ycombinator.com/item?id=20195740 )
