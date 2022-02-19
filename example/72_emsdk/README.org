@@ -1,7 +1,7 @@
-|       |                     |
-| gen00 | hello world example |
-| gen01 | sdl example         |
-
+|       |                                            |
+| gen00 | hello world example                        |
+| gen01 | sdl example                                |
+| gen02 | opencv example                             |
 
 - install emsdk
 #+begin_example
@@ -60,8 +60,23 @@ python -m http.server
 
 ##### this requires --build_test which i have not done
   #+end_example
+  
 - how to make the build smaller
-  https://lambda-it.ch/blog/build-opencv-js
+  - https://lambda-it.ch/blog/build-opencv-js
+  - https://github.com/adishavit/party_parrot
+  - he writes a c++ program that links with opencv (web assembly) and
+    converts colors of an animation
+  - inputs and results are transferred between c++ and js in a way
+    that minimizes copies
+  - printf bit smaller than cout
+  - flags to optimize size:
+    `-s NO_FILESYSTEM=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s NO_EXIT_RUNTIME=1`
+  - -O3 is downgraded to -O2
+
+- can i write a c++ program that depends on (a small subset of)
+  opencv?
+  http://videocortex.io/2017/opencv-web-app/
+
 - reading
   - i want to read camera in browser
   - perform aruco detection with opencv in browser

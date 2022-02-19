@@ -25,12 +25,13 @@
      :headers `()
      :header-preamble `(do0
 			(include<>
-			 SDL/SDL.h
 			 emscripten.h
-					;iostream
+
 			 ))
      :implementation-preamble `(do0
-				,log-preamble)
+				,log-preamble
+				(include<>
+				 opencv2/imgproc.hpp))
      :code `(do0
 	     (do0 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		  "std::mutex g_stdout_mutex;")
@@ -41,29 +42,7 @@
 	       (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 	       (progn
 		 ,(lprint :msg "enter program" :vars `(argc (aref argv)))
-		 (SDL_Init SDL_INIT_VIDEO)
-		 (let ((screen (SDL_SetVideoMode 256 256 32 SDL_SWSURFACE)))
-		   #+nil (EM_ASM
-			  (string "SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;"))
-		   (when (SDL_MUSTLOCK screen)
-		     ,(lprint :msg "lock screen")
-		     (SDL_LockSurface screen))
-		   ,(lprint :msg "draw")
-		   (dotimes (i 256)
-		     (dotimes (j 256)
-		       (let ((alpha 255 #+nil (% (+ i j)
-						 255)))
-			 (setf (aref (static_cast<Uint32*>
-				      screen->pixels)
-				     (+ i (* 256 j)))
-			       (SDL_MapRGBA screen->format i j (- 255 i) alpha)))))
-		   (when (SDL_MUSTLOCK screen)
-		     ,(lprint :msg "unlock screen")
-		     (SDL_UnlockSurface screen))
-		   ,(lprint :msg "flip screen")
-		   (SDL_Flip screen)
-		   ,(lprint :msg "quit sdl")
-		   (SDL_Quit))
+		 (let ((m (cv--Mat))))
 		 ,(lprint :msg "exit program")
 		 (return 0)))
 	     ))
@@ -90,7 +69,7 @@
 	  (out "set( CMAKE_CXX_STANDARD_REQUIRED True )")
 	  (out "set( OpenCV_DIR /home/martin/src/opencv/build_wasm/ )")
 	  (out "set( OpenCV_STATIC ON )")
-					;(out "find_package( OpenCV REQUIRED )")
+	  (out "find_package( OpenCV REQUIRED )")
 	  (out "include_directories( ${OpenCV_INCLUDE_DIRS} )")
 	  (out "option( BUILD_WASM \"Build Webassembly\" ON )")
 	  (progn
