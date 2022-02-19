@@ -32,8 +32,10 @@ source ./emsdk_env.sh
 - get a specific emscripten version
   #+begin_example
 emsdk list --old
-emsdk install 2.0.34
-emsdk activate 2.0.34
+#emsdk install 2.0.34
+#emsdk activate 2.0.34
+emsdk install 2.0.10
+emsdk activate 2.0.10
   #+end_example
 
 - compile opencv with emscripten
@@ -46,7 +48,7 @@ source "/home/martin/src/emsdk/emsdk_env.sh"
 export EMSCRIPTEN=$EMSDK
 ln -s ~/src/opencv/platforms/ /home/martin/src/opencv/build_wasm/./platforms
 emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --simd
-
+# this really only works with 2.0.10, i tried 2.0.34 and latest 
 #+end_example
 
 - reading
