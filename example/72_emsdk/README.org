@@ -142,3 +142,11 @@ http://earth.google.com/web webassembly based
 
 - example of a face detector
   https://github.com/serghov/OpencvFaceDetectWasm/blob/master/cpp/main.cpp
+
+- imgui in browser
+  - https://o-micron.github.io/ScriptenApp/
+  - https://github.com/o-micron/ScriptenApp
+    - looks like there is no c++ source
+  - https://youtu.be/9B1MsXXYhcw
+  - https://github.com/o-micron/Prototype
+    - this has c++ source
