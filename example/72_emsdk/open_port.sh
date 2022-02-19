@@ -1,2 +1,2 @@
-sudo firewall-cmd --zone=dmz --add-port=8000/tcp
-sudo firewall-cmd --zone=dmz --list-ports
+sudo firewall-cmd --zone=public --add-port=8000/tcp
+sudo firewall-cmd --zone=public --list-ports
