@@ -205,47 +205,77 @@
 		 (return 0)))
 	     ))
 
-    (with-open-file (s (format nil "~a/CMakeLists.txt" *source*)
-		       :direction :output
-		       :if-exists :supersede
-		       :if-does-not-exist :create)
-      (let ((dbg "-ggdb -O0 ")
-	    (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+    (let ((fn (format nil "build_opencv.sh" *source*)))
+      ;; pip install beautysh
+      (with-open-file (s fn
+			 :direction :output
+			 :if-exists :supersede
+			 :if-does-not-exist :create)
+	(let ((contrib-modules-off
+	       `(alphamat		; aruco
+		 barcode  bgsegm  bioinspired  ccalib  cnn_3dobj  cvv  datasets  dnn_objdetect  dnn_superres  dnns_easily_fooled  dpm  face  freetype  fuzzy  hdf  hfs  img_hash  intensity_transform  julia  line_descriptor  matlab  mcc  optflow  ovis  phase_unwrapping  plot  quality  rapid  reg  rgbd  saliency  sfm  shape  stereo  structured_light  superres  surface_matching  text  tracking  videostab  viz  wechat_qrcode  xfeatures2d  ximgproc  xobjdetect  xphoto ))
+	      (build-options `(build_wasm
+			       threads
+			       simd
+					;webnn
+
+			       ))
 	      )
-	    (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef -Werror  -Wno-unused -Wno-unused-parameter"
-	      ;;
-	      ;; -Wold-style-cast -Wsign-conversion
-	      ;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
-	      ))
-	(macrolet ((out (fmt &rest rest)
-		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-	  (out "cmake_minimum_required( VERSION 3.0 )")
+	  (macrolet ((out (fmt &rest rest)
+		       `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	    (out "cd /home/martin/src/opencv")
+	    (out "emcmake python  ./platforms/js/build_js.py build_wasm  ~{--~a~^ ~}  cmake_option=\"-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules ~{-DBUILD_opencv_~a=OFF~^ ~}\""
+		 build-options
+		 contrib-modules-off))))
+      (sb-ext:run-program "/home/martin/.local/bin/beautysh"
+			  (list "-i"  (namestring fn)))
+      )
 
-	  (out "project( example LANGUAGES CXX )")
+    (let ((fn (format nil "~a/CMakeLists.txt" *source*)))
+      ;; pip install cmakelang
+      (with-open-file (s fn
+			 :direction :output
+			 :if-exists :supersede
+			 :if-does-not-exist :create)
+	(let ((dbg "-ggdb -O0 ")
+	      (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+		)
+	      (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef -Werror  -Wno-unused -Wno-unused-parameter"
+		;;
+		;; -Wold-style-cast -Wsign-conversion
+		;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+		))
+	  (macrolet ((out (fmt &rest rest)
+		       `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	    (out "cmake_minimum_required( VERSION 3.0 )")
 
-	  (out "set( CMAKE_CXX_STANDARD 17 )")
-	  (out "set( CMAKE_CXX_STANDARD_REQUIRED True )")
-	  (out "set( OpenCV_DIR /home/martin/src/opencv/build_wasm/ )")
-	  (out "set( OpenCV_STATIC ON )")
-	  (out "find_package( OpenCV REQUIRED )")
-	  (out "include_directories( ${OpenCV_INCLUDE_DIRS} )")
-	  (out "option( BUILD_WASM \"Build Webassembly\" ON )")
-	  (progn
-	    (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+	    (out "project( example LANGUAGES CXX )")
+
+	    (out "set( CMAKE_CXX_STANDARD 17 )")
+	    (out "set( CMAKE_CXX_STANDARD_REQUIRED True )")
+	    (out "set( OpenCV_DIR /home/martin/src/opencv/build_wasm/ )")
+	    (out "set( OpenCV_STATIC ON )")
+	    (out "find_package( OpenCV REQUIRED )")
+	    (out "include_directories( ${OpenCV_INCLUDE_DIRS} )")
+	    (out "option( BUILD_WASM \"Build Webassembly\" ON )")
+	    (progn
+	      (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 					;(out "set( USE_FLAGS \"-s USE_SDL=2\" )")
 					;(out "set( CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ${USE_FLAGS}\" )")
-	    (out "set( CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}  ~a ~a ~a \")"
-		 dbg asan show-err)
+	      (out "set( CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}  ~a ~a ~a \")"
+		   dbg asan show-err)
 
-	    )
+	      )
 
-	  (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
+	    (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
 
-	  (out "set( SRCS ~{~a~^~%~} )"
-	       (append
-		(directory (format nil "~a/*.cpp" *source*))))
+	    (out "set( SRCS ~{~a~^~%~} )"
+		 (append
+		  (directory (format nil "~a/*.cpp" *source*))))
 
-	  (out "add_executable( index ${SRCS} )")
-	  (out "target_link_libraries( index ${OpenCV_LIBS} )")
-	  )))))
+	    (out "add_executable( index ${SRCS} )")
+	    (out "target_link_libraries( index ${OpenCV_LIBS} )")
+	    )))
+      (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
+			  (list "-i"  (namestring fn))))))
 
