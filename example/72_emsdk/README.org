@@ -1,3 +1,8 @@
+|       |                     |
+| gen00 | hello world example |
+| gen01 | sdl example         |
+
+
 - install emsdk
 #+begin_example
 git clone https://github.com/emscripten-core/emsdk.git
@@ -24,7 +29,12 @@ echo 'source "/home/martin/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
 # Activate PATH and other environment variables in the current terminal
 source ./emsdk_env.sh
   #+end_example
-
+- get a specific emscripten version
+  #+begin_example
+emsdk list --old
+emsdk install 2.0.34
+emsdk activate 2.0.34
+  #+end_example
 
 - compile opencv with emscripten
 #+begin_example

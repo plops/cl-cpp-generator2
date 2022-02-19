@@ -940,8 +940,8 @@
 					;<opencv2/imgproc.hpp>
 					;<opencv2/aruco/charuco.hpp>
 			   )
-		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
-		    "std::mutex g_stdout_mutex;"
+		    (do0 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
+			 "std::mutex g_stdout_mutex;")
 		    (include "implot.h")
 		    (include "GraphicsFramework.h")
 
