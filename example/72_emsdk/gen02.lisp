@@ -257,7 +257,7 @@
 	    (out "set( OpenCV_DIR /home/martin/src/opencv/build_wasm/ )")
 	    (out "set( OpenCV_STATIC ON )")
 	    (out "find_package( OpenCV REQUIRED )")
-	    (out "include_directories( ${OpenCV_INCLUDE_DIRS} )")
+	    (out "include_directories( ${OpenCV_INCLUDE_DIRS} /home/martin/src/opencv_contrib/modules/aruco/include )")
 	    (out "option( BUILD_WASM \"Build Webassembly\" ON )")
 	    (progn
 	      (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
@@ -272,7 +272,8 @@
 
 	    (out "set( SRCS ~{~a~^~%~} )"
 		 (append
-		  (directory (format nil "~a/*.cpp" *source*))))
+		  (directory (format nil "~a/*.cpp" *source*))
+		  (directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")))
 
 	    (out "add_executable( index ${SRCS} )")
 	    (out "target_link_libraries( index ${OpenCV_LIBS} )")
