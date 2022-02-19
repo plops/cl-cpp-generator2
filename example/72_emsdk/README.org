@@ -150,3 +150,42 @@ http://earth.google.com/web webassembly based
   - https://youtu.be/9B1MsXXYhcw
   - https://github.com/o-micron/Prototype
     - this has c++ source
+
+- emscripten examples that only use webgl compatible calls
+  - https://github.com/emscripten-core/emscripten/tree/main/tests/third_party/glbook
+
+- single file opengl 3.3 emscripten example
+  https://gist.github.com/mortennobel/0e9e90c9bbc61cc99d5c3e9c038d8115
+
+- another example (3 years old)
+  https://github.com/pcbaecker/example-emscripten-webgl
+#+begin_example
+
+    find_package(OpenGL REQUIRED)
+
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    add_subdirectory(glfw-3.2.1)
+add_executable(emscripten_webgl main.cpp)
+target_link_libraries(emscripten_webgl glfw ${OPENGL_LIBRARIES})
+set_target_properties(emscripten_webgl
+        PROPERTIES SUFFIX ".html"
+        LINK_FLAGS " --bind -s USE_GLFW=3 -s WASM=1 -g4")
+#+end_example
+
+- emscripten docs https://emscripten.org/docs/optimizing/Optimizing-WebGL.html
+  - default: WebGL 1 API
+    - acces with
+      #+begin_example
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+      #+end_example
+    -  works like GLES 2 with some restrictions
+      https://www.khronos.org/registry/webgl/specs/latest/1.0/#6
+  - On February 9, 2022 Khronos Group announced WebGL 2.0 support for
+    all major browsers.
+  - WebGL 1.0 is available for mobile Safari, in iOS 8.
+  - WebGL 1.0 is available for Android and MeeGo devices since Firefox 4.
+  - WebGL 1.0 is available for Android devices since Google Chrome 25
+    and enabled by default since version 30
