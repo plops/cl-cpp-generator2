@@ -53,9 +53,8 @@ emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --si
 ### next time add this
 
 emcmake python  ./platforms/js/build_js.py build_wasm  --build_wasm \
-  --threads --simd  --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=opencv_contrib/modules
+  --threads --simd --webnn --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=opencv_contrib/modules
  
---webnn
 
 #+end_example
 - test the opencv in browser
