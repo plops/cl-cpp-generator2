@@ -42,6 +42,9 @@ emsdk activate 2.0.10
 #+begin_example
 source "/home/martin/src/emsdk/emsdk_env.sh"
 cd ~/src
+git clone https://github.com/opencv/opencv_contrib
+# documentation of how to add (subset of) contrib: https://github.com/opencv/opencv_contrib
+cd ~/src
 git clone https://github.com/opencv/opencv.git
 cd opencv
 source "/home/martin/src/emsdk/emsdk_env.sh"
@@ -53,8 +56,9 @@ emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --si
 ### next time add this
 
 emcmake python  ./platforms/js/build_js.py build_wasm  --build_wasm \
-  --threads --simd --webnn --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=opencv_contrib/modules
- 
+  --threads --simd --webnn \
+  --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules \
+  -DBUILD_opencv_legacy=OFF 
 
 #+end_example
 - test the opencv in browser

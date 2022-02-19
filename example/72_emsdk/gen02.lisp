@@ -224,7 +224,8 @@
 	  (macrolet ((out (fmt &rest rest)
 		       `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	    (out "cd /home/martin/src/opencv")
-	    (out "emcmake python  ./platforms/js/build_js.py build_wasm  ~{--~a~^ ~}  cmake_option=\"-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules ~{-DBUILD_opencv_~a=OFF~^ ~}\""
+	    (out "source /home/martin/src/emsdk/emsdk_env.sh")
+	    (out "emcmake python  ./platforms/js/build_js.py build_wasm  ~{--~a~^ ~}  --cmake_option=\"-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules ~{-DBUILD_opencv_~a=OFF~^ ~}\""
 		 build-options
 		 contrib-modules-off))))
       (sb-ext:run-program "/home/martin/.local/bin/beautysh"
