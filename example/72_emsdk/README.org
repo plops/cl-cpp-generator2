@@ -176,16 +176,54 @@ set_target_properties(emscripten_webgl
 
 - emscripten docs https://emscripten.org/docs/optimizing/Optimizing-WebGL.html
   - default: WebGL 1 API
-    - acces with
+    - access with
       #+begin_example
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
       #+end_example
     -  works like GLES 2 with some restrictions
       https://www.khronos.org/registry/webgl/specs/latest/1.0/#6
+      - no support of client side rendering, use VBOs instead
+    - other alternatives to webl1: webgl2 webgpu
   - On February 9, 2022 Khronos Group announced WebGL 2.0 support for
     all major browsers.
   - WebGL 1.0 is available for mobile Safari, in iOS 8.
   - WebGL 1.0 is available for Android and MeeGo devices since Firefox 4.
   - WebGL 1.0 is available for Android devices since Google Chrome 25
     and enabled by default since version 30
+
+- dear imgui example
+  http://www.dearimgui.org/webdemo/master/example_emscripten.html
+  - works in safari on ios (but is quite difficult to use, too small
+    text, no zoom with pinch)
+
+- is there a minimal version to get an opengl window with emscripten?
+  - https://groups.google.com/g/emscripten-discuss/c/DrRfNzloqWc
+    - glut and EGL have overhead
+    - just call Browser.createContext
+  - minimal gui sokol https://github.com/floooh/sokol
+  - https://github.com/floooh/cimgui-sokol-starterkit
+  - a lot of examples https://floooh.github.io/sokol-html5/
+    - data https://github.com/floooh/sokol-html5
+      - triangle 52kB
+      - imgui-dock-sapp 983kB
+	- moving window in safari/ios doesn't work well
+      - cimgui-sapp 884kB
+      - sgl-microui-sapp 125kB
+	- no interaction on safari/ios at all
+      - nuklear 350kB maybe another 600kbB file
+	- interaction on safari/ios as bad as imgui-dock
+    - low-level platform-abstraction     parts of oryol (old)
+    - gfx .. supports glcore33 gles2 gles3 d3d11 metal wgpu backends
+       - gles2/webgl is lead api
+       - wasm is lead platform
+       - buffer, image, shader, pipeline, pass
+       - sg_draw_state, sg_pass_action, uniform blocks
+    - app .. single window
+      - https://floooh.github.io/2017/07/29/sokol-gfx-tour.html
+    - audio .. webAudio
+- imgui-app
+  -  https://github.com/pplux/imgui-app/blob/main/example/test.cpp
+  - amalgamation of imgui and sokol
+    - based on sqlite amalgamation idea
+      https://www.sqlite.org/amalgamation.html
