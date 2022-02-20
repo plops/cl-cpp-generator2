@@ -36,8 +36,9 @@
 		     ,private-headers)
 	  :header-preamble private-header-preamble
 	  :implementation-preamble private-implementation-preamble
-	  :code `(do0
-		  (defclass ,private-name ()
+	  :code (quote
+		 (do0
+		  (defclass ("," private-name) ()
 		    ,(string "public:")
 		    (format nil (string "class ~a;") private-name)
 		    (format nil (string "std::unique_ptr<~a> pimpl;") private-name)
@@ -86,7 +87,7 @@
 		      (do0
 		       ,private-destructor-code))
 		    ,private-code-inside-class)
-		  ,private-code-outside-class))
+		  ,private-code-outside-class)))
 	 ))		  ))
   (sb-ext:run-program "/usr/local/bin/lisp-format"
 		      (list "-i"  (format nil "~a.lisp" fn))))

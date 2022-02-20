@@ -38,16 +38,16 @@
 	(include<> imgui.h
 		   util/sokol_imgui.h)
 	))
-     :private-members `(:name desc :type "std::shared_ptr<sg_desc>"
-			      :init-form ((lambda ()
-					    (declare (values "std::shared_ptr<sg_desc>"))
-					    (let ((*s (new (sg_desc (curly)))))
-					      (return ("std::make_shared<sg_desc>" s
-										   (lambda (o)
-										     (declare (type sg_desc** o))
-										     (delete *o)
-										     ))))))
-			      )
+     :private-members `() #+nil (:name desc :type "std::shared_ptr<sg_desc>"
+				       :init-form ((lambda ()
+						     (declare (values "std::shared_ptr<sg_desc>"))
+						     (let ((*s (new (sg_desc (curly)))))
+						       (return ("std::make_shared<sg_desc>" s
+											    (lambda (o)
+											      (declare (type sg_desc** o))
+											      (delete *o)
+											      ))))))
+				       )
      :private-constructor-code `(do0
 				 ,(lprint :msg (format nil "constructor "))
 				 (setf desc->context (sapp_sgcontext))
