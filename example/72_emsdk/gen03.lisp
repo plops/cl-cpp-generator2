@@ -3,11 +3,11 @@
 
 (in-package :cl-cpp-generator2)
 
-(let ((log-preamble `(do0 (include <iostream>
-				   <iomanip>
-				   <chrono>
-				   <thread>
-				   <mutex>)
+(let ((log-preamble `(do0 (include<> iostream
+				     iomanip
+				     chrono
+				     thread
+				     mutex)
 			  "extern std::mutex g_stdout_mutex;"
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn
@@ -25,21 +25,30 @@
 	   *source-dir*)
      :private-header-preamble
      `(do0
-       (do0
-	"#define SOKOL_GLES2"
-	"#define SOKOL_GLUE_IMPL"
-	(include<>
-	 sokol_app.h
-	 sokol_gfx.h
-	 sokol_glue.h))
-       #+nil (do0
-	      "#define SOKOL_IMGUI_IMPL"
-	      (include<> imgui.h
-			 util/sokol_imgui.h)
-	      ))
+       "#define SOKOL_GLES2"
+       (include<>
+					;sokol_app.h
+	sokol_gfx.h
+					;sokol_glue.h
+	))
      :private-implementation-preamble
      `(do0
        ,log-preamble
+       (do0
+	(do0
+	 "#define SOKOL_GLES2"
+	 "#define SOKOL_IMPL"
+	 "#define SOKOL_APP_IMPL"
+	 "#define SOKOL_GLUE_IMPL"
+	 (include<>
+	  sokol_app.h
+	  sokol_gfx.h
+	  sokol_glue.h))
+	#+nil (do0
+	       "#define SOKOL_IMGUI_IMPL"
+	       (include<> imgui.h
+			  util/sokol_imgui.h)
+	       ))
        )
      :private-members `((:name desc :type "sg_desc"
 			       :init-form (sg_desc ;(curly)
@@ -51,8 +60,7 @@
 					;(sg_setup (desc.get))
 				 )
      :private-destructor-code `(do0
-
-				)
+				(comments "destructor"))
      )
 
     (write-class
@@ -62,20 +70,20 @@
      :name `index
      :headers `()
      :header-preamble `(do0
+
 			(include<>
 			 emscripten.h
 
 			 ))
      :implementation-preamble `(do0
-					;,log-preamble
+				(include<> iostream
+					   iomanip
+					   chrono
+					   thread
+					   mutex)
 				(include "SokolApp.h"))
      :code `(do0
 	     (do0
-	      (include <iostream>
-		       <iomanip>
-		       <chrono>
-		       <thread>
-		       <mutex>)
 	      "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 	      "std::mutex g_stdout_mutex;")
 	     (defun main (argc argv)
