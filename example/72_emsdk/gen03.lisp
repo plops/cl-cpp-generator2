@@ -91,7 +91,33 @@
 				     )
 				   (defun frame ()
 				     (declare (values "extern \"C\" void"))
-				     ,(lprint))
+				     (progn
+				       "static int frame_count = 0;"
+				       (when (== (% frame_count (* 10 60)) 0)
+					 ,(lprint))
+				       (incf frame_count))
+				     (let ((w (sapp_width))
+					   (h (sapp_height)))
+				       (simgui_new_frame
+					(curly w
+					       h
+					       (sapp_frame_duration)
+					       (sapp_dpi_scale)))
+				       (progn
+					 "static float f = 0.0f;"
+					 (ImGui--Text (string "drag windows"))
+					 (ImGui--SliderFloat (string "float")
+							     &f 0s0 1s0)
+					 (when (ImGui--Button (string "window"))
+					   (setf show_test_window
+						 !show_test_window)))
+				       (do0
+					(sg_begin_default_pass &pass_action
+							       w
+							       h)
+					(simgui_render)
+					(sg_end_pass)
+					(sg_commit))))
 				   (defun cleanup ()
 				     (declare (values "extern \"C\" void"))
 				     ,(lprint)
