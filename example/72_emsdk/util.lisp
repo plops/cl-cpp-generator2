@@ -297,3 +297,13 @@
      ;; pip install cmakelang
      (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
 			 (list "-i"  (namestring fn)))))
+
+(defun write-html (fn &key str)
+  (with-open-file (s fn
+		     :direction :output
+		     :if-exists :supersede
+		     :if-does-not-exist :create)
+    (write-sequence str s))
+  )
+
+

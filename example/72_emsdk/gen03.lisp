@@ -1,5 +1,8 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (ql:quickload "cl-cpp-generator2"))
+  (setf (readtable-case *readtable*) :upcase)
+  (ql:quickload "spinneret")
+  (ql:quickload "cl-cpp-generator2")
+  )
 
 (in-package :cl-cpp-generator2)
 
@@ -11,12 +14,54 @@
 			  "extern std::mutex g_stdout_mutex;"
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn
-    ;; for classes with templates use write-source and defclass+
-    ;; for cpp files without header use write-source
-    ;; for class definitions and implementation in separate h and cpp file
+    (setf (readtable-case *readtable*) :upcase)
+
     (defparameter *source* "03source")
     (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
     (load "util.lisp")
+
+    (write-html
+     "03source/index.html"
+     :str
+     (spinneret:with-html-string
+	 (:doctype)
+       (:html
+	(:head
+	 (:meta :charset "utf-8")
+	 (:meta :http-equiv "Content-Type"
+		:content "text/html; charset=utf-8")
+	 (:title "test")
+	 #+nil
+	 (:style :type "text/css"
+                 (:raw
+                  (lass:compile-and-write
+                   `(body :font-family "sans-serif")
+                   `(.container :width 25% :margin auto)
+                   `(.header :patting 15px
+                             :text-align center
+                             :font-size 2em
+                             :background "#f2f2f2"
+                             :margin-bottom 15px)
+                   `(.header>a   :color inherit
+                                 :text-decoration none)
+                   ))))
+	(:body
+	 (:canvas :id "canvas"
+		  :oncontextmenu "event.preventDefault()"
+		  :width 800
+		  :height 600)
+	 (:script :type "text/javascript"
+		  "var Module = { canvas: (function() { return document.getElementById('canvas'); } )() };"
+		  )
+	 (:script :src "index.js")))))
+
+    (setf (readtable-case *readtable*) :invert)
+    ;; for classes with templates use write-source and defclass+
+    ;; for cpp files without header use write-source
+    ;; for class definitions and implementation in separate h and cpp file
+
+    (assert (eq :invert
+		(readtable-case *readtable*)))
 
     (write-impl-class
      :name `SokolApp
