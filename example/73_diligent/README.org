@@ -9,9 +9,37 @@ https://github.com/DiligentGraphics/DiligentSamples/blob/69528b759230271a1b5eb09
 
 supports emscripten
 
+https://github.com/DiligentGraphics/DiligentCore#api-basics
+
+
+https://github.com/DiligentGraphics/DiligentSamples/tree/master/Tutorials
+
+
 
 - install
   #+begin_example
 git clone --recursive https://github.com/DiligentGraphics/DiligentEngine.git
+
+
+g-format_linux_10.0.0 -i *.hpp --verbose
+Generate CXX -> BlendStateParser.hpp
+Traceback (most recent call last):
+  File "/home/martin/src/DiligentEngine/DiligentTools/RenderStateNotation/scripts/cxx_generator.py", line 57, in <module>
+    main()
+  File "/home/martin/src/DiligentEngine/DiligentTools/RenderStateNotation/scripts/cxx_generator.py", line 50, in main
+    generate_file(file, os.path.join(args.dir, generated_filename))
+  File "/home/martin/src/DiligentEngine/DiligentTools/RenderStateNotation/scripts/cxx_parser.py", line 174, in generate_file
+    cpp.write(CXX_STRUCT_SERIALIZE_TEMPLATE.render(structs=struct_field_map.items(), field_size=field_size_map[0], field_size_inv=field_size_map[1]))
+  File "/usr/lib/python3.10/site-packages/jinja2/environment.py", line 1304, in render
+    self.environment.handle_exception()
+  File "/usr/lib/python3.10/site-packages/jinja2/environment.py", line 925, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 64, in <module>
+  File "/usr/lib/python3.10/site-packages/jinja2/runtime.py", line 828, in _invoke
+    rv = self._func(*arguments)
+  File "<template>", line 10, in <module>
+jinja2.exceptions.UndefinedError: 'dict object' has no attribute 'RenderTargetBlendDesc'
+[630/796] Linking CXX shared library DiligentCore/Graphics/Archiver/libArchiver.so
+ninja: build stopped: subcommand failed.
 
   #+end_example
