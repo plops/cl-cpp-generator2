@@ -5,11 +5,13 @@ https://github.com/DiligentGraphics/DiligentEngine
 http://diligentgraphics.com/diligent-engine/
 
 integration with glfw
-https://github.com/DiligentGraphics/DiligentEngine
+https://github.com/DiligentGraphics/DiligentSamples/blob/69528b759230271a1b5eb09e74870a28349cf7a0/Samples/GLFWDemo/src/GLFWDemo.hpp
+
 supports emscripten
 
 
 - install
   #+begin_example
 git clone --recursive https://github.com/DiligentGraphics/DiligentEngine.git
+
   #+end_example
