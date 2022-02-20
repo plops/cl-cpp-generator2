@@ -25,12 +25,16 @@
 	   *source-dir*)
      :private-header-preamble
      `(do0
-       "#define SOKOL_GLES2"
+					;"#define SOKOL_GLES2"
        (include<>
+	memory
 					;sokol_app.h
-	sokol_gfx.h
+					;sokol_gfx.h
 					;sokol_glue.h
-	))
+
+	)
+       "class sg_desc;"
+       "extern \"C\" struct sapp_desc;")
      :private-implementation-preamble
      `(do0
        ,log-preamble
@@ -38,29 +42,60 @@
 	(do0
 	 "#define SOKOL_GLES2"
 	 "#define SOKOL_IMPL"
-	 "#define SOKOL_APP_IMPL"
-	 "#define SOKOL_GLUE_IMPL"
+					;"#define SOKOL_APP_IMPL"
+					;"#define SOKOL_GLUE_IMPL"
 	 (include<>
 	  sokol_app.h
 	  sokol_gfx.h
-	  sokol_glue.h))
+	  sokol_glue.h
+	  ))
 	#+nil (do0
 	       "#define SOKOL_IMGUI_IMPL"
 	       (include<> imgui.h
 			  util/sokol_imgui.h)
 	       ))
        )
-     :private-members `((:name desc :type "sg_desc"
-			       :init-form (sg_desc ;(curly)
-					   )
-			       ))
+     :private-members `(#+nil (:name desc :type "std::unique_ptr<sg_desc>"
+				     :init-form (new (sg_desc))
+				     ))
      :private-constructor-code `(do0
 				 ,(lprint :msg (format nil "constructor "))
-				 (setf desc.context (sapp_sgcontext))
+					;(setf desc.context (sapp_sgcontext))
 					;(sg_setup (desc.get))
 				 )
      :private-destructor-code `(do0
 				(comments "destructor"))
+     :private-code-outside-class `(do0
+				   (defun init ()
+				     (declare (values "extern \"C\" void"))
+				     ,(lprint)
+				     (let ((desc (sg_desc)))
+				       (setf desc.context (sapp_sgcontext))
+				       (sg_setup &desc)))
+
+				   (defun sokol_main (argc argv)
+				     (declare (type int argc)
+					      (type char** argv)
+					      (values "extern \"C\" sapp_desc"				))
+				     (setf g_start_time ("std::chrono::high_resolution_clock::now"))
+				     ,(lprint :msg "enter program" :vars `(argc (aref argv)))
+
+				     (let ((s (sapp_desc)))
+				       ,@(loop for (e f) in `((width 640)
+							      (height 480)
+							      (init_cb init)
+					;(frame_cb frame)
+					;(cleanup_cb cleanup)
+					;(event_cb input)
+							      (gl_force_gles2 true)
+							      (window_title (string "imgui docking"))
+							      (ios_keyboard_resizes_canvas false)
+							      (icon.sokol_default true)
+							      )
+					       collect
+					       `(setf (dot s ,e) ,f))
+				       ,(lprint :msg "exit program")
+				       (return s))))
      )
 
     (write-class
@@ -81,22 +116,13 @@
 					   chrono
 					   thread
 					   mutex)
+
 				(include "SokolApp.h"))
      :code `(do0
 	     (do0
 	      "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 	      "std::mutex g_stdout_mutex;")
-	     (defun main (argc argv)
-	       (declare (type int argc)
-			(type char** argv)
-			(values "extern \"C\" int"))
-	       (setf g_start_time ("std::chrono::high_resolution_clock::now"))
-	       (progn
-		 ,(lprint :msg "enter program" :vars `(argc (aref argv)))
-		 (let ((sa (SokolApp)))
-		   )
-		 ,(lprint :msg "exit program")
-		 (return 0)))
+
 	     ))
 
 

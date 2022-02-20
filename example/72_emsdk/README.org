@@ -1,11 +1,11 @@
-|                        |                                                                                            |
-| gen00                  | hello world example                                                                        |
-| gen01                  | sdl example                                                                                |
-| gen02                  | opencv example                                                                             |
-| gen03                  | sokol example                                                                              |
-| util.lisp              | helper function to create c++ classes from lisp                                            |
-| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp |
-|                        |                                                                                            |
+|                        |                                                                                                         |
+| gen00                  | hello world example                                                                                     |
+| gen01                  | sdl example                                                                                             |
+| gen02                  | opencv example                                                                                          |
+| gen03                  | sokol example                                                                                           |
+| util.lisp              | helper function for logging and to create c++ classes from lisp (lprint, write-class, write-impl-class) |
+| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp              |
+|                        |                                                                                                         |
 - install emsdk
 #+begin_example
 git clone https://github.com/emscripten-core/emsdk.git
@@ -361,3 +361,20 @@ w::~w() {}
     - pass it as a parameter to the pimpl functions
       (pimpl->func(this,params))
   - https://herbsutter.com/gotw/_101/
+
+- another sokol c++ imgui example (emscripten)
+  https://github.com/floooh/sokol-samples/blob/master/html5/imgui-emsc.cc
+
+- sokol blog https://floooh.github.io/
+  - old http://flohofwoe.blogspot.com/
+
+  - https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+    - lots of small smart pointers bad for cache
+    - fake memory leaks because of forgotten smart pointers
+    - data oriented architecture for large number of objects
+      - move all memory managment to central system
+      - group objects as arrays
+      - return index handle (not a pointer to the ite)
+      - pointers must never be owners of underlying memory
+
+      - oryol gfx is similar to sokol but written in c++
