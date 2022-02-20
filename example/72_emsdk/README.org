@@ -1,8 +1,8 @@
-|       |                                            |
-| gen00 | hello world example                        |
-| gen01 | sdl example                                |
-| gen02 | opencv example                             |
-
+|       |                     |
+| gen00 | hello world example |
+| gen01 | sdl example         |
+| gen02 | opencv example      |
+| gen03 | sokol example       |
 - install emsdk
 #+begin_example
 git clone https://github.com/emscripten-core/emsdk.git
@@ -215,15 +215,100 @@ set_target_properties(emscripten_webgl
 	- interaction on safari/ios as bad as imgui-dock
     - low-level platform-abstraction     parts of oryol (old)
     - gfx .. supports glcore33 gles2 gles3 d3d11 metal wgpu backends
+      - https://floooh.github.io/2017/07/29/sokol-gfx-tour.html
        - gles2/webgl is lead api
        - wasm is lead platform
        - buffer, image, shader, pipeline, pass
        - sg_draw_state, sg_pass_action, uniform blocks
     - app .. single window
-      - https://floooh.github.io/2017/07/29/sokol-gfx-tour.html
+      
     - audio .. webAudio
+
+#+begin_example
+cd ~/src
+git clone https://github.com/floooh/sokol
+
+# alternative, using package manager
+~/src/vcpkg/vcpkg install sokol
+#    find_path(SOKOL_INCLUDE_DIRS "sokol_app.h")
+#    target_include_directories(main PRIVATE ${SOKOL_INCLUDE_DIRS})
+# https://github.com/floooh/sokol/archive/425e906d2af8c976c30f7e925a303fea9f0bf879.tar.gz
+# i think this is quite old (2019), so better use git directly
+#+end_example
+- https://github.com/floooh/sokol-tools/
+  - shader code generator, translates annotatet GLSL source into C
+    header
+    - translates GLSL to SPIR-V or HLSL, Metal or WGSL
+    - dead code elimination
+    - packaging vertex and fragment shaders into same source
+    - indicate reusable code blocks
+    - sg_shader_desc structs
+    - constants for vertex attribute locations, uniform blocks,
+      image-bind-slots
+      #+begin_example
+      git clone https://github.com/floooh/sokol-tools/
+      cmake     .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+      # depends on fips?
+      # requires docker?
+      # needs recursive clone?
+      #+end_example
+    - very annoying: doesn't easily build in cmake on linux
+      - probably because a all the dependencies
+    - maybe i should try the binary
+      https://github.com/floooh/sokol-tools-bin
+      #+begin_example
+      cd ~/src
+      git clone https://github.com/floooh/sokol-tools-bin
+      # very slow
+      git clone --depth 1 https://github.com/floooh/sokol-tools-bin
+
+      rm -rf .git bin/{osx,osx_arm64,win32}
+      
+[localhost sokol-tools-bin]$ ls
+bin  fips-files  LICENSE  README.md
+[localhost sokol-tools-bin]$ du -hs bin/*
+8.7M	bin/linux
+7.1M	bin/osx
+6.1M	bin/osx_arm64
+5.5M	bin/win32
+
+[localhost linux]$ bloaty sokol-shdc 
+    FILE SIZE        VM SIZE    
+ --------------  -------------- 
+  80.8%  6.95Mi  80.1%  6.95Mi    .text
+   7.9%   698Ki   7.9%   698Ki    .rodata
+   7.6%   667Ki   7.5%   667Ki    .eh_frame
+   3.3%   290Ki   3.3%   290Ki    .data.rel.ro
+   0.0%       0   1.0%  88.2Ki    .bss
+   0.2%  15.7Ki   0.2%  15.6Ki    .gcc_except_table
+   0.1%  7.23Ki   0.1%  7.17Ki    .data
+   0.1%  6.97Ki   0.0%       0    [Unmapped]
+   0.0%  1.05Ki   0.0%    1000    .init_array
+   0.0%     568   0.0%     568    [LOAD #0 [R]]
+   0.0%     552   0.0%     488    .got
+   0.0%     218   0.0%       0    .shstrtab
+   0.0%     192   0.0%       0    [ELF Headers]
+   0.0%     162   0.0%       0    .comment
+   0.0%     112   0.0%      48    .note.gnu.property
+   0.0%      80   0.0%      16    .ctors
+   0.0%      80   0.0%      16    .dtors
+   0.0%      77   0.0%      13    .init
+   0.0%      72   0.0%       8    .fini
+   0.0%      16   0.0%      32    [LOAD #3 [RW]]
+   0.0%       3   0.0%      19    [2 Others]
+ 100.0%  8.60Mi 100.0%  8.68Mi    TOTAL
+
+      #+end_example
+- http://floooh.github.io/fips/
+  - similar to rust's cargo or javascripts npm but for C/C++
+  - i don't think i want to deal with that extra complexity right now,
+    maybe good to learn how to do things or for later
 - imgui-app
   -  https://github.com/pplux/imgui-app/blob/main/example/test.cpp
   - amalgamation of imgui and sokol
     - based on sqlite amalgamation idea
       https://www.sqlite.org/amalgamation.html
+  - i don't think i would need that
+- how to read gyro and accelerometer
+  - https://emscripten.org/docs/api_reference/html5.h.html
+
