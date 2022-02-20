@@ -1,0 +1,15 @@
+https://youtu.be/qPoFrgk8S2U?t=2125 discussion about freecad
+they mention diligent engine
+
+https://github.com/DiligentGraphics/DiligentEngine
+http://diligentgraphics.com/diligent-engine/
+
+integration with glfw
+https://github.com/DiligentGraphics/DiligentEngine
+supports emscripten
+
+
+- install
+  #+begin_example
+git clone --recursive https://github.com/DiligentGraphics/DiligentEngine.git
+  #+end_example
