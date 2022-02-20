@@ -25,19 +25,37 @@
 	     *source-dir*)
        :name class-name
        :headers `()
-       :header-preamble `()
+       :header-preamble `(do0
+			  (comments "header preamble start")
+			  #+nil
+			  (include<>
+			   memory
+			   )
+			  (comments "header preamble end"))
        :implementation-preamble `(do0
 				  ,log-preamble
-				  (include<>
-				   sokol_app.h
-				   sokol_gfx.h
-				   sokol_glue.h)
+				  (do0
+				   "#define SOKOL_GLES2"
+				   (include<>
+				    memory
+				    sokol_app.h
+				    sokol_gfx.h
+				    sokol_glue.h))
 				  (do0
 				   "#define SOKOL_IMGUI_IMPL"
 				   (include<> imgui.h
 					      util/sokol_imgui.h)))
        :code (let ((def-members `(;; name type [default|init-form] [no-construct]
-				  (:name desc :type sg_desc :init-form "{}")
+				  (:name desc :type "std::shared_ptr<sg_desc>"
+					 :init-form ((lambda ()
+						       (declare (values "std::shared_ptr<sg_desc>"))
+						       (let ((*s (new (sg_desc (curly)))))
+							 (return ("std::make_shared<sg_desc>" s
+											      (lambda (o)
+												(declare (type sg_desc** o))
+												(delete *o)
+												))))))
+					 )
 				  )))
 	       `(do0
 		 (defclass ,class-name ()
@@ -79,8 +97,8 @@
 		      (values :constructor))
 		     (do0
 		      ,(lprint :msg (format nil "constructor ~a" class-name))
-		      (setf desc.context (sapp_sgcontext))
-		      (sg_setup &desc)
+		      (setf desc->context (sapp_sgcontext))
+		      (sg_setup (desc.get))
 		      ))
 
 		   (defmethod ,(format nil "~~~a" class-name) ()
@@ -131,10 +149,10 @@
      (let ((dbg "-ggdb -O0 ")
 	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	     )
-	   (show-err " -Wall -Wextra -Wno-cast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef -Werror  -Wno-unused -Wno-unused-parameter"
+	   (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
 	     ;;
-	     ;; -Wold-style-cast -Wsign-conversion
-	     ;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+	     ;; -Werror ;; i rather see the warnings
+	     ;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  " ;; not supported by emcc
 	     ))
        (macrolet ((out (fmt &rest rest)
 		    `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
