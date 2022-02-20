@@ -34,7 +34,8 @@
 
 	)
        "class sg_desc;"
-       "extern \"C\" struct sapp_desc;")
+       "extern \"C\" struct sapp_desc;"
+       "extern \"C\" struct sapp_event;")
      :private-implementation-preamble
      `(do0
        ,log-preamble
@@ -88,7 +89,19 @@
 				      (dot pass_action (aref colors 0) action) SG_ACTION_CLEAR
 				      (dot pass_action (aref colors 0) value) (curly .3s0 .7s0 .5s0 1s0))
 				     )
-
+				   (defun frame ()
+				     (declare (values "extern \"C\" void"))
+				     ,(lprint))
+				   (defun cleanup ()
+				     (declare (values "extern \"C\" void"))
+				     ,(lprint)
+				     (simgui_shutdown)
+				     (sg_shutdown))
+				   (defun input (event)
+				     (declare (type "const sapp_event*" event)
+					      (values "extern \"C\" void"))
+				     ,(lprint)
+				     (simgui_handle_event event))
 				   (defun sokol_main (argc argv)
 				     (declare (type int argc)
 					      (type char** argv)
@@ -100,9 +113,9 @@
 				       ,@(loop for (e f) in `((width 640)
 							      (height 480)
 							      (init_cb init)
-					;(frame_cb frame)
-					;(cleanup_cb cleanup)
-					;(event_cb input)
+							      (frame_cb frame)
+							      (cleanup_cb cleanup)
+							      (event_cb input)
 							      (gl_force_gles2 true)
 							      (window_title (string "imgui docking"))
 							      (ios_keyboard_resizes_canvas false)
