@@ -5,57 +5,89 @@
 
 
 
-(progn
-  (defparameter *path* "/home/martin/stage/cl-commonlisp-generator/example/00_test")
-  (defparameter *code-file* "run_00_test")
-  (defparameter *source* (format nil "~a/source/" *path*))
-  (defparameter *day-names*
-    '("Monday" "Tuesday" "Wednesday"
-      "Thursday" "Friday" "Saturday"
-      "Sunday"))
-  #+nil (defun lprint (cmd &optional rest)
-    `(when debug
-       (print (dot (string ,(format nil "{} ~a ~{~a={}~^ ~}" cmd rest))
-		   (format (- (time.time) start_time)
-			   ,@rest)))))
-  (let* (
-	 (code
-	   `(toplevel
-	      (defun test1 (a)
-		(+ a 3))
-	      (defun test2 (a &optional b (c 4))
-		(let* ((q (* b c))
-		      (p  (* q q))) (+ a 3 b p c)))
-	      (test2 3 4)
-	      (defun test3 (a &key b (c 4))
-		(let ((q (* 2 (string "b")))
-		      (p (+ b c)))
-		  (+ a 3 (* q p))))
+(let ((fn "/home/martin/stage/cl-cpp-generator2/example/72_emsdk/util-pimpl"))
+  (write-source
+   fn
+   `(toplevel
+     (defun write-impl-class
+	 (&key name dir
+	    public-members
+	    private-members
+	    ,@(loop for e in `(public-headers public-header-preamble public-implementation-preamble
+					      private-headers private-header-preamble
+					      private-implementation-preamble
+					      public-constructor-code public-destructor-code
+					      public-code-inside-class  public-code-outside-class
+					      private-constructor-code  private-destructor-code
+					      private-code-inside-class private-code-outside-class)
+		    collect
+		    (list e `(quote (comments ,(emit-cl :code `(string ,(format nil "placeholder ~a" e))))))
+		    )
+	    )
 
-	      (test3 1 :b 3)
-	      (setf
-	       _code_git_version
-	       (string ,(let ((str (with-output-to-string (s)
-				     (sb-ext:run-program "/usr/bin/git" (list "rev-parse" "HEAD") :output s))))
-			  (subseq str 0 (1- (length str)))))
-	       _code_repository (string ,(format nil "https://github.com/plops/cl-commonlisp-generator/tree/master/example/00_test/gen00.lisp"))
-	       _code_generation_time
-	       (string ,(multiple-value-bind
-			      (second minute hour date month year day-of-week dst-p tz)
-			    (get-decoded-time)
-			  (declare (ignorable dst-p))
-			  (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-				  hour
-				  minute
-				  second
-				  (nth day-of-week *day-names*)
-				  year
-				  month
-				  date
-				  (- tz)))))
-	     
-	     
-	     )))
-    (write-source (format nil "~a/~a" *source* *code-file*) code)
-    ))
+       (string "split class definition in two .h file and two implementations in .cpp file. members ::= (name type [default|init-form] [no-construct])*")
+       (let ((public-name (format nil (string "~a") name))
+	     (private-name (format nil (string "~aImpl") name)))
+	 (write-class
+	  :dir dir
+	  :name private-name
+	  :headers `(do0
+		     (include<> memory)
+		     ,private-headers)
+	  :header-preamble private-header-preamble
+	  :implementation-preamble private-implementation-preamble
+	  :code `(do0
+		  (defclass ,private-name ()
+		    ,(string "public:")
+		    (format nil (string "class ~a;") private-name)
+		    (format nil (string "std::unique_ptr<~a> pimpl;") private-name)
+
+		    ,@(loop for e in private-members
+			    collect
+			    (destructuring-bind (&key name type init-form default no-construct) e
+			      (format nil "~a ~a;" type name)))
+
+		    (defmethod ,private-name (&key
+						,@(remove-if
+						   #'null
+						   (loop for e in def-members
+							 collect
+							 (destructuring-bind (&key name type init-form default no-construct) e
+							   (when default
+							     `(,(intern (string-upcase (format nil "~a_" name)))
+								,default))))))
+		      (declare
+		       ,@(remove-if
+			  #'null
+			  (loop for e in def-members
+				collect
+				(destructuring-bind (&key name type init-form default no-construct) e
+				  (when default
+				    `(type ,type ,(intern (string-upcase (format nil (string "~a_") name))))))))
+
+		       (construct
+			,@(remove-if
+			   #'null
+			   (loop for e in def-members
+				 collect
+				 (destructuring-bind (&key name type init-form default no-construct) e
+				   (if init-form
+				       `(,name ,init-form)
+				       (unless no-construct
+					 `(,name ,(intern (string-upcase (format nil (string "~a_") name)))))))))
+			)
+		       (values :constructor))
+		      (do0
+		       ,private-constructor-code))
+
+		    (defmethod ,(format nil "~~~a" private-name) ()
+		      (declare
+		       (values :constructor))
+		      (do0
+		       ,private-destructor-code))
+		    ,private-code-inside-class)
+		  ,private-code-outside-class))
+	 ))		  ))
+  (sb-ext:run-program "/usr/local/bin/lisp-format"
+		      (list "-i"  (format nil "~a.lisp" fn))))
 

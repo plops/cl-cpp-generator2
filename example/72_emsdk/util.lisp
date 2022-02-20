@@ -44,7 +44,7 @@
 		 "std::endl"
 		 "std::flush")))))
 
-(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble moc)
+(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble )
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble. if moc is true create moc_<name>.h file from <name>.h"
   (let ((fn-h (format nil "~a/~a.h" dir name))
 	(fn-h-nodir (format nil "~a.h" name))
@@ -80,10 +80,7 @@
     (sb-ext:run-program "/usr/bin/clang-format"
                         (list "-i"  (namestring fn-h)
 			      "-o"))
-    (when moc
-      (sb-ext:run-program "/usr/bin/moc-qt5"
-                          (list (namestring fn-h)
-				"-o" (namestring fn-moc-h))))
+
     (write-source fn-cpp
 		  `(do0
 		    ,(if preamble
@@ -102,3 +99,143 @@
 		    ,(if code
 			 code
 			 `(comments "no code"))))))
+
+
+
+
+(defun write-impl-class_ (&key name dir
+			    (public-headers `(comments "public ")) (public-header-preamble "") (public-implementation-preamble "")
+			    (private-headers "") (private-header-preamble "") ( private-implementation-preamble "")
+			    public-members (public-constructor-code "") (public-destructor-code "") (public-code-inside-class "") (public-code-outside-class "")
+			    private-members (private-constructor-code "") (private-destructor-code "") (private-code-inside-class "") (private-code-outside-class ""))
+
+  "split class definition in two .h file and two implementations in .cpp file. members ::= (name type [default|init-form] [no-construct])*"
+  (let ((public-name (format nil "~a" name))
+	(private-name (format nil "~aImpl" name)))
+    (write-class
+     :dir dir
+     :name private-name
+     :headers `(do0
+		(include<> memory)
+		,private-headers)
+     :header-preamble private-header-preamble
+     :implementation-preamble private-implementation-preamble
+     :code `(do0
+	     ";"
+	     #+nil (defclass ,private-name ()
+		     "public:"
+		     (format nil "class ~a;" private-name)
+		     (format nil "std::unique_ptr<~a> pimpl;" private-name)
+
+		     ,@(loop for e in private-members
+			     collect
+			     (destructuring-bind (&key name type init-form default no-construct) e
+			       (format nil "~a ~a;" type name)))
+
+		     (defmethod ,private-name (&key
+						 ,@(remove-if
+						    #'null
+						    (loop for e in def-members
+							  collect
+							  (destructuring-bind (&key name type init-form default no-construct) e
+							    (when default
+							      `(,(intern (string-upcase (format nil "~a_" name)))
+								 ,default))))))
+		       (declare
+			,@(remove-if
+			   #'null
+			   (loop for e in def-members
+				 collect
+				 (destructuring-bind (&key name type init-form default no-construct) e
+				   (when default
+				     `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+			(construct
+			 ,@(remove-if
+			    #'null
+			    (loop for e in def-members
+				  collect
+				  (destructuring-bind (&key name type init-form default no-construct) e
+				    (if init-form
+					`(,name ,init-form)
+					(unless no-construct
+					  `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+			 )
+			(values :constructor))
+		       (do0
+			,private-constructor-code))
+
+		     (defmethod ,(format nil "~~~a" private-name) ()
+		       (declare
+			(values :constructor))
+		       (do0
+			,private-destructor-code))
+		     ,private-code-inside-class)
+	     ,private-code-outside-class))
+    #+nil (write-class
+	   :dir dir
+	   :name public-name
+	   :headers public-headers
+	   :header-preamble public-header-preamble
+	   :implementation-preamble public-implementation-preamble
+	   :code `(do0
+		   (defclass ,public-name ()
+		     "public:"
+		     ,@(loop for e in public-members
+			     collect
+			     (destructuring-bind (&key name type init-form default no-construct) e
+			       (format nil "~a ~a;" type name)))
+
+		     (defmethod ,public-name (&key
+						,@(remove-if
+						   #'null
+						   (loop for e in def-members
+							 collect
+							 (destructuring-bind (&key name type init-form default no-construct) e
+							   (when default
+							     `(,(intern (string-upcase (format nil "~a_" name)))
+								,default))))))
+		       (declare
+			,@(remove-if
+			   #'null
+			   (loop for e in def-members
+				 collect
+				 (destructuring-bind (&key name type init-form default no-construct) e
+				   (when default
+				     `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+			(construct
+			 ,@(remove-if
+			    #'null
+			    (loop for e in def-members
+				  collect
+				  (destructuring-bind (&key name type init-form default no-construct) e
+				    (if init-form
+					`(,name ,init-form)
+					(unless no-construct
+					  `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+			 )
+			(values :constructor))
+		       (do0
+			,public-constructor-code))
+
+		     (defmethod ,(format nil "~~~a" public-name) ()
+		       (declare
+			(values :constructor))
+		       (do0
+			,public-destructor-code))
+		     ,public-code-inside-class)
+		   ,public-code-outside-class))
+    ))
+
+
+(defmacro write-cmake (fn &key code)
+  `(let ((fn ,fn))
+     (with-open-file (s fn
+			:direction :output
+			:if-exists :supersede
+			:if-does-not-exist :create)
+       ,code)
+     ;; pip install cmakelang
+     (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
+			 (list "-i"  (namestring fn)))))
