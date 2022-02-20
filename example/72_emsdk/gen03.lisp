@@ -23,13 +23,19 @@
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
 	   *source-dir*)
+     :private-header-preamble
+     `(include<>
+
+       sokol_app.h
+       sokol_gfx.h
+       sokol_glue.h)
      :private-implementation-preamble
      `(do0
        ,log-preamble
        (do0
 	"#define SOKOL_GLES2"
 	(include<>
-	 memory
+
 	 sokol_app.h
 	 sokol_gfx.h
 	 sokol_glue.h))
@@ -38,20 +44,13 @@
 	(include<> imgui.h
 		   util/sokol_imgui.h)
 	))
-     :private-members `() #+nil (:name desc :type "std::shared_ptr<sg_desc>"
-				       :init-form ((lambda ()
-						     (declare (values "std::shared_ptr<sg_desc>"))
-						     (let ((*s (new (sg_desc (curly)))))
-						       (return ("std::make_shared<sg_desc>" s
-											    (lambda (o)
-											      (declare (type sg_desc** o))
-											      (delete *o)
-											      ))))))
-				       )
+     :private-members `(#+nil (:name desc :type "sg_desc"
+				     :init-form (sg_desc (curly))
+				     ))
      :private-constructor-code `(do0
 				 ,(lprint :msg (format nil "constructor "))
-				 (setf desc->context (sapp_sgcontext))
-				 (sg_setup (desc.get))
+					;(setf desc->context (sapp_sgcontext))
+					;(sg_setup (desc.get))
 				 )
      :private-destructor-code `(do0
 
@@ -96,7 +95,7 @@
      (let ((dbg "-ggdb -O0 ")
 	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	     )
-	   (show-err " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
+	   (show-err ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
 	     ;;
 	     ;; -Werror ;; i rather see the warnings
 	     ;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  " ;; not supported by emcc

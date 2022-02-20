@@ -149,14 +149,12 @@
 					;:headers
      :header-preamble `(do0
 
-			,private-headers)
+			,private-header-preamble)
      :implementation-preamble private-implementation-preamble
      :code `(do0
 	     (comments "code")
 	     (defclass ,private-name ()
 	       "public:"
-
-
 	       ,@(loop for e in private-members
 		       collect
 		       (destructuring-bind (&key name type init-form default no-construct) e
@@ -202,68 +200,85 @@
 		  ,private-destructor-code))
 	       ,private-code-inside-class)
 	     ,private-code-outside-class))
-    (write-class
-     :dir dir
-     :name public-name
+    (let ((public-members (let ((type (format nil "std::unique_ptr<~a>" private-name)))
+			    (append `((:name pimpl :type ,type
+					     :init-form (new (,private-name))
+					     #+nil ((lambda ()
+						      (declare (values ,type))
+						      (let ((s (new (,private-name))))
+							(declare (type ,(format nil "~a*" private-name) s))
+							(return (,(format nil "std::make_unique<~a>" private-name)
+								  s
+								  (lambda (o)
+								    (declare (type ,(format nil "~a**" private-name)
+										   o))
+								    (delete *o)
+								    ))))))
+					     )
+				      )
+				    public-members))))
+      (write-class
+       :dir dir
+       :name public-name
 					;:headers public-headers
-     :header-preamble `(do0
-			(include<> memory)
-			,(format nil "class ~a;" private-name)
-			,public-header-preamble)
-     :implementation-preamble `(do0
-				,public-implementation-preamble)
-     :code `(do0
-	     (defclass ,public-name ()
-	       "public:"
-	       (do0
-
-		,(format nil "std::unique_ptr<~a> pimpl;" private-name))
-
-	       ,@(loop for e in public-members
-		       collect
-		       (destructuring-bind (&key name type init-form default no-construct) e
-			 (format nil "~a ~a;" type name)))
-
-	       (defmethod ,public-name (&key
-					  ,@(remove-if
-					     #'null
-					     (loop for e in public-members
-						   collect
-						   (destructuring-bind (&key name type init-form default no-construct) e
-						     (when default
-						       `(,(intern (string-upcase (format nil "~a_" name)))
-							  ,default))))))
-		 (declare
-		  ,@(remove-if
-		     #'null
-		     (loop for e in public-members
-			   collect
-			   (destructuring-bind (&key name type init-form default no-construct) e
-			     (when default
-			       `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
-
-		  (construct
-		   ,@(remove-if
-		      #'null
-		      (loop for e in public-members
-			    collect
-			    (destructuring-bind (&key name type init-form default no-construct) e
-			      (if init-form
-				  `(,name ,init-form)
-				  (unless no-construct
-				    `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
-		   )
-		  (values :constructor))
+       :header-preamble `(do0
+			  (include<> memory)
+			  ,(format nil "class ~a;" private-name)
+			  ,public-header-preamble)
+       :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" private-name))
+				  ,public-implementation-preamble)
+       :code `(do0
+	       (defclass ,public-name ()
+		 "public:"
 		 (do0
-		  ,public-constructor-code))
+					;,(format nil "std::unique_ptr<~a> pimpl;" private-name)
+		  )
+		 ,@(loop for e in public-members
+			 collect
+			 (destructuring-bind (&key name type init-form default no-construct) e
+			   (format nil "~a ~a;" type name)))
 
-	       (defmethod ,(format nil "~~~a" public-name) ()
-		 (declare
-		  (values :constructor))
-		 (do0
-		  ,public-destructor-code))
-	       ,public-code-inside-class)
-	     ,public-code-outside-class))
+		 (defmethod ,public-name (&key
+					    ,@(remove-if
+					       #'null
+					       (loop for e in public-members
+						     collect
+						     (destructuring-bind (&key name type init-form default no-construct) e
+						       (when default
+							 `(,(intern (string-upcase (format nil "~a_" name)))
+							    ,default))))))
+		   (declare
+		    ,@(remove-if
+		       #'null
+		       (loop for e in public-members
+			     collect
+			     (destructuring-bind (&key name type init-form default no-construct) e
+			       (when default
+				 `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+		    (construct
+		     ,@(remove-if
+			#'null
+			(loop for e in public-members
+			      collect
+			      (destructuring-bind (&key name type init-form default no-construct) e
+				(if init-form
+				    `(,name ,init-form)
+				    (unless no-construct
+				      `(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+		     )
+		    (values :constructor))
+		   (do0
+		    ,public-constructor-code))
+
+		 (defmethod ,(format nil "~~~a" public-name) ()
+		   (declare
+		    (values :constructor))
+		   (do0
+		    ,public-destructor-code))
+		 ,public-code-inside-class)
+	       ,public-code-outside-class)))
     ))
 
 
