@@ -43,3 +43,10 @@ jinja2.exceptions.UndefinedError: 'dict object' has no attribute 'RenderTargetBl
 ninja: build stopped: subcommand failed.
 
   #+end_example
+
+- try a release 2.5.1
+  #+begin_example
+DiligentEngine/DiligentCore/BuildTools/FormatValidation/validate_format_linux.sh: /bin/bash^M: bad interpreter: No such file or directory
+
+  #+end_example
+  
