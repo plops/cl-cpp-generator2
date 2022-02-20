@@ -1,8 +1,11 @@
-|       |                     |
-| gen00 | hello world example |
-| gen01 | sdl example         |
-| gen02 | opencv example      |
-| gen03 | sokol example       |
+|                        |                                                                                            |
+| gen00                  | hello world example                                                                        |
+| gen01                  | sdl example                                                                                |
+| gen02                  | opencv example                                                                             |
+| gen03                  | sokol example                                                                              |
+| util.lisp              | helper function to create c++ classes from lisp                                            |
+| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp |
+|                        |                                                                                            |
 - install emsdk
 #+begin_example
 git clone https://github.com/emscripten-core/emsdk.git
@@ -234,7 +237,15 @@ git clone https://github.com/floooh/sokol
 #    target_include_directories(main PRIVATE ${SOKOL_INCLUDE_DIRS})
 # https://github.com/floooh/sokol/archive/425e906d2af8c976c30f7e925a303fea9f0bf879.tar.gz
 # i think this is quite old (2019), so better use git directly
+
 #+end_example
+  - how to use sokol with imgui https://github.com/floooh/sokol-samples/blob/master/sapp/imgui-dock-sapp.cc
+    - maybe best to not use vcpkg, just add c and headers explicitly
+#+begin_example
+cd ~/src
+git clone -b docking --single-branch https://github.com/ocornut/imgui
+#+end_example
+    
 - https://github.com/floooh/sokol-tools/
   - shader code generator, translates annotatet GLSL source into C
     header
@@ -312,3 +323,41 @@ bin  fips-files  LICENSE  README.md
 - how to read gyro and accelerometer
   - https://emscripten.org/docs/api_reference/html5.h.html
 
+
+- read about pimpl with smart pointers
+  - https://herbsutter.com/gotw/_100/
+    #+begin_example
+class w {
+public:
+  w();
+  ~w();
+private:
+  class impl;
+  unique_ptr<impl> pimpl;
+}
+
+class w::impl {
+}
+
+w::w() : pimpl{new impl{ ... } }  { }
+w::~w() {} 
+    #+end_example
+  - hold pimpl in unique_ptr
+    - define and use it in hidden implementation
+    - allocate in constructor in implementation
+    - explicit destructor required:
+      - unique_ptr destructor needs complete type to invoke delete
+      - destructor can't be generated on demand in the caller (where
+        impl is not defined)
+      
+  - can't be hidden
+    - interface for callers public members
+    - interface for derivers (protected and virtual members)
+  - should be hidden in pimpl
+    - private and non-virtual members
+
+  - if hidden function in pimpl needs to call nonprivate or virtual
+    function, then it needs a pointer to the visible class
+    - pass it as a parameter to the pimpl functions
+      (pimpl->func(this,params))
+  - https://herbsutter.com/gotw/_101/

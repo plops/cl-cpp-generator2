@@ -10,5 +10,7 @@ emcmake cmake \
 	-G Ninja \
 	-DCMAKE_BUILD_TYPE=Debug \
 	..
+# -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake 
 # -DCMAKE_PREFIX_PATH="/home/martin/src/opencv/build_wasm/" 
 cmake --build .
+
