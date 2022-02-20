@@ -5,6 +5,7 @@ mkdir -p $ODIR/b
 
 cd $ODIR/b
 
+cp ../index.html .
 source "/home/martin/src/emsdk/emsdk_env.sh"
 emcmake cmake \
 	-G Ninja \

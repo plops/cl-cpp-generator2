@@ -378,3 +378,7 @@ w::~w() {}
       - pointers must never be owners of underlying memory
 
       - oryol gfx is similar to sokol but written in c++
+
+- i want to see less stuff on the emscripten page
+  https://github.com/timhutton/sdl-canvas-wasm/blob/main/index.html
+  
