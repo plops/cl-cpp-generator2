@@ -49,11 +49,11 @@
 	  sokol_gfx.h
 	  sokol_glue.h
 	  ))
-	#+nil (do0
-	       "#define SOKOL_IMGUI_IMPL"
-	       (include<> imgui.h
-			  util/sokol_imgui.h)
-	       ))
+	(do0
+	 "#define SOKOL_IMGUI_IMPL"
+	 (include<> imgui.h
+		    util/sokol_imgui.h)
+	 ))
        )
      :private-members `(#+nil (:name desc :type "std::unique_ptr<sg_desc>"
 				     :init-form (new (sg_desc))
@@ -66,12 +66,28 @@
      :private-destructor-code `(do0
 				(comments "destructor"))
      :private-code-outside-class `(do0
+
+				   "static bool show_test_window = true;"
+				   "static sg_pass_action pass_action;"
+
 				   (defun init ()
 				     (declare (values "extern \"C\" void"))
 				     ,(lprint)
 				     (let ((desc (sg_desc)))
 				       (setf desc.context (sapp_sgcontext))
-				       (sg_setup &desc)))
+				       (sg_setup &desc))
+
+				     (let ((s (simgui_desc_t)))
+				       (simgui_setup &s)
+				       (setf (dot (ImGui--GetIO)
+						  ConfigFlags)
+					     (logior (dot (ImGui--GetIO)
+							  ConfigFlags)
+						     ImGuiConfigFlags_DockingEnable)))
+				     (setf
+				      (dot pass_action (aref colors 0) action) SG_ACTION_CLEAR
+				      (dot pass_action (aref colors 0) value) (curly .3s0 .7s0 .5s0 1s0))
+				     )
 
 				   (defun sokol_main (argc argv)
 				     (declare (type int argc)
@@ -168,7 +184,7 @@
 	       (directory (format nil "~a/*.cpp" *source*))
 					;(directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")
 	       ;; git clone -b docking --single-branch https://github.com/ocornut/imgui
-					;(directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")
+	       (directory "/home/martin/src/imgui/imgui*.cpp")
 	       ))
 
 	 (out "add_executable( index ${SRCS} )")
