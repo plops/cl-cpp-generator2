@@ -47,6 +47,7 @@
 (defun write-class (&key name dir code headers header-preamble implementation-preamble preamble )
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble. if moc is true create moc_<name>.h file from <name>.h"
   (let ((fn-h (format nil "~a/~a.h" dir name))
+	(once-guard (string-upcase (format nil "~a_H" name)))
 	(fn-h-nodir (format nil "~a.h" name))
 	(fn-moc-h (format nil "~a/moc_~a.cpp" dir name))
 	(fn-moc-h-nodir (format nil "moc_~a.cpp" name))
@@ -55,7 +56,10 @@
 			:direction :output
 			:if-exists :supersede
 			:if-does-not-exist :create)
-      (loop for e in `((pragma once)
+      (loop for e in `(;(pragma once)
+		       ,(format nil "#ifndef ~a" once-guard)
+		       ,(format nil "#define ~a~%" once-guard)
+
 		       ,@(loop for h in headers
 			       collect
 			       ;; write forward declaration for classes
@@ -76,7 +80,8 @@
 				(format sh "~a~%" str))
 		:hook-defclass #'(lambda (str)
                                    (format sh "~a;~%" str))
-		:header-only t)))
+		:header-only t))
+      (format sh "~%#endif /* !~a */" once-guard))
     (sb-ext:run-program "/usr/bin/clang-format"
                         (list "-i"  (namestring fn-h)
 			      "-o"))

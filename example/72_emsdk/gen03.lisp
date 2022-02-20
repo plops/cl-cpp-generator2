@@ -32,11 +32,11 @@
 	 sokol_app.h
 	 sokol_gfx.h
 	 sokol_glue.h))
-       (do0
-	"#define SOKOL_IMGUI_IMPL"
-	(include<> imgui.h
-		   util/sokol_imgui.h)
-	))
+       #+nil (do0
+	      "#define SOKOL_IMGUI_IMPL"
+	      (include<> imgui.h
+			 util/sokol_imgui.h)
+	      ))
      :private-implementation-preamble
      `(do0
        ,log-preamble
