@@ -24,18 +24,11 @@
 	   'cl-cpp-generator2
 	   *source-dir*)
      :private-header-preamble
-     `(include<>
-
-       sokol_app.h
-       sokol_gfx.h
-       sokol_glue.h)
-     :private-implementation-preamble
      `(do0
-       ,log-preamble
        (do0
 	"#define SOKOL_GLES2"
+	"#define SOKOL_GLUE_IMPL"
 	(include<>
-
 	 sokol_app.h
 	 sokol_gfx.h
 	 sokol_glue.h))
@@ -44,12 +37,17 @@
 	(include<> imgui.h
 		   util/sokol_imgui.h)
 	))
-     :private-members `(#+nil (:name desc :type "sg_desc"
-				     :init-form (sg_desc (curly))
-				     ))
+     :private-implementation-preamble
+     `(do0
+       ,log-preamble
+       )
+     :private-members `((:name desc :type "sg_desc"
+			       :init-form (sg_desc ;(curly)
+					   )
+			       ))
      :private-constructor-code `(do0
 				 ,(lprint :msg (format nil "constructor "))
-					;(setf desc->context (sapp_sgcontext))
+				 (setf desc.context (sapp_sgcontext))
 					;(sg_setup (desc.get))
 				 )
      :private-destructor-code `(do0
@@ -69,11 +67,17 @@
 
 			 ))
      :implementation-preamble `(do0
-				,log-preamble
+					;,log-preamble
 				(include "SokolApp.h"))
      :code `(do0
-	     (do0 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
-		  "std::mutex g_stdout_mutex;")
+	     (do0
+	      (include <iostream>
+		       <iomanip>
+		       <chrono>
+		       <thread>
+		       <mutex>)
+	      "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
+	      "std::mutex g_stdout_mutex;")
 	     (defun main (argc argv)
 	       (declare (type int argc)
 			(type char** argv)
