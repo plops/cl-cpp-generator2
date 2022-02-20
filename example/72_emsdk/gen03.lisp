@@ -18,8 +18,80 @@
     (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
     (load "util.lisp")
 
+    (let ((class-name `SokolApp))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name class-name
+       :headers `()
+       :header-preamble `()
+       :implementation-preamble `(do0
+				  ,log-preamble
+				  (include<>
+				   sokol_app.h
+				   sokol_gfx.h
+				   sokol_glue.h)
+				  (do0
+				   "#define SOKOL_IMGUI_IMPL"
+				   (include<> imgui.h
+					      util/sokol_imgui.h)))
+       :code (let ((def-members `(;; name type [default|init-form] [no-construct]
+				  (:name desc :type sg_desc :init-form "{}")
+				  )))
+	       `(do0
+		 (defclass ,class-name ()
+		   "public:"
+		   ,@(loop for e in def-members
+			   collect
+			   (destructuring-bind (&key name type init-form default no-construct) e
+			     (format nil "~a ~a;" type name)))
+
+		   (defmethod ,class-name (&key
+					     ,@(remove-if
+						#'null
+						(loop for e in def-members
+						      collect
+						      (destructuring-bind (&key name type init-form default no-construct) e
+							(when default
+							  `(,(intern (string-upcase (format nil "~a_" name)))
+							     ,default))))))
+		     (declare
+		      ,@(remove-if
+			 #'null
+			 (loop for e in def-members
+			       collect
+			       (destructuring-bind (&key name type init-form default no-construct) e
+				 (when default
+				   `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
+
+		      (construct
+		       ,@(remove-if
+			  #'null
+			  (loop for e in def-members
+				collect
+				(destructuring-bind (&key name type init-form default no-construct) e
+				  (if init-form
+				      `(,name ,init-form)
+				      (unless no-construct
+					`(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
+		       )
+		      (values :constructor))
+		     (do0
+		      ,(lprint :msg (format nil "constructor ~a" class-name))
+		      (setf desc.context (sapp_sgcontext))
+		      (sg_setup &desc)
+		      ))
+
+		   (defmethod ,(format nil "~~~a" class-name) ()
+		     (declare
+		      (values :constructor))
+		     (do0
+		      ,(lprint :msg (format nil "destructor ~a" class-name))
+		      ))
 
 
+		   )))))
 
     (write-class
      :dir (asdf:system-relative-pathname
@@ -34,9 +106,7 @@
 			 ))
      :implementation-preamble `(do0
 				,log-preamble
-				(include<>
-				 opencv2/imgproc.hpp)
-				(include "Charuco.h"))
+				(include "SokolApp.h"))
      :code `(do0
 	     (do0 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		  "std::mutex g_stdout_mutex;")
@@ -47,8 +117,8 @@
 	       (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 	       (progn
 		 ,(lprint :msg "enter program" :vars `(argc (aref argv)))
-		 (let ((ch (Charuco)))
-		   (ch.Shutdown))
+		 (let ((sa (SokolApp)))
+		   )
 		 ,(lprint :msg "exit program")
 		 (return 0)))
 	     ))
@@ -78,6 +148,8 @@
 					;(out "set( OpenCV_STATIC ON )")
 					;(out "find_package( OpenCV REQUIRED )")
 					;(out "include_directories( ${OpenCV_INCLUDE_DIRS} /home/martin/src/opencv_contrib/modules/aruco/include )")
+	 (out "include_directories( ~{~a~^ ~} )" `(/home/martin/src/sokol
+						   /home/martin/src/imgui))
 	 (out "option( BUILD_WASM \"Build Webassembly\" ON )")
 	 (progn
 	   (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
@@ -93,10 +165,23 @@
 	      (append
 	       (directory (format nil "~a/*.cpp" *source*))
 					;(directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")
+	       ;; git clone -b docking --single-branch https://github.com/ocornut/imgui
+					;(directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")
 	       ))
 
 	 (out "add_executable( index ${SRCS} )")
-	 (out "target_link_libraries( index ${OpenCV_LIBS} )")
+
+	 #+nil (loop for e in `(imgui ;implot GLEW
+				)
+		     do
+		     (out "find_package( ~a CONFIG REQUIRED )" e))
+
+	 #+nil (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
+		    `("imgui::imgui"
+					;"implot::implot"
+					;"GLEW::GLEW"
+					;"${OpenCV_LIBS}"
+		      ))
 	 )))
     ))
 
