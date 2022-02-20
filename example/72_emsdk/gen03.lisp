@@ -18,98 +18,45 @@
     (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
     (load "util.lisp")
 
-    (let ((class-name `SokolApp))
-      (write-class
-       :dir (asdf:system-relative-pathname
-	     'cl-cpp-generator2
-	     *source-dir*)
-       :name class-name
-       :headers `()
-       :header-preamble `(do0
-			  (comments "header preamble start")
-			  #+nil
-			  (include<>
-			   memory
-			   )
-			  (comments "header preamble end"))
-       :implementation-preamble `(do0
-				  ,log-preamble
-				  (do0
-				   "#define SOKOL_GLES2"
-				   (include<>
-				    memory
-				    sokol_app.h
-				    sokol_gfx.h
-				    sokol_glue.h))
-				  (do0
-				   "#define SOKOL_IMGUI_IMPL"
-				   (include<> imgui.h
-					      util/sokol_imgui.h)))
-       :code (let ((def-members `(;; name type [default|init-form] [no-construct]
-				  (:name desc :type "std::shared_ptr<sg_desc>"
-					 :init-form ((lambda ()
-						       (declare (values "std::shared_ptr<sg_desc>"))
-						       (let ((*s (new (sg_desc (curly)))))
-							 (return ("std::make_shared<sg_desc>" s
-											      (lambda (o)
-												(declare (type sg_desc** o))
-												(delete *o)
-												))))))
-					 )
-				  )))
-	       `(do0
-		 (defclass ,class-name ()
-		   "public:"
-		   ,@(loop for e in def-members
-			   collect
-			   (destructuring-bind (&key name type init-form default no-construct) e
-			     (format nil "~a ~a;" type name)))
+    (write-impl-class
+     :name `SokolApp
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :private-implementation-preamble
+     `(do0
+       ,log-preamble
+       (do0
+	"#define SOKOL_GLES2"
+	(include<>
+	 memory
+	 sokol_app.h
+	 sokol_gfx.h
+	 sokol_glue.h))
+       (do0
+	"#define SOKOL_IMGUI_IMPL"
+	(include<> imgui.h
+		   util/sokol_imgui.h)
+	))
+     :private-members `(:name desc :type "std::shared_ptr<sg_desc>"
+			      :init-form ((lambda ()
+					    (declare (values "std::shared_ptr<sg_desc>"))
+					    (let ((*s (new (sg_desc (curly)))))
+					      (return ("std::make_shared<sg_desc>" s
+										   (lambda (o)
+										     (declare (type sg_desc** o))
+										     (delete *o)
+										     ))))))
+			      )
+     :private-constructor-code `(do0
+				 ,(lprint :msg (format nil "constructor "))
+				 (setf desc->context (sapp_sgcontext))
+				 (sg_setup (desc.get))
+				 )
+     :private-destructor-code `(do0
 
-		   (defmethod ,class-name (&key
-					     ,@(remove-if
-						#'null
-						(loop for e in def-members
-						      collect
-						      (destructuring-bind (&key name type init-form default no-construct) e
-							(when default
-							  `(,(intern (string-upcase (format nil "~a_" name)))
-							     ,default))))))
-		     (declare
-		      ,@(remove-if
-			 #'null
-			 (loop for e in def-members
-			       collect
-			       (destructuring-bind (&key name type init-form default no-construct) e
-				 (when default
-				   `(type ,type ,(intern (string-upcase (format nil "~a_" name))))))))
-
-		      (construct
-		       ,@(remove-if
-			  #'null
-			  (loop for e in def-members
-				collect
-				(destructuring-bind (&key name type init-form default no-construct) e
-				  (if init-form
-				      `(,name ,init-form)
-				      (unless no-construct
-					`(,name ,(intern (string-upcase (format nil "~a_" name)))))))))
-		       )
-		      (values :constructor))
-		     (do0
-		      ,(lprint :msg (format nil "constructor ~a" class-name))
-		      (setf desc->context (sapp_sgcontext))
-		      (sg_setup (desc.get))
-		      ))
-
-		   (defmethod ,(format nil "~~~a" class-name) ()
-		     (declare
-		      (values :constructor))
-		     (do0
-		      ,(lprint :msg (format nil "destructor ~a" class-name))
-		      ))
-
-
-		   )))))
+				)
+     )
 
     (write-class
      :dir (asdf:system-relative-pathname
