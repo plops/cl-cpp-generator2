@@ -1,6 +1,6 @@
 (defun lprint (&key (msg "") (vars nil))
-  #+nil `(comments ,msg)
-  #-nil`(progn				;do0
+  #-nil `(comments ,msg)
+  #+nil`(progn				;do0
 	  " "
 	  (let
 	      ((lock (std--unique_lock<std--mutex> g_stdout_mutex))
@@ -44,48 +44,65 @@
 		 "std::endl"
 		 "std::flush")))))
 
+(defmacro only-write-when-hash-changed (fn str)
+  (let ((hash-db (gensym "file-hash")))
+    `(progn
+       (defparameter ,hash-db (make-hash-table))
+       (let ((fn-hash (sxhash ,fn))
+	     (code-hash (sxhash ,str)))
+	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db)
+	   (when (or (not exists)
+		     (/= fn-code-hash old-code-hash)
+		     (not (probe-file ,fn)))
+					;,@body
+	     (progn
+	       (with-open-file (sh ,fn
+				   :direction :output
+				   :if-exists :supersede
+				   :if-does-not-exist :create)
+       		 (format sh "~a" ,str))
+	       (sb-ext:run-program "/usr/bin/clang-format"
+				   (list "-i"  (namestring ,fn)
+					 "-o")))
+	     (setf (gethash fn-hash ,hash-db) code-hash)
+	     ))))))
+
 (defun write-class (&key name dir code headers header-preamble implementation-preamble preamble )
-  "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble. if moc is true create moc_<name>.h file from <name>.h"
-  (let ((fn-h (format nil "~a/~a.h" dir name))
-	(once-guard (string-upcase (format nil "~a_H" name)))
-	(fn-h-nodir (format nil "~a.h" name))
-	(fn-moc-h (format nil "~a/moc_~a.cpp" dir name))
-	(fn-moc-h-nodir (format nil "moc_~a.cpp" name))
-	(fn-cpp (format nil "~a/~a.cpp" dir name)))
-    (with-open-file (sh fn-h
-			:direction :output
-			:if-exists :supersede
-			:if-does-not-exist :create)
-      (loop for e in `(;(pragma once)
-		       ,(format nil "#ifndef ~a" once-guard)
-		       ,(format nil "#define ~a~%" once-guard)
+  "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble."
+  (let* ((fn-h (format nil "~a/~a.h" dir name))
+	 (once-guard (string-upcase (format nil "~a_H" name)))
+	 (fn-h-nodir (format nil "~a.h" name))
+	 (fn-cpp (format nil "~a/~a.cpp" dir name))
+	 )
+    (let* ((fn-h-str
+	    (with-output-to-string (sh)
+	      (loop for e in `(,(format nil "#ifndef ~a" once-guard)
+				,(format nil "#define ~a~%" once-guard)
 
-		       ,@(loop for h in headers
-			       collect
-			       ;; write forward declaration for classes
-			       (format nil "class ~a;" h))
-		       ,preamble
-		       ,header-preamble
-		       )
-	    do
-	    (when e
-	      (format sh "~a~%"
-		      (emit-c :code e))))
-
-      (when code
-	(emit-c :code
-		`(do0
-		  ,code)
-		:hook-defun #'(lambda (str)
-				(format sh "~a~%" str))
-		:hook-defclass #'(lambda (str)
-                                   (format sh "~a;~%" str))
-		:header-only t))
-      (format sh "~%#endif /* !~a */" once-guard))
-    (sb-ext:run-program "/usr/bin/clang-format"
-                        (list "-i"  (namestring fn-h)
-			      "-o"))
-
+				,@(loop for h in headers
+					collect
+					;; write forward declaration for classes
+					(format nil "class ~a;" h))
+				,preamble
+				,header-preamble
+				)
+		    do
+		    (when e
+		      (format sh "~a~%"
+			      (emit-c :code e))))
+	      (when code
+		(emit-c :code
+			`(do0
+			  ,code)
+			:hook-defun #'(lambda (str)
+					(format sh "~a~%" str))
+			:hook-defclass #'(lambda (str)
+					   (format sh "~a;~%" str))
+			:header-only t))
+	      (format sh "~%#endif /* !~a */" once-guard))))
+      (only-write-when-hash-changed
+       fn-h
+       fn-h-str))
     (write-source fn-cpp
 		  `(do0
 		    ,(if preamble
@@ -97,10 +114,7 @@
 		    ,@(loop for h in headers
 			    collect
 			    `(include ,(format nil "<~a>" h)))
-		    #+nil ,(if moc
-			       `(include ,(format nil "~a" fn-moc-h-nodir))
-			       )
-		    (include ,(format nil "~a" fn-h-nodir))
+	       	    (include ,(format nil "~a" fn-h-nodir))
 		    ,(if code
 			 code
 			 `(comments "no code"))))))
@@ -283,8 +297,7 @@
 		   (do0
 		    ,public-destructor-code))
 		 ,public-code-inside-class)
-	       ,public-code-outside-class)))
-    ))
+	       ,public-code-outside-class)))))
 
 
 (defmacro write-cmake (fn &key code)
@@ -303,7 +316,5 @@
 		     :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
-    (write-sequence str s))
-  )
-
+    (write-sequence str s)))
 
