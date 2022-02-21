@@ -132,6 +132,30 @@
 					     (logior (dot (ImGui--GetIO)
 							  ConfigFlags)
 						     ImGuiConfigFlags_DockingEnable)))
+				     (let ((img_desc (sg_image_desc))
+					   (texw 320)
+					   (texh 240))
+				       ,@(loop for (e f) in `((width texw)
+							      (height texh)
+							      (pixel_format SG_PIXELFORMAT_RGBA8)
+							      (wrap_u SG_WRAP_CLAMP_TO_EDGE)
+							      (wrap_v SG_WRAP_CLAMP_TO_EDGE)
+							      (min_filter SG_FILTER_LINEAR)
+							      (mag_filter SG_FILTER_LINEAR))
+					       collect
+					       `(setf (dot img_desc ,e)
+						      ,f))
+				       (setf (dot img_desc
+						  data
+						  (aref (aref subimage 0) 0)
+						  ptr)
+					     font_pixels)
+				       (setf (dot img_desc
+						  data
+						  (aref (aref subimage 0) 0)
+						  size)
+					     (* 4 texw texh)
+					     ))
 				     (setf
 				      (dot pass_action (aref colors 0) action) SG_ACTION_CLEAR
 				      (dot pass_action (aref colors 0) value) (curly .3s0 .7s0 .5s0 1s0))

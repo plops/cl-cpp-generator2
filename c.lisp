@@ -29,10 +29,11 @@
 	 (code-str (emit-c :code code :header-only nil))
 	 (fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
-    (format t "write code into file: '~a'~%" fn)
+
     (multiple-value-bind (old-code-hash exists) (gethash fn-hash *file-hashes*)
       (when (or (not exists) ignore-hash (/= code-hash old-code-hash)
 		(not (probe-file fn)))
+	(format t "write code into file: '~a'~%" fn)
 	;; store the sxhash of the c source in the hash table
 	;; *file-hashes* with the key formed by the sxhash of the full
 	;; pathname

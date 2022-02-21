@@ -102,5 +102,31 @@ add -Wno-unused-but-set-variable
 
 [183/183] Combining libraries...
 
-
+ninja install
 #+end_example
+
+- try examples
+  #+begin_example
+git clone  --recursive https://github.com/DiligentGraphics/DiligentSamples
+export CC=/usr/lib64/ccache/clang;
+export CXX=/usr/lib64/ccache/clang++ ;
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+that doesn't work
+  #+end_example
+
+- again with full repo
+  #+begin_example
+git clone --recursive https://github.com/DiligentGraphics/DiligentEngine
+
+emacs CMakeLists.txt
+-Wno-unused-
+but-set-variable
+<<<<<<<<<<<<
+export CC=/usr/lib64/ccache/clang;
+export CXX=/usr/lib64/ccache/clang++ ;
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+
+
+  #+end_example
