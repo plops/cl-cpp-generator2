@@ -6,47 +6,48 @@
 
 (in-package :cl-cpp-generator2)
 
-(defparameter *source* "04source")
-(defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
+(progn
+  (defparameter *source* "04source")
+  (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
 
 					;(setf (readtable-case *readtable*) :upcase)
-(load "util.lisp")
-(write-html
- (format nil  "~a/index.html" *source*)
- :str
- (spinneret:with-html-string
-     (:doctype)
-   (:html
-    (:head
-     (:meta :charset "utf-8")
-     (:meta :http-equiv "Content-Type"
-	    :content "text/html; charset=utf-8")
-     (:title "test")
-     #+nil
-     (:style :type "text/css"
-             (:raw
-              (lass:compile-and-write
-               `(body :font-family "sans-serif")
-               `(.container :width 25% :margin auto)
-               `(.header :patting 15px
-                         :text-align center
-                         :font-size 2em
-                         :background "#f2f2f2"
-                         :margin-bottom 15px)
-               `(.header>a   :color inherit
-                             :text-decoration none)
-               ))))
-    (:body
-     (:canvas :id "canvas"
-	      :oncontextmenu "event.preventDefault()"
-	      :width 800
-	      :height 600)
-     (:script :type "text/javascript"
-	      "var Module = { canvas: (function() { return document.getElementById('canvas'); } )() };"
-	      )
-     (:script :src "index.js")))))
+  (load "util.lisp")
+  (write-html
+   (format nil  "~a/index.html" *source*)
+   :str
+   (spinneret:with-html-string
+       (:doctype)
+     (:html
+      (:head
+       (:meta :charset "utf-8")
+       (:meta :http-equiv "Content-Type"
+	      :content "text/html; charset=utf-8")
+       (:title "test")
+       #+nil
+       (:style :type "text/css"
+               (:raw
+		(lass:compile-and-write
+		 `(body :font-family "sans-serif")
+		 `(.container :width 25% :margin auto)
+		 `(.header :patting 15px
+                           :text-align center
+                           :font-size 2em
+                           :background "#f2f2f2"
+                           :margin-bottom 15px)
+		 `(.header>a   :color inherit
+                               :text-decoration none)
+		 ))))
+      (:body
+       (:canvas :id "canvas"
+		:oncontextmenu "event.preventDefault()"
+		:width 800
+		:height 600)
+       (:script :type "text/javascript"
+		"var Module = { canvas: (function() { return document.getElementById('canvas'); } )() };"
+		)
+       (:script :src "index.js")))))
 
-(setf (readtable-case *readtable*) :invert)
+  (setf (readtable-case *readtable*) :invert))
 
 (let ((log-preamble `(do0 (include<> iostream
 				     iomanip
@@ -100,7 +101,8 @@
 	(do0
 	 "#define SOKOL_IMGUI_IMPL"
 	 (include<> imgui.h
-		    util/sokol_imgui.h)
+		    util/sokol_imgui.h
+		    vector)
 	 ))
        )
      :private-members `(#+nil (:name desc :type "std::unique_ptr<sg_desc>"
@@ -134,7 +136,8 @@
 						     ImGuiConfigFlags_DockingEnable)))
 				     (let ((img_desc (sg_image_desc))
 					   (texw 320)
-					   (texh 240))
+					   (texh 240)
+					   (tex_pixels (std--vector<uint8_t> (* 4 320 240))))
 				       ,@(loop for (e f) in `((width texw)
 							      (height texh)
 							      (pixel_format SG_PIXELFORMAT_RGBA8)
@@ -149,13 +152,15 @@
 						  data
 						  (aref (aref subimage 0) 0)
 						  ptr)
-					     font_pixels)
+					     (tex_pixels.data))
 				       (setf (dot img_desc
 						  data
 						  (aref (aref subimage 0) 0)
 						  size)
-					     (* 4 texw texh)
-					     ))
+					     (tex_pixels.size)
+					     )
+				       (let ((img (sg_make_image &img_desc))
+					     (tex_id img.id))))
 				     (setf
 				      (dot pass_action (aref colors 0) action) SG_ACTION_CLEAR
 				      (dot pass_action (aref colors 0) value) (curly .3s0 .7s0 .5s0 1s0))
@@ -256,7 +261,7 @@
     (write-cmake
      (format nil "~a/CMakeLists.txt" *source*)
      :code
-     (let ((dbg "-ggdb -O0 ")
+     (let ((dbg "-O0 -g3 -s ASSERTIONS=1 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s DEMANGLE_SUPPORT=1") ;; -gsource-map
 	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	     )
 	   (show-err ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "

@@ -44,7 +44,9 @@
 		 "std::endl"
 		 "std::flush")))))
 
-(defmacro only-write-when-hash-changed (fn str)
+(defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
+										    (list "-i"  (namestring ,fn)
+											  "-o"))))
   (let ((hash-db (gensym "file-hash")))
     `(progn
        (defparameter ,hash-db (make-hash-table))
@@ -61,9 +63,7 @@
 				   :if-exists :supersede
 				   :if-does-not-exist :create)
        		 (format sh "~a" ,str))
-	       (sb-ext:run-program "/usr/bin/clang-format"
-				   (list "-i"  (namestring ,fn)
-					 "-o")))
+	       ,formatter)
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
 
@@ -301,15 +301,28 @@
 
 
 (defmacro write-cmake (fn &key code)
-  `(let ((fn ,fn))
-     (with-open-file (s fn
-			:direction :output
-			:if-exists :supersede
-			:if-does-not-exist :create)
-       ,code)
+  `(let* ((cmake-fn ,fn)
+	  (cmake-str (with-output-to-string (s)
+		       ,code))
+	  )
      ;; pip install cmakelang
-     (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
-			 (list "-i"  (namestring fn)))))
+     (only-write-when-hash-changed
+      cmake-fn
+      cmake-str
+      :formatter (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
+				     (list "-i"  (namestring cmake-fn))))
+     #+nil (progn (with-open-file (s fn
+				     :direction :output
+				     :if-exists :supersede
+				     :if-does-not-exist :create)
+		    ,code)
+
+
+
+		  (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
+				      (list "-i"  (namestring cmake-fn))))))
+
+
 
 (defun write-html (fn &key str)
   (with-open-file (s fn
