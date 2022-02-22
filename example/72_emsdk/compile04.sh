@@ -13,5 +13,7 @@ emcmake cmake \
 	..
 # -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake 
 # -DCMAKE_PREFIX_PATH="/home/martin/src/opencv/build_wasm/" 
-cmake --build .
+# cmake --build .
+ninja -v
+cp ../*.{h,cpp} .
 
