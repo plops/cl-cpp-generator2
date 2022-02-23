@@ -5,8 +5,6 @@ mkdir -p $ODIR/b_linux
 
 cd $ODIR/b_linux
 
-cp ../index.html .
-source "/home/martin/src/emsdk/emsdk_env.sh"
 cmake \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Debug \

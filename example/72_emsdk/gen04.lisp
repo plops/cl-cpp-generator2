@@ -92,7 +92,7 @@
 	 (do0
 	  "#ifdef __EMSCRIPTEN__"
 	  "#define SOKOL_GLES2"
-	  "#elseif"
+	  "#else"
 	  "#define SOKOL_GLCORE33"
 	  "#endif")
 
@@ -152,7 +152,10 @@
 								      (wrap_u SG_WRAP_CLAMP_TO_EDGE)
 								      (wrap_v SG_WRAP_CLAMP_TO_EDGE)
 								      (min_filter SG_FILTER_LINEAR)
-								      (mag_filter SG_FILTER_LINEAR))
+								      (mag_filter SG_FILTER_LINEAR)
+								      ;; SG_USAGE_DYNAMIC
+								      ;; SG_USAGE_STREAM
+								      )
 						       collect
 						       `(setf (dot img_desc ,e)
 							      ,f))
@@ -169,7 +172,10 @@
 						     )
 					       (let ((img (sg_make_image &img_desc))
 						     (tex_id img.id))
-						 (setf g_tex_id tex_id)))
+						 (setf g_tex_id tex_id)
+						 (let ((img_data (sg_image_data)))
+						   (sg_update_image img &image_data))
+						 (sg_destroy_image img)))
 				       (setf
 					(dot pass_action (aref colors 0) action) SG_ACTION_CLEAR
 					(dot pass_action (aref colors 0) value) (curly .3s0 .7s0 .5s0 1s0))
@@ -287,9 +293,10 @@
      ;;  -s SAFE_HEAP=1 ;; maybe breaks debugging https://github.com/emscripten-core/emscripten/issues/8584
      (let ((dbg  "-O0" ; "-O0 -g4 -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 -s DEMANGLE_SUPPORT=1"
 	     ) ;; -gsource-map
-	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+	   (asan  "-fno-omit-frame-pointer -fsanitize=address "
+	     ;; -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
 	     )
-	   (show-err ""; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
+	   (show-err "-Wfatal-errors"; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
 	     ;;
 	     ;; -Werror ;; i rather see the warnings
 	     ;; "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  " ;; not supported by emcc
@@ -308,7 +315,7 @@
 					;(out "include_directories( ${OpenCV_INCLUDE_DIRS} /home/martin/src/opencv_contrib/modules/aruco/include )")
 	 (out "include_directories( ~{~a~^ ~} )" `(/home/martin/src/sokol
 						   /home/martin/src/imgui))
-	 (out "option( BUILD_WASM \"Build Webassembly\" ON )")
+
 	 (progn
 	   (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 					;(out "set( USE_FLAGS \"-s USE_SDL=2\" )")
@@ -316,9 +323,12 @@
 	   (out "set( CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}  ~a ~a ~a \")"
 		dbg asan show-err)
 	   )
-
+	 (out "if( EMSCRIPTEN )")
 	 (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
-
+	 (out "option( BUILD_WASM \"Build Webassembly\" ON )")
+	 (out "else()")
+	 (out "set( CMAKE_CXX_COMPILER clang++ )")
+	 (out "endif()")
 	 (out "set( SRCS ~{~a~^~%~} )"
 	      (append
 	       (directory (format nil "~a/*.cpp" *source*))
@@ -334,12 +344,13 @@
 		     do
 		     (out "find_package( ~a CONFIG REQUIRED )" e))
 
-	 #+nil (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
-		    `("imgui::imgui"
+	 (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
+	      `(;"imgui::imgui"
 					;"implot::implot"
 					;"GLEW::GLEW"
+		Xi Xcursor X11 GL
 					;"${OpenCV_LIBS}"
-		      ))
+		))
 	 )))
     ))
 

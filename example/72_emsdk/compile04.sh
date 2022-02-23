@@ -15,5 +15,5 @@ emcmake cmake \
 # -DCMAKE_PREFIX_PATH="/home/martin/src/opencv/build_wasm/" 
 # cmake --build .
 ninja -v
-cp ../*.{h,cpp} .
+cp ../*.{h,cpp} ../index.html .
 
