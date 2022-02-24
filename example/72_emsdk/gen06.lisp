@@ -96,7 +96,7 @@
 	       "sg_pass_action pass_action;"
 	       "sg_image img;"
 	       "sgl_pipeline pip_3d;")
-	     ,@(loop for e in `(init draw_triangle frame cleanup)
+	     ,@(loop for e in `(init frame cleanup)
 		     collect
 		     `(do0
 		       ,(format nil "std::function<void()> ~a;" e)
@@ -106,7 +106,32 @@
 			 ( ,(format nil "~a" e)))))
 
 
-	     
+
+	     (defun draw_triangle ()
+					; ,(lprint :msg "draw_triangle")
+		 (sgl_defaults)
+		 (do0
+		  (sgl_begin_triangles)
+		  (do0
+		   ,@(loop for e in `((0 .5 255 0 0)
+				      (-.5 -.5 0 0 255)
+				      (.5 -.5 0 255 0))
+			   collect
+			   `(sgl_v2f_c3b ,@e)))
+		  (sgl_end)))
+	     (defun draw_quad ()
+					; ,(lprint :msg "draw_triangle")
+		 (sgl_defaults)
+		 (do0
+		  (sgl_begin_quads)
+		  (do0
+		   ,@(loop for e in `((-1 1  -1 1)
+				      (1 1  1 1)
+				      (1 -1 1 -1)
+				      (-1 -1 -1 -1))
+			   collect
+			   `(sgl_v2f_t2f ,@e)))
+		  (sgl_end)))
 
 	     (defun sokol_main (argc argv)
 	       (declare (type int argc)
@@ -166,24 +191,12 @@
 							   :action SG_ACTION_CLEAR
 							   :value (curly 0s0 0s0 0s0 1s0)))))))))))
 
-	       (setf draw_triangle
-		     (lambda ()
-		      ; ,(lprint :msg "draw_triangle")
-		       (sgl_defaults)
-	       (do0
-		(sgl_begin_triangles)
-		(do0
-		 ,@(loop for e in `((0 .5 255 0 0)
-				    (-.5 -.5 0 0 255)
-				    (.5 -.5 0 255 0))
-			 collect
-			 `(sgl_v2f_c3b ,@e)))
-		(sgl_end))))
+	       
 
 	       (setf frame
 		     (lambda ()
 		       (declare (capture &))
-		       ;,(lprint :msg "frame")
+					;,(lprint :msg "frame")
 		       (let ((ti (static_cast<float> (* 60s0 (sapp_frame_duration))))
 			     (dw (sapp_width))
 			     (dh (sapp_height))
@@ -194,8 +207,11 @@
 			     (x1 (/ dw 2))
 			     (y0 0)
 			     (y1 (/ dh 2)))
-			 (sgl_viewport x0 y0 ww hh true)
-			 (draw_triangle)
+			 (do0 (sgl_viewport x0 y0 ww hh true)
+			      (draw_triangle))
+			 (do0 (sgl_viewport x1 y0 ww hh true)
+			      (draw_quad))
+			 
 			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far. ")
 			 (sg_begin_default_pass &state.pass_action
 						dw dh)
@@ -205,8 +221,14 @@
 			 (sg_commit))))
 
 
-	       
 
+	       (setf cleanup
+		     (lambda ()
+		       ,(lprint :msg "cleanup")
+		       ;;(__dbgui_shutdown)
+		       (sgl_shutdown)
+		       (sg_shutdown)
+		       ))
 
 	       (let ((sap (space sapp_desc
 				 (designated-initializer
@@ -221,18 +243,18 @@
 				  :icon.sokol_default true
 				  ))))
 		 #+nil ,@(loop for (e f) in `((init_cb init_cfun)
-					(frame_cb frame_cfun)
-					(cleanup_cb cleanup_cfun)
+					      (frame_cb frame_cfun)
+					      (cleanup_cb cleanup_cfun)
 					;(event_cb event)
-					(width 512)
-					(height 512)
-					(sample_count 4)
-					(gl_force_gles2 true)
-					(window_title (string "sokol_gl app"))
-					(icon.sokol_default true))
-			 collect
-			 `(setf (dot sap ,e)
-				,f)))
+					      (width 512)
+					      (height 512)
+					      (sample_count 4)
+					      (gl_force_gles2 true)
+					      (window_title (string "sokol_gl app"))
+					      (icon.sokol_default true))
+			       collect
+			       `(setf (dot sap ,e)
+				      ,f)))
 	       (return sap))
 
 	     ))
@@ -245,7 +267,7 @@
      ;;  -s SAFE_HEAP=1 ;; maybe breaks debugging https://github.com/emscripten-core/emscripten/issues/8584
      (let ((dbg  "-O0" ; "-O0 -g4 -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 -s DEMANGLE_SUPPORT=1"
 	     ) ;; -gsource-map
-	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address "
+	   (asan  ""; "-fno-omit-frame-pointer -fsanitize=address "
 	     ;; -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
 	     )
 	   (show-err "-Wfatal-errors"; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
