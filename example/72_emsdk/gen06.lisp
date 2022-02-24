@@ -111,6 +111,17 @@
 	       (declare (type int argc)
 			(type char** argv)
 			(values sapp_desc))
+	       (do0
+		"static State state;")
+
+	       (comments "designated initializers require c++20")
+	       (let ((sgd (space sg_desc
+				 (designated-initializer
+				  :context (sapp_sgcontext)))))
+		 (sg_setup (ref sgd
+				)))
+
+
 	       (let ((sap (sapp_desc)))
 		 ,@(loop for (e f) in `((init_cb init_cfun)
 					(frame_cb frame_cfun)
@@ -151,7 +162,7 @@
 
 	 (out "project( example LANGUAGES CXX C )")
 
-	 (out "set( CMAKE_CXX_STANDARD 17 )")
+	 (out "set( CMAKE_CXX_STANDARD 20 )")
 	 (out "set( CMAKE_CXX_STANDARD_REQUIRED True )")
 					;(out "set( OpenCV_DIR /home/martin/src/opencv/build_wasm/ )")
 					;(out "set( OpenCV_STATIC ON )")
