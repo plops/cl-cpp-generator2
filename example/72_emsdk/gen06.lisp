@@ -106,6 +106,7 @@
 			 ( ,(format nil "~a" e)))))
 
 
+	     
 
 	     (defun sokol_main (argc argv)
 	       (declare (type int argc)
@@ -114,43 +115,112 @@
 	       (do0
 		"static State state;")
 
+	       (setf
+		init
+		(lambda ()
+		  (declare (capture &))
+		  ,(lprint :msg "init")
+		  (do0
+		   (comments "designated initializers require c++20")
+		   (let ((sg_setup_param (space sg_desc
+						(designated-initializer
+						 :context (sapp_sgcontext)))))
+		     (sg_setup (ref sg_setup_param))
+		     (let ((sgl_setup_param (space sgl_desc_t
+						   (curly 0))))
+		       (sgl_setup
+			(ref sgl_setup_param))
+
+		       (do0
+			"uint32_t pixels[8][8];"
+			(dotimes (y 8)
+			  (dotimes (x 8)
+			    (setf (aref pixels y x)
+				  (? (& (logxor y x)
+					1)
+				     (hex #xFFFFffff)
+				     (hex #xff000000)))))
+			(let ((smi_param (space sg_image_desc
+						(designated-initializer
+						 :width 8
+						 :height 8
+						 (dot "" data (aref (aref subimage 0 ) 0))
+						 (SG_RANGE pixels)))))
+			  (setf (dot state img)
+				(sg_make_image &smi_param ))))
+
+		       (do0
+			(comments "sokol_gl creates shaders, pixel formats")
+			(let ((smp (space sg_pipeline_desc
+					  (designated-initializer
+					   :cull_mode SG_CULLMODE_BACK
+					   :depth (designated-initializer
+						   :write_enabled true
+						   :compare SG_COMPAREFUNC_LESS_EQUAL)))))
+			  (setf state.pip_3d
+				(sgl_make_pipeline &smp)))
+			(setf   state.pass_action (space sg_pass_action
+							 (designated-initializer
+							  (aref .colors  0)
+							  (designated-initializer
+							   :action SG_ACTION_CLEAR
+							   :value (curly 0s0 0s0 0s0 1s0)))))))))))
+
+	       (setf draw_triangle
+		     (lambda ()
+		      ; ,(lprint :msg "draw_triangle")
+		       (sgl_defaults)
 	       (do0
-		(comments "designated initializers require c++20")
-		(let ((sg_setup_param (space sg_desc
-					     (designated-initializer
-					      :context (sapp_sgcontext)))))
-		  (sg_setup (ref sg_setup_param))
-		  (let ((sgl_setup_param (space sgl_desc_t
-						(curly 0))))
-		    (sgl_setup
-		     (ref sgl_setup_param))
+		(sgl_begin_triangles)
+		(do0
+		 ,@(loop for e in `((0 .5 255 0 0)
+				    (-.5 -.5 0 0 255)
+				    (.5 -.5 0 255 0))
+			 collect
+			 `(sgl_v2f_c3b ,@e)))
+		(sgl_end))))
 
-		    (do0
-		     "uint32_t pixels[8][8];"
-		     (dotimes (y 8)
-		       (dotimes (x 8)
-			 (setf (aref pixels y x)
-			       (? (& (logxor y x)
-				     1)
-				  (hex #xFFFFffff)
-				  (hex #xff000000)))))
-		     (let ((smi_param (space sg_image_desc
-					     (designated-initializer
-					      :width 8
-					      :height 8
-					      (dot "" data (aref (aref subimage 0 ) 0))
-					      (SG_RANGE pixels)))))
-		       (setf (dot state img)
-			     (sg_make_image &smi_param ))))
+	       (setf frame
+		     (lambda ()
+		       (declare (capture &))
+		       ;,(lprint :msg "frame")
+		       (let ((ti (static_cast<float> (* 60s0 (sapp_frame_duration))))
+			     (dw (sapp_width))
+			     (dh (sapp_height))
+			     (ww (/ dh 2))
+			     (hh (/ dh 2))
+			     (x0 (- (/ dw 2)
+				    hh))
+			     (x1 (/ dw 2))
+			     (y0 0)
+			     (y1 (/ dh 2)))
+			 (sgl_viewport x0 y0 ww hh true)
+			 (draw_triangle)
+			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far. ")
+			 (sg_begin_default_pass &state.pass_action
+						dw dh)
+			 (sgl_draw)
+			 ;; (__dbgui_draw)
+			 (sg_end_pass)
+			 (sg_commit))))
 
-		    (do0
-		     (comments "sokol_gl creates shaders, pixel formats")
-		     ()))
-		  ))
+
+	       
 
 
-	       (let ((sap (sapp_desc)))
-		 ,@(loop for (e f) in `((init_cb init_cfun)
+	       (let ((sap (space sapp_desc
+				 (designated-initializer
+				  :init_cb init_cfun
+				  :frame_cb frame_cfun
+				  :cleanup_cb cleanup_cfun
+				  :width 512
+				  :height 512
+				  :sample_count 4
+				  :gl_force_gles2 true
+				  :window_title (string "sokol_gl app")
+				  :icon.sokol_default true
+				  ))))
+		 #+nil ,@(loop for (e f) in `((init_cb init_cfun)
 					(frame_cb frame_cfun)
 					(cleanup_cb cleanup_cfun)
 					;(event_cb event)
