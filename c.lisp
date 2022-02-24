@@ -569,6 +569,14 @@ entry return-values contains a list of return values. currently supports type, v
 		   ;; curly {args}*
 		   (let ((args (cdr code)))
 		     (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
+		  (designated-initializer
+		   (let* ((args (cdr code)))
+		     (format nil "~a"
+			     (emit `(curly ,@(loop for (e f) on args by #'cddr
+						   collect
+						   (if (symbolp e)
+						       `(= ,(format nil ".~a" e) ,f)
+						       `(= ,(format nil "~a" (emit e)) ,f))))))))
 		  (new
 		   ;; new arg
 		   (let ((arg (cadr code)))

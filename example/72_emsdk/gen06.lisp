@@ -114,12 +114,39 @@
 	       (do0
 		"static State state;")
 
-	       (comments "designated initializers require c++20")
-	       (let ((sgd (space sg_desc
-				 (designated-initializer
-				  :context (sapp_sgcontext)))))
-		 (sg_setup (ref sgd
-				)))
+	       (do0
+		(comments "designated initializers require c++20")
+		(let ((sg_setup_param (space sg_desc
+					     (designated-initializer
+					      :context (sapp_sgcontext)))))
+		  (sg_setup (ref sg_setup_param))
+		  (let ((sgl_setup_param (space sgl_desc_t
+						(curly 0))))
+		    (sgl_setup
+		     (ref sgl_setup_param))
+
+		    (do0
+		     "uint32_t pixels[8][8];"
+		     (dotimes (y 8)
+		       (dotimes (x 8)
+			 (setf (aref pixels y x)
+			       (? (& (logxor y x)
+				     1)
+				  (hex #xFFFFffff)
+				  (hex #xff000000)))))
+		     (let ((smi_param (space sg_image_desc
+					     (designated-initializer
+					      :width 8
+					      :height 8
+					      (dot "" data (aref (aref subimage 0 ) 0))
+					      (SG_RANGE pixels)))))
+		       (setf (dot state img)
+			     (sg_make_image &smi_param ))))
+
+		    (do0
+		     (comments "sokol_gl creates shaders, pixel formats")
+		     ()))
+		  ))
 
 
 	       (let ((sap (sapp_desc)))
