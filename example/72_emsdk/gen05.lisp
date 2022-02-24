@@ -74,6 +74,14 @@
      :headers `()
      :header-preamble `(do0
 			(do0
+			 ;; https://gist.github.com/ousttrue/0f3a11d5d28e365b129fe08f18f4e141
+			 "#ifdef __EMSCRIPTEN__"
+			 (include<>
+			  emscripten.h)
+			 "#define GL_GLEXT_PROTOTYPES"
+			 "#define EGL_EGLEXT_PROTOTYPES"
+			 "#endif")
+			(do0
 		         "#define GLFW_INCLUDE_NONE"
 			 (include<> GLFW/glfw3.h))
 
@@ -81,12 +89,9 @@
 
 			(include<>
 			 cmath
-			 GL/glu.h)
-			(do0
-			 "#ifdef __EMSCRIPTEN__"
-			 (include<>
-			  emscripten.h)
-			 "#endif"))
+			 GL/glu.h
+			 functional)
+	       		)
      :implementation-preamble `(do0
 				(include<> iostream
 					   iomanip
@@ -133,6 +138,12 @@
 					   ,(* 1s0 v)))))))
 	       (glEnd))
 
+
+	     "std::function<void()> loop;"
+	     (defun main_loop ()
+	       (loop))
+
+
 	     (defun main (argc argv)
 	       (declare (type int argc)
 			(type char** argv)
@@ -148,27 +159,41 @@
 		      (glfwMakeContextCurrent w)
 		      (glfwSwapInterval 1)
 		      (flextInit w)))
-	       (while (!glfwWindowShouldClose w)
-		 (let ((dw 0)
-		       (dh 0))
-		   (glfwGetFramebufferSize w   &dw &dh)
-		   (let ((ww (/ dh 2))
-			 (hh (/ dh  2))
-			 (x0 (- (/ dw 2)
-				hh))
-			 (x1 (/ dw 2)
-			   )
-			 (y0 (/ dh 2))
-			 (y1 0))
-		     (glClearColor 0s0 0s0 0s0 1s0)
-		     (glClearDepth 1s0)
-		     (glClear (logior GL_COLOR_BUFFER_BIT
-				      GL_DEPTH_BUFFER_BIT))
-		     (do0 (glViewport x0 y0 ww hh)
-			  (draw_triangle))
-		     (glfwSwapBuffers w)
-		     (glfwPollEvents))))
-	       (glfwTerminate))
+	       (setf loop
+		     (lambda ()
+		       (declare (capture "&"))
+		       (let ((dw 0)
+			     (dh 0))
+			 (glfwGetFramebufferSize w   &dw &dh)
+			 (let ((ww (/ dh 2))
+			       (hh (/ dh  2))
+			       (x0 (- (/ dw 2)
+				      hh))
+			       (x1 (/ dw 2)
+				 )
+			       (y0 (/ dh 2))
+			       (y1 0))
+			   (glClearColor 0s0 0s0 0s0 1s0)
+			   (glClearDepth 1s0)
+			   (glClear (logior GL_COLOR_BUFFER_BIT
+					    GL_DEPTH_BUFFER_BIT))
+			   (do0 (glViewport x0 y0 ww hh)
+				(draw_triangle))
+			   (glfwSwapBuffers w)
+			   (glfwPollEvents)))
+		       ))
+
+	       (do0
+		"#ifdef __EMSCRIPTEN__"
+		(emscripten_set_main_loop main_loop 0 true)
+		"#else"
+		(while (!glfwWindowShouldClose w)
+		  (main_loop))
+		"#endif")
+
+	       (glfwDestroyWindow w)
+	       (glfwTerminate)
+	       (return 0))
 
 	     ))
 
@@ -180,7 +205,7 @@
      ;;  -s SAFE_HEAP=1 ;; maybe breaks debugging https://github.com/emscripten-core/emscripten/issues/8584
      (let ((dbg  "-O0" ; "-O0 -g4 -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 -s DEMANGLE_SUPPORT=1"
 	     ) ;; -gsource-map
-	   (asan  "-fno-omit-frame-pointer -fsanitize=address "
+	   (asan "" ; "-fno-omit-frame-pointer -fsanitize=address "
 	     ;; -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
 	     )
 	   (show-err "-Wfatal-errors"; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
@@ -210,36 +235,34 @@
 	   (out "set( CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG}  ~a ~a ~a \")"
 		dbg asan show-err)
 	   )
-	 (out "if( EMSCRIPTEN )")
-	 (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
-	 (out "option( BUILD_WASM \"Build Webassembly\" ON )")
-	 (out "else()")
-	 (out "set( CMAKE_C_COMPILER clang )")
-	 (out "set( CMAKE_CXX_COMPILER clang++ )")
-	 (out "endif()")
+
 	 (out "set( SRCS ~{~a~^~%~} )"
 	      (append
 	       (directory (format nil "~a/*.cpp" *source*))
 	       (directory (format nil "~a/*.c" *source*))
-					;(directory "/home/martin/src/opencv_contrib/modules/aruco/src/*.cpp")
-	       ;; git clone -b docking --single-branch https://github.com/ocornut/imgui
-					;(directory "/home/martin/src/imgui/imgui*.cpp")
 	       ))
-
 	 (out "add_executable( index ${SRCS} )")
+
+	 (out "if( EMSCRIPTEN )")
+	 (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
+					;(out "option( BUILD_WASM \"Build Webassembly\" ON )")
+	 (out "set_target_properties( index PROPERTIES LINK_FLAGS \"-s WASM=1 -s LEGACY_GL_EMULATION=1 -s USE_GLFW=3\" ) ")
+	 (out "else()")
+	 (out "set( CMAKE_C_COMPILER clang )")
+	 (out "set( CMAKE_CXX_COMPILER clang++ )")
+	 (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
+	      `(glfw GL))
+	 (out "endif()")
+
+
+
 
 	 #+nil (loop for e in `(imgui ;implot GLEW
 				)
 		     do
 		     (out "find_package( ~a CONFIG REQUIRED )" e))
 
-	 (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
-	      `(;"imgui::imgui"
-					;"implot::implot"
-					;"GLEW::GLEW"
-		glfw GL ;;Xi Xcursor X11 GL
-					;"${OpenCV_LIBS}"
-		))
+
 	 )))
     ))
 
