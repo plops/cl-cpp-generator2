@@ -74,11 +74,14 @@
      :headers `()
      :header-preamble `(do0
 			(do0
-			 "#define GLFW_INCLUDE_NONE"
-			 (include<> GLFW/glfw3.h
-				    flextgl12/flextGL.h
-				    cmath
-				    glu.h))
+		         "#define GLFW_INCLUDE_NONE"
+			 (include<> GLFW/glfw3.h))
+
+			(include "flextGL.h")
+
+			(include<>
+			 cmath
+			 GL/glu.h)
 			(do0
 			 "#ifdef __EMSCRIPTEN__"
 			 (include<>
@@ -105,14 +108,14 @@
 		       `(,(if value
 			      `glEnable
 			      `glDisable)
-			  ,(string-upcase (format nil "gl_~a" value))))
+			  ,(string-upcase (format nil "gl_~a" name))))
 	       ,@(loop for e in `(
 				  modelview
 				  texture
 				  projection)
 		       collect
 		       `(do0
-			 (glMatrixModel ,(string-upcase (format nil "gl_~a" e)))
+			 (glMatrixMode ,(string-upcase (format nil "gl_~a" e)))
 			 (glLoadIdentity))))
 	     (defun draw_triangle ()
 	       (reset_state)
@@ -125,9 +128,9 @@
 			 (destructuring-bind (a b c) color
 			   (destructuring-bind (u v) uv
 			     `(do0
-			       (glColor3f (* 1s0 a) (* 1s0 b) (* 1s0 c))
-			       (glVertex2f (* 1s0 u)
-					   (* 1s0 v)))))))
+			       (glColor3f ,(* 1s0 a) ,(* 1s0 b) ,(* 1s0 c))
+			       (glVertex2f ,(* 1s0 u)
+					   ,(* 1s0 v)))))))
 	       (glEnd))
 
 	     (defun main (argc argv)
@@ -138,13 +141,13 @@
 		    (glfwWindowHint GLFW_SAMPLES 4)
 		    (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 1)
 		    (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
-		    (let ((*w (glfwCreateWindwo 512 512
+		    (let ((*w (glfwCreateWindow 512 512
 						(string "test glfw")
 						nullptr
 						nullptr)))
 		      (glfwMakeContextCurrent w)
 		      (glfwSwapInterval 1)
-		      (flexInit)))
+		      (flextInit w)))
 	       (while (!glfwWindowShouldClose w)
 		 (let ((dw 0)
 		       (dh 0))
@@ -234,7 +237,7 @@
 	      `(;"imgui::imgui"
 					;"implot::implot"
 					;"GLEW::GLEW"
-		Xi Xcursor X11 GL
+		glfw GL ;;Xi Xcursor X11 GL
 					;"${OpenCV_LIBS}"
 		))
 	 )))
