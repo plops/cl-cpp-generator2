@@ -80,6 +80,7 @@
 
 
 			 (include<> imgui.h
+				    implot.h
 				    util/sokol_gl.h
 				    util/sokol_imgui.h))
 			"class State;"
@@ -243,6 +244,7 @@
                        (logior (dot (ImGui--GetIO)
                                     ConfigFlags)
                                ImGuiConfigFlags_DockingEnable)))
+	       (ImPlot--CreateContext)
 
 	       )
 
@@ -368,7 +370,7 @@
 
 			   (when show_test_window
 			     (ImGui--ShowDemoWindow &show_test_window)
-					;(ImPlot--ShowDemoWindow)
+			     (ImPlot--ShowDemoWindow)
 			     )
 
 			   )
@@ -391,6 +393,7 @@
 	       (setf cleanup
 		     (lambda ()
 		       ,(lprint :msg "cleanup")
+		       (ImPlot--DestroyContext)
 		       (simgui_shutdown)
 		       (sgl_shutdown)
 		       (sg_shutdown)
@@ -423,7 +426,7 @@
      ;;  -s SAFE_HEAP=1 ;; maybe breaks debugging https://github.com/emscripten-core/emscripten/issues/8584
      (let ((dbg  "-O0" ; "-O0 -g4 -s ASSERTIONS=1 -s STACK_OVERFLOW_CHECK=1 -s DEMANGLE_SUPPORT=1"
 	     ) ;; -gsource-map
-	   (asan   "-fno-omit-frame-pointer -fsanitize=address "
+	   (asan   "";  "-fno-omit-frame-pointer -fsanitize=address "
 	     ;; -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope
 	     )
 	   (show-err "-Wfatal-errors"; " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs  -Woverloaded-virtual -Wredundant-decls -Wshadow  -Wswitch-default -Wundef   -Wunused -Wunused-parameter  -Wold-style-cast -Wsign-conversion "
@@ -444,7 +447,8 @@
 					;(out "find_package( OpenCV REQUIRED )")
 					;(out "include_directories( ${OpenCV_INCLUDE_DIRS} /home/martin/src/opencv_contrib/modules/aruco/include )")
 	 (out "include_directories( ~{~a~^ ~} )" `(/home/martin/src/sokol
-						   /home/martin/src/imgui))
+						   /home/martin/src/imgui
+						   /home/martin/src/implot))
 
 	 (progn
 	   (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
@@ -458,7 +462,9 @@
 	      (append
 	       (directory (format nil "~a/*.cpp" *source*))
 	       (directory (format nil "~a/*.c" *source*))
+
 	       (directory "/home/martin/src/imgui/imgui*.cpp")
+	       (directory "/home/martin/src/implot/implot*.cpp")
 	       ))
 	 (out "add_executable( index ${SRCS} )")
 
