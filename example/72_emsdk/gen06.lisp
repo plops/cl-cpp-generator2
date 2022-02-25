@@ -143,25 +143,25 @@
 						   (curly 0))))
 		       (sgl_setup
 			(ref sgl_setup_param))
-		       ,(let ((tex-w 16)
-			      (tex-h 16))
-			  `(do0
-			    ,(format nil "uint32_t pixels[~a][~a];" tex-h tex-w)
-			    (dotimes (y ,tex-h)
-			      (dotimes (x ,tex-w)
-				(setf (aref pixels y x)
-				      (? (& (logxor y x)
-					    1)
-					 (hex #xFFDDAAff)
-					 (hex #xff112233)))))
-			    (let ((smi_param (space sg_image_desc
-						    (designated-initializer
-						     :width ,tex-w
-						     :height ,tex-h
-						     (dot "" data (aref (aref subimage 0 ) 0))
-						     (SG_RANGE pixels)))))
-			      (setf (dot state img)
-				    (sg_make_image &smi_param )))))
+		       #+nil ,(let ((tex-w 16)
+				    (tex-h 16))
+				`(do0
+				  ,(format nil "static uint32_t pixels[~a][~a];" tex-h tex-w)
+				  (dotimes (y ,tex-h)
+				    (dotimes (x ,tex-w)
+				      (setf (aref pixels y x)
+					    (? (& (logxor y x)
+						  1)
+					       (hex #xFFDDAAff)
+					       (hex #xff112233)))))
+				  (let ((smi_param (space sg_image_desc
+							  (designated-initializer
+							   :width ,tex-w
+							   :height ,tex-h
+							   (dot "" data (aref (aref subimage 0 ) 0))
+							   (SG_RANGE pixels)))))
+				    (setf (dot state img)
+					  (sg_make_image &smi_param )))))
 
 		       (do0
 			(comments "sokol_gl creates shaders, pixel formats")
@@ -191,19 +191,19 @@
 
 		       (do0 (sgl_defaults)
 			    (sgl_load_pipeline state.pip_3d)
-			    (sgl_enable_texture)
-			    (sgl_texture state.img)
+					;(sgl_enable_texture)
+					;(sgl_texture state.img)
 			    )
 
-		       (do0
-			"static float frame_count = 0.0f;"
-			(incf frame_count)
-			(let ((a (sgl_rad frame_count))
-			      (tex_rot (* .5s0 a))
-			      (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
-			  (sgl_matrix_mode_texture)
-			  (sgl_rotate tex_rot 0s0 0s0 1s0)
-			  (sgl_scale tex_scale   tex_scale 1s0)))
+		       #+nil (do0
+			      "static float frame_count = 0.0f;"
+			      (incf frame_count)
+			      (let ((a (sgl_rad frame_count))
+				    (tex_rot (* .5s0 a))
+				    (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
+				(sgl_matrix_mode_texture)
+				(sgl_rotate tex_rot 0s0 0s0 1s0)
+				(sgl_scale tex_scale   tex_scale 1s0)))
 
 		       (do0
 			(sgl_begin_quads)
@@ -231,8 +231,8 @@
 			     (x1 (/ dw 2))
 			     (y0 0)
 			     (y1 (/ dh 2)))
-			 (do0 (sgl_viewport x1 y0 ww hh true)
-			      (draw_quad))
+			 #+nil (do0 (sgl_viewport x1 y0 ww hh true)
+				    (draw_quad))
 			 (do0 (sgl_viewport x0 y0 ww hh true)
 			      (draw_triangle))
 
@@ -336,7 +336,7 @@
 	 (out "if( EMSCRIPTEN )")
 	 (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
 					;(out "option( BUILD_WASM \"Build Webassembly\" ON )")
-	 (out "set_target_properties( index PROPERTIES LINK_FLAGS \"-s WASM=1 -s LEGACY_GL_EMULATION=1 -s USE_GLFW=3\" ) ")
+	 (out "set_target_properties( index PROPERTIES LINK_FLAGS \"-s WASM=1\" ) ")
 	 (out "else()")
 	 (out "set( CMAKE_C_COMPILER clang )")
 	 (out "set( CMAKE_CXX_COMPILER clang++ )")
