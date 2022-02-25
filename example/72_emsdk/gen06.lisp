@@ -78,6 +78,7 @@
 
 
 			 (include<> util/sokol_gl.h))
+			"class State;"
 	       		)
      :implementation-preamble `(do0
 				(include<> iostream
@@ -121,6 +122,93 @@
 		(sgl_end)))
 
 
+	     (defun draw_cube ()
+	       (sgl_begin_quads)
+	       ,@(loop for color in
+		       `((1 0 0)
+			 (0 1 0)
+			 (0 0 1)
+			 (1 .5 0)
+			 (0 .5 1)
+			 (1 0 .5))
+		       and  faces in
+		       `(((- + - - +)
+			  (+ + - + +)
+			  (+ - - + -)
+			  (- - - - -))
+
+			 ((- - + - +)
+			  (+ - + + +)
+			  (+ + + + -)
+			  (- + + - -))
+
+			 ((- - + - +)
+			  (- + + + +)
+			  (- + - + -)
+			  (- - - - -))
+
+			 ((+ - + - +)
+			  (+ - - + +)
+			  (+ + - + -)
+			  (+ + + - -))
+
+			 ((+ - - - +)
+			  (+ - + + +)
+			  (- - + + -)
+			  (- - - - -))
+
+			 ((- + - - +)
+			  (- + + + +)
+			  (+ + + + -)
+			  (+ + - - -)))
+
+		       collect
+		       `(do0
+			 (sgl_c3f ,@color)
+			 ,@(loop for face in faces
+				 collect
+				 `(sgl_v3f_t2f
+				   ,@(loop for sign in face
+					   collect
+					   (format nil "~a1.0f" sign)))))
+		       )
+	       (sgl_end)
+	       )
+
+	     (defun draw_tex_cube (state)
+	       (declare (type State& state))
+	       (do0
+		"static float frame_count = 0.0f;"
+		(incf frame_count)
+		(let ((a (sgl_rad frame_count))
+		      (tex_rot (* .5s0 a))
+		      (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
+		  (sgl_matrix_mode_texture)
+		  (sgl_rotate tex_rot 0s0 0s0 1s0)
+		  (sgl_scale tex_scale   tex_scale 1s0)))
+	       (let ((eye_x (* 6s0 (sinf a)))
+		     (eye_z (* 6s0 (cosf a)))
+		     (eye_y (* 3s0 (sinf a))))
+		 (sgl_defaults)
+		 (sgl_load_pipeline state.pip_3d)
+		 (sgl_enable_texture)
+		 (sgl_texture state.img)
+		 (sgl_matrix_mode_projection)
+		 (sgl_perspective (sgl_rad 45s0)
+				  1s0 .1s0 100s0)
+		 (sgl_matrix_mode_modelview)
+		 (sgl_lookat eye_x
+			     eye_y
+			     eye_z
+			     0s0 0s0 0s0
+			     0s0 1s0 0s0)
+		 (sgl_matrix_mode_texture)
+		 (sgl_rotate tex_rot 0s0 0s0 1s0)
+		 (sgl_scale tex_scale tex_scale 1s0)
+		 (draw_cube)
+		 )
+	       )
+
 	     (defun sokol_main (argc argv)
 	       (declare (type int argc)
 			(type char** argv)
@@ -143,25 +231,25 @@
 						   (curly 0))))
 		       (sgl_setup
 			(ref sgl_setup_param))
-		       #+nil ,(let ((tex-w 16)
-				    (tex-h 16))
-				`(do0
-				  ,(format nil "static uint32_t pixels[~a][~a];" tex-h tex-w)
-				  (dotimes (y ,tex-h)
-				    (dotimes (x ,tex-w)
-				      (setf (aref pixels y x)
-					    (? (& (logxor y x)
-						  1)
-					       (hex #xFFDDAAff)
-					       (hex #xff112233)))))
-				  (let ((smi_param (space sg_image_desc
-							  (designated-initializer
-							   :width ,tex-w
-							   :height ,tex-h
-							   (dot "" data (aref (aref subimage 0 ) 0))
-							   (SG_RANGE pixels)))))
-				    (setf (dot state img)
-					  (sg_make_image &smi_param )))))
+		       ,(let ((tex-w 16)
+			      (tex-h 16))
+			  `(do0
+			    ,(format nil "static uint32_t pixels[~a][~a];" tex-h tex-w)
+			    (dotimes (y ,tex-h)
+			      (dotimes (x ,tex-w)
+				(setf (aref pixels y x)
+				      (? (& (logxor y x)
+					    1)
+					 (hex #xFFDDAAff)
+					 (hex #xff112233)))))
+			    (let ((smi_param (space sg_image_desc
+						    (designated-initializer
+						     :width ,tex-w
+						     :height ,tex-h
+						     (dot "" data (aref (aref subimage 0 ) 0))
+						     (SG_RANGE pixels)))))
+			      (setf (dot state img)
+				    (sg_make_image &smi_param )))))
 
 		       (do0
 			(comments "sokol_gl creates shaders, pixel formats")
@@ -191,19 +279,19 @@
 
 		       (do0 (sgl_defaults)
 			    (sgl_load_pipeline state.pip_3d)
-					;(sgl_enable_texture)
-					;(sgl_texture state.img)
+			    (sgl_enable_texture)
+			    (sgl_texture state.img)
 			    )
 
-		       #+nil (do0
-			      "static float frame_count = 0.0f;"
-			      (incf frame_count)
-			      (let ((a (sgl_rad frame_count))
-				    (tex_rot (* .5s0 a))
-				    (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
-				(sgl_matrix_mode_texture)
-				(sgl_rotate tex_rot 0s0 0s0 1s0)
-				(sgl_scale tex_scale   tex_scale 1s0)))
+		       (do0
+			"static float frame_count = 0.0f;"
+			(incf frame_count)
+			(let ((a (sgl_rad frame_count))
+			      (tex_rot (* .5s0 a))
+			      (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
+			  (sgl_matrix_mode_texture)
+			  (sgl_rotate tex_rot 0s0 0s0 1s0)
+			  (sgl_scale tex_scale   tex_scale 1s0)))
 
 		       (do0
 			(sgl_begin_quads)
@@ -231,12 +319,14 @@
 			     (x1 (/ dw 2))
 			     (y0 0)
 			     (y1 (/ dh 2)))
-			 #+nil (do0 (sgl_viewport x1 y0 ww hh true)
-				    (draw_quad))
+
 			 (do0 (sgl_viewport x0 y0 ww hh true)
 			      (draw_triangle))
-
-
+			 (do0 (sgl_viewport x1 y0 ww hh true)
+			      (draw_quad))
+			 (do0 (sgl_viewport x1 y1 ww hh true)
+			      (draw_tex_cube state))
+			 (sgl_viewport 0 0 dw dh true)
 			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far. ")
 			 (sg_begin_default_pass &state.pass_action
 						dw dh)
