@@ -259,7 +259,7 @@
 						   :compare SG_COMPAREFUNC_LESS_EQUAL
 						   :write_enabled true
 						   )
-					   :cull_mode SG_CULLMODE_BACK
+					;:cull_mode SG_CULLMODE_BACK
 					   ))))
 			  (setf state.pip_3d
 				(sgl_make_pipeline &smp)))
