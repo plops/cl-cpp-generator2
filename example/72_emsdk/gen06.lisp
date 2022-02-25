@@ -431,7 +431,8 @@
 	 (out "set( CMAKE_C_COMPILER clang )")
 	 (out "set( CMAKE_CXX_COMPILER clang++ )")
 	 (out "target_link_libraries( index PRIVATE ~{~a~^ ~} )"
-	      `(X11 GL Xext Xi Xcursor))
+	      ;; don't forget pthread, without we can get weird bugs
+	      `(X11 GL Xext Xi Xcursor dl pthread))
 	 (out "endif()")
 
 
