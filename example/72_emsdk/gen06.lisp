@@ -96,7 +96,7 @@
 	       "sg_pass_action pass_action;"
 	       "sg_image img;"
 	       "sgl_pipeline pip_3d;")
-	     ,@(loop for e in `(init frame cleanup)
+	     ,@(loop for e in `(init frame cleanup draw_quad)
 		     collect
 		     `(do0
 		       ,(format nil "std::function<void()> ~a;" e)
@@ -109,29 +109,17 @@
 
 	     (defun draw_triangle ()
 					; ,(lprint :msg "draw_triangle")
-		 (sgl_defaults)
-		 (do0
-		  (sgl_begin_triangles)
-		  (do0
-		   ,@(loop for e in `((0 .5 255 0 0)
-				      (-.5 -.5 0 0 255)
-				      (.5 -.5 0 255 0))
-			   collect
-			   `(sgl_v2f_c3b ,@e)))
-		  (sgl_end)))
-	     (defun draw_quad ()
-					; ,(lprint :msg "draw_triangle")
-		 (sgl_defaults)
-		 (do0
-		  (sgl_begin_quads)
-		  (do0
-		   ,@(loop for e in `((-1 1  -1 1)
-				      (1 1  1 1)
-				      (1 -1 1 -1)
-				      (-1 -1 -1 -1))
-			   collect
-			   `(sgl_v2f_t2f ,@e)))
-		  (sgl_end)))
+	       (sgl_defaults)
+	       (do0
+		(sgl_begin_triangles)
+		(do0
+		 ,@(loop for e in `((0 .5 255 0 0)
+				    (-.5 -.5 0 0 255)
+				    (.5 -.5 0 255 0))
+			 collect
+			 `(sgl_v2f_c3b ,@e)))
+		(sgl_end)))
+
 
 	     (defun sokol_main (argc argv)
 	       (declare (type int argc)
@@ -163,8 +151,8 @@
 			    (setf (aref pixels y x)
 				  (? (& (logxor y x)
 					1)
-				     (hex #xFFFFffff)
-				     (hex #xff000000)))))
+				     (hex #xFFDDAAff)
+				     (hex #xff112233)))))
 			(let ((smi_param (space sg_image_desc
 						(designated-initializer
 						 :width 8
@@ -178,10 +166,12 @@
 			(comments "sokol_gl creates shaders, pixel formats")
 			(let ((smp (space sg_pipeline_desc
 					  (designated-initializer
-					   :cull_mode SG_CULLMODE_BACK
 					   :depth (designated-initializer
+						   :compare SG_COMPAREFUNC_LESS_EQUAL
 						   :write_enabled true
-						   :compare SG_COMPAREFUNC_LESS_EQUAL)))))
+						   )
+					   :cull_mode SG_CULLMODE_BACK
+					   ))))
 			  (setf state.pip_3d
 				(sgl_make_pipeline &smp)))
 			(setf   state.pass_action (space sg_pass_action
@@ -189,9 +179,42 @@
 							  (aref .colors  0)
 							  (designated-initializer
 							   :action SG_ACTION_CLEAR
-							   :value (curly 0s0 0s0 0s0 1s0)))))))))))
+							   :value (curly .5s0 .3s0 .2s0 1s0)))))))))))
 
-	       
+	       (setf draw_quad
+		     (lambda ()
+		       (declare (capture &))
+					;,(lprint :msg "draw_quad")
+
+
+
+		       (do0 (sgl_defaults)
+			    (sgl_load_pipeline state.pip_3d)
+			    (sgl_enable_texture)
+			    (sgl_texture state.img)
+			    )
+
+		       (do0
+			"static float frame_count = 0.0f;"
+			(incf frame_count)
+			(let ((a (sgl_rad frame_count))
+			      (tex_rot (* .5s0 a))
+			      (tex_scale  (+ 1s0 (* .5s0 (sinf a)))))
+			  (sgl_matrix_mode_texture)
+			  (sgl_rotate tex_rot 0s0 0s0 1s0)
+			  (sgl_scale tex_scale   tex_scale 1s0)))
+
+		       (do0
+			(sgl_begin_quads)
+			(do0
+			 ,@(loop for e in `((-1 1  -1 1)
+					    (1 1  1 1)
+					    (1 -1 1 -1)
+					    (-1 -1 -1 -1))
+				 collect
+				 `(sgl_v2f_t2f ,@(loop for q in e
+						       collect (* .8s0 q)))))
+			(sgl_end))))
 
 	       (setf frame
 		     (lambda ()
@@ -207,11 +230,12 @@
 			     (x1 (/ dw 2))
 			     (y0 0)
 			     (y1 (/ dh 2)))
-			 (do0 (sgl_viewport x0 y0 ww hh true)
-			      (draw_triangle))
 			 (do0 (sgl_viewport x1 y0 ww hh true)
 			      (draw_quad))
-			 
+			 (do0 (sgl_viewport x0 y0 ww hh true)
+			      (draw_triangle))
+
+
 			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far. ")
 			 (sg_begin_default_pass &state.pass_action
 						dw dh)
@@ -238,9 +262,11 @@
 				  :width 512
 				  :height 512
 				  :sample_count 4
-				  :gl_force_gles2 true
+
 				  :window_title (string "sokol_gl app")
 				  :icon.sokol_default true
+				  :gl_force_gles2 true
+
 				  ))))
 		 #+nil ,@(loop for (e f) in `((init_cb init_cfun)
 					      (frame_cb frame_cfun)
