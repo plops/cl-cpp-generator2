@@ -471,7 +471,7 @@
 	 (out "if( EMSCRIPTEN )")
 	 (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
 					;(out "option( BUILD_WASM \"Build Webassembly\" ON )")
-	 (out "set_target_properties( index PROPERTIES LINK_FLAGS \"-s WASM=1\" ) ")
+	 (out "set_target_properties( index PROPERTIES LINK_FLAGS \"-s WASM=1 -s ALLOW_MEMORY_GROWTH=1\" ) ")
 	 (out "else()")
 	 (out "set( CMAKE_C_COMPILER clang )")
 	 (out "set( CMAKE_CXX_COMPILER clang++ )")
