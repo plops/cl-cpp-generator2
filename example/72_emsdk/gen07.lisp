@@ -364,6 +364,12 @@
 			   (ImGui--Text (string "drag windows"))
 			   (ImGui--SliderFloat (string "float")
 					       &f 0s0 1s0)
+
+			   (do0
+			    (ImGui--Image (reinterpret_cast<void*>
+					   state.img.id)
+					  (ImVec2 128 128))
+			    )
 			   (when (ImGui--Button (string "window"))
 			     (setf show_test_window
 				   !show_test_window))
