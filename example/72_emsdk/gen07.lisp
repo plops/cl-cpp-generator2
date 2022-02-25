@@ -364,7 +364,14 @@
 					       &f 0s0 1s0)
 			   (when (ImGui--Button (string "window"))
 			     (setf show_test_window
-				   !show_test_window)))
+				   !show_test_window))
+
+			   (when show_test_window
+			     (ImGui--ShowDemoWindow &show_test_window)
+					;(ImPlot--ShowDemoWindow)
+			     )
+
+			   )
 
 
 
