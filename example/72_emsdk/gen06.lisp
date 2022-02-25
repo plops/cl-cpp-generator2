@@ -143,24 +143,25 @@
 						   (curly 0))))
 		       (sgl_setup
 			(ref sgl_setup_param))
-
-		       (do0
-			"uint32_t pixels[8][8];"
-			(dotimes (y 8)
-			  (dotimes (x 8)
-			    (setf (aref pixels y x)
-				  (? (& (logxor y x)
-					1)
-				     (hex #xFFDDAAff)
-				     (hex #xff112233)))))
-			(let ((smi_param (space sg_image_desc
-						(designated-initializer
-						 :width 8
-						 :height 8
-						 (dot "" data (aref (aref subimage 0 ) 0))
-						 (SG_RANGE pixels)))))
-			  (setf (dot state img)
-				(sg_make_image &smi_param ))))
+		       ,(let ((tex-w 16)
+			      (tex-h 16))
+			  `(do0
+			    ,(format nil "uint32_t pixels[~a][~a];" tex-h tex-w)
+			    (dotimes (y ,tex-h)
+			      (dotimes (x ,tex-w)
+				(setf (aref pixels y x)
+				      (? (& (logxor y x)
+					    1)
+					 (hex #xFFDDAAff)
+					 (hex #xff112233)))))
+			    (let ((smi_param (space sg_image_desc
+						    (designated-initializer
+						     :width ,tex-w
+						     :height ,tex-h
+						     (dot "" data (aref (aref subimage 0 ) 0))
+						     (SG_RANGE pixels)))))
+			      (setf (dot state img)
+				    (sg_make_image &smi_param )))))
 
 		       (do0
 			(comments "sokol_gl creates shaders, pixel formats")
