@@ -7,7 +7,7 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (defparameter *source* "07source")
+  (defparameter *source* "08source")
   (defparameter *source-dir* (format nil "example/72_emsdk/~a/" *source*))
 
 					;(setf (readtable-case *readtable*) :upcase)

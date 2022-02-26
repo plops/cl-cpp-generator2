@@ -377,13 +377,9 @@
 			   (when show_test_window
 			     (ImGui--ShowDemoWindow &show_test_window)
 			     (ImPlot--ShowDemoWindow)
-			     )
+			     ))
 
-			   )
-
-
-
-			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far.  ")
+			 (comments "sokol_gl default pass .. sgl_draw renders all commands that were submitted so far.")
 			 (sg_begin_default_pass &state.pass_action
 						dw dh)
 			 (sgl_draw)
