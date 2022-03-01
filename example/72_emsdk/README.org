@@ -1,17 +1,17 @@
-|                        |                                                                                                         |
-| gen00                  | hello world example                                                                                     |
-| gen01                  | sdl example                                                                                             |
-| gen02                  | opencv example                                                                                          |
-| gen03                  | sokol example                                                                                           |
-| util.lisp              | helper function for logging and to create c++ classes from lisp (lprint, write-class, write-impl-class) |
-| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp              |
-| gen04                  | show image with sokol (not working yet)                                                                 |
-| gen05                  | glfw opengl 1.2 https://github.com/floooh/sokol-samples/blob/master/glfw/sgl-test-glfw.c                |
-| gen06                  | sokol version of 05, no imgui   https://github.com/floooh/sokol-samples/blob/master/sapp/sgl-sapp.c     |
-| gen07                  | sokol and imgui (started from 06)                                                                       |
-| gen08                  | read camera with emscripten, sokol, imgui (started from 07)                                             |
-|                        |                                                                                                         |
-|                        |                                                                                                         |
+|                        |                                                                                                                                                  |
+| gen00                  | hello world example                                                                                                                              |
+| gen01                  | sdl example                                                                                                                                      |
+| gen02                  | opencv example                                                                                                                                   |
+| gen03                  | sokol example                                                                                                                                    |
+| util.lisp              | helper function for logging and to create c++ classes from lisp (lprint, write-class, write-impl-class)                                          |
+| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp                                                       |
+| gen04                  | show image with sokol (not working yet)                                                                                                          |
+| gen05                  | glfw opengl 1.2 https://github.com/floooh/sokol-samples/blob/master/glfw/sgl-test-glfw.c                                                         |
+| gen06                  | sokol version of 05, no imgui   https://github.com/floooh/sokol-samples/blob/master/sapp/sgl-sapp.c                                              |
+| gen07                  | sokol and imgui (started from 06)                                                                                                                |
+| gen08                  | read camera with emscripten, sokol, imgui (started from 07 and https://github.com/plops/cl-js-generator/blob/master/example/05_video/gen00.lisp) |
+|                        |                                                                                                                                                  |
+|                        |                                                                                                                                                  |
 - install emsdk
 #+begin_example
 git clone https://github.com/emscripten-core/emsdk.git
