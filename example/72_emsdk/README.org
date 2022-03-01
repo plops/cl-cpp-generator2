@@ -390,3 +390,6 @@ w::~w() {}
   
 - debugging c++ webassembly in chrome
   https://www.youtube.com/watch?v=VBMHswhun-s&t=26s
+
+- gen08 reads camera as documented here:
+  https://medium.com/docler-engineering/video-manipulation-with-webassembly-3477a0c8524d
