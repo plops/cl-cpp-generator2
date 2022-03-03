@@ -216,6 +216,7 @@
 				      util/sokol_gl.h
 				      util/sokol_imgui.h))
 			  "class State;"
+			  "#define WASM_EXPORT extern \"C\" __attribute__((visibility(\"default\")))"
 	       		  )
        :implementation-preamble `(do0
 				  (include<> iostream
@@ -236,7 +237,7 @@
 
 	       (do0
 		(comments "https://medium.com/docler-engineering/video-manipulation-with-webassembly-3477a0c8524d")
-		"#define WASM_EXPORT extern \"C\" __attribute__((visibility(\"default\")))"
+
 		"uint16_t g_frame_width, g_frame_height;"
 		"uint8_t*g_input_buffer,*g_output_buffer;"
 		;;"uint8_t*g_background_buffer;"
@@ -251,26 +252,28 @@
 		  (return (static_cast<uint8_t> val)))
 		,@(loop for e in `((defun init_in (w h)
 				     (declare (type uint16_t w h)
-					      (values uint8_t*))
+					      (values "WASM_EXPORT uint8_t*"))
 				     (setf g_frame_width w
 					   g_frame_height h
-					   g_input_buffer (malloc (/ (* w h 3)
-								     2)))
+					   g_input_buffer (static_cast<uint8_t*>
+							   (malloc (/ (* w h 3)
+								      2))))
 				     (return g_input_buffer))
 				   (defun init_out ()
 				     (declare (values uint8_t*))
 				     (setf
-				      g_output_buffer (malloc (* w h 4)))
+				      g_output_buffer (static_cast<uint8_t*>
+						       (malloc (* g_frame_width g_frame_height 4))))
 				     (return g_input_buffer))
 				   (defun process (stride offset1 offset2)
 				     (declare (type uint32_t stride offset1  offset2))
 				     (let ((xUV 0)
 					   (yUV 0))
-				       (dotimes (y h)
+				       (dotimes (y g_frame_height)
 					 (let ((yUV (* stride (>> y 1))))
-					   (dotimes (x w)
+					   (dotimes (x g_frame_width)
 					     (let ((xUV (>> x 1))
-						   (Y (static_cast<float> (aref g_input_buffer (+ x (* y w)))))
+						   (Y (static_cast<float> (aref g_input_buffer (+ x (* y g_frame_width)))))
 						   (V (static_cast<float> (- (aref g_input_buffer (+ offset1 xUV yUV))
 									     128)))
 						   (U (static_cast<float> (- (aref g_input_buffer (+ offset2 xUV yUV))
@@ -279,7 +282,7 @@
 						   (G (sat (+ Y (* -.698001 V) (* -.337633 U))))
 						   (B (sat (+ Y (* 1.732446 U))))
 						   (p (+ (* 4 x)
-							 (* 4 y w)))
+							 (* 4 y g_frame_width)))
 						   )
 					       (when (< (* .6 (+ R B))
 							G)
@@ -292,8 +295,7 @@
 							      ,c))))))))
 				   )
 			collect
-			`(space WASM_EXPORT
-				,e)
+			e
 			))
 
 
