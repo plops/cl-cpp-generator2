@@ -23,13 +23,90 @@
 		`(let ((W 640)
 		       (H 480))
 
-		   (defun sat (val)
-		     (when (< 255 val)
-		       (return 255))
-		     (when (< val 0)
-		       (return 0))
-		     (return (logior val
-				     "0x00")))
+		   (let ((WASM_FILE (string "./index.wasm"))
+			 (mem_in null)
+			 (mem_out null)
+			 (instance null)
+			 (memoryStates (new (WeakMap)))
+			 )
+		     (defun syscall (instance n args)
+		       (case n
+			 (45 (comments "brk")
+			     (return 0))
+			 (146 (comments "writev")
+			      (return (instance.exports.writev_c
+				       (aref args 0)
+				       (aref args 1)
+				       (aref args 2))))
+			 (192 (comments "mmap2")
+			      (do0
+			       debugger
+			       (let ((memory instance.exports.memory)
+				     (memoryState (memoryStates.get instance))
+				     (requested (aref args 1)))
+				 (unless (memoryState)
+				   (setf memoryState (dictionary
+						      :object memory
+						      :currentPosition memory.buffer.byteLength))
+				   (memoryStates.set instance memoryState))
+				 (let ((cur memoryState.currentPosition))
+				   (when (< memory.buffer.byteLength
+					    (+ cur requested))
+				     (let ((need (Math.ceil
+						  (/ (+ cur
+							requested
+							-memory.buffer.byteLength)
+						     65536))))
+				       (memory.grow need)))
+				   (incf memoryState.currentPosition
+					 requested)
+				   (return cur)))))
+			 (t
+			  break))
+		       )
+
+		     (let ((initWASM
+			    (lambda ()
+			      (dot (fetch WASM_FILE)
+				   (then (lambda (response)
+					   (response.arrayBuffer)))
+				   (then (lambda (bytes)
+					   (WebAssembly.instantiate
+					    bytes
+					    (dictionary
+					     :env (dictionary
+						   ,@ (loop for i from 0 upto 6
+							    appending
+							    (let ((args (loop for e below i
+									      and c in `(a b c d e f g)
+									      collect c)))
+							      `(,(make-keyword (string-upcase (format nil "_syscall~a" i)))
+								 (defun ,(format nil "__syscall~a" i) (n ,@args)
+								   (return (syscall instance n (list ,@args))))))))))))
+				   (then (lambda (results)
+					   (let ((instance results.instance)
+						 (in_p (instance.exports.init_in W H))
+						 (out_p (instance.exports.init_out))
+						 )
+					     (setf mem_in (new (Uint8Array
+								instance.exports.memory.buffer
+								in_p
+								(/ (* W H 3)
+								   2))
+							       ))
+					     (setf mem_out (new (Uint8Array
+								 instance.exports.memory.buffer
+								 in_p
+								 (* W H 4)))))))
+				   (catch console.error)))))))
+
+		   #+nil (defun sat (val)
+			   (when (< 255 val)
+			     (return 255))
+			   (when (< val 0)
+			     (return 0))
+			   (return (logior val
+					   "0x00")))
 
 		   (let ((bufferYUV (new (Uint8Array (/ (* 3 W H)
 							2))))
@@ -162,7 +239,7 @@
 		:width 800
 		:height 600)
        (:script :type "text/javascript"
-		"var Module = { canvas: (function() { return document.getElementById('canvas'); } )() };"
+		(:raw "var Module = { canvas: (function() { return document.getElementById('canvas'); } )() };")
 		)
        (:script :src "index.js")))))
 

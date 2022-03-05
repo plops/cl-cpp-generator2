@@ -350,7 +350,7 @@
 					;"GLEW::GLEW"
 		Xi Xcursor X11 GL
 					;"${OpenCV_LIBS}"
-		   ))
+		))
 	 )))
     ))
 
