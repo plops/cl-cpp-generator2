@@ -749,6 +749,17 @@
 		 (directory "/home/martin/src/implot/implot*.cpp")
 		 ))
 	   (out "add_executable( index ${SRCS} )")
+	   #+nil (out "target_precompile_headers( index PRIVATE ~{~a~^ ~} )"
+		(append (directory (format nil "~a/*.h" *source*))
+			;(directory "/home/martin/src/imgui/imgui.h")
+			;(directory "/home/martin/src/implot/implot.h")
+       			;(directory "/home/martin/src/sokol/sokol_gfx.h")
+	       		;(directory "/home/martin/src/sokol/sokol_glue.h")
+			;(directory "/home/martin/src/sokol/sokol_app.h")
+			;(directory "/home/martin/src/sokol/util/sokol_gl.h")
+			;(directory "/home/martin/src/sokol/util/sokol_imgui.h")
+			)
+		)
 
 	   (out "if( EMSCRIPTEN )")
 	   (out "set( CMAKE_EXECUTABLE_SUFFIX \".html\" )")
