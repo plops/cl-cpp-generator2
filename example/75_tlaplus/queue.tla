@@ -1,4 +1,4 @@
--- MODULE Queue --
+--------------------------- MODULE queue -----------------------------------
 
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -10,7 +10,7 @@ ASSUME Assumption ==
        /\ Producers \intersect Consumers = {}
        /\ BufCapacity \in (Nat \ {0})
 
-
+-----------------------------------------------------------------------------
 VARIABLES buffer, waitSet
 
 vars == <<buffer, waitSet>>
@@ -24,7 +24,7 @@ Notify == IF waitSet # {}
 Wait(t) == /\ waitSet' = waitSet \cup {t}
            /\ UNCHANGED <<buffer>>
 
-
+-----------------------------------------------------------------------------
 Put(t,d) ==
 	 \/ /\ Len(buffer) < BufCapacity
 	    /\ buffer' = Append(buffer, d)
@@ -39,7 +39,7 @@ Get(t) ==
        \/ /\ buffer = <<>>
           /\ Wait(t)
 
-
+-----------------------------------------------------------------------------
 Init == /\ buffer = <<>>
         /\ waitSet = {}
 
@@ -48,3 +48,5 @@ Next == \E t \in RunningThreads: \/ /\ t \in Producers
      	     	 		    /\ Put(t,t)
 				 \/ /\ t \in Consumers
 				    /\ Get(t)
+
+=============================================================================
