@@ -12,7 +12,6 @@ ASSUME Assumption ==
 
 -----------------------------------------------------------------------------
 VARIABLES buffer, waitSet
-
 vars == <<buffer, waitSet>>
 
 RunningThreads == (Producers \cup Consumers) \ waitSet
@@ -48,5 +47,13 @@ Next == \E t \in RunningThreads: \/ /\ t \in Producers
      	     	 		    /\ Put(t,t)
 				 \/ /\ t \in Consumers
 				    /\ Get(t)
+
+-----------------------------------------------------------------------------
+TypeInv == /\ buffer \in Seq(Producers)
+	   /\ Len(buffer) \in 0..BufCapacity
+	   /\ waitSet \subseteq (Producers \cup Consumers)
+
+Invariant == waitSet # (Producers \cup Consumers)
+
 
 =============================================================================
