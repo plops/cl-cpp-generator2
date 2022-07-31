@@ -1,3 +1,6 @@
+
 - try to understand tla+ after i watched the workshop at mch22
 
 - https://github.com/lemmy/BlockingQueue/tree/6b6f2128fb6e49307281dcdc63779864638de748
+
+- if i follow printf by fflush(stdout), does that make it reentrant?

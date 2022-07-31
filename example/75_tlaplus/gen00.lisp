@@ -136,6 +136,7 @@
 				    (pthread_cond_wait &modify &mutex))
 			     (append (% (rand) 10))
 			     (printf PYELLOW)
+			     (fflush )
 			     (pthread_cond_signal &modify)
 			     (pthread_mutex_unlock &mutex)))
 
@@ -185,25 +186,36 @@
 				   and e-i from 1
 				   collect
 				   `(setf ,e (atoi (aref argv ,e-i))))))
-
-		      (pthread_mutex_init &mutex nullptr)
-		      (pthread_cond_init &modify nullptr)
-		      (setf buffer (static_cast<uint32_t*> (malloc (* buf_size
-								      (sizeof uint32_t))))
-			    )
+		      (do0
+		       ,(lprint :msg "initiate mutex and condition variable")
+		       (pthread_mutex_init &mutex nullptr)
+		       (pthread_cond_init &modify nullptr))
+		      (do0
+		       ,(lprint :msg "allocate buffer" :vars `(buf_size))
+		       (setf buffer (static_cast<uint32_t*> (malloc (* buf_size
+								       (sizeof uint32_t))))
+			     ))
 		      "pthread_t prods[numProducers], cons[numConsumers];"
 		      "uint32_t threadIds[numConsumers], i;"
-		      (dotimes (i numProducers)
-			(pthread_create (+ prods i)
-					nullptr
-					producer
-					nullptr))
-		      (dotimes (i numConsumers)
-			(setf (aref threadIds i) i)
-			(pthread_create (+ cons i)
-					nullptr
-					consumer
-					(+ threadIds i)))
+		      (do0
+		       (do0
+			,(lprint :msg "start consumers" :vars `(numConsumers))
+			(dotimes (i numConsumers)
+			  (setf (aref threadIds i) i)
+			  (pthread_create (+ cons i)
+					  nullptr
+					  consumer
+					  (+ threadIds i))))
+		       
+		       (do0
+			,(lprint :msg "start producers" :vars `(numProducers))
+			(dotimes (i numProducers)
+			  (pthread_create (+ prods i)
+					  nullptr
+					  producer
+					  nullptr))))
+
+		      		      
 		      (do0
 		       ,(lprint :msg "wait for threads to finish")
 		       (dotimes (i numProducers)
