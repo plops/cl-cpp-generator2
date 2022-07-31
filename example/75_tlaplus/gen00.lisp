@@ -113,28 +113,57 @@
 			(decf count)
 			(return tmp)))
 
+		    
 		    (defun producer (arg)
 		      (declare (type void* arg)
 			       (values void*))
+		      ,@(loop for (name code )
+			      in `((red 31)
+				   (green 32)
+				   (yellow 33)
+				   (blue 34)
+				   (magenta 35)
+				   (cyan 36)
+				   (white 37))
+			    collect
+			    (format nil "#define ~a \"~a\""
+				    (string-upcase (format nil "P~a" name))
+				    (format nil "\\033[1;~amp\\033[0m" code)))
 		      (while 1
 			     (pthread_mutex_lock &mutex)
 			     (while (== count buf_size)
+				    (printf PRED)
 				    (pthread_cond_wait &modify &mutex))
 			     (append (% (rand) 10))
+			     (printf PYELLOW)
 			     (pthread_cond_signal &modify)
 			     (pthread_mutex_unlock &mutex)))
 
 		    (defun consumer (arg)
 		      (declare (type void* arg)
 			       (values void*))
+		      ,@(loop for (name code )
+				in `((red 31)
+				     (green 32)
+				     (yellow 33)
+				     (blue 34)
+				     (magenta 35)
+				     (cyan 36)
+				     (white 37))
+			      collect
+			      (format nil "#define ~a \"~a\" "
+				       (string-upcase (format nil "~a" name))
+				       (format nil "\\033[1;~amc%01d\\033[0m" code)))
 		      (let ((id (deref (static_cast<uint32_t*> arg)))
-			    ;(report (long 0))
+					;(report (long 0))
 			    )
 			(while 1
 			       (pthread_mutex_lock &mutex)
 			       (while (== 0 count)
+				      (printf RED id)
 				      (pthread_cond_wait &modify &mutex)))
 			(head)
+			(printf YELLOW id)
 			(pthread_cond_signal &modify)
 			(pthread_mutex_unlock &mutex)))
 
