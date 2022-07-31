@@ -124,13 +124,63 @@
 			     (pthread_cond_signal &modify)
 			     (pthread_mutex_unlock &mutex)))
 
+		    (defun consumer (arg)
+		      (declare (type void* arg)
+			       (values void*))
+		      (let ((id (deref (static_cast<uint32_t*> arg)))
+			    ;(report (long 0))
+			    )
+			(while 1
+			       (pthread_mutex_lock &mutex)
+			       (while (== 0 count)
+				      (pthread_cond_wait &modify &mutex)))
+			(head)
+			(pthread_cond_signal &modify)
+			(pthread_mutex_unlock &mutex)))
+
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
+		      (when (< argc 4)
+			(printf (string "Usage: ./main <buffer_size> <#producers> <#consumers>\\n"))
+			(exit 1))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
-		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
 		      
+		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
+
+		      (do0
+		       (srand 999)
+			  (do0
+			   ,@(loop for e in `(buf_size numProducers numConsumers)
+				   and e-i from 1
+				   collect
+				   `(setf ,e (atoi (aref argv ,e-i))))))
+
+		      (pthread_mutex_init &mutex nullptr)
+		      (pthread_cond_init &modify nullptr)
+		      (setf buffer (static_cast<uint32_t*> (malloc (* buf_size
+								      (sizeof uint32_t))))
+			    )
+		      "pthread_t prods[numProducers], cons[numConsumers];"
+		      "uint32_t threadIds[numConsumers], i;"
+		      (dotimes (i numProducers)
+			(pthread_create (+ prods i)
+					nullptr
+					producer
+					nullptr))
+		      (dotimes (i numConsumers)
+			(setf (aref threadIds i) i)
+			(pthread_create (+ cons i)
+					nullptr
+					consumer
+					(+ threadIds i)))
+		      (do0
+		       ,(lprint :msg "wait for threads to finish")
+		       (dotimes (i numProducers)
+			 (pthread_join (aref prods i) nullptr))
+		       (dotimes (i numConsumers)
+			 (pthread_join (aref cons i) nullptr)))
 		      ,(lprint :msg "leave program")
 		      (return 0))))
 
