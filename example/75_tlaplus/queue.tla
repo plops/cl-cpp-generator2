@@ -1,4 +1,4 @@
--- MODULE queue --
+-- MODULE Queue --
 
 EXTENDS Naturals, Sequences, FiniteSets
 
@@ -26,4 +26,25 @@ Wait(t) == /\ waitSet' = waitSet \cup {t}
 
 
 Put(t,d) ==
-	 \/ /\ Len(buffer)
+	 \/ /\ Len(buffer) < BufCapacity
+	    /\ buffer' = Append(buffer, d)
+	    /\ Notify
+	 \/ /\ Len(buffer) = BufCapacity
+	    /\ Wait(t)
+
+Get(t) ==
+       \/ /\ buffer # <<>>
+          /\ buffer' = Tail(buffer)
+	  /\ Notify
+       \/ /\ buffer = <<>>
+          /\ Wait(t)
+
+
+Init == /\ buffer = <<>>
+        /\ waitSet = {}
+
+
+Next == \E t \in RunningThreads: \/ /\ t \in Producers
+     	     	 		    /\ Put(t,t)
+				 \/ /\ t \in Consumers
+				    /\ Get(t)
