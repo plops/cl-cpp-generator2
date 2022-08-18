@@ -40,6 +40,8 @@ vec4 Truchet(vec2 p, vec3 col) {
     (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
   }
   if ((1) == (1)) {
+    // DEBUG: visualize edge of tile
+    ;
     if (((((0.490)) < (p.x)) || ((p.x) < ((-0.490))) || (((0.490)) < (p.y)) ||
          ((p.y) < ((-0.490))))) {
       return vec4((1.0), (1.0), (1.0), (1.0));

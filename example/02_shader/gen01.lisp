@@ -77,7 +77,7 @@
 		      (when (== 1 1)
 			,(let ((tile-border .01d0))
 			   `(do0
-			     ;; DEBUG: visualize edge of tile
+			     (comments "DEBUG: visualize edge of tile")
 			     (when (or ,@(loop for e in `(x y)
 					       appending
 					       `((< ,(- .5 tile-border) (dot p ,e))
