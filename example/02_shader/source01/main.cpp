@@ -9,6 +9,7 @@ vec4 Truchet(vec2 p, vec3 col) {
   vec2 id = floor(p);
   float n = Hash21(id);
   vec3 col2 = vec3((0.));
+  float depth2 = (0.);
   float d = (0.);
   p = ((fract(p)) - ((0.50)));
   if ((n) < ((0.50))) {
@@ -18,25 +19,29 @@ vec4 Truchet(vec2 p, vec3 col) {
     // circle around top-right
     ;
     vec2 cp = ((p) + ((-0.50)));
-    float a = (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
-    (col2) += (((a) * (col) *
-                (smoothstep((1.00e-2), (-1.00e-2),
-                            ((abs(((length(((p) + ((-0.50))))) - ((0.50))))) -
-                             ((5.00e-2)))))));
+    float depth =
+        (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
+    float contour = smoothstep(
+        (1.00e-2), (-1.00e-2),
+        ((abs(((length(((p) + ((-0.50))))) - ((0.50))))) - ((5.00e-2))));
+    (depth2) += (((depth) * (contour)));
+    (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
   }
   {
     // circle around btm-left
     ;
     vec2 cp = ((p) + ((0.50)));
-    float a = (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
-    (col2) += (((a) * (col) *
-                (smoothstep((1.00e-2), (-1.00e-2),
-                            ((abs(((length(((p) + ((0.50))))) - ((0.50))))) -
-                             ((5.00e-2)))))));
+    float depth =
+        (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
+    float contour = smoothstep(
+        (1.00e-2), (-1.00e-2),
+        ((abs(((length(((p) + ((0.50))))) - ((0.50))))) - ((5.00e-2))));
+    (depth2) += (((depth) * (contour)));
+    (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
   }
   if (((((0.490)) < (p.x)) || ((p.x) < ((-0.490))) || (((0.490)) < (p.y)) ||
        ((p.y) < ((-0.490))))) {
-    (col2) += ((1.0));
+    (col2) += (depth2);
   }
   return vec4(col2, d);
 }
