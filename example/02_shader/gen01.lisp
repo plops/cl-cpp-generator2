@@ -9,7 +9,7 @@
     (ensure-directories-exist (asdf:system-relative-pathname
 			       'cl-cpp-generator2
 			       *source-dir*))
-    
+
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"main.cpp"
@@ -22,16 +22,29 @@
 		      (setf p (- (fract p)
 				 .5d0))
 		      (let ((d 0d0)
-			    ;; edge blur
-			    (w .01d0)
-			     ;;distance to center
+			    ;;distance to center
 			    (cd (length p))
-			    
 			    (col (vec3 0d0)))
 			(declare (type float d cd w)
 				 (type vec3 col)))
 					;(setf col.rg p)
-		      (incf col (smoothstep w -w (- cd .5d0)))
+		      ,(let* ((edge-blur .1)
+			      (circle-thickness .05))
+			 `(incf col (smoothstep ,edge-blur
+						,(* -1 edge-blur)
+						(- (abs (- cd .5d0))
+						   ,circle-thickness)
+						)))
+
+		      ,(let ((tile-border .01))
+			 `(do0
+			 ;; DEBUG: visualize edge of tile
+			   (when (or ,@(loop for e in `(x y)
+					     appending
+					     `((< ,(- .5 tile-border) (dot p ,e))
+					       (< (dot p ,e) ,(- tile-border .5)))))
+			   (incf col 1d0))
+			 ))
 		      (return (vec4 col d)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)

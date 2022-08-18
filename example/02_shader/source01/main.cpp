@@ -6,7 +6,11 @@ vec4 Truchet(vec2 p) {
   float cd = length(p);
   vec3 col = vec3((0.));
   (col) += (smoothstep((0.10f), (-0.10f),
-                       ((abs(((cd) - ((0.50))))) - ((2.00e-2f)))));
+                       ((abs(((cd) - ((0.50))))) - ((5.00e-2f)))));
+  if (((((0.490f)) < (p.x)) || ((p.x) < ((-0.490f))) || (((0.490f)) < (p.y)) ||
+       ((p.y) < ((-0.490f))))) {
+    (col) += ((1.0));
+  }
   return vec4(col, d);
 }
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
