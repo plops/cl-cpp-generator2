@@ -18,7 +18,7 @@ vec4 Truchet(vec2 p, vec3 col) {
     // circle around top-right
     ;
     vec2 cp = ((p) + ((-0.50)));
-    float a = (((0.50)) + ((((0.50)) * (sin(atan(cp.y, cp.x))))));
+    float a = (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
     (col2) += (((a) * (col) *
                 (smoothstep((1.00e-2), (-1.00e-2),
                             ((abs(((length(((p) + ((-0.50))))) - ((0.50))))) -
@@ -28,7 +28,7 @@ vec4 Truchet(vec2 p, vec3 col) {
     // circle around btm-left
     ;
     vec2 cp = ((p) + ((0.50)));
-    float a = (((0.50)) + ((((0.50)) * (sin(atan(cp.y, cp.x))))));
+    float a = (((0.50)) + ((((0.50)) * (cos((((2.0)) * (atan(cp.y, cp.x))))))));
     (col2) += (((a) * (col) *
                 (smoothstep((1.00e-2), (-1.00e-2),
                             ((abs(((length(((p) + ((0.50))))) - ((0.50))))) -

@@ -55,7 +55,7 @@
 
 				     (comments ,(format nil "circle around ~a" name))
 				     (let ((cp ,circle-center)
-					   (a (+ .5d0 (* .5d0 (sin (atan cp.y cp.x))))))
+					   (a (+ .5d0 (* .5d0 (cos (* 2d0 (atan cp.y cp.x)))))))
 				       (declare (type vec2 cp)
 						(type float a))
 				       ,(let* ((edge-blur .01d0)
@@ -88,10 +88,12 @@
 				 (type vec3 col))
 			(*= uv 3d0)
 			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)))
-			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0))))
+			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)))
+			      )
 			  (declare (type vec4 t1 t2))
 			  (setf col t1.rgb)
-			  (incf col t2.rgb))
+			  (incf col t2.rgb)
+			  )
 			(setf fragColor (vec4 col 1d0))))))))
 
 
