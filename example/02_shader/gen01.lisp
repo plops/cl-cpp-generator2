@@ -4,12 +4,17 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (progn
-    (defparameter *source-dir* #P"example/02_shader/source01/")
-    (ensure-directories-exist (asdf:system-relative-pathname
+  (defparameter *source-dir* #P"example/02_shader/source01/")
+  (ensure-directories-exist (asdf:system-relative-pathname
 			       'cl-cpp-generator2
 			       *source-dir*))
 
+  ;; i want all the floats to be double float so that they don't print as 1.0f in the c source
+  ;; this doesn't seem to work, though. i have to define all constants as 1d0
+  (let ((common-lisp::*read-default-float-format* 'double-float))
+    
+    
+    
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"main.cpp"
@@ -21,30 +26,42 @@
 			       (values vec4))
 		      (setf p (- (fract p)
 				 .5d0))
-		      (let ((d 0d0)
-			    ;;distance to center
-			    (cd (length p))
-			    (col (vec3 0d0)))
-			(declare (type float d cd w)
-				 (type vec3 col)))
-					;(setf col.rg p)
-		      ,(let* ((edge-blur .1)
-			      (circle-thickness .05))
-			 `(incf col (smoothstep ,edge-blur
-						,(* -1 edge-blur)
-						(- (abs (- cd .5d0))
-						   ,circle-thickness)
-						)))
 
-		      ,(let ((tile-border .01))
+		      (let ((col (vec3 0d0))
+			    (d 0d0))
+			(declare (type vec3 col)
+				 (type float d)))
+		      ,@(loop for circle-center-def in `((:name top-right :scale -1)
+							 (:name btm-left :scale 1))
+			      collect
+			      (destructuring-bind (&key name scale) circle-center-def
+			       `(progn
+				  (let (
+			    
+				 
+					(cd (length (+ p ,(* scale .5d0))))
+					)
+				    (declare (type float d cd s)
+					     ))
+				  (comments ,(format nil "cd .. distance to ~a" name))
+					;(setf col.rg p)
+				  ,(let* ((edge-blur .1d0)
+					  (circle-thickness .05d0))
+				     `(incf col (smoothstep ,edge-blur
+							    ,(* -1 edge-blur)
+							    (- (abs (- cd .5d0))
+							       ,circle-thickness)
+							    ))))))
+
+		      ,(let ((tile-border .01d0))
 			 `(do0
-			 ;; DEBUG: visualize edge of tile
+			   ;; DEBUG: visualize edge of tile
 			   (when (or ,@(loop for e in `(x y)
 					     appending
 					     `((< ,(- .5 tile-border) (dot p ,e))
 					       (< (dot p ,e) ,(- tile-border .5)))))
-			   (incf col 1d0))
-			 ))
+			     (incf col 1d0))
+			   ))
 		      (return (vec4 col d)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)
