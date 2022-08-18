@@ -1,23 +1,29 @@
 // try to learn how to write shaders based on
 // https://www.youtube.com/watch?v=pmS-F6RJhAk
+float Hash21(vec2 p) {
+  p = fract(((p) * (vec2((123.222222340), (132.3230)))));
+  (p) += (dot(p, ((p) + ((223.120)))));
+  return fract(((p.x) * (p.y)));
+}
 vec4 Truchet(vec2 p) {
-  p = ((fract(p)) - ((0.50)));
+  vec2 id = floor(p);
+  float n = Hash21(id);
   vec3 col = vec3((0.));
   float d = (0.);
-  {
-    float cd = length(((p) + ((-0.50))));
-    // cd .. distance to top-right
-    ;
-    (col) +=
-        (smoothstep((0.10), (-0.10), ((abs(((cd) - ((0.50))))) - ((5.00e-2)))));
+  p = ((fract(p)) - ((0.50)));
+  if ((n) < ((0.50))) {
+    p.xy = vec2(p.x, -p.y);
   }
-  {
-    float cd = length(((p) + ((0.50))));
-    // cd .. distance to btm-left
-    ;
-    (col) +=
-        (smoothstep((0.10), (-0.10), ((abs(((cd) - ((0.50))))) - ((5.00e-2)))));
-  }
+  // circle around top-right
+  ;
+  (col) += (smoothstep(
+      (1.00e-2), (-1.00e-2),
+      ((abs(((length(((p) + ((-0.50))))) - ((0.50))))) - ((5.00e-2)))));
+  // circle around btm-left
+  ;
+  (col) += (smoothstep(
+      (1.00e-2), (-1.00e-2),
+      ((abs(((length(((p) + ((0.50))))) - ((0.50))))) - ((5.00e-2)))));
   if (((((0.490)) < (p.x)) || ((p.x) < ((-0.490))) || (((0.490)) < (p.y)) ||
        ((p.y) < ((-0.490))))) {
     (col) += ((1.0));
