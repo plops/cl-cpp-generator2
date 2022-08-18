@@ -49,18 +49,23 @@
 							 (:name btm-left :scale 1))
 			      collect
 			      (destructuring-bind (&key name scale) circle-center-def
-				(let ((corner-distance `(length (+ p ,(* scale .5d0)))))
-				  `(do0
+				(let* ((circle-center `(+ p ,(* scale .5d0)))
+				       (corner-distance `(length ,circle-center)))
+				  `(progn
 
-				    (comments ,(format nil "circle around ~a" name))
-					;(setf col.rg p)
-				    ,(let* ((edge-blur .01d0)
-					    (circle-thickness .05d0))
-				       `(incf col2 (* col (smoothstep ,edge-blur
-								      ,(* -1 edge-blur)
-								      (- (abs (- ,corner-distance .5d0))
-									 ,circle-thickness)
-								      ))))))))
+				     (comments ,(format nil "circle around ~a" name))
+				     (let ((cp ,circle-center)
+					   (a (+ .5d0 (* .5d0 (sin (atan cp.y cp.x))))))
+				       (declare (type vec2 cp)
+						(type float a))
+				       ,(let* ((edge-blur .01d0)
+					       (circle-thickness .05d0))
+					  `(incf col2 (* a col (smoothstep ,edge-blur
+									   ,(* -1 edge-blur)
+									   (- (abs (- ,corner-distance .5d0))
+									      ,circle-thickness)
+									   )))))
+				     ))))
 
 		      ,(let ((tile-border .01d0))
 			 `(do0
@@ -82,9 +87,11 @@
 			(declare (type vec2 uv)
 				 (type vec3 col))
 			(*= uv 3d0)
-			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0))))
-			  (declare (type vec4 t1))
-			  (setf col t1.rgb))
+			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)))
+			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0))))
+			  (declare (type vec4 t1 t2))
+			  (setf col t1.rgb)
+			  (incf col t2.rgb))
 			(setf fragColor (vec4 col 1d0))))))))
 
 
