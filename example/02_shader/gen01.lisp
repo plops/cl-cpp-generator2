@@ -28,16 +28,17 @@
 			    )
 		      (incf p ("dot" p (+ p 223.12d0)))
 		      (return (fract (* p.x p.y))))
-		    (defun Truchet (p)
+		    (defun Truchet (p col)
 		      (declare (type vec2 p)
+			       (type vec3 col)
 			       (values vec4))
-		      
+
 
 		      (let ((id (floor p))
 			    (n (Hash21 id))
-			    (col (vec3 0d0))
+			    (col2 (vec3 0d0))
 			    (d 0d0))
-			(declare (type vec3 col)
+			(declare (type vec3 col2)
 				 (type vec2 id)
 				 (type float d n)))
 		      (setf p (- (fract p)
@@ -49,17 +50,17 @@
 			      collect
 			      (destructuring-bind (&key name scale) circle-center-def
 				(let ((corner-distance `(length (+ p ,(* scale .5d0)))))
-				 `(do0
-				    
+				  `(do0
+
 				    (comments ,(format nil "circle around ~a" name))
 					;(setf col.rg p)
 				    ,(let* ((edge-blur .01d0)
 					    (circle-thickness .05d0))
-				       `(incf col (smoothstep ,edge-blur
-							      ,(* -1 edge-blur)
-							      (- (abs (- ,corner-distance .5d0))
-								 ,circle-thickness)
-							      )))))))
+				       `(incf col2 (* col (smoothstep ,edge-blur
+								      ,(* -1 edge-blur)
+								      (- (abs (- ,corner-distance .5d0))
+									 ,circle-thickness)
+								      ))))))))
 
 		      ,(let ((tile-border .01d0))
 			 `(do0
@@ -68,9 +69,9 @@
 					     appending
 					     `((< ,(- .5 tile-border) (dot p ,e))
 					       (< (dot p ,e) ,(- tile-border .5)))))
-			     (incf col 1d0))
+			     (incf col2 1d0))
 			   ))
-		      (return (vec4 col d)))
+		      (return (vec4 col2 d)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)
 			       (type "in vec2" fragCoord))
@@ -81,7 +82,7 @@
 			(declare (type vec2 uv)
 				 (type vec3 col))
 			(*= uv 3d0)
-			(let ((t1 (Truchet uv)))
+			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0))))
 			  (declare (type vec4 t1))
 			  (setf col t1.rgb))
 			(setf fragColor (vec4 col 1d0))))))))
