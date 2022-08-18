@@ -74,16 +74,17 @@
 							   contour)))))
 				     ))))
 
-		      ,(let ((tile-border .01d0))
-			 `(do0
-			   ;; DEBUG: visualize edge of tile
-			   (when (or ,@(loop for e in `(x y)
-					     appending
-					     `((< ,(- .5 tile-border) (dot p ,e))
-					       (< (dot p ,e) ,(- tile-border .5)))))
-			     (incf col2 depth2))
-			   ))
-		      (return (vec4 col2 d)))
+		      (when (== 1 1)
+			,(let ((tile-border .01d0))
+			   `(do0
+			     ;; DEBUG: visualize edge of tile
+			     (when (or ,@(loop for e in `(x y)
+					       appending
+					       `((< ,(- .5 tile-border) (dot p ,e))
+						 (< (dot p ,e) ,(- tile-border .5)))))
+			       (return (vec4 1d0 1d0 1d0 1d0)))
+			     )))
+		      (return (vec4 col2 depth2)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)
 			       (type "in vec2" fragCoord))
@@ -98,8 +99,10 @@
 			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)))
 			      )
 			  (declare (type vec4 t1 t2))
-			  (setf col t1.rgb)
-			  (incf col t2.rgb)
+			  (when (< t2.a t1.a)
+			    (incf col t1.rgb))
+			  (when (< t1.a t2.a)
+			    (incf col t2.rgb))
 			  )
 			(setf fragColor (vec4 col 1d0))))))))
 

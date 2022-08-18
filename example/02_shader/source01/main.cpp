@@ -39,11 +39,13 @@ vec4 Truchet(vec2 p, vec3 col) {
     (depth2) += (((depth) * (contour)));
     (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
   }
-  if (((((0.490)) < (p.x)) || ((p.x) < ((-0.490))) || (((0.490)) < (p.y)) ||
-       ((p.y) < ((-0.490))))) {
-    (col2) += (depth2);
+  if ((1) == (1)) {
+    if (((((0.490)) < (p.x)) || ((p.x) < ((-0.490))) || (((0.490)) < (p.y)) ||
+         ((p.y) < ((-0.490))))) {
+      return vec4((1.0), (1.0), (1.0), (1.0));
+    }
   }
-  return vec4(col2, d);
+  return vec4(col2, depth2);
 }
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   vec2 uv =
@@ -52,7 +54,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   uv *= ((3.0));
   vec4 t1 = Truchet(uv, vec3((1.0), (0.), (0.)));
   vec4 t2 = Truchet(((uv) + ((0.50))), vec3((0.), (1.0), (0.)));
-  col = t1.rgb;
-  (col) += (t2.rgb);
+  if ((t2.a) < (t1.a)) {
+    (col) += (t1.rgb);
+  }
+  if ((t1.a) < (t2.a)) {
+    (col) += (t2.rgb);
+  }
   fragColor = vec4(col, (1.0));
 }
