@@ -99,6 +99,7 @@
 
 		    (defun append (value)
 		      (declare (type uint32_t value))
+		      ,(lprint :msg "append" :vars `(value))
 		      (setf (aref buffer fillIndex)
 			    value
 			    fillIndex (% (+ fillIndex 1)
@@ -106,6 +107,7 @@
 		      (incf count))
 		    (defun head ()
 		      (declare (values uint32_t))
+		      ,(lprint :msg "head")
 		      (let ((tmp (aref buffer useIndex)))
 			(setf 
 			 useIndex (% (+ useIndex 1)
