@@ -28,9 +28,20 @@
 			    )
 		      (incf p ("dot" p (+ p 223.12d0)))
 		      (return (fract (* p.x p.y))))
-		    (defun Truchet (p col)
+		    (defun Length (p k)
+		      (declare (values float )
+			       (type vec2 p)
+			       (type float k))
+		      (comments "minkowsky distance")
+		      (setf p (abs p))
+		      (return (pow
+			       (+ (pow p.x k)
+				  (pow p.y k))
+			       (/ 1d0 k))))
+		    (defun Truchet (p col curve)
 		      (declare (type vec2 p)
 			       (type vec3 col)
+			       (type float curve)
 			       (values vec4))
 
 
@@ -51,7 +62,7 @@
 			      collect
 			      (destructuring-bind (&key name scale) circle-center-def
 				(let* ((circle-center `(+ p ,(* scale .5d0)))
-				       (corner-distance `(length ,circle-center)))
+				       (corner-distance `(Length ,circle-center curve)))
 				  `(progn
 
 				     (comments ,(format nil "circle around ~a" name))
@@ -95,8 +106,10 @@
 			(declare (type vec2 uv)
 				 (type vec3 col))
 			(*= uv 3d0)
-			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)))
-			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)))
+			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)
+					   2d0))
+			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)
+					   1d0))
 			      )
 			  (declare (type vec4 t1 t2))
 			  (when (< t2.a t1.a)
