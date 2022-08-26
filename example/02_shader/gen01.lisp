@@ -38,10 +38,10 @@
 			       (+ (pow p.x k)
 				  (pow p.y k))
 			       (/ 1d0 k))))
-		    (defun Truchet (p col curve)
+		    (defun Truchet (p col curve thickness pattern)
 		      (declare (type vec2 p)
 			       (type vec3 col)
-			       (type float curve)
+			       (type float curve thickness pattern)
 			       (values vec4))
 
 
@@ -67,12 +67,14 @@
 
 				     (comments ,(format nil "circle around ~a" name))
 				     (let ((cp ,circle-center)
-					   (depth (+ .5d0 (* .5d0 (cos (* 2d0 (atan cp.y cp.x))))))
+					   (a (atan cp.y cp.x))
+					   (depth (+ .5d0 (* .5d0 (cos (* 2d0 a)))))
 					   )
-				       (declare (type vec2 cp)
-						(type float depth ))
+				       (declare (type vec2 cp )
+						(type float depth a ))
 				       ,(let* ((edge-blur .01d0)
-					       (circle-thickness .05d0))
+					       (circle-thickness `thickness ;.05d0
+						 ))
 					  `(let ((contour (smoothstep ,edge-blur
 								      ,(* -1 edge-blur)
 								      (- (abs (- ,corner-distance .5d0))
@@ -80,9 +82,11 @@
 								      )))
 					     (declare (type float contour))
 					     (incf depth2 (* depth contour))
+					     
 					     (incf col2 (* (mix .2d0 1d0 depth)
 							   col
-							   contour)))))
+							   contour))
+					     (*= col2 (+ 1d0 (* pattern (sin (* 30d0 a))))))))
 				     ))))
 
 		      (when (== 1 1)
@@ -95,6 +99,7 @@
 						 (< (dot p ,e) ,(- tile-border .5)))))
 			       (return (vec4 1d0 1d0 1d0 1d0)))
 			     )))
+		      
 		      (return (vec4 col2 depth2)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)
@@ -105,18 +110,30 @@
 			    (col (vec3 0d0)))
 			(declare (type vec2 uv)
 				 (type vec3 col))
-			(*= uv 3d0)
-			(let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)
-					   2d0))
-			      (t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)
-					   1d0))
-			      )
-			  (declare (type vec4 t1 t2))
-			  (when (< t2.a t1.a)
-			    (incf col t1.rgb))
-			  (when (< t1.a t2.a)
-			    (incf col t2.rgb))
-			  )
+			(let ((cd (length uv)) ;; distance to center of screen
+			      (w (mix .1d0 0.01d0 (smoothstep 0d0 .5d0 cd)) ;; center: .1 edge of screen: 0
+				))
+			  (declare (type float cd w))
+			  (*= uv 3d0)
+			  (let ((t1 (Truchet uv (vec3 1d0 0d0 0d0)
+					     2d0  ;; curve
+					     w
+					     1d0
+					     ))
+				(t2 (Truchet (+ uv .5d0) (vec3 0d0 1d0 0d0)
+					     1d0 ;; curve
+					     .1d0 ;; thickness
+					     0d0
+					     )))
+			    (declare (type vec4 t1 t2)
+				     )
+			   
+
+			    (when (< t2.a t1.a)
+			      (incf col t1.rgb))
+			    (when (< t1.a t2.a)
+			      (incf col t2.rgb))
+			    ))
 			(setf fragColor (vec4 col 1d0))))))))
 
 
