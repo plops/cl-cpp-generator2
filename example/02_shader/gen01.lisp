@@ -74,19 +74,25 @@
 						(type float depth a ))
 				       ,(let* ((edge-blur .01d0)
 					       (circle-thickness `thickness ;.05d0
-						 ))
+						 )
+					       (edge-distance `(- (abs (- ,corner-distance .5d0))
+								  ,circle-thickness)))
 					  `(let ((contour (smoothstep ,edge-blur
 								      ,(* -1 edge-blur)
-								      (- (abs (- ,corner-distance .5d0))
-									 ,circle-thickness)
+								      ,edge-distance
 								      )))
 					     (declare (type float contour))
 					     (incf depth2 (* depth contour))
-					     
+
 					     (incf col2 (* (mix .2d0 1d0 depth)
 							   col
 							   contour))
-					     (*= col2 (+ 1d0 (* pattern (sin (* 30d0 a))))))))
+					     ,(let ((check `(- (* 2d0 (mod (+ id.x id.y)
+									   2d0))
+							       1d0)))
+					      `(*= col2 (+ 1d0 (* .3d0 pattern (sin (+ (* ,check 30d0 a)
+										       (* 100d0 ,edge-distance)
+										       (* -5d0 iTime))))))))))
 				     ))))
 
 		      (when (== 1 1)
@@ -99,7 +105,7 @@
 						 (< (dot p ,e) ,(- tile-border .5)))))
 			       (return (vec4 1d0 1d0 1d0 1d0)))
 			     )))
-		      
+
 		      (return (vec4 col2 depth2)))
 		    (defun mainImage (fragColor fragCoord)
 		      (declare (type "out vec4" fragColor)
@@ -127,7 +133,7 @@
 					     )))
 			    (declare (type vec4 t1 t2)
 				     )
-			   
+
 
 			    (when (< t2.a t1.a)
 			      (incf col t1.rgb))
