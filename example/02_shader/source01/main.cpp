@@ -32,15 +32,14 @@ vec4 Truchet(vec2 p, vec3 col, float curve, float thickness, float pattern) {
         ((abs(((Length(((p) + ((-0.50))), curve)) - ((0.50))))) - (thickness)));
     (depth2) += (((depth) * (contour)));
     (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
-    col2 *= ((
-        ((1.0)) +
-        ((((0.30)) * (pattern) *
-          (sin((((((((((2.0)) * (mod(((id.x) + (id.y)), (2.0))))) - ((1.0)))) *
-                  ((30.)) * (a))) +
-                ((((1.00e+2)) *
-                  (((abs(((Length(((p) + ((-0.50))), curve)) - ((0.50))))) -
-                    (thickness))))) +
-                ((((-5.0)) * (iTime))))))))));
+    col2 *=
+        ((((1.0)) +
+          ((((0.30)) * (pattern) *
+            (sin((((((1.0)) * ((30.)) * (a))) +
+                  ((((1.00e+2)) *
+                    (((abs(((Length(((p) + ((-0.50))), curve)) - ((0.50))))) -
+                      (thickness))))) +
+                  ((((-5.0)) * (iTime))))))))));
   }
   {
     // circle around btm-left
@@ -53,15 +52,14 @@ vec4 Truchet(vec2 p, vec3 col, float curve, float thickness, float pattern) {
         ((abs(((Length(((p) + ((0.50))), curve)) - ((0.50))))) - (thickness)));
     (depth2) += (((depth) * (contour)));
     (col2) += (((mix((0.20), (1.0), depth)) * (col) * (contour)));
-    col2 *= ((
-        ((1.0)) +
-        ((((0.30)) * (pattern) *
-          (sin((((((((((2.0)) * (mod(((id.x) + (id.y)), (2.0))))) - ((1.0)))) *
-                  ((30.)) * (a))) +
-                ((((1.00e+2)) *
-                  (((abs(((Length(((p) + ((0.50))), curve)) - ((0.50))))) -
-                    (thickness))))) +
-                ((((-5.0)) * (iTime))))))))));
+    col2 *=
+        ((((1.0)) +
+          ((((0.30)) * (pattern) *
+            (sin((((((-1.0)) * ((30.)) * (a))) +
+                  ((((1.00e+2)) *
+                    (((abs(((Length(((p) + ((0.50))), curve)) - ((0.50))))) -
+                      (thickness))))) +
+                  ((((-5.0)) * (iTime))))))))));
   }
   if ((1) == (1)) {
     // DEBUG: visualize edge of tile
