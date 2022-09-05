@@ -24,3 +24,18 @@ sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sy
 
 - glfw example https://www.youtube.com/watch?v=eoIuqLNvzFs
 - interactive c++ for datascience https://www.youtube.com/watch?v=23E0S3miWB0
+  - incremental compilation
+    - invalid code is discarded
+    - omit semicolon to print result
+    - cling::Value V; to store values
+  - libClang -> ast
+  - transfomrations by cling
+  - libClang -> ir
+  - small set of extensions for interactive explaration
+  - xeus-cling maintained by some company
+  - Symengine print nice math (symbolic computation)
+  - interactivity ?std::vector
+  - visual widgets xw::slider<double>
+  - more in this talk: S. Corlay Deep dive into xeus-based clin kernel for jupyter
+      - https://compiler-research.org/assets/presentations/S_Corlay-CaaS_Xeus-Cling.pdf
+      - https://www.youtube.com/watch?v=kx3wvKk4Qss
