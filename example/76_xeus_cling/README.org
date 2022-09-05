@@ -43,4 +43,4 @@ sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sy
   - relaunch only part of a simulation
     - libpng writer
     - game of life example
-    
+  - stop at 31:00
