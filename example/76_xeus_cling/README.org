@@ -1,0 +1,25 @@
+
+- https://github.com/pojntfx/xeus-cling-binaries
+#+begin_example
+
+curl \
+  -L -o /tmp/xeus-cling.tar.gz \
+  https://github.com/pojntfx/xeus-cling-binaries/releases/download/latest/xeus-cling.$(uname -m).tar.gz
+
+# 674MB
+# 2.1GB extracted
+
+
+# Extract the package to /usr/local/xeus-cling. You must install in this prefix.
+XEUS_PREFIX=/usr/local/xeus-cling
+sudo mkdir -p ${XEUS_PREFIX}
+sudo tar -C ${XEUS_PREFIX} -xzf /tmp/xeus-cling.tar.gz
+
+# Install the kernels
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp11 --sys-prefix
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp14 --sys-prefix
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sys-prefix
+#+end_example
+
+
+- glfw example https://www.youtube.com/watch?v=eoIuqLNvzFs
