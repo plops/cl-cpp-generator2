@@ -88,8 +88,8 @@
 							   col
 							   contour))
 					     ,(let ((check (* -1d0 scale) #+nil `(- (* 2d0 (mod (+ id.x id.y)
-											 2d0))
-									     1d0)))
+												2d0))
+										    1d0)))
 						`(*= col2 (+ 1d0 (* .3d0 pattern (sin (+ (* ,check 30d0 a)
 											 (* 100d0 ,edge-distance)
 											 (* -5d0 iTime))))))))))
