@@ -39,3 +39,8 @@ sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sy
   - more in this talk: S. Corlay Deep dive into xeus-based clin kernel for jupyter
       - https://compiler-research.org/assets/presentations/S_Corlay-CaaS_Xeus-Cling.pdf
       - https://www.youtube.com/watch?v=kx3wvKk4Qss
+  - cling supports cuda (with a second compiler instance)
+  - relaunch only part of a simulation
+    - libpng writer
+    - game of life example
+    
