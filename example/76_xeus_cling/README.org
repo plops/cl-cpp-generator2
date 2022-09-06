@@ -68,7 +68,7 @@ mamba install jupyterlab -c conda-forge
 
 jupyter-lab --no-browser
   #+end_example
-  - note this fails with some C++ library error
+  - note this fails with some C++ library error on arch linux hetzner
 
   - connect to jupyter
 
