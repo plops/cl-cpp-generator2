@@ -53,4 +53,16 @@ sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sy
 curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
 bash Mambaforge-$(uname)-$(uname -m).sh
 
+# maybe don't enable base environment: conda config --set auto_activate_base false
+
 #+end_example
+
+- install xeus-cling in a new environment
+  #+begin_example
+mamba create -n cling
+source activate cling
+
+mamba install xeus-cling -c conda-forge
+mamba install jupyterlab -c conda-forge
+
+  #+end_example
