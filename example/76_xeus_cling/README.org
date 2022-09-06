@@ -65,4 +65,13 @@ source activate cling
 mamba install xeus-cling -c conda-forge
 mamba install jupyterlab -c conda-forge
 
+
+jupyter-lab --no-browser
   #+end_example
+
+  - connect to jupyter
+
+ #+begin_example
+ssh hetzner -L 8888:localhost:8888
+
+ #+end_example
