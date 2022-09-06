@@ -44,3 +44,13 @@ sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sy
     - libpng writer
     - game of life example
   - stop at 31:00
+
+
+
+- install mamba https://github.com/conda-forge/miniforge#mambaforge
+#+begin_example
+
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+bash Mambaforge-$(uname)-$(uname -m).sh
+
+#+end_example
