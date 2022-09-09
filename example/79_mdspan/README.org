@@ -1,0 +1,13 @@
+
+- install mdspan
+
+#+begin_example
+cd ~/src
+git clone https://github.com/kokkos/mdspan
+cd mdspan
+mkdir b
+cd b
+cmake ..
+make
+sudo make install
+#+end_example
