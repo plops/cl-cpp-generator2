@@ -118,3 +118,6 @@ chmod +x cpt.py
 - after cling is build install jupyter according to the README.md
   here:
   https://github.com/root-project/cling/blob/master/tools/Jupyter
+
+-    gcc 11 has c++23 support, my fedora has gcc 12.2.1 (as of sep 9 2022)
+-  clang has (in various degrees of partial) c++2b support in clang 13,14 and 1; fedora has 14.0.5
