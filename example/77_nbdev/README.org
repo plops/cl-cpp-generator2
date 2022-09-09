@@ -1,0 +1,2 @@
+- try to use nbdev_export with an example xeus_cling notebook (from
+  https://www.youtube.com/watch?v=p3PTYU2xEaE )
