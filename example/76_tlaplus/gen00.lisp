@@ -14,56 +14,56 @@
 				   )
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (defun lprint (&key (msg "") (vars nil))
-  #+nil `(comments ,msg)
-  #-nil`(progn				;do0
-	  " "
-	  (do0				;let
-	   #+nil ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
-		  )
+    #+nil `(comments ,msg)
+    #-nil`(progn				;do0
+	    " "
+	    (do0				;let
+	     #+nil ((lock (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+		    )
 
-	   (do0
+	     (do0
 					;("std::setprecision" 3)
-	    ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
+	      ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
 
-	    "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-	    (<< "std::cout"
-		;;"std::endl"
-		("std::setw" 10)
-		#+nil (dot ("std::chrono::high_resolution_clock::now")
-			   (time_since_epoch)
-			   (count)
-			   )
-		(dot timestamp
-		     (count))
+	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	      (<< "std::cout"
+		  ;;"std::endl"
+		  ("std::setw" 10)
+		  #+nil (dot ("std::chrono::high_resolution_clock::now")
+			     (time_since_epoch)
+			     (count)
+			     )
+		  (dot timestamp
+		       (count))
 					;,(g `_start_time)
 
 					;(string " ")
 					;(dot now (period))
-		(string " ")
-		("std::this_thread::get_id")
-		(string " ")
-		__FILE__
-		(string ":")
-		__LINE__
-		(string " ")
-		__func__
-		(string " ")
-		(string ,msg)
-		(string " ")
-		,@(loop for e in vars appending
-			`(("std::setw" 8)
+		  (string " ")
+		  ("std::this_thread::get_id")
+		  (string " ")
+		  __FILE__
+		  (string ":")
+		  __LINE__
+		  (string " ")
+		  __func__
+		  (string " ")
+		  (string ,msg)
+		  (string " ")
+		  ,@(loop for e in vars appending
+			  `(("std::setw" 8)
 					;("std::width" 8)
-			  (string ,(format nil " ~a='" (emit-c :code e)))
-			  ,e
-			  (string "'")))
-		"std::endl"
-		"std::flush")))))
+			    (string ,(format nil " ~a='" (emit-c :code e)))
+			    ,e
+			    (string "'")))
+		  "std::endl"
+		  "std::flush")))))
   (progn
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
 
-    (defparameter *source-dir* #P"example/75_tlaplus/source/")
+    (defparameter *source-dir* #P"example/76_tlaplus/source/")
     (ensure-directories-exist (asdf:system-relative-pathname
 			       'cl-cpp-generator2
 			       *source-dir*))
@@ -72,7 +72,7 @@
 		   (merge-pathnames #P"main.cpp"
 				    *source-dir*))
 		  `(do0
-		    
+
 		    (include
 					;<tuple>
 					;<mutex>
@@ -109,13 +109,13 @@
 		      (declare (values uint32_t))
 		      ,(lprint :msg "head")
 		      (let ((tmp (aref buffer useIndex)))
-			(setf 
+			(setf
 			 useIndex (% (+ useIndex 1)
 				     buf_size))
 			(decf count)
 			(return tmp)))
 
-		    
+
 		    (defun producer (arg)
 		      (declare (type void* arg)
 			       (values void*))
@@ -127,46 +127,46 @@
 				   (magenta 35)
 				   (cyan 36)
 				   (white 37))
-			    collect
-			    (format nil "#define ~a \"~a\""
-				    (string-upcase (format nil "P~a" name))
-				    (format nil "\\033[1;~amp\\033[0m" code)))
+			      collect
+			      (format nil "#define ~a \"~a\""
+				      (string-upcase (format nil "P~a" name))
+				      (format nil "\\033[1;~amp\\033[0m" code)))
 		      (while 1
-			     (pthread_mutex_lock &mutex)
-			     (while (== count buf_size)
-				    (printf PRED)
-				    (fflush stdout)
-				    (pthread_cond_wait &modify &mutex))
-			     (append (% (rand) 10))
-			     (printf PYELLOW)
-			     (fflush stdout)
-			     (pthread_cond_signal &modify)
-			     (pthread_mutex_unlock &mutex)))
+			(pthread_mutex_lock &mutex)
+			(while (== count buf_size)
+			  (printf PRED)
+			  (fflush stdout)
+			  (pthread_cond_wait &modify &mutex))
+			(append (% (rand) 10))
+			(printf PYELLOW)
+			(fflush stdout)
+			(pthread_cond_signal &modify)
+			(pthread_mutex_unlock &mutex)))
 
 		    (defun consumer (arg)
 		      (declare (type void* arg)
 			       (values void*))
 		      ,@(loop for (name code )
-				in `((red 31)
-				     (green 32)
-				     (yellow 33)
-				     (blue 34)
-				     (magenta 35)
-				     (cyan 36)
-				     (white 37))
+			      in `((red 31)
+				   (green 32)
+				   (yellow 33)
+				   (blue 34)
+				   (magenta 35)
+				   (cyan 36)
+				   (white 37))
 			      collect
 			      (format nil "#define ~a \"~a\" "
-				       (string-upcase (format nil "~a" name))
-				       (format nil "\\033[1;~amc%01d\\033[0m" code)))
+				      (string-upcase (format nil "~a" name))
+				      (format nil "\\033[1;~amc%01d\\033[0m" code)))
 		      (let ((id (deref (static_cast<uint32_t*> arg)))
 					;(report (long 0))
 			    )
 			(while 1
-			       (pthread_mutex_lock &mutex)
-			       (while (== 0 count)
-				      (printf RED id)
-				      (fflush stdout)
-				      (pthread_cond_wait &modify &mutex)))
+			  (pthread_mutex_lock &mutex)
+			  (while (== 0 count)
+			    (printf RED id)
+			    (fflush stdout)
+			    (pthread_cond_wait &modify &mutex)))
 			(head)
 			(printf YELLOW id)
 			(fflush stdout)
@@ -181,16 +181,16 @@
 			(printf (string "Usage: ./main <buffer_size> <#producers> <#consumers>\\n"))
 			(exit 1))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
-		      
+
 		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
 
 		      (do0
 		       (srand 999)
-			  (do0
-			   ,@(loop for e in `(buf_size numProducers numConsumers)
-				   and e-i from 1
-				   collect
-				   `(setf ,e (atoi (aref argv ,e-i))))))
+		       (do0
+			,@(loop for e in `(buf_size numProducers numConsumers)
+				and e-i from 1
+				collect
+				`(setf ,e (atoi (aref argv ,e-i))))))
 		      (do0
 		       ,(lprint :msg "initiate mutex and condition variable")
 		       (pthread_mutex_init &mutex nullptr)
@@ -211,7 +211,7 @@
 					  nullptr
 					  consumer
 					  (+ threadIds i))))
-		       
+
 		       (do0
 			,(lprint :msg "start producers" :vars `(numProducers))
 			(dotimes (i numProducers)
@@ -220,7 +220,7 @@
 					  producer
 					  nullptr))))
 
-		      		      
+
 		      (do0
 		       ,(lprint :msg "wait for threads to finish")
 		       (dotimes (i numProducers)
@@ -261,12 +261,12 @@
 	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
 
 	  #+nil (loop for e in `(imgui implot)
-		do
-		(out "find_package( ~a CONFIG REQUIRED )" e))
+		      do
+		      (out "find_package( ~a CONFIG REQUIRED )" e))
 
 	  #+nil (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `("imgui::imgui"
-		 "implot::implot"))
+		     `("imgui::imgui"
+		       "implot::implot"))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")

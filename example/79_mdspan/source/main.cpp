@@ -24,8 +24,7 @@ int main(int argc, char **argv) {
 #if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
   auto vec = std::vector<double>({1, 2, 3, 4, 5, 6, 7, 8});
   stdex::mdspan ms{vec.data(), stdex::extents{2, 2, 2}};
-  auto q =
-      ms(static_cast<long unsigned int>(0), static_cast<long unsigned int>(0));
+  auto q = ms(0, 0);
 #else
   {
 
