@@ -27,10 +27,22 @@
 	".g")
        (cpp
 	(do0
-	 (comments "looks like i have to execute this cell before i can get the includes")
+	 (comments "looks like i have to execute this cell before i can execute the includes")
 	 (let ((a (int 12))
 	       (b (int 32)))
 	   (+ a b))))
+       (cpp
+	(do0
+	 (comments "Clang 9.0.1 (http://root.cern.ch/git/clang.git ddd3a61c4ec7cb9661e8dc9781dc797f70537519) (http://root.cern.ch/git/llvm.git c41338c59334340ee4d85a7c9bbdf49a4f59f76b)")
+	 __amd64__ ;; 1
+	 __linux__ ;; 1
+	 __cplusplus__ ;; 201703L
+	 __SSE__ ;; 1
+	 __SSE2__ ;; 1
+	 __MMX__ ;; 1
+	 __GLIBCXX_FAST_MATH ;; 0
+	 _GLIBCXX_USE_FLOAT128 ;; 1
+	 __VERSION__))
        (cpp
 	".g a")
        (cpp
