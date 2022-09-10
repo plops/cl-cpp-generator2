@@ -122,7 +122,7 @@ cd
 ./cpt.py --create-dev-env Release --with-workdir=./cling-build/ --with-cmake-flags "-G Ninja" --no-test --number-of-cores 4
 ninja
 
-# takes 2h and 1.5GB
+# takes 2h on 2 cores (4 hyperthreads) and 1.5GB
 emacs /home/martin/cling-build/cling-src/utils/benchmark/src/benchmark_register.h 
 # add #include <limits>
 
