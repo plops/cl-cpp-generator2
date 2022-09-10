@@ -142,7 +142,9 @@ jupyter-kernelspec install --user cling-cpp11
 
 jupyter notebook
 
-#include <iostream>
+#include <iostream> // use extra cell for this
+
+
 std::cout << "some output" << std::endl;
 
 int a=12;
