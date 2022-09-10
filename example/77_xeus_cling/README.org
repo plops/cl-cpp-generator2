@@ -136,6 +136,8 @@ pip3 install -e .
 
 jupyter-kernelspec install --user cling-cpp17
 
+export PATH=/tmp/cling-obj/bin:$PATH
+
 jupyter notebook
 
 #include <iostream>
