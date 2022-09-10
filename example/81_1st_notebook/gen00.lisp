@@ -8,6 +8,50 @@
   (ensure-directories-exist (asdf:system-relative-pathname
 			     'cl-cpp-generator2
 			     *source-dir*))
+  (defun lprint (&key (msg "") (vars nil))
+    `(progn				;do0
+	    " "
+	    (do0				;let
+	     #+nil ((lockxxxxxxx+ (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+		    )
+
+	     (do0
+					;("std::setprecision" 3)
+	      ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
+
+	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	      (<< "std::cout"
+		  ;;"std::endl"
+		  ("std::setw" 10)
+		  #+nil (dot ("std::chrono::high_resolution_clock::now")
+			     (time_since_epoch)
+			     (count)
+			     )
+		  (dot timestamp
+		       (count))
+					;,(g `_start_time)
+
+					;(string " ")
+					;(dot now (period))
+		  (string " ")
+		  ("std::this_thread::get_id")
+		  (string " ")
+		  __FILE__
+		  (string ":")
+		  __LINE__
+		  (string " ")
+		  __func__
+		  (string " ")
+		  (string ,msg)
+		  (string " ")
+		  ,@(loop for e in vars appending
+			  `(("std::setw" 8)
+					;("std::width" 8)
+			    (string ,(format nil " ~a='" (emit-c :code e)))
+			    ,e
+			    (string "'")))
+		  "std::endl"
+		  "std::flush")))))
   (let ((notebook-name "main")
 	(idx "00")
 	)
@@ -25,12 +69,24 @@
        (markdown "show all global variables")
        (cpp
 	".g")
+       (markdown "show help for cling commands")
+       (cpp ".help")
+       (markdown "show all typedefs")
+       (cpp ".typedef")
+       (markdown "show all parsed files")
+       (cpp ".files")
+       (markdown "show all parsed files with statistics")
+       (cpp ".fileEx")
+       (markdown "show optimization level")
+       (cpp
+	".O")
        (cpp
 	(do0
 	 (comments "looks like i have to execute this cell before i can execute the includes")
-	 (let ((a (int 12))
-	       (b (int 32)))
-	   (+ a b))))
+	 (do
+	  (let ((_a (int 12))
+		(_b (int 32)))
+	    (+ _a _b)))))
        (cpp
 	(do0
 	 (comments "Clang 9.0.1 (http://root.cern.ch/git/clang.git ddd3a61c4ec7cb9661e8dc9781dc797f70537519) (http://root.cern.ch/git/llvm.git c41338c59334340ee4d85a7c9bbdf49a4f59f76b)")
@@ -46,7 +102,7 @@
 	 __VERSION__))
        ;; .undo [n] tries to undo the last n lines
        (cpp
-	".g a")
+	".g _a")
        (cpp
 	(do0
 	 "//|export"
@@ -60,6 +116,17 @@
 					;  <memory>
 	  )
 	 ))
+       (cpp
+	(do0
+	 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"))
+       (cpp
+	(do0
+	 (setf g_start_time ("std::chrono::high_resolution_clock::now"))))
+       (cpp
+	(progn
+	  (let ((a (int 3))
+		(b (int 44)))
+	    ,(lprint :vars `(a b (+ a b))))))
        (cpp
 	"//|export"
 	(defun main (argc argv)
