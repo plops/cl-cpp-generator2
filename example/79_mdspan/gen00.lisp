@@ -123,13 +123,13 @@
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
-      (let ((dbg "-ggdb -O0 ")
+      (let ((dbg "-ggdb -O0 -std=gnu++2b")
 	    (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
 	    (show-err ;"";
-	      " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
-					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
-
+	     ;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+	      "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+	      
 	      ))
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
@@ -137,12 +137,12 @@
 	  (out "project( mytest LANGUAGES CXX )")
 	  (out "find_package( mdspan REQUIRED )")
 					; (out "set( CMAKE_CXX_COMPILER clang++ )")
-	   (out "set( CMAKE_CXX_COMPILER g++ )")
+	  (out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
-	  (out "set( CMAKE_CXX_STANDARD 23 )")
-				
+	  ;(out "set( CMAKE_CXX_STANDARD 23 )")
+
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
@@ -151,7 +151,7 @@
 	  (out "add_executable( mytest ${SRCS} )")
 	  (out "include_directories( /usr/local/include/  )")
 
-	  ;(out "target_compile_features( mytest PUBLIC cxx_std_23 )")
+					;(out "target_compile_features( mytest PUBLIC cxx_std_23 )")
 
 	  #+nil (loop for e in `(imgui implot)
 		      do
