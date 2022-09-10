@@ -4,7 +4,7 @@
     :maintainer " <kielhorn.martin@gmail.com>"
     :author " <kielhorn.martin@gmail.com>"
     :licence "GPL"
-    :depends-on ("alexandria" "cl-ppcre")
+    :depends-on ("alexandria" "cl-ppcre" "jonathan")
     :serial t
     :components ((:file "package")
 		 (:file "c")) )

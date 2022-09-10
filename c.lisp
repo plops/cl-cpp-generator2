@@ -20,6 +20,69 @@
 (defparameter *file-hashes* (make-hash-table))
 (defparameter *auto-keyword* "auto")
 
+(defun write-notebook (&key nb-file nb-code (std 17))
+  "write xeus-cling C++ jupyter notebook"
+  (let ((tmp (format nil "~a.tmp" nb-file)))
+    (with-output-to-file (s tmp :if-exists :supersede
+				:if-does-not-exist :create)
+      (format s "~a~%"
+	      (jonathan:to-json
+	       `(;; :cells
+		 :|cells|
+		  ,(loop for e in nb-code
+			 collect
+			 (destructuring-bind (name &rest rest) e
+			   (case name
+			     (`markdown `(:cell_type "markdown"
+					  :metadata :empty
+					  :source
+					  ,(loop for p in rest
+						 collect
+						 (format nil "~a~c" p #\Newline))))
+			     (`cpp `(:cell_type "code"
+					:metadata :empty
+					:execution_count :null
+					:outputs ()
+					:source
+					,(loop for p in rest
+					       appending
+					       (let ((tempfn #+sbcl "/dev/shm/cell"
+							     #+ecl (format nil "~a_tmp_cell" nb-file)))
+						 (write-source tempfn p)
+						 (with-open-file (stream (format nil "~a.cpp" tempfn))
+						   (loop for line = (read-line stream nil)
+							 while line
+							 collect
+							 (format nil "~a~c" line #\Newline)))))))
+			     )))
+		  :|metadata| (:|kernelspec| (:|display_name| ,(format nil "C++~a" std)
+					       :|language| ,(format nil "C++~a" std)
+					       :|name| ,(format nil "xcpp~a" std)))
+		  :|nbformat| 4
+		  :|nbformat_minor| 2
+
+		  #+nil
+		  (:metadata (:kernelspec (:display_name "Python 3"
+							     :language "python"
+							     :name "python3"))
+		       :nbformat 4
+		       :nbformat_minor 2)))))
+    #+nil
+    (sb-ext:run-program "/usr/bin/python3" `("-mjson.tool" ,nb-file))
+    #-sbcl
+    (external-program:run
+     "/usr/bin/jq"
+     `("-M" "." ,tmp)
+     :output nb-file
+     :if-output-exists :supersede
+     )
+    #+sbcl
+    (sb-ext:run-program "/usr/bin/jq" `("-M" "." ,tmp)
+			:output nb-file
+			:if-output-exists :supersede)
+    (delete-file tmp)))
+
+
 (defun write-source (name code &key
 				 (dir (user-homedir-pathname))
 				 ignore-hash
