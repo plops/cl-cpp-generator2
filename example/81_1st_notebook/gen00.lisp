@@ -54,20 +54,20 @@
 	     "std::flush")))))
 
   (defun lprint (&key (msg "") (vars nil))
-    `(lprint __FILE__
-	     (string ":")
-	     __LINE__
-	     (string " ")
-	     __func__
-	     (string " ")
-	     (string ,msg)
-	     (string " ")
-	     ,@(loop for e in vars appending
-		     `(("std::setw" 8)
+    `(lprint (curly  __FILE__
+		     (string ":")
+		     ("std::to_string" __LINE__)
+		     (string " ")
+		     __func__
+		     (string " ")
+		     (string ,msg)
+		     (string " ")
+		     ,@(loop for e in vars appending
+			     `(;("std::setw" 8)
 					;("std::width" 8)
-		       (string ,(format nil " ~a='" (emit-c :code e)))
-		       ,e
-		       (string "'")))))
+			       (string ,(format nil " ~a='" (emit-c :code e)))
+			       ("std::to_string" ,e)
+			       (string "'"))))))
   (let ((notebook-name "main")
 	(idx "00")
 	)
@@ -150,20 +150,15 @@
 	      (string " ")
 	      ("std::this_thread::get_id")
 	      (string " ")
-	      __FILE__
-	      (string ":")
-	      __LINE__
-	      (string " ")
-	      __func__
-	      (string " "))
+	      )
 	  (for-range ((elem :type "const auto&")
 		      il)
 		     (<< "std::cout"
-			 ("std::setw" 8)
+
 			 elem) )
 	  (<< "std::cout"
-		  "std::endl"
-		  "std::flush")))
+	      "std::endl"
+	      "std::flush")))
        (cpp
 	(progn
 	  (let ((a (int 3))
