@@ -130,18 +130,24 @@ emacs /home/martin/cling-build/cling-src/utils/benchmark/src/benchmark_register.
 ninja install
 # 936M in /tmp/cling-obj
 
+export PATH=/tmp/cling-obj/bin:$PATH
 
 cd /home/martin/cling-build/cling-src/tools/cling/tools/Jupyter/kernel
 pip3 install -e .
 
 jupyter-kernelspec install --user cling-cpp17
+jupyter-kernelspec install --user cling-cpp11
 
-export PATH=/tmp/cling-obj/bin:$PATH
+
 
 jupyter notebook
 
 #include <iostream>
 std::cout << "some output" << std::endl;
+
+int a=12;
+int b=11;
+a+b
 
   #+end_example
 - after cling is build install jupyter according to the README.md
