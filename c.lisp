@@ -46,10 +46,10 @@
 						:source
 						,(loop for p in rest
 						       appending
-						       (let ((tempfn #+sbcl "/dev/shm/cell"
+						       (let ((tempfn #+sbcl "/dev/shm/cell.cpp"
 								     #+ecl (format nil "~a_tmp_cell" nb-file)))
 							 (write-source tempfn p)
-							 (with-open-file (stream (format nil "~a.cpp" tempfn))
+							 (with-open-file (stream (format nil "~a" tempfn))
 							   (loop for line = (read-line stream nil)
 								 while line
 								 collect
@@ -61,12 +61,12 @@
 		  :|nbformat| 4
 		  :|nbformat_minor| 2
 
-		 #+nil
-		 (:metadata (:kernelspec (:display_name "Python 3"
-							:language "python"
-							:name "python3"))
-			    :nbformat 4
-			    :nbformat_minor 2)))))
+		  #+nil
+		  (:metadata (:kernelspec (:display_name "Python 3"
+							 :language "python"
+							 :name "python3"))
+			     :nbformat 4
+			     :nbformat_minor 2)))))
     #+nil
     (sb-ext:run-program "/usr/bin/python3" `("-mjson.tool" ,nb-file))
     #-sbcl

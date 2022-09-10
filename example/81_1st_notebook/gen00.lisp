@@ -14,31 +14,37 @@
     (write-notebook
      :nb-file (asdf:system-relative-pathname
 	       'cl-cpp-generator2
-	       (merge-pathnames (format nil "c~a_~a.cpp" idx notebook-name)
+	       (merge-pathnames (format nil "c~a_~a.ipynb" idx notebook-name)
 				*source-dir*))
      :nb-code
      `((cpp
-	(do0 ,(format nil "#|default_exp c~a_~a" idx notebook-name)))
+	(do0 ,(format nil "//|default_exp c~a_~a" idx notebook-name)))
        (cpp
 	(do0
-	 "#|export"
+	 (comments "looks like i have to execute this cell before i can get the includes")
+	 (let ((a (int 12))
+	       (b (int 32)))
+	   (+ a b))))
+       (cpp
+	(do0
+	 "//|export"
 	 (include
 					;<tuple>
 					;<mutex>
-		   <thread>
-		   <iostream>
-		   <iomanip>
-		   <chrono>
+	  <thread>
+	  <iostream>
+	  <iomanip>
+	  <chrono>
 					;  <memory>
-		   )
+	  )
 	 ))
        (cpp
-	"#|export"
+	"//|export"
 	(defun main (argc argv)
 	  (declare (type int argc)
 		   (type char** argv)
 		   (values int))
-	  
+
 	  (return 0))))
      ))
   (with-open-file (s "source/CMakeLists.txt" :direction :output
@@ -70,7 +76,7 @@
 	      (directory "source/*.cpp")))
 
 	(out "add_executable( mytest ${SRCS} )")
-	(out "include_directories( /usr/local/include/  )")
+	#+nil (out "include_directories( /usr/local/include/  )")
 
 					;(out "target_compile_features( mytest PUBLIC cxx_std_23 )")
 
@@ -78,7 +84,7 @@
 		    do
 		    (out "find_package( ~a CONFIG REQUIRED )" e))
 
-	(out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	#+nil (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	     `(			;"imgui::imgui"
 					; "implot::implot"
 	       "std::mdspan"
