@@ -1,0 +1,3 @@
+- after i managed to build cling and install xeus-cling, i want to try
+  to work with c++ notebooks
+  

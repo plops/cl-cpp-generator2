@@ -1,0 +1,93 @@
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  (ql:quickload "cl-cpp-generator2"))
+
+(in-package :cl-cpp-generator2)
+
+(progn
+  (defparameter *source-dir* #P"example/81_1st_notebook/source/")
+  (ensure-directories-exist (asdf:system-relative-pathname
+			     'cl-cpp-generator2
+			     *source-dir*))
+  (let ((notebook-name "main")
+	(idx "00")
+	)
+    (write-notebook
+     :nb-file (asdf:system-relative-pathname
+	       'cl-cpp-generator2
+	       (merge-pathnames (format nil "c~a_~a.cpp" idx notebook-name)
+				*source-dir*))
+     :nb-code
+     `((cpp
+	(do0 ,(format nil "#|default_exp c~a_~a" idx notebook-name)))
+       (cpp
+	(do0
+	 "#|export"
+	 (include
+					;<tuple>
+					;<mutex>
+		   <thread>
+		   <iostream>
+		   <iomanip>
+		   <chrono>
+					;  <memory>
+		   )
+	 ))
+       (cpp
+	"#|export"
+	(defun main (argc argv)
+	  (declare (type int argc)
+		   (type char** argv)
+		   (values int))
+	  
+	  (return 0))))
+     ))
+  (with-open-file (s "source/CMakeLists.txt" :direction :output
+		     :if-exists :supersede
+		     :if-does-not-exist :create)
+    (let ((dbg "-ggdb -O0 -std=gnu++2b")
+	  (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+	    )
+	  (show-err ;"";
+					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+	   "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+
+	    ))
+      (macrolet ((out (fmt &rest rest)
+		   `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	(out "cmake_minimum_required( VERSION 3.19 )")
+	(out "project( mytest LANGUAGES CXX )")
+	(out "find_package( mdspan REQUIRED )")
+					; (out "set( CMAKE_CXX_COMPILER clang++ )")
+	(out "set( CMAKE_CXX_COMPILER clang++ )")
+	(out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+	(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
+	(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
+					;(out "set( CMAKE_CXX_STANDARD 23 )")
+
+
+	(out "set( SRCS ~{~a~^~%~} )"
+	     (append
+	      (directory "source/*.cpp")))
+
+	(out "add_executable( mytest ${SRCS} )")
+	(out "include_directories( /usr/local/include/  )")
+
+					;(out "target_compile_features( mytest PUBLIC cxx_std_23 )")
+
+	#+nil (loop for e in `(imgui implot)
+		    do
+		    (out "find_package( ~a CONFIG REQUIRED )" e))
+
+	(out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	     `(			;"imgui::imgui"
+					; "implot::implot"
+	       "std::mdspan"
+	       ))
+
+					; (out "target_link_libraries ( mytest Threads::Threads )")
+					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
+	))
+    ))
+
+
+
