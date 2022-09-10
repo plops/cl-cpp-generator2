@@ -42,7 +42,9 @@
 	 __MMX__ ;; 1
 	 __GLIBCXX_FAST_MATH ;; 0
 	 _GLIBCXX_USE_FLOAT128 ;; 1
+	 NDEBUG ;; 1
 	 __VERSION__))
+       ;; .undo [n] tries to undo the last n lines
        (cpp
 	".g a")
        (cpp
