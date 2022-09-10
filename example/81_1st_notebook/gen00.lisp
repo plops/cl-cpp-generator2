@@ -8,50 +8,66 @@
   (ensure-directories-exist (asdf:system-relative-pathname
 			     'cl-cpp-generator2
 			     *source-dir*))
-  (defun lprint (&key (msg "") (vars nil))
+  (defun lprint2 (&key (msg "") (vars nil))
     `(progn				;do0
-	    " "
-	    (do0				;let
-	     #+nil ((lockxxxxxxx+ (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
-		    )
+       " "
+       (do0				;let
+	#+nil ((lockxxxxxxx+ (std--unique_lock<std--mutex> ,(g `_stdout_mutex)))
+	       )
 
-	     (do0
+	(do0
 					;("std::setprecision" 3)
-	      ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
+	 ;; https://stackoverflow.com/questions/7889136/stdchrono-and-cout
 
-	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-	      (<< "std::cout"
-		  ;;"std::endl"
-		  ("std::setw" 10)
-		  #+nil (dot ("std::chrono::high_resolution_clock::now")
-			     (time_since_epoch)
-			     (count)
-			     )
-		  (dot timestamp
-		       (count))
+	 "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	 (<< "std::cout"
+	     ;;"std::endl"
+	     ("std::setw" 10)
+	     #+nil (dot ("std::chrono::high_resolution_clock::now")
+			(time_since_epoch)
+			(count)
+			)
+	     (dot timestamp
+		  (count))
 					;,(g `_start_time)
 
 					;(string " ")
 					;(dot now (period))
-		  (string " ")
-		  ("std::this_thread::get_id")
-		  (string " ")
-		  __FILE__
-		  (string ":")
-		  __LINE__
-		  (string " ")
-		  __func__
-		  (string " ")
-		  (string ,msg)
-		  (string " ")
-		  ,@(loop for e in vars appending
-			  `(("std::setw" 8)
+	     (string " ")
+	     ("std::this_thread::get_id")
+	     (string " ")
+	     __FILE__
+	     (string ":")
+	     __LINE__
+	     (string " ")
+	     __func__
+	     (string " ")
+	     (string ,msg)
+	     (string " ")
+	     ,@(loop for e in vars appending
+		     `(("std::setw" 8)
 					;("std::width" 8)
-			    (string ,(format nil " ~a='" (emit-c :code e)))
-			    ,e
-			    (string "'")))
-		  "std::endl"
-		  "std::flush")))))
+		       (string ,(format nil " ~a='" (emit-c :code e)))
+		       ,e
+		       (string "'")))
+	     "std::endl"
+	     "std::flush")))))
+
+  (defun lprint (&key (msg "") (vars nil))
+    `(lprint __FILE__
+	     (string ":")
+	     __LINE__
+	     (string " ")
+	     __func__
+	     (string " ")
+	     (string ,msg)
+	     (string " ")
+	     ,@(loop for e in vars appending
+		     `(("std::setw" 8)
+					;("std::width" 8)
+		       (string ,(format nil " ~a='" (emit-c :code e)))
+		       ,e
+		       (string "'")))))
   (let ((notebook-name "main")
 	(idx "00")
 	)
@@ -123,6 +139,32 @@
 	(do0
 	 (setf g_start_time ("std::chrono::high_resolution_clock::now"))))
        (cpp
+	(defun lprint (il)
+	  (declare (type "std::initializer_list<std::string>" il))
+
+	  "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	  (<< "std::cout"
+	      ("std::setw" 10)
+	      (dot timestamp
+		   (count))
+	      (string " ")
+	      ("std::this_thread::get_id")
+	      (string " ")
+	      __FILE__
+	      (string ":")
+	      __LINE__
+	      (string " ")
+	      __func__
+	      (string " "))
+	  (for-range ((elem :type "const auto&")
+		      il)
+		     (<< "std::cout"
+			 ("std::setw" 8)
+			 elem) )
+	  (<< "std::cout"
+		  "std::endl"
+		  "std::flush")))
+       (cpp
 	(progn
 	  (let ((a (int 3))
 		(b (int 44)))
@@ -174,10 +216,10 @@
 		    (out "find_package( ~a CONFIG REQUIRED )" e))
 
 	#+nil (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	     `(			;"imgui::imgui"
+		   `(			;"imgui::imgui"
 					; "implot::implot"
-	       "std::mdspan"
-	       ))
+		     "std::mdspan"
+		     ))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
