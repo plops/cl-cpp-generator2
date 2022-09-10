@@ -19,12 +19,20 @@
      :nb-code
      `((cpp
 	(do0 ,(format nil "//|default_exp c~a_~a" idx notebook-name)))
+       (markdown "show all known namespaces")
+       (cpp
+	".namespace")
+       (markdown "show all global variables")
+       (cpp
+	".g")
        (cpp
 	(do0
 	 (comments "looks like i have to execute this cell before i can get the includes")
 	 (let ((a (int 12))
 	       (b (int 32)))
 	   (+ a b))))
+       (cpp
+	".g a")
        (cpp
 	(do0
 	 "//|export"
