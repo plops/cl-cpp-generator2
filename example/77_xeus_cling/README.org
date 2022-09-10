@@ -126,6 +126,21 @@ ninja
 emacs /home/martin/cling-build/cling-src/utils/benchmark/src/benchmark_register.h 
 # add #include <limits>
 
+
+ninja install
+# 936M in /tmp/cling-obj
+
+
+cd /home/martin/cling-build/cling-src/tools/cling/tools/Jupyter/kernel
+pip3 install -e .
+
+jupyter-kernelspec install --user cling-cpp17
+
+jupyter notebook
+
+#include <iostream>
+std::cout << "some output" << std::endl;
+
   #+end_example
 - after cling is build install jupyter according to the README.md
   here:
