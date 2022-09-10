@@ -59,10 +59,11 @@
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
 
-    (defparameter *source-dir* #P"example/79_mdspan/source/")
-    (ensure-directories-exist (asdf:system-relative-pathname
-			       'cl-cpp-generator2
-			       *source-dir*))
+    (defparameter *source-dir* #P"example/80_xtensor/source/")
+    (defparameter *full-source-dir* (asdf:system-relative-pathname
+				     'cl-cpp-generator2
+				     *source-dir*))
+    (ensure-directories-exist *full-source-dir*)
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames #P"main.cpp"
@@ -78,10 +79,14 @@
 		     <chrono>
 					;  <memory>
 		     )
-		    (include <vector>
-			     <experimental/mdspan>)
-		    (comments "https://github.com/kokkos/mdspan/wiki/A-Gentle-Introduction-to-mdspan")
-		    "namespace stdex = std::experimental;"
+		    (include
+					;<vector>
+		     <xtensor/xbuilder.hpp>
+		     <xtensor/xarray.hpp>
+		     <xtensor/xio.hpp>
+		     )
+
+					;"namespace stdex = std::experimental;"
 
 
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
@@ -95,49 +100,39 @@
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
 		      ,(lprint :msg "start" :vars `(argc (aref argv 0)))
-		      "#if defined(_MDSPAN_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)"
-		      (let (;(e ("stdex::extents<uint32_t,2,2,2>"))
-			    (vec (std--vector<double> (curly 1 2 3 4 5 6 7 8)))
-			    #+nil (ms ("stdex::mdspan<double,stdex::extents<int,2,2,2>,stdex::layout_left>"
-				       (vec.data)))
-			    #+nil
-			    (ms ("stdex::mdspan" (curly (vec.data)
-							(std--extents (curly (int 3)
-									     (int 3))))))
-			    )
-			#-nil
-			"stdex::mdspan ms{vec.data(),stdex::extents{2,2,2}};"
+		      (let ((ar (xt--linspace<double> .0 10.0 12)))
+			(ar.reshape (curly 4 3))
+			,(lprint :msg "" :vars `(ar))
+			#+nil (<< "std::cout"
+				  ar)
 			)
-		      (let ((q (ms 0
-				   0
-				   ))))
-					;,(lprint :msg "leave program" :vars `((ms 0 0 )))
-		      "#else"
-		      ,(lprint :msg "template deduction not supported")
-		      "#endif"
+
 		      (return 0))))
 
-    (with-open-file (s "source/CMakeLists.txt" :direction :output
+    (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
+		       :direction :output
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
-      (let ((dbg "-ggdb -O0 -std=gnu++2b")
+      (let ((dbg "-ggdb -O0")
 	    (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
 	    (show-err ;"";
-					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
-	     "-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
+	     " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
 	      ))
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "cmake_minimum_required( VERSION 3.19 )")
 	  (out "project( mytest LANGUAGES CXX )")
-	  (out "find_package( mdspan REQUIRED )")
-					; (out "set( CMAKE_CXX_COMPILER clang++ )")
+	  (loop for e in `(xtl xsimd xtensor)
+		do
+		(format s "find_package( ~a REQUIRED )~%" e))
 	  (out "set( CMAKE_CXX_COMPILER clang++ )")
+					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
@@ -146,10 +141,10 @@
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
-		(directory "source/*.cpp")))
+		(directory (format nil "~a/*.cpp" *full-source-dir*))))
 
 	  (out "add_executable( mytest ${SRCS} )")
-	  (out "include_directories( /usr/local/include/  )")
+					;(out "include_directories( /usr/local/include/  )")
 
 					;(out "target_compile_features( mytest PUBLIC cxx_std_23 )")
 
@@ -160,7 +155,11 @@
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(			;"imgui::imgui"
 					; "implot::implot"
-		 "std::mdspan"
+					;"std::mdspan"
+		 "xtensor"
+		 "xtensor::optimize"
+		 "xtensor::use_xsimd"
+
 		 ))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")

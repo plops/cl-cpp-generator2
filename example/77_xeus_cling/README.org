@@ -115,6 +115,18 @@ wget https://raw.githubusercontent.com/root-project/cling/master/tools/packaging
 chmod +x cpt.py
 ./cpt.py --check-requirements && ./cpt.py --create-dev-env Debug --with-workdir=./cling-build/
 #+end_example
+- try release build
+  #+begin_example
+cd
+./cpt.py --check-requirements
+./cpt.py --create-dev-env Release --with-workdir=./cling-build/ --with-cmake-flags "-G Ninja" --no-test --number-of-cores 4
+ninja
+
+# takes 2h and 1.5GB
+emacs /home/martin/cling-build/cling-src/utils/benchmark/src/benchmark_register.h 
+# add #include <limits>
+
+  #+end_example
 - after cling is build install jupyter according to the README.md
   here:
   https://github.com/root-project/cling/blob/master/tools/Jupyter
