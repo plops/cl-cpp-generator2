@@ -4,47 +4,47 @@
 (in-package :cl-cpp-generator2)
 
 (let (#+nil (log-preamble `(do0 (include <iostream>
-				   <iomanip>
-				   <chrono>
-				   <thread>
-				   )
-			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
-  (defun lprint (&key (msg "") (vars nil))
-    `(lprint (curly  __FILE__
-		     (string ":")
-		     ("std::to_string" __LINE__)
-		     (string " ")
-		     __func__
-		     (string " ")
-		     (string ,msg)
-		     (string " ")
-		     ,@(loop for e in vars appending
-			     `(;("std::setw" 8)
+					 <iomanip>
+					 <chrono>
+					 <thread>
+					 )
+				"extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
+  (progn (defun lprint (&key (msg "") (vars nil))
+	   `(lprint (curly  __FILE__
+			    (string ":")
+			    ("std::to_string" __LINE__)
+			    (string " ")
+			    __func__
+			    (string " ")
+			    (string ,msg)
+			    (string " ")
+			    ,@(loop for e in vars appending
+				    `(	;("std::setw" 8)
 					;("std::width" 8)
-			       (string ,(format nil " ~a='" (emit-c :code e)))
-			       ("std::to_string" ,e)
-			       (string "'"))))))
-  (defun init-lprint ()
-    `(defun lprint (il)
-	  (declare (type "std::initializer_list<std::string>" il))
+				      (string ,(format nil " ~a='" (emit-c :code e)))
+				      ("std::to_string" ,e)
+				      (string "'"))))))
+	 (defun init-lprint ()
+	   `(defun lprint (il)
+	      (declare (type "std::initializer_list<std::string>" il))
 
-	  "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-	  (<< "std::cout"
-	      ("std::setw" 10)
-	      (dot timestamp
-		   (count))
-	      (string " ")
-	      ("std::this_thread::get_id")
-	      (string " ")
-	      )
-	  (for-range ((elem :type "const auto&")
-		      il)
-		     (<< "std::cout"
+	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	      (<< "std::cout"
+		  ("std::setw" 10)
+		  (dot timestamp
+		       (count))
+		  (string " ")
+		  ("std::this_thread::get_id")
+		  (string " ")
+		  )
+	      (for-range ((elem :type "const auto&")
+			  il)
+			 (<< "std::cout"
 
-			 elem) )
-	  (<< "std::cout"
-	      "std::endl"
-	      "std::flush")))
+			     elem) )
+	      (<< "std::cout"
+		  "std::endl"
+		  "std::flush"))))
   (progn
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
@@ -70,7 +70,7 @@
 		     <chrono>
 					;  <memory>
 		     )
-		   
+
 
 					;"namespace stdex = std::experimental;"
 
@@ -88,7 +88,7 @@
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
 		      ,(lprint :msg "start" :vars `(argc))
-		   
+
 
 		      (return 0))))
 
@@ -112,16 +112,16 @@
 	  (out "cmake_minimum_required( VERSION 3.13 )")
 	  (out "project( mytest LANGUAGES CXX )")
 	  #+nil(loop for e in `(xtl xsimd xtensor)
-		do
-		(format s "find_package( ~a REQUIRED )~%" e))
-	  ;(out "set( CMAKE_CXX_COMPILER clang++ )")
+		     do
+		     (format s "find_package( ~a REQUIRED )~%" e))
+					;(out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 
-	  
+
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append

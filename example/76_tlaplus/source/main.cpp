@@ -13,31 +13,26 @@ uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex,
 pthread_cond_t modify;
 pthread_mutex_t mutex;
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
-void append(uint32_t value) {
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ") << ("append")
-                << (" ") << (std::setw(8)) << (" value='") << (value) << ("'")
-                << (std::endl) << (std::flush);
+void lprint(std::initializer_list<std::string> il) {
+  std::chrono::duration<double> timestamp =
+      std::chrono::high_resolution_clock::now() - g_start_time;
+  (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
+              << (std::this_thread::get_id()) << (" ");
+  for (const auto &elem : il) {
+    (std::cout) << (elem);
   }
+  (std::cout) << (std::endl) << (std::flush);
+}
+void append(uint32_t value) {
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "append",
+          " ", " value='", std::to_string(value), "'"});
   buffer[fillIndex] = value;
   fillIndex = ((fillIndex) + (1)) % buf_size;
   (count)++;
 }
 uint32_t head() {
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ") << ("head")
-                << (" ") << (std::endl) << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "head",
+          " "});
   auto tmp = buffer[useIndex];
   useIndex = ((useIndex) + (1)) % buf_size;
   (count)--;
@@ -94,100 +89,45 @@ int main(int argc, char **argv) {
     exit(1);
   }
   g_start_time = std::chrono::high_resolution_clock::now();
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ") << ("start")
-                << (" ") << (std::setw(8)) << (" argc='") << (argc) << ("'")
-                << (std::setw(8)) << (" argv[0]='") << (argv[0]) << ("'")
-                << (std::endl) << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "start",
+          " ", " argc='", std::to_string(argc), "'", " argv[0]='",
+          std::to_string(argv[0]), "'"});
   srand(999);
   buf_size = atoi(argv[1]);
   numProducers = atoi(argv[2]);
   numConsumers = atoi(argv[3]);
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("initiate mutex and condition variable") << (" ")
-                << (std::endl) << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "initiate mutex and condition variable", " "});
   pthread_mutex_init(&mutex, nullptr);
   pthread_cond_init(&modify, nullptr);
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("allocate buffer") << (" ") << (std::setw(8))
-                << (" buf_size='") << (buf_size) << ("'") << (std::endl)
-                << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "allocate buffer", " ", " buf_size='", std::to_string(buf_size),
+          "'"});
   buffer = static_cast<uint32_t *>(malloc(((buf_size) * (sizeof(uint32_t)))));
   pthread_t prods[numProducers], cons[numConsumers];
   uint32_t threadIds[numConsumers], i;
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("start consumers") << (" ") << (std::setw(8))
-                << (" numConsumers='") << (numConsumers) << ("'") << (std::endl)
-                << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "start consumers", " ", " numConsumers='",
+          std::to_string(numConsumers), "'"});
   for (auto i = 0; (i) < (numConsumers); (i) += (1)) {
     threadIds[i] = i;
     pthread_create(((cons) + (i)), nullptr, consumer, ((threadIds) + (i)));
   }
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("start producers") << (" ") << (std::setw(8))
-                << (" numProducers='") << (numProducers) << ("'") << (std::endl)
-                << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "start producers", " ", " numProducers='",
+          std::to_string(numProducers), "'"});
   for (auto i = 0; (i) < (numProducers); (i) += (1)) {
     pthread_create(((prods) + (i)), nullptr, producer, nullptr);
   }
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("wait for threads to finish") << (" ") << (std::endl)
-                << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "wait for threads to finish", " "});
   for (auto i = 0; (i) < (numProducers); (i) += (1)) {
     pthread_join(prods[i], nullptr);
   }
   for (auto i = 0; (i) < (numConsumers); (i) += (1)) {
     pthread_join(cons[i], nullptr);
   }
-  {
-
-    std::chrono::duration<double> timestamp =
-        std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("leave program") << (" ") << (std::endl) << (std::flush);
-  }
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
+          "leave program", " "});
   return 0;
 }
