@@ -130,8 +130,7 @@
 	  <iomanip>
 	  <chrono>
 					;  <memory>
-	  )
-	 ))
+	  )))
        (cpp
 	(do0
 	 "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"))
@@ -149,13 +148,11 @@
 		   (count))
 	      (string " ")
 	      ("std::this_thread::get_id")
-	      (string " ")
-	      )
+	      (string " "))
 	  (for-range ((elem :type "const auto&")
 		      il)
 		     (<< "std::cout"
-
-			 elem) )
+			 elem))
 	  (<< "std::cout"
 	      "std::endl"
 	      "std::flush")))
@@ -170,9 +167,7 @@
 	  (declare (type int argc)
 		   (type char** argv)
 		   (values int))
-
-	  (return 0))))
-     ))
+	  (return 0))))))
   (with-open-file (s "source/CMakeLists.txt" :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)

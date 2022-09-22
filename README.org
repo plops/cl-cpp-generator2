@@ -175,6 +175,19 @@ time on.
 |                            |       |                                                                                                                                                                                                                                        |          |
 | 71_imgui                   |       | gui with std::thread                                                                                                                                                                                                                   |          |
 | 72_emsdk                   |       | webassembly, beautify bash and cmake files                                                                                                                                                                                             |          |
+| 73_diligent                |       | lightweight cross-platform graphics API abstraction library and rendering framework. had trouble compiling on phone, i believe                                                           |          |
+| 74_ffmpeg                  |       | look into ffmpeg in order to decode videos (as neural network input)                                                                                                                                                                   |          |
+| 75_mini_h264               |       | look into a small good library that can decode videos                                                                                                                                                                                  |          |
+| 76_tlaplus                 |       | analysis of a blocking queue (with bugs)                                                                                                                                                                                               |          |
+| 77_xeus_cling              |       | learn about xeus, precompiled versions tend to fail with linker errors, takes forever to compile                                                                                                                                       |          |
+| 78_nbdev                   |       | try if nbdev can export c++ files from xeus notebooks (not yet working)                                                                                                                                                                |          |
+| 79_mdspan                  |       | n-dimensionsional arrays in c++                                                                                                                                                                                                        |          |
+| 80_xtensor                 |       | numpy in c++                                                                                                                                                                                                                           |          |
+| 81_1st_notebook            |       | cling interactive c++                                                                                                                                                                                                                  |          |
+| 82_static_cpp              |       | learn about things that need to be considered when compiling static c++                                                                                                                                                                |          |
+
+
+
 * FAQ
 
 ** There is no such language as c/C++. (https://news.ycombinator.com/item?id=20195740 )
