@@ -1,3 +1,4 @@
+# sudo dnf install fmt-devel
 cmake_minimum_required( VERSION 3.4 )
 project( mytest LANGUAGES CXX )
 set( CMAKE_CXX_COMPILER clang++ )
@@ -6,4 +7,6 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0  -fno-omit-frame-
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0   ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/76_tlaplus/source/main.cpp )
 add_executable( mytest ${SRCS} )
-target_compile_features( mytest PUBLIC cxx_std_17 )
+target_compile_features( mytest PUBLIC cxx_std_20 )
+find_package( fmt CONFIG REQUIRED )
+target_link_libraries( mytest PRIVATE fmt )

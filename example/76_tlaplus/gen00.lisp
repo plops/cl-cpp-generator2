@@ -26,7 +26,8 @@
 				    `(	;("std::setw" 8)
 					;("std::width" 8)
 				      (string ,(format nil " ~a='" (emit-c :code e)))
-				      ("std::to_string" ,e)
+					;("std::to_string" ,e)
+				      (fmt--format (string "{}") ,e)
 				      (string "'"))))))
 	 (defun init-lprint ()
 	   `(defun lprint (il)
@@ -118,6 +119,7 @@
 		     <iomanip>
 		     <chrono>
 		     <cmath>
+		     <fmt/core.h>
 		     <cassert>
 					;  <memory>
 		     )
@@ -281,6 +283,7 @@
 	      ))
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	  (out "# sudo dnf install fmt-devel")
 	  (out "cmake_minimum_required( VERSION 3.4 )")
 	  (out "project( mytest LANGUAGES CXX )")
 	  (out "set( CMAKE_CXX_COMPILER clang++ )")
@@ -295,15 +298,14 @@
 		(directory "source/*.cpp")))
 
 	  (out "add_executable( mytest ${SRCS} )")
-	  (out "target_compile_features( mytest PUBLIC cxx_std_17 )")
+	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
-	  #+nil (loop for e in `(imgui implot)
-		      do
-		      (out "find_package( ~a CONFIG REQUIRED )" e))
+	  (loop for e in `(fmt)
+		do
+		(out "find_package( ~a CONFIG REQUIRED )" e))
 
-	  #+nil (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-		     `("imgui::imgui"
-		       "implot::implot"))
+	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	       `(fmt))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <fmt/core.h>
 #include <iomanip>
 #include <iostream>
 #include <pthread.h>
@@ -25,7 +26,7 @@ void lprint(std::initializer_list<std::string> il) {
 }
 void append(uint32_t value) {
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "append",
-          " ", " value='", std::to_string(value), "'"});
+          " ", " value='", fmt::format("{}", value), "'"});
   buffer[fillIndex] = value;
   fillIndex = ((fillIndex) + (1)) % buf_size;
   (count)++;
@@ -90,8 +91,8 @@ int main(int argc, char **argv) {
   }
   g_start_time = std::chrono::high_resolution_clock::now();
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "start",
-          " ", " argc='", std::to_string(argc), "'", " argv[0]='",
-          std::to_string(argv[0]), "'"});
+          " ", " argc='", fmt::format("{}", argc), "'", " argv[0]='",
+          fmt::format("{}", argv[0]), "'"});
   srand(999);
   buf_size = atoi(argv[1]);
   numProducers = atoi(argv[2]);
@@ -101,21 +102,21 @@ int main(int argc, char **argv) {
   pthread_mutex_init(&mutex, nullptr);
   pthread_cond_init(&modify, nullptr);
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "allocate buffer", " ", " buf_size='", std::to_string(buf_size),
+          "allocate buffer", " ", " buf_size='", fmt::format("{}", buf_size),
           "'"});
   buffer = static_cast<uint32_t *>(malloc(((buf_size) * (sizeof(uint32_t)))));
   pthread_t prods[numProducers], cons[numConsumers];
   uint32_t threadIds[numConsumers], i;
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
           "start consumers", " ", " numConsumers='",
-          std::to_string(numConsumers), "'"});
+          fmt::format("{}", numConsumers), "'"});
   for (auto i = 0; (i) < (numConsumers); (i) += (1)) {
     threadIds[i] = i;
     pthread_create(((cons) + (i)), nullptr, consumer, ((threadIds) + (i)));
   }
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
           "start producers", " ", " numProducers='",
-          std::to_string(numProducers), "'"});
+          fmt::format("{}", numProducers), "'"});
   for (auto i = 0; (i) < (numProducers); (i) += (1)) {
     pthread_create(((prods) + (i)), nullptr, producer, nullptr);
   }
