@@ -14,6 +14,11 @@ uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex,
 pthread_cond_t modify;
 pthread_mutex_t mutex;
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
+// This function is generates log output including wall clock time, source file
+// and line, function and optionally some variables that will be submitted as
+// strings in an initializer_list. Arbitrary values are converted to strings
+// using fmt::format
+;
 void lprint(std::string msg, std::initializer_list<std::string> il,
             std::string func, std::string file, int line) {
   std::chrono::duration<double> timestamp =
@@ -26,21 +31,9 @@ void lprint(std::string msg, std::initializer_list<std::string> il,
   }
   (std::cout) << (std::endl) << (std::flush);
 }
-void append(uint32_t value) {
-  lprint("append", {" value='", fmt::format("{}", value), "'"}, __func__,
-         __FILE__, __LINE__);
-  buffer[fillIndex] = value;
-  fillIndex = ((fillIndex) + (1)) % buf_size;
-  (count)++;
-}
-uint32_t head() {
-  lprint("head", {}, __func__, __FILE__, __LINE__);
-  auto tmp = buffer[useIndex];
-  useIndex = ((useIndex) + (1)) % buf_size;
-  (count)--;
-  return tmp;
-}
-void *producer(void *arg) {
+// constant color strings
+// for use in producer (a colored p):
+;
 #define PRED "\033[1;31mp\033[0m"
 #define PGREEN "\033[1;32mp\033[0m"
 #define PYELLOW "\033[1;33mp\033[0m"
@@ -48,21 +41,8 @@ void *producer(void *arg) {
 #define PMAGENTA "\033[1;35mp\033[0m"
 #define PCYAN "\033[1;36mp\033[0m"
 #define PWHITE "\033[1;37mp\033[0m"
-  while (1) {
-    pthread_mutex_lock(&mutex);
-    while ((count) == (buf_size)) {
-      printf(PRED);
-      fflush(stdout);
-      pthread_cond_wait(&modify, &mutex);
-    }
-    append(rand() % 10);
-    printf(PYELLOW);
-    fflush(stdout);
-    pthread_cond_signal(&modify);
-    pthread_mutex_unlock(&mutex);
-  }
-}
-void *consumer(void *arg) {
+// for use in consumer (a colored c followed by an id):
+;
 #define RED "\033[1;31mc%01d\033[0m"
 #define GREEN "\033[1;32mc%01d\033[0m"
 #define YELLOW "\033[1;33mc%01d\033[0m"
@@ -70,24 +50,53 @@ void *consumer(void *arg) {
 #define MAGENTA "\033[1;35mc%01d\033[0m"
 #define CYAN "\033[1;36mc%01d\033[0m"
 #define WHITE "\033[1;37mc%01d\033[0m"
+// functions append and head that will run concurrently
+;
+void append(uint32_t value) {
+  lprint("", {" value='", fmt::format("{}", value), "'"}, __func__, __FILE__,
+         __LINE__);
+  buffer[fillIndex] = value;
+  fillIndex = ((fillIndex) + (1)) % buf_size;
+  (count)++;
+}
+uint32_t head() {
+  auto tmp = buffer[useIndex];
+  lprint("",
+         {" useIndex='", fmt::format("{}", useIndex), "'", " tmp='",
+          fmt::format("{}", tmp), "'"},
+         __func__, __FILE__, __LINE__);
+  useIndex = ((useIndex) + (1)) % buf_size;
+  (count)--;
+  return tmp;
+}
+void *producer(void *arg) {
+  while (1) {
+    pthread_mutex_lock(&mutex);
+    while ((count) == (buf_size)) {
+      pthread_cond_wait(&modify, &mutex);
+    }
+    append(rand() % 10);
+    pthread_cond_signal(&modify);
+    pthread_mutex_unlock(&mutex);
+  }
+}
+void *consumer(void *arg) {
   auto id = *(static_cast<uint32_t *>(arg));
   while (1) {
     pthread_mutex_lock(&mutex);
     while ((0) == (count)) {
-      printf(RED, id);
-      fflush(stdout);
       pthread_cond_wait(&modify, &mutex);
     }
   }
   head();
-  printf(YELLOW, id);
-  fflush(stdout);
   pthread_cond_signal(&modify);
   pthread_mutex_unlock(&mutex);
 }
 int main(int argc, char **argv) {
   if ((argc) < (4)) {
-    printf("Usage: ./main <buffer_size> <#producers> <#consumers>\n");
+    printf(
+        "Usage: ./consumer_producer <buffer_size> <#producers> <#consumers>\n");
+    printf("./consumer_producer 1 2 1  => deadlock possible\n");
     exit(1);
   }
   g_start_time = std::chrono::high_resolution_clock::now();

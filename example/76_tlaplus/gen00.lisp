@@ -13,6 +13,7 @@
 				   <thread>
 				   )
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
+  (defparameter *program-name* "consumer_producer")
   (progn (defun lprint (&key (msg "") (vars nil))
 	   `(lprint (string ,msg)
 		    (curly
@@ -30,36 +31,38 @@
 
 		    ))
 	 (defun init-lprint ()
-	   `(defun lprint (msg il func file line)
-	      (declare (type "std::initializer_list<std::string>" il)
-		       (type "std::string" file func msg)
-		       (type int line))
+	   `(do0
+	     (comments "This function is generates log output including wall clock time, source file and line, function and optionally some variables that will be submitted as strings in an initializer_list. Arbitrary values are converted to strings using fmt::format")
+	     (defun lprint (msg il func file line)
+	       (declare (type "std::initializer_list<std::string>" il)
+			(type "std::string" file func msg)
+			(type int line))
 
-	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
-	      (<< "std::cout"
-		  ("std::setw" 10)
-		  (dot timestamp
-		       (count))
-		  (string " ")
-		  ("std::this_thread::get_id")
-		  (string " ")
-		  file
-		  (string ":")
-		  line
-		  (string " ")
-		  func
-		  (string " ")
-		  msg
-		  (string " ")
-		  )
-	      (for-range ((elem :type "const auto&")
-			  il)
-			 (<< "std::cout"
+	       "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+	       (<< "std::cout"
+		   ("std::setw" 10)
+		   (dot timestamp
+			(count))
+		   (string " ")
+		   ("std::this_thread::get_id")
+		   (string " ")
+		   file
+		   (string ":")
+		   line
+		   (string " ")
+		   func
+		   (string " ")
+		   msg
+		   (string " ")
+		   )
+	       (for-range ((elem :type "const auto&")
+			   il)
+			  (<< "std::cout"
 
-			     elem) )
-	      (<< "std::cout"
-		  "std::endl"
-		  "std::flush"))))
+			      elem) )
+	       (<< "std::cout"
+		   "std::endl"
+		   "std::flush")))))
   #+nil
   (defun lprint (&key (msg "") (vars nil))
     #+nil `(comments ,msg)
@@ -146,9 +149,40 @@
 		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
 		    ,(init-lprint)
 
+		    (do0
+		     (comments "constant color strings"
+			       "for use in producer (a colored p):")
+		     ,@(loop for (name code )
+			     in `((red 31)
+				  (green 32)
+				  (yellow 33)
+				  (blue 34)
+				  (magenta 35)
+				  (cyan 36)
+				  (white 37))
+			     collect
+			     (format nil "#define ~a \"~a\""
+				     (string-upcase (format nil "P~a" name))
+				     (format nil "\\033[1;~amp\\033[0m" code)))
+		     (comments "for use in consumer (a colored c followed by an id):")
+		     ,@(loop for (name code )
+			     in `((red 31)
+				  (green 32)
+				  (yellow 33)
+				  (blue 34)
+				  (magenta 35)
+				  (cyan 36)
+				  (white 37))
+			     collect
+			     (format nil "#define ~a \"~a\" "
+				     (string-upcase (format nil "~a" name))
+				     (format nil "\\033[1;~amc%01d\\033[0m" code))))
+
+
+		    (comments "functions append and head that will run concurrently")
 		    (defun append (value)
 		      (declare (type uint32_t value))
-		      ,(lprint :msg "append" :vars `(value))
+		      ,(lprint :vars `(value))
 		      (setf (aref buffer fillIndex)
 			    value
 			    fillIndex (% (+ fillIndex 1)
@@ -156,69 +190,47 @@
 		      (incf count))
 		    (defun head ()
 		      (declare (values uint32_t))
-		      ,(lprint :msg "head")
+
 		      (let ((tmp (aref buffer useIndex)))
+			,(lprint :vars `(useIndex tmp))
 			(setf
 			 useIndex (% (+ useIndex 1)
 				     buf_size))
 			(decf count)
 			(return tmp)))
 
-
 		    (defun producer (arg)
 		      (declare (type void* arg)
 			       (values void*))
-		      ,@(loop for (name code )
-			      in `((red 31)
-				   (green 32)
-				   (yellow 33)
-				   (blue 34)
-				   (magenta 35)
-				   (cyan 36)
-				   (white 37))
-			      collect
-			      (format nil "#define ~a \"~a\""
-				      (string-upcase (format nil "P~a" name))
-				      (format nil "\\033[1;~amp\\033[0m" code)))
+
 		      (while 1
 			(pthread_mutex_lock &mutex)
 			(while (== count buf_size)
-			  (printf PRED)
-			  (fflush stdout)
+			  #+nil (do0 (printf PRED)
+				     (fflush stdout))
 			  (pthread_cond_wait &modify &mutex))
 			(append (% (rand) 10))
-			(printf PYELLOW)
-			(fflush stdout)
+			#+nil (do0 (printf PYELLOW)
+				   (fflush stdout))
 			(pthread_cond_signal &modify)
 			(pthread_mutex_unlock &mutex)))
 
 		    (defun consumer (arg)
 		      (declare (type void* arg)
 			       (values void*))
-		      ,@(loop for (name code )
-			      in `((red 31)
-				   (green 32)
-				   (yellow 33)
-				   (blue 34)
-				   (magenta 35)
-				   (cyan 36)
-				   (white 37))
-			      collect
-			      (format nil "#define ~a \"~a\" "
-				      (string-upcase (format nil "~a" name))
-				      (format nil "\\033[1;~amc%01d\\033[0m" code)))
+
 		      (let ((id (deref (static_cast<uint32_t*> arg)))
 					;(report (long 0))
 			    )
 			(while 1
 			  (pthread_mutex_lock &mutex)
 			  (while (== 0 count)
-			    (printf RED id)
-			    (fflush stdout)
+			    #+nil (do0 (printf RED id)
+				       (fflush stdout))
 			    (pthread_cond_wait &modify &mutex)))
 			(head)
-			(printf YELLOW id)
-			(fflush stdout)
+			#+nil (do0 (printf YELLOW id)
+				   (fflush stdout))
 			(pthread_cond_signal &modify)
 			(pthread_mutex_unlock &mutex)))
 
@@ -227,7 +239,10 @@
 			       (type char** argv)
 			       (values int))
 		      (when (< argc 4)
-			(printf (string "Usage: ./main <buffer_size> <#producers> <#consumers>\\n"))
+			(printf (string ,(format nil "Usage: ./~a <buffer_size> <#producers> <#consumers>\\n"
+						 *program-name*)))
+			(printf (string ,(format nil "./~a 1 2 1  => deadlock possible\\n"
+						 *program-name*)))
 			(exit 1))
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
@@ -295,7 +310,7 @@
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "# sudo dnf install fmt-devel")
 	  (out "cmake_minimum_required( VERSION 3.4 )")
-	  (out "project( mytest LANGUAGES CXX )")
+	  (out "project( ~a LANGUAGES CXX )" *program-name*)
 	  (out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
@@ -307,14 +322,17 @@
 	       (append
 		(directory "source/*.cpp")))
 
-	  (out "add_executable( mytest ${SRCS} )")
-	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
+	  (out "add_executable( ~a ${SRCS} )"
+	       *program-name*)
+	  (out "target_compile_features( ~a PUBLIC cxx_std_20 )"
+	       *program-name*)
 
 	  (loop for e in `(fmt)
 		do
 		(out "find_package( ~a CONFIG REQUIRED )" e))
 
-	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	  (out "target_link_libraries( ~a PRIVATE ~{~a~^ ~} )"
+	       *program-name*
 	       `(fmt))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
