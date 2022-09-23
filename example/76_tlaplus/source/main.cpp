@@ -14,26 +14,27 @@ uint32_t buf_size, numProducers, numConsumers, *buffer, fillIndex, useIndex,
 pthread_cond_t modify;
 pthread_mutex_t mutex;
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
-void lprint(std::initializer_list<std::string> il) {
+void lprint(std::string msg, std::initializer_list<std::string> il,
+            std::string func, std::string file, int line) {
   std::chrono::duration<double> timestamp =
       std::chrono::high_resolution_clock::now() - g_start_time;
   (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-              << (std::this_thread::get_id()) << (" ");
+              << (std::this_thread::get_id()) << (" ") << (file) << (":")
+              << (line) << (" ") << (func) << (" ") << (msg) << (" ");
   for (const auto &elem : il) {
     (std::cout) << (elem);
   }
   (std::cout) << (std::endl) << (std::flush);
 }
 void append(uint32_t value) {
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "append",
-          " ", " value='", fmt::format("{}", value), "'"});
+  lprint("append", {" value='", fmt::format("{}", value), "'"}, __func__,
+         __FILE__, __LINE__);
   buffer[fillIndex] = value;
   fillIndex = ((fillIndex) + (1)) % buf_size;
   (count)++;
 }
 uint32_t head() {
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "head",
-          " "});
+  lprint("head", {}, __func__, __FILE__, __LINE__);
   auto tmp = buffer[useIndex];
   useIndex = ((useIndex) + (1)) % buf_size;
   (count)--;
@@ -90,45 +91,43 @@ int main(int argc, char **argv) {
     exit(1);
   }
   g_start_time = std::chrono::high_resolution_clock::now();
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ", "start",
-          " ", " argc='", fmt::format("{}", argc), "'", " argv[0]='",
-          fmt::format("{}", argv[0]), "'"});
+  lprint("start",
+         {" argc='", fmt::format("{}", argc), "'", " argv[0]='",
+          fmt::format("{}", argv[0]), "'"},
+         __func__, __FILE__, __LINE__);
   srand(999);
   buf_size = atoi(argv[1]);
   numProducers = atoi(argv[2]);
   numConsumers = atoi(argv[3]);
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "initiate mutex and condition variable", " "});
+  lprint("initiate mutex and condition variable", {}, __func__, __FILE__,
+         __LINE__);
   pthread_mutex_init(&mutex, nullptr);
   pthread_cond_init(&modify, nullptr);
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "allocate buffer", " ", " buf_size='", fmt::format("{}", buf_size),
-          "'"});
+  lprint("allocate buffer", {" buf_size='", fmt::format("{}", buf_size), "'"},
+         __func__, __FILE__, __LINE__);
   buffer = static_cast<uint32_t *>(malloc(((buf_size) * (sizeof(uint32_t)))));
   pthread_t prods[numProducers], cons[numConsumers];
   uint32_t threadIds[numConsumers], i;
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "start consumers", " ", " numConsumers='",
-          fmt::format("{}", numConsumers), "'"});
+  lprint("start consumers",
+         {" numConsumers='", fmt::format("{}", numConsumers), "'"}, __func__,
+         __FILE__, __LINE__);
   for (auto i = 0; (i) < (numConsumers); (i) += (1)) {
     threadIds[i] = i;
     pthread_create(((cons) + (i)), nullptr, consumer, ((threadIds) + (i)));
   }
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "start producers", " ", " numProducers='",
-          fmt::format("{}", numProducers), "'"});
+  lprint("start producers",
+         {" numProducers='", fmt::format("{}", numProducers), "'"}, __func__,
+         __FILE__, __LINE__);
   for (auto i = 0; (i) < (numProducers); (i) += (1)) {
     pthread_create(((prods) + (i)), nullptr, producer, nullptr);
   }
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "wait for threads to finish", " "});
+  lprint("wait for threads to finish", {}, __func__, __FILE__, __LINE__);
   for (auto i = 0; (i) < (numProducers); (i) += (1)) {
     pthread_join(prods[i], nullptr);
   }
   for (auto i = 0; (i) < (numConsumers); (i) += (1)) {
     pthread_join(cons[i], nullptr);
   }
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
-          "leave program", " "});
+  lprint("leave program", {}, __func__, __FILE__, __LINE__);
   return 0;
 }

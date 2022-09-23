@@ -14,24 +14,26 @@
 				   )
 			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
   (progn (defun lprint (&key (msg "") (vars nil))
-	   `(lprint (curly  __FILE__
-			    (string ":")
-			    ("std::to_string" __LINE__)
-			    (string " ")
-			    __func__
-			    (string " ")
-			    (string ,msg)
-			    (string " ")
-			    ,@(loop for e in vars appending
-				    `(	;("std::setw" 8)
+	   `(lprint (string ,msg)
+		    (curly
+
+		     ,@(loop for e in vars appending
+			     `(	;("std::setw" 8)
 					;("std::width" 8)
-				      (string ,(format nil " ~a='" (emit-c :code e)))
+			       (string ,(format nil " ~a='" (emit-c :code e)))
 					;("std::to_string" ,e)
-				      (fmt--format (string "{}") ,e)
-				      (string "'"))))))
+			       (fmt--format (string "{}") ,e)
+			       (string "'"))))
+		    __func__
+		    __FILE__
+		    __LINE__
+
+		    ))
 	 (defun init-lprint ()
-	   `(defun lprint (il)
-	      (declare (type "std::initializer_list<std::string>" il))
+	   `(defun lprint (msg il func file line)
+	      (declare (type "std::initializer_list<std::string>" il)
+		       (type "std::string" file func msg)
+		       (type int line))
 
 	      "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
 	      (<< "std::cout"
@@ -40,6 +42,14 @@
 		       (count))
 		  (string " ")
 		  ("std::this_thread::get_id")
+		  (string " ")
+		  file
+		  (string ":")
+		  line
+		  (string " ")
+		  func
+		  (string " ")
+		  msg
 		  (string " ")
 		  )
 	      (for-range ((elem :type "const auto&")
