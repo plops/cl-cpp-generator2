@@ -307,6 +307,8 @@
 				 ()))
 			(bgfx--touch 0)
 			(bgfx--dbgTextClear)
+			(bgfx--dbgTextPrintf 0 0 #xf (string "press F1 to toggle stats"))
+			(bgfx--setDebug BGFX_DEBUG_TEXT)
 			(bgfx--frame))
 		      (bgfx--shutdown)
 		      (glfwTerminate)
