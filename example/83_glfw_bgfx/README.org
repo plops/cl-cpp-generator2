@@ -6,7 +6,8 @@ https://www.sandeepnambiar.com/getting-started-with-bgfx/
 
 bgfx
 https://www.youtube.com/watch?v=oUQJm755GwY
-
+- also complains about compile time
+  
 
 #+begin_example
 
@@ -35,4 +36,6 @@ rsync -avz hetzner:./src/{bx,bimg,bgfx} .
 
 cd bgfx
 make linux-release64
+
+# results are in .build (2.6GB)
 #+end_example
