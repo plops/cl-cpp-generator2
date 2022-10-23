@@ -12,8 +12,8 @@ set( SRCS /home/martin/stage/cl-cpp-generator2/example/83_glfw_bgfx/source00/mai
 /home/martin/src/bgfx/3rdparty/dear-imgui/imgui_tables.cpp
 /home/martin/src/bgfx/3rdparty/dear-imgui/imgui_widgets.cpp )
 add_executable( mytest ${SRCS} )
-target_include_directories( mytest PRIVATE 
-/home/martin/src/bgfx/include/  
+target_include_directories( mytest PRIVATE
+/home/martin/src/bgfx/include/
 /home/martin/src/bx/include/
 /home/martin/src/bimg/include/
 /home/martin/src/bgfx/examples/common

@@ -227,7 +227,7 @@
 					;"#define BX_CONFIG_DEBUG"
 					;(include <bx/bx.h>)
 		     (include <bgfx/bgfx.h>
-					; <bgfx/platform.h>
+			      <bgfx/platform.h>
 			      ))
 		    (do0
 		     (include <GLFW/glfw3.h>
@@ -269,6 +269,9 @@
 					)))))
 		      ((lambda ()
 			 (declare (capture window))
+			 (do0
+			  (comments "call renderFrame before bgfx::init to signal to bgfx not to create a render thread")
+			  (bgfx--renderFrame))
 			 (let ((bi (bgfx--Init)))
 			   (do0
 			    (setf bi.platformData.ndt (glfwGetX11Display))
@@ -291,8 +294,24 @@
 						 (hex #x303030ff)
 						 1s0
 						 0)
+			     (bgfx--setViewRect 0
+						0 0
+						bgfx--BackbufferRatio--Equal)
 			     (imguiCreate))
 			   )))
+
+		      (while (not (glfwWindowShouldClose window))
+			(glfwPollEvents)
+			#+nil ((lambda ()
+				 (declare (capture width height))
+				 ()))
+			(bgfx--touch 0)
+			(bgfx--dbgTextClear)
+			(bgfx--frame))
+		      (bgfx--shutdown)
+		      (glfwTerminate)
+
+
 
 
 		      (return 0))))
