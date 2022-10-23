@@ -307,6 +307,12 @@
 
 		      (while (not (glfwWindowShouldClose window))
 			(glfwPollEvents)
+
+			#+nil ((lambda ()
+				 (imguiBeginFrame)
+				 (showExampleDialog )
+				 (imguiEndFrame)))
+
 			((lambda ()
 			   (declare (capture &width &height window))
 			   (let ((oldwidth width)
@@ -396,6 +402,7 @@ IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfxRelease.
 INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
 	    )
 
+	  #+nil
 	  (loop for e in `(bx bgfx bimg)
 		do
 		(progn
@@ -405,7 +412,7 @@ IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/lib~aRelease.a\
 INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/~a/include\" )" e e e)
 		  ))
 
-	  #+nil
+
 	  (progn
 	    (out "add_library( bgfx-shared SHARED IMPORTED )")
 	    (out "set_target_properties( bgfx-shared PROPERTIES
@@ -427,8 +434,8 @@ INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/examples/common\" )")
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(
-					;bgfx-shared
-		 bx bgfx bimg
+		 bgfx-shared
+					; bx bgfx bimg
 		 GL X11 glfw
 					;imgui
 
