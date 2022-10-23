@@ -250,7 +250,7 @@
      `(do0
        "$input a_position, a_color0"
        "$output v_color0"
-
+       " "
        (include <bgfx_shader.sh>
 		"shaderlib.sh")
 
@@ -269,13 +269,14 @@
      ;; fragment shader
      `(do0
        "$input v_color0"
-
+       " "
        (include <bgfx_shader.sh>
 		"shaderlib.sh")
-
+       " "
        (defun main ()
-	 (setf gl_FragColor v_color0)))
-     :format nil)
+	 (setf gl_FragColor v_color0))
+       " ")
+     :format t)
 
     (write-source
      (asdf:system-relative-pathname
