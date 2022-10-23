@@ -14,12 +14,12 @@
 #include <imgui/imgui.h>
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 bgfx::VertexLayout PosColorVertex::ms_decl;
-static PosColorVertex s_cubeVertices[] = {
-    {(0.50f), (0.50f), (0.f), 0xFF0000FF},
-    {(0.50f), (-0.50f), (0.f), 0xFF0000FF},
-    {(-0.50f), (-0.50f), (0.f), 0xFF00FF00},
-    {(-0.50f), (0.50f), (0.f), 0xFF00FF00}};
-static const uint16_t s_cubeTriList[] = {0, 1, 3, 1, 2, 3};
+auto s_cubeVertices = std::array<PosColorVertex, 4>(
+    {PosColorVertex({(0.50f), (0.50f), (0.f), 0xFF0000FF}),
+     PosColorVertex({(0.50f), (-0.50f), (0.f), 0xFF0000FF}),
+     PosColorVertex({(-0.50f), (-0.50f), (0.f), 0xFF00FF00}),
+     PosColorVertex({(-0.50f), (0.50f), (0.f), 0xFF00FF00})});
+auto s_cubeTriList = std::array<uint16_t, 6>({0, 1, 3, 1, 2, 3});
 bgfx::VertexBufferHandle m_vbh;
 bgfx::IndexBufferHandle m_ibh;
 bgfx::ProgramHandle m_program;
@@ -69,8 +69,8 @@ int main(int argc, char **argv) {
       lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
               "glfwInit failed", " "});
     }
-    auto startWidth = 800;
-    auto startHeight = 600;
+    const auto startWidth = 800;
+    const auto startHeight = 600;
     auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
                                    nullptr, nullptr);
     if (!(window)) {
@@ -103,10 +103,10 @@ int main(int argc, char **argv) {
     }
     PosColorVertex::init();
     m_vbh = bgfx::createVertexBuffer(
-        bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)),
+        bgfx::makeRef(s_cubeVertices.data(), sizeof(s_cubeVertices)),
         PosColorVertex::ms_decl);
     m_ibh = bgfx::createIndexBuffer(
-        bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+        bgfx::makeRef(s_cubeTriList.data(), sizeof(s_cubeTriList)));
     auto vsh = bgfx::ShaderHandle(loadShader("v_simple.bin"));
     auto fsh = bgfx::ShaderHandle(loadShader("f_simple.bin"));
     m_program = bgfx::createProgram(vsh, fsh, true);
@@ -139,21 +139,21 @@ int main(int argc, char **argv) {
     bgfx::setDebug(BGFX_DEBUG_STATS);
     auto at = bx::Vec3((0.f), (0.f), (0.f));
     auto eye = bx::Vec3((0.f), (0.f), (10.f));
-    auto view = std::array<float>(16);
-    auto proj = std::array<float>(16);
-    auto mtx = std::array<float>(16);
-    bx::mtxLookAt(view, eye, at);
-    bx::mtxProj(proj, (60.f), ((width) / (static_cast<float>(height))), (0.10f),
-                (1.00e+2f), bgfx::getCaps()->homogeneousDepth);
-    bgfx::setViewTransform(0, view, proj);
+    auto view = std::array<float, 16>();
+    auto proj = std::array<float, 16>();
+    auto mtx = std::array<float, 16>();
+    bx::mtxLookAt(view.data(), eye, at);
+    bx::mtxProj(proj.data(), (60.f), ((width) / (static_cast<float>(height))),
+                (0.10f), (1.00e+2f), bgfx::getCaps()->homogeneousDepth);
+    bgfx::setViewTransform(0, view.data(), proj.data());
     bgfx::setViewRect(0, 0, 0, width, height);
-    bx::mtxRotateY(mtx, (0.f));
+    bx::mtxRotateY(mtx.data(), (0.f));
     // position x y z
     ;
     mtx[12] = (0.f);
     mtx[13] = (0.f);
     mtx[14] = (0.f);
-    bgfx::setTransform(mtx);
+    bgfx::setTransform(mtx.data());
     bgfx::setVertexBuffer(0, m_vbh);
     bgfx::setIndexBuffer(m_ibh);
     bgfx::setState(BGFX_STATE_DEFAULT);

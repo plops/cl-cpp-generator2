@@ -344,21 +344,25 @@
 
 		    "bgfx::VertexLayout PosColorVertex::ms_decl;"
 
-		    (let (("s_cubeVertices[]"
-			   (curly ,@(loop for e in `((.5 .5 .0 #xff0000ff)
-						     (.5 -.5 .0 #xff0000ff)
-						     (-.5 -.5 .0 #xff00ff00)
-						     (-.5 .5 .0 #xff00ff00))
-					  collect
-					  (destructuring-bind (x y z col) e
-					    `(curly ,x ,y ,z
-						    (hex ,col)))))))
-		      (declare (type "static PosColorVertex" "s_cubeVertices[]")))
+		    (let (("s_cubeVertices"
+			   ("std::array<PosColorVertex,4>"
+			    (curly ,@(loop for e in `((.5 .5 .0 #xff0000ff)
+						      (.5 -.5 .0 #xff0000ff)
+						      (-.5 -.5 .0 #xff00ff00)
+						      (-.5 .5 .0 #xff00ff00))
+					   collect
+					   (destructuring-bind (x y z col) e
+					     `(PosColorVertex
+					       (curly ,x ,y ,z
+						      (hex ,col)))))))))
+					;(declare (type "static PosColorVertex" "s_cubeVertices[]"))
+		      )
 
-		    (let (("s_cubeTriList[]"
-			   (curly 0 1 3
-				  1 2 3)))
-		      (declare (type "static const uint16_t" "s_cubeTriList[]")))
+		    (let (("s_cubeTriList"
+			   ("std::array<uint16_t,6> "(curly 0 1 3
+							    1 2 3))))
+					;(declare (type "static const uint16_t" "s_cubeTriList[]"))
+		      )
 		    ,@(loop for (e f) in `((VertexBufferHandle vbh)
 					   (IndexBufferHandle ibh)
 					   (ProgramHandle program))
@@ -415,7 +419,9 @@
 					      (window (glfwCreateWindow startWidth startHeight
 									(string "hello bgfx")
 									nullptr
-									nullptr)))
+									nullptr))
+					      )
+					  (declare (type "const auto" startWidth startHeight))
 					  (unless window
 					    ,(lprint :msg "can't create glfw window"))
 					  (return window))
@@ -448,11 +454,11 @@
 			     (do0
 			      (PosColorVertex--init)
 			      (setf m_vbh (bgfx--createVertexBuffer
-					   (bgfx--makeRef s_cubeVertices
+					   (bgfx--makeRef (dot s_cubeVertices (data))
 							  (sizeof s_cubeVertices))
 					   PosColorVertex--ms_decl))
 			      (setf m_ibh (bgfx--createIndexBuffer
-					   (bgfx--makeRef s_cubeTriList
+					   (bgfx--makeRef (s_cubeTriList.data)
 							  (sizeof s_cubeTriList))))
 			      (let ((vsh (bgfx--ShaderHandle (loadShader (string "v_simple.bin"))))
 				    (fsh (bgfx--ShaderHandle (loadShader (string "f_simple.bin"))))
@@ -512,25 +518,25 @@
 					;"float view[16], proj[16], mtx[16];"
 			      ,@(loop for e in `(view proj mtx)
 				      collect
-				      `(let ((,e (std--array<float> 16)))))
-			      (bx--mtxLookAt view eye at)
-			      (bx--mtxProj proj 60s0
+				      `(let ((,e ("std::array<float,16>")))))
+			      (bx--mtxLookAt (view.data) eye at)
+			      (bx--mtxProj (proj.data) 60s0
 					   (/ width
 					      (static_cast<float> height))
 					   .1s0
 					   100s0
 					   (-> (bgfx--getCaps)
 					       homogeneousDepth))
-			      (bgfx--setViewTransform 0 view proj)
+			      (bgfx--setViewTransform 0 (view.data) ( proj.data))
 			      (bgfx--setViewRect 0 0 0 width height)
-			      (bx--mtxRotateY mtx 0s0)
+			      (bx--mtxRotateY ( mtx.data) 0s0)
 			      (do0
 			       (comments "position x y z")
 			       ,@(loop for e in `(12 13 14)
 				       collect
 				       `(setf (aref mtx ,e)
 					      0s0)))
-			      (bgfx--setTransform mtx)
+			      (bgfx--setTransform (mtx.data))
 			      (bgfx--setVertexBuffer 0 m_vbh)
 			      (bgfx--setIndexBuffer m_ibh)
 			      (bgfx--setState BGFX_STATE_DEFAULT)
