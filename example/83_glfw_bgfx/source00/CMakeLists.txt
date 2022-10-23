@@ -25,4 +25,4 @@ set_target_properties( bgfx-shared PROPERTIES
 IMPORTED_LOCATION "/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so"
 INTERFACE_INCLUDE_DIRECTORIES "/home/martin/src/bgfx/include" )
 add_definitions( -DBX_CONFIG_DEBUG )
-target_link_libraries( mytest PRIVATE bgfx-shared GL X11 glfw )
+target_link_libraries( mytest PRIVATE bgfx-shared GL X11 glfw dl pthread rt )

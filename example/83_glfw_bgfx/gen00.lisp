@@ -248,10 +248,11 @@
 		       *source-dir*))
      ;; vertex shader
      `(do0
-       "$input a_position, a_color0
-"
+       "$input a_position, a_color0"
        "$output v_color0"
-       (include <bgfx_shader.sh>)
+
+       (include <bgfx_shader.sh>
+		"shaderlib.sh")
 
        (defun main ()
 	 (setf gl_Position (mul u_modelViewProj
@@ -269,6 +270,9 @@
      `(do0
        "$input v_color0"
 
+       (include <bgfx_shader.sh>
+		"shaderlib.sh")
+
        (defun main ()
 	 (setf gl_FragColor v_color0)))
      :format nil)
@@ -281,8 +285,15 @@
      `(do0
        "vec4 v_color0 : COLOR0;"
        "vec3 a_position : POSITION;"
-       "vec4 a_color0 : COLOR0;")
+       "vec4 a_color0 : COLOR0;
+"
+       )
      :format nil)
+
+    (sb-ext:run-program
+     "/usr/bin/bash"
+     `("/home/martin/stage/cl-cpp-generator2/example/83_glfw_bgfx/source00/setup01_compile_shader.sh")
+     )
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
@@ -587,6 +598,7 @@ INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/examples/common\" )")
 		 bgfx-shared
 					; bx bgfx bimg
 		 GL X11 glfw
+		 dl pthread rt
 					;imgui
 
 					;"imgui::imgui"
