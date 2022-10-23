@@ -4,7 +4,8 @@ set( CMAKE_CXX_COMPILER g++ )
 set( CMAKE_VERBOSE_MAKEFILE ON )
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0   -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused ")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused ")
-set( SRCS /home/martin/stage/cl-cpp-generator2/example/83_glfw_bgfx/source00/main.cpp
+set( SRCS /home/martin/stage/cl-cpp-generator2/example/83_glfw_bgfx/source00/PosColorVertex.cpp
+/home/martin/stage/cl-cpp-generator2/example/83_glfw_bgfx/source00/main.cpp
 /home/martin/src/bgfx/examples/common/imgui/imgui.cpp
 /home/martin/src/bgfx/3rdparty/dear-imgui/imgui.cpp
 /home/martin/src/bgfx/3rdparty/dear-imgui/imgui_demo.cpp

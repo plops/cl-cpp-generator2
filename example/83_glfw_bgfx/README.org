@@ -1,8 +1,9 @@
 https://github.com/jpcy/bgfx-minimal-example/blob/master/helloworld_mt.cpp
 
 https://dev.to/pperon/hello-bgfx-4dka
-https://www.sandeepnambiar.com/getting-started-with-bgfx/
 
+https://www.sandeepnambiar.com/getting-started-with-bgfx/
+https://github.com/gamedolphin/bgfx-sample
 
 bgfx
 https://www.youtube.com/watch?v=oUQJm755GwY
