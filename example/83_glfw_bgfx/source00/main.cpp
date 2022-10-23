@@ -48,7 +48,7 @@ bgfx::ShaderHandle loadShader(const char *_name) {
     fileSize = file.tellg();
     file.seekg(0, std::ios::beg);
     assert((fileSize) < (dataLen));
-    file.read(data, fileSize);
+    file.read(data, static_cast<std::streamsize>(fileSize));
     file.close();
   } else {
     lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",

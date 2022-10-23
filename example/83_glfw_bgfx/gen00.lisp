@@ -388,7 +388,7 @@
 			     (setf fileSize (file.tellg))
 			     (file.seekg 0 std--ios--beg)
 			     (assert (< fileSize dataLen))
-			     (file.read data fileSize)
+			     (file.read data ("static_cast<std::streamsize>" fileSize))
 			     (file.close))
 			    (do0
 			     ,(lprint :msg "warning: can't open shader file")))

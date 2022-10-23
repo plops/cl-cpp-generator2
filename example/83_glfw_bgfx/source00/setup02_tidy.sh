@@ -6,5 +6,6 @@ clang-tidy \
     -I/home/martin/src/bx/include \
     -I/home/martin/src/bgfx/3rdparty/ \
     -I/home/martin/src/bimg/include/ \
+    -I/home/martin/src/bgfx/examples/common \
     -DBX_CONFIG_DEBUG
     
