@@ -1,7 +1,9 @@
 #include "PosColorVertex.h"
 #include <GLFW/glfw3.h>
+#include <array>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+#include <bx/math.h>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -22,8 +24,8 @@ bgfx::VertexBufferHandle m_vbh;
 bgfx::IndexBufferHandle m_ibh;
 bgfx::ProgramHandle m_program;
 void lprint(std::initializer_list<std::string> il) {
-  std::chrono::duration<double> timestamp =
-      std::chrono::high_resolution_clock::now() - g_start_time;
+  std::chrono::duration<double> timestamp(0);
+  timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
   (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
               << (std::this_thread::get_id()) << (" ");
   for (const auto &elem : il) {
@@ -34,7 +36,8 @@ void lprint(std::initializer_list<std::string> il) {
 bgfx::ShaderHandle loadShader(const char *_name) {
   lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
           "loadShader", " "});
-  auto *data = new char[2048];
+  const int dataLen = 2048;
+  auto *data = new char[dataLen];
   auto file = std::ifstream();
   auto fileSize = size_t(0);
   file.open(_name);
@@ -44,7 +47,7 @@ bgfx::ShaderHandle loadShader(const char *_name) {
     file.seekg(0, std::ios::end);
     fileSize = file.tellg();
     file.seekg(0, std::ios::beg);
-    assert((fileSize) < (2048));
+    assert((fileSize) < (dataLen));
     file.read(data, fileSize);
     file.close();
   } else {
@@ -66,7 +69,10 @@ int main(int argc, char **argv) {
       lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
               "glfwInit failed", " "});
     }
-    auto window = glfwCreateWindow(800, 600, "hello bgfx", nullptr, nullptr);
+    auto startWidth = 800;
+    auto startHeight = 600;
+    auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
+                                   nullptr, nullptr);
     if (!(window)) {
       lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
               "can't create glfw window", " "});
@@ -105,8 +111,9 @@ int main(int argc, char **argv) {
     auto fsh = bgfx::ShaderHandle(loadShader("f_simple.bin"));
     m_program = bgfx::createProgram(vsh, fsh, true);
     auto debug = BGFX_DEBUG_TEXT;
+    auto darkGray = 0x303030FF;
     bgfx::setDebug(debug);
-    bgfx::setViewClear(0, ((BGFX_CLEAR_COLOR) | (BGFX_CLEAR_DEPTH)), 0x303030FF,
+    bgfx::setViewClear(0, ((BGFX_CLEAR_COLOR) | (BGFX_CLEAR_DEPTH)), darkGray,
                        (1.0f), 0);
     bgfx::setViewRect(0, 0, 0, bgfx::BackbufferRatio::Equal);
     imguiCreate();
@@ -130,6 +137,27 @@ int main(int argc, char **argv) {
     bgfx::dbgTextClear();
     bgfx::dbgTextPrintf(0, 0, 15, "press F1 to toggle stats");
     bgfx::setDebug(BGFX_DEBUG_STATS);
+    auto at = bx::Vec3((0.f), (0.f), (0.f));
+    auto eye = bx::Vec3((0.f), (0.f), (10.f));
+    auto view = std::array<float>(16);
+    auto proj = std::array<float>(16);
+    auto mtx = std::array<float>(16);
+    bx::mtxLookAt(view, eye, at);
+    bx::mtxProj(proj, (60.f), ((width) / (static_cast<float>(height))), (0.10f),
+                (1.00e+2f), bgfx::getCaps()->homogeneousDepth);
+    bgfx::setViewTransform(0, view, proj);
+    bgfx::setViewRect(0, 0, 0, width, height);
+    bx::mtxRotateY(mtx, (0.f));
+    // position x y z
+    ;
+    mtx[12] = (0.f);
+    mtx[13] = (0.f);
+    mtx[14] = (0.f);
+    bgfx::setTransform(mtx);
+    bgfx::setVertexBuffer(0, m_vbh);
+    bgfx::setIndexBuffer(m_ibh);
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(0, m_program);
     bgfx::frame();
   }
   bgfx::shutdown();

@@ -17,7 +17,10 @@
   `(defun lprint (il)
      (declare (type "std::initializer_list<std::string>" il))
 
-     "std::chrono::duration<double>  timestamp = std::chrono::high_resolution_clock::now() - g_start_time;"
+     "std::chrono::duration<double>  timestamp(0);"
+     (setf timestamp (- ("std::chrono::high_resolution_clock::now")
+			g_start_time
+			))
      (<< "std::cout"
 	 ("std::setw" 10)
 	 (dot timestamp

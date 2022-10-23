@@ -319,12 +319,15 @@
 
 		    (do0
 					;"#define BX_CONFIG_DEBUG"
-					;(include <bx/bx.h>)
+		     (include ; <bx/bx.h>
+		      <bx/math.h>
+		      )
 		     (include <bgfx/bgfx.h>
 			      <bgfx/platform.h>
 			      )
 		     (include "PosColorVertex.h")
-		     (include <fstream>))
+		     (include <fstream>
+			      <array>))
 		    (do0
 		     (include <GLFW/glfw3.h>
 			      )
@@ -369,7 +372,8 @@
 		      (declare (type "const char*" _name)
 			       (values "bgfx::ShaderHandle"))
 		      ,(lprint :msg "loadShader" :vars `())
-		      (let ((*data (new "char[2048]"))
+		      "const int dataLen=2048;"
+		      (let ((*data (new "char[dataLen]"))
 			    (file (std--ifstream))
 			    (fileSize (size_t 0)))
 			(file.open _name)
@@ -379,7 +383,7 @@
 			     (file.seekg 0 std--ios--end)
 			     (setf fileSize (file.tellg))
 			     (file.seekg 0 std--ios--beg)
-			     (assert (< fileSize 2048))
+			     (assert (< fileSize dataLen))
 			     (file.read data fileSize)
 			     (file.close))
 			    (do0
@@ -406,7 +410,9 @@
 					(declare (values GLFWwindow*))
 					(unless (glfwInit)
 					  ,(lprint :msg "glfwInit failed"))
-					(let ((window (glfwCreateWindow 800 600
+					(let ((startWidth 800)
+					      (startHeight 600)
+					      (window (glfwCreateWindow startWidth startHeight
 									(string "hello bgfx")
 									nullptr
 									nullptr)))
@@ -454,12 +460,13 @@
 				(setf m_program (bgfx--createProgram vsh fsh true))))
 
 
-			     (let ((debug BGFX_DEBUG_TEXT))
+			     (let ((debug BGFX_DEBUG_TEXT)
+				   (darkGray (hex #x303030ff)))
 			       (bgfx--setDebug debug)
 			       (bgfx--setViewClear 0
 						   (logior BGFX_CLEAR_COLOR
 							   BGFX_CLEAR_DEPTH)
-						   (hex #x303030ff)
+						   darkGray
 						   1s0
 						   0)
 			       (bgfx--setViewRect 0
@@ -490,11 +497,44 @@
 						    bgfx--BackbufferRatio--Equal)))))
 			  (do0
 			   (comments "draw frame")
+
+
 			   (bgfx--touch 0)
 			   (bgfx--dbgTextClear)
 			   (bgfx--dbgTextPrintf 0 0 #xf (string "press F1 to toggle stats"))
 			   (bgfx--setDebug BGFX_DEBUG_STATS ;TEXT
 					   )
+
+			   (do0
+			    (let ((at (bx--Vec3 .0s0 .0s0 .0s0))
+				  (eye (bx--Vec3 .0s0 .0s0 10s0))
+				  )
+					;"float view[16], proj[16], mtx[16];"
+			      ,@(loop for e in `(view proj mtx)
+				      collect
+				      `(let ((,e (std--array<float> 16)))))
+			      (bx--mtxLookAt view eye at)
+			      (bx--mtxProj proj 60s0
+					   (/ width
+					      (static_cast<float> height))
+					   .1s0
+					   100s0
+					   (-> (bgfx--getCaps)
+					       homogeneousDepth))
+			      (bgfx--setViewTransform 0 view proj)
+			      (bgfx--setViewRect 0 0 0 width height)
+			      (bx--mtxRotateY mtx 0s0)
+			      (do0
+			       (comments "position x y z")
+			       ,@(loop for e in `(12 13 14)
+				       collect
+				       `(setf (aref mtx ,e)
+					      0s0)))
+			      (bgfx--setTransform mtx)
+			      (bgfx--setVertexBuffer 0 m_vbh)
+			      (bgfx--setIndexBuffer m_ibh)
+			      (bgfx--setState BGFX_STATE_DEFAULT)
+			      (bgfx--submit 0 m_program)))
 			   (bgfx--frame))))
 		      (bgfx--shutdown)
 		      (glfwTerminate)
@@ -512,7 +552,8 @@
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
       (let ((dbg "-ggdb -O0")
-	    (asan "" ; "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+	    (asan ;""
+	     "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
 	    (show-err ;"";
 	     " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
@@ -526,8 +567,8 @@
 	  #+nil(loop for e in `(xtl xsimd xtensor)
 		     do
 		     (format s "find_package( ~a REQUIRED )~%" e))
-					;(out "set( CMAKE_CXX_COMPILER clang++ )")
-	  (out "set( CMAKE_CXX_COMPILER g++ )")
+	  (out "set( CMAKE_CXX_COMPILER clang++ )")
+					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
@@ -562,7 +603,7 @@
 
 	  #+nil
 	  (progn
-	    (out "add_library( bgfx STATIC IMPORTED )")  ;; SHARED or STATIC
+	    (out "add_library( bgfx STATIC IMPORTED )")	;; SHARED or STATIC
 	    (out "set_target_properties( bgfx PROPERTIES
 IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a\"
 INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
