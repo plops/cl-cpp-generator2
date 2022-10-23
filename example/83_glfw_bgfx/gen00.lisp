@@ -246,6 +246,7 @@
       'cl-cpp-generator2
       (merge-pathnames #P"v_simple.sc"
 		       *source-dir*))
+     ;; vertex shader
      `(do0
        "$input a_position, a_color0
 "
@@ -257,6 +258,30 @@
 				(vec4 a_position
 				      1s0))
 	       v_color a_color0)))
+     :format nil)
+
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"f_simple.sc"
+		       *source-dir*))
+     ;; fragment shader
+     `(do0
+       "$input v_color0"
+
+       (defun main ()
+	 (setf gl_FragColor v_color0)))
+     :format nil)
+
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"varying.def.sc"
+		       *source-dir*))
+     `(do0
+       "vec4 v_color0 : COLOR0;"
+       "vec3 a_position : POSITION;"
+       "vec4 a_color0 : COLOR0;")
      :format nil)
 
     (write-source (asdf:system-relative-pathname
