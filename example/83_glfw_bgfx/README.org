@@ -16,7 +16,7 @@ sudo apt-get install libgl1-mesa-dev x11proto-core-dev libx11-dev
 
 # fedora deps
 sudo dnf install mesa-libGL-devel xorg-x11-proto-devel libX11-devel
-
+sudo dnf install glfw-devel
 
 cd ~/src
 git clone git://github.com/bkaradzic/bx.git
@@ -38,4 +38,11 @@ cd bgfx
 make linux-release64
 
 # results are in .build (2.6GB)
+cd /home/martin/src/bgfx/examples/runtime
+../../.build/linux64_gcc/bin/examplesRelease  # 4.1M binary, linked to GL, Xext, X11
+
+# nanovg looks like blender ui
+
+cd ~/src
+git clone https://github.com/ocornut/imgui
 #+end_example

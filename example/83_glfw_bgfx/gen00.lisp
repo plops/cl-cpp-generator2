@@ -223,6 +223,21 @@
 		     )
 
 
+		    (do0
+					;"#define BX_CONFIG_DEBUG"
+					;(include <bx/bx.h>)
+		     (include <bgfx/bgfx.h>
+					; <bgfx/platform.h>
+			      ))
+		    (do0
+		     (include <GLFW/glfw3.h>
+			      )
+		     "#define GLFW_EXPOSE_NATIVE_X11"
+		     (include
+		      <GLFW/glfw3native.h>)
+		     (include <imgui/imgui.h>)
+		     )
+
 					;"namespace stdex = std::experimental;"
 
 
@@ -239,6 +254,45 @@
 		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
 		      ,(lprint :msg "start" :vars `(argc))
+
+		      (let ((*window ((lambda ()
+					(declare (values GLFWwindow*))
+					(unless (glfwInit)
+					  ,(lprint :msg "glfwInit failed"))
+					(let ((window (glfwCreateWindow 800 600
+									(string "hello bgfx")
+									nullptr
+									nullptr)))
+					  (unless window
+					    ,(lprint :msg "can't create glfw window"))
+					  (return window))
+					)))))
+		      ((lambda ()
+			 (declare (capture window))
+			 (let ((bi (bgfx--Init)))
+			   (do0
+			    (setf bi.platformData.ndt (glfwGetX11Display))
+			    (setf bi.platformData.nwh (reinterpret_cast<void*> (static_cast<uintptr_t> (glfwGetX11Window window)))))
+			   ,@(loop for (e f)
+				   in `((type bgfx--RendererType--Count)
+					(resolution.width 800)
+					(resolution.height 600)
+					(resolution.reset BGFX_RESET_VSYNC))
+				   collect
+				   `(setf (dot bi ,e)
+					  ,f))
+			   (unless (bgfx--init bi)
+			     ,(lprint :msg "bgfx init failed"))
+			   (let ((debug BGFX_DEBUG_TEXT))
+			     (bgfx--setDebug debug)
+			     (bgfx--setViewClear 0
+						 (logior BGFX_CLEAR_COLOR
+							 BGFX_CLEAR_DEPTH)
+						 (hex #x303030ff)
+						 1s0
+						 0)
+			     (imguiCreate))
+			   )))
 
 
 		      (return 0))))
@@ -265,8 +319,8 @@
 	  #+nil(loop for e in `(xtl xsimd xtensor)
 		     do
 		     (format s "find_package( ~a REQUIRED )~%" e))
-	  (out "set( CMAKE_CXX_COMPILER clang++ )")
-					;(out "set( CMAKE_CXX_COMPILER g++ )")
+					;(out "set( CMAKE_CXX_COMPILER clang++ )")
+	  (out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
@@ -276,10 +330,20 @@
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
-		(directory (format nil "~a/*.cpp" *full-source-dir*))))
+		(directory (format nil "~a/*.cpp" *full-source-dir*))
+		(directory (format nil "/home/martin/src/bgfx/examples/common/imgui/imgui.cpp"))
+		(directory (format nil "/home/martin/src/bgfx/3rdparty/dear-imgui/imgui*.cpp"))
+
+		))
 
 	  (out "add_executable( mytest ${SRCS} )")
 					;(out "include_directories( /usr/local/include/  )")
+	  (out "target_include_directories( mytest PRIVATE
+/home/martin/src/bgfx/include/
+/home/martin/src/bx/include/
+/home/martin/src/bimg/include/
+/home/martin/src/bgfx/examples/common
+/home/martin/src/bgfx/3rdparty/ )")
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
@@ -287,9 +351,38 @@
 	  #+nil (loop for e in `(imgui implot)
 		      do
 		      (out "find_package( ~a CONFIG REQUIRED )" e))
+					;(out "link_directories( /home/martin/src/bgfx/.build/linux64_gcc/bin/ )")
+
 	  #+nil
+	  (progn
+	    (out "add_library( bgfx STATIC IMPORTED )")  ;; SHARED or STATIC
+	    (out "set_target_properties( bgfx PROPERTIES
+IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a\"
+INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
+	    )
+	  (progn
+	    (out "add_library( bgfx SHARED IMPORTED )")
+	    (out "set_target_properties( bgfx PROPERTIES
+IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so\"
+INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
+	    )
+
+	  #+nil(progn
+		 (out "add_library( imgui SHARED IMPORTED )")
+		 (out "set_target_properties( imgui PROPERTIES
+INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/examples/common\" )")
+		 )
+
+	  (out "add_definitions( -DBX_CONFIG_DEBUG )")
+
+
+
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `(			;"imgui::imgui"
+	       `(bgfx
+		 GL X11 glfw
+					;imgui
+
+					;"imgui::imgui"
 					; "implot::implot"
 					;"std::mdspan"
 					;"xtensor"
