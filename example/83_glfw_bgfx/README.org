@@ -4,6 +4,10 @@ https://dev.to/pperon/hello-bgfx-4dka
 https://www.sandeepnambiar.com/getting-started-with-bgfx/
 
 
+bgfx
+https://www.youtube.com/watch?v=oUQJm755GwY
+
+
 #+begin_example
 
 # ubuntu deps
