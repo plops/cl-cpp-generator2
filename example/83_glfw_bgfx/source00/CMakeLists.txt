@@ -19,9 +19,17 @@ target_include_directories( mytest PRIVATE
 /home/martin/src/bgfx/examples/common
 /home/martin/src/bgfx/3rdparty/ )
 target_compile_features( mytest PUBLIC cxx_std_20 )
-add_library( bgfx SHARED IMPORTED )
+add_library( bx STATIC IMPORTED )
+set_target_properties( bx PROPERTIES
+IMPORTED_LOCATION "/home/martin/src/bgfx/.build/linux64_gcc/bin/libbxRelease.a"
+INTERFACE_INCLUDE_DIRECTORIES "/home/martin/src/bx/include" )
+add_library( bgfx STATIC IMPORTED )
 set_target_properties( bgfx PROPERTIES
-IMPORTED_LOCATION "/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so"
+IMPORTED_LOCATION "/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a"
 INTERFACE_INCLUDE_DIRECTORIES "/home/martin/src/bgfx/include" )
+add_library( bimg STATIC IMPORTED )
+set_target_properties( bimg PROPERTIES
+IMPORTED_LOCATION "/home/martin/src/bgfx/.build/linux64_gcc/bin/libbimgRelease.a"
+INTERFACE_INCLUDE_DIRECTORIES "/home/martin/src/bimg/include" )
 add_definitions( -DBX_CONFIG_DEBUG )
-target_link_libraries( mytest PRIVATE bgfx GL X11 glfw )
+target_link_libraries( mytest PRIVATE bx bgfx bimg GL X11 glfw )

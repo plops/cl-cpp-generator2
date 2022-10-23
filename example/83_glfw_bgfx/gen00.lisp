@@ -395,12 +395,25 @@
 IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfxRelease.a\"
 INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
 	    )
+
+	  (loop for e in `(bx bgfx bimg)
+		do
+		(progn
+		  (out "add_library( ~a STATIC IMPORTED )" e)
+		  (out "set_target_properties( ~a PROPERTIES
+IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/lib~aRelease.a\"
+INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/~a/include\" )" e e e)
+		  ))
+
+	  #+nil
 	  (progn
-	    (out "add_library( bgfx SHARED IMPORTED )")
-	    (out "set_target_properties( bgfx PROPERTIES
+	    (out "add_library( bgfx-shared SHARED IMPORTED )")
+	    (out "set_target_properties( bgfx-shared PROPERTIES
 IMPORTED_LOCATION \"/home/martin/src/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so\"
 INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/include\" )")
 	    )
+
+
 
 	  #+nil(progn
 		 (out "add_library( imgui SHARED IMPORTED )")
@@ -413,7 +426,9 @@ INTERFACE_INCLUDE_DIRECTORIES \"/home/martin/src/bgfx/examples/common\" )")
 
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `(bgfx
+	       `(
+					;bgfx-shared
+		 bx bgfx bimg
 		 GL X11 glfw
 					;imgui
 
