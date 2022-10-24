@@ -11,14 +11,17 @@
 #include <thread>
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
+#include <entt/entity/registry.hpp>
 #include <imgui/imgui.h>
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 bgfx::VertexLayout PosColorVertex::ms_decl;
+const auto X = .5f;
+const auto RED = 0xff0000ff;
+const auto YELLOW = 0xff00ff00;
 auto s_cubeVertices = std::array<PosColorVertex, 4>(
-    {PosColorVertex({(0.50f), (0.50f), (0.f), 0xFF0000FF}),
-     PosColorVertex({(0.50f), (-0.50f), (0.f), 0xFF0000FF}),
-     PosColorVertex({(-0.50f), (-0.50f), (0.f), 0xFF00FF00}),
-     PosColorVertex({(-0.50f), (0.50f), (0.f), 0xFF00FF00})});
+    {PosColorVertex({X, X, (0.f), RED}), PosColorVertex({X, -X, (0.f), RED}),
+     PosColorVertex({-X, -X, (0.f), YELLOW}),
+     PosColorVertex({-X, X, (0.f), YELLOW})});
 auto s_cubeTriList = std::array<uint16_t, 6>({0, 1, 3, 1, 2, 3});
 bgfx::VertexBufferHandle m_vbh;
 bgfx::IndexBufferHandle m_ibh;

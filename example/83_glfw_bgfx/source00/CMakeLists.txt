@@ -18,7 +18,8 @@ target_include_directories( mytest PRIVATE
 /home/martin/src/bx/include/
 /home/martin/src/bimg/include/
 /home/martin/src/bgfx/examples/common
-/home/martin/src/bgfx/3rdparty/ )
+/home/martin/src/bgfx/3rdparty/
+/home/martin/src/entt/src/ )
 target_compile_features( mytest PUBLIC cxx_std_20 )
 add_library( bgfx-shared SHARED IMPORTED )
 set_target_properties( bgfx-shared PROPERTIES

@@ -44,6 +44,20 @@ cd /home/martin/src/bgfx/examples/runtime
 
 # nanovg looks like blender ui
 
+# a version of imgui comes with bgfx, no need to download another one
+# cd ~/src
+# git clone https://github.com/ocornut/imgui
+#+end_example
+
+
+
+
+- entt
+#+begin_example
+
 cd ~/src
-git clone https://github.com/ocornut/imgui
+git clone https://github.com/skypjack/entt
+
+# 33Mb
+
 #+end_example

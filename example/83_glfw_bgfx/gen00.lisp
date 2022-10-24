@@ -335,6 +335,7 @@
 		     (include
 		      <GLFW/glfw3native.h>)
 		     (include <imgui/imgui.h>)
+		     (include <entt/entity/registry.hpp>)
 		     )
 
 					;"namespace stdex = std::experimental;"
@@ -344,17 +345,21 @@
 
 		    "bgfx::VertexLayout PosColorVertex::ms_decl;"
 
-		    (let (("s_cubeVertices"
+		    "const auto X = .5f;"
+		    "const auto RED = 0xff0000ff;"
+		    "const auto YELLOW = 0xff00ff00;"
+		    (let (
+			  ("s_cubeVertices"
 			   ("std::array<PosColorVertex,4>"
-			    (curly ,@(loop for e in `((.5 .5 .0 #xff0000ff)
-						      (.5 -.5 .0 #xff0000ff)
-						      (-.5 -.5 .0 #xff00ff00)
-						      (-.5 .5 .0 #xff00ff00))
+			    (curly ,@(loop for e in `((X X .0 RED)
+						      (X -X .0 RED)
+						      (-X -X .0 YELLOW)
+						      (-X X .0 YELLOW))
 					   collect
 					   (destructuring-bind (x y z col) e
 					     `(PosColorVertex
 					       (curly ,x ,y ,z
-						      (hex ,col)))))))))
+						      ,col))))))))
 					;(declare (type "static PosColorVertex" "s_cubeVertices[]"))
 		      )
 
@@ -597,7 +602,8 @@
 /home/martin/src/bx/include/
 /home/martin/src/bimg/include/
 /home/martin/src/bgfx/examples/common
-/home/martin/src/bgfx/3rdparty/ )")
+/home/martin/src/bgfx/3rdparty/
+/home/martin/src/entt/src/ )")
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
