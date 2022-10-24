@@ -7,7 +7,9 @@ https://glbinding.org/
 
  created by CG Internals and the Computer Graphics Systems Group at
  the Hasso Plattner Institute, University of Potsdam, Germany.
- 
+
+
+ maybe i can use this with WebGL as well
 
  https://github.com/cginternals/glbinding/releases
  (only for windows)
