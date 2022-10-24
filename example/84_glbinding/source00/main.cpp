@@ -9,6 +9,9 @@
 #include <thread>
 using namespace gl32core;
 using namespace glbinding;
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
@@ -37,6 +40,9 @@ int main(int argc, char **argv) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // enable Vsync
+    ;
+    glfwSwapInterval(1);
     const auto startWidth = 800;
     const auto startHeight = 600;
     auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
@@ -60,6 +66,14 @@ int main(int argc, char **argv) {
     const float a = (1.0f);
     glClearColor(r, g, b, a);
   }
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  auto io = ImGui::GetIO();
+  ImGui::StyleColorsLight();
+  const auto installCallbacks = true;
+  ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
+  const auto glslVersion = "#version 150";
+  ImGui_ImplOpenGL3_Init(glslVersion);
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
     ([&width, &height, window]() {

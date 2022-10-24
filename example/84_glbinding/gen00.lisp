@@ -54,13 +54,16 @@
 		     "using namespace gl32core;"
 		     "using namespace glbinding;")
 		    (do0
+		     (include <imgui.h>
+			      <backends/imgui_impl_glfw.h>
+			      <backends/imgui_impl_opengl3.h>)
 		     "#define GLFW_INCLUDE_NONE"
 		     (include <GLFW/glfw3.h>
 			      )
 		     #+nil (do0 "#define GLFW_EXPOSE_NATIVE_X11"
 				(include
 				 <GLFW/glfw3native.h>))
-					;(include <imgui/imgui.h>)
+
 
 		     )
 
@@ -96,6 +99,8 @@
 					(glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT true)
 					(glfwWindowHint GLFW_OPENGL_PROFILE
 							GLFW_OPENGL_CORE_PROFILE)
+					(comments "enable Vsync")
+					(glfwSwapInterval 1)
 					(let ((startWidth 800)
 					      (startHeight 600)
 					      (window (glfwCreateWindow startWidth startHeight
@@ -137,6 +142,20 @@
 				       `(let ((,n ,e))
 					  (declare (type "const float" ,n))))
 			       (glClearColor r g b a))))
+
+			(do0
+			 (IMGUI_CHECKVERSION)
+			 (ImGui--CreateContext)
+			 (let ((io (ImGui--GetIO))))
+			 (ImGui--StyleColorsLight)
+			 (let ((installCallbacks true))
+			   (declare (type "const auto" installCallbacks))
+			   (ImGui_ImplGlfw_InitForOpenGL window installCallbacks))
+			 #+ni
+			 (ImGui_ImplGlfw_InitForOpenGL window true)
+			 (let ((glslVersion (string "#version 150")))
+			   (declare (type "const auto" glslVersion))
+			   (ImGui_ImplOpenGL3_Init glslVersion)))
 
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)
@@ -203,14 +222,20 @@
 	       (append
 		(directory (format nil "~a/*.cpp" *full-source-dir*))
 					;(directory (format nil "/home/martin/src/bgfx/examples/common/imgui/imgui.cpp"))
-					;(directory (format nil "/home/martin/src/bgfx/3rdparty/dear-imgui/imgui*.cpp"))
+		(directory (format nil "/home/martin/src/imgui/backends/imgui_impl_opengl3.cpp"))
+		(directory (format nil "/home/martin/src/imgui/backends/imgui_impl_glfw.cpp"))
+
+
+		(directory (format nil "/home/martin/src/imgui/imgui*.cpp"))
 
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
 					;(out "include_directories( /usr/local/include/  )")
-	  #+nil (out "target_include_directories( mytest PRIVATE
-/home/martin/src/entt/src/ )")
+					; /home/martin/src/entt/src/
+	  (out "target_include_directories( mytest PRIVATE
+/home/martin/src/imgui/
+ )")
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
