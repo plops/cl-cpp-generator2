@@ -227,8 +227,8 @@
 	  #+nil(loop for e in `(xtl xsimd xtensor)
 		     do
 		     (format s "find_package( ~a REQUIRED )~%" e))
-	  (out "set( CMAKE_CXX_COMPILER clang++ )")
-					;(out "set( CMAKE_CXX_COMPILER g++ )")
+	  ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
+	  (out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
@@ -257,8 +257,8 @@
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
-					;(out "target_link_options( mytest PRIVATE -static -static-libgcc -static-libstdc++  )")
-	  (loop for e in `(glbinding)
+	  (out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
+	  (loop for e in `(glbinding glfw3)
 		do
 		(out "find_package( ~a REQUIRED )" e))
 
@@ -270,7 +270,7 @@
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(
 		 "glbinding::glbinding"
-		 glfw ;GL X11
+		 glfw3 ;GL X11
 					;dl pthread
 					;rt
 					;imgui
