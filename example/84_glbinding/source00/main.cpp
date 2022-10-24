@@ -126,10 +126,9 @@ int main(int argc, char **argv) {
   MM::EntityEditor<entt::entity> editor;
   editor.registerComponent<Transform>("Transform");
   editor.registerComponent<Velocity>("Velocity");
-  entt::entity e;
   const auto n = 1000;
   for (auto i = 0; (i) < (n); (i) += (1)) {
-    e = reg.create();
+    auto e = reg.create();
     const auto range = 5000;
     const auto offset = ((range) / (2));
     const auto scale = (0.10f);

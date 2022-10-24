@@ -230,12 +230,13 @@
 			 (editor.registerComponent<Transform> (string "Transform"))
 			 (editor.registerComponent<Velocity> (string "Velocity"))
 			 (do0
-			  "entt::entity e;"
+					;"entt::entity e;"
 			  (let ((n 1000))
 			    (declare (type "const auto" n))
 			    (dotimes (i n)
-			      (setf e (reg.create))
-			      (let ((range 5000)
+
+			      (let ((e (reg.create))
+				    (range 5000)
 				    (offset (/ range 2))
 				    (scale .1s0))
 				(declare (type "const auto" range offset scale))
@@ -270,10 +271,51 @@
 			   (ImGui_ImplGlfw_NewFrame)
 
 			   #+nil
-			   (do0
-			    (ImGui--NewFrame)
-			    (editor.renderSimpleCombo reg e)
-			    (ImGui--Render))
+
+			   (progn
+			     (ImGui--NewFrame)
+
+			     (let ((*dl (ImGui--GetBackgroundDrawList)))
+			       (dot
+				reg
+				("view<Transform>")
+				(each
+				 (lambda (e trans)
+				   (declare (type auto e)
+					    (type Transform& trans)
+					    (capture "&"))
+				   (let ((eInt (+ 1 (entt--to_integral e)))
+					 (M 256)
+					 (R 13)
+					 (G 159)
+					 (B 207)
+					 (A 250)
+					 (radius 10s0)
+					 (colorBasedOnId (IM_COL32
+							  (% (* R eInt)
+							     M)
+							  (% (* G eInt)
+							     M)
+							  (% (* B eInt)
+							     M)
+							  A)))
+				     (declare (type "const auto"
+						    radius M R G B A
+						    colorBasedOnId))
+				     (dl->AddCircleFilled
+				      (ImVec2 trans.x
+					      trans.y)
+				      radius
+				      colorBasedOnId
+				      )
+				     )))))
+
+			     (ImGui--Render))
+
+			   #+nil(do0
+				 (ImGui--NewFrame)
+				 (editor.renderSimpleCombo reg e)
+				 (ImGui--Render))
 
 			   (do0
 			    (ImGui--NewFrame)
