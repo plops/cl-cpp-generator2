@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
             "create GLFW3 window", " "});
     const auto startWidth = 800;
     const auto startHeight = 600;
-    auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
-                                   nullptr, nullptr);
+    auto window =
+        glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr);
     if (!(window)) {
       lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
               "can't create glfw window", " "});

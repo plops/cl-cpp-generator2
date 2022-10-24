@@ -167,7 +167,7 @@
 					(let ((startWidth 800)
 					      (startHeight 600)
 					      (window (glfwCreateWindow startWidth startHeight
-									(string "hello bgfx")
+									(string "glfw")
 									nullptr
 									nullptr))
 					      )
