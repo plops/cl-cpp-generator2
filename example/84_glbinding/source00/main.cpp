@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
       lprint({__FILE__, ":", std::to_string(__LINE__), " ", __PRETTY_FUNCTION__,
               " ", "glfwInit failed", " "});
     }
-    glfwWindowHint(GLFW_VISIBLE, false);
+    glfwWindowHint(GLFW_VISIBLE, true);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);

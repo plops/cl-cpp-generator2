@@ -90,7 +90,7 @@
 					(declare (values GLFWwindow*))
 					(unless (glfwInit)
 					  ,(lprint :msg "glfwInit failed"))
-					(glfwWindowHint GLFW_VISIBLE false)
+					(glfwWindowHint GLFW_VISIBLE true)
 					(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
 					(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
 					(glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT true)
