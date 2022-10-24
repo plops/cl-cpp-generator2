@@ -271,7 +271,7 @@
 	       `(
 		 "glbinding::glbinding"
 		 glfw3 ;GL X11
-					;dl pthread
+					;dl  pthread
 					;rt
 					;imgui
 
