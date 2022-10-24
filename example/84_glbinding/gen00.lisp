@@ -315,6 +315,13 @@
 				       )
 				      )))))
 
+			      (do0
+					;(ImGui--NewFrame)
+			       (let ((showDemoWindow true))
+				 (ImGui--ShowDemoWindow &showDemoWindow))
+					;(ImGui--Render)
+			       )
+
 			      (ImGui--Render))
 
 			    #+nil(do0
@@ -322,11 +329,7 @@
 				  (editor.renderSimpleCombo reg e)
 				  (ImGui--Render))
 
-			    #+nil (do0
-				   (ImGui--NewFrame)
-				   (let ((showDemoWindow true))
-				     (ImGui--ShowDemoWindow &showDemoWindow))
-				   (ImGui--Render)))
+			    )
 
 
 			   ((lambda ()

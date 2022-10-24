@@ -171,6 +171,8 @@ int main(int argc, char **argv) {
             ((R) * (eInt)) % M, ((G) * (eInt)) % M, ((B) * (eInt)) % M, A);
         dl->AddCircleFilled(ImVec2(trans.x, trans.y), radius, colorBasedOnId);
       });
+      auto showDemoWindow = true;
+      ImGui::ShowDemoWindow(&showDemoWindow);
       ImGui::Render();
     }
     ([&width, &height, window]() {
