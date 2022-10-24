@@ -14,7 +14,8 @@ using namespace glbinding;
 #include <imgui.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
+const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
+    std::chrono::high_resolution_clock::now();
 void lprint(std::initializer_list<std::string> il) {
   std::chrono::duration<double> timestamp(0);
   timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
@@ -27,13 +28,13 @@ void lprint(std::initializer_list<std::string> il) {
   (std::cout) << (std::endl) << (std::flush);
 }
 int main(int argc, char **argv) {
-  g_start_time = std::chrono::high_resolution_clock::now();
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ", __PRETTY_FUNCTION__,
-          " ", "start", " ", " argc='", std::to_string(argc), "'"});
+  lprint({__FILE__, ":", std::to_string(__LINE__), " ",
+          &(__PRETTY_FUNCTION__[0]), " ", "start", " ", " argc='",
+          std::to_string(argc), "'"});
   auto *window = ([]() -> GLFWwindow * {
     if (!(glfwInit())) {
-      lprint({__FILE__, ":", std::to_string(__LINE__), " ", __PRETTY_FUNCTION__,
-              " ", "glfwInit failed", " "});
+      lprint({__FILE__, ":", std::to_string(__LINE__), " ",
+              &(__PRETTY_FUNCTION__[0]), " ", "glfwInit failed", " "});
     }
     glfwWindowHint(GLFW_VISIBLE, true);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -48,8 +49,8 @@ int main(int argc, char **argv) {
     auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
                                    nullptr, nullptr);
     if (!(window)) {
-      lprint({__FILE__, ":", std::to_string(__LINE__), " ", __PRETTY_FUNCTION__,
-              " ", "can't create glfw window", " "});
+      lprint({__FILE__, ":", std::to_string(__LINE__), " ",
+              &(__PRETTY_FUNCTION__[0]), " ", "can't create glfw window", " "});
     }
     glfwMakeContextCurrent(window);
     return window;
@@ -69,6 +70,7 @@ int main(int argc, char **argv) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   auto io = ImGui::GetIO();
+  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
   ImGui::StyleColorsLight();
   const auto installCallbacks = true;
   ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);

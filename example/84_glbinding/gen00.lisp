@@ -72,7 +72,7 @@
 					;"namespace stdex = std::experimental;"
 
 
-		    "std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;"
+		    "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
 
 
 
@@ -85,7 +85,7 @@
 			       (values int))
 
 
-		      (setf g_start_time ("std::chrono::high_resolution_clock::now"))
+					;(setf g_start_time ("std::chrono::high_resolution_clock::now"))
 
 		      ,(lprint :msg "start" :vars `(argc))
 
@@ -146,7 +146,11 @@
 			(do0
 			 (IMGUI_CHECKVERSION)
 			 (ImGui--CreateContext)
-			 (let ((io (ImGui--GetIO))))
+			 (let ((io (ImGui--GetIO)))
+			   (setf io.ConfigFlags
+				 (logior
+				  io.ConfigFlags
+				  ImGuiConfigFlags_NavEnableKeyboard)))
 			 (ImGui--StyleColorsLight)
 			 (let ((installCallbacks true))
 			   (declare (type "const auto" installCallbacks))
