@@ -28,16 +28,16 @@ public:
   float y = (0.f);
 };
 void computeVelocity(entt::registry &reg, float delta, float width,
-                     float height) {
+                     float height, float radius) {
   reg.view<Transform, Velocity>().each([&](Transform &trans, Velocity &vel) {
     (trans.x) += (((vel.x) * (delta)));
     (trans.y) += (((vel.y) * (delta)));
-    if ((((trans.x) < ((0.f))) || ((width) < (trans.x)))) {
-      trans.x = std::clamp(trans.x, (0.f), width);
+    if ((((trans.x) < (radius)) || ((((width) - (radius))) < (trans.x)))) {
+      trans.x = std::clamp(trans.x, radius, ((width) - (radius)));
       vel.x = -vel.x;
     }
-    if ((((trans.y) < ((0.f))) || ((height) < (trans.y)))) {
-      trans.y = std::clamp(trans.y, (0.f), height);
+    if ((((trans.y) < (radius)) || ((((height) - (radius))) < (trans.y)))) {
+      trans.y = std::clamp(trans.y, radius, ((height) - (radius)));
       vel.y = -vel.y;
     }
   });
@@ -147,13 +147,15 @@ int main(int argc, char **argv) {
         e, ((scale) * (static_cast<float>(((-offset) + (rand() % range))))),
         ((scale) * (static_cast<float>(((-offset) + (rand() % range))))));
   }
+  const auto radius = (10.f);
   lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
           "start loop", " "});
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
     const auto framesPerSecond = (60.f);
     computeVelocity(reg, (((1.0f)) / (framesPerSecond)),
-                    static_cast<float>(width), static_cast<float>(height));
+                    static_cast<float>(width), static_cast<float>(height),
+                    radius);
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     {
@@ -166,7 +168,6 @@ int main(int argc, char **argv) {
         const auto G = 159;
         const auto B = 207;
         const auto A = 250;
-        const auto radius = (10.f);
         const auto colorBasedOnId = IM_COL32(
             ((R) * (eInt)) % M, ((G) * (eInt)) % M, ((B) * (eInt)) % M, A);
         dl->AddCircleFilled(ImVec2(trans.x, trans.y), radius, colorBasedOnId);

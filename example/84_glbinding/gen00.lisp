@@ -90,9 +90,9 @@
 			     (y 0s0))
 			 (declare (type float x y))))
 
-		     (defun computeVelocity (reg delta width height)
+		     (defun computeVelocity (reg delta width height radius)
 		       (declare (type "entt::registry&" reg)
-				(type float delta width height))
+				(type float delta width height radius))
 		       (dot reg
 			    ("view<Transform,Velocity>")
 			    (each
@@ -102,17 +102,17 @@
 					(type Velocity& vel))
 			       (incf trans.x (* vel.x delta))
 			       (incf trans.y (* vel.y delta))
-			       (when (or (< trans.x 0s0)
-					 (< width trans.x))
+			       (when (or (< trans.x radius)
+					 (< (- width radius) trans.x))
 				 (setf trans.x (std--clamp trans.x
-							   0s0
-							   width))
+							   radius
+							   (- width radius)))
 				 (setf vel.x -vel.x))
-			       (when (or (< trans.y 0s0)
-					 (< height trans.y))
+			       (when (or (< trans.y radius)
+					 (< (- height radius) trans.y))
 				 (setf trans.y (std--clamp trans.y
-							   0s0
-							   height))
+							   radius
+							   (- height radius)))
 				 (setf vel.y -vel.y))
 			       ))))
 
@@ -262,94 +262,98 @@
 								  (% (rand)
 								     range)))))))))
 
-			(do0
-			 ,(lprint :msg "start loop")
-			 (while (not (glfwWindowShouldClose window))
-			   (glfwPollEvents)
-			   (let ((framesPerSecond 60s0))
-			     (declare (type "const auto" framesPerSecond))
-			     (computeVelocity reg
-					      (/ 1s0
-						 framesPerSecond)
-					      (static_cast<float> width)
-					      (static_cast<float> height)))
-			   (do0
-			    (ImGui_ImplOpenGL3_NewFrame)
-			    (ImGui_ImplGlfw_NewFrame)
+			(let ((radius 10s0))
+			  (declare (type "const auto" radius))
+			  ,(lprint :msg "start loop")
+			  (while (not (glfwWindowShouldClose window))
+			    (glfwPollEvents)
+			    (let ((framesPerSecond 60s0))
+			      (declare (type "const auto" framesPerSecond))
+			      (computeVelocity reg
+					       (/ 1s0
+						  framesPerSecond)
+					       (static_cast<float> width)
+					       (static_cast<float> height)
+					       radius))
+			    (do0
+			     (ImGui_ImplOpenGL3_NewFrame)
+			     (ImGui_ImplGlfw_NewFrame)
 
-			    (progn
-			      (ImGui--NewFrame)
+			     (progn
+			       (ImGui--NewFrame)
 
-			      (let ((*dl (ImGui--GetBackgroundDrawList)))
-				(dot
-				 reg
-				 ("view<Transform>")
-				 (each
-				  (lambda (e trans)
-				    (declare (type auto e)
-					     (type Transform& trans)
-					     (capture "&"))
-				    (let ((eInt (+ 1 (entt--to_integral e)))
-					  (M 256)
-					  (R 13)
-					  (G 159)
-					  (B 207)
-					  (A 250)
-					  (radius 10s0)
-					  (colorBasedOnId (IM_COL32
-							   (% (* R eInt)
-							      M)
-							   (% (* G eInt)
-							      M)
-							   (% (* B eInt)
-							      M)
-							   A)))
-				      (declare (type "const auto"
-						     radius M R G B A
-						     colorBasedOnId))
-				      (dl->AddCircleFilled
-				       (ImVec2 trans.x
-					       trans.y)
-				       radius
-				       colorBasedOnId
-				       )
-				      )))))
+			       (let ((*dl (ImGui--GetBackgroundDrawList)))
+				 (dot
+				  reg
+				  ("view<Transform>")
+				  (each
+				   (lambda (e trans)
+				     (declare (type auto e)
+					      (type Transform& trans)
+					      (capture "&"))
+				     (let ((eInt (+ 1 (entt--to_integral e)))
+					   (M 256)
+					   (R 13)
+					   (G 159)
+					   (B 207)
+					   (A 250)
 
-			      (do0
+					   (colorBasedOnId (IM_COL32
+							    (% (* R eInt)
+							       M)
+							    (% (* G eInt)
+							       M)
+							    (% (* B eInt)
+							       M)
+							    A)))
+				       (declare (type "const auto"
+						      M R G B A
+						      colorBasedOnId))
+				       (dl->AddCircleFilled
+					(ImVec2 trans.x
+						trans.y)
+					radius
+					colorBasedOnId
+					)
+				       )))))
+
+			       (do0
 					;(ImGui--NewFrame)
-			       (let ((showDemoWindow true))
-				 (ImGui--ShowDemoWindow &showDemoWindow))
+				(let ((showDemoWindow true))
+				  (ImGui--ShowDemoWindow &showDemoWindow))
 					;(ImGui--Render)
-			       )
+				)
 
-			      (ImGui--Render))
+			       #+nil(editor.renderSimpleCombo reg e)
 
-			    #+nil(do0
-				  (ImGui--NewFrame)
-				  (editor.renderSimpleCombo reg e)
-				  (ImGui--Render))
+			       (ImGui--Render))
 
-			    )
+			     #+nil(do0
+				   (ImGui--NewFrame)
+				   (editor.renderSimpleCombo reg e)
+				   (ImGui--Render))
+
+			     )
 
 
-			   ((lambda ()
-			      (declare (capture &width &height window))
-			      (comments "react to changing window size")
-			      (let ((oldwidth width)
-				    (oldheight height))
-				(glfwGetWindowSize window &width &height)
-				(when (or (!= width oldwidth)
-					  (!= height oldheight))
-				  ,(lprint :msg "window size has changed" :vars `(width height))
-				  (glViewport 0 0 width height)))))
-			   (do0
-			    (comments "draw frame")
-			    (glClear GL_COLOR_BUFFER_BIT)
-			    (ImGui_ImplOpenGL3_RenderDrawData
-			     (ImGui--GetDrawData))
-			    (glfwSwapBuffers window)
+			    ((lambda ()
+			       (declare (capture &width &height window))
+			       (comments "react to changing window size")
+			       (let ((oldwidth width)
+				     (oldheight height))
+				 (glfwGetWindowSize window &width &height)
+				 (when (or (!= width oldwidth)
+					   (!= height oldheight))
+				   ,(lprint :msg "window size has changed" :vars `(width height))
+				   (glViewport 0 0 width height)))))
+			    (do0
+			     (comments "draw frame")
+			     (glClear GL_COLOR_BUFFER_BIT)
+			     (ImGui_ImplOpenGL3_RenderDrawData
+			      (ImGui--GetDrawData))
+			     (glfwSwapBuffers window)
 
-			    ))))
+			     ))))
 
 		      (do0
 		       ,(lprint :msg "Shutdown ImGui and GLFW3")
