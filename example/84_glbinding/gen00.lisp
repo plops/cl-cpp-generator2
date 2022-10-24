@@ -90,9 +90,9 @@
 			     (y 0s0))
 			 (declare (type float x y))))
 
-		     (defun computeVelocity (reg delta)
+		     (defun computeVelocity (reg delta width height)
 		       (declare (type "entt::registry&" reg)
-				(type float delta))
+				(type float delta width height))
 		       (dot reg
 			    ("view<Transform,Velocity>")
 			    (each
@@ -103,16 +103,16 @@
 			       (incf trans.x (* vel.x delta))
 			       (incf trans.y (* vel.y delta))
 			       (when (or (< trans.x 0s0)
-					 (< 1280s0 trans.x))
+					 (< width trans.x))
 				 (setf trans.x (std--clamp trans.x
 							   0s0
-							   1280s0))
+							   width))
 				 (setf vel.x -vel.x))
 			       (when (or (< trans.y 0s0)
-					 (< 720s0 trans.y))
+					 (< height trans.y))
 				 (setf trans.y (std--clamp trans.y
 							   0s0
-							   720s0))
+							   height))
 				 (setf vel.y -vel.y))
 			       ))))
 
@@ -126,11 +126,13 @@
 					(defun ,(format nil "ComponentEditorWidget<~a>" e) (reg e)
 					  (declare (type "entt::registry&" reg)
 						   (type "entt::registry::entity_type" e))
-					  (let ((&t (,(format nil "reg.get<~a>" e) e)))
+					  (let ((&t (,(format nil "reg.get<~a>" e) e))
+						(step .1s0))
+					    (declare (type "const auto" step))
 					    (ImGui--DragFloat (string "x")
-							      &t.x .1s0)
+							      &t.x step)
 					    (ImGui--DragFloat (string "y")
-							      &t.y .1s0)))))
+							      &t.y step)))))
 			))
 
 		     )
@@ -229,30 +231,40 @@
 			 (editor.registerComponent<Velocity> (string "Velocity"))
 			 (do0
 			  "entt::entity e;"
-			  (dotimes (i 1000)
-			    (setf e (reg.create))
-			    (reg.emplace<Transform> e
-						    (* .1s0 (static_cast<float>
-							     (% (rand)
-								5000)))
-						    (* .1s0 (static_cast<float>
-							     (% (rand)
-								5000))))
-			    (reg.emplace<Velocity> e
-						   (* .1s0 (static_cast<float>
-							    (+ -2500
-							       (% (rand)
-								  5000))))
-						   (* .1s0 (static_cast<float>
-							    (+ -2500
-							       (% (rand)
-								  5000))))))))
+			  (let ((n 1000))
+			    (declare (type "const auto" n))
+			    (dotimes (i n)
+			      (setf e (reg.create))
+			      (let ((range 5000)
+				    (offset (/ range 2))
+				    (scale .1s0))
+				(declare (type "const auto" range offset scale))
+				(reg.emplace<Transform> e
+							(* scale (static_cast<float>
+								  (% (rand)
+								     range)))
+							(* scale (static_cast<float>
+								  (% (rand)
+								     range)))))
+			      (reg.emplace<Velocity> e
+						     (* scale (static_cast<float>
+							       (+ -offset
+								  (% (rand)
+								     range))))
+						     (* scale (static_cast<float>
+							       (+ -offset
+								  (% (rand)
+								     range)))))))))
 
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)
-			  (computeVelocity reg
-					   (/ 1s0
-					      60s0))
+			  (let ((framesPerSecond 60s0))
+			    (declare (type "const auto" framesPerSecond))
+			    (computeVelocity reg
+					     (/ 1s0
+						framesPerSecond)
+					     (static_cast<float> width)
+					     (static_cast<float> height)))
 			  (do0
 			   (ImGui_ImplOpenGL3_NewFrame)
 			   (ImGui_ImplGlfw_NewFrame)

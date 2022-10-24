@@ -27,16 +27,17 @@ public:
   float x = (0.f);
   float y = (0.f);
 };
-void computeVelocity(entt::registry &reg, float delta) {
+void computeVelocity(entt::registry &reg, float delta, float width,
+                     float height) {
   reg.view<Transform, Velocity>().each([&](Transform &trans, Velocity &vel) {
     (trans.x) += (((vel.x) * (delta)));
     (trans.y) += (((vel.y) * (delta)));
-    if ((((trans.x) < ((0.f))) || (((1.280e+3f)) < (trans.x)))) {
-      trans.x = std::clamp(trans.x, (0.f), (1.280e+3f));
+    if ((((trans.x) < ((0.f))) || ((width) < (trans.x)))) {
+      trans.x = std::clamp(trans.x, (0.f), width);
       vel.x = -vel.x;
     }
-    if ((((trans.y) < ((0.f))) || (((7.20e+2f)) < (trans.y)))) {
-      trans.y = std::clamp(trans.y, (0.f), (7.20e+2f));
+    if ((((trans.y) < ((0.f))) || ((height) < (trans.y)))) {
+      trans.y = std::clamp(trans.y, (0.f), height);
       vel.y = -vel.y;
     }
   });
@@ -46,15 +47,17 @@ template <>
 void ComponentEditorWidget<Transform>(entt::registry &reg,
                                       entt::registry::entity_type e) {
   auto &t = reg.get<Transform>(e);
-  ImGui::DragFloat("x", &t.x, (0.10f));
-  ImGui::DragFloat("y", &t.y, (0.10f));
+  const auto step = (0.10f);
+  ImGui::DragFloat("x", &t.x, step);
+  ImGui::DragFloat("y", &t.y, step);
 };
 template <>
 void ComponentEditorWidget<Velocity>(entt::registry &reg,
                                      entt::registry::entity_type e) {
   auto &t = reg.get<Velocity>(e);
-  ImGui::DragFloat("x", &t.x, (0.10f));
-  ImGui::DragFloat("y", &t.y, (0.10f));
+  const auto step = (0.10f);
+  ImGui::DragFloat("x", &t.x, step);
+  ImGui::DragFloat("y", &t.y, step);
 };
 }; // namespace MM
 void lprint(std::initializer_list<std::string> il) {
@@ -124,17 +127,23 @@ int main(int argc, char **argv) {
   editor.registerComponent<Transform>("Transform");
   editor.registerComponent<Velocity>("Velocity");
   entt::entity e;
-  for (auto i = 0; (i) < (1000); (i) += (1)) {
+  const auto n = 1000;
+  for (auto i = 0; (i) < (n); (i) += (1)) {
     e = reg.create();
-    reg.emplace<Transform>(e, (((0.10f)) * (static_cast<float>(rand() % 5000))),
-                           (((0.10f)) * (static_cast<float>(rand() % 5000))));
+    const auto range = 5000;
+    const auto offset = ((range) / (2));
+    const auto scale = (0.10f);
+    reg.emplace<Transform>(e, ((scale) * (static_cast<float>(rand() % range))),
+                           ((scale) * (static_cast<float>(rand() % range))));
     reg.emplace<Velocity>(
-        e, (((0.10f)) * (static_cast<float>(((-2500) + (rand() % 5000))))),
-        (((0.10f)) * (static_cast<float>(((-2500) + (rand() % 5000))))));
+        e, ((scale) * (static_cast<float>(((-offset) + (rand() % range))))),
+        ((scale) * (static_cast<float>(((-offset) + (rand() % range))))));
   }
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
-    computeVelocity(reg, (((1.0f)) / ((60.f))));
+    const auto framesPerSecond = (60.f);
+    computeVelocity(reg, (((1.0f)) / (framesPerSecond)),
+                    static_cast<float>(width), static_cast<float>(height));
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();

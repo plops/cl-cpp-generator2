@@ -4,7 +4,9 @@ clang-tidy \
     -extra-arg=-std=c++20 \
     -- \
     -I/usr/local/include \
-    -I/home/martin/src/imgui
+    -I/home/martin/src/imgui \
+    -I/home/martin/src/entt/src/ \
+    -I/home/martin/src/imgui_entt_entity_editor/
 
    
     
