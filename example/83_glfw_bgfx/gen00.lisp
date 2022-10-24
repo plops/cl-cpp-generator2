@@ -396,7 +396,8 @@
 			     (file.read data ("static_cast<std::streamsize>" fileSize))
 			     (file.close))
 			    (do0
-			     ,(lprint :msg "warning: can't open shader file")))
+			     ,(lprint :msg "warning: can't open shader file")
+			     (std--abort)))
 			(let ((mem (bgfx--copy data (+ fileSize 1))))
 			  (setf (aref mem->data (- mem->size
 						   1))

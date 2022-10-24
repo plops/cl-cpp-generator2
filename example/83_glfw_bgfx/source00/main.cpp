@@ -56,6 +56,7 @@ bgfx::ShaderHandle loadShader(const char *_name) {
   } else {
     lprint({__FILE__, ":", std::to_string(__LINE__), " ", __func__, " ",
             "warning: can't open shader file", " "});
+    std::abort();
   }
   auto mem = bgfx::copy(data, ((fileSize) + (1)));
   mem->data[((mem->size) - (1))] = '\0';

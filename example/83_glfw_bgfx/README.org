@@ -61,3 +61,4 @@ git clone https://github.com/skypjack/entt
 # 33Mb
 
 #+end_example
+- video goes through entt wiki https://www.youtube.com/watch?v=jjGY7EyaTr0
