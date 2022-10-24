@@ -1,3 +1,9 @@
+
+Minimal OpenGL program using
+- glbinding for opengl
+- entt for entity component system
+- imgui for user interface
+
 https://glbinding.org/
 https://www.khronos.org/opengl/wiki/OpenGL_Loading_Library
 https://github.com/cginternals/glbinding/blob/master/source/examples/callbacks/main.cpp
