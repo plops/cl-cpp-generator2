@@ -47,8 +47,12 @@
 
 		    (do0
 		     (include <glbinding/gl32core/gl.h>
-			      <glbinding/glbinding.h>)
-		     "using namespace gl32core;")
+			      <glbinding/glbinding.h>
+			      <glbinding/CallbackMask.h>
+			      <glbinding/FunctionCall.h>
+			      <glbinding/AbstractFunction.h>)
+		     "using namespace gl32core;"
+		     "using namespace glbinding;")
 		    (do0
 		     "#define GLFW_INCLUDE_NONE"
 		     (include <GLFW/glfw3.h>
@@ -105,8 +109,19 @@
 			(do0
 			 (comments "if second arg is false: lazy function pointer loading")
 			 (glbinding--initialize glfwGetProcAddress
-					;false
+						false
 						)
+			 (glbinding--setCallbackMask
+			  (logior
+			   CallbackMask--After
+			   CallbackMask--ParametersAndReturnValue))
+			 (glbinding--setAfterCallback
+			  (lambda (call)
+			    (declare (type "const glbinding::FunctionCall&"
+					   call)
+				     )
+			    (let ((fun (dot call  (-> function (name)))))
+			      ,(lprint :msg `fun))))
 			 (glClearColor .4s0 .4s0 .2s0 1s0))
 
 			(while (not (glfwWindowShouldClose window))
