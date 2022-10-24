@@ -3,7 +3,7 @@
 		   (string ":")
 		   ("std::to_string" __LINE__)
 		   (string " ")
-		   __func__
+		   __PRETTY_FUNCTION__ ;__func__
 		   (string " ")
 		   (string ,msg)
 		   (string " ")

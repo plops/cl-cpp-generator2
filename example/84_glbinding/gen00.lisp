@@ -46,9 +46,9 @@
 				    <array>))
 
 		    (do0
-		     (include <glbinding/gl/gl.h>
+		     (include <glbinding/gl32core/gl.h>
 			      <glbinding/glbinding.h>)
-		     "using namespace gl;")
+		     "using namespace gl32core;")
 		    (do0
 		     "#define GLFW_INCLUDE_NONE"
 		     (include <GLFW/glfw3.h>
@@ -96,15 +96,18 @@
 					  (declare (type "const auto" startWidth startHeight))
 					  (unless window
 					    ,(lprint :msg "can't create glfw window"))
+					  (glfwMakeContextCurrent window)
 					  (return window))
 					)))))
 		      (let ((width (int 0))
 			    (height (int 0)))
 
 			(do0
-			 (comments "lazy function pointer loading")
+			 (comments "if second arg is false: lazy function pointer loading")
 			 (glbinding--initialize glfwGetProcAddress
-						false))
+					;false
+						)
+			 (glClearColor .4s0 .4s0 .2s0 1s0))
 
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)
@@ -124,6 +127,7 @@
 			  (do0
 			   (comments "draw frame")
 			   (glClear GL_COLOR_BUFFER_BIT)
+			   (glfwSwapBuffers window)
 
 			   )))
 
@@ -194,8 +198,8 @@
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(
 		 "glbinding::glbinding"
-		 GL X11 glfw
-		 dl pthread
+		 glfw ;GL X11
+					;dl pthread
 					;rt
 					;imgui
 
