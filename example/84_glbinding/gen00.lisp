@@ -123,7 +123,14 @@
 					  )
 				 (let ((fun (dot call  (-> function (name)))))
 				   ,(lprint :msg `fun)))))
-			 (glClearColor .4s0 .4s0 .2s0 1s0))
+			 ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
+			    `(progn
+			       ,@(loop for e in l
+				       and n in `(r g b a)
+				       collect
+				       `(let ((,n ,e))
+					  (declare (type "const float" ,n))))
+			       (glClearColor r g b a))))
 
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)

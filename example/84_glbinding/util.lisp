@@ -21,8 +21,10 @@
      (setf timestamp (- ("std::chrono::high_resolution_clock::now")
 			g_start_time
 			))
+     (let ((defaultWidth 10))
+       (declare (type "const auto" defaultWidth)))
      (<< "std::cout"
-	 ("std::setw" 10)
+	 ("std::setw" defaultWidth)
 	 (dot timestamp
 	      (count))
 	 (string " ")
