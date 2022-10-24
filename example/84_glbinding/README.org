@@ -27,3 +27,11 @@ git clone https://github.com/cginternals/glbinding.git
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
 
 #+end_example
+
+- imgui editor
+
+#+begin_example
+
+git clone https://github.com/Green-Sky/imgui_entt_entity_editor
+
+#+end_example

@@ -64,6 +64,10 @@
 				(include
 				 <GLFW/glfw3native.h>))
 
+		     (do0
+					;(include <entt/entt.hpp>)
+		      (include <imgui_entt_entity_editor.hpp>))
+
 
 		     )
 
@@ -73,8 +77,63 @@
 
 
 		    "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
+		    (do0
+		     (defclass+ Transform ()
+		       "public:"
+		       (let ((x 0s0)
+			     (y 0s0))
+			 (declare (type float x y))))
+
+		     (defclass+ Velocity ()
+		       "public:"
+		       (let ((x 0s0)
+			     (y 0s0))
+			 (declare (type float x y))))
+
+		     (defun computeVelocity (reg delta)
+		       (declare (type "entt::registry&" reg)
+				(type float delta))
+		       (dot reg
+			    ("view<Transform,Velocity>")
+			    (each
+			     (lambda (trans vel)
+			       (declare (capture "&")
+					(type Transform& trans)
+					(type Velocity& vel))
+			       (incf trans.x (* vel.x delta))
+			       (incf trans.y (* vel.y delta))
+			       (when (or (< trans.x 0s0)
+					 (< 1280s0 trans.x))
+				 (setf trans.x (std--clamp trans.x
+							   0s0
+							   1280s0))
+				 (setf vel.x -vel.x))
+			       (when (or (< trans.y 0s0)
+					 (< 720s0 trans.y))
+				 (setf trans.y (std--clamp trans.y
+							   0s0
+							   720s0))
+				 (setf vel.y -vel.y))
+			       ))))
 
 
+		     (space
+		      "namespace MM"
+		      (progn
+			,@(loop for e in `(Transform Velocity)
+				collect
+				`(space "template<>"
+					(defun ,(format nil "ComponentEditorWidget<~a>" e) (reg e)
+					  (declare (type "entt::registry&" reg)
+						   (type "entt::registry::entity_type" e))
+					  (let ((&t (,(format nil "reg.get<~a>" e) e)))
+					    (ImGui--DragFloat (string "x")
+							      &t.x .1s0)
+					    (ImGui--DragFloat (string "y")
+							      &t.y .1s0)))))
+			))
+
+		     )
 
 		    ,(init-lprint)
 
@@ -155,22 +214,60 @@
 			 (let ((installCallbacks true))
 			   (declare (type "const auto" installCallbacks))
 			   (ImGui_ImplGlfw_InitForOpenGL window installCallbacks))
-			 #+ni
-			 (ImGui_ImplGlfw_InitForOpenGL window true)
+
 			 (let ((glslVersion (string "#version 150")))
 			   (declare (type "const auto" glslVersion))
 			   (ImGui_ImplOpenGL3_Init glslVersion)))
 
+			(do0
+			 ,(lprint :msg "initialize ENTT")
+
+			 "entt::registry reg;"
+			 "MM::EntityEditor<entt::entity> editor;"
+
+			 (editor.registerComponent<Transform> (string "Transform"))
+			 (editor.registerComponent<Velocity> (string "Velocity"))
+			 (do0
+			  "entt::entity e;"
+			  (dotimes (i 1000)
+			    (setf e (reg.create))
+			    (reg.emplace<Transform> e
+						    (* .1s0 (static_cast<float>
+							     (% (rand)
+								5000)))
+						    (* .1s0 (static_cast<float>
+							     (% (rand)
+								5000))))
+			    (reg.emplace<Velocity> e
+						   (* .1s0 (static_cast<float>
+							    (+ -2500
+							       (% (rand)
+								  5000))))
+						   (* .1s0 (static_cast<float>
+							    (+ -2500
+							       (% (rand)
+								  5000))))))))
+
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)
-
+			  (computeVelocity reg
+					   (/ 1s0
+					      60s0))
 			  (do0
 			   (ImGui_ImplOpenGL3_NewFrame)
 			   (ImGui_ImplGlfw_NewFrame)
-			   (ImGui--NewFrame)
-			   (let ((showDemoWindow true))
-			     (ImGui--ShowDemoWindow &showDemoWindow))
-			   (ImGui--Render))
+
+			   #+nil
+			   (do0
+			    (ImGui--NewFrame)
+			    (editor.renderSimpleCombo reg e)
+			    (ImGui--Render))
+
+			   (do0
+			    (ImGui--NewFrame)
+			    (let ((showDemoWindow true))
+			      (ImGui--ShowDemoWindow &showDemoWindow))
+			    (ImGui--Render)))
 
 
 			  ((lambda ()
@@ -253,6 +350,8 @@
 					; /home/martin/src/entt/src/
 	  (out "target_include_directories( mytest PRIVATE
 /home/martin/src/imgui/
+/home/martin/src/entt/src/
+/home/martin/src/imgui_entt_entity_editor/
  )")
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
