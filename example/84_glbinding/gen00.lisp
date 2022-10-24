@@ -111,17 +111,18 @@
 			 (glbinding--initialize glfwGetProcAddress
 						false
 						)
-			 (glbinding--setCallbackMask
-			  (logior
-			   CallbackMask--After
-			   CallbackMask--ParametersAndReturnValue))
-			 (glbinding--setAfterCallback
-			  (lambda (call)
-			    (declare (type "const glbinding::FunctionCall&"
-					   call)
-				     )
-			    (let ((fun (dot call  (-> function (name)))))
-			      ,(lprint :msg `fun))))
+			 #+nil
+			 (do0 (glbinding--setCallbackMask
+			       (logior
+				CallbackMask--After
+				CallbackMask--ParametersAndReturnValue))
+			      (glbinding--setAfterCallback
+			       (lambda (call)
+				 (declare (type "const glbinding::FunctionCall&"
+						call)
+					  )
+				 (let ((fun (dot call  (-> function (name)))))
+				   ,(lprint :msg `fun)))))
 			 (glClearColor .4s0 .4s0 .2s0 1s0))
 
 			(while (not (glfwWindowShouldClose window))
