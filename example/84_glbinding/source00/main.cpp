@@ -72,13 +72,14 @@ void lprint(std::initializer_list<std::string> il) {
   (std::cout) << (std::endl) << (std::flush);
 }
 int main(int argc, char **argv) {
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ",
-          &(__PRETTY_FUNCTION__[0]), " ", "start", " ", " argc='",
-          std::to_string(argc), "'"});
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "start", " ", " argc='", std::to_string(argc), "'"});
   auto *window = ([]() -> GLFWwindow * {
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "initialize GLFW3", " "});
     if (!(glfwInit())) {
-      lprint({__FILE__, ":", std::to_string(__LINE__), " ",
-              &(__PRETTY_FUNCTION__[0]), " ", "glfwInit failed", " "});
+      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+              "glfwInit failed", " "});
     }
     glfwWindowHint(GLFW_VISIBLE, true);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -88,19 +89,25 @@ int main(int argc, char **argv) {
     // enable Vsync
     ;
     glfwSwapInterval(1);
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "create GLFW3 window", " "});
     const auto startWidth = 800;
     const auto startHeight = 600;
     auto window = glfwCreateWindow(startWidth, startHeight, "hello bgfx",
                                    nullptr, nullptr);
     if (!(window)) {
-      lprint({__FILE__, ":", std::to_string(__LINE__), " ",
-              &(__PRETTY_FUNCTION__[0]), " ", "can't create glfw window", " "});
+      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+              "can't create glfw window", " "});
     }
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "initialize GLFW3 context for window", " "});
     glfwMakeContextCurrent(window);
     return window;
   })();
   auto width = int(0);
   auto height = int(0);
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize glbinding", " "});
   // if second arg is false: lazy function pointer loading
   ;
   glbinding::initialize(glfwGetProcAddress, false);
@@ -111,6 +118,8 @@ int main(int argc, char **argv) {
     const float a = (1.0f);
     glClearColor(r, g, b, a);
   }
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize ImGui", " "});
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   auto io = ImGui::GetIO();
@@ -120,8 +129,8 @@ int main(int argc, char **argv) {
   ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
-  lprint({__FILE__, ":", std::to_string(__LINE__), " ",
-          &(__PRETTY_FUNCTION__[0]), " ", "initialize ENTT", " "});
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize ENTT", " "});
   entt::registry reg;
   MM::EntityEditor<entt::entity> editor;
   editor.registerComponent<Transform>("Transform");
@@ -138,6 +147,8 @@ int main(int argc, char **argv) {
         e, ((scale) * (static_cast<float>(((-offset) + (rand() % range))))),
         ((scale) * (static_cast<float>(((-offset) + (rand() % range))))));
   }
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "start loop", " "});
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
     const auto framesPerSecond = (60.f);
@@ -145,10 +156,23 @@ int main(int argc, char **argv) {
                     static_cast<float>(width), static_cast<float>(height));
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    auto showDemoWindow = true;
-    ImGui::ShowDemoWindow(&showDemoWindow);
-    ImGui::Render();
+    {
+      ImGui::NewFrame();
+      auto *dl = ImGui::GetBackgroundDrawList();
+      reg.view<Transform>().each([&](auto e, Transform &trans) {
+        auto eInt = ((1) + (entt::to_integral(e)));
+        const auto M = 256;
+        const auto R = 13;
+        const auto G = 159;
+        const auto B = 207;
+        const auto A = 250;
+        const auto radius = (10.f);
+        const auto colorBasedOnId = IM_COL32(
+            ((R) * (eInt)) % M, ((G) * (eInt)) % M, ((B) * (eInt)) % M, A);
+        dl->AddCircleFilled(ImVec2(trans.x, trans.y), radius, colorBasedOnId);
+      });
+      ImGui::Render();
+    }
     ([&width, &height, window]() {
       // react to changing window size
       ;
@@ -156,8 +180,10 @@ int main(int argc, char **argv) {
       auto oldheight = height;
       glfwGetWindowSize(window, &width, &height);
       if ((((width) != (oldwidth)) || ((height) != (oldheight)))) {
-        // set view
-        ;
+        lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+                "window size has changed", " ", " width='",
+                std::to_string(width), "'", " height='", std::to_string(height),
+                "'"});
         glViewport(0, 0, width, height);
       }
     })();
@@ -167,6 +193,8 @@ int main(int argc, char **argv) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
   }
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "Shutdown ImGui and GLFW3", " "});
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
