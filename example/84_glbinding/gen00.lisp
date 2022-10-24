@@ -160,6 +160,13 @@
 			(while (not (glfwWindowShouldClose window))
 			  (glfwPollEvents)
 
+			  (do0
+			   (ImGui_ImplOpenGL3_NewFrame)
+			   (ImGui_ImplGlfw_NewFrame)
+			   (ImGui--NewFrame)
+			   (let ((showDemoWindow true))
+			     (ImGui--ShowDemoWindow &showDemoWindow))
+			   (ImGui--Render))
 
 
 			  ((lambda ()
@@ -175,11 +182,18 @@
 			  (do0
 			   (comments "draw frame")
 			   (glClear GL_COLOR_BUFFER_BIT)
+			   (ImGui_ImplOpenGL3_RenderDrawData
+			    (ImGui--GetDrawData))
 			   (glfwSwapBuffers window)
 
 			   )))
 
-		      (glfwTerminate)
+		      (do0
+		       (ImGui_ImplOpenGL3_Shutdown)
+		       (ImGui_ImplGlfw_Shutdown)
+		       (ImGui--DestroyContext)
+		       (glfwDestroyWindow window)
+		       (glfwTerminate))
 
 
 

@@ -76,6 +76,12 @@ int main(int argc, char **argv) {
   ImGui_ImplOpenGL3_Init(glslVersion);
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    auto showDemoWindow = true;
+    ImGui::ShowDemoWindow(&showDemoWindow);
+    ImGui::Render();
     ([&width, &height, window]() {
       // react to changing window size
       ;
@@ -91,8 +97,13 @@ int main(int argc, char **argv) {
     // draw frame
     ;
     glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
   }
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+  glfwDestroyWindow(window);
   glfwTerminate();
   return 0;
 }
