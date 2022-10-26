@@ -1,0 +1,3 @@
+look at new files in /var/spool/squid with inotify
+
+maybe i can show videos and images that are cached by squid
