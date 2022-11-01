@@ -170,6 +170,7 @@
 			 (do0
 			  "ssize_t videoStream = -1;"
 			  "av::Stream vst;"
+			  "std::error_code ec;"
 			  (dotimes (i (ctx.streamsCount))
 			    (let ((st (ctx.stream i)))
 			      (when (== AVMEDIA_TYPE_VIDEO
@@ -190,7 +191,10 @@
 			       (vdec.open (curly
 					   (curly (string "threads")
 						  (string "1")))
-					  (av--Codec))))))))
+					  (av--Codec)
+					  ec)
+			       (when ec
+				 ,(lprint :msg "can't open codec"))))))))
 
 
 		      (let ((*window ((lambda ()
