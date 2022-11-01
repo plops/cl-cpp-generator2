@@ -161,7 +161,36 @@
 
 		      (do0
 		       (av--init)
-		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG))
+		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG)
+		       (let ((ctx (av--FormatContext)))
+			 (ctx.openInput (string "/dev/shm/et.mp4"))
+			 (ctx.findStreamInfo)
+			 ,(lprint :vars `((ctx.seekable)
+					  (ctx.streamsCount)))
+			 (do0
+			  "ssize_t videoStream = -1;"
+			  "av::Stream vst;"
+			  (dotimes (i (ctx.streamsCount))
+			    (let ((st (ctx.stream i)))
+			      (when (== AVMEDIA_TYPE_VIDEO
+					(st.mediaType))
+				(setf videoStream i
+				      vst st)
+				break)))
+			  (when (vst.isNull)
+			    ,(lprint :msg "Video stream not found"))
+			  (do0
+			   "av::VideoDecoderContext vdec;"
+			   (when (vst.isValid)
+			     (setf vdec (av--VideoDecoderContext vst))
+			     (let ((codec (av--findDecodingCodec (-> (vdec.raw)
+								     codec_id))))
+			       (vdec.setCodec codec)
+			       (vdec.setRefCountedFrames true)
+			       (vdec.open (curly
+					   (curly (string "threads")
+						  (string "1")))
+					  (av--Codec))))))))
 
 
 		      (let ((*window ((lambda ()
