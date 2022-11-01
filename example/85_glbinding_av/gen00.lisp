@@ -162,8 +162,8 @@
 		      (do0
 		       (av--init)
 		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG))
-		      
-		    
+
+
 		      (let ((*window ((lambda ()
 					(declare (values GLFWwindow*))
 					,(lprint :msg "initialize GLFW3")
@@ -442,29 +442,29 @@
 
 
 
-	  
-	  
-	   (progn
+
+
+	  (progn
 	    (out "add_library( libavcpp_static STATIC IMPORTED )")
 	    (out "set_target_properties( libavcpp_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libavcpp.a )")
 	    )
 
-	   (let ((avlibs `(avutil avdevice avfilter avcodec avformat
-				   swscale postproc)))
-	     (loop for e in avlibs
-			 collect
-			 `(progn
-			    (out "add_library( ~a STATIC IMPORTED )" e)
-			    (out "set_target_properties( ~a PROPERTIES IMPORTED_LOCATION /usr/local/lib/lib~a.a )" e)
-			    ))
+	  (let ((avlibs `(avutil avdevice avfilter avcodec avformat
+				 swscale postproc swresample)))
+	    #+nil (loop for e in avlibs
+			collect
+			`(progn
+			   (out "add_library( ~a STATIC IMPORTED )" e)
+			   (out "set_target_properties( ~a PROPERTIES IMPORTED_LOCATION /usr/local/lib/lib~a.a )" e)
+			   ))
 
-	     (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-		  `(
-		    "glbinding::glbinding"
-		    glfw3 ;GL X11
-		    libavcpp_static
-		    ,@avlibs
-		    
+	    (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+		 `(
+		   "glbinding::glbinding"
+		   glfw3 ;GL X11
+		   libavcpp_static
+		   ,@avlibs
+
 					;dl  pthread
 					;rt
 					;imgui
@@ -476,7 +476,7 @@
 					;"xtensor::optimize"
 					;"xtensor::use_xsimd"
 
-		    )))
+		   )))
 
 					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
