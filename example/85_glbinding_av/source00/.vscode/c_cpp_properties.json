@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/martin/src/imgui/",
+                "/home/martin/src/entt/src/",
+                "/home/martin/src/imgui_entt_entity_editor/",
+                "/usr/local/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/lib64/ccache/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
