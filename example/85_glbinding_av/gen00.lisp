@@ -194,7 +194,41 @@
 					  (av--Codec)
 					  ec)
 			       (when ec
-				 ,(lprint :msg "can't open codec"))))))))
+				 ,(lprint :msg "can't open codec"))
+
+			       (progn
+				 "std::error_code ec;"
+				 (while (= "av::Packet pkt"
+					   (ctx.readPacket ec))
+				   (when ec
+				     ,(lprint :msg "packet reading error"
+					      :vars `(;(ec.message)
+						      )))
+				   (unless (== videoStream
+					       (pkt.streamIndex))
+				     continue)
+				   (let ((ts (pkt.ts)))
+				     ,(lprint :vars `((ts.seconds)
+					; (pkt.timeBase)
+						      (pkt.streamIndex)))
+				     (let ((frame (vdec.decode pkt ec)))
+				       (if ec
+					   ,(lprint :msg "error"
+						    :vars `(;(ec.message)
+							    ))
+					   ,(lprint :msg "empty frame"))
+				       (setf ts (frame.pts))
+				       ,(lprint :msg "frame"
+						:vars `(;(frame.width)
+					;(frame.size)
+					;ts
+					;(ts.seconds)
+					;(frame.timeBase)
+					;(frame.isReferenced)
+					;(frame.refCount)
+							))))))
+
+			       ))))))
 
 
 		      (let ((*window ((lambda ()
