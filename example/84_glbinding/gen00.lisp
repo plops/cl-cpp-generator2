@@ -16,6 +16,7 @@
     ;; for class definitions and implementation in separate h and cpp file
 
     (defparameter *source-dir* #P"example/84_glbinding/source00/")
+    (defparameter /home/martin "/home/martin")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
@@ -401,11 +402,11 @@
 	       (append
 		(directory (format nil "~a/*.cpp" *full-source-dir*))
 					;(directory (format nil "/home/martin/src/bgfx/examples/common/imgui/imgui.cpp"))
-		(directory (format nil "/home/martin/src/imgui/backends/imgui_impl_opengl3.cpp"))
-		(directory (format nil "/home/martin/src/imgui/backends/imgui_impl_glfw.cpp"))
+		(directory (format nil "~a/src/imgui/backends/imgui_impl_opengl3.cpp" /home/martin))
+		(directory (format nil "~a/src/imgui/backends/imgui_impl_glfw.cpp" /home/martin))
 
 
-		(directory (format nil "/home/martin/src/imgui/imgui*.cpp"))
+		(directory (format nil "~a/src/imgui/imgui*.cpp" /home/martin))
 
 		))
 
@@ -413,10 +414,10 @@
 					;(out "include_directories( /usr/local/include/  )")
 					; /home/martin/src/entt/src/
 	  (out "target_include_directories( mytest PRIVATE
-/home/martin/src/imgui/
-/home/martin/src/entt/src/
-/home/martin/src/imgui_entt_entity_editor/
- )")
+~a/src/imgui/
+~a/src/entt/src/
+~a/src/imgui_entt_entity_editor/
+ )" /home/martin /home/martin /home/martin)
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")
 
