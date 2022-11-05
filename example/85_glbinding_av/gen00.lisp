@@ -201,7 +201,7 @@
 					    ,(lprint :msg "can't create glfw window"))
 					  ,(lprint :msg "initialize GLFW3 context for window")
 					  (glfwMakeContextCurrent window)
-					  (do0 (comments "configure Vsync, 1 locks to 60Hz")
+					  (do0 (comments "configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw errors")
 					       (glfwSwapInterval 0))
 					  (return window))
 					)))))
