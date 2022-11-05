@@ -218,15 +218,28 @@
 							    ))
 					   ,(lprint :msg "empty frame"))
 				       (setf ts (frame.pts))
-				       ,(lprint :msg "frame"
-						:vars `(;(frame.width)
-					;(frame.size)
+				       (when (and (frame.isComplete)
+						  (frame.isValid))
+					 (let ((data (frame.data 0)))
+					   ,(lprint :msg "frame"
+						    :vars `( ;frame.width
+							    (frame.size)
+							    (aref data 0)
+
+					;frame.height
+					;frame.nb_samples
+					;frame.key_frame
+					;frame.coded_picture_number
+					;frame.display_picture_number
+					;frame.quality
+					;frame.sample_rate
+
 					;ts
 					;(ts.seconds)
 					;(frame.timeBase)
 					;(frame.isReferenced)
 					;(frame.refCount)
-							))))))
+							    ))))))))
 
 			       ))))))
 
@@ -454,11 +467,11 @@
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
       (let ((dbg "-ggdb -O0")
-	    (asan ;""
-	     "-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
+	    (asan ""
+					;"-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
-	    (show-err ;"";
-	     " -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
+	    (show-err "-Wall -Wextra";
+					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
 	      ))
