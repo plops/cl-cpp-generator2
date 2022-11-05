@@ -65,7 +65,7 @@
 		      (include <avcpp/av.h>
 			       <avcpp/ffmpeg.h>)
 		      ;; API2
-		      (include <avcpp/format.h>
+		      (include ;<avcpp/format.h>
 			       <avcpp/formatcontext.h>
 			       <avcpp/codec.h>
 			       <avcpp/codeccontext.h>))
