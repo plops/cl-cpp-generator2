@@ -220,9 +220,14 @@
 				       (setf ts (frame.pts))
 				       (when (and (frame.isComplete)
 						  (frame.isValid))
-					 (let ((data (frame.data 0)))
+					 (let ((*data (frame.data 0))
+					       (*avframe (frame.makeRef)))
 					   ,(lprint :msg "frame"
-						    :vars `( ;frame.width
+						    :vars `(
+							    (frame.width)
+							    (frame.height)
+							    (frame.quality)
+							    (frame.isKeyFrame)
 							    (frame.size)
 							    (aref data 0)
 
