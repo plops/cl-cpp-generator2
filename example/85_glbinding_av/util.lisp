@@ -1,4 +1,6 @@
-(defun lprint (&key (msg "") (vars nil))
+(defun lprint (&key (msg "")
+		 (vars nil)
+		 (svars nil))
   `(lprint (curly  ;__FILE__
 					;(string ":")
 	    ("std::to_string" __LINE__)
@@ -12,6 +14,12 @@
 					;("std::width" 8)
 		      (string ,(format nil " ~a='" (emit-c :code e)))
 		      ("std::to_string" ,e)
+		      (string "'")))
+	    ,@(loop for e in svars appending
+		    `(	;("std::setw" 8)
+					;("std::width" 8)
+		      (string ,(format nil " ~a='" (emit-c :code e)))
+		      ,e
 		      (string "'"))))))
 (defun init-lprint ()
   `(defun lprint (il)

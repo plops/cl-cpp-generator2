@@ -21,7 +21,7 @@
 				     *source-dir*))
 
     (ensure-directories-exist *full-source-dir*)
-    (load "../84_glbinding/util.lisp")
+    (load "util.lisp")
 
     (write-source (asdf:system-relative-pathname
 		   'cl-cpp-generator2
@@ -223,11 +223,19 @@
 					 (let ((*data (frame.data 0))
 					       (*avframe (frame.makeRef)))
 					   ,(lprint :msg "frame"
+						    :svars
+						    `((dot frame (pixelFormat)
+							   (name)))
 						    :vars `(
 							    (frame.width)
 							    (frame.height)
 							    (frame.quality)
 							    (frame.isKeyFrame)
+							    (dot frame (pixelFormat)
+								 (bitsPerPixel))
+							    (dot frame (pixelFormat)
+								 (planesCount))
+
 							    (frame.size)
 							    (aref data 0)
 
