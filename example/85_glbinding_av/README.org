@@ -1,4 +1,4 @@
-- intsall avcpp dependency on fedora 36
+- install avcpp dependency on fedora 36
 #+begin_example
 
 sudo dnf install \

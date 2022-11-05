@@ -39,12 +39,6 @@
 					;  <memory>
 		     )
 
-
-		    #+nil (do0
-
-			   (include <fstream>
-				    <array>))
-
 		    (do0
 		     (include <glbinding/gl32core/gl.h>
 			      <glbinding/glbinding.h>
@@ -76,14 +70,7 @@
 			       <avcpp/formatcontext.h>
 			       <avcpp/codec.h>
 			       <avcpp/codeccontext.h>))
-
-
 		     )
-
-
-
-					;"namespace stdex = std::experimental;"
-
 
 		    "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
 		    (do0
@@ -104,6 +91,7 @@
 				(type float delta width height radius))
 		       (dot reg
 			    ("view<Transform,Velocity>")
+
 			    (each
 			     (lambda (trans vel)
 			       (declare (capture "&")
@@ -124,8 +112,6 @@
 							   (- height radius)))
 				 (setf vel.y -vel.y))
 			       ))))
-
-
 		     (space
 		      "namespace MM"
 		      (progn
@@ -142,23 +128,14 @@
 							      &t.x step)
 					    (ImGui--DragFloat (string "y")
 							      &t.y step)))))
-			))
-
-		     )
+			)))
 
 		    ,(init-lprint)
-
-
 		    (defun main (argc argv)
 		      (declare (type int argc)
 			       (type char** argv)
 			       (values int))
-
-
-					;(setf g_start_time ("std::chrono::high_resolution_clock::now"))
-
 		      ,(lprint :msg "start" :vars `(argc))
-
 		      (do0
 		       (av--init)
 		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG)
@@ -196,63 +173,6 @@
 			       (when ec
 				 ,(lprint :msg "can't open codec"))
 
-			       (progn
-				 "std::error_code ec;"
-				 (while (= "av::Packet pkt"
-					   (ctx.readPacket ec))
-				   (when ec
-				     ,(lprint :msg "packet reading error"
-					      :vars `(;(ec.message)
-						      )))
-				   (unless (== videoStream
-					       (pkt.streamIndex))
-				     continue)
-				   (let ((ts (pkt.ts)))
-				     ,(lprint :vars `((ts.seconds)
-					; (pkt.timeBase)
-						      (pkt.streamIndex)))
-				     (let ((frame (vdec.decode pkt ec)))
-				       (if ec
-					   ,(lprint :msg "error"
-						    :vars `(;(ec.message)
-							    ))
-					   ,(lprint :msg "empty frame"))
-				       (setf ts (frame.pts))
-				       (when (and (frame.isComplete)
-						  (frame.isValid))
-					 (let ((*data (frame.data 0))
-					       (*avframe (frame.makeRef)))
-					   ,(lprint :msg "frame"
-						    :svars
-						    `((dot frame (pixelFormat)
-							   (name)))
-						    :vars `(
-							    (frame.width)
-							    (frame.height)
-							    (frame.quality)
-							    (frame.isKeyFrame)
-							    (dot frame (pixelFormat)
-								 (bitsPerPixel))
-							    (dot frame (pixelFormat)
-								 (planesCount))
-
-							    (frame.size)
-							    (aref data 0)
-
-					;frame.height
-					;frame.nb_samples
-					;frame.key_frame
-					;frame.coded_picture_number
-					;frame.display_picture_number
-					;frame.quality
-					;frame.sample_rate
-
-					;ts
-					;(ts.seconds)
-					;(frame.timeBase)
-					;(frame.isReferenced)
-					;(frame.refCount)
-							    ))))))))
 
 			       ))))))
 
@@ -292,8 +212,7 @@
 			 ,(lprint :msg "initialize glbinding")
 			 (comments "if second arg is false: lazy function pointer loading")
 			 (glbinding--initialize glfwGetProcAddress
-						false
-						)
+						false)
 			 #+nil
 			 (do0 (glbinding--setCallbackMask
 			       (logior
@@ -388,7 +307,6 @@
 
 			     (progn
 			       (ImGui--NewFrame)
-
 			       (let ((*dl (ImGui--GetBackgroundDrawList)))
 				 (dot
 				  reg
@@ -420,28 +338,19 @@
 					(ImVec2 trans.x
 						trans.y)
 					radius
-					colorBasedOnId
-					)
-				       )))))
+					colorBasedOnId))))))
 
 			       (do0
-					;(ImGui--NewFrame)
 				(let ((showDemoWindow true))
-				  (ImGui--ShowDemoWindow &showDemoWindow))
-					;(ImGui--Render)
-				)
-
+				  (ImGui--ShowDemoWindow &showDemoWindow)))
 			       #+nil(editor.renderSimpleCombo reg e)
-
 			       (ImGui--Render))
 
 			     #+nil(do0
 				   (ImGui--NewFrame)
 				   (editor.renderSimpleCombo reg e)
 				   (ImGui--Render))
-
 			     )
-
 
 			    ((lambda ()
 			       (declare (capture &width &height window))
@@ -453,13 +362,57 @@
 					   (!= height oldheight))
 				   ,(lprint :msg "window size has changed" :vars `(width height))
 				   (glViewport 0 0 width height)))))
+
+			    (progn
+			      "std::error_code ec;"
+			      (while (= "av::Packet pkt"
+					(ctx.readPacket ec))
+				(when ec
+				  ,(lprint :msg "packet reading error"
+					   :svars `((ec.message))))
+				(unless (== videoStream
+					    (pkt.streamIndex))
+				  continue)
+				(let ((ts (pkt.ts)))
+				  ,(lprint :vars `((ts.seconds)
+					; (pkt.timeBase)
+						   (pkt.streamIndex)))
+				  (let ((frame (vdec.decode pkt ec)))
+				    (when ec
+				      ,(lprint :msg "error"
+					       :svars `((ec.message))))
+				    (setf ts (frame.pts))
+				    (when (and (frame.isComplete)
+					       (frame.isValid))
+				      (let ((*data (frame.data 0))
+					; (*avframe (frame.makeRef))
+					    )
+					,(lprint :msg "frame"
+						 :svars
+						 `((dot frame (pixelFormat)
+							(name)))
+						 :vars `(
+							 (frame.width)
+							 (frame.height)
+							 (frame.quality)
+							 (frame.isKeyFrame)
+							 (dot frame (pixelFormat)
+							      (bitsPerPixel))
+							 (dot frame (pixelFormat)
+							      (planesCount))
+
+							 (frame.size)
+							 (aref data 0)))
+					break))))))
+
 			    (do0
 			     (comments "draw frame")
+
+
 			     (glClear GL_COLOR_BUFFER_BIT)
 			     (ImGui_ImplOpenGL3_RenderDrawData
 			      (ImGui--GetDrawData))
 			     (glfwSwapBuffers window)
-
 			     ))))
 
 		      (do0
