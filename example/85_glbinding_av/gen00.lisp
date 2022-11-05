@@ -1,6 +1,5 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2"))
-
 (in-package :cl-cpp-generator2)
 
 (let ((log-preamble `(do0 (include <iostream>
@@ -347,18 +346,18 @@
 					radius
 					colorBasedOnId))))))
 
-			       #+nil (do0
-				      (let ((showDemoWindow true))
-					(ImGui--ShowDemoWindow &showDemoWindow)))
+			       (do0
+				(let ((showDemoWindow true))
+				  (ImGui--ShowDemoWindow &showDemoWindow)))
 			       #+nil(editor.renderSimpleCombo reg e)
 
 					;(ImGui--Render)
 			       )
 
-			     #+nil(do0
-				   (ImGui--NewFrame)
-				   (editor.renderSimpleCombo reg e)
-				   (ImGui--Render))
+			     #+nil  (do0
+				     (ImGui--Begin (string "combo"))
+				     (editor.renderSimpleCombo reg e)
+				     (ImGui--End))
 			     )
 
 			    ((lambda ()
@@ -401,6 +400,15 @@
 					    (do0 (comments "initialize texture for video frames")
 						 (glGenTextures 1 &image_texture)
 						 (glBindTexture GL_TEXTURE_2D image_texture)
+						 ,@(loop for (key val) in `((WRAP_S REPEAT)
+									    (WRAP_T REPEAT)
+									    (MIN_FILTER LINEAR)
+									    (MAG_FILTER LINEAR))
+							 collect
+							 `(glTexParameteri GL_TEXTURE_2D
+									   ,(format nil "GL_TEXTURE_~A" key)
+									   ,(format nil "GL_~A" val))
+							 )
 						 (setf image_width (frame.width)
 						       image_height (frame.height))
 						 (let ((init_width image_width ; 1024
