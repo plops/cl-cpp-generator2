@@ -187,8 +187,7 @@
 					(glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT true)
 					(glfwWindowHint GLFW_OPENGL_PROFILE
 							GLFW_OPENGL_CORE_PROFILE)
-					(comments "enable Vsync")
-					(glfwSwapInterval 1)
+
 					,(lprint :msg "create GLFW3 window")
 					(let ((startWidth 800)
 					      (startHeight 600)
@@ -202,6 +201,8 @@
 					    ,(lprint :msg "can't create glfw window"))
 					  ,(lprint :msg "initialize GLFW3 context for window")
 					  (glfwMakeContextCurrent window)
+					  (do0 (comments "configure Vsync, 1 locks to 60Hz")
+					       (glfwSwapInterval 0))
 					  (return window))
 					)))))
 		      (let ((width (int 0))
