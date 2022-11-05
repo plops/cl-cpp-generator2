@@ -383,9 +383,9 @@
 					    (pkt.streamIndex))
 				  continue)
 				(let ((ts (pkt.ts)))
-				  ,(lprint :vars `((ts.seconds)
+				  #+nil,(lprint :vars `((ts.seconds)
 					; (pkt.timeBase)
-						   (pkt.streamIndex)))
+							(pkt.streamIndex)))
 				  (let ((frame (vdec.decode pkt ec)))
 				    (when ec
 				      ,(lprint :msg "error"
@@ -396,59 +396,60 @@
 				      (let ((*data (frame.data 0))
 					; (*avframe (frame.makeRef))
 					    )
-					(if !video_is_initialized_p
-					    (do0 (comments "initialize texture for video frames")
-						 (glGenTextures 1 &image_texture)
-						 (glBindTexture GL_TEXTURE_2D image_texture)
-						 ,@(loop for (key val) in `((WRAP_S REPEAT)
-									    (WRAP_T REPEAT)
-									    (MIN_FILTER LINEAR)
-									    (MAG_FILTER LINEAR))
-							 collect
-							 `(glTexParameteri GL_TEXTURE_2D
-									   ,(format nil "GL_TEXTURE_~A" key)
-									   ,(format nil "GL_~A" val))
-							 )
-						 (setf image_width (frame.width)
-						       image_height (frame.height))
-						 (let ((init_width image_width ; 1024
+					(let ((tex_format GLenum--GL_LUMINANCE))
+					  (if !video_is_initialized_p
+					      (do0 (comments "initialize texture for video frames")
+						   (glGenTextures 1 &image_texture)
+						   (glBindTexture GL_TEXTURE_2D image_texture)
+						   ,@(loop for (key val) in `((WRAP_S REPEAT)
+									      (WRAP_T REPEAT)
+									      (MIN_FILTER LINEAR)
+									      (MAG_FILTER LINEAR))
+							   collect
+							   `(glTexParameteri GL_TEXTURE_2D
+									     ,(format nil "GL_TEXTURE_~A" key)
+									     ,(format nil "GL_~A" val))
+							   )
+						   (setf image_width (frame.width)
+							 image_height (frame.height))
+						   (let ((init_width image_width ; 1024
 
-							 )
-						       (init_height image_height ; 512
-							 ))
-						   (glTexImage2D GL_TEXTURE_2D
-								 0
-								 GL_RGBA
-								 init_width
-								 init_height
-								 0
-								 GL_GREEN
-								 GL_UNSIGNED_BYTE
-								 nullptr
-								 ))
-						 (glTexSubImage2D  GL_TEXTURE_2D
+							   )
+							 (init_height image_height ; 512
+							   ))
+						     (glTexImage2D GL_TEXTURE_2D
 								   0
-								   0 0
-								   image_width
-								   image_height
-								   GL_GREEN
+								   GL_RGBA
+								   init_width
+								   init_height
+								   0
+								   tex_format
 								   GL_UNSIGNED_BYTE
-								   data)
+								   nullptr
+								   ))
+						   (glTexSubImage2D  GL_TEXTURE_2D
+								     0
+								     0 0
+								     image_width
+								     image_height
+								     tex_format
+								     GL_UNSIGNED_BYTE
+								     data)
 
-						 (setf video_is_initialized_p true))
-					    (do0
-					     (comments "update texture with new frame")
-					     (glBindTexture GL_TEXTURE_2D image_texture)
-					     (glTexSubImage2D  GL_TEXTURE_2D
-							       0
-							       0 0
-							       image_width
-							       image_height
-							       GL_GREEN
-							       GL_UNSIGNED_BYTE
-							       data))
-					    )
-
+						   (setf video_is_initialized_p true))
+					      (do0
+					       (comments "update texture with new frame")
+					       (glBindTexture GL_TEXTURE_2D image_texture)
+					       (glTexSubImage2D  GL_TEXTURE_2D
+								 0
+								 0 0
+								 image_width
+								 image_height
+								 tex_format
+								 GL_UNSIGNED_BYTE
+								 data))
+					      ))
+					#+nil
 					,(lprint :msg "frame"
 						 :svars
 						 `((dot frame (pixelFormat)
