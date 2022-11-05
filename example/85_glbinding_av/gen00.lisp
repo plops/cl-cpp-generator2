@@ -290,6 +290,13 @@
 
 			(let ((radius 10s0))
 			  (declare (type "const auto" radius))
+
+			  (do0 "bool video_is_initialized_p = false;"
+			       "int image_width = 0;"
+			       "int image_height = 0;"
+			       "GLuint image_texture = 0;")
+
+
 			  ,(lprint :msg "start loop")
 			  (while (not (glfwWindowShouldClose window))
 			    (glfwPollEvents)
@@ -365,6 +372,7 @@
 
 			    (progn
 			      "std::error_code ec;"
+
 			      (while (= "av::Packet pkt"
 					(ctx.readPacket ec))
 				(when ec
@@ -387,6 +395,36 @@
 				      (let ((*data (frame.data 0))
 					; (*avframe (frame.makeRef))
 					    )
+					(if !video_is_initialized_p
+					    (do0 (comments "initialize texture for video frames")
+						 (glGenTextures 1 &image_texture)
+						 (glBindTexture GL_TEXTURE_2D image_texture)
+						 (setf image_width (frame.width)
+						       image_height (/ (frame.height) 3))
+						 (glTexImage2D GL_TEXTURE_2D
+							       0
+							       GL_RGBA
+							       image_width
+							       image_height
+							       0
+							       GL_RGB
+							       GL_UNSIGNED_BYTE
+							       data
+							       )
+						 (setf video_is_initialized_p true))
+					    (do0
+					     (comments "update texture with new frame")
+					     (glBindTexture GL_TEXTURE_2D image_texture)
+					     (glTexSubImage2D  GL_TEXTURE_2D
+							       0
+							       0 0
+							       image_width
+							       image_height
+							       GL_RGB
+							       GL_UNSIGNED_BYTE
+							       data))
+					    )
+
 					,(lprint :msg "frame"
 						 :svars
 						 `((dot frame (pixelFormat)
@@ -407,7 +445,15 @@
 
 			    (do0
 			     (comments "draw frame")
-
+			     (do0
+			      (ImGui--Begin (string "video texture"))
+			      (ImGui--Text (string "width = %d") image_width)
+			      (ImGui--Image (reinterpret_cast<void*>
+					     (static_cast<intptr_t> image_texture)
+					     )
+					    (ImVec2 image_width
+						    image_height))
+			      (ImGui--End))
 
 			     (glClear GL_COLOR_BUFFER_BIT)
 			     (ImGui_ImplOpenGL3_RenderDrawData
