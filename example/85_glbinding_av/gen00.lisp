@@ -347,11 +347,13 @@
 					radius
 					colorBasedOnId))))))
 
-			       (do0
-				(let ((showDemoWindow true))
-				  (ImGui--ShowDemoWindow &showDemoWindow)))
+			       #+nil (do0
+				      (let ((showDemoWindow true))
+					(ImGui--ShowDemoWindow &showDemoWindow)))
 			       #+nil(editor.renderSimpleCombo reg e)
-			       (ImGui--Render))
+
+					;(ImGui--Render)
+			       )
 
 			     #+nil(do0
 				   (ImGui--NewFrame)
@@ -454,6 +456,7 @@
 					    (ImVec2 image_width
 						    image_height))
 			      (ImGui--End))
+			     (ImGui--Render)
 
 			     (glClear GL_COLOR_BUFFER_BIT)
 			     (ImGui_ImplOpenGL3_RenderDrawData
