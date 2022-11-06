@@ -1,0 +1,340 @@
+#include <chrono>
+#include <glbinding/AbstractFunction.h>
+#include <glbinding/CallbackMask.h>
+#include <glbinding/FunctionCall.h>
+#include <glbinding/gl32core/gl.h>
+#include <glbinding/glbinding.h>
+#include <iomanip>
+#include <iostream>
+#include <thread>
+using namespace gl32core;
+using namespace glbinding;
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <avcpp/av.h>
+#include <avcpp/codec.h>
+#include <avcpp/codeccontext.h>
+#include <avcpp/ffmpeg.h>
+#include <avcpp/formatcontext.h>
+#include <cxxopts.hpp>
+#include <imgui_entt_entity_editor.hpp>
+const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
+    std::chrono::high_resolution_clock::now();
+class Transform {
+public:
+  float x = (0.f);
+  float y = (0.f);
+};
+class Velocity {
+public:
+  float x = (0.f);
+  float y = (0.f);
+};
+void computeVelocity(entt::registry &reg, float delta, float width,
+                     float height, float radius) {
+  reg.view<Transform, Velocity>().each([&](Transform &trans, Velocity &vel) {
+    (trans.x) += (((vel.x) * (delta)));
+    (trans.y) += (((vel.y) * (delta)));
+    if ((((trans.x) < (radius)) || ((((width) - (radius))) < (trans.x)))) {
+      trans.x = std::clamp(trans.x, radius, ((width) - (radius)));
+      vel.x = -vel.x;
+    }
+    if ((((trans.y) < (radius)) || ((((height) - (radius))) < (trans.y)))) {
+      trans.y = std::clamp(trans.y, radius, ((height) - (radius)));
+      vel.y = -vel.y;
+    }
+  });
+}
+namespace MM {
+template <>
+void ComponentEditorWidget<Transform>(entt::registry &reg,
+                                      entt::registry::entity_type e) {
+  auto &t = reg.get<Transform>(e);
+  const auto step = (0.10f);
+  ImGui::DragFloat("x", &t.x, step);
+  ImGui::DragFloat("y", &t.y, step);
+};
+template <>
+void ComponentEditorWidget<Velocity>(entt::registry &reg,
+                                     entt::registry::entity_type e) {
+  auto &t = reg.get<Velocity>(e);
+  const auto step = (0.10f);
+  ImGui::DragFloat("x", &t.x, step);
+  ImGui::DragFloat("y", &t.y, step);
+};
+}; // namespace MM
+void lprint(std::initializer_list<std::string> il) {
+  std::chrono::duration<double> timestamp(0);
+  timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
+  const auto defaultWidth = 10;
+  (std::cout) << (std::setw(defaultWidth)) << (timestamp.count()) << (" ")
+              << (std::this_thread::get_id()) << (" ");
+  for (const auto &elem : il) {
+    (std::cout) << (elem);
+  }
+  (std::cout) << (std::endl) << (std::flush);
+}
+int main(int argc, char **argv) {
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "start", " ", " argc='", std::to_string(argc), "'"});
+  auto options = cxxopts::Options("gl-video-viewer", "play videos with opengl");
+  auto positional = std::vector<std::string>();
+  ((options.add_options())("h,help", "Print usage"))(
+      "filenames", "The filenames of videos to display",
+      cxxopts::value<std::vector<std::string>>(positional));
+  options.parse_positional({"filenames"});
+  auto opt_res = options.parse(argc, argv);
+  if (opt_res.count("help")) {
+    (std::cout) << (options.help()) << (std::endl);
+    exit(0);
+  }
+  av::init();
+  auto ctx = av::FormatContext();
+  auto fn = positional.at(0);
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "open video file", " ", " fn='", fn, "'"});
+  ctx.openInput(fn);
+  ctx.findStreamInfo();
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "stream info", " ", " ctx.seekable()='",
+          std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
+          std::to_string(ctx.startTime().seconds()), "'",
+          " ctx.duration().seconds()='",
+          std::to_string(ctx.duration().seconds()), "'",
+          " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"});
+  ctx.seek({static_cast<long int>(
+                floor(((100) * ((((0.50f)) * (ctx.duration().seconds())))))),
+            {1, 100}});
+  ssize_t videoStream = -1;
+  av::Stream vst;
+  std::error_code ec;
+  for (auto i = 0; (i) < (ctx.streamsCount()); (i) += (1)) {
+    auto st = ctx.stream(i);
+    if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
+      videoStream = i;
+      vst = st;
+      break;
+    }
+  }
+  if (vst.isNull()) {
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "Video stream not found", " "});
+  }
+  av::VideoDecoderContext vdec;
+  if (vst.isValid()) {
+    vdec = av::VideoDecoderContext(vst);
+    auto codec = av::findDecodingCodec(vdec.raw()->codec_id);
+    vdec.setCodec(codec);
+    vdec.setRefCountedFrames(true);
+    vdec.open({{"threads", "1"}}, av::Codec(), ec);
+    if (ec) {
+      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+              "can't open codec", " "});
+    }
+  }
+  auto *window = ([]() -> GLFWwindow * {
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "initialize GLFW3", " "});
+    if (!(glfwInit())) {
+      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+              "glfwInit failed", " "});
+    }
+    glfwWindowHint(GLFW_VISIBLE, true);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "create GLFW3 window", " "});
+    const auto startWidth = 800;
+    const auto startHeight = 600;
+    auto window =
+        glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr);
+    if (!(window)) {
+      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+              "can't create glfw window", " "});
+    }
+    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+            "initialize GLFW3 context for window", " "});
+    glfwMakeContextCurrent(window);
+    // configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw
+    // errors
+    glfwSwapInterval(0);
+    return window;
+  })();
+  auto width = int(0);
+  auto height = int(0);
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize glbinding", " "});
+  // if second arg is false: lazy function pointer loading
+  glbinding::initialize(glfwGetProcAddress, false);
+  {
+    const float r = (0.40f);
+    const float g = (0.40f);
+    const float b = (0.20f);
+    const float a = (1.0f);
+    glClearColor(r, g, b, a);
+  }
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize ImGui", " "});
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  auto io = ImGui::GetIO();
+  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
+  ImGui::StyleColorsLight();
+  const auto installCallbacks = true;
+  ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
+  const auto glslVersion = "#version 150";
+  ImGui_ImplOpenGL3_Init(glslVersion);
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "initialize ENTT", " "});
+  entt::registry reg;
+  MM::EntityEditor<entt::entity> editor;
+  editor.registerComponent<Transform>("Transform");
+  editor.registerComponent<Velocity>("Velocity");
+  const auto n = 1000;
+  for (auto i = 0; (i) < (n); (i) += (1)) {
+    auto e = reg.create();
+    const auto range = 5000;
+    const auto offset = ((range) / (2));
+    const auto scale = (0.10f);
+    reg.emplace<Transform>(e, ((scale) * (static_cast<float>(rand() % range))),
+                           ((scale) * (static_cast<float>(rand() % range))));
+    reg.emplace<Velocity>(
+        e, ((scale) * (static_cast<float>(((-offset) + (rand() % range))))),
+        ((scale) * (static_cast<float>(((-offset) + (rand() % range))))));
+  }
+  const auto radius = (10.f);
+  bool video_is_initialized_p = false;
+  int image_width = 0;
+  int image_height = 0;
+  GLuint image_texture = 0;
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "start loop", " "});
+  while (!(glfwWindowShouldClose(window))) {
+    glfwPollEvents();
+    const auto framesPerSecond = (60.f);
+    computeVelocity(reg, (((1.0f)) / (framesPerSecond)),
+                    static_cast<float>(width), static_cast<float>(height),
+                    radius);
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    {
+      ImGui::NewFrame();
+      auto *dl = ImGui::GetBackgroundDrawList();
+      reg.view<Transform>().each([&](auto e, Transform &trans) {
+        auto eInt = ((1) + (entt::to_integral(e)));
+        const auto M = 256;
+        const auto R = 13;
+        const auto G = 159;
+        const auto B = 207;
+        const auto A = 250;
+        const auto colorBasedOnId = IM_COL32(
+            ((R) * (eInt)) % M, ((G) * (eInt)) % M, ((B) * (eInt)) % M, A);
+        dl->AddCircleFilled(ImVec2(trans.x, trans.y), radius, colorBasedOnId);
+      });
+      auto showDemoWindow = true;
+      ImGui::ShowDemoWindow(&showDemoWindow);
+    }
+    ([&width, &height, window]() {
+      // react to changing window size
+      auto oldwidth = width;
+      auto oldheight = height;
+      glfwGetWindowSize(window, &width, &height);
+      if ((((width) != (oldwidth)) || ((height) != (oldheight)))) {
+        lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+                "window size has changed", " ", " width='",
+                std::to_string(width), "'", " height='", std::to_string(height),
+                "'"});
+        glViewport(0, 0, width, height);
+      }
+    })();
+    {
+      std::error_code ec;
+      av::Packet pkt;
+      while (pkt = ctx.readPacket(ec)) {
+        if (ec) {
+          lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+                  "packet reading error", " ", " ec.message()='", ec.message(),
+                  "'"});
+        }
+        if (!((videoStream) == (pkt.streamIndex()))) {
+          continue;
+        }
+        auto ts = pkt.ts();
+        auto frame = vdec.decode(pkt, ec);
+        if (ec) {
+          lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+                  "error", " ", " ec.message()='", ec.message(), "'"});
+        }
+        ts = frame.pts();
+        if (((frame.isComplete()) && (frame.isValid()))) {
+          auto *data = frame.data(0);
+          image_width = frame.raw()->linesize[0];
+          image_height = frame.height();
+          auto init_width = image_width;
+          auto init_height = image_height;
+          if (!video_is_initialized_p) {
+            // initialize texture for video frames
+            glGenTextures(1, &image_texture);
+            glBindTexture(GL_TEXTURE_2D, image_texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]),
+                    " ", "prepare texture", " ", " init_width='",
+                    std::to_string(init_width), "'", " image_width='",
+                    std::to_string(image_width), "'", " image_height='",
+                    std::to_string(image_height), "'", " frame.width()='",
+                    std::to_string(frame.width()), "'"});
+            glTexImage2D(GL_TEXTURE_2D, 0, GLenum::GL_RGBA2, image_width,
+                         image_height, 0, GLenum::GL_LUMINANCE,
+                         GL_UNSIGNED_BYTE, nullptr);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height,
+                            GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+            video_is_initialized_p = true;
+          } else {
+            // update texture with new frame
+            glBindTexture(GL_TEXTURE_2D, image_texture);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height,
+                            GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+          }
+          break;
+        }
+      }
+      // draw frame
+      ImGui::Begin("video texture");
+      ImGui::Text("width = %d", image_width);
+      ImGui::Image(
+          reinterpret_cast<void *>(static_cast<intptr_t>(image_texture)),
+          ImVec2(static_cast<float>(image_width),
+                 static_cast<float>(image_height)));
+      auto val_old = static_cast<float>(pkt.ts().seconds());
+      auto val = val_old;
+      ImGui::SliderFloat("time", &val,
+                         static_cast<float>(ctx.startTime().seconds()),
+                         static_cast<float>(ctx.duration().seconds()), "%.3f");
+      if (!((val) == (val_old))) {
+        // perform seek operation
+        ctx.seek({static_cast<long int>(floor(((1000) * (val)))), {1, 1000}});
+      }
+      ImGui::End();
+      ImGui::Render();
+      glClear(GL_COLOR_BUFFER_BIT);
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      glfwSwapBuffers(window);
+    }
+  }
+  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
+          "Shutdown ImGui and GLFW3", " "});
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  return 0;
+}
