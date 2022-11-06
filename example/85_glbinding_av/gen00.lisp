@@ -541,12 +541,13 @@
 				    (comments "perform seek operation")
 				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
 						     (curly 1 1000)))))
-
+				#+nil
 				(let ((val_old2 val)
 				      (val2 val_old2))
+				  ;; FIXME: this doesn't allow to scroll back
 				  (ImGui--DragFloat (string "drag time")
 						    &val2
-						    (/ 1s0 60s0)
+						    (/ 1s0 6s0)
 						    (static_cast<float> (dot ctx (startTime) (seconds))) ;min
 						    (static_cast<float> (dot ctx (duration) (seconds))) ;max
 						    (string "%.3f") ; format string
