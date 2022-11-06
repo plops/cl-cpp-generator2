@@ -442,76 +442,72 @@
 							       (-> (raw)
 								   (aref linesize 0)))
 					      image_height (frame.height))
-					(let ((tex_format GLenum--GL_LUMINANCE)
-					      (init_width image_width)
-					      (init_height image_height))
-					  (if !video_is_initialized_p
-					      (do0 (comments "initialize texture for video frames")
-						   (glGenTextures 1 &image_texture)
+					,(flet ((make-tex (&key sub
+								(target 'GL_TEXTURE_2D)
+								(level 0)
+								(internal-format
+					;'GL_RGBA
+					;'GLenum--GL_RGB8
+					;'GLenum--GL_R3_G3_B2
+								 'GLenum--GL_RGBA2
+								 )
+								(width 'image_width)
+								(height 'image_height)
+								(xoffset 0)
+								(yoffset 0)
+								(border 0)
+								(tex-format 'GLenum--GL_LUMINANCE)
+								(tex-type 'GL_UNSIGNED_BYTE)
+								)
+						  (if sub
+						      `(glTexSubImage2D  ,target
+									 ,level
+									 ,xoffset ,yoffset
+									 ,width
+									 ,height
+									 ,tex-format
+									 ,tex-type
+									 data)
+						      `(glTexImage2D ,target
+								     ,level
+								     ,internal-format
+								     ,width
+								     ,height
+								     ,border
+								     ,tex-format
+								     ,tex-type
+								     nullptr))))
+					   `(let (
+						  (init_width image_width)
+						  (init_height image_height))
+					      (if !video_is_initialized_p
+						  (do0 (comments "initialize texture for video frames")
+						       (glGenTextures 1 &image_texture)
+						       (glBindTexture GL_TEXTURE_2D image_texture)
+						       ,@(loop for (key val) in `((WRAP_S REPEAT)
+										  (WRAP_T REPEAT)
+										  (MIN_FILTER LINEAR)
+										  (MAG_FILTER LINEAR))
+							       collect
+							       `(glTexParameteri GL_TEXTURE_2D
+										 ,(format nil "GL_TEXTURE_~A" key)
+										 ,(format nil "GL_~A" val)))
+
+						       (do0
+							,(lprint :msg "prepare texture"
+								 :vars `(init_width image_width image_height
+										    (frame.width)
+										    )
+								 )
+							,(make-tex :sub nil)
+							,(make-tex :sub t))
+
+						       (setf video_is_initialized_p true))
+						  (do0
+						   (comments "update texture with new frame")
 						   (glBindTexture GL_TEXTURE_2D image_texture)
-						   ,@(loop for (key val) in `((WRAP_S REPEAT)
-									      (WRAP_T REPEAT)
-									      (MIN_FILTER LINEAR)
-									      (MAG_FILTER LINEAR))
-							   collect
-							   `(glTexParameteri GL_TEXTURE_2D
-									     ,(format nil "GL_TEXTURE_~A" key)
-									     ,(format nil "GL_~A" val)))
-
-						   (do0
-						    (glTexImage2D GL_TEXTURE_2D
-								  0
-								  GL_RGBA
-								  init_width
-								  init_height
-								  0
-								  tex_format
-								  GL_UNSIGNED_BYTE
-								  nullptr)
-						    ,(lprint :msg "prepare texture"
-							     :vars `(init_width image_width image_height
-										(frame.width)
-										)
-							     ))
-						   (glTexSubImage2D  GL_TEXTURE_2D
-								     0
-								     0 0
-								     image_width
-								     image_height
-								     tex_format
-								     GL_UNSIGNED_BYTE
-								     data)
-
-						   (setf video_is_initialized_p true))
-					      (do0
-					       (comments "update texture with new frame")
-					       (glBindTexture GL_TEXTURE_2D image_texture)
-					       (glTexSubImage2D  GL_TEXTURE_2D
-								 0
-								 0 0
-								 image_width
-								 image_height
-								 tex_format
-								 GL_UNSIGNED_BYTE
-								 data))
-					      ))
-					#+nil
-					,(lprint :msg "frame"
-						 :svars
-						 `((dot frame (pixelFormat)
-							(name)))
-						 :vars `(
-							 (frame.width)
-							 (frame.height)
-							 (frame.quality)
-							 (frame.isKeyFrame)
-							 (dot frame (pixelFormat)
-							      (bitsPerPixel))
-							 (dot frame (pixelFormat)
-							      (planesCount))
-
-							 (frame.size)
-							 (aref data 0)))
+						   ,(make-tex :sub t))
+						  )))
 					break))))))
 
 			    (do0
@@ -520,10 +516,9 @@
 			      (ImGui--Begin (string "video texture"))
 			      (ImGui--Text (string "width = %d") image_width)
 			      (ImGui--Image (reinterpret_cast<void*>
-					     (static_cast<intptr_t> image_texture)
-					     )
-					    (ImVec2 image_width
-						    image_height))
+					     (static_cast<intptr_t> image_texture))
+					    (ImVec2 (static_cast<float> image_width)
+						    (static_cast<float> image_height)))
 			      (ImGui--End))
 			     (ImGui--Render)
 
