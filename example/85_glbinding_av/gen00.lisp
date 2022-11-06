@@ -66,9 +66,11 @@
 			       <avcpp/ffmpeg.h>)
 		      ;; API2
 		      (include ;<avcpp/format.h>
-			       <avcpp/formatcontext.h>
-			       <avcpp/codec.h>
-			       <avcpp/codeccontext.h>))
+		       <avcpp/formatcontext.h>
+		       <avcpp/codec.h>
+		       <avcpp/codeccontext.h>))
+		     (include <cxxopts.hpp>)
+
 		     )
 
 		    "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
@@ -135,6 +137,20 @@
 			       (type char** argv)
 			       (values int))
 		      ,(lprint :msg "start" :vars `(argc))
+
+		      (let ((options (cxxopts--Options
+				      (string "gl-video-viewer")
+				      (string "play videos with opengl")))
+			    )
+			((dot
+			  options
+			  (add_options))
+			 (string "filenames")
+			 (string "The filenames of videos to display")
+			 (cxxopts--value<std--vector<std--string>>))
+			(options.parse_positional (curly (string "filenames")))
+			(let ((opt_res (options.parse argc argv)))))
+
 		      (do0
 		       (av--init)
 		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG)

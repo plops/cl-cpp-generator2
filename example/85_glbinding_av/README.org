@@ -24,6 +24,15 @@ sudo ninja install
 #+end_example
 
 
+#+begin_example
+
+
+cd ~/src
+git clone https://github.com/jarro2783/cxxopts
+
+
+#+end_example
+
 - Basic video playback in OpenGL using FFmpeg (Part 1)
   https://www.youtube.com/watch?v=lFncAJqDQeE
 
