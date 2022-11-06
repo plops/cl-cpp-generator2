@@ -142,20 +142,47 @@
 				      (string "gl-video-viewer")
 				      (string "play videos with opengl")))
 			    )
-			((dot
-			  options
-			  (add_options))
-			 (string "filenames")
-			 (string "The filenames of videos to display")
-			 (cxxopts--value<std--vector<std--string>>))
-			(options.parse_positional (curly (string "filenames")))
-			(let ((opt_res (options.parse argc argv)))))
+
+			(let ((positional (std--vector<std--string>)))
+			  (((dot
+			     options
+			     (add_options))
+			    (string "h,help")
+			    (string "Print usage"))
+			   (string "filenames")
+			   (string "The filenames of videos to display")
+			   (cxxopts--value<std--vector<std--string>>
+			    positional))
+			  (options.parse_positional  (curly (string "filenames")
+							    )
+						     ))
+			(let ((opt_res (options.parse argc argv)))
+			  (when (opt_res.count (string "help"))
+			    (<< std--cout
+				(options.help)
+				std--endl)
+			    (exit 0))))
 
 		      (do0
 		       (av--init)
-		       (av--setFFmpegLoggingLevel AV_LOG_DEBUG)
+					;(av--setFFmpegLoggingLevel AV_LOG_DEBUG)
 		       (let ((ctx (av--FormatContext)))
-			 (ctx.openInput (string "/dev/shm/et.mp4"))
+		         #+nil(let ((fn (std--string "/dev/shm/o.mp4")))
+				(when (opt_res.count (string "filenames"))
+				  (let ((fns (dot (aref opt_res
+							(string "filenames"))
+						  (as<std--vector<std--string>>)
+						  )))
+				    (setf fn (aref fns 0))))
+				,(lprint :msg "open video file"
+					 :svars `(fn))
+				(ctx.openInput fn))
+
+			 (let ((fn (dot positional (at 0))))
+
+			   ,(lprint :msg "open video file"
+				    :svars `(fn))
+			   (ctx.openInput fn))
 			 (ctx.findStreamInfo)
 			 ,(lprint :vars `((ctx.seekable)
 					  (ctx.streamsCount)))
