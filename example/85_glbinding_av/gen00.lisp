@@ -529,13 +529,18 @@
 					       (static_cast<intptr_t> image_texture))
 					      (ImVec2 (static_cast<float> image_width)
 						      (static_cast<float> image_height)))
-				(let ((val (static_cast<float> (dot pkt (ts) (seconds)))))
+				(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+				      (val val_old))
 				  (ImGui--SliderFloat (string "time")
 						      &val
 						      (static_cast<float> (dot ctx (startTime) (seconds))) ;min
 						      (static_cast<float> (dot ctx (duration) (seconds))) ;max
 						      (string "%.3f") ; format string
-						      ))
+						      )
+				  (unless (== val val_old)
+				    (comments "perform seek operation")
+				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
+						     (curly 1 1000)))))
 				(ImGui--End))
 			       (ImGui--Render)
 
