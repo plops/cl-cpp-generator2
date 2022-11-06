@@ -184,8 +184,14 @@
 				    :svars `(fn))
 			   (ctx.openInput fn))
 			 (ctx.findStreamInfo)
-			 ,(lprint :vars `((ctx.seekable)
+			 ,(lprint :msg "stream info"
+				  :vars `((ctx.seekable)
+					  (dot ctx (startTime) (seconds))
+					  (dot ctx (duration) (seconds))
 					  (ctx.streamsCount)))
+			 (ctx.seek (curly (floor (* 100 (* .5 (dot ctx (duration)
+								   (seconds)))))
+					  (curly 1 100)))
 			 (do0
 			  "ssize_t videoStream = -1;"
 			  "av::Stream vst;"
@@ -450,6 +456,10 @@
 					;'GLenum--GL_RGB8
 					;'GLenum--GL_R3_G3_B2
 								 'GLenum--GL_RGBA2
+					;'GLenum--GL_RGB9_E5 ;; shared exponent, looks ok
+					; 'GLenum--GL_SRGB8 ;; this displays as much darker
+					;'GLenum--GL_RGB8UI ;; displays as black
+					;'GLenum--GL_COMPRESSED_RGB ;; framerate drops from +200fps to 40fps
 								 )
 								(width 'image_width)
 								(height 'image_height)
