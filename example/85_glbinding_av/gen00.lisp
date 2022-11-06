@@ -189,8 +189,8 @@
 					  (dot ctx (startTime) (seconds))
 					  (dot ctx (duration) (seconds))
 					  (ctx.streamsCount)))
-			 (ctx.seek (curly (floor (* 100 (* .5 (dot ctx (duration)
-								   (seconds)))))
+			 (ctx.seek (curly ("static_cast<long int>" (floor (* 100 (* .5 (dot ctx (duration)
+											    (seconds))))))
 					  (curly 1 100)))
 			 (do0
 			  "ssize_t videoStream = -1;"
@@ -423,8 +423,8 @@
 
 			    (progn
 			      "std::error_code ec;"
-
-			      (while (= "av::Packet pkt"
+			      "av::Packet pkt;"
+			      (while (= pkt
 					(ctx.readPacket ec))
 				(when ec
 				  ,(lprint :msg "packet reading error"
@@ -518,25 +518,32 @@
 						   (glBindTexture GL_TEXTURE_2D image_texture)
 						   ,(make-tex :sub t))
 						  )))
-					break))))))
+					break)))))
 
-			    (do0
-			     (comments "draw frame")
-			     (do0
-			      (ImGui--Begin (string "video texture"))
-			      (ImGui--Text (string "width = %d") image_width)
-			      (ImGui--Image (reinterpret_cast<void*>
-					     (static_cast<intptr_t> image_texture))
-					    (ImVec2 (static_cast<float> image_width)
-						    (static_cast<float> image_height)))
-			      (ImGui--End))
-			     (ImGui--Render)
+			      (do0
+			       (comments "draw frame")
+			       (do0
+				(ImGui--Begin (string "video texture"))
+				(ImGui--Text (string "width = %d") image_width)
+				(ImGui--Image (reinterpret_cast<void*>
+					       (static_cast<intptr_t> image_texture))
+					      (ImVec2 (static_cast<float> image_width)
+						      (static_cast<float> image_height)))
+				(let ((val (static_cast<float> (dot pkt (ts) (seconds)))))
+				  (ImGui--SliderFloat (string "time")
+						      &val
+						      (static_cast<float> (dot ctx (startTime) (seconds))) ;min
+						      (static_cast<float> (dot ctx (duration) (seconds))) ;max
+						      (string "%.3f") ; format string
+						      ))
+				(ImGui--End))
+			       (ImGui--Render)
 
-			     (glClear GL_COLOR_BUFFER_BIT)
-			     (ImGui_ImplOpenGL3_RenderDrawData
-			      (ImGui--GetDrawData))
-			     (glfwSwapBuffers window)
-			     ))))
+			       (glClear GL_COLOR_BUFFER_BIT)
+			       (ImGui_ImplOpenGL3_RenderDrawData
+				(ImGui--GetDrawData))
+			       (glfwSwapBuffers window)
+			       )))))
 
 		      (do0
 		       ,(lprint :msg "Shutdown ImGui and GLFW3")
