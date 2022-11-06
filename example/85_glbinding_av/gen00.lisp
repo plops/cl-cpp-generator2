@@ -470,7 +470,10 @@
 								   tex_format
 								   GL_UNSIGNED_BYTE
 								   nullptr
-								   ))
+								   )
+						     ,(lprint :msg "prepare texture"
+							      :vars `(init_width init_height)
+							      ))
 						   (glTexSubImage2D  GL_TEXTURE_2D
 								     0
 								     0 0
