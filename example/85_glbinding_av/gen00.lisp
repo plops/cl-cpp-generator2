@@ -541,6 +541,20 @@
 				    (comments "perform seek operation")
 				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
 						     (curly 1 1000)))))
+
+				(let ((val_old2 val)
+				      (val2 val_old2))
+				  (ImGui--DragFloat (string "drag time")
+						    &val2
+						    (/ 1s0 60s0)
+						    (static_cast<float> (dot ctx (startTime) (seconds))) ;min
+						    (static_cast<float> (dot ctx (duration) (seconds))) ;max
+						    (string "%.3f") ; format string
+						    )
+				  (unless (== val2 val_old2)
+				    (comments "perform seek operation")
+				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val2)))
+						     (curly 1 1000)))))
 				(ImGui--End))
 			       (ImGui--Render)
 
