@@ -456,10 +456,11 @@
 							   )
 						   (setf image_width (frame.width)
 							 image_height (frame.height))
-						   (let ((init_width image_width ; 1024
+						   (let ((n 4) ;; find next integer that is divisible by 4
+							 (init_width (+ image_width (- n (% image_width n))) ; 1024
 
 							   )
-							 (init_height image_height ; 512
+							 (init_height (+ image_height (- n (% image_height n))) ;  512
 							   ))
 						     (glTexImage2D GL_TEXTURE_2D
 								   0
@@ -472,7 +473,8 @@
 								   nullptr
 								   )
 						     ,(lprint :msg "prepare texture"
-							      :vars `(init_width init_height)
+							      :vars `(init_width init_height
+										 image_width image_height)
 							      ))
 						   (glTexSubImage2D  GL_TEXTURE_2D
 								     0
