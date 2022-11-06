@@ -437,22 +437,14 @@
 				    (setf ts (frame.pts))
 				    (when (and (frame.isComplete)
 					       (frame.isValid))
-				      (let ((*data (frame.data 0))
-					; (*avframe (frame.makeRef))
-					    )
+				      (let ((*data (frame.data 0)))
 					(setf image_width (dot frame
 							       (-> (raw)
 								   (aref linesize 0)))
-					      #+nil (frame.width)
 					      image_height (frame.height))
 					(let ((tex_format GLenum--GL_LUMINANCE)
-					      (n 4) ;; find next integer that is divisible by 4
-					      (init_width image_width ;
-					;(+ image_width (- n (% image_width n))) ; 1024
-
-						)
-					      (init_height image_height ; (+ image_height (- n (% image_height n))) ;  512
-						))
+					      (init_width image_width)
+					      (init_height image_height))
 					  (if !video_is_initialized_p
 					      (do0 (comments "initialize texture for video frames")
 						   (glGenTextures 1 &image_texture)
@@ -464,8 +456,7 @@
 							   collect
 							   `(glTexParameteri GL_TEXTURE_2D
 									     ,(format nil "GL_TEXTURE_~A" key)
-									     ,(format nil "GL_~A" val))
-							   )
+									     ,(format nil "GL_~A" val)))
 
 						   (do0
 						    (glTexImage2D GL_TEXTURE_2D
@@ -476,15 +467,11 @@
 								  0
 								  tex_format
 								  GL_UNSIGNED_BYTE
-								  nullptr
-								  )
+								  nullptr)
 						    ,(lprint :msg "prepare texture"
-							     :vars `(init_width init_height
-										image_width image_height
+							     :vars `(init_width image_width image_height
 										(frame.width)
-										(dot frame
-										     (-> (raw)
-											 (aref linesize 0))))
+										)
 							     ))
 						   (glTexSubImage2D  GL_TEXTURE_2D
 								     0

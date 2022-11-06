@@ -681,7 +681,8 @@ entry return-values contains a list of return values. currently supports type, v
 										     when if unless
 										     let pragma
 										     split-header-and-code
-										     defun defmethod defclass))))
+										     defun defmethod defclass
+										     comments comment))))
 						    ""
 						    ";"))))
 				  (cdr code)))
