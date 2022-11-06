@@ -440,7 +440,10 @@
 				      (let ((*data (frame.data 0))
 					; (*avframe (frame.makeRef))
 					    )
-					(setf image_width (frame.width)
+					(setf image_width (dot frame
+							       (-> (raw)
+								   (aref linesize 0)))
+					      #+nil (frame.width)
 					      image_height (frame.height))
 					(let ((tex_format GLenum--GL_LUMINANCE)
 					      (n 4) ;; find next integer that is divisible by 4
@@ -478,6 +481,7 @@
 						    ,(lprint :msg "prepare texture"
 							     :vars `(init_width init_height
 										image_width image_height
+										(frame.width)
 										(dot frame
 										     (-> (raw)
 											 (aref linesize 0))))
