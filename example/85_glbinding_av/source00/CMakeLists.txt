@@ -15,8 +15,6 @@ set( SRCS /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/
 add_executable( mytest ${SRCS} )
 target_include_directories( mytest PRIVATE
 /home/martin/src/imgui/
-/home/martin/src/entt/src/
-/home/martin/src/imgui_entt_entity_editor/
 /usr/local/include
  )
 target_compile_features( mytest PUBLIC cxx_std_20 )

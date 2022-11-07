@@ -20,52 +20,8 @@ using namespace glbinding;
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
 #include <cxxopts.hpp>
-#include <imgui_entt_entity_editor.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
     std::chrono::high_resolution_clock::now();
-class Transform {
-public:
-  float x = (0.f);
-  float y = (0.f);
-};
-class Velocity {
-public:
-  float x = (0.f);
-  float y = (0.f);
-};
-void computeVelocity(entt::registry &reg, float delta, float width,
-                     float height, float radius) {
-  reg.view<Transform, Velocity>().each([&](Transform &trans, Velocity &vel) {
-    (trans.x) += (((vel.x) * (delta)));
-    (trans.y) += (((vel.y) * (delta)));
-    if ((((trans.x) < (radius)) || ((((width) - (radius))) < (trans.x)))) {
-      trans.x = std::clamp(trans.x, radius, ((width) - (radius)));
-      vel.x = -vel.x;
-    }
-    if ((((trans.y) < (radius)) || ((((height) - (radius))) < (trans.y)))) {
-      trans.y = std::clamp(trans.y, radius, ((height) - (radius)));
-      vel.y = -vel.y;
-    }
-  });
-}
-namespace MM {
-template <>
-void ComponentEditorWidget<Transform>(entt::registry &reg,
-                                      entt::registry::entity_type e) {
-  auto &t = reg.get<Transform>(e);
-  const auto step = (0.10f);
-  ImGui::DragFloat("x", &t.x, step);
-  ImGui::DragFloat("y", &t.y, step);
-};
-template <>
-void ComponentEditorWidget<Velocity>(entt::registry &reg,
-                                     entt::registry::entity_type e) {
-  auto &t = reg.get<Velocity>(e);
-  const auto step = (0.10f);
-  ImGui::DragFloat("x", &t.x, step);
-  ImGui::DragFloat("y", &t.y, step);
-};
-}; // namespace MM
 void lprint(std::initializer_list<std::string> il) {
   std::chrono::duration<double> timestamp(0);
   timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
@@ -189,24 +145,6 @@ int main(int argc, char **argv) {
   ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "initialize ENTT", " "});
-  entt::registry reg;
-  MM::EntityEditor<entt::entity> editor;
-  editor.registerComponent<Transform>("Transform");
-  editor.registerComponent<Velocity>("Velocity");
-  const auto n = 1000;
-  for (auto i = 0; (i) < (n); (i) += (1)) {
-    auto e = reg.create();
-    const auto range = 5000;
-    const auto offset = ((range) / (2));
-    const auto scale = (0.10f);
-    reg.emplace<Transform>(e, ((scale) * (static_cast<float>(rand() % range))),
-                           ((scale) * (static_cast<float>(rand() % range))));
-    reg.emplace<Velocity>(
-        e, ((scale) * (static_cast<float>(((-offset) + (rand() % range))))),
-        ((scale) * (static_cast<float>(((-offset) + (rand() % range))))));
-  }
   const auto radius = (10.f);
   bool video_is_initialized_p = false;
   int image_width = 0;
@@ -216,26 +154,10 @@ int main(int argc, char **argv) {
           "start loop", " "});
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
-    const auto framesPerSecond = (60.f);
-    computeVelocity(reg, (((1.0f)) / (framesPerSecond)),
-                    static_cast<float>(width), static_cast<float>(height),
-                    radius);
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     {
       ImGui::NewFrame();
-      auto *dl = ImGui::GetBackgroundDrawList();
-      reg.view<Transform>().each([&](auto e, Transform &trans) {
-        auto eInt = ((1) + (entt::to_integral(e)));
-        const auto M = 256;
-        const auto R = 13;
-        const auto G = 159;
-        const auto B = 207;
-        const auto A = 250;
-        const auto colorBasedOnId = IM_COL32(
-            ((R) * (eInt)) % M, ((G) * (eInt)) % M, ((B) * (eInt)) % M, A);
-        dl->AddCircleFilled(ImVec2(trans.x, trans.y), radius, colorBasedOnId);
-      });
       auto showDemoWindow = true;
       ImGui::ShowDemoWindow(&showDemoWindow);
     }
@@ -309,6 +231,7 @@ int main(int argc, char **argv) {
       // draw frame
       ImGui::Begin("video texture");
       ImGui::Text("width = %d", image_width);
+      ImGui::Text("fn = %s", fn.c_str());
       ImGui::Image(
           reinterpret_cast<void *>(static_cast<intptr_t>(image_texture)),
           ImVec2(static_cast<float>(image_width),
