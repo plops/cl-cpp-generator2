@@ -22,20 +22,22 @@ using namespace glbinding;
 #include <cxxopts.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
     std::chrono::high_resolution_clock::now();
-void lprint(std::initializer_list<std::string> il) {
+void lprint(std::initializer_list<std::string> il, std::string file, int line,
+            std::string fun) {
   std::chrono::duration<double> timestamp(0);
   timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
   const auto defaultWidth = 10;
   (std::cout) << (std::setw(defaultWidth)) << (timestamp.count()) << (" ")
-              << (std::this_thread::get_id()) << (" ");
+              << (file) << (":") << (std::to_string(line)) << (" ") << (fun)
+              << (" ") << (std::this_thread::get_id()) << (" ");
   for (const auto &elem : il) {
     (std::cout) << (elem);
   }
   (std::cout) << (std::endl) << (std::flush);
 }
 int main(int argc, char **argv) {
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "start", " ", " argc='", std::to_string(argc), "'"});
+  lprint({"start", " ", " argc='", std::to_string(argc), "'"}, __FILE__,
+         __LINE__, &(__PRETTY_FUNCTION__[0]));
   auto options = cxxopts::Options("gl-video-viewer", "play videos with opengl");
   auto positional = std::vector<std::string>();
   ((options.add_options())("h,help", "Print usage"))(
@@ -50,17 +52,17 @@ int main(int argc, char **argv) {
   av::init();
   auto ctx = av::FormatContext();
   auto fn = positional.at(0);
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "open video file", " ", " fn='", fn, "'"});
+  lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
+         &(__PRETTY_FUNCTION__[0]));
   ctx.openInput(fn);
   ctx.findStreamInfo();
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "stream info", " ", " ctx.seekable()='",
+  lprint({"stream info", " ", " ctx.seekable()='",
           std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
           std::to_string(ctx.startTime().seconds()), "'",
           " ctx.duration().seconds()='",
           std::to_string(ctx.duration().seconds()), "'",
-          " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"});
+          " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"},
+         __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   ctx.seek({static_cast<long int>(
                 floor(((100) * ((((0.50f)) * (ctx.duration().seconds())))))),
             {1, 100}});
@@ -76,8 +78,8 @@ int main(int argc, char **argv) {
     }
   }
   if (vst.isNull()) {
-    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-            "Video stream not found", " "});
+    lprint({"Video stream not found", " "}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
   }
   av::VideoDecoderContext vdec;
   if (vst.isValid()) {
@@ -87,34 +89,34 @@ int main(int argc, char **argv) {
     vdec.setRefCountedFrames(true);
     vdec.open({{"threads", "1"}}, av::Codec(), ec);
     if (ec) {
-      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-              "can't open codec", " "});
+      lprint({"can't open codec", " "}, __FILE__, __LINE__,
+             &(__PRETTY_FUNCTION__[0]));
     }
   }
   auto *window = ([]() -> GLFWwindow * {
-    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-            "initialize GLFW3", " "});
+    lprint({"initialize GLFW3", " "}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
     if (!(glfwInit())) {
-      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-              "glfwInit failed", " "});
+      lprint({"glfwInit failed", " "}, __FILE__, __LINE__,
+             &(__PRETTY_FUNCTION__[0]));
     }
     glfwWindowHint(GLFW_VISIBLE, true);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-            "create GLFW3 window", " "});
+    lprint({"create GLFW3 window", " "}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
     const auto startWidth = 800;
     const auto startHeight = 600;
     auto window =
         glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr);
     if (!(window)) {
-      lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-              "can't create glfw window", " "});
+      lprint({"can't create glfw window", " "}, __FILE__, __LINE__,
+             &(__PRETTY_FUNCTION__[0]));
     }
-    lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-            "initialize GLFW3 context for window", " "});
+    lprint({"initialize GLFW3 context for window", " "}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
     glfwMakeContextCurrent(window);
     // configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw
     // errors
@@ -123,8 +125,8 @@ int main(int argc, char **argv) {
   })();
   auto width = int(0);
   auto height = int(0);
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "initialize glbinding", " "});
+  lprint({"initialize glbinding", " "}, __FILE__, __LINE__,
+         &(__PRETTY_FUNCTION__[0]));
   // if second arg is false: lazy function pointer loading
   glbinding::initialize(glfwGetProcAddress, false);
   {
@@ -134,15 +136,17 @@ int main(int argc, char **argv) {
     const float a = (1.0f);
     glClearColor(r, g, b, a);
   }
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "initialize ImGui", " "});
+  lprint({"initialize ImGui", " "}, __FILE__, __LINE__,
+         &(__PRETTY_FUNCTION__[0]));
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   auto io = ImGui::GetIO();
   io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
   ImGui::StyleColorsLight();
-  const auto installCallbacks = true;
-  ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
+  {
+    const auto installCallbacks = true;
+    ImGui_ImplGlfw_InitForOpenGL(window, installCallbacks);
+  }
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
   const auto radius = (10.f);
@@ -150,8 +154,7 @@ int main(int argc, char **argv) {
   int image_width = 0;
   int image_height = 0;
   GLuint image_texture = 0;
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "start loop", " "});
+  lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(glfwWindowShouldClose(window))) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
@@ -167,10 +170,10 @@ int main(int argc, char **argv) {
       auto oldheight = height;
       glfwGetWindowSize(window, &width, &height);
       if ((((width) != (oldwidth)) || ((height) != (oldheight)))) {
-        lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-                "window size has changed", " ", " width='",
+        lprint({"window size has changed", " ", " width='",
                 std::to_string(width), "'", " height='", std::to_string(height),
-                "'"});
+                "'"},
+               __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         glViewport(0, 0, width, height);
       }
     })();
@@ -179,9 +182,9 @@ int main(int argc, char **argv) {
       av::Packet pkt;
       while (pkt = ctx.readPacket(ec)) {
         if (ec) {
-          lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-                  "packet reading error", " ", " ec.message()='", ec.message(),
-                  "'"});
+          lprint({"packet reading error", " ", " ec.message()='", ec.message(),
+                  "'"},
+                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         }
         if (!((videoStream) == (pkt.streamIndex()))) {
           continue;
@@ -189,8 +192,8 @@ int main(int argc, char **argv) {
         auto ts = pkt.ts();
         auto frame = vdec.decode(pkt, ec);
         if (ec) {
-          lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-                  "error", " ", " ec.message()='", ec.message(), "'"});
+          lprint({"error", " ", " ec.message()='", ec.message(), "'"}, __FILE__,
+                 __LINE__, &(__PRETTY_FUNCTION__[0]));
         }
         ts = frame.pts();
         if (((frame.isComplete()) && (frame.isValid()))) {
@@ -207,12 +210,12 @@ int main(int argc, char **argv) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]),
-                    " ", "prepare texture", " ", " init_width='",
+            lprint({"prepare texture", " ", " init_width='",
                     std::to_string(init_width), "'", " image_width='",
                     std::to_string(image_width), "'", " image_height='",
                     std::to_string(image_height), "'", " frame.width()='",
-                    std::to_string(frame.width()), "'"});
+                    std::to_string(frame.width()), "'"},
+                   __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
             glTexImage2D(GL_TEXTURE_2D, 0, GLenum::GL_RGBA2, image_width,
                          image_height, 0, GLenum::GL_LUMINANCE,
                          GL_UNSIGNED_BYTE, nullptr);
@@ -252,8 +255,8 @@ int main(int argc, char **argv) {
       glfwSwapBuffers(window);
     }
   }
-  lprint({std::to_string(__LINE__), " ", &(__PRETTY_FUNCTION__[0]), " ",
-          "Shutdown ImGui and GLFW3", " "});
+  lprint({"Shutdown ImGui and GLFW3", " "}, __FILE__, __LINE__,
+         &(__PRETTY_FUNCTION__[0]));
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();

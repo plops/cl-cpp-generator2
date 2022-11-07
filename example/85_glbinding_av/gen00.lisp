@@ -60,7 +60,7 @@
 
 	(do0
 	 (include <avcpp/av.h>
-		  <avcpp/ffmpeg.h>)
+ 		  <avcpp/ffmpeg.h>)
 	 ;; API2
 	 (include ;<avcpp/format.h>
 	  <avcpp/formatcontext.h>
@@ -224,9 +224,10 @@
 		     io.ConfigFlags
 		     ImGuiConfigFlags_NavEnableKeyboard)))
 	    (ImGui--StyleColorsLight)
-	    (let ((installCallbacks true))
-	      (declare (type "const auto" installCallbacks))
-	      (ImGui_ImplGlfw_InitForOpenGL window installCallbacks))
+	    (progn
+	      (let ((installCallbacks true))
+		(declare (type "const auto" installCallbacks))
+		(ImGui_ImplGlfw_InitForOpenGL window installCallbacks)))
 
 	    (let ((glslVersion (string "#version 150")))
 	      (declare (type "const auto" glslVersion))
@@ -425,6 +426,10 @@
 	    (asan ""
 					;"-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
+	    ;; make __FILE__ shorter, so that the log output is more readable
+	    ;; note that this can interfere with debugger
+	    ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
+	    (short-file "-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/=")
 	    (show-err "-Wall -Wextra";
 					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
@@ -440,7 +445,8 @@
 	  ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
 	  (out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a \")" dbg asan show-err)
+	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	  (out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 
@@ -474,8 +480,8 @@
 		(out "find_package( ~a REQUIRED )" e))
 
 
-
-
+	  ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
+	  ;;(out "set( CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -D__FILENAME__='\\\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\\\"'\" )")
 
 	  (progn
 	    (out "add_library( libavcpp_static STATIC IMPORTED )")

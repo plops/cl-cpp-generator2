@@ -1,12 +1,7 @@
 (defun lprint (&key (msg "")
 		 (vars nil)
 		 (svars nil))
-  `(lprint (curly  ;__FILE__
-					;(string ":")
-	    ("std::to_string" __LINE__)
-	    (string " ")
-	    (ref (aref __PRETTY_FUNCTION__ 0)) ;__func__
-	    (string " ")
+  `(lprint (curly
 	    (string ,msg)
 	    (string " ")
 	    ,@(loop for e in vars appending
@@ -20,10 +15,16 @@
 					;("std::width" 8)
 		      (string ,(format nil " ~a='" (emit-c :code e)))
 		      ,e
-		      (string "'"))))))
+		      (string "'"))))
+	   __FILE__
+	   __LINE__
+	   (ref (aref __PRETTY_FUNCTION__ 0))
+	   ))
 (defun init-lprint ()
-  `(defun lprint (il)
-     (declare (type "std::initializer_list<std::string>" il))
+  `(defun lprint (il file line fun)
+     (declare (type "std::initializer_list<std::string>" il)
+	      (type int line)
+	      (type "std::string" file fun))
 
      "std::chrono::duration<double>  timestamp(0);"
      (setf timestamp (- ("std::chrono::high_resolution_clock::now")
@@ -35,6 +36,12 @@
 	 ("std::setw" defaultWidth)
 	 (dot timestamp
 	      (count))
+	 (string " ")
+	 file
+	 (string ":")
+	 (std--to_string line)
+	 (string " ")
+	 fun
 	 (string " ")
 	 ("std::this_thread::get_id")
 	 (string " ")
