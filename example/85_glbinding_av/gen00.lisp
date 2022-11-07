@@ -13,7 +13,6 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-
     (defparameter *source-dir* #P"example/85_glbinding_av/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
