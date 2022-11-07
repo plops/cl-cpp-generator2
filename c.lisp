@@ -2,7 +2,6 @@
 	  (safety 3)
 	  (speed 0)
 	  (debug 3)))
-
 #-nil
 (progn (ql:quickload "alexandria")
        (defpackage :cl-cpp-generator2
@@ -11,8 +10,8 @@
 	       :cl-ppcre)
 	 (:export
 	  #:write-source)))
-					;(setf *features* (union *features* '(:generic-c)))
-					;(setf *features* (set-difference *features* '(:generic-c)))
+;;(setf *features* (union *features* '(:generic-c)))
+;;(setf *features* (set-difference *features* '(:generic-c)))
 (in-package :cl-cpp-generator2)
 
 (setf (readtable-case *readtable*) :invert)
@@ -61,12 +60,12 @@
 		  :|nbformat| 4
 		  :|nbformat_minor| 2
 
-		  #+nil
-		  (:metadata (:kernelspec (:display_name "Python 3"
-							 :language "python"
-							 :name "python3"))
-			     :nbformat 4
-			     :nbformat_minor 2)))))
+		 #+nil
+		 (:metadata (:kernelspec (:display_name "Python 3"
+							:language "python"
+							:name "python3"))
+			    :nbformat 4
+			    :nbformat_minor 2)))))
     #+nil
     (sb-ext:run-program "/usr/bin/python3" `("-mjson.tool" ,nb-file))
     #-sbcl

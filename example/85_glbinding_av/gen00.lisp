@@ -22,558 +22,398 @@
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
 
-    (write-source (asdf:system-relative-pathname
-		   'cl-cpp-generator2
-		   (merge-pathnames #P"main.cpp"
-				    *source-dir*))
-		  `(do0
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"main.cpp"
+		       *source-dir*))
+     `(do0
 
-		    (include
+
+       (include
 					;<tuple>
 					;<mutex>
-		     <thread>
-		     <iostream>
-		     <iomanip>
-		     <chrono>
+	<thread>
+	<iostream>
+	<iomanip>
+	<chrono>
 					;  <memory>
-		     )
+	)
 
-		    (do0
-		     (include <glbinding/gl32core/gl.h>
-			      <glbinding/glbinding.h>
-			      <glbinding/CallbackMask.h>
-			      <glbinding/FunctionCall.h>
-			      <glbinding/AbstractFunction.h>)
-		     "using namespace gl32core;"
-		     "using namespace glbinding;")
-		    (do0
-		     (include <imgui.h>
-			      <backends/imgui_impl_glfw.h>
-			      <backends/imgui_impl_opengl3.h>)
-		     "#define GLFW_INCLUDE_NONE"
-		     (include <GLFW/glfw3.h>
-			      )
-		     #+nil (do0 "#define GLFW_EXPOSE_NATIVE_X11"
-				(include
-				 <GLFW/glfw3native.h>))
+       (do0
+	(include <glbinding/gl32core/gl.h>
+		 <glbinding/glbinding.h>
+		 <glbinding/CallbackMask.h>
+		 <glbinding/FunctionCall.h>
+		 <glbinding/AbstractFunction.h>)
+	"using namespace gl32core;"
+	"using namespace glbinding;")
+       (do0
+	(include <imgui.h>
+		 <backends/imgui_impl_glfw.h>
+		 <backends/imgui_impl_opengl3.h>)
+	"#define GLFW_INCLUDE_NONE"
+	(include <GLFW/glfw3.h>
+		 )
+	#+nil (do0 "#define GLFW_EXPOSE_NATIVE_X11"
+		   (include
+		    <GLFW/glfw3native.h>))
 
-		     (do0
-					;(include <entt/entt.hpp>)
-		      (include <imgui_entt_entity_editor.hpp>))
+	(do0
+	 (include <avcpp/av.h>
+		  <avcpp/ffmpeg.h>)
+	 ;; API2
+	 (include ;<avcpp/format.h>
+	  <avcpp/formatcontext.h>
+	  <avcpp/codec.h>
+	  <avcpp/codeccontext.h>))
+	(include <cxxopts.hpp>)
 
-		     (do0
-		      (include <avcpp/av.h>
-			       <avcpp/ffmpeg.h>)
-		      ;; API2
-		      (include ;<avcpp/format.h>
-		       <avcpp/formatcontext.h>
-		       <avcpp/codec.h>
-		       <avcpp/codeccontext.h>))
-		     (include <cxxopts.hpp>)
+	)
 
-		     )
+       "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
 
-		    "const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time = std::chrono::high_resolution_clock::now();"
-		    (do0
-		     (defclass+ Transform ()
-		       "public:"
-		       (let ((x 0s0)
-			     (y 0s0))
-			 (declare (type float x y))))
 
-		     (defclass+ Velocity ()
-		       "public:"
-		       (let ((x 0s0)
-			     (y 0s0))
-			 (declare (type float x y))))
+       ,(init-lprint)
+       (defun main (argc argv)
+	 (declare (type int argc)
+		  (type char** argv)
+		  (values int))
+	 ,(lprint :msg "start" :vars `(argc))
 
-		     (defun computeVelocity (reg delta width height radius)
-		       (declare (type "entt::registry&" reg)
-				(type float delta width height radius))
-		       (dot reg
-			    ("view<Transform,Velocity>")
+	 (let ((options (cxxopts--Options
+			 (string "gl-video-viewer")
+			 (string "play videos with opengl")))
+	       )
 
-			    (each
-			     (lambda (trans vel)
-			       (declare (capture "&")
-					(type Transform& trans)
-					(type Velocity& vel))
-			       (incf trans.x (* vel.x delta))
-			       (incf trans.y (* vel.y delta))
-			       (when (or (< trans.x radius)
-					 (< (- width radius) trans.x))
-				 (setf trans.x (std--clamp trans.x
-							   radius
-							   (- width radius)))
-				 (setf vel.x -vel.x))
-			       (when (or (< trans.y radius)
-					 (< (- height radius) trans.y))
-				 (setf trans.y (std--clamp trans.y
-							   radius
-							   (- height radius)))
-				 (setf vel.y -vel.y))
-			       ))))
-		     (space
-		      "namespace MM"
-		      (progn
-			,@(loop for e in `(Transform Velocity)
-				collect
-				`(space "template<>"
-					(defun ,(format nil "ComponentEditorWidget<~a>" e) (reg e)
-					  (declare (type "entt::registry&" reg)
-						   (type "entt::registry::entity_type" e))
-					  (let ((&t (,(format nil "reg.get<~a>" e) e))
-						(step .1s0))
-					    (declare (type "const auto" step))
-					    (ImGui--DragFloat (string "x")
-							      &t.x step)
-					    (ImGui--DragFloat (string "y")
-							      &t.y step)))))
-			)))
+	   (let ((positional (std--vector<std--string>)))
+	     (((dot
+		options
+		(add_options))
+	       (string "h,help")
+	       (string "Print usage"))
+	      (string "filenames")
+	      (string "The filenames of videos to display")
+	      (cxxopts--value<std--vector<std--string>>
+	       positional))
+	     (options.parse_positional  (curly (string "filenames")
+					       )
+					))
+	   (let ((opt_res (options.parse argc argv)))
+	     (when (opt_res.count (string "help"))
+	       (<< std--cout
+		   (options.help)
+		   std--endl)
+	       (exit 0))))
 
-		    ,(init-lprint)
-		    (defun main (argc argv)
-		      (declare (type int argc)
-			       (type char** argv)
-			       (values int))
-		      ,(lprint :msg "start" :vars `(argc))
-
-		      (let ((options (cxxopts--Options
-				      (string "gl-video-viewer")
-				      (string "play videos with opengl")))
-			    )
-
-			(let ((positional (std--vector<std--string>)))
-			  (((dot
-			     options
-			     (add_options))
-			    (string "h,help")
-			    (string "Print usage"))
-			   (string "filenames")
-			   (string "The filenames of videos to display")
-			   (cxxopts--value<std--vector<std--string>>
-			    positional))
-			  (options.parse_positional  (curly (string "filenames")
-							    )
-						     ))
-			(let ((opt_res (options.parse argc argv)))
-			  (when (opt_res.count (string "help"))
-			    (<< std--cout
-				(options.help)
-				std--endl)
-			    (exit 0))))
-
-		      (do0
-		       (av--init)
+	 (do0
+	  (av--init)
 					;(av--setFFmpegLoggingLevel AV_LOG_DEBUG)
-		       (let ((ctx (av--FormatContext)))
-		         #+nil(let ((fn (std--string "/dev/shm/o.mp4")))
-				(when (opt_res.count (string "filenames"))
-				  (let ((fns (dot (aref opt_res
-							(string "filenames"))
-						  (as<std--vector<std--string>>)
-						  )))
-				    (setf fn (aref fns 0))))
-				,(lprint :msg "open video file"
-					 :svars `(fn))
-				(ctx.openInput fn))
+	  (let ((ctx (av--FormatContext)))
+	    (let ((fn (dot positional (at 0))))
 
-			 (let ((fn (dot positional (at 0))))
-
-			   ,(lprint :msg "open video file"
-				    :svars `(fn))
-			   (ctx.openInput fn))
-			 (ctx.findStreamInfo)
-			 ,(lprint :msg "stream info"
-				  :vars `((ctx.seekable)
-					  (dot ctx (startTime) (seconds))
-					  (dot ctx (duration) (seconds))
-					  (ctx.streamsCount)))
-			 (ctx.seek (curly ("static_cast<long int>" (floor (* 100 (* .5 (dot ctx (duration)
-											    (seconds))))))
-					  (curly 1 100)))
-			 (do0
-			  "ssize_t videoStream = -1;"
-			  "av::Stream vst;"
-			  "std::error_code ec;"
-			  (dotimes (i (ctx.streamsCount))
-			    (let ((st (ctx.stream i)))
-			      (when (== AVMEDIA_TYPE_VIDEO
-					(st.mediaType))
-				(setf videoStream i
-				      vst st)
-				break)))
-			  (when (vst.isNull)
-			    ,(lprint :msg "Video stream not found"))
-			  (do0
-			   "av::VideoDecoderContext vdec;"
-			   (when (vst.isValid)
-			     (setf vdec (av--VideoDecoderContext vst))
-			     (let ((codec (av--findDecodingCodec (-> (vdec.raw)
-								     codec_id))))
-			       (vdec.setCodec codec)
-			       (vdec.setRefCountedFrames true)
-			       (vdec.open (curly
-					   (curly (string "threads")
-						  (string "1")))
-					  (av--Codec)
-					  ec)
-			       (when ec
-				 ,(lprint :msg "can't open codec"))
+	      ,(lprint :msg "open video file"
+		       :svars `(fn))
+	      (ctx.openInput fn))
+	    (ctx.findStreamInfo)
+	    ,(lprint :msg "stream info"
+		     :vars `((ctx.seekable)
+			     (dot ctx (startTime) (seconds))
+			     (dot ctx (duration) (seconds))
+			     (ctx.streamsCount)))
+	    (ctx.seek (curly ("static_cast<long int>" (floor (* 100 (* .5 (dot ctx (duration)
+									       (seconds))))))
+			     (curly 1 100)))
+	    (do0
+	     "ssize_t videoStream = -1;"
+	     "av::Stream vst;"
+	     "std::error_code ec;"
+	     (dotimes (i (ctx.streamsCount))
+	       (let ((st (ctx.stream i)))
+		 (when (== AVMEDIA_TYPE_VIDEO
+			   (st.mediaType))
+		   (setf videoStream i
+			 vst st)
+		   break)))
+	     (when (vst.isNull)
+	       ,(lprint :msg "Video stream not found"))
+	     (do0
+	      "av::VideoDecoderContext vdec;"
+	      (when (vst.isValid)
+		(setf vdec (av--VideoDecoderContext vst))
+		(let ((codec (av--findDecodingCodec (-> (vdec.raw)
+							codec_id))))
+		  (vdec.setCodec codec)
+		  (vdec.setRefCountedFrames true)
+		  (vdec.open (curly
+			      (curly (string "threads")
+				     (string "1")))
+			     (av--Codec)
+			     ec)
+		  (when ec
+		    ,(lprint :msg "can't open codec"))
 
 
-			       ))))))
+		  ))))))
 
 
-		      (let ((*window ((lambda ()
-					(declare (values GLFWwindow*))
-					,(lprint :msg "initialize GLFW3")
-					(unless (glfwInit)
-					  ,(lprint :msg "glfwInit failed"))
-					(glfwWindowHint GLFW_VISIBLE true)
-					(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
-					(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
-					(glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT true)
-					(glfwWindowHint GLFW_OPENGL_PROFILE
-							GLFW_OPENGL_CORE_PROFILE)
+	 (let ((*window ((lambda ()
+			   (declare (values GLFWwindow*))
+			   ,(lprint :msg "initialize GLFW3")
+			   (unless (glfwInit)
+			     ,(lprint :msg "glfwInit failed"))
+			   (glfwWindowHint GLFW_VISIBLE true)
+			   (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+			   (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
+			   (glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT true)
+			   (glfwWindowHint GLFW_OPENGL_PROFILE
+					   GLFW_OPENGL_CORE_PROFILE)
 
-					,(lprint :msg "create GLFW3 window")
-					(let ((startWidth 800)
-					      (startHeight 600)
-					      (window (glfwCreateWindow startWidth startHeight
-									(string "glfw")
-									nullptr
-									nullptr))
-					      )
-					  (declare (type "const auto" startWidth startHeight))
-					  (unless window
-					    ,(lprint :msg "can't create glfw window"))
-					  ,(lprint :msg "initialize GLFW3 context for window")
-					  (glfwMakeContextCurrent window)
-					  (do0 (comments "configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw errors")
-					       (glfwSwapInterval 0))
-					  (return window))
-					)))))
-		      (let ((width (int 0))
-			    (height (int 0)))
+			   ,(lprint :msg "create GLFW3 window")
+			   (let ((startWidth 800)
+				 (startHeight 600)
+				 (window (glfwCreateWindow startWidth startHeight
+							   (string "glfw")
+							   nullptr
+							   nullptr))
+				 )
+			     (declare (type "const auto" startWidth startHeight))
+			     (unless window
+			       ,(lprint :msg "can't create glfw window"))
+			     ,(lprint :msg "initialize GLFW3 context for window")
+			     (glfwMakeContextCurrent window)
+			     (do0 (comments "configure Vsync, 1 locks to 60Hz, FIXME: i should really check glfw errors")
+				  (glfwSwapInterval 0))
+			     (return window))
+			   )))))
+	 (let ((width (int 0))
+	       (height (int 0)))
 
-			(do0
-			 ,(lprint :msg "initialize glbinding")
-			 (comments "if second arg is false: lazy function pointer loading")
-			 (glbinding--initialize glfwGetProcAddress
-						false)
-			 #+nil
-			 (do0 (glbinding--setCallbackMask
-			       (logior
-				CallbackMask--After
-				CallbackMask--ParametersAndReturnValue))
-			      (glbinding--setAfterCallback
-			       (lambda (call)
-				 (declare (type "const glbinding::FunctionCall&"
-						call)
-					  )
-				 (let ((fun (dot call  (-> function (name)))))
-				   ,(lprint :msg `fun)))))
-			 ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
-			    `(progn
-			       ,@(loop for e in l
-				       and n in `(r g b a)
-				       collect
-				       `(let ((,n ,e))
-					  (declare (type "const float" ,n))))
-			       (glClearColor r g b a))))
+	   (do0
+	    ,(lprint :msg "initialize glbinding")
+	    (comments "if second arg is false: lazy function pointer loading")
+	    (glbinding--initialize glfwGetProcAddress
+				   false)
+	    #+nil
+	    (do0 (glbinding--setCallbackMask
+		  (logior
+		   CallbackMask--After
+		   CallbackMask--ParametersAndReturnValue))
+		 (glbinding--setAfterCallback
+		  (lambda (call)
+		    (declare (type "const glbinding::FunctionCall&"
+				   call)
+			     )
+		    (let ((fun (dot call  (-> function (name)))))
+		      ,(lprint :msg `fun)))))
+	    ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
+	       `(progn
+		  ,@(loop for e in l
+			  and n in `(r g b a)
+			  collect
+			  `(let ((,n ,e))
+			     (declare (type "const float" ,n))))
+		  (glClearColor r g b a))))
 
-			(do0
-			 ,(lprint :msg "initialize ImGui")
-			 (IMGUI_CHECKVERSION)
-			 (ImGui--CreateContext)
-			 (let ((io (ImGui--GetIO)))
-			   (setf io.ConfigFlags
-				 (logior
-				  io.ConfigFlags
-				  ImGuiConfigFlags_NavEnableKeyboard)))
-			 (ImGui--StyleColorsLight)
-			 (let ((installCallbacks true))
-			   (declare (type "const auto" installCallbacks))
-			   (ImGui_ImplGlfw_InitForOpenGL window installCallbacks))
+	   (do0
+	    ,(lprint :msg "initialize ImGui")
+	    (IMGUI_CHECKVERSION)
+	    (ImGui--CreateContext)
+	    (let ((io (ImGui--GetIO)))
+	      (setf io.ConfigFlags
+		    (logior
+		     io.ConfigFlags
+		     ImGuiConfigFlags_NavEnableKeyboard)))
+	    (ImGui--StyleColorsLight)
+	    (let ((installCallbacks true))
+	      (declare (type "const auto" installCallbacks))
+	      (ImGui_ImplGlfw_InitForOpenGL window installCallbacks))
 
-			 (let ((glslVersion (string "#version 150")))
-			   (declare (type "const auto" glslVersion))
-			   (ImGui_ImplOpenGL3_Init glslVersion)))
+	    (let ((glslVersion (string "#version 150")))
+	      (declare (type "const auto" glslVersion))
+	      (ImGui_ImplOpenGL3_Init glslVersion)))
 
-			(do0
-			 ,(lprint :msg "initialize ENTT")
+	   (let ((radius 10s0))
+	     (declare (type "const auto" radius))
 
-			 "entt::registry reg;"
-			 "MM::EntityEditor<entt::entity> editor;"
-
-			 (editor.registerComponent<Transform> (string "Transform"))
-			 (editor.registerComponent<Velocity> (string "Velocity"))
-			 (do0
-					;"entt::entity e;"
-			  (let ((n 1000))
-			    (declare (type "const auto" n))
-			    (dotimes (i n)
-
-			      (let ((e (reg.create))
-				    (range 5000)
-				    (offset (/ range 2))
-				    (scale .1s0))
-				(declare (type "const auto" range offset scale))
-				(reg.emplace<Transform> e
-							(* scale (static_cast<float>
-								  (% (rand)
-								     range)))
-							(* scale (static_cast<float>
-								  (% (rand)
-								     range)))))
-			      (reg.emplace<Velocity> e
-						     (* scale (static_cast<float>
-							       (+ -offset
-								  (% (rand)
-								     range))))
-						     (* scale (static_cast<float>
-							       (+ -offset
-								  (% (rand)
-								     range)))))))))
-
-			(let ((radius 10s0))
-			  (declare (type "const auto" radius))
-
-			  (do0 "bool video_is_initialized_p = false;"
-			       "int image_width = 0;"
-			       "int image_height = 0;"
-			       "GLuint image_texture = 0;")
+	     (do0 "bool video_is_initialized_p = false;"
+		  "int image_width = 0;"
+		  "int image_height = 0;"
+		  "GLuint image_texture = 0;")
 
 
-			  ,(lprint :msg "start loop")
-			  (while (not (glfwWindowShouldClose window))
-			    (glfwPollEvents)
-			    (let ((framesPerSecond 60s0))
-			      (declare (type "const auto" framesPerSecond))
-			      (computeVelocity reg
-					       (/ 1s0
-						  framesPerSecond)
-					       (static_cast<float> width)
-					       (static_cast<float> height)
-					       radius))
-			    (do0
-			     (ImGui_ImplOpenGL3_NewFrame)
-			     (ImGui_ImplGlfw_NewFrame)
+	     ,(lprint :msg "start loop")
+	     (while (not (glfwWindowShouldClose window))
+	       (glfwPollEvents)
 
-			     (progn
-			       (ImGui--NewFrame)
-			       (let ((*dl (ImGui--GetBackgroundDrawList)))
-				 (dot
-				  reg
-				  ("view<Transform>")
-				  (each
-				   (lambda (e trans)
-				     (declare (type auto e)
-					      (type Transform& trans)
-					      (capture "&"))
-				     (let ((eInt (+ 1 (entt--to_integral e)))
-					   (M 256)
-					   (R 13)
-					   (G 159)
-					   (B 207)
-					   (A 250)
+	       (do0
+		(ImGui_ImplOpenGL3_NewFrame)
+		(ImGui_ImplGlfw_NewFrame)
+		(progn
+		  (ImGui--NewFrame)
 
-					   (colorBasedOnId (IM_COL32
-							    (% (* R eInt)
-							       M)
-							    (% (* G eInt)
-							       M)
-							    (% (* B eInt)
-							       M)
-							    A)))
-				       (declare (type "const auto"
-						      M R G B A
-						      colorBasedOnId))
-				       (dl->AddCircleFilled
-					(ImVec2 trans.x
-						trans.y)
-					radius
-					colorBasedOnId))))))
 
-			       (do0
-				(let ((showDemoWindow true))
-				  (ImGui--ShowDemoWindow &showDemoWindow)))
-			       #+nil(editor.renderSimpleCombo reg e)
+		  (do0
+		   (let ((showDemoWindow true))
+		     (ImGui--ShowDemoWindow &showDemoWindow)))
+
 
 					;(ImGui--Render)
-			       )
+		  )
 
-			     #+nil  (do0
-				     (ImGui--Begin (string "combo"))
-				     (editor.renderSimpleCombo reg e)
-				     (ImGui--End))
-			     )
 
-			    ((lambda ()
-			       (declare (capture &width &height window))
-			       (comments "react to changing window size")
-			       (let ((oldwidth width)
-				     (oldheight height))
-				 (glfwGetWindowSize window &width &height)
-				 (when (or (!= width oldwidth)
-					   (!= height oldheight))
-				   ,(lprint :msg "window size has changed" :vars `(width height))
-				   (glViewport 0 0 width height)))))
+		)
 
-			    (progn
-			      "std::error_code ec;"
-			      "av::Packet pkt;"
-			      (while (= pkt
-					(ctx.readPacket ec))
-				(when ec
-				  ,(lprint :msg "packet reading error"
-					   :svars `((ec.message))))
-				(unless (== videoStream
-					    (pkt.streamIndex))
-				  continue)
-				(let ((ts (pkt.ts)))
-				  #+nil,(lprint :vars `((ts.seconds)
+	       ((lambda ()
+		  (declare (capture &width &height window))
+		  (comments "react to changing window size")
+		  (let ((oldwidth width)
+			(oldheight height))
+		    (glfwGetWindowSize window &width &height)
+		    (when (or (!= width oldwidth)
+			      (!= height oldheight))
+		      ,(lprint :msg "window size has changed" :vars `(width height))
+		      (glViewport 0 0 width height)))))
+
+	       (progn
+		 "std::error_code ec;"
+		 "av::Packet pkt;"
+		 (while (= pkt
+			   (ctx.readPacket ec))
+		   (when ec
+		     ,(lprint :msg "packet reading error"
+			      :svars `((ec.message))))
+		   (unless (== videoStream
+			       (pkt.streamIndex))
+		     continue)
+		   (let ((ts (pkt.ts)))
+		     #+nil,(lprint :vars `((ts.seconds)
 					; (pkt.timeBase)
-							(pkt.streamIndex)))
-				  (let ((frame (vdec.decode pkt ec)))
-				    (when ec
-				      ,(lprint :msg "error"
-					       :svars `((ec.message))))
-				    (setf ts (frame.pts))
-				    (when (and (frame.isComplete)
-					       (frame.isValid))
-				      (let ((*data (frame.data 0)))
-					(setf image_width (dot frame
-							       (-> (raw)
-								   (aref linesize 0)))
-					      image_height (frame.height))
-					,(flet ((make-tex (&key sub
-								(target 'GL_TEXTURE_2D)
-								(level 0)
-								(internal-format
+					   (pkt.streamIndex)))
+		     (let ((frame (vdec.decode pkt ec)))
+		       (when ec
+			 ,(lprint :msg "error"
+				  :svars `((ec.message))))
+		       (setf ts (frame.pts))
+		       (when (and (frame.isComplete)
+				  (frame.isValid))
+			 (let ((*data (frame.data 0)))
+			   (setf image_width (dot frame
+						  (-> (raw)
+						      (aref linesize 0)))
+				 image_height (frame.height))
+			   ,(flet ((make-tex (&key sub
+						   (target 'GL_TEXTURE_2D)
+						   (level 0)
+						   (internal-format
 					;'GL_RGBA
 					;'GLenum--GL_RGB8
 					;'GLenum--GL_R3_G3_B2
-								 'GLenum--GL_RGBA2
+						    'GLenum--GL_RGBA2
 					;'GLenum--GL_RGB9_E5 ;; shared exponent, looks ok
 					; 'GLenum--GL_SRGB8 ;; this displays as much darker
 					;'GLenum--GL_RGB8UI ;; displays as black
 					;'GLenum--GL_COMPRESSED_RGB ;; framerate drops from +200fps to 40fps
-								 )
-								(width 'image_width)
-								(height 'image_height)
-								(xoffset 0)
-								(yoffset 0)
-								(border 0)
-								(tex-format 'GLenum--GL_LUMINANCE)
-								(tex-type 'GL_UNSIGNED_BYTE)
-								)
-						  (if sub
-						      `(glTexSubImage2D  ,target
-									 ,level
-									 ,xoffset ,yoffset
-									 ,width
-									 ,height
-									 ,tex-format
-									 ,tex-type
-									 data)
-						      `(glTexImage2D ,target
-								     ,level
-								     ,internal-format
-								     ,width
-								     ,height
-								     ,border
-								     ,tex-format
-								     ,tex-type
-								     nullptr))))
-					   `(let (
-						  (init_width image_width)
-						  (init_height image_height))
-					      (if !video_is_initialized_p
-						  (do0 (comments "initialize texture for video frames")
-						       (glGenTextures 1 &image_texture)
-						       (glBindTexture GL_TEXTURE_2D image_texture)
-						       ,@(loop for (key val) in `((WRAP_S REPEAT)
-										  (WRAP_T REPEAT)
-										  (MIN_FILTER LINEAR)
-										  (MAG_FILTER LINEAR))
-							       collect
-							       `(glTexParameteri GL_TEXTURE_2D
-										 ,(format nil "GL_TEXTURE_~A" key)
-										 ,(format nil "GL_~A" val)))
-
-						       (do0
-							,(lprint :msg "prepare texture"
-								 :vars `(init_width image_width image_height
-										    (frame.width)
-										    )
-								 )
-							,(make-tex :sub nil)
-							,(make-tex :sub t))
-
-						       (setf video_is_initialized_p true))
-						  (do0
-						   (comments "update texture with new frame")
-						   (glBindTexture GL_TEXTURE_2D image_texture)
-						   ,(make-tex :sub t))
-						  )))
-					break)))))
-
-			      (do0
-			       (comments "draw frame")
-			       (do0
-				(ImGui--Begin (string "video texture"))
-				(ImGui--Text (string "width = %d") image_width)
-				(ImGui--Image (reinterpret_cast<void*>
-					       (static_cast<intptr_t> image_texture))
-					      (ImVec2 (static_cast<float> image_width)
-						      (static_cast<float> image_height)))
-				(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-				      (val val_old))
-				  (ImGui--SliderFloat (string "time")
-						      &val
-						      (static_cast<float> (dot ctx (startTime) (seconds))) ;min
-						      (static_cast<float> (dot ctx (duration) (seconds))) ;max
-						      (string "%.3f") ; format string
-						      )
-				  (unless (== val val_old)
-				    (comments "perform seek operation")
-				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
-						     (curly 1 1000)))))
-				#+nil
-				(let ((val_old2 val)
-				      (val2 val_old2))
-				  ;; FIXME: this doesn't allow to scroll back
-				  (ImGui--DragFloat (string "drag time")
-						    &val2
-						    (/ 1s0 6s0)
-						    (static_cast<float> (dot ctx (startTime) (seconds))) ;min
-						    (static_cast<float> (dot ctx (duration) (seconds))) ;max
-						    (string "%.3f") ; format string
 						    )
-				  (unless (== val2 val_old2)
-				    (comments "perform seek operation")
-				    (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val2)))
-						     (curly 1 1000)))))
-				(ImGui--End))
-			       (ImGui--Render)
+						   (width 'image_width)
+						   (height 'image_height)
+						   (xoffset 0)
+						   (yoffset 0)
+						   (border 0)
+						   (tex-format 'GLenum--GL_LUMINANCE)
+						   (tex-type 'GL_UNSIGNED_BYTE)
+						   )
+				     (if sub
+					 `(glTexSubImage2D  ,target
+							    ,level
+							    ,xoffset ,yoffset
+							    ,width
+							    ,height
+							    ,tex-format
+							    ,tex-type
+							    data)
+					 `(glTexImage2D ,target
+							,level
+							,internal-format
+							,width
+							,height
+							,border
+							,tex-format
+							,tex-type
+							nullptr))))
+			      `(let (
+				     (init_width image_width)
+				     (init_height image_height))
+				 (if !video_is_initialized_p
+				     (do0 (comments "initialize texture for video frames")
+					  (glGenTextures 1 &image_texture)
+					  (glBindTexture GL_TEXTURE_2D image_texture)
+					  ,@(loop for (key val) in `((WRAP_S REPEAT)
+								     (WRAP_T REPEAT)
+								     (MIN_FILTER LINEAR)
+								     (MAG_FILTER LINEAR))
+						  collect
+						  `(glTexParameteri GL_TEXTURE_2D
+								    ,(format nil "GL_TEXTURE_~A" key)
+								    ,(format nil "GL_~A" val)))
 
-			       (glClear GL_COLOR_BUFFER_BIT)
-			       (ImGui_ImplOpenGL3_RenderDrawData
-				(ImGui--GetDrawData))
-			       (glfwSwapBuffers window)
-			       )))))
+					  (do0
+					   ,(lprint :msg "prepare texture"
+						    :vars `(init_width image_width image_height
+								       (frame.width)
+								       )
+						    )
+					   ,(make-tex :sub nil)
+					   ,(make-tex :sub t))
 
-		      (do0
-		       ,(lprint :msg "Shutdown ImGui and GLFW3")
-		       (ImGui_ImplOpenGL3_Shutdown)
-		       (ImGui_ImplGlfw_Shutdown)
-		       (ImGui--DestroyContext)
-		       (glfwDestroyWindow window)
-		       (glfwTerminate))
+					  (setf video_is_initialized_p true))
+				     (do0
+				      (comments "update texture with new frame")
+				      (glBindTexture GL_TEXTURE_2D image_texture)
+				      ,(make-tex :sub t))
+				     )))
+			   break)))))
 
-		      (return 0))))
+		 (do0
+		  (comments "draw frame")
+		  (do0
+		   (ImGui--Begin (string "video texture"))
+		   (ImGui--Text (string "width = %d") image_width)
+		   (ImGui--Text (string "fn = %s") (fn.c_str))
+		   (ImGui--Image (reinterpret_cast<void*>
+				  (static_cast<intptr_t> image_texture))
+				 (ImVec2 (static_cast<float> image_width)
+					 (static_cast<float> image_height)))
+		   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+			 (val val_old))
+		     (ImGui--SliderFloat (string "time")
+					 &val
+					 (static_cast<float> (dot ctx (startTime) (seconds))) ;min
+					 (static_cast<float> (dot ctx (duration) (seconds))) ;max
+					 (string "%.3f") ; format string
+					 )
+		     (unless (== val val_old)
+		       (comments "perform seek operation")
+		       (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
+					(curly 1 1000)))))
+		   (ImGui--End))
+		  (ImGui--Render)
+
+		  (glClear GL_COLOR_BUFFER_BIT)
+		  (ImGui_ImplOpenGL3_RenderDrawData
+		   (ImGui--GetDrawData))
+		  (glfwSwapBuffers window)
+		  )))))
+
+	 (do0
+	  ,(lprint :msg "Shutdown ImGui and GLFW3")
+	  (ImGui_ImplOpenGL3_Shutdown)
+	  (ImGui_ImplGlfw_Shutdown)
+	  (ImGui--DestroyContext)
+	  (glfwDestroyWindow window)
+	  (glfwTerminate))
+
+	 (return 0))))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output
@@ -624,8 +464,6 @@
 					; /home/martin/src/entt/src/
 	  (out "target_include_directories( mytest PRIVATE
 /home/martin/src/imgui/
-/home/martin/src/entt/src/
-/home/martin/src/imgui_entt_entity_editor/
 /usr/local/include
  )")
 
