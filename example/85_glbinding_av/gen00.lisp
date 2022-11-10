@@ -1,5 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2"))
+
 (in-package :cl-cpp-generator2)
 
 (let ((log-preamble `(do0 (include <iostream>
@@ -36,6 +37,7 @@
 	<iostream>
 	<iomanip>
 	<chrono>
+	<cassert>
 					;  <memory>
 	)
 
@@ -86,15 +88,22 @@
 	       )
 
 	   (let ((positional (std--vector<std--string>)))
-	     (((dot
-		options
-		(add_options))
-	       (string "h,help")
-	       (string "Print usage"))
+	     ((((dot
+		 options
+		 (add_options))
+		(string "h,help")
+		(string "Print usage"))
+	       (string "i,internal-tex-format")
+	       (string "data format of texture")
+	       (-> (cxxopts--value<int>)
+		   (default_value (string "3"))))
 	      (string "filenames")
 	      (string "The filenames of videos to display")
 	      (cxxopts--value<std--vector<std--string>>
 	       positional))
+
+
+
 	     (options.parse_positional  (curly (string "filenames")
 					       )
 					))
@@ -103,7 +112,27 @@
 	       (<< std--cout
 		   (options.help)
 		   std--endl)
-	       (exit 0))))
+	       (exit 0))
+
+	     ,(let ((tex-formats `((GL_RGBA)
+				   (GLenum--GL_RGB8)
+				   (GLenum--GL_R3_G3_B2)
+				   (GLenum--GL_RGBA2 :default t :comment "weirdest effect")
+				   (GLenum--GL_RGB9_E5 :comment "shared exponent, looks ok")
+				   (GLenum--GL_SRGB8 :comment "this displays as much darker")
+				   (GLenum--GL_RGB8UI :comment "displays as black")
+				   (GLenum--GL_COMPRESSED_RGB :comment "framerate drops from +200fps to 40fps"))))
+		`(let ((texFormatIdx (dot (aref opt_res (string "internal-tex-format"))
+					  (as<int>))))
+ 		   (assert (<= 0 texFormatIdx))
+		   (assert (< texFormatIdx ,(length tex-formats)))
+		   (let ((texFormats (,(format nil "std::array<gl::GLenum,~a>" (length tex-formats))
+				       (curly ,@(loop for e in tex-formats
+						      collect
+						      (destructuring-bind ( val &key comment default) e
+							val)))))
+			 (texFormat (aref texFormats texFormatIdx))))))
+	     ))
 
 	 (do0
 	  (av--init)
@@ -249,20 +278,9 @@
 	       (do0
 		(ImGui_ImplOpenGL3_NewFrame)
 		(ImGui_ImplGlfw_NewFrame)
-		(progn
-		  (ImGui--NewFrame)
-
-
-		  (do0
-		   (let ((showDemoWindow true))
-		     (ImGui--ShowDemoWindow &showDemoWindow)))
-
-
-					;(ImGui--Render)
-		  )
-
-
-		)
+		(ImGui--NewFrame)
+		(let ((showDemoWindow true))
+		  (ImGui--ShowDemoWindow &showDemoWindow)))
 
 	       ((lambda ()
 		  (declare (capture &width &height window))
@@ -306,10 +324,11 @@
 						   (target 'GL_TEXTURE_2D)
 						   (level 0)
 						   (internal-format
+						    `texFormat
 					;'GL_RGBA
 					;'GLenum--GL_RGB8
 					;'GLenum--GL_R3_G3_B2
-						    'GLenum--GL_RGBA2
+					;'GLenum--GL_RGBA2
 					;'GLenum--GL_RGB9_E5 ;; shared exponent, looks ok
 					; 'GLenum--GL_SRGB8 ;; this displays as much darker
 					;'GLenum--GL_RGB8UI ;; displays as black

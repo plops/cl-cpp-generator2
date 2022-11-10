@@ -1,3 +1,4 @@
+#include <cassert>
 #include <chrono>
 #include <glbinding/AbstractFunction.h>
 #include <glbinding/CallbackMask.h>
@@ -40,7 +41,9 @@ int main(int argc, char **argv) {
          __LINE__, &(__PRETTY_FUNCTION__[0]));
   auto options = cxxopts::Options("gl-video-viewer", "play videos with opengl");
   auto positional = std::vector<std::string>();
-  ((options.add_options())("h,help", "Print usage"))(
+  (((options.add_options())("h,help", "Print usage"))(
+      "i,internal-tex-format", "data format of texture",
+      cxxopts::value<int>()->default_value("3")))(
       "filenames", "The filenames of videos to display",
       cxxopts::value<std::vector<std::string>>(positional));
   options.parse_positional({"filenames"});
@@ -49,6 +52,14 @@ int main(int argc, char **argv) {
     (std::cout) << (options.help()) << (std::endl);
     exit(0);
   }
+  auto texFormatIdx = opt_res["internal-tex-format"].as<int>();
+  assert((0) <= (texFormatIdx));
+  assert((texFormatIdx) < (8));
+  auto texFormats = std::array<gl::GLenum, 8>(
+      {GL_RGBA, GLenum::GL_RGB8, GLenum::GL_R3_G3_B2, GLenum::GL_RGBA2,
+       GLenum::GL_RGB9_E5, GLenum::GL_SRGB8, GLenum::GL_RGB8UI,
+       GLenum::GL_COMPRESSED_RGB});
+  auto texFormat = texFormats[texFormatIdx];
   av::init();
   auto ctx = av::FormatContext();
   auto fn = positional.at(0);
@@ -159,11 +170,9 @@ int main(int argc, char **argv) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
-    {
-      ImGui::NewFrame();
-      auto showDemoWindow = true;
-      ImGui::ShowDemoWindow(&showDemoWindow);
-    }
+    ImGui::NewFrame();
+    auto showDemoWindow = true;
+    ImGui::ShowDemoWindow(&showDemoWindow);
     ([&width, &height, window]() {
       // react to changing window size
       auto oldwidth = width;
@@ -216,9 +225,8 @@ int main(int argc, char **argv) {
                     std::to_string(image_height), "'", " frame.width()='",
                     std::to_string(frame.width()), "'"},
                    __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-            glTexImage2D(GL_TEXTURE_2D, 0, GLenum::GL_RGBA2, image_width,
-                         image_height, 0, GLenum::GL_LUMINANCE,
-                         GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, texFormat, image_width, image_height,
+                         0, GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height,
                             GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
             video_is_initialized_p = true;
