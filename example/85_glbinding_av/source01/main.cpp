@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
   }
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
-  auto video = Video("/dev/shm/et.mp4");
+  auto video = Video(op.non_option_args().at(0));
   auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {

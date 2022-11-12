@@ -631,40 +631,6 @@
 		 std--endl)
 	     (exit 0)))
 
-	 #+nil (let ((options (cxxopts--Options
-			       (string "gl-video-viewer")
-			       (string "play videos with opengl"))))
-
-
-
-		 (let ((positional (std--vector<std--string>)))
-		   ((((dot
-		       options
-		       (add_options))
-		      (string "h,help")
-		      (string "Print usage"))
-		     (string "i,internal-tex-format")
-		     (string "data format of texture")
-		     (-> (cxxopts--value<int>)
-			 (default_value (string "3"))))
-		    (string "filenames")
-		    (string "The filenames of videos to display")
-		    (cxxopts--value<std--vector<std--string>>
-		     positional))
-
-
-
-		   (options.parse_positional  (curly (string "filenames"))))
-		 (let ((opt_res (options.parse argc argv)))
-		   (when (opt_res.count (string "help"))
-		     (<< std--cout
-			 (options.help)
-			 std--endl)
-		     (exit ))
-
-
-		   ))
-
 	 (do0
 	  ,(let ((tex-formats `((GL_RGBA)
 				(GLenum--GL_RGB8)
@@ -684,7 +650,9 @@
 						   (destructuring-bind ( val &key comment default) e
 						     val)))))
 		      (texFormat (aref texFormats texFormatIdx)))))))
-
+	 #+nil
+	 (for-range (arg (op.non_option_args))
+		    ,(lprint :svars `(arg)))
 	 (let ((win (GlfwWindow)))
 	   (do0
 	    ,(lprint :msg "initialize glbinding")
@@ -717,8 +685,7 @@
 
 	   (do0
 	    (av--init)
-	    (let ((video (Video (string "/dev/shm/et.mp4")
-					;(dot positional (at 0))
+	    (let ((video (Video (dot op (non_option_args) (at 0))
 				)))))
 	   (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
 	     (do0
@@ -809,7 +776,7 @@
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
-      (let ((dbg "-ggdb -O0 ")
+      (let ((dbg "-ggdb -O0 -flto")
 	    (asan ""
 					;"-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )
