@@ -16,7 +16,7 @@ class Video  {
         av::VideoDecoderContext vdec;
         av::Packet pkt;
         public:
-        ssize_t videoStream = -1;
+        ssize_t videoStream = -2;
         explicit  Video (std::string filename)     ;  
         av::Packet readPacket ()     ;  
         av::VideoFrame decode ()     ;  

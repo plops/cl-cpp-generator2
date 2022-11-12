@@ -262,7 +262,7 @@
 	       "av::Packet pkt;"
 
 	       "public:"
-	       "ssize_t videoStream = -1;"
+	       "ssize_t videoStream = -2;"
 	       (defmethod Video (filename)
 		 (declare
 		  (type "std::string" filename)
@@ -638,7 +638,7 @@
 					(static_cast<intptr_t> image_texture))
 				       (ImVec2 (static_cast<float> image_width)
 					       (static_cast<float> image_height)))
-		   #+nil(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+		   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
 			      (val val_old))
 			  (imgui.SliderFloat (string "time")
 					     &val

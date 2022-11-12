@@ -65,7 +65,7 @@
 	     (code-hash (sxhash ,str)))
 	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db)
 	   (when (or (not exists)
-		     (/= fn-code-hash old-code-hash)
+		     (/= code-hash old-code-hash)
 		     (not (probe-file ,fn)))
 					;,@body
 	     (progn

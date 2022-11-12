@@ -135,6 +135,14 @@ int main(int argc, char **argv) {
       // draw frame
       imgui.Begin("video texture");
       imgui.Image(image_texture, image_width, image_height);
+      auto val_old = static_cast<float>(pkt.ts().seconds());
+      auto val = val_old;
+      imgui.SliderFloat("time", &val, video.startTime(), video.duration(),
+                        "%.3f");
+      if (!((val) == (val_old))) {
+        // perform seek operation
+        video.seek(val);
+      }
       imgui.End();
       imgui.Render();
       glClear(GL_COLOR_BUFFER_BIT);
