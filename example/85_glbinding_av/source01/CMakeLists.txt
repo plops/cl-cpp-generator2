@@ -21,6 +21,7 @@ add_executable( mytest ${SRCS} )
 target_include_directories( mytest PRIVATE
 /home/martin/src/imgui/
 /usr/local/include
+/home/martin/src/popl/include/
  )
 target_compile_features( mytest PUBLIC cxx_std_20 )
 target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )

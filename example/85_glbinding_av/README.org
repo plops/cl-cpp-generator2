@@ -54,3 +54,10 @@ git clone https://github.com/jarro2783/cxxopts
   - need class to represent
     - texture (init, change)
     - video file with skipping
+
+  - use popl for argument parsing
+
+ #+begin_example
+ cd ~/src
+git clone https://github.com/badaix/popl
+ #+end_example

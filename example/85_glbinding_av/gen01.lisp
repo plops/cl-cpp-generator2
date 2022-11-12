@@ -574,12 +574,13 @@
 					;	  <avcpp/ffmpeg.h>
 		  )
 	 ;; API2
-	 (include ;<avcpp/format.h>
+	 (include			;<avcpp/format.h>
 	  <avcpp/formatcontext.h>
 					;<avcpp/codec.h>
 					;<avcpp/codeccontext.h>
 	  ))
-	(include <cxxopts.hpp>)
+
+	(include <popl.hpp>)
 
 	)
 
@@ -593,54 +594,96 @@
 		  (values int))
 	 ,(lprint :msg "start" :vars `(argc))
 
-	 (let ((options (cxxopts--Options
-			 (string "gl-video-viewer")
-			 (string "play videos with opengl"))))
+	 (let ((op (popl--OptionParser (string "allowed opitons")))
+	       (varInternalTextureFormat (int 3))
+	       ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+				  (:long verbose :short v :type Switch :msg "produce verbose output")
+				  (:long texformat :short T :type int :msg "choose internal texture format"
+					 :default 3 :out &varInternalTextureFormat)
 
-	   (let ((positional (std--vector<std--string>)))
-	     ((((dot
-		 options
-		 (add_options))
-		(string "h,help")
-		(string "Print usage"))
-	       (string "i,internal-tex-format")
-	       (string "data format of texture")
-	       (-> (cxxopts--value<int>)
-		   (default_value (string "3"))))
-	      (string "filenames")
-	      (string "The filenames of videos to display")
-	      (cxxopts--value<std--vector<std--string>>
-	       positional))
+				  )
+		       appending
+		       (destructuring-bind (&key long short type msg default out) e
+			 `(#+nil (,(format nil "~aVar" long) (,(case type
+								 (`Switch `(bool false))
+								 (`Switch `(bool false)))))
+				 (,(format nil "~aOption" long)
+				   ,(let ((cmd `(,(format nil "add<~a>"
+							  (if (eq type 'Switch)
+							      "popl::Switch"
+							      (format nil "popl::Value<~a>" type)))
+						  (string ,short)
+						  (string ,long)
+						  (string ,msg))))
+				      (when default
+					(setf cmd (append cmd `(,default)))
+					)
+				      (when out
+					(setf cmd (append cmd `(,out)))
+					)
+				      `(dot op ,cmd)
+				      ))))
+		       ))
+	   (op.parse argc argv)
+	   (when (helpOption->count)
+	     (<< std--cout
+		 op
+		 std--endl)
+	     (exit 0)))
+
+	 #+nil (let ((options (cxxopts--Options
+			       (string "gl-video-viewer")
+			       (string "play videos with opengl"))))
 
 
 
-	     (options.parse_positional  (curly (string "filenames"))))
-	   (let ((opt_res (options.parse argc argv)))
-	     (when (opt_res.count (string "help"))
-	       (<< std--cout
-		   (options.help)
-		   std--endl)
-	       (exit 0))
+		 (let ((positional (std--vector<std--string>)))
+		   ((((dot
+		       options
+		       (add_options))
+		      (string "h,help")
+		      (string "Print usage"))
+		     (string "i,internal-tex-format")
+		     (string "data format of texture")
+		     (-> (cxxopts--value<int>)
+			 (default_value (string "3"))))
+		    (string "filenames")
+		    (string "The filenames of videos to display")
+		    (cxxopts--value<std--vector<std--string>>
+		     positional))
 
-	     ,(let ((tex-formats `((GL_RGBA)
-				   (GLenum--GL_RGB8)
-				   (GLenum--GL_R3_G3_B2)
-				   (GLenum--GL_RGBA2 :default t :comment "weirdest effect")
-				   (GLenum--GL_RGB9_E5 :comment "shared exponent, looks ok")
-				   (GLenum--GL_SRGB8 :comment "this displays as much darker")
-				   (GLenum--GL_RGB8UI :comment "displays as black")
-				   (GLenum--GL_COMPRESSED_RGB :comment "framerate drops from +200fps to 40fps"))))
-		`(let ((texFormatIdx (dot (aref opt_res (string "internal-tex-format"))
-					  (as<int>))))
- 		   (assert (<= 0 texFormatIdx))
-		   (assert (< texFormatIdx ,(length tex-formats)))
-		   (let ((texFormats (,(format nil "std::array<gl::GLenum,~a>" (length tex-formats))
-				       (curly ,@(loop for e in tex-formats
-						      collect
-						      (destructuring-bind ( val &key comment default) e
-							val)))))
-			 (texFormat (aref texFormats texFormatIdx))))))
-	     ))
+
+
+		   (options.parse_positional  (curly (string "filenames"))))
+		 (let ((opt_res (options.parse argc argv)))
+		   (when (opt_res.count (string "help"))
+		     (<< std--cout
+			 (options.help)
+			 std--endl)
+		     (exit ))
+
+
+		   ))
+
+	 (do0
+	  ,(let ((tex-formats `((GL_RGBA)
+				(GLenum--GL_RGB8)
+				(GLenum--GL_R3_G3_B2)
+				(GLenum--GL_RGBA2 :default t :comment "weirdest effect")
+				(GLenum--GL_RGB9_E5 :comment "shared exponent, looks ok")
+				(GLenum--GL_SRGB8 :comment "this displays as much darker")
+				(GLenum--GL_RGB8UI :comment "displays as black")
+				(GLenum--GL_COMPRESSED_RGB :comment "framerate drops from +200fps to 40fps"))))
+	     `(let ((texFormatIdx varInternalTextureFormat #+nil (dot (aref opt_res (string "internal-tex-format"))
+								      (as<int>))))
+ 		(assert (<= 0 texFormatIdx))
+		(assert (< texFormatIdx ,(length tex-formats)))
+		(let ((texFormats (,(format nil "std::array<gl::GLenum,~a>" (length tex-formats))
+				    (curly ,@(loop for e in tex-formats
+						   collect
+						   (destructuring-bind ( val &key comment default) e
+						     val)))))
+		      (texFormat (aref texFormats texFormatIdx)))))))
 
 	 (let ((win (GlfwWindow)))
 	   (do0
@@ -648,18 +691,19 @@
 	    (comments "if second arg is false: lazy function pointer loading")
 	    (glbinding--initialize win.GetProcAddress
 				   false)
-	    #-nil
-	    (do0 (glbinding--setCallbackMask
-		  (logior
-		   CallbackMask--After
-		   CallbackMask--ParametersAndReturnValue))
-		 (glbinding--setAfterCallback
-		  (lambda (call)
-		    (declare (type "const glbinding::FunctionCall&"
-				   call)
-			     )
-		    (let ((fun (dot call  (-> function (name)))))
-		      ,(lprint :msg "cb" :svars `(fun))))))
+	    (when
+		(verboseOption->is_set)
+	      (do0 (glbinding--setCallbackMask
+		    (logior
+		     CallbackMask--After
+		     CallbackMask--ParametersAndReturnValue))
+		   (glbinding--setAfterCallback
+		    (lambda (call)
+		      (declare (type "const glbinding::FunctionCall&"
+				     call)
+			       )
+		      (let ((fun (dot call  (-> function (name)))))
+			,(lprint :msg "cb" :svars `(fun)))))))
 	    ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
 	       `(progn
 		  ,@(loop for e in l
@@ -673,7 +717,9 @@
 
 	   (do0
 	    (av--init)
-	    (let ((video (Video (dot positional (at 0)))))))
+	    (let ((video (Video (string "/dev/shm/et.mp4")
+					;(dot positional (at 0))
+				)))))
 	   (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
 	     (do0
 	      ,(lprint :msg "start loop")
@@ -811,6 +857,7 @@
 	  (out "target_include_directories( mytest PRIVATE
 /home/martin/src/imgui/
 /usr/local/include
+/home/martin/src/popl/include/
  )")
 
 	  (out "target_compile_features( mytest PUBLIC cxx_std_20 )")

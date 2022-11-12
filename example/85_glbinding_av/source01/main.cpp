@@ -16,7 +16,7 @@ using namespace glbinding;
 #include "Video.h"
 #include <avcpp/av.h>
 #include <avcpp/formatcontext.h>
-#include <cxxopts.hpp>
+#include <popl.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
     std::chrono::high_resolution_clock::now();
 void lprint(std::initializer_list<std::string> il, std::string file, int line,
@@ -35,20 +35,20 @@ void lprint(std::initializer_list<std::string> il, std::string file, int line,
 int main(int argc, char **argv) {
   lprint({"start", " ", " argc='", std::to_string(argc), "'"}, __FILE__,
          __LINE__, &(__PRETTY_FUNCTION__[0]));
-  auto options = cxxopts::Options("gl-video-viewer", "play videos with opengl");
-  auto positional = std::vector<std::string>();
-  (((options.add_options())("h,help", "Print usage"))(
-      "i,internal-tex-format", "data format of texture",
-      cxxopts::value<int>()->default_value("3")))(
-      "filenames", "The filenames of videos to display",
-      cxxopts::value<std::vector<std::string>>(positional));
-  options.parse_positional({"filenames"});
-  auto opt_res = options.parse(argc, argv);
-  if (opt_res.count("help")) {
-    (std::cout) << (options.help()) << (std::endl);
+  auto op = popl::OptionParser("allowed opitons");
+  auto varInternalTextureFormat = int(3);
+  auto helpOption = op.add<popl::Switch>("h", "help", "produce help message");
+  auto verboseOption =
+      op.add<popl::Switch>("v", "verbose", "produce verbose output");
+  auto texformatOption = op.add<popl::Value<int>>(
+      "T", "texformat", "choose internal texture format", 3,
+      &varInternalTextureFormat);
+  op.parse(argc, argv);
+  if (helpOption->count()) {
+    (std::cout) << (op) << (std::endl);
     exit(0);
   }
-  auto texFormatIdx = opt_res["internal-tex-format"].as<int>();
+  auto texFormatIdx = varInternalTextureFormat;
   assert((0) <= (texFormatIdx));
   assert((texFormatIdx) < (8));
   auto texFormats = std::array<gl::GLenum, 8>(
@@ -61,13 +61,15 @@ int main(int argc, char **argv) {
          &(__PRETTY_FUNCTION__[0]));
   // if second arg is false: lazy function pointer loading
   glbinding::initialize(win.GetProcAddress, false);
-  glbinding::setCallbackMask(
-      ((CallbackMask::After) | (CallbackMask::ParametersAndReturnValue)));
-  glbinding::setAfterCallback([](const glbinding::FunctionCall &call) {
-    auto fun = call.function->name();
-    lprint({"cb", " ", " fun='", fun, "'"}, __FILE__, __LINE__,
-           &(__PRETTY_FUNCTION__[0]));
-  });
+  if (verboseOption->is_set()) {
+    glbinding::setCallbackMask(
+        ((CallbackMask::After) | (CallbackMask::ParametersAndReturnValue)));
+    glbinding::setAfterCallback([](const glbinding::FunctionCall &call) {
+      auto fun = call.function->name();
+      lprint({"cb", " ", " fun='", fun, "'"}, __FILE__, __LINE__,
+             &(__PRETTY_FUNCTION__[0]));
+    });
+  }
   {
     const float r = (0.40f);
     const float g = (0.40f);
@@ -77,7 +79,7 @@ int main(int argc, char **argv) {
   }
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
-  auto video = Video(positional.at(0));
+  auto video = Video("/dev/shm/et.mp4");
   auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
