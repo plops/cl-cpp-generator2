@@ -9,6 +9,7 @@ using namespace gl32core;
 using namespace glbinding;
 #include "GlfwWindow.h"
 #include "ImguiHandler.h"
+#include "Texture.h"
 #include "Video.h"
 #include <avcpp/av.h>
 #include <avcpp/formatcontext.h>
@@ -67,10 +68,6 @@ int main(int argc, char **argv) {
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
   auto video = Video(positional.at(0));
-  bool video_is_initialized_p = false;
-  int image_width = 0;
-  int image_height = 0;
-  GLuint image_texture = 0;
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
     win.PollEvents();
@@ -92,6 +89,7 @@ int main(int argc, char **argv) {
     }
     {
       av::Packet pkt;
+      auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
       while (pkt = video.readPacket()) {
         if (!((video.videoStream) == (pkt.streamIndex()))) {
           continue;
@@ -101,40 +99,16 @@ int main(int argc, char **argv) {
         ts = frame.pts();
         if (((frame.isComplete()) && (frame.isValid()))) {
           auto *data = frame.data(0);
-          image_width = frame.raw()->linesize[0];
-          image_height = frame.height();
-          auto init_width = image_width;
-          if (!video_is_initialized_p) {
-            // initialize texture for video frames
-            glGenTextures(1, &image_texture);
-            glBindTexture(GL_TEXTURE_2D, image_texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            lprint({"prepare texture", " ", " init_width='",
-                    std::to_string(init_width), "'", " image_width='",
-                    std::to_string(image_width), "'", " image_height='",
-                    std::to_string(image_height), "'", " frame.width()='",
-                    std::to_string(frame.width()), "'"},
-                   __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-            glTexImage2D(GL_TEXTURE_2D, 0, texFormat, image_width, image_height,
-                         0, GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height,
-                            GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-            video_is_initialized_p = true;
-          } else {
-            // update texture with new frame
-            glBindTexture(GL_TEXTURE_2D, image_texture);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height,
-                            GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-          }
+          auto w = frame.raw()->linesize[0];
+          auto h = frame.height();
+          texture.Reset(data, w, h, static_cast<unsigned int>(texFormat));
           break;
         }
       }
       // draw frame
       imgui.Begin("video texture");
-      imgui.Image(image_texture, image_width, image_height);
+      imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
+                  texture.GetHeight());
       auto val_old = static_cast<float>(pkt.ts().seconds());
       auto val = val_old;
       imgui.SliderFloat("time", &val, video.startTime(), video.duration(),

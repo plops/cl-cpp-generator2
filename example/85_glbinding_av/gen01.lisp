@@ -361,6 +361,167 @@
 
 	       )))
 
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name `Texture
+     :headers `()
+     :header-preamble `(do0
+
+			)
+     :implementation-preamble `(do0
+				,log-preamble
+				(do0
+				 (include <glbinding/gl32core/gl.h>
+					  <glbinding/glbinding.h>
+					; <glbinding/CallbackMask.h>
+					;<glbinding/FunctionCall.h>
+					;<glbinding/AbstractFunction.h>
+					  )
+				 "using namespace gl32core;"
+				 "using namespace glbinding;")
+				)
+     :code
+     (flet ((make-tex (&key sub
+			    (target 'GL_TEXTURE_2D)
+			    (level 0)
+			    (internal-format
+			     `internalFormat
+					;'GL_RGBA
+					;'GLenum--GL_RGB8
+					;'GLenum--GL_R3_G3_B2
+					;'GLenum--GL_RGBA2
+					;'GLenum--GL_RGB9_E5 ;; shared exponent, looks ok
+					; 'GLenum--GL_SRGB8 ;; this displays as much darker
+					;'GLenum--GL_RGB8UI ;; displays as black
+					;'GLenum--GL_COMPRESSED_RGB ;; framerate drops from +200fps to 40fps
+			     )
+			    (width 'w)
+			    (height 'h)
+			    (xoffset 0)
+			    (yoffset 0)
+			    (border 0)
+			    (tex-format 'GLenum--GL_LUMINANCE)
+			    (tex-type 'GL_UNSIGNED_BYTE)
+			    )
+	      (if sub
+		  `(glTexSubImage2D  ,target
+				     ,level
+				     ,xoffset ,yoffset
+				     ,width
+				     ,height
+				     ,tex-format
+				     ,tex-type
+				     data)
+		  `(glTexImage2D ,target
+				 ,level
+				 ,internal-format
+				 ,width
+				 ,height
+				 ,border
+				 ,tex-format
+				 ,tex-type
+				 nullptr))))
+       `(do0
+	 (defclass Texture ()
+	   "unsigned int image_texture;"
+	   "bool initialized_p;"
+
+	   "int m_internalFormat = 0;"
+	   "int m_width = 0;"
+	   "int m_height = 0;"
+	   "int m_internalWidth = 0;"
+	   "int m_internalHeight = 0;"
+
+	   "public:"
+	   (defmethod GetImageTexture ()
+	     (declare (values "unsigned int"))
+	     (return image_texture))
+
+	   (defmethod GetWidth ()
+	     (declare (values "int"))
+	     (return m_width))
+	   (defmethod GetHeight ()
+	     (declare (values "int"))
+	     (return m_height))
+
+	   (defmethod Texture (w h internalFormat)
+	     (declare
+	      (type int internalFormat w h)
+	      (explicit)
+	      (construct
+	       (image_texture 0)
+	       (initialized_p false)
+	       (m_internalFormat internalFormat)
+	       (m_width w)
+	       (m_height h)
+	       )
+	      (values :constructor))
+	     (Reset nullptr w h internalFormat)
+	     )
+	   (defmethod Update (data w h)
+	     (declare
+	      (type int w h)
+	      (type "unsigned char*" data)
+	      )
+	     (if initialized_p
+		 (do0
+		  (comments "update texture with new frame")
+		  (glBindTexture GL_TEXTURE_2D image_texture)
+		  (do0
+		   ,(make-tex :sub t)
+		   (setf m_width w
+			 m_height h)))
+		 (do0
+		  ,(lprint :msg "warning: texture not initialized"))))
+	   (defmethod Compatible_p (w h internalFormat)
+	     (declare (values bool)
+		      (type int internalFormat w h))
+	     (return
+	       (logand (== m_internalFormat internalFormat)
+		       (<= w m_width)
+		       (<= h m_height))))
+	   (defmethod Reset (data w h internalFormat)
+	     (declare
+	      (type int w h internalFormat)
+	      (type "unsigned char*" data)
+	      )
+	     (when (logand initialized_p
+			   (not (Compatible_p w h internalFormat)))
+	       (glDeleteTextures 1 &image_texture)
+	       (setf initialized_p false)
+	       (glGenTextures 1 &image_texture))
+	     (do0 (comments "initialize texture for video frames")
+		  (glBindTexture GL_TEXTURE_2D image_texture)
+		  ,@(loop for (key val) in `((WRAP_S REPEAT)
+					     (WRAP_T REPEAT)
+					     (MIN_FILTER LINEAR)
+					     (MAG_FILTER LINEAR))
+			  collect
+			  `(glTexParameteri GL_TEXTURE_2D
+					    ,(format nil "GL_TEXTURE_~A" key)
+					    ,(format nil "GL_~A" val)))
+
+		  (do0
+		   (do0
+		    ,(make-tex :sub nil)
+		    (setf m_internalWidth w
+			  m_internalHeight h))
+		   (do0
+		    ,(make-tex :sub t)
+		    (setf m_width w
+			  m_height h)))
+		  (setf initialized_p true)))
+
+	   (defmethod ~Texture ()
+	     (declare
+	      (values :constructor))
+	     (when initialized_p
+	       (setf initialized_p false)
+	       (glDeleteTextures 1 &image_texture))
+	     )) )))
+
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -398,7 +559,8 @@
 			    ))
 	(include "GlfwWindow.h"
 		 "ImguiHandler.h"
-		 "Video.h")
+		 "Video.h"
+		 "Texture.h")
 
 	(do0
 	 (include <avcpp/av.h>
@@ -510,10 +672,11 @@
 		 )
 	     (declare (type "const auto" radius))
 
-	     (do0 "bool video_is_initialized_p = false;"
-		  "int image_width = 0;"
-		  "int image_height = 0;"
-		  "GLuint image_texture = 0;")
+	     #+nil(do0 "bool video_is_initialized_p = false;"
+		       "int image_width = 0;"
+		       "int image_height = 0;"
+		       "GLuint image_texture = 0;"
+		       )
 
 
 	     ,(lprint :msg "start loop")
@@ -537,95 +700,28 @@
 
 	       (progn
 		 "av::Packet pkt;"
-		 (while (= pkt (video.readPacket))
-		   (unless (== video.videoStream
-			       (pkt.streamIndex))
-		     continue)
-		   (let ((ts (pkt.ts)))
+		 (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
+		   (while (= pkt (video.readPacket))
+		     (unless (== video.videoStream
+				 (pkt.streamIndex))
+		       continue)
+		     (let ((ts (pkt.ts)))
 
-		     (let ((frame (video.decode)))
+		       (let ((frame (video.decode)))
 
-		       (setf ts (frame.pts))
-		       (when (and (frame.isComplete)
-				  (frame.isValid))
-			 (let ((*data (frame.data 0)))
-			   (setf image_width (dot frame
-						  (-> (raw)
-						      (aref linesize 0)))
-				 image_height (frame.height))
-			   ,(flet ((make-tex (&key sub
-						   (target 'GL_TEXTURE_2D)
-						   (level 0)
-						   (internal-format
-						    `texFormat
-					;'GL_RGBA
-					;'GLenum--GL_RGB8
-					;'GLenum--GL_R3_G3_B2
-					;'GLenum--GL_RGBA2
-					;'GLenum--GL_RGB9_E5 ;; shared exponent, looks ok
-					; 'GLenum--GL_SRGB8 ;; this displays as much darker
-					;'GLenum--GL_RGB8UI ;; displays as black
-					;'GLenum--GL_COMPRESSED_RGB ;; framerate drops from +200fps to 40fps
-						    )
-						   (width 'image_width)
-						   (height 'image_height)
-						   (xoffset 0)
-						   (yoffset 0)
-						   (border 0)
-						   (tex-format 'GLenum--GL_LUMINANCE)
-						   (tex-type 'GL_UNSIGNED_BYTE)
-						   )
-				     (if sub
-					 `(glTexSubImage2D  ,target
-							    ,level
-							    ,xoffset ,yoffset
-							    ,width
-							    ,height
-							    ,tex-format
-							    ,tex-type
-							    data)
-					 `(glTexImage2D ,target
-							,level
-							,internal-format
-							,width
-							,height
-							,border
-							,tex-format
-							,tex-type
-							nullptr))))
-			      `(let (
-				     (init_width image_width)
-					;(init_height image_height)
-				     )
-				 (if !video_is_initialized_p
-				     (do0 (comments "initialize texture for video frames")
-					  (glGenTextures 1 &image_texture)
-					  (glBindTexture GL_TEXTURE_2D image_texture)
-					  ,@(loop for (key val) in `((WRAP_S REPEAT)
-								     (WRAP_T REPEAT)
-								     (MIN_FILTER LINEAR)
-								     (MAG_FILTER LINEAR))
-						  collect
-						  `(glTexParameteri GL_TEXTURE_2D
-								    ,(format nil "GL_TEXTURE_~A" key)
-								    ,(format nil "GL_~A" val)))
+			 (setf ts (frame.pts))
+			 (when (and (frame.isComplete)
+				    (frame.isValid))
+			   (let ((*data (frame.data 0)))
+			     #+nil  (setf image_width
+					  image_height )
+			     (let ((w (dot frame
+					   (-> (raw)
+					       (aref linesize 0))))
+				   (h (frame.height)))
+			       (texture.Reset data w h ("static_cast<unsigned int>" texFormat)))
 
-					  (do0
-					   ,(lprint :msg "prepare texture"
-						    :vars `(init_width image_width image_height
-								       (frame.width)
-								       )
-						    )
-					   ,(make-tex :sub nil)
-					   ,(make-tex :sub t))
-
-					  (setf video_is_initialized_p true))
-				     (do0
-				      (comments "update texture with new frame")
-				      (glBindTexture GL_TEXTURE_2D image_texture)
-				      ,(make-tex :sub t))
-				     )))
-			   break)))))
+			     break))))))
 
 		 (do0
 		  (comments "draw frame")
@@ -633,31 +729,33 @@
 		   (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
 					;(ImGui--Text (string "fn = %s") (fn.c_str))
-		   (imgui.Image image_texture image_width image_height)
+		   (imgui.Image (texture.GetImageTexture)
+				(texture.GetWidth)
+				(texture.GetHeight))
 		   #+nil (ImGui--Image (reinterpret_cast<void*>
 					(static_cast<intptr_t> image_texture))
 				       (ImVec2 (static_cast<float> image_width)
 					       (static_cast<float> image_height)))
 		   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-			      (val val_old))
-			  (imgui.SliderFloat (string "time")
-					     &val
-					     (video.startTime) ;min
-					     (video.duration)
+			 (val val_old))
+		     (imgui.SliderFloat (string "time")
+					&val
+					(video.startTime) ;min
+					(video.duration)
 					;max
-					     (string "%.3f") ; format string
-					     )
-			  #+nil (ImGui--SliderFloat (string "time")
-						    &val
-						    (video.startTime) ;min
-						    (video.duration)
+					(string "%.3f") ; format string
+					)
+		     #+nil (ImGui--SliderFloat (string "time")
+					       &val
+					       (video.startTime) ;min
+					       (video.duration)
 					;max
-						    (string "%.3f") ; format string
-						    )
-			  (unless (== val val_old)
-			    (comments "perform seek operation")
-			    (video.seek val)
-			    ))
+					       (string "%.3f") ; format string
+					       )
+		     (unless (== val val_old)
+		       (comments "perform seek operation")
+		       (video.seek val)
+		       ))
 		   (imgui.End))
 		  (imgui.Render)
 

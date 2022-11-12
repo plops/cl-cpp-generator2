@@ -24,6 +24,8 @@ void Texture::Update(unsigned char *data, int w, int h) {
     glBindTexture(GL_TEXTURE_2D, image_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GLenum::GL_LUMINANCE,
                     GL_UNSIGNED_BYTE, data);
+    m_width = w;
+    m_height = h;
   } else {
     lprint({"warning: texture not initialized", " "}, __FILE__, __LINE__,
            &(__PRETTY_FUNCTION__[0]));
@@ -47,8 +49,12 @@ void Texture::Reset(unsigned char *data, int w, int h, int internalFormat) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, GLenum::GL_LUMINANCE,
                GL_UNSIGNED_BYTE, nullptr);
+  m_internalWidth = w;
+  m_internalHeight = h;
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GLenum::GL_LUMINANCE,
                   GL_UNSIGNED_BYTE, data);
+  m_width = w;
+  m_height = h;
   initialized_p = true;
 }
 Texture::~Texture() {

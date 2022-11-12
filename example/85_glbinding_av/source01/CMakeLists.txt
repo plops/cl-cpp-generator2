@@ -7,6 +7,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0   -Wall -Wextra -ffile-prefix
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/GlfwWindow.cpp
 /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/ImguiHandler.cpp
+/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/Texture.cpp
 /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/Video.cpp
 /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/main.cpp
 /home/martin/src/imgui/backends/imgui_impl_opengl3.cpp

@@ -8,6 +8,8 @@ class Texture  {
         int m_internalFormat = 0;
         int m_width = 0;
         int m_height = 0;
+        int m_internalWidth = 0;
+        int m_internalHeight = 0;
         public:
         unsigned int GetImageTexture ()     ;  
         int GetWidth ()     ;  
