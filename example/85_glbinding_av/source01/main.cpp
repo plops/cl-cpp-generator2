@@ -16,6 +16,7 @@ using namespace glbinding;
 #include "Video.h"
 #include <avcpp/av.h>
 #include <avcpp/formatcontext.h>
+#include <imgui.h>
 #include <popl.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
     std::chrono::high_resolution_clock::now();
@@ -129,6 +130,22 @@ int main(int argc, char **argv) {
         // perform seek operation
         video.seek(val);
       }
+      imgui.End();
+      imgui.Begin("video files");
+      auto item_current_idx = int(0);
+      ImGui::BeginListBox("files", ImGui::GetItemRectSize());
+      auto i = 0;
+      for (auto arg : op.non_option_args()) {
+        auto selected_p = (i) == (item_current_idx);
+        if (ImGui::Selectable(arg.c_str(), selected_p)) {
+          item_current_idx = i;
+        }
+        if (selected_p) {
+          ImGui::SetItemDefaultFocus();
+        }
+        (i)++;
+      }
+      ImGui::EndListBox();
       imgui.End();
       imgui.Render();
       glClear(GL_COLOR_BUFFER_BIT);

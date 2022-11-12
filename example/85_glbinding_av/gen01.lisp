@@ -558,9 +558,10 @@
 	"using namespace gl32core;"
 	"using namespace glbinding;")
        (do0
-	#+nil (include <imgui.h>
-		       <backends/imgui_impl_glfw.h>
-		       <backends/imgui_impl_opengl3.h>)
+	(include <imgui.h>
+					;<backends/imgui_impl_glfw.h>
+					;<backends/imgui_impl_opengl3.h>
+		 )
 	#+nil (do0 "#define GLFW_INCLUDE_NONE"
 		   (include <GLFW/glfw3.h>
 			    ))
@@ -755,6 +756,22 @@
 			(comments "perform seek operation")
 			(video.seek val)))
 
+		    (imgui.End))
+
+		   (do0
+		    (imgui.Begin  (string "video files"))
+		    (let ((item_current_idx (int 0)))
+		      (ImGui--BeginListBox (string "files")
+					   (ImGui--GetItemRectSize))
+		      (let ((i 0))
+			(for-range (arg (op.non_option_args))
+				   (let ((selected_p (== i item_current_idx)))
+				     (when (ImGui--Selectable (arg.c_str) selected_p)
+				       (setf item_current_idx i))
+				     (when selected_p
+				       (ImGui--SetItemDefaultFocus)))
+				   (incf i)))
+		      (ImGui--EndListBox))
 		    (imgui.End))
 		   (imgui.Render)
 
