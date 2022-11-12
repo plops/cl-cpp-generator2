@@ -82,8 +82,7 @@ int main(int argc, char **argv) {
   av::init();
 
   auto fn = op.non_option_args().at(0);
-  auto videos = std::vector<Video>();
-  videos.push_back(Video(fn));
+  auto video = new Video(fn);
   auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
@@ -104,15 +103,14 @@ int main(int argc, char **argv) {
         oldheight = height;
       }
     }
-    auto video = videos.back();
     {
       av::Packet pkt;
-      while (pkt = video.readPacket()) {
-        if (!((video.videoStream) == (pkt.streamIndex()))) {
+      while (pkt = video->readPacket()) {
+        if (!((video->videoStream) == (pkt.streamIndex()))) {
           continue;
         }
         auto ts = pkt.ts();
-        auto frame = video.decode();
+        auto frame = video->decode();
         ts = frame.pts();
         if (((frame.isComplete()) && (frame.isValid()))) {
           auto *data = frame.data(0);
@@ -126,28 +124,23 @@ int main(int argc, char **argv) {
       imgui.Begin("video texture");
       imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
                   texture.GetHeight());
-      auto val_old = static_cast<float>(pkt.ts().seconds());
-      auto val = val_old;
-      imgui.SliderFloat("time", &val, video.startTime(), video.duration(),
-                        "%.3f");
-      if (!((val) == (val_old))) {
-        // perform seek operation
-        video.seek(val);
-      }
       imgui.End();
       imgui.Begin("video files");
-      auto item_current_idx = int(0);
+      static int item_current_idx = int(0);
+      static int item_old_idx = int(0);
       ImGui::BeginListBox("files");
       auto i = 0;
       for (auto arg : op.non_option_args()) {
         auto selected_p = (i) == (item_current_idx);
         if (ImGui::Selectable(arg.c_str(), selected_p)) {
+          item_old_idx = item_current_idx;
           item_current_idx = i;
         }
         if (selected_p) {
           ImGui::SetItemDefaultFocus();
           fn = arg;
-          videos.push_back(Video(fn));
+          delete (video);
+          video = new Video(fn);
         }
         i = ((i) + (1));
       }
