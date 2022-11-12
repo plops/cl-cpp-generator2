@@ -80,7 +80,10 @@ int main(int argc, char **argv) {
   }
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
-  auto video = Video(op.non_option_args().at(0));
+
+  auto fn = op.non_option_args().at(0);
+  auto videos = std::vector<Video>();
+  videos.push_back(Video(fn));
   auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
@@ -101,6 +104,7 @@ int main(int argc, char **argv) {
         oldheight = height;
       }
     }
+    auto video = videos.back();
     {
       av::Packet pkt;
       while (pkt = video.readPacket()) {
@@ -133,7 +137,7 @@ int main(int argc, char **argv) {
       imgui.End();
       imgui.Begin("video files");
       auto item_current_idx = int(0);
-      ImGui::BeginListBox("files", ImGui::GetItemRectSize());
+      ImGui::BeginListBox("files");
       auto i = 0;
       for (auto arg : op.non_option_args()) {
         auto selected_p = (i) == (item_current_idx);
@@ -142,8 +146,10 @@ int main(int argc, char **argv) {
         }
         if (selected_p) {
           ImGui::SetItemDefaultFocus();
+          fn = arg;
+          videos.push_back(Video(fn));
         }
-        (i)++;
+        i = ((i) + (1));
       }
       ImGui::EndListBox();
       imgui.End();

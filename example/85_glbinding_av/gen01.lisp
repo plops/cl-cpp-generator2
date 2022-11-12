@@ -686,101 +686,106 @@
 
 	   (do0
 	    (av--init)
-	    (let ((video (Video (dot op (non_option_args) (at 0))
-				)))))
-	   (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
-	     (do0
-	      ,(lprint :msg "start loop")
-	      (while (not (win.WindowShouldClose))
+	    (let ()))
+	   (let ((fn (dot op (non_option_args) (at 0)))
+		 (videos ("std::vector<Video>")))
+	     (videos.push_back (Video fn))
+	     (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
+	       (do0
+		,(lprint :msg "start loop")
+		(while (not (win.WindowShouldClose))
 
-		(win.PollEvents)
-		(imgui.NewFrame)
+		  (win.PollEvents)
+		  (imgui.NewFrame)
 
-		(progn
-		  (let ((oldwidth 0)
-			(oldheight 0))
-		    (declare (type "static int" oldwidth oldheight))
-		    (comments "react to changing window size")
-		    (let (("[width,height]" (win.GetWindowSize)))
-		      (when (or (!= width oldwidth)
-				(!= height oldheight))
-			,(lprint :msg "window size has changed" :vars `(width height))
-			(glViewport 0 0 width height)
-			(setf oldwidth width
-			      oldheight height)))))
+		  (progn
+		    (let ((oldwidth 0)
+			  (oldheight 0))
+		      (declare (type "static int" oldwidth oldheight))
+		      (comments "react to changing window size")
+		      (let (("[width,height]" (win.GetWindowSize)))
+			(when (or (!= width oldwidth)
+				  (!= height oldheight))
+			  ,(lprint :msg "window size has changed" :vars `(width height))
+			  (glViewport 0 0 width height)
+			  (setf oldwidth width
+				oldheight height)))))
+		  (let ((video (videos.back)))
+		    (progn
+		      "av::Packet pkt;"
+		      (while (= pkt (video.readPacket))
+			(unless (== video.videoStream
+				    (pkt.streamIndex))
+			  continue)
+			(let ((ts (pkt.ts)))
 
-		(progn
-		  "av::Packet pkt;"
-		  (while (= pkt (video.readPacket))
-		    (unless (== video.videoStream
-				(pkt.streamIndex))
-		      continue)
-		    (let ((ts (pkt.ts)))
+			  (let ((frame (video.decode)))
 
-		      (let ((frame (video.decode)))
+			    (setf ts (frame.pts))
+			    (when (and (frame.isComplete)
+				       (frame.isValid))
+			      (let ((*data (frame.data 0)))
+				(let ((w (dot frame
+					      (-> (raw)
+						  (aref linesize 0))))
+				      (h (frame.height)))
+				  #+nil (texture.Update data w h ;("static_cast<unsigned int>" texFormat)
+							)
+				  #-nil (texture.Reset data w h ("static_cast<unsigned int>" texFormat)
+						       ))
 
-			(setf ts (frame.pts))
-			(when (and (frame.isComplete)
-				   (frame.isValid))
-			  (let ((*data (frame.data 0)))
-			    (let ((w (dot frame
-					  (-> (raw)
-					      (aref linesize 0))))
-				  (h (frame.height)))
-			      #+nil (texture.Update data w h ;("static_cast<unsigned int>" texFormat)
-						    )
-			      #-nil (texture.Reset data w h ("static_cast<unsigned int>" texFormat)
-						   ))
+				break)))))
 
-			    break)))))
-
-		  (do0
-		   (comments "draw frame")
-		   (do0
-		    (imgui.Begin  (string "video texture"))
+		      (do0
+		       (comments "draw frame")
+		       (do0
+			(imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
 					;(ImGui--Text (string "fn = %s") (fn.c_str))
-		    (imgui.Image (texture.GetImageTexture)
-				 (texture.GetWidth)
-				 (texture.GetHeight))
-		    (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-			  (val val_old))
-		      (imgui.SliderFloat (string "time")
-					 &val
-					 (video.startTime) ;min
-					 (video.duration)
+			(imgui.Image (texture.GetImageTexture)
+				     (texture.GetWidth)
+				     (texture.GetHeight))
+			(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+			      (val val_old))
+			  (imgui.SliderFloat (string "time")
+					     &val
+					     (video.startTime) ;min
+					     (video.duration)
 					;max
-					 (string "%.3f") ; format string
-					 )
-		      (unless (== val val_old)
-			(comments "perform seek operation")
-			(video.seek val)))
+					     (string "%.3f") ; format string
+					     )
+			  (unless (== val val_old)
+			    (comments "perform seek operation")
+			    (video.seek val)))
 
-		    (imgui.End))
+			(imgui.End))
 
-		   (do0
-		    (imgui.Begin  (string "video files"))
-		    (let ((item_current_idx (int 0)))
-		      (ImGui--BeginListBox (string "files")
-					   (ImGui--GetItemRectSize))
-		      (let ((i 0))
-			(for-range (arg (op.non_option_args))
-				   (let ((selected_p (== i item_current_idx)))
-				     (when (ImGui--Selectable (arg.c_str) selected_p)
-				       (setf item_current_idx i))
-				     (when selected_p
-				       (ImGui--SetItemDefaultFocus)))
-				   (incf i)))
-		      (ImGui--EndListBox))
-		    (imgui.End))
-		   (imgui.Render)
+		       (do0
+			(imgui.Begin  (string "video files"))
+			(let ((item_current_idx (int 0)))
+			  (ImGui--BeginListBox (string "files")
+					;(ImGui--GetItemRectSize)
+					       )
+			  (let ((i 0))
+			    (for-range (arg (op.non_option_args))
+				       (let ((selected_p (== i item_current_idx)))
+					 (when (ImGui--Selectable (arg.c_str) selected_p)
+					   (setf item_current_idx i))
+					 (when selected_p
+					   (ImGui--SetItemDefaultFocus)
+					   (setf  fn arg)
+					   (videos.push_back (Video fn))))
+				       (setf i (+ i 1))))
+			  (ImGui--EndListBox))
+			(imgui.End))
+		       (imgui.Render)
 
 
-		   (glClear GL_COLOR_BUFFER_BIT)
-		   (imgui.RenderDrawData)
+		       (glClear GL_COLOR_BUFFER_BIT)
+		       (imgui.RenderDrawData)
 
-		   (win.SwapBuffers)
-		   ))))))
+		       (win.SwapBuffers)
+		       ))))))))
 
 
 
