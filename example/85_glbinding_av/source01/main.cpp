@@ -119,8 +119,11 @@ int main(int argc, char **argv) {
           continue;
         }
         auto ts = pkt.ts();
+        lprint({"763 ts", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         auto frame = video->decode();
+        lprint({"765", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         ts = frame.pts();
+        lprint({"768", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         if (((frame.isComplete()) && (frame.isValid()))) {
           auto *data(frame.data(0));
           auto w = frame.raw()->linesize[0];

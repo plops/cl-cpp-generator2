@@ -760,10 +760,12 @@
 				  (pkt.streamIndex))
 			continue)
 		      (let ((ts (pkt.ts)))
-
+			,(lprint :msg "763 ts")
 			(let ((frame (video->decode)))
-
-			  (setf ts (frame.pts))
+			  ,(lprint :msg "765")
+			  (setf ts (frame.pts)
+				)
+			  ,(lprint :msg "768")
 			  (when (and (frame.isComplete)
 				     (frame.isValid))
 			    (let (;(*data (frame.data 0))
