@@ -1,5 +1,8 @@
 #include <cassert>
 #include <chrono>
+#include <glbinding/AbstractFunction.h>
+#include <glbinding/CallbackMask.h>
+#include <glbinding/FunctionCall.h>
 #include <glbinding/gl32core/gl.h>
 #include <glbinding/glbinding.h>
 #include <iomanip>
@@ -58,6 +61,13 @@ int main(int argc, char **argv) {
          &(__PRETTY_FUNCTION__[0]));
   // if second arg is false: lazy function pointer loading
   glbinding::initialize(win.GetProcAddress, false);
+  glbinding::setCallbackMask(
+      ((CallbackMask::After) | (CallbackMask::ParametersAndReturnValue)));
+  glbinding::setAfterCallback([](const glbinding::FunctionCall &call) {
+    auto fun = call.function->name();
+    lprint({"cb", " ", " fun='", fun, "'"}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
+  });
   {
     const float r = (0.40f);
     const float g = (0.40f);

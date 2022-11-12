@@ -544,9 +544,10 @@
        (do0
 	(include <glbinding/gl32core/gl.h>
 		 <glbinding/glbinding.h>
-					; <glbinding/CallbackMask.h>
-					;<glbinding/FunctionCall.h>
-					;<glbinding/AbstractFunction.h>
+
+		 <glbinding/CallbackMask.h>
+		 <glbinding/FunctionCall.h>
+		 <glbinding/AbstractFunction.h>
 		 )
 	"using namespace gl32core;"
 	"using namespace glbinding;")
@@ -641,7 +642,7 @@
 	    (comments "if second arg is false: lazy function pointer loading")
 	    (glbinding--initialize win.GetProcAddress
 				   false)
-	    #+nil
+	    #-nil
 	    (do0 (glbinding--setCallbackMask
 		  (logior
 		   CallbackMask--After
@@ -652,7 +653,7 @@
 				   call)
 			     )
 		    (let ((fun (dot call  (-> function (name)))))
-		      ,(lprint :msg `fun)))))
+		      ,(lprint :msg "cb" :svars `(fun))))))
 	    ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
 	       `(progn
 		  ,@(loop for e in l
@@ -667,104 +668,80 @@
 	   (do0
 	    (av--init)
 	    (let ((video (Video (dot positional (at 0)))))))
+	   (do0
+	    ,(lprint :msg "start loop")
+	    (while (not (win.WindowShouldClose))
 
-	   (let (;(radius 10s0)
-		 )
-	     (declare (type "const auto" radius))
+	      (win.PollEvents)
+	      (imgui.NewFrame)
 
-	     #+nil(do0 "bool video_is_initialized_p = false;"
-		       "int image_width = 0;"
-		       "int image_height = 0;"
-		       "GLuint image_texture = 0;"
-		       )
+	      (progn
+		(let ((oldwidth 0)
+		      (oldheight 0))
+		  (declare (type "static int" oldwidth oldheight))
+		  (comments "react to changing window size")
+		  (let (("[width,height]" (win.GetWindowSize)))
+		    (when (or (!= width oldwidth)
+			      (!= height oldheight))
+		      ,(lprint :msg "window size has changed" :vars `(width height))
+		      (glViewport 0 0 width height)
+		      (setf oldwidth width
+			    oldheight height)))))
 
+	      (progn
+		"av::Packet pkt;"
+		(let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
+		  (while (= pkt (video.readPacket))
+		    (unless (== video.videoStream
+				(pkt.streamIndex))
+		      continue)
+		    (let ((ts (pkt.ts)))
 
-	     ,(lprint :msg "start loop")
-	     (while (not (win.WindowShouldClose))
+		      (let ((frame (video.decode)))
 
-	       (win.PollEvents)
-	       (imgui.NewFrame)
+			(setf ts (frame.pts))
+			(when (and (frame.isComplete)
+				   (frame.isValid))
+			  (let ((*data (frame.data 0)))
+			    (let ((w (dot frame
+					  (-> (raw)
+					      (aref linesize 0))))
+				  (h (frame.height)))
+			      (texture.Reset data w h ("static_cast<unsigned int>" texFormat)))
 
-	       (progn
-		 (let ((oldwidth 0)
-		       (oldheight 0))
-		   (declare (type "static int" oldwidth oldheight))
-		   (comments "react to changing window size")
-		   (let (("[width,height]" (win.GetWindowSize)))
-		     (when (or (!= width oldwidth)
-			       (!= height oldheight))
-		       ,(lprint :msg "window size has changed" :vars `(width height))
-		       (glViewport 0 0 width height)
-		       (setf oldwidth width
-			     oldheight height)))))
+			    break))))))
 
-	       (progn
-		 "av::Packet pkt;"
-		 (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
-		   (while (= pkt (video.readPacket))
-		     (unless (== video.videoStream
-				 (pkt.streamIndex))
-		       continue)
-		     (let ((ts (pkt.ts)))
-
-		       (let ((frame (video.decode)))
-
-			 (setf ts (frame.pts))
-			 (when (and (frame.isComplete)
-				    (frame.isValid))
-			   (let ((*data (frame.data 0)))
-			     #+nil  (setf image_width
-					  image_height )
-			     (let ((w (dot frame
-					   (-> (raw)
-					       (aref linesize 0))))
-				   (h (frame.height)))
-			       (texture.Reset data w h ("static_cast<unsigned int>" texFormat)))
-
-			     break))))))
-
+		(do0
+		 (comments "draw frame")
 		 (do0
-		  (comments "draw frame")
-		  (do0
-		   (imgui.Begin  (string "video texture"))
+		  (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
 					;(ImGui--Text (string "fn = %s") (fn.c_str))
-		   (imgui.Image (texture.GetImageTexture)
-				(texture.GetWidth)
-				(texture.GetHeight))
-		   #+nil (ImGui--Image (reinterpret_cast<void*>
-					(static_cast<intptr_t> image_texture))
-				       (ImVec2 (static_cast<float> image_width)
-					       (static_cast<float> image_height)))
-		   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-			 (val val_old))
-		     (imgui.SliderFloat (string "time")
-					&val
-					(video.startTime) ;min
-					(video.duration)
+		  (imgui.Image (texture.GetImageTexture)
+			       (texture.GetWidth)
+			       (texture.GetHeight))
+		  (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+			(val val_old))
+		    (imgui.SliderFloat (string "time")
+				       &val
+				       (video.startTime) ;min
+				       (video.duration)
 					;max
-					(string "%.3f") ; format string
-					)
-		     #+nil (ImGui--SliderFloat (string "time")
-					       &val
-					       (video.startTime) ;min
-					       (video.duration)
-					;max
-					       (string "%.3f") ; format string
-					       )
-		     (unless (== val val_old)
-		       (comments "perform seek operation")
-		       (video.seek val)
-		       ))
-		   (imgui.End))
-		  (imgui.Render)
+				       (string "%.3f") ; format string
+				       )
+		    (unless (== val val_old)
+		      (comments "perform seek operation")
+		      (video.seek val)))
+
+		  (imgui.End))
+		 (imgui.Render)
 
 
-		  (glClear GL_COLOR_BUFFER_BIT)
-		  (imgui.RenderDrawData)
+		 (glClear GL_COLOR_BUFFER_BIT)
+		 (imgui.RenderDrawData)
 
-		  (win.SwapBuffers)
-		  )))))
+		 (win.SwapBuffers)
+		 )))))
 
 
 
