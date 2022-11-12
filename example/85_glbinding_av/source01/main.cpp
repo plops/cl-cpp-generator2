@@ -122,8 +122,17 @@ int main(int argc, char **argv) {
       }
       // draw frame
       imgui.Begin("video texture");
+      ImGui::Text("fn = %s", video->fn.c_str());
       imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
                   texture.GetHeight());
+      auto val_old = static_cast<float>(pkt.ts().seconds());
+      auto val = val_old;
+      imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
+                        "%.3f");
+      if (!((val) == (val_old))) {
+        // perform seek operation
+        video->seek(val);
+      }
       imgui.End();
       imgui.Begin("video files");
       static int item_current_idx = int(0);

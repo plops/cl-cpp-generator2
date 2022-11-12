@@ -741,22 +741,22 @@
 		     (do0
 		      (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
-					;(ImGui--Text (string "fn = %s") (fn.c_str))
+		      (ImGui--Text (string "fn = %s") (-> video (fn.c_str)))
 		      (imgui.Image (texture.GetImageTexture)
 				   (texture.GetWidth)
 				   (texture.GetHeight))
-		      #+nil(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-				 (val val_old))
-			     (imgui.SliderFloat (string "time")
-						&val
-						(video.startTime) ;min
-						(video.duration)
+		      (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+			    (val val_old))
+			(imgui.SliderFloat (string "time")
+					   &val
+					   (video->startTime) ;min
+					   (video->duration)
 					;max
-						(string "%.3f") ; format string
-						)
-			     (unless (== val val_old)
-			       (comments "perform seek operation")
-			       (video.seek val)))
+					   (string "%.3f") ; format string
+					   )
+			(unless (== val val_old)
+			  (comments "perform seek operation")
+			  (video->seek val)))
 
 		      (imgui.End))
 
