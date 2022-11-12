@@ -19,7 +19,7 @@ Texture::Texture(int w, int h, int internalFormat)
   Reset(nullptr, w, h, internalFormat);
 }
 void Texture::Update(unsigned char *data, int w, int h) {
-  if (initialized_p) {
+  if (((initialized_p) && (Compatible_p(w, h, m_internalFormat)))) {
     // update texture with new frame
     glBindTexture(GL_TEXTURE_2D, image_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GLenum::GL_LUMINANCE,
@@ -29,28 +29,31 @@ void Texture::Update(unsigned char *data, int w, int h) {
   } else {
     lprint({"warning: texture not initialized", " "}, __FILE__, __LINE__,
            &(__PRETTY_FUNCTION__[0]));
+    Reset(data, w, h, m_internalFormat);
   }
 }
 bool Texture::Compatible_p(int w, int h, int internalFormat) {
-  return (((m_internalFormat) == (internalFormat)) & ((w) <= (m_width)) &
-          ((h) <= (m_height)));
+  return (((m_internalFormat) == (internalFormat)) && ((w) == (m_width)) &&
+          ((h) == (m_height)));
 }
 void Texture::Reset(unsigned char *data, int w, int h, int internalFormat) {
-  if (((initialized_p) & (!(Compatible_p(w, h, internalFormat))))) {
+  if (((initialized_p) && (!(Compatible_p(w, h, internalFormat))))) {
     glDeleteTextures(1, &image_texture);
     initialized_p = false;
     glGenTextures(1, &image_texture);
   }
-  // initialize texture for video frames
+  if (!(initialized_p)) {
+    glBindTexture(GL_TEXTURE_2D, image_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0,
+                 GLenum::GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
+    m_internalWidth = w;
+    m_internalHeight = h;
+  }
   glBindTexture(GL_TEXTURE_2D, image_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, GLenum::GL_LUMINANCE,
-               GL_UNSIGNED_BYTE, nullptr);
-  m_internalWidth = w;
-  m_internalHeight = h;
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GLenum::GL_LUMINANCE,
                   GL_UNSIGNED_BYTE, data);
   m_width = w;

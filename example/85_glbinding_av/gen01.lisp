@@ -465,7 +465,8 @@
 	      (type int w h)
 	      (type "unsigned char*" data)
 	      )
-	     (if initialized_p
+	     (if (and initialized_p
+		      (Compatible_p w h m_internalFormat))
 		 (do0
 		  (comments "update texture with new frame")
 		  (glBindTexture GL_TEXTURE_2D image_texture)
@@ -474,45 +475,50 @@
 		   (setf m_width w
 			 m_height h)))
 		 (do0
-		  ,(lprint :msg "warning: texture not initialized"))))
+		  ,(lprint :msg "warning: texture not initialized")
+		  (Reset data w h m_internalFormat))))
 	   (defmethod Compatible_p (w h internalFormat)
 	     (declare (values bool)
 		      (type int internalFormat w h))
 	     (return
-	       (logand (== m_internalFormat internalFormat)
-		       (<= w m_width)
-		       (<= h m_height))))
+	       (and (== m_internalFormat internalFormat)
+		    (== w m_width)
+		    (== h m_height))))
 	   (defmethod Reset (data w h internalFormat)
 	     (declare
 	      (type int w h internalFormat)
 	      (type "unsigned char*" data)
 	      )
-	     (when (logand initialized_p
-			   (not (Compatible_p w h internalFormat)))
+	     (when (and initialized_p
+			(not (Compatible_p w h internalFormat)))
 	       (glDeleteTextures 1 &image_texture)
 	       (setf initialized_p false)
-	       (glGenTextures 1 &image_texture))
-	     (do0 (comments "initialize texture for video frames")
-		  (glBindTexture GL_TEXTURE_2D image_texture)
-		  ,@(loop for (key val) in `((WRAP_S REPEAT)
-					     (WRAP_T REPEAT)
-					     (MIN_FILTER LINEAR)
-					     (MAG_FILTER LINEAR))
-			  collect
-			  `(glTexParameteri GL_TEXTURE_2D
-					    ,(format nil "GL_TEXTURE_~A" key)
-					    ,(format nil "GL_~A" val)))
+	       (glGenTextures 1 &image_texture)
+	       )
+	     (unless initialized_p
+	       (do0
+		(do0 (glBindTexture GL_TEXTURE_2D image_texture)
+		     ,@(loop for (key val) in `((WRAP_S REPEAT)
+						(WRAP_T REPEAT)
+						(MIN_FILTER LINEAR)
+						(MAG_FILTER LINEAR))
+			     collect
+			     `(glTexParameteri GL_TEXTURE_2D
+					       ,(format nil "GL_TEXTURE_~A" key)
+					       ,(format nil "GL_~A" val))))
+		(do0
+		 ,(make-tex :sub nil)
+		 (setf m_internalWidth w
+		       m_internalHeight h))))
+	     (do0
 
-		  (do0
-		   (do0
-		    ,(make-tex :sub nil)
-		    (setf m_internalWidth w
-			  m_internalHeight h))
-		   (do0
-		    ,(make-tex :sub t)
-		    (setf m_width w
-			  m_height h)))
-		  (setf initialized_p true)))
+	      (do0
+	       (glBindTexture GL_TEXTURE_2D image_texture)
+	       ,(make-tex :sub t)
+	       (setf m_width w
+		     m_height h)))
+
+	     (setf initialized_p true))
 
 	   (defmethod ~Texture ()
 	     (declare
@@ -707,7 +713,10 @@
 					  (-> (raw)
 					      (aref linesize 0))))
 				  (h (frame.height)))
-			      (texture.Reset data w h ("static_cast<unsigned int>" texFormat)))
+			      #+nil (texture.Update data w h ;("static_cast<unsigned int>" texFormat)
+						    )
+			      #-nil (texture.Reset data w h ("static_cast<unsigned int>" texFormat)
+						   ))
 
 			    break)))))
 
