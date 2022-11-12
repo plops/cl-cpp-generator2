@@ -138,13 +138,16 @@ int main(int argc, char **argv) {
       if (video->GetSuccess()) {
         imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
                     texture.GetHeight());
-        auto val_old = static_cast<float>(pkt.ts().seconds());
-        auto val = val_old;
-        imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
-                          "%.3f");
-        if (!((val) == (val_old))) {
-          // perform seek operation
-          video->seek(val);
+        if (video->Seekable_p()) {
+          auto val_old = static_cast<float>(pkt.ts().seconds());
+          auto val = val_old;
+          imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
+                            "%.3f");
+          if (!((val) == (val_old))) {
+            // perform seek operation
+            video->seek(val);
+          }
+          ImGui::Text("can't seek in file");
         }
       } else {
         ImGui::Text("could not open video file");

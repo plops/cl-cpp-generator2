@@ -268,6 +268,11 @@
 	       (defmethod GetSuccess ()
 		 (declare (values bool))
 		 (return success))
+	       (defmethod Seekable_p ()
+		 (declare (values bool))
+		 (return (and  success
+			       (ctx.seekable)
+			       )))
 	       (defmethod Video (filename)
 		 (declare
 		  (type "std::string" filename)
@@ -298,14 +303,15 @@
 				     (dot ctx (startTime) (seconds))
 				     (dot ctx (duration) (seconds))
 				     (ctx.streamsCount)))
-		    (let ((center .5)
-			  (timeResolution 100))
-		      (declare (type "const auto" center timeResolution))
-		      (comments "split second into 100 parts")
-		      (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution
-									  (* center (dot ctx (duration)
-											 (seconds))))))
-				       (curly 1 timeResolution))))
+		    (when (ctx.seekable)
+		      (let ((center .5)
+			    (timeResolution 100))
+			(declare (type "const auto" center timeResolution))
+			(comments "split second into 100 parts")
+			(ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution
+									    (* center (dot ctx (duration)
+											   (seconds))))))
+					 (curly 1 timeResolution)))))
 		    (do0
 		     (
 		      for ((= "size_t i" 0)
@@ -366,7 +372,7 @@
 		 (declare (type float val))
 		 (let ((timeResolution 1000))
 		   (declare (type "const auto" timeResolution))
-		   (when success
+		   (when (and success (Seekable_p))
 		     (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution val)))
 				      (curly 1 timeResolution))))))
 	       (defmethod startTime ()
@@ -795,18 +801,22 @@
 			   (imgui.Image (texture.GetImageTexture)
 					(texture.GetWidth)
 					(texture.GetHeight))
-			   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-				 (val val_old))
-			     (imgui.SliderFloat (string "time")
-						&val
-						(video->startTime) ;min
-						(video->duration)
+			   (when (video->Seekable_p)
+			     (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+				   (val val_old))
+			       (imgui.SliderFloat (string "time")
+						  &val
+						  (video->startTime) ;min
+						  (video->duration)
 					;max
-						(string "%.3f") ; format string
-						)
-			     (unless (== val val_old)
-			       (comments "perform seek operation")
-			       (video->seek val))))
+						  (string "%.3f") ; format string
+						  )
+			       (unless (== val val_old)
+				 (comments "perform seek operation")
+				 (video->seek val)))
+			     (do0
+			      (ImGui--Text (string "can't seek in file"))
+			      )))
 			  (do0
 			   (ImGui--Text (string "could not open video file"))))
 

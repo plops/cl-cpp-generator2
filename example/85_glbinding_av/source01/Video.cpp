@@ -12,6 +12,7 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
 bool Video::GetSuccess() { return success; }
+bool Video::Seekable_p() { return ((success) && (ctx.seekable())); }
 Video::Video(std::string filename)
     : ctx(av::FormatContext()), fn(filename), success(false) {
   lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
@@ -30,12 +31,15 @@ Video::Video(std::string filename)
           std::to_string(ctx.duration().seconds()), "'",
           " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"},
          __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-  const auto center = (0.50f);
-  const auto timeResolution = 100;
-  // split second into 100 parts
-  ctx.seek({static_cast<long int>(floor((
-                (timeResolution) * (((center) * (ctx.duration().seconds())))))),
-            {1, timeResolution}});
+  if (ctx.seekable()) {
+    const auto center = (0.50f);
+    const auto timeResolution = 100;
+    // split second into 100 parts
+    ctx.seek(
+        {static_cast<long int>(floor(
+             ((timeResolution) * (((center) * (ctx.duration().seconds())))))),
+         {1, timeResolution}});
+  }
   for (size_t i = 0; (i) < (ctx.streamsCount()); i++) {
     auto st = ctx.stream(i);
     if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
@@ -81,7 +85,7 @@ av::VideoFrame Video::decode() {
 }
 void Video::seek(float val) {
   const auto timeResolution = 1000;
-  if (success) {
+  if (((success) && (Seekable_p()))) {
     ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
               {1, timeResolution}});
   }
