@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
   auto video = Video(positional.at(0));
+  auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
     win.PollEvents();
@@ -99,7 +100,6 @@ int main(int argc, char **argv) {
     }
     {
       av::Packet pkt;
-      auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
       while (pkt = video.readPacket()) {
         if (!((video.videoStream) == (pkt.streamIndex()))) {
           continue;
