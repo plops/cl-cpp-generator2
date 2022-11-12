@@ -16,8 +16,6 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
          &(__PRETTY_FUNCTION__[0]));
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  auto io = ImGui::GetIO();
-  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
   ImGui::StyleColorsLight();
   {
     const auto installCallbacks = true;
@@ -25,9 +23,8 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
   }
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
-  if ((io.DeltaTime) <= ((0.f))) {
-    io.DeltaTime = (1.00e-6f);
-  }
+  auto io = ImGui::GetIO();
+  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
 }
 void ImguiHandler::NewFrame() {
   ImGui_ImplOpenGL3_NewFrame();

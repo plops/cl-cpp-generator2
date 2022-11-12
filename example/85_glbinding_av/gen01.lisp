@@ -148,11 +148,7 @@
 		  ,(lprint :msg "initialize ImGui")
 		  (IMGUI_CHECKVERSION)
 		  (ImGui--CreateContext)
-		  (let ((io (ImGui--GetIO)))
-		    (setf io.ConfigFlags
-			  (logior
-			   io.ConfigFlags
-			   ImGuiConfigFlags_NavEnableKeyboard)))
+
 		  (ImGui--StyleColorsLight)
 		  (progn
 		    (let ((installCallbacks true))
@@ -163,6 +159,12 @@
 		  (let ((glslVersion (string "#version 150")))
 		    (declare (type "const auto" glslVersion))
 		    (ImGui_ImplOpenGL3_Init glslVersion))
+		  (let ((io (ImGui--GetIO)))
+		    (setf io.ConfigFlags
+			  (logior
+			   io.ConfigFlags
+			   ImGuiConfigFlags_NavEnableKeyboard)))
+		  #+nil
 		  (when (<= io.DeltaTime 0s0)
 		    (setf io.DeltaTime 1s-6)))
 		 )
