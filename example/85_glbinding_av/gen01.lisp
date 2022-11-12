@@ -265,6 +265,9 @@
 	       "bool success;"
 	       "public:"
 	       "size_t videoStream = -1;"
+	       (defmethod GetSuccess ()
+		 (declare (values bool))
+		 (return success))
 	       (defmethod Video (filename)
 		 (declare
 		  (type "std::string" filename)
@@ -274,6 +277,7 @@
 		   (fn filename)
 		   (success false))
 		  (values :constructor))
+
 		 (do0
 
 					;(av--setFFmpegLoggingLevel AV_LOG_DEBUG)
@@ -744,7 +748,14 @@
 				oldheight height)))))
 		  (progn
 		    "av::Packet pkt;"
-		    (while (= pkt (video->readPacket))
+		    (while ((lambda ()
+			      (declare (capture &pkt &video)
+				       (values bool))
+			      (unless (video->GetSuccess)
+				(return false))
+			      (= pkt (video->readPacket))
+			      (return true)
+			      ))
 		      (unless (== video->videoStream
 				  (pkt.streamIndex))
 			continue)
@@ -776,21 +787,26 @@
 		      (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
 		      (ImGui--Text (string "fn = %s") (fn.c_str))
-		      (imgui.Image (texture.GetImageTexture)
-				   (texture.GetWidth)
-				   (texture.GetHeight))
-		      (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-			    (val val_old))
-			(imgui.SliderFloat (string "time")
-					   &val
-					   (video->startTime) ;min
-					   (video->duration)
+
+		      (if (video->GetSuccess)
+			  (do0
+			   (imgui.Image (texture.GetImageTexture)
+					(texture.GetWidth)
+					(texture.GetHeight))
+			   (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+				 (val val_old))
+			     (imgui.SliderFloat (string "time")
+						&val
+						(video->startTime) ;min
+						(video->duration)
 					;max
-					   (string "%.3f") ; format string
-					   )
-			(unless (== val val_old)
-			  (comments "perform seek operation")
-			  (video->seek val)))
+						(string "%.3f") ; format string
+						)
+			     (unless (== val val_old)
+			       (comments "perform seek operation")
+			       (video->seek val))))
+			  (do0
+			   (ImGui--Text (string "could not open video file"))))
 
 		      (imgui.End))
 

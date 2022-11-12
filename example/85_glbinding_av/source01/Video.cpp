@@ -11,6 +11,7 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock>
 #include <avcpp/codeccontext.h>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
+bool Video::GetSuccess() { return success; }
 Video::Video(std::string filename)
     : ctx(av::FormatContext()), fn(filename), success(false) {
   lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,

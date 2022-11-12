@@ -18,6 +18,7 @@ class Video  {
         bool success;
         public:
         size_t videoStream = -1;
+        bool GetSuccess ()     ;  
         explicit  Video (std::string filename)     ;  
         av::Packet readPacket ()     ;  
         av::VideoFrame decode ()     ;  

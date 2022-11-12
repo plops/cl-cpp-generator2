@@ -108,7 +108,13 @@ int main(int argc, char **argv) {
     }
     {
       av::Packet pkt;
-      while (pkt = video->readPacket()) {
+      while (([&pkt, &video]() -> bool {
+        if (!(video->GetSuccess())) {
+          return false;
+        }
+        pkt = video->readPacket();
+        return true;
+      })()) {
         if (!((video->videoStream) == (pkt.streamIndex()))) {
           continue;
         }
@@ -126,15 +132,19 @@ int main(int argc, char **argv) {
       // draw frame
       imgui.Begin("video texture");
       ImGui::Text("fn = %s", fn.c_str());
-      imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
-                  texture.GetHeight());
-      auto val_old = static_cast<float>(pkt.ts().seconds());
-      auto val = val_old;
-      imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
-                        "%.3f");
-      if (!((val) == (val_old))) {
-        // perform seek operation
-        video->seek(val);
+      if (video->GetSuccess()) {
+        imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
+                    texture.GetHeight());
+        auto val_old = static_cast<float>(pkt.ts().seconds());
+        auto val = val_old;
+        imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
+                          "%.3f");
+        if (!((val) == (val_old))) {
+          // perform seek operation
+          video->seek(val);
+        }
+      } else {
+        ImGui::Text("could not open video file");
       }
       imgui.End();
       imgui.Begin("video files");
