@@ -11,10 +11,16 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock>
 #include <avcpp/codeccontext.h>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
-Video::Video(std::string filename) : ctx(av::FormatContext()), fn(filename) {
+Video::Video(std::string filename)
+    : ctx(av::FormatContext()), fn(filename), success(false) {
   lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
-  ctx.openInput(fn);
+  ctx.openInput(fn, ec);
+  if (ec) {
+    lprint({"can't open file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
+           &(__PRETTY_FUNCTION__[0]));
+    return;
+  }
   ctx.findStreamInfo();
   lprint({"stream info", " ", " ctx.seekable()='",
           std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
@@ -40,6 +46,7 @@ Video::Video(std::string filename) : ctx(av::FormatContext()), fn(filename) {
   if (vst.isNull()) {
     lprint({"Video stream not found", " "}, __FILE__, __LINE__,
            &(__PRETTY_FUNCTION__[0]));
+    return;
   }
   if (vst.isValid()) {
     vdec = av::VideoDecoderContext(vst);
@@ -50,7 +57,9 @@ Video::Video(std::string filename) : ctx(av::FormatContext()), fn(filename) {
     if (ec) {
       lprint({"can't open codec", " "}, __FILE__, __LINE__,
              &(__PRETTY_FUNCTION__[0]));
+      return;
     }
+    success = true;
   }
 }
 av::Packet Video::readPacket() {
@@ -71,11 +80,21 @@ av::VideoFrame Video::decode() {
 }
 void Video::seek(float val) {
   const auto timeResolution = 1000;
-  ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
-            {1, timeResolution}});
+  if (success) {
+    ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
+              {1, timeResolution}});
+  }
 }
 float Video::startTime() {
-  return static_cast<float>(ctx.startTime().seconds());
+  if (success) {
+    return static_cast<float>(ctx.startTime().seconds());
+  }
+  return (0.f);
 }
-float Video::duration() { return static_cast<float>(ctx.duration().seconds()); }
+float Video::duration() {
+  if (success) {
+    return static_cast<float>(ctx.duration().seconds());
+  }
+  return (1.0f);
+}
 Video::~Video() {}

@@ -262,16 +262,17 @@
 	       "av::VideoDecoderContext vdec;"
 
 	       "av::Packet pkt;"
-
+	       "bool success;"
 	       "public:"
-	       "size_t videoStream = -2;"
+	       "size_t videoStream = -1;"
 	       (defmethod Video (filename)
 		 (declare
 		  (type "std::string" filename)
 		  (explicit)
 		  (construct
 		   (ctx (av--FormatContext))
-		   (fn filename))
+		   (fn filename)
+		   (success false))
 		  (values :constructor))
 		 (do0
 
@@ -282,7 +283,11 @@
 
 		      ,(lprint :msg "open video file"
 			       :svars `(fn))
-		      (ctx.openInput fn))
+		      (ctx.openInput fn ec)
+		      (when ec
+			,(lprint :msg "can't open file" :svars `(fn))
+			return)
+		      )
 		    (ctx.findStreamInfo)
 		    ,(lprint :msg "stream info"
 			     :vars `((ctx.seekable)
@@ -310,7 +315,8 @@
 				vst st)
 			  break)))
 		     (when (vst.isNull)
-		       ,(lprint :msg "Video stream not found"))
+		       ,(lprint :msg "Video stream not found")
+		       return)
 		     (do0
 
 		      (when (vst.isValid)
@@ -327,7 +333,10 @@
 				     (av--Codec)
 				     ec)
 			  (when ec
-			    ,(lprint :msg "can't open codec"))
+			    ,(lprint :msg "can't open codec")
+			    return)
+
+			  (setf success true)
 
 
 			  ))))))
@@ -353,15 +362,20 @@
 		 (declare (type float val))
 		 (let ((timeResolution 1000))
 		   (declare (type "const auto" timeResolution))
-		   (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution val)))
-				    (curly 1 timeResolution)))))
+		   (when success
+		     (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution val)))
+				      (curly 1 timeResolution))))))
 	       (defmethod startTime ()
 		 (declare (values float))
-		 (return (static_cast<float> (dot ctx (startTime) (seconds))) ))
+		 (when success
+		   (return (static_cast<float> (dot ctx (startTime) (seconds))) ))
+		 (return 0s0))
 	       (defmethod duration ()
 		 (declare (values float))
-		 (return
-		   (static_cast<float> (dot ctx (duration) (seconds)))))
+		 (when success
+		   (return
+		     (static_cast<float> (dot ctx (duration) (seconds)))))
+		 (return 1s0))
 	       (defmethod ~Video ()
 		 (declare
 		  (values :constructor))

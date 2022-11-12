@@ -15,8 +15,9 @@ class Video  {
         std::error_code ec;
         av::VideoDecoderContext vdec;
         av::Packet pkt;
+        bool success;
         public:
-        size_t videoStream = -2;
+        size_t videoStream = -1;
         explicit  Video (std::string filename)     ;  
         av::Packet readPacket ()     ;  
         av::VideoFrame decode ()     ;  
