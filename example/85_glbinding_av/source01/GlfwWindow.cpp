@@ -48,6 +48,12 @@ GlfwWindow::~GlfwWindow() {
 bool GlfwWindow::WindowShouldClose() { return glfwWindowShouldClose(m_window); }
 void GlfwWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
 GLFWwindow *GlfwWindow::GetWindow() { return m_window; }
+void GlfwWindow::PollEvents() { glfwPollEvents(); }
+GLFWglproc GlfwWindow::GetProcAddress(const char *name) {
+  lprint({"", " ", " name='", name, "'"}, __FILE__, __LINE__,
+         &(__PRETTY_FUNCTION__[0]));
+  return glfwGetProcAddress(name);
+}
 std::pair<int, int> GlfwWindow::GetWindowSize() const {
   auto width = int(0);
   auto height = int(0);

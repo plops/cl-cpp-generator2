@@ -26,7 +26,7 @@ Video::Video(std::string filename) : ctx(av::FormatContext()) {
   ctx.seek({static_cast<long int>(
                 floor(((100) * ((((0.50f)) * (ctx.duration().seconds())))))),
             {1, 100}});
-  for (auto i = 0; (i) < (ctx.streamsCount()); (i) += (1)) {
+  for (size_t i = 0; (i) < (ctx.streamsCount()); i++) {
     auto st = ctx.stream(i);
     if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
       videoStream = i;

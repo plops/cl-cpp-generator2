@@ -35,6 +35,7 @@
 				       <memory>
 				       )
 			"class GLFWwindow;"
+			"typedef void (*GLFWglproc)(void);"
 			)
      :implementation-preamble `(do0
 				,log-preamble
@@ -97,6 +98,14 @@
 	       (defmethod GetWindow ()
 		 (declare (values GLFWwindow*))
 		 (return m_window))
+	       (defmethod PollEvents ()
+		 (glfwPollEvents))
+	       (defmethod GetProcAddress (name)
+		 (declare (type "const char*" name)
+			  (static)
+			  (values GLFWglproc))
+		 ,(lprint :svars `(name))
+		 (return (glfwGetProcAddress name)))
 	       (defmethod GetWindowSize ()
 		 (declare (values "std::pair<int,int>")
 			  (const))
@@ -277,13 +286,17 @@
 										       (seconds))))))
 				     (curly 1 100)))
 		    (do0
-		     (dotimes (i (ctx.streamsCount))
-		       (let ((st (ctx.stream i)))
-			 (when (== AVMEDIA_TYPE_VIDEO
-				   (st.mediaType))
-			   (setf videoStream i
-				 vst st)
-			   break)))
+		     (
+		      for ((= "size_t i" 0)
+			   (< i (ctx.streamsCount))
+			   "i++")
+					;dotimes (i (ctx.streamsCount))
+		      (let ((st (ctx.stream i)))
+			(when (== AVMEDIA_TYPE_VIDEO
+				  (st.mediaType))
+			  (setf videoStream i
+				vst st)
+			  break)))
 		     (when (vst.isNull)
 		       ,(lprint :msg "Video stream not found"))
 		     (do0
@@ -370,15 +383,12 @@
 	"using namespace gl32core;"
 	"using namespace glbinding;")
        (do0
-	(include <imgui.h>
-		 <backends/imgui_impl_glfw.h>
-		 <backends/imgui_impl_opengl3.h>)
-	(do0 "#define GLFW_INCLUDE_NONE"
-	     (include <GLFW/glfw3.h>
-		      ))
-	#+nil (do0 "#define GLFW_EXPOSE_NATIVE_X11"
-		   (include
-		    <GLFW/glfw3native.h>))
+	#+nil (include <imgui.h>
+		       <backends/imgui_impl_glfw.h>
+		       <backends/imgui_impl_opengl3.h>)
+	#+nil (do0 "#define GLFW_INCLUDE_NONE"
+		   (include <GLFW/glfw3.h>
+			    ))
 	(include "GlfwWindow.h"
 		 "ImguiHandler.h"
 		 "Video.h")
@@ -465,7 +475,7 @@
 	     (do0
 	      ,(lprint :msg "initialize glbinding")
 	      (comments "if second arg is false: lazy function pointer loading")
-	      (glbinding--initialize glfwGetProcAddress
+	      (glbinding--initialize win.GetProcAddress
 				     false)
 	      #+nil
 	      (do0 (glbinding--setCallbackMask
@@ -494,7 +504,8 @@
 	      (av--init)
 	      (let ((video (Video (dot positional (at 0)))))))
 
-	     (let ((radius 10s0))
+	     (let (;(radius 10s0)
+		   )
 	       (declare (type "const auto" radius))
 
 	       (do0 "bool video_is_initialized_p = false;"
@@ -505,8 +516,8 @@
 
 	       ,(lprint :msg "start loop")
 	       (while (not (win.WindowShouldClose))
-		 (glfwPollEvents)
 
+		 (win.PollEvents)
 		 (imgui.NewFrame)
 
 
@@ -583,7 +594,8 @@
 							  nullptr))))
 				`(let (
 				       (init_width image_width)
-				       (init_height image_height))
+					;(init_height image_height)
+				       )
 				   (if !video_is_initialized_p
 				       (do0 (comments "initialize texture for video frames")
 					    (glGenTextures 1 &image_texture)

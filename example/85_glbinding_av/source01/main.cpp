@@ -10,14 +10,9 @@
 #include <thread>
 using namespace gl32core;
 using namespace glbinding;
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-#include <imgui.h>
-#define GLFW_INCLUDE_NONE
 #include "GlfwWindow.h"
 #include "ImguiHandler.h"
 #include "Video.h"
-#include <GLFW/glfw3.h>
 #include <avcpp/av.h>
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
@@ -69,7 +64,7 @@ int main(int argc, char **argv) {
   lprint({"initialize glbinding", " "}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
   // if second arg is false: lazy function pointer loading
-  glbinding::initialize(glfwGetProcAddress, false);
+  glbinding::initialize(win.GetProcAddress, false);
   {
     const float r = (0.40f);
     const float g = (0.40f);
@@ -80,14 +75,13 @@ int main(int argc, char **argv) {
   auto imgui = ImguiHandler(win.GetWindow());
   av::init();
   auto video = Video(positional.at(0));
-  const auto radius = (10.f);
   bool video_is_initialized_p = false;
   int image_width = 0;
   int image_height = 0;
   GLuint image_texture = 0;
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
-    glfwPollEvents();
+    win.PollEvents();
     imgui.NewFrame();
     ([&width, &height, win]() {
       // react to changing window size
@@ -118,7 +112,6 @@ int main(int argc, char **argv) {
           image_width = frame.raw()->linesize[0];
           image_height = frame.height();
           auto init_width = image_width;
-          auto init_height = image_height;
           if (!video_is_initialized_p) {
             // initialize texture for video frames
             glGenTextures(1, &image_texture);
