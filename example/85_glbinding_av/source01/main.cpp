@@ -1,8 +1,5 @@
 #include <cassert>
 #include <chrono>
-#include <glbinding/AbstractFunction.h>
-#include <glbinding/CallbackMask.h>
-#include <glbinding/FunctionCall.h>
 #include <glbinding/gl32core/gl.h>
 #include <glbinding/glbinding.h>
 #include <iomanip>
@@ -14,9 +11,6 @@ using namespace glbinding;
 #include "ImguiHandler.h"
 #include "Video.h"
 #include <avcpp/av.h>
-#include <avcpp/codec.h>
-#include <avcpp/codeccontext.h>
-#include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
 #include <cxxopts.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =

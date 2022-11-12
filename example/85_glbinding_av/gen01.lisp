@@ -377,9 +377,10 @@
        (do0
 	(include <glbinding/gl32core/gl.h>
 		 <glbinding/glbinding.h>
-		 <glbinding/CallbackMask.h>
-		 <glbinding/FunctionCall.h>
-		 <glbinding/AbstractFunction.h>)
+					; <glbinding/CallbackMask.h>
+					;<glbinding/FunctionCall.h>
+					;<glbinding/AbstractFunction.h>
+		 )
 	"using namespace gl32core;"
 	"using namespace glbinding;")
        (do0
@@ -395,12 +396,14 @@
 
 	(do0
 	 (include <avcpp/av.h>
- 		  <avcpp/ffmpeg.h>)
+					;	  <avcpp/ffmpeg.h>
+		  )
 	 ;; API2
 	 (include ;<avcpp/format.h>
 	  <avcpp/formatcontext.h>
-	  <avcpp/codec.h>
-	  <avcpp/codeccontext.h>))
+					;<avcpp/codec.h>
+					;<avcpp/codeccontext.h>
+	  ))
 	(include <cxxopts.hpp>)
 
 	)
