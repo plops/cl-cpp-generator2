@@ -774,15 +774,18 @@
 			  (for-range (arg (op.non_option_args))
 				     (let ((selected_p (== i item_current_idx)))
 				       (when (ImGui--Selectable (arg.c_str) selected_p)
-					 (setf item_old_idx item_current_idx)
+
 					 (setf item_current_idx i))
 				       (when selected_p
 					 (ImGui--SetItemDefaultFocus)
-					 (do0 #+nil unless #+nil (== item_old_idx
-								     item_current_idx)
-					      (setf  fn arg)
-					      (delete video)
-					      (setf video (new (Video fn))))))
+
+					 (unless (== item_old_idx
+						     item_current_idx)
+					   ,(lprint :msg "change video")
+					   (setf item_old_idx item_current_idx)
+					   (setf  fn arg)
+					   (delete video)
+					   (setf video (new (Video fn))))))
 				     (setf i (+ i 1))))
 			(ImGui--EndListBox))
 		      (imgui.End))

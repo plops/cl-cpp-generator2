@@ -133,14 +133,18 @@ int main(int argc, char **argv) {
       for (auto arg : op.non_option_args()) {
         auto selected_p = (i) == (item_current_idx);
         if (ImGui::Selectable(arg.c_str(), selected_p)) {
-          item_old_idx = item_current_idx;
           item_current_idx = i;
         }
         if (selected_p) {
           ImGui::SetItemDefaultFocus();
-          fn = arg;
-          delete (video);
-          video = new Video(fn);
+          if (!((item_old_idx) == (item_current_idx))) {
+            lprint({"change video", " "}, __FILE__, __LINE__,
+                   &(__PRETTY_FUNCTION__[0]));
+            item_old_idx = item_current_idx;
+            fn = arg;
+            delete (video);
+            video = new Video(fn);
+          }
         }
         i = ((i) + (1));
       }
