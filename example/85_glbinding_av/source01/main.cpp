@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   av::init();
 
   auto fn = op.non_option_args().at(0);
-  auto video = new Video(fn);
+  auto video = std::make_unique<Video>(fn);
   auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
@@ -153,8 +153,7 @@ int main(int argc, char **argv) {
                    &(__PRETTY_FUNCTION__[0]));
             item_old_idx = item_current_idx;
             fn = arg;
-            delete (video);
-            video = new Video(fn);
+            video = std::make_unique<Video>(fn);
           }
         }
         i = ((i) + (1));
