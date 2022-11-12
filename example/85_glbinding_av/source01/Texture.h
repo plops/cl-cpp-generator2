@@ -15,8 +15,7 @@ class Texture  {
         int GetWidth ()     ;  
         int GetHeight ()     ;  
         explicit  Texture (int w, int h, int internalFormat)     ;  
-        void Update (unsigned char* data, int w, int h)     ;  
-        bool Compatible_p (int w, int h, int internalFormat)     ;  
+        bool Compatible_p (int w, int h, unsigned int internalFormat)     ;  
         void Reset (unsigned char* data, int w, int h, int internalFormat)     ;  
          ~Texture ()     ;  
 };

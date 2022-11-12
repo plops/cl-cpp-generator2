@@ -9,7 +9,7 @@
 				   <thread>
 				   )
 			  "void lprint(std::initializer_list<std::string> il, std::string file, int line, std::string fun);"
-			  "extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
+			  "extern const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
 
   (progn
     ;; for classes with templates use write-source and defclass+
@@ -264,17 +264,16 @@
 	       "av::Packet pkt;"
 
 	       "public:"
-	       "ssize_t videoStream = -2;"
+	       "size_t videoStream = -2;"
 	       (defmethod Video (filename)
 		 (declare
 		  (type "std::string" filename)
 		  (explicit)
 		  (construct
 		   (ctx (av--FormatContext))
-		   )
+		   (fn filename))
 		  (values :constructor))
 		 (do0
-		  (setf fn filename)
 
 					;(av--setFFmpegLoggingLevel AV_LOG_DEBUG)
 					;(setf ctx (av--FormatContext))
@@ -290,9 +289,14 @@
 				     (dot ctx (startTime) (seconds))
 				     (dot ctx (duration) (seconds))
 				     (ctx.streamsCount)))
-		    (ctx.seek (curly ("static_cast<long int>" (floor (* 100 (* .5 (dot ctx (duration)
-										       (seconds))))))
-				     (curly 1 100)))
+		    (let ((center .5)
+			  (timeResolution 100))
+		      (declare (type "const auto" center timeResolution))
+		      (comments "split second into 100 parts")
+		      (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution
+									  (* center (dot ctx (duration)
+											 (seconds))))))
+				       (curly 1 timeResolution))))
 		    (do0
 		     (
 		      for ((= "size_t i" 0)
@@ -347,8 +351,10 @@
 		 )
 	       (defmethod seek (val)
 		 (declare (type float val))
-		 (ctx.seek (curly ("static_cast<long int>" (floor (* 1000 val)))
-				  (curly 1 1000))))
+		 (let ((timeResolution 1000))
+		   (declare (type "const auto" timeResolution))
+		   (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution val)))
+				    (curly 1 timeResolution)))))
 	       (defmethod startTime ()
 		 (declare (values float))
 		 (return (static_cast<float> (dot ctx (startTime) (seconds))) ))
@@ -450,7 +456,8 @@
 
 	   (defmethod Texture (w h internalFormat)
 	     (declare
-	      (type int internalFormat w h)
+	      (type int  w h)
+	      (type "int" internalFormat)
 	      (explicit)
 	      (construct
 	       (image_texture 0)
@@ -462,33 +469,35 @@
 	      (values :constructor))
 	     (Reset nullptr w h internalFormat)
 	     )
-	   (defmethod Update (data w h)
-	     (declare
-	      (type int w h)
-	      (type "unsigned char*" data)
-	      )
-	     (if (and initialized_p
-		      (Compatible_p w h m_internalFormat))
-		 (do0
-		  (comments "update texture with new frame")
-		  (glBindTexture GL_TEXTURE_2D image_texture)
-		  (do0
-		   ,(make-tex :sub t)
-		   (setf m_width w
-			 m_height h)))
-		 (do0
-		  ,(lprint :msg "warning: texture not initialized")
-		  (Reset data w h m_internalFormat))))
+	   #+nil (defmethod Update (data w h)
+		   (declare
+		    (type int w h)
+		    (type "unsigned char*" data)
+		    )
+		   (if (and initialized_p
+			    (Compatible_p w h m_internalFormat))
+		       (do0
+			(comments "update texture with new frame")
+			(glBindTexture GL_TEXTURE_2D image_texture)
+			(do0
+			 ,(make-tex :sub t)
+			 (setf m_width w
+			       m_height h)))
+		       (do0
+			,(lprint :msg "warning: texture not initialized")
+			(Reset data w h m_internalFormat))))
 	   (defmethod Compatible_p (w h internalFormat)
 	     (declare (values bool)
-		      (type int internalFormat w h))
+		      (type int w h)
+		      (type "unsigned int" internalFormat))
 	     (return
 	       (and (== m_internalFormat internalFormat)
 		    (== w m_width)
 		    (== h m_height))))
 	   (defmethod Reset (data w h internalFormat)
 	     (declare
-	      (type int w h internalFormat)
+	      (type "int" internalFormat)
+	      (type int w h)
 	      (type "unsigned char*" data)
 	      )
 	     (when (and initialized_p
@@ -644,15 +653,18 @@
 				(GLenum--GL_RGB8UI :comment "displays as black")
 				(GLenum--GL_COMPRESSED_RGB :comment "framerate drops from +200fps to 40fps"))))
 	     `(let ((texFormatIdx varInternalTextureFormat #+nil (dot (aref opt_res (string "internal-tex-format"))
-								      (as<int>))))
+								      (as<int>)))
+		    (numTexFormats ,(length tex-formats)))
+		(declare (type "const auto" numTexFormats))
  		(assert (<= 0 texFormatIdx))
-		(assert (< texFormatIdx ,(length tex-formats)))
-		(let ((texFormats (,(format nil "std::array<gl::GLenum,~a>" (length tex-formats))
-				    (curly ,@(loop for e in tex-formats
-						   collect
-						   (destructuring-bind ( val &key comment default) e
-						     val)))))
-		      (texFormat (aref texFormats texFormatIdx)))))))
+		(assert (< texFormatIdx numTexFormats))
+
+		(let ((texFormats ("std::array<gl::GLenum,numTexFormats>"
+				   (curly ,@(loop for e in tex-formats
+						  collect
+						  (destructuring-bind ( val &key comment default) e
+						    val)))))
+		      (texFormat (dot texFormats (at texFormatIdx))))))))
 	 #+nil
 	 (for-range (arg (op.non_option_args))
 		    ,(lprint :svars `(arg)))
@@ -690,10 +702,13 @@
 	    (av--init)
 	    (let ()))
 	   (let ((fn (dot op (non_option_args) (at 0)))
-		 (video ;(new (Video fn))
-		  ("std::make_unique<Video>" fn)))
-					;(videos.push_back (Video fn))
-	     (let ((texture (Texture 640 480 ("static_cast<unsigned int>" texFormat))))
+		 (video
+		  ("std::make_unique<Video>" fn))
+		 (initW 640)
+		 (initH 480))
+	     (declare (type "const auto" initW initH))
+
+	     (let ((texture (Texture initW initH ("static_cast<int>" texFormat))))
 	       (do0
 		,(lprint :msg "start loop")
 		(while (not (win.WindowShouldClose))
@@ -726,14 +741,17 @@
 			  (setf ts (frame.pts))
 			  (when (and (frame.isComplete)
 				     (frame.isValid))
-			    (let ((*data (frame.data 0)))
+			    (let (;(*data (frame.data 0))
+				  )
+					;"auto*data(frame.data(0));"
+			      (space auto* (data (frame.data 0)))
 			      (let ((w (dot frame
 					    (-> (raw)
 						(aref linesize 0))))
 				    (h (frame.height)))
 				#+nil (texture.Update data w h ;("static_cast<unsigned int>" texFormat)
 						      )
-				#-nil (texture.Reset data w h ("static_cast<unsigned int>" texFormat)
+				#-nil (texture.Reset data w h ("static_cast<int>" texFormat)
 						     ))
 
 			      break)))))
@@ -769,11 +787,13 @@
 			(declare (type "static int"
 				       item_current_idx
 				       item_old_idx))
-			(ImGui--BeginListBox (string "files")
-					     (ImVec2 -FLT_MIN
-						     (* 40 (ImGui--GetTextLineHeightWithSpacing)))
+			(let ((filesToShow 40s0))
+			  (declare (type "const auto" filesToShow))
+			  (ImGui--BeginListBox (string "files")
+					       (ImVec2 -FLT_MIN
+						       (* filesToShow (ImGui--GetTextLineHeightWithSpacing)))
 					;(ImGui--GetItemRectSize)
-					     )
+					       ))
 			(let ((i 0))
 			  (for-range (arg (op.non_option_args))
 				     (let ((selected_p (== i item_current_idx)))

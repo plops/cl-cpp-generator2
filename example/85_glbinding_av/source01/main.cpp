@@ -50,13 +50,14 @@ int main(int argc, char **argv) {
     exit(0);
   }
   auto texFormatIdx = varInternalTextureFormat;
+  const auto numTexFormats = 8;
   assert((0) <= (texFormatIdx));
-  assert((texFormatIdx) < (8));
-  auto texFormats = std::array<gl::GLenum, 8>(
+  assert((texFormatIdx) < (numTexFormats));
+  auto texFormats = std::array<gl::GLenum, numTexFormats>(
       {GL_RGBA, GLenum::GL_RGB8, GLenum::GL_R3_G3_B2, GLenum::GL_RGBA2,
        GLenum::GL_RGB9_E5, GLenum::GL_SRGB8, GLenum::GL_RGB8UI,
        GLenum::GL_COMPRESSED_RGB});
-  auto texFormat = texFormats[texFormatIdx];
+  auto texFormat = texFormats.at(texFormatIdx);
   auto win = GlfwWindow();
   lprint({"initialize glbinding", " "}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
@@ -83,7 +84,9 @@ int main(int argc, char **argv) {
 
   auto fn = op.non_option_args().at(0);
   auto video = std::make_unique<Video>(fn);
-  auto texture = Texture(640, 480, static_cast<unsigned int>(texFormat));
+  const auto initW = 640;
+  const auto initH = 480;
+  auto texture = Texture(initW, initH, static_cast<int>(texFormat));
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
     win.PollEvents();
@@ -113,10 +116,10 @@ int main(int argc, char **argv) {
         auto frame = video->decode();
         ts = frame.pts();
         if (((frame.isComplete()) && (frame.isValid()))) {
-          auto *data = frame.data(0);
+          auto *data(frame.data(0));
           auto w = frame.raw()->linesize[0];
           auto h = frame.height();
-          texture.Reset(data, w, h, static_cast<unsigned int>(texFormat));
+          texture.Reset(data, w, h, static_cast<int>(texFormat));
           break;
         }
       }
@@ -137,9 +140,10 @@ int main(int argc, char **argv) {
       imgui.Begin("video files");
       static int item_current_idx = int(0);
       static int item_old_idx = int(0);
+      const auto filesToShow = (40.f);
       ImGui::BeginListBox(
-          "files",
-          ImVec2(-FLT_MIN, ((40) * (ImGui::GetTextLineHeightWithSpacing()))));
+          "files", ImVec2(-FLT_MIN, ((filesToShow) *
+                                     (ImGui::GetTextLineHeightWithSpacing()))));
       auto i = 0;
       for (auto arg : op.non_option_args()) {
         auto selected_p = (i) == (item_current_idx);

@@ -4,7 +4,8 @@
 #include <thread>
 void lprint(std::initializer_list<std::string> il, std::string file, int line,
             std::string fun);
-extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
+extern const std::chrono::time_point<std::chrono::high_resolution_clock>
+    g_start_time;
 #include <glbinding/gl32core/gl.h>
 #include <glbinding/glbinding.h>
 using namespace gl32core;
@@ -18,21 +19,7 @@ Texture::Texture(int w, int h, int internalFormat)
       m_width(w), m_height(h) {
   Reset(nullptr, w, h, internalFormat);
 }
-void Texture::Update(unsigned char *data, int w, int h) {
-  if (((initialized_p) && (Compatible_p(w, h, m_internalFormat)))) {
-    // update texture with new frame
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GLenum::GL_LUMINANCE,
-                    GL_UNSIGNED_BYTE, data);
-    m_width = w;
-    m_height = h;
-  } else {
-    lprint({"warning: texture not initialized", " "}, __FILE__, __LINE__,
-           &(__PRETTY_FUNCTION__[0]));
-    Reset(data, w, h, m_internalFormat);
-  }
-}
-bool Texture::Compatible_p(int w, int h, int internalFormat) {
+bool Texture::Compatible_p(int w, int h, unsigned int internalFormat) {
   return (((m_internalFormat) == (internalFormat)) && ((w) == (m_width)) &&
           ((h) == (m_height)));
 }

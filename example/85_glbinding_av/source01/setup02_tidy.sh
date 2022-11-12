@@ -5,8 +5,6 @@ clang-tidy \
     -- \
     -I/usr/local/include \
     -I/home/martin/src/imgui \
-    -I/home/martin/src/entt/src/ \
-    -I/home/martin/src/imgui_entt_entity_editor/
-
+    -I/home/martin/src/popl/include/ \
    
     

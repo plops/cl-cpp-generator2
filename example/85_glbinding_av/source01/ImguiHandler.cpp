@@ -4,7 +4,8 @@
 #include <thread>
 void lprint(std::initializer_list<std::string> il, std::string file, int line,
             std::string fun);
-extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
+extern const std::chrono::time_point<std::chrono::high_resolution_clock>
+    g_start_time;
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>

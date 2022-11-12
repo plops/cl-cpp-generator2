@@ -4,14 +4,14 @@
 #include <thread>
 void lprint(std::initializer_list<std::string> il, std::string file, int line,
             std::string fun);
-extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
+extern const std::chrono::time_point<std::chrono::high_resolution_clock>
+    g_start_time;
 #include "Video.h"
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
 #include <avcpp/ffmpeg.h>
 #include <avcpp/formatcontext.h>
-Video::Video(std::string filename) : ctx(av::FormatContext()) {
-  fn = filename;
+Video::Video(std::string filename) : ctx(av::FormatContext()), fn(filename) {
   lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
   ctx.openInput(fn);
@@ -23,9 +23,12 @@ Video::Video(std::string filename) : ctx(av::FormatContext()) {
           std::to_string(ctx.duration().seconds()), "'",
           " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"},
          __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-  ctx.seek({static_cast<long int>(
-                floor(((100) * ((((0.50f)) * (ctx.duration().seconds())))))),
-            {1, 100}});
+  const auto center = (0.50f);
+  const auto timeResolution = 100;
+  // split second into 100 parts
+  ctx.seek({static_cast<long int>(floor((
+                (timeResolution) * (((center) * (ctx.duration().seconds())))))),
+            {1, timeResolution}});
   for (size_t i = 0; (i) < (ctx.streamsCount()); i++) {
     auto st = ctx.stream(i);
     if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
@@ -67,7 +70,9 @@ av::VideoFrame Video::decode() {
   return frame;
 }
 void Video::seek(float val) {
-  ctx.seek({static_cast<long int>(floor(((1000) * (val)))), {1, 1000}});
+  const auto timeResolution = 1000;
+  ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
+            {1, timeResolution}});
 }
 float Video::startTime() {
   return static_cast<float>(ctx.startTime().seconds());
