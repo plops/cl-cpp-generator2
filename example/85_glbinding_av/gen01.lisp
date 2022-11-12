@@ -373,7 +373,11 @@
 		 (let ((timeResolution 1000))
 		   (declare (type "const auto" timeResolution))
 		   (when (and success (Seekable_p))
-		     (ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution val)))
+		     (let ((ma (* .99 (duration))))
+		       (when (< ma val)
+			 (setf val ma)))
+		     (ctx.seek (curly ("static_cast<long int>"
+				       (floor (* timeResolution val)))
 				      (curly 1 timeResolution))))))
 	       (defmethod startTime ()
 		 (declare (values float))
@@ -766,12 +770,12 @@
 				  (pkt.streamIndex))
 			continue)
 		      (let ((ts (pkt.ts)))
-			,(lprint :msg "763 ts")
+					;,(lprint :msg "763 ts")
 			(let ((frame (video->decode)))
-			  ,(lprint :msg "765")
+					;,(lprint :msg "765")
 			  (setf ts (frame.pts)
 				)
-			  ,(lprint :msg "768")
+					;,(lprint :msg "768")
 			  (when (and (frame.isComplete)
 				     (frame.isValid))
 			    (let (;(*data (frame.data 0))
@@ -876,7 +880,7 @@
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
-      (let ((dbg "-ggdb -O0 -flto")
+      (let ((dbg "-ggdb -O0 ")
 	    (asan ""
 					;"-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )

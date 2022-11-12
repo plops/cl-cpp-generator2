@@ -86,6 +86,10 @@ av::VideoFrame Video::decode() {
 void Video::seek(float val) {
   const auto timeResolution = 1000;
   if (((success) && (Seekable_p()))) {
+    auto ma = (((0.990f)) * (duration()));
+    if ((ma) < (val)) {
+      val = ma;
+    }
     ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
               {1, timeResolution}});
   }
