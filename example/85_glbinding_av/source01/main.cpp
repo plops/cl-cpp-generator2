@@ -53,8 +53,6 @@ int main(int argc, char **argv) {
        GLenum::GL_COMPRESSED_RGB});
   auto texFormat = texFormats[texFormatIdx];
   auto win = GlfwWindow();
-  auto width = int(0);
-  auto height = int(0);
   lprint({"initialize glbinding", " "}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
   // if second arg is false: lazy function pointer loading
@@ -77,21 +75,21 @@ int main(int argc, char **argv) {
   while (!(win.WindowShouldClose())) {
     win.PollEvents();
     imgui.NewFrame();
-    ([&width, &height, win]() {
+    {
+      static int oldwidth = 0;
+      static int oldheight = 0;
       // react to changing window size
-      auto oldwidth = width;
-      auto oldheight = height;
-      auto [nwidth, nheight] = win.GetWindowSize();
-      width = nwidth;
-      height = nheight;
+      auto [width, height] = win.GetWindowSize();
       if ((((width) != (oldwidth)) || ((height) != (oldheight)))) {
         lprint({"window size has changed", " ", " width='",
                 std::to_string(width), "'", " height='", std::to_string(height),
                 "'"},
                __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
         glViewport(0, 0, width, height);
+        oldwidth = width;
+        oldheight = height;
       }
-    })();
+    }
     {
       av::Packet pkt;
       while (pkt = video.readPacket()) {
@@ -137,14 +135,6 @@ int main(int argc, char **argv) {
       // draw frame
       imgui.Begin("video texture");
       imgui.Image(image_texture, image_width, image_height);
-      auto val_old = static_cast<float>(pkt.ts().seconds());
-      auto val = val_old;
-      imgui.SliderFloat("time", &val, video.startTime(), video.duration(),
-                        "%.3f");
-      if (!((val) == (val_old))) {
-        // perform seek operation
-        video.seek(val);
-      }
       imgui.End();
       imgui.Render();
       glClear(GL_COLOR_BUFFER_BIT);

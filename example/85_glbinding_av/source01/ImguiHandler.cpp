@@ -25,6 +25,9 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
   }
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
+  if ((io.DeltaTime) <= ((0.f))) {
+    io.DeltaTime = (1.00e-6f);
+  }
 }
 void ImguiHandler::NewFrame() {
   ImGui_ImplOpenGL3_NewFrame();

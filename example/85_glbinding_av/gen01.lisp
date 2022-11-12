@@ -136,7 +136,6 @@
 				)
      :code `(do0
 	     (defclass ImguiHandler ()
-
 	       "public:"
 	       (defmethod ImguiHandler (window)
 		 (declare
@@ -163,15 +162,21 @@
 
 		  (let ((glslVersion (string "#version 150")))
 		    (declare (type "const auto" glslVersion))
-		    (ImGui_ImplOpenGL3_Init glslVersion)))
+		    (ImGui_ImplOpenGL3_Init glslVersion))
+		  (when (<= io.DeltaTime 0s0)
+		    (setf io.DeltaTime 1s-6)))
 		 )
 	       (defmethod NewFrame ()
 		 (do0
 		  (ImGui_ImplOpenGL3_NewFrame)
 		  (ImGui_ImplGlfw_NewFrame)
+
+
 		  (ImGui--NewFrame)
 		  (let ((showDemoWindow true))
 		    (ImGui--ShowDemoWindow &showDemoWindow)))
+
+
 		 )
 	       (defmethod Render ()
 		 (ImGui--Render))
@@ -195,6 +200,7 @@
 		 (declare (type "const char*" label fmt)
 			  (type float* val)
 			  (type float min max))
+
 		 (ImGui--SliderFloat label
 				     val
 				     min max fmt
@@ -467,99 +473,91 @@
 			 (texFormat (aref texFormats texFormatIdx))))))
 	     ))
 
+	 (let ((win (GlfwWindow)))
+	   (do0
+	    ,(lprint :msg "initialize glbinding")
+	    (comments "if second arg is false: lazy function pointer loading")
+	    (glbinding--initialize win.GetProcAddress
+				   false)
+	    #+nil
+	    (do0 (glbinding--setCallbackMask
+		  (logior
+		   CallbackMask--After
+		   CallbackMask--ParametersAndReturnValue))
+		 (glbinding--setAfterCallback
+		  (lambda (call)
+		    (declare (type "const glbinding::FunctionCall&"
+				   call)
+			     )
+		    (let ((fun (dot call  (-> function (name)))))
+		      ,(lprint :msg `fun)))))
+	    ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
+	       `(progn
+		  ,@(loop for e in l
+			  and n in `(r g b a)
+			  collect
+			  `(let ((,n ,e))
+			     (declare (type "const float" ,n))))
+		  (glClearColor r g b a))))
+
+	   (let ((imgui (ImguiHandler (win.GetWindow)))))
+
+	   (do0
+	    (av--init)
+	    (let ((video (Video (dot positional (at 0)))))))
+
+	   (let (;(radius 10s0)
+		 )
+	     (declare (type "const auto" radius))
+
+	     (do0 "bool video_is_initialized_p = false;"
+		  "int image_width = 0;"
+		  "int image_height = 0;"
+		  "GLuint image_texture = 0;")
 
 
-	 "auto win = GlfwWindow();"
-	 (let (;(win (GlfwWindow))
-	       )
-	   (let ((width (int 0))
-		 (height (int 0)))
+	     ,(lprint :msg "start loop")
+	     (while (not (win.WindowShouldClose))
 
-	     (do0
-	      ,(lprint :msg "initialize glbinding")
-	      (comments "if second arg is false: lazy function pointer loading")
-	      (glbinding--initialize win.GetProcAddress
-				     false)
-	      #+nil
-	      (do0 (glbinding--setCallbackMask
-		    (logior
-		     CallbackMask--After
-		     CallbackMask--ParametersAndReturnValue))
-		   (glbinding--setAfterCallback
-		    (lambda (call)
-		      (declare (type "const glbinding::FunctionCall&"
-				     call)
-			       )
-		      (let ((fun (dot call  (-> function (name)))))
-			,(lprint :msg `fun)))))
-	      ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
-		 `(progn
-		    ,@(loop for e in l
-			    and n in `(r g b a)
-			    collect
-			    `(let ((,n ,e))
-			       (declare (type "const float" ,n))))
-		    (glClearColor r g b a))))
+	       (win.PollEvents)
+	       (imgui.NewFrame)
 
-	     (let ((imgui (ImguiHandler (win.GetWindow)))))
+	       (progn
+		 (let ((oldwidth 0)
+		       (oldheight 0))
+		   (declare (type "static int" oldwidth oldheight))
+		   (comments "react to changing window size")
+		   (let (("[width,height]" (win.GetWindowSize)))
+		     (when (or (!= width oldwidth)
+			       (!= height oldheight))
+		       ,(lprint :msg "window size has changed" :vars `(width height))
+		       (glViewport 0 0 width height)
+		       (setf oldwidth width
+			     oldheight height)))))
 
-	     (do0
-	      (av--init)
-	      (let ((video (Video (dot positional (at 0)))))))
+	       (progn
+		 "av::Packet pkt;"
+		 (while (= pkt (video.readPacket))
+		   (unless (== video.videoStream
+			       (pkt.streamIndex))
+		     continue)
+		   (let ((ts (pkt.ts)))
 
-	     (let (;(radius 10s0)
-		   )
-	       (declare (type "const auto" radius))
+		     (let ((frame (video.decode)))
 
-	       (do0 "bool video_is_initialized_p = false;"
-		    "int image_width = 0;"
-		    "int image_height = 0;"
-		    "GLuint image_texture = 0;")
-
-
-	       ,(lprint :msg "start loop")
-	       (while (not (win.WindowShouldClose))
-
-		 (win.PollEvents)
-		 (imgui.NewFrame)
-
-
-		 ((lambda ()
-		    (declare (capture &width &height win))
-		    (comments "react to changing window size")
-		    (let ((oldwidth width)
-			  (oldheight height))
-		      (let (("[nwidth,nheight]" (win.GetWindowSize))))
-		      (setf width nwidth
-			    height nheight)
-		      (when (or (!= width oldwidth)
-				(!= height oldheight))
-			,(lprint :msg "window size has changed" :vars `(width height))
-			(glViewport 0 0 width height)))))
-
-		 (progn
-		   "av::Packet pkt;"
-		   (while (= pkt (video.readPacket))
-		     (unless (== video.videoStream
-				 (pkt.streamIndex))
-		       continue)
-		     (let ((ts (pkt.ts)))
-
-		       (let ((frame (video.decode)))
-
-			 (setf ts (frame.pts))
-			 (when (and (frame.isComplete)
-				    (frame.isValid))
-			   (let ((*data (frame.data 0)))
-			     (setf image_width (dot frame
-						    (-> (raw)
-							(aref linesize 0)))
-				   image_height (frame.height))
-			     ,(flet ((make-tex (&key sub
-						     (target 'GL_TEXTURE_2D)
-						     (level 0)
-						     (internal-format
-						      `texFormat
+		       (setf ts (frame.pts))
+		       (when (and (frame.isComplete)
+				  (frame.isValid))
+			 (let ((*data (frame.data 0)))
+			   (setf image_width (dot frame
+						  (-> (raw)
+						      (aref linesize 0)))
+				 image_height (frame.height))
+			   ,(flet ((make-tex (&key sub
+						   (target 'GL_TEXTURE_2D)
+						   (level 0)
+						   (internal-format
+						    `texFormat
 					;'GL_RGBA
 					;'GLenum--GL_RGB8
 					;'GLenum--GL_R3_G3_B2
@@ -568,107 +566,107 @@
 					; 'GLenum--GL_SRGB8 ;; this displays as much darker
 					;'GLenum--GL_RGB8UI ;; displays as black
 					;'GLenum--GL_COMPRESSED_RGB ;; framerate drops from +200fps to 40fps
-						      )
-						     (width 'image_width)
-						     (height 'image_height)
-						     (xoffset 0)
-						     (yoffset 0)
-						     (border 0)
-						     (tex-format 'GLenum--GL_LUMINANCE)
-						     (tex-type 'GL_UNSIGNED_BYTE)
-						     )
-				       (if sub
-					   `(glTexSubImage2D  ,target
-							      ,level
-							      ,xoffset ,yoffset
-							      ,width
-							      ,height
-							      ,tex-format
-							      ,tex-type
-							      data)
-					   `(glTexImage2D ,target
-							  ,level
-							  ,internal-format
-							  ,width
-							  ,height
-							  ,border
-							  ,tex-format
-							  ,tex-type
-							  nullptr))))
-				`(let (
-				       (init_width image_width)
+						    )
+						   (width 'image_width)
+						   (height 'image_height)
+						   (xoffset 0)
+						   (yoffset 0)
+						   (border 0)
+						   (tex-format 'GLenum--GL_LUMINANCE)
+						   (tex-type 'GL_UNSIGNED_BYTE)
+						   )
+				     (if sub
+					 `(glTexSubImage2D  ,target
+							    ,level
+							    ,xoffset ,yoffset
+							    ,width
+							    ,height
+							    ,tex-format
+							    ,tex-type
+							    data)
+					 `(glTexImage2D ,target
+							,level
+							,internal-format
+							,width
+							,height
+							,border
+							,tex-format
+							,tex-type
+							nullptr))))
+			      `(let (
+				     (init_width image_width)
 					;(init_height image_height)
-				       )
-				   (if !video_is_initialized_p
-				       (do0 (comments "initialize texture for video frames")
-					    (glGenTextures 1 &image_texture)
-					    (glBindTexture GL_TEXTURE_2D image_texture)
-					    ,@(loop for (key val) in `((WRAP_S REPEAT)
-								       (WRAP_T REPEAT)
-								       (MIN_FILTER LINEAR)
-								       (MAG_FILTER LINEAR))
-						    collect
-						    `(glTexParameteri GL_TEXTURE_2D
-								      ,(format nil "GL_TEXTURE_~A" key)
-								      ,(format nil "GL_~A" val)))
+				     )
+				 (if !video_is_initialized_p
+				     (do0 (comments "initialize texture for video frames")
+					  (glGenTextures 1 &image_texture)
+					  (glBindTexture GL_TEXTURE_2D image_texture)
+					  ,@(loop for (key val) in `((WRAP_S REPEAT)
+								     (WRAP_T REPEAT)
+								     (MIN_FILTER LINEAR)
+								     (MAG_FILTER LINEAR))
+						  collect
+						  `(glTexParameteri GL_TEXTURE_2D
+								    ,(format nil "GL_TEXTURE_~A" key)
+								    ,(format nil "GL_~A" val)))
 
-					    (do0
-					     ,(lprint :msg "prepare texture"
-						      :vars `(init_width image_width image_height
-									 (frame.width)
-									 )
-						      )
-					     ,(make-tex :sub nil)
-					     ,(make-tex :sub t))
+					  (do0
+					   ,(lprint :msg "prepare texture"
+						    :vars `(init_width image_width image_height
+								       (frame.width)
+								       )
+						    )
+					   ,(make-tex :sub nil)
+					   ,(make-tex :sub t))
 
-					    (setf video_is_initialized_p true))
-				       (do0
-					(comments "update texture with new frame")
-					(glBindTexture GL_TEXTURE_2D image_texture)
-					,(make-tex :sub t))
-				       )))
-			     break)))))
+					  (setf video_is_initialized_p true))
+				     (do0
+				      (comments "update texture with new frame")
+				      (glBindTexture GL_TEXTURE_2D image_texture)
+				      ,(make-tex :sub t))
+				     )))
+			   break)))))
 
-		   (do0
-		    (comments "draw frame")
-		    (do0
-		     (imgui.Begin  (string "video texture"))
+		 (do0
+		  (comments "draw frame")
+		  (do0
+		   (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
 					;(ImGui--Text (string "fn = %s") (fn.c_str))
-		     (imgui.Image image_texture image_width image_height)
-		     #+nil (ImGui--Image (reinterpret_cast<void*>
-					  (static_cast<intptr_t> image_texture))
-					 (ImVec2 (static_cast<float> image_width)
-						 (static_cast<float> image_height)))
-		     (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-			   (val val_old))
-		       (imgui.SliderFloat (string "time")
-					  &val
-					  (video.startTime) ;min
-					  (video.duration)
+		   (imgui.Image image_texture image_width image_height)
+		   #+nil (ImGui--Image (reinterpret_cast<void*>
+					(static_cast<intptr_t> image_texture))
+				       (ImVec2 (static_cast<float> image_width)
+					       (static_cast<float> image_height)))
+		   #+nil(let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+			      (val val_old))
+			  (imgui.SliderFloat (string "time")
+					     &val
+					     (video.startTime) ;min
+					     (video.duration)
 					;max
-					  (string "%.3f") ; format string
-					  )
-		       #+nil (ImGui--SliderFloat (string "time")
-						 &val
-						 (video.startTime) ;min
-						 (video.duration)
+					     (string "%.3f") ; format string
+					     )
+			  #+nil (ImGui--SliderFloat (string "time")
+						    &val
+						    (video.startTime) ;min
+						    (video.duration)
 					;max
-						 (string "%.3f") ; format string
-						 )
-		       (unless (== val val_old)
-			 (comments "perform seek operation")
-			 (video.seek val)
-			 ))
-		     (imgui.End))
-		    (imgui.Render)
+						    (string "%.3f") ; format string
+						    )
+			  (unless (== val val_old)
+			    (comments "perform seek operation")
+			    (video.seek val)
+			    ))
+		   (imgui.End))
+		  (imgui.Render)
 
 
-		    (glClear GL_COLOR_BUFFER_BIT)
-		    (imgui.RenderDrawData)
+		  (glClear GL_COLOR_BUFFER_BIT)
+		  (imgui.RenderDrawData)
 
-		    (win.SwapBuffers)
-		    ))))))
+		  (win.SwapBuffers)
+		  )))))
 
 
 
