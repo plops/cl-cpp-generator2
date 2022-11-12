@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
       }
       // draw frame
       imgui.Begin("video texture");
-      ImGui::Text("fn = %s", video->fn.c_str());
+      ImGui::Text("fn = %s", fn.c_str());
       imgui.Image(texture.GetImageTexture(), texture.GetWidth(),
                   texture.GetHeight());
       auto val_old = static_cast<float>(pkt.ts().seconds());
@@ -137,7 +137,9 @@ int main(int argc, char **argv) {
       imgui.Begin("video files");
       static int item_current_idx = int(0);
       static int item_old_idx = int(0);
-      ImGui::BeginListBox("files");
+      ImGui::BeginListBox(
+          "files",
+          ImVec2(-FLT_MIN, ((40) * (ImGui::GetTextLineHeightWithSpacing()))));
       auto i = 0;
       for (auto arg : op.non_option_args()) {
         auto selected_p = (i) == (item_current_idx);

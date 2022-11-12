@@ -741,7 +741,7 @@
 		     (do0
 		      (imgui.Begin  (string "video texture"))
 					;(ImGui--Text (string "width = %d") image_width)
-		      (ImGui--Text (string "fn = %s") (-> video (fn.c_str)))
+		      (ImGui--Text (string "fn = %s") (fn.c_str))
 		      (imgui.Image (texture.GetImageTexture)
 				   (texture.GetWidth)
 				   (texture.GetHeight))
@@ -768,6 +768,8 @@
 				       item_current_idx
 				       item_old_idx))
 			(ImGui--BeginListBox (string "files")
+					     (ImVec2 -FLT_MIN
+						     (* 40 (ImGui--GetTextLineHeightWithSpacing)))
 					;(ImGui--GetItemRectSize)
 					     )
 			(let ((i 0))
