@@ -26,6 +26,27 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
 }
+void ImguiHandler::NewFrame() {
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
+  auto showDemoWindow = true;
+  ImGui::ShowDemoWindow(&showDemoWindow);
+}
+void ImguiHandler::Render() { ImGui::Render(); }
+void ImguiHandler::RenderDrawData() {
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+void ImguiHandler::Begin(const char *str) { ImGui::Begin(str); }
+void ImguiHandler::End() { ImGui::End(); }
+void ImguiHandler::Image(uint tex, int w, int h) {
+  ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(tex)),
+               ImVec2(static_cast<float>(w), static_cast<float>(h)));
+}
+void ImguiHandler::SliderFloat(const char *label, float *val, float min,
+                               float max, const char *fmt) {
+  ImGui::SliderFloat(label, val, min, max, fmt);
+}
 ImguiHandler::~ImguiHandler() {
   lprint({"Shutdown ImGui", " "}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));

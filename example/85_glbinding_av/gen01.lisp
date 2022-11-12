@@ -156,6 +156,40 @@
 		    (declare (type "const auto" glslVersion))
 		    (ImGui_ImplOpenGL3_Init glslVersion)))
 		 )
+	       (defmethod NewFrame ()
+		 (do0
+		  (ImGui_ImplOpenGL3_NewFrame)
+		  (ImGui_ImplGlfw_NewFrame)
+		  (ImGui--NewFrame)
+		  (let ((showDemoWindow true))
+		    (ImGui--ShowDemoWindow &showDemoWindow)))
+		 )
+	       (defmethod Render ()
+		 (ImGui--Render))
+	       (defmethod RenderDrawData ()
+		 (ImGui_ImplOpenGL3_RenderDrawData
+		  (ImGui--GetDrawData)))
+	       (defmethod Begin (str)
+		 (declare (type "const char*" str))
+		 (ImGui--Begin str))
+	       (defmethod End ()
+		 (ImGui--End))
+	       (defmethod Image (tex w h)
+		 (declare (type int w h)
+			  (type uint tex))
+		 (ImGui--Image (reinterpret_cast<void*>
+				(static_cast<intptr_t> tex))
+			       (ImVec2 (static_cast<float> w)
+				       (static_cast<float> h)))
+		 )
+	       (defmethod SliderFloat (label val min max fmt)
+		 (declare (type "const char*" label fmt)
+			  (type float* val)
+			  (type float min max))
+		 (ImGui--SliderFloat label
+				     val
+				     min max fmt
+				     ))
 	       (defmethod ~ImguiHandler ()
 		 (declare
 		  (values :constructor))
@@ -454,7 +488,7 @@
 			       (declare (type "const float" ,n))))
 		    (glClearColor r g b a))))
 
-	     (let ((imguiHandler (ImguiHandler (win.GetWindow)))))
+	     (let ((imgui (ImguiHandler (win.GetWindow)))))
 
 	     (do0
 	      (av--init)
@@ -473,12 +507,8 @@
 	       (while (not (win.WindowShouldClose))
 		 (glfwPollEvents)
 
-		 (do0
-		  (ImGui_ImplOpenGL3_NewFrame)
-		  (ImGui_ImplGlfw_NewFrame)
-		  (ImGui--NewFrame)
-		  (let ((showDemoWindow true))
-		    (ImGui--ShowDemoWindow &showDemoWindow)))
+		 (imgui.NewFrame)
+
 
 		 ((lambda ()
 		    (declare (capture &width &height win))
@@ -587,32 +617,41 @@
 		   (do0
 		    (comments "draw frame")
 		    (do0
-		     (ImGui--Begin (string "video texture"))
-		     (ImGui--Text (string "width = %d") image_width)
+		     (imgui.Begin  (string "video texture"))
+					;(ImGui--Text (string "width = %d") image_width)
 					;(ImGui--Text (string "fn = %s") (fn.c_str))
-		     (ImGui--Image (reinterpret_cast<void*>
-				    (static_cast<intptr_t> image_texture))
-				   (ImVec2 (static_cast<float> image_width)
-					   (static_cast<float> image_height)))
+		     (imgui.Image image_texture image_width image_height)
+		     #+nil (ImGui--Image (reinterpret_cast<void*>
+					  (static_cast<intptr_t> image_texture))
+					 (ImVec2 (static_cast<float> image_width)
+						 (static_cast<float> image_height)))
 		     (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
 			   (val val_old))
-		       (ImGui--SliderFloat (string "time")
-					   &val
-					   (video.startTime) ;min
-					   (video.duration)
+		       (imgui.SliderFloat (string "time")
+					  &val
+					  (video.startTime) ;min
+					  (video.duration)
 					;max
-					   (string "%.3f") ; format string
-					   )
+					  (string "%.3f") ; format string
+					  )
+		       #+nil (ImGui--SliderFloat (string "time")
+						 &val
+						 (video.startTime) ;min
+						 (video.duration)
+					;max
+						 (string "%.3f") ; format string
+						 )
 		       (unless (== val val_old)
 			 (comments "perform seek operation")
 			 (video.seek val)
 			 ))
-		     (ImGui--End))
-		    (ImGui--Render)
+		     (imgui.End))
+		    (imgui.Render)
+
 
 		    (glClear GL_COLOR_BUFFER_BIT)
-		    (ImGui_ImplOpenGL3_RenderDrawData
-		     (ImGui--GetDrawData))
+		    (imgui.RenderDrawData)
+
 		    (win.SwapBuffers)
 		    ))))))
 

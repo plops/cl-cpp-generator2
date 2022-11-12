@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     const float a = (1.0f);
     glClearColor(r, g, b, a);
   }
-  auto imguiHandler = ImguiHandler(win.GetWindow());
+  auto imgui = ImguiHandler(win.GetWindow());
   av::init();
   auto video = Video(positional.at(0));
   const auto radius = (10.f);
@@ -88,11 +88,7 @@ int main(int argc, char **argv) {
   lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
   while (!(win.WindowShouldClose())) {
     glfwPollEvents();
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    auto showDemoWindow = true;
-    ImGui::ShowDemoWindow(&showDemoWindow);
+    imgui.NewFrame();
     ([&width, &height, win]() {
       // react to changing window size
       auto oldwidth = width;
@@ -152,24 +148,20 @@ int main(int argc, char **argv) {
         }
       }
       // draw frame
-      ImGui::Begin("video texture");
-      ImGui::Text("width = %d", image_width);
-      ImGui::Image(
-          reinterpret_cast<void *>(static_cast<intptr_t>(image_texture)),
-          ImVec2(static_cast<float>(image_width),
-                 static_cast<float>(image_height)));
+      imgui.Begin("video texture");
+      imgui.Image(image_texture, image_width, image_height);
       auto val_old = static_cast<float>(pkt.ts().seconds());
       auto val = val_old;
-      ImGui::SliderFloat("time", &val, video.startTime(), video.duration(),
-                         "%.3f");
+      imgui.SliderFloat("time", &val, video.startTime(), video.duration(),
+                        "%.3f");
       if (!((val) == (val_old))) {
         // perform seek operation
         video.seek(val);
       }
-      ImGui::End();
-      ImGui::Render();
+      imgui.End();
+      imgui.Render();
       glClear(GL_COLOR_BUFFER_BIT);
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      imgui.RenderDrawData();
       win.SwapBuffers();
     }
   }
