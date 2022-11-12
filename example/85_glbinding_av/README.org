@@ -1,3 +1,7 @@
+|       | completion | comment                       |
+| gen00 |        60% | imgui, avcpp, glbinding, glfw |
+| gen01 |            | split into classes            |
+
 - install avcpp dependency on fedora 36
 #+begin_example
 
@@ -42,3 +46,11 @@ git clone https://github.com/jarro2783/cxxopts
 
 
 - how to display image with imgui https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
+
+
+* how to split into classes for gen01
+
+  - i want to be able to play multiple videos
+  - need class to represent
+    - texture (init, change)
+    - video file with skipping
