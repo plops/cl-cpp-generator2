@@ -10,7 +10,7 @@ class GlfwWindow  {
         bool WindowShouldClose ()     ;  
         void SwapBuffers ()     ;  
         GLFWwindow* GetWindow ()     ;  
-        std::pair<int,int> GetWindowSize ()     ;  
+        std::pair<int,int> GetWindowSize () const    ;  
 };
 
 #endif /* !GLFWWINDOW_H */

@@ -68,7 +68,7 @@
 				  GLFW_OPENGL_CORE_PROFILE)
 
 		  ,(lprint :msg "create GLFW3 window")
-		  (let ((startWidth )
+		  (let ((startWidth 800)
 			(startHeight 600)
 			(window (glfwCreateWindow startWidth startHeight
 						  (string "glfw")
@@ -98,7 +98,8 @@
 		 (declare (values GLFWwindow*))
 		 (return m_window))
 	       (defmethod GetWindowSize ()
-		 (declare (values "std::pair<int,int>"))
+		 (declare (values "std::pair<int,int>")
+			  (const))
 		 (let ((width (int 0))
 		       (height (int 0)))
 		   (glfwGetWindowSize m_window &width &height)
@@ -626,7 +627,7 @@
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
       ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
       ;;
-      (let ((dbg "-ggdb -O0 -fpermissive")
+      (let ((dbg "-ggdb -O0 ")
 	    (asan ""
 					;"-fno-omit-frame-pointer -fsanitize=address -fsanitize-address-use-after-return=always -fsanitize-address-use-after-scope"
 	      )

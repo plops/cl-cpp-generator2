@@ -2,9 +2,9 @@ cmake_minimum_required( VERSION 3.13 )
 project( mytest LANGUAGES CXX )
 set( CMAKE_CXX_COMPILER g++ )
 set( CMAKE_VERBOSE_MAKEFILE ON )
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0 -fpermissive  -Wall -Wextra -ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/= ")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0 -fpermissive  -Wall -Wextra -ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/= ")
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0 -fpermissive -Wall -Wextra ")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0   -Wall -Wextra -ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/= ")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0   -Wall -Wextra -ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/= ")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/GlfwWindow.cpp
 /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/ImguiHandler.cpp
 /home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/Video.cpp

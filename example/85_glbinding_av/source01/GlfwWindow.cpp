@@ -25,7 +25,7 @@ GlfwWindow::GlfwWindow() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   lprint({"create GLFW3 window", " "}, __FILE__, __LINE__,
          &(__PRETTY_FUNCTION__[0]));
-  const auto startWidth;
+  const auto startWidth = 800;
   const auto startHeight = 600;
   auto window =
       glfwCreateWindow(startWidth, startHeight, "glfw", nullptr, nullptr);
@@ -48,7 +48,7 @@ GlfwWindow::~GlfwWindow() {
 bool GlfwWindow::WindowShouldClose() { return glfwWindowShouldClose(m_window); }
 void GlfwWindow::SwapBuffers() { glfwSwapBuffers(m_window); }
 GLFWwindow *GlfwWindow::GetWindow() { return m_window; }
-std::pair<int, int> GlfwWindow::GetWindowSize() {
+std::pair<int, int> GlfwWindow::GetWindowSize() const {
   auto width = int(0);
   auto height = int(0);
   glfwGetWindowSize(m_window, &width, &height);
