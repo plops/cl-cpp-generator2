@@ -15,6 +15,8 @@ using namespace glbinding;
 #include <imgui.h>
 #define GLFW_INCLUDE_NONE
 #include "GlfwWindow.h"
+#include "ImguiHandler.h"
+#include "Video.h"
 #include <GLFW/glfw3.h>
 #include <avcpp/av.h>
 #include <avcpp/codec.h>
@@ -61,50 +63,6 @@ int main(int argc, char **argv) {
        GLenum::GL_RGB9_E5, GLenum::GL_SRGB8, GLenum::GL_RGB8UI,
        GLenum::GL_COMPRESSED_RGB});
   auto texFormat = texFormats[texFormatIdx];
-  av::init();
-  auto ctx = av::FormatContext();
-  auto fn = positional.at(0);
-  lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
-  ctx.openInput(fn);
-  ctx.findStreamInfo();
-  lprint({"stream info", " ", " ctx.seekable()='",
-          std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
-          std::to_string(ctx.startTime().seconds()), "'",
-          " ctx.duration().seconds()='",
-          std::to_string(ctx.duration().seconds()), "'",
-          " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"},
-         __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-  ctx.seek({static_cast<long int>(
-                floor(((100) * ((((0.50f)) * (ctx.duration().seconds())))))),
-            {1, 100}});
-  ssize_t videoStream = -1;
-  av::Stream vst;
-  std::error_code ec;
-  for (auto i = 0; (i) < (ctx.streamsCount()); (i) += (1)) {
-    auto st = ctx.stream(i);
-    if ((AVMEDIA_TYPE_VIDEO) == (st.mediaType())) {
-      videoStream = i;
-      vst = st;
-      break;
-    }
-  }
-  if (vst.isNull()) {
-    lprint({"Video stream not found", " "}, __FILE__, __LINE__,
-           &(__PRETTY_FUNCTION__[0]));
-  }
-  av::VideoDecoderContext vdec;
-  if (vst.isValid()) {
-    vdec = av::VideoDecoderContext(vst);
-    auto codec = av::findDecodingCodec(vdec.raw()->codec_id);
-    vdec.setCodec(codec);
-    vdec.setRefCountedFrames(true);
-    vdec.open({{"threads", "1"}}, av::Codec(), ec);
-    if (ec) {
-      lprint({"can't open codec", " "}, __FILE__, __LINE__,
-             &(__PRETTY_FUNCTION__[0]));
-    }
-  }
   auto win = GlfwWindow();
   auto width = int(0);
   auto height = int(0);
@@ -119,19 +77,9 @@ int main(int argc, char **argv) {
     const float a = (1.0f);
     glClearColor(r, g, b, a);
   }
-  lprint({"initialize ImGui", " "}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  auto io = ImGui::GetIO();
-  io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
-  ImGui::StyleColorsLight();
-  {
-    const auto installCallbacks = true;
-    ImGui_ImplGlfw_InitForOpenGL(win.GetWindow(), installCallbacks);
-  }
-  const auto glslVersion = "#version 150";
-  ImGui_ImplOpenGL3_Init(glslVersion);
+  auto imguiHandler = ImguiHandler(win.GetWindow());
+  av::init();
+  auto video = Video(positional.at(0));
   const auto radius = (10.f);
   bool video_is_initialized_p = false;
   int image_width = 0;
@@ -161,23 +109,13 @@ int main(int argc, char **argv) {
       }
     })();
     {
-      std::error_code ec;
       av::Packet pkt;
-      while (pkt = ctx.readPacket(ec)) {
-        if (ec) {
-          lprint({"packet reading error", " ", " ec.message()='", ec.message(),
-                  "'"},
-                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
-        }
-        if (!((videoStream) == (pkt.streamIndex()))) {
+      while (pkt = video.readPacket()) {
+        if (!((video.videoStream) == (pkt.streamIndex()))) {
           continue;
         }
         auto ts = pkt.ts();
-        auto frame = vdec.decode(pkt, ec);
-        if (ec) {
-          lprint({"error", " ", " ec.message()='", ec.message(), "'"}, __FILE__,
-                 __LINE__, &(__PRETTY_FUNCTION__[0]));
-        }
+        auto frame = video.decode();
         ts = frame.pts();
         if (((frame.isComplete()) && (frame.isValid()))) {
           auto *data = frame.data(0);
@@ -216,19 +154,17 @@ int main(int argc, char **argv) {
       // draw frame
       ImGui::Begin("video texture");
       ImGui::Text("width = %d", image_width);
-      ImGui::Text("fn = %s", fn.c_str());
       ImGui::Image(
           reinterpret_cast<void *>(static_cast<intptr_t>(image_texture)),
           ImVec2(static_cast<float>(image_width),
                  static_cast<float>(image_height)));
       auto val_old = static_cast<float>(pkt.ts().seconds());
       auto val = val_old;
-      ImGui::SliderFloat("time", &val,
-                         static_cast<float>(ctx.startTime().seconds()),
-                         static_cast<float>(ctx.duration().seconds()), "%.3f");
+      ImGui::SliderFloat("time", &val, video.startTime(), video.duration(),
+                         "%.3f");
       if (!((val) == (val_old))) {
         // perform seek operation
-        ctx.seek({static_cast<long int>(floor(((1000) * (val)))), {1, 1000}});
+        video.seek(val);
       }
       ImGui::End();
       ImGui::Render();
@@ -237,10 +173,5 @@ int main(int argc, char **argv) {
       win.SwapBuffers();
     }
   }
-  lprint({"Shutdown ImGui and GLFW3", " "}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
   return 0;
 }

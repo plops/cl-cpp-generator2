@@ -1,13 +1,11 @@
 // no preamble
 #include <chrono>
-#include <iomanip>
 #include <iostream>
 #include <thread>
 void lprint(std::initializer_list<std::string> il, std::string file, int line,
             std::string fun);
 extern std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;
 #include "Video.h"
-#include <avcpp/av.h>
 #include <avcpp/codec.h>
 #include <avcpp/codeccontext.h>
 #include <avcpp/ffmpeg.h>
