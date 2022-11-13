@@ -713,7 +713,7 @@
 				     call)
 			       )
 		      (let ((fun (dot call  (-> function (name)))))
-			,(lprint :msg "cb" :svars `(fun)))))))
+			,(lprint :level "trace" :msg "cb" :svars `(fun)))))))
 	    ,(let ((l `(.4s0 .4s0 .2s0 1s0)))
 	       `(progn
 		  ,@(loop for e in l

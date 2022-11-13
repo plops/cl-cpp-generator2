@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
         ((CallbackMask::After) | (CallbackMask::ParametersAndReturnValue)));
     glbinding::setAfterCallback([](const glbinding::FunctionCall &call) {
       auto fun = call.function->name();
-      spdlog::info("cb  fun='{}'", fun);
+      spdlog::trace("cb  fun='{}'", fun);
     });
   }
   {
