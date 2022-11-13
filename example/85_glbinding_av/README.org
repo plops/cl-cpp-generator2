@@ -91,3 +91,35 @@ cd b
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
 
 #+end_example
+
+- i want to track humans, try to install mediapipe for that
+https://google.github.io/mediapipe/getting_started/hello_world_cpp.html
+
+#+begin_example
+
+
+ sudo dnf install bazel
+
+ sudo dnf install java-11-openjdk-devel
+
+ cd ~/src
+ git clone https://github.com/google/mediapipe.git
+ # 628MB
+ 
+ cd mediapipe
+ 
+
+ls -ltr /etc/alternatives/java
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.17.0.8-2.fc36.x86_64
+
+export GLOG_logtostderr=1
+
+bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hand_tracking:hand_tracking_cpu
+
+
+bazel run --define MEDIAPIPE_DISABLE_GPU=1 \
+    mediapipe/examples/desktop/hello_world:hello_world
+
+
+#+end_example
