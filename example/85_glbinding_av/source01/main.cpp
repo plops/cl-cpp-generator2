@@ -16,6 +16,7 @@ using namespace glbinding;
 #include "Video.h"
 #include <avcpp/av.h>
 #include <avcpp/formatcontext.h>
+#include <fmt/core.h>
 #include <imgui.h>
 #include <popl.hpp>
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
@@ -150,6 +151,7 @@ int main(int argc, char **argv) {
         ImGui::Text("could not open video file");
       }
       imgui.End();
+      // window with file listing
       imgui.Begin("video files");
       static int item_current_idx = int(0);
       static int item_old_idx = int(0);
@@ -177,6 +179,37 @@ int main(int argc, char **argv) {
       }
       ImGui::EndListBox();
       imgui.End();
+      {
+        // window with internal texture format listing
+        imgui.Begin("internal texture format");
+        static int fmt_current_idx = varInternalTextureFormat;
+        static int fmt_old_idx = varInternalTextureFormat;
+        const auto formatsToShow = (15.f);
+        ImGui::BeginListBox(
+            "files",
+            ImVec2(-FLT_MIN, ((formatsToShow) *
+                              (ImGui::GetTextLineHeightWithSpacing()))));
+        auto i = 0;
+        for (auto arg : texFormats) {
+          auto selected_p = (i) == (fmt_current_idx);
+          auto argString = fmt::format("{}", static_cast<int>(arg));
+          if (ImGui::Selectable(argString.c_str(), selected_p)) {
+            fmt_current_idx = i;
+          }
+          if (selected_p) {
+            ImGui::SetItemDefaultFocus();
+            if (!((fmt_old_idx) == (fmt_current_idx))) {
+              lprint({"change texture format", " "}, __FILE__, __LINE__,
+                     &(__PRETTY_FUNCTION__[0]));
+              fmt_old_idx = fmt_current_idx;
+              varInternalTextureFormat = fmt_current_idx;
+            }
+          }
+          i = ((i) + (1));
+        }
+        ImGui::EndListBox();
+        imgui.End();
+      }
       imgui.Render();
       glClear(GL_COLOR_BUFFER_BIT);
       imgui.RenderDrawData();

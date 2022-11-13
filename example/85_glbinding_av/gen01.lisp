@@ -495,25 +495,7 @@
 	       (m_height h)
 	       )
 	      (values :constructor))
-	     (Reset nullptr w h internalFormat)
-	     )
-	   #+nil (defmethod Update (data w h)
-		   (declare
-		    (type int w h)
-		    (type "unsigned char*" data)
-		    )
-		   (if (and initialized_p
-			    (Compatible_p w h m_internalFormat))
-		       (do0
-			(comments "update texture with new frame")
-			(glBindTexture GL_TEXTURE_2D image_texture)
-			(do0
-			 ,(make-tex :sub t)
-			 (setf m_width w
-			       m_height h)))
-		       (do0
-			,(lprint :msg "warning: texture not initialized")
-			(Reset data w h m_internalFormat))))
+	     (Reset nullptr w h internalFormat))
 	   (defmethod Compatible_p (w h internalFormat)
 	     (declare (values bool)
 		      (type int w h)
@@ -621,6 +603,7 @@
 	  ))
 
 	(include <popl.hpp>)
+	(include <fmt/core.h>)
 
 	)
 
@@ -680,8 +663,9 @@
 				(GLenum--GL_SRGB8 :comment "this displays as much darker")
 				(GLenum--GL_RGB8UI :comment "displays as black")
 				(GLenum--GL_COMPRESSED_RGB :comment "framerate drops from +200fps to 40fps"))))
-	     `(let ((texFormatIdx varInternalTextureFormat #+nil (dot (aref opt_res (string "internal-tex-format"))
-								      (as<int>)))
+	     `(let ((texFormatIdx varInternalTextureFormat
+		      #+nil (dot (aref opt_res (string "internal-tex-format"))
+				 (as<int>)))
 		    (numTexFormats ,(length tex-formats)))
 		(declare (type "const auto" numTexFormats))
  		(assert (<= 0 texFormatIdx))
@@ -693,9 +677,7 @@
 						  (destructuring-bind ( val &key comment default) e
 						    val)))))
 		      (texFormat (dot texFormats (at texFormatIdx))))))))
-	 #+nil
-	 (for-range (arg (op.non_option_args))
-		    ,(lprint :svars `(arg)))
+
 	 (let ((win (GlfwWindow)))
 	   (do0
 	    ,(lprint :msg "initialize glbinding")
@@ -770,28 +752,18 @@
 				  (pkt.streamIndex))
 			continue)
 		      (let ((ts (pkt.ts)))
-					;,(lprint :msg "763 ts")
 			(let ((frame (video->decode)))
-					;,(lprint :msg "765")
-			  (setf ts (frame.pts)
-				)
-					;,(lprint :msg "768")
+			  (setf ts (frame.pts))
 			  (when (and (frame.isComplete)
 				     (frame.isValid))
-			    (let (;(*data (frame.data 0))
-				  )
-					;"auto*data(frame.data(0));"
-			      (space auto* (data (frame.data 0)))
-			      (let ((w (dot frame
-					    (-> (raw)
-						(aref linesize 0))))
-				    (h (frame.height)))
-				#+nil (texture.Update data w h ;("static_cast<unsigned int>" texFormat)
-						      )
-				#-nil (texture.Reset data w h ("static_cast<int>" texFormat)
-						     ))
+			    (space auto* (data (frame.data 0)))
+			    (let ((w (dot frame
+					  (-> (raw)
+					      (aref linesize 0))))
+				  (h (frame.height)))
+			      (texture.Reset data w h ("static_cast<int>" texFormat)))
 
-			      break)))))
+			    break))))
 
 		    (do0
 		     (comments "draw frame")
@@ -827,6 +799,7 @@
 		      (imgui.End))
 
 		     (do0
+		      (comments "window with file listing")
 		      (imgui.Begin  (string "video files"))
 		      (let ((item_current_idx (int 0))
 			    (item_old_idx (int 0)))
@@ -860,6 +833,41 @@
 				     (setf i (+ i 1))))
 			(ImGui--EndListBox))
 		      (imgui.End))
+
+		     (progn
+		       (comments "window with internal texture format listing")
+		       (imgui.Begin  (string "internal texture format"))
+		       (let ((fmt_current_idx varInternalTextureFormat)
+			     (fmt_old_idx  varInternalTextureFormat))
+			 (declare (type "static int"
+					fmt_current_idx
+					fmt_old_idx))
+			 (let ((formatsToShow 15s0))
+			   (declare (type "const auto" formatsToShow))
+			   (ImGui--BeginListBox (string "files")
+						(ImVec2 -FLT_MIN
+							(* formatsToShow (ImGui--GetTextLineHeightWithSpacing)))
+						))
+			 (let ((i 0))
+			   (for-range (arg texFormats)
+				      (let ((selected_p (== i fmt_current_idx))
+					    (argString (fmt--format (string "{}")
+								    (static_cast<int> arg))))
+					(when (ImGui--Selectable (dot argString (c_str)) selected_p)
+					  (setf fmt_current_idx i))
+					(when selected_p
+					  (ImGui--SetItemDefaultFocus)
+
+					  (unless (== fmt_old_idx
+						      fmt_current_idx)
+					    ,(lprint :msg "change texture format")
+					    (setf fmt_old_idx fmt_current_idx)
+					    (setf varInternalTextureFormat fmt_current_idx)
+					    )))
+				      (setf i (+ i 1))))
+			 (ImGui--EndListBox))
+		       (imgui.End))
+
 		     (imgui.Render)
 
 
@@ -946,6 +954,10 @@
 	    (out "add_library( libavcpp_static STATIC IMPORTED )")
 	    (out "set_target_properties( libavcpp_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libavcpp.a )")
 	    )
+	  (progn
+	    (out "add_library( fmt_static STATIC IMPORTED )")
+	    (out "set_target_properties( fmt_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libfmt.a )")
+	    )
 
 	  (let ((avlibs `(avutil avdevice avfilter avcodec avformat
 				 swscale postproc swresample)))
@@ -962,6 +974,7 @@
 		   glfw3 ;GL X11
 		   libavcpp_static
 		   ,@avlibs
+		   fmt_static
 
 					;dl  pthread
 					;rt

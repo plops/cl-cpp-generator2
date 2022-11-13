@@ -61,3 +61,9 @@ git clone https://github.com/jarro2783/cxxopts
  cd ~/src
 git clone https://github.com/badaix/popl
  #+end_example
+  - use fmt to print values into strings
+#+begin_example
+ cd ~/src
+git clone https://github.com/fmtlib/fmt
+
+#+end_example
