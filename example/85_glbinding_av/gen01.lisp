@@ -318,17 +318,15 @@
 			 ,(lprint :msg "can't seek" :svars `((ec.message)))
 			 return)))
 		   (do0
-		    (
-		     for ((= "size_t i" 0)
+		    (for ((= "size_t i" 0)
 			  (< i (ctx.streamsCount))
 			  "i++")
-					;dotimes (i (ctx.streamsCount))
-		     (let ((st (ctx.stream i)))
-		       (when (== AVMEDIA_TYPE_VIDEO
-				 (st.mediaType))
-			 (setf videoStream i
-			       vst st)
-			 break)))
+			 (let ((st (ctx.stream i)))
+			   (when (== AVMEDIA_TYPE_VIDEO
+				     (st.mediaType))
+			     (setf videoStream i
+				   vst st)
+			     break)))
 		    (when (vst.isNull)
 		      ,(lprint :msg "Video stream not found")
 		      return)
@@ -360,8 +358,13 @@
 		 (do0  (setf pkt (ctx.readPacket ec))
 		       (when ec
 			 ,(lprint :msg "packet reading error"
-				  :svars `((ec.message))))
+				  :svars `((ec.message)
+					   )))
 					;,(lprint :vars `((pkt.size)))
+		       ;; https://www.ffmpeg.org/doxygen/3.2/avcodec_8h_source.html
+		       ;; key 1, corrupt 2, discard 4
+		       ;; ,(lprint :vars `((pkt.flags)))
+
 		       )
 		 (return  pkt))
 
@@ -759,6 +762,24 @@
 			      (= pkt (video->readPacket))
 			      (when (<= (pkt.size) 0)
 				(return false))
+			      (unless (pkt.flags)
+				,(lprint :msg "normal pkt"
+					 :vars `((pkt.size)
+						 (pkt.flags))))
+			      (when (& 1 (pkt.flags))
+				,(lprint :msg "pkt contains keyframe"
+					 :vars `((pkt.size)
+						 (pkt.flags))))
+			      (when (& 2 (pkt.flags))
+				,(lprint :msg "pkt corrupt"
+					 :vars `((pkt.size)
+						 (pkt.flags)))
+				(return false))
+			      (when (& 4 (pkt.flags))
+				,(lprint :msg "pkt discard"
+					 :vars `((pkt.size)
+						 (pkt.flags))))
+
 			      (return true)
 			      ))
 		      (unless (== video->videoStream

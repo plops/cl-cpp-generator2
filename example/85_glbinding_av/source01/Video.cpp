@@ -19,11 +19,18 @@ Video::Video(std::string filename)
          &(__PRETTY_FUNCTION__[0]));
   ctx.openInput(fn, ec);
   if (ec) {
-    lprint({"can't open file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
-           &(__PRETTY_FUNCTION__[0]));
+    lprint({"can't open file", " ", " fn='", fn, "'", " ec.message()='",
+            ec.message(), "'"},
+           __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
     return;
   }
-  ctx.findStreamInfo();
+  ctx.findStreamInfo(ec);
+  if (ec) {
+    lprint(
+        {"can't find stream info", " ", " ec.message()='", ec.message(), "'"},
+        __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+    return;
+  }
   lprint({"stream info", " ", " ctx.seekable()='",
           std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
           std::to_string(ctx.startTime().seconds()), "'",
@@ -38,7 +45,13 @@ Video::Video(std::string filename)
     ctx.seek(
         {static_cast<long int>(floor(
              ((timeResolution) * (((center) * (ctx.duration().seconds())))))),
-         {1, timeResolution}});
+         {1, timeResolution}},
+        ec);
+    if (ec) {
+      lprint({"can't seek", " ", " ec.message()='", ec.message(), "'"},
+             __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+      return;
+    }
   }
   for (size_t i = 0; (i) < (ctx.streamsCount()); i++) {
     auto st = ctx.stream(i);
@@ -86,12 +99,14 @@ av::VideoFrame Video::decode() {
 void Video::seek(float val) {
   const auto timeResolution = 1000;
   if (((success) && (Seekable_p()))) {
-    auto ma = (((0.990f)) * (duration()));
-    if ((ma) < (val)) {
-      val = ma;
-    }
     ctx.seek({static_cast<long int>(floor(((timeResolution) * (val)))),
-              {1, timeResolution}});
+              {1, timeResolution}},
+             ec);
+    if (ec) {
+      lprint({"can't seek", " ", " ec.message()='", ec.message(), "'"},
+             __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+      return;
+    }
   }
 }
 float Video::startTime() {

@@ -54,6 +54,10 @@ int main(int argc, char **argv) {
   const auto numTexFormats = 8;
   assert((0) <= (texFormatIdx));
   assert((texFormatIdx) < (numTexFormats));
+  auto texFormatsString = std::array<std::string, numTexFormats>(
+      {"GL_RGBA", "GLenum--GL_RGB8", "GLenum--GL_R3_G3_B2", "GLenum--GL_RGBA2",
+       "GLenum--GL_RGB9_E5", "GLenum--GL_SRGB8", "GLenum--GL_RGB8UI",
+       "GLenum--GL_COMPRESSED_RGB"});
   auto texFormats = std::array<gl::GLenum, numTexFormats>(
       {GL_RGBA, GLenum::GL_RGB8, GLenum::GL_R3_G3_B2, GLenum::GL_RGBA2,
        GLenum::GL_RGB9_E5, GLenum::GL_SRGB8, GLenum::GL_RGB8UI,
@@ -114,6 +118,34 @@ int main(int argc, char **argv) {
           return false;
         }
         pkt = video->readPacket();
+        if ((pkt.size()) <= (0)) {
+          return false;
+        }
+        if (!(pkt.flags())) {
+          lprint({"normal pkt", " ", " pkt.size()='",
+                  std::to_string(pkt.size()), "'", " pkt.flags()='",
+                  std::to_string(pkt.flags()), "'"},
+                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+        }
+        if (((1) & (pkt.flags()))) {
+          lprint({"pkt contains keyframe", " ", " pkt.size()='",
+                  std::to_string(pkt.size()), "'", " pkt.flags()='",
+                  std::to_string(pkt.flags()), "'"},
+                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+        }
+        if (((2) & (pkt.flags()))) {
+          lprint({"pkt corrupt", " ", " pkt.size()='",
+                  std::to_string(pkt.size()), "'", " pkt.flags()='",
+                  std::to_string(pkt.flags()), "'"},
+                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+          return false;
+        }
+        if (((4) & (pkt.flags()))) {
+          lprint({"pkt discard", " ", " pkt.size()='",
+                  std::to_string(pkt.size()), "'", " pkt.flags()='",
+                  std::to_string(pkt.flags()), "'"},
+                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+        }
         return true;
       })()) {
         if (!((video->videoStream) == (pkt.streamIndex()))) {
@@ -142,9 +174,11 @@ int main(int argc, char **argv) {
           imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
                             "%.3f");
           if (!((val) == (val_old))) {
-            // perform seek operation
+            lprint({"perform seek operation", " "}, __FILE__, __LINE__,
+                   &(__PRETTY_FUNCTION__[0]));
             video->seek(val);
           }
+        } else {
           ImGui::Text("can't seek in file");
         }
       } else {
@@ -192,15 +226,16 @@ int main(int argc, char **argv) {
         auto i = 0;
         for (auto arg : texFormats) {
           auto selected_p = (i) == (fmt_current_idx);
-          auto argString = fmt::format("{}", static_cast<int>(arg));
+          auto argString = texFormatsString.at(i);
           if (ImGui::Selectable(argString.c_str(), selected_p)) {
             fmt_current_idx = i;
           }
           if (selected_p) {
             ImGui::SetItemDefaultFocus();
             if (!((fmt_old_idx) == (fmt_current_idx))) {
-              lprint({"change texture format", " "}, __FILE__, __LINE__,
-                     &(__PRETTY_FUNCTION__[0]));
+              lprint({"change texture format", " ", " argString='", argString,
+                      "'"},
+                     __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
               fmt_old_idx = fmt_current_idx;
               varInternalTextureFormat = fmt_current_idx;
               texFormat = texFormats.at(varInternalTextureFormat);
