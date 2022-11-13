@@ -862,7 +862,9 @@
 						      fmt_current_idx)
 					    ,(lprint :msg "change texture format")
 					    (setf fmt_old_idx fmt_current_idx)
-					    (setf varInternalTextureFormat fmt_current_idx)
+					    (setf varInternalTextureFormat
+						  fmt_current_idx)
+					    (setf texFormat (dot texFormats (at varInternalTextureFormat)))
 					    )))
 				      (setf i (+ i 1))))
 			 (ImGui--EndListBox))

@@ -203,6 +203,7 @@ int main(int argc, char **argv) {
                      &(__PRETTY_FUNCTION__[0]));
               fmt_old_idx = fmt_current_idx;
               varInternalTextureFormat = fmt_current_idx;
+              texFormat = texFormats.at(varInternalTextureFormat);
             }
           }
           i = ((i) + (1));
