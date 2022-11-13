@@ -123,3 +123,17 @@ bazel run --define MEDIAPIPE_DISABLE_GPU=1 \
 
 
 #+end_example
+
+
+- i can't get bazel to run
+
+- an alternative might be https://neuralmagic.com/
+  https://www.youtube.com/watch?v=0PAiQ1jTN5k How to make your CPU as
+  fast as a GPU - Advances in Sparsity w/ Nir Shavit
+
+#+begin_example
+
+pip3 install --user deepsparse
+
+
+#+end_example
