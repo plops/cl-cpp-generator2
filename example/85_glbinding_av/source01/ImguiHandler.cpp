@@ -22,7 +22,8 @@ ImguiHandler::ImguiHandler(GLFWwindow *window) {
   }
   const auto glslVersion = "#version 150";
   ImGui_ImplOpenGL3_Init(glslVersion);
-  auto io = ImGui::GetIO();
+  auto &io = ImGui::GetIO();
+  spdlog::info("enable keyboard input for imgui");
   io.ConfigFlags = ((io.ConfigFlags) | (ImGuiConfigFlags_NavEnableKeyboard));
 }
 void ImguiHandler::NewFrame() {

@@ -162,20 +162,19 @@
 		  (let ((glslVersion (string "#version 150")))
 		    (declare (type "const auto" glslVersion))
 		    (ImGui_ImplOpenGL3_Init glslVersion))
-		  (let ((io (ImGui--GetIO)))
+		  (let ((&io (ImGui--GetIO)))
+		    ,(lprint :msg "enable keyboard input for imgui")
 		    (setf io.ConfigFlags
+
 			  (logior
 			   io.ConfigFlags
 			   ImGuiConfigFlags_NavEnableKeyboard)))
-		  #+nil
-		  (when (<= io.DeltaTime 0s0)
-		    (setf io.DeltaTime 1s-6)))
+		  )
 		 )
 	       (defmethod NewFrame ()
 		 (do0
 		  (ImGui_ImplOpenGL3_NewFrame)
 		  (ImGui_ImplGlfw_NewFrame)
-
 
 		  (ImGui--NewFrame)
 		  (let ((showDemoWindow true))
@@ -734,6 +733,7 @@
 		 (initW 640)
 		 (initH 480))
 	     (declare (type "const auto" initW initH))
+
 
 	     (let ((texture (Texture initW initH ("static_cast<int>" texFormat))))
 	       (do0
