@@ -1,9 +1,8 @@
 // no preamble
 #include <chrono>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <thread>
-void lprint(std::initializer_list<std::string> il, std::string file, int line,
-            std::string fun);
 extern const std::chrono::time_point<std::chrono::high_resolution_clock>
     g_start_time;
 #include <glbinding/gl32core/gl.h>

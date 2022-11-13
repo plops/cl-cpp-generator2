@@ -3,13 +3,16 @@
 
 (in-package :cl-cpp-generator2)
 
-(let ((log-preamble `(do0 (include <iostream>
+(let ((log-preamble
+       `(do0
+	 (include <iostream>
 					;<iomanip>
-				   <chrono>
-				   <thread>
-				   )
-			  "void lprint(std::initializer_list<std::string> il, std::string file, int line, std::string fun);"
-			  "extern const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
+		  <chrono>
+		  <thread>
+		  <spdlog/spdlog.h>
+		  )
+	 #+nil "void lprint(std::initializer_list<std::string> il, std::string file, int line, std::string fun);"
+	 "extern const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time;")))
 
   (progn
     ;; for classes with templates use write-source and defclass+
@@ -612,7 +615,7 @@
 	  ))
 
 	(include <popl.hpp>)
-	(include <fmt/core.h>)
+	,log-preamble
 
 	)
 
@@ -763,11 +766,13 @@
 			      (when (<= (pkt.size) 0)
 				(return false))
 			      (unless (pkt.flags)
-				,(lprint :msg "normal pkt"
+				,(lprint :level "trace"
+					 :msg "normal pkt"
 					 :vars `((pkt.size)
 						 (pkt.flags))))
 			      (when (& 1 (pkt.flags))
-				,(lprint :msg "pkt contains keyframe"
+				,(lprint :level "trace"
+					 :msg "pkt contains keyframe"
 					 :vars `((pkt.size)
 						 (pkt.flags))))
 			      (when (& 2 (pkt.flags))
@@ -930,7 +935,7 @@
 	    ;; make __FILE__ shorter, so that the log output is more readable
 	    ;; note that this can interfere with debugger
 	    ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
-	    (short-file "-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source00/=")
+	    (short-file "-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/85_glbinding_av/source01/=")
 	    (show-err "-Wall -Wextra";
 					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
@@ -989,10 +994,19 @@
 	    (out "add_library( libavcpp_static STATIC IMPORTED )")
 	    (out "set_target_properties( libavcpp_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libavcpp.a )")
 	    )
+	  #+nil
 	  (progn
 	    (out "add_library( fmt_static STATIC IMPORTED )")
 	    (out "set_target_properties( fmt_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libfmt.a )")
 	    )
+
+	  #+nil (progn
+		  (out "add_library( spdlog_static STATIC IMPORTED )")
+		  (out "set_target_properties( spdlog_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libspdlog.a )")
+		  )
+
+	  (out "find_package( PkgConfig REQUIRED )")
+	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
 
 	  (let ((avlibs `(avutil avdevice avfilter avcodec avformat
 				 swscale postproc swresample)))
@@ -1006,10 +1020,12 @@
 	    (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 		 `(
 		   "glbinding::glbinding"
-		   glfw3 ;GL X11
+		   glfw3		;GL X11
 		   libavcpp_static
 		   ,@avlibs
-		   fmt_static
+		   spdlog
+					;spdlog_static
+					;fmt_static
 
 					;dl  pthread
 					;rt

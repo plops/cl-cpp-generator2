@@ -16,27 +16,19 @@ using namespace glbinding;
 #include "Video.h"
 #include <avcpp/av.h>
 #include <avcpp/formatcontext.h>
-#include <fmt/core.h>
+#include <chrono>
 #include <imgui.h>
+#include <iostream>
 #include <popl.hpp>
+#include <spdlog/spdlog.h>
+#include <thread>
+extern const std::chrono::time_point<std::chrono::high_resolution_clock>
+    g_start_time;
 const std::chrono::time_point<std::chrono::high_resolution_clock> g_start_time =
     std::chrono::high_resolution_clock::now();
-void lprint(std::initializer_list<std::string> il, std::string file, int line,
-            std::string fun) {
-  std::chrono::duration<double> timestamp(0);
-  timestamp = ((std::chrono::high_resolution_clock::now()) - (g_start_time));
-  const auto defaultWidth = 10;
-  (std::cout) << (std::setw(defaultWidth)) << (timestamp.count()) << (" ")
-              << (file) << (":") << (std::to_string(line)) << (" ") << (fun)
-              << (" ") << (std::this_thread::get_id()) << (" ");
-  for (const auto &elem : il) {
-    (std::cout) << (elem);
-  }
-  (std::cout) << (std::endl) << (std::flush);
-}
+// lprint not needed
 int main(int argc, char **argv) {
-  lprint({"start", " ", " argc='", std::to_string(argc), "'"}, __FILE__,
-         __LINE__, &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("start  argc='{}'", argc);
   auto op = popl::OptionParser("allowed opitons");
   auto varInternalTextureFormat = int(3);
   auto helpOption = op.add<popl::Switch>("h", "help", "produce help message");
@@ -64,8 +56,7 @@ int main(int argc, char **argv) {
        GLenum::GL_COMPRESSED_RGB});
   auto texFormat = texFormats.at(texFormatIdx);
   auto win = GlfwWindow();
-  lprint({"initialize glbinding", " "}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("initialize glbinding");
   // if second arg is false: lazy function pointer loading
   glbinding::initialize(win.GetProcAddress, false);
   if (verboseOption->is_set()) {
@@ -73,8 +64,7 @@ int main(int argc, char **argv) {
         ((CallbackMask::After) | (CallbackMask::ParametersAndReturnValue)));
     glbinding::setAfterCallback([](const glbinding::FunctionCall &call) {
       auto fun = call.function->name();
-      lprint({"cb", " ", " fun='", fun, "'"}, __FILE__, __LINE__,
-             &(__PRETTY_FUNCTION__[0]));
+      spdlog::info("cb  fun='{}'", fun);
     });
   }
   {
@@ -92,7 +82,7 @@ int main(int argc, char **argv) {
   const auto initW = 640;
   const auto initH = 480;
   auto texture = Texture(initW, initH, static_cast<int>(texFormat));
-  lprint({"start loop", " "}, __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("start loop");
   while (!(win.WindowShouldClose())) {
     win.PollEvents();
     imgui.NewFrame();
@@ -102,10 +92,8 @@ int main(int argc, char **argv) {
       // react to changing window size
       auto [width, height] = win.GetWindowSize();
       if ((((width) != (oldwidth)) || ((height) != (oldheight)))) {
-        lprint({"window size has changed", " ", " width='",
-                std::to_string(width), "'", " height='", std::to_string(height),
-                "'"},
-               __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+        spdlog::info("window size has changed  width='{}'  height='{}'", width,
+                     height);
         glViewport(0, 0, width, height);
         oldwidth = width;
         oldheight = height;
@@ -122,29 +110,22 @@ int main(int argc, char **argv) {
           return false;
         }
         if (!(pkt.flags())) {
-          lprint({"normal pkt", " ", " pkt.size()='",
-                  std::to_string(pkt.size()), "'", " pkt.flags()='",
-                  std::to_string(pkt.flags()), "'"},
-                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+          spdlog::trace("normal pkt  pkt.size()='{}'  pkt.flags()='{}'",
+                        pkt.size(), pkt.flags());
         }
         if (((1) & (pkt.flags()))) {
-          lprint({"pkt contains keyframe", " ", " pkt.size()='",
-                  std::to_string(pkt.size()), "'", " pkt.flags()='",
-                  std::to_string(pkt.flags()), "'"},
-                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+          spdlog::trace(
+              "pkt contains keyframe  pkt.size()='{}'  pkt.flags()='{}'",
+              pkt.size(), pkt.flags());
         }
         if (((2) & (pkt.flags()))) {
-          lprint({"pkt corrupt", " ", " pkt.size()='",
-                  std::to_string(pkt.size()), "'", " pkt.flags()='",
-                  std::to_string(pkt.flags()), "'"},
-                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+          spdlog::info("pkt corrupt  pkt.size()='{}'  pkt.flags()='{}'",
+                       pkt.size(), pkt.flags());
           return false;
         }
         if (((4) & (pkt.flags()))) {
-          lprint({"pkt discard", " ", " pkt.size()='",
-                  std::to_string(pkt.size()), "'", " pkt.flags()='",
-                  std::to_string(pkt.flags()), "'"},
-                 __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+          spdlog::info("pkt discard  pkt.size()='{}'  pkt.flags()='{}'",
+                       pkt.size(), pkt.flags());
         }
         return true;
       })()) {
@@ -174,8 +155,7 @@ int main(int argc, char **argv) {
           imgui.SliderFloat("time", &val, video->startTime(), video->duration(),
                             "%.3f");
           if (!((val) == (val_old))) {
-            lprint({"perform seek operation", " "}, __FILE__, __LINE__,
-                   &(__PRETTY_FUNCTION__[0]));
+            spdlog::info("perform seek operation");
             video->seek(val);
           }
         } else {
@@ -202,8 +182,7 @@ int main(int argc, char **argv) {
         if (selected_p) {
           ImGui::SetItemDefaultFocus();
           if (!((item_old_idx) == (item_current_idx))) {
-            lprint({"change video", " "}, __FILE__, __LINE__,
-                   &(__PRETTY_FUNCTION__[0]));
+            spdlog::info("change video");
             item_old_idx = item_current_idx;
             fn = arg;
             video = std::make_unique<Video>(fn);
@@ -233,9 +212,7 @@ int main(int argc, char **argv) {
           if (selected_p) {
             ImGui::SetItemDefaultFocus();
             if (!((fmt_old_idx) == (fmt_current_idx))) {
-              lprint({"change texture format", " ", " argString='", argString,
-                      "'"},
-                     __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+              spdlog::info("change texture format  argString='{}'", argString);
               fmt_old_idx = fmt_current_idx;
               varInternalTextureFormat = fmt_current_idx;
               texFormat = texFormats.at(varInternalTextureFormat);

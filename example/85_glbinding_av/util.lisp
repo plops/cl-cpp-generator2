@@ -1,6 +1,20 @@
 (defun lprint (&key (msg "")
+		 (level "info")
 		 (vars nil)
-		 (svars nil))
+		 (svars nil)
+		 )
+  #-nil `(,(format nil "spdlog::~a" level)
+	   (string ,(format nil "~a~{ ~a~}~{ ~a~}"
+			    msg
+			    (loop for e in vars
+				  collect
+				  (format nil " ~a='{}'" (emit-c :code e)))
+			    (loop for e in svars
+				  collect
+				  (format nil " ~a='{}'" (emit-c :code e)))))
+	   ,@vars
+	   ,@svars)
+  #+nil
   `(lprint (curly
 	    (string ,msg)
 	    (string " ")
@@ -21,6 +35,8 @@
 	   (ref (aref __PRETTY_FUNCTION__ 0))
 	   ))
 (defun init-lprint ()
+  `(comments "lprint not needed")
+  #+nil
   `(defun lprint (il file line fun)
      (declare (type "std::initializer_list<std::string>" il)
 	      (type int line)
@@ -58,9 +74,13 @@
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)
 											  "-o"))))
-  (let ((hash-db (gensym "file-hash")))
+  (let ((hash-db 'file-hash
+					;(gensym "file-hash")
+	  ))
     `(progn
-       (defparameter ,hash-db (make-hash-table))
+       (defvar
+					;  parameter
+	   ,hash-db (make-hash-table))
        (let ((fn-hash (sxhash ,fn))
 	     (code-hash (sxhash ,str)))
 	 (multiple-value-bind (old-code-hash exists) (gethash fn-hash ,hash-db)
@@ -69,6 +89,7 @@
 		     (not (probe-file ,fn)))
 					;,@body
 	     (progn
+	       (format t "hash has changed in ~a exists=~a old=~a new=~a~%" ,fn exists old-code-hash code-hash)
 	       (with-open-file (sh ,fn
 				   :direction :output
 				   :if-exists :supersede

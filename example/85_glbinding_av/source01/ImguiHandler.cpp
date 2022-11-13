@@ -1,9 +1,8 @@
 // no preamble
 #include <chrono>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <thread>
-void lprint(std::initializer_list<std::string> il, std::string file, int line,
-            std::string fun);
 extern const std::chrono::time_point<std::chrono::high_resolution_clock>
     g_start_time;
 #include <backends/imgui_impl_glfw.h>
@@ -13,8 +12,7 @@ extern const std::chrono::time_point<std::chrono::high_resolution_clock>
 #include "ImguiHandler.h"
 #include <GLFW/glfw3.h>
 ImguiHandler::ImguiHandler(GLFWwindow *window) {
-  lprint({"initialize ImGui", " "}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("initialize ImGui");
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGui::StyleColorsLight();
@@ -49,8 +47,7 @@ void ImguiHandler::SliderFloat(const char *label, float *val, float min,
   ImGui::SliderFloat(label, val, min, max, fmt);
 }
 ImguiHandler::~ImguiHandler() {
-  lprint({"Shutdown ImGui", " "}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("Shutdown ImGui");
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();

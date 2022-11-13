@@ -67,3 +67,27 @@ git clone https://github.com/badaix/popl
 git clone https://github.com/fmtlib/fmt
 
 #+end_example
+
+- i think it would be useful to use spdlog, so that i can have
+  different log levels (keyframes only printed in the highest 'trace'
+  level)
+   - note: this isn't working. maybe the fedora spdlog is incompatible
+     with the github fmt
+#+begin_example
+# sudo dnf install spdlog-devel
+sudo dnf remove spdlog-devel spdlog # this remove gnuradio and some qt stuff
+#+end_example
+
+
+- spdlog from github
+#+begin_example
+
+
+cd ~/src
+git clone https://github.com/gabime/spdlog.git
+cd spdlog
+mkdir b
+cd b
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+#+end_example

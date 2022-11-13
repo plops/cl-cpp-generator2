@@ -1,9 +1,8 @@
 // no preamble
 #include <chrono>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <thread>
-void lprint(std::initializer_list<std::string> il, std::string file, int line,
-            std::string fun);
 extern const std::chrono::time_point<std::chrono::high_resolution_clock>
     g_start_time;
 #include "Video.h"
@@ -15,29 +14,23 @@ bool Video::GetSuccess() { return success; }
 bool Video::Seekable_p() { return ((success) && (ctx.seekable())); }
 Video::Video(std::string filename)
     : ctx(av::FormatContext()), fn(filename), success(false) {
-  lprint({"open video file", " ", " fn='", fn, "'"}, __FILE__, __LINE__,
-         &(__PRETTY_FUNCTION__[0]));
+  spdlog::info("open video file  fn='{}'", fn);
   ctx.openInput(fn, ec);
   if (ec) {
-    lprint({"can't open file", " ", " fn='", fn, "'", " ec.message()='",
-            ec.message(), "'"},
-           __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+    spdlog::info("can't open file  fn='{}'  ec.message()='{}'", fn,
+                 ec.message());
     return;
   }
   ctx.findStreamInfo(ec);
   if (ec) {
-    lprint(
-        {"can't find stream info", " ", " ec.message()='", ec.message(), "'"},
-        __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+    spdlog::info("can't find stream info  ec.message()='{}'", ec.message());
     return;
   }
-  lprint({"stream info", " ", " ctx.seekable()='",
-          std::to_string(ctx.seekable()), "'", " ctx.startTime().seconds()='",
-          std::to_string(ctx.startTime().seconds()), "'",
-          " ctx.duration().seconds()='",
-          std::to_string(ctx.duration().seconds()), "'",
-          " ctx.streamsCount()='", std::to_string(ctx.streamsCount()), "'"},
-         __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+  spdlog::info(
+      "stream info  ctx.seekable()='{}'  ctx.startTime().seconds()='{}'  "
+      "ctx.duration().seconds()='{}'  ctx.streamsCount()='{}'",
+      ctx.seekable(), ctx.startTime().seconds(), ctx.duration().seconds(),
+      ctx.streamsCount());
   if (ctx.seekable()) {
     const auto center = (0.50f);
     const auto timeResolution = 100;
@@ -48,8 +41,7 @@ Video::Video(std::string filename)
          {1, timeResolution}},
         ec);
     if (ec) {
-      lprint({"can't seek", " ", " ec.message()='", ec.message(), "'"},
-             __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+      spdlog::info("can't seek  ec.message()='{}'", ec.message());
       return;
     }
   }
@@ -62,8 +54,7 @@ Video::Video(std::string filename)
     }
   }
   if (vst.isNull()) {
-    lprint({"Video stream not found", " "}, __FILE__, __LINE__,
-           &(__PRETTY_FUNCTION__[0]));
+    spdlog::info("Video stream not found");
     return;
   }
   if (vst.isValid()) {
@@ -73,8 +64,7 @@ Video::Video(std::string filename)
     vdec.setRefCountedFrames(true);
     vdec.open({{"threads", "1"}}, av::Codec(), ec);
     if (ec) {
-      lprint({"can't open codec", " "}, __FILE__, __LINE__,
-             &(__PRETTY_FUNCTION__[0]));
+      spdlog::info("can't open codec");
       return;
     }
     success = true;
@@ -83,16 +73,14 @@ Video::Video(std::string filename)
 av::Packet Video::readPacket() {
   pkt = ctx.readPacket(ec);
   if (ec) {
-    lprint({"packet reading error", " ", " ec.message()='", ec.message(), "'"},
-           __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+    spdlog::info("packet reading error  ec.message()='{}'", ec.message());
   }
   return pkt;
 }
 av::VideoFrame Video::decode() {
   auto frame = vdec.decode(pkt, ec);
   if (ec) {
-    lprint({"error", " ", " ec.message()='", ec.message(), "'"}, __FILE__,
-           __LINE__, &(__PRETTY_FUNCTION__[0]));
+    spdlog::info("error  ec.message()='{}'", ec.message());
   }
   return frame;
 }
@@ -103,8 +91,7 @@ void Video::seek(float val) {
               {1, timeResolution}},
              ec);
     if (ec) {
-      lprint({"can't seek", " ", " ec.message()='", ec.message(), "'"},
-             __FILE__, __LINE__, &(__PRETTY_FUNCTION__[0]));
+      spdlog::info("can't seek  ec.message()='{}'", ec.message());
       return;
     }
   }
