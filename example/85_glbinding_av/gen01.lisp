@@ -286,78 +286,83 @@
 		 (do0
 
 					;(av--setFFmpegLoggingLevel AV_LOG_DEBUG)
-					;(setf ctx (av--FormatContext))
-		  (let ()
-		    (let ()
-
-		      ,(lprint :msg "open video file"
-			       :svars `(fn))
-		      (ctx.openInput fn ec)
-		      (when ec
-			,(lprint :msg "can't open file" :svars `(fn))
-			return)
-		      )
-		    (ctx.findStreamInfo)
-		    ,(lprint :msg "stream info"
-			     :vars `((ctx.seekable)
-				     (dot ctx (startTime) (seconds))
-				     (dot ctx (duration) (seconds))
-				     (ctx.streamsCount)))
-		    (when (ctx.seekable)
-		      (let ((center .5)
-			    (timeResolution 100))
-			(declare (type "const auto" center timeResolution))
-			(comments "split second into 100 parts")
-			(ctx.seek (curly ("static_cast<long int>" (floor (* timeResolution
-									    (* center (dot ctx (duration)
-											   (seconds))))))
-					 (curly 1 timeResolution)))))
-		    (do0
-		     (
-		      for ((= "size_t i" 0)
-			   (< i (ctx.streamsCount))
-			   "i++")
+		  (do0
+		   ,(lprint :msg "open video file"
+			    :svars `(fn))
+		   (do0 (ctx.openInput fn ec)
+			(when ec
+			  ,(lprint :msg "can't open file" :svars `(fn (ec.message)))
+			  return))
+		   (do0 (ctx.findStreamInfo ec)
+			(when ec
+			  ,(lprint :msg "can't find stream info" :svars `((ec.message)))
+			  return))
+		   ,(lprint :msg "stream info"
+			    :vars `((ctx.seekable)
+				    (dot ctx (startTime) (seconds))
+				    (dot ctx (duration) (seconds))
+				    (ctx.streamsCount)))
+		   (when (ctx.seekable)
+		     (let ((center .5)
+			   (timeResolution 100))
+		       (declare (type "const auto" center timeResolution))
+		       (comments "split second into 100 parts")
+		       (ctx.seek
+			(curly ("static_cast<long int>"
+				(floor (* timeResolution
+					  (* center (dot ctx (duration)
+							 (seconds))))))
+			       (curly 1 timeResolution))
+			ec)
+		       (when ec
+			 ,(lprint :msg "can't seek" :svars `((ec.message)))
+			 return)))
+		   (do0
+		    (
+		     for ((= "size_t i" 0)
+			  (< i (ctx.streamsCount))
+			  "i++")
 					;dotimes (i (ctx.streamsCount))
-		      (let ((st (ctx.stream i)))
-			(when (== AVMEDIA_TYPE_VIDEO
-				  (st.mediaType))
-			  (setf videoStream i
-				vst st)
-			  break)))
-		     (when (vst.isNull)
-		       ,(lprint :msg "Video stream not found")
-		       return)
-		     (do0
+		     (let ((st (ctx.stream i)))
+		       (when (== AVMEDIA_TYPE_VIDEO
+				 (st.mediaType))
+			 (setf videoStream i
+			       vst st)
+			 break)))
+		    (when (vst.isNull)
+		      ,(lprint :msg "Video stream not found")
+		      return)
+		    (do0
 
-		      (when (vst.isValid)
-			(setf vdec (av--VideoDecoderContext vst))
-			(let (;(codec )
-			      )
-			  (setf codec (av--findDecodingCodec (-> (vdec.raw)
-								 codec_id)))
-			  (vdec.setCodec codec)
-			  (vdec.setRefCountedFrames true)
-			  (vdec.open (curly
-				      (curly (string "threads")
-					     (string "1")))
-				     (av--Codec)
-				     ec)
-			  (when ec
-			    ,(lprint :msg "can't open codec")
-			    return)
+		     (when (vst.isValid)
+		       (setf vdec (av--VideoDecoderContext vst))
+		       (setf codec (av--findDecodingCodec (-> (vdec.raw)
+							      codec_id)))
+		       (vdec.setCodec codec)
+		       (vdec.setRefCountedFrames true)
+		       (vdec.open (curly
+				   (curly (string "threads")
+					  (string "1")))
+				  (av--Codec)
+				  ec)
+		       (when ec
+			 ,(lprint :msg "can't open codec")
+			 return)
 
-			  (setf success true)
+		       (setf success true)
 
 
-			  ))))))
+		       )))))
 		 )
 	       (defmethod readPacket ()
 		 (declare (values "av::Packet"))
-		 (setf pkt (ctx.readPacket ec)
+
+		 (do0  (setf pkt (ctx.readPacket ec))
+		       (when ec
+			 ,(lprint :msg "packet reading error"
+				  :svars `((ec.message))))
+					;,(lprint :vars `((pkt.size)))
 		       )
-		 (when ec
-		   ,(lprint :msg "packet reading error"
-			    :svars `((ec.message))))
 		 (return  pkt))
 
 	       (defmethod decode ()
@@ -373,12 +378,13 @@
 		 (let ((timeResolution 1000))
 		   (declare (type "const auto" timeResolution))
 		   (when (and success (Seekable_p))
-		     (let ((ma (* .99 (duration))))
-		       (when (< ma val)
-			 (setf val ma)))
 		     (ctx.seek (curly ("static_cast<long int>"
 				       (floor (* timeResolution val)))
-				      (curly 1 timeResolution))))))
+				      (curly 1 timeResolution))
+			       ec)
+		     (when ec
+		       ,(lprint :msg "can't seek" :svars `((ec.message)))
+		       return))))
 	       (defmethod startTime ()
 		 (declare (values float))
 		 (when success
@@ -671,7 +677,12 @@
  		(assert (<= 0 texFormatIdx))
 		(assert (< texFormatIdx numTexFormats))
 
-		(let ((texFormats ("std::array<gl::GLenum,numTexFormats>"
+		(let ((texFormatsString ("std::array<std::string,numTexFormats>"
+					 (curly ,@(loop for e in tex-formats
+							collect
+							(destructuring-bind ( val &key comment default) e
+							  `(string ,val))))))
+		      (texFormats ("std::array<gl::GLenum,numTexFormats>"
 				   (curly ,@(loop for e in tex-formats
 						  collect
 						  (destructuring-bind ( val &key comment default) e
@@ -746,6 +757,8 @@
 			      (unless (video->GetSuccess)
 				(return false))
 			      (= pkt (video->readPacket))
+			      (when (<= (pkt.size) 0)
+				(return false))
 			      (return true)
 			      ))
 		      (unless (== video->videoStream
@@ -777,22 +790,20 @@
 			   (imgui.Image (texture.GetImageTexture)
 					(texture.GetWidth)
 					(texture.GetHeight))
-			   (when (video->Seekable_p)
-			     (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
-				   (val val_old))
-			       (imgui.SliderFloat (string "time")
-						  &val
-						  (video->startTime) ;min
-						  (video->duration)
-					;max
-						  (string "%.3f") ; format string
-						  )
-			       (unless (== val val_old)
-				 (comments "perform seek operation")
-				 (video->seek val)))
-			     (do0
-			      (ImGui--Text (string "can't seek in file"))
-			      )))
+			   (if (video->Seekable_p)
+			       (let ((val_old (static_cast<float> (dot pkt (ts) (seconds))))
+				     (val val_old))
+				 (imgui.SliderFloat (string "time")
+						    &val
+						    (video->startTime)
+						    (video->duration)
+						    (string "%.3f"))
+				 (unless (== val val_old)
+				   ,(lprint :msg "perform seek operation")
+				   (video->seek val)))
+			       (do0
+				(ImGui--Text (string "can't seek in file"))
+				)))
 			  (do0
 			   (ImGui--Text (string "could not open video file"))))
 
@@ -851,8 +862,9 @@
 			 (let ((i 0))
 			   (for-range (arg texFormats)
 				      (let ((selected_p (== i fmt_current_idx))
-					    (argString (fmt--format (string "{}")
-								    (static_cast<int> arg))))
+					    (argString (dot texFormatsString (at i))
+					      #+nil (fmt--format (string "{}")
+								 (static_cast<int> arg))))
 					(when (ImGui--Selectable (dot argString (c_str)) selected_p)
 					  (setf fmt_current_idx i))
 					(when selected_p
@@ -860,7 +872,7 @@
 
 					  (unless (== fmt_old_idx
 						      fmt_current_idx)
-					    ,(lprint :msg "change texture format")
+					    ,(lprint :msg "change texture format" :svars `(argString))
 					    (setf fmt_old_idx fmt_current_idx)
 					    (setf varInternalTextureFormat
 						  fmt_current_idx)
