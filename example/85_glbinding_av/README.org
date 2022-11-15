@@ -137,3 +137,22 @@ pip3 install --user deepsparse
 
 
 #+end_example
+
+- it comes with libdeepsparse.so
+- this is without source
+- this library is manylinux2014-compatible and built on CentOS 7.
+  Linux distributions such as Ubuntu 20.04, which are compatible with
+  manylinux2014, should support it.
+
+- the repo mentions headers: ./docs/source/c++api-overview.md but
+  doesn't contain them
+#+begin_example
+
+compiler.hpp
+config.hpp
+dimensions.hpp
+tensor.hpp
+engine.hpp
+
+
+#+end_example
