@@ -1,0 +1,2 @@
+- c++ doc https://pytorch.org/tutorials/advanced/cpp_frontend.html
+- download libtorch: https://pytorch.org/get-started/locally/
