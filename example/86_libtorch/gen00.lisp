@@ -6,12 +6,12 @@
 
 (let ((log-preamble
        `(do0
-	 (include <iostream>
+	 (include ;<iostream>
 					;<iomanip>
-		  <chrono>
-		  <thread>
-		  <spdlog/spdlog.h>
-		  ))))
+					;<chrono>
+					;<thread>
+	  <spdlog/spdlog.h>
+	  ))))
 
   (progn
     ;; for classes with templates use write-source and defclass+
@@ -37,26 +37,46 @@
 
 			  ,@(loop for e in `(autograd
 					     cuda
-					     data
-					     enum
-					     fft
-					     jit
-					     linalg
-					     nested
+					;data
+					;enum
+					;fft
+					;jit
+					;linalg
+					;nested
 					     nn
-					     optim
-					     serialize
-					     sparse
-					     special
+					;optim
+					;serialize
+					;sparse
+					; special
 					     types
-					     utils
-					     version
+					;utils
+					;version
 					     )
 				  collect
 				  `(include ,(format nil "<torch/~a.h>" e)))
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
+				  ,@(loop for e in `(autograd
+						     cuda
+					;	     data
+					;	     enum
+					;	     fft
+					;	     jit
+					;	     linalg
+					;	     nested
+					;	     nn
+					;	     optim
+					;	     serialize
+					;	     sparse
+					;	     special
+					;	     types
+					;utils
+					; version
+						     )
+					  collect
+					  `(include ,(format nil "<torch/~a.h>" e)))
+				  #+nil
 				  (include <torch/torch.h>)
 				  )
        :code `(do0
@@ -73,6 +93,7 @@
 		     (b (register_parameter (string "b")
 					    (torch--randn M))))
 		    (values :constructor))
+		   ,(lprint :msg "Net constructor")
 		   )
 		 (defmethod forward (input)
 		   (declare (type "torch::Tensor" input)
@@ -106,8 +127,9 @@
        (do0
 	(include <spdlog/spdlog.h>)
 					;(include <torch/torch.h>)
+	(include "Net.h")
 	)
-
+       #+nil
        (do0
 	,@(loop for e in `(autograd
 			   cuda
@@ -139,6 +161,7 @@
 	 (<< std--cout
 	     tensor
 	     std--endl)
+	 (let ((net (Net 2 3))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
