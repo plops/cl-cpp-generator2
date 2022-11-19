@@ -1,6 +1,7 @@
 - c++ doc https://pytorch.org/tutorials/advanced/cpp_frontend.html
 - download libtorch: https://pytorch.org/get-started/locally/
   - 176MB
+- https://github.com/pytorch/examples/tree/main/cpp/dcgan example code
 
 - give cmake prefix as absolute path!
 #+begin_example
@@ -22,3 +23,5 @@ cmake --build . --config Release
 - libtorch uses an elaborate scheme to hide shared_ptr and make
   reference semantic the default, without having to write
   std::shared_ptr or std::make_shared all the time
+
+  

@@ -26,24 +26,24 @@
     (load "util.lisp")
 
     (let ((name `DCGANGeneratorImpl)
-	  (l `((:name conv1 :init (nn--ConvTranspose2dOptions kNoiseSize 256 4)
-		      :type "nn::ConvTranspose2dOptions"
+	  (l `((:name conv1 :init (torch--nn--ConvTranspose2dOptions kNoiseSize 256 4)
+		      :type "torch::nn::ConvTranspose2d"
 		      :options ((bias false)))
-	       (:name conv2 :init (nn--ConvTranspose2dOptions 256 128 3)
-		      :type "nn::ConvTranspose2dOptions"
+	       (:name conv2 :init (torch--nn--ConvTranspose2dOptions 256 128 3)
+		      :type "torch::nn::ConvTranspose2d"
 		      :options ((stride 2)
 				(padding 1) (bias false)))
-	       (:name conv3 :init (nn--ConvTranspose2dOptions 128 64 4)
-		      :type "nn::ConvTranspose2dOptions"
+	       (:name conv3 :init (torch--nn--ConvTranspose2dOptions 128 64 4)
+		      :type "torch::nn::ConvTranspose2d"
 		      :options ((stride 2)
 				(padding 1) (bias false)))
-	       (:name conv4 :init (nn--ConvTranspose2dOptions 64 1 4)
-		      :type "nn::ConvTranspose2dOptions"
+	       (:name conv4 :init (torch--nn--ConvTranspose2dOptions 64 1 4)
+		      :type "torch::nn::ConvTranspose2d"
 		      :options ((stride 2)
 				(padding 1) (bias false)))
-	       (:name batch_norm1 :type "nn::BatchNorm2d" :init 256)
-	       (:name batch_norm2 :type "nn::BatchNorm2d" :init 128)
-	       (:name batch_norm3 :type "nn::BatchNorm2d" :init 64))))
+	       (:name batch_norm1 :type "torch::nn::BatchNorm2d" :init 256)
+	       (:name batch_norm2 :type "torch::nn::BatchNorm2d" :init 128)
+	       (:name batch_norm3 :type "torch::nn::BatchNorm2d" :init 64))))
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -138,7 +138,8 @@
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 		    (values :constructor))
-		   )))))
+		   ))
+	       )))
 
     (write-source
      (asdf:system-relative-pathname
@@ -162,7 +163,7 @@
        (do0
 	(include <spdlog/spdlog.h>)
 					;(include <torch/torch.h>)
-	(include "Net.h")
+	(include "DCGANGeneratorImpl.h")
 	)
        #+nil
        (do0
@@ -186,6 +187,7 @@
 		collect
 		`(include ,(format nil "<torch/~a.h>" e))))
 
+       (TORCH_MODULE DCGANGenerator)
 
        (defun main (argc argv)
 	 (declare (type int argc)
@@ -196,7 +198,8 @@
 	 (<< std--cout
 	     tensor
 	     std--endl)
-	 (let ((net (Net 2 3))))
+	 (let ((kNoiseSize 12)
+	       (generator (DCGANGenerator kNoiseSize))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
