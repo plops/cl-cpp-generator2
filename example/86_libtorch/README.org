@@ -7,5 +7,11 @@
 
 cmake \
   -DCMAKE_PREFIX_PATH=/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/ ..
+cmake --build . --config Release
 
 #+end_example
+
+- module:
+  - buffers .. store state (e.g. variances for batch norm)
+  - parameters .. store state and gradients (e.g. trainable weights)
+  - submodules

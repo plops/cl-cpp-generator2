@@ -24,8 +24,8 @@
 
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
-    #+nil
-    (let ((name `GlfwWindow))
+
+    (let ((name `Net))
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -33,20 +33,36 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  (include <torch/torch.h>)
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
+				  (include <torch/torch.h>)
 				  )
        :code `(do0
-	       (defclass GlfwWindow ()
+	       (defclass ,name torch--nn--Module
 		 "public:"
-		 (defmethod ,name ()
+		 "torch::Tensor W, b;"
+		 (defmethod ,name (N M)
 		   (declare
-		    (explicit)
-		    (construct
-		     )
+		    (type int64_t N M)
+					;  (explicit)
+		    #-nil (construct
+			   (W (register_parameter (string "W")
+						  (torch--randn (curly N M))))
+			   (b (register_parameter (string "b")
+						  (torch--randn M))))
 		    (values :constructor))
-		   )
+		   #+nil (setf
+			  W (register_parameter (string "W")
+						(torch--randn (curly N M)))
+			  b (register_parameter (string "b")
+						(torch--randn M))))
+		 (defmethod forward (input)
+		   (declare (type "torch::Tensor" input)
+			    (values "torch::Tensor"))
+		   (return (torch--addmm b input W)))
+		 #+nil
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 		    (values :constructor))
@@ -194,10 +210,3 @@
 	  ))
       )))
 
-
-;; build with:
-
-;; cmake -DCMAKE_PREFIX_PATH=/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch ..
-
-
-;; cmake --build . --config Release
