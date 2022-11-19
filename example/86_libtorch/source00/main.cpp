@@ -1,12 +1,14 @@
 #include "DCGANGeneratorImpl.h"
 #include <iostream>
 #include <spdlog/spdlog.h>
+#include <torch/data.h>
 TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
   spdlog::info("start  argc='{}'", argc);
   torch::Tensor tensor = torch::eye(3);
   (std::cout) << (tensor) << (std::endl);
   auto kNoiseSize = 12;
+  auto kBatchSize = 32;
   auto generator = DCGANGenerator(kNoiseSize);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
@@ -30,4 +32,18 @@ int main(int argc, char **argv) {
       torch::nn::Conv2d(
           torch::nn::Conv2dOptions(256, 1, 3).stride(1).padding(0).bias(false)),
       torch::nn::Sigmoid());
+  auto dataset =
+      torch::data::datasets::MNIST("./mnist")
+          .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
+          .map(torch::data::transforms::Stack<>());
+  auto data_loader = torch::data::make_data_loader(
+      std::move(dataset),
+      torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
+  for (auto &batch : *data_loader) {
+    spdlog::info("  batch.data.size(0)='{}'", batch.data.size(0));
+    for (auto i = 0; (i) < (batch.data.size(0)); (i) += (1)) {
+      spdlog::info("  batch.target[i].item<int64_t>()='{}'",
+                   batch.target[i].item<int64_t>());
+    }
+  }
 }

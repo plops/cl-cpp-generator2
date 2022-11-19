@@ -165,24 +165,23 @@
 					;(include <torch/torch.h>)
 	(include "DCGANGeneratorImpl.h")
 	)
-       #+nil
        (do0
-	,@(loop for e in `(autograd
-			   cuda
+	,@(loop for e in `(;autograd
+					;cuda
 			   data
-			   enum
-			   fft
-			   jit
-			   linalg
-			   nested
-			   nn
-			   optim
-			   serialize
-			   sparse
-			   special
-			   types
-			   utils
-			   version
+					;enum
+					;fft
+					;jit
+					;linalg
+					;nested
+					;nn
+					;optim
+					;serialize
+					;sparse
+					;special
+					;types
+					;utils
+					;version
 			   )
 		collect
 		`(include ,(format nil "<torch/~a.h>" e))))
@@ -246,13 +245,30 @@
 
 		      )))
 	    `(let ((kNoiseSize 12)
+		   (kBatchSize 32)
 		   (generator (DCGANGenerator kNoiseSize))
 		   (discriminator
 		    (torch--nn--Sequential
 		     ,@(loop for e in ld
 			     collect
 			     (destructuring-bind (&key name init type options) e
-			       `(,type (dot ,init ,@options)))))))))
+			       `(,type (dot ,init ,@options))))))
+		   (dataset (dot
+			     (torch--data--datasets--MNIST (string "./mnist"))
+			     (map (torch--data--transforms--Normalize<> .5 .5))
+			     (map (torch--data--transforms--Stack<>))))
+		   (data_loader (torch--data--make_data_loader
+				 (std--move dataset)
+				 (dot (torch--data--DataLoaderOptions)
+				      (batch_size kBatchSize)
+				      (workers 2))))
+		   )
+	       (for-range (&batch *data_loader)
+			  ,(lprint :vars `((batch.data.size 0)))
+			  (dotimes (i (batch.data.size 0))
+			    ,(lprint :vars `((dot batch
+						  (aref target i)
+						  (item<int64_t>))))))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
