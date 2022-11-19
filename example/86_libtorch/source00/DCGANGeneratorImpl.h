@@ -5,7 +5,7 @@
 #include <torch/cuda.h>
 #include <torch/nn.h>
 #include <torch/types.h>
-class DCGANGeneratorImpl : torch::nn::Module {
+class DCGANGeneratorImpl : public torch::nn::Module {
         public:
         torch::nn::ConvTranspose2d conv1;
         torch::nn::ConvTranspose2d conv2;

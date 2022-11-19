@@ -98,7 +98,7 @@
 				  (include <torch/torch.h>)
 				  )
        :code `(do0
-	       (defclass ,name torch--nn--Module
+	       (defclass ,name "public torch::nn::Module"
 		 "public:"
 		 ,@(loop for e in l
 			 collect
@@ -162,6 +162,7 @@
 
        (do0
 	(include <spdlog/spdlog.h>)
+	(include <popl.hpp>)
 					;(include <torch/torch.h>)
 	(include "DCGANGeneratorImpl.h")
 	)
@@ -175,7 +176,7 @@
 					;linalg
 					;nested
 					;nn
-					;optim
+			   optim
 					;serialize
 					;sparse
 					;special
@@ -193,6 +194,50 @@
 		  (type char** argv)
 		  (values int))
 	 ,(lprint :msg "start" :vars `(argc))
+	 ,(let ((l `((:name kNoiseSize :default 12 :short n)
+		     (:name kBatchSize :default 32 :short b)
+		     (:name kNumberOfEpochs :default 10 :short e))))
+	    `(let ((op (popl--OptionParser (string "allowed opitons")))
+		   ,@(loop for e in l collect
+			   (destructuring-bind (&key name default short) e
+			     `(,name (int ,default))))
+		   ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+				      (:long verbose :short v :type Switch :msg "produce verbose output")
+				      ,@(loop for f in l
+					      collect
+					      (destructuring-bind (&key name default short) f
+						`(:long ,name
+							:short ,short
+							:type int :msg "parameter"
+							:default ,default :out ,(format nil "&~a" name))))
+
+				      )
+			   appending
+			   (destructuring-bind (&key long short type msg default out) e
+			     `((,(format nil "~aOption" long)
+				 ,(let ((cmd `(,(format nil "add<~a>"
+							(if (eq type 'Switch)
+							    "popl::Switch"
+							    (format nil "popl::Value<~a>" type)))
+						(string ,short)
+						(string ,long)
+						(string ,msg))))
+				    (when default
+				      (setf cmd (append cmd `(,default)))
+				      )
+				    (when out
+				      (setf cmd (append cmd `(,out)))
+				      )
+				    `(dot op ,cmd)
+				    ))))
+			   ))
+	       (op.parse argc argv)
+	       (when (helpOption->count)
+		 (<< std--cout
+		     op
+		     std--endl)
+		 (exit 0))))
+
 	 "torch::Tensor tensor = torch::eye(3);"
 	 (<< std--cout
 	     tensor
@@ -244,8 +289,8 @@
 			     :type "torch::nn::Sigmoid")
 
 		      )))
-	    `(let ((kNoiseSize 12)
-		   (kBatchSize 32)
+	    `(let (;(kNoiseSize 12)
+					;(kBatchSize 32)
 		   (generator (DCGANGenerator kNoiseSize))
 		   (discriminator
 		    (torch--nn--Sequential
@@ -257,6 +302,10 @@
 			     (torch--data--datasets--MNIST (string "./mnist"))
 			     (map (torch--data--transforms--Normalize<> .5 .5))
 			     (map (torch--data--transforms--Stack<>))))
+		   (batches_per_epoch (/ (std--ceil (dot dataset
+							 (size)
+							 (value)))
+					 (static_cast<double> kBatchSize)))
 		   (data_loader (torch--data--make_data_loader
 				 (std--move dataset)
 				 (dot (torch--data--DataLoaderOptions)
@@ -268,7 +317,61 @@
 			  (dotimes (i (batch.data.size 0))
 			    ,(lprint :vars `((dot batch
 						  (aref target i)
-						  (item<int64_t>))))))))
+						  (item<int64_t>))))))
+	       (let ((generator_optimizer
+		      (torch--optim--Adam
+		       (generator->parameters)
+		       (dot
+			(torch--optim--AdamOptions 2e-4)
+			(betas (curly .9 .5)))))
+		     (discriminator_optimizer
+		      (torch--optim--Adam
+		       (generator->parameters)
+		       (dot
+			(torch--optim--AdamOptions 5e-4)
+			(betas (curly .9 .5))))))
+		 (dotimes (epoch kNumberOfEpochs)
+		   (let ((batch_index (int64_t 0)))
+		     (for-range
+		      (&batch *data_loader)
+		      (let ((noise (torch--randn (curly (batch.data.size 0)
+							kNoiseSize 1 1))))
+			,@(loop for (e f) in `((real batch.data)
+					       (fake (generator->forward noise)))
+				collect
+				(flet ((n (var)
+					 (format nil "~a_~a" e var)))
+				  (let ((images (n "images"))
+					(labels (n "labels"))
+					(output (n "output"))
+					(d_loss (n "d_loss")))
+				    `(do0
+				      (comments ,(format nil "train discriminator with ~a images" e))
+				      (let ((,images ,f)
+					    (,labels (dot (torch--empty (batch.data.size 0))
+							  (uniform_ .8 1.0)))
+					    (,output (discriminator->forward ,images))
+					    (,d_loss (torch--binary_cross_entropy
+						      ,output ,labels)))
+					(dot ,d_loss (backward)))))))
+			(let ((d_loss (+ fake_d_loss
+					 real_d_loss)))
+			  (discriminator_optimizer.step)
+			  (progn
+			    (comments "train generator")
+			    (generator->zero_grad)
+			    (fake_labels.fill_ 1)
+			    (setf fake_output (discriminator->forward fake_images))
+			    (let ((g_loss (torch--binary_cross_entropy
+					   fake_output fake_labels)))
+			      (g_loss.backward)
+			      (generator_optimizer.step)
+			      ,(lprint :vars `(epoch kNumberOfEpochs batch_index
+						     batches_per_epoch
+						     (d_loss.item<float>)
+						     (g_loss.item<float>)))
+			      (incf batch_index)))))
+		      ))))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
@@ -318,6 +421,7 @@
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/
+/home/martin/src/popl/include/
  )")
 
 	  #+nil (/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/include/torch/csrc/api/include/

@@ -25,3 +25,7 @@ cmake --build . --config Release
   std::shared_ptr or std::make_shared all the time
 
   
+
+- how to link statically with pytorch
+
+  https://stackoverflow.com/questions/60629537/cmake-linking-static-library-pytorch-cannot-find-its-internal-functions-during

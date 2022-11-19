@@ -9,6 +9,7 @@ set( SRCS /home/martin/stage/cl-cpp-generator2/example/86_libtorch/source00/DCGA
 add_executable( mytest ${SRCS} )
 target_include_directories( mytest PRIVATE
 /usr/local/include/
+/home/martin/src/popl/include/
  )
 set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )
 target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )
