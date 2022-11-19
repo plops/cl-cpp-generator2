@@ -33,7 +33,27 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include <torch/torch.h>)
+					;(include <torch/torch.h>)
+
+			  ,@(loop for e in `(autograd
+					     cuda
+					     data
+					     enum
+					     fft
+					     jit
+					     linalg
+					     nested
+					     nn
+					     optim
+					     serialize
+					     sparse
+					     special
+					     types
+					     utils
+					     version
+					     )
+				  collect
+				  `(include ,(format nil "<torch/~a.h>" e)))
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
@@ -48,10 +68,10 @@
 		    (type int64_t N M)
 					;  (explicit)
 		    (construct
-			   (W (register_parameter (string "W")
-						  (torch--randn (curly N M))))
-			   (b (register_parameter (string "b")
-						  (torch--randn M))))
+		     (W (register_parameter (string "W")
+					    (torch--randn (curly N M))))
+		     (b (register_parameter (string "b")
+					    (torch--randn M))))
 		    (values :constructor))
 		   )
 		 (defmethod forward (input)
@@ -85,7 +105,29 @@
 
        (do0
 	(include <spdlog/spdlog.h>)
-	(include <torch/torch.h>))
+					;(include <torch/torch.h>)
+	)
+
+       (do0
+	,@(loop for e in `(autograd
+			   cuda
+			   data
+			   enum
+			   fft
+			   jit
+			   linalg
+			   nested
+			   nn
+			   optim
+			   serialize
+			   sparse
+			   special
+			   types
+			   utils
+			   version
+			   )
+		collect
+		`(include ,(format nil "<torch/~a.h>" e))))
 
 
        (defun main (argc argv)
