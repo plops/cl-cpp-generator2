@@ -198,8 +198,61 @@
 	 (<< std--cout
 	     tensor
 	     std--endl)
-	 (let ((kNoiseSize 12)
-	       (generator (DCGANGenerator kNoiseSize))))
+	 ,(let ((ld `((:name layer1 :type "torch::nn::Conv2d"
+			     :init (torch--nn--Conv2dOptions 1 64 4)
+			     :options ((stride 2)
+				       (padding 1)
+				       (bias false)))
+		      (:name layer1nl
+			     :type "torch::nn::LeakyReLU"
+			     :init (torch--nn--LeakyReLUOptions)
+			     :options ((negative_slope .2)))
+
+		      (:name layer2 :type "torch::nn::Conv2d"
+			     :init (torch--nn--Conv2dOptions 64 128 4)
+			     :options ((stride 2)
+				       (padding 1)
+				       (bias false)))
+		      (:name layer2bn
+			     :type "torch::nn::BatchNorm2d"
+			     :init 128)
+		      (:name layer2nl
+			     :type "torch::nn::LeakyReLU"
+			     :init (torch--nn--LeakyReLUOptions)
+			     :options ((negative_slope .2)))
+
+		      (:name layer3 :type "torch::nn::Conv2d"
+			     :init (torch--nn--Conv2dOptions 128 256 4)
+			     :options ((stride 2)
+				       (padding 1)
+				       (bias false)))
+		      (:name layer3bn
+			     :type "torch::nn::BatchNorm2d"
+			     :init 256)
+		      (:name layer3nl
+			     :type "torch::nn::LeakyReLU"
+			     :init (torch--nn--LeakyReLUOptions)
+			     :options ((negative_slope .2)))
+
+
+		      (:name layer4 :type "torch::nn::Conv2d"
+			     :init (torch--nn--Conv2dOptions 256 1 3)
+			     :options ((stride 1)
+				       (padding 0)
+				       (bias false)))
+
+		      (:name layer4nl
+			     :type "torch::nn::Sigmoid")
+
+		      )))
+	    `(let ((kNoiseSize 12)
+		   (generator (DCGANGenerator kNoiseSize))
+		   (discriminator
+		    (torch--Sequential
+		     ,@(loop for e in ld
+			     collect
+			     (destructuring-bind (&key name init type options) e
+			       `(,type (dot ,init ,@options)))))))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
