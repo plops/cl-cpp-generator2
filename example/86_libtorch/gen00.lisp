@@ -26,16 +26,24 @@
     (load "util.lisp")
 
     (let ((name `DCGANGeneratorImpl)
-	  (l `((:name conv1 :init (nn--ConvTranspose2dOptions kNoiseSize 256 4) :options ((bias false)))
-	       (:name conv2 :init (nn--ConvTranspose2dOptions 256 128 3) :options ((stride 2)
-										   (padding 1) (bias false)))
-	       (:name conv3 :init (nn--ConvTranspose2dOptions 128 64 4) :options ((stride 2)
-										  (padding 1) (bias false)))
-	       (:name conv4 :init (nn--ConvTranspose2dOptions 64 1 4) :options ((stride 2)
-										(padding 1) (bias false)))
-	       (:name batch_norm1 :init 256)
-	       (:name batch_norm2 :init 128)
-	       (:name batch_norm3 :init 64))))
+	  (l `((:name conv1 :init (nn--ConvTranspose2dOptions kNoiseSize 256 4)
+		      :type "nn::ConvTranspose2dOptions"
+		      :options ((bias false)))
+	       (:name conv2 :init (nn--ConvTranspose2dOptions 256 128 3)
+		      :type "nn::ConvTranspose2dOptions"
+		      :options ((stride 2)
+				(padding 1) (bias false)))
+	       (:name conv3 :init (nn--ConvTranspose2dOptions 128 64 4)
+		      :type "nn::ConvTranspose2dOptions"
+		      :options ((stride 2)
+				(padding 1) (bias false)))
+	       (:name conv4 :init (nn--ConvTranspose2dOptions 64 1 4)
+		      :type "nn::ConvTranspose2dOptions"
+		      :options ((stride 2)
+				(padding 1) (bias false)))
+	       (:name batch_norm1 :type "nn::BatchNorm2d" :init 256)
+	       (:name batch_norm2 :type "nn::BatchNorm2d" :init 128)
+	       (:name batch_norm3 :type "nn::BatchNorm2d" :init 64))))
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -92,7 +100,12 @@
        :code `(do0
 	       (defclass ,name torch--nn--Module
 		 "public:"
-		 "torch::Tensor W, b;"
+		 ,@(loop for e in l
+			 collect
+			 (destructuring-bind (&key name init type options) e
+			   (format nil "~a ~a;"
+				   type
+				   name)))
 		 (defmethod ,name (kNoiseSize)
 		   (declare
 		    (type int kNoiseSize)
@@ -100,13 +113,13 @@
 		    (construct
 		     ,@(loop for e in l
 			     collect
-			     (destructuring-bind (&key name init options) e
+			     (destructuring-bind (&key name init type options) e
 			       `(,name (dot ,init ,@options)))))
 		    (values :constructor))
 		   ,(lprint :msg "Net constructor")
 		   ,@(loop for e in l
 			   collect
-			   (destructuring-bind (&key name init options) e
+			   (destructuring-bind (&key name init type options) e
 			     `(register_module (string ,name) ,name))))
 		 (defmethod forward (x)
 		   (declare (type "torch::Tensor" x)
@@ -114,8 +127,7 @@
 		   ,@(loop for e in `((torch--relu batch_norm1 conv1)
 				      (torch--relu batch_norm2 conv2)
 				      (torch--relu batch_norm2 conv3)
-				      (torch--tanh conv4)
-				      )
+				      (torch--tanh conv4))
 			   collect
 			   `(setf x ,(let ((q `x))
 				       (loop for f in (reverse e) do
