@@ -15,3 +15,10 @@ cmake --build . --config Release
   - buffers .. store state (e.g. variances for batch norm)
   - parameters .. store state and gradients (e.g. trainable weights)
   - submodules
+
+- with std::shared_ptr<Net> semantic, one can stay close to python's
+  semantics
+
+- libtorch uses an elaborate scheme to hide shared_ptr and make
+  reference semantic the default, without having to write
+  std::shared_ptr or std::make_shared all the time

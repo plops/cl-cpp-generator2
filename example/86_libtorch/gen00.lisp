@@ -25,7 +25,17 @@
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
 
-    (let ((name `Net))
+    (let ((name `DCGANGeneratorImpl)
+	  (l `((:name conv1 :init (nn--ConvTranspose2dOptions kNoiseSize 256 4) :options ((bias false)))
+	       (:name conv2 :init (nn--ConvTranspose2dOptions 256 128 3) :options ((stride 2)
+										   (padding 1) (bias false)))
+	       (:name conv3 :init (nn--ConvTranspose2dOptions 128 64 4) :options ((stride 2)
+										  (padding 1) (bias false)))
+	       (:name conv4 :init (nn--ConvTranspose2dOptions 64 1 4) :options ((stride 2)
+										(padding 1) (bias false)))
+	       (:name batch_norm1 :init 256)
+	       (:name batch_norm2 :init 128)
+	       (:name batch_norm3 :init 64))))
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -83,22 +93,35 @@
 	       (defclass ,name torch--nn--Module
 		 "public:"
 		 "torch::Tensor W, b;"
-		 (defmethod ,name (N M)
+		 (defmethod ,name (kNoiseSize)
 		   (declare
-		    (type int64_t N M)
+		    (type int kNoiseSize)
 					;  (explicit)
 		    (construct
-		     (W (register_parameter (string "W")
-					    (torch--randn (curly N M))))
-		     (b (register_parameter (string "b")
-					    (torch--randn M))))
+		     ,@(loop for e in l
+			     collect
+			     (destructuring-bind (&key name init options) e
+			       `(,name (dot ,init ,@options)))))
 		    (values :constructor))
 		   ,(lprint :msg "Net constructor")
-		   )
-		 (defmethod forward (input)
-		   (declare (type "torch::Tensor" input)
+		   ,@(loop for e in l
+			   collect
+			   (destructuring-bind (&key name init options) e
+			     `(register_module (string ,name) ,name))))
+		 (defmethod forward (x)
+		   (declare (type "torch::Tensor" x)
 			    (values "torch::Tensor"))
-		   (return (torch--addmm b input W)))
+		   ,@(loop for e in `((torch--relu batch_norm1 conv1)
+				      (torch--relu batch_norm2 conv2)
+				      (torch--relu batch_norm2 conv3)
+				      (torch--tanh conv4)
+				      )
+			   collect
+			   `(setf x ,(let ((q `x))
+				       (loop for f in (reverse e) do
+					     (setf q (append `(,f ,q))))
+				       q)))
+		   (return x))
 		 #+nil
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
@@ -116,11 +139,11 @@
        (include
 					;<tuple>
 					;<mutex>
-	<thread>
+					;<thread>
 	<iostream>
-	<iomanip>
-	<chrono>
-	<cassert>
+					;<iomanip>
+					;<chrono>
+					;<cassert>
 					;  <memory>
 	)
 
