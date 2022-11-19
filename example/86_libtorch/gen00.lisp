@@ -47,17 +47,13 @@
 		   (declare
 		    (type int64_t N M)
 					;  (explicit)
-		    #-nil (construct
+		    (construct
 			   (W (register_parameter (string "W")
 						  (torch--randn (curly N M))))
 			   (b (register_parameter (string "b")
 						  (torch--randn M))))
 		    (values :constructor))
-		   #+nil (setf
-			  W (register_parameter (string "W")
-						(torch--randn (curly N M)))
-			  b (register_parameter (string "b")
-						(torch--randn M))))
+		   )
 		 (defmethod forward (input)
 		   (declare (type "torch::Tensor" input)
 			    (values "torch::Tensor"))
