@@ -248,7 +248,7 @@
 	    `(let ((kNoiseSize 12)
 		   (generator (DCGANGenerator kNoiseSize))
 		   (discriminator
-		    (torch--Sequential
+		    (torch--nn--Sequential
 		     ,@(loop for e in ld
 			     collect
 			     (destructuring-bind (&key name init type options) e
