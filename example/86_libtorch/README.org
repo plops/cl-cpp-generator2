@@ -1,2 +1,11 @@
 - c++ doc https://pytorch.org/tutorials/advanced/cpp_frontend.html
 - download libtorch: https://pytorch.org/get-started/locally/
+  - 176MB
+
+- give cmake prefix as absolute path!
+#+begin_example
+
+cmake \
+  -DCMAKE_PREFIX_PATH=/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/ ..
+
+#+end_example
