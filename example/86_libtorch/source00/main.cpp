@@ -9,21 +9,21 @@ TORCH_MODULE(DCGANGenerator);
 int main(int argc, char **argv) {
   spdlog::info("start  argc='{}'", argc);
   auto op = popl::OptionParser("allowed opitons");
-  auto kNoiseSize = int(12);
-  auto kBatchSize = int(32);
-  auto kNumberOfEpochs = int(10);
+  auto kNoiseSize = int(100);
+  auto kBatchSize = int(64);
+  auto kNumberOfEpochs = int(30);
   auto kTorchManualSeed = int(-1);
   auto helpOption = op.add<popl::Switch>("h", "help", "produce help message");
   auto verboseOption =
       op.add<popl::Switch>("v", "verbose", "produce verbose output");
   auto anomalyDetectionOption =
       op.add<popl::Switch>("A", "anomalyDetection", "enable anomaly detection");
-  auto kNoiseSizeOption =
-      op.add<popl::Value<int>>("n", "kNoiseSize", "parameter", 12, &kNoiseSize);
+  auto kNoiseSizeOption = op.add<popl::Value<int>>(
+      "n", "kNoiseSize", "parameter", 100, &kNoiseSize);
   auto kBatchSizeOption =
-      op.add<popl::Value<int>>("b", "kBatchSize", "parameter", 32, &kBatchSize);
+      op.add<popl::Value<int>>("b", "kBatchSize", "parameter", 64, &kBatchSize);
   auto kNumberOfEpochsOption = op.add<popl::Value<int>>(
-      "e", "kNumberOfEpochs", "parameter", 10, &kNumberOfEpochs);
+      "e", "kNumberOfEpochs", "parameter", 30, &kNumberOfEpochs);
   auto kTorchManualSeedOption = op.add<popl::Value<int>>(
       "s", "kTorchManualSeed", "parameter", -1, &kTorchManualSeed);
   op.parse(argc, argv);
@@ -66,11 +66,11 @@ int main(int argc, char **argv) {
           torch::nn::Conv2dOptions(256, 1, 3).stride(1).padding(0).bias(false)),
       torch::nn::Sigmoid());
   auto dataset =
-      torch::data::datasets::MNIST("./mnist")
+      torch::data::datasets::MNIST("./data")
           .map(torch::data::transforms::Normalize<>((0.50f), (0.50f)))
           .map(torch::data::transforms::Stack<>());
   auto batches_per_epoch =
-      ((std::ceil(dataset.size().value())) / (static_cast<double>(kBatchSize)));
+      std::ceil(((dataset.size().value()) / (static_cast<double>(kBatchSize))));
   auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
       generator->parameters(),
       torch::optim::AdamOptions((2.00e-4f)).betas({(0.90f), (0.50f)}));
   auto discriminator_optimizer = torch::optim::Adam(
-      generator->parameters(),
+      discriminator->parameters(),
       torch::optim::AdamOptions((5.00e-4f)).betas({(0.90f), (0.50f)}));
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = int64_t(0);

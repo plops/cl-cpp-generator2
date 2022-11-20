@@ -194,9 +194,9 @@
 		  (type char** argv)
 		  (values int))
 	 ,(lprint :msg "start" :vars `(argc))
-	 ,(let ((l `((:name kNoiseSize :default 12 :short n)
-		     (:name kBatchSize :default 32 :short b)
-		     (:name kNumberOfEpochs :default 10 :short e)
+	 ,(let ((l `((:name kNoiseSize :default 100 :short n)
+		     (:name kBatchSize :default 64 :short b)
+		     (:name kNumberOfEpochs :default 30 :short e)
 		     (:name kTorchManualSeed :default -1 :short s))))
 	    `(let ((op (popl--OptionParser (string "allowed opitons")))
 		   ,@(loop for e in l collect
@@ -307,13 +307,14 @@
 			     (destructuring-bind (&key name init type options) e
 			       `(,type (dot ,init ,@options))))))
 		   (dataset (dot
-			     (torch--data--datasets--MNIST (string "./mnist"))
+			     (torch--data--datasets--MNIST (string "./data"))
 			     (map (torch--data--transforms--Normalize<> .5 .5))
 			     (map (torch--data--transforms--Stack<>))))
-		   (batches_per_epoch (/ (std--ceil (dot dataset
+		   (batches_per_epoch (std--ceil (/ (dot dataset
 							 (size)
-							 (value)))
-					 (static_cast<double> kBatchSize)))
+							 (value))
+						    (static_cast<double> kBatchSize)))
+		     )
 		   (data_loader (torch--data--make_data_loader
 				 (std--move dataset)
 				 (dot (torch--data--DataLoaderOptions)
@@ -335,7 +336,7 @@
 			(betas (curly .9 .5)))))
 		     (discriminator_optimizer
 		      (torch--optim--Adam
-		       (generator->parameters)
+		       (discriminator->parameters)
 		       (dot
 			(torch--optim--AdamOptions 5e-4)
 			(betas (curly .9 .5))))))
