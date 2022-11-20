@@ -93,9 +93,14 @@ int main(int argc, char **argv) {
       discriminator->parameters(),
       torch::optim::AdamOptions((2.00e-4f)).betas({(0.50f), (0.50f)}));
   if (kRestoreFromCheckpointOption->count()) {
+    spdlog::info("try to load checkpoint");
+    spdlog::info("generator-checkpoint.pt");
     torch::load(generator, "generator-checkpoint.pt");
+    spdlog::info("generator-optimizer-checkpoint.pt");
     torch::load(generator_optimizer, "generator-optimizer-checkpoint.pt");
+    spdlog::info("discriminator-checkpoint.pt");
     torch::load(discriminator, "discriminator-checkpoint.pt");
+    spdlog::info("discriminator-optimizer-checkpoint.pt");
     torch::load(discriminator_optimizer,
                 "discriminator-optimizer-checkpoint.pt");
   }

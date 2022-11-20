@@ -361,10 +361,13 @@
 
 
 		   (when (kRestoreFromCheckpointOption->count)
+		     ,(lprint :msg "try to load checkpoint")
 		     ,@(loop for e in checkpoint-state
 			     collect
 			     (destructuring-bind (&key var fn) e
-			       `(torch--load ,var (string ,fn)))))
+			       `(do0
+				 ,(lprint :msg (format nil "~a" fn))
+				 (torch--load ,var (string ,fn))))))
 		   (let ((checkpoint_counter 1))
 		     (dotimes (epoch kNumberOfEpochs)
 		       (let ((batch_index (int64_t 0)))
