@@ -2,6 +2,7 @@
   (ql:quickload "cl-py-generator"))
 
 (in-package :cl-py-generator)
+					;(setf (readtable-case *readtable*) :invert)
 
 (progn
   (defparameter *project* "86_libtorch")
@@ -184,5 +185,16 @@
 	(export
 	 (setf module (torch.jit.load (string "/home/martin/stage/cl-cpp-generator2/example/86_libtorch/source/../source00/b/cp0/dcgan-sample-104.pt")))
 	 (setf images (aref ("list" (module.parameters))
-			    0))))))))
+			    0))))
+       (python
+	(export
+	 (setf index 2)
+	 (setf image (dot (aref images index)
+			  (detach)
+			  (cpu)
+			  (reshape 28 28)
+			  (mul 255)
+			  (to torch.uint8))
+	       array (image.numpy))
+	 (plt.imshow array :cmap (string "gray"))))))))
 
