@@ -159,3 +159,6 @@ engine.hpp
 
 - https://www.youtube.com/watch?v=-VU4b5b8l_Y How to Achieve the
   Fastest CPU Inference Performance for Object Detection YOLO Models
+
+- https://google.github.io/mediapipe/solutions/pose.html blazepose
+  seems to be good to track people poses
