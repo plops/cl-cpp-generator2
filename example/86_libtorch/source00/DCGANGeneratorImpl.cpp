@@ -29,7 +29,7 @@ DCGANGeneratorImpl::DCGANGeneratorImpl(int kNoiseSize)
 torch::Tensor DCGANGeneratorImpl::forward(torch::Tensor x) {
   x = torch::relu(batch_norm1(conv1(x)));
   x = torch::relu(batch_norm2(conv2(x)));
-  x = torch::relu(batch_norm2(conv3(x)));
+  x = torch::relu(batch_norm3(conv3(x)));
   x = torch::tanh(conv4(x));
   return x;
 }

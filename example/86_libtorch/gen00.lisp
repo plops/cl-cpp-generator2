@@ -126,7 +126,7 @@
 			    (values "torch::Tensor"))
 		   ,@(loop for e in `((torch--relu batch_norm1 conv1)
 				      (torch--relu batch_norm2 conv2)
-				      (torch--relu batch_norm2 conv3)
+				      (torch--relu batch_norm3 conv3)
 				      (torch--tanh conv4))
 			   collect
 			   `(setf x ,(let ((q `x))
