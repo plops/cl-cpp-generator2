@@ -2,6 +2,7 @@
 #include <iostream>
 #include <popl.hpp>
 #include <spdlog/spdlog.h>
+#include <torch/autograd.h>
 #include <torch/data.h>
 #include <torch/optim.h>
 TORCH_MODULE(DCGANGenerator);
@@ -11,22 +12,36 @@ int main(int argc, char **argv) {
   auto kNoiseSize = int(12);
   auto kBatchSize = int(32);
   auto kNumberOfEpochs = int(10);
+  auto kTorchManualSeed = int(-1);
   auto helpOption = op.add<popl::Switch>("h", "help", "produce help message");
   auto verboseOption =
       op.add<popl::Switch>("v", "verbose", "produce verbose output");
+  auto anomalyDetectionOption =
+      op.add<popl::Switch>("A", "anomalyDetection", "enable anomaly detection");
   auto kNoiseSizeOption =
       op.add<popl::Value<int>>("n", "kNoiseSize", "parameter", 12, &kNoiseSize);
   auto kBatchSizeOption =
       op.add<popl::Value<int>>("b", "kBatchSize", "parameter", 32, &kBatchSize);
   auto kNumberOfEpochsOption = op.add<popl::Value<int>>(
       "e", "kNumberOfEpochs", "parameter", 10, &kNumberOfEpochs);
+  auto kTorchManualSeedOption = op.add<popl::Value<int>>(
+      "s", "kTorchManualSeed", "parameter", -1, &kTorchManualSeed);
   op.parse(argc, argv);
   if (helpOption->count()) {
     (std::cout) << (op) << (std::endl);
     exit(0);
   }
-  torch::Tensor tensor = torch::eye(3);
-  (std::cout) << (tensor) << (std::endl);
+  if ((0) <= (kTorchManualSeed)) {
+    spdlog::info("set manual seed  kTorchManualSeed='{}'", kTorchManualSeed);
+    torch::manual_seed(kTorchManualSeed);
+  }
+  if (anomalyDetectionOption->count()) {
+    // https://discuss.pytorch.org/t/detect-anomaly-in-c/49011/6 not supported
+    // video of the implementation by Thomas Viehmann of the implementation
+    // https://lernapparat.de/pytorch-cpp-anomaly/
+    spdlog::info("enable anomaly detection");
+    torch::autograd::AnomalyMode::set_enabled(true);
+  }
   auto generator = DCGANGenerator(kNoiseSize);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
@@ -59,13 +74,6 @@ int main(int argc, char **argv) {
   auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
-  for (auto &batch : *data_loader) {
-    spdlog::info("  batch.data.size(0)='{}'", batch.data.size(0));
-    for (auto i = 0; (i) < (batch.data.size(0)); (i) += (1)) {
-      spdlog::info("  batch.target[i].item<int64_t>()='{}'",
-                   batch.target[i].item<int64_t>());
-    }
-  }
   auto generator_optimizer = torch::optim::Adam(
       generator->parameters(),
       torch::optim::AdamOptions((2.00e-4f)).betas({(0.90f), (0.50f)}));

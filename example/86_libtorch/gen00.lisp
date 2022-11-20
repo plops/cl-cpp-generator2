@@ -167,7 +167,7 @@
 	(include "DCGANGeneratorImpl.h")
 	)
        (do0
-	,@(loop for e in `(;autograd
+	,@(loop for e in `(autograd
 					;cuda
 			   data
 					;enum
@@ -196,13 +196,15 @@
 	 ,(lprint :msg "start" :vars `(argc))
 	 ,(let ((l `((:name kNoiseSize :default 12 :short n)
 		     (:name kBatchSize :default 32 :short b)
-		     (:name kNumberOfEpochs :default 10 :short e))))
+		     (:name kNumberOfEpochs :default 10 :short e)
+		     (:name kTorchManualSeed :default -1 :short s))))
 	    `(let ((op (popl--OptionParser (string "allowed opitons")))
 		   ,@(loop for e in l collect
 			   (destructuring-bind (&key name default short) e
 			     `(,name (int ,default))))
 		   ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 				      (:long verbose :short v :type Switch :msg "produce verbose output")
+				      (:long anomalyDetection  :short A :type Switch :msg "enable anomaly detection")
 				      ,@(loop for f in l
 					      collect
 					      (destructuring-bind (&key name default short) f
@@ -238,10 +240,17 @@
 		     std--endl)
 		 (exit 0))))
 
-	 "torch::Tensor tensor = torch::eye(3);"
-	 (<< std--cout
-	     tensor
-	     std--endl)
+	 (when (<= 0 kTorchManualSeed)
+	   ,(lprint :msg "set manual seed" :vars `(kTorchManualSeed))
+	   (torch--manual_seed kTorchManualSeed))
+
+	 (when (anomalyDetectionOption->count)
+	   (comments "https://discuss.pytorch.org/t/detect-anomaly-in-c/49011/6 not supported")
+	   (comments "video of the implementation by Thomas Viehmann of the implementation https://lernapparat.de/pytorch-cpp-anomaly/")
+	   ,(lprint :msg "enable anomaly detection")
+	   (torch--autograd--AnomalyMode--set_enabled true))
+
+
 	 ,(let ((ld `((:name layer1 :type "torch::nn::Conv2d"
 			     :init (torch--nn--Conv2dOptions 1 64 4)
 			     :options ((stride 2)
@@ -289,8 +298,7 @@
 			     :type "torch::nn::Sigmoid")
 
 		      )))
-	    `(let (;(kNoiseSize 12)
-					;(kBatchSize 32)
+	    `(let (
 		   (generator (DCGANGenerator kNoiseSize))
 		   (discriminator
 		    (torch--nn--Sequential
@@ -312,6 +320,7 @@
 				      (batch_size kBatchSize)
 				      (workers 2))))
 		   )
+	       #+nil
 	       (for-range (&batch *data_loader)
 			  ,(lprint :vars `((batch.data.size 0)))
 			  (dotimes (i (batch.data.size 0))
