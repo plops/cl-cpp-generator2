@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
     spdlog::info("enable anomaly detection");
     torch::autograd::AnomalyMode::set_enabled(true);
   }
+  auto device = torch::Device(torch::kCPU);
   auto generator = DCGANGenerator(kNoiseSize);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
@@ -74,26 +75,28 @@ int main(int argc, char **argv) {
   auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
+  generator->to(device);
+  discriminator->to(device);
   auto generator_optimizer = torch::optim::Adam(
       generator->parameters(),
-      torch::optim::AdamOptions((2.00e-4f)).betas({(0.90f), (0.50f)}));
+      torch::optim::AdamOptions((2.00e-4f)).betas({(0.50f), (0.50f)}));
   auto discriminator_optimizer = torch::optim::Adam(
       discriminator->parameters(),
-      torch::optim::AdamOptions((5.00e-4f)).betas({(0.90f), (0.50f)}));
+      torch::optim::AdamOptions((2.00e-4f)).betas({(0.50f), (0.50f)}));
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = int64_t(0);
     for (auto &batch : *data_loader) {
-      auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1});
+      auto noise = torch::randn({batch.data.size(0), kNoiseSize, 1, 1}, device);
       // train discriminator with real images
-      auto real_images = batch.data;
+      auto real_images = batch.data.to(device);
       auto real_labels =
-          torch::empty(batch.data.size(0)).uniform_((0.80f), (1.0f));
+          torch::empty(batch.data.size(0), device).uniform_((0.80f), (1.0f));
       auto real_output = discriminator->forward(real_images);
       auto real_d_loss = torch::binary_cross_entropy(real_output, real_labels);
       real_d_loss.backward();
       // train discriminator with fake images
       auto fake_images = generator->forward(noise);
-      auto fake_labels = torch::zeros(batch.data.size(0));
+      auto fake_labels = torch::zeros(batch.data.size(0), device);
       auto fake_output = discriminator->forward(fake_images.detach());
       auto fake_d_loss = torch::binary_cross_entropy(fake_output, fake_labels);
       fake_d_loss.backward();

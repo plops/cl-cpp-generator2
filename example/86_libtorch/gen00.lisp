@@ -251,144 +251,151 @@
 	   (torch--autograd--AnomalyMode--set_enabled true))
 
 
-	 ,(let ((ld `((:name layer1 :type "torch::nn::Conv2d"
-			     :init (torch--nn--Conv2dOptions 1 64 4)
-			     :options ((stride 2)
-				       (padding 1)
-				       (bias false)))
-		      (:name layer1nl
-			     :type "torch::nn::LeakyReLU"
-			     :init (torch--nn--LeakyReLUOptions)
-			     :options ((negative_slope .2)))
+	 (let ((device (torch--Device torch--kCPU)))
 
-		      (:name layer2 :type "torch::nn::Conv2d"
-			     :init (torch--nn--Conv2dOptions 64 128 4)
-			     :options ((stride 2)
-				       (padding 1)
-				       (bias false)))
-		      (:name layer2bn
-			     :type "torch::nn::BatchNorm2d"
-			     :init 128)
-		      (:name layer2nl
-			     :type "torch::nn::LeakyReLU"
-			     :init (torch--nn--LeakyReLUOptions)
-			     :options ((negative_slope .2)))
+	   ,(let ((ld `((:name layer1 :type "torch::nn::Conv2d"
+			       :init (torch--nn--Conv2dOptions 1 64 4)
+			       :options ((stride 2)
+					 (padding 1)
+					 (bias false)))
+			(:name layer1nl
+			       :type "torch::nn::LeakyReLU"
+			       :init (torch--nn--LeakyReLUOptions)
+			       :options ((negative_slope .2)))
 
-		      (:name layer3 :type "torch::nn::Conv2d"
-			     :init (torch--nn--Conv2dOptions 128 256 4)
-			     :options ((stride 2)
-				       (padding 1)
-				       (bias false)))
-		      (:name layer3bn
-			     :type "torch::nn::BatchNorm2d"
-			     :init 256)
-		      (:name layer3nl
-			     :type "torch::nn::LeakyReLU"
-			     :init (torch--nn--LeakyReLUOptions)
-			     :options ((negative_slope .2)))
+			(:name layer2 :type "torch::nn::Conv2d"
+			       :init (torch--nn--Conv2dOptions 64 128 4)
+			       :options ((stride 2)
+					 (padding 1)
+					 (bias false)))
+			(:name layer2bn
+			       :type "torch::nn::BatchNorm2d"
+			       :init 128)
+			(:name layer2nl
+			       :type "torch::nn::LeakyReLU"
+			       :init (torch--nn--LeakyReLUOptions)
+			       :options ((negative_slope .2)))
+
+			(:name layer3 :type "torch::nn::Conv2d"
+			       :init (torch--nn--Conv2dOptions 128 256 4)
+			       :options ((stride 2)
+					 (padding 1)
+					 (bias false)))
+			(:name layer3bn
+			       :type "torch::nn::BatchNorm2d"
+			       :init 256)
+			(:name layer3nl
+			       :type "torch::nn::LeakyReLU"
+			       :init (torch--nn--LeakyReLUOptions)
+			       :options ((negative_slope .2)))
 
 
-		      (:name layer4 :type "torch::nn::Conv2d"
-			     :init (torch--nn--Conv2dOptions 256 1 3)
-			     :options ((stride 1)
-				       (padding 0)
-				       (bias false)))
+			(:name layer4 :type "torch::nn::Conv2d"
+			       :init (torch--nn--Conv2dOptions 256 1 3)
+			       :options ((stride 1)
+					 (padding 0)
+					 (bias false)))
 
-		      (:name layer4nl
-			     :type "torch::nn::Sigmoid")
+			(:name layer4nl
+			       :type "torch::nn::Sigmoid")
 
-		      )))
-	    `(let (
-		   (generator (DCGANGenerator kNoiseSize))
-		   (discriminator
-		    (torch--nn--Sequential
-		     ,@(loop for e in ld
-			     collect
-			     (destructuring-bind (&key name init type options) e
-			       `(,type (dot ,init ,@options))))))
-		   (dataset (dot
-			     (torch--data--datasets--MNIST (string "./data"))
-			     (map (torch--data--transforms--Normalize<> .5 .5))
-			     (map (torch--data--transforms--Stack<>))))
-		   (batches_per_epoch (std--ceil (/ (dot dataset
-							 (size)
-							 (value))
-						    (static_cast<double> kBatchSize)))
+			)))
+	      `(let (
+		     (generator (DCGANGenerator kNoiseSize))
+		     (discriminator
+		      (torch--nn--Sequential
+		       ,@(loop for e in ld
+			       collect
+			       (destructuring-bind (&key name init type options) e
+				 `(,type (dot ,init ,@options))))))
+		     (dataset (dot
+			       (torch--data--datasets--MNIST (string "./data"))
+			       (map (torch--data--transforms--Normalize<> .5 .5))
+			       (map (torch--data--transforms--Stack<>))))
+		     (batches_per_epoch (std--ceil (/ (dot dataset
+							   (size)
+							   (value))
+						      (static_cast<double> kBatchSize)))
+		       )
+		     (data_loader (torch--data--make_data_loader
+				   (std--move dataset)
+				   (dot (torch--data--DataLoaderOptions)
+					(batch_size kBatchSize)
+					(workers 2))))
 		     )
-		   (data_loader (torch--data--make_data_loader
-				 (std--move dataset)
-				 (dot (torch--data--DataLoaderOptions)
-				      (batch_size kBatchSize)
-				      (workers 2))))
-		   )
-	       #+nil
-	       (for-range (&batch *data_loader)
-			  ,(lprint :vars `((batch.data.size 0)))
-			  (dotimes (i (batch.data.size 0))
-			    ,(lprint :vars `((dot batch
-						  (aref target i)
-						  (item<int64_t>))))))
-	       (let ((generator_optimizer
-		      (torch--optim--Adam
-		       (generator->parameters)
-		       (dot
-			(torch--optim--AdamOptions 2e-4)
-			(betas (curly .9 .5)))))
-		     (discriminator_optimizer
-		      (torch--optim--Adam
-		       (discriminator->parameters)
-		       (dot
-			(torch--optim--AdamOptions 5e-4)
-			(betas (curly .9 .5))))))
-		 (dotimes (epoch kNumberOfEpochs)
-		   (let ((batch_index (int64_t 0)))
-		     (for-range
-		      (&batch *data_loader)
-		      (let ((noise (torch--randn (curly (batch.data.size 0)
-							kNoiseSize 1 1))))
-			,@(loop for e in `((:selec real
-						   :img batch.data
-						   :lab (dot (torch--empty (batch.data.size 0))
-							     (uniform_ .8 1.0)) ; high output
-						   :out (discriminator->forward real_images))
-					   (:selec fake
-						   :img (generator->forward noise)
-						   :lab (torch--zeros (batch.data.size 0)) ;low output
-						   :out (discriminator->forward (dot fake_images (detach)))))
-				collect
-				(destructuring-bind (&key selec img lab out) e
-				  (flet ((n (var)
-					   (format nil "~a_~a" selec var)))
-				    (let ((images (n "images"))
-					  (labels (n "labels"))
-					  (output (n "output"))
-					  (d_loss (n "d_loss")))
-				      `(do0
-					(comments ,(format nil "train discriminator with ~a images" selec))
-					(let ((,images ,img)
-					      (,labels ,lab)
-					      (,output ,out)
-					      (,d_loss (torch--binary_cross_entropy
-							,output ,labels)))
-					  (dot ,d_loss (backward))))))))
-			(let ((d_loss (+ fake_d_loss
-					 real_d_loss)))
-			  (discriminator_optimizer.step)
-			  (progn
-			    (comments "train generator")
-			    (generator->zero_grad)
-			    (fake_labels.fill_ 1)
-			    (setf fake_output (discriminator->forward fake_images))
-			    (let ((g_loss (torch--binary_cross_entropy
-					   fake_output fake_labels)))
-			      (g_loss.backward)
-			      (generator_optimizer.step)
-			      ,(lprint :vars `(epoch kNumberOfEpochs batch_index
-						     batches_per_epoch
-						     (d_loss.item<float>)
-						     (g_loss.item<float>)))
-			      (incf batch_index)))))
-		      ))))))
+		 (generator->to device)
+		 (discriminator->to device)
+		 #+nil
+		 (for-range (&batch *data_loader)
+			    ,(lprint :vars `((batch.data.size 0)))
+			    (dotimes (i (batch.data.size 0))
+			      ,(lprint :vars `((dot batch
+						    (aref target i)
+						    (item<int64_t>))))))
+		 (let ((generator_optimizer
+			(torch--optim--Adam
+			 (generator->parameters)
+			 (dot
+			  (torch--optim--AdamOptions 2e-4)
+			  (betas (curly .5 .5)))))
+		       (discriminator_optimizer
+			(torch--optim--Adam
+			 (discriminator->parameters)
+			 (dot
+			  (torch--optim--AdamOptions 2e-4)
+			  (betas (curly .5 .5))))))
+		   (dotimes (epoch kNumberOfEpochs)
+		     (let ((batch_index (int64_t 0)))
+		       (for-range
+			(&batch *data_loader)
+			(let ((noise (torch--randn (curly (batch.data.size 0)
+							  kNoiseSize 1 1)
+						   device)))
+			  ,@(loop for e in `((:selec real
+						     :img (batch.data.to device)
+						     :lab (dot (torch--empty (batch.data.size 0)
+									     device)
+							       (uniform_ .8 1.0)) ; high output
+						     :out (discriminator->forward real_images))
+					     (:selec fake
+						     :img (generator->forward noise)
+						     :lab (torch--zeros (batch.data.size 0)
+									device) ;low output
+						     :out (discriminator->forward (dot fake_images (detach)))))
+				  collect
+				  (destructuring-bind (&key selec img lab out) e
+				    (flet ((n (var)
+					     (format nil "~a_~a" selec var)))
+				      (let ((images (n "images"))
+					    (labels (n "labels"))
+					    (output (n "output"))
+					    (d_loss (n "d_loss")))
+					`(do0
+					  (comments ,(format nil "train discriminator with ~a images" selec))
+					  (let ((,images ,img)
+						(,labels ,lab)
+						(,output ,out)
+						(,d_loss (torch--binary_cross_entropy
+							  ,output ,labels)))
+					    (dot ,d_loss (backward))))))))
+			  (let ((d_loss (+ fake_d_loss
+					   real_d_loss)))
+			    (discriminator_optimizer.step)
+			    (progn
+			      (comments "train generator")
+			      (generator->zero_grad)
+			      (fake_labels.fill_ 1)
+			      (setf fake_output (discriminator->forward fake_images))
+			      (let ((g_loss (torch--binary_cross_entropy
+					     fake_output fake_labels)))
+				(g_loss.backward)
+				(generator_optimizer.step)
+				,(lprint :vars `(epoch kNumberOfEpochs batch_index
+						       batches_per_epoch
+						       (d_loss.item<float>)
+						       (g_loss.item<float>)))
+				(incf batch_index)))))
+			)))))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
