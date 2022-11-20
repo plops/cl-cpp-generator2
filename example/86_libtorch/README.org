@@ -34,3 +34,7 @@ cmake --build . --config Release
 - speed up compilation with libtorch
   https://www.reddit.com/r/pytorch/comments/lrlazm/faster_builds_using_libtorch_c_question/
   
+
+- the proper path to bring torch model to production seems to be
+  torchscript: https://pytorch.org/tutorials/advanced/cpp_export.html
+https://pytorch.org/tutorials/beginner/deploy_seq2seq_hybrid_frontend_tutorial.html
