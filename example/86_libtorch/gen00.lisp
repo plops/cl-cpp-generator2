@@ -197,7 +197,10 @@
 	 ,(let ((l `((:name kNoiseSize :default 100 :short n)
 		     (:name kBatchSize :default 64 :short b)
 		     (:name kNumberOfEpochs :default 30 :short e)
-		     (:name kTorchManualSeed :default -1 :short s))))
+		     (:name kTorchManualSeed :default -1 :short s)
+					;(:name kRestoreFromCheckpoint :default 0 :short C)
+		     (:name kCheckpointEvery :default 100 :short c)
+		     )))
 	    `(let ((op (popl--OptionParser (string "allowed opitons")))
 		   ,@(loop for e in l collect
 			   (destructuring-bind (&key name default short) e
@@ -205,6 +208,7 @@
 		   ,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
 				      (:long verbose :short v :type Switch :msg "produce verbose output")
 				      (:long anomalyDetection  :short A :type Switch :msg "enable anomaly detection")
+				      (:long kRestoreFromCheckpoint  :short C :type Switch :msg "load checkpoint from file system")
 				      ,@(loop for f in l
 					      collect
 					      (destructuring-bind (&key name default short) f
@@ -253,7 +257,17 @@
 
 	 (let ((device (torch--Device torch--kCPU)))
 
-	   ,(let ((ld `((:name layer1 :type "torch::nn::Conv2d"
+	   (when (torch--cuda--is_available)
+	     ,(lprint :msg "cuda is available. train on gpu")
+	     (setf device torch--kCUDA))
+
+	   ,(let ((checkpoint-state `((:var generator :fn generator-checkpoint.pt)
+				      (:var generator_optimizer :fn generator-optimizer-checkpoint.pt)
+				      (:var discriminator :fn discriminator-checkpoint.pt)
+				      (:var discriminator_optimizer :fn discriminator-optimizer-checkpoint.pt)
+				      ))
+
+		  (ld `((:name layer1 :type "torch::nn::Conv2d"
 			       :init (torch--nn--Conv2dOptions 1 64 4)
 			       :options ((stride 2)
 					 (padding 1)
@@ -344,58 +358,84 @@
 			 (dot
 			  (torch--optim--AdamOptions 2e-4)
 			  (betas (curly .5 .5))))))
-		   (dotimes (epoch kNumberOfEpochs)
-		     (let ((batch_index (int64_t 0)))
-		       (for-range
-			(&batch *data_loader)
-			(let ((noise (torch--randn (curly (batch.data.size 0)
-							  kNoiseSize 1 1)
-						   device)))
-			  ,@(loop for e in `((:selec real
-						     :img (batch.data.to device)
-						     :lab (dot (torch--empty (batch.data.size 0)
-									     device)
-							       (uniform_ .8 1.0)) ; high output
-						     :out (discriminator->forward real_images))
-					     (:selec fake
-						     :img (generator->forward noise)
-						     :lab (torch--zeros (batch.data.size 0)
-									device) ;low output
-						     :out (discriminator->forward (dot fake_images (detach)))))
-				  collect
-				  (destructuring-bind (&key selec img lab out) e
-				    (flet ((n (var)
-					     (format nil "~a_~a" selec var)))
-				      (let ((images (n "images"))
-					    (labels (n "labels"))
-					    (output (n "output"))
-					    (d_loss (n "d_loss")))
-					`(do0
-					  (comments ,(format nil "train discriminator with ~a images" selec))
-					  (let ((,images ,img)
-						(,labels ,lab)
-						(,output ,out)
-						(,d_loss (torch--binary_cross_entropy
-							  ,output ,labels)))
-					    (dot ,d_loss (backward))))))))
-			  (let ((d_loss (+ fake_d_loss
-					   real_d_loss)))
-			    (discriminator_optimizer.step)
-			    (progn
-			      (comments "train generator")
-			      (generator->zero_grad)
-			      (fake_labels.fill_ 1)
-			      (setf fake_output (discriminator->forward fake_images))
-			      (let ((g_loss (torch--binary_cross_entropy
-					     fake_output fake_labels)))
-				(g_loss.backward)
-				(generator_optimizer.step)
-				,(lprint :vars `(epoch kNumberOfEpochs batch_index
-						       batches_per_epoch
-						       (d_loss.item<float>)
-						       (g_loss.item<float>)))
-				(incf batch_index)))))
-			)))))))
+
+
+		   (when (kRestoreFromCheckpointOption->count)
+		     ,@(loop for e in checkpoint-state
+			     collect
+			     (destructuring-bind (&key var fn) e
+			       `(torch--load ,var (string ,fn)))))
+		   (let ((checkpoint_counter 1))
+		     (dotimes (epoch kNumberOfEpochs)
+		       (let ((batch_index (int64_t 0)))
+			 (for-range
+			  (&batch *data_loader)
+			  (let ((noise (torch--randn (curly (batch.data.size 0)
+							    kNoiseSize 1 1)
+						     device)))
+			    ,@(loop for e in `((:selec real
+						       :img (batch.data.to device)
+						       :lab (dot (torch--empty (batch.data.size 0)
+									       device)
+								 (uniform_ .8 1.0)) ; high output
+						       :out (discriminator->forward real_images))
+					       (:selec fake
+						       :img (generator->forward noise)
+						       :lab (torch--zeros (batch.data.size 0)
+									  device) ;low output
+						       :out (discriminator->forward (dot fake_images (detach)))))
+				    collect
+				    (destructuring-bind (&key selec img lab out) e
+				      (flet ((n (var)
+					       (format nil "~a_~a" selec var)))
+					(let ((images (n "images"))
+					      (labels (n "labels"))
+					      (output (n "output"))
+					      (d_loss (n "d_loss")))
+					  `(do0
+					    (comments ,(format nil "train discriminator with ~a images" selec))
+					    (let ((,images ,img)
+						  (,labels ,lab)
+						  (,output ,out)
+						  (,d_loss (torch--binary_cross_entropy
+							    ,output ,labels)))
+					      (dot ,d_loss (backward))))))))
+			    (let ((d_loss (+ fake_d_loss
+					     real_d_loss)))
+			      (discriminator_optimizer.step)
+			      (progn
+				(comments "train generator")
+				(generator->zero_grad)
+				(fake_labels.fill_ 1)
+				(setf fake_output (discriminator->forward fake_images))
+				(let ((g_loss (torch--binary_cross_entropy
+					       fake_output fake_labels)))
+				  (g_loss.backward)
+				  (generator_optimizer.step)
+				  (progn
+				    ,(lprint :vars `(epoch kNumberOfEpochs batch_index
+							   batches_per_epoch
+							   (d_loss.item<float>)
+							   (g_loss.item<float>)))
+				    (when (== 0 (% batch_index kCheckpointEvery))
+				      ,@(loop for e in checkpoint-state
+					      collect
+					      (destructuring-bind (&key var fn) e
+						`(torch--save ,var (string ,fn))))
+				      (let ((samples (generator->forward
+						      (torch--randn (curly 8 kNoiseSize 1 1)
+								    device))))
+					(torch--save (/ (+ samples 1.0)
+							2.0)
+						     (torch--str (string "dcgan-sample-")
+								 checkpoint_counter
+								 (string ".pt")))
+					,(lprint :msg "checkpoint"
+						 :vars `(checkpoint_counter))
+					(incf checkpoint_counter))))
+
+				  (incf batch_index)))))
+			  ))))))))
 	 )))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)

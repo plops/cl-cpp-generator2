@@ -13,11 +13,14 @@ int main(int argc, char **argv) {
   auto kBatchSize = int(64);
   auto kNumberOfEpochs = int(30);
   auto kTorchManualSeed = int(-1);
+  auto kCheckpointEvery = int(100);
   auto helpOption = op.add<popl::Switch>("h", "help", "produce help message");
   auto verboseOption =
       op.add<popl::Switch>("v", "verbose", "produce verbose output");
   auto anomalyDetectionOption =
       op.add<popl::Switch>("A", "anomalyDetection", "enable anomaly detection");
+  auto kRestoreFromCheckpointOption = op.add<popl::Switch>(
+      "C", "kRestoreFromCheckpoint", "load checkpoint from file system");
   auto kNoiseSizeOption = op.add<popl::Value<int>>(
       "n", "kNoiseSize", "parameter", 100, &kNoiseSize);
   auto kBatchSizeOption =
@@ -26,6 +29,8 @@ int main(int argc, char **argv) {
       "e", "kNumberOfEpochs", "parameter", 30, &kNumberOfEpochs);
   auto kTorchManualSeedOption = op.add<popl::Value<int>>(
       "s", "kTorchManualSeed", "parameter", -1, &kTorchManualSeed);
+  auto kCheckpointEveryOption = op.add<popl::Value<int>>(
+      "c", "kCheckpointEvery", "parameter", 100, &kCheckpointEvery);
   op.parse(argc, argv);
   if (helpOption->count()) {
     (std::cout) << (op) << (std::endl);
@@ -43,6 +48,10 @@ int main(int argc, char **argv) {
     torch::autograd::AnomalyMode::set_enabled(true);
   }
   auto device = torch::Device(torch::kCPU);
+  if (torch::cuda::is_available()) {
+    spdlog::info("cuda is available. train on gpu");
+    device = torch::kCUDA;
+  }
   auto generator = DCGANGenerator(kNoiseSize);
   auto discriminator = torch::nn::Sequential(
       torch::nn::Conv2d(
@@ -83,6 +92,14 @@ int main(int argc, char **argv) {
   auto discriminator_optimizer = torch::optim::Adam(
       discriminator->parameters(),
       torch::optim::AdamOptions((2.00e-4f)).betas({(0.50f), (0.50f)}));
+  if (kRestoreFromCheckpointOption->count()) {
+    torch::load(generator, "generator-checkpoint.pt");
+    torch::load(generator_optimizer, "generator-optimizer-checkpoint.pt");
+    torch::load(discriminator, "discriminator-checkpoint.pt");
+    torch::load(discriminator_optimizer,
+                "discriminator-optimizer-checkpoint.pt");
+  }
+  auto checkpoint_counter = 1;
   for (auto epoch = 0; (epoch) < (kNumberOfEpochs); (epoch) += (1)) {
     auto batch_index = int64_t(0);
     for (auto &batch : *data_loader) {
@@ -110,11 +127,28 @@ int main(int argc, char **argv) {
         auto g_loss = torch::binary_cross_entropy(fake_output, fake_labels);
         g_loss.backward();
         generator_optimizer.step();
-        spdlog::info("  epoch='{}'  kNumberOfEpochs='{}'  batch_index='{}'  "
-                     "batches_per_epoch='{}'  d_loss.item<float>()='{}'  "
-                     "g_loss.item<float>()='{}'",
-                     epoch, kNumberOfEpochs, batch_index, batches_per_epoch,
-                     d_loss.item<float>(), g_loss.item<float>());
+        {
+          spdlog::info("  epoch='{}'  kNumberOfEpochs='{}'  batch_index='{}'  "
+                       "batches_per_epoch='{}'  d_loss.item<float>()='{}'  "
+                       "g_loss.item<float>()='{}'",
+                       epoch, kNumberOfEpochs, batch_index, batches_per_epoch,
+                       d_loss.item<float>(), g_loss.item<float>());
+          if ((0) == (batch_index % kCheckpointEvery)) {
+            torch::save(generator, "generator-checkpoint.pt");
+            torch::save(generator_optimizer,
+                        "generator-optimizer-checkpoint.pt");
+            torch::save(discriminator, "discriminator-checkpoint.pt");
+            torch::save(discriminator_optimizer,
+                        "discriminator-optimizer-checkpoint.pt");
+            auto samples =
+                generator->forward(torch::randn({8, kNoiseSize, 1, 1}, device));
+            torch::save(((((samples) + ((1.0f)))) / ((2.0f))),
+                        torch::str("dcgan-sample-", checkpoint_counter, ".pt"));
+            spdlog::info("checkpoint  checkpoint_counter='{}'",
+                         checkpoint_counter);
+            (checkpoint_counter)++;
+          }
+        }
         (batch_index)++;
       }
     }
