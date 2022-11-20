@@ -336,24 +336,31 @@
 		      (&batch *data_loader)
 		      (let ((noise (torch--randn (curly (batch.data.size 0)
 							kNoiseSize 1 1))))
-			,@(loop for (e f) in `((real batch.data)
-					       (fake (generator->forward noise)))
+			,@(loop for e in `((:selec real
+						   :img batch.data
+						   :lab (dot (torch--empty (batch.data.size 0))
+							     (uniform_ .8 1.0)) ; high output
+						   :out (discriminator->forward real_images))
+					   (:selec fake
+						   :img (generator->forward noise)
+						   :lab (torch--zeros (batch.data.size 0)) ;low output
+						   :out (discriminator->forward (dot fake_images (detach)))))
 				collect
-				(flet ((n (var)
-					 (format nil "~a_~a" e var)))
-				  (let ((images (n "images"))
-					(labels (n "labels"))
-					(output (n "output"))
-					(d_loss (n "d_loss")))
-				    `(do0
-				      (comments ,(format nil "train discriminator with ~a images" e))
-				      (let ((,images ,f)
-					    (,labels (dot (torch--empty (batch.data.size 0))
-							  (uniform_ .8 1.0)))
-					    (,output (discriminator->forward ,images))
-					    (,d_loss (torch--binary_cross_entropy
-						      ,output ,labels)))
-					(dot ,d_loss (backward)))))))
+				(destructuring-bind (&key selec img lab out) e
+				  (flet ((n (var)
+					   (format nil "~a_~a" selec var)))
+				    (let ((images (n "images"))
+					  (labels (n "labels"))
+					  (output (n "output"))
+					  (d_loss (n "d_loss")))
+				      `(do0
+					(comments ,(format nil "train discriminator with ~a images" selec))
+					(let ((,images ,img)
+					      (,labels ,lab)
+					      (,output ,out)
+					      (,d_loss (torch--binary_cross_entropy
+							,output ,labels)))
+					  (dot ,d_loss (backward))))))))
 			(let ((d_loss (+ fake_d_loss
 					 real_d_loss)))
 			  (discriminator_optimizer.step)

@@ -85,9 +85,8 @@ int main(int argc, char **argv) {
       real_d_loss.backward();
       // train discriminator with fake images
       auto fake_images = generator->forward(noise);
-      auto fake_labels =
-          torch::empty(batch.data.size(0)).uniform_((0.80f), (1.0f));
-      auto fake_output = discriminator->forward(fake_images);
+      auto fake_labels = torch::zeros(batch.data.size(0));
+      auto fake_output = discriminator->forward(fake_images.detach());
       auto fake_d_loss = torch::binary_cross_entropy(fake_output, fake_labels);
       fake_d_loss.backward();
       auto d_loss = ((fake_d_loss) + (real_d_loss));
