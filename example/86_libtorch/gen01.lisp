@@ -38,20 +38,20 @@
 					;"%matplotlib notebook"
 		 (do0
 
-		       (imports (matplotlib))
+		  (imports (matplotlib))
                                         ;(matplotlib.use (string "QT5Agg"))
 					;"from matplotlib.backends.backend_qt5agg import (FigureCanvas, NavigationToolbar2QT as NavigationToolbar)"
 					;"from matplotlib.figure import Figure"
-		       (imports ((plt matplotlib.pyplot)
+		  (imports ((plt matplotlib.pyplot)
 					;  (animation matplotlib.animation)
 					;(xrp xarray.plot)
-				 ))
+			    ))
 
-		       (plt.ion)
+		  (plt.ion)
 					;(plt.ioff)
-		       ;;(setf font (dict ((string size) (string 6))))
-		       ;; (matplotlib.rc (string "font") **font)
-		       )
+		  ;;(setf font (dict ((string size) (string 6))))
+		  ;; (matplotlib.rc (string "font") **font)
+		  )
 		 (imports (	os
 					;sys
 				time

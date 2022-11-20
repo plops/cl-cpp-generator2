@@ -1,3 +1,7 @@
+|       |     |                                               |
+| gen00 | 80% | c++ code to train adverserial mnist generator |
+| gen01 | 20% | python code to visualize generated images     |
+
 - c++ doc https://pytorch.org/tutorials/advanced/cpp_frontend.html
 - download libtorch: https://pytorch.org/get-started/locally/
   - 176MB
