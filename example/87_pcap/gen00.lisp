@@ -26,7 +26,7 @@
     (load "util.lisp")
     #+nil
     (let ((name `DCGANGeneratorImpl)
-	 )
+	  )
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -119,7 +119,7 @@
 	(include <spdlog/spdlog.h>)
 	(include <popl.hpp>)
 					;(include <torch/torch.h>)
-	;(include "DCGANGeneratorImpl.h")
+					;(include "DCGANGeneratorImpl.h")
 	)
        (do0
 	(include <IPv4Layer.h>
@@ -209,9 +209,7 @@
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	  (out "project( mytest LANGUAGES CXX )")
-	  #+nil(loop for e in `(xtl xsimd xtensor)
-		     do
-		     (format s "find_package( ~a REQUIRED )~%" e))
+
 	  ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
 					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
@@ -229,65 +227,33 @@
 
 	  (out "add_executable( mytest ${SRCS} )")
 
-	  (out "target_include_directories( mytest PRIVATE
-/usr/local/include/
-/home/martin/src/popl/include/
- )")
 
-	  #+nil (/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/include/torch/csrc/api/include/
-		 /home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/include/torch/csrc/
-		 /home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/include/
-		 /home/martin/src/popl/include/
-		 )
 
-					;(out "target_compile_features( mytest PUBLIC cxx_std_20 )")
+
 	  (out "set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )")
 
 	  (out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
-	  (loop for e in `(Torch)
-		do
-		(out "find_package( ~a REQUIRED )" e))
-
-	  #+nil
-	  (progn
-	    (out "add_library( fmt_static STATIC IMPORTED )")
-	    (out "set_target_properties( fmt_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libfmt.a )")
-	    )
-
-	  #+nil (progn
-		  (out "add_library( spdlog_static STATIC IMPORTED )")
-		  (out "set_target_properties( spdlog_static PROPERTIES IMPORTED_LOCATION /usr/local/lib64/libspdlog.a )")
-		  )
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
+	  (out "pkg_check_modules( pcappp REQUIRED PcapPlusPlus )")
+
+	  (out "target_include_directories( mytest PRIVATE
+/usr/local/include/
+/home/martin/src/popl/include/
+/home/martin/stage/cl-cpp-generator2/example/87_pcap/dep/installed/include/pcapplusplus
+ )")
 
 
-	  (let ((libs (directory
-		       "/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/lib/lib*.a")))
-	    (defparameter *bla* libs)
-	    #+nil  (loop for e in libs
-			 do
-			 (let* ((lib (cl-ppcre:split "(/)" (format nil "~a" e)))
-				(liba (elt lib (1- (length lib))))
-				#+nil (stem (cl-ppcre:all-matches-as-strings
-					     "lib(.*)\\.a" liba)))
-			   (register-groups-bind (stem)
-						 ("lib(.*)\\.a" liba)
-						 (progn
-						   (out "add_library( ~a STATIC IMPORTED )" stem)
-						   (out "set_target_properties( ~a PROPERTIES IMPORTED_LOCATION ~a )" stem e)
-						   ))))
+	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
+	       `("\"${pcappp_LIBRARIES}\""
 
-	    (out "target_link_libraries( mytest )")
-	    (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-		 `("\"${TORCH_LIBRARIES}\""
-					;,@libs
+		 spdlog
+		 ))
 
-		   spdlog
-		   )))
+	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
+	       `("${pcappp_CFLAGS_OTHER}"))
 
-					; (out "target_link_libraries ( mytest Threads::Threads )")
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
 	  ))
       )))

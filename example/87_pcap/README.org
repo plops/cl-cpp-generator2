@@ -1,1 +1,9 @@
 - https://pcapplusplus.github.io/docs/tutorials/intro
+
+
+#+begin_example
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/home/martin/stage/cl-cpp-generator2/example/87_pcap/source00/b/../../dep/installed/lib/pkgconfig/
+
+#+end_example
+
+- i can't easily link pcapplusplus with pkg-cnfig
