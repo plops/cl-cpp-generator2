@@ -66,6 +66,8 @@
 		 "public:"
 					;"std::vector<uint8_t> compressed;"
 					;"size_t numWorkerThreads;"
+
+		 "JxlThreadParallelRunnerPtr runner;"
 		 ,@(loop for e in types
 			 collect
 			 (destructuring-bind (&key var name member (ptr t)) e
@@ -91,24 +93,60 @@
 		    (values :constructor))
 		   ,(lprint :msg (format nil "~a constructor" name))
 		   (let ((enc (JxlEncoderMake nullptr))
+
 			 (runner (JxlThreadParallelRunnerMake nullptr
 							      4)))
+		     #+nil (setf runner (JxlThreadParallelRunnerMake nullptr
+								     4))
 		     (unless (== JXL_ENC_SUCCESS
 				 (JxlEncoderSetParallelRunner
 				  (enc.get)
 				  JxlThreadParallelRunner
-				  (runner.get)))))
+				  (runner.get)))
+		       ,(lprint :msg "parallel runner setting failed"))
+		     (progn
+		       "JxlBasicInfo basic_info;"
+		       (JxlEncoderInitBasicInfo
+			&basic_info)
+		       ,@(loop for (e f) in `((xsize 512)
+					      (ysize 256)
+					      (bits_per_sample 32)
+					      (exponent_bits_per_sample 8)
+					      (uses_original_profile
+					       JXL_FALSE))
+			       collect
+			       `(setf (dot basic_info ,e)
+				      ,f))
+		       (unless (== JXL_ENC_SUCCESS
+				   (JxlEncoderSetBasicInfo
+				    (enc.get)
+				    &basic_info))
+			 ,(lprint :msg "basic info failed")
+			 )
+		       (let ((*frame_settings (JxlEncoderFrameSettingsCreate
+					       (enc.get)
+					       nullptr)))
+			 (let ((pixel_format
+				(JxlPixelFormat (curly 3
+						       JXL_TYPE_FLOAT
+						       JXL_NATIVE_ENDIAN
+						       0)))))
+			 (unless (== JXL_ENC_SUCCESS
+				     (JxlEncoderAddImageFrame
+				      frame_settings
+				      &pixel_format
+				      nullptr 0))
+			   ,(lprint :msg "adding image frame failed")
+			   ))
+		       (JxlEncoderCloseInput (enc.get))
+		       ))
 		   )
 		 (defmethod Encode (;pixels
 					; width height
 				    )
 		   (declare (type "std::vector<float>" pixels)
 			    (type int width height))
-		   #+nil(let ((format
-			       (JxlPixelFormat (curly 3
-						      JXL_TYPE_FLOAT
-						      JXL_NATIVE_ENDIAN
-						      0)))))
+
 		   )
 		 #+nil (defmethod Reset ()
 			 (JxlEncoderReset (jxlencoderptr.get)))
