@@ -26,12 +26,13 @@
     (load "util.lisp")
 
     (let ((name `JxlEncode)
-	  (types `((:var enc :name JxlEncoderPtr :member t :ptr nil)
+	  (types `(;(:var enc :name JxlEncoderPtr :member t :ptr nil)
+		   #+nil
 		   (:var runner :name JxlThreadParallelRunnerPtr
-			  :member t :ptr nil)
-		   ;(:name JxlEncoderFrameSettings :member t)
-		   (:var options :name JxlEncoderOptions :member t)
-		   ;(:name JxlEncoderError :member t)
+			 :member t :ptr nil)
+					;(:name JxlEncoderFrameSettings :member t)
+					;  (:var options :name JxlEncoderOptions :member t)
+					;(:name JxlEncoderError :member t)
 		   )))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -46,71 +47,76 @@
 			  ,@(loop for e in types
 				  collect
 				  (destructuring-bind (&key var name member) e
-				   (format nil "struct ~a;" name)))
+				    (format nil "struct ~a;" name)))
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
 				  " "
-				  
+
 				  (include <jxl/encode.h>
 					   <jxl/encode_cxx.h>
 					   <jxl/thread_parallel_runner.h>
 					   <jxl/thread_parallel_runner_cxx.h>
-					   
+
 					   <vector>)
 				  " "
 				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 "std::vector<uint8_t> compressed;"
-		 "size_t numWorkerThreads;"
+					;"std::vector<uint8_t> compressed;"
+					;"size_t numWorkerThreads;"
 		 ,@(loop for e in types
 			 collect
 			 (destructuring-bind (&key var name member (ptr t)) e
-			     (when member
-			       (format nil "~a ~:[~;*~]~a;"
-				       name
-				       ptr
-				       (if var
-					   var
-					   (string-downcase name))))))
+			   (when member
+			     (format nil "~a ~:[~;*~]~a;"
+				     name
+				     ptr
+				     (if var
+					 var
+					 (string-downcase name))))))
 
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
-		    (construct
-		     (enc (JxlEncoderMake nullptr))
-		     (numWorkerThreads (JxlThreadParallelRunnerDefaultNumWorkerThreads))
-		     (runner
-		      (JxlThreadParallelRunnerMake
-		       nullptr
-		       numWorkerThreads
-		       )))
+		    #+nil (construct
+			   (enc (JxlEncoderMake nullptr))
+			   (numWorkerThreads (JxlThreadParallelRunnerDefaultNumWorkerThreads))
+			   (runner
+			    (JxlThreadParallelRunnerMake
+			     nullptr
+			     numWorkerThreads
+			     )))
 		    (values :constructor))
 		   ,(lprint :msg (format nil "~a constructor" name))
-		   (unless (== JXL_ENC_SUCCESS
-			       (JxlEncoderSetParallelRunner
-				(enc.get)
-				JxlThreadParallelRunner
-				(runner.get))))
+		   (let ((enc (JxlEncoderMake nullptr))
+			 (runner (JxlThreadParallelRunnerMake nullptr
+							      4)))
+		     (unless (== JXL_ENC_SUCCESS
+				 (JxlEncoderSetParallelRunner
+				  (enc.get)
+				  JxlThreadParallelRunner
+				  (runner.get)))))
 		   )
-		 (defmethod Encode (pixels width height)
+		 (defmethod Encode (;pixels
+					; width height
+				    )
 		   (declare (type "std::vector<float>" pixels)
 			    (type int width height))
 		   #+nil(let ((format
-			  (JxlPixelFormat (curly 3
-						 JXL_TYPE_FLOAT
-						 JXL_NATIVE_ENDIAN
-						 0)))))
+			       (JxlPixelFormat (curly 3
+						      JXL_TYPE_FLOAT
+						      JXL_NATIVE_ENDIAN
+						      0)))))
 		   )
 		 #+nil (defmethod Reset ()
-		   (JxlEncoderReset (jxlencoderptr.get)))
+			 (JxlEncoderReset (jxlencoderptr.get)))
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 		    (values :constructor))
-		   
-		  #+nil (JxlEncoderDestroy jxlencoder)))
+
+		   #+nil (JxlEncoderDestroy jxlencoder)))
 	       )))
 
     (write-source
@@ -247,20 +253,22 @@
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
 	  (out "pkg_check_modules( jxl REQUIRED libjxl )")
+	  (out "pkg_check_modules( jxlt REQUIRED libjxl_threads )")
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/
 /home/martin/src/popl/include/
  )")
 	  #+nil (progn
-	    (out "add_library( libnc SHARED IMPORTED )")
-	    (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
+		  (out "add_library( libnc SHARED IMPORTED )")
+		  (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
  )")
-	    )
+		  )
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
 		 jxl
+		 jxl_threads
 		 ))
 
 	  #+nil
