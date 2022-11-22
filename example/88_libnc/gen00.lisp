@@ -24,8 +24,8 @@
 
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
-    #+nil
-    (let ((name `DCGANGeneratorImpl)
+
+    (let ((name `Net)
 	  )
       (write-class
        :dir (asdf:system-relative-pathname
@@ -34,24 +34,47 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  ,@(loop for e in `(NCContext
+					     NCDevice)
+				  collect
+				  (format nil "struct ~a;" e))
+			  #+nil
+			  (do0
+			   (include
+			    <cstddef>)
+			   (space "extern \"C\"" (progn
+						   (include <libnc.h>))))
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
-
+					;(include <string>)
+				  (space "extern \"C\""
+					 (progn
+					   (include <libnc.h>)))
 				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
+					;"string deviceName;"
+		 "NCContext *s;"
+		 "NCDevice *dev;"
+
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
-		    (construct)
+		    (construct
+		     (s (nc_context_init 1))
+					; (deviceName (string "cpu"))
+		     (dev (nc_new_device s (string "cpu")
+					;(deviceName.c_str)
+					 )))
 		    (values :constructor))
 		   ,(lprint :msg (format nil "~a constructor" name))
 		   )
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 		    (values :constructor))
+		   (nc_context_end s)
 		   ))
 	       )))
 
@@ -81,7 +104,7 @@
 					;(include "DCGANGeneratorImpl.h")
 	)
        (do0
-	(include <libnc.h>))
+	(include "Net.h"))
 
        (defun main (argc argv)
 	 (declare (type int argc)
@@ -130,6 +153,8 @@
 		     op
 		     std--endl)
 		 (exit 0))
+
+	       (let ((net (Net))))
 
 	       ))
 	 )))
