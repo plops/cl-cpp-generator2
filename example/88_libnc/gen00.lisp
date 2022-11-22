@@ -37,7 +37,7 @@
 			  )
        :implementation-preamble `(do0
 				  ,log-preamble
-				  
+
 				  )
        :code `(do0
 	       (defclass ,name ()
@@ -130,7 +130,7 @@
 		     op
 		     std--endl)
 		 (exit 0))
-	       
+
 	       ))
 	 )))
 
@@ -186,23 +186,27 @@
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
-	  (out "pkg_check_modules( pcappp REQUIRED PcapPlusPlus )")
+
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/
 /home/martin/src/popl/include/
-/home/martin/stage/cl-cpp-generator2/example/87_pcap/dep/installed/include/pcapplusplus
+/home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/
  )")
-
+	  (progn
+	    (out "add_library( libnc SHARED IMPORTED )")
+	    (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
+ )")
+	    )
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `("\"${pcappp_LIBRARIES}\""
-
-		 spdlog
+	       `(spdlog
+		 libnc
 		 ))
 
+	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
-	       `("${pcappp_CFLAGS_OTHER}"))
+	       `())
 
 					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
 	  ))
