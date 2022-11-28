@@ -1,0 +1,264 @@
+|       |                                      |
+| gen00 | imgui and implot demo                |
+| gen01 | imgui, implot and opencv, no threads |
+| gen02 | like 01 but split into more classes  |
+| gen03 | like 02 but use parallel workers     |
+* references
+ - kosarevsky: "3d graphics rendering cookbook"
+
+ - The Cherno: "BEST WAY to make Desktop Applications in C++"
+   - https://www.youtube.com/watch?v=vWXrFetSH8w
+
+ - Why and How To Use ImGui For Your Coding Projects | Tutorial & Case Study
+   - https://www.youtube.com/watch?v=U1BnzWX194Q
+   - use vcpgk to install glad, glfw and imgui
+     - seems to support imgui docking branch: https://github.com/microsoft/vcpkg/issues/18609
+       
+* install vcpkg
+
+  #+begin_example
+cd ~/src
+git clone https://github.com/Microsoft/vcpkg.git
+./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+  #+end_example
+- install imgui
+  - https://vcpkg.info/port/imgui
+- install implot
+  - https://github.com/epezent/implot
+  - note that you should enable 32-bit indices if plotting heatmaps
+    #+begin_example
+~/src/vcpkg/vcpkg install imgui[docking-experimental,glfw-binding,opengl3-binding]
+~/src/vcpkg/vcpkg install implot
+~/src/vcpkg/vcpkg install glew
+# requires apt-get install libxmu-dev libxi-dev libgl-dev
+    #+end_example
+- files are installed here: /home/martin/src/vcpkg/packages/glfw3_x64-linux/lib/pkgconfig/glfw3.pc
+#+begin_example
+Installing package imgui[core,docking-experimental,glfw-binding,opengl3-binding]:x64-linux...
+Elapsed time for package imgui:x64-linux: 22.9 s
+
+Total elapsed time: 30.95 s
+
+The package imgui provides CMake targets:
+
+    find_package(imgui CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE imgui::imgui)
+
+Using source at /home/martin/src/vcpkg/buildtrees/implot/src/v0.12-10fbb8cc87.clean
+
+Total elapsed time: 2.381 min
+
+The package implot provides CMake targets:
+
+    find_package(implot CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE implot::implot)
+
+
+#+end_example
+
+- update vcpkg
+  #+begin_example
+cd ~/src/vcpkg
+git pull
+~/src/vcpkg/vcpkg update
+#The following packages differ from their port versions:
+#    imgui:x64-linux                  1.86 -> 1.87
+#    implot:x64-linux                 0.12 -> 0.13
+~/src/vcpkg/vcpkg upgrade
+~/src/vcpkg/vcpkg remove --outdated
+  #+end_example
+
+  
+- configure cmake using vcpkg
+  #+begin_example
+mkdir b
+cmake -B b -S . -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build b
+  #+end_example
+
+- try to also use opencv (and maybe later ceres)
+  - opencv with imgui  https://gist.github.com/UnaNancyOwen/acfc71de5b157d2ba22c090b420030e4
+  - how to read video with opencv https://docs.opencv.org/3.4/d3/d9c/samples_2cpp_2tutorial_code_2videoio_2video-write_2video-write_8cpp-example.html
+#+begin_example
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=/home/martin/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+#+end_example
+- sudo dnf install opencv-devel
+- charuco board example https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html
+- parallel processing with opencv https://github.com/dwood3/cppnd-capstone/blob/master/src/main.cpp
+  - https://www.manmade2.com/concurrent-c-opencv-video-streaming/
+  - grabframe symbolized as conveyor belt, stores frames in
+    frameStack, clears when stack flows over
+  - processFrame another conveyor, read last frame from stack, some
+    image processing, store in contourStack
+  - main, start two threads, set stopSig when user quits, display
+    results
+#+begin_example
+class keyframe_processor
+  process()
+    while(run)
+      sleep(1ms)
+      event = eventQueue->receive
+      process_event(event)
+  process_event(event)
+    gray = rgb2gray(event.get_rgb)
+    for (sub: subframe(gray))
+      median[sub] = median(sub)
+    msg = processed_fame_message(event.batch_idx,event.frame_idx,event.seconds, median)
+    std::async(std::launch::async, &message_queue<processed_frame_message>::send, msgQueue, std::move(msg))
+
+  id : int
+  run : bool
+  std::shared_ptr<message_queue<process_frame_event> > eventQueue     (<- input)
+  std::shared_ptr<message_queue<processed_frame_message> > msgQueue   (-> output>
+
+class message_queue<T>
+  T receive()
+    lock(mutex)
+    condition.wait()
+    msg = move(queue.back)
+    queue.pop_back
+    return msg
+    
+  send(T&&)
+    lock(mutex)
+    queue.push_back(std::move(msg))
+    condition.notify_one()
+    
+  queue : deque<T>
+  mutex : mutex
+  condition : condition_variable
+  
+class process_frame_event
+  batch_idx, frame_idx, idm : int
+  frame : Mat
+  fps, seconds : real
+
+class processed_frame_message
+  batch_idx, frame_idx : int
+  seconds : real
+  medians : vector<int>
+
+std::shared_ptr<message_queue<process_frame_event>> eventQueue = std::make_shared<message_queue<process_frame_event>>();
+std::shared_ptr<message_queue<processed_frame_message>> msgQueue = std::make_shared<message_queue<processed_frame_message>>();
+  
+int num_threads = 4;
+std::vector<keyframe_processor> kfps;
+std::vector<std::thread> kfp_threads;
+
+dotimes i num_threads
+  kfp = keyframe_processor(i,eventQueue,msgQueue)
+  kfps.push_back(kfp)
+  kfp_threads.push_back(std::thread(&keyframe_processor::process, kfp))
+
+for-each keyframe keyframes
+  frame = cap.read()
+  event = process_frame_event(i frame_idx frame dim fps seconds)
+  async(launch::async &message_queue<process_frame_event>::send eventQueu std::move(event))
+
+while True
+  sleep(1ms)
+  msg = msgQueue->receive()
+  print msg.get_seconds()
+  print msg.get_median()
+
+#+end_example
+
+- https://www.khronos.org/opengl/wiki/Common_Mistakes
+  don't use opengl objects without context (sometimes you can't handle them in destructors)
+- include-what-you-use, i want to reduce the number of headers
+  #+begin_example
+git clone https://github.com/include-what-you-use/include-what-you-use.git
+clang -v
+git checkout clang_13
+mkdir b && cd b
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+ninja
+sudo ninja install
+  #+end_example
+  - call it
+  #+begin_example
+    
+
+  mkdir bi && cd bi
+  CC="clang" CXX="clang++" cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use -G Ninja ..
+  #+end_example
+  - alternative way
+    #+begin_example
+mkdir bc;cd bc; cmake ..  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
+ninja
+python /usr/local/bin/iwyu_tool.py -p .
+    #+end_example
+    - iwyu has problems finding stddef.h
+      #+begin_example
+ it needs to find Clang's built-ins in path/to/iwyu/../lib/clang/3.5.0/include where 3.5.0 is a stand-in for the version of Clang your IWYU was built against.
+clang -print-resource-dir to find the base path of the built-in headers on your system.
+# /usr/lib64/clang/13.0.0
+use include-what-you-use -print-resource-dir to learn exactly where IWYU wants the headers
+# /usr/local/lib64/clang/13.0.0
+sudo mkdir -p /usr/local/lib64/clang/
+sudo ln -s /usr/lib64/clang/13.0.0 /usr/local/lib64/clang/13.0.0
+  #+end_example
+- another tool
+  https://www.youtube.com/watch?v=DXil_ahLTyg
+  cppinclude - Tool for analyzing includes in C++ - Oleg Fedorenko - CppCon 2020
+#+begin_example
+git clone https://github.com/cppinclude/cppinclude
+cd cppinclude
+cd build
+cmake .. -G Ninja
+ninja
+sudo ninja install
+# usage:
+mkdir bc; cd bc; cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cppinclude --compile_commands=bc/compile_commands.json
+
+cppinclude --report=unresolved --compile_commands=bc/compile_commands.json|grep --color -E '^|Charu'
+
+
+cppinclude --report=most_impact --compile_commands=bc/compile_commands.json
+
+
+#+end_example
+
+
+
+- try a class diagram
+  - mermaid.live
+#+begin_example
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Charuco{
+      +Mat board_img
+      +Init()
+      +ShutDown()
+      +Render()
+      +Mat Capture()
+    }
+    class GraphicsFramework{
+      +window
+      +bool WindowShouldClose()
+      +PollEvents()
+    }
+    class MessageQueue {
+        +mutex
+        +queue
+        +condition
+        +T receive()
+        +bool empty()
+        +send(T)
+    }
+    class MainWindow {
+        +Init()
+        +NewFrame()
+        +Update()
+        +Render()
+        +Shutdown()
+    } 
+
+#+end_example

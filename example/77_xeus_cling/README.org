@@ -1,0 +1,160 @@
+
+- https://github.com/pojntfx/xeus-cling-binaries
+#+begin_example
+
+curl \
+  -L -o /tmp/xeus-cling.tar.gz \
+  https://github.com/pojntfx/xeus-cling-binaries/releases/download/latest/xeus-cling.$(uname -m).tar.gz
+
+# 674MB
+# 2.1GB extracted
+
+
+# Extract the package to /usr/local/xeus-cling. You must install in this prefix.
+XEUS_PREFIX=/usr/local/xeus-cling
+sudo mkdir -p ${XEUS_PREFIX}
+sudo tar -C ${XEUS_PREFIX} -xzf /tmp/xeus-cling.tar.gz
+
+# Install the kernels
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp11 --sys-prefix
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp14 --sys-prefix
+sudo jupyter kernelspec install ${XEUS_PREFIX}/share/jupyter/kernels/xcpp17 --sys-prefix
+#+end_example
+
+
+- glfw example https://www.youtube.com/watch?v=eoIuqLNvzFs
+- interactive c++ for datascience https://www.youtube.com/watch?v=23E0S3miWB0
+  - incremental compilation
+    - invalid code is discarded
+    - omit semicolon to print result
+    - cling::Value V; to store values
+  - libClang -> ast
+  - transfomrations by cling
+  - libClang -> ir
+  - small set of extensions for interactive explaration
+  - xeus-cling maintained by some company
+  - Symengine print nice math (symbolic computation)
+  - interactivity ?std::vector
+  - visual widgets xw::slider<double>
+  - more in this talk: S. Corlay Deep dive into xeus-based clin kernel for jupyter
+      - https://compiler-research.org/assets/presentations/S_Corlay-CaaS_Xeus-Cling.pdf
+      - https://www.youtube.com/watch?v=kx3wvKk4Qss
+  - cling supports cuda (with a second compiler instance)
+  - relaunch only part of a simulation
+    - libpng writer
+    - game of life example
+  - stop at 31:00
+
+
+
+- install mamba https://github.com/conda-forge/miniforge#mambaforge
+#+begin_example
+
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+bash Mambaforge-$(uname)-$(uname -m).sh
+
+# maybe don't enable base environment: conda config --set auto_activate_base false
+
+#+end_example
+
+- install xeus-cling in a new environment
+  #+begin_example
+mamba create -n cling
+source activate cling
+
+mamba install xeus-cling -c conda-forge
+mamba install jupyterlab -c conda-forge
+
+
+jupyter-lab --no-browser
+  #+end_example
+  - note this fails with some C++ library error on arch linux hetzner
+
+  - connect to jupyter
+
+ #+begin_example
+ssh hetzner -L 8888:localhost:8888
+
+ #+end_example
+
+- build cling from source
+
+#+begin_example
+mamba create -n xeus-cling -c conda-forge cmake "xeus>=2.0,<3.0" cling=0.8 clangdev=5.0.0 llvmdev=5 "nlohmann_json>=3.9.1,<3.10" "cppzmq>=4.6.0,<5" "xtl>=0.7,<0.8" pugixml "cxxopts>=2.1.1,<2.2"
+source activate xeus-cling
+mamba activate xeus-cling
+cd src
+git clone https://github.com/jupyter-xeus/xeus-cling
+cd xeus-cling
+cmake -D CMAKE_INSTALL_PREFIX=${CONDA_PREFIX} -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX -D CMAKE_INSTALL_LIBDIR=${CONDA_PREFIX}/lib -D DOWNLOAD_GTEST=ON
+make && make install
+
+# compilation didn't take all that long on single core
+
+
+mamba install jupyterlab -c conda-forge
+
+
+jupyter-lab --no-browser
+
+
+#+end_example
+
+
+- try install cling with fedora:
+#+begin_example
+sudo dnf install root-cling
+# 289M
+rootcling
+sudo dnf remove root-cling
+#+end_example
+
+- try to build cling from source
+#+begin_example
+wget https://raw.githubusercontent.com/root-project/cling/master/tools/packaging/cpt.py
+chmod +x cpt.py
+./cpt.py --check-requirements && ./cpt.py --create-dev-env Debug --with-workdir=./cling-build/
+#+end_example
+- try release build
+  #+begin_example
+cd
+./cpt.py --check-requirements
+./cpt.py --create-dev-env Release --with-workdir=./cling-build/ --with-cmake-flags "-G Ninja" --no-test --number-of-cores 4
+ninja
+
+# takes 2h on 2 cores (4 hyperthreads) and 1.5GB
+emacs /home/martin/cling-build/cling-src/utils/benchmark/src/benchmark_register.h 
+# add #include <limits>
+
+
+ninja install
+# 936M in /tmp/cling-obj
+
+export PATH=/tmp/cling-obj/bin:$PATH
+
+cd /home/martin/cling-build/cling-src/tools/cling/tools/Jupyter/kernel
+pip3 install -e .
+
+jupyter-kernelspec install --user cling-cpp17
+jupyter-kernelspec install --user cling-cpp11
+
+
+
+jupyter notebook
+
+#include <iostream> // use extra cell for this
+
+
+std::cout << "some output" << std::endl;
+
+int a=12;
+int b=11;
+a+b
+
+  #+end_example
+- after cling is build install jupyter according to the README.md
+  here:
+  https://github.com/root-project/cling/blob/master/tools/Jupyter
+
+-    gcc 11 has c++23 support, my fedora has gcc 12.2.1 (as of sep 9 2022)
+-  clang has (in various degrees of partial) c++2b support in clang 13,14 and 1; fedora has 14.0.5

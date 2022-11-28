@@ -1,0 +1,28 @@
+|       |     |                                                                       |   |
+| gen00 | 20% | pcapplusplus                                                          |   |
+| gen01 | 30% | libtins sniff 10 packets https://libtins.github.io/tutorial/sniffing/ |   |
+| gen02 |     |                                                                       |   |
+
+
+- https://pcapplusplus.github.io/docs/tutorials/intro
+
+** pcapplusplus
+
+#+begin_example
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/home/martin/stage/cl-cpp-generator2/example/87_pcap/source00/b/../../dep/installed/lib/pkgconfig/
+
+#+end_example
+
+- i can't easily link pcapplusplus with pkg-cnfig
+
+** libtins
+
+#+begin_example
+sudo dnf install libtins-devel
+
+#+end_example
+
+
+** References
+
+   - https://weberblog.net/the-ultimate-pcap/

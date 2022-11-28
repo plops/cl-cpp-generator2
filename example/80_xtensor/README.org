@@ -1,0 +1,35 @@
+
+
+
+- install
+#+begin_example
+cd ~/src
+git clone https://github.com/xtensor-stack/xtl
+cd xtl
+mkdir b
+cd b
+cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+ninja
+sudo ninja install
+
+cd ~/src
+git clone https://github.com/xtensor-stack/xsimd
+cd xsimd
+mkdir b
+cd b
+cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+ninja
+sudo ninja install
+
+cd ~/src
+git clone https://github.com/xtensor-stack/xtensor
+cd xtensor
+mkdir b
+cd ~/src/xtensor/b
+cmake -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+ninja
+sudo ninja install
+
+#+end_example
+
+- https://xtensor.readthedocs.io/en/latest/numpy.html

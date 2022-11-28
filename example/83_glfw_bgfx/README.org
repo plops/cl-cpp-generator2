@@ -1,0 +1,64 @@
+https://github.com/jpcy/bgfx-minimal-example/blob/master/helloworld_mt.cpp
+
+https://dev.to/pperon/hello-bgfx-4dka
+
+https://www.sandeepnambiar.com/getting-started-with-bgfx/
+https://github.com/gamedolphin/bgfx-sample
+
+bgfx
+https://www.youtube.com/watch?v=oUQJm755GwY
+- also complains about compile time
+  
+
+#+begin_example
+
+# ubuntu deps
+sudo apt-get install libgl1-mesa-dev x11proto-core-dev libx11-dev
+
+# fedora deps
+sudo dnf install mesa-libGL-devel xorg-x11-proto-devel libX11-devel
+sudo dnf install glfw-devel
+
+cd ~/src
+git clone git://github.com/bkaradzic/bx.git
+git clone git://github.com/bkaradzic/bimg.git
+git clone git://github.com/bkaradzic/bgfx.git
+
+
+# du -hs bx bimg bgfx
+39M	bx
+8.0M	bimg
+448M	bgfx
+
+# hmm, 500MB, that is bit too much dependency
+# a lot is in examples/assets and examples/runtime
+
+rsync -avz hetzner:./src/{bx,bimg,bgfx} .
+
+cd bgfx
+make linux-release64
+
+# results are in .build (2.6GB)
+cd /home/martin/src/bgfx/examples/runtime
+../../.build/linux64_gcc/bin/examplesRelease  # 4.1M binary, linked to GL, Xext, X11
+
+# nanovg looks like blender ui
+
+# a version of imgui comes with bgfx, no need to download another one
+# cd ~/src
+# git clone https://github.com/ocornut/imgui
+#+end_example
+
+
+
+
+- entt
+#+begin_example
+
+cd ~/src
+git clone https://github.com/skypjack/entt
+
+# 33Mb
+
+#+end_example
+- video goes through entt wiki https://www.youtube.com/watch?v=jjGY7EyaTr0

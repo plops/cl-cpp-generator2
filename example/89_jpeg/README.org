@@ -1,0 +1,16 @@
+
+- compare jpeg and jpeg xl compression time
+
+- nice intro to jpeg https://www.youtube.com/watch?v=Kv1Hiv3ox8I
+
+- install:
+
+#+begin_example
+
+sudo dnf install libjxl-devel libjpeg-turbo-devel
+#+end_example
+
+- will multi-threaded encoder speed up compression of a single image?
+
+- example code:
+  https://github.com/libjxl/libjxl/blob/main/examples/encode_oneshot.cc

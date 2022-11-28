@@ -1,0 +1,44 @@
+|       |     |                                               |
+| gen00 | 80% | c++ code to train adverserial mnist generator |
+| gen01 | 20% | python code to visualize generated images     |
+
+- c++ doc https://pytorch.org/tutorials/advanced/cpp_frontend.html
+- download libtorch: https://pytorch.org/get-started/locally/
+  - 176MB
+- https://github.com/pytorch/examples/tree/main/cpp/dcgan example code
+
+- give cmake prefix as absolute path!
+#+begin_example
+
+cmake \
+  -DCMAKE_PREFIX_PATH=/home/martin/stage/cl-cpp-generator2/example/86_libtorch/dep/libtorch/ ..
+cmake --build . --config Release
+
+#+end_example
+
+- module:
+  - buffers .. store state (e.g. variances for batch norm)
+  - parameters .. store state and gradients (e.g. trainable weights)
+  - submodules
+
+- with std::shared_ptr<Net> semantic, one can stay close to python's
+  semantics
+
+- libtorch uses an elaborate scheme to hide shared_ptr and make
+  reference semantic the default, without having to write
+  std::shared_ptr or std::make_shared all the time
+
+  
+
+- how to link statically with pytorch
+
+  https://stackoverflow.com/questions/60629537/cmake-linking-static-library-pytorch-cannot-find-its-internal-functions-during
+
+
+- speed up compilation with libtorch
+  https://www.reddit.com/r/pytorch/comments/lrlazm/faster_builds_using_libtorch_c_question/
+  
+
+- the proper path to bring torch model to production seems to be
+  torchscript: https://pytorch.org/tutorials/advanced/cpp_export.html
+https://pytorch.org/tutorials/beginner/deploy_seq2seq_hybrid_frontend_tutorial.html

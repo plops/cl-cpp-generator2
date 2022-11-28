@@ -1,0 +1,12 @@
+
+- try to understand tla+ after i watched the workshop at mch22
+
+- https://github.com/lemmy/BlockingQueue/tree/6b6f2128fb6e49307281dcdc63779864638de748
+
+- if i follow printf by fflush(stdout), does that make it reentrant?
+
+- download tlaplus
+  https://github.com/tlaplus/tlaplus/releases/tag/v1.7.2
+#+begin_example
+wget https://objects.githubusercontent.com/github-production-release-asset-2e65be/50906927/5d8ca4a7-0a04-4dfa-908f-346c52e1e83c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20220923%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20220923T204947Z&X-Amz-Expires=300&X-Amz-Signature=506a44b066e13a94d42bcefb68f4f3d3e7b241a652438eb2b527511a3afd7e51&X-Amz-SignedHeaders=host&actor_id=131941&key_id=0&repo_id=50906927&response-content-disposition=attachment%3B%20filename%3Dtla2tools.jar&response-content-type=application%2Foctet-stream
+#+end_example

@@ -1,0 +1,166 @@
+|       | completion | comment                       |
+| gen00 |        60% | imgui, avcpp, glbinding, glfw |
+| gen01 |            | split into classes            |
+
+- install avcpp dependency on fedora 36
+#+begin_example
+
+sudo dnf install \
+  libavcodec-free-devel \
+  libavformat-free-devel \
+  libavutil-free-devel \
+  libpostproc-free-devel \
+  libswresample-free-devel \
+  libswscale-free-devel \
+  libavdevice-free-devel \
+  libavfilter-free-devel \
+  ffmpeg-free
+
+cd ~/src
+git clone --recurse-submodules https://github.com/h4tr3d/avcpp
+mkdir b && cd b
+cmake -G Ninja -DCMAKE_BUILD_MODE=RELEASE ..
+ninja install
+sudo ninja install
+
+
+
+#+end_example
+
+
+#+begin_example
+
+
+cd ~/src
+git clone https://github.com/jarro2783/cxxopts
+
+
+#+end_example
+
+- Basic video playback in OpenGL using FFmpeg (Part 1)
+  https://www.youtube.com/watch?v=lFncAJqDQeE
+
+- https://github.com/bartjoyce/video-app
+  
+- [2015] https://news.ycombinator.com/item?id=33392260
+
+
+- how to display image with imgui https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
+
+
+* how to split into classes for gen01
+
+  - i want to be able to play multiple videos
+  - need class to represent
+    - texture (init, change)
+    - video file with skipping
+
+  - use popl for argument parsing
+
+ #+begin_example
+ cd ~/src
+git clone https://github.com/badaix/popl
+ #+end_example
+  - use fmt to print values into strings
+#+begin_example
+ cd ~/src
+git clone https://github.com/fmtlib/fmt
+
+#+end_example
+
+- i think it would be useful to use spdlog, so that i can have
+  different log levels (keyframes only printed in the highest 'trace'
+  level)
+   - note: this isn't working. maybe the fedora spdlog is incompatible
+     with the github fmt
+#+begin_example
+# sudo dnf install spdlog-devel
+sudo dnf remove spdlog-devel spdlog # this remove gnuradio and some qt stuff
+#+end_example
+
+
+- spdlog from github
+#+begin_example
+
+
+cd ~/src
+git clone https://github.com/gabime/spdlog.git
+cd spdlog
+mkdir b
+cd b
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+#+end_example
+
+- i want to track humans, try to install mediapipe for that
+https://google.github.io/mediapipe/getting_started/hello_world_cpp.html
+
+#+begin_example
+
+
+ sudo dnf install bazel
+
+ sudo dnf install java-11-openjdk-devel
+
+ cd ~/src
+ git clone https://github.com/google/mediapipe.git
+ # 628MB
+ 
+ cd mediapipe
+ 
+
+ls -ltr /etc/alternatives/java
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.17.0.8-2.fc36.x86_64
+
+export GLOG_logtostderr=1
+
+bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hand_tracking:hand_tracking_cpu
+
+
+bazel run --define MEDIAPIPE_DISABLE_GPU=1 \
+    mediapipe/examples/desktop/hello_world:hello_world
+
+
+#+end_example
+
+
+- i can't get bazel to run
+
+- an alternative might be https://neuralmagic.com/
+  https://www.youtube.com/watch?v=0PAiQ1jTN5k How to make your CPU as
+  fast as a GPU - Advances in Sparsity w/ Nir Shavit
+
+#+begin_example
+
+pip3 install --user deepsparse
+
+
+#+end_example
+
+- it comes with libdeepsparse.so
+- this is without source
+- this library is manylinux2014-compatible and built on CentOS 7.
+  Linux distributions such as Ubuntu 20.04, which are compatible with
+  manylinux2014, should support it.
+
+- the repo mentions headers: ./docs/source/c++api-overview.md but
+  doesn't contain them
+#+begin_example
+
+compiler.hpp
+config.hpp
+dimensions.hpp
+tensor.hpp
+engine.hpp
+
+
+#+end_example
+
+- https://www.youtube.com/watch?v=-VU4b5b8l_Y How to Achieve the
+  Fastest CPU Inference Performance for Object Detection YOLO Models
+
+- https://google.github.io/mediapipe/solutions/pose.html blazepose
+  seems to be good to track people poses
+
+- how to build tflite with bazel2 https://www.youtube.com/watch?v=He2p2JLpYC0

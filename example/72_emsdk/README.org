@@ -1,0 +1,395 @@
+|                        |                                                                                                                                                  |
+| gen00                  | hello world example                                                                                                                              |
+| gen01                  | sdl example                                                                                                                                      |
+| gen02                  | opencv example                                                                                                                                   |
+| gen03                  | sokol example                                                                                                                                    |
+| util.lisp              | helper function for logging and to create c++ classes from lisp (lprint, write-class, write-impl-class)                                          |
+| gen-cl-util-pimpl.lisp | create util-pimpl.lisp, helper function to create more complex c++ pimpl classes from lisp                                                       |
+| gen04                  | show image with sokol (not working yet)                                                                                                          |
+| gen05                  | glfw opengl 1.2 https://github.com/floooh/sokol-samples/blob/master/glfw/sgl-test-glfw.c                                                         |
+| gen06                  | sokol version of 05, no imgui   https://github.com/floooh/sokol-samples/blob/master/sapp/sgl-sapp.c                                              |
+| gen07                  | sokol and imgui (started from 06)                                                                                                                |
+| gen08                  | read camera with emscripten, sokol, imgui (started from 07 and https://github.com/plops/cl-js-generator/blob/master/example/05_video/gen00.lisp) |
+|                        |                                                                                                                                                  |
+|                        |                                                                                                                                                  |
+- install emsdk
+#+begin_example
+git clone https://github.com/emscripten-core/emsdk.git
+./emsdk install latest
+./emsdk activate latest
+
+source "/home/martin/src/emsdk/emsdk_env.sh"
+
+# Configure emsdk in your shell startup scripts by running:
+echo 'source "/home/martin/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
+
+#+end_example
+- update emsdk
+  #+begin_example
+# Fetch the latest registry of available tools.
+./emsdk update
+
+# Download and install the latest SDK tools.
+./emsdk install latest
+
+# Set up the compiler configuration to point to the "latest" SDK.
+./emsdk activate latest
+
+# Activate PATH and other environment variables in the current terminal
+source ./emsdk_env.sh
+  #+end_example
+- get a specific emscripten version
+  #+begin_example
+emsdk list --old
+#emsdk install 2.0.34
+#emsdk activate 2.0.34
+emsdk install 2.0.10
+emsdk activate 2.0.10
+  #+end_example
+
+- compile opencv with emscripten
+#+begin_example
+source "/home/martin/src/emsdk/emsdk_env.sh"
+cd ~/src
+git clone https://github.com/opencv/opencv_contrib
+# documentation of how to add (subset of) contrib: https://github.com/opencv/opencv_contrib
+cd ~/src
+git clone https://github.com/opencv/opencv.git
+cd opencv
+source "/home/martin/src/emsdk/emsdk_env.sh"
+# export EMSCRIPTEN=$EMSDK
+ln -s ~/src/opencv/platforms/ /home/martin/src/opencv/build_wasm/./platforms
+emcmake python ./platforms/js/build_js.py build_wasm --build_wasm --threads --simd
+# this really only works with 2.0.10, i tried 2.0.34 and latest
+
+### next time add this
+
+emcmake python  ./platforms/js/build_js.py build_wasm  --build_wasm \
+  --threads --simd --webnn \
+  --cmake_option=-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules \
+  -DBUILD_opencv_legacy=OFF 
+
+#+end_example
+- test the opencv in browser
+  #+begin_example 
+cd /home/martin/src/opencv/build_wasm/bin
+python -m http.server
+
+##### this requires --build_test which i have not done
+  #+end_example
+  
+- how to make the build smaller
+  - https://lambda-it.ch/blog/build-opencv-js
+  - https://github.com/adishavit/party_parrot
+  - he writes a c++ program that links with opencv (web assembly) and
+    converts colors of an animation
+  - inputs and results are transferred between c++ and js in a way
+    that minimizes copies
+  - printf bit smaller than cout
+  - flags to optimize size:
+    `-s NO_FILESYSTEM=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s NO_EXIT_RUNTIME=1`
+  - -O3 is downgraded to -O2
+
+- can i write a c++ program that depends on (a small subset of)
+  opencv?
+  http://videocortex.io/2017/opencv-web-app/
+
+- reading
+  - i want to read camera in browser
+  - perform aruco detection with opencv in browser
+
+https://emscripten.org/docs/porting/asyncify.html
+
+
+https://web.dev/fugu-status/
+https://www.chromium.org/teams/web-capabilities-fugu/
+https://fugu-tracker.web.app/
+
+pan/tilt for camera
+
+
+http://aggregate.org/DIT/KREMY/ image denoise
+
+http://aggregate.org/DIT/KREMY/noisy220209.pdf
+https://learn.sparkfun.com/tutorials/working-with-wire/how-to-use-a-wire-wrap-tool learn wirewrap
+
+8 Color Wrapping Wire AWG30 Cable OK Line PCB Flying Jumper Wire Electrical Wire + WSU Wire Wrap Strip Unwrap Tool BUY (23EUR)
+
+
+http://earth.google.com/web webassembly based
+
+- https://github.com/serghov/OpencvFaceDetectWasm
+  - index.html in /web loads a video in a <video> tag and runs a small
+    script that copies each frame of that video onto a canvas, runs
+    getImageData on that canvas and passes the resulted pixel array to
+    c++.
+
+  - main.cpp in /cpp grabs the pixel array passed by js, wraps it in
+    an opencv Mat and runs haar face detection on it. Afterwards the
+    image is displayed using emscripten's port of SDL.
+
+- webgl
+  - https://emscripten.org/docs/porting/multimedia_and_graphics/OpenGL-support.html#opengl-support
+  - To only target WebGL 2 and drop support for WebGL 1 altogether to
+    save code size, pass the linker flags -s MIN_WEBGL_VERSION=2 and
+    -s MAX_WEBGL_VERSION=2.
+- EMSCRIPTEN_GENERATE_BITCODE_STATIC_LIBRARIES sounds interesting
+- https://github.com/emscripten-core/emscripten/blob/main/site/source/docs/compiling/Building-Projects.rst
+
+- egl
+  - https://emscripten.org/docs/porting/multimedia_and_graphics/EGL-Support-in-Emscripten.html#egl-support-in-emscripten
+  - https://github.com/emscripten-core/emscripten/blob/main/tests/third_party/glbook/Common/esUtil.c
+
+
+- sdl
+  - https://github.com/emscripten-core/emscripten/blob/main/tests/hello_world_sdl.cpp
+  - Another option is to use Asyncify which will rewrite the program
+    so that it can return to the browser’s main event loop by just
+    calling emscripten_sleep(). Note that this rewriting causes size
+    and speed overhead while emscripten_request_animation_frame_loop /
+    emscripten_set_main_loop as described earlier do not.
+
+- example of a face detector
+  https://github.com/serghov/OpencvFaceDetectWasm/blob/master/cpp/main.cpp
+
+- imgui in browser
+  - https://o-micron.github.io/ScriptenApp/
+  - https://github.com/o-micron/ScriptenApp
+    - looks like there is no c++ source
+  - https://youtu.be/9B1MsXXYhcw
+  - https://github.com/o-micron/Prototype
+    - this has c++ source
+
+- emscripten examples that only use webgl compatible calls
+  - https://github.com/emscripten-core/emscripten/tree/main/tests/third_party/glbook
+
+- single file opengl 3.3 emscripten example
+  https://gist.github.com/mortennobel/0e9e90c9bbc61cc99d5c3e9c038d8115
+
+- another example (3 years old)
+  https://github.com/pcbaecker/example-emscripten-webgl
+#+begin_example
+
+    find_package(OpenGL REQUIRED)
+
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    add_subdirectory(glfw-3.2.1)
+add_executable(emscripten_webgl main.cpp)
+target_link_libraries(emscripten_webgl glfw ${OPENGL_LIBRARIES})
+set_target_properties(emscripten_webgl
+        PROPERTIES SUFFIX ".html"
+        LINK_FLAGS " --bind -s USE_GLFW=3 -s WASM=1 -g4")
+#+end_example
+
+- emscripten docs https://emscripten.org/docs/optimizing/Optimizing-WebGL.html
+  - default: WebGL 1 API
+    - access with
+      #+begin_example
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+      #+end_example
+    -  works like GLES 2 with some restrictions
+      https://www.khronos.org/registry/webgl/specs/latest/1.0/#6
+      - no support of client side rendering, use VBOs instead
+    - other alternatives to webl1: webgl2 webgpu
+  - On February 9, 2022 Khronos Group announced WebGL 2.0 support for
+    all major browsers.
+  - WebGL 1.0 is available for mobile Safari, in iOS 8.
+  - WebGL 1.0 is available for Android and MeeGo devices since Firefox 4.
+  - WebGL 1.0 is available for Android devices since Google Chrome 25
+    and enabled by default since version 30
+
+- dear imgui example
+  http://www.dearimgui.org/webdemo/master/example_emscripten.html
+  - works in safari on ios (but is quite difficult to use, too small
+    text, no zoom with pinch)
+
+- is there a minimal version to get an opengl window with emscripten?
+  - https://groups.google.com/g/emscripten-discuss/c/DrRfNzloqWc
+    - glut and EGL have overhead
+    - just call Browser.createContext
+  - minimal gui sokol https://github.com/floooh/sokol
+  - https://github.com/floooh/cimgui-sokol-starterkit
+  - a lot of examples https://floooh.github.io/sokol-html5/
+    - data https://github.com/floooh/sokol-html5
+      - triangle 52kB
+      - imgui-dock-sapp 983kB
+	- moving window in safari/ios doesn't work well
+      - cimgui-sapp 884kB
+      - sgl-microui-sapp 125kB
+	- no interaction on safari/ios at all
+      - nuklear 350kB maybe another 600kbB file
+	- interaction on safari/ios as bad as imgui-dock
+    - low-level platform-abstraction     parts of oryol (old)
+    - gfx .. supports glcore33 gles2 gles3 d3d11 metal wgpu backends
+      - https://floooh.github.io/2017/07/29/sokol-gfx-tour.html
+       - gles2/webgl is lead api
+       - wasm is lead platform
+       - buffer, image, shader, pipeline, pass
+       - sg_draw_state, sg_pass_action, uniform blocks
+    - app .. single window
+      
+    - audio .. webAudio
+
+#+begin_example
+cd ~/src
+git clone https://github.com/floooh/sokol
+
+# alternative, using package manager
+~/src/vcpkg/vcpkg install sokol
+#    find_path(SOKOL_INCLUDE_DIRS "sokol_app.h")
+#    target_include_directories(main PRIVATE ${SOKOL_INCLUDE_DIRS})
+# https://github.com/floooh/sokol/archive/425e906d2af8c976c30f7e925a303fea9f0bf879.tar.gz
+# i think this is quite old (2019), so better use git directly
+
+#+end_example
+  - how to use sokol with imgui https://github.com/floooh/sokol-samples/blob/master/sapp/imgui-dock-sapp.cc
+    - maybe best to not use vcpkg, just add c and headers explicitly
+#+begin_example
+cd ~/src
+git clone -b docking --single-branch https://github.com/ocornut/imgui
+#+end_example
+    
+- https://github.com/floooh/sokol-tools/
+  - shader code generator, translates annotatet GLSL source into C
+    header
+    - translates GLSL to SPIR-V or HLSL, Metal or WGSL
+    - dead code elimination
+    - packaging vertex and fragment shaders into same source
+    - indicate reusable code blocks
+    - sg_shader_desc structs
+    - constants for vertex attribute locations, uniform blocks,
+      image-bind-slots
+      #+begin_example
+      git clone https://github.com/floooh/sokol-tools/
+      cmake     .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+      # depends on fips?
+      # requires docker?
+      # needs recursive clone?
+      #+end_example
+    - very annoying: doesn't easily build in cmake on linux
+      - probably because a all the dependencies
+    - maybe i should try the binary
+      https://github.com/floooh/sokol-tools-bin
+      #+begin_example
+      cd ~/src
+      git clone https://github.com/floooh/sokol-tools-bin
+      # very slow
+      git clone --depth 1 https://github.com/floooh/sokol-tools-bin
+
+      rm -rf .git bin/{osx,osx_arm64,win32}
+      
+[localhost sokol-tools-bin]$ ls
+bin  fips-files  LICENSE  README.md
+[localhost sokol-tools-bin]$ du -hs bin/*
+8.7M	bin/linux
+7.1M	bin/osx
+6.1M	bin/osx_arm64
+5.5M	bin/win32
+
+[localhost linux]$ bloaty sokol-shdc 
+    FILE SIZE        VM SIZE    
+ --------------  -------------- 
+  80.8%  6.95Mi  80.1%  6.95Mi    .text
+   7.9%   698Ki   7.9%   698Ki    .rodata
+   7.6%   667Ki   7.5%   667Ki    .eh_frame
+   3.3%   290Ki   3.3%   290Ki    .data.rel.ro
+   0.0%       0   1.0%  88.2Ki    .bss
+   0.2%  15.7Ki   0.2%  15.6Ki    .gcc_except_table
+   0.1%  7.23Ki   0.1%  7.17Ki    .data
+   0.1%  6.97Ki   0.0%       0    [Unmapped]
+   0.0%  1.05Ki   0.0%    1000    .init_array
+   0.0%     568   0.0%     568    [LOAD #0 [R]]
+   0.0%     552   0.0%     488    .got
+   0.0%     218   0.0%       0    .shstrtab
+   0.0%     192   0.0%       0    [ELF Headers]
+   0.0%     162   0.0%       0    .comment
+   0.0%     112   0.0%      48    .note.gnu.property
+   0.0%      80   0.0%      16    .ctors
+   0.0%      80   0.0%      16    .dtors
+   0.0%      77   0.0%      13    .init
+   0.0%      72   0.0%       8    .fini
+   0.0%      16   0.0%      32    [LOAD #3 [RW]]
+   0.0%       3   0.0%      19    [2 Others]
+ 100.0%  8.60Mi 100.0%  8.68Mi    TOTAL
+
+      #+end_example
+- http://floooh.github.io/fips/
+  - similar to rust's cargo or javascripts npm but for C/C++
+  - i don't think i want to deal with that extra complexity right now,
+    maybe good to learn how to do things or for later
+- imgui-app
+  -  https://github.com/pplux/imgui-app/blob/main/example/test.cpp
+  - amalgamation of imgui and sokol
+    - based on sqlite amalgamation idea
+      https://www.sqlite.org/amalgamation.html
+  - i don't think i would need that
+- how to read gyro and accelerometer
+  - https://emscripten.org/docs/api_reference/html5.h.html
+
+
+- read about pimpl with smart pointers
+  - https://herbsutter.com/gotw/_100/
+    #+begin_example
+class w {
+public:
+  w();
+  ~w();
+private:
+  class impl;
+  unique_ptr<impl> pimpl;
+}
+
+class w::impl {
+}
+
+w::w() : pimpl{new impl{ ... } }  { }
+w::~w() {} 
+    #+end_example
+  - hold pimpl in unique_ptr
+    - define and use it in hidden implementation
+    - allocate in constructor in implementation
+    - explicit destructor required:
+      - unique_ptr destructor needs complete type to invoke delete
+      - destructor can't be generated on demand in the caller (where
+        impl is not defined)
+      
+  - can't be hidden
+    - interface for callers public members
+    - interface for derivers (protected and virtual members)
+  - should be hidden in pimpl
+    - private and non-virtual members
+
+  - if hidden function in pimpl needs to call nonprivate or virtual
+    function, then it needs a pointer to the visible class
+    - pass it as a parameter to the pimpl functions
+      (pimpl->func(this,params))
+  - https://herbsutter.com/gotw/_101/
+
+- another sokol c++ imgui example (emscripten)
+  https://github.com/floooh/sokol-samples/blob/master/html5/imgui-emsc.cc
+
+- sokol blog https://floooh.github.io/
+  - old http://flohofwoe.blogspot.com/
+
+  - https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+    - lots of small smart pointers bad for cache
+    - fake memory leaks because of forgotten smart pointers
+    - data oriented architecture for large number of objects
+      - move all memory managment to central system
+      - group objects as arrays
+      - return index handle (not a pointer to the ite)
+      - pointers must never be owners of underlying memory
+
+      - oryol gfx is similar to sokol but written in c++
+
+- i want to see less stuff on the emscripten page
+  https://github.com/timhutton/sdl-canvas-wasm/blob/main/index.html
+  
+- debugging c++ webassembly in chrome
+  https://www.youtube.com/watch?v=VBMHswhun-s&t=26s
+
+- gen08 reads camera as documented here:
+  https://medium.com/docler-engineering/video-manipulation-with-webassembly-3477a0c8524d

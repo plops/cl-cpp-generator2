@@ -1,0 +1,11 @@
+- after i managed to build cling and install xeus-cling, i want to try
+  to work with c++ notebooks
+
+- in order to load notebook on fedora:
+#+begin_example
+export PATH=/tmp/cling-obj/bin:$PATH
+cd /home/martin/stage/cl-cpp-generator2/example/81_1st_notebook/source
+pip3 install --user jupyterlab
+jupyter-lab
+# jupyter notebook
+#+end_example

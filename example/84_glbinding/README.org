@@ -1,0 +1,43 @@
+
+Minimal OpenGL program using
+- glbinding for opengl
+- entt for entity component system
+- imgui for user interface
+
+https://glbinding.org/
+https://www.khronos.org/opengl/wiki/OpenGL_Loading_Library
+https://github.com/cginternals/glbinding/blob/master/source/examples/callbacks/main.cpp
+
+ glbinding leverages C++11 features like enum classes, lambdas, and
+ variadic templates, instead of relying on macros; all OpenGL symbols
+ are real functions and variables. It provides type-safe parameters,
+ per-feature API headers,
+
+ created by CG Internals and the Computer Graphics Systems Group at
+ the Hasso Plattner Institute, University of Potsdam, Germany.
+
+
+ maybe i can use this with WebGL as well
+
+ https://github.com/cginternals/glbinding/releases
+ (only for windows)
+
+
+https://github.com/cginternals/glbinding
+ 
+#+begin_example
+
+sudo dnf install mesa-khr-devel  # provides KHR/khrplatform.h
+
+git clone https://github.com/cginternals/glbinding.git
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+#+end_example
+
+- imgui editor
+
+#+begin_example
+
+git clone https://github.com/Green-Sky/imgui_entt_entity_editor
+
+#+end_example

@@ -1,0 +1,13 @@
+- i want a minimal h264 decoder
+- ben mesander
+  - pure yuv
+  - https://www.cardinalpeak.com/blog/worlds-smallest-h-264-encoder
+  - https://www.cardinalpeak.com/blog/the-h-264-sequence-parameter-set
+- wasm decoder based on h264bsd https://github.com/udevbe/tinyh264
+- decoder from android https://github.com/oneam/h264bsd
+- single header encoder https://github.com/lieff/minih264
+- basic decoder 2004 https://keyj.emphy.de/files/proj
+  ects/SA_paper.pdf
+https://github.com/leandromoreira/digital_video_introduction
+
+https://github.com/leandromoreira/ffmpeg-libav-tutorial
