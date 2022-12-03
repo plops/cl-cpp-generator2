@@ -495,3 +495,140 @@ int main(int argc, char ** argv) {
 	return EXIT_SUCCESS;
 }
 #+end_example
+
+
+** C++ libtorch
+
+- pose estimation on image
+#+begin_example
+Write C++ code with libtorch that opens an image and performs pose estimation.
+
+#include <torch/torch.h>
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+// Read the image
+cv::Mat image = cv::imread("image.jpg");
+
+// Convert to tensor
+at::Tensor tensor_image = torch::from_blob(image.data, {1, image.rows, image.cols, 3}, at::kByte);
+
+// Normalize the image
+tensor_image = tensor_image.toType(at::kFloat) / 255.0;
+
+// Create the network
+auto network = torch::nn::Sequential(torch::nn::Conv2d(3, 32, 3),
+                                    torch::nn::ReLU(),
+                                    torch::nn::MaxPool2d(2),
+                                    torch::nn::Conv2d(32, 64, 3),
+                                    torch::nn::ReLU(),
+                                    torch::nn::MaxPool2d(2),
+                                    torch::nn::Conv2d(64, 128, 3),
+                                    torch::nn::ReLU(),
+                                    torch::nn::MaxPool2d(2));
+
+// Perform pose estimation
+torch::Tensor output = network->forward(tensor_image);
+
+std::cout << "Pose estimation output: " << output << std::endl;
+
+#+end_example
+
+- on video
+
+#+begin_example
+#include <torch/torch.h>
+#include <opencv2/opencv.hpp>
+
+// Load a pretrained model
+torch::jit::script::Module model = torch::jit::load("pose_estimation_model.pt");
+
+// Create a cv::VideoCapture object to capture from a camera
+cv::VideoCapture cap(0);
+
+while (true) {
+    // Capture a frame from the video
+    cv::Mat frame;
+    cap >> frame;
+
+    // Convert the frame to a tensor
+    torch::Tensor tensor_image = torch::from_blob(frame.data, {1, frame.rows, frame.cols, 3}, torch::kByte);
+    tensor_image = tensor_image.permute({0, 3, 1, 2});
+    tensor_image = tensor_image.to(torch::kF32);
+
+    // Run the model
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(tensor_image);
+    at::Tensor output = model.forward(inputs).toTensor();
+
+    // Extract the pose from the output
+    float x_pos = output[0][0].item<float>();
+    float y_pos = output[0][1].item<float>();
+
+    // Draw the pose on the frame
+    cv::circle(frame, cv::Point(x_pos, y_pos), 3, cv::Scalar(0,255,0), -1);
+
+    // Display the frame
+    cv::imshow("Pose Estimation", frame);
+
+    // Check for user input
+    int key = cv::waitKey(1);
+    if (key == 27) {
+        break;
+    }
+}
+
+#+end_example
+
+
+** C++ CGAL
+
+#+begin_example
+
+Write C++ code using CGAL.  Open a point cloud from a file. Fit a plane to the points with a z height lower than 10.
+
+
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Plane_3.h>
+#include <CGAL/IO/read_xyz_points.h>
+#include <CGAL/Point_3.h>
+#include <CGAL/Random.h>
+#include <CGAL/linear_least_squares_fitting_3.h>
+
+#include <fstream>
+#include <iostream>
+#include <vector>
+
+typedef CGAL::Simple_cartesian<double> K;
+typedef K::FT FT;
+typedef K::Point_3 Point;
+typedef K::Plane_3 Plane;
+typedef std::vector<Point> Points;
+
+int main()
+{
+  Points points;
+  std::ifstream stream("data/points.xyz");
+  if (!stream ||
+      !CGAL::read_xyz_points(stream, std::back_inserter(points)))
+  {
+    std::cerr << "Error: cannot read file data/points.xyz" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  Plane plane;
+
+  Points filtered_points;
+  for (auto p : points) {
+    if (p.z() < 10) {
+      filtered_points.push_back(p);
+    }
+  }
+
+  CGAL::linear_least_squares_fitting_3(filtered_points.begin(), filtered_points.end(), plane, CGAL::Dimension_tag<0>());
+
+  std::cout << "Fitting plane : " << plane << std::endl;
+
+  return EXIT_SUCCESS;
+}
+#+end_example
