@@ -60,6 +60,7 @@
 		      (CreateDefaultSubobject<UCameraComponent>
 		       (TEXT (string "Camera")))))
 		    (values :constructor))
+		   (comments "don't perform instance dependent things in constructor. unreal may not call the constructor for each instance")
 		   (setf PrimaryActorTick.bCanEveryTick true)
 
 		   #+nil
