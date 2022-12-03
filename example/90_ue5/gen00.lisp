@@ -34,6 +34,7 @@
        :header-preamble `(do0
 			  (include "CoreMinimal.h"
 				   "GameFramework/Pawn.h"
+				   "Camera/CameraComponent.h"
 				   "GameCharacter.generated.h"))
        ;; note: the cpp implementation does not have to (or should
        ;; not?) include AGameCharacter.h
@@ -50,15 +51,28 @@
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
-		    (construct)
+		    (construct
+		     (Camera
+		      (CreateDefaultSubobject<UCameraComponent>
+		       (TEXT (string "Camera")))))
 		    (values :constructor))
-		   (setf PrimaryActorTick.bCanEveryTick true))
+		   (setf PrimaryActorTick.bCanEveryTick true)
+
+		   #+nil
+		   (setf Camera
+			 (CreateDefaultSubobject<UCameraComponent>
+			  (TEXT (string "Camera"))))
+		   )
 		 "protected:"
+		 (comments "Main Pawn Camera, https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/Camera/UCameraComponent/")
 
 		 (defmethod BeginPlay ()
 		   (declare (values "virtual void")
 			    (override))
 		   (Super--BeginPlay))
+
+		 "UPROPERTY(EditAnywhere)"
+		 "UCameraComponent* Camera;"
 
 		 "public:"
 		 (defmethod Tick (DeltaTime)
