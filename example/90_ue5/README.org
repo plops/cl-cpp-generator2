@@ -129,3 +129,117 @@ private:
 
 
  #+end_example
+
+
+ ** EMVA
+
+
+- I want code that allows the calibration of a linear camera according to EMVA 1288.
+
+
+- EMVA 1288 is a standard for measuring and reporting the performance
+  of digital cameras. It is a comprehensive method that requires a
+  test chart setup, camera settings, and a set of measurements taken
+  with the camera.
+
+- Unfortunately, there is no code that allows a linear camera to be
+  calibrated according to EMVA 1288. Instead, you will need to use
+  specialized software and/or hardware to complete the calibration
+  process. For example, you can use software such as Photonfocus
+  Calibration or hardware such as the Photonfocus EMVA 1288
+  Calibration Kit to help you calibrate your linear camera.
+
+- load PNG with R
+
+#+begin_example
+Write R code to load a sequence of 2D gray PNG image.
+
+library(png)
+
+img_list <- list.files(path = ".", pattern = "*.png", full.names = TRUE)
+
+for (i in seq_along(img_list)){
+  img <- readPNG(img_list[i])
+  # add code to process the 2D gray PNG image
+}
+
+#+end_example
+
+
+- compute statistics
+
+#+begin_example
+
+Write R code to load a sequence of 2D gray PNG image. Compute the variance and the mean of each pixel over all the images.
+
+# Load packages
+library(png)
+
+# Create an empty vector to store the data
+data <- vector(mode="numeric", length=1000)
+
+# Loop through images
+for (i in 1:1000) {
+  # Load image and store into data vector
+  img <- readPNG(paste0("image",i,".png"))
+  data[i] <- img
+}
+
+# Compute the variance and the mean of each pixel over all images
+pixel_variance <- apply(data, c(1,2), var)
+pixel_mean <- apply(data, c(1,2), mean)
+#+end_example
+
+- continue:
+
+#+begin_example
+
+Plot variance against mean. Perform a linear fit. Print slope and intercept with error estimates.
+
+# Plot variance against mean
+plot(pixel_mean, pixel_variance, main="Variance vs Mean of Pixels")
+
+# Perform linear fit
+fit <- lm(pixel_variance ~ pixel_mean)
+
+# Print slope and intercept with error estimates
+summary(fit)
+#+end_example
+
+
+** Lane-Emden (star model, astronomy)
+
+#+begin_example
+Implement a solver for the Lane-Emden equation in Python.
+
+The Lane-Emden equation is a second-order nonlinear ordinary differential equation that describes the behavior of certain self-gravitating systems such as stars or gas clouds. It is given by:
+
+d^2ξ/dθ^2 + (2/θ)dξ/dθ + ξ^n = 0
+
+Where ξ(θ) is the unknown function and n is a constant.
+
+The following code provides a solver for the Lane-Emden equation in Python:
+
+import numpy as np
+
+def lane_emden(n, theta):
+    # Define the ODE
+    def f(x, t):
+        ξ, η = x
+        return [η, -(2./t)*η - ξ**n]
+    
+    # Define the initial conditions
+    x0 = [1, 0]
+    
+    # Solve the ODE
+    soln = integrate.solve_ivp(f, [1e-6, theta], x0)
+    
+    # Return the solution
+    return soln.y[0][-1]
+
+# Test the solver
+n = 3
+theta = 10
+print(lane_emden(n, theta)) # 0.08799616713117206
+
+#+end_example
