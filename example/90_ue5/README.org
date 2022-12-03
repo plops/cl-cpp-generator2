@@ -2,3 +2,13 @@
 - apparently better video: https://www.youtube.com/watch?v=g9dU0eCy8RI&t=0s
   - starting C++ tutorial from blank project
 - corresponding github: https://github.com/Ohjurot/UE5-Cpp-Tutorial
+
+* How to install VS Code
+
+  - https://docs.unrealengine.com/5.0/en-US/setting-up-visual-studio-code-for-unreal-engine/
+  - Download VS Code
+  - C/C++ extension
+  - Compiler toolset LLVM/Clang
+  - LLDB extension
+    
+  - Set up intellisense
