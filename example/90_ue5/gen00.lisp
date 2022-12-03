@@ -35,7 +35,11 @@
 			  (include "CoreMinimal.h"
 				   "GameFramework/Pawn.h"
 				   "Camera/CameraComponent.h"
-				   "GameCharacter.generated.h"))
+				   )
+			  " "
+			  (comments "the ...generated.h file must always be included last")
+			  (include "GameCharacter.generated.h")
+			  )
        ;; note: the cpp implementation does not have to (or should
        ;; not?) include AGameCharacter.h
 

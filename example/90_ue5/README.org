@@ -12,3 +12,12 @@
   - LLDB extension
     
   - Set up intellisense
+
+
+* Build UE5 from source
+  - download release from github (currently 5.1)
+  - run some scripts
+    - first one downloads 20GB
+    - second generates build scripts (or something), takes 1min30sec
+    - run make (needs 1.5GB ram per core, i can only use 8 cores)
+      
