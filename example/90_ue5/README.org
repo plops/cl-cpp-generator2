@@ -329,7 +329,7 @@ n_1 = n_2 + (2π/λ)^2n_1n_2r^2.
 #+end_example
 
 
-** Common Lisp
+** Common Lisp socket
 
 - Write Common Lisp code that listens on a socket. When it reads the
   string "Hello" the programm must return "World".
@@ -350,3 +350,26 @@ n_1 = n_2 + (2π/λ)^2n_1n_2r^2.
 
 
 #+end_example
+
+
+
+** Common Lisp C++ generator
+
+#+begin_example
+
+Write Common Lisp code that reads s-expressions and generates C++ code.
+
+(defun s-expr-to-cpp (expr)
+  (cond
+    ((atom expr) (format nil "~a" expr))
+    ((eq (car expr) 'quote) (format nil "~a" (cadr expr)))
+    ((or (eq (car expr) '+) (eq (car expr) '-))
+     (format nil "(~a ~a ~a)"
+             (s-expr-to-cpp (second expr)) (car expr) (s-expr-to-cpp (third expr))))
+    ((or (eq (car expr) '*) (eq (car expr) '/))
+     (format nil "(~a ~a ~a)"
+             (s-expr-to-cpp (second expr)) (car expr) (s-expr-to-cpp (third expr))))
+    (t (error "Unrecognized expression ~a" expr))))
+#+end_example
+
+- that is not what i want, i also don't see how i could fix that
