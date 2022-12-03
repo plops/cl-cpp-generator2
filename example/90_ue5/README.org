@@ -351,6 +351,30 @@ n_1 = n_2 + (2π/λ)^2n_1n_2r^2.
 
 #+end_example
 
+** Android socket
+
+#+begin_example
+
+Write Kotlin code for an Android App that opens a socket and that listens on a socket. When it reads the string "Hello" the programm must return "World".
+
+import java.net.ServerSocket
+import java.io.BufferedReader
+import java.io.InputStreamReader
+
+fun main() {
+    val serverSocket = ServerSocket(8080)
+    println("Listening on port 8080")
+    while (true) {
+        val clientSocket = serverSocket.accept()
+        val inFromClient = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
+        val inputLine = inFromClient.readLine()
+        if (inputLine == "Hello") {
+            println("Received: $inputLine")
+            clientSocket.getOutputStream().write(("World\n").toByteArray())
+        }
+    }
+}
+#+end_example
 
 
 ** Common Lisp C++ generator
@@ -373,3 +397,101 @@ Write Common Lisp code that reads s-expressions and generates C++ code.
 #+end_example
 
 - that is not what i want, i also don't see how i could fix that
+
+** C++ popl
+
+#+begin_example
+Write C++ code that parses command line arguments with popl. It should support the verbose switch with the flag -v. If -h is given as an argument print the usage documentation and exit the program.
+
+#include <iostream>
+#include <string>
+#include <popl.hpp>
+
+int main(int argc, char* argv[]) {
+    // Create a parser.
+    popl::OptionParser parser;
+    // Define the options.
+    popl::Flag v{ parser, "v", "verbose", "enable verbose mode" };
+    popl::Flag h{ parser, "h", "help", "print usage" };
+    // Parse the command line arguments.
+    try {
+        parser.parse(argc, argv);
+    }
+    catch (const std::exception& e) {
+        std::cerr << e.what() << "\n";
+        return 1;
+    }
+    // Check if the -h flag was given.
+    if (h.is_set()) {
+        std::cout << parser << "\n";
+        return 0;
+    }
+    // Check if the -v flag was given.
+    if (v.is_set()) {
+        std::cout << "Verbose mode enabled.\n";
+    }
+    // Do something with the command line arguments.
+    // ...
+    return 0;
+}
+
+#+end_example
+
+
+- i want positional file arguments
+#+begin_example
+
+Write C++ code that parses command line arguments with popl. It should support the verbose switch with the flag -v. If -h is given as an argument print the usage documentation and exit the program. After the optional flags a sequence of one or more file arguments can follow.
+
+
+#include <iostream>
+#include <popl.hpp>
+
+using namespace popl;
+
+// Function to print usage documentation
+void printUsageDoc() {
+	std::cout << "Usage: myprogram [-v] file1 [file2 ...]" << std::endl;
+	std::cout << "Flags:" << std::endl;
+	std::cout << "-v   Enable verbose mode" << std::endl;
+	std::cout << "-h   Print usage documentation and exit" << std::endl;
+}
+
+int main(int argc, char ** argv) {
+	// Create option parser
+	OptionParser op("myprogram");
+
+	// Add verbose switch
+	Switch verbose_switch(op, "v", "verbose", "Enable verbose mode");
+
+	// Add help switch
+	Switch help_switch(op, "h", "help", "Print usage documentation and exit");
+
+	// Parse command line arguments
+	try {
+		op.parse(argc, argv);
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		op.printHelp(std::cerr);
+		return EXIT_FAILURE;
+	}
+
+	// Print usage documentation if help switch is given
+	if (help_switch.is_set()) {
+		printUsageDoc();
+		return EXIT_SUCCESS;
+	}
+
+	// Print verbose message if verbose switch is given
+	if (verbose_switch.is_set())
+		std::cout << "Verbose mode is enabled" << std::endl;
+
+	// Handle file arguments
+	std::vector<std::string> files = op.free_args();
+	for (const std::string& file : files)
+		std::cout << "Processing file: " << file << std::endl;
+
+	return EXIT_SUCCESS;
+}
+#+end_example
