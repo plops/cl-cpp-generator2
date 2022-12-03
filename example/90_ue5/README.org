@@ -1,1 +1,4 @@
 - tutorial c++ unreal engine 5: https://youtu.be/nvruYLgjKkk
+- apparently better video: https://www.youtube.com/watch?v=g9dU0eCy8RI&t=0s
+  - starting C++ tutorial from blank project
+- corresponding github: https://github.com/Ohjurot/UE5-Cpp-Tutorial
