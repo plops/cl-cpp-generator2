@@ -20,4 +20,112 @@
     - first one downloads 20GB
     - second generates build scripts (or something), takes 1min30sec
     - run make (needs 1.5GB ram per core, i can only use 8 cores)
-      
+      build time was ca 90min
+
+
+ * ChatGPT Experiments
+
+   ** C++ UE5
+
+ #+begin_example
+
+Write a simple C++ example for Unreal Engine 5.
+
+#include "Engine.h"
+
+int main()
+{
+	// Create a new instance of the engine
+	UEngine* Engine = NewObject<UEngine>();
+
+	// Set the desired frame rate
+	Engine->SetTargetFPS(60);
+
+	// Begin the game loop
+	while (Engine->IsRunning())
+	{
+		// Update the engine
+		Engine->Tick();
+	}
+
+	// Cleanup
+	Engine->Destroy();
+
+	return 0;
+}
+ #+end_example
+
+
+ ** UE5 Sphere
+
+ #+begin_example
+
+Write a simple C++ example for Unreal Engine 5. Draw a bouncing red sphere.
+
+
+#include "Com#include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
+
+#include "DrawDebugHelpers.h"
+
+#include "Engine/World.h"
+
+class ABouncingSphere : public AActor
+{
+	GENERATED_BODY()
+
+public:
+	ABouncingSphere()
+	{
+		PrimaryActorTick.bCanEverTick = true;
+
+		// Create the sphere mesh
+		SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SphereMesh"));
+		SphereMesh->SetStaticMesh(ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Engine/BasicShapes/Sphere")).Object);
+		SphereMesh->SetWorldScale3D(FVector(0.2f, 0.2f, 0.2f));
+		SphereMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		SphereMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		SphereMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		SphereMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+		RootComponent = SphereMesh;
+
+		// Create the sphere physics
+		SpherePhysics = CreateDefaultSubobject<USceneComponent>(TEXT("SpherePhysics"));
+		SpherePhysics->SetMobility(EComponentMobility::Movable);
+		SpherePhysics->SetupAttachment(RootComponent);
+
+		// Set the sphere's color
+		SphereMesh->SetMaterial(0, ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("/Engine/BasicShapes/BasicShapeMaterial")).Object);
+		SphereMesh->SetVectorParameterValue(FName("Color"), FLinearColor(1.0f, 0.0f, 0.0f));
+	}
+
+	void BeginPlay()
+	{
+		Super::BeginPlay();
+
+		// Set the initial velocity
+		SpherePhysics->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 10.0f));
+	}
+
+	void Tick(float DeltaTime)
+	{
+		Super::Tick(DeltaTime);
+
+		// Calculate the new velocity
+		FVector Velocity = SpherePhysics->GetPhysicsLinearVelocity();
+		Velocity.Z = Velocity.Z * -0.8f;
+		SpherePhysics->SetPhysicsLinearVelocity(Velocity);
+
+		// Draw a debug sphere
+		DrawDebugSphere(GetWorld(), GetActorLocation(), 10.0f, 8, FColor(255, 0, 0));
+	}
+
+private:
+	UStaticMeshComponent* SphereMesh;
+	USceneComponent* SpherePhysics;
+
+};
+
+
+ #+end_example
