@@ -632,3 +632,77 @@ int main()
   return EXIT_SUCCESS;
 }
 #+end_example
+ 
+** C++ Ceres
+
+#+begin_example
+
+Write C++ read images from two cameras and perform stereo calibration with the ceres-solver.
+
+// Include the necessary libraries
+#include<opencv2/opencv.hpp>
+#include<ceres/ceres.h>
+#include <ceres/rotation.h>
+
+int main()
+{
+    // Read in the images from the two cameras
+    cv::Mat left_image;
+    cv::Mat right_image;
+    left_image = cv::imread("left.jpg");
+    right_image = cv::imread("right.jpg");
+    
+    // Create the vector of image point correspondences
+    std::vector<cv::Point2f> left_points;
+    std::vector<cv::Point2f> right_points;
+    cv::findChessboardCorners(left_image, cv::Size(7,7), left_points);
+    cv::findChessboardCorners(right_image, cv::Size(7,7), right_points);
+    
+    // Create the vector of 3D point correspondences
+    std::vector<cv::Point3f> object_points;
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            object_points.push_back(cv::Point3f(i, j, 0));
+        }
+    }
+    
+    // Create the camera intrinsic parameters
+    cv::Matx33d camera_matrix = cv::Matx33d::eye();
+    camera_matrix(0,0) = 1.0; //fx
+    camera_matrix(1,1) = 1.0; //fy
+    camera_matrix(0,2) = 0.5*left_image.cols; //cx
+    camera_matrix(1,2) = 0.5*left_image.rows; //cy
+    
+    // Define the ceres problem
+    ceres::Problem problem;
+    for (int i = 0; i < left_points.size(); i++) {
+        // Define the residual block
+        ceres::CostFunction* cost_function =
+        new ceres::AutoDiffCostFunction<ReprojectionError, 2, 4, 6>(
+            new ReprojectionError(left_points[i], right_points[i], object_points[i], camera_matrix));
+        
+        // Set the parameters for the problem
+        double* R = new double[4];
+        double* t = new double[3];
+        problem.AddResidualBlock(cost_function, NULL, R, t);
+        
+        // Set the parameter lower and upper bounds
+        problem.SetParameterLowerBound(R, 0, -1.0);
+        problem.SetParameterUpperBound(R, 0, 1.0);
+        problem.SetParameterLowerBound(t, 0, -1000.0);
+        problem.SetParameterUpperBound(t, 0, 1000.0);
+    }
+    
+    // Solve the problem with Ceres
+    ceres::Solver::Options options;
+    options.linear_solver_type = ceres::DENSE_QR;
+    options.minimizer_progress_to_stdout = true;
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
+    
+    // Print the results
+    std::cout << summary.BriefReport() << std::endl;
+    
+    return 0;
+}
+#+end_example
