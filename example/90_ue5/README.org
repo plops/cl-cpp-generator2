@@ -6281,6 +6281,54 @@ int main() {
 
 - This code uses the folly::fbvector class from facebook/folly to create a vector of strings. It then adds a new string to the vector and prints the contents of the vector. This code provides a simple example of how to use the folly::fbvector class from facebook/folly. You can find more information about facebook/folly and how to use it on the folly website (https://github.com/facebook/folly).
 
+** TFlite
+
+- Show modern C++20 code that uses tensor flow lite.
+
+#+begin_example
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <tensorflow/lite/interpreter.h>
+#include <tensorflow/lite/kernels/register.h>
+#include <tensorflow/lite/model.h>
+
+int main() {
+  // Load the TensorFlow Lite model
+  std::string model_file = "model.tflite";
+  std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromFile(model_file.c_str());
+  if (!model) {
+    std::cerr << "Error: failed to load model" << std::endl;
+    return 1;
+  }
+
+  // Create the TensorFlow Lite interpreter
+  tflite::ops::builtin::BuiltinOpResolver resolver;
+  std::unique_ptr<tflite::Interpreter> interpreter;
+  tflite::InterpreterBuilder(*model, resolver)(&interpreter);
+  if (!interpreter) {
+    std::cerr << "Error: failed to create interpreter" << std::endl;
+    return 1;
+  }
+
+  // Allocate tensors
+  if (interpreter->AllocateTensors() != kTfLiteOk) {
+    std::cerr << "Error: failed to allocate tensors" << std::endl;
+    return 1;
+  }
+
+  // Set the input tensor data
+  int input_tensor_index = interpreter->inputs()[0];
+  const auto& input_tensor = interpreter->tensor(input_tensor_index);
+  float* input_data = interpreter->typed_input_tensor<float>(0);
+  std::memcpy(input_data, input_buffer.data(), input_buffer.size() * sizeof(float));
+
+  // Run the model
+  if (interpreter->Invoke() != kTfLiteOk) {
+    std::cerr << "Error: failed to invoke interpreter" << std::
+
+#+end_example
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
