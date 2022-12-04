@@ -4666,15 +4666,6 @@ void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
 #+end_example
 
 
-** next
-
-- compute forward error correction (and use it to correct broken data)
-- i want an example of how to demux with ffmpeg and decode with nvdec
-  https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
-- maybe something with imgui
-- some async c++, coroutines
-- c++ modules with clang
-- imx477 set registers to increase sensitivity, disable star destroyer
 
 *** more complexity, allow for different packet types
 
@@ -4953,6 +4944,283 @@ struct DataPacket {
 
 
 #+end_example
+
+** MP4 demuxer
+
+*** FFMPEG
+
+- Write modern C++20 code that opens an MP4 file, demuxes it with
+  FFMPEG libraries and decodes the video frames with nvdec.
+
+#+begin_example
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+extern "C" {
+  // Include the FFmpeg and nvdec headers
+  #include <libavformat/avformat.h>
+  #include <libavutil/avutil.h>
+  #include <libavcodec/avcodec.h>
+  #include <libavcodec/nvdec.h>
+}
+
+int main(int argc, char* argv[]) {
+  // Initialize the FFmpeg and nvdec libraries
+  av_log_set_level(AV_LOG_DEBUG);
+  av_register_all();
+  avcodec_register_all();
+  avformat_network_init();
+
+  // Open the input file
+  std::string filename = "input.mp4";
+  AVFormatContext* format_context = nullptr;
+  if (avformat_open_input(&format_context, filename.c_str(), nullptr, nullptr) != 0) {
+    std::cerr << "Error opening input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Read the input file header
+  if (avformat_find_stream_info(format_context, nullptr) < 0) {
+    std::cerr << "Error reading input file header: " << filename << std::endl;
+    return 1;
+  }
+
+  // Find the first video stream in the input file
+  int video_stream_index = -1;
+  for (std::size_t i = 0; i < format_context->nb_streams; i++) {
+    if (format_context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+      video_stream_index = i;
+      break;
+    }
+  }
+  if (video_stream_index == -1) {
+    std::cerr << "Error: No video stream found in input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Get the codec parameters of the video stream
+  AVCodecParameters* codec_params = format_context->streams[video_stream_index]->codecpar;
+
+  // Find the decoder for the video stream
+  AVCodec* codec = avcodec_find_decoder(codec_params->codec_id);
+  if (codec == nullptr) {
+    std::cerr << "Error: No decoder found for codec: " << codec_params->codec_id << std::endl;
+    return 1;
+  }
+
+  // Create the codec context for the video stream
+  AVCodecContext* codec_context = avcodec_alloc_context3
+
+#+end_example
+
+*** minimp4
+- Write modern C++20 code that opens an MP4 file, demuxes it with
+  lieff/minimp4 and decodes the video frames with nvdec.
+
+#+begin_example
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+extern "C" {
+  // Include the minimp4 and nvdec headers
+  #include <minimp4/minimp4.h>
+  #include <libavcodec/nvdec.h>
+}
+
+int main(int argc, char* argv[]) {
+  // Initialize the minimp4 and nvdec libraries
+  mp4_initialize();
+
+  // Open the input file
+  std::string filename = "input.mp4";
+  FILE* file = std::fopen(filename.c_str(), "rb");
+  if (file == nullptr) {
+    std::cerr << "Error opening input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Read the input file header
+  mp4_context_t* mp4_context = mp4_create_context();
+  mp4_demuxer_t* mp4_demuxer = mp4_create_demuxer(mp4_context, MP4_DEBUG_VERBOSE);
+  if (mp4_parse(mp4_demuxer, file) != MP4_OK) {
+    std::cerr << "Error reading input file header: " << filename << std::endl;
+    return 1;
+  }
+
+  // Find the first video track in the input file
+  mp4_track_t* mp4_video_track = nullptr;
+  for (std::size_t i = 0; i < mp4_demuxer->tracks_count; i++) {
+    mp4_track_t* mp4_track = mp4_demuxer->tracks[i];
+    if (mp4_track->media_type == MP4_MEDIA_TYPE_VIDEO) {
+      mp4_video_track = mp4_track;
+      break;
+    }
+  }
+  if (mp4_video_track == nullptr) {
+    std::cerr << "Error: No video track
+
+#+end_example
+
+- again
+
+  #+begin_example
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+// Include the lieff/minimp4 and nvdec headers
+#include <minimp4/minimp4.h>
+#include <nvdec/nvdec.h>
+
+int main(int argc, char* argv[]) {
+  // Initialize the lieff/minimp4 and nvdec libraries
+  mp4::Init();
+
+  // Open the input file
+  std::string filename = "input.mp4";
+  mp4::File file;
+  if (!file.Open(filename)) {
+    std::cerr << "Error opening input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Find the first video track in the input file
+  int video_track_index = -1;
+  for (std::size_t i = 0; i < file.GetTracksCount(); i++) {
+    if (file.GetTrack(i).GetType() == mp4::Track::Type::kVideo) {
+      video_track_index = i;
+      break;
+    }
+  }
+  if (video_track_index == -1) {
+    std::cerr << "Error: No video track found in input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Get the codec type of the video track
+  mp4::Track::CodecType codec_type = file.GetTrack(video_track_index).GetCodec();
+
+  // Create the codec context for the video track
+  mp4::CodecContext codec_context;
+  if (!codec_context.Create(codec_type)) {
+    std::cerr << "Error: Failed to create codec context for codec type: " << codec_type << std::endl;
+    return 1;
+  }
+
+  // Decode the video frames
+  std::vector<mp4::Frame> frames;
+  for (std::size_t i = 0; i < file.GetSamplesCount(video_
+
+#+end_example
+
+
+- Write modern C++20 code that opens an MP4 file, demuxes it with
+  lieff/minimp4. I'm only interested in video data.
+
+#+begin_example
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <vector>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+// Include the lieff/minimp4 header
+#include <minimp4/minimp4.h>
+
+int main(int argc, char* argv[]) {
+  // Initialize the lieff/minimp4 library
+  mp4::Init();
+
+  // Open the input file
+  std::string filename = "input.mp4";
+  mp4::File file;
+  if (!file.Open(filename)) {
+    std::cerr << "Error opening input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Find the first video track in the input file
+  int video_track_index = -1;
+  for (std::size_t i = 0; i < file.GetTracksCount(); i++) {
+    if (file.GetTrack(i).GetType() == mp4::Track::Type::kVideo) {
+      video_track_index = i;
+      break;
+    }
+  }
+  if (video_track_index == -1) {
+    std::cerr << "Error: No video track found in input file: " << filename << std::endl;
+    return 1;
+  }
+
+  // Get the video track
+  const mp4::Track& video_track = file.GetTrack(video_track_index);
+
+  // Get the codec type of the video track
+  mp4::Track::CodecType codec_type = video_track.GetCodec();
+
+  // Decode the video frames
+  std::vector<mp4::Frame> frames;
+  for (std::size_t i = 0; i < file.GetSamplesCount(video_track_index); i++) {
+    // Read the next sample from the video track
+    mp4::Sample sample;
+    if (!file.ReadSample(video_track_index, i, sample)) {
+      std::cerr << "Error reading sample: " << i << " from video track: " << video_track_index << std::endl;
+      return 1;
+    }
+
+    // Decode the video frame
+    mp4::Frame frame;
+    if (!frame.Decode(sample, codec_type)) {
+      std::cerr << "Error decoding video frame: " << i << " from video track: " << video_track_index << std::endl;
+      return 1;
+    }
+
+    // Add the decoded video frame to the list of frames
+    frames.push_back(frame);
+  }
+
+  // Print the number of decoded video frames
+  std::cout << "Decoded " << frames.size() << " video frames from video track: " << video_track_index << std::endl;
+
+  return 0;
+}
+#+end_example
+
+
+** next
+
+- [DONE] compute forward error correction (and use it to correct broken data)
+- i want an example of how to demux with ffmpeg and decode with nvdec
+  https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
+- maybe something with imgui
+- some async c++, coroutines
+- c++ modules with clang
+- imx477 set registers to increase sensitivity, disable star destroyer
+
 
 ** Misc
 
