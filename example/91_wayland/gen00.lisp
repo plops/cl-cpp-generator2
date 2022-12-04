@@ -91,7 +91,8 @@
 		(include <wayland-client.h>
 			 <sys/mman.h>
 			 <sys/stat.h>
-			 <fcntl.h>)
+			 <fcntl.h>
+			 <errno.h>)
 		" "))
 
        ,(let ((l `(wl_compositor wl_shm wl_output)))
@@ -164,7 +165,7 @@
 			      (return -1)))
 
 		   (progn
-		     (let ((fd (shm_open (string "/tmp/my-wayland-pool")
+		     (let ((fd (shm_open (string "/my-wayland-pool")
 					 (logior O_RDWR O_CREAT)
 					 (logior S_IRUSR S_IWUSR)))
 			   (width 1920)
@@ -172,7 +173,8 @@
 			   (stride 4)
 			   (size (* width height stride)))
 		       (when (< fd 0)
-			 ,(lprint :msg "shm_open failed")
+			 ,(lprint :msg "shm_open failed"
+				  :vars `(errno (strerror errno)))
 			 (return -1))
 		       (when (< (ftruncate fd size) 0)
 			 ,(lprint :msg "ftruncate failed")
