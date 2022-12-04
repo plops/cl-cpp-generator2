@@ -2514,3 +2514,63 @@ int main(int argc, char* argv[])
 }
 
 #+end_example
+
+- inject keys
+
+#+begin_example
+
+Write Linux C++ code that controls chrome in wayland. Inject key commands.
+
+#include <iostream>
+#include <wayland-client.h>
+#include <wayland-server.h>
+#include <xkbcommon/xkbcommon.h>
+
+using namespace std;
+
+int main()
+{
+    // Create a Wayland display and connect to it
+    wl_display* display = wl_display_connect(NULL); // connect to the default Wayland display
+    if (!display) {
+        cerr << "Failed to connect to Wayland display" << endl;
+        return -1;
+    }
+
+    // Initialize the Wayland registry
+    wl_registry* registry = wl_display_get_registry(display);
+    wl_registry_add_listener(registry, &registry_listener, NULL);
+    wl_display_dispatch(display);
+
+    // Find the Chrome window and activate it
+    wl_surface* surface = wl_compositor_create_surface(compositor); // create a wayland surface for Chrome
+    if (!surface) {
+        cerr << "Failed to create wayland surface" << endl;
+        return -1;
+    }
+
+    // Send key commands to the Chrome window
+    xkb_keymap* keymap = xkb_keymap_new_from_names(NULL, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    xkb_state* state = xkb_state_new(keymap);
+    xkb_keysym_t key;
+
+    // Send the 'Ctrl+T' key command
+    key = xkb_keysym_from_name("Ctrl_L", XKB_KEYSYM_CASE_INSENSITIVE);
+    xkb_state_update_key(state, key, XKB_KEY_DOWN);
+    key = xkb_keysym_from_name("T", XKB_KEYSYM_CASE_INSENSITIVE);
+    xkb_state_update_key(state, key, XKB_KEY_DOWN);
+    wl_keyboard_send_key(keyboard, 0, 0, WL_KEYBOARD_KEY_STATE_PRESSED, key);
+    wl_keyboard_send_key(keyboard, 0, 0, WL_KEYBOARD_KEY_STATE_RELEASED, key);
+    xkb_state_update_key(state, key, XKB_KEY_UP);
+    xkb_state_update_key(state, key, XKB_KEY_UP);
+
+    // Free all the resources
+    xkb_keymap_unref(keymap);
+    xkb_state_unref(state);
+    wl_surface_destroy(surface);
+    wl_registry_destroy(registry);
+    wl_display_disconnect(display);
+
+    return 0;
+}
+#+end_example
