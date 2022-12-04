@@ -6198,6 +6198,89 @@ int main() {
 #+end_example
 - This code uses the xml-rs library to parse an Edgar XML file. It first opens the XML file and creates an EventReader to read the events in the file. It then iterates over the events in the file, using a match statement to match on the event type. For start elements, it prints the name of the element. For character data, it prints the character data of the element. For end elements, it prints the name of the element. This code provides a basic example of how to parse an Edgar XML file using xml-rs. You can find more information about the xml-rs library and how to use it on the xml-rs website (https://github.com/netvl/xml-rs).
 
+** Vulkan compute shader
+
+- Write modern C++20 code that reads an array of 1024 single float values from a socket and computes the average with a Vulkan compute shader.
+
+#+begin_example
+
+#include <iostream>
+#include <array>
+#include <cstdint>
+#include <cstring>
+#include <cmath>
+
+#include <vulkan/vulkan.hpp>
+
+// Create a buffer for the input data
+std::array<float, 1024> input_buffer;
+
+// Create a buffer for the output data
+std::array<float, 1> output_buffer;
+
+// Read the input data from the socket
+std::size_t bytes_read = recv(socket_fd, input_buffer.data(), input_buffer.size() * sizeof(float), 0);
+
+// Create a Vulkan instance
+vk::ApplicationInfo app_info("Compute average", VK_MAKE_VERSION(1, 0, 0), "", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0);
+vk::InstanceCreateInfo create_info({}, &app_info);
+auto instance = vk::createInstance(create_info);
+
+// Create a Vulkan device
+auto physical_devices = instance.enumeratePhysicalDevices();
+auto physical_device = physical_devices[0];
+auto queue_family_properties = physical_device.getQueueFamilyProperties();
+std::vector<vk::DeviceQueueCreateInfo> queue_create_infos;
+for (std::size_t i = 0; i < queue_family_properties.size(); ++i) {
+  if (queue_family_properties[i].queueFlags & vk::QueueFlagBits::eCompute) {
+    queue_create_infos.emplace_back(vk::DeviceQueueCreateFlags(), i, 1, {});
+    break;
+  }
+}
+vk::PhysicalDeviceFeatures device_features;
+vk::DeviceCreateInfo device_create_info({}, queue_create_infos.size(), queue_create_infos.data(), 0, nullptr, device_features);
+auto device = physical_device.createDevice(device_create_info);
+
+// Create a Vulkan command pool and command buffer
+auto command_pool_create_info = vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), queue_create_infos[0].queueFamilyIndex);
+auto command_pool = device.createCommandPool(command_pool_create_info);
+auto command_buffer_allocate_info = vk::CommandBufferAllocateInfo(command_pool, vk::CommandBufferLevel::ePrimary, 1);
+auto command_buffer = device.allocateCommandBuffers(command_buffer_allocate_info)[0];
+
+// Create a Vulkan buffer for the input data
+auto buffer_create_info = v
+#+end_example
+
+- Vulkan is just too verbose
+
+** facebook/folly
+
+- Show modern C++20 code that uses facebook/folly.
+
+#+begin_example
+
+#include <iostream>
+#include <string>
+#include <folly/FBVector.h>
+
+int main() {
+  // Create a vector of strings
+  folly::fbvector<std::string> words = {"Hello", "World"};
+
+  // Add a new string to the vector
+  words.push_back("!");
+
+  // Print the vector
+  for (const auto& word : words) {
+    std::cout << word << std::endl;
+  }
+
+  return 0;
+}
+#+end_example
+
+- This code uses the folly::fbvector class from facebook/folly to create a vector of strings. It then adds a new string to the vector and prints the contents of the vector. This code provides a simple example of how to use the folly::fbvector class from facebook/folly. You can find more information about facebook/folly and how to use it on the folly website (https://github.com/facebook/folly).
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
