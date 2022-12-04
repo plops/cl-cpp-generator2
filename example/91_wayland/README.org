@@ -342,3 +342,29 @@ This implementation is similar to the previous one, but it uses the std::string_
 
 Note that this code is for illustrative purposes only and may not be complete or fully functional. It is up to the developer to implement the necessary error handling and additional code to capture and use the screen data as needed.
 #+end_example
+- https://chromium.googlesource.com/external/wayland/wayland/+/refs/heads/master/tests/queue-test.c
+
+  #+begin_example
+
+static void
+registry_handle_global(void *data, struct wl_registry *registry,
+		       uint32_t id, const char *interface, uint32_t version)
+{
+	int *pcounter = data;
+	(*pcounter)++;
+	assert(*pcounter == 1);
+	wl_registry_destroy(registry);
+}
+static const struct wl_registry_listener registry_listener = {
+	registry_handle_global,
+	NULL
+};
+
+int counter = 0;
+	display = wl_display_connect(NULL);
+	assert(display);
+	registry = wl_display_get_registry(display);
+	assert(registry != NULL);
+	wl_registry_add_listener(registry, &registry_listener,
+				 &counter);
+#+end_example

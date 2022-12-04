@@ -90,16 +90,41 @@
 	      (curly
 	       (include <wayland-client.h>)))
 
-       (defun registry_handle_global (data registry id interface version)
-	 (declare (type void* data)
-		  (type "struct wl_registry*" registry)
-		  (type uint32_t id)
-		  (type "const char*" interface)
-		  (type uint32_t version)))
+       ,(let ((l `(wl_compositor wl_shm wl_output)))
+	  `(do0
+	    ,@(loop for e in l
+		    collect
+		    (format nil "struct ~a* ~a =nullptr;" e e))
+	    (defun registry_handle_global (data registry id interface version)
+	      (declare (type void* data)
+		       (type "struct wl_registry*" registry)
+		       (type uint32_t id)
+		       (type "const char*" interface)
+		       (type uint32_t version))
+	      ,@(loop for e in l
+		      collect
+		      `(when (== (string ,e)
+				 (std--string_view interface))
+			 (setf ,e (,(format nil "static_cast<struct ~a*>" e)
+				    (wl_registry_bind registry
+						      id
+						      ,(format nil "&~a_interface" e)
+						      version)))
+			 (return))))
+	    (defun registry_handle_global_remove (data registry id)
+	      (declare (type void* data)
+		       (type "struct wl_registry*" registry)
+		       (type uint32_t id))
+	      ,@(loop for e in l
+		      collect
+		      `(when (and ,e
+				  (== id
+				      (wl_proxy_get_id ("reinterpret_cast<struct wl_proxy*>" ,e))))
+			 (setf ,e nullptr))))))
 
        (setf "static const struct wl_registry_listener registry_listener"
 	     (curly registry_handle_global
-		    registry_handle_remove))
+		    registry_handle_global_remove))
 
        (defun main (argc argv)
 	 (declare (type int argc)
