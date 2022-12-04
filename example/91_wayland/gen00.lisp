@@ -175,7 +175,7 @@
 			   (format WL_SHM_FORMAT_ARGB8888)
 			   (size (* width height stride)))
 		       (when (< fd 0)
-			 ,(lprint :msg "shm_open failed"
+			 ,(lprint :msg "shm_open failed."
 				  :vars `(errno (strerror errno)))
 			 (return -1))
 		       (when (< (ftruncate fd size) 0)
