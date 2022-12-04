@@ -5209,13 +5209,165 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 #+end_example
+- i think it doesn't know minimp4
+  
+- Write modern C++20 code that opens an MP4 file and demuxes the H.264
+  data. Use axiomatic-systems/Bento4 to demux the H.264 data.
+
+#+begin_example
+#include <iostream>
+#include <fstream>
+#include <string>
+
+// Include the Bento4 library
+#include "Ap4.h"
+
+int main() {
+  // Open the MP4 file using a filestream
+  std::filesystem::path mp4_file = "path/to/file.mp4";
+  std::ifstream file_stream(mp4_file);
+
+  // Check if the file was successfully opened
+  if (!file_stream.is_open()) {
+    std::cerr << "Error opening file: " << mp4_file << std::endl;
+    return 1;
+  }
+
+  // Create a memory stream to read the data from the file
+  AP4_ByteStream* memory_stream = new AP4_MemoryByteStream(file_stream.rdbuf()->data(), file_stream.rdbuf()->size());
+
+  // Use the Bento4 library to parse the MP4 file
+  AP4_File file(*memory_stream);
+
+  // Get the video track from the file
+  AP4_Track* video_track = file.GetMovie()->GetTrack(AP4_Track::TYPE_VIDEO);
+
+  // Check if the track was found
+  if (!video_track) {
+    std::cerr << "Error: no video track found in file" << std::endl;
+    return 1;
+  }
+
+  // Get the H.264 sample table from the track
+  AP4_H264SampleDescription* sample_desc =
+      dynamic_cast<AP4_H264SampleDescription*>(video_track->GetSampleDescription(0));
+
+  // Check if the sample table was found
+  if (!sample_desc) {
+    std::cerr << "Error: no sample table found in video track" << std::endl;
+    return 1;
+  }
+
+  // Get the H.264 decoder configuration from the sample table
+  AP4_DataBuffer decoder_config;
+  sample_desc->GetDecoderInfo().GetDecoderConfig(decoder_config);
+
+  // Use the decoder configuration to demux the H.264 data
+  // ...
+
+  // Close the file and clean up
+  file_stream.close();
+  delete memory_stream;
+
+  return 0;
+}
+
+#+end_example
+
+- looks similar to
+  https://github.com/axiomatic-systems/Bento4/blob/master/Source/C%2B%2B/Apps/Mp42Avc/Mp42Avc.cpp
+
+
+** ImGUI
+
+- Write modern C++20 code that opens an OpenGL window with glfw and
+  uses ImGUI to show a temperature conversion widget.
+
+#+begin_example
+
+#include <iostream>
+#include <string>
+#include <cmath>
+
+// Include the glfw and ImGUI libraries
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+
+int main() {
+  // Initialize the glfw library
+  if (!glfwInit()) {
+    std::cerr << "Error: failed to initialize glfw" << std::endl;
+    return 1;
+  }
+
+  // Create a window and its OpenGL context
+  GLFWwindow* window = glfwCreateWindow(800, 600, "Temperature Converter", nullptr, nullptr);
+  if (!window) {
+    std::cerr << "Error: failed to create window or OpenGL context" << std::endl;
+    glfwTerminate();
+    return 1;
+  }
+  glfwMakeContextCurrent(window);
+
+  // Initialize the ImGUI library
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+  // Setup the ImGUI style and colors
+  ImGui::StyleColorsDark();
+
+  // Setup the ImGUI input bindings
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init("#version 130");
+
+  // Main loop
+  while (!glfwWindowShouldClose(window)) {
+    // Poll for events
+    glfwPollEvents();
+
+    // Start a new ImGUI frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Create a temperature conversion widget
+    static float fahrenheit = 0.0f;
+    ImGui::InputFloat("Fahrenheit", &fahrenheit);
+    ImGui::SameLine();
+    ImGui::Text("= %.2f Celsius", (fahrenheit - 32.0f) * (5.0f / 9.0f));
+
+    // Render the ImGUI widgets
+    ImGui::Render();
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // Swap the front and back buffers
+    glfwSwapBuffers(window);
+  }
+
+  // Clean up
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+  glfwDestroyWindow(window);
+  glfwTerminate();
+
+  return 0;
+}
+
+
+#+end_example
 
 
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
-- i want an example of how to demux with ffmpeg and decode with nvdec
-  https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
+- [DONE PARTLY] i want an example of how to demux with ffmpeg and decode with
+  nvdec https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
 - maybe something with imgui
 - some async c++, coroutines
 - c++ modules with clang
