@@ -4372,6 +4372,294 @@ int main() {
 #+end_example
 
 
+** grpc c++
+
+#+begin_example
+
+Implement modern C++20 code that reads 1024 single float values from a socket. The data is encoded using grpc.
+
+// C++20 code example 
+#include <iostream>
+#include <string>
+#include <grpcpp/grpcpp.h>
+
+int main()
+{
+    // Create a channel to the server.
+    grpc::ChannelArguments channel_args;
+    std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel("localhost:50051", channel_args);
+
+    // Create a stub to communicate with the server.
+    auto stub = myproto::DataService::NewStub(channel);
+
+    // Create a request that can hold 1024 float values.
+    myproto::Request request;
+    request.set_num_values(1024);
+
+    // Create a reader to receive the response from the server.
+    grpc::ClientReader<myproto::Response> reader(stub->Read(&context, request));
+
+    // Read the values from the socket.
+    std::vector<float> values;
+    myproto::Response response;
+    while (reader.Read(&response)) {
+        if (response.has_value()) {
+            values.push_back(response.value());
+        }
+    }
+
+    // Print out the values.
+    for (auto v : values) {
+        std::cout << v << std::endl;
+    }
+
+    return 0;
+}
+#+end_example
+
+** protobuf c++
+
+#+begin_example
+
+Implement modern C++20 code that reads 1024 single float values from a socket. The data is encoded using protobuf.
+
+#include <iostream>
+#include <cstdint>
+#include <vector>
+#include <span>
+#include <numeric>
+#include <socket>
+
+#include <google/protobuf/message.h>
+
+using namespace std;
+
+constexpr uint32_t kBufferSize = 1024;
+
+// Reads float values from a socket, encoded using protobuf.
+vector<float> ReadFromSocketWithProtoBuf(socket &sock) {
+  // Allocate a buffer for the protobuf message.
+  uint8_t buf[kBufferSize];
+  
+  // Read the message from the socket.
+  size_t bytes_read = sock.read(buf, kBufferSize);
+  if (bytes_read != kBufferSize) {
+    throw runtime_error("Failed to read protobuf message from socket");
+  }
+  
+  // Parse the message from the buffer.
+  google::protobuf::Message message;
+  if (!message.ParseFromArray(buf, kBufferSize)) {
+    throw runtime_error("Failed to parse protobuf message from buffer");
+  }
+  
+  // Extract the float values from the message.
+  vector<float> values;
+  for (int i = 0; i < message.float_size(); ++i) {
+    values.push_back(message.float(i));
+  }
+  
+  return values;
+}
+
+// Reads float values from a socket, using a binary format.
+vector<float> ReadFromSocketWithBinary(socket &sock) {
+  // Allocate a buffer for the float values.
+  uint8_t buf[sizeof(float) * kBufferSize];
+  
+  // Read the float values from the socket.
+  size_t bytes_read = sock.read(buf, sizeof(float) * kBufferSize);
+  if (bytes_read != sizeof(float) * kBufferSize) {
+    throw runtime_error("Failed to read float values from socket");
+  }
+  
+  // Extract the float values from the buffer.
+  vector<float> values;
+  span<float> float_span(reinterpret_cast<float*>(buf), kBufferSize);
+  for (float f : float_span) {
+    values.push_back(f);
+  }
+  
+  return values;
+}
+#+end_example
+
+
+*** more complexity (with crc)
+
+#+begin_example
+
+Implement modern C++20 code that reads a data packet from a socket. The data is encoded using protobuf. The data packet consist of a CRC, a length (which is 1024) followed by 1024 single float values. The CRC is computed over length and data.
+
+#include <iostream>
+#include <span>
+#include <numeric>
+#include <protobuf/message.h>
+
+using std::span;
+using std::accumulate;
+
+// Read a data packet from a socket.
+// The data is encoded using protobuf.
+// The data packet consist of a CRC, a length (which is 1024)
+// followed by 1024 single float values.
+// The CRC is computed over length and data.
+void readDataPacket(std::istream& socket, protobuf::Message& message)
+{
+    // Read CRC
+    uint32_t crc;
+    socket >> crc;
+
+    // Read length
+    uint32_t length;
+    socket >> length;
+
+    // Check if length is 1024
+    if (length != 1024) {
+        throw std::runtime_error("length isn't 1024");
+    }
+
+    // Read data
+    span<float> data(length);
+    for (float& d : data) {
+        socket >> d;
+    }
+
+    // Calculate CRC over length and data
+    uint32_t expectedCrc = accumulate(data.begin(), data.end(), length);
+
+    // Check if CRC is correct
+    if (crc != expectedCrc) {
+        throw std::runtime_error("CRC doesn't match");
+    }
+
+    // Deserialize data into protobuf message
+    message.ParseFromArray(data.data(), length * sizeof(float));
+}
+#+end_example
+
+*** protobuf writer
+
+#+begin_example
+
+Implement modern C++20 code that writes a data packet to a socket. The data is encoded using protobuf. The data packet consist of a CRC, a length (which is 1024) followed by 1024 single float values. The CRC is computed over length and data. Do not omit the CRC calculation.
+
+#include <cstdint>
+#include <netinet/in.h>
+#include <span>
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+#include "crc32.h"
+#include "protobuf.h"
+
+using namespace std;
+
+// Compute the CRC of the data packet
+uint32_t compute_crc32(std::span<float> data)
+{
+    // Turn the data into byte array
+    std::vector<uint8_t> byte_data = {};
+    for(float f : data) {
+        const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&f);
+        for(int i = 0; i < sizeof(float); i++)
+            byte_data.push_back(bytes[i]);
+    }
+
+    // Compute and return the CRC
+    return crc32(byte_data.data(), byte_data.size());
+}
+
+// Write the data packet to the socket
+void write_data_packet(int socket, std::span<float> data)
+{
+    // Compute the CRC
+    const uint32_t crc = compute_crc32(data);
+
+    // Construct the packet
+    const uint32_t length = htonl(data.size());
+    std::vector<uint8_t> packet = {};
+    const uint8_t* crc_bytes = reinterpret_cast<const uint8_t*>(&crc);
+    for(int i = 0; i < sizeof(uint32_t); i++)
+        packet.push_back(crc_bytes[i]);
+    const uint8_t* length_bytes = reinterpret_cast<const uint8_t*>(&length);
+    for(int i = 0; i < sizeof(uint32_t); i++)
+        packet.push_back(length_bytes[i]);
+    for(float f : data) {
+        const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&f);
+        for(int i = 0; i < sizeof(float); i++)
+            packet.push_back(bytes[i]);
+    }
+
+    // Encode the packet using protobuf
+    const std::vector<uint8_t> encoded_packet = protobuf_encode(packet);
+
+    // Write the packet to the socket
+    write(socket, encoded_packet.data(), encoded_packet.size());
+}
+#+end_example
+
+
+** Construct Raw Packet C++20
+
+#+begin_example
+Implement modern C++20 code that writes or reads a data packet to or from a socket. The data packet is a struct that contains CRC, packet type (uint8), protocol version (uint8), length (uint32) and data. Data is an array of length single float values. The CRC is computed over packet type, protocol version, length, data;
+
+#include <array>
+#include <cstdint>
+#include <numeric>
+#include <socket>
+
+// Struct to represent the data packet
+struct DataPacket {
+  uint32_t crc;
+  uint8_t packetType;
+  uint8_t protocolVersion;
+  uint32_t length;
+  std::array<float, 128> data;
+};
+
+// Compute the CRC for the data packet
+uint32_t computeCRC(const DataPacket& packet) {
+  // Compute CRC over packet type, protocol version, length, and data
+  const auto crc = std::accumulate(
+    packet.data.begin(), packet.data.end(),
+    packetType ^ protocolVersion ^ length,
+    [](const auto acc, const auto& elem) {
+      return std::crc32(acc, &elem, sizeof(elem));
+    }
+  );
+  return crc;
+}
+
+// Function to write the data packet to a socket
+void writeDataPacketToSocket(const DataPacket& packet, std::socket& socket) {
+  // Compute the CRC
+  packet.crc = computeCRC(packet);
+
+  // Write the data packet to the socket
+  socket.send(reinterpret_cast<const char*>(&packet), sizeof(packet));
+}
+
+// Function to read the data packet from a socket
+void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
+  // Read the data packet from the socket
+  socket.recv(reinterpret_cast<char*>(&packet), sizeof(packet));
+
+  // Compute the CRC
+  const auto computedCrc = computeCRC(packet);
+
+  // Verify the CRC
+  if (packet.crc != computedCrc) {
+    throw std::runtime_error("Data packet CRC mismatch");
+  }
+}
+
+#+end_example
+
+
 ** Misc
 
 *** investment
