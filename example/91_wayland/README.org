@@ -342,6 +342,54 @@ This implementation is similar to the previous one, but it uses the std::string_
 
 Note that this code is for illustrative purposes only and may not be complete or fully functional. It is up to the developer to implement the necessary error handling and additional code to capture and use the screen data as needed.
 #+end_example
+
+#+begin_example
+Show details of how to create the shared memory pool with wl_shm_create_buffer.
+
+To create a shared memory pool with wl_shm_create_buffer(), you will need to do the following:
+
+    Create a file descriptor for the shared memory pool using the shm_open() function. This function allows you to create and open a shared memory object. For example:
+
+int fd = shm_open(
+    "/my_shm_pool",
+    O_RDWR | O_CREAT,
+    S_IRUSR | S_IWUSR
+);
+
+In this example, the /my_shm_pool parameter specifies the name of the shared memory object, and the O_RDWR | O_CREAT and S_IRUSR | S_IWUSR parameters specify the open flags and permissions, respectively.
+
+    Set the size of the shared memory pool using the ftruncate() function. This function allows you to set the size of an open file descriptor. For example:
+
+ftruncate(fd, size);
+
+In this example, the fd parameter specifies the file descriptor of the shared memory object, and the size parameter specifies the desired size of the pool.
+
+    Map the shared memory pool to memory using the mmap() function. This function allows you to map a file descriptor to memory. For example:
+
+void* data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+In this example, the nullptr and size parameters specify the address and size of the memory mapping, respectively. The PROT_READ | PROT_WRITE parameter specifies the memory protection, and the `MAP_SHAR
+wol pumba
+continue
+
+Continuing from the previous code listing, you can now create a wl_buffer for the shared memory pool using the wl_shm_create_buffer() function.
+
+// Create buffer for shared memory pool
+struct wl_buffer* buffer = wl_shm_create_buffer(
+    shm,
+    id,
+    width,
+    height,
+    stride,
+    WL_SHM_FORMAT_ARGB8888
+);
+
+In this example, the shm parameter specifies the wl_shm global object that was bound previously, the id parameter specifies the id of the shared memory object, the width and height parameters specify the dimensions of the buffer, the stride parameter specifies the stride of the buffer, and the WL_SHM_FORMAT_ARGB8888 parameter specifies the format of the buffer data.
+
+Note that this code is for illustrative purposes only and may not be complete or fully functional. It is up to the developer to implement the necessary error handling and additional code to capture and use the screen data as needed. Additionally, the code assumes that the id, width, height, and stride variables have been properly initialized with the id, dimensions, and stride of the shared memory pool, respectively.
+
+#+end_example
+
 - https://chromium.googlesource.com/external/wayland/wayland/+/refs/heads/master/tests/queue-test.c
 
   #+begin_example

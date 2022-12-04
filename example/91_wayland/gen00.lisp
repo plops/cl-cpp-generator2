@@ -105,6 +105,7 @@
 		      collect
 		      `(when (== (string ,e)
 				 (std--string_view interface))
+			 ,(lprint :msg (format nil "~a" e) :vars `(id version interface))
 			 (setf ,e (,(format nil "static_cast<struct ~a*>" e)
 				    (wl_registry_bind registry
 						      id
@@ -115,41 +116,61 @@
 	      (declare (type void* data)
 		       (type "struct wl_registry*" registry)
 		       (type uint32_t id))
+
 	      ,@(loop for e in l
 		      collect
 		      `(when (and ,e
 				  (== id
 				      (wl_proxy_get_id ("reinterpret_cast<struct wl_proxy*>" ,e))))
-			 (setf ,e nullptr))))))
+			 ,(lprint :msg (format nil "~a" e) :vars `(id))
+			 (setf ,e nullptr))))
+	    (do0
+	     (setf "static const struct wl_registry_listener registry_listener"
+		   (curly registry_handle_global
+			  registry_handle_global_remove))
 
-       (setf "static const struct wl_registry_listener registry_listener"
-	     (curly registry_handle_global
-		    registry_handle_global_remove))
+	     (defun main (argc argv)
+	       (declare (type int argc)
+			(type char** argv)
+			(values int))
+	       "(void)argv;"
+	       ,(lprint :msg "start" :vars `(argc))
+	       (progn
+		 (let ((*display (wl_display_connect (string "wayland-0"))))
+		   (when (== nullptr
+			     display)
+		     ,(lprint :msg "can't connect to display")
+		     (return -1))
+		   #+nil (do0
+			  ,(lprint :msg "initialize glbinding")
+			  (glbinding--initialize (wl_display_get_event_queue display)))
 
-       (defun main (argc argv)
-	 (declare (type int argc)
-		  (type char** argv)
-		  (values int))
-	 "(void)argv;"
-	 ,(lprint :msg "start" :vars `(argc))
-	 (progn
-	   (let ((*display (wl_display_connect (string "wayland-0"))))
-	     (when (== nullptr
-		       display)
-	       ,(lprint :msg "can't connect to display")
-	       (return -1))
-	     #+nil (do0
-		    ,(lprint :msg "initialize glbinding")
-		    (glbinding--initialize (wl_display_get_event_queue display)))
+		   (let ((*registry (wl_display_get_registry display)))
+		     ,(lprint :msg "add listener..")
+		     (wl_registry_add_listener registry
+					       &registry_listener
+					       nullptr))
+		   ,(lprint :msg "dispatch..")
+		   (wl_display_dispatch display)
 
-	     (let ((*registry (wl_display_get_registry display)))
-	       (wl_registry_add_listener registry
-					 &registry_listener
-					 nullptr))
+		   ,(loop for e in l
+			  collect
+			  `(unless ,e
+			     ,(lprint :msg (format nil "missing ~a" e))
+			     (return -1)))
 
-	     (wl_display_disconnect display)
-	     ))
-	 )))
+		   (let ((*pool (wl_shm_create_pool
+				 shm
+				 (wl_shm_create_buffer shm
+						       )))))
+
+		   (do0
+		    ,(lprint :msg "disconnect..")
+		    (wl_display_disconnect display))
+		   ))
+	       ))))
+
+       ))
 
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
