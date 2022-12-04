@@ -2792,7 +2792,7 @@ int main()
         cerr << "Error: Failed to send netlink request" << endl;
 #+end_example
 ** Open Wayland window
-
+*** C++
 #+begin_example
 Write Linux C++20 code that opens a wayland window.
 
@@ -2844,7 +2844,7 @@ wayland_open.cpp:19:12: error: ‘wl_shell_create’ was not declared in this sc
 
 #+end_example
 
-*** again
+*** C++ again
 #+begin_example
 
 Write Linux C++20 code that opens a wayland window. wl_compositor_create is not declared.
@@ -2887,6 +2887,51 @@ struct wl_egl_window *egl_window = wl_egl_window_create(surface,
 if (egl_window == NULL) {
     // handle error
 }
+#+end_example
+*** Python
+
+- Write Linux Python code that opens a wayland window.
+
+#+begin_example
+
+Here is an example of how you might open a Wayland window using Python in a Linux environment:
+
+import gi
+
+gi.require_version('Gtk', '3.0')
+gi.require_version('Wayland', '1.0')
+
+from gi.repository import Gtk, Wayland
+
+# Create a Wayland display
+display = Wayland.Display.get_default()
+
+# Create a Wayland surface to draw on
+surface = Wayland.Surface.new()
+
+# Create a Wayland shell surface to manage the surface
+shell_surface = Wayland.ShellSurface.new(surface)
+
+# Set the initial title and size of the window
+shell_surface.set_title("My Wayland Window")
+shell_surface.set_fullscreen(False)
+
+# Create a GTK widget to draw on the Wayland surface
+widget = Gtk.DrawingArea()
+widget.set_size_request(800, 600)
+widget.realize()
+widget.set_realized(True)
+
+# Set the Wayland surface to be the widget's surface
+widget.get_surface()
+
+# Show the widget and run the GTK main loop
+widget.show()
+Gtk.main()
+
+This code creates a Wayland display, surface, and shell surface, and then creates a GTK widget that is drawn on the Wayland surface. The widget is then shown and the GTK main loop is run to display the window.
+
+Keep in mind that this is just an example, and you may need to modify the code depending on your specific needs and the version of Wayland and GTK you are using.
 #+end_example
 
 ** C++ control browser

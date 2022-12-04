@@ -17,88 +17,41 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-    (defparameter *source-dir* #P"example/90_ue5/source00/")
+    (defparameter *source-dir* #P"example/91_wayland/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
-    (let ((name `AGameCharacter)
-	  )
-      (write-class
-       :dir (asdf:system-relative-pathname
-	     'cl-cpp-generator2
-	     *source-dir*)
-       :name name
-       :headers `()
-       :header-preamble `(do0
-			  (include "CoreMinimal.h"
-				   "GameFramework/Pawn.h"
-				   "Camera/CameraComponent.h"
-				   )
-			  " "
-			  (comments "the ...generated.h file must always be included last")
-			  (include "GameCharacter.generated.h")
-			  )
-       ;; note: the cpp implementation does not have to (or should
-       ;; not?) include AGameCharacter.h
-
-       :implementation-preamble `(do0
-				  (include "GameCharacter.h"))
-       :code `(do0
-	       (defclass ,name (space public APawn)
-		 "GENERATED_BODY()"
-
-		 "public:"
+    #+nil (let ((name `AGameCharacter)
+		)
+	    (write-class
+	     :dir (asdf:system-relative-pathname
+		   'cl-cpp-generator2
+		   *source-dir*)
+	     :name name
+	     :headers `()
+	     :header-preamble `(do0
+				(include "bla.h"))
+	     :implementation-preamble `(do0
+					(include "bah.h"))
+	     :code `(do0
+		     (defclass ,name ()
+		       "public:"
 
 
-		 (defmethod ,name ()
-		   (declare
+		       (defmethod ,name ()
+			 (declare
 					;  (explicit)
-		    (construct
-		     (Camera
-		      (CreateDefaultSubobject<UCameraComponent>
-		       (TEXT (string "Camera")))))
-		    (values :constructor))
-		   (comments "don't perform instance dependent things in constructor. unreal may not call the constructor for each instance")
-		   (setf PrimaryActorTick.bCanEveryTick true)
-
-		   #+nil
-		   (setf Camera
-			 (CreateDefaultSubobject<UCameraComponent>
-			  (TEXT (string "Camera"))))
-		   )
-		 "protected:"
-		 (comments "Main Pawn Camera, https://docs.unrealengine.com/5.0/en-US/API/Runtime/Engine/Camera/UCameraComponent/")
-
-		 (defmethod BeginPlay ()
-		   (declare (values "virtual void")
-			    (override))
-		   (Super--BeginPlay))
-
-		 "UPROPERTY(EditAnywhere)"
-		 "UCameraComponent* Camera;"
-
-		 "public:"
-		 (defmethod Tick (DeltaTime)
-		   (declare (type float DeltaTime)
-			    (values void)
-			    (virtual)
-			    (override))
-		   (Super--Tick DeltaTime))
-
-		 (defmethod SetupPlayerInputComponent (PlayerInputComponent)
-		   (declare (type "class UInputComponent*" PlayerInputComponent)
-			    (values void)
-			    (virtual)
-			    (override))
-		   (Super--SetupPlayerInputComponent PlayerInputComponent))
+			  (construct
+			   (Camera
+			    3))
+			  (values :constructor))
+			 )
+		       )
+		     )))
 
 
-		 )
-	       )))
-
-    #+nil
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -120,21 +73,60 @@
 
        (do0
 	(include <spdlog/spdlog.h>)
-	(include <popl.hpp>)
-					;(include <torch/torch.h>)
-					;(include "DCGANGeneratorImpl.h")
+					;(include <popl.hpp>)
+
+
 	)
+       #+nil
        (do0
-	)
+	(include <glbinding/glbinding.h>
+					;<glbinding/gl/gl.h>
+		 <glbinding/gl32core/gl.h>
+		 )
+					;"using namespace gl;"
+	"using namespace gl32core;"
+	"using namespace glbinding;")
+       (space "extern \"C\""
+	      (curly
+	       (include <wayland-client.h>)))
+
+       (defun registry_handle_global (data registry id interface version)
+	 (declare (type void* data)
+		  (type "struct wl_registry*" registry)
+		  (type uint32_t id)
+		  (type "const char*" interface)
+		  (type uint32_t version)))
+
+       (setf "static const struct wl_registry_listener registry_listener"
+	     (curly registry_handle_global
+		    registry_handle_remove))
 
        (defun main (argc argv)
 	 (declare (type int argc)
 		  (type char** argv)
 		  (values int))
+	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
+	 (progn
+	   (let ((*display (wl_display_connect (string "wayland-0"))))
+	     (when (== nullptr
+		       display)
+	       ,(lprint :msg "can't connect to display")
+	       (return -1))
+	     #+nil (do0
+		    ,(lprint :msg "initialize glbinding")
+		    (glbinding--initialize (wl_display_get_event_queue display)))
+
+	     (let ((*registry (wl_display_get_registry display)))
+	       (wl_registry_add_listener registry
+					 &registry_listener
+					 nullptr))
+
+	     (wl_display_disconnect display)
+	     ))
 	 )))
 
-    #+nil
+
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output
 		       :if-exists :supersede
@@ -187,8 +179,6 @@
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
-	  (out "pkg_check_modules( jxl REQUIRED libjxl )")
-	  (out "pkg_check_modules( jxlt REQUIRED libjxl_threads )")
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/
@@ -202,15 +192,14 @@
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
-		 jxl
-		 jxl_threads
-		 ))
+					; glbinding--glbinding
+		 wayland-client))
 
 	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
 	       `())
 
-					;(out "target_precompile_headers( mytest PRIVATE vis_00_base.hpp )")
+					;(out "target_precompile_headers( mytest PRIVATE fatheader.hpp )")
 	  ))
       )))
 

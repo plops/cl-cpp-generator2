@@ -3,73 +3,18 @@
 		 (vars nil)
 		 (svars nil)
 		 )
-  #-nil `(,(format nil "spdlog::~a" level)
-	   (string ,(format nil "~a~{ ~a~}~{ ~a~}"
-			    msg
-			    (loop for e in vars
-				  collect
-				  (format nil " ~a='{}'" (emit-c :code e)))
-			    (loop for e in svars
-				  collect
-				  (format nil " ~a='{}'" (emit-c :code e)))))
-	   ,@vars
-	   ,@svars)
-  #+nil
-  `(lprint (curly
-	    (string ,msg)
-	    (string " ")
-	    ,@(loop for e in vars appending
-		    `(	;("std::setw" 8)
-					;("std::width" 8)
-		      (string ,(format nil " ~a='" (emit-c :code e)))
-		      ("std::to_string" ,e)
-		      (string "'")))
-	    ,@(loop for e in svars appending
-		    `(	;("std::setw" 8)
-					;("std::width" 8)
-		      (string ,(format nil " ~a='" (emit-c :code e)))
-		      ,e
-		      (string "'"))))
-	   __FILE__
-	   __LINE__
-	   (ref (aref __PRETTY_FUNCTION__ 0))
-	   ))
-(defun init-lprint ()
-  `(comments "lprint not needed")
-  #+nil
-  `(defun lprint (il file line fun)
-     (declare (type "std::initializer_list<std::string>" il)
-	      (type int line)
-	      (type "std::string" file fun))
+  `(,(format nil "spdlog::~a" level)
+     (string ,(format nil "~a~{ ~a~}~{ ~a~}"
+		      msg
+		      (loop for e in vars
+			    collect
+			    (format nil " ~a='{}'" (emit-c :code e)))
+		      (loop for e in svars
+			    collect
+			    (format nil " ~a='{}'" (emit-c :code e)))))
+     ,@vars
+     ,@svars))
 
-     "std::chrono::duration<double>  timestamp(0);"
-     (setf timestamp (- ("std::chrono::high_resolution_clock::now")
-			g_start_time
-			))
-     (let ((defaultWidth 10))
-       (declare (type "const auto" defaultWidth)))
-     (<< "std::cout"
-	 ("std::setw" defaultWidth)
-	 (dot timestamp
-	      (count))
-	 (string " ")
-	 file
-	 (string ":")
-	 (std--to_string line)
-	 (string " ")
-	 fun
-	 (string " ")
-	 ("std::this_thread::get_id")
-	 (string " ")
-	 )
-     (for-range ((elem :type "const auto&")
-		 il)
-		(<< "std::cout"
-
-		    elem) )
-     (<< "std::cout"
-	 "std::endl"
-	 "std::flush")))
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)
