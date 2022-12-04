@@ -2584,6 +2584,69 @@ int main()
 
 #+end_example
 
+*** Python network statistics 
+
+- Q: Implement the same in Python
+#+begin_example
+Here is an example of modern Python code that uses the rtnetlink method to access the number of TX packets on the eth0 interface:
+
+import socket
+from struct import pack, unpack
+
+# Create a socket for communicating with the kernel via the rtnetlink protocol
+sock = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, socket.NETLINK_ROUTE)
+
+# Set up a sockaddr_nl structure for the rtnetlink socket
+sa = socket.sockaddr_nl(0, 0, 0, 0)
+
+# Bind the socket to the rtnetlink address
+sock.bind(sa)
+
+# Set up a nlmsghdr structure to request information about the eth0 interface
+nlh = pack('IHHII', 16, 0, 0, 0, 0)
+
+# Set up an ifinfomsg structure to specify the eth0 interface
+ifi = pack('BxxxII', 16, 0, 0, 0)
+ifi += b'eth0' + (16 - len(b'eth0')) * b'\0'
+
+# Set up an iovec structure to hold the nlmsghdr and ifinfomsg structures
+iov = [
+    pack('I', 16),
+    pack('I', 16),
+]
+
+# Set up a msghdr structure to hold the iovec structure and sockaddr_nl structure
+msg = [
+    pack('I', 16),
+    pack('I', 0),
+    iov,
+    pack('I', 0),
+    pack('I', 0),
+    pack('I', 0),
+]
+
+# Send the request to the kernel via the rtnetlink socket
+sock.sendmsg([nlh + ifi], msg, 0)
+
+# Receive the response from the kernel
+data = sock.recv(16384)
+
+# Parse the response and extract the tx_packets value
+index = 16
+length, _, _, _, _ = unpack('IHHII', data[:index])
+_, _, _, _, _, _, tx_packets = unpack('BxxxIIIIII', data[index:index+length])
+
+# Print the tx_packets value
+print(f'TX packets: {tx_packets}')
+
+# Close the socket
+sock.close()
+
+In this code, we use the socket module to create a socket for communicating with the kernel via the rtnetlink protocol. We then set up the necessary data structures and send a request to the kernel, asking for information about the eth0 interface. We receive the response from the kernel and parse it to extract the tx_packets value. Finally, we print the tx_packets value to the standard output.
+
+Note that this code assumes that the eth0 interface exists and is properly configured on the system. Additionally, this is just a simple example to demonstrate how to use the rtnetlink method to access the number of TX packets on eth0 – more complex and efficient algorithms can be written using the Python standard library.
+#+end_example
+
 ** Open Wayland window
 
 #+begin_example
