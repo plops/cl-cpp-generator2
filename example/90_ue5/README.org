@@ -5533,6 +5533,21 @@ int main() {
 
 - Note that this is just an example, and the specific implementation will depend on the requirements of your project. You may need to use more advanced techniques to fully write the time to the socket every second.
 
+- it doesn't really work but i  think it points to the right direction:
+
+  #+begin_example
+[martin@localhost 90_ue5]$ clang++ -std=c++20 chrono.cppm --precompile -o chrono.pcm
+chrono.cppm:2:8: error: header file <chrono> (aka '/usr/bin/../lib/gcc/x86_64-redhat-linux/12/../../../../include/c++/12/chrono') cannot be imported because it is not known to be a header unit
+import <chrono>;
+       ^
+chrono.cppm:3:8: fatal error: 'networking' file not found
+import <networking>;
+       ^~~~~~~~~~~~
+2 errors generated.
+
+#+end_example
+- https://clang.llvm.org/docs/StandardCPlusPlusModules.html
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
