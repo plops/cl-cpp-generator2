@@ -455,6 +455,37 @@ Note that this code is for illustrative purposes only and may not be complete or
 #+end_example
 
 
+#+begin_example
+
+Show how to store the captured screen data into a file using modern C++20 and std::array.
+
+To store the captured screen data into a file using modern C++20 and std::array, you can do the following:
+
+// Capture screen
+wl_output_damage_buffer(output, 0, 0, width, height);
+
+// Get buffer stride and data
+int stride = wl_buffer_get_stride(buffer);
+void* data = wl_buffer_get_data(buffer);
+
+// Create local buffer for screen data
+std::array<uint8_t, stride * height> local_buffer;
+
+// Copy screen data to local buffer
+std::memcpy(local_buffer.data(), data, stride * height);
+
+// Save local buffer to file
+std::ofstream file("screen.raw", std::ios::binary);
+file.write(reinterpret_cast<char*>(local_buffer.data()), stride * height);
+
+// Clean up
+file.close();
+
+In this example, the std::array class is used to create a local buffer for the screen data. The std::memcpy() function is used to copy the screen data to the local buffer, and the std::ofstream class is used to save the local buffer to a file.
+
+Note that this code is for illustrative purposes only and may not be complete or fully functional. It is up to the developer to implement the necessary error handling and additional code to capture and use the screen data as needed. Additionally, the code assumes that the width and height variables have been properly initialized with the dimensions of the screen.
+#+end_example
+
 - https://chromium.googlesource.com/external/wayland/wayland/+/refs/heads/master/tests/queue-test.c
 
   #+begin_example

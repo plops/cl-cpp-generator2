@@ -194,7 +194,14 @@
 				     wl_shm
 				     fd
 				     size
-				     ))))))
+				     )))
+			 (do0
+			  ,(lprint :msg "capture screen..")
+			  (wl_output_damage_buffer wl_output
+						   0 0 width height)
+			  (let ((cap_stride (wl_buffer_get_stride buffer))
+				(*cap_data (wl_buffer_get_data buffer)))
+			    (let ((local))))))))
 
 		   (do0
 		    ,(lprint :msg "disconnect..")
