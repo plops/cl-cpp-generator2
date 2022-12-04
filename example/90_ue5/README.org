@@ -5362,14 +5362,101 @@ int main() {
 
 #+end_example
 
+** C++ coroutine
+
+- Write modern C++20 code that listen on a socket and respond to each request using an async coroutine.
+
+#+begin_example
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstdio>
+
+// Include the Boost ASIO library for networking
+#include <boost/asio.hpp>
+
+// Use the C++20 coroutines TS to define the async coroutine
+#include <experimental/coroutine>
+
+// Define the async coroutine that handles a client connection
+struct handle_client {
+  // The socket for the client connection
+  boost::asio::ip::tcp::socket socket;
+
+  // The buffer for receiving data from the client
+  std::vector<char> buffer;
+
+  // Constructor that takes the socket and buffer as arguments
+  handle_client(boost::asio::ip::tcp::socket socket, std::vector<char> buffer)
+      : socket(std::move(socket)), buffer(std::move(buffer)) {}
+
+  // The async coroutine
+  struct awaiter {
+    // The handle_client instance that owns this awaiter
+    handle_client& client;
+
+    // Constructor that takes the handle_client instance as an argument
+    awaiter(handle_client& client) : client(client) {}
+
+    // The operator that resumes the coroutine
+    bool await_ready() { return false; }
+
+    // The function that suspends the coroutine
+    void await_suspend(std::experimental::coroutine_handle<> coro) {
+      // Read data from the client asynchronously
+      client.socket.async_read_some(
+          boost::asio::buffer(client.buffer),
+          [coro](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+            // Resume the coroutine when the data has been received
+            coro.resume();
+          });
+    }
+
+    // The function that returns the result of the coroutine
+    std::string await_resume() {
+      // Return the data received from the client as a string
+      return std::string(client.buffer.data(), client.buffer.size());
+    }
+  };
+
+  // The operator that starts the coroutine
+  awaiter operator co_await() { return awaiter(*this); }
+};
+
+int main() {
+  // Create an IO service and a listening socket
+  boost::asio::io_service io_service;
+  boost::asio::ip::tcp::acceptor acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8080));
+
+  // Main loop
+  while (true) {
+    // Wait for a new client connection
+    boost::asio::ip::tcp::socket socket(io_service);
+    acceptor.accept(socket);
+
+    // Start a new coroutine to handle the client connection
+    std::experimental::coroutine_handle<> coro = [&]() -> handle_client {
+      // Create a buffer for receiving data from the client
+      std::vector<char> buffer(1024);
+
+      // Wait for data from the client and return it as a string
+      std::string request = co_await handle_client(std::move(socket), std::move(buffer));
+
+     
+
+#+end_example
+
+
+
 
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
 - [DONE PARTLY] i want an example of how to demux with ffmpeg and decode with
   nvdec https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
-- maybe something with imgui
-- some async c++, coroutines
+- [DONE] maybe something with imgui
+- [DONE] some async c++, coroutines
 - c++ modules with clang
 - imx477 set registers to increase sensitivity, disable star destroyer
 
