@@ -121,9 +121,26 @@
 			 screencast_proxy
 			 (string "AvailableSourceTypes")))
 		       )
+		   ;; https://github.com/obsproject/obs-studio/blob/7c493ea03572ddf6e34459b49291904e195ba8ea/plugins/linux-pipewire/screencast-portal.c
 		   (when cachedSourceTypes
-		     ,(lprint :vars `((g_variant_get_uint32
-				       cachedSourceTypes))))))))
+		     (let ((availableCaptureTypes (g_variant_get_uint32
+						   cachedSourceTypes))
+			   (CAPTURE_TYPE_MONITOR "1<<0")
+			   (CAPTURE_TYPE_WINDOW "1<<1")
+			   (CAPTURE_TYPE_VIRTUAL "1<<2")
+			   (desktopCaptureAvailable
+			    (!= 0 (logand
+				   availableCaptureTypes
+				   CAPTURE_TYPE_MONITOR
+				   )))
+			   (windowCaptureAvailable
+			    (!= 0 (logand
+				   availableCaptureTypes
+				   CAPTURE_TYPE_WINDOW
+				   ))))
+		       ,(lprint :vars `(availableCaptureTypes
+					desktopCaptureAvailable
+					windowCaptureAvailable))))))))
 	   )
 
 
