@@ -5899,10 +5899,10 @@ int main() {
   
 - GPT: I'm sorry, but I am not able to browse the internet and I don't have the information about the best Sony sensor with the highest light sensitivity and the lowest read noise. My training is limited to a specific set of information and I am not able to provide information beyond that.
 
-
+**** Read noise
 - How would you measure the read noise of an IMX477 sensor according to EMVA 1288?
 
-**** GPT:
+***** GPT:
 - The EMVA 1288 standard provides a standardized method for measuring the read noise of a camera sensor. To measure the read noise of an IMX477 sensor according to EMVA 1288, you would need to follow these steps:
 
   -  Set up the camera in a dark room with a stable temperature.
@@ -5911,7 +5911,26 @@ int main() {
   -  Use the EMVA 1288 standard to analyze the images and extract the read noise of the sensor.
 
 - The EMVA 1288 standard provides detailed instructions on how to extract the read noise from the images, including how to calculate the mean and standard deviation of the pixel values, how to fit a noise model to the data, and how to calculate the read noise. You can find more information about the EMVA 1288 standard and how to use it on the EMVA website (https://www.emva.org/).
-  
+
+**** Color Calib
+- How would you perform color calibration of an IMX477 sensor.
+
+***** GPT:
+- Color calibration is the process of adjusting the colors produced by a camera to match a reference color space. To perform color calibration of an IMX477 sensor, you would need to follow these steps:
+
+    - Set up the camera in a controlled lighting environment, such as a color calibration lab.
+    - Use a color calibration target, such as a Macbeth ColorChecker chart, to provide a set of known colors to the camera.
+    - Take multiple images of the color calibration target with the camera, at different exposures and white balance settings.
+    - Use color calibration software to analyze the images and extract the color information from the color calibration target.
+    - Use the color information to calculate the color correction matrix for the camera.
+    - Apply the color correction matrix to the camera's output to produce calibrated colors.
+
+- The color calibration process can be complex and involves several
+  steps, including the use of specialized software and calibration
+  targets. You can find more information about color calibration and
+  how to perform it on the internet, or by consulting with a camera
+  manufacturer or a color calibration specialist.
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
