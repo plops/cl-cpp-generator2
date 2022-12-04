@@ -8,6 +8,12 @@
 - here it explains binding to globals https://wayland-book.com/registry/binding.html
 - the book is not finished and doesn't seem to mention screen capture
 
+- obs uses pipewire to capture the screen on wayland
+  - gnome shell seems to integrate it's own way to capture the
+    screen. it looks like wayland developers don't want to allow
+    capturing the screen because of privacy concerns (which is okay
+    with me)
+  
 * Conversion with chatGPT
 
 
