@@ -1,0 +1,48 @@
+#+begin_example
+
+sudo dnf install xdg-desktop-portal-devel
+
+#+end_example
+
+- https://wiki.gnome.org/Projects/Mutter/RemoteDesktop
+
+  - i think this is the interface that gnome provides to capture the screen
+  - https://flatpak.github.io/xdg-desktop-portal/ screen cast api
+
+#+begin_example
+
+
+Write modern C++20 code that captures a wayland screen using xdg-desktop-portal.
+
+Here is an example of C++20 code that captures a Wayland screen using xdg-desktop-portal:
+
+#include <iostream>
+#include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>
+
+int main()
+{
+    // Initialize xdg-desktop-portal
+    xdg::Desktop dp;
+
+    // Create a new screen capture request
+    auto request = dp.screen_cast().create_request();
+
+    // Set the target format for the screen capture
+    request.set_target_format(xdg::ScreenCast::Format::RGB);
+    request.set_width(1920);
+    request.set_height(1080);
+
+    // Start the screen capture
+    auto data = request.start();
+
+    // Use the captured screen data
+    // ...
+
+    // Stop the screen capture
+    request.stop();
+
+    return 0;
+}
+
+Note that this code is just an example and may not work as-is. It is intended to illustrate the general approach to capturing a Wayland screen using xdg-desktop-portal in C++20.
+#+end_example
