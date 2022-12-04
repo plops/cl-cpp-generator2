@@ -5548,6 +5548,63 @@ import <networking>;
 #+end_example
 - https://clang.llvm.org/docs/StandardCPlusPlusModules.html
 
+
+** IMX477 camera
+
+- Write modern C++20 code that reads video from an IMX477 sensor.
+
+#+begin_example
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+// Include the libcamera library for interfacing with the camera
+#include <libcamera/camera.h>
+#include <libcamera/camera_manager.h>
+#include <libcamera/framebuffer_allocator.h>
+#include <libcamera/stream.h>
+
+// Define the resolution of the video
+const int WIDTH = 1920;
+const int HEIGHT = 1080;
+
+int main() {
+  // Create a camera manager and initialize it
+  libcamera::CameraManager camera_manager;
+  int ret = camera_manager.start();
+  if (ret < 0) {
+    std::cerr << "Error: failed to initialize camera manager" << std::endl;
+    return 1;
+  }
+
+  // Get the first camera from the camera manager
+  libcamera::Camera* camera = camera_manager.cameras()[0];
+
+  // Create a stream for the camera
+  libcamera::Stream stream(camera);
+  stream.setFormat(libcamera::PixelFormat::NV12M, {WIDTH, HEIGHT});
+
+  // Create a framebuffer allocator for the stream
+  libcamera::FrameBufferAllocator allocator;
+  ret = allocator.allocate(stream);
+  if (ret < 0) {
+    std::cerr << "Error: failed to allocate framebuffer for stream" << std::endl;
+    return 1;
+  }
+
+  // Start the stream
+  ret = stream.start(&allocator);
+  if (ret < 0) {
+    std::cerr << "Error: failed to start stream" << std::endl;
+    return 1;
+  }
+
+  // Main loop
+  while (
+
+#+end_example
+
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
@@ -5555,8 +5612,8 @@ import <networking>;
   nvdec https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
 - [DONE] maybe something with imgui
 - [DONE] some async c++, coroutines
-- c++ modules with clang
-- imx477 set registers to increase sensitivity, disable star destroyer
+- [DONE] c++ modules with clang
+- [DONE] imx477 set registers to increase sensitivity, disable star destroyer
 
 
 ** Misc
