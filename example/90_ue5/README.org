@@ -2647,6 +2647,132 @@ In this code, we use the socket module to create a socket for communicating with
 Note that this code assumes that the eth0 interface exists and is properly configured on the system. Additionally, this is just a simple example to demonstrate how to use the rtnetlink method to access the number of TX packets on eth0 – more complex and efficient algorithms can be written using the Python standard library.
 #+end_example
 
+*** Python FEC
+- Get the FEC statistics using the ethtool-netlink interface using Python code.
+
+- https://docs.kernel.org/networking/ethtool-netlink.html
+
+#+begin_example
+
+Here is an example of modern Python code that uses the ethtool-netlink interface to gather FEC statistics about the eth0 interface:
+
+import socket
+from struct import pack, unpack
+
+# Create a socket for communicating with the kernel via the netlink protocol
+sock = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, socket.NETLINK_GENERIC)
+
+# Set up a sockaddr_nl structure for the netlink socket
+sa = socket.sockaddr_nl(0, 0, 0, 0)
+
+# Bind the socket to the netlink address
+sock.bind(sa)
+
+# Set up a nlmsghdr structure to request statistics from the eth0 interface
+nlh = pack('IHHII', 16, 0, 0, 0, 0)
+
+# Set up an ethtool_stats structure to specify the eth0 interface
+stats = pack('II', 16, 0)
+stats += b'eth0' + (16 - len(b'eth0')) * b'\0'
+
+# Set up an iovec structure to hold the nlmsghdr and ethtool_stats structures
+iov = [
+    pack('I', 16),
+    pack('I', 16),
+]
+
+# Set up a msghdr structure to hold the iovec structure and sockaddr_nl structure
+msg = [
+    pack('I', 16),
+    pack('I', 0),
+    iov,
+    pack('I', 0),
+    pack('I', 0),
+    pack('I', 0),
+]
+
+# Send the request to the kernel via the netlink socket
+sock.sendmsg([nlh + stats], msg, 0)
+
+# Receive the response from the kernel
+data = sock.recv(16384)
+
+# Parse the response and extract the FEC statistics
+index = 16
+length, _, _, _, _ = unpack('IHHII', data[:index])
+_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, fec_tx, fec_rx = unpack('IIIIIIIIIIIIIIIIIIIIIIIIII', data[index:index+length])
+#+end_example
+*** Go FEC
+
+- Get the FEC statistics using the ethtool-netlink interface using modern C++20 code.
+#+begin_example
+
+Here is an example of modern C++20 code that uses the ethtool-netlink interface to gather FEC statistics about the eth0 interface:
+
+#include <cstring>
+#include <iostream>
+#include <linux/ethtool.h>
+#include <linux/netlink.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+using namespace std;
+
+int main()
+{
+    // Create a socket for communicating with the kernel via the netlink protocol
+    int sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_GENERIC);
+    if (sock < 0)
+    {
+        cerr << "Error: Failed to create netlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a sockaddr_nl structure for the netlink socket
+    struct sockaddr_nl sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.nl_family = AF_NETLINK;
+
+    // Bind the socket to the netlink address
+    if (bind(sock, (struct sockaddr*)&sa, sizeof(sa)) < 0)
+    {
+        cerr << "Error: Failed to bind netlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a nlmsghdr structure to request statistics from the eth0 interface
+    struct nlmsghdr nlh;
+    memset(&nlh, 0, sizeof(nlh));
+    nlh.nlmsg_len = NLMSG_LENGTH(sizeof(struct ethtool_stats));
+    nlh.nlmsg_type = ETHTOOL_GSTATS;
+    nlh.nlmsg_flags = NLM_F_REQUEST;
+
+    // Set up an ethtool_stats structure to specify the eth0 interface
+    struct ethtool_stats stats;
+    memset(&stats, 0, sizeof(stats));
+    strncpy(stats.dev_name, "eth0", IFNAMSIZ);
+
+    // Set up an iovec structure to hold the nlmsghdr and ethtool_stats structures
+    struct iovec iov[2];
+    iov[0].iov_base = (void*)&nlh;
+    iov[0].iov_len = sizeof(nlh);
+    iov[1].iov_base = (void*)&stats;
+    iov[1].iov_len = sizeof(stats);
+
+    // Set up a msghdr structure to hold the iovec structure and sockaddr_nl structure
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_name = (void*)&sa;
+    msg.msg_namelen = sizeof(sa);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 2;
+
+    // Send the request to the kernel via the netlink socket
+    if (sendmsg(sock, &msg, 0) < 0)
+    {
+        cerr << "Error: Failed to send netlink request" << endl;
+#+end_example
 ** Open Wayland window
 
 #+begin_example
