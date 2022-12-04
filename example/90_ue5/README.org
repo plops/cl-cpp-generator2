@@ -5751,7 +5751,150 @@ int main() {
 #+end_example
 
 
-- This code is similar to the previous example, but it sets the integration time of the camera to 80ms using the setControl() method. This ensures that the camera uses an integration time of 80ms when capturing frames. Other than this, the code is the same and uses the libcamera library to interface with the IMX477 sensor on a Raspberry Pi running Linux. It creates a camera manager, gets the first camera from the manager, sets the integration time of the camera, creates a stream for the camera, and then starts the stream. It then enters a loop where it waits
+- GPT: This code is similar to the previous example, but it sets the integration time of the camera to 80ms using the setControl() method. This ensures that the camera uses an integration time of 80ms when capturing frames. Other than this, the code is the same and uses the libcamera library to interface with the IMX477 sensor on a Raspberry Pi running Linux. It creates a camera manager, gets the first camera from the manager, sets the integration time of the camera, creates a stream for the camera, and then starts the stream. It then enters a loop where it waits
+
+
+- Disable the automatic bad pixel correction of the sensor.
+
+
+#+begin_example
+
+
+
+
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+// Include the libcamera library for interfacing with the camera
+#include <libcamera/camera.h>
+#include <libcamera/camera_manager.h>
+#include <libcamera/framebuffer_allocator.h>
+#include <libcamera/stream.h>
+
+// Define the resolution of the video
+const int WIDTH = 1920;
+const int HEIGHT = 1080;
+
+int main() {
+  // Create a camera manager and initialize it
+  libcamera::CameraManager camera_manager;
+  int ret = camera_manager.start();
+  if (ret < 0) {
+    std::cerr << "Error: failed to initialize camera manager" << std::endl;
+    return 1;
+  }
+
+  // Get the first camera from the camera manager
+  libcamera::Camera* camera = camera_manager.cameras()[0];
+
+  // Disable the automatic bad pixel correction of the camera
+  camera->setControl(libcamera::V4L2_CID_BAD_PIXEL_CORRECTION_ENABLE, 0);
+
+  // Create a stream for the camera
+  libcamera::Stream stream(camera);
+  stream.setFormat(libcamera::PixelFormat::NV12M, {WIDTH, HEIGHT});
+
+  // Create a framebuffer allocator for the stream
+  libcamera::FrameBufferAllocator allocator;
+  ret = allocator.allocate(stream);
+  if (ret < 0) {
+    std::cerr << "Error: failed to allocate framebuffer for stream" << std::endl;
+    return 1;
+  }
+
+  // Start the stream
+  ret = stream.start(&allocator);
+  if (ret < 0) {
+    std::cerr << "Error: failed to start stream" << std::endl;
+    return 1;
+  }
+
+  // Main loop
+  while (true) {
+    // Wait for a frame to be available from the stream
+    libcamera::FrameBuffer* frame = stream.buffer();
+
+    // Read the frame data from the stream
+    std::vector<std::uint8_t> data;
+    data.resize(frame->size());
+    frame->map();
+    std::memcpy(data.data(), frame->data(), data.size());
+    frame->unmap();
+
+    // Process the frame data here...
+
+    // Return the frame to the stream
+    stream.release(frame);
+  }
+
+  return 0;
+}
+#+end_example
+
+- GPT: This code is similar to the previous examples, but it disables the automatic bad pixel correction of the camera using the setControl() method. This ensures that the camera does not automatically correct bad pixels in the captured frames. Other than this, the code is the same and uses the libcamera library to interface with the IMX477 sensor on a Raspberry Pi running Linux. It creates a camera manager, gets the first camera from the manager, disables the automatic bad pixel correction of the camera, creates a stream for the camera, and
+
+- I don't think that works like that.
+
+- me: Don't use libcamera.
+
+#+begin_example
+
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+// Include the V4L2 library for interfacing with the camera
+#include <linux/videodev2.h>
+
+// Define the resolution of the video
+const int WIDTH = 1920;
+const int HEIGHT = 1080;
+
+int main() {
+  // Open the video device file for the camera
+  int fd = open("/dev/video0", O_RDWR);
+  if (fd < 0) {
+    std::cerr << "Error: failed to open video device file" << std::endl;
+    return 1;
+  }
+
+  // Set the format of the video stream
+  struct v4l2_format format;
+  std::memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  format.fmt.pix.width = WIDTH;
+  format.fmt.pix.height = HEIGHT;
+  format.fmt.pix.pixelformat = V4L2_PIX_FMT_NV12M;
+  if (ioctl(fd, VIDIOC_S_FMT, &format) < 0) {
+    std::cerr << "Error: failed to set video format" << std::endl;
+    return 1;
+  }
+
+  // Set the integration time of the camera to 80ms
+  struct v4l2_ext_controls controls;
+  std::memset(&controls, 0, sizeof(controls));
+  controls.ctrl_class = V4L2_CTRL_CLASS_CAMERA;
+  controls.count = 1;
+  controls.controls = new v4l2_ext_control;
+  controls.controls[0].id = V4L2_CID_INTEGRATION_TIME;
+  controls.controls[0].value = 80;
+  if (ioctl(fd, VIDIOC_S_EXT_CTRLS, &controls) < 0) {
+    std::cerr << "Error: failed to set integration time" << std::endl;
+    return 1;
+  }
+  delete[] controls.controls;
+
+  // Disable the automatic bad pixel correction of the camera
+  std::memset(&controls, 0, sizeof(controls));
+  controls.ctrl_class = V4L2_CTRL_CLASS_CAMERA;
+  controls.count = 1;
+  controls.controls = new v4l2_ext_control;
+  controls.controls[0].id = V4L2_CID_BAD_PIXEL_CORRECTION_ENABLE;
+  controls.controls[0].value = 0;
+  if (ioctl(
+
+#+end_example
 
 ** next
 
