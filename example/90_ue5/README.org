@@ -1989,3 +1989,399 @@ int main()
 96378561070
 
 #+end_example
+
+*** for Ryzen it the sys path is a bit different:
+
+#+begin_example
+
+Write Linux C++20 code that reads current power consumption from register on AMD Ryzen processor core 0.
+
+
+#include <fstream>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string path = "/sys/devices/system/cpu/cpu0/power/energy_uj";
+    std::ifstream infile(path);
+    uint64_t energy;
+    infile >> energy;
+    std::cout << "Current power consumption (in uJ) of core 0 is: " << energy << std::endl;
+    return 0;
+}
+#+end_example
+
+** C++ Linux clock frequency
+
+#+begin_example
+
+Write Linux C++20 code that reads current frequency  from register on AMD Ryzen.
+
+#include <cpufreq.h>
+ 
+int main()
+{
+    /* Get the current frequency of CPU 0 on AMD Ryzen */
+    unsigned int freq;
+    int ret = cpufreq_get_freq_kernel(0, &freq);
+    if (ret == 0) {
+        std::cout << "Current CPU frequency is: " << freq << " MHz\n";
+    } else {
+        std::cerr << "Error getting CPU frequency\n";
+    }
+ 
+    return 0;
+}
+#+end_example
+
+** C++ Linux clock frequency intel register
+
+#+begin_example
+
+Write Linux C++20 code that reads current frequency  from register on Intel processor.
+
+
+#include <cpuid.h>
+#include <bitset>
+#include <iostream>
+
+int main()
+{
+	unsigned int eax, ebx, ecx, edx;
+	unsigned int max_level, ext_level;
+
+	// Get processor info
+	__cpuid(0, max_level, ebx, ecx, edx);
+	__cpuid(0x80000000, ext_level, ebx, ecx, edx);
+
+	// Check if CPUID supports extended functions
+	if (ext_level >= 0x16) {
+		// Get frequency from the MSR
+		__cpuid(0x16, eax, ebx, ecx, edx);
+		// Bits 31:0 contain the current frequency in MHz
+		std::bitset<32> cur_freq(eax);
+		std::cout << "Current frequency: " << cur_freq.to_ulong() << " MHz" << std::endl;
+	}
+
+	return 0;
+}
+#+end_example
+
+** C++ Linux ARM A53 frequency
+
+#+begin_example
+
+Write Linux C++20 code that reads current frequency  from register on ARM A53.
+
+
+#include <stdio.h>
+#include <stdint.h>
+
+int main() {
+    // Read from the A53 frequency register
+    uint32_t reg;
+    asm volatile("mrs %0, S3_1_C15_C2_4" : "=r" (reg));
+    uint32_t cur_freq = (reg >> 8) & 0xFFF;  // Bits 8-19 of the register
+    printf("Current frequency is %u MHz\n", cur_freq);
+    return 0;
+}
+#+end_example
+
+- again
+#+begin_example
+
+Write Android C++20 code that reads current frequency  from register on ARM A53.
+
+
+#include <stdio.h>
+#include <stdint.h>
+
+// Get the current frequency of the ARM A53 processor
+uint32_t getCurrentFrequency(void)
+{
+    uint32_t result;
+    
+    // Read the register containing the current frequency
+    asm volatile (
+        "mrc p15, 0, %0, c0, c1, 0"
+        : "=r" (result)
+    );
+    
+    return result;
+}
+
+int main(void)
+{
+    printf("Current frequency: %u\n", getCurrentFrequency());
+    
+    return 0;
+}
+#+end_example
+
+*** power consumption
+
+#+begin_example
+
+Write Linux C++20 code that reads current power consumption  from register on ARM A53.
+
+
+#include <iostream>
+#include <fstream>
+#include <cstdint>
+
+int main() {
+    // Read the register value
+    std::ifstream reg_file("/sys/devices/system/cpu/cpu0/regs/PMCR_EL0");
+    uint32_t reg_val;
+    reg_file >> std::hex >> reg_val;
+
+    // Extract the power consumption value
+    uint32_t power_consumption = (reg_val >> 0) & 0xFFFF;
+
+    std::cout << "Power consumption: " << power_consumption << std::endl;
+
+    return 0;
+}
+#+end_example
+
+*** android
+
+#+begin_example
+Write Android C++20 code that reads current power consumption  from register on ARM A53.
+
+
+
+#include <stdio.h>
+#include <stdint.h>
+
+// Register addresses for power consumption
+#define A53_PWR_CONSUMPTION_REGISTER 0x020C8018
+
+int main()
+{
+    // Read from power consumption register
+    uint32_t value;
+    __asm__ ("MRS %0, PMU_PWR_CONSUMPTION" : "=r" (value));
+ 
+    // Print the current power consumption
+    printf("Current power consumption is %u\n", value);
+    
+    return 0;
+}
+
+
+#+end_example
+
+*** armv7 frequency
+
+#+begin_example
+Write Android C++20 code that reads current frequency  from register on ARMv7.
+
+
+#include <cstdint>
+#include <arm_neon.h>
+ 
+int main(int argc, char **argv) {
+    uint32_t current_freq;
+    asm volatile ("mrc p15, 0, %0, c0, c0, 0" : "=r" (current_freq));
+    uint32x2_t vFreq = vdup_n_u32(current_freq);
+    printf("Current Frequency: %d Hz\n", vFreq[0]);
+    return 0;
+}
+
+#+end_example
+
+*** Android armv7 power consumption
+
+#+begin_example
+
+Write Android C++20 code that reads current power consumption from register on ARMv7.
+
+
+// Include necessary libraries
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <arm_neon.h>
+
+// Define register address
+#define POWER_REGISTER 0xE000ED14
+
+// Function to read current power consumption from register
+int32_t read_power_consumption()
+{
+    int32_t power_consumption;
+
+    // Use vld1q_s32 intrinsics to read the register
+    int32x2_t power_val = vld1q_s32((const int32_t *)POWER_REGISTER);
+
+    // Extract the value from the register
+    power_consumption = vgetq_lane_s32(power_val, 0);
+
+    return power_consumption;
+}
+#+end_example
+- Shows the content of the CCR register (in HEX) located at memory
+  address 0xE000ED14.
+
+
+*** Linux armv7 power consumption
+
+#+begin_example
+
+Write Linux C++20 code that reads current power consumption from register on ARMv7.
+
+
+#include <cstdint>
+#include <cstdio>
+#include <functional>
+
+using namespace std;
+
+int main(int argc, char** argv) {
+    const int CP15_REG_POWER_CTRL = 0xE000ED2C;
+
+    // Read the power control register
+    uint32_t power_ctrl;
+    asm volatile("mrc p15, 0, %0, c9, c0, 2" : "=r" (power_ctrl));
+
+    // Extract the current power consumption
+    uint32_t consumption = (power_ctrl & 0xFF);
+    printf("Current power consumption: %u\n", consumption);
+
+    return 0;
+}
+#+end_example
+
+
+** Open Wayland window
+
+#+begin_example
+Write Linux C++20 code that opens a wayland window.
+
+#include <wayland-client.h>
+
+int main() {
+   struct wl_display *display;
+   struct wl_compositor *compositor;
+   struct wl_surface *surface;
+   struct wl_shell *shell;
+   struct wl_shell_surface *shell_surface;
+
+   display = wl_display_connect(NULL);
+   if (display == NULL) {
+      return -1;
+   }
+
+   compositor = wl_compositor_create(display, 1);
+   surface = wl_compositor_create_surface(compositor);
+   shell = wl_shell_create(display, 1);
+   shell_surface = wl_shell_get_shell_surface(shell, surface);
+
+   wl_shell_surface_set_toplevel(shell_surface);
+
+   wl_display_dispatch(display);
+
+   wl_shell_surface_destroy(shell_surface);
+   wl_shell_destroy(shell);
+   wl_surface_destroy(surface);
+   wl_compositor_destroy(compositor);
+   wl_display_disconnect(display);
+
+   return 0;
+}
+#+end_example
+
+- not working: 
+#+begin_example
+[martin@localhost 90_ue5]$ g++ wayland_open.cpp
+wayland_open.cpp: In function ‘int main()’:
+wayland_open.cpp:17:17: error: ‘wl_compositor_create’ was not declared in this scope; did you mean ‘wl_compositor_interface’?
+   17 |    compositor = wl_compositor_create(display, 1);
+      |                 ^~~~~~~~~~~~~~~~~~~~
+      |                 wl_compositor_interface
+wayland_open.cpp:19:12: error: ‘wl_shell_create’ was not declared in this scope; did you mean ‘wl_shell_surface’?
+   19 |    shell = wl_shell_create(display, 1);
+      |            ^~~~~~~~~~~~~~~
+      |            wl_shell_surface
+
+#+end_example
+
+*** again
+#+begin_example
+
+Write Linux C++20 code that opens a wayland window. wl_compositor_create is not declared.
+
+#include <wayland-client.h>
+#include <wayland-egl.h>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+ 
+struct wl_display *display = wl_display_connect(NULL);
+if (display == NULL) {
+    // handle error
+}
+ 
+struct wl_registry *registry = wl_display_get_registry(display);
+if (registry == NULL) {
+    // handle error
+}
+ 
+wl_registry_add_listener(registry, &registry_listener, NULL);
+wl_display_dispatch(display);
+wl_display_roundtrip(display);
+ 
+struct wl_compositor *compositor = wl_registry_bind(registry,
+                                                    compositor_id,
+                                                    &wl_compositor_interface,
+                                                    1);
+if (compositor == NULL) {
+    // handle error
+}
+ 
+struct wl_surface *surface = wl_compositor_create_surface(compositor);
+if (surface == NULL) {
+    // handle error
+}
+ 
+struct wl_egl_window *egl_window = wl_egl_window_create(surface,
+                                                       width,
+                                                       height);
+if (egl_window == NULL) {
+    // handle error
+}
+#+end_example
+
+** C++ control firefox
+
+#+begin_example
+Write Linux C++ code that controls firefox.
+
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <unistd.h>
+using namespace std;
+
+int main() 
+{
+    string firefoxPath = "/usr/bin/firefox";
+    string firefoxCommand = firefoxPath + " &";
+    system(firefoxCommand.c_str());
+    sleep(2); // give Firefox time to launch
+
+    // Here is where you would add your code to control Firefox
+    // For example, you might want to navigate to a specific URL
+    string navigateCommand = firefoxPath + " -url http://www.example.com";
+    system(navigateCommand.c_str());
+    sleep(2); // give Firefox time to navigate
+
+    // You could also add code to close Firefox
+    string closeCommand = firefoxPath + " -remote 'quit'";
+    system(closeCommand.c_str());
+
+    return 0;
+}
+#+end_example
+
+- is that possible. it seems reasonable
