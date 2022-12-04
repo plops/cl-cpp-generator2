@@ -390,6 +390,71 @@ Note that this code is for illustrative purposes only and may not be complete or
 
 #+end_example
 
+#+begin_example
+
+Show details about the call to wl_shm_pool_create_buffer.
+
+To create a wl_buffer for a shared memory pool using wl_shm_pool_create_buffer(), you will need to do the following:
+
+    Create a shared memory pool using the wl_shm_create_pool() function. This function allows you to create a shared memory pool for a wl_shm global object. For example:
+
+struct wl_shm_pool* pool = wl_shm_create_pool(
+    shm,
+    wl_shm_create_buffer(shm, ...)
+);
+
+In this example, the shm parameter specifies the wl_shm global object that was bound previously, and the wl_shm_create_buffer() function is used to create a wl_buffer for the shared memory pool.
+
+    Create a wl_buffer for the shared memory pool using the wl_shm_pool_create_buffer() function. This function allows you to create a wl_buffer for a shared memory pool. For example:
+
+struct wl_buffer* buffer = wl_shm_pool_create_buffer(
+    pool,
+    0,
+    width,
+    height,
+    stride,
+    WL_SHM_FORMAT_ARGB8888
+);
+
+In this example, the pool parameter specifies the `wl_sh
+wol pumba
+continue
+
+Continuing from the previous code listing, you can now use the wl_buffer to capture the screen in Wayland.
+
+// Capture screen
+wl_output_damage_buffer(output, 0, 0, width, height);
+
+// Get buffer stride and data
+int stride = wl_buffer_get_stride(buffer);
+void* data = wl_buffer_get_data(buffer);
+
+// Use the captured screen data as needed
+// ...
+
+Once you have the stride and data of the buffer, you can use the captured screen data as needed. For example, you can copy the data to a local buffer and save it to a file.
+
+// Allocate local buffer for screen data
+uint8_t* local_buffer = new uint8_t[stride * height];
+
+// Copy screen data to local buffer
+memcpy(local_buffer, data, stride * height);
+
+// Save local buffer to file
+FILE* file = fopen("screen.raw", "wb");
+if (file)
+{
+    fwrite(local_buffer, 1, stride * height, file);
+    fclose(file);
+}
+
+// Clean up
+delete[] local_buffer;
+
+Note that this code is for illustrative purposes only and may not be complete or fully functional. It is up to the developer to implement the necessary error handling and additional code to capture and use the screen data as needed. Additionally, the code assumes that the width and height variables have been properly initialized with the dimensions of the screen.
+#+end_example
+
+
 - https://chromium.googlesource.com/external/wayland/wayland/+/refs/heads/master/tests/queue-test.c
 
   #+begin_example

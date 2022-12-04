@@ -171,6 +171,7 @@
 			   (width 1920)
 			   (height 1080)
 			   (stride 4)
+			   (format WL_SHM_FORMAT_ARGB88888)
 			   (size (* width height stride)))
 		       (when (< fd 0)
 			 ,(lprint :msg "shm_open failed"
@@ -179,18 +180,21 @@
 		       (when (< (ftruncate fd size) 0)
 			 ,(lprint :msg "ftruncate failed")
 			 (return -1))
-		       #+nil (let ((*data (mmap nullptr size (logior PROT_READ
-								     PROT_WRITE)
-						MAP_SHARED
-						fd 0))
-				   (*pool (wl_shm_create_pool
-					   shm
-					   (wl_shm_create_buffer shm
-								 wl_shm
-								 width
-								 height
-								 stride
-								 WL_SHM_FORMAD_ARGB88888)))))))
+		       (let ((*data (mmap nullptr size (logior PROT_READ
+							       PROT_WRITE)
+					  MAP_SHARED
+					  fd 0))
+			     (*buffer (wl_shm_create_buffer wl_shm
+							    fd
+							    width
+							    height
+							    stride
+							    format))
+			     (*pool (wl_shm_create_pool
+				     wl_shm
+				     fd
+				     size
+				     ))))))
 
 		   (do0
 		    ,(lprint :msg "disconnect..")
