@@ -106,6 +106,7 @@
 		       (type uint32_t id)
 		       (type "const char*" interface)
 		       (type uint32_t version))
+	      ,(lprint :vars `(id version interface))
 	      ,@(loop for e in l
 		      collect
 		      `(when (== (string ,e)
@@ -146,15 +147,15 @@
 			     display)
 		     ,(lprint :msg "can't connect to display")
 		     (return -1))
-		   #+nil (do0
-			  ,(lprint :msg "initialize glbinding")
-			  (glbinding--initialize (wl_display_get_event_queue display)))
+
 
 		   (let ((*registry (wl_display_get_registry display)))
 		     ,(lprint :msg "add listener..")
 		     (wl_registry_add_listener registry
 					       &registry_listener
 					       nullptr))
+		   ,(lprint :msg "roundtrip..")
+		   (wl_display_roundtrip display)
 		   ,(lprint :msg "dispatch..")
 		   (wl_display_dispatch display)
 
@@ -171,7 +172,7 @@
 			   (width 1920)
 			   (height 1080)
 			   (stride 4)
-			   (format WL_SHM_FORMAT_ARGB88888)
+			   (format WL_SHM_FORMAT_ARGB8888)
 			   (size (* width height stride)))
 		       (when (< fd 0)
 			 ,(lprint :msg "shm_open failed"
@@ -180,39 +181,39 @@
 		       (when (< (ftruncate fd size) 0)
 			 ,(lprint :msg "ftruncate failed")
 			 (return -1))
-		       (let ((*data (mmap nullptr size (logior PROT_READ
-							       PROT_WRITE)
-					  MAP_SHARED
-					  fd 0))
-			     (*buffer (wl_shm_create_buffer wl_shm
-							    fd
-							    width
-							    height
-							    stride
-							    format))
-			     #+nil (*pool (wl_shm_create_pool
-					   wl_shm
-					   fd
-					   size
-					   )))
-			 (do0
-			  ,(lprint :msg "capture screen..")
-			  (wl_output_damage_buffer wl_output
-						   0 0 width height)
-			  (let ((cap_stride (wl_buffer_get_stride buffer))
-				(*cap_data (wl_buffer_get_data buffer))
-				(local_buffer ("std::array<uint8_t,size>"))
-				(out_fn (string "screen.raw"))
-				(file (std--ofstream out_fn
-						     std--ios--binary)))
-			    (std--memcpy (local_buffer.data)
-					 data
-					 size)
-			    ,(lprint :msg "store to file" :vars `(out_fn))
-			    (file.write (reinterpret_cast<char*>
-					 (local_buffer.data)
-					 size))
-			    (file.close))))))
+		       #+nil    (let ((*data (mmap nullptr size (logior PROT_READ
+									PROT_WRITE)
+						   MAP_SHARED
+						   fd 0))
+				      (*buffer (wl_shm_create_buffer wl_shm
+								     fd
+								     width
+								     height
+								     stride
+								     format))
+				      #+nil (*pool (wl_shm_create_pool
+						    wl_shm
+						    fd
+						    size
+						    )))
+				  (do0
+				   ,(lprint :msg "capture screen..")
+				   (wl_output_damage_buffer wl_output
+							    0 0 width height)
+				   (let ((cap_stride (wl_buffer_get_stride buffer))
+					 (*cap_data (wl_buffer_get_data buffer))
+					 (local_buffer ("std::array<uint8_t,size>"))
+					 (out_fn (string "screen.raw"))
+					 (file (std--ofstream out_fn
+							      std--ios--binary)))
+				     (std--memcpy (local_buffer.data)
+						  data
+						  size)
+				     ,(lprint :msg "store to file" :vars `(out_fn))
+				     (file.write (reinterpret_cast<char*>
+						  (local_buffer.data)
+						  size))
+				     (file.close))))))
 
 		   (do0
 		    ,(lprint :msg "disconnect..")
