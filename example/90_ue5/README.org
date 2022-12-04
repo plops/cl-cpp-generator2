@@ -706,3 +706,197 @@ int main()
     return 0;
 }
 #+end_example
+
+** C++ skia
+
+#+begin_example
+
+Write C++ that draws a star with skia. When the user presses the star, it should smoothly transform into a circle.
+
+#include <SkCanvas.h>
+#include <SkPaint.h>
+#include <SkPath.h>
+#include <SkEvent.h>
+
+void drawStar(SkCanvas* canvas) {
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+
+    SkPath starPath;
+    starPath.moveTo(50, 10); 
+    for (int i = 1; i < 5; i++) {
+        starPath.lineTo(50 + 25 * cos(36 * i * M_PI / 180), 10 + 25 * sin(36 * i * M_PI / 180));
+    }
+    starPath.close();
+    canvas->drawPath(starPath, paint);
+}
+
+void onUserPress(SkEvent *evt) {
+    SkCanvas *canvas = evt->getCanvas();
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    canvas->drawCircle(50, 50, 25, paint);
+}
+
+void main() {
+    SkCanvas canvas;
+    drawStar(&canvas);
+    SkEvent evt("UserPressed", onUserPress);
+    canvas.post(&evt);
+}
+#+end_example
+
+** C++ filament
+
+#+begin_example
+
+Write C++ that uses filament. Load a glTF with a character animation. Display the character walking on a checkerboard floor.
+
+#include <filament/Engine.h>
+#include <filament/Scene.h>
+#include <filament/Material.h>
+#include <filament/TransformManager.h>
+#include <filament/RenderableManager.h>
+#include <filament/IndirectLight.h>
+#include <filament/View.h>
+#include <filament/LightManager.h>
+#include <filament/IndexBuffer.h>
+#include <filament/VertexBuffer.h>
+#include <filament/Animation.h>
+#include <filament/AnimationController.h>
+#include <filament/Renderer.h>
+#include <filament/Texture.h>
+
+#include <gltfio/FilamentAsset.h>
+
+#include <math/mat4.h>
+#include <math/vec3.h>
+
+using namespace filament;
+using namespace gltfio;
+using namespace math;
+
+int main() {
+    // Create an engine and a scene
+    Engine* engine = Engine::create();
+    Scene* scene = engine->createScene();
+
+    // Create a camera
+    Camera* camera = engine->createCamera();
+    camera->setProjection(45.0f, 16.0f/9.0f, 0.1f, 100.0f);
+
+    // Set a view
+    View* view = engine->createView();
+    view->setCamera(camera);
+    view->setScene(scene);
+
+    // Create a material
+    Material* material = Material::Builder()
+        .package("checkerboard.filamat")
+        .build(*engine);
+
+    // Load the glTF
+    FilamentAsset* asset = FilamentAsset::createFromFile("character.gltf", engine);
+
+    // Create the transform
+    Entity entity = engine->getEntityManager()->create();
+    TransformManager::get().setTransform(entity, mat4f{ mat3f::rotation(M_PI_2, float3{1, 0, 0}) });
+
+    // Add the glTF to the scene
+    asset->addEntitiesToScene(scene);
+    asset->releaseSourceData();
+
+    // Create the animation controller
+    AnimationController* animController = engine->createAnimationController(asset->getAnimator());
+    animController->setAnimation("walk", 0);
+
+    // Set the scene and render
+    engine->setView(view);
+    engine->render(view);
+
+    // Clean up
+    engine->destroy(view);
+    engine->destroy(animController);
+    engine->destroy(camera);
+    engine->destroy(asset);
+    engine->destroy(material);
+    engine->destroy(scene);
+    engine->destroy(engine);
+
+    return 0;
+}
+#+end_example
+
+** Blender Python Armature
+
+#+begin_example
+
+Write Python code for Blender that creates an animated robot.
+
+import bpy
+
+# Create Armature
+bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+bpy.ops.armature.bone_primitive_add(name='UpperArm')
+bpy.ops.armature.bone_primitive_add(name='LowerArm')
+bpy.ops.armature.bone_primitive_add(name='UpperLeg')
+bpy.ops.armature.bone_primitive_add(name='LowerLeg')
+bpy.ops.armature.bone_primitive_add(name='Head')
+bpy.ops.armature.bone_primitive_add(name='Torso')
+bpy.ops.object.mode_set(mode='OBJECT')
+
+# Add modifiers to armature
+bpy.context.object.modifiers.new(name='Armature', type='ARMATURE')
+bpy.context.object.modifiers["Armature"].object = bpy.data.objects["Armature"]
+
+# Create IK Constraints
+bpy.context.object.pose.bones["UpperArm"].constraints.new("IK")
+bpy.context.object.pose.bones["UpperLeg"].constraints.new("IK")
+
+# Set IK Targets
+bpy.context.object.pose.bones["UpperArm"].constraints["IK"].target = bpy.data.objects["LowerArm"]
+bpy.context.object.pose.bones["UpperLeg"].constraints["IK"].target = bpy.data.objects["LowerLeg"]
+
+# Create Animation
+bpy.context.scene.frame_start = 0
+bpy.context.scene.frame_end = 60
+bpy.context.scene.frame_current = 0
+
+# Set Armature location for each frame
+for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
+    bpy.context.scene.frame_set(frame)
+    bpy.context.object.location.x = frame * 0.2
+
+# Set Armature rotation for each frame
+for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
+    bpy.context.scene.frame_set(frame)
+    bpy.context.object.rotation_euler.z = frame * 0.2
+
+# Set Armature scale for each frame
+for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
+    bpy.context.scene.frame_set(frame)
+    bpy.context.object.scale = (frame * 0.01, frame * 0.01, frame * 0.01)
+#+end_example
+
+** Emacs lisp words
+
+#+begin_example
+
+Write Emacs code that computes the ten words that occur the most in a buffer.
+
+(defun compute-most-frequent-words (buffer) 
+  "Computes the 10 most frequent words in BUFFER." 
+  (interactive "b") 
+  (let ((words (split-string (buffer-substring (point-min) (point-max))))) 
+    (sort 
+     (cl-loop for w in words 
+              count w into word-counts 
+              finally return (cl-loop for word being the hash-keys of word-counts using (hash-values count) 
+                                     collect (cons word count))) 
+     (lambda (x y) (> (cdr x) (cdr y))) 
+     :key 'cdr) 
+    (subseq (cl-loop for w in words 
+                     count w into word-counts 
+                     finally return (cl-loop for word being the hash-keys of word-counts using (hash-values count) 
+                                            collect (cons word count))) 0 10)))
+#+end_example
