@@ -28,7 +28,7 @@
   openai)
 - looks like it can generate helpful example code for different
   problems.
-
+- https://beta.openai.com/playground
 
 ** C++ UE5
 
@@ -6995,6 +6995,32 @@ Another solution is to use a VPN to connect your laptop and desktop to the same 
   of 2021 . source.android.com/devices/architecture/modular-system/…
   no longer part of framework its been moved to its own replaceable
   module. And it still depends on your manufacturer customization.
+
+** Pascal
+
+#+begin_example
+Show a small Pascal program that runs in Linux.
+
+Here is a small Pascal program that runs in Linux:
+
+program HelloWorld;
+
+begin
+  writeln('Hello, world!');
+end.
+
+This program simply outputs the string Hello, world! to the standard output.
+
+To compile and run this program in Linux, you can use the Free Pascal Compiler (FPC) as follows:
+
+$ fpc helloworld.pas
+$ ./helloworld
+Hello, world!
+
+The first command compiles the program using the FPC, and the second command runs the compiled binary. Note that you may need to adjust the command depending on your specific Linux distribution and setup.
+#+end_example
+
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
