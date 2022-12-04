@@ -914,3 +914,68 @@ console.log(link); // Prints "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 #+end_example
 
 - is this a joke?
+
+** Python helium
+
+#+begin_example
+Write Python code using helium. Open youtube. Search for "water". Download the video of the first result into a file. Wait until the download finished. Print the time it took. Exit the python program.
+
+import helium
+
+#open youtube
+helium.start('youtube.com')
+
+#search for 'water'
+helium.write('water', into='Search')
+helium.press(helium.Key.ENTER)
+
+#download the video of the first result
+helium.click('Download')
+
+#wait until the download finished
+start_time = helium.get_time()
+helium.wait_until(lambda: helium.get_text('Downloaded') == 'Downloaded', timeout=60)
+end_time = helium.get_time()
+
+#print the time it took
+print('Download finished in {} seconds.'.format(end_time - start_time))
+
+#exit the program
+helium.exit()
+#+end_example
+
+- i don't think you can just click download. but pretty good.
+
+
+- try to help
+#+begin_example
+
+Write Python code using helium. Open youtube. Search for "water". Download the video of the first result into a file. Note that there is no download button. The program has to look at the HTML code of the site. Wait until the download finished. Print the time it took. Exit the python program.
+
+
+
+import helium
+
+# open youtube
+helium.start_chrome('youtube.com')
+
+# search for 'water'
+helium.write('water', into='Search')
+helium.press(helium.Key.ENTER)
+
+# find link to the first result
+first_result_url = helium.find_all('a.yt-simple-endpoint.style-scope.ytd-video-renderer')[0].web_element.get_attribute("href")
+
+# download the video
+start_time = helium.time()
+helium.download(first_result_url)
+
+# wait until download finishes
+helium.wait_until(lambda: helium.download_complete())
+
+# print time it took
+print("Time elapsed: {} seconds".format(int(helium.time() - start_time)))
+
+# exit program
+helium.kill_browser()
+#+end_example
