@@ -2300,6 +2300,212 @@ int main(int argc, char** argv) {
 }
 #+end_example
 
+** C++ Linux Network bandwidth
+
+- Write Linux modern C++20 code that reads the number of TX packets on eth0.
+
+#+begin_example
+Here is an example of modern C++20 code that reads the number of TX packets on eth0 on a Linux system:
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    // Open the "eth0" interface file in "read" mode
+    ifstream eth0("/sys/class/net/eth0/statistics/tx_packets");
+
+    // Check if the file was successfully opened
+    if (eth0.is_open())
+    {
+        // Read the contents of the file into a string
+        string tx_packets;
+        getline(eth0, tx_packets);
+
+        // Convert the string to an integer and print the result
+        cout << "TX packets: " << stoi(tx_packets) << endl;
+
+        // Close the file
+        eth0.close();
+    }
+    else
+    {
+        // Print an error message if the file could not be opened
+        cerr << "Error: Failed to open eth0 interface file" << endl;
+    }
+
+    return 0;
+}
+
+In this code, we use the ifstream class to open the /sys/class/net/eth0/statistics/tx_packets file, which contains the number of TX packets on the eth0 interface. We then use the getline function to read the contents of the file into a string, which we convert to an integer using the stoi function. Finally, we print the result to the standard output using the cout object.
+
+Note that this code assumes that the eth0 interface exists and is properly configured on the system. Additionally, this is just a simple example to demonstrate how to read the number of TX packets on eth0 – more complex and efficient algorithms can be written using the C++20 standard library.
+#+end_example
+
+- Poll on the tx_packets file and collect the number every time the file changes.
+
+#+begin_example
+Here is an example of modern C++20 code that polls the /sys/class/net/eth0/statistics/tx_packets file and collects the number of TX packets every time the file changes:
+
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+using namespace std;
+using namespace std::chrono;
+
+int main()
+{
+    // Open the "eth0" interface file in "read" mode
+    ifstream eth0("/sys/class/net/eth0/statistics/tx_packets");
+
+    // Check if the file was successfully opened
+    if (eth0.is_open())
+    {
+        // Create a variable to store the previous value of the tx_packets
+        string prev_tx_packets;
+
+        // Poll the file at a fixed interval (in milliseconds)
+        const int poll_interval = 1000;
+
+        // Run the polling loop indefinitely
+        while (true)
+        {
+            // Read the contents of the file into a string
+            string tx_packets;
+            getline(eth0, tx_packets);
+
+            // Check if the value has changed since the last iteration
+            if (prev_tx_packets != tx_packets)
+            {
+                // Print the new value of the tx_packets
+                cout << "TX packets: " << stoi(tx_packets) << endl;
+
+                // Update the previous value
+                prev_tx_packets = tx_packets;
+            }
+
+            // Sleep for the specified interval
+            this_thread::sleep_for(milliseconds(poll_interval));
+        }
+
+        // Close the file
+        eth0.close();
+    }
+    else
+    {
+        // Print an error message if the file could not be opened
+        cerr << "Error: Failed to open eth0 interface file" << endl;
+    }
+
+    return 0;
+}
+
+In this code, we use the ifstream class to open the /sys/class/net/eth0/statistics/tx_packets file, which contains the number of TX packets on the eth0 interface. We then enter a polling loop, where we read the contents of the file into a string and check if the value has changed since the last iteration. If the value has changed, we print the new value to the standard output using the cout object. We also use the this_thread::sleep_for function to sleep for a fixed interval (in this case, 1000 milliseconds) between each iteration of the loop.
+
+Note that this code assumes that the eth0 interface exists and is properly configured on the system. Additionally, this is just a simple example to demonstrate how to poll the tx_packets file and collect the number every time the file changes – more complex and efficient algorithms can be written using the C++20 standard library
+
+#+end_example
+
+- This is not what I want.
+
+- This simple interface (sysfs) is convenient especially in
+  constrained/embedded environments without access to tools. However,
+  it’s inefficient when reading multiple stats as it internally
+  performs a full dump of struct rtnl_link_stats64 and reports only
+  the stat corresponding to the accessed file.
+
+- rtnetlink (NETLINK_ROUTE) is the preferred method of accessing
+  struct rtnl_link_stats64 stats. Statistics are reported both in the
+  responses to link information requests (RTM_GETLINK) and statistic
+  requests (RTM_GETSTATS, when IFLA_STATS_LINK_64 bit is set in the
+  .filter_mask of the request).
+
+- Ethtool netlink is a replacement for the older IOCTL
+  interface. Protocol-related statistics can be requested in get
+  commands by setting the ETHTOOL_FLAG_STATS flag in
+  ETHTOOL_A_HEADER_FLAGS. Currently statistics are supported in the
+  following commands:
+
+   - ETHTOOL_MSG_PAUSE_GET
+   - ETHTOOL_MSG_FEC_GET
+
+- Q: Use the rtnetlink method to access the values.
+
+#+begin_example
+Here is an example of modern C++20 code that uses the rtnetlink method to access the number of TX packets on the eth0 interface:
+
+#include <cstring>
+#include <iostream>
+#include <linux/rtnetlink.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+using namespace std;
+
+int main()
+{
+    // Create a socket for communicating with the kernel via the rtnetlink protocol
+    int sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    if (sock < 0)
+    {
+        cerr << "Error: Failed to create rtnetlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a sockaddr_nl structure for the rtnetlink socket
+    struct sockaddr_nl sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.nl_family = AF_NETLINK;
+
+    // Bind the socket to the rtnetlink address
+    if (bind(sock, (struct sockaddr*)&sa, sizeof(sa)) < 0)
+    {
+        cerr << "Error: Failed to bind rtnetlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a nlmsghdr structure to request information about the eth0 interface
+    struct nlmsghdr nlh;
+    memset(&nlh, 0, sizeof(nlh));
+    nlh.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+    nlh.nlmsg_type = RTM_GETLINK;
+    nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+
+    // Set up an ifinfomsg structure to specify the eth0 interface
+    struct ifinfomsg ifi;
+    memset(&ifi, 0, sizeof(ifi));
+    ifi.ifi_family = AF_UNSPEC;
+    strncpy(ifi.ifi_name, "eth0", IFNAMSIZ);
+
+    // Set up an iovec structure to hold the nlmsghdr and ifinfomsg structures
+    struct iovec iov[2];
+    iov[0].iov_base = (void*)&nlh;
+    iov[0].iov_len = sizeof(nlh);
+    iov[1].iov_base = (void*)&ifi;
+    iov[1].iov_len = sizeof(ifi);
+
+    // Set up a msghdr structure to hold the iovec structure and sockaddr_nl structure
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_name = (void*)&sa;
+    msg.msg_namelen = sizeof(sa);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 2;
+
+    // Send the request to the kernel via the rtnetlink socket
+    if (sendmsg(sock, &msg, 0) < 0)
+    {
+        cerr << "Error: Failed to send rtnetlink request" << endl;
+       
+#+end_example
+
+- https://www.linuxjournal.com/article/8498 by Asanga Udugama on March 30, 2006
 
 ** Open Wayland window
 
@@ -6741,7 +6947,13 @@ This code uses the Cuda C++ standard library to perform the following steps:
     Print the result.
     Free the memory allocated on the device.
 #+end_example
+
+
+
 - that looks reasonable
+
+- Show modern C++20 code that uses the Cuda C++ standard library. Use complex single float numbers.
+  
 
 ** Cudaflow
 - Show modern C++20 code that uses the cudaFlow.
