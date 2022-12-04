@@ -4884,6 +4884,76 @@ int main() {
 
 #+end_example
 
+- it didn't create FEC, again
+
+- Implement modern C++20 code that writes or reads a data packet to or
+  from a socket. The data packet contains a fixed block of data with
+  64 bytes. It also contains a low-density parity check code for
+  forward error correction. Show the implementation of the forward
+  error correction using AFF3CT.
+
+#+begin_example
+#include <cstdint>
+#include <cstddef>
+#include <array>
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+// Include the AFF3CT library
+#include <aff3ct.hpp>
+
+constexpr std::size_t kBlockSize = 64;
+
+// Define the struct for the packet
+struct DataPacket {
+  std::array<uint8_t, kBlockSize> data;
+  uint16_t ldpc;
+
+  // Compute the low-density parity check code of the packet using
+  // the AFF3CT library
+  uint16_t compute_ldpc() const {
+    // Convert the data block to a vector of 8-bit symbols
+    std::vector<uint8_t> symbols(data.begin(), data.end());
+
+    // Define the parity check matrix for a (72,64) LDPC code
+    // with 8-bit symbols
+    std::array<std::array<uint8_t, 72>, 64> H{
+      {
+        {
+          1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0,
+          1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0
+        }
+      }
+    };
+
+    // Create an LDPC decoder using the parity check matrix
+    aff3ct::module::Encoder_LDPC_std_8bits encoder(H, false);
+
+    // Encode the data block to compute the LDPC code
+    std::vector<uint8_t> ldpc_code(encoder.get_n_code_bits());
+    encoder.encode(symbols.data(), ldpc_code.data());
+
+    // Convert the LDPC code to a 16-bit value and return it
+    uint16_t ldpc = 0;
+    std::memcpy(&ldpc, ldpc_code.data(), sizeof(ldpc));
+    return ldpc;
+  }
+
+  // Check if the packet is valid by comparing the stored LDPC with
+  // the computed LDPC
+  bool is_valid() const {
+    return ldpc == compute_ldpc();
+  }
+};
+
+// Write the data packet to a socket
+
+
+#+end_example
+
 ** Misc
 
 *** investment
