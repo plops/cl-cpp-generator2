@@ -346,9 +346,28 @@ n_1 = n_2 + (2π/λ)^2n_1n_2r^2.
            (sleep 5))))
 
 (start-server)
-
-
 #+end_example
+** Forth socket
+
+#+begin_example
+
+Write forth code to listen on  a port. When it reads "Hello" it shall respond "World".
+
+: listen ( port -- )
+  begin
+    accept port
+    dup 0= if
+      exit
+    then
+    ?dup "Hello" = if
+      "World" emit
+    then
+    drop
+  again ;
+
+listen 80
+#+end_example
+
 
 ** Android socket
 
@@ -2573,4 +2592,38 @@ int main()
 
     return 0;
 }
+#+end_example
+
+** wireshark lua dissector
+
+#+begin_example
+
+Write LUA dissector for wireshark for a simple UDP Packet that contains a 32bit length followed by the data.
+
+-- declare protocol
+local myproto = Proto("myproto", "My Protocol")
+
+-- declare fields
+local f_length = ProtoField.uint32("myproto.length", "Length")
+local f_data = ProtoField.string("myproto.data", "Data")
+
+-- add fields to protocol
+myproto.fields = {f_length, f_data}
+
+-- declare dissector function
+function myproto.dissector(buffer, pinfo, tree)
+	local length = buffer(0, 4):uint()
+	local data = buffer(4):string()
+
+	-- add protocol to tree
+	local subtree = tree:add(myproto, buffer(0))
+
+	-- add fields to protocol
+	subtree:add(f_length, buffer(0,4)):append_text(" (" .. length .. " bytes)")
+	subtree:add(f_data, buffer(4,length))
+end
+
+-- register protocol
+udp_table = DissectorTable.get("udp.port")
+udp_table:add(80, myproto)
 #+end_example
