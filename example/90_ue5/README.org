@@ -5448,7 +5448,90 @@ int main() {
 #+end_example
 
 
+** C++ module Clang
 
+- Write modern C++ that uses clang's C++ modules to define a program that writes the time to a socket every second.
+
+#+begin_example
+
+// Import the Boost ASIO library for networking
+import <boost/asio.hpp>;
+
+// Import the C++20 chrono library for time manipulation
+import <chrono>;
+
+int main() {
+  // Create an IO service and a socket
+  boost::asio::io_service io_service;
+  boost::asio::ip::tcp::socket socket(io_service);
+
+  // Connect the socket to localhost on port 8080
+  socket.connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 8080));
+
+  // Main loop
+  while (true) {
+    // Get the current time
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+    // Convert the time to a string
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    std::string time_str = std::ctime(&time);
+
+    // Write the time to the socket
+    boost::asio::write(socket, boost::asio::buffer(time_str));
+
+    // Sleep for 1 second
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+
+  return 0;
+}
+
+#+end_example
+
+- GPT: This code uses clang's C++ modules to import the Boost ASIO and C++20 chrono libraries. It then uses these libraries to create a socket and connect it to localhost on port 8080. It then enters a loop where it gets the current time, converts it to a string, and writes it to the socket. It then sleeps for 1 second before repeating the loop.
+
+- GPT: Note that this is just an example, and the specific implementation will depend on the requirements of your project. You may need to use more advanced techniques to fully write the time to the socket every second.
+
+- Do it again but don't use boost.
+
+  #+begin_example
+
+  // Import the C++20 chrono and networking libraries
+import <chrono>;
+import <networking>;
+
+int main() {
+  // Create a socket and connect it to localhost on port 8080
+  std::experimental::net::ip::tcp::socket socket(std::experimental::net::ip::tcp::v4(), 8080);
+  socket.connect(std::experimental::net::ip::tcp::endpoint(std::experimental::net::ip::address_v4::loopback(), 8080));
+
+  // Main loop
+  while (true) {
+    // Get the current time
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+    // Convert the time to a string
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    std::string time_str = std::ctime(&time);
+
+    // Write the time to the socket
+    socket.write_some(std::experimental::net::const_buffer(time_str.data(), time_str.size()));
+
+    // Sleep for 1 second
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+
+  return 0;
+}
+
+
+#+end_example
+
+
+- This code uses clang's C++ modules to import the C++20 chrono and networking libraries. It then uses these libraries to create a socket and connect it to localhost on port 8080. It then enters a loop where it gets the current time, converts it to a string, and writes it to the socket. It then sleeps for 1 second before repeating the loop.
+
+- Note that this is just an example, and the specific implementation will depend on the requirements of your project. You may need to use more advanced techniques to fully write the time to the socket every second.
 
 ** next
 
