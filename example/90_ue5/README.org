@@ -2627,3 +2627,125 @@ end
 udp_table = DissectorTable.get("udp.port")
 udp_table:add(80, myproto)
 #+end_example
+
+** Misc
+
+*** investment
+
+
+- Are treasuries better investment during a recession compared to real estate.
+
+- The answer depends on a variety of factors, including your
+  individual financial situation and risk tolerance. Treasuries
+  generally offer a more secure investment than real estate during a
+  recession, as they are backed by the full faith and credit of the
+  U.S. government and provide a fixed rate of return. However, because
+  of their low returns, treasuries may not be the best investment for
+  those looking to maximize their return on investment. Real estate,
+  on the other hand, can offer potentially higher returns, but carries
+  the risk of increased volatility in pricing and liquidity during
+  economic downturns. Ultimately, the best investment for you during a
+  recession will depend on your individual financial goals and risk
+  tolerance.
+
+- Are treasuries better investment during a recession compared to real
+  estate?
+
+- It depends on the individual's risk tolerance and financial
+  goals. Generally, Treasury securities are considered a safe
+  investment during a recession, because they are backed by the
+  U.S. government. However, real estate can also be a good investment
+  during a recession. In a recession, some real estate values may
+  decrease, but with the right research and timing, there may be
+  opportunities for lucrative investments.
+
+
+- Do I have to pay Irish withholding tax for stock investments, when
+  I'm registered in Switzerland?
+
+- No, you do not have to pay Irish withholding tax for stock
+  investments when you are registered in Switzerland. As a Swiss
+  resident, you would be subject to Swiss income tax on your
+  investments, but not Irish withholding tax.
+
+
+- What is the closest nuclear power plant to Dornbirn, Austria?
+
+- The closest nuclear power plant to Dornbirn, Austria is the Nuclear
+  Power Plant in Beznau, Switzerland, located approximately 26.5 km
+  (16.5 miles) away.
+  - The distance is wrong.
+   
+
+- Were there ever any incidents in the Nuclear Power Plant in Beznau,
+  Switzerland?
+
+- Yes. In 1970, a minor incident occurred in the Beznau Nuclear Power
+  Plant, causing the reactor to be shut down. In addition, in 2014, a
+  transformer fire at the plant caused the plant to be shut down and
+  its two reactors to be offline.
+
+
+- Where do the Swiss store the majority of their nuclear waste?
+
+- The Swiss store the majority of their nuclear waste in deep
+  geological repositories, usually located hundreds of metres below
+  the earth's surface.
+
+
+- Where do the Germans store the majority of their nuclear waste?
+
+- The majority of Germany's nuclear waste is stored in interim storage
+  facilities located near nuclear power plants. Long-term disposal of
+  the waste is planned in deep geological repositories.
+
+
+- Where there ever any incidents with nuclear waste in deep geological
+  repositories?
+
+- Yes, there have been several incidents involving nuclear waste in
+  deep geological repositories. In the United States, one of the most
+  notable incidents was in 2005, when an underground tunnel in the
+  Waste Isolation Pilot Plant (WIPP) in New Mexico collapsed and
+  leaked radioactive material into the environment. In Germany, an
+  incident occurred in 1986 when a container of nuclear waste leaked
+  into a salt mine used as a repository. In Russia, an incident
+  occurred in 2007 when an underground nuclear waste repository
+  exploded, resulting in significant damage and contamination.
+
+
+- Were there ever any incidents with nuclear waste in deep geological
+  repositories?
+
+- Yes, there have been several incidents involving nuclear waste in
+  deep geological repositories. In 2014, a leak of radioactive
+  material from the Waste Isolation Pilot Plant in New Mexico was
+  discovered, prompting an evacuation of the facility and the closure
+  of nearby roads. In 2017, a major leak of radioactive tritium was
+  discovered at the Onkalo repository in Finland, prompting an
+  investigation. In 2018, a leak of radioactively contaminated water
+  was reported at the Asse II repository in Germany, prompting the
+  shutdown of the facility.
+
+
+
+- Were there ever any incidents with nuclear waste in deep geological
+  repositories in Switzerland?
+
+- No, there have been no incidents with nuclear waste in deep
+  geological repositories in Switzerland. The country has operated a
+  safe and secure program for the disposal of nuclear waste for
+  decades. As of 2020, Switzerland had disposed of more than 5,000
+  cubic meters of nuclear waste in five deep geological repositories.
+
+
+- What are the locations of the five deep geological repositories in
+  Switzerland?
+
+- The five deep geological repositories in Switzerland are:
+
+1. Mont Terri, canton Jura
+2. Wellenberg, canton Nidwalden
+3. Zürich Nordost, canton Zurich
+4. Gösgen, canton Solothurn
+5. Nördlich Lägern, canton Aargau
