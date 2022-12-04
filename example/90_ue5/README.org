@@ -1920,3 +1920,72 @@ void main()
 }
 #+end_example
 - i'm not sure this works but looks quite impressive
+
+
+** C++ Ryzen power consumption
+
+#+begin_example
+Write an C++ code that reads current power consumption from register on AMD Ryzen.
+
+#include <cstdio>
+#include <iostream>
+#include <Windows.h>
+
+int main() {
+  HKEY hKey;
+  DWORD dwType = REG_DWORD;
+  DWORD dwSize = sizeof(DWORD);
+  DWORD dwValue;
+  LONG lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+      TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"), 0, KEY_READ, &hKey);
+  if (lRet != ERROR_SUCCESS) {
+    printf("Error opening registry key\n");
+    return 1;
+  }
+  lRet = RegQueryValueEx(hKey, TEXT("PowerManagement"), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+  if (lRet != ERROR_SUCCESS) {
+    printf("Error querying registry value\n");
+    return 1;
+  }
+  printf("Current power consumption from AMD Ryzen is %d W\n", dwValue);
+  RegCloseKey(hKey);
+  return 0;
+}
+#+end_example
+
+** C++ Linux power consumption
+#+begin_example
+
+Write Linux C++20 code that reads current power consumption from register on AMD Ryzen.
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main()
+{
+    std::ifstream cpu_file("/sys/class/powercap/rapl_controller/intel-rapl/intel-rapl:0/energy_uj");
+    std::string power_consumption_line;
+    double power_consumption;
+
+    if (cpu_file.is_open()) {
+        if (getline(cpu_file, power_consumption_line)) {
+            power_consumption = std::stod(power_consumption_line);
+            std::cout << "Current power consumption is " << power_consumption << " uJ\n";
+        }
+    }
+
+    return 0;
+}
+#+end_example
+
+- i have an intel box, this is actually pretty close:
+
+#+begin_example
+[martin@localhost source00]$ sudo cat /sys/class/powercap/intel-rapl/intel-rapl\:0/energy_uj 
+[sudo] password for martin: 
+96375830303
+[martin@localhost source00]$ sudo cat /sys/class/powercap/intel-rapl/intel-rapl\:0/energy_uj 
+96378561070
+
+#+end_example
