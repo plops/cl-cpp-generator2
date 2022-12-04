@@ -1,8 +1,71 @@
 - https://github.com/stronnag/wayfarer/blob/master/src/gst-recording.vala
   -uses pipewire and gst
-  
+
+- the pw example from chatGPT is not working
+
+- https://wiki.gnome.org/Projects/Mutter/RemoteDesktop
+
+  - i think this is the interface that gnome provides to capture the screen
+  - https://flatpak.github.io/xdg-desktop-portal/ screen cast api
 #+begin_example
 
+sudo dnf install pipewire-devel
+
+[martin@localhost b]$ pkg-config libpipewire-0.3 --cflags
+-I/usr/include/pipewire-0.3 -I/usr/include/spa-0.2 -D_REENTRANT 
+[martin@localhost b]$ pkg-config libpipewire-0.3 --libs
+-lpipewire-0.3 
+
+#+end_example
+
+#+begin_example
+
+
 Write modern C++20 code that captures a wayland screen using pipewire.
+
+
+#include <iostream>
+#include <pipewire/pipewire.h>
+
+int main()
+{
+    // Initialize PipeWire
+    auto pw = pw_init(nullptr, nullptr);
+
+    // Create a new context
+    auto context = pw_context_new(pw, nullptr, 0);
+
+    // Get the default Wayland display
+    auto display = pw_wayland_context_get_display(context);
+
+    // Create a new screen capture stream
+    auto stream = pw_stream_new_with_listener(context, "screen-capture", nullptr, 0);
+
+    // Set the target format for the stream
+    pw_stream_set_format(stream, PW_FORMAT_RGB, 1920, 1080, 0);
+
+    // Start the stream
+    pw_stream_start(stream);
+
+    // Capture the screen
+    auto data = pw_stream_read_data(stream, nullptr);
+
+    // Use the captured screen data
+    // ...
+
+    // Stop the stream
+    pw_stream_stop(stream);
+
+    // Destroy the stream
+    pw_stream_destroy(stream);
+
+    // Destroy the context
+    pw_context_destroy(context);
+
+    // Deinitialize PipeWire
+    pw_deinit(pw);
+
+    return 0;
+}
 
 #+end_example

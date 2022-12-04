@@ -17,7 +17,7 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-    (defparameter *source-dir* #P"example/92_pipewire/source00/")
+    (defparameter *source-dir* #P"example/93_xdg-desktop-portal/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
@@ -79,7 +79,7 @@
 	)
        (space "extern \"C\""
 	      (progn
-		(include <pipewire/pipewire.h>)
+		(include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>)
 		" "))
 
        (defun main (argc argv)
@@ -100,7 +100,7 @@
 	   (pw_stream_set_format stream
 				 PW_FORMAT_RGB
 				 1920 1080 0
-				))
+				 ))
 	 )
 
        ))
@@ -174,7 +174,7 @@
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
-			
+
 		 pipewire))
 
 	  #+nil

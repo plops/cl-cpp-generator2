@@ -46,3 +46,5 @@ int main()
 
 Note that this code is just an example and may not work as-is. It is intended to illustrate the general approach to capturing a Wayland screen using xdg-desktop-portal in C++20.
 #+end_example
+
+- i think the AI is bullshitting again
