@@ -6633,6 +6633,212 @@ optix::float3 color(optix::Ray ray, std::vector<Sphere> scene, optix::float3 lig
 
 #+end_example
 
+** Cuda C++
+
+- Show modern C++20 code that uses the Cuda C++ standard library.
+#+begin_example
+#include <cuda_std/cmath>
+#include <cuda_std/algorithm>
+#include <cuda_std/functional>
+#include <cuda_std/vector>
+
+// Define a function to calculate the square of a number
+template <typename T>
+__device__ __host__ T square(T x) {
+  return x * x;
+}
+
+// Define a class to represent a point in 3D space
+struct Point3D {
+  float x;
+  float y;
+  float z;
+
+  // Overload the + and - operators to support vector addition and subtraction
+  __device__ __host__ Point3D operator+(const Point3D& other) const {
+    return {x + other.x, y + other.y, z + other.z};
+  }
+
+  __device__ __host__ Point3D operator-(const Point3D& other) const {
+    return {x - other.x, y - other.y, z - other.z};
+  }
+
+  // Define a method to calculate the Euclidean distance between two points
+  __device__ __host__ float distance(const Point3D& other) const {
+    return cuda_std::sqrt(square(x - other.x) + square(y - other.y) +
+                          square(z - other.z));
+  }
+};
+
+// Define a function to find the closest point in a vector to a given
+
+#+end_example
+- https://nvidia.github.io/libcudacxx/standard_api/utility_library/functional.html
+
+- reset thread and again:
+
+#+begin_example
+
+Here is an example of modern C++20 code that uses the Cuda C++ standard library:
+
+#include <cuda/std/algorithm>
+#include <cuda/std/numeric>
+#include <cuda/std/vector>
+
+__global__ void addArraysOnDevice(int* a, int* b, int* c, int size) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < size) {
+    c[i] = a[i] + b[i];
+  }
+}
+
+int main() {
+  // Declare and initialize two vectors on the host
+  cuda::std::vector<int> a{1, 2, 3, 4, 5};
+  cuda::std::vector<int> b{5, 4, 3, 2, 1};
+
+  // Allocate memory for the result vector on the device
+  int* d_c;
+  cudaMalloc((void**)&d_c, a.size() * sizeof(int));
+
+  // Copy the input vectors from the host to the device
+  int* d_a;
+  cudaMalloc((void**)&d_a, a.size() * sizeof(int));
+  cudaMemcpy(d_a, a.data(), a.size() * sizeof(int), cudaMemcpyHostToDevice);
+  int* d_b;
+  cudaMalloc((void**)&d_b, b.size() * sizeof(int));
+  cudaMemcpy(d_b, b.data(), b.size() * sizeof(int), cudaMemcpyHostToDevice);
+
+  // Launch a kernel to add the two input arrays on the device
+  addArraysOnDevice<<<1, a.size()>>>(d_a, d_b, d_c, a.size());
+
+  // Copy the result vector from the device to the host
+  cuda::std::vector<int> c(a.size());
+  cudaMemcpy(c.data(), d_c, a.size() * sizeof(int), cudaMemcpyDeviceToHost);
+
+  // Use the C++ standard library to sum the elements of the result vector
+  int sum = cuda::std::accumulate(c.begin(), c.end(), 0);
+
+  // Print the result
+  cuda::std::cout << "The sum of the elements of the result vector is: " << sum << cuda::std::endl;
+
+  // Free the memory allocated on the device
+  cudaFree(d_a);
+  cudaFree(d_b);
+  cudaFree(d_c);
+
+  return 0;
+}
+
+This code uses the Cuda C++ standard library to perform the following steps:
+
+    Declare and initialize two vectors on the host containing the input data.
+    Allocate memory for the result vector on the device.
+    Copy the input vectors from the host to the device.
+    Launch a kernel to add the two input arrays on the device.
+    Copy the result vector from the device to the host.
+    Use the C++ standard library to sum the elements of the result vector.
+    Print the result.
+    Free the memory allocated on the device.
+#+end_example
+- that looks reasonable
+
+** Cudaflow
+- Show modern C++20 code that uses the cudaFlow.
+
+#+begin_example
+
+#include <cudaFlow.h>
+
+// Define a function to calculate the square of a number
+template <typename T>
+__device__ __host__ T square(T x) {
+  return x * x;
+}
+
+// Define a class to represent a point in 3D space
+struct Point3D {
+  float x;
+  float y;
+  float z;
+
+  // Overload the + and - operators to support vector addition and subtraction
+  __device__ __host__ Point3D operator+(const Point3D& other) const {
+    return {x + other.x, y + other.y, z + other.z};
+  }
+
+  __device__ __host__ Point3D operator-(const Point3D& other) const {
+    return {x - other.x, y - other.y, z - other.z};
+  }
+
+  // Define a method to calculate the Euclidean distance between two points
+  __device__ __host__ float distance(const Point3D& other) const {
+    return cuda_std::sqrt(square(x - other.x) + square(y - other.y) +
+                          square(z - other.z));
+  }
+};
+
+// Define a function to find the closest point in a vector to a given point
+Point3D closestPoint(const Point3D& p, cudaFlow::HostVector<Point3D> points) {
+  // Initialize the minimum distance and closest point to infinity and the first
+  // point in the vector, respectively
+  float minDistance = std::numeric_limits<float>::infinity();
+  Point3D closest = points[0];
+  // Loop through all points in the vector
+  for (const auto& q : points) {
+    // Calculate the distance between the given point and the current point
+    auto d = p.distance(q);
+    // If the distance is less than the current minimum, update the minimum
+    // distance and closest point
+    if (d < minDistance) {
+      minDistance = d;
+      closest = q;
+    }
+  }
+  return closest;
+}
+
+int main() {
+  // Create a vector of points on the host
+  cudaFlow::HostVector<Point3D> points = {{1.0f, 2.0f, 3.0f},
+                                          {4.0f, 5.0f, 6.0f},
+                                          {7.0f, 8.0f, 9.0f}};
+  // Create a point on the host
+  Point3D p = {0.0f, 0.0f, 0.0f};
+  // Find the closest point in the vector to the given point
+  auto closest = closestPoint(p, points);
+  // Print the coordinates of the closest point
+  std::cout << "Closest point: (" << closest.x << ", " << closest.y << ", "
+            << closest.z << ")" << std::endl;
+  return 0;
+}
+
+#+end_example
+
+- I think it is confused because I talked about raytracing.
+
+- Reset thread and try again:
+
+#+begin_example
+
+I'm sorry, but I am not able to browse the internet and do not have information about a specific technology called "cudaFlow." However, I can provide an example of modern C++20 code that uses the CUDA parallel computing platform:
+
+#include <iostream>
+#include <cuda_runtime.h>
+
+__global__ void helloWorldKernel() {
+  std::cout << "Hello, world!" << std::endl;
+}
+
+int main() {
+  helloWorldKernel<<<1, 1>>>();
+  cudaDeviceSynchronize();
+
+  return 0;
+}
+
+This code defines a CUDA kernel named helloWorldKernel that prints "Hello, world!" to the console. The kernel is launched on a single thread and block, and the cudaDeviceSynchronize function is called to ensure that the kernel has finished executing before the program exits.
+#+end_example
 
 ** Misc
 
