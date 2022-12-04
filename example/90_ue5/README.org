@@ -5967,6 +5967,102 @@ int main() {
 
 
 #+end_example
+- that is not very specific
+
+** XML
+
+*** C++
+
+
+- Write modern C++20 code to parse an Edgar XML file.
+
+#+begin_example
+
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <experimental/filesystem>
+
+// Include the RapidXML library for parsing XML
+#include "rapidxml.hpp"
+#include "rapidxml_utils.hpp"
+
+int main() {
+  // Open the XML file
+  std::string file_name = "edgar.xml";
+  rapidxml::file<> xml_file(file_name.c_str());
+
+  // Parse the XML file
+  rapidxml::xml_document<> xml_doc;
+  xml_doc.parse<0>(xml_file.data());
+
+  // Get the root node of the XML document
+  rapidxml::xml_node<>* root_node = xml_doc.first_node();
+
+  // Iterate over the child nodes of the root node
+  for (rapidxml::xml_node<>* node = root_node->first_node(); node != nullptr; node = node->next_sibling()) {
+    // Get the name and value of the current node
+    std::string node_name = node->name();
+    std::string node_value = node->value();
+
+    // Print the name and value of the current node
+    std::cout << "Node name: " << node_name << std::endl;
+    std::cout << "Node value: " << node_value << std::endl;
+  }
+
+  return 0;
+}
+#+end_example
+
+- This code uses the RapidXML library to parse an Edgar XML file. It first opens the XML file and then uses the parse() method of the xml_document class to parse the XML data. It then gets the root node of the XML document and iterates over the child nodes of the root node. For each child node, it prints the name and value of the node. This code provides a basic example of how to parse an Edgar XML file using RapidXML. You can find more information about the RapidXML library and how to use it on the RapidXML website (http://rapidxml.sourceforge.net/).
+
+*** Rust
+
+- Write Rust code to parse an Edgar XML file.
+
+#+begin_example
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
+use xml::reader::{EventReader, XmlEvent};
+
+fn main() {
+    // Open the XML file
+    let file = File::open("edgar.xml").unwrap();
+    let file = BufReader::new(file);
+
+    // Create an XML event reader
+    let parser = EventReader::new(file);
+
+    // Iterate over the events in the XML file
+    for e in parser {
+        // Match on the event type
+        match e {
+            Ok(XmlEvent::StartElement { name, .. }) => {
+                // Print the name of the start element
+                println!("Start element: {}", name);
+            }
+            Ok(XmlEvent::Characters(data)) => {
+                // Print the character data of the element
+                println!("Character data: {}", data);
+            }
+            Ok(XmlEvent::EndElement { name }) => {
+                // Print the name of the end element
+                println!("End element: {}", name);
+            }
+            Err(e) => {
+                // Print any errors that occur
+                println!("Error: {}", e);
+                break;
+            }
+            _ => {}
+        }
+    }
+}
+
+
+#+end_example
+- This code uses the xml-rs library to parse an Edgar XML file. It first opens the XML file and creates an EventReader to read the events in the file. It then iterates over the events in the file, using a match statement to match on the event type. For start elements, it prints the name of the element. For character data, it prints the character data of the element. For end elements, it prints the name of the element. This code provides a basic example of how to parse an Edgar XML file using xml-rs. You can find more information about the xml-rs library and how to use it on the xml-rs website (https://github.com/netvl/xml-rs).
 
 ** next
 
