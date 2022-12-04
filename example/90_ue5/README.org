@@ -24,6 +24,12 @@
 
 * ChatGPT Experiments
 
+- i had some conversations with the AI (it ran on some server by
+  openai)
+- looks like it can generate helpful example code for different
+  problems.
+
+
 ** C++ UE5
 
  #+begin_example
@@ -4662,13 +4668,15 @@ void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
 
 ** next
 
+- compute forward error correction (and use it to correct broken data)
 - i want an example of how to demux with ffmpeg and decode with nvdec
   https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
 - maybe something with imgui
 - some async c++, coroutines
 - c++ modules with clang
+- imx477 set registers to increase sensitivity, disable star destroyer
 
-*** more complexity
+*** more complexity, allow for different packet types
 
 
 - Implement modern C++20 code that writes or reads a data packet to or
@@ -4688,6 +4696,193 @@ void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
   your rate limit. Visit https://beta.openai.com/account/billing to
   add a payment method.
 
+- try on chat.openai.com/chat next morning:
+
+#+begin_example
+
+#include <cstdint>
+#include <cstddef>
+#include <array>
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+// Define the union for the different data types
+union PacketData {
+  std::array<uint8_t, 4> data_type_0;
+  std::array<float, 4096> data_type_1;
+  std::string data_type_2;
+};
+
+// Define the struct for the packet
+struct DataPacket {
+  uint16_t crc;
+  uint8_t packet_type;
+  uint8_t protocol_version;
+  uint16_t length;
+  PacketData data;
+
+  // Compute the CRC of the packet
+  uint16_t compute_crc() const {
+    // Convert the struct to a byte array
+    std::array<uint8_t, sizeof(DataPacket)> bytes{};
+    std::memcpy(bytes.data(), this, sizeof(DataPacket));
+
+    // Compute the sum of all bytes in the array, modulo 65535
+    // to ensure that the result is a 16-bit value
+    return std::accumulate(bytes.begin(), bytes.end(), 0) % 65535;
+  }
+
+  // Check if the packet is valid by comparing the stored CRC with
+  // the computed CRC
+  bool is_valid() const {
+    return crc == compute_crc();
+  }
+};
+
+// Write the data packet to a socket
+void write_data_packet(int socket, const DataPacket& packet) {
+  // Compute the CRC of the packet and store it in the packet
+  packet.crc = packet.compute_crc();
+
+  // Write the packet to the socket
+  std::array<uint8_t, sizeof(DataPacket)> bytes{};
+  std::memcpy(bytes.data(), &packet, sizeof(DataPacket));
+  std::write(socket, bytes.data(), bytes.size());
+}
+
+// Read a data packet from a socket
+DataPacket read_data_packet(int socket) {
+  DataPacket packet{};
+
+  // Read the packet from the socket
+  std::array<uint8_t, sizeof(DataPacket)> bytes{};
+  std::read(socket, bytes.data(), bytes.size());
+  std::memcpy(&packet, bytes.data(), sizeof(DataPacket));
+
+  return packet;
+}
+
+int main() {
+  // Create a sample packet
+  DataPacket packet{};
+  packet.packet_type = 1;
+  packet.protocol_version = 2;
+  packet.length = 4096;
+  std::fill(packet.data.data_type_1.begin(), packet.data.data_type_1.end(), 1.0f);
+
+  // Write the packet to a socket
+  int socket = 1; // dummy value
+  write_data_packet(socket, packet);
+
+  // Read the packet back from the socket
+  DataPacket received_packet = read_data_packet(socket);
+
+#+end_example
+
+- crc is over full packet, maybe it assumes that CRC is initialized
+  with zero during computation
+
+*** try forward error correction
+
+
+- Implement modern C++20 code that writes or reads a data packet to or
+  from a socket. The data packet is a struct that contains FEC, packet
+  type (uint8), protocol version (uint8), length (uint16) and
+  data. Length can be at most 4096. The FEC (forward error correction)
+  is computed over all the struct members (except FEC) and is used to
+  correct a limited number of errors in the packet data without the
+  need for retransmission.  Data is a union and takes on different
+  meanings depending on the value of packet type. For packet type 1
+  data contains an array of single float values with <length>
+  entries. For packet type 2 data contains a UTF-8 string of at most
+  <length> runes.
+
+#+begin_example
+#include <cstdint>
+#include <cstddef>
+#include <array>
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+
+// Define the union for the different data types
+union PacketData {
+  std::array<float, 4096> data_type_1;
+  std::string data_type_2;
+};
+
+// Define the struct for the packet
+struct DataPacket {
+  uint16_t fec;
+  uint8_t packet_type;
+  uint8_t protocol_version;
+  uint16_t length;
+  PacketData data;
+
+  // Compute the FEC of the packet
+  uint16_t compute_fec() const {
+    // Convert the struct to a byte array
+    std::array<uint8_t, sizeof(DataPacket)> bytes{};
+    std::memcpy(bytes.data(), this, sizeof(DataPacket));
+
+    // Compute the sum of all bytes in the array, modulo 65535
+    // to ensure that the result is a 16-bit value
+    return std::accumulate(bytes.begin(), bytes.end(), 0) % 65535;
+  }
+
+  // Check if the packet is valid by comparing the stored FEC with
+  // the computed FEC
+  bool is_valid() const {
+    return fec == compute_fec();
+  }
+};
+
+// Write the data packet to a socket
+void write_data_packet(int socket, const DataPacket& packet) {
+  // Compute the FEC of the packet and store it in the packet
+  packet.fec = packet.compute_fec();
+
+  // Write the packet to the socket
+  std::array<uint8_t, sizeof(DataPacket)> bytes{};
+  std::memcpy(bytes.data(), &packet, sizeof(DataPacket));
+  std::write(socket, bytes.data(), bytes.size());
+}
+
+// Read a data packet from a socket
+DataPacket read_data_packet(int socket) {
+  DataPacket packet{};
+
+  // Read the packet from the socket
+  std::array<uint8_t, sizeof(DataPacket)> bytes{};
+  std::read(socket, bytes.data(), bytes.size());
+  std::memcpy(&packet, bytes.data(), sizeof(DataPacket));
+
+  return packet;
+}
+
+int main() {
+  // Create a sample packet
+  DataPacket packet{};
+  packet.packet_type = 1;
+  packet.protocol_version = 2;
+  packet.length = 4096;
+  std::fill(packet.data.data_type_1.begin(), packet.data.data_type_1.end(), 1.0f);
+
+  // Write the packet to a socket
+  int socket = 1; // dummy value
+  write_data_packet(socket, packet);
+
+  // Read the packet back from the socket
+  DataPacket received_packet = read_data_packet(socket);
+}
+
+
+#+end_example
 
 ** Misc
 
