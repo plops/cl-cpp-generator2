@@ -6534,6 +6534,106 @@ Another solution is to use a VPN to connect your laptop and desktop to the same 
 - [DONE] imx477 set registers to increase sensitivity, disable star destroyer
 
 
+** Raytrace
+
+*** C++ optix
+
+- Use modern C++20 and Optix to raytrace a sphere.
+
+#+begin_example
+To raytrace a sphere using modern C++20 and Optix, you will need to perform the following steps:
+
+    Install Optix and all necessary dependencies on your system.
+
+    Create a new C++ project and include the Optix headers in your source code.
+
+    Define a struct or class to represent the sphere, with member variables for the center point, radius, and material properties.
+
+    Define a function that takes a ray and a sphere as arguments, and returns the intersection point of the ray and the sphere (if any). This function should use the equation of a sphere to calculate the intersection point.
+
+    Define a function that takes a ray, a sphere, and the intersection point as arguments, and returns the normal vector at the intersection point. This function should use the gradient of the sphere equation to calculate the normal vector.
+
+    Define a function that takes a ray and a scene containing one or more spheres as arguments, and returns the nearest intersection point and the corresponding sphere. This function should use the intersection and normal functions defined earlier to find the nearest intersection point.
+
+    Define a function that takes a ray, a scene, and a light source as arguments, and returns the color of the ray at the nearest intersection point. This function should use the nearest intersection point and normal vector to calculate the lighting at that point, using the Phong lighting model or a similar model.
+
+    In the main function of your program, create an instance of the sphere and a scene containing the sphere.
+
+    Create a loop to shoot rays from the camera into the scene, and use the color function to calculate the color of each ray at the nearest intersection point.
+
+    Use Optix to render the resulting image on the screen.
+
+The exact implementation of these steps will depend on your specific requirements and the specifics of your C++20 and Optix setup. However, this should provide a general outline of how to use C++20 and Optix to raytrace a sphere.
+#+end_example
+
+- Show modern C++20 code that uses Optix to raytrace a sphere.
+#+begin_example
+#include <optix.h>
+
+// Struct to represent a sphere
+struct Sphere {
+  optix::float3 center;
+  float radius;
+  optix::float3 material;
+};
+
+// Function to find the intersection point of a ray and a sphere
+optix::float3 intersect(optix::Ray ray, Sphere sphere) {
+  // Calculate the intersection point using the equation of a sphere
+  // (x - x0)^2 + (y - y0)^2 + (z - z0)^2 = r^2
+  // where (x0, y0, z0) is the center of the sphere, and r is the radius
+  auto a = dot(ray.direction, ray.direction);
+  auto b = 2 * dot(ray.direction, ray.origin - sphere.center);
+  auto c = dot(ray.origin - sphere.center, ray.origin - sphere.center) -
+           sphere.radius * sphere.radius;
+  auto discriminant = b * b - 4 * a * c;
+  if (discriminant >= 0) {
+    auto t = (-b - sqrt(discriminant)) / (2 * a);
+    return ray.origin + t * ray.direction;
+  }
+  return optix::make_float3(0.0f);
+}
+
+// Function to calculate the normal vector at the intersection point
+optix::float3 normal(optix::Ray ray, Sphere sphere, optix::float3 point) {
+  // Calculate the normal vector using the gradient of the sphere equation
+  // 2 * (x - x0, y - y0, z - z0)
+  return normalize(point - sphere.center);
+}
+
+// Function to find the nearest intersection point in a scene
+std::pair<optix::float3, Sphere> nearestIntersection(optix::Ray ray,
+                                                    std::vector<Sphere> scene) {
+  // Initialize the intersection point and sphere to (0, 0, 0) and null
+  optix::float3 point = optix::make_float3(0.0f);
+  Sphere sphere = {};
+  float minDistance = std::numeric_limits<float>::max();
+  // Loop through all spheres in the scene
+  for (const auto& s : scene) {
+    // Calculate the intersection point of the ray and the sphere
+    auto p = intersect(ray, s);
+    // If the intersection point is valid and closer than the current minimum,
+    // update the minimum
+    if (p.x != 0.0f && p.y != 0.0f && p.z != 0.0f) {
+      auto d = optix::length(p - ray.origin);
+      if (d < minDistance) {
+        minDistance = d;
+        point = p;
+        sphere = s;
+      }
+    }
+  }
+  return {point, sphere};
+}
+
+// Function to calculate the color of a ray at the nearest intersection point
+optix::float3 color(optix::Ray ray, std::vector<Sphere> scene, optix::float3 light) {
+  // Find the nearest intersection point and corresponding sphere
+  auto [point, sphere] = nearestIntersection
+
+#+end_example
+
+
 ** Misc
 
 *** investment
