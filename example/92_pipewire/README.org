@@ -7,6 +7,10 @@
 
   - i think this is the interface that gnome provides to capture the screen
   - https://flatpak.github.io/xdg-desktop-portal/ screen cast api
+
+PipeWire was created by Wim Taymans, Principal Engineer at Red Hat and
+co-creator of the GStreamer multimedia framework.
+
 #+begin_example
 
 sudo dnf install pipewire-devel
@@ -15,6 +19,12 @@ sudo dnf install pipewire-devel
 -I/usr/include/pipewire-0.3 -I/usr/include/spa-0.2 -D_REENTRANT 
 [martin@localhost b]$ pkg-config libpipewire-0.3 --libs
 -lpipewire-0.3 
+
+
+[martin@localhost b]$ pkg-config glib-2.0 --cflags
+-I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/sysprof-4 -pthread 
+[martin@localhost b]$ pkg-config glib-2.0 --libs
+-lglib-2.0 
 
 #+end_example
 

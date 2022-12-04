@@ -48,3 +48,22 @@ Note that this code is just an example and may not work as-is. It is intended to
 #+end_example
 
 - i think the AI is bullshitting again
+
+
+#+begin_example
+[martin@localhost 93_xdg-desktop-portal]$ rpm -qe xdg-desktop-portal-devel
+xdg-desktop-portal-devel-1.12.6-1.fc36.x86_64
+[martin@localhost 93_xdg-desktop-portal]$ rpm -ql xdg-desktop-portal-devel
+/usr/share/pkgconfig/xdg-desktop-portal.pc
+[martin@localhost 93_xdg-desktop-portal]$ cat /usr/share/pkgconfig/xdg-desktop-portal.pc
+prefix=/usr
+datarootdir=${prefix}/share
+datadir=/usr/share
+
+interfaces_dir=${datadir}/dbus-1/interfaces/
+
+Name: xdg-desktop-portal
+Description: Desktop integration portal
+Version: 1.12.6
+
+#+end_example

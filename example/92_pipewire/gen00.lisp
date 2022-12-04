@@ -79,7 +79,8 @@
 	)
        (space "extern \"C\""
 	      (progn
-		(include <pipewire/pipewire.h>)
+		(include <pipewire/pipewire.h>
+			 <gio/gio.h>)
 		" "))
 
        (defun main (argc argv)
@@ -88,7 +89,23 @@
 		  (values int))
 	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((pw (pw_init nullptr nullptr))
+	 (pw_init nullptr nullptr)
+	 ;; https://github.com/obsproject/obs-studio/blob/6fb83abaeb711d1e12054d2ef539da5c43237c58/plugins/linux-pipewire/screencast-portal.c
+	 (progn
+	   "g_autoptr(GError) error = nullptr;"
+	   (let ((*connection (g_bus_get_sync
+			       G_BUS_TYPE_SESSION
+			       nullptr
+			       &error)))
+	     (when error
+	       ,(lprint :msg "d-bus connection failed"
+			:vars `(error->message))
+	       (return -1))))
+
+	 #+nil (let ((availableCaptureTypes
+		      (get_available_capture_types))))
+	 #+nil
+	 (let (
 	       (context (pw_context_new pw nullptr 0))
 	       (display (pw_wayland_context_get_display context))
 	       (stream (pw_stream_new_with_listener
@@ -165,7 +182,9 @@
 /home/martin/src/popl/include/
 /usr/include/pipewire-0.3
 /usr/include/spa-0.2
- )")
+/usr/include/glib-2.0
+/usr/lib64/glib-2.0/include
+/usr/include/sysprof-4  )")
 	  #+nil (progn
 		  (out "add_library( libnc SHARED IMPORTED )")
 		  (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
@@ -174,8 +193,10 @@
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
-
-		 pipewire))
+		 pthread
+		 glib-2.0
+		 gio-2.0
+		 pipewire-0.3))
 
 	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
