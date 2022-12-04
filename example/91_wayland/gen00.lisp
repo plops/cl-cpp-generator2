@@ -164,7 +164,7 @@
 			      (return -1)))
 
 		   (progn
-		     (let ((fd (shm_open (string "/dev/shm/pool")
+		     (let ((fd (shm_open (string "/tmp/my-wayland-pool")
 					 (logior O_RDWR O_CREAT)
 					 (logior S_IRUSR S_IWUSR)))
 			   (width 1920)
