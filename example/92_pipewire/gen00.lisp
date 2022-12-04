@@ -100,7 +100,33 @@
 	     (when error
 	       ,(lprint :msg "d-bus connection failed"
 			:vars `(error->message))
-	       (return -1))))
+	       (return -1))
+	     (progn
+
+	       (let ((*screencast_proxy
+		      (g_dbus_proxy_new_sync
+		       connection
+		       G_DBUS_PROXY_FLAGS_NONE
+		       nullptr
+		       (string "org.freedesktop.portal.Desktop")
+		       (string "/org/freedesktop/portal/desktop")
+		       (string "org.freedesktop.portal.ScreenCast")
+		       nullptr &error)))
+		 (when error
+		   ,(lprint :msg "d-bus proxy retrieval failed"
+			    :vars `(error->message))
+		   (return -1))
+		 (let ((cachedSourceTypes
+			(g_dbus_proxy_get_cached_property
+			 screencast_proxy
+			 (string "AvailableSourceTypes")))
+		       )
+		   (when cachedSourceTypes
+		     ,(lprint :vars `((g_variant_get_uint32
+				       cachedSourceTypes))))))))
+	   )
+
+
 
 	 #+nil (let ((availableCaptureTypes
 		      (get_available_capture_types))))
