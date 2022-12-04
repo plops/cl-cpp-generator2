@@ -5931,6 +5931,43 @@ int main() {
   how to perform it on the internet, or by consulting with a camera
   manufacturer or a color calibration specialist.
 
+** Radar
+
+- Write modern C++20 code to parse a Sentinel 1 space packet.
+
+#+begin_example
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+// Sentinel 1 space packet header
+struct SpacePacketHeader {
+  std::uint16_t apid;         // Application process identifier
+  std::uint16_t packet_type;  // Packet type
+  std::uint32_t seq_flags;    // Sequence flags and sequence count
+  std::uint16_t length;       // Length of data field
+};
+
+int main() {
+  // Sentinel 1 space packet data
+  std::vector<std::uint8_t> packet_data = {
+    // Space packet header
+    0x12, 0x34,  // APID
+    0x56, 0x78,  // Packet type
+    0x9A, 0xBC, 0xDE, 0xF0,  // Sequence flags and sequence count
+    0x01, 0x23,  // Length of data field
+
+    // Space packet data
+    0xAB, 0xCD, 0xEF, 0x01
+  };
+
+  // Parse space packet header
+  SpacePacketHeader header;
+  std::memcpy(&header, packet_data.data(), sizeof(header));
+
+
+#+end_example
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
