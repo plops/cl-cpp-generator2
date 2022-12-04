@@ -1,5 +1,10 @@
 - https://jan.newmarch.name/Wayland/ProgrammingClient/
 
+- this is the first time that I tried to learn an interface using chatGPT.
+
+- after spending some time on it. i'm actually not sure if wayland can capture a screen
+
+- https://wayland-book.com/introduction/high-level-design.html
 
 * Conversion with chatGPT
 

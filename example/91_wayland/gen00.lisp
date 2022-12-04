@@ -190,18 +190,29 @@
 							    height
 							    stride
 							    format))
-			     (*pool (wl_shm_create_pool
-				     wl_shm
-				     fd
-				     size
-				     )))
+			     #+nil (*pool (wl_shm_create_pool
+					   wl_shm
+					   fd
+					   size
+					   )))
 			 (do0
 			  ,(lprint :msg "capture screen..")
 			  (wl_output_damage_buffer wl_output
 						   0 0 width height)
 			  (let ((cap_stride (wl_buffer_get_stride buffer))
-				(*cap_data (wl_buffer_get_data buffer)))
-			    (let ((local))))))))
+				(*cap_data (wl_buffer_get_data buffer))
+				(local_buffer ("std::array<uint8_t,size>"))
+				(out_fn (string "screen.raw"))
+				(file (std--ofstream out_fn
+						     std--ios--binary)))
+			    (std--memcpy (local_buffer.data)
+					 data
+					 size)
+			    ,(lprint :msg "store to file" :vars `(out_fn))
+			    (file.write (reinterpret_cast<char*>
+					 (local_buffer.data)
+					 size))
+			    (file.close))))))
 
 		   (do0
 		    ,(lprint :msg "disconnect..")
