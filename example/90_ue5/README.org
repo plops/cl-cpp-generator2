@@ -6502,6 +6502,27 @@ One possible solution to this problem is to use a mobile hotspot device, such as
 Another solution is to use a VPN to connect your laptop and desktop to the same network. This will allow them to communicate with each other even if they are on different subnets. To do this, you will need to install a VPN client on both your laptop and desktop, and connect them to the same VPN server. Once they are connected to the VPN, they will be able to communicate with each other as if they were on the same local network.
 #+end_example
 
+- Just as response to nuances in some of the above great answers, in
+  my practice the 192.168.43.0/24 range is by Android/vendor default
+  assigned for WiFi tethering and 192.168.42.0/24 is for USB
+  tethering. –  Jim Klimov May 29, 2017 at 5:39
+
+- Unfortunately, there is no way to change the IP address range for
+  the builtin tethering support, even in CyanogenMod. The Wi-Fi
+  hotspot IP is hardcoded in
+  android.net.wifi.WifiStateMachine.startTethering(); the USB
+  tethering IP is hardcoded in
+  com.android.server.connectivity.Tethering.
+
+- On Android 11 it seems my gateway IP of my hotspot is changing every
+  time I disable and enable the hotspot, again. So this answer is
+  outdated for the latest Android. The question is now, is there a
+  solution, eventually? –  Martin Braun Oct 10, 2020 at 0:28
+
+- Something about a string in Framework APK. But has been revamped as
+  of 2021 . source.android.com/devices/architecture/modular-system/…
+  no longer part of framework its been moved to its own replaceable
+  module. And it still depends on your manufacturer customization.
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
