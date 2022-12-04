@@ -6329,6 +6329,63 @@ int main() {
 
 #+end_example
 
+** Wireguard
+
+- Write a script that configures wireguard on a Linux server.
+  
+
+#+begin_example
+
+The first step in configuring WireGuard on a Linux server is to install the WireGuard software on the server. This can typically be done using the package manager for your Linux distribution. For example, on Ubuntu, you can use the following command to install WireGuard:
+
+sudo apt-get install wireguard
+
+Once the software is installed, you will need to create a configuration file for the WireGuard server. This file typically resides in the /etc/wireguard directory, and is named wg0.conf by default. You can use the wg command to generate a sample configuration file:
+
+sudo wg genkey | sudo tee /etc/wireguard/server_private.key | sudo wg pubkey > /etc/wireguard/server_public.key
+
+This will generate a private key for the server and a corresponding public key. You will need to include these keys in the configuration file, along with the network settings for the WireGuard server.
+
+Here is an example configuration file that you can use as a starting point:
+
+[Interface]
+Address = 192.168.1.1/24
+PrivateKey = <server_private_key>
+
+[Peer]
+PublicKey = <client_public_key>
+AllowedIPs = 192.168.1.2/32
+
+In this example, the server is configured to use the 192.168.1.1/24 network, with a private key generated earlier. The configuration also includes a single peer, with the specified public key and IP address. You can add more peers to the configuration file as needed.
+
+Once you have created the configuration file, you can use the wg-quick command to start the WireGuard server:
+
+sudo wg-quick up wg0
+
+This will start the WireGuard server and load the configuration from the wg0.conf file. You can verify that the server is running by checking the status of the wg0 interface:
+
+sudo wg show
+
+This will print information about the WireGuard interface, including the public key and the list of peers.
+
+At this point, the WireGuard server is ready to accept connections from clients. You can use the wg command on the client to connect to the server, using the server's public key and the shared secret key.
+
+For example, on the client, you can use the following commands to generate a private key and add the server as a peer:
+
+wg genkey | tee private.key | wg pubkey > public.key
+wg set wg0 peer <server_public_key> allowed-ips 192.168.1.2/32 endpoint <server_ip>:<server_port> persistent-keepalive 25
+
+Replace <server_public_key>, <server_ip>, and <server_port> with the appropriate values for your server. Once the client is configured, you can use the following command to connect to the server:
+
+wg-quick up wg0
+
+This will start the WireGuard client and establish a connection to the server. You can verify the connection by checking the status of the wg0 interface on the client:
+
+wg show
+
+This should print information about the WireGuard interface, including
+#+end_example
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
