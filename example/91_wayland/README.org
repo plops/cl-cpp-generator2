@@ -5,6 +5,8 @@
 - after spending some time on it. i'm actually not sure if wayland can capture a screen
 
 - https://wayland-book.com/introduction/high-level-design.html
+- here it explains binding to globals https://wayland-book.com/registry/binding.html
+
 
 * Conversion with chatGPT
 
