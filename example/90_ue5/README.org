@@ -979,3 +979,346 @@ print("Time elapsed: {} seconds".format(int(helium.time() - start_time)))
 # exit program
 helium.kill_browser()
 #+end_example
+
+- it's not working but pretty good
+
+** C++ SIMD Gaussian filter
+
+#+begin_example
+
+Write C++ code that opens a PGM image. Perform a 2D Gaussian filter using SIMD instructions.
+
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <xmmintrin.h>
+
+using namespace std;
+
+int main() {
+	int width, height, max_val;
+	string line;
+	ifstream pgm_file;
+	pgm_file.open("test.pgm");
+
+	// Read PGM file header
+	getline(pgm_file, line);
+	getline(pgm_file, line);
+	sscanf(line.c_str(), "%d %d", &width, &height);
+	getline(pgm_file, line);
+	sscanf(line.c_str(), "%d", &max_val);
+	
+	// Read pixel data
+	int *pixel_data = new int[width * height];
+	for (int i = 0; i < width * height; i++) {
+		getline(pgm_file, line);
+		sscanf(line.c_str(), "%d", &pixel_data[i]);
+	}
+	
+	// Perform Gaussian filtering
+	float kernel[3][3] = {
+		{1.0/16.0, 2.0/16.0, 1.0/16.0},
+		{2.0/16.0, 4.0/16.0, 2.0/16.0},
+		{1.0/16.0, 2.0/16.0, 1.0/16.0}
+	};
+	
+	float *output = new float[width * height];
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			float sum = 0.0;
+			for (int m = -1; m <= 1; m++) {
+				for (int n = -1; n <= 1; n++) {
+					int x = j + n;
+					int y = i + m;
+					if (x < 0 || x >= width || y < 0 || y >= height) {
+						continue;
+					}
+					sum += (float)pixel_data[y * width + x] * kernel[m + 1][n + 1];
+				}
+			}
+			output[i * width + j] = sum;
+		}
+	}
+	
+	// Perform Gaussian filtering using SIMD instructions
+	__m128 *kernel_sse = (__m128*)kernel;
+	
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			__m128 sum = _mm_set1_ps(0.0f);
+			for (int m = -1; m <= 1; m++) {
+				for (int n = -1; n <= 1; n++) {
+					int x = j + n;
+					int y = i + m;
+					if (x < 0 || x >= width || y < 0 || y >= height) {
+						continue;
+					}
+					__m128 input = _mm_set1_ps((float)pixel_data[y * width + x]);
+					sum = _mm_add_ps(sum, _mm_mul_ps(input, kernel_sse[m + 1][n + 1]));
+				}
+			}
+			output[i * width + j] = sum[0] + sum[1] + sum[2] + sum[3];
+		}
+	}
+	
+	delete[] pixel_data;
+	delete[] output;
+	
+	pgm_file.close();
+	
+	return 0;
+}
+#+end_example
+
+** C++ read pulse audio
+#+begin_example
+
+Write C++ code that reads a buffer from the default pulse audio device.
+
+
+#include <pulse/simple.h>
+#include <iostream>
+
+int main()
+{
+    pa_simple *s = NULL;
+    int error;
+    int16_t buffer[1024];
+
+    // Create a new pulse audio simple context 
+    s = pa_simple_new(
+        nullptr,                          // Use the default server.
+        "My Application Name",            // Our application's name.
+        PA_STREAM_RECORD,                 // Record from the microphone.
+        nullptr,                          // Use the default device.
+        "Record from the microphone",     // Description of the stream.
+        nullptr,                          // Specify sample format (defaults to signed 16-bit int).
+        nullptr,                          // Use default channel map.
+        nullptr,                          // Use default buffering attributes.
+        &error                            // Error code.
+    );
+
+    if (s == nullptr) {
+        std::cout << "Error creating pulse audio simple context: " << pa_strerror(error) << std::endl;
+        return 1;
+    }
+
+    // Read a buffer of samples from the default pulse audio device
+    if (pa_simple_read(s, buffer, sizeof(buffer), &error) < 0) {
+        std::cout << "Error reading from pulse audio simple context: " << pa_strerror(error) << std::endl;
+        return 1;
+    }
+
+    pa_simple_free(s);
+
+    // Do something with the buffer of samples here
+
+    return 0;
+}
+#+end_example
+
+
+** C++ SIMD FFT
+
+#+begin_example
+
+Write C++ code that performs 1D FFT using SIMD instructions on a single-float buffer of length 1024.
+
+#include <immintrin.h> // SIMD instructions
+#include <complex> // complex data types
+
+// define complex data type
+typedef std::complex<float> cplx;
+
+// helper function to perform FFT butterfly operation
+void butterfly(__m128 &x0, __m128 &x1, __m128 &w0)
+{
+    __m128 tmp = _mm_add_ps(x0, x1);
+    x1 = _mm_sub_ps(x0, x1);
+    x0 = tmp;
+    x1 = _mm_mul_ps(x1, w0);
+}
+
+// FFT implementation using SIMD instructions
+void fft_simd(cplx *in, cplx *out, int N)
+{
+    // define constants
+    const float PI = 3.14159265358979323846f;
+    const __m128i mask_even = _mm_set_epi32(0, 0, 0, 0x55555555);
+    const __m128i mask_odd = _mm_set_epi32(0, 0, 0, 0xAAAAAAA);
+    const __m128 PI_2 = _mm_set1_ps(PI / 2.f);
+    const int N_2 = N / 2;
+
+    // create buffers for input and output
+    __m128 *x_in = (__m128*)in;
+    __m128 *x_out = (__m128*)out;
+
+    // perform bit-reversal
+    for (int i = 0; i < N_2; i++)
+    {
+        int j = _mm_cvtsi128_si32(_mm_shuffle_epi32(_mm_set_epi32(0, 0, 0, i), 0x1B));
+        __m128 tmp = x_in[i];
+        x_in[i] = x_in[j];
+        x_in[j] = tmp;
+    }
+
+    // iterate over stages
+    for (int s = 0; s < N_2; s++)
+    {
+        // calculate twiddle factors
+        __m128 w = _mm_set1_ps(exp(-2.f * PI * s / N));
+
+        // iterate over butterflies
+        for (int b = 0; b < N_2; b++)
+        {
+            // select inputs
+            int i0 = b;
+            int i1 = b + N_2;
+            __m128 x0 = x_in[i0];
+            __m128 x1 = x_in[i1];
+
+            // perform butterfly operation
+            butterfly(x0, x1, w);
+
+            // store results
+            x_out[i0] = x0;
+            x_out[i1] = x1;
+
+            // update twiddle factors
+            w = _mm_mul_ps(w, PI_2);
+        }
+
+        // swap input and output buffers
+        __m128 *tmp = x_in;
+        x_in = x_out;
+        x_out = tmp;
+    }
+
+    // store output values
+    int i = 0;
+    for (int s = 0; s < N_2; s += 2)
+    {
+        // select values
+        __m128 tmp = x_in[s];
+        __m128 even = _mm_and_ps(tmp, mask_even);
+        __m128 odd = _mm_and_ps(tmp, mask_odd);
+
+        // store values
+        out[i++] = cplx(_mm_cvtss_f32(even), _mm_cvtss_f32(odd));
+    }
+}
+
+// main function
+int main()
+{
+    // array of input values
+    const int N = 1024;
+    cplx input[N];
+
+    // initialize input values
+    for (int i = 0; i < N; i++)
+        input[i] = cplx((float)i, 0);
+
+    // array of output values
+    cplx output[N];
+
+    // perform FFT
+    fft_simd(input, output, N);
+
+    // print output values
+    for (int i = 0; i < N; i++)
+        std::cout << output[i] << std::endl;
+
+    return 0;
+}
+#+end_example
+
+- again with C++20
+
+#+begin_example
+
+Write C++20 code that performs 1D FFT using SIMD instructions on a single-float buffer of length 1024.
+
+
+#include <intrin.h>
+#include <immintrin.h>
+
+int FFT_1D_SIMD(float *buffer, int N) {
+    __m128 *data = (__m128*)buffer;
+    int i, j;
+
+    // Perform FFT in-place
+    for (i = 0; i < N; i++) {
+        __m128 sum = _mm_setzero_ps();
+        __m128 w = _mm_set1_ps(1.0f);
+        for (j = 0; j < N; j++) {
+            sum = _mm_add_ps(sum, _mm_mul_ps(data[j], w));
+            w = _mm_mul_ps(w, _mm_set_ps(cosf(2.0f*M_PI*i*j/N), sinf(2.0f*M_PI*i*j/N), cosf(2.0f*M_PI*i*j/N), sinf(2.0f*M_PI*i*j/N)));
+        }
+        data[i] = sum;
+    }
+
+    return 0;
+}
+#+end_example
+
+- again Cuda
+
+#+begin_example
+Write Cuda code that performs 1D FFT on a single-float buffer of length 1024.
+
+
+__global__ void FFTKernel(float* buf, int length)
+{
+    // Perform 1D FFT on a single-float buffer of length 1024
+    int index = blockDim.x * blockIdx.x + threadIdx.x;
+
+    // Check that thread is within bounds
+    if (index < length)
+    {
+        // Declare complex variables
+        float2 x, w, t;
+
+        // Calculate the magnitude of the current index
+        int k = index;
+        int m = length/2;
+        int n = 0;
+        while (m > 0)
+        {
+            n++;
+            m >>= 1;
+        }
+
+        // Calculate the twiddle factor
+        float theta = -2.0 * M_PI * k / length;
+        w.x = cosf(theta);
+        w.y = sinf(theta);
+
+        // Perform FFT
+        for (int j = 0; j < n; j++)
+        {
+            m = 1 << j;
+            for (int i = 0; i < length; i += 2*m)
+            {
+                t.x = buf[i+m] * w.x - buf[i+m] * w.y;
+                t.y = buf[i+m] * w.y + buf[i+m] * w.x;
+                x.x = buf[i];
+                x.y = 0.0f;
+                buf[i] = x.x + t.x;
+                buf[i+m] = x.x - t.x;
+                x.x = buf[i+1];
+                x.y = 0.0f;
+                buf[i+1] = x.x + t.y;
+                buf[i+m+1] = x.x - t.y;
+            }
+            w.x = (w.x * w.x) - (w.y * w.y);
+            w.y = 2.0f * w.x * w.y;
+        }
+    }
+}
+
+// Launch the FFT kernel
+FFTKernel<<<1024,1>>>(buf, 1024);
+
+#+end_example
