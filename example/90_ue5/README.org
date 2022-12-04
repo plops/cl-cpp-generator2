@@ -1322,3 +1322,601 @@ __global__ void FFTKernel(float* buf, int length)
 FFTKernel<<<1024,1>>>(buf, 1024);
 
 #+end_example
+
+** OpenCL 1D FFT
+
+#+begin_example
+
+Write OpenCL code that performs 1D FFT on a single-float buffer of length 1024.
+
+
+// FFT kernel
+__kernel void fft_kernel(__global float* input, __global float* output){
+    // Get the global id of the current thread
+    int gid = get_global_id(0);
+
+    // Define constants
+    int N = 1024;
+    float PI = 3.14159265358979f;
+
+    // Calculate the FFT
+    float real = 0.0f;
+    float imag = 0.0f;
+    for (int k=0; k<N; k++){
+        real += input[k] * cos(-2*PI*k*gid/N);
+        imag += input[k] * sin(-2*PI*k*gid/N);
+    }
+
+    // Store the output
+    output[2*gid] = real;
+    output[2*gid+1] = imag;
+}
+#+end_example
+
+- that is not a "FAST" FT
+
+- again
+
+#+begin_example
+
+Write OpenCL code that performs 1D FFT on a single-float buffer of length 1024. Make sure to use butterfly.
+
+// Global constants
+#define NUM_ELEMENTS 1024
+#define LOG2_NUM_ELEMENTS 10
+
+// Global variables
+__constant float twiddle_factors[NUM_ELEMENTS/2];
+__global float buffer[NUM_ELEMENTS];
+
+// Kernel function
+__kernel void FFT_1D(__global float *buffer, __constant float *twiddle_factors)
+{
+  // Local memory
+  __local float local_buffer[NUM_ELEMENTS];
+
+  // Read input data into local memory
+  int index = get_global_id(0);
+  local_buffer[index] = buffer[index];
+
+  // FFT butterfly
+  for (int i=1; i<=LOG2_NUM_ELEMENTS; i++) {
+    int butterfly_size = 1 << i;
+    int butterfly_count = NUM_ELEMENTS / butterfly_size;
+    int butterfly_half_size = butterfly_size / 2;
+
+    for (int j=0; j<butterfly_count; j++) {
+      int base_index = j * butterfly_size;
+      int index_A = base_index;
+      int index_B = base_index + butterfly_half_size;
+      float twiddle_index = (float) (j * butterfly_half_size);
+
+      float A = local_buffer[index_A];
+      float B = local_buffer[index_B];
+      float twiddle = twiddle_factors[(int) twiddle_index];
+      float sum = A + B;
+      float difference = (A - B) * twiddle;
+
+      local_buffer[index_A] = sum;
+      local_buffer[index_B] = difference;
+    }
+  }
+
+  // Write result back to global memory
+  buffer[index] = local_buffer[index];
+}
+#+end_example
+** Cuda 2D gaussian blur
+
+#+begin_example
+
+Write Cuda code that performs 2D Gaussian blur on a 2D texture with size 1024x1024;
+
+
+
+// Kernel function for 2D Gaussian blur
+__global__ void gaussian_blur(float *in, float *out, int width, int height, float sigma)
+{
+    int x = blockDim.x * blockIdx.x + threadIdx.x;
+    int y = blockDim.y * blockIdx.y + threadIdx.y;
+   
+    if (x < width && y < height) 
+    { 
+        // calculate the gaussian blur    
+        float sum = 0.0f; 
+        float kernel_value;
+        for (int i = -1; i <= 1; i++)
+        {
+            for (int j = -1; j <= 1; j++)
+            {
+                // Retrieve the value of the current pixel
+                float pixel_value = in[(y + i) * width + (x + j)];
+                // Calculate the kernel value
+                kernel_value = exp(-((i * i + j * j) / (2 * sigma * sigma)));
+                // Accumulate the weighted pixel value
+                sum += pixel_value * kernel_value;
+            }
+        }
+        // Store the blurred pixel value
+        out[y * width + x] = sum;
+    }
+}
+ 
+// Launch grid for the kernel
+dim3 blocks(32, 32);
+dim3 threads(16, 16);
+ 
+// Allocate shared memory
+__shared__ float shared_in[16 * 16];
+__shared__ float shared_out[16 * 16];
+ 
+// Call the kernel
+gaussian_blur<<<blocks, threads>>>(in, out, 1024, 1024, sigma);
+#+end_example
+
+** OpenCL 2D Gaussian blur
+
+#+begin_example
+
+Write OpenCL
+ code that performs 2D Gaussian blur on a 2D texture with size 1024x1024;
+
+
+// Define the global constants
+#define IMAGE_WIDTH 1024
+#define IMAGE_HEIGHT 1024
+#define KERNEL_SIZE 9
+
+// Define the kernel
+__kernel void gaussianBlur2D(__read_only image2d_t input,
+                            __write_only image2d_t output)
+{
+    // Get the x and y coordinates of the current thread
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+ 
+    // Compute the coordinates of the current pixel
+    int2 coords = (int2)(x, y);
+
+    // Initialize the sum to 0
+    float4 sum = (float4)(0.0f);
+
+    // Iterate over the kernel size
+    for (int i = -KERNEL_SIZE/2; i <= KERNEL_SIZE/2; i++)
+    {
+        for (int j = -KERNEL_SIZE/2; j <= KERNEL_SIZE/2; j++)
+        {
+            // Compute the coordinates of the kernel element
+            int2 kernelCoords = (int2)(x + i, y + j);
+
+            // Make sure that the coordinates are valid
+            if (kernelCoords.x >= 0 && kernelCoords.x < IMAGE_WIDTH &&
+                kernelCoords.y >= 0 && kernelCoords.y < IMAGE_HEIGHT)
+            {
+                // Read the pixel value from the input image
+                float4 pixel = read_imagef(input, kernelCoords);
+
+                // Apply the Gaussian filter
+                float4 gaussianWeight = (float4)(exp(-((i*i)+(j*j))/(2*(KERNEL_SIZE/3)*(KERNEL_SIZE/3))));
+                sum += pixel * gaussianWeight;
+            }
+        }
+    }
+
+    // Write the blurred pixel to the output image
+    write_imagef(output, coords, sum);
+}
+#+end_example
+
+** C++ wayland screen capture
+
+#+begin_example
+
+Write C++ code that captures a wayland screen.
+
+#include <wayland-client.h>
+#include <wayland-server.h>
+
+/* Get a reference to the global Wayland display */
+struct wl_display *display = wl_display_connect(NULL);
+
+/* Create a Wayland registry and add a listener */
+struct wl_registry *registry = wl_display_get_registry(display);
+wl_registry_add_listener(registry, &registry_listener, NULL);
+
+/* Wait for the registry listener to be called */
+wl_display_dispatch(display);
+
+/* Get the compositor for the display */
+struct wl_compositor *compositor = wl_registry_bind(
+    registry,
+    compositor_id,
+    &wl_compositor_interface,
+    1);
+
+/* Create a surface */
+struct wl_surface *surface = wl_compositor_create_surface(compositor);
+
+/* Create a buffer to store the image data */
+struct wl_buffer *buffer = wl_shm_pool_create_buffer(
+    shm_pool,
+    0,
+    width,
+    height,
+    stride,
+    WL_SHM_FORMAT_ARGB8888);
+
+/* Attach the buffer to the surface */
+wl_surface_attach(surface, buffer, 0, 0);
+
+/* Commit the surface */
+wl_surface_commit(surface);
+
+/* Read the image data from the buffer */
+uint8_t *data = wl_shm_pool_read(shm_pool, 0, width * height * 4);
+#+end_example
+
+*** store in opengl texture
+
+#+begin_example
+Write C++ code that captures a wayland screen into a OpenGL texture.
+
+#include <GL/gl.h>
+#include <wayland-client.h>
+
+int main() {
+    struct wl_display *display = wl_display_connect(NULL);
+    struct wl_registry *registry = wl_display_get_registry(display);
+    struct wl_compositor *compositor = NULL;
+    wl_registry_add_listener(registry, &registry_listener, &compositor);
+    wl_display_dispatch(display);
+    wl_display_roundtrip(display);
+    // get the output
+    struct wl_output *output = wl_registry_bind(registry, 0, &wl_output_interface, 1);
+    // create a buffer
+    struct wl_buffer *buffer = wl_compositor_create_buffer(compositor, output, WL_OUTPUT_MODE_CURRENT, 0, 0);
+    // create an OpenGL texture
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, wl_buffer_get_width(buffer), wl_buffer_get_height(buffer), 0, GL_RGBA, GL_UNSIGNED_BYTE, wl_buffer_get_data(buffer));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    wl_buffer_destroy(buffer);
+    wl_output_destroy(output);
+    wl_registry_destroy(registry);
+    wl_compositor_destroy(compositor);
+    wl_display_disconnect(display);
+    return 0;
+}
+
+#+end_example
+
+*** store in vulkan texture
+
+#+begin_example
+Write C++ code that captures a wayland screen into a Vulkan texture.
+
+#include <vulkan/vulkan.h>
+#include <wayland/wayland.h>
+
+struct wl_display* display;
+struct wl_buffer* buffer;
+
+VkImage image;
+VkDeviceMemory memory;
+VkImageView view;
+VkBuffer stagingBuffer;
+VkDeviceMemory stagingMemory;
+
+// Create image
+VkImageCreateInfo imageInfo = {};
+imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+imageInfo.imageType = VK_IMAGE_TYPE_2D;
+imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+imageInfo.extent.width = width;
+imageInfo.extent.height = height;
+imageInfo.extent.depth = 1;
+imageInfo.mipLevels = 1;
+imageInfo.arrayLayers = 1;
+imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
+imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+// Allocate memory
+VkMemoryRequirements memReqs;
+vkGetImageMemoryRequirements(device, image, &memReqs);
+
+VkMemoryAllocateInfo allocInfo = {};
+allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+allocInfo.allocationSize = memReqs.size;
+allocInfo.memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits,
+											VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
+											VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+vkAllocateMemory(device, &allocInfo, nullptr, &memory);
+vkBindImageMemory(device, image, memory, 0);
+
+// Create image view
+VkImageViewCreateInfo viewInfo = {};
+viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+viewInfo.image = image;
+viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+viewInfo.subresourceRange.baseMipLevel = 0;
+viewInfo.subresourceRange.levelCount = 1;
+viewInfo.subresourceRange.baseArrayLayer = 0;
+viewInfo.subresourceRange.layerCount = 1;
+
+vkCreateImageView(device, &viewInfo, nullptr, &view);
+
+// Create staging buffer
+VkBufferCreateInfo stagingBufferInfo = {};
+stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+stagingBufferInfo.size = width * height * 4;
+stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+stagingBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+vkCreateBuffer(device, &stagingBufferInfo, nullptr, &stagingBuffer);
+
+// Allocate memory for staging buffer
+VkMemoryRequirements stagingMemReqs;
+vkGetBufferMemoryRequirements(device, stagingBuffer, &stagingMemReqs);
+
+VkMemoryAllocateInfo stagingAllocInfo = {};
+stagingAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+stagingAllocInfo.allocationSize = stagingMemReqs.size;
+stagingAllocInfo.memoryTypeIndex = findMemoryType(stagingMemReqs.memoryTypeBits, 
+												  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | 
+												  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+vkAllocateMemory(device, &stagingAllocInfo, nullptr, &stagingMemory);
+vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0);
+
+// Acquire Wayland buffer
+wl_display_roundtrip(display);
+wl_surface_attach(surface, buffer, 0, 0);
+wl_surface_damage(surface, 0, 0, width, height);
+
+// Map memory
+void* data;
+vkMapMemory(device, stagingMemory, 0, width * height * 4, 0, &data);
+
+// Copy data
+wl_shm_pool_get_data(pool, data);
+
+// Unmap memory
+vkUnmapMemory(device, stagingMemory);
+
+// Copy data to image
+VkCommandBufferBeginInfo beginInfo = {};
+beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+VkImageMemoryBarrier barrier = {};
+barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+barrier.srcAccessMask = 0;
+barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.image = image;
+barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+barrier.subresourceRange.baseMipLevel = 0;
+barrier.subresourceRange.levelCount = 1;
+barrier.subresourceRange.baseArrayLayer = 0;
+barrier.subresourceRange.layerCount = 1;
+
+vkCmdPipelineBarrier(commandBuffer,
+					 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+					 VK_PIPELINE_STAGE_TRANSFER_BIT,
+					 0,
+					 0, nullptr,
+					 0, nullptr,
+					 1, &barrier);
+
+VkBufferImageCopy region = {};
+region.bufferOffset = 0;
+region.bufferRowLength = 0;
+region.bufferImageHeight = 0;
+region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+region.imageSubresource.mipLevel = 0;
+region.imageSubresource.baseArrayLayer = 0;
+region.imageSubresource.layerCount = 1;
+region.imageOffset = { 0, 0, 0 };
+region.imageExtent = { width, height, 1 };
+
+vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+VkImageMemoryBarrier barrier2 = {};
+barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+barrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+barrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+barrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+barrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier2.image = image;
+barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+barrier2.subresourceRange.baseMipLevel = 0;
+barrier2.subresourceRange.levelCount = 1;
+barrier2.subresourceRange.baseArrayLayer = 0;
+barrier2.subresourceRange.layerCount = 1;
+
+vkCmdPipelineBarrier(commandBuffer,
+					 VK_PIPELINE_STAGE_TRANSFER_BIT,
+					 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					 0,
+					 0, nullptr,
+					 0, nullptr,
+					 1, &barrier2);
+
+vkEndCommandBuffer(commandBuffer);
+
+VkSubmitInfo submitInfo = {};
+submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+submitInfo.commandBufferCount = 1;
+submitInfo.pCommandBuffers = &commandBuffer;
+
+vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+vkQueueWaitIdle(queue);
+
+vkDestroyBuffer(device, stagingBuffer, nullptr);
+vkFreeMemory(device, stagingMemory, nullptr);
+
+#+end_example
+
+- that is too verbose, using up all the tokens
+
+** OpenGL compute shader clahe
+
+#+begin_example
+
+Write an OpenGL shader that performs CLAHE.
+
+// Vertex shader
+#version 330 core
+layout (location = 0) in vec3 aPos;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main()
+{
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+}
+
+//Fragment shader
+#version 330 core
+out vec4 FragColor;
+
+uniform sampler2D inputTexture;
+uniform float clipLimit;
+
+// Number of bins to use
+const int BINS = 256;
+
+// Size of histogram bin
+const float BIN_SIZE = 1.0 / float(BINS);
+
+// Size of window used to compute histogram
+const int WINDOW_SIZE = 32;
+
+// Compute histogram of pixel values
+float calculateHistogram(sampler2D texture, vec2 uv, int windowSize)
+{
+    // Initialize histogram array
+    float histogram[BINS];
+    for (int i = 0; i < BINS; i++)
+        histogram[i] = 0.0;
+
+    // Compute histogram
+    for (int x = -windowSize; x <= windowSize; x++)
+    {
+        for (int y = -windowSize; y <= windowSize; y++)
+        {
+            vec2 offset = vec2(float(x), float(y));
+            vec4 sample = texture2D(texture, uv + offset);
+            int bin = int(sample.r * 255.0);
+            histogram[bin] += 1.0;
+        }
+    }
+
+    // Normalize histogram
+    float total = 0.0;
+    for (int i = 0; i < BINS; i++)
+        total += histogram[i];
+    for (int i = 0; i < BINS; i++)
+        histogram[i] /= total;
+
+    // Compute cumulative distribution
+    float cdf[BINS];
+    cdf[0] = histogram[0];
+    for (int i = 1; i < BINS; i++)
+        cdf[i] = cdf[i - 1] + histogram[i];
+
+    // Compute clip limit
+    float clipLimit = 0.0;
+    for (int i = 0; i < BINS; i++)
+    {
+        if (cdf[i] >= clipLimit)
+            clipLimit = cdf[i];
+    }
+
+    // Return clip limit
+    return clipLimit;
+}
+
+// Compute CLAHE pixel
+vec4 clahe(sampler2D texture, vec2 uv, float clipLimit)
+{
+    // Compute histogram
+    float histogram[BINS];
+    for (int i = 0; i < BINS; i++)
+        histogram[i] = 0.0;
+
+    // Compute histogram
+    for (int x = -WINDOW_SIZE; x <= WINDOW_SIZE; x++)
+    {
+        for (int y = -WINDOW_SIZE; y <= WINDOW_SIZE; y++)
+        {
+            vec2 offset = vec2(float(x), float(y));
+            vec4 sample = texture2D(texture, uv + offset);
+            int bin = int(sample.r * 255.0);
+            histogram[bin] += 1.0;
+        }
+    }
+
+    // Normalize histogram
+    float total = 0.0;
+    for (int i = 0; i < BINS; i++)
+        total += histogram[i];
+    for (int i = 0; i < BINS; i++)
+        histogram[i] /= total;
+
+    // Compute cumulative distribution
+    float cdf[BINS];
+    cdf[0] = histogram[0];
+    for (int i = 1; i < BINS; i++)
+        cdf[i] = cdf[i - 1] + histogram[i];
+
+    // Compute clip limit
+    float clipLimit = 0.0;
+    for (int i = 0; i < BINS; i++)
+    {
+        if (cdf[i] >= clipLimit)
+            clipLimit = cdf[i];
+    }
+
+    // Compute CLAHE pixel
+    vec4 sample = texture2D(texture, uv);
+    int bin = int(sample.r * 255.0);
+    float cdfMin = 0.0;
+    if (bin > 0)
+        cdfMin = cdf[bin - 1];
+    float cdfMax = cdf[bin];
+    float a = (clipLimit - cdfMin) / (cdfMax - cdfMin);
+    sample.r = bin * BIN_SIZE + a * BIN_SIZE;
+
+    return sample;
+}
+
+void main()
+{
+    // Compute clip limit
+    float clipLimit = calculateHistogram(inputTexture, gl_FragCoord.xy, WINDOW_SIZE);
+
+    // Compute CLAHE pixel
+    vec4 sample = clahe(inputTexture, gl_FragCoord.xy, clipLimit);
+
+    FragColor = sample;
+}
+#+end_example
+- i'm not sure this works but looks quite impressive
