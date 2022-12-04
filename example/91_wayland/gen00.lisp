@@ -87,8 +87,12 @@
 	"using namespace gl32core;"
 	"using namespace glbinding;")
        (space "extern \"C\""
-	      (curly
-	       (include <wayland-client.h>)))
+	      (progn
+		(include <wayland-client.h>
+			 <sys/mman.h>
+			 <sys/stat.h>
+			 <fcntl.h>)
+		" "))
 
        ,(let ((l `(wl_compositor wl_shm wl_output)))
 	  `(do0
@@ -153,16 +157,38 @@
 		   ,(lprint :msg "dispatch..")
 		   (wl_display_dispatch display)
 
-		   ,(loop for e in l
-			  collect
-			  `(unless ,e
-			     ,(lprint :msg (format nil "missing ~a" e))
-			     (return -1)))
+		   ,@(loop for e in l
+			   collect
+			   `(unless ,e
+			      ,(lprint :msg (format nil "missing ~a" e))
+			      (return -1)))
 
-		   (let ((*pool (wl_shm_create_pool
-				 shm
-				 (wl_shm_create_buffer shm
-						       )))))
+		   (progn
+		     (let ((fd (shm_open (string "/dev/shm/pool")
+					 (logior O_RDWR O_CREAT)
+					 (logior S_IRUSR S_IWUSR)))
+			   (width 1920)
+			   (height 1080)
+			   (stride 4)
+			   (size (* width height stride)))
+		       (when (< fd 0)
+			 ,(lprint :msg "shm_open failed")
+			 (return -1))
+		       (when (< (ftruncate fd size) 0)
+			 ,(lprint :msg "ftruncate failed")
+			 (return -1))
+		       #+nil (let ((*data (mmap nullptr size (logior PROT_READ
+								     PROT_WRITE)
+						MAP_SHARED
+						fd 0))
+				   (*pool (wl_shm_create_pool
+					   shm
+					   (wl_shm_create_buffer shm
+								 wl_shm
+								 width
+								 height
+								 stride
+								 WL_SHM_FORMAD_ARGB88888)))))))
 
 		   (do0
 		    ,(lprint :msg "disconnect..")
