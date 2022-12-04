@@ -2352,8 +2352,9 @@ if (egl_window == NULL) {
 }
 #+end_example
 
-** C++ control firefox
+** C++ control browser
 
+*** firefox
 #+begin_example
 Write Linux C++ code that controls firefox.
 
@@ -2385,3 +2386,131 @@ int main()
 #+end_example
 
 - is that possible. it seems reasonable
+
+*** chrome x11
+
+#+begin_example
+Write Linux C++ code that controls chrome.
+
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+ 
+// Function to simulate user input of a key
+void send_key(Display *display, KeySym key)
+{
+    XTestFakeKeyEvent(display, XKeysymToKeycode(display, key), True, 0);
+    XFlush(display);
+    XTestFakeKeyEvent(display, XKeysymToKeycode(display, key), False, 0);
+    XFlush(display);
+}
+ 
+// Function to open Chrome
+void open_chrome(Display *display)
+{
+    std::string command = "google-chrome &";
+    system(command.c_str());
+ 
+    // Wait until Chrome is open
+    while (true)
+    {
+        Window window;
+        int revert;
+        XGetInputFocus(display, &window, &revert);
+ 
+        char *wm_name;
+        XFetchName(display, window, &wm_name);
+ 
+        if (wm_name != NULL)
+        {
+            std::string name(wm_name);
+            XFree(wm_name);
+            if (name.find("Google Chrome") != std::string::npos)
+            {
+                break;
+            }
+        }
+    }
+}
+ 
+// Main function
+int main()
+{
+    Display *display = XOpenDisplay(NULL);
+ 
+    // Open Chrome
+    open_chrome(display);
+ 
+    // Send a key to control Chrome
+    send_key(display, XK_F5);
+ 
+    return 0;
+}
+
+#+end_example
+*** chrome wayland
+- modified it to compile
+#+begin_example
+
+// g++ chrome.cpp  -lwayland-client
+#include <iostream>
+#include <string>
+#include <wayland-client.h>
+
+int main(int argc, char* argv[])
+{
+    wl_display *display = wl_display_connect(NULL);
+    if (!display)
+    {
+        std::cerr << "Failed to connect to Wayland display" << std::endl;
+        return -1;
+    }
+
+    wl_registry *registry = wl_display_get_registry(display);
+    if (!registry)
+    {
+        std::cerr << "Failed to get registry from Wayland display" << std::endl;
+        return -1;
+    }
+
+    auto *compositor = wl_registry_bind(registry, 1, &wl_compositor_interface, 1);
+    if (!compositor)
+    {
+        std::cerr << "Failed to bind compositor" << std::endl;
+        return -1;
+    }
+
+    wl_surface *surface = wl_compositor_create_surface((wl_compositor*)compositor);
+    if (!surface)
+    {
+        std::cerr << "Failed to create surface" << std::endl;
+        return -1;
+    }
+
+    auto *shell = wl_registry_bind(registry, 2, &wl_shell_interface, 1);
+    if (!shell)
+    {
+        std::cerr << "Failed to bind shell" << std::endl;
+        return -1;
+    }
+
+    wl_shell_surface *shell_surface = wl_shell_get_shell_surface((wl_shell*)shell, surface);
+    if (!shell_surface)
+    {
+        std::cerr << "Failed to get shell surface" << std::endl;
+        return -1;
+    }
+
+    // Set the title of the window
+    wl_shell_surface_set_title(shell_surface, "My Chrome Window");
+
+    // Launch chrome
+    std::string chrome_command = "/usr/bin/google-chrome-stable";
+    system(chrome_command.c_str());
+
+    return 0;
+}
+
+#+end_example
