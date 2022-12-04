@@ -6,7 +6,7 @@
 
 - https://wayland-book.com/introduction/high-level-design.html
 - here it explains binding to globals https://wayland-book.com/registry/binding.html
-
+- the book is not finished and doesn't seem to mention screen capture
 
 * Conversion with chatGPT
 

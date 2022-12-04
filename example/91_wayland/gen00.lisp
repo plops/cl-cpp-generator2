@@ -166,8 +166,9 @@
 			      (return -1)))
 
 		   (progn
-		     (let ((fd (shm_open (string "/my-wayland-pool")
-					 (logior O_RDWR O_CREAT)
+		     (let ((shm_fn (string "/my-wayland-pool"))
+			   (fd (shm_open shm_fn
+					 (logior O_RDWR O_CREAT O_EXCL)
 					 (logior S_IRUSR S_IWUSR)))
 			   (width 1920)
 			   (height 1080)
@@ -176,26 +177,31 @@
 			   (size (* width height stride)))
 		       (when (< fd 0)
 			 ,(lprint :msg "shm_open failed."
-				  :vars `(errno (strerror errno)))
+				  :vars `(shm_fn errno (strerror errno)))
+			 (shm_unlink shm_fn)
 			 (return -1))
 		       (when (< (ftruncate fd size) 0)
 			 ,(lprint :msg "ftruncate failed")
 			 (return -1))
-		       #+nil    (let ((*data (mmap nullptr size (logior PROT_READ
-									PROT_WRITE)
-						   MAP_SHARED
-						   fd 0))
-				      (*buffer (wl_shm_create_buffer wl_shm
-								     fd
-								     width
-								     height
-								     stride
-								     format))
-				      #+nil (*pool (wl_shm_create_pool
-						    wl_shm
-						    fd
-						    size
-						    )))
+		       #+nil    (let ((*pool_data (mmap nullptr size (logior PROT_READ
+									     PROT_WRITE)
+							MAP_SHARED
+							fd 0))
+				      ;; https://wayland-book.com/surfaces/shared-memory.html
+				      (*pool (wl_shm_create_pool
+					      wl_shm
+					      fd
+					      size
+					      ))
+				      (index 0)
+				      (offset (* height stride index))
+				      (*buffer (wl_shm_pool_create_buffer pool
+									  offset
+									  width
+									  height
+									  stride
+									  format))
+				      )
 				  (do0
 				   ,(lprint :msg "capture screen..")
 				   (wl_output_damage_buffer wl_output
