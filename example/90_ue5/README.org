@@ -2507,6 +2507,83 @@ int main()
 
 - https://www.linuxjournal.com/article/8498 by Asanga Udugama on March 30, 2006
 
+- Q: Gather statistics using the ethtool-netlink interface.
+
+#+begin_example
+
+Here is an example of modern C++20 code that uses the ethtool-netlink interface to gather statistics about the eth0 interface:
+
+#include <cstring>
+#include <iostream>
+#include <linux/ethtool.h>
+#include <linux/netlink.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+using namespace std;
+
+int main()
+{
+    // Create a socket for communicating with the kernel via the netlink protocol
+    int sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_GENERIC);
+    if (sock < 0)
+    {
+        cerr << "Error: Failed to create netlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a sockaddr_nl structure for the netlink socket
+    struct sockaddr_nl sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.nl_family = AF_NETLINK;
+
+    // Bind the socket to the netlink address
+    if (bind(sock, (struct sockaddr*)&sa, sizeof(sa)) < 0)
+    {
+        cerr << "Error: Failed to bind netlink socket" << endl;
+        return 1;
+    }
+
+    // Set up a nlmsghdr structure to request statistics from the eth0 interface
+    struct nlmsghdr nlh;
+    memset(&nlh, 0, sizeof(nlh));
+    nlh.nlmsg_len = NLMSG_LENGTH(sizeof(struct ethtool_stats));
+    nlh.nlmsg_type = ETHTOOL_GSTATS;
+    nlh.nlmsg_flags = NLM_F_REQUEST;
+
+    // Set up an ethtool_stats structure to specify the eth0 interface
+    struct ethtool_stats stats;
+    memset(&stats, 0, sizeof(stats));
+    strncpy(stats.dev_name, "eth0", IFNAMSIZ);
+
+    // Set up an iovec structure to hold the nlmsghdr and ethtool_stats structures
+    struct iovec iov[2];
+    iov[0].iov_base = (void*)&nlh;
+    iov[0].iov_len = sizeof(nlh);
+    iov[1].iov_base = (void*)&stats;
+    iov[1].iov_len = sizeof(stats);
+
+    // Set up a msghdr structure to hold the iovec structure and sockaddr_nl structure
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_name = (void*)&sa;
+    msg.msg_namelen = sizeof(sa);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 2;
+
+    // Send the request to the kernel via the netlink socket
+    if (sendmsg(sock, &msg, 0) < 0)
+    {
+        cerr << "Error: Failed to send netlink request" << endl;
+        return 1;
+    }
+
+    // Set up a buffer to receive the response from the kernel
+    const int buf_size =
+
+#+end_example
+
 ** Open Wayland window
 
 #+begin_example
