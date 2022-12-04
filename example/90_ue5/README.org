@@ -2776,6 +2776,94 @@ Implement FORTH code to make a robust fit of a linear function using RANSAC.
 #+end_example
 - not sure if this works, looks wrong
 
+#+begin_example
+
+Implement modern Fortran code to make a robust fit of a linear function using RANSAC.
+
+#+end_example
+
+! Set the number of iterations for RANSAC
+integer, parameter :: n_iter = 1000
+
+! Set the minimum number of points required to fit a model
+integer, parameter :: min_points = 2
+
+! Set the maximum number of points to fit a model
+integer, parameter :: max_points = 5
+
+! Set the maximum number of outliers
+integer, parameter :: max_outliers = 1
+
+! Set the maximum distance from a point to a model for it to be considered an inlier
+real, parameter :: max_distance = 0.1
+
+! Set the minimum number of inliers required to fit a model
+integer, parameter :: min_inliers = 6
+
+! Set the number of input points
+integer, parameter :: n_points = 10
+
+! Set the input points
+real, dimension(2, n_points) :: points = [
+  [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+  [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9]
+]
+
+! Set the tolerance for the fit
+real, parameter :: tol = 1e-10
+
+! Set the maximum number of iterations for the fit
+integer, parameter :: max_iter = 10
+
+! Set the input data
+real, dimension(2, n_points) :: x = points(1, :), y = points(2, :)
+
+! Set the number of points for the model
+integer :: n_model = 2
+
+! Set the model parameters
+real, dimension(n_model) :: model, temp
+
+! Set the number of inliers for the model
+integer :: n_inliers
+
+! Set the residuals for the model
+real, dimension(n_points) :: residuals
+
+! Set the indices of the inliers
+integer, dimension(n_points) :: inliers
+
+! Set the best model and number of inliers
+real, dimension(n_model) :: best_model
+integer :: best_n_inliers
+
+! Set the random number generator
+integer :: seed = 12345
+
+! Set the iteration count
+integer :: iter
+
+! Set the model parameters
+model = [1.0, 1.0]
+
+do iter = 1, n_iter
+  ! Set the number of inliers to 0
+  n_inliers = 0
+
+  ! Set the residuals to 0
+  residuals = 0.0
+
+  ! Set the inliers to false
+  inliers = .false.
+
+  ! Generate a random subset of the input points
+  call random_subset(points, n_model, seed, temp)
+
+  ! Fit the model to the random subset of points
+  call fit_model(temp, model, tol, max_iter)
+
+  ! Calculate the residuals for the model
+  call calc
 
 
 #+begin_example
@@ -6060,7 +6148,53 @@ fn main() {
     }
 }
 
+** GDSII
 
+*** C++
+
+- Write modern C++20 code to parse a GDSII file.
+
+#+begin_example
+
+
+#include <iostream>
+#include <fstream>
+#include <cstdint>
+#include <vector>
+
+// GDSII record header
+struct RecordHeader {
+  std::uint16_t length;    // Length of the record data
+  std::uint16_t type;      // Type of the record
+};
+
+int main() {
+  // Open the GDSII file
+  std::string file_name = "gdsii.gds";
+  std::ifstream gds_file(file_name, std::ios::binary);
+
+  // Read the GDSII file header
+  std::uint16_t header;
+  gds_file.read(reinterpret_cast<char*>(&header), sizeof(header));
+  if (header != 0x0606) {
+    std::cerr << "Error: invalid GDSII file header" << std::endl;
+    return 1;
+  }
+
+  // Read the GDSII records
+  while (gds_file) {
+    // Read the record header
+    RecordHeader record_header;
+    gds_file.read(reinterpret_cast<char*>(&record_header), sizeof(record_header));
+
+    // Read the record data
+    std::vector<std::uint8_t> record_data(record_header.length);
+    gds_file.read(re
+
+
+#+end_example
+
+  
 #+end_example
 - This code uses the xml-rs library to parse an Edgar XML file. It first opens the XML file and creates an EventReader to read the events in the file. It then iterates over the events in the file, using a match statement to match on the event type. For start elements, it prints the name of the element. For character data, it prints the character data of the element. For end elements, it prints the name of the element. This code provides a basic example of how to parse an Edgar XML file using xml-rs. You can find more information about the xml-rs library and how to use it on the xml-rs website (https://github.com/netvl/xml-rs).
 
