@@ -4660,27 +4660,6 @@ void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
 #+end_example
 
 
-*** more complexity
-
-
-- Implement modern C++20 code that writes or reads a data packet to or
-  from a socket. The data packet is a struct that contains CRC, packet
-  type (uint8), protocol version (uint8), length (uint16) and
-  data. Length can be at most 4096. The CRC is computed over all the
-  struct members (except CRC). Data is a union and takes on different
-  meanings depending on the value of packet type. For packet type 0
-  the data always contains the bytes 0xDEADBEEF. For packet type 1
-  data contains an array of single float values with length
-  entries. For packet type 2 data contains a UTF-8 string.
-
-- Rate limit reached for default-text-davinci-003 in organization
-  org-hfhpVR90227iWJY2LLrRggZ5 on tokens per min. Limit: 150000.000000
-  / min. Current: 192480.000000 / min. Contact support@openai.com if
-  you continue to have issues. Please add a payment method to your
-  account to increase your rate limit. Visit
-  https://beta.openai.com/account/billing to add a payment method.
-
-
 ** Misc
 
 *** investment
