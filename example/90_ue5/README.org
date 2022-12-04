@@ -1425,6 +1425,28 @@ __kernel void FFT_1D(__global float *buffer, __constant float *twiddle_factors)
   buffer[index] = local_buffer[index];
 }
 #+end_example
+
+*** Common Lisp SBCL FFT sb-simd
+
+#+begin_example
+
+Write Common Lisp for SBCL code using sb-simd that performs 1D FFT for a single float array. Don't forget butterfly.
+
+(defun 1D-FFT (array)
+  (let ((n (length array)))
+    (if (= n 1)
+        array
+        (let* ((even-array (sb-simd:map (lambda (x y) (+ x y))
+                                        (1D-FFT (subseq array 0 (truncate (/ n 2))))
+                                        (1D-FFT (subseq array (truncate (/ n 2)) n))))
+          (sb-simd:map (lambda (x y w) (+ (* w x) y))
+                       even-array
+                       (sb-simd:map (lambda (x y) (- x y))
+                                    (1D-FFT (subseq array 0 (truncate (/ n 2))))
+                                    (1D-FFT (subseq array (truncate (/ n 2)) n)))
+                       (sb-simd:butterfly n)))))
+#+end_example
+
 ** Cuda 2D gaussian blur
 
 #+begin_example
@@ -2627,6 +2649,1261 @@ end
 udp_table = DissectorTable.get("udp.port")
 udp_table:add(80, myproto)
 #+end_example
+
+** Fit sigmoid
+
+- Fit a sigmoid function to an edge assuming quasi-poissonian noise.
+
+- A sigmoid function can be fit to an edge by minimizing the sum of
+  squares of the residuals between the model and the data. This can be
+  done using a least squares algorithm, such as gradient descent. The
+  model should be adjusted to account for the quasi-poissonian noise,
+  by including a term in the cost function that penalizes
+  outliers. This can be done by adding a penalty term to the cost
+  function that is proportional to the difference between the model
+  and the data.
+
+
+#+begin_example
+Implement code in R. Load a 1D array from a CSV file. Fit a sigmoid function to an edge assuming quasi-poissonian noise.
+
+# Load necessary packages
+library(ggplot2)
+
+# Read the CSV file and store the data in a variable
+data <- read.csv("filename.csv")
+
+# Fit the sigmoid function to the data
+fit <- nls(data$y ~ SSlogis(data$x, Asym, xmid, scal), start=list(Asym=1, xmid=0, scal=1), trace=FALSE)
+
+# Plot the fitted sigmoid function
+ggplot(data, aes(x,y)) +
+  geom_point() +
+  stat_function(fun = SSlogis, args = coef(fit))
+
+#+end_example
+
+** Ransac
+
+*** Python
+#+begin_example
+Implement Python code to make a robust fit of a linear function using RANSAC.
+
+import numpy as np
+from sklearn.linear_model import RANSACRegressor
+
+# Generate random data
+x = np.random.rand(100, 1)
+y = 2 + 3 * x + np.random.randn(100, 1)
+
+# Fit line using all data
+model = RANSACRegressor()
+model.fit(x, y)
+
+# Robustly fit linear model with RANSAC algorithm
+model_ransac = RANSACRegressor(residual_threshold=1.0)
+model_ransac.fit(x, y)
+inlier_mask = model_ransac.inlier_mask_
+outlier_mask = np.logical_not(inlier_mask)
+
+# Predict data of estimated models
+line_X = np.arange(x.min(), x.max())[:, np.newaxis]
+line_y = model.predict(line_X)
+line_y_ransac = model_ransac.predict(line_X)
+
+# Compare estimated coefficients
+print(model.coef_,model_ransac.estimator_.coef_)
+#+end_example
+
+*** R
+
+#+begin_example
+Implement R code to make a robust fit of a linear function using RANSAC.
+
+# Load the necessary libraries
+library(MASS)
+library(robustbase)
+
+# Set the data
+x <- c(1, 2, 3, 4, 5, 100, 101, 102, 103, 104)
+y <- c(1, 1.9, 3.2, 4.2, 5.3, 300, 300.1, 300.3, 300.4, 300.5)
+
+# Fit the RANSAC model
+model <- ransac(x, y, LinearModel, n = 1000, thresh = 0.1)
+
+# Print the model
+print(model)
+#+end_example
+
+*** FORTH
+
+#+begin_example
+Implement FORTH code to make a robust fit of a linear function using RANSAC.
+
+
+: ransac ( n m-max n-iters -- )
+    0 SWAP 0 SWAP  \ n m-max n-iters 0 0
+    BEGIN
+        DUP 0 > WHILE \ n m-max n-iters k
+        DUP 1 + SWAP  \ n m-max n-iters k+1
+        \ Generate random samples
+        2DUP 3 PICK  \ n m-max n-iters k+1 n n-iters
+        n-iters SAMPLE \ n m-max n-iters k+1 nSample
+        nSample MODEL-FIT   \ n m-max n-iters k+1 m b
+        \ Calculate error of the model
+        DUP 5 PICK 5 PICK \ n m-max n-iters k+1 m b n m
+        n m MODEL-EVALUATE \ n m-max n-iters k+1 m b error
+        error m-max < IF
+            \ Update best model
+            \ m-max m b
+            3 PICK 3 PICK 3 PICK \ m-max m b m-max m b
+            SWAP ROT \ m-max m b m b m-max
+            SWAP \ m-max m b m-max m b
+        THEN
+        DROP DROP DROP \ n m-max n-iters
+    REPEAT
+    \ m-max m b
+    3 PICK 3 PICK 3 PICK \ m-max m b m-max m b
+    SWAP ROT \ m-max m b m b m-max
+    DROP DROP DROP DROP DROP \
+
+#+end_example
+- not sure if this works, looks wrong
+
+
+
+#+begin_example
+
+Implement C++20 code to make a robust fit of a linear function using RANSAC.
+
+#include <iostream>
+#include <vector>
+#include <random>
+#include <algorithm>
+
+// Define the linear equation
+struct LinearEquation {
+    double m;  // Slope
+    double b;  // Intercept
+};
+
+// Calculate the RSS (residual sum of squares)
+double CalculateRSS(const LinearEquation& equation, const std::vector<std::pair<double, double>>& data) {
+    double rss = 0.0;
+    for (size_t i = 0; i < data.size(); ++i) {
+        double error = data[i].second - (equation.m * data[i].first + equation.b);
+        rss += error * error;
+    }
+    return rss;
+}
+
+// Fit a linear equation using RANSAC
+LinearEquation FitLinearEquation(const std::vector<std::pair<double, double>>& data, int iterations, double error_threshold) {
+    // Set up random number generator
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(0, data.size() - 1);
+
+    // Initialize variables
+    LinearEquation best_equation;
+    double best_rss = std::numeric_limits<double>::max();
+    int best_inliers = 0;
+
+    // Run RANSAC iterations
+    for (int i = 0; i < iterations; ++i) {
+        // Choose two random points
+        int idx1 = distribution(generator);
+        int idx2 = distribution(generator);
+        while (idx1 == idx2) {
+            idx2 = distribution(generator);
+        }
+        double x1 = data[idx1].first;
+        double y1 = data[idx1].second;
+        double x2 = data[idx2].first;
+        double y2 = data[idx2].second;
+
+        // Fit a linear equation using the two points
+        LinearEquation equation;
+        equation.m = (y2 - y1) / (x2 - x1);
+        equation.b = y1 - equation.m * x1;
+
+        // Count the number of inliers
+        int inliers = 0;
+        for (size_t i = 0; i < data.size(); ++i) {
+            double y_predicted = equation.m * data[i].first + equation.b;
+            double error = std::abs(y_predicted - data[i].second);
+            if (error < error_threshold) {
+                ++inliers;
+            }
+        }
+
+        // Update the best equation
+        if (inliers > best_inliers) {
+            best_inliers = inliers;
+            best_equation = equation;
+            best_rss = CalculateRSS(equation, data);
+        }
+    }
+
+    return best_equation;
+}
+
+// Test the function
+int main() {
+    // Generate data points
+    std::vector<std::pair<double, double>> data;
+    for (int i = -30; i < 30; ++i) {
+        double x = static_cast<double>(i);
+        double y = 3.5 * x + 4.2;
+        data.emplace_back(x, y + static_cast<double>((std::rand() % 101) - 50));
+    }
+
+    // Fit the linear equation
+    LinearEquation equation = FitLinearEquation(data, 1000, 10.0);
+
+    // Print the result
+    std::cout << "m = " << equation.m << ", b = " << equation.b << std::endl;
+
+    return 0;
+}
+#+end_example
+
+- again a bit different
+#+begin_example
+
+Implement modern C++20 code to make a robust fit of a linear function using RANSAC.
+
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <vector>
+
+// A linear function is of the form y = mx + c
+struct LinearFunction {
+    double m;
+    double c;
+};
+
+// A point on a 2D plane
+struct Point {
+    double x;
+    double y;
+};
+
+// Represents a set of points and the corresponding linear function
+struct Model {
+    std::vector<Point> points;
+    LinearFunction fn;
+};
+
+// Calculates the distance between a point and a linear function
+double distance(const Point& pt, const LinearFunction& fn)
+{
+    return std::abs(pt.y - (fn.m * pt.x + fn.c));
+}
+
+// Fits a linear function to the given points using RANSAC
+LinearFunction fit(const std::vector<Point>& points, int nIter, double threshold)
+{
+    LinearFunction bestModel;
+    int bestScore = 0;
+
+    // Use a random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // Repeat the iterations multiple times
+    for(int i = 0; i < nIter; ++i) {
+        // Select two random points
+        std::vector<Point> modelPoints(2);
+        std::sample(points.begin(), points.end(), modelPoints.begin(), 2, gen);
+
+        // Calculate the linear function for the two points
+        LinearFunction model;
+        model.m = (modelPoints[1].y - modelPoints[0].y) / (modelPoints[1].x - modelPoints[0].x);
+        model.c = modelPoints[1].y - (model.m * modelPoints[1].x);
+
+        // Count the number of points close to the linear function
+        int score = 0;
+        for(const Point& pt : points) {
+            if(distance(pt, model) < threshold) {
+                ++score;
+            }
+        }
+
+        // Update the best model
+        if(score > bestScore) {
+            bestScore = score;
+            bestModel = model;
+        }
+    }
+
+    return bestModel;
+}
+
+int main() {
+    // Define a set of points
+    std::vector<Point> points = {
+        {1, 2},
+        {2, 3},
+        {3, 4},
+        {4, 5},
+        {5, 6},
+    };
+
+    // Fit a linear function to the points using RANSAC
+    LinearFunction fn = fit(points, 10, 0.5);
+
+    // Print the result
+    std::cout << "m: " << fn.m << ", c: " << fn.c << '\n';
+}
+#+end_example
+
+- use SIMD (still double)
+
+#+begin_example
+
+Implement modern C++20 code to make a robust fit of a linear function using RANSAC. Use SIMD instructions.
+
+#include <algorithm>
+#include <numeric>
+#include <array>
+#include <cmath>
+#include <immintrin.h>
+
+// A structure to hold the result of a RANSAC fit
+struct LinearFitRansacResult {
+    double a;
+    double b;
+    double error;
+};
+
+// A structure to hold the data points for a linear fit
+struct LinearFitData {
+    double x[256];
+    double y[256];
+    int nPoints;
+};
+
+// A function to compute the least-squares error of a linear fit
+double compute_least_squares_error(const LinearFitData &data, double a, double b) {
+    double sum_err_sq = 0.0;
+
+    // Compute the sum of the squared errors using SIMD instructions
+    __m256d a_vec = _mm256_set1_pd(a);
+    __m256d b_vec = _mm256_set1_pd(b);
+    __m256d err_sq_vec = _mm256_setzero_pd();
+    for (int i = 0; i < data.nPoints; i += 4) {
+        __m256d x_vec = _mm256_load_pd(data.x + i);
+        __m256d y_vec = _mm256_load_pd(data.y + i);
+        __m256d y_pred_vec = _mm256_add_pd(_mm256_mul_pd(a_vec, x_vec), b_vec);
+        __m256d err_vec = _mm256_sub_pd(y_vec, y_pred_vec);
+        __m256d err_sq_vec = _mm256_mul_pd(err_vec, err_vec);
+        err_sq_vec = _mm256_add_pd(err_sq_vec, err_sq_vec);
+    }
+    std::array<double, 4> err_sq_arr;
+    _mm256_store_pd(err_sq_arr.data(), err_sq_vec);
+    for (auto err_sq : err_sq_arr) {
+        sum_err_sq += err_sq;
+    }
+
+    return sum_err_sq;
+}
+
+// A function to fit a linear function using RANSAC
+LinearFitRansacResult linear_fit_ransac(const LinearFitData &data, int num_iters, double thresh) {
+    LinearFitRansacResult result;
+
+    // Initialize the best result
+    result.a = 0;
+    result.b = 0;
+    result.error = std::numeric_limits<double>::infinity();
+
+    // Generate num_iters random samples
+    for (int i = 0; i < num_iters; ++i) {
+        // Choose two random points
+        int idx1 = std::rand() % data.nPoints;
+        int idx2 = std::rand() % data.nPoints;
+
+        // Compute the coefficients of the line passing through the two points
+        double x1 = data.x[idx1];
+        double x2 = data.x[idx2];
+        double y1 = data.y[idx1];
+        double y2 = data.y[idx2];
+        double a = (y2 - y1) / (x2 - x1);
+        double b = y1 - (a * x1);
+
+        // Compute the error of the line
+        double error = compute_least_squares_error(data, a, b);
+
+        // Update the best result if the error is lower than the threshold
+        if (error < thresh && error < result.error) {
+            result.a = a;
+            result.b = b;
+            result.error = error;
+        }
+    }
+
+    return result;
+}
+#+end_example
+
+- SIMD single float
+
+#+begin_example
+Implement modern C++20 code to make a robust fit of a linear function (in single float datatype) using RANSAC. Use SIMD instructions.
+
+#include <array>
+#include <numeric>
+#include <algorithm>
+#include <xmmintrin.h>
+
+auto robust_fit_linear_function_ransac_simd(const std::array<float, N>& data,
+                                           float threshold,
+                                           unsigned int max_iterations)
+{
+    float a{0}, b{0};
+    float best_error = std::numeric_limits<float>::max();
+
+    __m128 x, y, x2, xy;
+    int count = 0;
+
+    for (unsigned int i = 0; i < max_iterations; ++i) {
+        // Generate random indices
+        std::array<int, 2> indices;
+        std::generate(indices.begin(), indices.end(), [&] { return std::rand() % data.size(); });
+
+        // Load random data into SIMD registers
+        x = _mm_load_ps(&data[indices[0]]);
+        y = _mm_load_ps(&data[indices[1]]);
+
+        // Compute quantities
+        x2 = _mm_mul_ps(x, x);
+        xy = _mm_mul_ps(x, y);
+
+        // Calculate coefficients
+        __m128 coeffs = _mm_div_ps(xy, x2);
+        a = coeffs[0];
+        b = coeffs[1];
+
+        // Calculate error
+        float error = 0;
+        for (int j = 0; j < data.size(); j += 4) {
+            x  = _mm_load_ps(&data[j]);
+            y  = _mm_load_ps(&data[j+1]);
+
+            __m128 predicted = _mm_add_ps(_mm_mul_ps(x, _mm_set1_ps(a)), _mm_set1_ps(b));
+            __m128 diff      = _mm_sub_ps(predicted, y);
+            __m128 sq_diff   = _mm_mul_ps(diff, diff);
+
+            error += sq_diff[0] + sq_diff[1] + sq_diff[2] + sq_diff[3];
+        }
+
+        // Update best fit
+        if (error < best_error) {
+            best_error = error;
+            a = coeffs[0];
+            b = coeffs[1];
+            count = 1;
+        } else if (error - best_error < threshold) {
+            count++;
+        }
+    }
+
+    return std::make_pair(a, b);
+}
+#+end_example
+
+*** Cuda
+#+begin_example
+Implement Cuda code to make a robust fit of a linear function using RANSAC.
+
+__global__ void ransac(float *x, float *y, int n, float *a, float *b, float *residual){
+    int idx = threadIdx.x + blockDim.x * blockIdx.x;
+    if (idx < n){
+        float a_t = 0.0f;
+        float b_t = 0.0f;
+        float sum_x = 0.0f;
+        float sum_y = 0.0f;
+        float sum_xy = 0.0f;
+        float sum_x2 = 0.0f;
+        int sample_size = 0;
+        for (int i = 0; i < n; ++i){
+            int rand_idx = rand() % n;
+            sum_x += x[rand_idx];
+            sum_y += y[rand_idx];
+            sum_xy += x[rand_idx] * y[rand_idx];
+            sum_x2 += x[rand_idx] * x[rand_idx];
+            sample_size++;
+        }
+        //Calculate line parameters
+        a_t = (sum_x * sum_y - sample_size * sum_xy) / (sum_x * sum_x - sample_size * sum_x2);
+        b_t = (sum_x * sum_xy - sum_y * sum_x2) / (sum_x * sum_x - sample_size * sum_x2);
+        //Calculate residual
+        float sum_residual = 0.0f;
+        for (int i = 0; i < n; ++i){
+            sum_residual += (y[i] - a_t * x[i] - b_t) * (y[i] - a_t * x[i] - b_t);
+        }
+        a[idx] = a_t;
+        b[idx] = b_t;
+        residual[idx] = sum_residual;
+    }
+} 
+
+//Call the kernel
+dim3 blockSize(64, 1, 1);
+dim3 gridSize(ceil(n/64.0f), 1, 1);
+ransac<<<gridSize, blockSize>>>(x, y, n, a, b, residual);
+#+end_example
+
+*** C#
+
+#+begin_example
+Implement C# code to make a robust fit of a linear function using RANSAC.
+
+using System;
+using System.Collections.Generic;
+ 
+//The point class to store x and y coordinates 
+public class Point
+{
+    public double x;
+    public double y;
+ 
+    public Point(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+ 
+public class RANSAC
+{
+    //The list of points
+    List<Point> points;
+ 
+    //The parameters of the linear function
+    double m;
+    double b;
+ 
+    //The maximum distance from the line for a point to be considered as an inlier
+    double inlierThreshold;
+ 
+    //The minimum number of inliers for the linear function to be considered as a robust fit
+    int minInliers;
+ 
+    //The maximum number of iterations for the algorithm
+    int maxIterations;
+ 
+    public RANSAC(List<Point> points, double inlierThreshold, int minInliers, int maxIterations)
+    {
+        this.points = points;
+        this.inlierThreshold = inlierThreshold;
+        this.minInliers = minInliers;
+        this.maxIterations = maxIterations;
+    }
+ 
+    public void Fit()
+    {
+        //The number of iterations
+        int iterations = 0;
+ 
+        //The number of inliers
+        int numInliers = 0;
+ 
+        //The best model
+        double bestM = 0;
+        double bestB = 0;
+ 
+        //The random number generator
+        Random rand = new Random();
+ 
+        //The list of inliers
+        List<Point> bestInliers = new List<Point>();
+ 
+        //Keep iterating until the maximum number of iterations is reached
+        while (iterations < maxIterations)
+        {
+            //Choose two random points
+            int i1 = rand.Next(points.Count);
+            int i2 = rand.Next(points.Count);
+ 
+            //Calculate the linear parameters (m and b)
+            double x1 = points[i1].x;
+            double y1 = points[i1].y;
+            double x2 = points[i2].x;
+            double y2 = points[i2].y;
+            m = (y2 - y1) / (x2 - x1);
+            b = y1 - (m * x1);
+ 
+            //Reset the inliers
+            numInliers = 0;
+            List<Point> inliers = new List<Point>();
+ 
+            //Loop over all points and count the inliers
+            for (int i = 0; i < points.Count; i++)
+            {
+                //Calculate the distance of the point from the line
+                double x = points[i].x;
+                double y = points[i].y;
+                double dist = Math.Abs(y - (m * x + b));
+ 
+                //Check if the point is an inlier
+                if (dist < inlierThreshold)
+                {
+                    numInliers++;
+                    inliers.Add(points[i]);
+                }
+            }
+ 
+            //Check if the model is better
+            if (numInliers > minInliers && numInliers > bestInliers.Count)
+            {
+                bestInliers = inliers;
+                bestM = m;
+                bestB = b;
+            }
+ 
+            iterations++;
+        }
+ 
+        //Store the best model
+        m = bestM;
+        b = bestB;
+    }
+ 
+    //The linear function
+    public double f(double x)
+    {
+        return m * x + b;
+    }
+ 
+    //The y co-ordinate of the linear function at the given x co-ordinate
+    public double GetY(double x)
+    {
+        return f(x);
+    }
+}
+
+#+end_example
+
+*** Go
+
+#+begin_example
+
+Implement Go code to make a robust fit of a linear function using RANSAC.
+
+package main
+
+import (
+	"fmt"
+)
+
+// A linear function is a function of the form y = mx + b
+type LinearFunction struct {
+	m float64 // Slope of the line
+	b float64 // Y-intercept
+}
+
+// A point is a pair of x-y coordinates
+type Point struct {
+	x float64
+	y float64
+}
+
+// This function takes a list of points and attempts to find a robust fit of a linear function using RANSAC.
+// It returns a LinearFunction that best fits the points.
+func RANSAC(points []Point) LinearFunction {
+	// Set the number of iterations and the inlier threshold
+	iterations := 1000
+	inlierThreshold := 0.1
+
+	// Initialize best fit to an empty LinearFunction
+	bestFit := LinearFunction{}
+
+	// Iterate for the specified number of iterations
+	for i := 0; i < iterations; i++ {
+		// Randomly select two points from the list
+		p1 := points[rand.Intn(len(points))]
+		p2 := points[rand.Intn(len(points))]
+
+		// Calculate the slope and y-intercept of the line between the two points
+		m := (p2.y - p1.y) / (p2.x - p1.x)
+		b := p2.y - m*p2.x
+
+		// Create a LinearFunction with the calculated slope and y-intercept
+		line := LinearFunction{m, b}
+
+		// Count the number of inliers
+		inliers := 0
+		for _, p := range points {
+			// Calculate the difference between the actual y-value and the y-value predicted by the line
+			diff := p.y - (m*p.x + b)
+			// If the difference is within the inlier threshold, count it as an inlier
+			if math.Abs(diff) < inlierThreshold {
+				inliers++
+			}
+		}
+
+		// If the line has more inliers than the best fit so far, update the best fit
+		if inliers > bestFit.inliers {
+			bestFit = line
+		}
+	}
+
+	// Return the best fit
+	return bestFit
+}
+
+func main() {
+	// Create a list of points
+	points := []Point{{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 7}}
+
+	// Find the best fit using RANSAC
+	bestFit := RANSAC(points)
+
+	// Print the best fit
+	fmt.Printf("Best fit: y = %fx + %f\n", bestFit.m, bestFit.b)
+}
+#+end_example
+
+*** Rust
+
+#+begin_example
+Implement Rust code to make a robust fit of a linear function using RANSAC.
+
+use ransac::{ransac, Estimator};
+
+// Define our struct that implements Estimator
+#[derive(Copy, Clone)]
+struct LinearRegression {
+    x_mean: f64,
+    y_mean: f64,
+    x_term: f64,
+    y_term: f64,
+    xy_term: f64
+}
+
+impl Estimator<f64, (f64, f64)> for LinearRegression {
+    fn estimate(&self, data: &[(f64, f64)]) -> Option<f64> {
+        let mut slope = (self.xy_term - self.x_term * self.y_mean) / (self.x_term * self.x_mean - self.xy_term);
+        let mut intercept = self.y_mean - slope * self.x_mean;
+
+        Some((slope, intercept))
+    }
+    
+    fn is_model_valid(&self, data: &[(f64, f64)], _model: &f64) -> bool {
+        let (slope, intercept) = self.estimate(data).unwrap();
+        let mut residual_sum = 0.;
+
+        for (x, y) in data {
+            let predicted_y = slope * x + intercept;
+            let residual = (y - predicted_y).powi(2);
+            residual_sum += residual;
+        }
+
+        // If the residual_sum is below a certain threshold, we consider the model valid
+        residual_sum < 0.01
+    }
+}
+
+fn main() {
+    let data = vec![
+        (1.0, 0.3),
+        (2.0, 0.5),
+        (3.0, 0.8),
+        (4.0, 1.2),
+        (5.0, 1.4)
+    ];
+   
+    let (x_mean, y_mean, x_term, y_term, xy_term) = linear_regression(&data);
+    let estimator = LinearRegression {
+        x_mean,
+        y_mean,
+        x_term,
+        y_term,
+        xy_term
+    };
+
+    let (slope, intercept) = ransac(&data, &estimator, 4).unwrap();
+    println!("Slope: {:.2}, Intercept: {:.2}", slope, intercept);
+}
+
+// Helper function to calculate linear regression parameters
+fn linear_regression(data: &[(f64, f64)]) -> (f64, f64, f64, f64, f64) {
+    let (mut x_sum, mut y_sum, mut x_term, mut y_term, mut xy_term) = (0., 0., 0., 0., 0.);
+
+    for (x, y) in data {
+        x_sum += x;
+        y_sum += y;
+        x_term += x * x;
+        y_term += y * y;
+        xy_term += x * y;
+    }
+
+    let n = data.len() as f64;
+    let x_mean = x_sum / n;
+    let y_mean = y_sum / n;
+
+    (x_mean, y_mean, x_term, y_term, xy_term)
+}
+#+end_example
+
+*** Erlang
+
+#+begin_example
+
+Implement Erlang code to make a robust fit of a linear function using RANSAC.
+
+-module(ransac).
+-export([fit/1]).
+
+fit(DataSet) ->
+	MaxIterations = 10,
+	MinInliers = floor(length(DataSet) / 2),
+	BestFit = [],
+	BestError = infinity,
+	BestInliers = [],
+	for iteration = 1 to MaxIterations do
+		Sample = take_sample(DataSet),
+		Fit = linear_regression(Sample),
+		Error = get_error(DataSet, Fit),
+		Inliers = get_inliers(DataSet, Error),
+		if length(Inliers) > MinInliers and Error < BestError then
+			BestFit = Fit,
+			BestError = Error,
+			BestInliers = Inliers
+		end
+	end,
+	{BestFit, BestError, BestInliers}.
+
+take_sample(DataSet) ->
+	random:uniform(length(DataSet)),
+	[DataSet[Index] || Index <- random:uniform(length(DataSet))].
+
+linear_regression(Sample) ->
+	[Slope, Intercept] = linear_regression_fit(Sample),
+	{Slope, Intercept}.
+
+get_error(DataSet, Fit) ->
+	[{X, Y} || {X, Y} <- DataSet],
+	[abs(Y - (Fit#{slope} * X + Fit#{intercept})) || {X, Y} <- DataSet].
+
+get_inliers(DataSet, Error) ->
+	Threshold = mean(Error),
+	[DataSet[Index] || {Index, Err} <- lists:zip(lists:seq(1, length(DataSet)), Error), Err < Threshold].
+#+end_example
+
+*** Elixir
+
+#+begin_example
+
+Implement Elixir code to make a robust fit of a linear function using RANSAC.
+
+defmodule RANSAC do
+  @doc """
+  Robust linear fit with RANSAC
+
+  ## Examples
+    iex> RANSAC.fit([{1,2}, {2,4}, {3,6}, {4,5}])
+    {a: 1.0, b: 2.0}
+  """
+  def fit(points) do
+    # Set the parameters for RANSAC
+    n_samples = 3
+    max_iterations = 1000
+    min_inliers = 3
+    inlier_tolerance = 0.5
+
+    # Calculate the total number of samples
+    total_samples = length(points)
+
+    # Initialize the inlier count and best fit parameters
+    inlier_count = 0
+    best_fit_params = {a: 0, b: 0}
+
+    # Repeat until max iteration is reached
+    1..max_iterations
+    |> Enum.each(fn _ ->
+      # Select a random sample of points
+      sample = Enum.take(Enum.random_member(points, n_samples), n_samples)
+
+      # Fit the linear model
+      fit_params = fit_linear_model(sample)
+
+      # Count the inliers
+      inlier_count = count_inliers(points, fit_params, inlier_tolerance)
+
+      # Update the best fit parameters if necessary
+      if inlier_count >= min_inliers, do: best_fit_params = fit_params
+    end)
+
+    # Return the best fit parameters
+    best_fit_params
+  end
+
+  # Fit a linear model
+  defp fit_linear_model(points) do
+    # Calculate the sums
+    x_sum = Enum.reduce(points, 0, &(&1 + elem(&2, 0)))
+    y_sum = Enum.reduce(points, 0, &(&1 + elem(&2, 1)))
+    xy_sum = Enum.reduce(points, 0, &(&1 + elem(&2, 0) * elem(&2, 1)))
+    x2_sum = Enum.reduce(points, 0, &(&1 + elem(&2, 0) * elem(&2, 0)))
+
+    # Calculate the parameters
+    n = length(points)
+    a = (n * xy_sum - x_sum * y_sum) / (n * x2_sum - x_sum * x_sum)
+    b = (x2_sum * y_sum - x_sum * xy_sum) / (n * x2_sum - x_sum * x_sum)
+
+    # Return the parameters
+    {a: a, b: b}
+  end
+
+  # Count the inliers
+  defp count_inliers(points, fit_params, tolerance) do
+    Enum.reduce(points, 0, fn point, count ->
+      # Calculate the distance from the point to the line
+      x = elem(point, 0)
+      y = elem(point, 1)
+      a = fit_params[:a]
+      b = fit_params[:b]
+      distance = abs(y - (a * x + b))
+
+      # Check if the point is within the tolerance
+      if distance <= tolerance, do: count + 1, else: count
+    end)
+  end
+end
+#+end_example
+
+*** Common Lisp
+#+begin_example
+Implement Common Lisp code to make a robust fit of a linear function using RANSAC.
+
+(defun robust-fit (data)
+  (let* ((n (length data))
+         (max-iterations (ceiling (1+ (/ n 2))))
+         (inlier-threshold 0.5)
+         (best-fit nil)
+         (best-inliers nil))
+    (dotimes (i max-iterations)
+      (let* ((sample (subseq data (random 0 (- n 2))))
+             (model (fit-line sample))
+             (inliers (ransac-inliers data model inlier-threshold)))
+        (when (> (length inliers) (length best-inliers))
+          (setf best-fit model
+                best-inliers inliers))))
+    (values best-fit best-inliers)))
+
+(defun fit-line (data)
+  (let* ((x-sum 0)
+         (y-sum 0)
+         (x2-sum 0)
+         (xy-sum 0)
+         (n (length data)))
+    (dolist (datum data)
+      (let* ((x (car datum))
+             (y (cdr datum)))
+        (incf x-sum x)
+        (incf y-sum y)
+        (incf x2-sum (* x x))
+        (incf xy-sum (* x y))))
+    (let* ((denom (- (* n x2-sum) (expt x-sum 2)))
+           (a (/ (- (* n xy-sum) (* x-sum y-sum)) denom))
+           (b (- (/ y-sum n) (* a (/ x-sum n)))))
+      (values a b))))
+
+(defun ransac-inliers (data model inlier-threshold)
+  (let ((inliers (list)))
+    (dolist (datum data)
+      (let ((x (car datum))
+            (y (cdr datum))
+            (a (car model))
+            (b (cadr model))
+            (y-expected (- (* a x) b)))
+        (when (< (abs (- y y-expected)) inlier-threshold)
+          (push datum inliers))))
+    inliers))
+#+end_example
+
+*** Emacs Lisp
+#+begin_example
+
+Implement Emacs Lisp code to make a robust fit of a linear function using RANSAC.
+
+(defun ransac-fit (data)
+  "Robustly fit a line to DATA using RANSAC algorithm."
+  (let ((iterations 1000)
+	(threshold 0.1)
+	(best-parameters nil))
+    (dotimes (i iterations)
+      ;; Randomly select two points from the data
+      (let ((index1 (random (length data)))
+	    (index2 (random (length data))))
+	(let* ((point1 (elt data index1))
+	       (point2 (elt data index2))
+	       (slope (/ (- (cadr point2) (cadr point1))
+			 (- (car point2) (car point1))))
+	       (intercept (- (cadr point1) (* slope (car point1)))))
+	  ;; Calculate the distance between each point and the line
+	  (let ((inliers '()))
+	    (dolist (point data)
+	      (let ((d (abs (- (cadr point) (+ (* slope (car point)) intercept)))))
+		(when (< d threshold)
+		  (push point inliers))))
+	    ;; Update best parameters if we have more inliers
+	    (when (> (length inliers) (length best-parameters))
+	      (setq best-parameters (list slope intercept inliers))))))
+    best-parameters))
+#+end_example
+
+** Savgol filter
+
+*** Python
+#+begin_example
+Implement Python code that applies a Savitzky-Golay filter  over a 1D data set of 1024 single float values. Use a filter window of 17 points and a polynomial order of 3.
+
+import numpy as np
+from scipy.signal import savgol_filter
+
+# Create a 1D array of 1024 single float values
+data = np.random.rand(1024)
+
+# Apply Savitzky-Golay filter 
+savgol_data = savgol_filter(data, 17, 3)
+
+print(savgol_data)
+#+end_example
+
+*** C++ 
+#+begin_example
+Implement modern C++20 code that applies a Savitzky-Golay filter  over a 1D data set of 1024 single float values. Use a filter window of 17 points and a polynomial order of 3.
+
+#include <ranges>
+#include <numeric>
+#include <vector>
+
+//Function to apply the Savitzky-Golay filter
+std::vector<float> savitzky_golay_filter(std::vector<float> data, int window, int order) {
+
+	//Calculate number of coefficients
+    int num_coeff = (2 * window) + 1;
+
+	//Create vector of coefficients
+    std::vector<float> coeff(num_coeff);
+	
+	//Calculate coefficients
+    for (int i = 0; i < num_coeff; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < (num_coeff + 1); ++j) {
+            sum += std::pow(-1.0f, j) * std::pow(i - (num_coeff - 1.0f) / 2.0f, j);
+        }
+        coeff[i] = sum / std::pow((num_coeff - 1.0f) / 2.0f, order);
+    }
+	
+	//Create vector to store filtered data
+    std::vector<float> filtered(data.size());
+	
+	//Filter data with the Savitzky-Golay filter
+    for (int i = 0; i < data.size(); ++i) {
+        int start = std::max(0, i - (num_coeff - 1) / 2);
+        int end = std::min(data.size() - 1, i + (num_coeff - 1) / 2);
+        filtered[i] = std::inner_product(std::begin(data) + start, std::begin(data) + end + 1, std::begin(coeff), 0.0f);
+    }
+	
+	//Return filtered data
+    return filtered;
+}
+
+int main() {
+	//Create vector of 1024 single float values
+    std::vector<float> data(1024);
+	
+	//Populate vector with values
+    for (int i = 0; i < data.size(); ++i) {
+        data[i] = i;
+    }
+	
+	//Apply Savitzky-Golay filter
+    std::vector<float> filtered = savitzky_golay_filter(data, 17, 3);
+	
+	return 0;
+}
+#+end_example
+
+*** C++ SIMD
+
+#+begin_example
+
+Implement modern C++20 code that applies a Savitzky-Golay filter  over a 1D data set of 1024 single float values. Use a filter window of 17 points and a polynomial order of 3. Speed up the computation with SIMD instructions.
+
+#include <simd/simd.h>
+
+// Savitzky-Golay filter coefficients for a 17-point filter window and a polynomial order of 3
+static constexpr float filterCoeffs[17] = {
+    -3.0f, -2.5f, -1.5f, -0.5f, 0.5f, 1.5f, 2.5f, 3.0f,
+    3.0f,  2.5f,  1.5f,  0.5f, -0.5f, -1.5f, -2.5f, -3.0f
+};
+
+// SIMD-accelerated Savitzky-Golay filter
+void SavitzkyGolayFilter_SIMD(float* data, const int length)
+{
+    const int filterLength = 17;
+    const int halfFilterLength = filterLength / 2;
+    
+    simd_float4 runningSum = 0.0f;
+    simd_float4 filterCoeffs_SIMD;
+    simd_float4 data_SIMD;
+    
+    // Iterate over the input data
+    for (int i = 0; i < length; ++i)
+    {
+        // Reset running sum
+        runningSum = 0.0f;
+        
+        // Iterate over the filter coefficients
+        for (int j = 0; j < filterLength; ++j)
+        {
+            // Load filter coefficients into SIMD register
+            filterCoeffs_SIMD = simd_make_float4(filterCoeffs[j]);
+            
+            // Calculate the start and end indices for the data
+            const int startIdx = i - halfFilterLength + j;
+            const int endIdx = startIdx + 4;
+            
+            // Clamp start and end indices to valid range
+            const int clampedStartIdx = startIdx < 0 ? 0 : startIdx;
+            const int clampedEndIdx = endIdx > length ? length : endIdx;
+            
+            // Load 4 data points into SIMD register
+            data_SIMD = simd_load(data + clampedStartIdx);
+            
+            // Calculate the running sum
+            runningSum += simd_mul(filterCoeffs_SIMD, data_SIMD);
+        }
+        
+        // Store the result
+        data[i] = simd_sum(runningSum);
+    }
+}
+#+end_example
+*** Go
+
+#+begin_example
+Implement Go code that applies a Savitzky-Golay filter  over a 1D data set of 1024 single float values. Use a filter window of 17 points and a polynomial order of 3. Don't omit code for brevity.
+
+package main 
+
+import (
+	"fmt"
+)
+
+func main() {
+	// Initialize data set with 1024 single float values
+	data := []float32{1.2, 2.3, 3.2, 4.1, 5.6, ... , 1024.0}
+
+	// Initialize filter window of 17 points
+	var filterWindow int = 17
+
+	// Initialize polynomial order of 3
+	var polyOrder int = 3
+
+	// Initialize filteredData with zero values
+	filteredData := make([]float32, len(data))
+
+	// Apply Savitzky-Golay filter over 1D data set
+	for i := 0; i < len(data); i++ {
+		start := i - filterWindow/2
+		end := i + filterWindow/2
+		if start < 0 {
+			start = 0
+		}
+		if end > len(data)-1 {
+			end = len(data) - 1
+		}
+		subData := data[start : end+1]
+		filteredData[i] = savitzkyGolay(subData, polyOrder)
+	}
+
+	// Print filteredData
+	fmt.Println("Filtered Data:")
+	for i := 0; i < len(filteredData); i++ {
+		fmt.Println(filteredData[i])
+	}
+}
+
+func savitzkyGolay(data []float32, polyOrder int) float32 {
+	// Initialize filtered data
+	var filteredData float32
+
+	// Calculate filtered data
+	for i := 0; i < len(data); i++ {
+		// Calculate weight for each data point
+		weight := float32(math.Pow(-1, float64(i))) * float32(math.Pow(float64(i), float64(polyOrder)))
+		filteredData += data[i] * weight
+	}
+
+	return filteredData
+}
+
+#+end_example
+- i'm not sure if this is right
+
+*** Rust
+#+begin_example
+
+#include <ranges>
+#include <numeric>
+#include <vector>
+
+//Function to apply the Savitzky-Golay filter
+std::vector<float> savitzky_golay_filter(std::vector<float> data, int window, int order) {
+
+	//Calculate number of coefficients
+    int num_coeff = (2 * window) + 1;
+
+	//Create vector of coefficients
+    std::vector<float> coeff(num_coeff);
+	
+	//Calculate coefficients
+    for (int i = 0; i < num_coeff; ++i) {
+        float sum = 0.0f;
+        for (int j = 0; j < (num_coeff + 1); ++j) {
+            sum += std::pow(-1.0f, j) * std::pow(i - (num_coeff - 1.0f) / 2.0f, j);
+        }
+        coeff[i] = sum / std::pow((num_coeff - 1.0f) / 2.0f, order);
+    }
+	
+	//Create vector to store filtered data
+    std::vector<float> filtered(data.size());
+	
+	//Filter data with the Savitzky-Golay filter
+    for (int i = 0; i < data.size(); ++i) {
+        int start = std::max(0, i - (num_coeff - 1) / 2);
+        int end = std::min(data.size() - 1, i + (num_coeff - 1) / 2);
+        filtered[i] = std::inner_product(std::begin(data) + start, std::begin(data) + end + 1, std::begin(coeff), 0.0f);
+    }
+	
+	//Return filtered data
+    return filtered;
+}
+
+int main() {
+	//Create vector of 1024 single float values
+    std::vector<float> data(1024);
+	
+	//Populate vector with values
+    for (int i = 0; i < data.size(); ++i) {
+        data[i] = i;
+    }
+	
+	//Apply Savitzky-Golay filter
+    std::vector<float> filtered = savitzky_golay_filter(data, 17, 3);
+	
+	return 0;
+}
+#+end_example
+
+
 
 ** Misc
 
