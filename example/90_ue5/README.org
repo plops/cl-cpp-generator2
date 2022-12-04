@@ -4660,6 +4660,13 @@ void readDataPacketFromSocket(DataPacket& packet, std::socket& socket) {
 #+end_example
 
 
+** next
+
+- i want an example of how to demux with ffmpeg and decode with nvdec
+  https://github.com/FFmpeg/FFmpeg/blob/master/libavcodec/nvdec.c
+- maybe something with imgui
+- some async c++, coroutines
+- c++ modules with clang
 
 *** more complexity
 
