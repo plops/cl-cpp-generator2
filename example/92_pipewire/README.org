@@ -1,0 +1,8 @@
+- https://github.com/stronnag/wayfarer/blob/master/src/gst-recording.vala
+  -uses pipewire and gst
+  
+#+begin_example
+
+Write modern C++20 code that captures a wayland screen using pipewire.
+
+#+end_example
