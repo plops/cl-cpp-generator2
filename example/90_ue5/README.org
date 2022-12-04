@@ -6386,6 +6386,122 @@ wg show
 This should print information about the WireGuard interface, including
 #+end_example
 
+** Network configuration
+
+- I want to be able to connect my laptop (which is connected to my
+  phone tether network using wifi) and desktop (which is connected
+  using the phones usb tether).
+
+*** Linux
+- Configure a Linux server so that packets between eth1 and eth2 are
+  forwarded.
+
+#+begin_example
+To configure a Linux server to forward packets between eth1 and eth2, you will need to perform the following steps:
+
+    Edit the /etc/sysctl.conf file and set the following values:
+
+net.ipv4.ip_forward = 1
+net.ipv4.conf.all.proxy_arp = 1
+net.ipv4.conf.eth1.proxy_arp = 1
+net.ipv4.conf.eth2.proxy_arp = 1
+
+This will enable packet forwarding and proxy ARP on the server.
+
+    Save the changes to the sysctl.conf file and run the following command to apply the new settings:
+
+sudo sysctl -p
+
+    Edit the /etc/network/interfaces file and add the following configuration for the eth1 and eth2 interfaces:
+
+auto eth1
+iface eth1 inet static
+address 192.168.1.1
+netmask 255.255.255.0
+
+auto eth2
+iface eth2 inet static
+address 192.168.2.1
+netmask 255.255.255.0
+
+Replace the address and netmask values with the appropriate values for your network.
+
+    Save the changes to the interfaces file and run the following command to apply the new settings:
+
+sudo ifup eth1
+sudo ifup eth2
+
+    Finally, you will need to add some iptables rules to enable NAT on the server. Use the following commands to add the necessary rules:
+
+sudo iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE
+sudo iptables -A FORWARD -i eth1 -o eth2 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i eth2 -o eth1 -j ACCEPT
+
+These rules will enable NAT on the server and allow packets to be forwarded between eth1 and eth2.
+
+Once these steps are completed, the Linux server should be configured to forward packets between eth1 and eth2. You can verify that the configuration is working by attempting to ping a host on the other interface from the server. For example, if you have a host on the 192.168.1.0/24 network with an IP address of 192.168.1.100, you can use the following command to ping it from the server:
+
+ping 192.168.1.100
+
+If the configuration is working correctly, the ping should be successful and the packets should be forwarded between the interfaces.
+#+end_example
+
+*** Android
+
+- I want to be able to connect my laptop (which is connected to my
+  phone tether network using wifi) and desktop (which is connected
+  using the phones usb tether). How can I configure the network on my
+  Android phone, so that my laptop and desktop can talk to each other.
+
+#+begin_example
+To configure your Android phone to allow your laptop and desktop to communicate over the tether network, you will need to perform the following steps:
+
+    On your Android phone, go to Settings > Network & internet > Hotspot & tethering.
+
+    Tap on "USB tethering" to enable it. This will allow your desktop to connect to the phone using a USB cable and access the internet.
+
+    Tap on "Wi-Fi hotspot" to open the hotspot settings.
+
+    Enable the hotspot by turning on the "Wi-Fi hotspot" switch.
+
+    In the "Network name" field, enter a name for the hotspot network. This will be the name that your laptop will use to connect to the hotspot.
+
+    In the "Security" field, choose the type of security that you want to use for the hotspot. It is recommended to use WPA2 security for maximum protection.
+
+    In the "Password" field, enter a password for the hotspot. This password will be required when connecting to the hotspot from your laptop.
+
+    Once you have configured the hotspot settings, tap on "Save" to save the changes.
+
+    On your laptop, connect to the hotspot by going to the Wi-Fi settings and selecting the hotspot network that you just created on your phone. Enter the password that you configured earlier to connect to the hotspot.
+
+    Once your laptop is connected to the hotspot, you should be able to access the internet through the phone's tether network.
+
+    To allow your laptop and desktop to communicate with each other, you will need to configure the hotspot to use the same subnet for both the Wi-Fi and USB connections. To do this, go back to the hotspot settings on your phone and tap on "Advanced".
+
+    In the "IP address" field, enter the IP address that you want to use for the hotspot. It is recommended to use an IP address in the 192.168.43.0/24 range.
+
+    In the "Subnet mask" field, enter the subnet mask that you want to use for the hotspot. It is recommended to use a subnet mask of 255.255.255.0 for the 192.168.43.0/24 range.
+
+    Once you have configured the IP address and subnet mask, tap on "Save" to save the changes.
+
+    Now, both your laptop and desktop should be able to communicate with each other over the tether network. You can test this by pinging one device from the other. For example, if your laptop has an IP address of 192.168.43.10 and your desktop has an IP address of 192.168.43.11, you can use the following command on your laptop to ping the desktop:
+
+ping 192.168.43.11
+
+If the ping is successful, it means that your laptop and desktop can communicate with each other over the tether network.
+
+#+end_example
+
+- My phone does not show "Advanced" hotspot settings.
+
+#+begin_example
+If your phone does not show the "Advanced" hotspot settings, it is likely because the hotspot settings on your phone are not customizable. In this case, you will not be able to configure the subnet or IP address for the hotspot, and your laptop and desktop will not be able to communicate with each other over the tether network.
+
+One possible solution to this problem is to use a mobile hotspot device, such as a router or a dedicated hotspot device, instead of using the hotspot feature on your phone. These devices typically offer more advanced hotspot settings, including the ability to customize the subnet and IP address for the hotspot network.
+
+Another solution is to use a VPN to connect your laptop and desktop to the same network. This will allow them to communicate with each other even if they are on different subnets. To do this, you will need to install a VPN client on both your laptop and desktop, and connect them to the same VPN server. Once they are connected to the VPN, they will be able to communicate with each other as if they were on the same local network.
+#+end_example
+
 ** next
 
 - [DONE] compute forward error correction (and use it to correct broken data)
