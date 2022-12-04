@@ -3730,6 +3730,75 @@ int main() {
 }
 #+end_example
 
+*** C++17
+
+#+begin_example
+
+Implement modern C++17 code that applies a Savitzky-Golay filter  over a 1D data set of 1024 single float values. 
+
+#include <vector>
+#include <algorithm>
+#include <numeric>
+
+// Savitzky-Golay filter of order k
+std::vector<float> SavitzkyGolayFilter(const std::vector<float>& data, int k)
+{
+	// Data size must be greater than the filter order
+	if (data.size() < k)
+		return data;
+
+	// Create the result array
+	std::vector<float> result(data.size(), 0.0f);
+
+	// Iterate over every element in the dataset
+	for (int i = 0; i < data.size(); ++i)
+	{
+		// Calculate the weights for the current window
+		float weightsSum = 0.0f;
+		std::vector<float> weights(k);
+		for (int j = 0; j < k; ++j)
+		{
+			int n = i - (k - 1) / 2 + j;
+			if (n < 0)
+				n = 0;
+			else if (n > data.size() - 1)
+				n = data.size() - 1;
+			weights[j] = data[n];
+			weightsSum += weights[j];
+		}
+
+		// Calculate the weighted sum
+		float weightedSum = 0.0f;
+		for (int j = 0; j < k; ++j)
+		{
+			weightedSum += weights[j] * data[i - (k - 1) / 2 + j];
+		}
+
+		// Calculate the result for the current element
+		result[i] = weightedSum / weightsSum;
+	}
+
+	return result;
+}
+
+int main()
+{
+	// Create a 1D data set of 1024 single float values
+	std::vector<float> data(1024);
+	std::iota(data.begin(), data.end(), 1.0f);
+	
+	// Apply a Savitzky-Golay filter of order k
+	int k = 3;
+	std::vector<float> result = SavitzkyGolayFilter(data, k);
+
+	// Print the result
+	for (auto& val : result)
+		std::cout << val << " ";
+
+	return 0;
+}
+#+end_example
+
 *** C++ SIMD
 
 #+begin_example
@@ -3903,6 +3972,404 @@ int main() {
 }
 #+end_example
 
+
+** CSV 
+
+*** Read C++
+#+begin_example
+
+Implement modern C++17 code that reads 2x1024 single float values from a two columns of a CSV file with the titles "time" and "measurement". The first line of the CSV file contains column titles.  The CSV file may contain more than two columns and the columns we want can be at an arbitrary position. Select the columns by locking at the column titles.
+
+
+
+#include <iostream> 
+#include <fstream>
+#include <sstream>
+#include <string> 
+#include <vector> 
+
+int main() 
+{ 
+    std::ifstream csv_file("data.csv");
+    std::string line;
+    std::vector<float> time;
+    std::vector<float> measurement;
+    std::string time_title;
+    std::string measurement_title;
+    int time_column;
+    int measurement_column;
+
+    // Get first line with titles
+    std::getline(csv_file, line);
+    std::stringstream line_stream(line);
+    std::string token;
+    int column = 0;
+    while (std::getline(line_stream, token, ',')) {
+        if (token == "time") {
+            time_title = token;
+            time_column = column;
+        }
+        else if (token == "measurement") {
+            measurement_title = token;
+            measurement_column = column;
+        }
+        column++;
+    }
+
+    // Read data 
+    while (std::getline(csv_file, line)) {
+        std::stringstream line_stream(line);
+        column = 0;
+        while (std::getline(line_stream, token, ',')) {
+            if (column == time_column) {
+                time.push_back(std::stof(token));
+            }
+            else if (column == measurement_column) {
+                measurement.push_back(std::stof(token));
+            }
+            column++;
+        }
+    }
+
+    // Output the two columns
+    for (int i = 0; i < 1024; i++) {
+        std::cout << time[i] << ", " << measurement[i] << '\n';
+    }
+
+    return 0; 
+} 
+
+#+end_example
+
+- bit different. there is no need for SIMD
+#+begin_example
+Implement modern C++17 code that reads 2x1024 single float values from a two columns of a CSV file with the titles "time" and "measurement". The first line of the CSV file contains column titles.  The CSV file may contain more than two columns and the columns we want can be at an arbitrary position. Select the columns by locking at the column titles. Use SIMD.
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <array>
+#include <numeric>
+#include <algorithm>
+#include <immintrin.h>
+
+constexpr unsigned int NumValues = 1024;
+
+int main()
+{
+	std::ifstream csvFile("data.csv");
+	std::string line;
+	
+	// Get column titles
+	std::getline(csvFile, line);
+	std::stringstream ss(line);
+	std::string columnName;
+	int timeColumnIndex = -1, measurementColumnIndex = -1;
+	int columnIndex = 0;
+	while (std::getline(ss, columnName, ','))
+	{
+		if (columnName == "time")
+			timeColumnIndex = columnIndex;
+		else if (columnName == "measurement")
+			measurementColumnIndex = columnIndex;
+		columnIndex++;
+	}
+	if (timeColumnIndex == -1 || measurementColumnIndex == -1)
+	{
+		std::cerr << "Error: column titles not found\n";
+		return -1;
+	}
+
+	// Read data
+	std::array<float, NumValues> times;
+	std::array<float, NumValues> measurements;
+	int index = 0;
+	while (std::getline(csvFile, line) && index < NumValues)
+	{
+		std::stringstream ss(line);
+		std::string value;
+		int columnIndex = 0;
+		while (std::getline(ss, value, ','))
+		{
+			if (columnIndex == timeColumnIndex)
+				times[index] = std::stof(value);
+			else if (columnIndex == measurementColumnIndex)
+				measurements[index] = std::stof(value);
+			columnIndex++;
+		}
+		index++;
+	}
+
+	// Use SIMD to calculate the sum of the measurements
+	__m128 sum = _mm_setzero_ps();
+	for (int i = 0; i < NumValues; i += 4)
+	{
+		__m128 measurementVec = _mm_loadu_ps(&measurements[i]);
+		sum = _mm_add_ps(sum, measurementVec);
+	}
+	// Sum the four elements of the vector
+	float sum4 = sum[0] + sum[1] + sum[2] + sum[3];
+	
+	std::cout << "Sum of measurements: " << sum4 << "\n";
+	
+	return 0;
+}
+
+#+end_example
+
+- stringview (c++20)
+
+#+begin_example
+Implement modern C++20 code that reads 2x1024 single float values from a two columns of a CSV file with the titles "time" and "measurement". The first line of the CSV file contains column titles.  The CSV file may contain more than two columns and the columns we want can be at an arbitrary position. Select the columns by locking at the column titles. Use SIMD.
+
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <string_view>
+#include <vector>
+
+int main() {
+    const std::filesystem::path csv_path = "path/to/file.csv";
+    std::ifstream csv_file(csv_path);
+    std::string line;
+
+    // Find the index of the columns we want:
+    std::size_t time_col_index;
+    std::size_t measurement_col_index;
+    if (std::getline(csv_file, line)) {
+        std::istringstream ss(line);
+        std::string column_title;
+        std::size_t i;
+        for (i = 0; std::getline(ss, column_title, ','); ++i) {
+            if (column_title == "time") {
+                time_col_index = i;
+            } else if (column_title == "measurement") {
+                measurement_col_index = i;
+            }
+        }
+    }
+
+    // Read the values:
+    std::vector<float> times;
+    std::vector<float> measurements;
+    times.reserve(1024);
+    measurements.reserve(1024);
+    while (std::getline(csv_file, line)) {
+        std::istringstream ss(line);
+        std::string value;
+        std::size_t i;
+        for (i = 0; std::getline(ss, value, ','); ++i) {
+            if (i == time_col_index) {
+                times.emplace_back(std::stof(value));
+            } else if (i == measurement_col_index) {
+                measurements.emplace_back(std::stof(value));
+            }
+        }
+    }
+
+    // Process the data using SIMD:
+    constexpr std::size_t simd_data_width = 16;
+    constexpr std::size_t num_iterations = 1024 / simd_data_width;
+    __m128 time_values;
+    __m128 measurement_values;
+    for (std::size_t i = 0; i < num_iterations; ++i) {
+        time_values = _mm_load_ps(&times[i * simd_data_width]);
+        measurement_values = _mm_load_ps(&measurements[i * simd_data_width]);
+        // Do something with the values here
+    }
+
+    return 0;
+}
+
+#+end_example
+
+- use simd to compute mean and variance
+
+#+begin_example
+
+Implement modern C++20 code that reads 2x1024 single float values from a two columns of a CSV file with the titles "time" and "measurement". The first line of the CSV file contains column titles.  The CSV file may contain more than two columns and the columns we want can be at an arbitrary position. Select the columns by locking at the column titles. Use SIMD to compute variance and mean of the measurements.
+
+#include <algorithm>
+#include <array>
+#include <filesystem>
+#include <fstream>
+#include <numeric>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <immintrin.h>
+
+std::pair<float, float> compute_mean_and_variance(const std::vector<float>& measurements) {
+    // Start with an empty accumulator
+    __m128 acc = _mm_setzero_ps();
+
+    // Accumulate mean and variance for each SIMD iteration
+    for (size_t i = 0; i < measurements.size(); i += 4) {
+        // Load 4 values into SIMD registers
+        __m128 x = _mm_loadu_ps(&measurements[i]);
+
+        // Compute the square of x
+        __m128 square = _mm_mul_ps(x, x);
+
+        // Accumulate square and x
+        acc = _mm_add_ps(acc, square);
+        acc = _mm_add_ps(acc, x);
+    }
+
+    // Reduce the accumulator to get the mean and variance
+    float sum = std::accumulate(measurements.begin(), measurements.end(), 0.0f);
+    float mean = sum / measurements.size();
+    float variance = (_mm_cvtss_f32(acc) - measurements.size() * mean * mean) / (measurements.size() - 1);
+
+    return {mean, variance};
+}
+
+std::pair<std::vector<float>, std::vector<float>> read_csv(const std::filesystem::path& path, std::string_view time_column, std::string_view measure_column) {
+    std::pair<std::vector<float>, std::vector<float>> values{};
+
+    std::ifstream file(path);
+    if (!file.good()) {
+        return values;
+    }
+
+    // Read the first line to determine the column indices
+    std::string titles;
+    std::getline(file, titles);
+    size_t time_index = titles.find(time_column);
+    size_t measure_index = titles.find(measure_column);
+
+    // Read the remaining lines
+    while (file) {
+        std::string line;
+        std::getline(file, line);
+
+        // Parse the line into tokens
+        std::vector<std::string> tokens;
+        std::string token;
+        for (char c : line) {
+            if (c == ',') {
+                tokens.push_back(token);
+                token.clear();
+            } else {
+                token += c;
+            }
+        }
+        tokens.push_back(token);
+
+        // Convert the tokens to float values
+        float time = std::stof(tokens[time_index]);
+        float measure = std::stof(tokens[measure_index]);
+
+        // Store the values
+        values.first.push_back(time);
+        values.second.push_back(measure);
+    }
+
+    return values;
+}
+
+int main() {
+    auto [times, measurements] = read_csv("data.csv", "time", "measurement");
+    auto [mean, variance] = compute_mean_and_variance(measurements);
+
+    return 0;
+}
+#+end_example
+
+*** Write CSV C++
+
+#+begin_example
+
+#include <algorithm>
+#include <array>
+#include <filesystem>
+#include <fstream>
+#include <numeric>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <immintrin.h>
+
+std::pair<float, float> compute_mean_and_variance(const std::vector<float>& measurements) {
+    // Start with an empty accumulator
+    __m128 acc = _mm_setzero_ps();
+
+    // Accumulate mean and variance for each SIMD iteration
+    for (size_t i = 0; i < measurements.size(); i += 4) {
+        // Load 4 values into SIMD registers
+        __m128 x = _mm_loadu_ps(&measurements[i]);
+
+        // Compute the square of x
+        __m128 square = _mm_mul_ps(x, x);
+
+        // Accumulate square and x
+        acc = _mm_add_ps(acc, square);
+        acc = _mm_add_ps(acc, x);
+    }
+
+    // Reduce the accumulator to get the mean and variance
+    float sum = std::accumulate(measurements.begin(), measurements.end(), 0.0f);
+    float mean = sum / measurements.size();
+    float variance = (_mm_cvtss_f32(acc) - measurements.size() * mean * mean) / (measurements.size() - 1);
+
+    return {mean, variance};
+}
+
+std::pair<std::vector<float>, std::vector<float>> read_csv(const std::filesystem::path& path, std::string_view time_column, std::string_view measure_column) {
+    std::pair<std::vector<float>, std::vector<float>> values{};
+
+    std::ifstream file(path);
+    if (!file.good()) {
+        return values;
+    }
+
+    // Read the first line to determine the column indices
+    std::string titles;
+    std::getline(file, titles);
+    size_t time_index = titles.find(time_column);
+    size_t measure_index = titles.find(measure_column);
+
+    // Read the remaining lines
+    while (file) {
+        std::string line;
+        std::getline(file, line);
+
+        // Parse the line into tokens
+        std::vector<std::string> tokens;
+        std::string token;
+        for (char c : line) {
+            if (c == ',') {
+                tokens.push_back(token);
+                token.clear();
+            } else {
+                token += c;
+            }
+        }
+        tokens.push_back(token);
+
+        // Convert the tokens to float values
+        float time = std::stof(tokens[time_index]);
+        float measure = std::stof(tokens[measure_index]);
+
+        // Store the values
+        values.first.push_back(time);
+        values.second.push_back(measure);
+    }
+
+    return values;
+}
+
+int main() {
+    auto [times, measurements] = read_csv("data.csv", "time", "measurement");
+    auto [mean, variance] = compute_mean_and_variance(measurements);
+
+    return 0;
+}
+
+#+end_example
 
 
 ** Misc
