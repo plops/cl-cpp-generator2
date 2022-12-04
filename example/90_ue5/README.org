@@ -22,10 +22,9 @@
     - run make (needs 1.5GB ram per core, i can only use 8 cores)
       build time was ca 90min
 
+* ChatGPT Experiments
 
- * ChatGPT Experiments
-
-   ** C++ UE5
+** C++ UE5
 
  #+begin_example
 
@@ -56,7 +55,7 @@ int main()
  #+end_example
 
 
- ** UE5 Sphere
+** UE5 Sphere
 
  #+begin_example
 
@@ -131,7 +130,7 @@ private:
  #+end_example
 
 
- ** EMVA
+** EMVA
 
 
 - I want code that allows the calibration of a linear camera according to EMVA 1288.
@@ -900,3 +899,18 @@ Write Emacs code that computes the ten words that occur the most in a buffer.
                      finally return (cl-loop for word being the hash-keys of word-counts using (hash-values count) 
                                             collect (cons word count))) 0 10)))
 #+end_example
+
+** Javascript link extractor
+
+#+begin_example
+
+Write Javascript code that finds extracts link for a youtube video when executed in the browsers javascript console.
+
+//Assuming the video ID is "dQw4w9WgXcQ"
+
+let link = 'https://www.youtube.com/watch?v=' + 'dQw4w9WgXcQ';
+console.log(link); // Prints "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+#+end_example
+
+- is this a joke?
