@@ -58,7 +58,7 @@
       (merge-pathnames #P"main.cpp"
 		       *source-dir*))
      `(do0
-   
+
 
        (include
 					;<tuple>
@@ -78,8 +78,11 @@
 
 	)
        (include <X11/Xlib.h>
+		<X11/Xutil.h>
 		<X11/extensions/XShm.h>
-		<cassert>)
+		<cassert>
+		<sys/shm.h>
+		<fstream>)
 
        (defun main (argc argv)
 	 (declare (type int argc)
@@ -102,7 +105,41 @@
 					    ZPixmap
 					    nullptr
 					    &info
-					    w h)))))))
+					    w h)))
+	       (setf info.shmid (shmget IPC_PRIVATE
+					(* image->bytes_per_line
+					   image->height)
+					(logior IPC_CREAT "0777")))
+	       (assert (<= 0 info.shmid) )
+	       (setf image->data (reinterpret_cast<char*>
+				  (shmat info.shmid 0 0))
+		     info.shmaddr image->data)
+	       (setf info.readOnly False)
+	       (XShmAttach display &info)
+	       (XShmGetImage display rootWindow image 0 0 AllPlanes)
+
+
+	       (let ((file (std--ofstream (string "screenshot.pgm")
+					  std--ios--binary)))
+		 (<< file (string "P5") std--endl)
+		 (<< file image->width
+		     (string " ")
+		     image->height
+		     std--endl)
+		 (<< file "255" std--endl)
+
+		 (dotimes (y image->height)
+		   (dotimes (x image->width)
+		     (let ((pixel (XGetPixel image x y)))
+		       (file.put ("static_cast<unsigned char>" pixel)))))
+		 (file.close))
+
+	       (shmdt info.shmaddr
+		      )
+	       (shmctl info.shmid IPC_RMID 0)
+	       (XDestroyImage image)
+	       (XCloseDisplay display)
+	       (return 0)))))
 
        ))
 
@@ -159,7 +196,7 @@
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
-	  
+
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/

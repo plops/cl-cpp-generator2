@@ -160,7 +160,7 @@
 			  )))
 		     )))))
 	   )
-
+	 ;; remotedesktyeyop.py https://gitlab.gnome.org/-/snippets/39
 
 
 	 #+nil (let ((availableCaptureTypes

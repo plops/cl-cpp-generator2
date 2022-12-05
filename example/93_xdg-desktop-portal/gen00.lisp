@@ -77,7 +77,7 @@
 
 
 	)
-       (include <dbus-c++/dbus.h>)
+					;(include <dbus-c++/dbus.h>)
 
        #+nil (space "extern \"C\""
 		    (progn
@@ -90,11 +90,11 @@
 		  (values int))
 	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((conn (DBus--Connection--SessionBus))
-	       (proxy (conn.create_proxy
-		       (string "org.freedesktop.impl.portal.ScreenCast")
-		       (string "/org/freedesktop/impl/portal/ScreenCast")
-		       (string "org.freedesktop.impl.portal.ScreenCast")))))
+	 #+nil  (let ((conn (DBus--Connection--SessionBus))
+		      (proxy (conn.create_proxy
+			      (string "org.freedesktop.impl.portal.ScreenCast")
+			      (string "/org/freedesktop/impl/portal/ScreenCast")
+			      (string "org.freedesktop.impl.portal.ScreenCast")))))
 
 	 #+nil (let ((pw (pw_init nullptr nullptr))
 		     (context (pw_context_new pw nullptr 0))
