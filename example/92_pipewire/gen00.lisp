@@ -140,7 +140,25 @@
 				   ))))
 		       ,(lprint :vars `(availableCaptureTypes
 					desktopCaptureAvailable
-					windowCaptureAvailable))))))))
+					windowCaptureAvailable))
+		       (do0
+			(comments "init capture")
+			(let ((cancellable (g_cancellable_new))
+			      (connection (portal_get_dbus_connection)))
+			  (unless connection
+			    ,(lprint :msg "can't get connection")
+			    (return -1))
+			  ;; (get_screencast_portal_proxy)
+			  ;; (ensure_screencast_portal_proxy)
+			  ;; create_session
+			  ;;  portal_create_request_path
+			  ;;  portal_create_session
+			  "char*request_path,*request_token;"
+			  (portal_create_request_path &request_path &request_token)
+			  ,(lprint :vars `(request_path
+					   request_token))
+			  )))
+		     )))))
 	   )
 
 
