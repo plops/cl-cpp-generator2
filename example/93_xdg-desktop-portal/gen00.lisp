@@ -58,8 +58,8 @@
       (merge-pathnames #P"main.cpp"
 		       *source-dir*))
      `(do0
-       "#define _REENTRANT"
-
+					;"#define _REENTRANT"
+       "#define DBUS_API_SUBJECT_TO_CHANGE"
        (include
 					;<tuple>
 					;<mutex>
@@ -77,10 +77,12 @@
 
 
 	)
-       (space "extern \"C\""
-	      (progn
-		(include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>)
-		" "))
+       (include <dbus-c++/dbus.h>)
+
+       #+nil (space "extern \"C\""
+		    (progn
+		      (include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>)
+		      " "))
 
        (defun main (argc argv)
 	 (declare (type int argc)
@@ -88,19 +90,25 @@
 		  (values int))
 	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((pw (pw_init nullptr nullptr))
-	       (context (pw_context_new pw nullptr 0))
-	       (display (pw_wayland_context_get_display context))
-	       (stream (pw_stream_new_with_listener
-			context
-			(string "screen-capture")
-			nullptr
-			0))
-	       )
-	   (pw_stream_set_format stream
-				 PW_FORMAT_RGB
-				 1920 1080 0
-				 ))
+	 (let ((conn (DBus--Connection--SessionBus))
+	       (proxy (conn.create_proxy
+		       (string "org.freedesktop.impl.portal.ScreenCast")
+		       (string "/org/freedesktop/impl/portal/ScreenCast")
+		       (string "org.freedesktop.impl.portal.ScreenCast")))))
+
+	 #+nil (let ((pw (pw_init nullptr nullptr))
+		     (context (pw_context_new pw nullptr 0))
+		     (display (pw_wayland_context_get_display context))
+		     (stream (pw_stream_new_with_listener
+			      context
+			      (string "screen-capture")
+			      nullptr
+			      0))
+		     )
+		 (pw_stream_set_format stream
+				       PW_FORMAT_RGB
+				       1920 1080 0
+				       ))
 	 )
 
        ))
@@ -158,14 +166,18 @@
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
-	  (out "pkg_check_modules( pipewire REQUIRED libpipewire-0.3 )")
+					;(out "pkg_check_modules( pipewire REQUIRED libpipewire-0.3 )")
 
 	  (out "target_include_directories( mytest PRIVATE
 /usr/local/include/
 /home/martin/src/popl/include/
-/usr/include/pipewire-0.3
-/usr/include/spa-0.2
+/usr/include/dbus-c++-1/
+/usr/include/dbus-1.0
+/usr/lib64/dbus-1.0/include
  )")
+	  #+nil (/usr/include/pipewire-0.3
+		 /usr/include/spa-0.2)
+
 	  #+nil (progn
 		  (out "add_library( libnc SHARED IMPORTED )")
 		  (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
@@ -174,8 +186,11 @@
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
+		 dbus-c++-1
+		 dbus-1
 
-		 pipewire))
+					;pipewire
+		 ))
 
 	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
