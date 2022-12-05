@@ -117,4 +117,14 @@ xdg-desktop-portal-cpp.h is the header file for the C++ API of xdg-desktop-porta
 
 Alternatively, you can use the xdg-desktop-portal D-Bus API directly from your C++20 code without using the C++ API. This may require more work, but it may be possible depending on your needs and preferences.
 
+
+I installed the dev package but it contains no header:[martin@localhost .b]$ rpm -ql xdg-desktop-portal-devel
+/usr/share/pkgconfig/xdg-desktop-portal.pc
+
+I apologize if my previous answer was incorrect. It is possible that the xdg-desktop-portal-cpp.h header file is not included in the xdg-desktop-portal-dev package on your system. In this case, you may need to install the header file manually or use the D-Bus API directly as I mentioned in my previous answer.
+
+To install the header file manually, you can download the source code for xdg-desktop-portal from the project's GitHub repository (https://github.com/flatpak/xdg-desktop-portal). The header file you are looking for should be included in the src/cpp directory. Once you have downloaded the source code, you can copy the header file to the appropriate location on your system, such as /usr/include or /usr/local/include.
+
+Alternatively, you can use the D-Bus API directly from your C++20 code without using the C++ API. This may require more work, but it may be possible depending on your needs and preferences. You can find the D-Bus interface definition file for xdg-desktop-portal at https://github.com/flatpak/xdg-desktop-portal/blob/master/data/org.freedesktop.impl.portal.ScreenCast.xml. This file contains the definitions of the D-Bus methods and signals that you can use to interact with xdg-desktop-portal. You can use a D-Bus library for C++, such as libdbus-c++ (https://dbus.freedesktop.org/doc/libdbus-c++/) or qt-d-bus (https://wiki.qt.io/D-Bus), to access these methods and signals from your C++20 code.
+
 #+end_example
