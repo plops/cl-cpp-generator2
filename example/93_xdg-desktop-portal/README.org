@@ -1,0 +1,232 @@
+#+begin_example
+
+sudo dnf install xdg-desktop-portal-devel
+
+#+end_example
+
+- https://wiki.gnome.org/Projects/Mutter/RemoteDesktop
+
+  - i think this is the interface that gnome provides to capture the screen
+  - https://flatpak.github.io/xdg-desktop-portal/ screen cast api
+
+#+begin_example
+
+
+Write modern C++20 code that captures a wayland screen using xdg-desktop-portal.
+
+Here is an example of C++20 code that captures a Wayland screen using xdg-desktop-portal:
+
+#include <iostream>
+#include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>
+
+int main()
+{
+    // Initialize xdg-desktop-portal
+    xdg::Desktop dp;
+
+    // Create a new screen capture request
+    auto request = dp.screen_cast().create_request();
+
+    // Set the target format for the screen capture
+    request.set_target_format(xdg::ScreenCast::Format::RGB);
+    request.set_width(1920);
+    request.set_height(1080);
+
+    // Start the screen capture
+    auto data = request.start();
+
+    // Use the captured screen data
+    // ...
+
+    // Stop the screen capture
+    request.stop();
+
+    return 0;
+}
+
+Note that this code is just an example and may not work as-is. It is intended to illustrate the general approach to capturing a Wayland screen using xdg-desktop-portal in C++20.
+#+end_example
+
+- i think the AI is bullshitting again
+
+
+#+begin_example
+[martin@localhost 93_xdg-desktop-portal]$ rpm -qe xdg-desktop-portal-devel
+xdg-desktop-portal-devel-1.12.6-1.fc36.x86_64
+[martin@localhost 93_xdg-desktop-portal]$ rpm -ql xdg-desktop-portal-devel
+/usr/share/pkgconfig/xdg-desktop-portal.pc
+[martin@localhost 93_xdg-desktop-portal]$ cat /usr/share/pkgconfig/xdg-desktop-portal.pc
+prefix=/usr
+datarootdir=${prefix}/share
+datadir=/usr/share
+
+interfaces_dir=${datadir}/dbus-1/interfaces/
+
+Name: xdg-desktop-portal
+Description: Desktop integration portal
+Version: 1.12.6
+
+#+end_example
+
+
+#+begin_example
+
+screencast portal
+
+xdg-desktop-portal is a software component that allows applications to access certain services provided by the desktop environment. One of the services it provides is screen casting, which allows applications to capture the screen or individual windows on the desktop. This can be useful for applications that want to provide screen recording or sharing functionality.
+wol pumba
+Show my C++20 code that uses it.
+
+Here is an example of C++20 code that uses xdg-desktop-portal to capture the screen:
+
+#include <iostream>
+#include <xdg-desktop-portal/xdg-desktop-portal-cpp.h>
+
+int main()
+{
+    // Initialize xdg-desktop-portal
+    xdg::Desktop dp;
+
+    // Create a new screen capture request
+    auto request = dp.screen_cast().create_request();
+
+    // Set the target format for the screen capture
+    request.set_target_format(xdg::ScreenCast::Format::RGB);
+    request.set_width(1920);
+    request.set_height(1080);
+
+    // Start the screen capture
+    auto data = request.start();
+
+    // Use the captured screen data
+    // ...
+
+    // Stop the screen capture
+    request.stop();
+
+    return 0;
+}
+
+This code initializes xdg-desktop-portal, creates a screen capture request, sets the target format for the screen capture, starts the screen capture, uses the captured screen data, and then stops the screen capture.
+
+Note that this code is just an example and may not work as-is. It is intended to illustrate how xdg-desktop-portal can be used in C++20 to capture the screen.
+wol pumba
+I can't find xdg-desktop-portal/xdg-desktop-portal-cpp.h
+
+xdg-desktop-portal-cpp.h is the header file for the C++ API of xdg-desktop-portal. In order to use this API in your C++20 code, you will need to install the xdg-desktop-portal-dev package on your system. This package should include the header file you are looking for.
+
+Alternatively, you can use the xdg-desktop-portal D-Bus API directly from your C++20 code without using the C++ API. This may require more work, but it may be possible depending on your needs and preferences.
+
+
+I installed the dev package but it contains no header:[martin@localhost .b]$ rpm -ql xdg-desktop-portal-devel
+/usr/share/pkgconfig/xdg-desktop-portal.pc
+
+I apologize if my previous answer was incorrect. It is possible that the xdg-desktop-portal-cpp.h header file is not included in the xdg-desktop-portal-dev package on your system. In this case, you may need to install the header file manually or use the D-Bus API directly as I mentioned in my previous answer.
+
+To install the header file manually, you can download the source code for xdg-desktop-portal from the project's GitHub repository (https://github.com/flatpak/xdg-desktop-portal). The header file you are looking for should be included in the src/cpp directory. Once you have downloaded the source code, you can copy the header file to the appropriate location on your system, such as /usr/include or /usr/local/include.
+
+Alternatively, you can use the D-Bus API directly from your C++20 code without using the C++ API. This may require more work, but it may be possible depending on your needs and preferences. You can find the D-Bus interface definition file for xdg-desktop-portal at https://github.com/flatpak/xdg-desktop-portal/blob/master/data/org.freedesktop.impl.portal.ScreenCast.xml. This file contains the definitions of the D-Bus methods and signals that you can use to interact with xdg-desktop-portal. You can use a D-Bus library for C++, such as libdbus-c++ (https://dbus.freedesktop.org/doc/libdbus-c++/) or qt-d-bus (https://wiki.qt.io/D-Bus), to access these methods and signals from your C++20 code.
+
+#+end_example
+
+#+begin_example
+
+ sudo dnf install \
+ autoconf automake libtool pkg-config m4 \
+ json-glib-devel \
+ libportal-devel \
+ geoclue2-devel \
+ fuse3-devel
+
+
+git clone https://github.com/flatpak/xdg-desktop-portal
+
+#+end_example
+
+#+begin_example
+
+I tried the Github repository. It Does not contain the header file.
+
+I apologize if my previous answers were not helpful. It appears that the xdg-desktop-portal project does not include the xdg-desktop-portal-cpp.h header file in its source code. This means that you cannot use the C++ API of xdg-desktop-portal in your C++20 code.
+
+However, you can still use the xdg-desktop-portal D-Bus API directly from your C++20 code. You can find the D-Bus interface definition file for xdg-desktop-portal at https://github.com/flatpak/xdg-desktop-portal/blob/master/data/org.freedesktop.impl.portal.ScreenCast.xml. This file contains the definitions of the D-Bus methods and signals that you can use to interact with xdg-desktop-portal. You can use a D-Bus library for C++, such as libdbus-c++ (https://dbus.freedesktop.org/doc/libdbus-c++/) or qt-d-bus (https://wiki.qt.io/D-Bus), to access these methods and signals from your C++20 code.
+
+Here is an example of C++20 code that uses xdg-desktop-portal via the D-Bus API:
+
+#include <iostream>
+#include <dbus-c++/dbus.h>
+
+int main()
+{
+    // Initialize D-Bus
+    auto conn = DBus::Connection::SessionBus();
+
+    // Create a proxy for the xdg-desktop-portal screen cast service
+    auto proxy = conn.create_proxy("org.freedesktop.impl.portal.ScreenCast",
+                                   "/org/freedesktop/impl/portal/ScreenCast",
+                                   "org.freedesktop.impl.portal.ScreenCast");
+
+    // Create a new screen capture request
+    uint32_t handle;
+    std::vector<std::string> options;
+    auto reply = proxy.CreateSession("", "", options, handle);
+
+    // Set the target format for the screen capture
+    std::map<std::string, DBus::Variant> props;
+    props["target-format"] = DBus::Variant("rgb");
+    props["width"] = DBus::Variant(1920);
+    props["height"] = DBus::Variant(1080);
+    reply = proxy.SetSessionOptions(handle, props);
+
+    // Start the screen capture
+    reply = proxy.Start(handle);
+
+    // Use the captured screen data
+    // ...
+
+    // Stop the screen capture
+    reply = proxy.Stop(handle);
+
+    return 0;
+}
+
+This code initializes D-Bus, creates a proxy for the xdg-desktop-portal screen cast service, creates a new screen capture request, sets the target format for the screen capture, starts the screen capture, uses the captured screen data, and then stops the screen capture.
+
+Note that this code is just an example and may not work as-is. It is intended to illustrate how xdg-desktop-portal can be used via the D-Bus API in C++20. You will need to include the appropriate D-Bus headers and link against the D-Bus library in order to use this code. You may also need to modify the code
+#+end_example
+
+
+#+begin_example
+How can I install the libraries in Fedora?
+
+To install the xdg-desktop-portal and libdbus-c++ libraries in Fedora, you can use the following commands:
+
+# Install xdg-desktop-portal
+dnf install xdg-desktop-portal
+
+# Install libdbus-c++
+dnf install libdbus-c++-devel
+
+These commands will install the xdg-desktop-portal and libdbus-c++ libraries, along with any other dependencies they may have.
+
+Once these libraries are installed, you can compile and link your C++20 code against them using the appropriate compiler and linker flags. For example, you can compile the code using the following command:
+
+g++ -std=c++20 -o screencast screencast.cpp -lxdg-desktop-portal -ldbus-c++
+
+This command will compile the code in the file screencast.cpp using 
+
+#+end_example
+
+#+begin_example
+
+sudo dnf install dbus-c++-devel
+
+
+[martin@localhost 93_xdg-desktop-portal]$ pkg-config dbus-c++-1 --cflags
+-I/usr/include/dbus-c++-1 -DDBUS_API_SUBJECT_TO_CHANGE -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include 
+[martin@localhost 93_xdg-desktop-portal]$ pkg-config dbus-c++-1 --libs
+-ldbus-c++-1 -ldbus-1 
+
+
+#+end_example
+

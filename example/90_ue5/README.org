@@ -30,6 +30,24 @@
   problems.
 - https://beta.openai.com/playground
 
+** UE5 building
+
+#+begin_example
+Does Unreal engine always have to rebuild the whole Editor when you compile your project?
+
+No, Unreal Engine does not always have to rebuild the entire Editor when you compile your project. Unreal Engine uses a system called "hot reloading" that allows you to make changes to your code and see the results in the Editor without having to rebuild the entire project. This can save a lot of time and make the development process more efficient.
+
+However, there are some cases where hot reloading may not be possible, and the entire Editor will need to be rebuilt. For example, if you make changes to the engine's core code or to certain engine modules, a full rebuild may be necessary. Additionally, certain types of changes, such as changes to the build configuration or the addition of new plugins, may also require a full rebuild.
+
+In general, it is best to try hot reloading first and see if it works for your changes. If it does not, you can always try rebuilding the entire Editor to see if that resolves the issue.
+wol pumba
+Do I have to wait for an initial complete build?
+
+It depends on what you mean by "initial complete build." If you are asking whether you have to wait for a full rebuild of the Unreal Engine Editor after making code changes, the answer is no, as I mentioned earlier. Unreal Engine has a feature called "hot reloading" that allows you to see your changes in the Editor without having to rebuild the entire project.
+
+However, if you are asking whether you have to wait for a full build of your project before you can start using the Unreal Engine Editor, the answer is yes. Before you can use the Unreal Engine Editor, you will need to build your project at least once, as this is necessary to generate the necessary files and set up the project's environment. This initial build may take some time, depending on the size and complexity of your project, but once it is complete, you should be able to use the Unreal Engine Editor and see your changes in real-time using hot reloading.
+#+end_example
+
 ** C++ UE5
 
  #+begin_example
@@ -2774,7 +2792,7 @@ int main()
         cerr << "Error: Failed to send netlink request" << endl;
 #+end_example
 ** Open Wayland window
-
+*** C++
 #+begin_example
 Write Linux C++20 code that opens a wayland window.
 
@@ -2826,7 +2844,7 @@ wayland_open.cpp:19:12: error: ‘wl_shell_create’ was not declared in this sc
 
 #+end_example
 
-*** again
+*** C++ again
 #+begin_example
 
 Write Linux C++20 code that opens a wayland window. wl_compositor_create is not declared.
@@ -2869,6 +2887,51 @@ struct wl_egl_window *egl_window = wl_egl_window_create(surface,
 if (egl_window == NULL) {
     // handle error
 }
+#+end_example
+*** Python
+
+- Write Linux Python code that opens a wayland window.
+
+#+begin_example
+
+Here is an example of how you might open a Wayland window using Python in a Linux environment:
+
+import gi
+
+gi.require_version('Gtk', '3.0')
+gi.require_version('Wayland', '1.0')
+
+from gi.repository import Gtk, Wayland
+
+# Create a Wayland display
+display = Wayland.Display.get_default()
+
+# Create a Wayland surface to draw on
+surface = Wayland.Surface.new()
+
+# Create a Wayland shell surface to manage the surface
+shell_surface = Wayland.ShellSurface.new(surface)
+
+# Set the initial title and size of the window
+shell_surface.set_title("My Wayland Window")
+shell_surface.set_fullscreen(False)
+
+# Create a GTK widget to draw on the Wayland surface
+widget = Gtk.DrawingArea()
+widget.set_size_request(800, 600)
+widget.realize()
+widget.set_realized(True)
+
+# Set the Wayland surface to be the widget's surface
+widget.get_surface()
+
+# Show the widget and run the GTK main loop
+widget.show()
+Gtk.main()
+
+This code creates a Wayland display, surface, and shell surface, and then creates a GTK widget that is drawn on the Wayland surface. The widget is then shown and the GTK main loop is run to display the window.
+
+Keep in mind that this is just an example, and you may need to modify the code depending on your specific needs and the version of Wayland and GTK you are using.
 #+end_example
 
 ** C++ control browser
@@ -7344,6 +7407,32 @@ int main() {
 This code defines a CUDA kernel named helloWorldKernel that prints "Hello, world!" to the console. The kernel is launched on a single thread and block, and the cudaDeviceSynchronize function is called to ensure that the kernel has finished executing before the program exits.
 #+end_example
 
+** Yocto
+
+#+begin_example
+To add more software to a Yocto build, you can use the bitbake command to build the desired package and then add it to the image. For example, to build and add the nano text editor to your Yocto image, you can use the following steps:
+
+    First, make sure you have the necessary dependencies installed. This may vary depending on the package you are trying to build, but typically you will need the build-essential and devscripts packages.
+
+    Next, navigate to the directory where your Yocto project is located, and run the bitbake command to build the nano package, like this:
+
+$ cd yocto-project
+$ bitbake nano
+
+    After the build is complete, the nano package will be installed in the tmp/deploy/rpm directory. You can then use the smart command to add it to your Yocto image, like this:
+
+$ smart channel --add yocto-nano type=rpm-md baseurl=file:///path/to/yocto-project/tmp/deploy/rpm/
+$ smart update
+$ smart install nano
+
+    Finally, rebuild your Yocto image to include the nano package, using the bitbake command again:
+
+$ bitbake yocto-image
+
+After the image is built, you should be able to use the nano text editor on your Yocto system. Keep in mind that these steps are just an example, and the exact process for adding software to a Yocto build may vary depending on the package you are trying to build and the version of Yocto you are using.
+#+end_example
+
+
 ** Misc
 
 *** investment
@@ -7384,6 +7473,7 @@ This code defines a CUDA kernel named helloWorldKernel that prints "Hello, world
   resident, you would be subject to Swiss income tax on your
   investments, but not Irish withholding tax.
 
+*** Safety  
 
 - What is the closest nuclear power plant to Dornbirn, Austria?
 
