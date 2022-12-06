@@ -104,3 +104,6 @@ int main() {
 }
 
 This code is similar to the previous example, but it uses the `
+
+dma / drm capture
+https://obsproject.com/forum/threads/experimental-zero-copy-screen-capture-on-linux.101262/

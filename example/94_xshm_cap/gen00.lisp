@@ -100,7 +100,8 @@
 		 (h (DisplayHeight display screenNum)))
 	     (setf info.shmid -1)
 	     (let ((*image (XShmCreateImage display
-					    nullptr
+					    (DefaultVisual display 0)
+					    ;; nullptr
 					    24
 					    ZPixmap
 					    nullptr
@@ -109,14 +110,18 @@
 	       (setf info.shmid (shmget IPC_PRIVATE
 					(* image->bytes_per_line
 					   image->height)
-					(logior IPC_CREAT "0777")))
+					(logior IPC_CREAT
+						"0777"
+					;"0700"
+						)))
 	       (assert (<= 0 info.shmid) )
 	       (setf image->data (reinterpret_cast<char*>
 				  (shmat info.shmid 0 0))
 		     info.shmaddr image->data)
 	       (setf info.readOnly False)
-	       (XShmAttach display &info)
-	       (XShmGetImage display rootWindow image 0 0 AllPlanes)
+	       (assert (!= 0 (XShmAttach display &info)))
+	       (assert (!= 0
+			   (XShmGetImage display rootWindow image 0 0 AllPlanes)))
 
 
 	       (let ((file (std--ofstream (string "screenshot.pgm")
