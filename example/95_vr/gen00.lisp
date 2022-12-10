@@ -17,7 +17,7 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-    (defparameter *source-dir* #P"example/94_xshm_cap/source00/")
+    (defparameter *source-dir* #P"example/95_vr/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
@@ -73,82 +73,59 @@
 
        (do0
 	(include <spdlog/spdlog.h>)
-					;(include <popl.hpp>)
+					
 
 
 	)
-       (include <X11/Xlib.h>
-		<X11/Xutil.h>
-		<X11/extensions/XShm.h>
-		<cassert>
-		<sys/shm.h>
-		<fstream>)
+       (include "VrApi.h"
+		"VrApi_Helpers.h"
+		"VrApi_Input.h"
+		"VrApi_SystemUtils.h"
+		"android_native_app_glue.h"
+		<EGL/egl.h>
+		<EGL/eglext.h>
+		<GLES3/gl3.h>
+		<android/log.h>
+		<android/window.h>
+		<cstdin>
+		<cstdlib>
+		<unistd.h>)
 
-       (defun main (argc argv)
-	 (declare (type int argc)
-		  (type char** argv)
-		  (values int))
-	 "(void)argv;"
-	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((*display (XOpenDisplay nullptr)))
-	   (assert display)
-	   (let ((screenNum (DefaultScreen display))
-		 (rootWindow (RootWindow display
-					 screenNum))
-		 (info (XShmSegmentInfo))
-		 (w (DisplayWidth display screenNum))
-		 (h (DisplayHeight display screenNum)))
-	     (setf info.shmid -1)
-	     (let ((*image (XShmCreateImage display
-					    (DefaultVisual display 0)
-					    ;; nullptr
-					    24
-					    ZPixmap
-					    nullptr
-					    &info
-					    w h)))
-	       (setf info.shmid (shmget IPC_PRIVATE
-					(* image->bytes_per_line
-					   image->height)
-					(logior IPC_CREAT
-						"0777"
-					;"0700"
-						)))
-	       (assert (<= 0 info.shmid) )
-	       (setf image->data (reinterpret_cast<char*>
-				  (shmat info.shmid 0 0))
-		     info.shmaddr image->data)
-	       (setf info.readOnly False)
-	       (assert (!= 0 (XShmAttach display &info)))
-	       (assert (!= 0
-			   (XShmGetImage display rootWindow image 0 0 AllPlanes)))
+       (do0
+	"#define FMT_HEADER_ONLY"
 
+	(include "core.h"))
 
-	       (let ((file (std--ofstream (string "screenshot.pgm")
-					  std--ios--binary)))
-		 (<< file (string "P5") std--endl)
-		 (<< file image->width
-		     (string " ")
-		     image->height
-		     std--endl)
-		 (<< file "255" std--endl)
+       (defun android_main (android_app)
+	 (declare (type android_app* android_app))
+	 (ANativeActivity_setWindowFlags
+	  android_app->activity
+	  AWINDOW_FLAG_KEEP_SCREEN_ON
+	  0)
 
-		 (dotimes (y image->height)
-		   (dotimes (x image->width)
-		     (let ((pixel (XGetPixel image x y)))
-		       (file.put ("static_cast<unsigned char>" pixel)))))
-		 (file.close))
+	 (do0
+	  ,(lprint :msg "attach current thread"
+		   :level "info")
+	  (let ((java (ovrJava)))
+	    (setf java.Vm android_app->activity->vm)
+	    (-> (deref java.Vm)
+		(AttachCurrentThread java.Vm
+				     &java.Env
+				     nullptr))))
 
-	       (shmdt info.shmaddr
-		      )
-	       (shmctl info.shmid IPC_RMID 0)
-	       (XDestroyImage image)
-	       (XCloseDisplay display)
-	       (return 0)))))
+	 (do0
+	  ,(lprint :msg "initialize vr api")
+	  (let ((init_params (vrapi_DefaultInitParams
+			      &java)))
+	    (unless (== VRAPI_INITIALIZE_SUCCESS
+			(vrapi_Initialize &init_params))
+	      ,(lprint :msg "can't initialize vr api")
+	      (std--exit 1))))
+	 )
 
        ))
 
-
+    #+nil
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output
 		       :if-exists :supersede

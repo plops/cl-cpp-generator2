@@ -1,1 +1,14 @@
 https://github.com/makepad/hello_quest
+
+
+- fmtlib
+
+#+begin_example
+
+cd /dev/shm
+git clone https://github.com/fmtlib/fmt
+
+cp fmt/include/fmt/{core,format,format-inl}.h \
+   ~/stage/cl-cpp-generator2/example/95_vr/source00
+
+#+end_example

@@ -1,19 +1,24 @@
 (defun lprint (&key (msg "")
 		 (level "info")
 		 (vars nil)
-		 (svars nil)
+					
 		 )
-  `(,(format nil "spdlog::~a" level)
-     (string ,(format nil "~a~{ ~a~}~{ ~a~}"
-		      msg
-		      (loop for e in vars
-			    collect
-			    (format nil " ~a='{}'" (emit-c :code e)))
-		      (loop for e in svars
-			    collect
-			    (format nil " ~a='{}'" (emit-c :code e)))))
-     ,@vars
-     ,@svars))
+  `(__android_log_print
+    ,(cond
+       ((string= level "info")
+	'ANDROID_LOG_VERBOSE)
+       ((string= level "error")
+	'ANDROID_LOG_ERROR))
+    TAG
+    ,(if vars
+     `(fmt--print
+      (string ,(format nil "~a~{ ~a~}"
+		       msg
+		       (loop for e in vars
+			     collect
+			     (format nil " ~a='{}'" (emit-c :code e)))))
+      ,@vars)
+     `(string ,(format nil "~a" msg)))))
 
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
