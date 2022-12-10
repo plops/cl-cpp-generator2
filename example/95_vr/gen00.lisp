@@ -23,33 +23,185 @@
 				     *source-dir*))
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
-    #+nil (let ((name `AGameCharacter)
-		)
-	    (write-class
-	     :dir (asdf:system-relative-pathname
-		   'cl-cpp-generator2
-		   *source-dir*)
-	     :name name
-	     :headers `()
-	     :header-preamble `(do0
-				(include "bla.h"))
-	     :implementation-preamble `(do0
-					(include "bah.h"))
-	     :code `(do0
-		     (defclass ,name ()
-		       "public:"
+    (let ((name `App))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "ovrJava* java;"
+		 "bool resumed;"
+		 "Egl egl;"
+		 "Renderer renderer;"
+		 "ANativeWindow* window;"
+		 "ovrMobile* ovr;"
+		 "bool back_button_down_previous_frame;"
+		 "uint64_t frame_index;"
 
-
-		       (defmethod ,name ()
-			 (declare
+		 (defmethod ,name (java)
+		   (declare
 					;  (explicit)
-			  (construct
-			   (Camera
-			    3))
-			  (values :constructor))
-			 )
-		       )
-		     )))
+		    (type ovrJava* java)
+		    (construct
+		     (java java)
+		     (resumed false)
+		     (egl (Egl))
+		     (renderer
+			    (Renderer
+			     (vrapi_GetystemPropertyInit
+			      java
+			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
+			     (vrapi_GetystemPropertyInit
+			      java
+			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
+		     (window nullptr)
+		     (ovr nullptr)
+		     (back_button_down_previous_frame false)
+		     (frame_index 0))
+		    (values :constructor)))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+					;  (explicit)
+		    
+		    (construct
+		     )
+		    (values :constructor))
+		   )
+		 )
+	       )))
+
+    (let ((name `Renderer))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "std::vector<Framebuffer> framebuffers;"
+		 "Program program;"
+		 "Geometry geometry;"
+		 (defmethod ,name (width height)
+		   (declare
+					;  (explicit)
+		    (type GLsizei width height)
+		    (construct
+		     (program (Program))
+		     (geometry (Geometry)))
+		    (values :constructor))
+		   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (framebuffers.push_back
+			   (Framebuffer width height))))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+					;  (explicit)
+		    
+		    (construct
+		     )
+		    (values :constructor))
+		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (setf (aref framebuffers i)
+			   (Framebuffer width height)))
+		   )
+		 )
+	       )))
+
+    (let ((name `Cube))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "std::vector<Vertex> vertices;"
+		 "std::vector<unsigned short> indices;"
+		 (defmethod ,name ()
+		   (declare
+					;  (explicit)
+		    (construct
+		     (vertices
+		      (curly
+		       ,@(loop for e in `((-1 1 -1) (1 0 1)
+					  (1 1 -1)  (0 1 0)
+					  (1 1 1)   (0 0 1)
+					  (-1 1 1)  (1 0 0)
+					  (-1 -1 -1)(0 0 1)
+					  (-1 -1 1) (0 1 0)
+					  (1 -1 1)  (1 0 1)
+					  (1 -1 -1) (1 0 0))
+			       collect
+			       `(curly ,@e))))
+		     (indices
+		      (curly 0 1 2 2 0 3
+			     4 6 5 6 4 7
+			     2 6 7 7 1 2
+			     0 4 5 5 3 0
+			     3 5 6 6 2 3
+			     0 1 7 7 4 0)))
+		    (values :constructor))))
+	       )))
+
+    (let ((name `Geometry))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "GLuint vertex_array, vertex_buffer, index_buffer;"
+		 (defmethod ,name ()
+		   (declare
+					;  (explicit)
+		    (construct)
+		    (values :constructor))
+		   (glGenVertexArrays 1
+				      vertex_array)
+		   (glBindVertexArrays vertex_array)
+		   (glGenBuffers 1 vertex_buffer)
+		   (glBufferData GL_ARRAY_BUFFER
+				 (sizeof VERTICES)
+				 VERTICES))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+					;  (explicit)
+		    
+		    (construct
+		     )
+		    (values :constructor))
+		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (setf (aref framebuffers i)
+			   (Framebuffer width height)))
+		   )
+		 )
+	       )))
 
 
     (write-source
@@ -121,6 +273,10 @@
 			(vrapi_Initialize &init_params))
 	      ,(lprint :msg "can't initialize vr api")
 	      (std--exit 1))))
+
+	 (do0
+	  (let ((app (App &app
+			  &java)))))
 	 )
 
        ))

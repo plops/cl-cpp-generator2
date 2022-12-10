@@ -28,4 +28,5 @@ void android_main(android_app *android_app) {
     __android_log_print(ANDROID_LOG_VERBOSE, TAG, "can't initialize vr api");
     std::exit(1);
   }
+  auto app = App(&app, &java);
 }
