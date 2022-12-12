@@ -177,6 +177,7 @@
 	       (defclass ,name ()
 		 "public:"
 		 "GLuint vertex_array, vertex_buffer, index_buffer;"
+		 "Cube cube;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -187,8 +188,10 @@
 		   (glBindVertexArrays vertex_array)
 		   (glGenBuffers 1 vertex_buffer)
 		   (glBufferData GL_ARRAY_BUFFER
-				 (sizeof VERTICES)
-				 VERTICES))
+				 cube.vertices.size
+				 (cube.vertices.data)
+				 GL_STATIC_DRAW)
+		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 					;  (explicit)
@@ -200,6 +203,114 @@
 		     (setf (aref framebuffers i)
 			   (Framebuffer width height)))
 		   )
+		 )
+	       )))
+
+    (let ((name `Egl))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "GLuint vertex_array, vertex_buffer, index_buffer;"
+		 "Cube cube;"
+		 (defmethod ,name ()
+		   (declare
+					;  (explicit)
+		    (construct)
+		    (values :constructor))
+		   )
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+					;  (explicit)
+		    
+		    (construct
+		     )
+		    (values :constructor))
+		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (setf (aref framebuffers i)
+			   (Framebuffer width height)))
+		   )
+		 )
+	       )))
+
+    (let ((name `Framebuffer))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "GLuint vertex_array, vertex_buffer, index_buffer;"
+		 "Cube cube;"
+		 (defmethod ,name ()
+		   (declare
+					;  (explicit)
+		    (construct)
+		    (values :constructor))
+		   )
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+					;  (explicit)
+		    
+		    (construct
+		     )
+		    (values :constructor))
+		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (setf (aref framebuffers i)
+			   (Framebuffer width height)))
+		   )
+		 )
+	       )))
+
+    (let ((name `Program))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "GLuint vertex_array, vertex_buffer, index_buffer;"
+		 "Cube cube;"
+		 (defmethod ,name ()
+		   (declare
+					;  (explicit)
+		    (construct)
+		    (values :constructor))
+		   )
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+			 (declare
+					;  (explicit)
+		    
+			  (construct
+			   )
+			  (values :constructor))
+			 (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+			   (setf (aref framebuffers i)
+				 (Framebuffer width height)))
+			 )
 		 )
 	       )))
 
