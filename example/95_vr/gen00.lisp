@@ -220,8 +220,6 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 "GLuint vertex_array, vertex_buffer, index_buffer;"
-		 "Cube cube;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -256,8 +254,6 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 "GLuint vertex_array, vertex_buffer, index_buffer;"
-		 "Cube cube;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -292,8 +288,6 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 "GLuint vertex_array, vertex_buffer, index_buffer;"
-		 "Cube cube;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
