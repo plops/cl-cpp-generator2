@@ -15,6 +15,11 @@
 #include <unistd.h>
 #define FMT_HEADER_ONLY
 #include "core.h"
+static const std::array<AttribPointer, 2> ATTRIB_POINTERS = {
+    AttribPointer(3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                  reinterpret_cast<GLvoid *>(offsetof(Vertex, position))),
+    AttribPointer(3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                  reinterpret_cast<GLvoid *>(offsetof(Vertex, color)))};
 void android_main(android_app *android_app) {
   ANativeActivity_setWindowFlags(android_app->activity,
                                  AWINDOW_FLAG_KEEP_SCREEN_ON, 0);

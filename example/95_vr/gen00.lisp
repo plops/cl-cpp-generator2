@@ -161,8 +161,45 @@
 			     0 1 7 7 4 0)))
 		    (values :constructor))))
 	       )))
-
-    (let ((name `Geometry))
+   
+    (let ((name `Vertex))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include <array>)
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h"))
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
+		 "std::array<float,4> position;"
+		 "std::array<float,4> color;"
+		 (defmethod ,name (size type normalized stride pointer)
+		   	 (declare
+			  (type GLint size)
+			  (type GLenum type)
+			  (type GLboolean normalized)
+			  (type GLsizei stride)
+			  (type "const GLvoid*" pointer)
+					;  (explicit)
+			  (construct (size size)
+				     (type type)
+				     (normalized normalized)
+				     (stride stride)
+				     (pointer pointer))
+			  (values :constructor)))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+			 (declare
+					;  (explicit)
+		    	  (construct)
+			  (values :constructor)))))))
+    
+    (let ((name `AttribPointer))
       (write-class
        :dir (asdf:system-relative-pathname
 	     'cl-cpp-generator2
@@ -176,6 +213,53 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
+		 "GLint size;"
+		 "GLenum type;"
+		 "GLboolean normalized;"
+		 "GLsizei stride;"
+		 "const GLvoid* pointer;"
+		 (defmethod ,name (size type normalized stride pointer)
+		   
+		   (declare
+		    (type GLint size)
+		    (type GLenum type)
+		    (type GLboolean normalized)
+		    (type GLsizei stride)
+		    (type "const GLvoid*" pointer)
+					;  (explicit)
+		    (construct (size size)
+			       (type type)
+			       (normalized normalized)
+			       (stride stride)
+			       (pointer pointer))
+		    (values :constructor)))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+			 (declare
+					;  (explicit)
+		    
+			  (construct
+			   )
+			  (values :constructor))
+		 
+			 )
+		 )
+	       )))
+
+    (let ((name `Geometry))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include "bla.h"))
+       :implementation-preamble `(do0
+				  (include "bah.h")
+				  "extern static const std::array<AttribPointer,2> ATTRIB_POINTERS;")
+       :code `(do0
+	       (defclass ,name ()
+		 "public:"
 		 "GLuint vertex_array, vertex_buffer, index_buffer;"
 		 "Cube cube;"
 		 (defmethod ,name ()
@@ -184,28 +268,46 @@
 		    (construct)
 		    (values :constructor))
 		   (glGenVertexArrays 1
-				      vertex_array)
+				      &vertex_array)
 		   (glBindVertexArrays vertex_array)
-		   (glGenBuffers 1 vertex_buffer)
+		   (glGenBuffers 1 &vertex_buffer)
 		   (glBufferData GL_ARRAY_BUFFER
 				 cube.vertices.size
 				 (cube.vertices.data)
 				 GL_STATIC_DRAW)
+		   (let ((i 0))
+		    (for-range (attrib ATTRIB_POINTERS)
+			       (glEnableVertexAttribArray i)
+			       (glVertexAttribPointer
+				i attrib.size attrib.type
+				attrib.normalized attrib.stride
+				attrib.pointer)
+			       (incf i)))
+		   (glGenBuffers 1 &index_buffer)
+		   (glBindBuffer GL_ELEMENT_ARRAY_BUFFER
+				 index_buffer)
+		   (glBufferData GL_ELEMENT_ARRAY_BUFFER
+				 (dot cube
+				      indices
+				      (size))
+				 cube.indices
+				 GL_STATIC_DRAW)
+		   (glBindVertexArray 0)
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
-		   (declare
+			 (declare
 					;  (explicit)
 		    
-		    (construct
-		     )
-		    (values :constructor))
-		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		     (setf (aref framebuffers i)
-			   (Framebuffer width height)))
-		   )
+			  (construct
+			   )
+			  (values :constructor))
+			 (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+			   (setf (aref framebuffers i)
+				 (Framebuffer width height)))
+			 )
 		 )
 	       )))
-
+    
     (let ((name `Egl))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -227,19 +329,15 @@
 		    (values :constructor))
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
-		   (declare
+			 (declare
 					;  (explicit)
 		    
-		    (construct
-		     )
-		    (values :constructor))
-		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		     (setf (aref framebuffers i)
-			   (Framebuffer width height)))
-		   )
+			  (construct
+			   )
+			  (values :constructor))			 )
 		 )
 	       )))
-
+    
     (let ((name `Framebuffer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -267,9 +365,7 @@
 		    (construct
 		     )
 		    (values :constructor))
-		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		     (setf (aref framebuffers i)
-			   (Framebuffer width height)))
+			 
 		   )
 		 )
 	       )))
@@ -298,17 +394,8 @@
 			 (declare
 					;  (explicit)
 		    
-			  (construct
-			   )
-			  (values :constructor))
-			 (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-			   (setf (aref framebuffers i)
-				 (Framebuffer width height)))
-			 )
-		 )
-	       )))
-
-
+			  (construct)
+			  (values :constructor)))))))
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -352,6 +439,13 @@
 	"#define FMT_HEADER_ONLY"
 
 	(include "core.h"))
+
+       (let ((ATTRIB_POINTERS
+	       (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				     (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
+		      (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				     (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
+	 (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
        (defun android_main (android_app)
 	 (declare (type android_app* android_app))
