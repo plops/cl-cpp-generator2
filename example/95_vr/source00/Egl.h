@@ -4,6 +4,9 @@
 #include "bla.h"
 class Egl  {
         public:
+        EGLDisplay display;
+        EGLContext context;
+        EGLSurface surface;
          Egl ()     ;  
 };
 

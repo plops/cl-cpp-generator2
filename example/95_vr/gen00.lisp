@@ -113,12 +113,7 @@
 		    (construct
 		     )
 		    (values :constructor))
-		  (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		     (setf (aref framebuffers i)
-			   (Framebuffer width height)))
-		   )
-		 )
-	       )))
+			)))))
 
     (let ((name `Cube))
       (write-class
@@ -316,12 +311,35 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
+		 "EGLDisplay display;"
+		 "EGLContext context;"
+		 "EGLSurface surface;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
-		    (construct)
+		    (construct
+		     (diplay (eglGetDisplay EGL_DEFAULT_DISPLAY)))
 		    (values :constructor))
-		   )
+		   (when (== EGL_NO_DISPLAY
+			     display)
+		     ,(lprint :msg "can't get egl display"))
+		   (when (== EGL_FALSE
+			     (eglInitialize display
+					    nullptr
+					    nullptr))
+		     ,(lprint :msg "can't initialize egl display"))
+		   (let ((numConfigs ((lambda ()
+					(let ((n (EGLint 0)))
+					  (when (== EGL_FALSE
+						    (eglGetConfigs display nullptr
+								   0 &n))
+					    ,(lprint :msg "cant get number of egl configs"))
+					  (return n)))))
+			 (configs (std--vector<EGLConfig> numConfigs)))
+		     (when (== EGL_FALSE
+			       (eglGetConfigs display (configs.data) numConfigs &numConfigs))
+		       ,(lprint :msg "cant get egl configs"))
+		     ))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
