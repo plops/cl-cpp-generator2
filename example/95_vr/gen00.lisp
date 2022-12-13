@@ -106,7 +106,7 @@
 		   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
 		     (framebuffers.push_back
 			   (Framebuffer width height))))
-		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		#+nil (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 					;  (explicit)
 		    
@@ -292,21 +292,15 @@
 				      (size))
 				 cube.indices
 				 GL_STATIC_DRAW)
-		   (glBindVertexArray 0)
-		   )
-		 #+nil (defmethod ,(format nil "~~~a" name) ()
+		   (glBindVertexArray 0))
+		 (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
-		    
-			  (construct
-			   )
+		    	  (construct)
 			  (values :constructor))
-			 (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-			   (setf (aref framebuffers i)
-				 (Framebuffer width height)))
-			 )
-		 )
-	       )))
+		   (glDeleteBuffers 1 &index_buffer)
+		   (glDeleteBuffers 1 &vertex_buffer)
+		   (glDeleteVertexArrays 1 &vertex_array))))))
     
     (let ((name `Egl))
       (write-class

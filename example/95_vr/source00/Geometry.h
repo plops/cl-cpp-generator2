@@ -7,6 +7,7 @@ class Geometry  {
         GLuint vertex_array, vertex_buffer, index_buffer;
         Cube cube;
          Geometry ()     ;  
+         ~Geometry ()     ;  
 };
 
 #endif /* !GEOMETRY_H */

@@ -21,3 +21,8 @@ Geometry::Geometry() {
                GL_STATIC_DRAW);
   glBindVertexArray(0);
 }
+Geometry::~Geometry() {
+  glDeleteBuffers(1, &index_buffer);
+  glDeleteBuffers(1, &vertex_buffer);
+  glDeleteVertexArrays(1, &vertex_array);
+}
