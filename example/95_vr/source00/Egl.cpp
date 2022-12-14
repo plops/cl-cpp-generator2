@@ -35,13 +35,9 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
       }
       return renderable_type;
     })(EGLint(0));
-    if ((0) == (((renderable_type) & (EGL_OPENGL_ES3_BIT_KHR)))) {
-      continue;
-    }
-    if ((0) == (((renderable_type) & (EGL_PBUFFER_BIT)))) {
-      continue;
-    }
-    if ((0) == (((renderable_type) & (EGL_WINDOW_BIT)))) {
+    if ((((0) == (((renderable_type) & (EGL_OPENGL_ES3_BIT_KHR)))) ||
+         ((0) == (((renderable_type) & (EGL_PBUFFER_BIT)))) ||
+         ((0) == (((renderable_type) & (EGL_WINDOW_BIT)))))) {
       continue;
     }
     auto surface_type = ([](auto i) {
@@ -53,36 +49,18 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
       return i;
     })(EGLint(0));
     {
-      auto value = EGLint(0);
-      if ((EGL_FALSE) ==
-          (eglGetConfigAttrib(display, config, EGL_RED_SIZE, &value))) {
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
-                            "cant get config attrib red-size");
-      }
-      auto cond0 = (8) <= (value);
-      if ((EGL_FALSE) ==
-          (eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &value))) {
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
-                            "cant get config attrib green-size");
-      }
-      auto cond1 = (8) <= (value);
-      if ((EGL_FALSE) ==
-          (eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &value))) {
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
-                            "cant get config attrib blue-size");
-      }
-      auto cond2 = (8) <= (value);
-      if ((EGL_FALSE) ==
-          (eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &value))) {
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
-                            "cant get config attrib alpha-size");
-      }
-      auto cond3 = (8) <= (value);
-      ;
-      ;
-      ;
-      if (((cond0) && (cond1) && (cond2) && (cond3) && (cond4) && (cond5) &&
-           (cond6))) {
+      auto check = [&](auto attrib) -> auto {
+        auto value = EGLint(0);
+        if ((EGL_FALSE) ==
+            (eglGetConfigAttrib(display, config, attrib, &value))) {
+          __android_log_print(ANDROID_LOG_VERBOSE, TAG,
+                              "cant get config attrib");
+        }
+        return value;
+      };
+      if ((((8) <= (check(EGL_RED_SIZE))) && ((8) <= (check(EGL_GREEN_SIZE))) &&
+           ((8) <= (check(EGL_BLUE_SIZE))) &&
+           ((8) <= (check(EGL_ALPHA_SIZE))))) {
         foundConfig = config;
       }
     }

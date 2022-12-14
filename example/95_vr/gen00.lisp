@@ -357,15 +357,16 @@
 							    ,(lprint :msg "cant get EGL config renderable type"))
 							  (return renderable_type))
 							(EGLint 0))))
-				  ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
-						     EGL_PBUFFER_BIT
-						     EGL_WINDOW_BIT)
-					  collect
-					  `(when (== 0
-						     (logand renderable_type
-							     ,e))
-					     continue))
-				  (let ((surface_type ((lambda (i)
+				 (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
+							      EGL_PBUFFER_BIT
+							      EGL_WINDOW_BIT)
+						 collect
+						 `(== 0
+						      (logand renderable_type
+							      ,e))
+						  ))
+				   continue)
+			       (let ((surface_type ((lambda (i)
 							 (declare (type auto i))
 							 (when (== EGL_FALSE
 								   (eglGetConfigAttrib
@@ -378,26 +379,29 @@
 						       (EGLint 0))))
 				    ,(let ((l-attrib `((red-size 8)
 						(green-size 8)
-						(blue-size 8)
+						       (blue-size 8)
 						(alpha-size 8)
 						(depth-size 0)
 						(stencil-size 0)
 						(samples 0))))
 				       `(progn
-					  (let ((value (EGLint 0)))
-					    ,@(loop for (e f) in l-attrib
-						    and i from 0
-						    collect
-						    (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
-						      (unless (eq 0 f)
-							`(do0
+					  (let (
+						(check (lambda (attrib)
+							 (declare (type auto attrib)
+								  (values auto)
+								  (capture "&"))
+							 (let ((value (EGLint 0)))
 							  (when (== EGL_FALSE
-								    (eglGetConfigAttrib display config ,attrib &value))
-							    ,(lprint :msg (format nil "cant get config attrib ~a" e)))
-							  (let ((,(format nil "cond~a" i) (<= ,f value))))))))
-					    (when (and ,@(loop for e in l-attrib and i from 0
-							       collect
-							       (format nil "cond~a" i)))
+								    (eglGetConfigAttrib display config attrib &value))
+							    ,(lprint :msg "cant get config attrib")))
+							 (return value))))
+					    (when (and ,@(remove-if
+							  #'null
+							  (loop for (e f) in l-attrib and i from 0
+									  collect
+									  (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
+									    (unless (eq 0 f)
+									      `(<= ,f (check ,attrib)))))))
 					      (setf foundConfig config)))))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
