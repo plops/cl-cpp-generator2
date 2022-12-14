@@ -37,6 +37,12 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
     if ((0) == (((renderable_type) & (EGL_OPENGL_ES3_BIT_KHR)))) {
       continue;
     }
+    if ((0) == (((renderable_type) & (EGL_PBUFFER_BIT)))) {
+      continue;
+    }
+    if ((0) == (((renderable_type) & (EGL_WINDOW_BIT)))) {
+      continue;
+    }
     auto surface_type = ([](auto i) {
       if ((EGL_FALSE) ==
           (eglGetConfigAttrib(display, config, EGL_SURFACE_TYPE, &i))) {

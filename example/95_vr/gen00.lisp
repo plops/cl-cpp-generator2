@@ -1,5 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
+  (ql:quickload "cl-change-case")
   (ql:quickload "cl-ppcre"))
 
 (in-package :cl-cpp-generator2)
@@ -344,32 +345,60 @@
 		      ))
 		   (do0
 		    ,(lprint :msg "choose egl config")
-		    (for-range (config configs)
-			       (let ((renderable_type ((lambda (renderable_type)
-							 (declare (type aute renderable_type))
+		    (let ((foundConfig (EGLConfig nullptr)))
+		     (for-range (config configs)
+				(let ((renderable_type ((lambda (renderable_type)
+							  (declare (type aute renderable_type))
+							  (when (== EGL_FALSE
+								    (eglGetConfigAttrib display
+											config
+											EGL_RENDERABLE_TYPE
+											&renderable_type))
+							    ,(lprint :msg "cant get EGL config renderable type"))
+							  (return renderable_type))
+							(EGLint 0))))
+				  ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
+						     EGL_PBUFFER_BIT
+						     EGL_WINDOW_BIT)
+					  collect
+					  `(when (== 0
+						     (logand renderable_type
+							     ,e))
+					     continue))
+				  (let ((surface_type ((lambda (i)
+							 (declare (type auto i))
 							 (when (== EGL_FALSE
-								   (eglGetConfigAttrib display
-										       config
-										       EGL_RENDERABLE_TYPE
-										       &renderable_type))
-							   ,(lprint :msg "cant get EGL config renderable type"))
-							 (return renderable_type))
+								   (eglGetConfigAttrib
+								    display
+								    config
+								    EGL_SURFACE_TYPE
+								    &i))
+							   ,(lprint :msg "cant get surface config type"))
+							 (return i))
 						       (EGLint 0))))
-				 (when (== 0
-					   (logand renderable_type
-						   EGL_OPENGL_ES3_BIT_KHR))
-				   continue)
-				 (let ((surface_type ((lambda (i)
-							(declare (type auto i))
-							(when (== EGL_FALSE
-								  (eglGetConfigAttrib
-								   display
-								   config
-								   EGL_SURFACE_TYPE
-								   &i))
-							  ,(lprint :msg "cant get surface config type"))
-							(return i))
-						      (EGLint 0)))))))))
+				    ,(let ((l `((red-size 8)
+						(green-size 8)
+						(blue-size 8)
+						(alpha-size 8)
+						(depth-size 0)
+						(stencil-size 0)
+						(samples 0))))
+				       `(progn
+					  (let ((value (EGLint 0)))
+					    ,@(loop for (e f) in l
+						    and i from 0
+						    collect
+						    (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
+						      (unless (== 0 f)
+							`(do0
+							  (when (== EGL_FALSE
+								    (eglGetConfigAttrib display config ,attrib &value))
+							    ,(lprint :msg (format nil "cant get config attrib ~a" e)))
+							  (let ((,(format nil "cond~a" i) (<= ,f value))))))))
+					    (when (and ,@(loop for e in l and i from 0
+							       collect
+							       ,(format nil "cond~a" i)))
+					      (setf foundConfig config)))))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
