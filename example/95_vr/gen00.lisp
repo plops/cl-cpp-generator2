@@ -328,18 +328,48 @@
 					    nullptr
 					    nullptr))
 		     ,(lprint :msg "can't initialize egl display"))
-		   (let ((numConfigs ((lambda ()
-					(let ((n (EGLint 0)))
-					  (when (== EGL_FALSE
-						    (eglGetConfigs display nullptr
-								   0 &n))
-					    ,(lprint :msg "cant get number of egl configs"))
-					  (return n)))))
-			 (configs (std--vector<EGLConfig> numConfigs)))
-		     (when (== EGL_FALSE
-			       (eglGetConfigs display (configs.data) numConfigs &numConfigs))
-		       ,(lprint :msg "cant get egl configs"))
-		     ))
+		   (do0
+		    ,(lprint :msg "get number of egl configs ..")
+		    (let ((numConfigs ((lambda ()
+					 (let ((n (EGLint 0)))
+					   (when (== EGL_FALSE
+						     (eglGetConfigs display nullptr
+								    0 &n))
+					     ,(lprint :msg "cant get number of egl configs"))
+					   (return n)))))
+			  (configs (std--vector<EGLConfig> numConfigs)))
+		      (when (== EGL_FALSE
+				(eglGetConfigs display (configs.data) numConfigs &numConfigs))
+			,(lprint :msg "cant get egl configs"))
+		      ))
+		   (do0
+		    ,(lprint :msg "choose egl config")
+		    (for-range (config configs)
+			       (let ((renderable_type ((lambda (renderable_type)
+							 (declare (type aute renderable_type))
+							 (when (== EGL_FALSE
+								   (eglGetConfigAttrib display
+										       config
+										       EGL_RENDERABLE_TYPE
+										       &renderable_type))
+							   ,(lprint :msg "cant get EGL config renderable type"))
+							 (return renderable_type))
+						       (EGLint 0))))
+				 (when (== 0
+					   (logand renderable_type
+						   EGL_OPENGL_ES3_BIT_KHR))
+				   continue)
+				 (let ((surface_type ((lambda (i)
+							(declare (type auto i))
+							(when (== EGL_FALSE
+								  (eglGetConfigAttrib
+								   display
+								   config
+								   EGL_SURFACE_TYPE
+								   &i))
+							  ,(lprint :msg "cant get surface config type"))
+							(return i))
+						      (EGLint 0)))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
