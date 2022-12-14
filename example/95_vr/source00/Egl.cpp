@@ -24,6 +24,7 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
     __android_log_print(ANDROID_LOG_VERBOSE, TAG, "cant get egl configs");
   }
   __android_log_print(ANDROID_LOG_VERBOSE, TAG, "choose egl config");
+  auto foundConfig = EGLConfig(nullptr);
   for (auto config : configs) {
     auto renderable_type = ([](aute renderable_type) {
       if ((EGL_FALSE) ==
@@ -51,5 +52,39 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
       }
       return i;
     })(EGLint(0));
+    {
+      auto value = EGLint(0);
+      if ((EGL_FALSE) ==
+          (eglGetConfigAttrib(display, config, EGL_RED_SIZE, &value))) {
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
+                            "cant get config attrib red-size");
+      }
+      auto cond0 = (8) <= (value);
+      if ((EGL_FALSE) ==
+          (eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &value))) {
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
+                            "cant get config attrib green-size");
+      }
+      auto cond1 = (8) <= (value);
+      if ((EGL_FALSE) ==
+          (eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &value))) {
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
+                            "cant get config attrib blue-size");
+      }
+      auto cond2 = (8) <= (value);
+      if ((EGL_FALSE) ==
+          (eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &value))) {
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG,
+                            "cant get config attrib alpha-size");
+      }
+      auto cond3 = (8) <= (value);
+      ;
+      ;
+      ;
+      if (((cond0) && (cond1) && (cond2) && (cond3) && (cond4) && (cond5) &&
+           (cond6))) {
+        foundConfig = config;
+      }
+    }
   }
 }

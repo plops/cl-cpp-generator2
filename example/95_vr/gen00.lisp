@@ -376,7 +376,7 @@
 							   ,(lprint :msg "cant get surface config type"))
 							 (return i))
 						       (EGLint 0))))
-				    ,(let ((l `((red-size 8)
+				    ,(let ((l-attrib `((red-size 8)
 						(green-size 8)
 						(blue-size 8)
 						(alpha-size 8)
@@ -385,19 +385,19 @@
 						(samples 0))))
 				       `(progn
 					  (let ((value (EGLint 0)))
-					    ,@(loop for (e f) in l
+					    ,@(loop for (e f) in l-attrib
 						    and i from 0
 						    collect
 						    (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
-						      (unless (== 0 f)
+						      (unless (eq 0 f)
 							`(do0
 							  (when (== EGL_FALSE
 								    (eglGetConfigAttrib display config ,attrib &value))
 							    ,(lprint :msg (format nil "cant get config attrib ~a" e)))
 							  (let ((,(format nil "cond~a" i) (<= ,f value))))))))
-					    (when (and ,@(loop for e in l and i from 0
+					    (when (and ,@(loop for e in l-attrib and i from 0
 							       collect
-							       ,(format nil "cond~a" i)))
+							       (format nil "cond~a" i)))
 					      (setf foundConfig config)))))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
