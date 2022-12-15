@@ -587,7 +587,9 @@
 		       <android/window.h>
 					;<cstdin>
 		       <cstdlib>
-		       <unistd.h>))
+		       <unistd.h>
+		       ))
+       (include "App.h")
 
        (do0
 	"#define FMT_HEADER_ONLY"
@@ -628,9 +630,9 @@
 	      ,(lprint :msg "can't initialize vr api")
 	      (std--exit 1))))
 
-	 #+nil (do0
-		(let ((app (App
-			    &java)))))
+	 (do0
+	  (let ((app (App
+		      &java)))))
 	 )
 
        ))
