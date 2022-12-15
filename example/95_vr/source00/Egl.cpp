@@ -49,7 +49,7 @@ Egl::Egl() : diplay(eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
       return i;
     })(EGLint(0));
     {
-      auto check = [&](auto attrib) -> auto {
+      auto check = [&](auto attrib) -> auto{
         auto value = EGLint(0);
         if ((EGL_FALSE) ==
             (eglGetConfigAttrib(display, config, attrib, &value))) {

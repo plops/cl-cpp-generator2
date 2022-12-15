@@ -85,7 +85,8 @@
 (defun write-source (name code &key
 				 (dir (user-homedir-pathname))
 				 ignore-hash
-				 (format t))
+				 (format t)
+				 (tidy t))
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
 	 (code-str (emit-c :code code :header-only nil))
@@ -114,7 +115,14 @@
 			      (list "-i"  (namestring fn)
 				    "-style=llvm" ;; removes unneccessary parentheses (i hope)
 				    ;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
-				    )))))))
+				    )))
+	(when tidy
+	  (sb-ext:run-program "/usr/bin/clang-tidy"
+			      (list (namestring fn)
+       				    "--checks=readability-*"
+				    "--fix"
+				    ))
+	  )))))
 
 ;; http://clhs.lisp.se/Body/s_declar.htm
 ;; http://clhs.lisp.se/Body/d_type.htm
