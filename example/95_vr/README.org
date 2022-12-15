@@ -238,3 +238,8 @@ sudo dnf install java-1.8.0-openjdk-devel
 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.352.b08-2.fc37.x86_64/bin/javac
 
 #+end_example
+
+- i copied the following boiler plate from hello_quest repo:
+  - MainActivity.java
+  - src/main/cpp/android_native_app_glue.c
+  - src/main/cpp/android_native_app_glue.h

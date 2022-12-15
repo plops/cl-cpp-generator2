@@ -9,7 +9,7 @@
 	'ANDROID_LOG_VERBOSE)
        ((string= level "error")
 	'ANDROID_LOG_ERROR))
-    TAG
+    (string "hello_quest")					;TAG
     ,(if vars
 	 `(fmt--print
 	   (string ,(format nil "~a~{ ~a~}"

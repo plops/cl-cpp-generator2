@@ -21,5 +21,7 @@ dx --dex --output classes.dex .
 mkdir -p lib/arm64-v8a
 pushd lib/arm64-v8a
 
+export CC=aarch64-linux-android29-clang
+export CXX=aarch64-linux-android29-clang++
 cmake /home/martin/stage/cl-cpp-generator2/example/95_vr/source00
 make

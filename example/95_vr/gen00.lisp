@@ -38,6 +38,7 @@
 					;  <memory>
 				)
 
+			       #+nil
 			       (include
 				"App.h"
 				"AttribPointer.h"
@@ -65,9 +66,11 @@
 					<GLES3/gl3.h>
 					<android/log.h>
 					<android/window.h>
-					<cstdin>
+					;<cstdin>
+					<vector>
 					<cstdlib>
 					<unistd.h>)))
+
     (let ((name `App))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -76,8 +79,25 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  #+nil(include
+
+				"AttribPointer.h"
+				"core.h"
+				"Cube.h"
+				"Egl.h"
+				"format.h"
+				"format-inl.h"
+				"Framebuffer.h"
+				"Geometry.h"
+				"Program.h"
+				"Renderer.h"
+				"Vertex.h"
+
+
+				)
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*
 				  )
        :code `(do0
@@ -85,8 +105,8 @@
 		 "public:"
 		 "ovrJava* java;"
 		 "bool resumed;"
-		 "Egl egl;"
-		 "Renderer renderer;"
+					;"Egl egl;"
+					;"Renderer renderer;"
 		 "ANativeWindow* window;"
 		 "ovrMobile* ovr;"
 		 "bool back_button_down_previous_frame;"
@@ -99,15 +119,15 @@
 		    (construct
 		     (java java)
 		     (resumed false)
-		     (egl (Egl))
-		     (renderer
-		      (Renderer
-		       (vrapi_GetystemPropertyInit
-			java
-			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
-		       (vrapi_GetystemPropertyInit
-			java
-			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
+		     #+nil (egl (Egl))
+		     #+nil (renderer
+			    (Renderer
+			     (vrapi_GetSystemPropertyInt
+			      java
+			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
+			     (vrapi_GetSystemPropertyInt
+			      java
+			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
 		     (window nullptr)
 		     (ovr nullptr)
 		     (back_button_down_previous_frame false)
@@ -124,6 +144,7 @@
 		 )
 	       )))
 
+    #+nil
     (let ((name `Renderer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -134,6 +155,7 @@
        :header-preamble `(do0
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
@@ -160,7 +182,7 @@
 			   )
 			  (values :constructor))
 			 )))))
-
+    #+nil
     (let ((name `Cube))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -171,6 +193,7 @@
        :header-preamble `(do0
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*
 				  )
        :code `(do0
@@ -203,7 +226,7 @@
 			     0 1 7 7 4 0)))
 		    (values :constructor))))
 	       )))
-
+    #+nil
     (let ((name `Vertex))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -214,8 +237,10 @@
        :header-preamble `(do0
 			  (include <array>)
 			  ,*includes*)
-       :implementation-preamble `(do0,*includes*
-				  (include "bah.h"))
+       :implementation-preamble `(do0
+				  ,*includes*
+				  (include ,(format nil "~a.h" name))
+				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -241,6 +266,7 @@
 		    	  (construct)
 			  (values :constructor)))))))
 
+
     (let ((name `AttribPointer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -252,6 +278,7 @@
 			  ,*includes*)
        :implementation-preamble `(do0
 				  ,*includes*
+				  (include ,(format nil "~a.h" name))
 				  )
        :code `(do0
 	       (defclass ,name ()
@@ -287,7 +314,7 @@
 			 )
 		 )
 	       )))
-
+    #+nil
     (let ((name `Geometry))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -299,7 +326,7 @@
 			  ,*includes*)
        :implementation-preamble `(do0
 				  ,*includes*
-				  (include "bah.h")
+				  (include ,(format nil "~a.h" name))
 				  "extern static const std::array<AttribPointer,2> ATTRIB_POINTERS;")
        :code `(do0
 	       (defclass ,name ()
@@ -346,6 +373,7 @@
 		   (glDeleteBuffers 1 &vertex_buffer)
 		   (glDeleteVertexArrays 1 &vertex_array))))))
 
+    #+nil
     (let ((name `Egl))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -356,6 +384,7 @@
        :header-preamble `(do0
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
@@ -460,7 +489,7 @@
 			  (values :constructor))			 )
 		 )
 	       )))
-
+    #+nil
     (let ((name `Framebuffer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -471,6 +500,7 @@
        :header-preamble `(do0
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
@@ -492,7 +522,7 @@
 			 )
 		 )
 	       )))
-
+    #+nil
     (let ((name `Program))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -503,6 +533,7 @@
        :header-preamble `(do0
 			  ,*includes*)
        :implementation-preamble `(do0
+				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
@@ -543,7 +574,7 @@
 	       )
 
 
-
+					; (include "AttribPointer.h")
 	      (include "VrApi.h"
 		       "VrApi_Helpers.h"
 		       "VrApi_Input.h"
@@ -554,7 +585,7 @@
 		       <GLES3/gl3.h>
 		       <android/log.h>
 		       <android/window.h>
-		       <cstdin>
+					;<cstdin>
 		       <cstdlib>
 		       <unistd.h>))
 
@@ -563,12 +594,12 @@
 
 	(include "core.h"))
 
-       (let ((ATTRIB_POINTERS
-	      (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-				    (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
-		     (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-				    (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
-	 (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
+       #+nil (let ((ATTRIB_POINTERS
+		    (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+					  (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
+			   (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+					  (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
+	       (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
        (defun android_main (android_app)
 	 (declare (type android_app* android_app))
@@ -582,23 +613,24 @@
 		   :level "info")
 	  (let ((java (ovrJava)))
 	    (setf java.Vm android_app->activity->vm)
-	    (-> (deref java.Vm)
-		(AttachCurrentThread java.Vm
-				     &java.Env
-				     nullptr))))
+	    (-> java.Vm ;"(*java.Vm)"
+		(AttachCurrentThread ;java.Vm
+		 &java.Env
+		 nullptr
+		 ))))
 
 	 (do0
 	  ,(lprint :msg "initialize vr api")
-	  (let ((init_params (vrapi_DefaultInitParams
+	  (let ((init_params (vrapi_DefaultInitParms
 			      &java)))
 	    (unless (== VRAPI_INITIALIZE_SUCCESS
 			(vrapi_Initialize &init_params))
 	      ,(lprint :msg "can't initialize vr api")
 	      (std--exit 1))))
 
-	 (do0
-	  (let ((app (App &app
-			  &java)))))
+	 #+nil (do0
+		(let ((app (App
+			    &java)))))
 	 )
 
        ))
@@ -619,7 +651,7 @@
 	    ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 	    (short-file "" ;"-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/86_glbinding_av/source01/="
 	      )
-	    (show-err "-Wall -Wextra -std=c++20 -march=armv8-a "	;
+	    (show-err "-Wall -Wextra -std=c++20"	;  -march=arm-v8a
 					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
@@ -629,11 +661,14 @@
 	  (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	  (out "project( mytest LANGUAGES CXX )")
 
-	  (out "set( CMAKE_CXX_COMPILER aarch64-linux-android29-clang++ )")
+          (out "set( CMAKE_C_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang )")
+	  (out "set( CMAKE_CXX_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ )")
+
 					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
 	  (out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	  (out "set (CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
 	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 
@@ -642,6 +677,7 @@
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
 		(directory (format nil "~a/*.cpp" *full-source-dir*))
+		(directory (format nil "~a/*.c" *full-source-dir*))
 		))
 
 					;(out "add_executable( mytest ${SRCS} )")
@@ -659,13 +695,16 @@
 
 
 	  (out "target_include_directories( mytest PRIVATE
-
+/home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/
+/home/martin/quest2/ovr/VrApi/Include
 )")
-	  #+nil (progn
-		  (out "add_library( libnc SHARED IMPORTED )")
-		  (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
+	  ;;/home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug
+					; /platforms/android-26/arch-arm64/usr/lib
+	  (progn
+	    (out "add_library( vrapi SHARED IMPORTED )")
+	    (out "set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )")
-		  )
+	    )
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(android
