@@ -22,3 +22,4 @@ mkdir -p lib/arm64-v8a
 pushd lib/arm64-v8a
 
 cmake /home/martin/stage/cl-cpp-generator2/example/95_vr/source00
+make

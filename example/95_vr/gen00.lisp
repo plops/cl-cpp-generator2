@@ -24,6 +24,50 @@
 				     *source-dir*))
     (ensure-directories-exist *full-source-dir*)
     (load "util.lisp")
+
+    (defparameter *includes* `(do0
+					;(include <spdlog/spdlog.h>)
+			       (include
+					;<tuple>
+					;<mutex>
+					;<thread>
+				<iostream>
+					;<iomanip>
+					;<chrono>
+					;<cassert>
+					;  <memory>
+				)
+
+			       (include
+				"App.h"
+				"AttribPointer.h"
+				"core.h"
+				"Cube.h"
+				"Egl.h"
+				"format.h"
+				"format-inl.h"
+				"Framebuffer.h"
+				"Geometry.h"
+				"Program.h"
+				"Renderer.h"
+				"Vertex.h"
+
+
+				)
+
+			       (include "VrApi.h"
+					"VrApi_Helpers.h"
+					"VrApi_Input.h"
+					"VrApi_SystemUtils.h"
+					"android_native_app_glue.h"
+					<EGL/egl.h>
+					<EGL/eglext.h>
+					<GLES3/gl3.h>
+					<android/log.h>
+					<android/window.h>
+					<cstdin>
+					<cstdlib>
+					<unistd.h>)))
     (let ((name `App))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -32,9 +76,10 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*
+				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -87,9 +132,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -124,9 +169,10 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*
+				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -167,8 +213,8 @@
        :headers `()
        :header-preamble `(do0
 			  (include <array>)
-			  (include "bla.h"))
-       :implementation-preamble `(do0
+			  ,*includes*)
+       :implementation-preamble `(do0,*includes*
 				  (include "bah.h"))
        :code `(do0
 	       (defclass ,name ()
@@ -203,9 +249,10 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*
+				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -249,8 +296,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
+				  ,*includes*
 				  (include "bah.h")
 				  "extern static const std::array<AttribPointer,2> ATTRIB_POINTERS;")
        :code `(do0
@@ -306,9 +354,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -421,9 +469,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -453,9 +501,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "bla.h"))
+			  ,*includes*)
        :implementation-preamble `(do0
-				  (include "bah.h"))
+				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -479,36 +527,36 @@
      `(do0
 
 
-       (include
+
+       ,*includes*
+       #+nil (do0
+					;(include <spdlog/spdlog.h>)
+	      (include
 					;<tuple>
 					;<mutex>
 					;<thread>
-	<iostream>
+	       <iostream>
 					;<iomanip>
 					;<chrono>
 					;<cassert>
 					;  <memory>
-	)
-
-       (do0
-	(include <spdlog/spdlog.h>)
+	       )
 
 
 
-	)
-       (include "VrApi.h"
-		"VrApi_Helpers.h"
-		"VrApi_Input.h"
-		"VrApi_SystemUtils.h"
-		"android_native_app_glue.h"
-		<EGL/egl.h>
-		<EGL/eglext.h>
-		<GLES3/gl3.h>
-		<android/log.h>
-		<android/window.h>
-		<cstdin>
-		<cstdlib>
-		<unistd.h>)
+	      (include "VrApi.h"
+		       "VrApi_Helpers.h"
+		       "VrApi_Input.h"
+		       "VrApi_SystemUtils.h"
+		       "android_native_app_glue.h"
+		       <EGL/egl.h>
+		       <EGL/eglext.h>
+		       <GLES3/gl3.h>
+		       <android/log.h>
+		       <android/window.h>
+		       <cstdin>
+		       <cstdlib>
+		       <unistd.h>))
 
        (do0
 	"#define FMT_HEADER_ONLY"
