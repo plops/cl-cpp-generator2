@@ -130,5 +130,78 @@ gpiochip0          null                     sec_nvm_sp_keymaster      syncboss_c
 gpiochip1          pmsg0                    sec_nvm_sp_nvm            syncboss_powerstate0 zero         
 gpiochip2          ppp                      sg0                       syncboss_stream0     
 
+hollywood:/dev $ getprop ro.build.version.sdk 
+29
+hollywood:/dev $ getprop ro.build.version.release                                                                       
+10
+[ro.product.cpu.abi]: [arm64-v8a]
+[ro.product.cpu.abilist]: [arm64-v8a,armeabi-v7a,armeabi]
+[ro.product.cpu.abilist32]: [armeabi-v7a,armeabi]
+[ro.product.cpu.abilist64]: [arm64-v8a]
+
+[ro.sf.lcd_density]: [290]
+[ro.sf.lcd_density_scale]: [0.42]
+[ro.surface_flinger.disable_refresh_rate_update]: [true]
+[ro.surface_flinger.discard_framebuffer_surface]: [true]
+[ro.surface_flinger.protected_contents]: [true]
+[ro.surface_flinger.writeback_dpu_cac]: [1]
+[ro.system.build.date]: [Mon Dec 12 15:05:51 PST 2022]
+
+hollywood:/ $ mount
+tmpfs on /dev type tmpfs (rw,seclabel,nosuid,relatime,size=2972924k,nr_inodes=743231,mode=755)
+devpts on /dev/pts type devpts (rw,seclabel,relatime,mode=600,ptmxmode=000)
+proc on /proc type proc (rw,relatime,gid=3009,hidepid=2)
+sysfs on /sys type sysfs (rw,seclabel,relatime)
+selinuxfs on /sys/fs/selinux type selinuxfs (rw,relatime)
+tmpfs on /mnt type tmpfs (rw,seclabel,nosuid,nodev,noexec,relatime,size=2972924k,nr_inodes=743231,mode=755,gid=1000)
+tmpfs on /apex type tmpfs (rw,seclabel,nosuid,nodev,noexec,relatime,size=2972924k,nr_inodes=743231,mode=755)
+/dev/block/sda8 on /metadata type ext4 (rw,seclabel,nosuid,nodev,noatime,discard,nodelalloc,commit=1,data=journal)
+/dev/block/dm-4 on / type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-5 on /vendor type ext4 (ro,seclabel,relatime,discard)
+none on /dev/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,blkio)
+none on /dev/cg2_bpf type cgroup2 (rw,nosuid,nodev,noexec,relatime)
+none on /dev/cpuctl type cgroup (rw,nosuid,nodev,noexec,relatime,cpu)
+none on /acct type cgroup (rw,nosuid,nodev,noexec,relatime,cpuacct)
+none on /dev/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,cpuset,noprefix,release_agent=/sbin/cpuset_release_agent)
+none on /dev/memcg type cgroup (rw,nosuid,nodev,noexec,relatime,memory)
+none on /dev/stune type cgroup (rw,nosuid,nodev,noexec,relatime,schedtune)
+/dev/block/dm-4 on /apex/com.android.tzdata@299900000 type ext4 (ro,seclabel,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.tzdata type ext4 (ro,seclabel,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.runtime@1 type ext4 (ro,seclabel,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.runtime type ext4 (ro,seclabel,relatime,discard)
+debugfs on /sys/kernel/debug type debugfs (rw,seclabel,relatime)
+/dev/block/sda2 on /persist type ext4 (rw,sync,seclabel,nosuid,nodev,noatime)
+none on /config type configfs (rw,nosuid,nodev,noexec,relatime)
+bpf on /sys/fs/bpf type bpf (rw,nosuid,nodev,noexec,relatime)
+pstore on /sys/fs/pstore type pstore (rw,seclabel,nosuid,nodev,noexec,relatime)
+tracefs on /sys/kernel/debug/tracing type tracefs (rw,seclabel,relatime)
+/dev/block/sde24 on /vendor/firmware_mnt type vfat (ro,context=u:object_r:firmware_file:s0,relatime,uid=1000,gid=1000,fmask=0337,dmask=0227,codepage=437,iocharset=iso8859-1,shortname=lower,errors=remount-ro)
+tmpfs on /storage type tmpfs (rw,seclabel,nosuid,nodev,noexec,relatime,size=2972924k,nr_inodes=743231,mode=755,gid=1000)
+/dev/block/dm-6 on /data type f2fs (rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,inline_data,inline_dentry,flush_merge,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=1065,alloc_mode=default,fsync_mode=nobarrier)
+/dev/block/dm-4 on /apex/com.android.conscrypt@299900000 type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.conscrypt type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.media@299900000 type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.media type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.media.swcodec@299900000 type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.media.swcodec type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.resolv@299900000 type ext4 (ro,seclabel,nodev,relatime,discard)
+/dev/block/dm-4 on /apex/com.android.resolv type ext4 (ro,seclabel,nodev,relatime,discard)
+tmpfs on /data/vendor/wifi/wpa/sockets type tmpfs (rw,seclabel,nosuid,nodev,noexec,relatime,size=2972924k,nr_inodes=743231)
+/dev/block/loop0 on /data/misc/vision type ext4 (rw,seclabel,relatime)
+adb on /dev/usb-ffs/adb type functionfs (rw,relatime)
+xrsp on /dev/usb-ffs/xrsp type functionfs (rw,relatime)
+mtp on /dev/usb-ffs/mtp type functionfs (rw,relatime)
+/data/media on /mnt/runtime/default/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal)
+/data/media on /storage/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal)
+/data/media on /mnt/runtime/read/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=23,derive_gid,default_normal)
+/data/media on /mnt/runtime/write/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=7,derive_gid,default_normal)
+/data/media on /mnt/runtime/full/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=7,derive_gid,default_normal)
 
 #+end_example
+
+- i need to build for android 10, api 29, arm64
+
+- https://dl.google.com/android/repository/android-ndk-r25b-linux.zip 506MB
+- https://developer.android.com/studio command line tools only
+  - https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip 121MB
+    - use included sdk manager to download sdk
