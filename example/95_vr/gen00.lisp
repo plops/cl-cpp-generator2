@@ -56,26 +56,26 @@
 		     (resumed false)
 		     (egl (Egl))
 		     (renderer
-			    (Renderer
-			     (vrapi_GetystemPropertyInit
-			      java
-			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
-			     (vrapi_GetystemPropertyInit
-			      java
-			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
+		      (Renderer
+		       (vrapi_GetystemPropertyInit
+			java
+			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
+		       (vrapi_GetystemPropertyInit
+			java
+			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
 		     (window nullptr)
 		     (ovr nullptr)
 		     (back_button_down_previous_frame false)
 		     (frame_index 0))
 		    (values :constructor)))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
-		   (declare
+			 (declare
 					;  (explicit)
-		    
-		    (construct
-		     )
-		    (values :constructor))
-		   )
+
+			  (construct
+			   )
+			  (values :constructor))
+			 )
 		 )
 	       )))
 
@@ -106,15 +106,15 @@
 		    (values :constructor))
 		   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
 		     (framebuffers.push_back
-			   (Framebuffer width height))))
-		#+nil (defmethod ,(format nil "~~~a" name) ()
-		   (declare
+		      (Framebuffer width height))))
+		 #+nil (defmethod ,(format nil "~~~a" name) ()
+			 (declare
 					;  (explicit)
-		    
-		    (construct
-		     )
-		    (values :constructor))
-			)))))
+
+			  (construct
+			   )
+			  (values :constructor))
+			 )))))
 
     (let ((name `Cube))
       (write-class
@@ -157,7 +157,7 @@
 			     0 1 7 7 4 0)))
 		    (values :constructor))))
 	       )))
-   
+
     (let ((name `Vertex))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -176,25 +176,25 @@
 		 "std::array<float,4> position;"
 		 "std::array<float,4> color;"
 		 (defmethod ,name (size type normalized stride pointer)
-		   	 (declare
-			  (type GLint size)
-			  (type GLenum type)
-			  (type GLboolean normalized)
-			  (type GLsizei stride)
-			  (type "const GLvoid*" pointer)
+		   (declare
+		    (type GLint size)
+		    (type GLenum type)
+		    (type GLboolean normalized)
+		    (type GLsizei stride)
+		    (type "const GLvoid*" pointer)
 					;  (explicit)
-			  (construct (size size)
-				     (type type)
-				     (normalized normalized)
-				     (stride stride)
-				     (pointer pointer))
-			  (values :constructor)))
+		    (construct (size size)
+			       (type type)
+			       (normalized normalized)
+			       (stride stride)
+			       (pointer pointer))
+		    (values :constructor)))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
 		    	  (construct)
 			  (values :constructor)))))))
-    
+
     (let ((name `AttribPointer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -215,7 +215,7 @@
 		 "GLsizei stride;"
 		 "const GLvoid* pointer;"
 		 (defmethod ,name (size type normalized stride pointer)
-		   
+
 		   (declare
 		    (type GLint size)
 		    (type GLenum type)
@@ -232,11 +232,11 @@
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
-		    
+
 			  (construct
 			   )
 			  (values :constructor))
-		 
+
 			 )
 		 )
 	       )))
@@ -272,13 +272,13 @@
 				 (cube.vertices.data)
 				 GL_STATIC_DRAW)
 		   (let ((i 0))
-		    (for-range (attrib ATTRIB_POINTERS)
-			       (glEnableVertexAttribArray i)
-			       (glVertexAttribPointer
-				i attrib.size attrib.type
-				attrib.normalized attrib.stride
-				attrib.pointer)
-			       (incf i)))
+		     (for-range (attrib ATTRIB_POINTERS)
+				(glEnableVertexAttribArray i)
+				(glVertexAttribPointer
+				 i attrib.size attrib.type
+				 attrib.normalized attrib.stride
+				 attrib.pointer)
+				(incf i)))
 		   (glGenBuffers 1 &index_buffer)
 		   (glBindBuffer GL_ELEMENT_ARRAY_BUFFER
 				 index_buffer)
@@ -290,14 +290,14 @@
 				 GL_STATIC_DRAW)
 		   (glBindVertexArray 0))
 		 (defmethod ,(format nil "~~~a" name) ()
-			 (declare
+		   (declare
 					;  (explicit)
-		    	  (construct)
-			  (values :constructor))
+		    (construct)
+		    (values :constructor))
 		   (glDeleteBuffers 1 &index_buffer)
 		   (glDeleteBuffers 1 &vertex_buffer)
 		   (glDeleteVertexArrays 1 &vertex_array))))))
-    
+
     (let ((name `Egl))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -346,73 +346,73 @@
 		   (do0
 		    ,(lprint :msg "choose egl config")
 		    (let ((foundConfig (EGLConfig nullptr)))
-		     (for-range (config configs)
-				(let ((renderable_type ((lambda (renderable_type)
-							  (declare (type aute renderable_type))
+		      (for-range (config configs)
+				 (let ((renderable_type ((lambda (renderable_type)
+							   (declare (type aute renderable_type))
+							   (when (== EGL_FALSE
+								     (eglGetConfigAttrib display
+											 config
+											 EGL_RENDERABLE_TYPE
+											 &renderable_type))
+							     ,(lprint :msg "cant get EGL config renderable type"))
+							   (return renderable_type))
+							 (EGLint 0))))
+				   (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
+								EGL_PBUFFER_BIT
+								EGL_WINDOW_BIT)
+						     collect
+						     `(== 0
+							  (logand renderable_type
+								  ,e))
+						     ))
+				     continue)
+				   (let ((surface_type ((lambda (i)
+							  (declare (type auto i))
 							  (when (== EGL_FALSE
-								    (eglGetConfigAttrib display
-											config
-											EGL_RENDERABLE_TYPE
-											&renderable_type))
-							    ,(lprint :msg "cant get EGL config renderable type"))
-							  (return renderable_type))
+								    (eglGetConfigAttrib
+								     display
+								     config
+								     EGL_SURFACE_TYPE
+								     &i))
+							    ,(lprint :msg "cant get surface config type"))
+							  (return i))
 							(EGLint 0))))
-				 (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
-							      EGL_PBUFFER_BIT
-							      EGL_WINDOW_BIT)
-						 collect
-						 `(== 0
-						      (logand renderable_type
-							      ,e))
-						  ))
-				   continue)
-			       (let ((surface_type ((lambda (i)
-							 (declare (type auto i))
-							 (when (== EGL_FALSE
-								   (eglGetConfigAttrib
-								    display
-								    config
-								    EGL_SURFACE_TYPE
-								    &i))
-							   ,(lprint :msg "cant get surface config type"))
-							 (return i))
-						       (EGLint 0))))
-				    ,(let ((l-attrib `((red-size 8)
-						(green-size 8)
-						       (blue-size 8)
-						(alpha-size 8)
-						(depth-size 0)
-						(stencil-size 0)
-						(samples 0))))
-				       `(progn
-					  (let (
-						(check (lambda (attrib)
-							 (declare (type auto attrib)
-								  (values auto)
-								  (capture "&"))
-							 (let ((value (EGLint 0)))
-							  (when (== EGL_FALSE
-								    (eglGetConfigAttrib display config attrib &value))
-							    ,(lprint :msg "cant get config attrib")))
-							 (return value))))
-					    (when (and ,@(remove-if
-							  #'null
-							  (loop for (e f) in l-attrib and i from 0
-									  collect
-									  (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
-									    (unless (eq 0 f)
-									      `(<= ,f (check ,attrib)))))))
-					      (setf foundConfig config)))))))))))
+				     ,(let ((l-attrib `((red-size 8)
+							(green-size 8)
+							(blue-size 8)
+							(alpha-size 8)
+							(depth-size 0)
+							(stencil-size 0)
+							(samples 0))))
+					`(progn
+					   (let (
+						 (check (lambda (attrib)
+							  (declare (type auto attrib)
+								   (values auto)
+								   (capture "&"))
+							  (let ((value (EGLint 0)))
+							    (when (== EGL_FALSE
+								      (eglGetConfigAttrib display config attrib &value))
+							      ,(lprint :msg "cant get config attrib")))
+							  (return value))))
+					     (when (and ,@(remove-if
+							   #'null
+							   (loop for (e f) in l-attrib and i from 0
+								 collect
+								 (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
+								   (unless (eq 0 f)
+								     `(<= ,f (check ,attrib)))))))
+					       (setf foundConfig config)))))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
-		    
+
 			  (construct
 			   )
 			  (values :constructor))			 )
 		 )
 	       )))
-    
+
     (let ((name `Framebuffer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -434,14 +434,14 @@
 		    (values :constructor))
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
-		   (declare
+			 (declare
 					;  (explicit)
-		    
-		    (construct
-		     )
-		    (values :constructor))
-			 
-		   )
+
+			  (construct
+			   )
+			  (values :constructor))
+
+			 )
 		 )
 	       )))
 
@@ -468,7 +468,7 @@
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
-		    
+
 			  (construct)
 			  (values :constructor)))))))
     (write-source
@@ -492,7 +492,7 @@
 
        (do0
 	(include <spdlog/spdlog.h>)
-					
+
 
 
 	)
@@ -516,10 +516,10 @@
 	(include "core.h"))
 
        (let ((ATTRIB_POINTERS
-	       (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-				     (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
-		      (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-				     (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
+	      (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				    (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
+		     (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				    (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
 	 (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
        (defun android_main (android_app)
@@ -555,7 +555,6 @@
 
        ))
 
-    #+nil
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output
 		       :if-exists :supersede
@@ -572,7 +571,7 @@
 	    ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 	    (short-file "" ;"-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/86_glbinding_av/source01/="
 	      )
-	    (show-err "-Wall -Wextra"	;
+	    (show-err "-Wall -Wextra -std=c++20 -march=armv8-a "	;
 					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
@@ -582,7 +581,7 @@
 	  (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
 	  (out "project( mytest LANGUAGES CXX )")
 
-	  ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
+	  (out "set( CMAKE_CXX_COMPILER aarch64-linux-android29-clang++ )")
 					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
 	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
@@ -597,22 +596,22 @@
 		(directory (format nil "~a/*.cpp" *full-source-dir*))
 		))
 
-	  (out "add_executable( mytest ${SRCS} )")
+					;(out "add_executable( mytest ${SRCS} )")
+	  (out "add_library (mytest SHARED ${SRCS} )")
 
 
 
 
 	  (out "set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )")
 
-	  (out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
+					;(out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
 
-	  (out "find_package( PkgConfig REQUIRED )")
-	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
+					;(out "find_package( PkgConfig REQUIRED )")
+					;(out "pkg_check_modules( spdlog REQUIRED spdlog )")
 
 
 	  (out "target_include_directories( mytest PRIVATE
-/usr/local/include/
-/home/martin/src/popl/include/
+
 )")
 	  #+nil (progn
 		  (out "add_library( libnc SHARED IMPORTED )")
@@ -621,10 +620,10 @@
 		  )
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `(spdlog
-		 pthread
-		 X11
-		 Xext
+	       `(android
+		 log
+		 vrapi
+
 		 ))
 
 	  #+nil

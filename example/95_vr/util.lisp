@@ -1,7 +1,7 @@
 (defun lprint (&key (msg "")
 		 (level "info")
 		 (vars nil)
-					
+
 		 )
   `(__android_log_print
     ,(cond
@@ -11,14 +11,14 @@
 	'ANDROID_LOG_ERROR))
     TAG
     ,(if vars
-     `(fmt--print
-      (string ,(format nil "~a~{ ~a~}"
-		       msg
-		       (loop for e in vars
-			     collect
-			     (format nil " ~a='{}'" (emit-c :code e)))))
-      ,@vars)
-     `(string ,(format nil "~a" msg)))))
+	 `(fmt--print
+	   (string ,(format nil "~a~{ ~a~}"
+			    msg
+			    (loop for e in vars
+				  collect
+				  (format nil " ~a='{}'" (emit-c :code e)))))
+	   ,@vars)
+	 `(string ,(format nil "~a" msg)))))
 
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"

@@ -205,3 +205,36 @@ mtp on /dev/usb-ffs/mtp type functionfs (rw,relatime)
 - https://developer.android.com/studio command line tools only
   - https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip 121MB
     - use included sdk manager to download sdk
+    - https://guides.codepath.com/android/installing-android-sdk-tools
+#+begin_example
+
+
+
+$ tools/bin/sdkmanager --update
+$ tools/bin/sdkmanager "platforms;android-25" "build-tools;25.0.2" "extras;google;m2repository" "extras;android;m2repository"
+$ tools/bin/sdkmanager --licenses
+
+
+sdkmanager "build-tools;29.0.3" --sdk_root=/home/martin/quest2/sdk
+
+cmdline-tools/bin/sdkmanager "build-tools;29.0.3" --sdk_root=sdk  # 1GB on disk
+cmdline-tools/bin/sdkmanager "platforms;android-29" --sdk_root=sdk # 200MB on disk
+
+#+end_example
+
+- https://developer.oculus.com/downloads/
+  - https://developer.oculus.com/downloads/package/oculus-mobile-sdk
+  - guide: https://developer.oculus.com/documentation/native/android/
+  - https://securecdn.oculus.com/binaries/download/?id=46... 15MB
+
+- apparently on ubuntu one needs
+  #+begin_example
+
+sudo apt-get install libc6-dev-i386 lib32z1 openjdk-8-jdk
+
+on fedora
+
+sudo dnf install java-1.8.0-openjdk-devel
+/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.352.b08-2.fc37.x86_64/bin/javac
+
+#+end_example
