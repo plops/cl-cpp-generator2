@@ -17,7 +17,8 @@ int main(int argc, char **argv) {
   auto w = DisplayWidth(display, screenNum);
   auto h = DisplayHeight(display, screenNum);
   info.shmid = -1;
-  auto *image = XShmCreateImage(display, DefaultVisual(display, 0), 24, ZPixmap,
+  auto *image = XShmCreateImage(display, DefaultVisual(display, screenNum),
+                                DefaultDepth(display, screenNum), ZPixmap,
                                 nullptr, &info, w, h);
   info.shmid = shmget(IPC_PRIVATE, ((image->bytes_per_line) * (image->height)),
                       ((IPC_CREAT) | (0777)));

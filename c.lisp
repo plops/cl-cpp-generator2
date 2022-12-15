@@ -112,6 +112,7 @@
 	(when format
 	  (sb-ext:run-program "/usr/bin/clang-format"
 			      (list "-i"  (namestring fn)
+				    "-style=llvm" ;; removes unneccessary parentheses (i hope)
 				    ;; "-style='{PenaltyReturnTypeOnItsOwnLine: 100000000}'"
 				    )))))))
 

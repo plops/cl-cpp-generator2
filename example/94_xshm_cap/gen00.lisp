@@ -100,9 +100,9 @@
 		 (h (DisplayHeight display screenNum)))
 	     (setf info.shmid -1)
 	     (let ((*image (XShmCreateImage display
-					    (DefaultVisual display 0)
+					    (DefaultVisual display screenNum)
 					    ;; nullptr
-					    24
+					    (DefaultDepth display screenNum)
 					    ZPixmap
 					    nullptr
 					    &info
@@ -111,6 +111,7 @@
 					(* image->bytes_per_line
 					   image->height)
 					(logior IPC_CREAT
+
 						"0777"
 					;"0700"
 						)))
