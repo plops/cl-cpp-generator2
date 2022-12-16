@@ -1,3 +1,2 @@
 #!/bin/bash
-adb uninstall com.makepad.hello_quest
-adb install build/hello_quest.apk
+adb shell am start -n com.makepad.hello_quest/com.makepad.hello_quest.MainActivity

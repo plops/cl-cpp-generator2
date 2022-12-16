@@ -246,3 +246,13 @@ sudo dnf install java-1.8.0-openjdk-devel
   - src/main/AndroidManifest.xml
 
 - build takes now 5sec
+
+
+- the install doesnt work. here are the corresponding lines from `adb logcat`
+
+#+begin_example
+12-16 08:38:31.493  2301  2301 W OVRLibrary: null cursor received for query content://com.oculus.ocms.library/apps/com.makepad.hello_quest
+12-16 08:38:31.496  1058  1565 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.PACKAGE_ADDED dat=package:com.makepad.hello_quest flg=0x4000010 (has extras) } to com.oculus.socialplatform/com.oculus.common.packagescache.PackagesCacheReceiver
+
+
+#+end_example
