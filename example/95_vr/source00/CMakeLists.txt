@@ -9,6 +9,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0   -Wall -Wextra -std=c++20  ")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra -std=c++20 ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/App.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AttribPointer.cpp
+/home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Egl.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/main.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/android_native_app_glue.c )
 add_library (main SHARED ${SRCS} )
@@ -20,7 +21,4 @@ target_include_directories( main PRIVATE
 add_library( vrapi SHARED IMPORTED )
 set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )
-add_library( c++shared SHARED IMPORTED )
-set_target_properties( c++shared PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so
- )
-target_link_libraries( main PRIVATE android log vrapi c++shared )
+target_link_libraries( main PRIVATE android log vrapi )

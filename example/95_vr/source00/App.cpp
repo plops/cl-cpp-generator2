@@ -15,5 +15,5 @@
 #include <unistd.h>
 #include <vector>
 App::App(ovrJava *java)
-    : java(java), resumed(false), window(nullptr), ovr(nullptr),
+    : java(java), resumed(false), egl(Egl()), window(nullptr), ovr(nullptr),
       back_button_down_previous_frame(false), frame_index(0) {}

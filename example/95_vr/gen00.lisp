@@ -79,8 +79,8 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  (include "Egl.h")
 			  #+nil(include
-
 				"AttribPointer.h"
 				"core.h"
 				"Cube.h"
@@ -91,21 +91,17 @@
 				"Geometry.h"
 				"Program.h"
 				"Renderer.h"
-				"Vertex.h"
-
-
-				)
+				"Vertex.h")
 			  ,*includes*)
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
-				  ,*includes*
-				  )
+				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
 		 "ovrJava* java;"
 		 "bool resumed;"
-					;"Egl egl;"
+		 "Egl egl;"
 					;"Renderer renderer;"
 		 "ANativeWindow* window;"
 		 "ovrMobile* ovr;"
@@ -119,7 +115,7 @@
 		    (construct
 		     (java java)
 		     (resumed false)
-		     #+nil (egl (Egl))
+		     (egl (Egl))
 		     #+nil (renderer
 			    (Renderer
 			     (vrapi_GetSystemPropertyInt
@@ -139,10 +135,7 @@
 
 			  (construct
 			   )
-			  (values :constructor))
-			 )
-		 )
-	       )))
+			  (values :constructor)))))))
 
     #+nil
     (let ((name `Renderer))
@@ -176,12 +169,8 @@
 		      (Framebuffer width height))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
-					;  (explicit)
-
-			  (construct
-			   )
-			  (values :constructor))
-			 )))))
+			  (construct)
+			  (values :constructor)))))))
     #+nil
     (let ((name `Cube))
       (write-class
@@ -373,7 +362,7 @@
 		   (glDeleteBuffers 1 &vertex_buffer)
 		   (glDeleteVertexArrays 1 &vertex_array))))))
 
-    #+nil
+
     (let ((name `Egl))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -396,7 +385,7 @@
 		   (declare
 					;  (explicit)
 		    (construct
-		     (diplay (eglGetDisplay EGL_DEFAULT_DISPLAY)))
+		     (display (eglGetDisplay EGL_DEFAULT_DISPLAY)))
 		    (values :constructor))
 		   (when (== EGL_NO_DISPLAY
 			     display)
@@ -409,6 +398,7 @@
 		   (do0
 		    ,(lprint :msg "get number of egl configs ..")
 		    (let ((numConfigs ((lambda ()
+					 (declare (capture "&"))
 					 (let ((n (EGLint 0)))
 					   (when (== EGL_FALSE
 						     (eglGetConfigs display nullptr
@@ -425,7 +415,8 @@
 		    (let ((foundConfig (EGLConfig nullptr)))
 		      (for-range (config configs)
 				 (let ((renderable_type ((lambda (renderable_type)
-							   (declare (type aute renderable_type))
+							   (declare (type auto renderable_type)
+								    (capture "&"))
 							   (when (== EGL_FALSE
 								     (eglGetConfigAttrib display
 											 config
@@ -444,7 +435,8 @@
 						     ))
 				     continue)
 				   (let ((surface_type ((lambda (i)
-							  (declare (type auto i))
+							  (declare (type auto i)
+								   (capture "&"))
 							  (when (== EGL_FALSE
 								    (eglGetConfigAttrib
 								     display
@@ -462,8 +454,7 @@
 							(stencil-size 0)
 							(samples 0))))
 					`(progn
-					   (let (
-						 (check (lambda (attrib)
+					   (let ((check (lambda (attrib)
 							  (declare (type auto attrib)
 								   (values auto)
 								   (capture "&"))
@@ -483,12 +474,8 @@
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 					;  (explicit)
-
-			  (construct
-			   )
-			  (values :constructor))			 )
-		 )
-	       )))
+			  (construct)
+			  (values :constructor)))))))
     #+nil
     (let ((name `Framebuffer))
       (write-class
@@ -609,7 +596,6 @@
 	  android_app->activity
 	  AWINDOW_FLAG_KEEP_SCREEN_ON
 	  0)
-
 	 (do0
 	  ,(lprint :msg "attach current thread"
 		   :level "info")
@@ -618,9 +604,7 @@
 	    (-> java.Vm ;"(*java.Vm)"
 		(AttachCurrentThread ;java.Vm
 		 &java.Env
-		 nullptr
-		 ))))
-
+		 nullptr))))
 	 (do0
 	  ,(lprint :msg "initialize vr api")
 	  (let ((init_params (vrapi_DefaultInitParms
@@ -629,13 +613,9 @@
 			(vrapi_Initialize &init_params))
 	      ,(lprint :msg "can't initialize vr api")
 	      (std--exit 1))))
-
 	 (do0
 	  (let ((app (App
-		      &java)))))
-	 )
-
-       ))
+		      &java))))))))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output

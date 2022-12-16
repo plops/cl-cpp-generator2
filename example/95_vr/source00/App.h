@@ -1,6 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include "Egl.h"
 #include <iostream>
 #include "VrApi.h"
 #include "VrApi_Helpers.h"
@@ -19,6 +20,7 @@ class App  {
         public:
         ovrJava* java;
         bool resumed;
+        Egl egl;
         ANativeWindow* window;
         ovrMobile* ovr;
         bool back_button_down_previous_frame;
