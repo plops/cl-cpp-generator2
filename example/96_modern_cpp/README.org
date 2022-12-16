@@ -1,0 +1,32 @@
+https://github.com/DanielaE/CppInAction
+https://www.youtube.com/watch?v=el-xE645Clo
+
+Contemporary C++ in Action - Daniela Engert - Center Keynote Meeting C++ 2022
+35:00 advantage of coroutines vs callbacks
+
+- 800 lines of code?
+
+#+begin_example
+
+
+[martin@localhost Demo-App]$ wc *.ixx *.cpp *.hpp
+  109   321  3304 caboodle.ixx
+   97   326  3224 client.ixx
+   41   126  1145 events.ixx
+  163   661  5766 executor.ixx
+   12    40   319 generator.ixx
+   43   130  1103 gui.ixx
+  106   409  3719 net.ixx
+   93   341  3058 server.ixx
+    8    14   149 videodecoder.ixx
+   72   237  2107 videoframe.ixx
+    4     9    68 video.ixx
+   90   260  2845 gui.cpp
+   66   267  2162 main.cpp
+   70   214  2124 net.cpp
+  177   579  5969 videodecoder.cpp
+  272   984  8626 c_resource.hpp
+  509  1531 20639 generator.hpp
+ 1932  6449 66327 total
+
+#+end_example
