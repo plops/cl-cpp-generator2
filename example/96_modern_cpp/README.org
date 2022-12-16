@@ -30,3 +30,5 @@ Contemporary C++ in Action - Daniela Engert - Center Keynote Meeting C++ 2022
  1932  6449 66327 total
 
 #+end_example
+
+- include full stdlib 2sec, import module 50ms
