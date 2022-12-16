@@ -17,9 +17,6 @@
 #include <unistd.h>
 class Renderer  {
         public:
-        std::vector<Framebuffer> framebuffers;
-        Program program;
-        Geometry geometry;
          Renderer (GLsizei width, GLsizei height)     ;  
 };
 

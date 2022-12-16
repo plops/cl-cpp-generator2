@@ -15,5 +15,11 @@
 #include <unistd.h>
 #include <vector>
 App::App(ovrJava *java)
-    : java(java), resumed(false), egl(Egl()), window(nullptr), ovr(nullptr),
-      back_button_down_previous_frame(false), frame_index(0) {}
+    : java(java), resumed(false), egl(Egl()),
+      renderer(
+          Renderer(vrapi_GetSystemPropertyInt(
+                       java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH),
+                   vrapi_GetSystemPropertyInt(
+                       java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT))),
+      window(nullptr), ovr(nullptr), back_button_down_previous_frame(false),
+      frame_index(0) {}

@@ -79,7 +79,8 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include "Egl.h")
+			  (include "Egl.h"
+				   "Renderer.h")
 			  #+nil(include
 				"AttribPointer.h"
 				"core.h"
@@ -102,7 +103,7 @@
 		 "ovrJava* java;"
 		 "bool resumed;"
 		 "Egl egl;"
-					;"Renderer renderer;"
+		 "Renderer renderer;"
 		 "ANativeWindow* window;"
 		 "ovrMobile* ovr;"
 		 "bool back_button_down_previous_frame;"
@@ -116,7 +117,7 @@
 		     (java java)
 		     (resumed false)
 		     (egl (Egl))
-		     #+nil (renderer
+		     #-nil (renderer
 			    (Renderer
 			     (vrapi_GetSystemPropertyInt
 			      java
@@ -137,7 +138,7 @@
 			   )
 			  (values :constructor)))))))
 
-    #+nil
+
     (let ((name `Renderer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -146,6 +147,7 @@
        :name name
        :headers `()
        :header-preamble `(do0
+					;(include "Framebuffer.h")
 			  ,*includes*)
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
@@ -153,20 +155,21 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 "std::vector<Framebuffer> framebuffers;"
-		 "Program program;"
-		 "Geometry geometry;"
+					;"std::vector<Framebuffer> framebuffers;"
+					;"Program program;"
+					;"Geometry geometry;"
 		 (defmethod ,name (width height)
 		   (declare
 					;  (explicit)
 		    (type GLsizei width height)
 		    (construct
-		     (program (Program))
-		     (geometry (Geometry)))
+					;(program (Program))
+					;(geometry (Geometry))
+		     )
 		    (values :constructor))
-		   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		     (framebuffers.push_back
-		      (Framebuffer width height))))
+		   #+nil   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+			     (framebuffers.push_back
+			      (Framebuffer width height))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (construct)
