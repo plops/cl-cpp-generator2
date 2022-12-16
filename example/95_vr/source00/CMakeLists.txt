@@ -20,4 +20,7 @@ target_include_directories( main PRIVATE
 add_library( vrapi SHARED IMPORTED )
 set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )
-target_link_libraries( main PRIVATE android log vrapi )
+add_library( c++shared SHARED IMPORTED )
+set_target_properties( c++shared PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so
+ )
+target_link_libraries( main PRIVATE android log vrapi c++shared )

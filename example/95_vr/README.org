@@ -285,3 +285,32 @@ sudo dnf install java-1.8.0-openjdk-devel
 
 
 #+end_example
+
+- i added c++_shared library to the apk, now the error looks like this:
+
+#+begin_example
+
+12-16 08:52:22.441  1058  1574 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.makepad.hello_quest/.MainActivity} from uid 2000
+12-16 08:52:22.491  1058  1089 I ActivityManager: Start proc 23902:com.makepad.hello_quest/u0a99 for activity {com.makepad.hello_quest/com.makepad.hello_quest.MainActivity}
+12-16 08:52:22.527  1807  1807 D VrRuntimeService: Package com.makepad.hello_quest has ossplash false
+12-16 08:52:22.528  8829  8829 D [SUI] ActivityManagerUtilsHelper: onForegroundActivitiesChanged: Instance: com.oculus.common.activitymanager.ActivityManagerUtilsHelper@398d923, Pid: 23902, Tid: 10099, foregroundActivities: true, foreground app: com.makepad.hello_quest, previous app: com.oculus.shellenv
+12-16 08:52:22.581 23902 23902 W linker  : Warning: "/data/app/com.makepad.hello_quest-CG3zYqWGweUG5Xoow8mYLQ==/lib/arm64/libc++_shared.so" unused DT entry: unknown processor-specific (type 0x70000001 arg 0x0) (ignoring)
+12-16 08:52:22.583 23902 23902 E AndroidRuntime: Process: com.makepad.hello_quest, PID: 23902
+12-16 08:52:22.583 23902 23902 E AndroidRuntime: java.lang.UnsatisfiedLinkError: Unable to load native library "/data/app/com.makepad.hello_quest-CG3zYqWGweUG5Xoow8mYLQ==/lib/arm64/libmain.so": undefined symbol: ANativeActivity_onCreate
+12-16 08:52:22.587  1058  6060 W ActivityTaskManager:   Force finishing activity com.makepad.hello_quest/.MainActivity
+12-16 08:52:22.593  1058  1077 I ActivityManager: Showing crash dialog for package com.makepad.hello_quest u0
+12-16 08:52:22.601  8829 23846 W OVRLibrary: null cursor received for query content://com.oculus.ocms.library/apps/com.makepad.hello_quest
+12-16 08:52:22.609  1803  1889 I crash-reporter: uncaught drop box entry crash report written at /data/misc/crashes/com.makepad.hello_quest_2022-12-16_08-52-22-603894.exception.meta
+12-16 08:52:23.089  1058  1079 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{2ce035d u0 com.makepad.hello_quest/.MainActivity t133 f}
+12-16 08:52:23.089  1058  1079 W ActivityTaskManager: Activity pause timeout for ActivityRecord{2ce035d u0 com.makepad.hello_quest/.MainActivity t133 f}
+12-16 08:52:23.450  8829  8829 D [SUI] ActivityManagerUtilsHelper: onForegroundActivitiesChanged: Instance: com.oculus.common.activitymanager.ActivityManagerUtilsHelper@833537, Pid: 23902, Tid: 10099, foregroundActivities: false, foreground app: com.oculus.os.clearactivity, previous app: com.makepad.hello_quest
+12-16 08:52:23.473  8829 23821 W OVRLibrary: null cursor received for query content://com.oculus.ocms.library/apps/com.makepad.hello_quest
+12-16 08:52:23.620   822  1202 I crash-uploader: Crash uploaded from /data/misc/crashes//com.makepad.hello_quest_2022-12-16_08-52-22-603894.exception.meta to https://b-www.facebook.com/mobile/reliability_event_log_upload/
+12-16 08:52:23.620   822  1202 D crash-reporter: Crash[exception] com.makepad.hello_quest
+12-16 08:52:33.093  1058  1079 W ActivityTaskManager: Activity destroy timeout for ActivityRecord{2ce035d u0 com.makepad.hello_quest/.MainActivity t133 f}
+12-16 08:52:33.112  1058  3341 I ActivityManager: Process com.makepad.hello_quest (pid 23902) has died: cch CRE 
+12-16 08:52:33.123  1058  6060 W ActivityManager: Ignoring remove of inactive process: ProcessRecord{8e34115 0:com.makepad.hello_quest/u0a99}
+
+
+#+end_example
+- maybe i should read this on how to keep the symbol https://github.com/android/ndk/issues/381
