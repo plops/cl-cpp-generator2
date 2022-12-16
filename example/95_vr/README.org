@@ -256,3 +256,32 @@ sudo dnf install java-1.8.0-openjdk-devel
 
 
 #+end_example
+
+- i think install worked after i went into the home screen on the quest2
+
+- now it complains about a missing library:
+
+#+begin_example
+
+12-16 08:45:50.849  1058  1074 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.makepad.hello_quest/.MainActivity} from uid 2000
+12-16 08:45:50.914  1058  1089 I ActivityManager: Start proc 23068:com.makepad.hello_quest/u0a97 for activity {com.makepad.hello_quest/com.makepad.hello_quest.MainActivity}
+12-16 08:45:50.976  8829  8829 D [SUI] ActivityManagerUtilsHelper: onForegroundActivitiesChanged: Instance: com.oculus.common.activitymanager.ActivityManagerUtilsHelper@b31e7a1, Pid: 23068, Tid: 10097, foregroundActivities: true, foreground app: com.makepad.hello_quest, previous app: com.oculus.shellenv
+12-16 08:45:50.982  1807  1807 D VrRuntimeService: Package com.makepad.hello_quest has ossplash false
+12-16 08:45:51.032 23068 23068 W NativeActivity: NativeActivity LoadNativeLibrary("/data/app/com.makepad.hello_quest-iIRoIQhaxB2TYDDumPWcOQ==/lib/arm64/libmain.so") failed: dlopen failed: library "libc++_shared.so" not found
+12-16 08:45:51.032 23068 23068 E AndroidRuntime: Process: com.makepad.hello_quest, PID: 23068
+12-16 08:45:51.032 23068 23068 E AndroidRuntime: java.lang.UnsatisfiedLinkError: Unable to load native library "/data/app/com.makepad.hello_quest-iIRoIQhaxB2TYDDumPWcOQ==/lib/arm64/libmain.so": dlopen failed: library "libc++_shared.so" not found
+12-16 08:45:51.036  1058  1578 W ActivityTaskManager:   Force finishing activity com.makepad.hello_quest/.MainActivity
+12-16 08:45:51.040  1058  1077 I ActivityManager: Showing crash dialog for package com.makepad.hello_quest u0
+12-16 08:45:51.080  1803  1889 I crash-reporter: uncaught drop box entry crash report written at /data/misc/crashes/com.makepad.hello_quest_2022-12-16_08-45-51-048051.exception.meta
+12-16 08:45:51.106  8829 23012 W OVRLibrary: null cursor received for query content://com.oculus.ocms.library/apps/com.makepad.hello_quest
+12-16 08:45:51.125   822  1202 I crash-uploader: [Crash Reporter Rate Limiting] total number of reported crashes (5) for package (com.makepad.hello_quest) and type (0) above threshold (5)
+12-16 08:45:51.125   822  1202 I crash-uploader: [Crash Reporter Rate Limiting] did not upload crash /data/misc/crashes//com.makepad.hello_quest_2022-12-16_08-45-51-048051.exception.meta
+12-16 08:45:51.125   822  1202 D crash-reporter: Crash[exception] com.makepad.hello_quest
+12-16 08:45:51.537  1058  1079 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{d8d986b u0 com.makepad.hello_quest/.MainActivity t128 f}
+12-16 08:45:51.538  1058  1079 W ActivityTaskManager: Activity pause timeout for ActivityRecord{d8d986b u0 com.makepad.hello_quest/.MainActivity t128 f}
+12-16 08:46:01.541  1058  1079 W ActivityTaskManager: Activity destroy timeout for ActivityRecord{d8d986b u0 com.makepad.hello_quest/.MainActivity t128 f}
+12-16 08:46:01.561  1058 12061 I ActivityManager: Process com.makepad.hello_quest (pid 23068) has died: cch CRE 
+12-16 08:46:01.567  1058  1578 W ActivityManager: Ignoring remove of inactive process: ProcessRecord{fc2d937 0:com.makepad.hello_quest/u0a97}
+
+
+#+end_example
