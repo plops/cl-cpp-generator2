@@ -243,3 +243,4 @@ sudo dnf install java-1.8.0-openjdk-devel
   - MainActivity.java
   - src/main/cpp/android_native_app_glue.c
   - src/main/cpp/android_native_app_glue.h
+  - src/main/AndroidManifest.xml

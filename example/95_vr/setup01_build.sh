@@ -25,3 +25,28 @@ export CC=aarch64-linux-android29-clang
 export CXX=aarch64-linux-android29-clang++
 cmake /home/martin/stage/cl-cpp-generator2/example/95_vr/source00
 make
+
+
+cp /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so .
+
+popd
+
+aapt package \
+     -F hello_quest.apk \
+     -I /home/martin/quest2/sdk/platforms/android-29/android.jar \
+     -M /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AndroidManifest.xml  \
+     -f 
+
+# creates hello_quest.apk
+
+aapt add hello_quest.apk classes.dex
+aapt add hello_quest.apk lib/arm64-v8a/libmain.so
+aapt add hello_quest.apk lib/arm64-v8a/libvrapi.so
+
+apksigner sign \
+	  -ks ~/.android/debug.keystore \
+	  --ks-key-alias androiddebugkey \
+	  --ks-pass pass:android \
+	  hello_quest.apk
+
+popd

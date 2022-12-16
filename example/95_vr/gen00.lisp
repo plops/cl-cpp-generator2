@@ -658,37 +658,38 @@
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
 	      ))
-	(macrolet ((out (fmt &rest rest)
-		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
-	  (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
-	  (out "project( mytest LANGUAGES CXX )")
+	(let ((program-name "main"))
+	  (macrolet ((out (fmt &rest rest)
+		       `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
+	    (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
+	    (out "project( ~a LANGUAGES CXX )" program-name)
 
-          (out "set( CMAKE_C_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang )")
-	  (out "set( CMAKE_CXX_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ )")
+            (out "set( CMAKE_C_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang )")
+	    (out "set( CMAKE_CXX_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ )")
 
 					;(out "set( CMAKE_CXX_COMPILER g++ )")
-	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
-	  (out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
-	  (out "set (CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
-	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
+	    (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
+	    (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	    (out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	    (out "set (CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	    (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
 					;(out "set( CMAKE_CXX_STANDARD 23 )")
 
 
 
-	  (out "set( SRCS ~{~a~^~%~} )"
-	       (append
-		(directory (format nil "~a/*.cpp" *full-source-dir*))
-		(directory (format nil "~a/*.c" *full-source-dir*))
-		))
+	    (out "set( SRCS ~{~a~^~%~} )"
+		 (append
+		  (directory (format nil "~a/*.cpp" *full-source-dir*))
+		  (directory (format nil "~a/*.c" *full-source-dir*))
+		  ))
 
 					;(out "add_executable( mytest ${SRCS} )")
-	  (out "add_library (mytest SHARED ${SRCS} )")
+	    (out "add_library (~a SHARED ${SRCS} )" program-name)
 
 
 
 
-	  (out "set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )")
+	    (out "set_property( TARGET ~a PROPERTY CXX_STANDARD 20 )" program-name)
 
 					;(out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
 
@@ -696,30 +697,31 @@
 					;(out "pkg_check_modules( spdlog REQUIRED spdlog )")
 
 
-	  (out "target_include_directories( mytest PRIVATE
+	    (out "target_include_directories( ~a PRIVATE
 /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/
 /home/martin/quest2/ovr/VrApi/Include
-)")
-	  ;;/home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug
+)" program-name)
+	    ;;/home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug
 					; /platforms/android-26/arch-arm64/usr/lib
-	  (progn
-	    (out "add_library( vrapi SHARED IMPORTED )")
-	    (out "set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
+	    (progn
+	      (out "add_library( vrapi SHARED IMPORTED )")
+	      (out "set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )")
-	    )
+	      )
 
-	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
-	       `(android
-		 log
-		 vrapi
+	    (out "target_link_libraries( ~a PRIVATE ~{~a~^ ~} )"
+		 program-name
+		 `(android
+		   log
+		   vrapi
 
-		 ))
+		   ))
 
-	  #+nil
-	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
-	       `())
+	    #+nil
+	    (out "target_compile_options( ~a PRIVATE ~{~a~^ ~} )"
+		 program-name `())
 
-					;(out "target_precompile_headers( mytest PRIVATE fatheader.hpp )")
-	  ))
+					;(out "target_precompile_headers( ~a PRIVATE fatheader.hpp )" program-name)
+	    )))
       )))
 
