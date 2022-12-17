@@ -9,6 +9,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0   -Wall -Wextra -std=c++20  ")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra -std=c++20 ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/App.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AttribPointer.cpp
+/home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Cube.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Egl.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Geometry.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Program.cpp

@@ -15,9 +15,11 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include "Cube.h"
 class Geometry  {
         public:
         GLuint vertex_array, vertex_buffer, index_buffer;
+        Cube cube;
          Geometry ()     ;  
          ~Geometry ()     ;  
 };

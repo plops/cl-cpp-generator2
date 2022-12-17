@@ -20,7 +20,7 @@ class Vertex  {
         public:
         std::array<float,4> position;
         std::array<float,4> color;
-         Vertex ()     ;  
+         Vertex (std::array<float,3> p, std::array<float,3> c)     ;  
 };
 
 #endif /* !VERTEX_H */

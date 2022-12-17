@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include "Vertex.h"
 class Cube  {
         public:
         std::vector<Vertex> vertices;

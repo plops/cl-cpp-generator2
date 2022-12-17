@@ -173,7 +173,7 @@
 			 (declare
 			  (construct)
 			  (values :constructor)))))))
-    #+nil
+
     (let ((name `Cube))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -182,7 +182,8 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  ,*includes*)
+			  ,*includes*
+			  (include "Vertex.h"))
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*
@@ -198,16 +199,17 @@
 		    (construct
 		     (vertices
 		      (curly
-		       ,@(loop for e in `((-1 1 -1) (1 0 1)
-					  (1 1 -1)  (0 1 0)
-					  (1 1 1)   (0 0 1)
-					  (-1 1 1)  (1 0 0)
-					  (-1 -1 -1)(0 0 1)
-					  (-1 -1 1) (0 1 0)
-					  (1 -1 1)  (1 0 1)
-					  (1 -1 -1) (1 0 0))
+		       ,@(loop for (e f) in `(((-1 1 -1) (1 0 1))
+					      ((1 1 -1)  (0 1 0))
+					      ((1 1 1)   (0 0 1))
+					      ((-1 1 1)  (1 0 0))
+					      ((-1 -1 -1) (0 0 1))
+					      ((-1 -1 1) (0 1 0))
+					      ((1 -1 1)  (1 0 1))
+					      ((1 -1 -1) (1 0 0)))
 			       collect
-			       `(curly ,@e))))
+			       `(curly (Vertex ("std::array<float,3>" (curly ,@e))
+					       ("std::array<float,3>" (curly ,@f)))))))
 		     (indices
 		      (curly 0 1 2 2 0 3
 			     4 6 5 6 4 7
@@ -237,10 +239,21 @@
 		 "public:"
 		 "std::array<float,4> position;"
 		 "std::array<float,4> color;"
-		 (defmethod ,name ()
+		 (defmethod ,name (p c)
 		   (declare
-					;  (explicit)
-		    (construct )
+		    (type "std::array<float,3>" p c)
+		    (construct (position ("std::array<float,4>"
+					  (curly
+					   (aref p 0)
+					   (aref p 1)
+					   (aref p 2)
+					   0s0)))
+			       (color ("std::array<float,4>"
+				       (curly
+					(aref c 0)
+					(aref c 1)
+					(aref c 2)
+					0s0))))
 		    (values :constructor)))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
@@ -305,49 +318,48 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  ,*includes*)
+			  ,*includes*
+			  (include "Cube.h"))
        :implementation-preamble `(do0
 				  ,*includes*
 				  (include ,(format nil "~a.h" name))
-
 				  (include "DataExtern.h")
 				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
 		 "GLuint vertex_array, vertex_buffer, index_buffer;"
-					;"Cube cube;"
+		 "Cube cube;"
 		 (defmethod ,name ()
 		   (declare
-					;  (explicit)
 		    (construct)
 		    (values :constructor))
 		   (glGenVertexArrays 1
 				      &vertex_array)
 		   (glBindVertexArray vertex_array)
 		   (glGenBuffers 1 &vertex_buffer)
-		   #+nil (glBufferData GL_ARRAY_BUFFER
-				       cube.vertices.size
-				       (cube.vertices.data)
-				       GL_STATIC_DRAW)
-		   #+nl (do0 (let ((i 0))
-			       (for-range (attrib ATTRIB_POINTERS)
-					  (glEnableVertexAttribArray i)
-					  (glVertexAttribPointer
-					   i attrib.size attrib.type
-					   attrib.normalized attrib.stride
-					   attrib.pointer)
-					  (incf i)))
-			     (glGenBuffers 1 &index_buffer)
-			     (glBindBuffer GL_ELEMENT_ARRAY_BUFFER
-					   index_buffer)
-			     #+nil (do0 (glBufferData GL_ELEMENT_ARRAY_BUFFER
-						      (dot cube
-							   indices
-							   (size))
-						      cube.indices
-						      GL_STATIC_DRAW)
-					(glBindVertexArray 0))))
+		   (glBufferData GL_ARRAY_BUFFER
+				 (cube.vertices.size)
+				 (cube.vertices.data)
+				 GL_STATIC_DRAW)
+		   (do0 (let ((i 0))
+			  (for-range (attrib ATTRIB_POINTERS)
+				     (glEnableVertexAttribArray i)
+				     (glVertexAttribPointer
+				      i attrib.size attrib.type
+				      attrib.normalized attrib.stride
+				      attrib.pointer)
+				     (incf i)))
+			(glGenBuffers 1 &index_buffer)
+			(glBindBuffer GL_ELEMENT_ARRAY_BUFFER
+				      index_buffer)
+			(do0 (glBufferData GL_ELEMENT_ARRAY_BUFFER
+					   (dot cube
+						indices
+						(size))
+					   (cube.indices.data)
+					   GL_STATIC_DRAW)
+			     (glBindVertexArray 0))))
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 					;  (explicit)
