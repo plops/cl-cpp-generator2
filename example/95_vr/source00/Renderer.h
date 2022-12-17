@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "Program.h"
 #include <iostream>
 #include "VrApi.h"
 #include "VrApi_Helpers.h"
@@ -17,6 +18,7 @@
 #include <unistd.h>
 class Renderer  {
         public:
+        Program program;
          Renderer (GLsizei width, GLsizei height)     ;  
 };
 

@@ -15,8 +15,13 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include "DataTypes.h"
+#include <array>
 class Program  {
         public:
+        GLuint program;
+        std::array<GLint,UNIFORM_END> uniform_locations;
+        GLuint compileShader (GLenum type, std::string str)     ;  
          Program ()     ;  
 };
 

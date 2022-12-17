@@ -147,7 +147,9 @@
        :name name
        :headers `()
        :header-preamble `(do0
-					;(include "Framebuffer.h")
+			  (include ;"Framebuffer.h"
+			   "Program.h"
+			   )
 			  ,*includes*)
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
@@ -156,7 +158,7 @@
 	       (defclass ,name ()
 		 "public:"
 					;"std::vector<Framebuffer> framebuffers;"
-					;"Program program;"
+		 "Program program;"
 					;"Geometry geometry;"
 		 (defmethod ,name (width height)
 		   (declare
@@ -512,7 +514,7 @@
 			 )
 		 )
 	       )))
-    #+nil
+    #-nil
     (let ((name `Program))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -521,18 +523,66 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  ,*includes*)
+			  ,*includes*
+			  (include "DataTypes.h"
+				   <array>))
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
+		 "GLuint program;"
+		 "std::array<GLint,UNIFORM_END> uniform_locations;"
+		 (defmethod compileShader (type str)
+		   (declare (type GLenum type)
+			    (type "std::string" str)
+			    (values GLuint))
+		   (let ((shader (glCreateShader type)))
+		     (glShaderSource shader
+				     1
+				     (ref (dot str (c_str)))
+				     nullptr)
+		     (glCompileShader shader)
+		     (let ((status (GLint 0)))
+		       (glGetShaderiv shader
+				      GL_COMPILE_STATUS
+				      &status)
+		       (when (== GL_FALSE
+				 status)
+			 (let ((length (GLint length)))
+			   (glGetShaderiv shader
+					  GL_INFO_LOG_LENGTH
+					  &length)
+			   (let ((log (std--vector<char> length)))
+			     (glGetShaderInfoLog shader
+						 length
+						 nullptr
+						 (log.data))
+			     (let ((logstr (std--string (std--begin log)
+							(std--end log))))
+			       ,(lprint :msg "cant compile shader"
+					:vars `(logstr))))))
+		       (return shader))))
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
-		    (construct)
+		    (construct (program (glCreateProgram)))
 		    (values :constructor))
+		   (let ((FRAGMENT_SHADER
+			  (std--string
+			   (string-r
+			    ,(cl-cpp-generator2::emit-c
+			      :code
+			      `(do0
+				"#version 300 es"
+				"in lowp vec3 vColor;"
+				"out lowp vec4 outColor;"
+				(defun main ()
+				  (setf outColor
+					(vec4 vColor 1s0))))))))
+			 (vertexShader (compileShader GL_FRAGMENT_SHADER
+						      FRAGMENT_SHADER))))
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
@@ -540,6 +590,21 @@
 
 			  (construct)
 			  (values :constructor)))))))
+
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"DataTypes.h"
+		       *source-dir*))
+     `(do0
+
+       (space enum uniform
+	      (curly
+	       UNIFORM_BEGIN
+	       (= UNIFORM_MODEL_MATRIX UNIFORM_BEGIN)
+	       UNIFORM_VIEW_MATRIX
+	       UNIFORM_PROJECTION_MATRIX
+	       UNIFORM_END))))
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -593,6 +658,9 @@
 					  (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
 	       (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
+
+
+
        (defun android_main (android_app)
 	 (declare (type android_app* android_app))
 	 (ANativeActivity_setWindowFlags
@@ -604,8 +672,8 @@
 		   :level "info")
 	  (let ((java (ovrJava)))
 	    (setf java.Vm android_app->activity->vm)
-	    (-> java.Vm ;"(*java.Vm)"
-		(AttachCurrentThread ;java.Vm
+	    (-> java.Vm			;"(*java.Vm)"
+		(AttachCurrentThread	;java.Vm
 		 &java.Env
 		 nullptr))))
 	 (do0
