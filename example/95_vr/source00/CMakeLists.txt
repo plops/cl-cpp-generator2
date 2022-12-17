@@ -11,6 +11,7 @@ set( SRCS /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/App.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AttribPointer.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Cube.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Egl.cpp
+/home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Framebuffer.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Geometry.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Program.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Renderer.cpp

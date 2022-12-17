@@ -143,10 +143,10 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  (include ;"Framebuffer.h"
-			   "Program.h"
-			   "Geometry.h"
-			   )
+			  (include "Framebuffer.h"
+				   "Program.h"
+				   "Geometry.h"
+				   )
 			  ,*includes*)
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
@@ -154,7 +154,7 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-					;"std::vector<Framebuffer> framebuffers;"
+		 "std::vector<Framebuffer> framebuffers;"
 		 "Program program;"
 		 "Geometry geometry;"
 		 (defmethod ,name (width height)
@@ -361,14 +361,10 @@
 					   GL_STATIC_DRAW)
 			     (glBindVertexArray 0))))
 		 (defmethod ,(format nil "~~~a" name) ()
-		   (declare
-					;  (explicit)
-		    (construct)
-		    (values :constructor))
+		   (declare (values :constructor))
 		   (glDeleteBuffers 1 &index_buffer)
 		   (glDeleteBuffers 1 &vertex_buffer)
 		   (glDeleteVertexArrays 1 &vertex_array))))))
-
 
     (let ((name `Egl))
       (write-class
@@ -421,17 +417,18 @@
 		    ,(lprint :msg "choose egl config")
 		    (let ((foundConfig (EGLConfig nullptr)))
 		      (for-range (config configs)
-				 (let ((renderable_type ((lambda (renderable_type)
-							   (declare (type auto renderable_type)
-								    (capture "&"))
-							   (when (== EGL_FALSE
-								     (eglGetConfigAttrib display
-											 config
-											 EGL_RENDERABLE_TYPE
-											 &renderable_type))
-							     ,(lprint :msg "cant get EGL config renderable type"))
-							   (return renderable_type))
-							 (EGLint 0))))
+				 (let ((renderable_type
+					((lambda (renderable_type)
+					   (declare (type auto renderable_type)
+						    (capture "&"))
+					   (when (== EGL_FALSE
+						     (eglGetConfigAttrib display
+									 config
+									 EGL_RENDERABLE_TYPE
+									 &renderable_type))
+					     ,(lprint :msg "cant get EGL config renderable type"))
+					   (return renderable_type))
+					 (EGLint 0))))
 				   (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
 								EGL_PBUFFER_BIT
 								EGL_WINDOW_BIT)
@@ -480,10 +477,8 @@
 					       (setf foundConfig config)))))))))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
-					;  (explicit)
-			  (construct)
 			  (values :constructor)))))))
-    #+nil
+
     (let ((name `Framebuffer))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -499,24 +494,36 @@
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
-		 (defmethod ,name ()
+		 "int swap_chain_index;"
+		 "int swap_chain_length;"
+		 "GLsizei width;"
+		 "GLsizei height;"
+		 "ovrTextureSwapChain* color_texture_swap_chain;"
+		 "GLuint* depth_renderbuffers;"
+		 "GLuint* framebuffers;"
+		 (defmethod ,name (w h)
 		   (declare
-					;  (explicit)
-		    (construct)
+		    (type GLsizei w h)
+		    (construct
+		     (swap_chain_index 0)
+		     (width w)
+		     (height h)
+		     (color_texture_swap_chain
+		      (vrapi_CreateTextureSwapChain3
+		       VRAPI_TEXTURE_TYPE_2D
+		       GL_RGBA8
+		       w h 1 3)))
+		    (when (== nullptr
+			      color_texture_swap_chain)
+		      ,(lprint :msg "cant create color texture swap chain")
+		      (std--exit -1))
 		    (values :constructor))
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
-					;  (explicit)
-
-			  (construct
-			   )
-			  (values :constructor))
-
-			 )
-		 )
+			  (values :constructor))))
 	       )))
-    #-nil
+
     (let ((name `Program))
       (write-class
        :dir (asdf:system-relative-pathname

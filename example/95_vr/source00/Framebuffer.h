@@ -17,7 +17,14 @@
 #include <unistd.h>
 class Framebuffer  {
         public:
-         Framebuffer ()     ;  
+        int swap_chain_index;
+        int swap_chain_length;
+        GLsizei width;
+        GLsizei height;
+        ovrTextureSwapChain* color_texture_swap_chain;
+        GLuint* depth_renderbuffers;
+        GLuint* framebuffers;
+         Framebuffer (GLsizei w, GLsizei h)     ;  
 };
 
 #endif /* !FRAMEBUFFER_H */

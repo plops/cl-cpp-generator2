@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "Framebuffer.h"
 #include "Program.h"
 #include "Geometry.h"
 #include <iostream>
@@ -19,6 +20,7 @@
 #include <unistd.h>
 class Renderer  {
         public:
+        std::vector<Framebuffer> framebuffers;
         Program program;
         Geometry geometry;
          Renderer (GLsizei width, GLsizei height)     ;  
