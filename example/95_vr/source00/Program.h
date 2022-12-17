@@ -25,6 +25,7 @@ class Program  {
         std::array<GLint,UNIFORM_END> uniform_locations;
         GLuint compileShader (GLenum type, std::string str)     ;  
          Program ()     ;  
+         ~Program ()     ;  
 };
 
 #endif /* !PROGRAM_H */

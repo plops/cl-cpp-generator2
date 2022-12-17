@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "Program.h"
+#include "Geometry.h"
 #include <iostream>
 #include "VrApi.h"
 #include "VrApi_Helpers.h"
@@ -19,6 +20,7 @@
 class Renderer  {
         public:
         Program program;
+        Geometry geometry;
          Renderer (GLsizei width, GLsizei height)     ;  
 };
 

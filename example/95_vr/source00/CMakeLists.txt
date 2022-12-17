@@ -10,8 +10,10 @@ set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wex
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/App.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AttribPointer.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Egl.cpp
+/home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Geometry.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Program.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Renderer.cpp
+/home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Vertex.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/main.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/android_native_app_glue.c )
 add_library (main SHARED ${SRCS} )

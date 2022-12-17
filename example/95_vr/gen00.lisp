@@ -117,14 +117,14 @@
 		     (java java)
 		     (resumed false)
 		     (egl (Egl))
-		     #-nil (renderer
-			    (Renderer
-			     (vrapi_GetSystemPropertyInt
-			      java
-			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
-			     (vrapi_GetSystemPropertyInt
-			      java
-			      VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
+		     (renderer
+		      (Renderer
+		       (vrapi_GetSystemPropertyInt
+			java
+			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH)
+		       (vrapi_GetSystemPropertyInt
+			java
+			VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT)))
 		     (window nullptr)
 		     (ovr nullptr)
 		     (back_button_down_previous_frame false)
@@ -132,10 +132,6 @@
 		    (values :constructor)))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
-					;  (explicit)
-
-			  (construct
-			   )
 			  (values :constructor)))))))
 
 
@@ -149,6 +145,7 @@
        :header-preamble `(do0
 			  (include ;"Framebuffer.h"
 			   "Program.h"
+			   "Geometry.h"
 			   )
 			  ,*includes*)
        :implementation-preamble `(do0
@@ -159,14 +156,14 @@
 		 "public:"
 					;"std::vector<Framebuffer> framebuffers;"
 		 "Program program;"
-					;"Geometry geometry;"
+		 "Geometry geometry;"
 		 (defmethod ,name (width height)
 		   (declare
 					;  (explicit)
 		    (type GLsizei width height)
 		    (construct
-					;(program (Program))
-					;(geometry (Geometry))
+		     (program (Program))
+		     (geometry (Geometry))
 		     )
 		    (values :constructor))
 		   #+nil   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
@@ -220,7 +217,7 @@
 			     0 1 7 7 4 0)))
 		    (values :constructor))))
 	       )))
-    #+nil
+
     (let ((name `Vertex))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -240,19 +237,10 @@
 		 "public:"
 		 "std::array<float,4> position;"
 		 "std::array<float,4> color;"
-		 (defmethod ,name (size type normalized stride pointer)
+		 (defmethod ,name ()
 		   (declare
-		    (type GLint size)
-		    (type GLenum type)
-		    (type GLboolean normalized)
-		    (type GLsizei stride)
-		    (type "const GLvoid*" pointer)
 					;  (explicit)
-		    (construct (size size)
-			       (type type)
-			       (normalized normalized)
-			       (stride stride)
-			       (pointer pointer))
+		    (construct )
 		    (values :constructor)))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
@@ -308,7 +296,7 @@
 			 )
 		 )
 	       )))
-    #+nil
+
     (let ((name `Geometry))
       (write-class
        :dir (asdf:system-relative-pathname
@@ -321,12 +309,14 @@
        :implementation-preamble `(do0
 				  ,*includes*
 				  (include ,(format nil "~a.h" name))
-				  "extern static const std::array<AttribPointer,2> ATTRIB_POINTERS;")
+
+				  (include "DataExtern.h")
+				  )
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
 		 "GLuint vertex_array, vertex_buffer, index_buffer;"
-		 "Cube cube;"
+					;"Cube cube;"
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -334,30 +324,30 @@
 		    (values :constructor))
 		   (glGenVertexArrays 1
 				      &vertex_array)
-		   (glBindVertexArrays vertex_array)
+		   (glBindVertexArray vertex_array)
 		   (glGenBuffers 1 &vertex_buffer)
-		   (glBufferData GL_ARRAY_BUFFER
-				 cube.vertices.size
-				 (cube.vertices.data)
-				 GL_STATIC_DRAW)
-		   (let ((i 0))
-		     (for-range (attrib ATTRIB_POINTERS)
-				(glEnableVertexAttribArray i)
-				(glVertexAttribPointer
-				 i attrib.size attrib.type
-				 attrib.normalized attrib.stride
-				 attrib.pointer)
-				(incf i)))
-		   (glGenBuffers 1 &index_buffer)
-		   (glBindBuffer GL_ELEMENT_ARRAY_BUFFER
-				 index_buffer)
-		   (glBufferData GL_ELEMENT_ARRAY_BUFFER
-				 (dot cube
-				      indices
-				      (size))
-				 cube.indices
-				 GL_STATIC_DRAW)
-		   (glBindVertexArray 0))
+		   #+nil (glBufferData GL_ARRAY_BUFFER
+				       cube.vertices.size
+				       (cube.vertices.data)
+				       GL_STATIC_DRAW)
+		   #+nl (do0 (let ((i 0))
+			       (for-range (attrib ATTRIB_POINTERS)
+					  (glEnableVertexAttribArray i)
+					  (glVertexAttribPointer
+					   i attrib.size attrib.type
+					   attrib.normalized attrib.stride
+					   attrib.pointer)
+					  (incf i)))
+			     (glGenBuffers 1 &index_buffer)
+			     (glBindBuffer GL_ELEMENT_ARRAY_BUFFER
+					   index_buffer)
+			     #+nil (do0 (glBufferData GL_ELEMENT_ARRAY_BUFFER
+						      (dot cube
+							   indices
+							   (size))
+						      cube.indices
+						      GL_STATIC_DRAW)
+					(glBindVertexArray 0))))
 		 (defmethod ,(format nil "~~~a" name) ()
 		   (declare
 					;  (explicit)
@@ -656,16 +646,11 @@
 		       (setf (aref uniform_locations i)
 			     (glGetUniformLocation program
 						   (dot (aref UNIFORM_NAMES i)
-							(c_str))))
-		       )
-		     )
-		   )
-		 #+nil (defmethod ,(format nil "~~~a" name) ()
-			 (declare
-					;  (explicit)
-
-			  (construct)
-			  (values :constructor)))))))
+							(c_str)))))))
+		 (defmethod ,(format nil "~~~a" name) ()
+	       	   (declare
+		    (values :constructor))
+		   (glDeleteProgram program))))))
 
     (write-source
      (asdf:system-relative-pathname
@@ -673,10 +658,13 @@
       (merge-pathnames #P"DataExtern.h"
 		       *source-dir*))
      `(do0
+       "#pragma once"
        (include <vector>
-		<string>)
+		<string>
+		"AttribPointer.h")
        "extern const std::vector<std::string> ATTRIB_NAMES;"
        "extern const std::vector<std::string> UNIFORM_NAMES;"
+       "extern const std::array<AttribPointer,2> ATTRIB_POINTERS;"
        ))
     (write-source
      (asdf:system-relative-pathname
@@ -738,8 +726,10 @@
 					;<cstdin>
 		       <cstdlib>
 		       <unistd.h>
+
 		       ))
-       (include "App.h")
+       (include "App.h"
+		"Vertex.h")
 
        (do0
 	"#define FMT_HEADER_ONLY"
@@ -749,15 +739,12 @@
        "const std::vector<std::string> ATTRIB_NAMES = {\"aPosition\",\"aColor\"};"
        "const std::vector<std::string> UNIFORM_NAMES = {\"uModelMatrix\",\"uViewMatrix\",\"uProjectionMatrix\"};"
 
-       #+nil (let ((ATTRIB_POINTERS
-		    (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-					  (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
-			   (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
-					  (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
-	       (declare (type "static const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
-
-
-
+       (let ((ATTRIB_POINTERS
+	      (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				    (reinterpret_cast<GLvoid*> (offsetof Vertex position)))
+		     (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
+				    (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
+	 (declare (type "const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
        (defun android_main (android_app)
 	 (declare (type android_app* android_app))
