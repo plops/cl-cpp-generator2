@@ -3,22 +3,30 @@
 		 (vars nil)
 
 		 )
-  `(__android_log_print
-    ,(cond
-       ((string= level "info")
-	'ANDROID_LOG_VERBOSE)
-       ((string= level "error")
-	'ANDROID_LOG_ERROR))
-    (string "hello_quest")					;TAG
-    ,(if vars
-	 `(fmt--print
-	   (string ,(format nil "~a~{ ~a~}"
-			    msg
-			    (loop for e in vars
-				  collect
-				  (format nil " ~a='{}'" (emit-c :code e)))))
-	   ,@vars)
-	 `(string ,(format nil "~a" msg)))))
+  (let ((arg1 (cond
+		((string= level "info")
+		 'ANDROID_LOG_VERBOSE)
+		((string= level "error")
+		 'ANDROID_LOG_ERROR))))
+    (if vars
+	`(__android_log_print
+	  ,arg1
+	  (string "hello_quest")		;TAG
+	  (string "%s")
+	  (dot
+	   (fmt--format
+	    (string ,(format nil "~a~{ ~a~}"
+			     msg
+			     (loop for e in vars
+				   collect
+				   (format nil " ~a='{}'" (emit-c :code e)))))
+	    ,@vars)
+	   (c_str))
+	  )
+	`(__android_log_print
+	  ,arg1
+	  (string "hello_quest")		;TAG
+	  (string ,(format nil "~a" msg))))))
 
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"

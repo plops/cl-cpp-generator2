@@ -1,6 +1,7 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
+#pragma once
 #include <iostream>
 #include "VrApi.h"
 #include "VrApi_Helpers.h"
@@ -16,6 +17,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include "DataTypes.h"
+#include "DataExtern.h"
 #include <array>
 class Program  {
         public:

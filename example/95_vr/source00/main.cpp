@@ -15,6 +15,9 @@
 #include <vector>
 #define FMT_HEADER_ONLY
 #include "core.h"
+const std::vector<std::string> ATTRIB_NAMES = {"aPosition", "aColor"};
+const std::vector<std::string> UNIFORM_NAMES = {"uModelMatrix", "uViewMatrix",
+                                                "uProjectionMatrix"};
 void android_main(android_app *android_app) {
   ANativeActivity_setWindowFlags(android_app->activity,
                                  AWINDOW_FLAG_KEEP_SCREEN_ON, 0);

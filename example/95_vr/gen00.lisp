@@ -523,10 +523,20 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  "#pragma once"
+
 			  ,*includes*
 			  (include "DataTypes.h"
+				   "DataExtern.h"
 				   <array>))
+
        :implementation-preamble `(do0
+				  (do0
+				   "#define FMT_HEADER_ONLY"
+				   (include "core.h"
+					    "format.h"
+					    <android/log.h>))
+
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
        :code `(do0
@@ -539,10 +549,11 @@
 			    (type "std::string" str)
 			    (values GLuint))
 		   (let ((shader (glCreateShader type)))
-		     (glShaderSource shader
-				     1
-				     (ref (dot str (c_str)))
-				     nullptr)
+		     (let ((c_str (str.c_str)))
+		       (glShaderSource shader
+				       1
+				       (ref c_str)
+				       nullptr))
 		     (glCompileShader shader)
 		     (let ((status (GLint 0)))
 		       (glGetShaderiv shader
@@ -550,7 +561,7 @@
 				      &status)
 		       (when (== GL_FALSE
 				 status)
-			 (let ((length (GLint length)))
+			 (let ((length (GLint 0)))
 			   (glGetShaderiv shader
 					  GL_INFO_LOG_LENGTH
 					  &length)
@@ -559,10 +570,10 @@
 						 length
 						 nullptr
 						 (log.data))
-			     (let ((logstr (std--string (std--begin log)
-							(std--end log))))
-			       ,(lprint :msg "cant compile shader"
-					:vars `(logstr))))))
+			     #-nil (let ((logstr (std--string (std--begin log)
+							      (std--end log))))
+				     ,(lprint :msg "cant compile shader"
+					      :vars `(logstr))))))
 		       (return shader))))
 		 (defmethod ,name ()
 		   (declare
@@ -581,8 +592,41 @@
 				(defun main ()
 				  (setf outColor
 					(vec4 vColor 1s0))))))))
-			 (vertexShader (compileShader GL_FRAGMENT_SHADER
-						      FRAGMENT_SHADER))))
+			 (VERTEX_SHADER
+			  (std--string
+			   (string-r
+			    ,(cl-cpp-generator2::emit-c
+			      :code
+			      `(do0
+				"#version 300 es"
+				"in vec3 aPosition;"
+				"in vec3 aColor;"
+				"uniform mat4 uModelMatrix;"
+				"uniform mat4 uViewMatrix;"
+				"uniform mat4 uProjectionMatrix;"
+				"out vec3 vColor;"
+				(defun main ()
+				  (setf gl_Position
+					(* uProjectionMatrix
+					   (* uViewMatrix
+					      (* uModelMatrix
+						 (vec4 (* aPosition 1s0)
+						       1s0))))
+					vColor aColor)))))))
+			 (vertexShader (compileShader GL_VERTEX_SHADER
+						      VERTEX_SHADER))
+			 (fragmentShader (compileShader GL_FRAGMENT_SHADER
+							FRAGMENT_SHADER)))
+		     (glAttachShader program
+				     vertexShader)
+		     (glAttachShader program
+				     fragmentShader)
+		     (let ((i 0))
+		       (for-range (name ATTRIB_NAMES)
+				  (glBindAttribLocation program
+							i
+							(name.c_str))
+				  (incf i))))
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
@@ -594,10 +638,29 @@
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
+      (merge-pathnames #P"DataExtern.h"
+		       *source-dir*))
+     `(do0
+       (include <vector>
+		<string>)
+       "extern const std::vector<std::string> ATTRIB_NAMES;"
+       "extern const std::vector<std::string> UNIFORM_NAMES;"
+       ))
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
       (merge-pathnames #P"DataTypes.h"
 		       *source-dir*))
      `(do0
+       (include <vector>
+		<string>)
 
+       (space enum attrib
+	      (curly
+	       ATTRIB_BEGIN
+	       (= ATTRIB_POSITION ATTRIB_BEGIN)
+	       ATTRIB_COLOR
+	       ATTRIB_END))
        (space enum uniform
 	      (curly
 	       UNIFORM_BEGIN
@@ -650,6 +713,9 @@
 	"#define FMT_HEADER_ONLY"
 
 	(include "core.h"))
+
+       "const std::vector<std::string> ATTRIB_NAMES = {\"aPosition\",\"aColor\"};"
+       "const std::vector<std::string> UNIFORM_NAMES = {\"uModelMatrix\",\"uViewMatrix\",\"uProjectionMatrix\"};"
 
        #+nil (let ((ATTRIB_POINTERS
 		    (curly (AttribPointer 3 GL_FLOAT GL_FALSE (sizeof Vertex)
