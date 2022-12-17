@@ -555,26 +555,28 @@
 				       (ref c_str)
 				       nullptr))
 		     (glCompileShader shader)
-		     (let ((status (GLint 0)))
-		       (glGetShaderiv shader
-				      GL_COMPILE_STATUS
-				      &status)
-		       (when (== GL_FALSE
-				 status)
-			 (let ((length (GLint 0)))
-			   (glGetShaderiv shader
-					  GL_INFO_LOG_LENGTH
-					  &length)
-			   (let ((log (std--vector<char> length)))
-			     (glGetShaderInfoLog shader
-						 length
-						 nullptr
-						 (log.data))
-			     #-nil (let ((logstr (std--string (std--begin log)
-							      (std--end log))))
-				     ,(lprint :msg "cant compile shader"
-					      :vars `(logstr))))))
-		       (return shader))))
+		     (progn
+		       (let ((status (GLint 0)))
+			 (glGetShaderiv shader
+					GL_COMPILE_STATUS
+					&status)
+			 (when (== GL_FALSE
+				   status)
+			   (let ((length (GLint 0)))
+			     (glGetShaderiv shader
+					    GL_INFO_LOG_LENGTH
+					    &length)
+			     (let ((log (std--vector<char> length)))
+			       (glGetShaderInfoLog shader
+						   length
+						   nullptr
+						   (log.data))
+			       (let ((logstr (std--string (std--begin log)
+							  (std--end log))))
+				 ,(lprint :msg "cant compile shader"
+					  :vars `(logstr))
+				 (std--exit -1)))))
+			 (return shader)))))
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -626,7 +628,37 @@
 				  (glBindAttribLocation program
 							i
 							(name.c_str))
-				  (incf i))))
+				  (incf i)))
+		     (glLinkProgram program)
+		     (progn
+		       (let ((status (GLint 0)))
+			 (glGetProgramiv program
+					 GL_LINK_STATUS
+					 &status)
+			 (when (== GL_FALSE
+				   status)
+			   (let ((length (GLint 0)))
+			     (glGetProgramiv program
+					     GL_INFO_LOG_LENGTH
+					     &length)
+			     (let ((log (std--vector<char> length)))
+			       (glGetProgramInfoLog program
+						    length
+						    nullptr
+						    (log.data))
+			       (let ((logstr (std--string (std--begin log)
+							  (std--end log))))
+				 ,(lprint :msg "cant compile shader"
+					  :vars `(logstr))
+				 (std--exit -1)))))
+			 ))
+		     (dotimes (i UNIFORM_END)
+		       (setf (aref uniform_locations i)
+			     (glGetUniformLocation program
+						   (dot (aref UNIFORM_NAMES i)
+							(c_str))))
+		       )
+		     )
 		   )
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
