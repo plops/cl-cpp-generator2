@@ -558,7 +558,8 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  ,*includes*)
+			  ,*includes*
+			  (include <array>))
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
@@ -592,73 +593,131 @@
 								    0 &n))
 					     ,(lprint :msg "cant get number of egl configs"))
 					   (return n)))))
-			  (configs (std--vector<EGLConfig> numConfigs)))
+			  (configs (std--vector<EGLConfig> )))
+		      (configs.resize numConfigs)
 		      (when (== EGL_FALSE
 				(eglGetConfigs display (configs.data) numConfigs &numConfigs))
 			,(lprint :msg "cant get egl configs"))
 		      ))
 		   (do0
 		    ,(lprint :msg "choose egl config")
-		    (let ((foundConfig (EGLConfig nullptr)))
-		      (for-range (config configs)
-				 (let ((renderable_type
-					((lambda (renderable_type)
-					   (declare (type auto renderable_type)
-						    (capture "&"))
-					   (when (== EGL_FALSE
-						     (eglGetConfigAttrib display
-									 config
-									 EGL_RENDERABLE_TYPE
-									 &renderable_type))
-					     ,(lprint :msg "cant get EGL config renderable type"))
-					   (return renderable_type))
-					 (EGLint 0))))
-				   (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
-								EGL_PBUFFER_BIT
-								EGL_WINDOW_BIT)
-						     collect
-						     `(== 0
-							  (logand renderable_type
-								  ,e))
-						     ))
-				     continue)
-				   (let ((surface_type ((lambda (i)
-							  (declare (type auto i)
-								   (capture "&"))
-							  (when (== EGL_FALSE
-								    (eglGetConfigAttrib
-								     display
-								     config
-								     EGL_SURFACE_TYPE
-								     &i))
-							    ,(lprint :msg "cant get surface config type"))
-							  (return i))
-							(EGLint 0))))
-				     ,(let ((l-attrib `((red-size 8)
-							(green-size 8)
-							(blue-size 8)
-							(alpha-size 8)
-							(depth-size 0)
-							(stencil-size 0)
-							(samples 0))))
-					`(progn
-					   (let ((check (lambda (attrib)
-							  (declare (type auto attrib)
-								   (values auto)
-								   (capture "&"))
-							  (let ((value (EGLint 0)))
-							    (when (== EGL_FALSE
-								      (eglGetConfigAttrib display config attrib &value))
-							      ,(lprint :msg "cant get config attrib")))
-							  (return value))))
-					     (when (and ,@(remove-if
-							   #'null
-							   (loop for (e f) in l-attrib and i from 0
-								 collect
-								 (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
-								   (unless (eq 0 f)
-								     `(<= ,f (check ,attrib)))))))
-					       (setf foundConfig config)))))))))))
+		    (let ((found_config (EGLConfig nullptr)))
+		      (for-range
+		       (config configs)
+		       (let ((renderable_type
+			      ((lambda (renderable_type)
+				 (declare (type auto renderable_type)
+					  (capture "&"))
+				 (when (== EGL_FALSE
+					   (eglGetConfigAttrib display
+							       config
+							       EGL_RENDERABLE_TYPE
+							       &renderable_type))
+				   ,(lprint :msg "cant get EGL config renderable type"))
+				 (return renderable_type))
+			       (EGLint 0))))
+			 (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
+						      )
+					   collect
+					   `(== 0
+						(logand renderable_type
+							,e))
+					   ))
+			   continue)
+			 (let ((surface_type ((lambda (i)
+						(declare (type auto i)
+							 (capture "&"))
+						(when (== EGL_FALSE
+							  (eglGetConfigAttrib
+							   display
+							   config
+							   EGL_SURFACE_TYPE
+							   &i))
+						  ,(lprint :msg "cant get surface config type"))
+						(return i))
+					      (EGLint 0))))
+			   (when (or ,@(loop for e in `(
+							EGL_PBUFFER_BIT
+							EGL_WINDOW_BIT)
+					     collect
+					     `(== 0
+						  (logand surface_type
+							  ,e))
+					     ))
+			     continue)
+			   ,(let ((l-attrib `((red-size 8)
+					      (green-size 8)
+					      (blue-size 8)
+					      (alpha-size 8)
+					      (depth-size 0)
+					      (stencil-size 0)
+					      (samples 0))))
+			      `(progn
+				 (let ((check (lambda (attrib)
+						(declare (type auto attrib)
+							 (values auto)
+							 (capture "&"))
+						(let ((value (EGLint 0)))
+						  (when (== EGL_FALSE
+							    (eglGetConfigAttrib display config attrib &value))
+						    ,(lprint :msg "cant get config attrib")))
+						(return value))))
+				   (when (and ,@(remove-if
+						 #'null
+						 (loop for (e f) in l-attrib and i from 0
+						       collect
+						       (let ((attrib (cl-change-case:constant-case (format nil "egl-~a" e))))
+							 (unless (eq 0 f)
+							   `(<= ,f (check ,attrib)))))))
+				     (setf found_config config)
+				     break)))))))
+		      (when (== nullptr found_config)
+			,(lprint :msg "cant choose egl config")
+			(std--exit -1))
+		      (do0
+		       ,(lprint :msg "create egl config")
+		       (let ((CONTEXT_ATTRIBS ("std::array<EGLint,3>"
+					       (curly EGL_CONTEXT_CLIENT_VERSION
+						      3
+						      EGL_NONE))))
+			 (setf context
+			       (eglCreateContext display
+						 found_config
+						 EGL_NO_CONTEXT
+						 (CONTEXT_ATTRIBS.data)))
+			 (when (== EGL_NO_CONTEXT
+				   context)
+			   ,(lprint :msg "can't create egl context")
+			   (std--exit -1))
+
+			 ))
+		      (do0
+		       ,(lprint :msg "create egl surface")
+		       ,(let ((l `(EGL_WIDTH 16 EGL_HEIGHT 16 EGL_NONE)))
+			  `(let ((SURFACE_ATTRIBS (,(format nil "std::array<EGLint,~a>" (length l))
+						    (curly ,@l))))
+			     (setf surface
+				   (eglCreatePbufferSurface
+				    display
+				    found_config
+				    (SURFACE_ATTRIBS.data)))
+			     (when (== EGL_NO_SURFACE
+				       surface)
+			       ,(lprint :msg "can't create pixel buffer surface")
+			       (std--exit -1))
+
+			     )))
+		      (do0
+		       ,(lprint :msg "make egl context current")
+		       (when (== EGL_FALSE
+				 (eglMakeCurrent display
+						 surface
+						 surface
+						 context))
+			 ,(lprint :msg "can't make egl context current")
+			 (std--exit -1)))
+
+		      )))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (values :constructor)))))))

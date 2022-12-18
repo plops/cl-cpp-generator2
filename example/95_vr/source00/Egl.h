@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include <array>
 class Egl  {
         public:
         EGLDisplay display;
