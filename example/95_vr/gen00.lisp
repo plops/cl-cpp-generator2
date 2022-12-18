@@ -1219,7 +1219,7 @@
 		       :if-exists :supersede
 		       :if-does-not-exist :create)
       ;;https://clang.llvm.org/docs/AddressSanitizer.html
-      ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+      ;; cmake -DCMAKE_BUILD_TYPE=Debug -GNinja  ..
       ;;
       (let ((dbg "-ggdb -O0 ")
 	    (asan ""
