@@ -1297,6 +1297,7 @@
 		   vrapi
 		   EGL
 		   c++
+		   GLESv3
 					;c++shared
 		   ))
 

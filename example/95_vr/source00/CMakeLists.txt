@@ -27,4 +27,4 @@ target_include_directories( main PRIVATE
 add_library( vrapi SHARED IMPORTED )
 set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )
-target_link_libraries( main PRIVATE android log vrapi EGL c++_shared )
+target_link_libraries( main PRIVATE android log vrapi EGL c++ GLESv3 )
