@@ -1,12 +1,12 @@
 cmake_minimum_required( VERSION 3.0 FATAL_ERROR )
-project( main LANGUAGES CXX )
+project( main LANGUAGES C CXX )
 set( CMAKE_C_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang )
 set( CMAKE_CXX_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ )
 set( CMAKE_VERBOSE_MAKEFILE ON )
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0   -Wall -Wextra -std=c++20  ")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0   -Wall -Wextra -std=c++20  ")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0   -Wall -Wextra -std=c++20  ")
-set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra -std=c++20 ")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0   -Wall -Wextra   ")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0   -Wall -Wextra   ")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -O0   -Wall -Wextra   ")
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -ggdb -O0  -Wall -Wextra  ")
 set( SRCS /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/App.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/AttribPointer.cpp
 /home/martin/stage/cl-cpp-generator2/example/95_vr/source00/Cube.cpp
@@ -27,4 +27,4 @@ target_include_directories( main PRIVATE
 add_library( vrapi SHARED IMPORTED )
 set_target_properties( vrapi PROPERTIES IMPORTED_LOCATION /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so
  )
-target_link_libraries( main PRIVATE android log vrapi EGL c++ GLESv3 )
+target_link_libraries( main PRIVATE android log vrapi EGL GLESv3 )

@@ -1228,7 +1228,7 @@
 	    ;; https://stackoverflow.com/questions/8487986/file-macro-shows-full-path
 	    (short-file "" ;"-ffile-prefix-map=/home/martin/stage/cl-cpp-generator2/example/86_glbinding_av/source01/="
 	      )
-	    (show-err "-Wall -Wextra -std=c++20"	;  -march=arm-v8a
+	    (show-err "-Wall -Wextra "	;  -march=arm-v8a
 					;" -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self  -Wmissing-declarations -Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wswitch-default -Wundef -Werror -Wno-unused"
 					;"-Wlogical-op -Wnoexcept  -Wstrict-null-sentinel  -Wsign-promo-Wstrict-overflow=5  "
 
@@ -1237,7 +1237,7 @@
 	  (macrolet ((out (fmt &rest rest)
 		       `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	    (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
-	    (out "project( ~a LANGUAGES CXX )" program-name)
+	    (out "project( ~a LANGUAGES C CXX )" program-name)
 
             (out "set( CMAKE_C_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang )")
 	    (out "set( CMAKE_CXX_COMPILER /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ )")
@@ -1296,7 +1296,7 @@
 		   log
 		   vrapi
 		   EGL
-		   c++
+					;c++
 		   GLESv3
 					;c++shared
 		   ))
