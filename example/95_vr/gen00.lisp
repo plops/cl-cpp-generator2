@@ -243,7 +243,7 @@
 		     (framebuffers.push_back
 		      (Framebuffer width height)))
 		   )
-		 (defmethod RenderFrame (tracking)
+		 (defmethod render_frame (tracking)
 		   (declare (type ovrTracking2* tracking)
 			    (values ovrLayerProjection2))
 		   (let ((model_matrix (ovrMatrix4f_CreateTranslation 0s0 0s0 -1s0)))
@@ -1110,9 +1110,16 @@
 		  ))
 	      (app.handle_input)
 	      (when (== nullptr
-			ovr)
+			app.ovr)
 		continue)
 	      (incf app.frame_index)
+	      (let ((display_time
+		     (vrapi_GetPredictedDisplayTime
+		      app.ovr app.frame_index))
+		    (tracking (vrapi_GetPredictedTracking2
+			       app.ovr display_time))
+		    (layer (app.renderer.render_frame
+			    &tracking))))
 	      )
 
 	    )))))

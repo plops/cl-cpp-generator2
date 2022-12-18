@@ -107,9 +107,12 @@ void android_main(android_app *android_app) {
       app.update_vr_mode();
     }
     app.handle_input();
-    if ((nullptr) == (ovr)) {
+    if ((nullptr) == (app.ovr)) {
       continue;
     }
     (app.frame_index)++;
+    auto display_time = vrapi_GetPredictedDisplayTime(app.ovr, app.frame_index);
+    auto tracking = vrapi_GetPredictedTracking2(app.ovr, display_time);
+    auto layer = app.renderer.render_frame(&tracking);
   }
 }
