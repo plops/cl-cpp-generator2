@@ -28,6 +28,7 @@ class App  {
         bool back_button_down_previous_frame;
         uint64_t frame_index;
          App (ovrJava* java)     ;  
+        void update_vr_mode ()     ;  
 };
 
 #endif /* !APP_H */

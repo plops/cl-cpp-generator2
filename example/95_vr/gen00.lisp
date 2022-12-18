@@ -134,6 +134,38 @@
 		     (back_button_down_previous_frame false)
 		     (frame_index 0))
 		    (values :constructor)))
+		 (defmethod update_vr_mode ()
+		   (if (and resumed
+			    (!= nullptr window))
+		       (when (== nullptr ovr)
+			 (let ((mode_parms (vrapi_DefaultModeParms java)))
+			   (setf mode_parms.Flags
+				 (logior mode_parms.Flags
+					 VRAPI_MODE_FLAG_NATIVE_WINDOW)
+				 )
+			   (setf mode_parms.Flags
+				 (logand mode_parms.Flags
+					 ~VRAPI_MODE_FLAG_RESET_WINDOW_FULLSCREEN)
+				 )
+			   (setf mode_parms.Display (reinterpret_cast<size_t> egl.display)
+				 mode_parms.WindowSurface (reinterpret_cast<size_t> window)
+				 mode_parms.ShareContext (reinterpret_cast<size_t> egl.context)
+				 )
+			   ,(lprint :msg "enter vr mode")
+			   (setf ovr (vrapi_EnterVrMode &mode_parms))
+			   (when (== nullptr
+				     ovr)
+			     ,(lprint :msg "error: cant enter vr mode")
+			     (std--exit -1))
+			   (vrapi_SetClockLevels
+			    ovr
+			    CPU_LEVEL
+			    GPU_LEVEL)))
+		       (unless (== nullptr
+				   ovr)
+			 ,(lprint :msg "leave vr mode")
+			 (vrapi_LeaveVrMode ovr)
+			 (setf ovr nullptr))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (values :constructor)))))))
@@ -902,7 +934,10 @@
 	       (= UNIFORM_MODEL_MATRIX UNIFORM_BEGIN)
 	       UNIFORM_VIEW_MATRIX
 	       UNIFORM_PROJECTION_MATRIX
-	       UNIFORM_END))))
+	       UNIFORM_END))
+       (space enum level
+	      (curly (= CPU_LEVEL 2)
+		     (= GPU_LEVEL 3)))))
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
@@ -1015,7 +1050,29 @@
 	  (let ((app (App
 		      &java)))
 	    (setf android_app->userData (ref app)
-		  android_app->onAppCmd app_on_cmd))))))
+		  android_app->onAppCmd app_on_cmd)
+	    (while (not android_app->destroyRequested)
+	      (while true
+		(let ((events 0)
+		      (source nullptr))
+		  (declare (type "android_poll_source*"
+				 source))
+		  (when (< (ALooper_pollAll
+			    (or android_app->destroyRequested
+				(? (!= nullptr app.ovr)
+				   0 -1))
+			    nullptr
+			    &events
+			    (reinterpret_cast<void**> &source))
+			   0)
+		    break)
+		  (unless (== nullptr source)
+		    (source->process android_app
+				     source))
+		  (app.update_vr_mode)
+		  )))
+					;(app_handle_input &app)
+	    )))))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output

@@ -91,4 +91,20 @@ void android_main(android_app *android_app) {
   auto app = App(&java);
   android_app->userData = &(app);
   android_app->onAppCmd = app_on_cmd;
+  while (!(android_app->destroyRequested)) {
+    while (true) {
+      auto events = 0;
+      android_poll_source *source = nullptr;
+      if ((ALooper_pollAll(((android_app->destroyRequested) ||
+                            (((nullptr) != (app.ovr)) ? (0) : (-1))),
+                           nullptr, &events,
+                           reinterpret_cast<void **>(&source))) < (0)) {
+        break;
+      }
+      if (!((nullptr) == (source))) {
+        source->process(android_app, source);
+      }
+      app.update_vr_mode();
+    }
+  }
 }
