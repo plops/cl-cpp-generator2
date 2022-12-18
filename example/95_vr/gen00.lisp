@@ -963,6 +963,30 @@
 				    (reinterpret_cast<GLvoid*> (offsetof Vertex color))))))
 	 (declare (type "const std::array<AttribPointer,2>" ATTRIB_POINTERS)))
 
+       (defun app_on_cmd (android_app cmd)
+	 (declare (type android_app* android_app)
+		  (type int32_t cmd))
+	 (let ((app (reinterpret_cast<App*> android_app->userData)))
+	   (case cmd
+	     ,@(loop for e in `((start)
+				(resume (setf app->resumed true))
+				(pause (setf app->resumed false))
+				(stop)
+				(destroy (setf app->window nullptr))
+				(init-window (setf app->window
+						   android_app->window))
+				(term-window (setf app->window nullptr)))
+		     collect
+		     (destructuring-bind (name &optional code) e
+		       (let* ((clause (cl-change-case:constant-case
+				       (format nil "app-cmd-~a" name)) )
+			      (res `(,clause
+				     ,(lprint :msg (format nil "~a" e)))))
+			 (when code
+			   (setf res (append res `(,code))))
+			 res)))
+	     (t ,(lprint :msg "app_on_cmd default")))))
+
        (defun android_main (android_app)
 	 (declare (type android_app* android_app))
 	 (ANativeActivity_setWindowFlags
@@ -977,7 +1001,8 @@
 	    (-> java.Vm			;"(*java.Vm)"
 		(AttachCurrentThread	;java.Vm
 		 &java.Env
-		 nullptr))))
+		 nullptr))
+	    (setf java.ActivityObject android_app->activity->clazz)))
 	 (do0
 	  ,(lprint :msg "initialize vr api")
 	  (let ((init_params (vrapi_DefaultInitParms
@@ -988,7 +1013,9 @@
 	      (std--exit 1))))
 	 (do0
 	  (let ((app (App
-		      &java))))))))
+		      &java)))
+	    (setf android_app->userData (ref app)
+		  android_app->onAppCmd app_on_cmd))))))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output

@@ -24,6 +24,54 @@ const std::array<AttribPointer, 2> ATTRIB_POINTERS = {
                   reinterpret_cast<GLvoid *>(offsetof(Vertex, position))),
     AttribPointer(3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                   reinterpret_cast<GLvoid *>(offsetof(Vertex, color)))};
+void app_on_cmd(android_app *android_app, int32_t cmd) {
+  auto app = reinterpret_cast<App *>(android_app->userData);
+  switch (cmd) {
+  case APP_CMD_START: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(start)");
+    break;
+  }
+  case APP_CMD_RESUME: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(resume (setf app->resumed true))");
+    app->resumed = true;
+    break;
+  }
+  case APP_CMD_PAUSE: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(pause (setf app->resumed false))");
+    app->resumed = false;
+    break;
+  }
+  case APP_CMD_STOP: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(stop)");
+    break;
+  }
+  case APP_CMD_DESTROY: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(destroy (setf app->window nullptr))");
+    app->window = nullptr;
+    break;
+  }
+  case APP_CMD_INIT_WINDOW: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(init-window (setf app->window android_app->window))");
+    app->window = android_app->window;
+    break;
+  }
+  case APP_CMD_TERM_WINDOW: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(term-window (setf app->window nullptr))");
+    app->window = nullptr;
+    break;
+  }
+  default: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "app_on_cmd default");
+    break;
+  }
+  }
+}
 void android_main(android_app *android_app) {
   ANativeActivity_setWindowFlags(android_app->activity,
                                  AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
@@ -32,6 +80,7 @@ void android_main(android_app *android_app) {
   auto java = ovrJava();
   java.Vm = android_app->activity->vm;
   java.Vm->AttachCurrentThread(&java.Env, nullptr);
+  java.ActivityObject = android_app->activity->clazz;
   __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "initialize vr api");
   auto init_params = vrapi_DefaultInitParms(&java);
   if (!((VRAPI_INITIALIZE_SUCCESS) == (vrapi_Initialize(&init_params)))) {
@@ -40,4 +89,6 @@ void android_main(android_app *android_app) {
     std::exit(1);
   }
   auto app = App(&java);
+  android_app->userData = &(app);
+  android_app->onAppCmd = app_on_cmd;
 }
