@@ -114,5 +114,13 @@ void android_main(android_app *android_app) {
     auto display_time = vrapi_GetPredictedDisplayTime(app.ovr, app.frame_index);
     auto tracking = vrapi_GetPredictedTracking2(app.ovr, display_time);
     auto layer = app.renderer.render_frame(&tracking);
+    auto layers = std::array<ovrLayerHeader2 *, 1>({&layer.Header});
+    ovrSubmitFrameDescription2 frame = {.Flags = 0,
+                                        .SwapInterval = 1,
+                                        .FrameIndex = app.frame_index,
+                                        .DisplayTime = display_time,
+                                        .LayerCount = 1,
+                                        .Layers = layers.data()};
+    vrapi_SubmitFrame2(app.ovr, &frame);
   }
 }

@@ -1119,7 +1119,20 @@
 		    (tracking (vrapi_GetPredictedTracking2
 			       app.ovr display_time))
 		    (layer (app.renderer.render_frame
-			    &tracking))))
+			    &tracking))
+		    (layers ("std::array<ovrLayerHeader2*,1>"
+			     (curly
+			      &layer.Header)))
+		    (frame (curly (= .Flags 0)
+				  (= .SwapInterval 1)
+				  (= .FrameIndex app.frame_index)
+				  (= .DisplayTime display_time)
+				  (= .LayerCount 1)
+				  (= .Layers (layers.data))
+				  )))
+		(declare (type ovrSubmitFrameDescription2 frame))
+		(vrapi_SubmitFrame2
+		 app.ovr &frame))
 	      )
 
 	    )))))
