@@ -24,11 +24,12 @@ pushd lib/arm64-v8a
 export CC=aarch64-linux-android29-clang
 export CXX=aarch64-linux-android29-clang++
 cmake /home/martin/stage/cl-cpp-generator2/example/95_vr/source00
-make
+make -j4
 
 
 cp /home/martin/quest2/ovr/VrApi/Libs/Android/arm64-v8a/Debug/libvrapi.so .
 cp /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so .
+cp /home/martin/quest2/ndk/android-ndk-r25b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/29/libEGL.so .
 
 popd
 
@@ -44,6 +45,7 @@ aapt add hello_quest.apk classes.dex
 aapt add hello_quest.apk lib/arm64-v8a/libmain.so
 aapt add hello_quest.apk lib/arm64-v8a/libvrapi.so
 aapt add hello_quest.apk lib/arm64-v8a/libc++_shared.so
+aapt add hello_quest.apk lib/arm64-v8a/libEGL.so
 
 apksigner sign \
 	  -ks ~/.android/debug.keystore \
