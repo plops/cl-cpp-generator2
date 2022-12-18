@@ -1295,6 +1295,8 @@
 		 `(android
 		   log
 		   vrapi
+		   EGL
+		   c++
 					;c++shared
 		   ))
 
