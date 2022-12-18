@@ -166,9 +166,39 @@
 		     (geometry (Geometry))
 		     )
 		    (values :constructor))
-		   #+nil   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-			     (framebuffers.push_back
-			      (Framebuffer width height))))
+		   (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		     (framebuffers.push_back
+		      (Framebuffer width height)))
+		   )
+		 (defmethod RenderFrame (tracking)
+		   (declare (type ovrTracking2* tracking))
+		   (let ((model_matrix (ovrMatrix4f_CreateTranslation 0s0 0s0 -1s0)))
+		     (setf model_matrix (ovrMatrix4f_Transpose &model_matrix))
+		     (let ((layer (vrapi_DefaultLayerProjection2)))
+		       (setf layer.Header.Flags
+			     (logior layer.Header.Flags
+				     VRAPI_FRAME_LAYER_FLAG_CHROMATIC_ABERRATION_CORRECTION)
+			     layer.HeadPose
+			     tracking->HeadPose))
+		     (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
+		       (let ((view_matrix (ovrMatrix4f_Transpose
+					   (ref (-> tracking
+						    (aref Eye i)
+						    ViewMatrix))))
+			     (projection_matrix
+			      (ovrMatrix4f_Transpose
+			       (ref (-> tracking
+					(aref Eye i)
+					ProjectionMatrix)))
+			       )
+			     (*framebuffer (ref (dot framebuffers (at i))))
+
+			     )
+			 (setf (dot layer (aref Textures i) ColorSwapChain)
+			       framebuffer->color_texture_swap_chain)
+			 (setf (dot layer (aref Textures i) SwapChainIndex)
+			       framebuffer->swap_chain_index)
+			 ))))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (construct)

@@ -24,6 +24,7 @@ class Renderer  {
         Program program;
         Geometry geometry;
          Renderer (GLsizei width, GLsizei height)     ;  
+        void RenderFrame (ovrTracking2* tracking)     ;  
 };
 
 #endif /* !RENDERER_H */
