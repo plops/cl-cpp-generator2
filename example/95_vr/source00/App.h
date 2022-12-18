@@ -29,6 +29,7 @@ class App  {
         uint64_t frame_index;
          App (ovrJava* java)     ;  
         void update_vr_mode ()     ;  
+        void handle_input ()     ;  
 };
 
 #endif /* !APP_H */

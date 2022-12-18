@@ -166,6 +166,43 @@
 			 ,(lprint :msg "leave vr mode")
 			 (vrapi_LeaveVrMode ovr)
 			 (setf ovr nullptr))))
+		 (defmethod handle_input ()
+		   (let ((back_button_down_current_frame false)
+			 (i 0)
+			 (capability (ovrInputCapabilityHeader)))
+		     (while (<= 0
+				(vrapi_EnumerateInputDevices
+				 ovr i &capability))
+		       (when (== ovrControllerType_TrackedRemote
+				 capability.Type)
+			 (let ((input_state (ovrInputStateTrackedRemote)))
+			   (setf input_state.Header.ControllerType
+				 ovrControllerType_TrackedRemote)
+			   (when (== ovrSuccess
+				     (vrapi_GetCurrentInputState
+				      ovr capability.DeviceID
+				      &input_state.Header))
+			     (setf back_button_down_current_frame
+				   (logior back_button_down_current_frame
+					   (logand input_state.Buttons
+						   ovrButton_Back)))
+			     (setf back_button_down_current_frame
+				   (logior back_button_down_current_frame
+					   (logand input_state.Buttons
+						   ovrButton_B)))
+			     (setf back_button_down_current_frame
+				   (logior back_button_down_current_frame
+					   (logand input_state.Buttons
+						   ovrButton_Y))))))
+		       (incf i))
+		     (when (and back_button_down_previous_frame
+				(not back_button_down_current_frame))
+		       (vrapi_ShowSystemUI java
+					   VRAPI_SYS_UI_CONFIRM_QUIT_MENU))
+		     (setf back_button_down_previous_frame
+			   back_button_down_current_frame)
+
+		     ))
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (values :constructor)))))))
@@ -1070,8 +1107,14 @@
 		    (source->process android_app
 				     source))
 		  (app.update_vr_mode)
-		  )))
-					;(app_handle_input &app)
+		  ))
+	      (app.handle_input)
+	      (when (== nullptr
+			ovr)
+		continue)
+	      (incf app.frame_index)
+	      )
+
 	    )))))
 
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)

@@ -50,3 +50,32 @@ void App::update_vr_mode() {
     }
   }
 }
+void App::handle_input() {
+  auto back_button_down_current_frame = false;
+  auto i = 0;
+  auto capability = ovrInputCapabilityHeader();
+  while ((0) <= (vrapi_EnumerateInputDevices(ovr, i, &capability))) {
+    if ((ovrControllerType_TrackedRemote) == (capability.Type)) {
+      auto input_state = ovrInputStateTrackedRemote();
+      input_state.Header.ControllerType = ovrControllerType_TrackedRemote;
+      if ((ovrSuccess) == (vrapi_GetCurrentInputState(ovr, capability.DeviceID,
+                                                      &input_state.Header))) {
+        back_button_down_current_frame =
+            ((back_button_down_current_frame) |
+             (((input_state.Buttons) & (ovrButton_Back))));
+        back_button_down_current_frame =
+            ((back_button_down_current_frame) |
+             (((input_state.Buttons) & (ovrButton_B))));
+        back_button_down_current_frame =
+            ((back_button_down_current_frame) |
+             (((input_state.Buttons) & (ovrButton_Y))));
+      }
+    }
+    (i)++;
+  }
+  if (((back_button_down_previous_frame) &&
+       (!(back_button_down_current_frame)))) {
+    vrapi_ShowSystemUI(java, VRAPI_SYS_UI_CONFIRM_QUIT_MENU);
+  }
+  back_button_down_previous_frame = back_button_down_current_frame;
+}

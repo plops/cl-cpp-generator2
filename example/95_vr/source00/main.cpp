@@ -106,5 +106,10 @@ void android_main(android_app *android_app) {
       }
       app.update_vr_mode();
     }
+    app.handle_input();
+    if ((nullptr) == (ovr)) {
+      continue;
+    }
+    (app.frame_index)++;
   }
 }
