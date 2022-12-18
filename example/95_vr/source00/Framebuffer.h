@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+#include "DataTypes.h"
 class Framebuffer  {
         public:
         int swap_chain_index;
@@ -22,9 +23,10 @@ class Framebuffer  {
         GLsizei width;
         GLsizei height;
         ovrTextureSwapChain* color_texture_swap_chain;
-        GLuint* depth_renderbuffers;
-        GLuint* framebuffers;
+        std::vector<GLuint> depth_renderbuffers;
+        std::vector<GLuint> framebuffers;
          Framebuffer (GLsizei w, GLsizei h)     ;  
+         ~Framebuffer ()     ;  
 };
 
 #endif /* !FRAMEBUFFER_H */

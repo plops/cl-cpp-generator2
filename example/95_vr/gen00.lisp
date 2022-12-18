@@ -487,10 +487,17 @@
        :name name
        :headers `()
        :header-preamble `(do0
-			  ,*includes*)
+			  ,*includes*
+			  (include "DataTypes.h")
+
+			  )
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
-				  ,*includes*)
+				  ,*includes*
+				  (include
+				   <EGL/egl.h>
+				   <EGL/eglext.h>
+				   <GLES3/gl3.h>))
        :code `(do0
 	       (defclass ,name ()
 		 "public:"
@@ -499,8 +506,8 @@
 		 "GLsizei width;"
 		 "GLsizei height;"
 		 "ovrTextureSwapChain* color_texture_swap_chain;"
-		 "GLuint* depth_renderbuffers;"
-		 "GLuint* framebuffers;"
+		 "std::vector<GLuint> depth_renderbuffers;"
+		 "std::vector<GLuint> framebuffers;"
 		 (defmethod ,name (w h)
 		   (declare
 		    (type GLsizei w h)
@@ -513,15 +520,86 @@
 		       VRAPI_TEXTURE_TYPE_2D
 		       GL_RGBA8
 		       w h 1 3)))
-		    (when (== nullptr
-			      color_texture_swap_chain)
-		      ,(lprint :msg "cant create color texture swap chain")
-		      (std--exit -1))
 		    (values :constructor))
-		   )
-		 #+nil (defmethod ,(format nil "~~~a" name) ()
-			 (declare
-			  (values :constructor))))
+		   (when (== nullptr
+			     color_texture_swap_chain)
+		     ,(lprint :msg "cant create color texture swap chain")
+		     (std--exit -1))
+		   (setf swap_chain_length
+			 (vrapi_GetTextureSwapChainLength
+			  color_texture_swap_chain))
+		   (do0
+		    (depth_renderbuffers.resize swap_chain_length)
+		    (glGenRenderbuffers swap_chain_length
+					(depth_renderbuffers.data)))
+		   (do0
+		    (framebuffers.resize swap_chain_length)
+		    (glGenFramebuffers swap_chain_length
+				       (framebuffers.data)))
+		   (dotimes (i swap_chain_length)
+		     (do0
+		      ,(lprint :msg "color texture " :vars `(i ))
+		      (let ((color_texture (vrapi_GetTextureSwapChainHandle
+					    color_texture_swap_chain
+					    i))))
+		      (glBindTexture GL_TEXTURE_2D
+				     color_texture)
+		      (glTexParameteri GL_TEXTURE_2D
+				       GL_TEXTURE_MIN_FILTER
+				       GL_LINEAR)
+		      (glTexParameteri GL_TEXTURE_2D
+				       GL_TEXTURE_MAG_FILTER
+				       GL_LINEAR)
+		      (glTexParameteri GL_TEXTURE_2D
+				       GL_TEXTURE_WRAP_S
+				       GL_CLAMP_TO_EDGE)
+		      (glTexParameteri GL_TEXTURE_2D
+				       GL_TEXTURE_WRAP_T
+				       GL_CLAMP_TO_EDGE)
+		      (glBindTexture GL_TEXTURE_2D
+				     0))
+		     (do0 ,(lprint :msg "create depth buffer"
+				   :vars `(i))
+			  (glBindRenderbuffer
+			   GL_RENDERBUFFER
+			   (dot depth_renderbuffers (at i)))
+			  (glRenderbufferStorage GL_RENDERBUFFER
+						 GL_DEPTH_COMPONENT24
+						 w h)
+			  (glBindRenderbuffer GL_RENDERBUFFER 0))
+		     (do0
+		      ,(lprint :msg "create framebuffer"
+			       :vars `(i))
+		      (glBindFramebuffer GL_DRAW_FRAMEBUFFER
+					 (dot framebuffers (at i)))
+		      (glFramebufferTexture2D GL_DRAW_FRAMEBUFFER
+					      GL_COLOR_ATTACHMENT0
+					      GL_TEXTURE_2D
+					      color_texture
+					      0)
+		      (glFramebufferRenderbuffer GL_DRAW_FRAMEBUFFER
+						 GL_DEPTH_ATTACHMENT
+						 GL_RENDERBUFFER
+						 (depth_renderbuffers.at i))
+		      (progn
+			(let ((status (glCheckFramebufferStatus
+				       GL_DRAW_FRAMEBUFFER)))
+			  (unless (== GL_FRAMEBUFFER_COMPLETE
+				      status)
+			    ,(lprint :msg "cant create framebuffer" :vars `(i))
+			    (std--exit -1))))
+		      (glBindFramebuffer GL_DRAW_FRAMEBUFFER
+					 0))
+		     ))
+		 (defmethod ,(format nil "~~~a" name) ()
+		   (declare
+		    (values :constructor))
+		   (glDeleteFramebuffers swap_chain_length
+					 (framebuffers.data))
+		   (glDeleteRenderbuffers swap_chain_length
+					  (depth_renderbuffers.data))
+		   (vrapi_DestroyTextureSwapChain
+		    color_texture_swap_chain)))
 	       )))
 
     (let ((name `Program))
@@ -533,7 +611,6 @@
        :headers `()
        :header-preamble `(do0
 			  "#pragma once"
-
 			  ,*includes*
 			  (include "DataTypes.h"
 				   "DataExtern.h"
@@ -541,10 +618,10 @@
 
        :implementation-preamble `(do0
 				  (do0
-				   "#define FMT_HEADER_ONLY"
-				   (include "core.h"
-					    "format.h"
-					    <android/log.h>))
+				   (do0 "#define FMT_HEADER_ONLY"
+					(include "core.h"
+						 "format.h"
+						 <android/log.h>)))
 
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
@@ -588,7 +665,6 @@
 			 (return shader)))))
 		 (defmethod ,name ()
 		   (declare
-					;  (explicit)
 		    (construct (program (glCreateProgram)))
 		    (values :constructor))
 		   (let ((FRAGMENT_SHADER
@@ -691,8 +767,13 @@
       (merge-pathnames #P"DataTypes.h"
 		       *source-dir*))
      `(do0
+       "#pragma once"
        (include <vector>
 		<string>)
+       (do0 "#define FMT_HEADER_ONLY"
+	    (include "core.h"
+		     "format.h"
+		     <android/log.h>))
 
        (space enum attrib
 	      (curly
@@ -737,16 +818,18 @@
 		       "VrApi_Input.h"
 		       "VrApi_SystemUtils.h"
 		       "android_native_app_glue.h"
-		       <EGL/egl.h>
-		       <EGL/eglext.h>
-		       <GLES3/gl3.h>
+
 		       <android/log.h>
 		       <android/window.h>
 					;<cstdin>
 		       <cstdlib>
 		       <unistd.h>
 
-		       ))
+		       )
+	      (include
+	       <EGL/egl.h>
+	       <EGL/eglext.h>
+	       <GLES3/gl3.h>))
        (include "App.h"
 		"Vertex.h")
 
