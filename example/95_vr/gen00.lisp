@@ -1201,6 +1201,8 @@
 				  (= .Layers (layers.data))
 				  )))
 		(declare (type ovrSubmitFrameDescription2 frame))
+		,(lprint :vars `(app.frame_index
+				 display_time))
 		(vrapi_SubmitFrame2
 		 app.ovr &frame))
 	      )

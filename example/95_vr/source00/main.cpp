@@ -159,6 +159,10 @@ void android_main(android_app *android_app) {
                                         .DisplayTime = display_time,
                                         .LayerCount = 1,
                                         .Layers = layers.data()};
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "%s",
+                        fmt::format("  app.frame_index='{}'  display_time='{}'",
+                                    app.frame_index, display_time)
+                            .c_str());
     vrapi_SubmitFrame2(app.ovr, &frame);
   }
   __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "shut down vr api");
