@@ -70,6 +70,10 @@
 					<vector>
 					<cstdlib>
 					<unistd.h>)))
+    (defparameter *uniforms*
+      `((:name "model-matrix" :type mat4 :ptype GLfloat*)
+	(:name "view-matrix" :type mat4 :ptype GLfloat*)
+	(:name "projection-matrix" :type mat4 :ptype GLfloat*)))
 
     (let ((name `App))
       (write-class
@@ -171,7 +175,8 @@
 		      (Framebuffer width height)))
 		   )
 		 (defmethod RenderFrame (tracking)
-		   (declare (type ovrTracking2* tracking))
+		   (declare (type ovrTracking2* tracking)
+			    (values ovrLayerProjection2))
 		   (let ((model_matrix (ovrMatrix4f_CreateTranslation 0s0 0s0 -1s0)))
 		     (setf model_matrix (ovrMatrix4f_Transpose &model_matrix))
 		     (let ((layer (vrapi_DefaultLayerProjection2)))
@@ -181,15 +186,18 @@
 			     layer.HeadPose
 			     tracking->HeadPose))
 		     (dotimes (i VRAPI_FRAME_LAYER_EYE_MAX)
-		       (let ((view_matrix (ovrMatrix4f_Transpose
-					   (ref (-> tracking
-						    (aref Eye i)
-						    ViewMatrix))))
+		       (let (
+			     (view_matrix (ovrMatrix4f_Transpose
+					   (ref
+					    (-> tracking
+						(dot (aref Eye i)
+						     ViewMatrix)))))
+
 			     (projection_matrix
 			      (ovrMatrix4f_Transpose
 			       (ref (-> tracking
-					(aref Eye i)
-					ProjectionMatrix)))
+					(dot (aref Eye i)
+					     ProjectionMatrix))))
 			       )
 			     (*framebuffer (ref (dot framebuffers (at i))))
 
@@ -198,7 +206,84 @@
 			       framebuffer->color_texture_swap_chain)
 			 (setf (dot layer (aref Textures i) SwapChainIndex)
 			       framebuffer->swap_chain_index)
-			 ))))
+			 (comments "this seems to be the heart of the thing. maybe they distort a pre-rendered version to match current head position")
+			 (setf (dot layer (aref Textures i) TexCoordsFromTanAngles)
+			       (ovrMatrix4f_TanAngleMatrixFromProjection
+				(ref (-> tracking
+					 (dot (aref Eye i)
+					      ProjectionMatrix)))))
+			 (glBindFramebuffer
+			  GL_DRAW_FRAMEBUFFER
+			  (dot framebuffer->framebuffers
+			       (at framebuffer->swap_chain_index)))
+			 (glEnable GL_CULL_FACE)
+			 (glEnable GL_DEPTH_TEST)
+			 (glEnable GL_SCISSOR_TEST)
+			 (glViewport 0 0
+				     framebuffer->width framebuffer->height)
+			 (glScissor 0 0
+				    framebuffer->width framebuffer->height)
+			 (glClearColor 0s0 0s0 0s0 0s0)
+			 (glClear (logior GL_COLOR_BUFFER_BIT
+					  GL_DEPTH_BUFFER_BIT))
+			 (glUseProgram program.program)
+			 (let ((count 1)
+			       (transpose GL_FALSE))
+			   ,@(loop for e in *uniforms*
+				   collect
+				   (destructuring-bind (&key name type ptype)
+				       e
+				     `(glUniformMatrix4fv
+				       (dot program
+					    (aref uniform_locations
+						  ,(cl-change-case:constant-case
+						    (format nil "uniform-~a" name))))
+				       count
+				       transpose
+				       (,(format nil "reinterpret_cast<const ~a>" ptype)
+					 (ref ,(cl-change-case:snake-case
+						name)))))))
+			 (glBindVertexArray geometry.vertex_array)
+			 (glDrawElements GL_TRIANGLES
+					 (dot geometry
+					      cube
+					      indices
+					      (size))
+					 GL_UNSIGNED_SHORT
+					 nullptr)
+			 (glBindVertexArray 0)
+			 (glUseProgram 0)
+
+			 (do0
+			  (glClearColor 0s0 0s0 0s0 1s0)
+
+			  ,@(loop for (x y w h) in `((0 0 1 framebuffer->height)
+						     ((- framebuffer->width 1) 0 1 framebuffer->height)
+						     (0 0 framebuffer->width 1)
+						     (0 (- framebuffer->height 1)
+							framebuffer->width 1))
+				  collect
+				  `(do0
+				    (glScissor ,x ,y ,w ,h)
+				    (glClear GL_COLOR_BUFFER_BIT)))
+
+			  (let ((ATTACHMENTS ("std::array<const GLenum,1>"
+					      (curly GL_DEPTH_ATTACHMENT))))
+			    (declare (type "static auto" ATTACHMENTS))
+			    (glInvalidateFramebuffer GL_DRAW_FRAMEBUFFER
+						     (ATTACHMENTS.size)
+						     (ATTACHMENTS.data))
+			    (glFlush)
+			    (glBindFramebuffer GL_DRAW_FRAMEBUFFER 0)
+			    (setf framebuffer->swap_chain_index
+				  (% (+ framebuffer->swap_chain_index 1)
+				     framebuffer->swap_chain_length)))
+
+			  )
+
+			 )))
+		   (return layer))
+
 		 #+nil (defmethod ,(format nil "~~~a" name) ()
 			 (declare
 			  (construct)
