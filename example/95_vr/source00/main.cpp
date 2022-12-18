@@ -65,6 +65,44 @@ void app_on_cmd(android_app *android_app, int32_t cmd) {
     app->window = nullptr;
     break;
   }
+  case APP_CMD_INPUT_CHANGED: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(input-changed)");
+    break;
+  }
+  case APP_CMD_WINDOW_RESIZED: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(window-resized)");
+    break;
+  }
+  case APP_CMD_WINDOW_REDRAW_NEEDED: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(window-redraw-needed)");
+    break;
+  }
+  case APP_CMD_CONTENT_RECT_CHANGED: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                        "(content-rect-changed)");
+    break;
+  }
+  case APP_CMD_GAINED_FOCUS: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(gained-focus)");
+    break;
+  }
+  case APP_CMD_LOST_FOCUS: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(lost-focus)");
+    break;
+  }
+  case APP_CMD_CONFIG_CHANGED: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(config-changed)");
+    break;
+  }
+  case APP_CMD_LOW_MEMORY: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(low-memory)");
+    break;
+  }
+  case APP_CMD_SAVE_STATE: {
+    __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "(save-state)");
+    break;
+  }
   default: {
     __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
                         "app_on_cmd default");

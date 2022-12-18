@@ -1106,7 +1106,18 @@
 				(destroy (setf app->window nullptr))
 				(init-window (setf app->window
 						   android_app->window))
-				(term-window (setf app->window nullptr)))
+				(term-window (setf app->window nullptr))
+				;; some more commands:
+				(input-changed)
+				(window-resized)
+				(window-redraw-needed)
+				(content-rect-changed)
+				(gained-focus)
+				(lost-focus)
+				(config-changed)
+				(low-memory)
+				(save-state)
+				)
 		     collect
 		     (destructuring-bind (name &optional code) e
 		       (let* ((clause (cl-change-case:constant-case
