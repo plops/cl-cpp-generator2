@@ -123,4 +123,9 @@ void android_main(android_app *android_app) {
                                         .Layers = layers.data()};
     vrapi_SubmitFrame2(app.ovr, &frame);
   }
+  __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest", "shut down vr api");
+  vrapi_Shutdown();
+  __android_log_print(ANDROID_LOG_VERBOSE, "hello_quest",
+                      "detach current thread");
+  java.Vm->DetachCurrentThread();
 }

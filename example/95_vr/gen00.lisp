@@ -1134,6 +1134,11 @@
 		(vrapi_SubmitFrame2
 		 app.ovr &frame))
 	      )
+	    ,(lprint :msg "shut down vr api")
+	    (vrapi_Shutdown)
+	    ,(lprint :msg "detach current thread")
+	    (-> java.Vm
+		(DetachCurrentThread))
 
 	    )))))
 
