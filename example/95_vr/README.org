@@ -1,6 +1,14 @@
 https://github.com/makepad/hello_quest
 
 
+- ovr
+ - https://developer.oculus.com/documentation/native/android/mobile-intro/
+ - As of August 31 2022, we no longer support Mobile SDK and the VrApi
+   library. We will be delivering new features through OpenXR
+   extensions and our OpenXR Mobile SDK, rather than new Meta Mobile
+   and PC APIs.
+
+
 - fmtlib
 
 #+begin_example
