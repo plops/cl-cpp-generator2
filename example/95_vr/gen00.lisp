@@ -324,7 +324,7 @@
 			 (glUseProgram 0)
 
 			 (do0
-			  (glClearColor 0s0 0s0 0s0 1s0)
+			  (glClearColor .2s0 .8s0 .3s0 1s0)
 
 			  ,@(loop for (x y w h) in `((0 0 1 framebuffer->height)
 						     ((- framebuffer->width 1) 0 1 framebuffer->height)
