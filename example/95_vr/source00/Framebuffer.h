@@ -25,6 +25,7 @@ class Framebuffer  {
         ovrTextureSwapChain* color_texture_swap_chain;
         std::vector<GLuint> depth_renderbuffers;
         std::vector<GLuint> framebuffers;
+        std::string_view gl_get_framebuffer_status_string (GLenum status)     ;  
          Framebuffer (GLsizei w, GLsizei h)     ;  
          ~Framebuffer ()     ;  
 };

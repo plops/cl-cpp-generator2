@@ -14,6 +14,34 @@
 #include <iostream>
 #include <unistd.h>
 #include <vector>
+std::string_view Framebuffer::gl_get_framebuffer_status_string(GLenum status) {
+  switch (status) {
+  case GL_FRAMEBUFFER_UNDEFINED: {
+    return "undefined";
+    break;
+  }
+  case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
+    return "incomplete-attachment";
+    break;
+  }
+  case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
+    return "incomplete-missing-attachment";
+    break;
+  }
+  case GL_FRAMEBUFFER_UNSUPPORTED: {
+    return "unsupported";
+    break;
+  }
+  case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
+    return "incomplete-multisample";
+    break;
+  }
+  default: {
+    return "undefined";
+    break;
+  }
+  }
+}
 Framebuffer::Framebuffer(GLsizei w, GLsizei h)
     : swap_chain_index(0), width(w), height(h),
       color_texture_swap_chain(vrapi_CreateTextureSwapChain3(
@@ -56,7 +84,10 @@ Framebuffer::Framebuffer(GLsizei w, GLsizei h)
       if (!((GL_FRAMEBUFFER_COMPLETE) == (status))) {
         __android_log_print(
             ANDROID_LOG_VERBOSE, "hello_quest", "%s",
-            fmt::format("cant create framebuffer  i='{}'", i).c_str());
+            fmt::format("cant create framebuffer  i='{}'  "
+                        "gl_get_framebuffer_status_string(status)='{}'",
+                        i, gl_get_framebuffer_status_string(status))
+                .c_str());
         std::exit(-1);
       }
     }

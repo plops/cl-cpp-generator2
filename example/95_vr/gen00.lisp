@@ -559,7 +559,9 @@
        :headers `()
        :header-preamble `(do0
 			  ,*includes*
-			  (include <array>))
+			  (include <array>
+				   <string_view>
+				   "DataTypes.h"))
        :implementation-preamble `(do0
 				  (include ,(format nil "~a.h" name))
 				  ,*includes*)
@@ -569,6 +571,29 @@
 		 "EGLDisplay display;"
 		 "EGLContext context;"
 		 "EGLSurface surface;"
+		 (defmethod egl_get_error_string (err)
+		   (declare (type EGLint err)
+			    (values "std::string_view"))
+		   (case err
+		     ,@(loop for e in `(success
+					not-initialized
+					bad-access
+					bad-alloc
+					bad-attribute
+					bad-context
+					bad-config
+					bad-current-surface
+					bad-display
+					bad-surface
+					bad-match
+					bad-parameter
+					bad-native-pixmap
+					bad-native-window
+					context-lost)
+			     collect
+			     `(,(cl-change-case:constant-case (format nil "egl-~a" e))
+				(return (string ,e))))
+		     (t (return (string "undefined")))))
 		 (defmethod ,name ()
 		   (declare
 					;  (explicit)
@@ -577,12 +602,16 @@
 		    (values :constructor))
 		   (when (== EGL_NO_DISPLAY
 			     display)
-		     ,(lprint :msg "can't get egl display"))
+		     ,(lprint :msg "can't get egl display"
+			      :vars `((egl_get_error_string
+				       (eglGetError)))))
 		   (when (== EGL_FALSE
 			     (eglInitialize display
 					    nullptr
 					    nullptr))
-		     ,(lprint :msg "can't initialize egl display"))
+		     ,(lprint :msg "can't initialize egl display"
+			      :vars `((egl_get_error_string
+				       (eglGetError)))))
 		   (do0
 		    ,(lprint :msg "get number of egl configs ..")
 		    (let ((numConfigs ((lambda ()
@@ -591,13 +620,17 @@
 					   (when (== EGL_FALSE
 						     (eglGetConfigs display nullptr
 								    0 &n))
-					     ,(lprint :msg "cant get number of egl configs"))
+					     ,(lprint :msg "cant get number of egl configs"
+						      :vars `((egl_get_error_string
+							       (eglGetError)))))
 					   (return n)))))
 			  (configs (std--vector<EGLConfig> )))
 		      (configs.resize numConfigs)
 		      (when (== EGL_FALSE
 				(eglGetConfigs display (configs.data) numConfigs &numConfigs))
-			,(lprint :msg "cant get egl configs"))
+			,(lprint :msg "cant get egl configs"
+				 :vars `((egl_get_error_string
+					  (eglGetError)))))
 		      ))
 		   (do0
 		    ,(lprint :msg "choose egl config")
@@ -613,7 +646,9 @@
 							       config
 							       EGL_RENDERABLE_TYPE
 							       &renderable_type))
-				   ,(lprint :msg "cant get EGL config renderable type"))
+				   ,(lprint :msg "cant get EGL config renderable type"
+					    :vars `((egl_get_error_string
+						     (eglGetError)))))
 				 (return renderable_type))
 			       (EGLint 0))))
 			 (when (or ,@(loop for e in `(EGL_OPENGL_ES3_BIT_KHR
@@ -633,7 +668,9 @@
 							   config
 							   EGL_SURFACE_TYPE
 							   &i))
-						  ,(lprint :msg "cant get surface config type"))
+						  ,(lprint :msg "cant get surface config type"
+							   :vars `((egl_get_error_string
+								    (eglGetError)))))
 						(return i))
 					      (EGLint 0))))
 			   (when (or ,@(loop for e in `(
@@ -660,7 +697,9 @@
 						(let ((value (EGLint 0)))
 						  (when (== EGL_FALSE
 							    (eglGetConfigAttrib display config attrib &value))
-						    ,(lprint :msg "cant get config attrib")))
+						    ,(lprint :msg "cant get config attrib"
+							     :vars `((egl_get_error_string
+								      (eglGetError))))))
 						(return value))))
 				   (when (and ,@(remove-if
 						 #'null
@@ -672,7 +711,8 @@
 				     (setf found_config config)
 				     break)))))))
 		      (when (== nullptr found_config)
-			,(lprint :msg "cant choose egl config")
+			,(lprint :msg "cant choose egl config"
+				 )
 			(std--exit -1))
 		      (do0
 		       ,(lprint :msg "create egl config")
@@ -687,7 +727,9 @@
 						 (CONTEXT_ATTRIBS.data)))
 			 (when (== EGL_NO_CONTEXT
 				   context)
-			   ,(lprint :msg "can't create egl context")
+			   ,(lprint :msg "can't create egl context"
+				    :vars `((egl_get_error_string
+					     (eglGetError))))
 			   (std--exit -1))
 
 			 ))
@@ -703,7 +745,9 @@
 				    (SURFACE_ATTRIBS.data)))
 			     (when (== EGL_NO_SURFACE
 				       surface)
-			       ,(lprint :msg "can't create pixel buffer surface")
+			       ,(lprint :msg "can't create pixel buffer surface"
+					:vars `((egl_get_error_string
+						 (eglGetError))))
 			       (std--exit -1))
 
 			     )))
@@ -714,7 +758,9 @@
 						 surface
 						 surface
 						 context))
-			 ,(lprint :msg "can't make egl context current")
+			 ,(lprint :msg "can't make egl context current"
+				  :vars `((egl_get_error_string
+					   (eglGetError))))
 			 (std--exit -1)))
 
 		      )))
@@ -751,6 +797,22 @@
 		 "ovrTextureSwapChain* color_texture_swap_chain;"
 		 "std::vector<GLuint> depth_renderbuffers;"
 		 "std::vector<GLuint> framebuffers;"
+		 (defmethod gl_get_framebuffer_status_string (status)
+		   (declare (type GLenum status)
+			    (values "std::string_view"))
+		   ,(let ((l `(undefined
+			       incomplete-attachment
+			       incomplete-missing-attachment
+			       unsupported
+			       incomplete-multisample)))
+		      `(case status
+			 ,@(loop for e in l
+				 collect
+				 `(,(cl-change-case:constant-case
+				     (format nil "gl-framebuffer-~a" e))
+				    (return (string ,e))))
+			 (t (return (string "undefined")))))
+		   )
 		 (defmethod ,name (w h)
 		   (declare
 		    (type GLsizei w h)
@@ -829,7 +891,10 @@
 				       GL_DRAW_FRAMEBUFFER)))
 			  (unless (== GL_FRAMEBUFFER_COMPLETE
 				      status)
-			    ,(lprint :msg "cant create framebuffer" :vars `(i))
+			    ,(lprint :msg "cant create framebuffer"
+				     :vars `(i
+					     (gl_get_framebuffer_status_string
+					      status)))
 			    (std--exit -1))))
 		      (glBindFramebuffer GL_DRAW_FRAMEBUFFER
 					 0))

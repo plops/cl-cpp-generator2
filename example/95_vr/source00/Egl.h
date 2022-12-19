@@ -16,11 +16,14 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <array>
+#include <string_view>
+#include "DataTypes.h"
 class Egl  {
         public:
         EGLDisplay display;
         EGLContext context;
         EGLSurface surface;
+        std::string_view egl_get_error_string (EGLint err)     ;  
          Egl ()     ;  
 };
 

@@ -44,8 +44,8 @@ aapt package \
 aapt add hello_quest.apk classes.dex
 aapt add hello_quest.apk lib/arm64-v8a/libmain.so
 aapt add hello_quest.apk lib/arm64-v8a/libvrapi.so
-#aapt add hello_quest.apk lib/arm64-v8a/libc++_shared.so
-#aapt add hello_quest.apk lib/arm64-v8a/libEGL.so
+aapt add hello_quest.apk lib/arm64-v8a/libc++_shared.so
+aapt add hello_quest.apk lib/arm64-v8a/libEGL.so
 
 apksigner sign \
 	  -ks ~/.android/debug.keystore \
