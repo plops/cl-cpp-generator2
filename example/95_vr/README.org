@@ -324,3 +324,4 @@ sudo dnf install java-1.8.0-openjdk-devel
 
 #+end_example
 - maybe i should read this on how to keep the symbol https://github.com/android/ndk/issues/381
+- note: the linker error was resolved easier than that
