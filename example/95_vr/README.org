@@ -7,7 +7,9 @@ https://github.com/makepad/hello_quest
    library. We will be delivering new features through OpenXR
    extensions and our OpenXR Mobile SDK, rather than new Meta Mobile
    and PC APIs.
+- intro openxr https://www.youtube.com/watch?v=cMyUqDeGH6A
 
+- maybe i should have read this before writing this code, ah well
 
 - fmtlib
 
