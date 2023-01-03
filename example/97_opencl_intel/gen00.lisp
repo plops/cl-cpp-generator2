@@ -17,7 +17,7 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-    (defparameter *source-dir* #P"example/94_xshm_cap/source00/")
+    (defparameter *source-dir* #P"example/97_opencl_intel/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
@@ -55,7 +55,7 @@
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
-      (merge-pathnames #P"main.cpp"
+      (merge-pathnames #P"fatheader.hpp"
 		       *source-dir*))
      `(do0
 
@@ -75,14 +75,26 @@
 	(include <spdlog/spdlog.h>)
 					;(include <popl.hpp>)
 
+	"#define CL_HPP_ENABLE_EXCEPTIONS"
+	,@(loop for e in `(CL_TARGET_OPENCL_VERSION
+			   CL_HPP_TARGET_OPENCL_VERSION
+			   CL_HPP_MINIMUM_OPENCL_VERSION)
+		collect
+		(format nil "#define ~a 300" e))
+	(include <CL/opencl.hpp>)
 
-	)
-       (include <X11/Xlib.h>
-		<X11/Xutil.h>
-		<X11/extensions/XShm.h>
-		<cassert>
-		<sys/shm.h>
-		<fstream>)
+	)))
+
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames #P"main.cpp"
+		       *source-dir*))
+     `(do0
+
+					;"using namespace std;"
+       "using namespace cl;"
+
 
        (defun main (argc argv)
 	 (declare (type int argc)
@@ -90,62 +102,24 @@
 		  (values int))
 	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((*display (XOpenDisplay nullptr)))
-	   (assert display)
-	   (let ((screenNum (DefaultScreen display))
-		 (rootWindow (RootWindow display
-					 screenNum))
-		 (info (XShmSegmentInfo))
-		 (w (DisplayWidth display screenNum))
-		 (h (DisplayHeight display screenNum)))
-	     (setf info.shmid -1)
-	     (let ((*image (XShmCreateImage display
-					    (DefaultVisual display screenNum)
-					    ;; nullptr
-					    (DefaultDepth display screenNum)
-					    ZPixmap
-					    nullptr
-					    &info
-					    w h)))
-	       (setf info.shmid (shmget IPC_PRIVATE
-					(* image->bytes_per_line
-					   image->height)
-					(logior IPC_CREAT
-
-						"0777"
-					;"0700"
-						)))
-	       (assert (<= 0 info.shmid) )
-	       (setf image->data (reinterpret_cast<char*>
-				  (shmat info.shmid 0 0))
-		     info.shmaddr image->data)
-	       (setf info.readOnly False)
-	       (assert (!= 0 (XShmAttach display &info)))
-	       (assert (!= 0
-			   (XShmGetImage display rootWindow image 0 0 AllPlanes)))
-
-
-	       (let ((file (std--ofstream (string "screenshot.pgm")
-					  std--ios--binary)))
-		 (<< file (string "P5") std--endl)
-		 (<< file image->width
-		     (string " ")
-		     image->height
-		     std--endl)
-		 (<< file "255" std--endl)
-
-		 (dotimes (y image->height)
-		   (dotimes (x image->width)
-		     (let ((pixel (XGetPixel image x y)))
-		       (file.put ("static_cast<unsigned char>" pixel)))))
-		 (file.close))
-
-	       (shmdt info.shmaddr
-		      )
-	       (shmctl info.shmid IPC_RMID 0)
-	       (XDestroyImage image)
-	       (XCloseDisplay display)
-	       (return 0)))))
+	 (let ((platforms (std--vector<Platform>))
+	       (platformDevices (std--vector<Device>)))
+	   (handler-case
+	       (progn
+		 (Platform--get &platforms)
+		 (dot (aref platforms 0)
+		      (getDevices CL_DEVICE_TYPE_ALL
+				  &platformDevices))
+		 (let ((context (Context platformDevices))
+		       (ctxDevices (context.getInfo<CL_CONTEXT_DEVICES>)))
+		   (for-range (&d ctxDevices)
+			      (let ((name (d.getInfo<CL_DEVICE_NAME>)))
+				,(lprint :vars `(name))))
+		   ))
+	     ("cl::Error const&" (e)
+	       ,(lprint :vars `((e.what)
+				(e.err))))))
+	 )
 
        ))
 
@@ -202,6 +176,7 @@
 
 	  (out "find_package( PkgConfig REQUIRED )")
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
+	  (out "pkg_check_modules( OpenCL REQUIRED OpenCL )")
 
 
 	  (out "target_include_directories( mytest PRIVATE
@@ -216,16 +191,14 @@
 
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
-		 pthread
-		 X11
-		 Xext
+		 OpenCL
 		 ))
 
 	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
 	       `())
 
-					;(out "target_precompile_headers( mytest PRIVATE fatheader.hpp )")
+	  (out "target_precompile_headers( mytest PRIVATE fatheader.hpp )")
 	  ))
       )))
 

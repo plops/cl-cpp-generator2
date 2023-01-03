@@ -10,8 +10,10 @@ set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )
 target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )
 find_package( PkgConfig REQUIRED )
 pkg_check_modules( spdlog REQUIRED spdlog )
+pkg_check_modules( OpenCL REQUIRED OpenCL )
 target_include_directories( mytest PRIVATE
 /usr/local/include/
 /home/martin/src/popl/include/
 )
-target_link_libraries( mytest PRIVATE spdlog )
+target_link_libraries( mytest PRIVATE spdlog OpenCL )
+target_precompile_headers( mytest PRIVATE fatheader.hpp )
