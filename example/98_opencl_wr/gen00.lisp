@@ -17,7 +17,7 @@
     ;; for classes with templates use write-source and defclass+
     ;; for cpp files without header use write-source
     ;; for class definitions and implementation in separate h and cpp file
-    (defparameter *source-dir* #P"example/97_opencl_intel/source00/")
+    (defparameter *source-dir* #P"example/98_opencl_wr/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*))
@@ -81,9 +81,8 @@
 			   CL_HPP_MINIMUM_OPENCL_VERSION)
 		collect
 		(format nil "#define ~a 300" e))
-	(include <CL/opencl.hpp>)
-
-	)))
+	(include "/home/martin/stage/cl-cpp-generator2/example/98_opencl_wr/include/CL/opencl.hpp"
+		 "/home/martin/stage/cl-cpp-generator2/example/98_opencl_wr/wrapper/opencl.hpp"))))
 
     (write-source
      (asdf:system-relative-pathname
@@ -91,39 +90,14 @@
       (merge-pathnames #P"main.cpp"
 		       *source-dir*))
      `(do0
-
-					;"using namespace std;"
-       "using namespace cl;"
-
-
        (defun main (argc argv)
 	 (declare (type int argc)
 		  (type char** argv)
 		  (values int))
 	 "(void)argv;"
 	 ,(lprint :msg "start" :vars `(argc))
-	 (let ((platforms (std--vector<Platform>))
-	       (platformDevices (std--vector<Device>)))
-	   (handler-case
-	       (progn
-		 (Platform--get &platforms)
-		 (dot (aref platforms 0)
-		      (getDevices CL_DEVICE_TYPE_ALL
-				  &platformDevices))
-		 (let ((context (Context platformDevices))
-		       (ctxDevices (context.getInfo<CL_CONTEXT_DEVICES>)))
-		   (for-range (&d ctxDevices)
-			      (let ((name (d.getInfo<CL_DEVICE_NAME>)))
-				,(lprint :vars `(name))))
-		   ))
-	     ("cl::Error const&" (e)
-	       ,(lprint :vars `((e.what)
-				(e.err))))))
-	 )
-
-       ))
-
-
+	 (let ((device (Device (select_device_with_most_flops)))))
+	 )))
     (with-open-file (s (format nil "~a/CMakeLists.txt" *full-source-dir*)
 		       :direction :output
 		       :if-exists :supersede
@@ -148,28 +122,23 @@
 	(macrolet ((out (fmt &rest rest)
 		     `(format s ,(format nil "~&~a~%" fmt) ,@rest)))
 	  (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
-	  (out "project( mytest LANGUAGES CXX )")
+	  (out "project( mytest )")
 
 	  ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
 					;(out "set( CMAKE_CXX_COMPILER g++ )")
 	  (out "set( CMAKE_VERBOSE_MAKEFILE ON )")
-	  (out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
-	  (out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
-	  (out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
-					;(out "set( CMAKE_CXX_STANDARD 23 )")
-
-
+	  ;;(out "set (CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	  ;;(out "set (CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} ~a ~a ~a ~a \")" dbg asan show-err short-file)
+	  ;;(out "set (CMAKE_LINKER_FLAGS_DEBUG \"${CMAKE_LINKER_FLAGS_DEBUG} ~a ~a \")" dbg show-err )
+	  ;;(out "set( CMAKE_CXX_STANDARD 23 )")
 
 	  (out "set( SRCS ~{~a~^~%~} )"
 	       (append
+		`("/home/martin/stage/cl-cpp-generator2/example/98_opencl_wr/wrapper/kernel.cpp")
 		(directory (format nil "~a/*.cpp" *full-source-dir*))
 		))
 
 	  (out "add_executable( mytest ${SRCS} )")
-
-
-
-
 	  (out "set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )")
 
 	  (out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
@@ -178,27 +147,18 @@
 	  (out "pkg_check_modules( spdlog REQUIRED spdlog )")
 	  (out "pkg_check_modules( OpenCL REQUIRED OpenCL )")
 
-
 	  (out "target_include_directories( mytest PRIVATE
-/usr/local/include/
-/home/martin/src/popl/include/
+/home/martin/stage/cl-cpp-generator2/example/98_opencl_wr/wrapper/
 )")
-	  #+nil (progn
-		  (out "add_library( libnc SHARED IMPORTED )")
-		  (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so
- )")
-		  )
-
+	  #+nil
+	  (progn
+	    (out "add_library( libnc SHARED IMPORTED )")
+	    (out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so )"))
 	  (out "target_link_libraries( mytest PRIVATE ~{~a~^ ~} )"
 	       `(spdlog
-		 OpenCL
-		 ))
-
+		 OpenCL))
 	  #+nil
 	  (out "target_compile_options( mytest PRIVATE ~{~a~^ ~} )"
 	       `())
-
-	  (out "target_precompile_headers( mytest PRIVATE fatheader.hpp )")
-	  ))
-      )))
+	  (out "target_precompile_headers( mytest PRIVATE fatheader.hpp )"))))))
 

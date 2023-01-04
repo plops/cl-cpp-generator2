@@ -4,12 +4,19 @@
 
 cd ~/src
 git clone https://github.com/ProjectPhysX/OpenCL-Wrapper
+git clone https://github.com/KhronosGroup/OpenCL-Headers
+git clone https://github.com/KhronosGroup/OpenCL-CLHPP
 
 cd /home/martin/stage/cl-cpp-generator2/example/98_opencl_wr
 mkdir wrapper
-cp -r ~/src/OpenCL-Wrapper/src/OpenCL/include/ wrapper
+#cp -r ~/src/OpenCL-Wrapper/src/OpenCL/include/ wrapper
 cp -r ~/src/OpenCL-Wrapper/LICENSE.md wrapper
 cp -r ~/src/OpenCL-Wrapper/src/*.hpp wrapper
+cp -r ~/src/OpenCL-Wrapper/src/*.cpp wrapper
+
+mkdir -p include/CL
+cp /home/martin/src/OpenCL-CLHPP/include/CL/opencl.hpp include/CL
+cp -r /home/martin/src/OpenCL-Headers/CL/*.h include/CL
 
 
 #+end_example

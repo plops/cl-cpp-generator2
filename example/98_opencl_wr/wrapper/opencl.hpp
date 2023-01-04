@@ -7,7 +7,7 @@
 #ifndef _WIN32
 #pragma GCC diagnostic ignored "-Wignored-attributes" // ignore compiler warnings for CL/cl.hpp with g++
 #endif // _WIN32
-#include <CL/cl.hpp> // OpenCL 1.0, 1.1, 1.2
+//#include <CL/cl.hpp> // OpenCL 1.0, 1.1, 1.2
 #include "utilities.hpp"
 
 struct Device_Info {
