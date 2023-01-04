@@ -948,6 +948,7 @@ entry return-values contains a list of return values. currently supports type, v
 			      (format nil "(~a)-=(~a)" (emit a) (emit b))
 			      (format nil "(~a)--" (emit a)))))
 		  (string (format nil "\"~a\"" (cadr code)))
+		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be intrduced, like R"x( .. )" .. )x"
 		  (string-r (format nil "R\"(~a)\"" (cadr code)))
 		  (string-u8 (format nil "u8\"(~a)\"" (cadr code)))
 		  (char (format nil "'~a'" (cadr code)))
