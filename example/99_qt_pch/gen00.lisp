@@ -258,7 +258,7 @@
 		      outputLineEdit
 		      outputComboBox
 		      inputUnit
-		      intputTemp
+		      inputTemp
 		      ))))
 		)
 

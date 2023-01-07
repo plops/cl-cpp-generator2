@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   QObject::connect(convertButton, &QPushButton::clicked, [=]() {
     auto inputTemp = inputLineEdit->text().toDouble();
     auto inputUnit = inputComboBox->currentText();
-    convertTemperature(outputLineEdit, outputComboBox, inputUnit, intputTemp);
+    convertTemperature(outputLineEdit, outputComboBox, inputUnit, inputTemp);
   });
   mainLayout->addWidget(convertButton);
   window.setLayout(mainLayout);
