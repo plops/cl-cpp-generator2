@@ -100,7 +100,7 @@
 		     :direction :output
 		     :if-exists :supersede
 		     :if-does-not-exist :create)
-		  (let ((l-dep `(spdlog)))
+		  (let ((l-dep `(spdlog Qt5Gui Qt5Core Qt5Widgets)))
 		    (macrolet ((out (fmt &rest rest)
 				    `(format s ,(format nil "~&~a~%" fmt) ,@rest))
 			       )
@@ -130,7 +130,7 @@
 			      (out "target_compile_options( mytest PUBLIC ~{${~a_CFLAGS_OTHER}~^ ~} )" l-dep)
 			      #+nil
 			      (progn
-				(out "add_library( libnc SHARED IMPORTccED )")
+				(out "add_library( libnc SHARED IMPORTED )")
 				(out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so )"))
 			      (out "target_link_libraries( mytest PRIVATE ~{${~a_LIBRARIES}~^ ~} )"
 				   l-dep)
