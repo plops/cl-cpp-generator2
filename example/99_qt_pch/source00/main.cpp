@@ -70,7 +70,9 @@ int main(int argc, char **argv) {
     convertTemperature(outputLineEdit, outputComboBox, inputUnit, inputTemp);
   });
   mainLayout->addWidget(convertButton);
-  window.setLayout(mainLayout);
+  auto *centralWidget = new QWidget;
+  centralWidget->setLayout(mainLayout);
+  window.setCentralWidget(centralWidget);
   window.show();
   return app.exec();
 }

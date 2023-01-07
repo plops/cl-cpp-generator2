@@ -264,7 +264,11 @@
 
 	      ,(add-widgets `(mainLayout
 			      (convertButton)))
-	      (window.setLayout mainLayout)
+	      (let ((*centralWidget (new QWidget)))
+		(centralWidget->setLayout mainLayout)
+		(window.setCentralWidget centralWidget))
+	      
+					;(window.setLayout mainLayout)
 	      (window.show)
 	      (return (app.exec))
 
