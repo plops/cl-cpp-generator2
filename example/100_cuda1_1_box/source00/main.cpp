@@ -31,7 +31,7 @@ void LoadImage(const std::string &fileName, std::vector<Pixel> &image) {
 void SaveImage(const std::string &fileName, const std::vector<Pixel> &image) {
   auto out = std::ofstream(fileName, std::ios::binary);
   assert(out.is_open());
-  (out) << ("P6\n") << (512 512\n255\n);
+  (out) << ("P6\n512 512\n255\n");
   out.write(
       reinterpret_cast<const char *>(image.data(), ((512) * (512) * (3))));
 }

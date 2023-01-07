@@ -1,1 +1,23 @@
+
 - i want to try cuda 1.1 on an old laptop T61
+- input for chat.openai:
+
+#+begin_example
+
+
+Show modern C++ code to load a PPM image and perform a box filter with CUDA 1.1.
+
+#+end_example
+
+
+- i don't think i will use old c++
+#+begin_example
+
+Does nvcc that comes with CUDA 1.1 already support C++11?
+
+The version of nvcc that comes with CUDA 1.1 does not support C++11. The first version of nvcc that added support for C++11 was CUDA 5.0, which was released in 2013.
+
+If you are using CUDA 1.1, you will need to use an older version of the C++ standard, such as C++98 or C++03. You can specify the version of the C++ standard to use by adding the appropriate flag to the nvcc command. For example, to use C++98, you can use the following command:
+
+
+#+end_example
