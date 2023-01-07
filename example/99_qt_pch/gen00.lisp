@@ -116,6 +116,7 @@
       (include <spdlog/spdlog.h>)
 					;(include <popl.hpp>)
 
+      (comments "precompiled header is 154MB")
       )))
 
 
