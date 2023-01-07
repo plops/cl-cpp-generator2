@@ -67,11 +67,49 @@
 			 mouse-event
 			 style
 			 timer
+
+			 application
+			 variant
+			 map
+			 vector
+			 string-list
+			 dir
+			 pointer
+			 color
+
+			 
 			 )
 	      collect
 	      (format nil "<~a>"
 		      (cl-change-case:pascal-case
 		       (format nil "q-~a" e))))
+
+      ,@(loop for e in `(string
+			 set
+			 map
+			 memory
+			 vector
+			 unordered_map
+			 array
+			 bitset
+			 initializer_list
+			 functional
+			 algorithm
+			 numeric
+			 iterator
+			 type_traits
+			 cmath
+			 cassert
+			 cfloat
+			 complex
+			 cstddef
+			 cstdint
+			 cstdlib
+			 mutex
+			 thread
+			 condition_variable)
+	      collect
+	      (format nil "<~a>" e))
       )
 
      (do0
@@ -104,7 +142,7 @@
 		    (macrolet ((out (fmt &rest rest)
 				    `(format s ,(format nil "~&~a~%" fmt) ,@rest))
 			       )
-			      (out "cmake_minimum_required( VERSION 3.0 FATAL_ERROR )")
+			      (out "cmake_minimum_required( VERSION 3.16 FATAL_ERROR )")
 			      (out "project( mytest )")
 
 			      ;;(out "set( CMAKE_CXX_COMPILER clang++ )")
@@ -119,7 +157,7 @@
 			      (out "add_executable( mytest ${SRCS} )")
 			      (out "set_property( TARGET mytest PROPERTY CXX_STANDARD 20 )")
 
-			      (out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
+		      ;;(out "target_link_options( mytest PRIVATE -static-libgcc -static-libstdc++   )")
 
 			      (out "find_package( PkgConfig REQUIRED )")
 			      (loop for e in l-dep
@@ -128,7 +166,10 @@
 
 			      (out "target_include_directories( mytest PUBLIC ~{${~a_INCLUDE_DIRS}~^ ~} )" l-dep)
 			      (out "target_compile_options( mytest PUBLIC ~{${~a_CFLAGS_OTHER}~^ ~} )" l-dep)
-			      #+nil
+
+		      ;; (out "set_property( TARGET mytest PROPERTY POSITION_INDEPENDENT_CODE ON )")
+		      (out "set( CMAKE_POSITION_INDEPENDENT_CODE ON )")
+		      #+nil
 			      (progn
 				(out "add_library( libnc SHARED IMPORTED )")
 				(out "set_target_properties( libnc PROPERTIES IMPORTED_LOCATION /home/martin/stage/cl-cpp-generator2/example/88_libnc/dep/libnc-2021-04-24/libnc.so )"))
