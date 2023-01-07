@@ -15,3 +15,40 @@ sudo ln -s /usr/bin/clang-tidy-14 /usr/bin/clang-tidy
 
 
 #+end_example
+
+
+- even with precompiled header the build takes 17sec on a single core
+  of a Intel(R) Core(TM)2 Duo CPU T7300 @ 2.00GHz
+
+- this is unusable for me
+
+#+begin_example
+
+
+$ time make
+/usr/bin/cmake -S/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00 -B/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b/CMakeFiles /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b//CMakeFiles/progress.marks
+make  -f CMakeFiles/Makefile2 all
+make[1]: Entering directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+make  -f CMakeFiles/mytest.dir/build.make CMakeFiles/mytest.dir/depend
+make[2]: Entering directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+cd /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00 /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00 /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b/CMakeFiles/mytest.dir/DependInfo.cmake --color=
+Scanning dependencies of target mytest
+make[2]: Leaving directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+make  -f CMakeFiles/mytest.dir/build.make CMakeFiles/mytest.dir/build
+make[2]: Entering directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+[ 33%] Building CXX object CMakeFiles/mytest.dir/main.cpp.o
+/usr/bin/clang++-14  -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -DSPDLOG_SHARED_LIB -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DQT_GUI_LIB -DQT_CORE_LIB -DQT_WIDGETS_LIB -std=gnu++20 -Winvalid-pch -Xclang -include-pch -Xclang /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b/CMakeFiles/mytest.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b/CMakeFiles/mytest.dir/cmake_pch.hxx -o CMakeFiles/mytest.dir/main.cpp.o -c /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/main.cpp
+[ 66%] Linking CXX executable mytest
+/usr/bin/cmake -E cmake_link_script CMakeFiles/mytest.dir/link.txt --verbose=1
+/usr/bin/clang++-14 CMakeFiles/mytest.dir/main.cpp.o -o mytest  -lspdlog -lfmt -lQt5Gui -lQt5Core -lQt5Core -lQt5Widgets -lQt5Gui -lQt5Core -lQt5Widgets 
+make[2]: Leaving directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+[100%] Built target mytest
+make[1]: Leaving directory '/home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b'
+/usr/bin/cmake -E cmake_progress_start /home/martin/stage/cl-cpp-generator2/example/99_qt_pch/source00/b/CMakeFiles 0
+
+real	0m17.383s
+user	0m2.124s
+sys	0m0.456s
+
+#+end_example

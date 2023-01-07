@@ -270,6 +270,8 @@
 	      
 					;(window.setLayout mainLayout)
 	      (window.show)
+
+	      ,(lprint :msg "starting app")
 	      (return (app.exec))
 
 	    

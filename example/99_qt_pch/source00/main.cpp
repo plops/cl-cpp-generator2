@@ -74,5 +74,6 @@ int main(int argc, char **argv) {
   centralWidget->setLayout(mainLayout);
   window.setCentralWidget(centralWidget);
   window.show();
+  spdlog::info("starting app");
   return app.exec();
 }
