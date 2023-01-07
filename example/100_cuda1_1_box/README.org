@@ -1,0 +1,1 @@
+- i want to try cuda 1.1 on an old laptop T61
