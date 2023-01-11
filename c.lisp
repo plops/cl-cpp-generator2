@@ -690,7 +690,8 @@ entry return-values contains a list of return values. currently supports type, v
 										     let pragma
 										     split-header-and-code
 										     defun defmethod defclass
-										     comments comment))))
+										comments comment
+										namespace))))
 						    ""
 						    ";"))))
 				  (cdr code)))
@@ -743,6 +744,15 @@ entry return-values contains a list of return values. currently supports type, v
 			   ;; progn {form}*
 			   ;; like do but surrounds forms with braces.
 			   (format s "{~{~&~a~}~&}" (mapcar #'(lambda (x) (emit `(indent (do0 ,x)) :dl 1)) (cdr code)))))
+		  (namespace
+		   ;; namespace name {form}*
+		   ;; name .. can be nil
+		   (let ((args (cdr code)))
+		     (with-output-to-string (s)
+		       (destructuring-bind (name &rest forms) args
+			 (format s "namespace ~a ~a"
+				 (emit name)
+				 (emit `(progn ,@forms)))))))
 		  (do (with-output-to-string (s)
 			;; do {form}*
 			;; print each form on a new line with one more indentation.
