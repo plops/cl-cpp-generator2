@@ -1037,7 +1037,7 @@ entry return-values contains a list of return values. currently supports type, v
 							 (cdr code)
 							 (format str "for(~a : ~a) ~a"
 								 (if (atom var-decl)
-								     (format nil "auto ~a" var-decl)
+								     (format nil "const auto ~a" var-decl)
 								   (destructuring-bind (name &key (type 'auto)) var-decl
 										       (format nil "~a ~a" type name)))
 								 (emit range)
