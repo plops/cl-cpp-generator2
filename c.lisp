@@ -307,7 +307,7 @@ entry return-values contains a list of return values. currently supports type, v
 										       ;;         template          static          inline  virtual ret   params     pure      override         header-only
 										       ;;                                   explicit                   name  const                                        constructs
 										       ;;         1                 2       3       4       5       6  7  8  9a      9b        9c               10        11
-										       (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~] ~:[~;;~]  ~@[: ~a~]"
+										       (format s "~%~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~] ~:[~;;~]  ~@[: ~a~]"
 											       ;; 1 template
 											       (when template
 												 template)
@@ -389,7 +389,7 @@ entry return-values contains a list of return values. currently supports type, v
 													  (not header-only))
 												 (funcall emit `(comma ,@(mapcar emit constructs)))))
 										       (unless header-only
-											 (format s "~a" (funcall emit `(progn ,@body)))))))))
+											 (format s "~a~%" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
   ;; defun function-name lambda-list [declaration*] form*
@@ -693,8 +693,11 @@ entry return-values contains a list of return values. currently supports type, v
 														  comments comment
 														  namespace))))
 										 ""
-									       ";"))))
+										 (if (eq #\Newline (aref b (- (length b) 1))) ;; don't place semicolon after newline
+										     #\Newline
+										     ";")))))
 							       (cdr code)))
+						      (terpri s)
 
 						      #+nil
 						      (let ((a (emit (cadr code))))
@@ -944,7 +947,15 @@ entry return-values contains a list of return values. currently supports type, v
 			  (% (destructuring-bind (a b) (cdr code)
 						 (format nil "~a%~a" (emit a) (emit b))))
 			  (<< (destructuring-bind (a &rest rest) (cdr code)
-						  (format nil "(~a)~{<<(~a)~}" (emit a) (mapcar #'emit rest))))
+						  (format nil "~a~{<<~a~}"
+							  (if (symbolp a)
+							      (emit a)
+							      (emit `(paren ,a)))
+							  (mapcar #'(lambda (a)
+								      (if (symbolp a)
+									  (emit a)
+									  (emit `(paren ,a))))
+								  rest))))
 			  (>> (destructuring-bind (a &rest rest) (cdr code)
 						  (format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
 			  #+nil (>> (destructuring-bind (a b) (cdr code)
