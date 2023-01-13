@@ -625,8 +625,36 @@ entry return-values contains a list of return values. currently supports type, v
 			     (format nil "~{~a~^ ~}" (mapcar #'emit args))))
 			  (comments (let ((args (cdr code)))
 				      (format nil "~{// ~a~%~}" args)))
+			  (paren*
+			   ;; paren arg
+			   ;; place a pair of parentheses only when needed
+			   (let ((arg (cadr code))
+				 (*precedence* `(("::")
+						 (incf decf aref ; call cast
+						       dot ->
+						       )
+						 (not ))))
+			     (unless (eq 2 (length code))
+			       (break "paren* expects only one argument"))
+			     (cond
+			       ((symbolp arg)
+				(format nil "~a" arg))
+			       ((stringp arg)
+				(if (and (eq #\( (aref arg 0))
+					 (eq #\) (aref arg (- (length arg)
+							      1))))
+				    (format nil "~a" arg)
+				    (format nil "(~a)" arg)))
+			       ((listp arg)
+				(destructuring-bind (op &rest args)
+				    (case op
+				      ())))
+			       (t
+				(break "unsupported argument for paren*"))))
+			   )
 			  (paren
 			   ;; paren {args}*
+			   ;; parentheses with comma separated values
 			   (let ((args (cdr code)))
 			     (format nil "(~{~a~^, ~})" (mapcar #'emit args))))
 			  (angle
@@ -890,6 +918,7 @@ entry return-values contains a list of return values. currently supports type, v
 						      (b (elt args (+ 1 i))))
 						  `(= ,a ,b))))))))
 			  (not (format nil "!(~a)" (emit (car (cdr code)))))
+			  (bitwise-not (format nil "~~(~a)" (emit (car (cdr code)))))
 			  (deref (format nil "*(~a)" (emit (car (cdr code)))))
 			  (ref (format nil "&(~a)" (emit (car (cdr code)))))
 			  (+ (let ((args (cdr code)))
