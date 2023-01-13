@@ -629,11 +629,28 @@ entry return-values contains a list of return values. currently supports type, v
 			   ;; paren arg
 			   ;; place a pair of parentheses only when needed
 			   (let ((arg (cadr code))
-				 (*precedence* `(("::")
+				 (*precedence* `(#+nil ("::")
 						 (incf decf aref ; call cast
 						       dot ->
 						       )
-						 (not ))))
+						 (not bitwise-not
+						      cast ref
+						      deref
+						      sizeof
+						      co_await
+						      new
+						      delete)
+						 #+nil (.* ->*)
+						 (* / %)
+						 (+ -)
+						 (<< >>)
+						 ;(<=>)
+						 (< <= > >=)
+						 (== !=)
+						 (and)
+						 (xor)
+						 (or)
+						 )))
 			     (unless (eq 2 (length code))
 			       (break "paren* expects only one argument"))
 			     (cond
@@ -932,6 +949,7 @@ entry return-values contains a list of return values. currently supports type, v
 			       (format nil "(~{(~a)~^*~})" (mapcar #'emit args))))
 			  (^ (let ((args (cdr code)))
 			       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
+			  (xor `(^ ,@(cdr code)))
 			  (& (let ((args (cdr code)))
 			       (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
 			  (/ (let ((args (cdr code)))
@@ -939,15 +957,15 @@ entry return-values contains a list of return values. currently supports type, v
 				   (format nil "(1.0/(~a))" (emit (car args))) ;; py
 				 (format nil "(~{(~a)~^/~})" (mapcar #'emit args)))))
 
-			  (logior (let ((args (cdr code))) ;; py
+			  (or (let ((args (cdr code))) ;; py
 				    (format nil "(~{(~a)~^ | ~})" (mapcar #'emit args))))
-			  (logand (let ((args (cdr code))) ;; py
+			  (and (let ((args (cdr code))) ;; py
 				    (format nil "(~{(~a)~^ & ~})" (mapcar #'emit args))))
-			  (logxor (let ((args (cdr code))) ;; py
+			  #+nil (xor (let ((args (cdr code))) ;; py
 				    (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
-			  (or (let ((args (cdr code)))
+			  (logior (let ((args (cdr code)))
 				(format nil "(~{(~a)~^||~})" (mapcar #'emit args))))
-			  (and (let ((args (cdr code)))
+			  (logand (let ((args (cdr code)))
 				 (format nil "(~{(~a)~^&&~})" (mapcar #'emit args))))
 			  (= (destructuring-bind (a b) (cdr code)
 						 ;; = pair
