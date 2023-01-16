@@ -1004,14 +1004,17 @@ entry return-values contains a list of return values. currently supports type, v
 		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
-		       (format nil "~{~a~^+~}" (mapcar #'(lambda (x) (emit `(paren* ,x)))
-							   args))))
+		       (format nil "(~{~a~^+~})"
+			       
+			        (mapcar
+				 #'(lambda (x) (emit `(paren* ,x)))
+				 args))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
 			   (format nil "(-(~a))" (emit (car args))) ;; py
 			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
 		  (* (let ((args (cdr code)))
-		       (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
+		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (^ (let ((args (cdr code)))
 		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
 		  (xor `(^ ,@(cdr code)))
@@ -1045,7 +1048,7 @@ entry return-values contains a list of return values. currently supports type, v
 			(if c
 			    (format nil "(((~a)<=(~a)) && ((~a)<=(~a)))" (emit a) (emit b)
 				    (emit b) (emit c))
-			    (format nil "(~a)<=(~a)" (emit a) (emit b)))))
+			    (format nil "~a<=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (< (destructuring-bind (a b &optional c) (cdr code)
 		       (if c
 			   (format nil "(((~a)<(~a)) && ((~a)<(~a)))" (emit a) (emit b)
@@ -1074,8 +1077,8 @@ entry return-values contains a list of return values. currently supports type, v
 			      (format nil "(~a)>>~a" (emit a) (emit b))))
 		  (incf (destructuring-bind (a &optional b) (cdr code) ;; py
 			  (if b
-			      (format nil "(~a)+=(~a)" (emit a) (emit b))
-			      (format nil "(~a)++" (emit a)))))
+			      (format nil "~a+=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
+			      (format nil "~a++" (emit `(paren* ,a))))))
 		  (decf (destructuring-bind (a &optional b) (cdr code)
 			  (if b
 			      (format nil "(~a)-=(~a)" (emit a) (emit b))
@@ -1174,9 +1177,9 @@ entry return-values contains a list of return values. currently supports type, v
 						       (or (lookup-type i :env env)
 							   *auto-keyword*)
 						       
-						       (emit i)) ;; int
-					      (< ,(emit i) ,(emit n))
-					      (incf ,(emit i) ,(emit step)))
+						       (emit i))
+					      (< ,i ,n)
+					      (incf ,i ,step))
 					     ,@body)))))
 		  #-generic-c
 		  (foreach (destructuring-bind ((item collection) &rest body) (cdr code)
