@@ -1117,15 +1117,16 @@ entry return-values contains a list of return values. currently supports type, v
 				 (emit end)
 				 (emit iter)
 				 (emit `(progn ,@body)))))
-		  (for-range (destructuring-bind ((var-decl range) &rest statement-list)
+		  (for-range (destructuring-bind ((var range) &rest body)
 				 (cdr code)
-			       (format str "for(~a : ~a) ~a"
-				       (if (atom var-decl)
-					   (format nil "const auto ~a" var-decl)
-					   (destructuring-bind (name &key (type 'auto)) var-decl
-					     (format nil "~a ~a" type name)))
-				       (emit range)
-				       (emit `(progn ,@statement-list)))))
+			       (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)
+				   (consume-declare body)
+				 (format str "for(~a ~a: ~a) ~a"
+					 (or (lookup-type var :env env)
+					     *auto-keyword*)
+					 var
+					 (emit range)
+					 (emit `(progn ,@body))))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
 			     (emit `(for (,(format nil "~a ~a = 0"
 					;#+generic-c "__auto_type"
