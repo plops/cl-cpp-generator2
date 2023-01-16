@@ -633,7 +633,7 @@ entry return-values contains a list of return values. currently supports type, v
 	and e-i from 0
 	do
 	   (when (member op e)
-	   (return e-i))))
+	     (return e-i))))
 
 (progn
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil) (in-class nil))
@@ -696,22 +696,23 @@ entry return-values contains a list of return values. currently supports type, v
 			  (assert (symbolp op))
 			  (assert (listp rest))
 			  (let ((p0 (lookup-precedence op)))
-			    (format t "op ~a~%" p0
-				    )
-			    (format nil
-				    "~a" 
-				    (emit 
-				     `(,op
-				       ,@(loop for e in rest
-					       do
-						 (if (listp e)
+			    
+			    (when p0
+			     (format nil
+				     "~a" 
+				     (emit 
+				      `(,op
+					,@(loop for e in rest
+						do
+						   (if (listp e)
 						     
-						     (let ((p1 (lookup-precedence (first e))))
-						       ;; no parens required if first op has higher precedence
-						       (if (< p0 p1)
-							   (format nil "~a" (emit e))
-							   (format nil "~a" (emit `(pair* ,e)))))
-						     (format nil "~a" (emit e))))))))))
+						       (let ((p1 (lookup-precedence (first e))))
+							 ;; no parens required if first op has higher precedence
+							 (if (and p1
+								  (< p0 p1))
+							     (format nil "~a" (emit e))
+							     (format nil "~a" (emit `(pair* ,e)))))
+						       (format nil "~a" (emit e)))))))))))
 		       (t
 			(break "unsupported argument for paren*"))))
 		   )
@@ -986,13 +987,14 @@ entry return-values contains a list of return values. currently supports type, v
 		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
-		       (format nil "(~{(~a)~^+~})" (mapcar #'emit args))))
+		       (format nil "(~{~a~^+~})" (mapcar #'(lambda (x) (emit `(paren* x)))
+							   args))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
 			   (format nil "(-(~a))" (emit (car args))) ;; py
 			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
 		  (* (let ((args (cdr code)))
-		       (format nil "(~{(~a)~^*~})" (mapcar #'emit args))))
+		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* x))) args))))
 		  (^ (let ((args (cdr code)))
 		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
 		  (xor `(^ ,@(cdr code)))
@@ -1043,11 +1045,11 @@ entry return-values contains a list of return values. currently supports type, v
 			(format nil "~a~{<<~a~}"
 				(if (symbolp a)
 				    (emit a)
-				    (emit `(paren ,a)))
+				    (emit `(paren* ,a)))
 				(mapcar #'(lambda (a)
 					    (if (symbolp a)
 						(emit a)
-						(emit `(paren ,a))))
+						(emit `(paren* ,a))))
 					rest))))
 		  (>> (destructuring-bind (a &rest rest) (cdr code)
 			(format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
