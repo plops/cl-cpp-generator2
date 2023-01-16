@@ -20,13 +20,22 @@
       ,@(loop for e in `(iostream)
 	      collect
 	      (format nil "<~a>" e)))
+
      (defun main (argc argv)
        (declare (type int argc)
 		(type **char argv)
 		(values int))
-       (for-range (th threads)
-		  (declare (type "auto&" th))
-		  (th.join)
-		  (<< std--cout (string "bla")))
+       
+       (dotimes (i 23)
+	 (declare (type char i))
+	 (<< std--cout
+	     i
+	     std--endl))
+
+       (for-range
+	(th threads)
+       	(declare (type "auto&" th))
+	(th.join)
+	(<< std--cout (string "bla")))
        ))))
 
