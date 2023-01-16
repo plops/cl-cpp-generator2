@@ -1135,7 +1135,7 @@ entry return-values contains a list of return values. currently supports type, v
 					
 						       (or (lookup-type var :env env)
 							   *auto-keyword*)
-						       *auto-keyword*
+						       
 						       (emit i)) ;; int
 					      (< ,(emit i) ,(emit n))
 					      (incf ,(emit i) ,(emit step)))
