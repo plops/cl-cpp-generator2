@@ -688,14 +688,17 @@ entry return-values contains a list of return values. currently supports type, v
 			  ;; no parens for number needed (maybe for negative?)
 			  (format nil "~a" arg))
 			 ((stringp arg)
-			  ;; a string may contain operators 
-			  ;; only add parens if there are not already parens
+			  ;; no parens around string
+			  (format nil "~a" arg)
+			  #+nil (progn
+				  ;; a string may contain operators 
+				  ;; only add parens if there are not already parens
 			  
-			  (if (and (eq #\( (aref arg 0))
-				   (eq #\) (aref arg (- (length arg)
-							1))))
-			      (format nil "~a" arg)
-			      (format nil "(~a)" arg)))
+				  (if (and (eq #\( (aref arg 0))
+					   (eq #\) (aref arg (- (length arg)
+								1))))
+				      (format nil "~a" arg)
+				      (format nil "_~a_" arg))))
 			 ((listp arg)
 			  ;; a list can be an arbitrary abstract syntax tree of operators
 			  ;; use precedence list to check if parens are needed
@@ -719,7 +722,7 @@ entry return-values contains a list of return values. currently supports type, v
 							  (if p1
 							      (if (< p0 p1)
 								  (format nil "~a" (emit e))
-								  (format nil "~a" (emit `(pair* ,e))))
+								  (format nil "~a" (emit `(paren* ,e))))
 							      (break "operator unknown '~a'" (first e))))
 							(progn
 					;(break "unsupported codepath 724")
@@ -1001,14 +1004,14 @@ entry return-values contains a list of return values. currently supports type, v
 		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
-		       (format nil "(~{~a~^+~})" (mapcar #'(lambda (x) (emit `(paren* ,x)))
+		       (format nil "~{~a~^+~}" (mapcar #'(lambda (x) (emit `(paren* ,x)))
 							   args))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
 			   (format nil "(-(~a))" (emit (car args))) ;; py
 			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
 		  (* (let ((args (cdr code)))
-		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
+		       (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (^ (let ((args (cdr code)))
 		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
 		  (xor `(^ ,@(cdr code)))
@@ -1059,11 +1062,11 @@ entry return-values contains a list of return values. currently supports type, v
 			(format nil "~a~{<<~a~}"
 				(if (symbolp a)
 				    (emit a)
-				    (emit `(paren ,a)))
+				    (emit `(paren* ,a)))
 				(mapcar #'(lambda (a)
 					    (if (symbolp a)
 						(emit a)
-						(emit `(paren ,a))))
+						(emit `(paren* ,a))))
 					rest))))
 		  (>> (destructuring-bind (a &rest rest) (cdr code)
 			(format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
