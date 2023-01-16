@@ -687,11 +687,12 @@ entry return-values contains a list of return values. currently supports type, v
 			(destructuring-bind (op &rest args)
 			    (let ((p0 (lookup-precedence op)))
 			      (loop for e in args
-				    (let ((p1 (lookup-precedence (first e))))
-				      ;; no parens required if first op has higher precedence
-				      (if (< p0 p1)
-					  (format nil "~a" (emit e))
-					  (format nil "(~a)" (emit e))))))))
+				    do
+					     (let ((p1 (lookup-precedence (first e))))
+					       ;; no parens required if first op has higher precedence
+					       (if (< p0 p1)
+						   (format nil "~a" (emit e))
+						   (format nil "(~a)" (emit e))))))))
 		       (t
 			(break "unsupported argument for paren*"))))
 		   )
@@ -1124,18 +1125,21 @@ entry return-values contains a list of return values. currently supports type, v
 				 (format str "for(~a ~a: ~a) ~a"
 					 (or (lookup-type var :env env)
 					     *auto-keyword*)
-					 var
+					 (emit var)
 					 (emit range)
 					 (emit `(progn ,@body))))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			     (emit `(for (,(format nil "~a ~a = 0"
-					;#+generic-c "__auto_type"
-					;#-generic-c "auto"
-						   *auto-keyword*
-						   (emit i)) ;; int
-					  (< ,(emit i) ,(emit n))
-					  (incf ,(emit i) ,(emit step)))
-					 ,@body))))
+			     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)
+				 (consume-declare body)
+				 (emit `(for (,(format nil "~a ~a = 0"
+					
+						       (or (lookup-type var :env env)
+							   *auto-keyword*)
+						       *auto-keyword*
+						       (emit i)) ;; int
+					      (< ,(emit i) ,(emit n))
+					      (incf ,(emit i) ,(emit step)))
+					     ,@body)))))
 		  #-generic-c
 		  (foreach (destructuring-bind ((item collection) &rest body) (cdr code)
 			     (format nil "for (auto& ~a : ~a) ~a"
