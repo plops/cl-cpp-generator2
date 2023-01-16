@@ -671,28 +671,47 @@ entry return-values contains a list of return values. currently supports type, v
 		  (paren*
 		   ;; paren arg
 		   ;; place a pair of parentheses only when needed
-		   (let ((arg (cadr code)))
-		     (unless (eq 2 (length code))
+		   (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
+		   (let ((arg (cadr code)))
+		      (format t "paren* arg=~a~%" arg)
 		     (cond
 		       ((symbolp arg)
+			;; no parens for symbol needed
 			(format nil "~a" arg))
 		       ((stringp arg)
+			;; a string may contain operators 
+			;; only add parens if there are not already parens
+			
 			(if (and (eq #\( (aref arg 0))
 				 (eq #\) (aref arg (- (length arg)
 						      1))))
 			    (format nil "~a" arg)
 			    (format nil "(~a)" arg)))
 		       ((listp arg)
-			(destructuring-bind (op &rest args)
-			    (let ((p0 (lookup-precedence op)))
-			      (loop for e in args
-				    do
-					     (let ((p1 (lookup-precedence (first e))))
-					       ;; no parens required if first op has higher precedence
-					       (if (< p0 p1)
-						   (format nil "~a" (emit e))
-						   (format nil "(~a)" (emit e))))))))
+			;; a list can be an arbitrary abstract syntax tree of operators
+			;; use precedence list to check if parens are needed
+			(let ((op (car arg))
+			      (rest (cdr arg)))
+			  (assert (symbolp op))
+			  (assert (listp rest))
+			  (let ((p0 (lookup-precedence op)))
+			    (format t "op ~a~%" p0
+				    )
+			    (format nil
+				    "~a" 
+				    (emit 
+				     `(,op
+				       ,@(loop for e in rest
+					       do
+						 (if (listp e)
+						     
+						     (let ((p1 (lookup-precedence (first e))))
+						       ;; no parens required if first op has higher precedence
+						       (if (< p0 p1)
+							   (format nil "~a" (emit e))
+							   (format nil "~a" (emit `(pair* ,e)))))
+						     (format nil "~a" (emit e))))))))))
 		       (t
 			(break "unsupported argument for paren*"))))
 		   )
@@ -1133,7 +1152,7 @@ entry return-values contains a list of return values. currently supports type, v
 				 (consume-declare body)
 				 (emit `(for (,(format nil "~a ~a = 0"
 					
-						       (or (lookup-type var :env env)
+						       (or (lookup-type i :env env)
 							   *auto-keyword*)
 						       
 						       (emit i)) ;; int

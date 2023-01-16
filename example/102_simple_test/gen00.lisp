@@ -29,13 +29,14 @@
        (dotimes (i 23)
 	 (declare (type char i))
 	 (<< std--cout
-	     i
+	     (+ i (* a (+ a 1)) b)
 	     std--endl))
 
        (for-range
 	(th threads)
        	(declare (type "auto&" th))
 	(th.join)
-	(<< std--cout (string "bla")))
+	;(<< std--cout (string "bla"))
+	)
        ))))
 
