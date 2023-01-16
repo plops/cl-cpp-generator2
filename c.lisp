@@ -671,50 +671,64 @@ entry return-values contains a list of return values. currently supports type, v
 		  (paren*
 		   ;; paren arg
 		   ;; place a pair of parentheses only when needed
-		   (unless (eq 2 (length code))
+		   #+nil
+		   (format nil "(~a)" (emit (cadr code)))
+		   #-nil
+		   (progn
+		     (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
-		   (let ((arg (cadr code)))
-		      (format t "paren* arg=~a~%" arg)
-		     (cond
-		       ((symbolp arg)
-			;; no parens for symbol needed
-			(format nil "~a" arg))
-		       ((stringp arg)
-			;; a string may contain operators 
-			;; only add parens if there are not already parens
-			
-			(if (and (eq #\( (aref arg 0))
-				 (eq #\) (aref arg (- (length arg)
-						      1))))
-			    (format nil "~a" arg)
-			    (format nil "(~a)" arg)))
-		       ((listp arg)
-			;; a list can be an arbitrary abstract syntax tree of operators
-			;; use precedence list to check if parens are needed
-			(let ((op (car arg))
-			      (rest (cdr arg)))
-			  (assert (symbolp op))
-			  (assert (listp rest))
-			  (let ((p0 (lookup-precedence op)))
-			    
-			    (when p0
-			     (format nil
-				     "~a" 
-				     (emit 
-				      `(,op
-					,@(loop for e in rest
-						do
-						   (if (listp e)
-						     
-						       (let ((p1 (lookup-precedence (first e))))
-							 ;; no parens required if first op has higher precedence
-							 (if (and p1
-								  (< p0 p1))
-							     (format nil "~a" (emit e))
-							     (format nil "~a" (emit `(pair* ,e)))))
-						       (format nil "~a" (emit e)))))))))))
-		       (t
-			(break "unsupported argument for paren*"))))
+		     (let ((arg (cadr code)))
+		       
+		       
+		       (cond
+			 ((symbolp arg)
+			  ;; no parens for symbol needed
+			  (format nil "~a" arg))
+			 ((numberp arg)
+			  ;; no parens for number needed (maybe for negative?)
+			  (format nil "~a" arg))
+			 ((stringp arg)
+			  ;; a string may contain operators 
+			  ;; only add parens if there are not already parens
+			  
+			  (if (and (eq #\( (aref arg 0))
+				   (eq #\) (aref arg (- (length arg)
+							1))))
+			      (format nil "~a" arg)
+			      (format nil "(~a)" arg)))
+			 ((listp arg)
+			  ;; a list can be an arbitrary abstract syntax tree of operators
+			  ;; use precedence list to check if parens are needed
+			  (let ((op (car arg))
+				(rest (cdr arg)))
+			    (assert (symbolp op))
+			    (assert (listp rest))
+			    (let ((p0 (lookup-precedence op)))
+			      
+			      (if p0
+				  (format nil
+					  "~a" 
+					  (emit 
+					   `(,op
+					     ,@(loop for e in rest
+						    collect
+						    (if (listp e)
+							
+							(let ((p1 (lookup-precedence (first e))))
+							  ;; no parens required if first op has higher precedence
+							  (if p1
+							      (if (< p0 p1)
+								  (format nil "~a" (emit e))
+								  (format nil "~a" (emit `(pair* ,e))))
+							      (break "operator unknown '~a'" (first e))))
+							(progn
+					;(break "unsupported codepath 724")
+							  (format nil "~a" (emit e))))))))
+				  (progn (break "unsupported codepath")
+					 (format nil "~a"
+						 (emit arg)))))))
+			 (t
+			  (break "unsupported argument for paren* '~a'" arg)))))
 		   )
 		  (paren
 		   ;; paren {args}*
@@ -987,14 +1001,14 @@ entry return-values contains a list of return values. currently supports type, v
 		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
-		       (format nil "(~{~a~^+~})" (mapcar #'(lambda (x) (emit `(paren* x)))
+		       (format nil "(~{~a~^+~})" (mapcar #'(lambda (x) (emit `(paren* ,x)))
 							   args))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
 			   (format nil "(-(~a))" (emit (car args))) ;; py
 			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
 		  (* (let ((args (cdr code)))
-		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* x))) args))))
+		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (^ (let ((args (cdr code)))
 		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
 		  (xor `(^ ,@(cdr code)))
@@ -1045,11 +1059,11 @@ entry return-values contains a list of return values. currently supports type, v
 			(format nil "~a~{<<~a~}"
 				(if (symbolp a)
 				    (emit a)
-				    (emit `(paren* ,a)))
+				    (emit `(paren ,a)))
 				(mapcar #'(lambda (a)
 					    (if (symbolp a)
 						(emit a)
-						(emit `(paren* ,a))))
+						(emit `(paren ,a))))
 					rest))))
 		  (>> (destructuring-bind (a &rest rest) (cdr code)
 			(format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
