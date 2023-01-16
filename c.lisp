@@ -1053,7 +1053,7 @@ entry return-values contains a list of return values. currently supports type, v
 		       (if c
 			   (format nil "(((~a)<(~a)) && ((~a)<(~a)))" (emit a) (emit b)
 				   (emit b) (emit c))
-			   (format nil "(~a)<(~a)" (emit a) (emit b)))))
+			   (format nil "~a<~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (!= (destructuring-bind (a b) (cdr code)
 			(format nil "(~a)!=(~a)" (emit a) (emit b))))
 		  (== (destructuring-bind (a b) (cdr code)
