@@ -28,9 +28,10 @@
        
        (dotimes (i 23)
 	 (declare (type char i))
-	 (<< std--cout
-	     (+ i (* a (+ a 1)) b)
-	     std--endl))
+	 (if (== (+ i 3) (+ i (* (+ i 2) a)))
+	  (<< std--cout
+	      (+ i (* a (+ a 1)) b)
+	      std--endl)))
 
        (for-range
 	(th threads)

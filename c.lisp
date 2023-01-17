@@ -1057,7 +1057,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (!= (destructuring-bind (a b) (cdr code)
 			(format nil "(~a)!=(~a)" (emit a) (emit b))))
 		  (== (destructuring-bind (a b) (cdr code)
-			(format nil "(~a)==(~a)" (emit a) (emit b))))
+			(format nil "~a==~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 
 		  (% (destructuring-bind (a b) (cdr code)
 		       (format nil "~a%~a" (emit a) (emit b))))
@@ -1097,7 +1097,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
-				  (emit condition)
+				  (emit `(paren* ,condition))
 				  (emit `(progn ,true-statement)))
 			  (when false-statement
 			    (format s " else ~a"

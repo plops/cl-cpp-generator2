@@ -8,6 +8,10 @@ cl-golang-generator. Most notably Common Lisp style type declarations,
 Common Lisp style operator names (incf, logior, and) and implicit
 function calls.
 
+Work in progress:
+
+- reduce the number of parenthesis
+
 * Installation
 
 
