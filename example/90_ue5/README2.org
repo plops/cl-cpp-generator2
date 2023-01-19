@@ -693,3 +693,92 @@ while (true) {
 }
 
 #+end_example
+
+
+** Prolog Poker
+
+#+begin_example
+
+ber(card(13, S), Hand),
+    member(card(14, S), Hand).
+
+straight_flush(Hand) :-
+    suit(Hand, S),
+    is_straight(Hand),
+    member(card(_, S), Hand).
+
+four_of_a_kind(Hand) :-
+    member(card(V1, _), Hand),
+    member(card(V2, _), Hand),
+    V1 == V2,
+    member(card(V1, _), Hand),
+    member(card(V1, _), Hand),
+    member(card(V1, _), Hand).
+
+full_house(Hand) :-
+    member(card(V1, _), Hand),
+    member(card(V2, _), Hand),
+    V1 == V2,
+    member(card(V1, _), Hand),
+    member(card(V1, _), Hand),
+    member(card(V3, _), Hand),
+    V1 \== V3,
+    member(card(V3, _), Hand).
+
+flush(Hand) :-
+    suit(Hand, S),
+    member(card(_, S), Hand).
+
+straight(Hand) :-
+    is_straight(Hand).
+
+three_of_a_kind(Hand) :-
+    member(card(V1, _), Hand),
+    member(card(V2, _), Hand),
+    V1 == V2,
+    member(card(V1, _), Hand),
+    member(card(V1, _), Hand).
+
+two_pair(Hand) :-
+    member(card(V1, _), Hand),
+    member(card(V2, _), Hand),
+    V1 == V2,
+    member(card(V3, _), Hand),
+    member(card(V4, _), Hand),
+    V3 == V4,
+    V1 \== V3.
+
+pair(Hand) :-
+    member(card(V1, _), Hand),
+    member(card(V2, _), Hand),
+    V1 == V2.
+    
+high_card(Hand) :-
+    member(card(V, _), Hand),
+    V > 10.
+
+% Auxiliary predicates
+suit([], _).
+suit([card(_, S)|T], S) :- suit(T, S).
+
+is_straight([card(V1,_),card(V2,_),card(V3,_),card(V4,_),card(V5,_)]) :-
+    V2 is V1 + 1,
+    V3 is V2 + 1,
+    V4 is V3 + 1,
+    V5 is V4 + 1.
+
+% Main predicate
+play_poker(Hand, Result) :-
+    royal_flush(Hand) -> Result = royal_flush;
+    straight_flush(Hand) -> Result = straight_flush;
+    four_of_a_kind(Hand) -> Result = four_of_a_kind;
+    full_house(Hand) -> Result = full_house;
+    flush(Hand) -> Result = flush;
+    straight(Hand) -> Result = straight;
+    three_of_a_kind(Hand) -> Result = three_of_a_kind;
+    two_pair(Hand) -> Result = two_pair;
+    pair(Hand) -> Result = pair;
+    high_card(Hand) -> Result = high_card.
+#+end_example
+
+- i think this is incomplete. i don't care enough to let it continue
