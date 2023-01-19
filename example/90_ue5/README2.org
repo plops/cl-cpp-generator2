@@ -335,3 +335,188 @@ cv2.waitKey(0)
 #+end_example
 
 - that is not a good solution
+
+
+** Python superimpose images
+
+#+begin_example
+
+Assume that we have 5 raw images of a static scene. The images were taken with slightly different orientation of the camera. Correct the shift between the images and average the images. Show the code that does this.
+
+// import necessary libraries 
+import numpy as np 
+import cv2 
+
+# list of images 
+imgs = ['image1.jpg','image2.jpg','image3.jpg', 'image4.jpg','image5.jpg']
+
+# create an empty list to store images 
+images = []
+
+# loop over images and store them in the list 
+for i in imgs:
+    images.append(cv2.imread(i))
+
+# create a variable to store the reference image 
+ref_image = images[0]
+
+# loop over rest of the images and register them with the reference image 
+for i in range(1,len(images)):
+    images[i] = cv2.warpAffine(images[i], cv2.estimateRigidTransform(images[i], ref_image, fullAffine=False), ref_image.shape[:2])
+
+# calculate the average of all images 
+avg_image = np.mean(images, axis=0).astype('uint8')
+
+# show the output image 
+cv2.imshow("Average Image", avg_image) 
+cv2.waitKey(0)
+#+end_example
+
+** VHDL DCT
+
+#+begin_example
+
+        image_out : out std_logic_vector(319 downto 0)
+    );
+end DCT_8x8;
+
+architecture arch_DCT_8x8 of DCT_8x8 is
+-- Create 8x8 macroblocks from the input image
+    type macroblock_array is array (7 downto 0, 7 downto 0) of std_logic_vector(7 downto 0);
+    signal macroblock : macroblock_array;
+begin
+    -- Process the 8x8 macroblocks 
+    process (image_in)
+    begin
+        -- Initialize the macroblock array
+        for i in 0 to 7 loop
+            for j in 0 to 7 loop
+                macroblock(i, j) := (others => '0');
+            end loop;
+        end loop;
+        -- Copy the input image into macroblock array
+        for i in 0 to 7 loop
+            for j in 0 to 7 loop
+                macroblock(i, j) := image_in((i*8 + j)*8 +: 8);
+            end loop;
+        end loop;
+        -- Compute the DCT of each 8x8 macroblock
+        for i in 0 to 7 loop
+            for j in 0 to 7 loop
+                macroblock(i, j) := compute_DCT(macroblock(i, j));
+            end loop;
+        end loop;
+        -- Copy the macroblock array into output image
+        for i in 0 to 7 loop
+            for j in 0 to 7 loop
+                image_out((i*8 + j)*8 +: 8) := macroblock(i, j);
+            end loop;
+        end loop;
+    end process;
+end arch_DCT_8x8;
+
+-- subprogram to compute the DCT of 8x8 matrix
+function compute_DCT (m : std_logic_vector(7 downto 0)) return std_logic_vector is
+    variable dct_coeff : std_logic_vector(7 downto 0);
+    variable c : real;
+    variable sum : real := 0.0;
+begin
+    -- Compute the DCT coefficients
+    for k in 0 to 7 loop
+        if k = 0 then
+            c := 1.0 / sqrt(2.0);
+        else 
+            c := 1.0;
+        end if;
+        for n in 0 to 7 loop
+            sum := sum + to_real(m(n)) * cos((2.0 * real(n) + 1.0) * real(k) * pi() / 16.0) * c;
+        end loop;
+        dct_coeff(k) := to_slv(sum);
+    end loop;
+    return dct_coeff;
+end compute_DCT;
+#+end_example
+
+
+** Verilog DCT
+
+#+begin_example
+
+Show Verilog code that takes a 320x240 pixel 8-bit gray scale image and computes DCT of 8x8 macroblocks. Use fixed-point arithmetic.
+
+`module dct_8x8(clk, i_data, o_data);
+ 
+ // Inputs
+ input clk;
+ input [7:0] i_data;
+ 
+ // Outputs
+ output [7:0] o_data;
+ 
+ // Internal signals
+ reg signed [15:0] c_coeffs [7:0];
+ reg signed [15:0] c_data [7:0];
+ reg signed [15:0] c_out [7:0];
+ reg [7:0] counter;
+ 
+ // Pre-calculated Cosine Coefficients
+ always @ (*) begin
+ c_coeffs[0] = 16384;
+ c_coeffs[1] = 14790;
+ c_coeffs[2] = 12288;
+ c_coeffs[3] = 9102;
+ c_coeffs[4] = 5793;
+ c_coeffs[5] = 2430;
+ c_coeffs[6] = 0;
+ c_coeffs[7] = -2430;
+ end
+ 
+ // Initialize counter
+ always @ (posedge clk) begin
+ counter <= 0;
+ end
+ 
+ // Load data
+ always @ (posedge clk) begin
+ c_data[counter] <= i_data;
+ end
+ 
+ // Compute DCT
+ always @ (posedge clk) begin
+ 
+ c_out[0] = (c_data[0] * c_coeffs[0]) >> 14;
+ c_out[1] = 0;
+ c_out[2] = 0;
+ c_out[3] = 0;
+ c_out[4] = 0;
+ c_out[5] = 0;
+ c_out[6] = 0;
+ c_out[7] = 0;
+ 
+ for (int i = 1; i < 8; i++) begin
+ c_out[0] += (c_data[i] * c_coeffs[i]) >> 14;
+ c_out[1] += (c_data[i] * c_coeffs[7-i]) >> 14;
+ c_out[2] += (c_data[i] * c_coeffs[2*i]) >> 14;
+ c_out[3] += (c_data[i] * c_coeffs[6-2*i]) >> 14;
+ c_out[4] += (c_data[i] * c_coeffs[3*i]) >> 14;
+ c_out[5] += (c_data[i] * c_coeffs[5-3*i]) >> 14;
+ c_out[6] += (c_data[i] * c_coeffs[4*i]) >> 14;
+ c_out[7] += (c_data[i] * c_coeffs[4-4*i]) >> 14;
+ end
+ 
+ end
+ 
+ // Output result
+ always @ (posedge clk) begin
+ o_data <= c_out[counter];
+ 
+ if (counter == 7) begin
+ counter <= 0;
+ end else begin
+ counter <= counter + 1;
+ end
+ 
+ end
+ 
+endmodule`
+#+end_example
