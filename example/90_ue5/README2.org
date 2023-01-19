@@ -520,3 +520,107 @@ Show Verilog code that takes a 320x240 pixel 8-bit gray scale image and computes
  
 endmodule`
 #+end_example
+
+** UART protocol C
+
+#+begin_example
+
+Show code that sends data over UART. Use checksums to verify integrity and send occasional packets that allow resynchronization.
+
+// Initialize UART interface
+UART_Init();
+
+// Initialize check sum generator
+CRC_Init();
+
+// Create packet of data to be sent
+packet_t data = {.data = {0xFF, 0x00, 0xA2, 0x04}, .length = 4};
+
+// Create a packet header
+packet_header_t header = {.sync_flag = 0xA5, .data_length = data.length};
+
+// Calculate checksum
+uint16_t checksum = CRC_Calculate(data.data, data.length);
+
+// Create packet trailer
+packet_trailer_t trailer = {.checksum = checksum};
+
+// Send header
+UART_SendData(&header, sizeof(header));
+
+// Send data
+UART_SendData(data.data, data.length);
+
+// Send trailer
+UART_SendData(&trailer, sizeof(trailer));
+
+// Send resync packet
+UART_SendData(0xA5, 1);
+#+end_example
+
+- check parity and crc
+
+#+begin_example
+    serialPort.write(buffer);
+    
+    // Send a resynchronization packet
+    serialPort.write(Buffer.from([0xAA, 0xFA]));
+}
+
+Receiver:
+
+// This function should be called when a byte is received over UART
+function receiveUART8E1(byte) {
+    let dataBuffer = [];
+    let parity;
+    let checksum;
+    
+    // If the byte is 0xAA, this is a resynchronization packet
+    if (byte === 0xAA) {
+        // Read the next byte
+        byte = serialPort.read();
+        // If the byte is 0xFA, this is a valid resynchronization packet
+        if (byte === 0xFA) {
+            // Set the state to start receiving data
+            state = 'receiving';
+        }
+    }
+    // If the state is 'receiving'
+    if (state === 'receiving') {
+        // If the parity is correct
+        if (parityCheck(byte)) {
+            // Add the byte to the data buffer
+            dataBuffer.push(byte);
+            // When the buffer is full
+            if (dataBuffer.length === 9) {
+                // Calculate the checksum
+                for (let i=0; i < 8; i++) {
+                    parity ^= dataBuffer[i];
+                    checksum += dataBuffer[i];
+                }
+                // Verify checksum
+                if (checksum === dataBuffer[8] && parity === dataBuffer[9]) {
+                    // Process the data
+                    processData(dataBuffer.slice(0, 8));
+                }
+                // Reset the state
+                state = 'idle';
+            }
+        }
+        else {
+            // Discard the byte and reset the state
+            state = 'idle';
+        }
+    }
+}
+
+// This function checks the parity of a byte
+function parityCheck(byte) {
+    let parity = 0;
+    for (let i=0; i < 8; i++) {
+        parity ^= (byte >> i) & 1;
+    }
+    return parity === 0;
+}
+
+#+end_example
