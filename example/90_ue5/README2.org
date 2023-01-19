@@ -627,3 +627,69 @@ function parityCheck(byte) {
 - not sure if this is reasonable. i wanted the parity check to be done
   by the uart. maybe a datapacket could look like a resync packet? how
   are packets separated?
+
+
+** UART Arduino C
+
+#+begin_example
+
+
+// UART config
+uint8_t uart_parity = SERIAL_PARITY_EVEN;
+uint8_t uart_stopbits = SERIAL_STOPBIT_ONE;
+uint8_t uart_databits = SERIAL_8N1;
+
+// Receive buffer
+uint8_t buffer[256];
+int index = 0;
+
+Serial.begin(9600, uart_parity, uart_stopbits, uart_databits);
+
+while (true) {
+    if (Serial.available()) {
+        uint8_t byte = Serial.read();
+
+        // Check for resynchronization packet
+        if (byte == 0xFF) {
+            index = 0;
+            continue;
+        }
+
+        // Check parity
+        uint8_t parity_error = false;
+        if (Serial.getParityError()) {
+            parity_error = true;
+        }
+
+        // Discard bytes with errors
+        if (parity_error) {
+            continue;
+        }
+
+        // Store byte
+        buffer[index] = byte;
+        index++;
+
+        // Check if enough bytes were received
+        if (index == sizeof(data) + 1) {
+            // Calculate checksum
+            uint8_t checksum = 0;
+            for (int i = 0; i < sizeof(data); i++) {
+                checksum += buffer[i];
+            }
+
+            // Compare checksum
+            if (checksum == buffer[sizeof(data)]) {
+                // Data received successfully
+            }
+            else {
+                // Checksum error
+            }
+
+            // Reset index
+            index = 0;
+        }
+    }
+}
+
+#+end_example
