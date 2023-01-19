@@ -31,3 +31,307 @@ program sinc_fft
 
 end program sinc_fft
 #+end_example
+
+** Fortran FFT
+
+#+begin_example
+Write modern Fortran code that computes FFT of  a 3D single-float array.
+
+program fft3D
+   implicit none
+   integer, parameter :: nx=32, ny=32, nz=32
+   real, dimension (nx,ny,nz) :: data
+   complex, dimension (nx,ny,nz) :: cdata
+
+   integer :: i,j,k
+
+   ! Initialize data
+   do i = 1, nx
+      do j = 1, ny
+         do k = 1, nz
+            data(i,j,k) = i*j*k
+         end do
+      end do
+   end do
+
+   ! Convert to complex
+   do i = 1, nx
+      do j = 1, ny
+         do k = 1, nz
+            cdata(i,j,k) = cmplx(data(i,j,k), 0, kind=kind(1.0))
+         end do
+      end do
+   end do
+
+   ! Call FFT
+   call cfft3d(cdata)
+
+   ! Print out result
+   do i = 1, nx
+      do j = 1, ny
+         do k = 1, nz
+            write(*,*) cdata(i,j,k)
+         end do
+      end do
+   end do
+
+end program fft3D
+#+end_example
+
+- link it
+#+begin_example
+Write modern Fortran code that computes FFT of  a 3D single-float array. Also show how to link it on Linux.
+
+! Example 3D FFT in Fortran
+
+program FFT_3D
+  implicit none
+  integer, parameter :: nx=128,ny=128,nz=128
+  real, dimension(nx,ny,nz) :: array
+  complex, dimension(nx,ny,nz) :: array_complex
+  integer :: i,j,k
+  
+  ! Initialize array
+  do k=1,nz
+    do j=1,ny
+      do i=1,nx
+        array(i,j,k) = real(i+j+k)
+      end do
+    end do
+  end do
+  
+  ! Convert to complex
+  do k=1,nz
+    do j=1,ny
+      do i=1,nx
+        array_complex(i,j,k) = cmplx(array(i,j,k),0.0_4)
+      end do
+    end do
+  end do
+  
+  ! Perform FFT
+  call cfft3d(array_complex,nx,ny,nz,-1)
+
+end program FFT_3D
+
+! Linking on Linux
+gfortran -c FFT_3D.f90
+gfortran -o FFT_3D FFT_3D.o -lfftw3
+#+end_example
+
+** Fortran fit parabola
+
+#+begin_example
+
+00) :: filename
+
+  print *, 'Enter the filename of your CSV file: '
+  read *, filename
+
+  open(unit=10, file=filename, action='read', status='old', iostat=i)
+  if (i /= 0) then
+    print *, 'Error opening file'
+    stop
+  end if
+
+  n = 0
+  do
+    read(10, *, iostat=i) x(n+1), y(n+1)
+    if (i /= 0) exit
+    n = n+1
+  end do
+
+  close(10)
+
+  ! Fit parameters
+  a = sum((x**2)*y) / sum((x**2)*x)
+  b = (sum(x*y) - a*sum(x**2)) / sum(x**2)
+  c = (sum(y) - a*sum(x) - b*sum(x**2)) / n
+
+  ! Output
+  print *, 'The parabola is y = ', a, 'x^2 + ', b, 'x + ', c
+
+  end program parabola_fitting
+
+! Compile with: gfortran parabola_fitting.f90 -o parabola_fitting
+
+#+end_example
+
+
+** Fortran exponential Fit
+
+#+begin_example
+
+ata. Assume that the noise of the intensity values is poisson-distributed. Show the command to compile the program on Linux.
+
+program exponential_fit
+    use, intrinsic :: iso_fortran_env,only: real64
+    implicit none
+    integer, parameter :: dp = selected_real_kind(15, 307)
+    real(dp), parameter :: pi = 3.141592653589793
+
+    ! Declare variables
+    integer :: n, i
+    real(dp) :: time(50), intensity(50), a, b
+    ! Read data from CSV file
+    open(10, file='data.csv', action='read')
+    read(10,*) n
+    do i=1,n
+        read(10,*) time(i), intensity(i)
+    end do
+    close(10)
+
+    ! Fit exponential decay curve
+    a = -sum((time-mean(time))*intensity)/sum((time-mean(time))**2)
+    b = mean(intensity) + a*mean(time)
+
+    ! Print exponential decay equation
+    write(*,*) 'Intensity = ', b, '*exp(', a, '*time)'
+
+end program exponential_fit
+
+! Compile the program on Linux
+gfortran exponential_fit.f90 -o exponential_fit.out
+#+end_example
+
+** R decay fit
+
+#+begin_example
+
+Write R code that reads a CSV file of (time, intensity) values and fits an exponential decay curve to the data. Assume that the noise of the intensity values is poisson-distributed. Show the command to run the program on Linux.
+
+# Install the 'expsmooth' package
+install.packages("expsmooth")
+
+# Load the library
+library("expsmooth")
+
+# Read in the CSV file
+data <- read.csv("time_intensity.csv")
+
+# Fit the exponential decay curve to the data
+fit <- HoltWinters(data$Intensity, gamma = FALSE, l.start = c(0.2, 0.2))
+
+# Print the fit to the console
+print(fit)
+
+# Run the program on Linux
+Rscript --vanilla time_intensity.R
+
+#+end_example
+
+** Python HDR image
+
+#+begin_example
+Assume that we have 5 raw images of a static scene, that were acquired with different and known integration times. For each integration time we also have a dark image. Write code that computes a HDR image from the raw exposed and dark images.
+
+// Import the necessary libraries
+import cv2
+import numpy as np 
+import matplotlib.pyplot as plt
+
+# Read in the raw exposed images and dark images
+img1 = cv2.imread('image1.png', 1)
+dark1 = cv2.imread('dark1.png', 1)
+img2 = cv2.imread('image2.png', 1)
+dark2 = cv2.imread('dark2.png', 1)
+img3 = cv2.imread('image3.png', 1)
+dark3 = cv2.imread('dark3.png', 1)
+img4 = cv2.imread('image4.png', 1)
+dark4 = cv2.imread('dark4.png', 1)
+img5 = cv2.imread('image5.png', 1)
+dark5 = cv2.imread('dark5.png', 1)
+
+# Subtract each raw exposed image from its corresponding dark image 
+img1_sub = img1 - dark1
+img2_sub = img2 - dark2
+img3_sub = img3 - dark3
+img4_sub = img4 - dark4
+img5_sub = img5 - dark5
+
+# Create a list of the integration times
+int_times = [1, 2, 3, 4, 5]
+
+# Convert the list of integration times to a numpy array
+int_times_arr = np.array(int_times)
+
+# Calculate the weights for each image based on the integration times
+weights = 1/int_times_arr
+
+# Create a list of weights
+weights_list = [weights[0], weights[1], weights[2], weights[3], weights[4]]
+
+# Calculate the weighted average of the images
+hdr_img = (img1_sub * weights_list[0] + img2_sub * weights_list[1] +
+           img3_sub * weights_list[2] + img4_sub * weights_list[3] +
+           img5_sub * weights_list[4])
+
+# Display the HDR image
+plt.imshow(hdr_img)
+plt.show()
+
+#+end_example
+
+** Python HDR overexposed
+
+#+begin_example
+
+ation times 
+t1 = 2 #seconds
+t2 = 5 #seconds
+t3 = 10 #seconds
+t4 = 20 #seconds
+t5 = 30 #seconds
+
+#load raw images 
+img1 = cv2.imread("img_raw_t1.png")
+img2 = cv2.imread("img_raw_t2.png")
+img3 = cv2.imread("img_raw_t3.png")
+img4 = cv2.imread("img_raw_t4.png")
+img5 = cv2.imread("img_raw_t5.png")
+
+#load dark images 
+dark1 = cv2.imread("dark_t1.png")
+dark2 = cv2.imread("dark_t2.png")
+dark3 = cv2.imread("dark_t3.png")
+dark4 = cv2.imread("dark_t4.png")
+dark5 = cv2.imread("dark_t5.png")
+
+#subtract dark images from raw images
+img1 = img1 - dark1
+img2 = img2 - dark2
+img3 = img3 - dark3
+img4 = img4 - dark4
+img5 = img5 - dark5
+
+#normalize the images 
+img1 = img1/t1
+img2 = img2/t2
+img3 = img3/t3
+img4 = img4/t4
+img5 = img5/t5
+
+#create a list of images 
+imgs = [img1, img2, img3, img4, img5]
+
+#create empty array to store HDR image 
+hdr_img = np.zeros_like(img1)
+
+#loop through images and add to HDR image
+for img in imgs:
+    #check for overexposed pixels 
+    overexposed_pixels = np.where(img > t5/t1)
+    img[overexposed_pixels] = 0
+    #add normalized img to hdr_img 
+    hdr_img = hdr_img + img
+
+#divide by number of images to get average for each pixel
+hdr_img = hdr_img/len(imgs)
+
+#display HDR image 
+cv2.imshow("HDR Image", hdr_img)
+cv2.waitKey(0)
+
+#+end_example
+
+- that is not a good solution
