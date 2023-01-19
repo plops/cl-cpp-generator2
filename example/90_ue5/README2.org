@@ -31,6 +31,40 @@ program sinc_fft
 
 end program sinc_fft
 #+end_example
+- chatgpt
+
+- Show modern Fortran code that fills a 3D single-float array with a
+  centered sinc function and computes the 3D FFT of it.
+
+#+begin_example
+program sinc_3d
+    use, intrinsic :: iso_c_binding
+    use :: fftw3
+    implicit none
+
+    integer, parameter :: nx=64, ny=64, nz=64
+    real(c_float), allocatable :: array3d(:,:,:), fft3d(:,:,:)
+    integer :: i, j, k
+
+    ! allocate memory for array3d and fft3d
+    allocate(array3d(nx,ny,nz))
+    allocate(fft3d(nx,ny,nz))
+
+    ! fill array3d with sinc function
+    do k = 1, nz
+        do j = 1, ny
+            do i = 1, nx
+                array3d(i,j,k) = sinc((i-nx/2)/nx) * sinc((j-ny/2)/ny) * sinc((k-nz/2)/nz)
+            end do
+        end do
+    end do
+
+    ! compute 3D FFT of array3d and store in fft3d
+    call dfftw_plan_dft_r2c_3d(nx, ny, nz, array3d, fft3d, FFTW_ESTIMATE)
+
+end program sinc_3d
+
+#+end_example
 
 ** Fortran FFT
 
@@ -828,4 +862,48 @@ bit_error_packet_counter(PC1,PC2) :-
 	PC1 > PC2.
 
 
+#+end_example
+
+
+* chat gpt
+
+** TLA+ queue
+
+#+begin_example
+
+Show TLA+ code to prove a multiple producer, multiple consumer queue is correct.
+TLA+ is a formal specification language and it is not a programming language, therefore it cannot be used to "run" a program or "prove" its correctness. Instead, you can use TLA+ to write a formal specification of the multiple producer, multiple consumer queue and then use the TLA+ toolset, such as the TLA+ toolbox, to check the specification for correctness using model checking.
+
+Here's an example TLA+ specification for a multiple producer, multiple consumer queue:
+
+------------------------------ MODULE MQueue ------------------------------
+EXTENDS Integers
+
+VARIABLES queue, front, back
+
+Init == front = 1 /\ back = 1 /\ queue = [0 |-> "empty"]
+
+Enqueue(x) ==
+IF (back = Len(queue)) THEN
+queue' = Append(queue, x) /\ back' = back + 1
+ELSE
+queue' = [queue EXCEPT ![back] = x] /\ back' = back + 1
+
+Dequeue ==
+IF (front = back) THEN
+queue' = queue /\ front' = front /\ back' = back
+ELSE
+queue' = queue /\ front' = front + 1
+
+Spec == Init /\ [][Enqueue(x) / Dequeue]_<<queue,front,back>>
+
+Properties == Spec /\ (WF_vars(Enqueue) /\ WF_vars(Dequeue))
+
+End MODULE
+
+In this example, the module MQueue defines a variable queue that represents the queue data structure, and two variables front and back that keep track of the front and back of the queue. The Init state specifies the initial values of these variables. The Enqueue(x) action adds an element x to the back of the queue, and the Dequeue action removes an element from the front of the queue. The Spec property defines the behavior of the queue, and the Properties property specifies that the Enqueue and Dequeue actions preserve the well-formedness of the queue.
+
+You can use the TLA+ toolbox to check the specification for correctness and find potential bugs.
+
+It's important to notice that this is just an example, and that the specification will depends on the particular requirements of the system you want to prove.
 #+end_example
