@@ -1,0 +1,33 @@
+* More text-davinci-003
+
+** Fortran sinc
+#+begin_example
+
+Write modern Fortran code that fills a 3D single-float array with a centered sinc function and computes the 3D FFT of it.
+
+program sinc_fft
+  implicit none
+  integer, parameter:: nx=32, ny=32, nz=32
+  integer:: i,j,k
+  real(8), dimension(nx,ny,nz):: sinc_arr, fft_arr
+  real(8):: x,y,z,x0,y0,z0
+
+  x0 = 0.5*real(nx-1,8)
+  y0 = 0.5*real(ny-1,8)
+  z0 = 0.5*real(nz-1,8)
+  
+  do k=1,nz
+    z = real(k-1,8) - z0
+    do j=1,ny
+     y = real(j-1,8) - y0
+      do i=1,nx
+        x = real(i-1,8) - x0
+        sinc_arr(i,j,k) = sin(3.14159265*(x*x+y*y+z*z))/(3.14159265*(x*x+y*y+z*z))
+      end do
+    end do
+  end do
+
+  call cfft3d(sinc_arr, fft_arr)
+
+end program sinc_fft
+#+end_example
