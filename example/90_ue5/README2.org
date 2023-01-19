@@ -624,3 +624,6 @@ function parityCheck(byte) {
 }
 
 #+end_example
+- not sure if this is reasonable. i wanted the parity check to be done
+  by the uart. maybe a datapacket could look like a resync packet? how
+  are packets separated?
