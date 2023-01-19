@@ -782,3 +782,50 @@ play_poker(Hand, Result) :-
 #+end_example
 
 - i think this is incomplete. i don't care enough to let it continue
+
+** Prolog UDP decoder
+
+- i'm not sure the question makes sense
+#+begin_example
+
+We receive UDP Packets that contain a monotonic uint64 timer, a uint8 packet counter and four uint64 data fields. Packets may arrive out of order, but not more than 3 packets appart. Show Prolog code that looks at the 4 most recent packets and identifies bit errors in the timer and packet counter.
+
+ % Define timer, packet counter, and data fields
+timer(T) :-
+	integer(T).
+packet_counter(PC) :-
+	integer(PC).
+data1(D1) :-
+	integer(D1).
+data2(D2) :-
+	integer(D2).
+data3(D3) :-
+	integer(D3).
+data4(D4) :-
+	integer(D4).
+
+% Define the list of packets
+packets([P1,P2,P3,P4]) :-
+	packet(P1),
+	packet(P2),
+	packet(P3),
+	packet(P4).
+
+% Define a packet
+packet(p(T,PC,D1,D2,D3,D4)) :-
+	timer(T),
+	packet_counter(PC),
+	data1(D1),
+	data2(D2),
+	data3(D3),
+	data4(D4).
+
+% Identify bit errors in the timer and packet counter
+bit_error_timer(T1,T2) :-
+	T1 > T2.
+
+bit_error_packet_counter(PC1,PC2) :-
+	PC1 > PC2.
+
+
+#+end_example
