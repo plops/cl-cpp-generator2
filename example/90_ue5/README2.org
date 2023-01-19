@@ -370,6 +370,42 @@ cv2.waitKey(0)
 
 - that is not a good solution
 
+- try chatgpt
+- Assume that we have 5 raw images of a static scene, that were
+  acquired with different and known integration times. For each
+  integration time we also have a dark image. Write code that computes
+  a HDR image from the raw exposed and dark images. Take care that
+  overexposed parts of the raw images are excluded from the HDR image.
+
+#+begin_example
+
+import numpy as np
+from skimage import io
+from skimage.exposure import create_debevec_ldr, process_debevec
+
+# Load the raw exposed images and dark images
+raw_images = []
+dark_images = []
+for i in range(5):
+    raw_images.append(io.imread('raw_image_' + str(i) + '.tiff'))
+    dark_images.append(io.imread('dark_image_' + str(i) + '.tiff'))
+
+# Create the exposure times array
+exposure_times = np.array([1/30.0, 1/60.0, 1/125.0, 1/250.0, 1/500.0])
+
+# Create the HDR radiance map
+hdr_radiance = create_debevec_ldr(raw_images, dark_images, exposure_times)
+
+# Create the HDR image
+hdr_image = process_debevec(hdr_radiance)
+
+# Save the HDR image
+io.imsave('hdr_image.tiff', hdr_image)
+
+
+
+#+end_example
+
 
 ** Python superimpose images
 
@@ -907,3 +943,4 @@ You can use the TLA+ toolbox to check the specification for correctness and find
 
 It's important to notice that this is just an example, and that the specification will depends on the particular requirements of the system you want to prove.
 #+end_example
+
