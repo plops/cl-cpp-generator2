@@ -1282,13 +1282,131 @@ path = x
 ** Kalman observation C++
 
 Assume a system that acquires 2D images of the ocean. On the horizon
-the image contains ships. Show code to reconstruct the path of the
-ship. Use the horizontal ship position and a Kalman filter that
+the image contains ships. Show modern C++ code to reconstruct the path
+of the ship. Use the horizontal ship position and a Kalman filter that
 assumes that ships travel straight or make turns, but always on the
-plane of the ocean. Use modern C++.
+plane of the ocean.
 
 
 #+begin_example
 
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
+
+// Ship position and velocity
+Mat state(4, 1, CV_32F);
+// Transition matrix
+Mat transitionMatrix(4, 4, CV_32F);
+// Measurement matrix
+Mat measurementMatrix(2, 4, CV_32F);
+// Process noise
+Mat processNoiseCov(4, 4, CV_32F);
+// Measurement noise
+Mat measurementNoiseCov(2, 2, CV_32F);
+// Prior error estimate covariance matrix
+Mat errorCovPost(4, 4, CV_32F);
+
+KalmanFilter kf;
+
+void initKalmanFilter() {
+    // Initialize state
+    state.at<float>(0) = 0;
+    state.at<float>(1) = 0;
+    state.at<float>(2) = 0;
+    state.at<float>(3) = 0;
+
+    // Transition matrix
+    transitionMatrix.at<float>(0, 0) = 1;
+    transitionMatrix.at<float>(0, 1) = 0;
+    transitionMatrix.at<float>(0, 2) = 1;
+    transitionMatrix.at<float>(0, 3) = 0;
+    transitionMatrix.at<float>(1, 0) = 0;
+    transitionMatrix.at<float>(1, 1) = 1;
+    transitionMatrix.at<float>(1, 2) = 0;
+    transitionMatrix.at<float>(1, 3) = 1;
+    transitionMatrix.at<float>(2, 0) = 0;
+    transitionMatrix.at<float>(2, 1) = 0;
+    transitionMatrix.at<float>(2, 2) = 1;
+    transitionMatrix.at<float>(2, 3) = 0;
+    transitionMatrix.at<float>(3, 0) = 0;
+    transitionMatrix.at<float>(3, 1) = 0;
+    transitionMatrix.at<float>(3, 2) = 0;
+    transitionMatrix.at<float>(3, 3) = 1;
+
+    // Measurement matrix
+    measurementMatrix.at<float>(0, 0) = 1;
+    measurementMatrix.at<float>(0, 1) = 0;
+    measurementMatrix.at<float>(0, 2) = 0;
+    measurementMatrix.at<float>(0, 3) = 0;
+    measurementMatrix.at<float>(1, 0) = 0;
+    measurementMatrix.at<float>(1, 1) = 1;
+    measurementMatrix.at<float>(1, 2) = 0;
+    measurementMatrix.at<float>(1, 3) = 0;
+
+    // Process noise
+    processNoiseCov.at<float>(0, 0) = 1e-2;
+    processNoiseCov.at<float>(0, 1) = 0;
+    processNoiseCov.at<float>(0, 2) = 0;
+    processNoiseCov.at<float>(0, 3) = 0;
+    processNoiseCov.at<float>(1, 0) = 0
+    processNoiseCov.at<float>(1, 1) = 1e-2;
+    processNoiseCov.at<float>(1, 2) = 0;
+    processNoiseCov.at<float>(1, 3) = 0;
+    processNoiseCov.at<float>(2, 0) = 0;
+    processNoiseCov.at<float>(2, 1) = 0;
+    processNoiseCov.at<float>(2, 2) = 1e-2;
+    processNoiseCov.at<float>(2, 3) = 0;
+    processNoiseCov.at<float>(3, 0) = 0;
+    processNoiseCov.at<float>(3, 1) = 0;
+    processNoiseCov.at<float>(3, 2) = 0;
+    processNoiseCov.at<float>(3, 3) = 1e-2;
+
+    // Measurement noise
+    measurementNoiseCov.at<float>(0, 0) = 1e-1;
+    measurementNoiseCov.at<float>(0, 1) = 0;
+    measurementNoiseCov.at<float>(1, 0) = 0;
+    measurementNoiseCov.at<float>(1, 1) = 1e-1;
+
+    // Prior error estimate covariance matrix
+    errorCovPost.at<float>(0, 0) = 1;
+    errorCovPost.at<float>(0, 1) = 0;
+    errorCovPost.at<float>(0, 2) = 0;
+    errorCovPost.at<float>(0, 3) = 0;
+    errorCovPost.at<float>(1, 0) = 0;
+    errorCovPost.at<float>(1, 1) = 1;
+    errorCovPost.at<float>(1, 2) = 0;
+    errorCovPost.at<float>(1, 3) = 0;
+    errorCovPost.at<float>(2, 0) = 0;
+    errorCovPost.at<float>(2, 1) = 0;
+    errorCovPost.at<float>(2, 2) = 1;
+    errorCovPost.at<float>(2, 3) = 0;
+    errorCovPost.at<float>(3, 0) = 0;
+    errorCovPost.at<float>(3, 1) = 0;
+    errorCovPost.at<float>(3, 2) = 0;
+    errorCovPost.at<float>(3, 3) = 1;
+
+    // Configure Kalman filter
+    kf.init(4, 2, 0);
+    kf.transitionMatrix = transitionMatrix;
+    kf.measurementMatrix = measurementMatrix;
+    kf.processNoiseCov = processNoiseCov;
+    kf.measurementNoiseCov = measurementNoiseCov;
+    kf.errorCovPost = errorCovPost;
+}
+
+void predict() {
+    Mat prediction = kf.predict();
+    Point predictPt(prediction.at<float>(0), prediction.at<float>(1));
+}
+
+void update(Point2f measurement) {
+    Mat measurementMat(2
+
 
 #+end_example
+
+- this is very annoying. isn't there a shorter way to define these
+  matrices?
