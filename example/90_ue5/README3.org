@@ -1,6 +1,6 @@
 * ChatGPT
 
-** Protobuf and gRPC
+** Protobuf
 
 What is Google Protobuf?
 
@@ -76,3 +76,49 @@ possible to make changes in a completely backwards compatible
 way. Ultimately, it depends on the specific requirements of your
 application and the nature of the changes you need to make.
 
+** gRPC
+
+How can gRPC handle errors?
+
+
+gRPC uses the status object in the gRPC protocol to handle errors. The
+status object includes an error code and a message that describes the
+error. The error code is a numerical value that indicates the type of
+error, and the message provides additional details about the
+error. gRPC also allows for additional metadata to be sent along with
+the status object, which can be used to provide more information about
+the error. Additionally, gRPC supports the use of custom error codes,
+which can be used to provide more fine-grained error handling.
+
+
+What are some rules for gRPC service design that allow future updates?
+
+Here are a few best practices for designing gRPC services that can be
+easily updated in the future:
+
+1. Use versioning: Versioning is essential to allow for updates to
+   your service without breaking existing clients. You can use a
+   versioning scheme like Semantic Versioning (SemVer) to keep track
+   of changes to your service.
+
+2. Avoid breaking changes: When making updates to your service, try to
+   avoid breaking changes that will require clients to update their
+   code. Instead, make changes that are backward compatible.
+
+3. Use gRPC's built-in support for streaming: gRPC has built-in
+   support for bidirectional streaming, which allows for updates to be
+   pushed to clients without requiring a new request.
+
+4. Avoid hard-coding client-specific details: Avoid hard-coding
+   client-specific details like IP addresses or ports in your
+   service. Instead, use a service discovery mechanism like DNS or a
+   service registry.
+
+5. Plan for extensibility: When designing your service, plan for
+   extensibility by keeping your data structures and APIs
+   flexible. This will make it easier to add new features or
+   capabilities in the future.
+
+6. Use compatibility test suite: It's a good practice to have a
+   compatibility test suite which can be run against the new updates
+   to make sure they do not break existing clients.
