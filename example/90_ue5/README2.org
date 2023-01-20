@@ -1404,6 +1404,41 @@ void predict() {
 
 void update(Point2f measurement) {
     Mat measurementMat(2
+, 1, CV_32F);
+    measurementMat.at<float>(0) = measurement.x;
+    measurementMat.at<float>(1) = measurement.y;
+
+    Mat estimated = kf.correct(measurementMat);
+    Point statePt(estimated.at<float>(0), estimated.at<float>(1));
+}
+
+int main() {
+    initKalmanFilter();
+
+    // Acquire 2D image of the ocean
+    Mat image;
+    // Process image to extract ship position
+    Point2f shipPos;
+
+    while (true) {
+        // Acquire new image
+        image = acquireImage();
+        // Extract ship position from image
+        shipPos = extractShipPosition(image);
+
+        predict();
+        update(shipPos);
+
+        // Draw ship path on image
+        drawShipPath(image, statePt);
+
+        // Display image
+        imshow("Ship Path", image);
+        waitKey(30);
+    }
+
+    return 0;
+}
 
 
 #+end_example
