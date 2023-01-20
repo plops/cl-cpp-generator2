@@ -1,0 +1,78 @@
+* ChatGPT
+
+** Protobuf and gRPC
+
+What is Google Protobuf?
+
+Google Protocol Buffers (Protobuf) is a data serialization format
+developed by Google for efficient data exchange between networked
+systems. It is designed to be extensible, efficient, and
+language-independent. Data is encoded in a binary format, rather than
+in XML or JSON, which can make it more compact and faster to
+process. Google provides libraries for working with Protobuf in many
+programming languages, including C++, Java, Python, and C#.
+
+
+
+
+
+How does Protobuf deal with versioning of the communication protocol?
+Google Protocol Buffers (Protobuf) deals with versioning of the
+communication protocol through a feature called backwards
+compatibility. This means that if a new field is added to a message,
+or if the data type of a field is changed, the new version of the
+message can still be parsed and understood by systems using the old
+version of the message.
+
+This is achieved by using unique field numbers for each field in a
+message. When a new field is added, it is assigned a new field number,
+and old systems that do not recognize the new field number will simply
+ignore it. Similarly, if the data type of a field is changed, the new
+version of the field will be assigned a new field number, and old
+systems will continue to use the old field number.
+
+It's worth noting that protobuf doesn't have any built-in mechanism to
+handle breaking changes which can't be handled by the aforementioned
+approach. It's up to the developer to handle such changes by using
+different message types, different service methods or custom options.
+
+
+
+
+
+Do you know any rules-of-thumb how to design the protocol, so that
+breaking changes are possible later?  
+
+Here are a few rules of thumb for designing a communication protocol
+using Google Protocol Buffers (Protobuf) that allows for breaking
+changes to be made later:
+
+Reserve field numbers: When defining your messages, reserve a range of
+field numbers for future use. This will allow you to add new fields to
+your messages without having to change the field numbers of existing
+fields.
+
+Use oneof and/or optional fields: The oneof and optional fields can be
+used to add new fields or change the data type of a field without
+breaking backwards compatibility.
+
+Create new message types: Instead of making breaking changes to
+existing message types, create new message types for the new version
+of the protocol. This way, old systems will continue to use the old
+message types, while new systems can use the new message types.
+
+Use different service methods: Instead of changing the service method,
+create a new service method for the new version of the protocol. This
+way, old systems will continue to use the old service method, while
+new systems can use the new service method.
+
+Use custom options: Use custom options for handling breaking changes,
+you can use custom options to indicate that certain fields or methods
+are deprecated or have been replaced by new fields or methods.
+
+It's important to note that while the above approach can make it
+easier to introduce breaking changes to your protocol, it's not always
+possible to make changes in a completely backwards compatible
+way. Ultimately, it depends on the specific requirements of your
+application and the nature of the changes you need to make.
+
