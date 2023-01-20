@@ -166,3 +166,78 @@ advisable to use it to directly communicate with the browser, due to
 the fact that gRPC is meant to be used in a more controlled
 environment, such as a microservices architecture, where you have more
 control over the client and server environments.
+
+
+What is a well known opensource project that uses gRPC?
+
+
+One well-known open-source project that uses gRPC is Kubernetes.
+
+Kubernetes is an open-source container orchestration system for
+automating the deployment, scaling, and management of containerized
+applications. It uses gRPC for communication between its various
+components, including the API server, etcd, and the kubelet.
+
+gRPC provides Kubernetes with a high-performance, low-latency
+communication channel that allows the different components of the
+system to work together efficiently. Additionally, gRPC's support for
+bi-directional streaming and flow control allows Kubernetes to handle
+large numbers of simultaneous connections and handle high levels of
+network traffic.
+
+Other well-known open-source projects that use gRPC include Istio,
+Envoy, and etcd, to name a few.
+
+
+Are there examples that have nothing to do with cloud infrastructure?
+
+Yes, there are many examples of open-source projects that use gRPC and
+have nothing to do with cloud infrastructure. Here are a few examples:
+
+1. Prometheus: Prometheus is a popular open-source monitoring and
+   alerting system. It uses gRPC to expose metrics and allows for the
+   collection of metrics from remote services.
+
+2. Etcd: etcd is a distributed key-value store, often used as a
+   consistent data storage for microservices. It uses gRPC for
+   communication between the different nodes in the cluster.
+
+3. grpc-health-probe: grpc-health-probe is a simple Go library for
+   health checking gRPC servers. It uses gRPC to check the health of a
+   server by sending a request to the server's Health checking
+   service.
+
+4. gRPC-Go: gRPC-Go is the Go implementation of gRPC. It allows
+   developers to build gRPC services and clients in Go.
+
+5. gRPC-Java: gRPC-Java is the Java implementation of gRPC. It allows
+   developers to build gRPC services and clients in Java.
+
+These are just a few examples, gRPC is widely used in different
+domains like finance, gaming, retail and more. gRPC's
+high-performance, low-latency communication makes it a good choice for
+a wide range of applications that need to handle large amounts of data
+or many concurrent connections.
+
+
+
+Can Wireshark decode pRPC messages (assuming the proto files are available)?
+
+Wireshark is a network protocol analyzer tool that can be used to
+inspect and analyze network traffic. It can decode a wide variety of
+network protocols, including HTTP, DNS, and many others.
+
+Wireshark can also decode gRPC messages, as long as the Protocol
+Buffer (proto) files that define the messages are available. The
+Wireshark gRPC dissector plugin uses the proto files to decode the
+messages and make them human-readable.
+
+The gRPC dissector plugin for Wireshark can be installed from the
+Wireshark's website or from the Wireshark's plugin installer. Once the
+plugin is installed, you will be able to see the gRPC messages in
+Wireshark's packet list and inspect the details of the message in the
+packet details window.
+
+It's worth noting that Wireshark is only able to decode gRPC messages
+that are sent over HTTP/2. If a different protocol is used, Wireshark
+will not be able to decode the messages.
