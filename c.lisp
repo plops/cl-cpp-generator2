@@ -497,7 +497,7 @@ entry return-values contains a list of return values. currently supports type, v
 													  (not header-only))
 												     "const")
 											       (when header-only pure-p)
-											       (when header-only override-p)
+											       (when header-only override-p) ;; FIXME: not working in defclass+
 											       ;; semicolon if header only
 											       (and (not inline-p) header-only)
 											       ;; constructor initializers
