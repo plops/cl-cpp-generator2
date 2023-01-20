@@ -1122,3 +1122,173 @@ void loop() {
 
 
 #+end_example
+
+** Real-time Motion control with Kalman filter 
+
+Show realtime motion control code. Use Kalman filter.
+
+#+begin_example
+
+import numpy as np
+
+class KalmanFilter:
+    def __init__(self, process_noise, sensor_noise, estimated_error, intial_value):
+        self.process_noise = process_noise
+        self.sensor_noise = sensor_noise
+        self.estimated_error = estimated_error
+        self.current_estimate = intial_value
+
+    def predict(self):
+        self.current_estimate = self.current_estimate
+        self.estimated_error = self.estimated_error + self.process_noise
+
+    def update(self, measurement):
+        residual = measurement - self.current_estimate
+        residual_cov = self.estimated_error + self.sensor_noise
+        kalman_gain = self.estimated_error / residual_cov
+        self.current_estimate = self.current_estimate + kalman_gain * residual
+        self.estimated_error = (1 - kalman_gain) * self.estimated_error
+
+
+
+#+end_example
+
+
+** Kalman observation
+
+Assume a system that acquires 2D images of the ocean. On the horizon
+the image contains ships. Show code to reconstruct the path of the
+ship. Use the horizontal ship position and a Kalman filter that
+assumes that ships travel straight or make turns, but always on the
+plane of the ocean.
+
+#+begin_example
+
+import numpy as np
+from scipy.optimize import minimize
+
+# Define the measurement model
+def h(x, u):
+    pos_x, pos_y, vel_x, vel_y = x
+    return np.array([pos_x, pos_y])
+
+# Define the transition model
+def f(x, u, dt):
+    pos_x, pos_y, vel_x, vel_y = x
+    return np.array([pos_x + vel_x*dt, pos_y + vel_y*dt, vel_x, vel_y])
+
+# Define the Kalman filter
+def kalman_filter(x, P, z, Q, R):
+    # Prediction step
+    x_pred = f(x, u, dt)
+    P_pred = np.dot(F, P).dot(F.T) + Q
+
+    # Update step
+    y = z - h(x_pred, u)
+    S = np.dot(H, P_pred).dot(H.T) + R
+    K = np.dot(P_pred, H.T).dot(np.linalg.inv(S))
+    x_est = x_pred + np.dot(K, y)
+    P_est = P_pred - np.dot(K, H).dot(P_pred)
+
+    return x_est, P_est
+
+# Initialize state vector, covariance matrix, and process noise
+x = np.array([pos_x, pos_y, 0, 0])
+P = np.eye(4)
+Q = np.eye(4) * 0.1
+
+# Measurement noise
+R = np.eye(2) * 0.1
+
+# Time step
+dt = 1
+
+# Measurement vector
+z = np.array([pos_x, pos_y])
+
+# Run the Kalman filter
+for i in range(num_steps):
+    x, P = kalman_filter(x, P, z, Q, R)
+    ship_path.append(x)
+
+
+#+end_example
+
+** Kalman observation Fortran
+
+Assume a system that acquires 2D images of the ocean. On the horizon
+the image contains ships. Show code to reconstruct the path of the
+ship. Use the horizontal ship position and a Kalman filter that
+assumes that ships travel straight or make turns, but always on the
+plane of the ocean. Use modern Fortran.
+
+#+begin_example
+! Define the state vector, which includes the x and y position of the ship
+type(state) :: x
+
+! Define the transition matrix, which describes how the state evolves over time
+type(matrix) :: F
+
+! Define the measurement matrix, which relates the state to the observations
+type(matrix) :: H
+
+! Define the process noise covariance matrix
+type(matrix) :: Q
+
+! Define the measurement noise covariance matrix
+type(matrix) :: R
+
+! Define the initial state estimate
+x = [x_initial, y_initial]
+
+! Define the transition matrix, assuming the ship travels in a straight line or makes turns on the plane of the ocean
+F = [[1, dt, 0, 0], [0, 1, 0, 0], [0, 0, 1, dt], [0, 0, 0, 1]]
+
+! Define the measurement matrix, assuming the x and y position of the ship are directly observable
+H = [[1, 0, 0, 0], [0, 0, 1, 0]]
+
+! Define the process noise covariance matrix, assuming the ship may deviate slightly from its straight path or turns
+Q = [[q_x, 0, 0, 0], [0, q_y, 0, 0], [0, 0, q_x, 0], [0, 0, 0, q_y]]
+
+! Define the measurement noise covariance matrix, assuming the image acquisition process has some noise
+R = [[r_x, 0], [0, r_y]]
+
+! Initialize the Kalman filter
+call Kalman_Init(x, P, F, H, Q, R)
+
+! Iterate over each image
+do i = 1, num_images
+    ! Acquire the next image
+    call acquire_image(image)
+
+    ! Extract the ship's position from the image
+    x_measured = extract_ship_position(image)
+
+    ! Update the Kalman filter with the new measurement
+    call Kalman_Update(x, P, x_measured)
+
+    ! Predict the ship's position at the next time step
+    call Kalman_Predict(x, P)
+
+end do
+
+! The final state estimate contains the reconstructed path of the ship
+path = x
+
+
+#+end_example
+
+
+** Kalman observation C++
+
+Assume a system that acquires 2D images of the ocean. On the horizon
+the image contains ships. Show code to reconstruct the path of the
+ship. Use the horizontal ship position and a Kalman filter that
+assumes that ships travel straight or make turns, but always on the
+plane of the ocean. Use modern C++.
+
+
+#+begin_example
+
+
+#+end_example
