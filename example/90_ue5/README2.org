@@ -944,3 +944,181 @@ You can use the TLA+ toolbox to check the specification for correctness and find
 It's important to notice that this is just an example, and that the specification will depends on the particular requirements of the system you want to prove.
 #+end_example
 
+** Motion controller
+
+Show code for a motion controller that measures the stage position
+every 10 ms. The controller shall ramp up the speed for T seconds with
+constant jerk. Keep speed constant for distance D and ramp down speed
+to zero in T seconds.
+
+#+begin_example
+
+import time
+
+# Constants
+T = 0.5  # ramp-up and ramp-down time in seconds
+D = 10  # constant speed distance in units
+
+# Initialize variables
+start_time = time.time()
+current_time = start_time
+current_position = 0
+current_speed = 0
+
+while True:
+    # Calculate time since start
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+
+    # Calculate current speed
+    if elapsed_time < T:
+        # Ramp-up phase
+        current_speed = (elapsed_time / T) ** 3
+    elif elapsed_time < T + D:
+        # Constant speed phase
+        current_speed = 1
+    else:
+        # Ramp-down phase
+        current_speed = ((elapsed_time - T - D) / T) ** 3
+
+    # Update position
+    current_position += current_speed * (current_time - start_time)
+
+    # Measure stage position
+    print("Position: ", current_position)
+
+    # Update start time for next iteration
+    start_time = current_time
+
+    # Sleep for 10 ms
+    time.sleep(0.01)
+
+#+end_example
+The code above uses the time module in python to measure time, and
+based on the time elapsed, it changes the speed.  Please note that
+this is a simple example, and there might be some inaccuracies and
+variations between the expected and actual results. Also, the code is
+not optimized for real-time motion control, and you might need to use
+other libraries like pycontrol, scipy.signal, etc
+
+
+** Realtime Motion controller
+
+Show real-time code for a motion controller that measures the stage
+position every 10 ms. The controller shall ramp up the speed for T
+seconds with constant jerk. Keep speed constant for distance D and
+ramp down speed to zero in T seconds.
+
+#+begin_example
+
+import time
+
+# Initialize variables
+T = 2  # Ramp-up time in seconds
+D = 10  # Constant speed distance in meters
+jerk = 1  # Constant jerk in m/s^3
+
+# Get current position
+current_position = get_stage_position()
+
+# Calculate target position
+target_position = current_position + D
+
+# Get current time
+start_time = time.time()
+
+# Ramp up speed
+while True:
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    if elapsed_time > T:
+        break
+    current_speed = jerk * elapsed_time
+    set_stage_speed(current_speed)
+    time.sleep(0.01)  # Sleep for 10 ms
+
+# Keep speed constant
+while True:
+    current_position = get_stage_position()
+    if current_position >= target_position:
+        break
+    time.sleep(0.01)  # Sleep for 10 ms
+
+# Ramp down speed
+while True:
+    current_time = time.time()
+    elapsed_time = current_time - start_time
+    if elapsed_time > 2*T:
+        break
+    current_speed = -jerk * (elapsed_time - T)
+    set_stage_speed(current_speed)
+    time.sleep(0.01)  # Sleep for 10 ms
+
+# Stop stage
+set_stage_speed(0)
+
+#+end_example
+
+** Realtime Ardnuino Motion controller
+
+Show real-time Arduino code for a motion controller that measures the
+stage position every 10 ms. The controller shall ramp up the speed for
+T seconds with constant jerk. Keep speed constant for distance D and
+ramp down speed to zero in T seconds.
+
+
+#+begin_example
+
+// Constants
+const int STAGE_POSITION_PIN = A0; // Pin for stage position sensor
+const int STAGE_CONTROL_PIN = 3; // Pin for stage control signal
+const int UPDATE_INTERVAL = 10; // Interval for measuring stage position (ms)
+const double T_ACCEL = 2.0; // Time for acceleration (s)
+const double T_DECEL = 2.0; // Time for deceleration (s)
+const double MAX_SPEED = 1.0; // Maximum speed (units/s)
+const double DISTANCE = 10.0; // Distance to travel (units)
+
+// Variables
+double stagePos = 0; // Current stage position
+double speed = 0; // Current speed
+double jerk = MAX_SPEED / T_ACCEL; // Constant jerk
+double startTime; // Time when motion started
+double endTime; // Time when motion should end
+
+void setup() {
+  // Set pin modes
+  pinMode(STAGE_POSITION_PIN, INPUT);
+  pinMode(STAGE_CONTROL_PIN, OUTPUT);
+  // Calculate end time
+  endTime = millis() + (T_ACCEL + (DISTANCE / MAX_SPEED) + T_DECEL) * 1000;
+}
+
+void loop() {
+  // Measure stage position
+  stagePos = analogRead(STAGE_POSITION_PIN);
+  // Calculate elapsed time
+  double elapsedTime = (millis() - startTime) / 1000.0;
+  // Check if acceleration phase
+  if (elapsedTime < T_ACCEL) {
+    speed = jerk * elapsedTime;
+  }
+  // Check if constant speed phase
+  else if (elapsedTime < T_ACCEL + (DISTANCE / MAX_SPEED)) {
+    speed = MAX_SPEED;
+  }
+  // Check if deceleration phase
+  else if (elapsedTime < endTime) {
+    speed = MAX_SPEED - (jerk * (elapsedTime - T_ACCEL - (DISTANCE / MAX_SPEED)));
+  }
+  // Check if motion should end
+  else {
+    speed = 0;
+  }
+  // Send control signal to stage
+  analogWrite(STAGE_CONTROL_PIN, speed);
+  // Wait for update interval
+  delay(UPDATE_INTERVAL);
+}
+
+
+#+end_example
