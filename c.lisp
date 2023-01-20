@@ -707,30 +707,65 @@ entry return-values contains a list of return values. currently supports type, v
 				(rest (cdr arg)))
 			    (assert (symbolp op))
 			    (assert (listp rest))
-			    (let ((p0 (lookup-precedence op)))
-			      
-			      (if p0
-				  (format nil
-					  "~a" 
-					  (emit 
-					   `(,op
-					     ,@(loop for e in rest
-						    collect
-						    (if (listp e)
-							
-							(let ((p1 (lookup-precedence (first e))))
-							  ;; no parens required if first op has higher precedence
-							  (if p1
-							      (if (< p0 p1)
-								  (format nil "~a" (emit e))
-								  (format nil "~a" (emit `(paren* ,e))))
-							      (break "operator unknown '~a'" (first e))))
-							(progn
-					;(break "unsupported codepath 724")
-							  (format nil "~a" (emit e))))))))
-				  (progn (break "unsupported codepath")
-					 (format nil "~a"
-						 (emit arg)))))))
+			    (if  (member op *operators*)
+				 (progn ;; we deal with a known operator
+				  (let ((p0 (lookup-precedence op)))
+				    (if p0
+					(progn
+					  ;; operator was found in
+					  ;; precedence table. look at
+					  ;; operators in all
+					  ;; arguments to see if we
+					  ;; need parentheses
+					  (format nil
+						  "~a" 
+						  (emit 
+						   `(,op
+						     ,@(loop for e in rest
+							     collect
+							     (if (listp e)
+								 (progn
+								   ;; argument is a list, we should look for operators
+								   (if (member (first e) *operators*)
+								       (progn ;; known operator
+									(let ((p1 (lookup-precedence (first e))))
+								     
+									  (if p1
+									      (progn
+										;; operator is present in precedence table
+										(if (< p0 p1)
+										    (progn
+										      ;; no parens required if first op has higher precedence
+										      (format nil "~a" (emit e)))
+										    (progn
+										      ;; parens required
+										      (format nil "~a" (emit `(paren* ,e))))))
+									      (progn
+										(break "operator of unknown precedence '~a'" (first e))
+										;; i think we should place parens
+										(format nil "~a" (emit `(paren* ,e)))
+										))))
+								       (progn ;; not an operator, so must be a function call
+									 (format nil "~a" (emit e)))))
+								 (progn
+								   ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
+								   (format nil "~a" (emit e)))))))))
+					(progn
+					  ;; operator was not found in
+					  ;; precedence table. i think
+					  ;; we should just emit the
+					  ;; code without thinking
+					  ;; about parens
+					  (break "unsupported codepath")
+					       (format nil "~a"
+						       (emit arg))))))
+
+				 (progn
+				   ;; if the first element is not an
+				   ;; operator, then we must deal with a
+				   ;; function call
+				   (format nil "~a" (emit arg))
+			      ))))
 			 (t
 			  (break "unsupported argument for paren* '~a'" arg)))))
 		   )
