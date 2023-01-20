@@ -122,3 +122,47 @@ easily updated in the future:
 6. Use compatibility test suite: It's a good practice to have a
    compatibility test suite which can be run against the new updates
    to make sure they do not break existing clients.
+
+
+Is gRPC commonly used to communicate with Javascript code in the
+browser?
+
+gRPC is not commonly used to directly communicate with JavaScript code
+in the browser because it is based on the HTTP/2 protocol, which is
+not natively supported by most web browsers. However, it is possible
+to use gRPC in a JavaScript client through the use of a gRPC-Web
+library, which provides a JavaScript client library that can be used
+to call gRPC services from the browser.
+
+gRPC-Web is a JavaScript client library for gRPC, which allows browser
+clients to communicate with gRPC servers via a proxy. The gRPC-Web
+client calls are translated by the proxy into gRPC HTTP/2 calls. This
+allows web developers to use gRPC to communicate with backend
+services, while using the same idiomatic JavaScript API they would use
+to communicate over HTTP/1.1.
+
+It's worth noting that gRPC-Web is not a part of gRPC project and it's
+maintained by a different team, also it's still considered an
+experimental feature.
+
+
+
+Does Chrome support HTTP/2 and gRPC?
+
+
+Yes, Chrome supports HTTP/2 and gRPC. Chrome has supported HTTP/2
+since version 41, which was released in April 2015. HTTP/2 is an
+update to the HTTP protocol that improves the performance of web
+applications by reducing the latency of network requests.
+
+gRPC, which is based on HTTP/2, is also supported by Chrome. However,
+as I mentioned in the previous answer, gRPC is not natively supported
+by most web browsers, so in order to use gRPC with a JavaScript client
+in the browser, developers will need to use a gRPC-Web library to
+communicate with the gRPC services via a proxy.
+
+It's worth noting that even though Chrome supports gRPC, it's not
+advisable to use it to directly communicate with the browser, due to
+the fact that gRPC is meant to be used in a more controlled
+environment, such as a microservices architecture, where you have more
+control over the client and server environments.
