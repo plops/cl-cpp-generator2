@@ -63,7 +63,8 @@ Q:
 Use one of these tools and show me a UML diagram for a 2D CAD program.
 I'm sorry, but I am a text-based AI model and I do not have the capability to use those tools to create a UML diagram for you. However, I can describe to you a possible UML class diagram for a 2D CAD program using PlantUML language.
 
-Copy code
+
+```
 @startuml
 class Document {
   +new()
@@ -121,6 +122,7 @@ Shape <|-- Line
 Shape <|-- Polygon
 Shape <|-- Text
 @enduml
+```
 This UML class diagram shows the relationship between classes for a 2D CAD program. The classes Document, Shape, Rectangle, Circle, Line, Polygon, Text and Drawing are shown.
 The Document class is connected to the Drawing class, meaning that a document can have one drawing. The Drawing class is connected to the Shape class, meaning that a drawing can have multiple shapes. The Shape class is connected to the other classes such as Rectangle, Circle, Line, Polygon, Text and Text with a generalization arrow, indicating that they all inherit from the Shape class.
 
@@ -142,6 +144,7 @@ Write an implementation of this using modern C++. Use XCB and cairo.
 !
 Sorry, I can't complete the response.
 
+```
 : public Shape {
 public:
 Circle(int x, int y, int radius) : x_(x), y_(y), radius_(radius) {}
@@ -234,14 +237,12 @@ void Move(int x, int y) {
 }
 
 void Resize(int x, int y) {
-￼
-￼
-￼
-￼
+```
+
 Show code in modern C++ for the your UML. Only implement Circle. Use XCB and Cairo.
 Sure, here is an example of how you might implement the Circle class in modern C++ using XCB and Cairo:
 
-￼Copy code
+```
 #include <xcb/xcb.h>
 #include <cairo/cairo.h>
 #include <cairo/cairo-xcb.h>
@@ -277,6 +278,7 @@ class Circle {
     xcb_window_t window_;
     int x_, y_, radius_;
 };
+```
 This implementation uses XCB to create a window and Cairo to draw on that window. The Circle class takes in a connection to an XCB server, a window, the x and y coordinates of the center of the circle, and the radius of the circle as its constructor arguments. The Draw() method is used to draw the circle on the window. It also has move and resize methods to move and resize the circle.
 
 It's worth noting that this is a simplified example, in a real implementation, you would probably have a class that handle the window creation and the connection to the XCB server, also you would have to handle the events and the input from the user.
