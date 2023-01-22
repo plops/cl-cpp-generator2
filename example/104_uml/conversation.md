@@ -336,3 +336,160 @@ A while loop is used to handle events, `xcb_wait_for_eventis used to wait for th
 In the XCB_EXPOSE case, you would probably want to redraw any shapes or other content that was obscured by another window. In the XCB_BUTTON_PRESS and XCB_BUTTON_RELEASE cases, you would probably want to handle user input such as clicking and dragging. In the XCB_MOTION_NOTIFY case, you would probably want to handle pointer motion events such as moving the mouse over the window.
 
 It's important to note that this is a simplified example and in a real application, you would need to handle more events and also properly handle errors and disconnections.
+
+
+Q: Implement the UML design in C#.
+
+Here's an example of how you might implement the UML design in C#:
+
+
+```
+using System;
+using System.Collections.Generic;
+
+abstract class Shape {
+    public abstract void Draw();
+    public abstract void Move(int x, int y);
+    public abstract void Resize(int x, int y);
+}
+
+class Rectangle : Shape {
+    private int x, y, width, height;
+
+    public Rectangle(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public override void Draw() {
+        // code to draw a rectangle
+    }
+
+    public override void Move(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public override void Resize(int x, int y) {
+        this.width = x;
+        this.height = y;
+    }
+}
+
+class Circle : Shape {
+    private int x, y, radius;
+
+    public Circle(int x, int y, int radius) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    public override void Draw() {
+         // code to draw a circle
+    }
+
+    public override void Move(int x, int y) {
+        this.x = x;
+this.y = y;
+}
+
+￼Copy code
+public override void Resize(int x, int y) {
+    this.radius = x;
+}
+}
+
+class Line : Shape {
+private int x1, y1, x2, y2;
+
+￼Copy code
+public Line(int x1, int y1, int x2, int y2) {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+}
+
+public override void Draw() {
+    // code to draw a line
+}
+
+public override void Move(int x, int y) {
+    this.x1 += x;
+    this.y1 += y;
+    this.x2 += x;
+    this.y2 += y;
+}
+
+public override void Resize(int x, int y) {
+    this.x2 = x1 + x;
+    this.y2 = y1 + y;
+}
+}
+
+class Polygon : Shape {
+private List<Tuple<int, int>> points;
+
+￼Copy code
+public Polygon(List<Tuple<int, int>> points) {
+    this.points = points;
+}
+
+public override void Draw() {
+    // code to draw a polygon
+}
+
+public override void Move(int x, int y) {
+    for (int i = 0; i < points.Count; i++) {
+        Tuple<int, int> point = points[i];
+        points[i] = Tuple.Create(point.Item1 +
+￼
+￼
+￼
+￼
+continue
+x, point.Item2 + y);
+}
+}
+
+￼Copy code
+public override void Resize(int x, int y) {
+    // Not applicable for a polygon
+}
+}
+
+class Text : Shape {
+private int x, y;
+private string text;
+
+￼Copy code
+public Text(int x, int y, string text) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+}
+
+public override void Draw() {
+    // code to draw text
+}
+
+public override void Move(int x, int y) {
+    this.x += x;
+    this.y += y;
+}
+
+public override void Resize(int x, int y) {
+    // Not applicable for text
+}
+}
+
+
+```
+
+
+This implementation uses an abstract `Shape` class as the base class for all the different shapes. Each shape class has `Draw()`, `Move(int x, int y)`, and `Resize(int x, int y)` methods that are overridden by the derived classes. The `Rectangle`, `Circle`, `Line`, `Polygon`, and `Text` classes are all derived from the `Shape` class and provide their own implementation for each of these methods.
+
+This is a simple example and in a real application, you would probably need to handle additional functionality, for example, adding shapes to a canvas class, handling input events, and so on.
