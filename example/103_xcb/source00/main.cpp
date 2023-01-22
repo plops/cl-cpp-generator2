@@ -1,5 +1,6 @@
+#include <cstdlib>
 #include <cstring>
-#include <iostream>
+#include <vector>
 #include <xcb/xcb.h>
 
 int main() {
@@ -9,15 +10,27 @@ int main() {
   }
   auto *screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
   auto win = xcb_generate_id(conn);
+  auto mask = ((XCB_CW_BACK_PIXEL) | (XCB_CW_EVENT_MASK));
+  auto values = std::vector<uint32_t>(
+      {screen->white_pixel,
+       ((XCB_EVENT_MASK_EXPOSURE) | (XCB_EVENT_MASK_KEY_PRESS) |
+        (XCB_EVENT_MASK_BUTTON_PRESS))});
   xcb_create_window(conn, XCB_COPY_FROM_PARENT, win, screen->root, 0, 0, 600,
-                    400, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual,
-                    0, nullptr);
-  xcb_gcontext_t gc = xcb_generate_id(conn);
-  xcb_create_gc(conn, gc, win, XCB_GC_FOREGROUND, &screen->black_pixel);
+                    400, 2, XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual,
+                    mask, values.data());
+  auto gc = xcb_generate_id(conn);
+  auto font = xcb_generate_id(conn);
+  const auto *fontName = "-*-terminal-medium-*-*-*-14-*-*-*-*-*-iso8859-*";
+  auto fontMask = ((XCB_GC_FOREGROUND) | (XCB_GC_BACKGROUND) | (XCB_GC_FONT));
+  auto fontValues =
+      std::vector<uint32_t>({screen->black_pixel, screen->white_pixel, font});
+  xcb_open_font(conn, font, strlen(fontName), fontName);
+  xcb_create_gc(conn, gc, win, fontMask, fontValues.data());
   xcb_map_window(conn, win);
   xcb_flush(conn);
 
-  while (true) {
+  auto done = true;
+  while (done) {
     auto *event = xcb_wait_for_event(conn);
     if ((event) == nullptr) {
       break;
