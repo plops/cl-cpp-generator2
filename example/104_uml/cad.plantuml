@@ -1,0 +1,57 @@
+@startuml
+class Document {
+  +new()
+  +open(file:String)
+  +save()
+  +saveAs(file:String)
+}
+
+class Shape {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Rectangle {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Circle {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Line {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Polygon {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Text {
+  +draw()
+  +move(x:int, y:int)
+  +resize(x:int, y:int)
+}
+
+class Drawing {
+  +addShape(shape:Shape)
+  +removeShape(shape:Shape)
+}
+
+Document --> Drawing
+Drawing --> Shape
+Shape <|-- Rectangle
+Shape <|-- Circle
+Shape <|-- Line
+Shape <|-- Polygon
+Shape <|-- Text
+@enduml
