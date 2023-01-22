@@ -134,3 +134,149 @@ Q:
 Write an implementation of this using modern C++. Use XCB and cairo.
 !
 Sorry, I can't complete the response.
+
+
+
+Write an implementation of this using modern C++. Use XCB and cairo.
+
+!
+Sorry, I can't complete the response.
+
+: public Shape {
+public:
+Circle(int x, int y, int radius) : x_(x), y_(y), radius_(radius) {}
+
+￼Copy code
+void Draw(cairo_t* cr) {
+    cairo_arc(cr, x_, y_, radius_, 0, 2 * M_PI);
+    cairo_stroke(cr);
+}
+
+void Move(int x, int y) {
+    x_ = x;
+    y_ = y;
+}
+
+void Resize(int x, int y) {
+    radius_ = x;
+}
+private:
+int x_, y_, radius_;
+};
+
+class Line : public Shape {
+public:
+Line(int x1, int y1, int x2, int y2) : x1_(x1), y1_(y1), x2_(x2), y2_(y2) {}
+
+￼Copy code
+void Draw(cairo_t* cr) {
+    cairo_move_to(cr, x1_, y1_);
+    cairo_line_to(cr, x2_, y2_);
+    cairo_stroke(cr);
+}
+
+void Move(int x, int y) {
+    x1_ += x;
+    y1_ += y;
+    x2_ += x;
+    y2_ += y;
+}
+
+void Resize(int x, int y) {
+    x2_ = x1_ + x;
+    y2_ = y1_ + y;
+}
+private:
+int x1_, y1_, x2_, y2_;
+};
+
+class Polygon : public Shape {
+public:
+Polygon(const std::vector<std::pair<int, int>>& points) : points_(points) {}
+
+￼Copy code
+void Draw(cairo_t* cr) {
+    cairo_move_to(cr, points_[0].first, points_[0].second);
+    for (unsigned int i = 1; i < points_.size(); ++i) {
+        cairo_line_to(cr, points_[i].first, points_[i].second);
+    }
+    cairo_close_path(cr);
+    cairo_stroke(cr);
+}
+
+void Move(int x, int y) {
+    for (auto& point : points_) {
+        point.first += x;
+        point.second += y;
+    }
+}
+
+void Resize(int x, int y) {
+    // Not applicable for a polygon
+}
+private:
+std::vector<std::pair<int, int>> points_;
+};
+
+class Text : public Shape {
+public:
+Text(int x, int y, const std::string& text) : x_(x), y_(y), text_(text) {}
+
+￼Copy code
+void Draw(cairo_t* cr) {
+    cairo_move_to(cr, x_, y_);
+    cairo_show_text(cr, text_.c_str());
+}
+
+void Move(int x, int y) {
+    x_ += x;
+    y_ += y;
+}
+
+void Resize(int x, int y) {
+￼
+￼
+￼
+￼
+Show code in modern C++ for the your UML. Only implement Circle. Use XCB and Cairo.
+Sure, here is an example of how you might implement the Circle class in modern C++ using XCB and Cairo:
+
+￼Copy code
+#include <xcb/xcb.h>
+#include <cairo/cairo.h>
+#include <cairo/cairo-xcb.h>
+
+class Circle {
+  public:
+    Circle(xcb_connection_t* conn, xcb_window_t window, int x, int y, int radius) 
+        : conn_(conn), window_(window), x_(x), y_(y), radius_(radius) {}
+
+    void Draw() {
+        xcb_flush(conn_);
+        cairo_surface_t* surface = cairo_xcb_surface_create(conn_, window_,
+                                                            XCB_VISUAL_TYPE_TRUE_COLOR, 800, 600);
+        cairo_t* cr = cairo_create(surface);
+        cairo_arc(cr, x_, y_, radius_, 0, 2 * M_PI);
+        cairo_set_source_rgb(cr, 1, 0, 0); //set the color of the circle
+        cairo_stroke(cr);
+        cairo_destroy(cr);
+        cairo_surface_destroy(surface);
+    }
+
+    void Move(int x, int y) {
+        x_ = x;
+        y_ = y;
+    }
+
+    void Resize(int x, int y) {
+        radius_ = x;
+    }
+
+  private:
+    xcb_connection_t* conn_;
+    xcb_window_t window_;
+    int x_, y_, radius_;
+};
+This implementation uses XCB to create a window and Cairo to draw on that window. The Circle class takes in a connection to an XCB server, a window, the x and y coordinates of the center of the circle, and the radius of the circle as its constructor arguments. The Draw() method is used to draw the circle on the window. It also has move and resize methods to move and resize the circle.
+
+It's worth noting that this is a simplified example, in a real implementation, you would probably have a class that handle the window creation and the connection to the XCB server, also you would have to handle the events and the input from the user.
