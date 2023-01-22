@@ -282,3 +282,57 @@ class Circle {
 This implementation uses XCB to create a window and Cairo to draw on that window. The Circle class takes in a connection to an XCB server, a window, the x and y coordinates of the center of the circle, and the radius of the circle as its constructor arguments. The Draw() method is used to draw the circle on the window. It also has move and resize methods to move and resize the circle.
 
 It's worth noting that this is a simplified example, in a real implementation, you would probably have a class that handle the window creation and the connection to the XCB server, also you would have to handle the events and the input from the user.
+
+
+Show modern C++ code that handles window creation and input events.
+Here's an example of how you might create a window and handle input events using the XCB library in modern C++:
+
+```
+#include <xcb/xcb.h>
+#include <iostream>
+
+int main() {
+    xcb_connection_t* conn = xcb_connect(nullptr, nullptr);
+    xcb_screen_t* screen = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
+    xcb_window_t window = xcb_generate_id(conn);
+
+    uint32_t values[] = { screen->white_pixel, XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION };
+    xcb_create_window(conn, XCB_COPY_FROM_PARENT, window, screen->root, 0, 0, 800, 600, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual, XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK, values);
+    xcb_map_window(conn, window);
+    xcb_flush(conn);
+
+    while (true) {
+        xcb_generic_event_t* event = xcb_wait_for_event(conn);
+        if (event == nullptr) {
+            break;
+        }
+
+        switch (event->response_type & ~0x80) {
+        case XCB_EXPOSE:
+            // handle expose event here
+            break;
+        case XCB_BUTTON_PRESS:
+            // handle button press event here
+            break;
+        case XCB_BUTTON_RELEASE:
+            // handle button release event here
+            break;
+        case XCB_MOTION_NOTIFY:
+            // handle pointer motion event here
+            break;
+        }
+
+        free(event);
+    }
+
+    xcb_disconnect(conn);
+    return 0;
+}
+```
+This code creates a connection to the X server using xcb_connect, gets the default screen using xcb_setup_roots_iterator, and generates a new window ID using xcb_generate_id. It then creates a window using xcb_create_window, sets the background color and event mask, and maps the window to the screen using xcb_map_window. The xcb_flush function is used to send the requests to the server.
+
+A while loop is used to handle events, `xcb_wait_for_eventis used to wait for the next event and theswitchstatement is used to handle different types of events based on their response type. In this example, it's handling theXCB_EXPOSE, XCB_BUTTON_PRESS, XCB_BUTTON_RELEASEandXCB_MOTION_NOTIFY` events.
+
+In the XCB_EXPOSE case, you would probably want to redraw any shapes or other content that was obscured by another window. In the XCB_BUTTON_PRESS and XCB_BUTTON_RELEASE cases, you would probably want to handle user input such as clicking and dragging. In the XCB_MOTION_NOTIFY case, you would probably want to handle pointer motion events such as moving the mouse over the window.
+
+It's important to note that this is a simplified example and in a real application, you would need to handle more events and also properly handle errors and disconnections.
