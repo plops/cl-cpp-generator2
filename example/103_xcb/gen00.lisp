@@ -63,15 +63,31 @@
 	     (xcb_create_gc conn gc win fontMask (fontValues.data))
              (xcb_map_window conn win)
              (xcb_flush conn)))
-	 (let ((done true))
+	 (let ((done true)
+	       (helloString (string "Hello")))
 	  (while done
 		 (let ((*event (xcb_wait_for_event conn)))
 		   (unless event
 		     break)
-		   (case (and (-> event response_type)
-			      (bitwise-not 0x80))
+		   (case (-> event response_type)
+		     #+nil (and (-> event response_type)
+		      (bitwise-not 0x80)
+		      )
 		     (XCB_EXPOSE
-		      (xcb_clear_area conn 0 win 0 0 0 0))
+		      (xcb_clear_area conn 0 win 0 0 0 0)
+		      (xcb_image_text_8 conn (strlen helloString) win
+					gc 50 50 helloString)
+		      (xcb_flush conn))
+		     (XCB_MAPPING_NOTIFY
+		      )
+		     (XCB_BUTTON_PRESS
+		      (let ((ev (reinterpret_cast<xcb_button_press_event_t*> event))
+			    (x (-> ev
+				   event_x))
+			    (y (-> ev
+				   event_y)))
+			
+			(xcb_flush conn)))
 		     (XCB_KEY_PRESS
 		      (let ( ;(*key (reinterpret_cast<xcb_key_press_event_t*> event))
 			    (geom_c (xcb_get_geometry conn win))

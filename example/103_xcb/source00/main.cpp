@@ -30,14 +30,28 @@ int main() {
   xcb_flush(conn);
 
   auto done = true;
+  const auto *helloString = "Hello";
   while (done) {
     auto *event = xcb_wait_for_event(conn);
     if ((event) == nullptr) {
       break;
     }
-    switch (((event->response_type) & (~(0x80)))) {
+    switch (event->response_type) {
     case XCB_EXPOSE: {
       xcb_clear_area(conn, 0, win, 0, 0, 0, 0);
+      xcb_image_text_8(conn, strlen(helloString), win, gc, 50, 50, helloString);
+      xcb_flush(conn);
+      break;
+    }
+    case XCB_MAPPING_NOTIFY: {
+      break;
+    }
+    case XCB_BUTTON_PRESS: {
+      auto *ev = reinterpret_cast<xcb_button_press_event_t *>(event);
+      auto x = ev->event_x;
+      auto y = ev->event_y;
+      xcb_flush(conn);
+
       break;
     }
     case XCB_KEY_PRESS: {
