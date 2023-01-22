@@ -111,7 +111,7 @@
 				   (let ((*msg (xcb_log_get_message conn)))
 				     (unless msg
 				       return)
-				     (<< std--cout
+			 	     (<< std--cout
 					 (xcb_log_get_level_label msg->level)
 					 (string " ")
 					 msg->message
