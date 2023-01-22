@@ -1,3 +1,8 @@
+
+￼￼
+What is levenberg-markward
+Levenberg-Marquardt is an optimization algorithm used to minimize the sum of the squares of nonlinear functions. It is a combination of the gradient descent method and the Newton-Raphson method, and is typically used in nonlinear least squares problems in which the goal is to find the best fit of a set of data points. It is particularly useful for problems in which the function to be minimized has many local minima.
+
 Does it work for multiple dimensions?
 Yes, Levenberg-Marquardt can be used to optimize multidimensional nonlinear functions. The algorithm can handle functions with many variables, and can be used to find the optimal values of those variables that minimize the sum of the squares of the nonlinear functions. The algorithm can be applied to a wide range of problems, including curve fitting, data fitting, and parameter estimation, among others. The implementation of Levenberg-Marquardt algorithm is usually done in programming languages like C, C++, Matlab, Python etc.
 
