@@ -62,6 +62,26 @@
 	     (<< std--cout
 		 (clang_getCString code)
 		 std--endl))
+	   (clang_visitChildren
+	    (clang_getTranslationUnitCursor tu)
+	    (lambda (c parent data)
+	      (declare (type CXCursor c parent)
+		       (type CXClientData data)
+		       )
+	      (when (== CXCursor_ParenExpr
+			(clang_getCursorKind c))
+		(let ((child (clang_getChild c)))
+		  (when (clang_isExpression
+			 (clang_getCursorKind child))
+		    (clang_replaceChildRange parent
+					     c
+					     child
+					     (clang_getNextSibling child)
+					     data))
+		  ))
+	      (return CXChildVisit_Recurse))
+	    nullptr)
+	   
 	   (clang_disposeString code)
 	   (clang_disposeTranslationUnit tu)
 	   (clang_disposeIndex index)
