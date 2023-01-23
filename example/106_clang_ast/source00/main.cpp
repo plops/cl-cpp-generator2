@@ -18,19 +18,6 @@ int main(int argc, char **argv) {
   }
   auto code = clang_getTranslationUnitSpelling(tu);
   std::cout << clang_getCString(code) << std::endl;
-  clang_visitChildren(
-      clang_getTranslationUnitCursor(tu),
-      [](CXCursor c, CXCursor parent, CXClientData data) {
-        if (CXCursor_ParenExpr == clang_getCursorKind(c)) {
-          auto child = clang_getChild(c);
-          if (clang_isExpression(clang_getCursorKind(child))) {
-            clang_replaceChildRange(parent, c, child,
-                                    clang_getNextSibling(child), data);
-          }
-        }
-        return CXChildVisit_Recurse;
-      },
-      nullptr);
   clang_disposeString(code);
   clang_disposeTranslationUnit(tu);
   clang_disposeIndex(index);

@@ -97,3 +97,55 @@ This function takes a CXTranslationUnit as an argument, which is the Clang objec
 It's important to note that this is a simplified example that only handles a specific case of unnecessary parenthesis, it may not cover all possible cases and it may not be safe to use it on all cases.
 
 It's also important to test your code before and after the modification to ensure that the semantics of the code were not changed. And also keep in mind that this approach may be complex and error-prone, and it could also cause bugs or unexpected behavior if not done correctly.
+
+
+Q:
+In the first program you used the C interface. Please use the C++ interface.
+￼
+Sure, here is an example of using the Clang C++ API to parse a C++ file and then regenerate the code from the Abstract Syntax Tree (AST), using the C++ interface:
+
+```
+￼Copy code
+#include <iostream>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/AST/ASTContext.h>
+#include <clang/AST/ASTConsumer.h>
+#include <clang/AST/RecursiveASTVisitor.h>
+#include <clang/Frontend/TextDiagnosticPrinter.h>
+#include <clang/Frontend/FrontendActions.h>
+#include <clang/Tooling/CommonOptionsParser.h>
+#include <clang/Tooling/Tooling.h>
+
+class ASTPrinter : public clang::ASTConsumer {
+public:
+  virtual bool HandleTopLevelDecl(clang::DeclGroupRef DG) {
+    for (auto& D : DG) {
+        D->dump();
+    }
+    return true;
+  }
+};
+
+class ASTAction : public clang::ASTFrontendAction {
+public:
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& CI, llvm::StringRef file) {
+    return std::unique_ptr<clang::ASTConsumer>(new ASTPrinter());
+  }
+};
+
+int main(int argc, char **argv) {
+    clang::tooling::CommonOptionsParser op(argc, argv, "AST dump tool");
+    clang::tooling::ClangTool Tool(op.getCompilations(), op.getSourcePathList());
+    return Tool.run(clang::tooling::newFrontendActionFactory<ASTAction>().get());
+}
+```
+
+This example uses the Clang C++ API to parse a C++ file specified on the command line and then prints the AST using the dump() method. The main function creates a ClangTool object, which is used to run the front-end action, in this case, the ASTAction class, which is responsible for creating the ASTConsumer that will print the AST.
+
+The ASTParser class inherits from ASTConsumer and overrides the HandleTopLevelDecl method, which is called by the Clang front-end for each top-level declaration in the translation unit. In this method, we are using the dump() method to print the AST.
+
+It's important to note that this example is not regenerating the code from the AST, it's just printing the AST, if you want to regenerate the code from the AST, you will need to traverse the AST and generate the corresponding source code.
+
+This example uses the Clang tooling library, which provides a convenient way to run the Clang front-end as a separate tool, it also provides a convenient way to parse command-line options.
+
+Also,

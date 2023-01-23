@@ -62,7 +62,7 @@
 	     (<< std--cout
 		 (clang_getCString code)
 		 std--endl))
-	   (clang_visitChildren
+	   #+nil(clang_visitChildren
 	    (clang_getTranslationUnitCursor tu)
 	    (lambda (c parent data)
 	      (declare (type CXCursor c parent)
