@@ -23,5 +23,35 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
+       (unless (== 2 argc)
+	 (<< std--cerr
+	     (string "usage: ")
+	     (aref argv 0)
+	     (string " <source file>")
+	     std--endl)
+	 (return 1))
+       (let ((index (clang_createIndex 0 0))
+	     (tu (clang_parseTranslationUnit index
+					     (aref argv 1)
+					     nullptr
+					     0
+					     nullptr
+					     0
+					     CXTranslationUnit_None)))
+	 (unless tu
+	   (<< std--cerr
+	     (string "failed to parse ")
+	     (aref argv 1)
+	     std--endl)
+	   )
+
+	 (let ((code (clang_getTranslationUnitSpelling tu)))
+	   (<< std--cout
+	       (clang_getCString code)
+	       std--endl))
+	 (clang_disposeString code)
+	 (clang_disposeTranslationUnit tu)
+	 (clang_disposeIndex index)
+	 (return 0))
        ))))
 
