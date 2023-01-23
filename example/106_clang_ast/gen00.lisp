@@ -17,7 +17,8 @@
    `(do0
      
      (include<> iostream
-		clang-c/Index.h)
+		clang-c/Index.h
+		vector)
      
      (defun main (argc argv)
        (declare (values int)
@@ -30,28 +31,40 @@
 	     (string " <source file>")
 	     std--endl)
 	 (return 1))
-       (let ((index (clang_createIndex 0 0))
-	     (tu (clang_parseTranslationUnit index
-					     (aref argv 1)
-					     nullptr
-					     0
-					     nullptr
-					     0
-					     CXTranslationUnit_None)))
-	 (unless tu
-	   (<< std--cerr
-	     (string "failed to parse ")
-	     (aref argv 1)
-	     std--endl)
-	   )
+       (let (#+nil (unsaved_file (CXUnsavedFile)))
+	 #+nil (setf unsaved_file.Filename (string "-I/usr/lib/llvm-11/include/"))
+	 (let ((cmdline (string "-I/usr/lib/llvm-11/include/"))
+	       (cmdlineArgs ("std::vector<const char*>"))
+	       (index (clang_createIndex 0 0))
+	     
+	       #+nil (unsaved_files (std--vector<CXUnsavedFile>
+			       (curly unsaved_file)))
+	       
+	       
+	       )
+	   (cmdlineArgs.push_back cmdline)
+	   ;; clang_parseTranslationUnit (CXIndex CIdx, const char *source_filename, const char *const *command_line_args, int num_command_line_args, struct CXUnsavedFile *unsaved_files, unsigned num_unsaved_files, unsigned options)
+	   (let ((tu (clang_parseTranslationUnit index ;; idx
+						 (aref argv 1) ;; source_filename
+						 (cmdlineArgs.data)
+						 1
+						 nullptr
+						 0
+						 CXTranslationUnit_None)))
+	     (unless tu
+	       (<< std--cerr
+		   (string "failed to parse ")
+		   (aref argv 1)
+		   std--endl)
+	       ))
 
-	 (let ((code (clang_getTranslationUnitSpelling tu)))
-	   (<< std--cout
-	       (clang_getCString code)
-	       std--endl))
-	 (clang_disposeString code)
-	 (clang_disposeTranslationUnit tu)
-	 (clang_disposeIndex index)
-	 (return 0))
+	   (let ((code (clang_getTranslationUnitSpelling tu)))
+	     (<< std--cout
+		 (clang_getCString code)
+		 std--endl))
+	   (clang_disposeString code)
+	   (clang_disposeTranslationUnit tu)
+	   (clang_disposeIndex index)
+	   (return 0)))
        ))))
 
