@@ -24,4 +24,9 @@ public:
   }
 };
 
-int main(int argc, char **argv) {}
+int main(int argc, const char **argv) {
+  auto op = clang::tooling::CommonOptionsParser(argc, argv, "ast dump tool");
+  auto tool =
+      clang::tooling::ClangTool(op.getCompilations(), op.getSourcePathList());
+  return tool.run(clang::tooling::newFrontendActionFactory<ASTAction>().get());
+}

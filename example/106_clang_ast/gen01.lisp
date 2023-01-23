@@ -53,6 +53,16 @@
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
-		(type char** argv))
+		(type "const char**" argv))
+       (let ((op (clang--tooling--CommonOptionsParser  argc argv
+						       (string "ast dump tool")
+						       #+nil (llvm--cl--OptionCategory
+							      (string "ast dump tool"))
+		  ))
+	     (tool (clang--tooling--ClangTool (op.getCompilations)
+					      (op.getSourcePathList))))
+	 (return (tool.run
+		  (dot (clang--tooling--newFrontendActionFactory<ASTAction>)
+		       (get)))))
 ))))
 
