@@ -341,3 +341,70 @@ The Hessian matrix is computed by multiplying the Jacobian by its transpose, the
 With these two matrices, you can implement your own version of the Levenberg-Marquardt algorithm, updating x using the gradient and hessian, and checking for convergence at each iteration.
 
 It's worth noting that the example above is a simplified version of the algorithm, in a real case scenario, you might need to handle some additional cases such as singular matrices, and also take care of the parameter
+
+Q:
+
+￼￼
+Show modern C++ code for levenberg-marquard.
+￼
+Here is an example of modern C++ code for the Levenberg-Marquardt algorithm:
+```
+￼Copy code
+#include <iostream>
+#include <Eigen/Dense>
+
+using namespace std;
+using namespace Eigen;
+
+// Define your objective function here
+double objective(const VectorXd &x) {
+    double result = /* some function of x */;
+    return result;
+}
+
+// Define the gradient of your objective function here
+VectorXd gradient(const VectorXd &x) {
+    VectorXd result = /* gradient of some function of x */;
+    return result;
+}
+
+int main() {
+    // Initialize variables
+    double lambda = 0.1;
+    VectorXd x(2);
+    x << 1, 1;
+    double tolerance = 1e-6;
+    int maxIterations = 100;
+
+    // Perform the Levenberg-Marquardt algorithm
+    for (int i = 0; i < maxIterations; i++) {
+        // Calculate the gradient and Hessian
+        VectorXd grad = gradient(x);
+        MatrixXd hessian = /* Hessian of some function of x */;
+
+        // Add damping term to the Hessian
+        hessian += (lambda * MatrixXd::Identity(x.size(), x.size()));
+
+        // Solve for the step
+        VectorXd step = -hessian.ldlt().solve(grad);
+
+        // Update the variables
+        x += step;
+
+        // Check for convergence
+        double change = step.norm();
+        if (change < tolerance) {
+            break;
+        }
+
+        // Update lambda
+        lambda *= /* some factor */;
+    }
+
+    // Print the result
+    cout << "Result: " << x << endl;
+
+    return 0;
+}
+```
+Note that this is a simple example and the objective function and gradient, Hessian may need to be defined based on the problem at hand. Also, the damping factor, tolerance, and maxIterations can be adjusted as needed.
