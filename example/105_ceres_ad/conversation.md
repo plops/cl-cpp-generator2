@@ -408,3 +408,84 @@ int main() {
 }
 ```
 Note that this is a simple example and the objective function and gradient, Hessian may need to be defined based on the problem at hand. Also, the damping factor, tolerance, and maxIterations can be adjusted as needed.
+
+
+
+Q:
+
+Write  code for the objective, gradient and hessian.
+Here is an example of how the objective, gradient, and Hessian functions can be defined for a simple least squares problem:
+
+```
+￼Copy code
+#include <iostream>
+#include <Eigen/Dense>
+
+using namespace std;
+using namespace Eigen;
+
+// Define the objective function
+double objective(const VectorXd &x) {
+    double result = 0;
+
+    // Define your data points here
+    VectorXd y(3);
+    y << 1, 2, 3;
+
+    // Define your model function here
+    VectorXd f(3);
+    f = x(0) + x(1)*y;
+
+    // Calculate the least squares error
+    VectorXd error = y - f;
+    result = error.squaredNorm();
+
+    return result;
+}
+
+// Define the gradient of the objective function
+VectorXd gradient(const VectorXd &x) {
+    VectorXd result(2);
+
+    // Define your data points here
+    VectorXd y(3);
+    y << 1, 2, 3;
+
+    // Define your model function here
+    VectorXd f(3);
+    f = x(0) + x(1)*y;
+
+    // Calculate the error
+    VectorXd error = y - f;
+
+    // Calculate the gradient
+    result(0) = -2*error.sum();
+    result(1) = -2*(error.transpose()*y).sum();
+
+    return result;
+}
+
+// Define the Hessian of the objective function
+MatrixXd hessian(const VectorXd &x) {
+    MatrixXd result(2, 2);
+
+    // Define your data points here
+    VectorXd y(3);
+    y << 1, 2, 3;
+
+    // Define your model function here
+    VectorXd f(3);
+    f = x(0) + x(1)*y;
+
+    // Calculate the Hessian
+    result(0,0) = 2*y.size();
+    result(0,1) = result(1,0) = 2*y.sum();
+    result(1,1) = 2*(y.array()*y.array()).sum();
+
+    return result;
+}
+```
+
+In this example, the objective function is defined as the sum of the squared errors between the data points and the model function. The gradient of the objective function is calculated as the negative of the partial derivatives of the objective function with respect to the variables. The Hessian is calculated as the matrix of second derivatives of the objective function with respect to the variables.
+
+You can use these functions in the main function to perform the Levenberg-Marquardt algorithm as described in the previous example. This is just an example of a simple problem, depending on your problem the objective, gradient and Hessian functions may need to be defined differently.
