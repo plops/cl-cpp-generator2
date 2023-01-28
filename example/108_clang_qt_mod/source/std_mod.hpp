@@ -1,3 +1,7 @@
+#include <QDoubleValidator>
+#include <QGroupBox>
+#include <QMainWindow>
+
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
