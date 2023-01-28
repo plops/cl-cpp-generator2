@@ -34,9 +34,9 @@ int main(int argc, char **argv) {
   //spdlog::info("start program  argc='{}'", argc);
   auto app = QApplication(argc, argv);
   auto window = QMainWindow();
-  window.setWindowTitle("Temperature converter ");
+  window.setWindowTitle("Temperature converter");
   auto *mainLayout = new QVBoxLayout;
-  auto *inputGroupBox = new QGroupBox("Input");
+  auto *inputGroupBox = new QGroupBox("Input"); 
   auto *inputLayout = new QHBoxLayout;
   auto *inputLineEdit = new QLineEdit;
   auto *inputValidator = new QDoubleValidator;
