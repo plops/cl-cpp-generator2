@@ -2,25 +2,32 @@
 #include <QGroupBox>
 #include <QMainWindow>
 
-// #include <QAction>
 #include <QApplication>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QVBoxLayout>
+
+// #include <QAction>
+
 // #include <QButtonGroup>
 // #include <QCheckBox>
 // #include <QColor>
-#include <QComboBox>
+
 // #include <QDir>
 // #include <QDrag>
 // #include <QFileDialog>
 // #include <QFrame>
-#include <QHBoxLayout>
+
 // #include <QHeaderView>
 // #include <QLabel>
-#include <QLineEdit>
+
 // #include <QMap>
 // #include <QMimeData>
 // #include <QMouseEvent>
 // #include <QPointer>
-#include <QPushButton>
+
 // #include <QRadioButton>
 // #include <QSpacerItem>
 // #include <QStackedWidget>
@@ -30,7 +37,7 @@
 // #include <QTimer>
 // #include <QToolButton>
 // #include <QToolTip>
-#include <QVBoxLayout>
+
 // #include <QValidator>
 // #include <QVariant>
 // #include <QVector>
@@ -53,12 +60,14 @@
 // #include <mutex>
 // #include <numeric>
 // #include <set>
-//#include <spdlog/spdlog.h>
+
 // #include <string>
 // #include <thread>
 // #include <type_traits>
 // #include <unordered_map>
 // #include <vector>
 
-// 52M Jan 28 14:48 std_mod.pcm
+//#include <spdlog/spdlog.h> // slows module down
+
+// 22M  std_mod.pcm
 
