@@ -1,5 +1,5 @@
-//import std_mod;
-#include "std_mod.hpp"
+import std_mod;
+//#include "std_mod.hpp"
 
 void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
                         const QString &inputUnit, double inputTemp) {
@@ -31,7 +31,7 @@ void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
 }
 int main(int argc, char **argv) {
   (void)argv;
-  spdlog::info("start  argc='{}'", argc);
+  spdlog::info("start program  argc='{}'", argc);
   auto app = QApplication(argc, argv);
   auto window = QMainWindow();
   window.setWindowTitle("Temperature converter");
