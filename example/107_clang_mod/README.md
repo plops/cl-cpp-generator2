@@ -1,15 +1,15 @@
 
-* Investigate performance of using clang with C++20 modules
+# Investigate performance of using clang with C++20 modules
 
 - try to include standard library using modules
 
 
-** References
+## References
 - https://stackoverflow.com/questions/66411157/import-std-lib-as-modules-with-clang
 - https://clang.llvm.org/docs/PCHInternals.html
 
 
-* Conventional clang call
+## Conventional clang call
 
 - for comparison source00/use.cpp shows conventional include:
 
@@ -22,7 +22,7 @@ sys	0m0.098s
 ```
 - it takes 1sec to include iostream and vector
 
-* Conventional clang call with precompiled header
+## Conventional clang call with precompiled header
 
 - code is in source01
 
@@ -52,7 +52,7 @@ I don't think clang uses the gch file. Adding -H to the command in
 compile1.sh doesn't show it. I don't know how to fix this right now.
 
 
-* C++20 modules
+## C++20 modules
 - code is in source02
 
 - prepare the std_mod.pcm file (this only needs to be executed once and repeated whenever the headers change):  
@@ -76,6 +76,6 @@ sys	0m0.052s
 
 ```
 
-* Conclusion
+# Conclusion
 
 - clang compiles in 0.25sec instead of >1sec when a module is used.
