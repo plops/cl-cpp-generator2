@@ -31,10 +31,10 @@ void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
 }
 int main(int argc, char **argv) {
   (void)argv;
-  spdlog::info("start program  argc='{}'", argc);
+  //spdlog::info("start program  argc='{}'", argc);
   auto app = QApplication(argc, argv);
   auto window = QMainWindow();
-  window.setWindowTitle("Temperature converter");
+  window.setWindowTitle("Temperature converter ");
   auto *mainLayout = new QVBoxLayout;
   auto *inputGroupBox = new QGroupBox("Input");
   auto *inputLayout = new QHBoxLayout;
@@ -74,6 +74,6 @@ int main(int argc, char **argv) {
   centralWidget->setLayout(mainLayout);
   window.setCentralWidget(centralWidget);
   window.show();
-  spdlog::info("starting app");
+  //spdlog::info("starting app");
   return app.exec();
 }
