@@ -25,3 +25,8 @@ pkg-config Qt5Gui Qt5Widgets --cflags --libs
 
 
 ```
+
+- compile2.sh can compile and link the qt example program within 1sec.
+
+- it is important not to use spdlog. if this header is present in the
+  module every recompilation takes >9sec
