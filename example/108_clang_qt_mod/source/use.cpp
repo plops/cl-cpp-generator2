@@ -1,4 +1,5 @@
-import std_mod;
+//import std_mod;
+#include "std_mod.hpp"
 
 void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
                         const QString &inputUnit, double inputTemp) {
