@@ -64,22 +64,43 @@
 
 			;argparse
 		  ))
+
+	(setf cmd (list ,@(mapcar (lambda (x)
+				    `(string ,x))
+				  `("clang++"
+				    "-###" "main.cpp"
+				    "-c" "-std=c++20" "-ggdb" "-O1"))))
+	(print (dot (string "calling: {}")
+		    (format (dot (string " ")
+			  (join cmd)))))
 	(setf out
-	 (subprocess.run
-	 
-	  (list ,@(mapcar (lambda (x)
-			    `(string ,x))
-			  `("clang++"
-			    "-###" "main.cpp"
-			    "-c" "-std=c++20" "-ggdb" "-O1")))
-	  :capture_output True))
+	      (subprocess.run
+	       
+	       cmd
+	       :capture_output True))
+
+
+	;; i am only interested in line after (in-process):
+	
+	;; clang version 15.0.7 (Fedora 15.0.7-1.fc37)
+	;; Target: x86_64-redhat-linux-gnu
+	;; Thread model: posix
+	;; InstalledDir: /usr/bin
+	;;  (in-process)
+	;;  "/usr/bin/clang-15" "-cc1" "-triple"
+ 
+	
 	(setf count 0
-	      start 0)
-	(for (line (out.split (string "\\n")))
-	     (when (line.contains (string "(in-process)"))
-	       (setf start (+ count 1)))
-	     (when (<= count start)
-	       (print (dot (string "{}: {}")
+	      start -1)
+	(for (line (dot out
+			stderr
+			(decode (string "utf-8"))
+			(split (string "\\n"))))
+	     (when (in (string "(in-process)")
+		       line )
+	       (setf start count))
+	     (when (and (< 0 start) (== (+ 1 start) count))
+	       (print (dot (string "{}: '{}'")
 			   (format count line))))
 	     (incf count))
 	
@@ -87,3 +108,10 @@
        )
      )))
 
+
+
+-main-file-name
+  main.cpp
+  -o
+  main.o
+  source00/main.cpp
