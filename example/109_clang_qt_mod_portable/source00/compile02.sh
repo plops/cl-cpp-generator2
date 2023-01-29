@@ -1,0 +1,1 @@
+clang++ -std=c++20 -ggdb -O1 main.cpp -o main `pkg-config Qt5Gui Qt5Widgets --cflags --libs`
