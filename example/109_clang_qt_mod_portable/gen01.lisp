@@ -65,20 +65,40 @@
 			;argparse
 		  ))
 
-	(setf cmd (list ,@(mapcar (lambda (x)
-				    `(string ,x))
-				  `("clang++"
-				    "-###" "main.cpp"
-				    "-c" "-std=c++20" "-ggdb" "-O1"))))
-	(print (dot (string "calling: {}")
+	(setf qtflags (subprocess.run
+		       (list (string "pkg-config")
+			     (string "Qt5Gui")
+			     (string "Qt5Widgets")
+			     (string "--cflags"))
+		       :capture_output True))
+	
+	(setf cflags (list ,@(mapcar (lambda (x)
+				       `(string ,x))
+				     `("-std=c++20" "-ggdb" "-O1" 
+						    )))
+	      )
+	(setf cmd (+ (list ,@(mapcar (lambda (x)
+				     `(string ,x))
+				   `("clang++"
+				     "-###" "main.cpp"
+				     "-c" )))
+		     cflags
+		     (dot qtflags
+			     stdout
+			     (decode (string "utf-8"))
+			     (split (string " ")))))
+	(print (dot (string "calling : subprocess.run {}")
 		    (format (dot (string " ")
 			  (join cmd)))))
 	(setf out
 	      (subprocess.run
 	       
 	       cmd
-	       :capture_output True))
+	       :capture_output True
+	       ;:shell True
+	       ))
 
+	
 
 	;; i am only interested in line after (in-process):
 	
@@ -115,8 +135,17 @@
 			    (string ""))
 		   (replace (string "\\\"main.cpp\\\"")
 			    (string ""))))
+	#+nil
 	(print clang_line1)
-	
+	(with (as (open (string "compile01.sh") (string "w"))
+		  f)
+	      (f.write (+ clang_line1 (string " module.modulemap -o std_mod.pcm -emit-module -fmodules -fmodule-name=std_mod "))))
+	(with (as (open (string "compile02.sh") (string "w"))
+		  f)
+	      (f.write (dot (string "clang++ {} main.cpp -o main `pkg-config Qt5Gui Qt5Widgets --cflags --libs`")
+			    (format (dot (string " ")
+					 (join
+					  cflags))))))
 	)
        )
      )))

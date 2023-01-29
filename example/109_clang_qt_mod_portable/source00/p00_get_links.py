@@ -1,6 +1,8 @@
 import subprocess
-cmd=["clang++", "-###", "main.cpp", "-c", "-std=c++20", "-ggdb", "-O1"]
-print("calling: {}".format(" ".join(cmd)))
+qtflags=subprocess.run(["pkg-config", "Qt5Gui", "Qt5Widgets", "--cflags"], capture_output=True)
+cflags=["-std=c++20", "-ggdb", "-O1"]
+cmd=((["clang++", "-###", "main.cpp", "-c"])+(cflags)+(qtflags.stdout.decode("utf-8").split(" ")))
+print("calling : subprocess.run {}".format(" ".join(cmd)))
 out=subprocess.run(cmd, capture_output=True)
 count=0
 start=-1
@@ -12,4 +14,7 @@ for line in out.stderr.decode("utf-8").split("\n"):
         clang_line0=line
     count += 1
 clang_line1=clang_line0.replace("\"-o\" \"main.o\"", "").replace("\"-main-file-name\" \"main.cpp\"", "").replace("\"main.cpp\"", "")
-print(clang_line1)
+with open("compile01.sh", "w") as f:
+    f.write(((clang_line1)+(" module.modulemap -o std_mod.pcm -emit-module -fmodules -fmodule-name=std_mod ")))
+with open("compile02.sh", "w") as f:
+    f.write("clang++ {} main.cpp -o main `pkg-config Qt5Gui Qt5Widgets --cflags --libs`".format(" ".join(cflags)))

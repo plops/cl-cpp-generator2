@@ -246,36 +246,7 @@
 	      
 					;(window.setLayout mainLayout)
 	      (window.show)
-	      (return (app.exec))))))))
-  (let ((s
-	 (with-output-to-string (s)
-	   (sb-ext:run-program "/usr/bin/clang++"
-			       `("-###" "source00/main.cpp"
-					"-c" "-std=c++20" "-ggdb" "-O1")
-			       :output s
-			       )))
-	(lines (cl-ppcre:split "\\n" s)))
-
-    ;; run clang++ to get arguments for clang -cc1. the output of above command looks like this:
-
-    ;; lang version 15.0.7 (Fedora 15.0.7-1.fc37)
-    ;; Target: x86_64-redhat-linux-gnu
-    ;; Thread model: posix
-    ;; InstalledDir: /usr/bin
-    ;;  (in-process)
-    ;;  "/usr/bin/clang-15" "-cc1" "-triple" ...
-    
-    ;; some of the options are specific to this particular call and
-    ;; need to be removed
-    
-    )
-  
-  )
+	      (return (app.exec))))))))  )
 
 
--main-file-name
-  main.cpp
-  -o
-  main.o
-  source00/main.cpp
   
