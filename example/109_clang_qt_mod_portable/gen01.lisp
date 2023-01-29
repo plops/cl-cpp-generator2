@@ -91,7 +91,8 @@
  
 	
 	(setf count 0
-	      start -1)
+	      start -1
+	      clang_line0 None)
 	(for (line (dot out
 			stderr
 			(decode (string "utf-8"))
@@ -100,9 +101,21 @@
 		       line )
 	       (setf start count))
 	     (when (and (< 0 start) (== (+ 1 start) count))
+	       (setf clang_line0 line)
+	       #+nil
 	       (print (dot (string "{}: '{}'")
 			   (format count line))))
 	     (incf count))
+
+	(setf clang_line1
+	      (dot clang_line0
+		   (replace (string "\\\"-o\\\" \\\"main.o\\\"")
+			    (string ""))
+		   (replace (string "\\\"-main-file-name\\\" \\\"main.cpp\\\"")
+			    (string ""))
+		   (replace (string "\\\"main.cpp\\\"")
+			    (string ""))))
+	(print clang_line1)
 	
 	)
        )
@@ -110,8 +123,3 @@
 
 
 
--main-file-name
-  main.cpp
-  -o
-  main.o
-  source00/main.cpp
