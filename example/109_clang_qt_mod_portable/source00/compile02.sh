@@ -1,1 +1,2 @@
-clang++ -std=c++20 -ggdb -O1 main.cpp -o main `pkg-config Qt5Gui Qt5Widgets --cflags --libs`
+time clang++ -std=c++20 -ggdb -O1 -I/usr/include/qt5/QtGui -I/usr/include/qt5 -I/usr/include/qt5/QtCore -DQT_WIDGETS_LIB -I/usr/include/qt5/QtWidgets -DQT_GUI_LIB -DQT_CORE_LIB -fmodule-file=std_mod.pcm main.cpp -c -o main.o
+time clang++ -std=c++20 -ggdb -O1 -I/usr/include/qt5/QtGui -I/usr/include/qt5 -I/usr/include/qt5/QtCore -DQT_WIDGETS_LIB -I/usr/include/qt5/QtWidgets -DQT_GUI_LIB -DQT_CORE_LIB main.o -o main  `pkg-config Qt5Gui Qt5Widgets --libs`

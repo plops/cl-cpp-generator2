@@ -1,3 +1,4 @@
+import std_mod;
 
 void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
                         const QString &inputUnit, double inputTemp) {
@@ -11,7 +12,7 @@ void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
 
     } else {
       if ("Kelvin" == inputUnit) {
-        outputTemp = ((inputTemp) - ((273.150000000000000000000000000)));
+        outputTemp = ((inputTemp) - ((273.150f)));
       }
     }
   }
@@ -25,7 +26,7 @@ void convertTemperature(QLineEdit *outputLineEdit, QComboBox *outputComboBox,
 
     } else {
       if ("Kelvin" == inputUnit) {
-        outputTemp = (outputTemp + 273.15d0);
+        outputTemp = (outputTemp + 273.15);
       }
     }
   }

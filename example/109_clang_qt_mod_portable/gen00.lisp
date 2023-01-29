@@ -116,6 +116,7 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
+     "import std_mod;"
      (defun convertTemperature (outputLineEdit
 				outputComboBox
 				inputUnit
@@ -137,7 +138,7 @@
 	    (if (== (string "Kelvin")
 		inputUnit)
 	    (do0
-	     (setf outputTemp (- inputTemp 273.15d0)))
+	     (setf outputTemp (- inputTemp 273.15)))
 	    )))
 	(let ((outputUnit (outputComboBox->currentText)))
 	  (if (== (string "Celsius")
@@ -151,7 +152,7 @@
 	    (if (== (string "Kelvin")
 		inputUnit)
 	    (do0
-	     (setf outputTemp (+ outputTemp 273.15d0)))
+	     (setf outputTemp (+ outputTemp 273.15)))
 	    )))
 	  )
 	(-> outputLineEdit
