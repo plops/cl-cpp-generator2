@@ -58,21 +58,31 @@
 					;io.StringIO
 					;bs4
 					;requests
-
+		  subprocess
 					;(np jax.numpy)
 					;(mpf mplfinance)
 
 			;argparse
 		  ))
-	(subprocess.check_output
+	(setf out
+	 (subprocess.run
 	 
-	 ,(mapcar (lambda (x)
-		   `(string ,x))
-		 `("clang++"
-		     "-###" "source00/main.cpp"
-		     "-c" "-std=c++20" "-ggdb" "-O1"))
-	 
-	 )
+	  (list ,@(mapcar (lambda (x)
+			    `(string ,x))
+			  `("clang++"
+			    "-###" "main.cpp"
+			    "-c" "-std=c++20" "-ggdb" "-O1")))
+	  :capture_output True))
+	(setf count 0
+	      start 0)
+	(for (line (out.split (string "\\n")))
+	     (when (line.contains (string "(in-process)"))
+	       (setf start (+ count 1)))
+	     (when (<= count start)
+	       (print (dot (string "{}: {}")
+			   (format count line))))
+	     (incf count))
+	
 	)
        )
      )))
