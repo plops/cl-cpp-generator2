@@ -1,6 +1,8 @@
 #pragma once
 #include "UsbError.h"
 #include "UsbUsing.h"
+#include <libusb-1.0/libusb.h>
+#include <vector>
 
 context init() {
   libusb_context *ctx = nullptr;

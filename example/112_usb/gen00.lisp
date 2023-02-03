@@ -51,7 +51,7 @@
 		 (return _code))
 	       "private:"
 	       "int _code;"))))
-
+  #+nil
   (let ((name `UsbInterface))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -80,23 +80,98 @@
 				;"import fatheader;"
 				)
      :code `(do0
-
-	     		;"import fatheader;"
-	     (do0
 	 
-	 (defclass ,name ()
-	   "public:"
-	   (defmethod ,name ()
-	     (declare
-	      
-	      (construct
-	      )
-	      (values :constructor)))
-	   
-	   "private:"
-	   ))
+	     )))
 
-			
+  (let ((name `UsbInterface))
+   (write-source
+    (asdf:system-relative-pathname
+     'cl-cpp-generator2
+     (merge-pathnames #P"UsbInterface.hpp"
+		      *source-dir*))
+    `(do0
+      "#pragma once"
+      (include
+       "UsbError.h"
+       "UsbUsing.h"
+      
+      
+       )
+      (include<> libusb-1.0/libusb.h)
+      (do0
+       (defclass+ ,name ()
+	 "static constexpr int Invalid = -1;"
+	 "int handle = Invalid;"
+	 "libusb_device_handle* dev = nullptr;"
+
+	 (defun try_release ()
+	   (unless (== Invalid handle)
+	     (let ((h handle))
+	       (setf handle Invalid)
+	       (return (libusb_release_interface dev h)))))
+	 
+	 "public:"
+	 (defmethod ,name (i dev)
+	   (declare
+	    (type int i)
+	    (type device_handle& dev)
+	    (construct (handle i)
+		       (dev (dev.get))
+		       )
+	    (values :constructor)))
+	 "Interface(const Interface&)=delete;"
+	 "Interface& operator=(const Interface&)=delete;"
+	 (defmethod ,name (from)
+	   (declare
+	    (type Interface&& from)
+	    
+	    (values :constructor))
+	   (setf *this
+		 (std--move from)))
+	 (defun release_interface ()
+	   (check (try_release)))
+	 (defun operator= (from)
+	   (declare
+	    (type Interface&& from)
+	    
+	    (values Interfac&))
+	   (release_interface)
+	   (setf handle from.handle
+		 dev from.dev
+		 from.handle Invalid)
+	   (return *this))
+	 (defmethod ~Interface ()
+	   (declare
+	    (values :constructor))
+	   (let ((e (libusb_release_interface dev handle)))
+	     (unless (== e 0)
+	       (<< std--cerr
+		   (string "failed to release interface")
+		   (UsbError e)))))
+	   
+	 "private:"
+	 )
+       ))))
+
+  
+  
+  (write-source
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
+    (merge-pathnames #P"Usbpp.hpp"
+		     *source-dir*))
+   `(do0
+     "#pragma once"
+     (include
+      "UsbError.h"
+      "UsbUsing.h"
+      
+      
+      )
+     (include<> libusb-1.0/libusb.h
+		vector)
+     (do0
+
 	     ;"template<typename T, void(*del)(T*)> using Handle = std::unique_ptr<T,decltype([](T*x){del(x);})>;"
 
      
@@ -175,7 +250,6 @@
        )
      )))
 
- 
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -234,9 +308,11 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     (include "UsbInterface.h"
-	      "UsbUsing.h"
-	      "UsbError.h")
+     (include "UsbInterface.hpp"
+	      ;"UsbUsing.h"
+	      ;"UsbError.h"
+	      "Usbpp.hpp"
+	      )
      (include "fatheader.hpp")
 					;"import fatheader;"
      ;(include<> algorithm)
