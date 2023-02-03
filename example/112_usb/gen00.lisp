@@ -73,9 +73,9 @@
 					 "UsbError.h"
 					 )
 				(include<> vector
-					   libusb-1.0/libusb.h
-					   exception
-					   stdexcept
+					  ; libusb-1.0/libusb.h
+					  ; exception
+					  ; stdexcept
 					   )
 				;"import fatheader;"
 				)
@@ -105,7 +105,8 @@
       
       (defun init ()
 	(declare (values context)
-		 ;(inline)
+		 (extern)
+					;(inline)
 		 )
 	(let ((ctx nullptr)
 	      )
