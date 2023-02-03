@@ -21,7 +21,9 @@
      :headers `()
      :header-preamble `(do0
 			(include<> exception
-				   stdexcept)
+				   stdexcept
+				   libusb-1.0/libusb.h)
+			
 			)
      :implementation-preamble `(do0
 				(include "UsbError.h")
