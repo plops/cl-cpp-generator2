@@ -532,8 +532,10 @@ entry return-values contains a list of return values. currently supports type, v
 								     (let ((type (gethash p env)))
 								       (if type
 									   (funcall emit type)
-									   (break "can't find type for ~a in defun"
-										  p)))
+									   (progn
+									     ;; (break "can't find type for ~a in defun" p)
+									     "auto"
+									     )))
 								     p
 								     ))))
 		  (let ((r (gethash 'return-values env)))

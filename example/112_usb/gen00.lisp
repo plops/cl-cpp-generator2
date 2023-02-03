@@ -110,16 +110,61 @@
    `(do0
      "import fatheader;"
      "template<typename T, void(*del)(T*)> using Handle = std::unique_ptr<T,decltype([](T*x){del(x);})>;"
-     "using context = Handle<libusb_context, libusb_exit>;"
-     
-     (defun init ()
-       (declare (values context)
-		(inline))
-       (let ((ctx nullptr)
-	     )
-	 (declare (type libusb_context* ctx))
-	 (check (libusb_init &ctx))
-	 (return context{ctx})))))
+
+     (do0
+      "using context = Handle<libusb_context, libusb_exit>;"
+      
+      (defun init ()
+	(declare (values context)
+		 (inline))
+	(let ((ctx nullptr)
+	      )
+	  (declare (type libusb_context* ctx))
+	  (check (libusb_init &ctx))
+	  (return context{ctx}))))
+
+     (do0
+      "using device = Handle<libusb_device, libusb_unref_device>;"
+      (defun get_device_list (ctx)
+	(declare (values "std::vector<device>")
+		 (type context& ctx)
+		 (inline))
+	(let ((list nullptr)
+	      (n (libusb_get_device_list (ctx.get)
+					 &list)))
+	  (declare (type libusb_device** list))
+	  (check n)
+	  (let ((ret (std--vector<device>)))
+	    (dotimes (i n)
+	      (ret.emplace_back (aref list i)))
+	    (libusb_free_device_list list false)
+	    (return ret)))))
+
+
+     (do0
+      "using device_handle = Handle<libusb_device_handle,libusb_close>;"
+      (defun open (dev)
+	(declare (type device& dev)
+		 (values device_handle)
+		 (inline))
+	(let ((handle nullptr))
+	  (declare (type libusb_device_handle* handle))
+	  (let ((err (libusb_open (dev.get)
+				  &handle)))
+	    (check err)
+	    (return "device_handle{handle}")))
+	))
+
+     (do0
+      "using device_descriptor = libusb_device_descriptor;"
+      (defun get_device_descriptor (dev)
+	(declare (type "const  device&" dev)
+		 (values device_descriptor))
+	(let ((ret (device_descriptor)))
+	  (check (libusb_get_device_descriptor (dev.get)
+					       &ret))
+	  (return ret))
+	))))
 
   (write-source
    (asdf:system-relative-pathname
@@ -128,11 +173,17 @@
 		     *source-dir*))
    `(do0
      (include "usbpp.hpp")
+     ;; Bus 001 Device 039: ID 8087:0a2b Intel Corp. Bluetooth wireless interface
 
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
+       (let ((ctx (init))
+	     (devices (get_device_list ctx))
+	     (bt (find_if devices
+			  (lambda (&dev)
+			    )))))
       ))))
 
 
