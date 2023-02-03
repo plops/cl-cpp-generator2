@@ -6,14 +6,17 @@ fatheader.pcm: fatheader.hpp UsbError.h
 UsbError.o: UsbError.cpp fatheader.pcm
 	clang++ -std=c++20 -ggdb -O1 UsbError.cpp -c -o UsbError.o
 
+UsbInterface.o: UsbInterface.cpp fatheader.pcm UsbInterface.h
+	clang++ -std=c++20 -ggdb -O1 -fmodule-file=fatheader.pcm UsbInterface.cpp -c -o UsbInterface.o
+
 main.o: main.cpp fatheader.pcm
 	clang++ -std=c++20 -ggdb -O1 -fmodule-file=fatheader.pcm main.cpp -c -o main.o
 
-main: main.o UsbError.o
-	clang++ -std=c++20 -ggdb -O1 main.o UsbError.o -o main `pkg-config libusb-1.0 --libs`
+main: main.o UsbError.o UsbInterface.o
+	clang++ -std=c++20 -ggdb -O1 main.o UsbInterface.o UsbError.o -o main `pkg-config libusb-1.0 --libs`
 
-distclean: clean
-	rm fatheader.pcm
+distclean: 
+	rm fatheader.pcm UsbInterface.o UsbError.o main.o main 
 
 clean:
-	rm UsbError.o main.o main
+	rm UsbInterface.o UsbError.o main.o main

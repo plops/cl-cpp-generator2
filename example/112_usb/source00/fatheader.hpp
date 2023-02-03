@@ -1,4 +1,4 @@
-#include "UsbError.h"
+#pragma once
 #include <algorithm>
 #include <chrono>
 #include <exception>
