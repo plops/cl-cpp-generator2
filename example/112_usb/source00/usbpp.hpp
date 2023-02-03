@@ -39,3 +39,13 @@ device_descriptor get_device_descriptor(const device &dev) {
   check(libusb_get_device_descriptor(dev.get(), &ret));
   return ret;
 }
+
+device_handle open_device_with_vid_pid(context &ctx, uint16_t vid,
+                                       uint16_t pid) {
+  auto h = libusb_open_device_with_vid_pid(ctx.get(), vid, pid);
+  device_handle ret{h};
+  if (nullptr == ret) {
+    throw UsbError(LIBUSB_ERROR_NOT_FOUND);
+  }
+  return ret;
+}

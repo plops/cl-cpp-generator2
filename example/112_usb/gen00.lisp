@@ -29,6 +29,7 @@
 				(include "UsbError.h")
 				)
      :code `(do0
+	    
 	     (defun check (err)
 				  (declare (type int err)
 
@@ -155,6 +156,7 @@
 	    (return "device_handle{handle}")))
 	))
 
+     
      (do0
       "using device_descriptor = libusb_device_descriptor;"
       (defun get_device_descriptor (dev)
@@ -164,7 +166,21 @@
 	  (check (libusb_get_device_descriptor (dev.get)
 					       &ret))
 	  (return ret))
-	))))
+	))
+
+     (defun open_device_with_vid_pid (ctx vid pid)
+       (declare (values device_handle)
+		(inline)
+		(type context& ctx)
+		(type uint16_t vid pid))
+       (let ((h (libusb_open_device_with_vid_pid (ctx.get)
+						 vid pid))
+	     )
+	 "device_handle ret{h};"
+	 (when (== nullptr ret)
+	   (throw (UsbError LIBUSB_ERROR_NOT_FOUND)))
+	 (return ret))
+      )))
 
   (write-source
    (asdf:system-relative-pathname
@@ -173,6 +189,8 @@
 		     *source-dir*))
    `(do0
      (include "usbpp.hpp")
+					;"import fatheader;"
+     ;(include<> algorithm)
      ;; Bus 001 Device 039: ID 8087:0a2b Intel Corp. Bluetooth wireless interface
 
      (defun main (argc argv)
@@ -180,13 +198,28 @@
 		(type char** argv)
 		(values int))
        (let ((ctx (init))
-	     (devices (get_device_list ctx))
-	     (bt (find_if devices
-			  (lambda (dev)
-			    ;(declare (type "const auto&" dev))
-			    (let ((d (get_device_descriptor dev)))
-			      (return (and (== (hex #x8087) d.idVendor )
-					   (== (hex #x154f) d.idProduct)))))))))
+	     (bt (open_device_with_vid_pid ctx
+					   "0x8087"
+					   "0x0a2b"
+					   )))
+	 #+nil
+	 (let ((devices (get_device_list ctx))
+		   (bt_devs (std--find_if devices
+					  (lambda (dev)
+					    (declare (type
+						      "const auto&"
+					;"const device&"
+						      dev))
+					    (let ((d (get_device_descriptor dev)))
+					      (return (logand
+						       (== "0x8087" d.idVendor )
+						       (== "0x0a2b" d.idProduct))))))))
+	   (when (== (devices.end)
+		     bt_devs)
+	     (<< std--cerr (string "no intel bluetooth device found"))
+	     (return 1))
+	   (let ((bt (open *bt_devs)))))
+	 )
       ))))
 
 
