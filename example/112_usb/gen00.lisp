@@ -105,7 +105,7 @@
       
       (defun init ()
 	(declare (values context)
-		 (extern)
+		 (inline)
 					;(inline)
 		 )
 	(let ((ctx nullptr)
