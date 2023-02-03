@@ -182,8 +182,11 @@
        (let ((ctx (init))
 	     (devices (get_device_list ctx))
 	     (bt (find_if devices
-			  (lambda (&dev)
-			    )))))
+			  (lambda (dev)
+			    ;(declare (type "const auto&" dev))
+			    (let ((d (get_device_descriptor dev)))
+			      (return (and (== (hex #x8087) d.idVendor )
+					   (== (hex #x154f) d.idProduct)))))))))
       ))))
 
 
