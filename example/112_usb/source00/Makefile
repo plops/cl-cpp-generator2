@@ -1,2 +1,19 @@
+all: main
+
 fatheader.pcm: fatheader.hpp
 	"/usr/bin/clang-15" "-cc1" "-triple" "x86_64-redhat-linux-gnu" "-emit-obj" "--mrelax-relocations" "-disable-free" "-clear-ast-before-backend" "-disable-llvm-verifier" "-discard-value-names"  "-mrelocation-model" "static" "-mframe-pointer=none" "-fmath-errno" "-ffp-contract=on" "-fno-rounding-math" "-mconstructor-aliases" "-funwind-tables=2" "-target-cpu" "x86-64" "-tune-cpu" "generic" "-mllvm" "-treat-scalable-fixed-error-as-warning" "-debug-info-kind=constructor" "-dwarf-version=4" "-debugger-tuning=gdb" "-fcoverage-compilation-dir=/home/martin/stage/cl-cpp-generator2/example/112_usb/source00" "-resource-dir" "/usr/lib64/clang/15.0.7" "-internal-isystem" "/usr/bin/../lib/gcc/x86_64-redhat-linux/12/../../../../include/c++/12" "-internal-isystem" "/usr/bin/../lib/gcc/x86_64-redhat-linux/12/../../../../include/c++/12/x86_64-redhat-linux" "-internal-isystem" "/usr/bin/../lib/gcc/x86_64-redhat-linux/12/../../../../include/c++/12/backward" "-internal-isystem" "/usr/lib64/clang/15.0.7/include" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/usr/bin/../lib/gcc/x86_64-redhat-linux/12/../../../../x86_64-redhat-linux/include" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-O1" "-std=c++20" "-fdeprecated-macro" "-fdebug-compilation-dir=/home/martin/stage/cl-cpp-generator2/example/112_usb/source00" "-ferror-limit" "19" "-fgnuc-version=4.2.1" "-fno-implicit-modules" "-fcxx-exceptions" "-fexceptions" "-fcolor-diagnostics" "-faddrsig" "-D__GCC_HAVE_DWARF2_CFI_ASM=1"  "-x" "c++"  module.modulemap -o fatheader.pcm -emit-module -fmodules -fmodule-name=fatheader
+
+UsbError.o: UsbError.cpp fatheader.pcm
+	clang++ -std=c++20 -ggdb -O1 -fmodule-file=fatheader.pcm UsbError.cpp -c -o UsbError.o
+
+main.o: main.cpp fatheader.pcm
+	clang++ -std=c++20 -ggdb -O1 -fmodule-file=fatheader.pcm main.cpp -c -o main.o
+
+main: main.o UsbError.o
+	clang++ -std=c++20 -ggdb -O1 main.o UsbError.o -o main `pkg-config libusb-1.0 --libs`
+
+distclean: clean
+	rm fatheader.pcm
+
+clean:
+	rm UsbError.o main.o main

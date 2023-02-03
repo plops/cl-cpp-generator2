@@ -11,8 +11,8 @@
 				   'cl-cpp-generator2
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
-  #+nil
-  (let ((name `Error))
+  (load "util.lisp")
+  (let ((name `UsbError))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -20,10 +20,18 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> stdexcept))
+			(include<> stdexcept)
+			)
      :implementation-preamble `(do0
-				(include "Error.h"))
+				(include "UsbError.h")
+				)
      :code `(do0
+	     (defun check (err)
+				  (declare (type int err)
+
+					   )
+				  (when (< err 0)
+				    (throw (UsbError err))))
 	     (defclass ,name "public std::runtime_error"
 	       "public:"
 	       (defmethod ,name ()
@@ -39,81 +47,52 @@
 	       "private:"
 	       "int _code;"))))
 
-  #+nil
+ 
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
     (merge-pathnames #P"fatheader.hpp"
 		     *source-dir*))
    `(do0
+     
      (include
-      ,@(loop for e in `(file-dialog
-			 push-button
-			 label
-			 check-box
-			 combo-box
-			 v-box-layout
-			 h-box-layout
-			 drag
-			 mime-data
-			 tool-button
-			 frame
-			 validator
-			 action
-			 button-group
-			 header-view
-			 line-edit
-			 spacer-item
-			 stacked-widget
-			 radio-button
-			 tab-widget
-			 tool-tip
-			 mouse-event
-			 style
-			 timer
-
-			 application
-			 variant
-			 map
-			 vector
-			 string-list
-			 dir
-			 pointer
-			 color
-
-			 main-window
-			 double-validator
-			 group-box
-			 )
-	      collect
-	      (format nil "<~a>"
-		      (cl-change-case:pascal-case
-		       (format nil "q-~a" e))))
-
-      ,@(loop for e in `(string
-			 set
-			 map
+      "UsbError.h"
+      
+      ,@(loop for e in `(libusb-1.0/libusb.h
 			 memory
+			 ranges
 			 vector
-			 unordered_map
-			 array
-			 bitset
-			 initializer_list
-			 functional
+			 chrono
 			 algorithm
-			 numeric
-			 iterator
-			 type_traits
-			 cmath
-			 cassert
-			 cfloat
-			 complex
-			 cstddef
-			 cstdint
-			 cstdlib
-			 mutex
-			 thread
-			 condition_variable)
+			 iostream
+			 exception
+			 
+			 
+			 ;; string
+			 ;; set
+			 ;; map
+			 
+			 ;; vector
+			 ;; unordered_map
+			 ;; array
+			 ;; bitset
+			 ;; initializer_list
+			 ;; functional
+			 
+			 ;; numeric
+			 ;; iterator
+			 ;; type_traits
+			 ;; cmath
+			 ;; cassert
+			 ;; cfloat
+			 ;; complex
+			 ;; cstddef
+			 ;; cstdint
+			 ;; cstdlib
+			 ;; mutex
+			 ;; thread
+			 ;; condition_variable
+			 )
 	      collect
 	      (format nil "<~a>" e))
       )))
@@ -125,18 +104,16 @@
     (merge-pathnames #P"usbpp.hpp"
 		     *source-dir*))
    `(do0
+     "import fatheader;"
      "template<typename T, void(*del)(T*)> using Handle = std::unique_ptr<T,decltype([](T*x){del(x);})>;"
      "using context = Handle<libusb_context, libusb_exit>;"
-     (defun check (err)
-       (declare (type int err)
-		)
-       (when (< err 0)
-	 (throw (Error err))))
+     
      (defun init ()
        (declare (values context)
 		(inline))
-       (let ((*ctx (libusb_context* nullptr))
+       (let ((ctx nullptr)
 	     )
+	 (declare (type libusb_context* ctx))
 	 (check (libusb_init &ctx))
 	 (return context{ctx})))))
 
@@ -146,7 +123,7 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     ;"import std_mod;"
+     (include "usbpp.hpp")
 
      (defun main (argc argv)
        (declare (type int argc)

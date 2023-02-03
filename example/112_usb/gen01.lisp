@@ -4,7 +4,7 @@
 (in-package :cl-py-generator)
 
 (progn
-  (defparameter *project* "109_clang_qt_mod_portable")
+  (defparameter *project* "112_usb")
   (defparameter *idx* "00")
   (defparameter *path* (format nil "/home/martin/stage/cl-cpp-generator2/example/~a/source00/" *project*))
   (defparameter *day-names*
@@ -66,17 +66,18 @@
 			;argparse
 		  ))
 
-	(setf qtflags_string (subprocess.run
-		       (list (string "pkg-config")
-			     (string "Qt5Gui")
-			     (string "Qt5Widgets")
-			     (string "--cflags"))
-		       :capture_output True))
-	(setf qtflags (dot qtflags_string
-			     stdout
-			     (decode (string "utf-8"))
-			     (rstrip)
-			     (split (string " "))))
+	#+nil
+	(do0 (setf qtflags_string (subprocess.run
+			       (list (string "pkg-config")
+				     (string "Qt5Gui")
+				     (string "Qt5Widgets")
+				     (string "--cflags"))
+			       :capture_output True))
+	     (setf qtflags (dot qtflags_string
+				stdout
+				(decode (string "utf-8"))
+				(rstrip)
+				(split (string " ")))))
 	(setf cflags (list ,@(mapcar (lambda (x)
 				       `(string ,x))
 				     `("-std=c++20" "-ggdb" "-O1" 
@@ -88,7 +89,8 @@
 				     "-###" "main.cpp"
 				     "-c" )))
 		     cflags
-		     qtflags))
+		     ;qtflags
+		     ))
 	(print (dot (string "calling : subprocess.run {}")
 		    (format (dot (string " ")
 			  (join cmd)))))
@@ -141,19 +143,25 @@
 	(print clang_line1)
 	(with (as (open (string "compile01.sh") (string "w"))
 		  f)
-	      (f.write (+ (string "time ") clang_line1 (string " module.modulemap -o std_mod.pcm -emit-module -fmodules -fmodule-name=std_mod "))))
+	      (f.write (+ (string "time ") clang_line1 (string " module.modulemap -o fatheader.pcm -emit-module -fmodules -fmodule-name=fatheader"))))
 	(with (as (open (string "compile02.sh") (string "w"))
 		  f)
-	      (f.write (dot (string "time clang++ {} -fmodule-file=std_mod.pcm main.cpp -c -o main.o\\n")
+	      (for (file (list (string "main")
+			       (string "UsbError")))
+		   (setf flags (dot (string " ")
+						 (join
+						  (+ cflags
+					;qtflags
+						     ))))
+		   (f.write (fstring "time clang++ {flags} -fmodule-file=fatheader.pcm {file}.cpp -c -o {file}.o\\n")
+				    ))
+	     
+	      (f.write (dot (string "time clang++ {} main.o UsbError.o -o main `pkg-config libusb-1.0 --libs`\\n")
 			    (format (dot (string " ")
 					 (join
 					  (+ cflags
-					     qtflags))))))
-	      (f.write (dot (string "time clang++ {} main.o -o main  `pkg-config Qt5Gui Qt5Widgets --libs`\\n")
-			    (format (dot (string " ")
-					 (join
-					  (+ cflags
-					     qtflags)))))))
+					     ;qtflags
+					     )))))))
 	)
        )
      )))

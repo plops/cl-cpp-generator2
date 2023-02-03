@@ -1,3 +1,4 @@
+#include "UsbError.h"
 #include <algorithm>
 #include <chrono>
 #include <exception>

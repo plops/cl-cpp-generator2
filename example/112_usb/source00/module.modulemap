@@ -1,5 +1,5 @@
-module std_mod {
+module fatheader {
   requires cplusplus17
-  header "std_mod.hpp"
+  header "fatheader.hpp"
   export *
 }

@@ -1,14 +1,16 @@
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef USBERROR_H
+#define USBERROR_H
 
 #include <stdexcept>
 
-class Error : public std::runtime_error {
+
+void check (int err)    ;  
+class UsbError : public std::runtime_error {
         public:
-         Error ()     ;  
+         UsbError ()     ;  
         int code () const    ;  
         private:
         int _code;
 };
 
-#endif /* !ERROR_H */
+#endif /* !USBERROR_H */
