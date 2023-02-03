@@ -6,6 +6,6 @@ void check(int err) {
     throw UsbError(err);
   }
 }
-UsbError::UsbError()
+UsbError::UsbError(int err_code)
     : runtime_error(libusb_error_name(err_code)), _code(err_code) {}
 int UsbError::code() const { return _code; }

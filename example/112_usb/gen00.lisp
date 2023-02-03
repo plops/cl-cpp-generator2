@@ -20,7 +20,8 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> stdexcept)
+			(include<> exception
+				   stdexcept)
 			)
      :implementation-preamble `(do0
 				(include "UsbError.h")
@@ -34,8 +35,9 @@
 				    (throw (UsbError err))))
 	     (defclass ,name "public std::runtime_error"
 	       "public:"
-	       (defmethod ,name ()
+	       (defmethod ,name (err_code)
 		 (declare
+		  (type int err_code)
 		  (construct
 		   (runtime_error (libusb_error_name err_code))
 		   (_code err_code))
