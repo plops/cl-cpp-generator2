@@ -1,4 +1,5 @@
 #pragma once
+#include <libusb-1.0/libusb.h>
 #include <memory>
 template <typename T, void (*del)(T *)>
 using Handle = std::unique_ptr<T, decltype([](T *x) { del(x); })>;

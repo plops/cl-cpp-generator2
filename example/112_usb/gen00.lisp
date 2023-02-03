@@ -88,17 +88,13 @@
 	   "public:"
 	   (defmethod ,name ()
 	     (declare
-	      (type int err_code)
+	      
 	      (construct
-	       (std--runtime_error (libusb_error_name err_code))
-	       (_code err_code))
+	      )
 	      (values :constructor)))
-	   (defmethod code ()
-	     (declare (const)
-		      (values int))
-	     (return _code))
+	   
 	   "private:"
-	   "int _code;"))
+	   ))
 
 			
 	     ;"template<typename T, void(*del)(T*)> using Handle = std::unique_ptr<T,decltype([](T*x){del(x);})>;"
@@ -211,7 +207,8 @@
    `(do0
       "#pragma once"
 					;"import fatheader;"
-     (include<> memory)
+      (include<> memory
+		 libusb-1.0/libusb.h)
      "template<typename T, void(*del)(T*)> using Handle = std::unique_ptr<T,decltype([](T*x){del(x);})>;"
 
      "using context = Handle<libusb_context, libusb_exit>;"
