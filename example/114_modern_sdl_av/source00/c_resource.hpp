@@ -11,5 +11,6 @@ template <typename T> constexpr inline T *c_resource_null_value = nullptr;
 // construct(thing**)
 template <typename T, auto *ConstructFunction, auto *DestructFunction>
 class c_resource {
-  using(pointer, T *, const_pointer, std::add_const_t<T> *);
+  using pointer = T *;
+  using const_pointer = std::add_const_t<T> *;
 };

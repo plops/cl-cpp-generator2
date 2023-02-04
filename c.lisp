@@ -1032,6 +1032,8 @@ entry return-values contains a list of return values. currently supports type, v
 		  (setf
 		   (let ((args (cdr code)))
 		     ;; "setf {pair}*"
+		     ;; (setf var 5) => var = 5;
+		     ;; (setf a 5 b 4) => a=5; b=4;
 		     (format nil "~a"
 			     (emit
 			      `(do0
@@ -1039,6 +1041,20 @@ entry return-values contains a list of return values. currently supports type, v
 								       (let ((a (elt args i))
 									     (b (elt args (+ 1 i))))
 									 `(= ,a ,b))))))))
+		  (using
+		   (let ((args (cdr code)))
+		     ;; "using {pair}*"
+		     ;; similar to setf
+		     ;; (using var 5) => using var = 5;
+		     ;; (using a 5 b 4) => using a=5; using b=4;
+		     (format nil "~a"
+			     (emit
+			      `(do0
+				,@(loop for i below (length args) by 2 collect
+								       (let ((a (elt args i))
+									     (b (elt args (+ 1 i))))
+									 `(space using (= ,a ,b)))))))))
+		  
 		  (not (format nil "!(~a)" (emit (car (cdr code)))))
 		  (bitwise-not (format nil "~~(~a)" (emit (car (cdr code)))))
 		  (deref (format nil "*(~a)" (emit (car (cdr code)))))
@@ -1465,7 +1481,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    (emit
 		     `(progn
 			,@(mapcar #'emit slot-descriptions))))))
-      (setf (parse-setf code #'emit)) ;; FIXME: where is parse-setf defined?
+      (setf (parse-setf code #'emit)) 
       (const (parse-const code #'emit))
       (assign
        ;; assign {pair}*
