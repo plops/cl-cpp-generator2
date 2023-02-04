@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <fmt/core.h>
 #include <iostream>
 #include <pipewire/pipewire.h>
 #include <spa/pod/builder.h>

@@ -4,6 +4,8 @@ constexpr int CHANNELS = 2;
 constexpr int BUFFER_SIZE = 8192;
 
 int main(int argc, char **argv) {
-  spa_handle_factory_enum(&factory, SPA_TYPE_INTERFACE_Node, 0, 0);
+  pw_init(&argc, &argv);
+  fmt::print("  pw_get_headers_version()='{}'  pw_get_library_version()='{}'\n",
+             pw_get_headers_version(), pw_get_library_version());
   return 0;
 }

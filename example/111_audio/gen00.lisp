@@ -11,6 +11,7 @@
 				   'cl-cpp-generator2
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
+  (load "util.lisp")
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -26,7 +27,8 @@
 			 cstring
 			 spa/pod/parser.h
 			 spa/pod/builder.h
-			 pipewire/pipewire.h)
+			 pipewire/pipewire.h
+			 fmt/core.h)
 	      collect
 	      (format nil "<~a>" e))
       )))
@@ -51,10 +53,17 @@
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-       (spa_handle_factory_enum &factory
-				SPA_TYPE_INTERFACE_Node
-				0
-				0)
+
+       (pw_init &argc &argv)
+       ,(lprint :vars `((pw_get_headers_version)
+			(pw_get_library_version)))
+       
+       #+nil
+       (do0 "spa_handle_factory *factory;"
+	    (spa_handle_factory_enum &factory
+				     SPA_TYPE_INTERFACE_Node
+				     0
+				     0))
        (return 0)))))
 
 
