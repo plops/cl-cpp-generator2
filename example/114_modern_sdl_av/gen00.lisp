@@ -179,7 +179,49 @@
 		  (return (== 0 (std--memcmp ptr_
 					     rhs.ptr_
 					     (sizeof T))))))
+	 (comments "here should be some get and pointer methods whose implementation depends on __cpp_explicit_this_parameter")
+	 "public:"
+	 (space constexpr void
+		(reset "pointer ptr=null")
+		noexcept
+		(progn
+		  (_destruct ptr_)
+		  (setf ptr_ ptr)
+		   (<< std--cout (string "reset")
+		       std--endl)))
+	 (space constexpr pointer
+		(release)
+		noexcept
+		(progn
+		  (let ((ptr ptr_))
+		    (setf ptr_ null)
+		   (<< std--cout (string "release")
+			std--endl) 
+		    (return ptr))
+		  ))
 
+	 (space template "<auto* CleanupFunction>"
+		struct guard
+		(progn
+		  (using cleaner (decltype CleanupFunction))
+		  (space constexpr
+			 (guard "c_resource& Obj")
+			 noexcept
+			 ": ptr_{ Obj.ptr_ }"
+			 (progn
+			   (<< std--cout (string "guard")
+			       std--endl)))
+		  (space constexpr
+			 (~guard )
+			 noexcept
+			 
+			 (progn
+			   (unless (== ptr_ null)
+			     (CleanupFunction ptr_))
+			   (<< std--cout (string "~guard")
+			       std--endl)))))
+	 "private:"
+	 "pointer ptr_;"
 	 
 	 ))
       ))))

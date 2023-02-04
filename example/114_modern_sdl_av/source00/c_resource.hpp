@@ -130,4 +130,37 @@ public:
     std::cout << "operator==" << std::endl;
     return 0 == std::memcmp(ptr_, rhs.ptr_, sizeof(T));
   };
+  // here should be some get and pointer methods whose implementation depends on
+  // __cpp_explicit_this_parameter
+
+public:
+  constexpr void reset(pointer ptr = null) noexcept {
+    _destruct(ptr_);
+    ptr_ = ptr;
+
+    std::cout << "reset" << std::endl;
+  };
+  constexpr pointer release() noexcept {
+    auto ptr = ptr_;
+    ptr_ = null;
+
+    std::cout << "release" << std::endl;
+    return ptr;
+  };
+  template <auto *CleanupFunction> struct guard {
+    using cleaner = decltype(CleanupFunction);
+
+    constexpr guard(c_resource &Obj) noexcept : ptr_{Obj.ptr_} {
+      std::cout << "guard" << std::endl;
+    };
+    constexpr ~guard() noexcept {
+      if (!(ptr_ == null)) {
+        CleanupFunction(ptr_);
+      }
+      std::cout << "~guard" << std::endl;
+    };
+  };
+
+private:
+  pointer ptr_;
 };
