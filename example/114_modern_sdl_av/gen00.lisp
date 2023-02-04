@@ -25,7 +25,11 @@
 		cstring
 		type_traits)
      (do0
-))))
+      "template <typename T> constexpr inline T *c_resource_null_value=nullptr;"
+      (comments "two api schemas for destructors and constructor"
+		"1) thing* construct();      void destruct(thing*)"
+		"2) void construct(thing**); void destruct(thing**)")
+      ))))
 
 
   
