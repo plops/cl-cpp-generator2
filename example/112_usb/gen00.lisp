@@ -94,10 +94,13 @@
       (include
        "UsbError.h"
        "UsbUsing.h"
-      
+       
+       
       
        )
-      (include<> libusb-1.0/libusb.h)
+      (include<> libusb-1.0/libusb.h
+		 iostream
+		 chrono)
       (do0
        (defclass+ ,name ()
 	 "static constexpr int Invalid = -1;"
@@ -105,10 +108,12 @@
 	 "libusb_device_handle* dev = nullptr;"
 
 	 (defun try_release ()
+	   (declare (values int))
 	   (unless (== Invalid handle)
 	     (let ((h handle))
 	       (setf handle Invalid)
-	       (return (libusb_release_interface dev h)))))
+	       (return (libusb_release_interface dev h))))
+	   (return Invalid))
 	 
 	 "public:"
 	 (defmethod ,name (i dev)
@@ -119,11 +124,11 @@
 		       (dev (dev.get))
 		       )
 	    (values :constructor)))
-	 "Interface(const Interface&)=delete;"
-	 "Interface& operator=(const Interface&)=delete;"
+	 "UsbInterface(const UsbInterface&)=delete;"
+	 "UsbInterface& operator=(const UsbInterface&)=delete;"
 	 (defmethod ,name (from)
 	   (declare
-	    (type Interface&& from)
+	    (type UsbInterface&& from)
 	    
 	    (values :constructor))
 	   (setf *this
@@ -132,25 +137,56 @@
 	   (check (try_release)))
 	 (defun operator= (from)
 	   (declare
-	    (type Interface&& from)
+	    (type UsbInterface&& from)
 	    
-	    (values Interfac&))
+	    (values UsbInterface&))
 	   (release_interface)
 	   (setf handle from.handle
 		 dev from.dev
 		 from.handle Invalid)
 	   (return *this))
-	 (defmethod ~Interface ()
+	 (defmethod ~UsbInterface ()
 	   (declare
 	    (values :constructor))
 	   (let ((e (libusb_release_interface dev handle)))
 	     (unless (== e 0)
 	       (<< std--cerr
-		   (string "failed to release interface")
-		   (UsbError e)))))
+		   (string "failed to release interface: ")
+		   ; (UsbError e)
+		   ))))
 	   
-	 "private:"
 	 )
+       "template<typename T, typename... Args> constexpr bool one_of = (... || std::same_as<T,Args>);"
+       ;"static_assert(one_of<char,float,bool,int> ==false);"
+       ;"static_assert(one_of<char,float,char bool,int> ==false);"
+       "template<typename T> concept NonConstByteData = std::ranges::contiguous_range<T> && one_of<std::ranges::range_value_t<T>,char,unsigned char,std::byte> && !std::is_const_v<T>;"
+
+       (defun bulk_transfer (dev endpoint range
+
+			     timeout ;|timeout=std::chrono::milliseconds{0}|
+			     )
+	 (declare (type device_handle& dev)
+		  (type int endpoint)
+		  (type Range&& range)
+		  (type "std::chrono::milliseconds" timeout ;|timeout=std::chrono::milliseconds{0}|
+			)
+		  (values "template<NonConstByteData Range> int"))
+	 "using std::begin;"
+	 "using std::end;"
+	 (let ((sent (int 0))
+	       (err (libusb_bulk_transfer (dev.get
+					   
+					   )
+					  endpoint
+					  ("reinterpret_cast<unsigned char*>"
+					    (&*begin range)
+					    )
+					  (- (end range)
+					     (begin range))
+					  &sent
+					  (timeout.count))))
+	   (check err)
+	   (return sent)))
        ))))
 
   
