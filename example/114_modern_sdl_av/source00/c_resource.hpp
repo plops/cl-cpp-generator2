@@ -148,6 +148,7 @@ public:
     return ptr;
   };
   template <auto *CleanupFunction> struct guard {
+  public:
     using cleaner = decltype(CleanupFunction);
 
     constexpr guard(c_resource &Obj) noexcept : ptr_{Obj.ptr_} {
@@ -159,8 +160,27 @@ public:
       }
       std::cout << "~guard" << std::endl;
     };
+
+  private:
+    pointer ptr_;
   };
 
 private:
-  pointer ptr_;
+  constexpr static void _destruct(pointer &p) noexcept
+    requires std::is_invocable_v<Destructor, T *>
+  {
+    if (!(p == null)) {
+      std::cout << "_destruct224 T*" << std::endl;
+      destruct(p);
+    }
+  };
+  constexpr static void _destruct(pointer &p) noexcept
+    requires std::is_invocable_v<Destructor, T **>
+  {
+    if (!(p == null)) {
+      std::cout << "_destruct230 T**" << std::endl;
+      destruct(&p);
+    }
+  };
+  pointer ptr_ = null;
 };

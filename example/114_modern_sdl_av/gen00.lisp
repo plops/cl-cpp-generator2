@@ -203,6 +203,7 @@
 	 (space template "<auto* CleanupFunction>"
 		struct guard
 		(progn
+		  "public:"
 		  (using cleaner (decltype CleanupFunction))
 		  (space constexpr
 			 (guard "c_resource& Obj")
@@ -219,9 +220,30 @@
 			   (unless (== ptr_ null)
 			     (CleanupFunction ptr_))
 			   (<< std--cout (string "~guard")
-			       std--endl)))))
+			       std--endl)))
+		  "private:"
+		   "pointer ptr_;"))
 	 "private:"
-	 "pointer ptr_;"
+	 (space constexpr static void
+		(_destruct "pointer& p")
+		noexcept
+		requires "std::is_invocable_v<Destructor, T*>"
+		(progn
+		  (unless (== p null)
+		    (<< std--cout (string "_destruct224 T*")
+			       std--endl)
+		    (destruct p))))
+	 (space constexpr static void
+		(_destruct "pointer& p")
+		noexcept
+		requires "std::is_invocable_v<Destructor, T**>"
+		(progn
+		  (unless (== p null)
+		    (<< std--cout (string "_destruct230 T**")
+			       std--endl)
+		    (destruct &p))))
+	 
+	 "pointer ptr_ = null;"
 	 
 	 ))
       ))))
