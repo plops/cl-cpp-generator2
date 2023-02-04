@@ -51,10 +51,72 @@
 	 "public:"
 	 "static constexpr construct_t constructed = {};"
 	 "[[nodiscard]] constexpr c_resource() noexcept = default;"
-	 "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}{} "
-	 "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null } { construct( &ptr_, static_cast<Ts &&> (Args)... ); } "
+	 (space "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}"
+		(progn
+		  (<< std--cout (string "construct75")
+		      std--endl)))
+	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null }"
+		(progn
+		  
+		  (construct &ptr_
+			     "static_cast<Ts &&> (Args)... ")
+		  (<< std--cout (string "construct83")
+		      std--endl)))
 	 ;; WTF! greater than inside a template
-	 "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null } { construct(&ptr_, static_cast<Ts &&> (Args)... ); }"
+	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null }"
+		(progn
+		  (construct &ptr_
+			     "static_cast<Ts &&> (Args)...")
+		  (<< std--cout (string "construct93")
+		      std--endl)))
+
+	 (space "template <typename... Ts>"
+		(requires "std::is_invocable_v<Constructor, T**, Ts... >")
+		"[[nodiscard]]"
+		constexpr auto
+		(emplace "Ts &&... Args")
+		noexcept
+		(progn
+		  (_destruct ptr_)
+		  (setf ptr_ null)
+		  (<< std--cout (string "emplace")
+		      std--endl)
+		  (return (construct &ptr_
+				     "static_cast<Ts &&>(Args)..."))))
+	 (space "[[nodiscard]]"
+		constexpr
+		(c_resource "c_resource&& other")
+		noexcept
+		(progn
+		  (setf ptr_ other.ptr_
+			other.ptr_ null)
+		  (<< std--cout (string "copy104")
+		      std--endl)))
+	 (space constexpr
+		c_resource&
+		(operator= "c_resource&& rhs")
+		noexcept
+		(progn
+		  (unless (== this &rhs)
+		    (_destruct ptr_)
+		    (setf ptr_ rhs.ptr_
+			  rhs.ptr_ null)
+		    (<< std--cout (string "operator=")
+			std--endl)
+		    )
+		  (return *this)))
+	 (space constexpr
+		void
+		(swap "c_resource& other")
+		noexcept
+		(progn
+		  (let ((ptr ptr_))
+		    (setf ptr_ other.ptr_
+			  other.ptr_ ptr)
+		    (<< std--cout (string "swap")
+			std--endl)
+		    )))
+
 	 
 	 ))
       ))))

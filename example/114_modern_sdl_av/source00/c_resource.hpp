@@ -30,7 +30,9 @@ public:
   [[nodiscard]] constexpr c_resource() noexcept = default;
   [[nodiscard]] constexpr explicit c_resource(construct_t)
     requires std::is_invocable_r_v<T *, Constructor>
-      : ptr_{construct()} {}
+      : ptr_{construct()} {
+    std::cout << "construct75" << std::endl;
+  };
   template <typename... Ts>
     requires(sizeof...(Ts) > 0 &&
              requires(T * p, Ts... Args) {
@@ -40,7 +42,8 @@ public:
       c_resource(Ts &&...Args) noexcept
       : ptr_{null} {
     construct(&ptr_, static_cast<Ts &&>(Args)...);
-  }
+    std::cout << "construct83" << std::endl;
+  };
   template <typename... Ts>
     requires(sizeof...(Ts) > 0 &&
              requires(T * p, Ts... Args) {
@@ -50,5 +53,38 @@ public:
       c_resource(Ts &&...Args) noexcept
       : ptr_{null} {
     construct(&ptr_, static_cast<Ts &&>(Args)...);
-  }
+    std::cout << "construct93" << std::endl;
+  };
+  template <typename... Ts>
+    requires(std::is_invocable_v<Constructor, T **, Ts...>)
+  [[nodiscard]] constexpr auto emplace(Ts &&...Args) noexcept {
+    _destruct(ptr_);
+    ptr_ = null;
+
+    std::cout << "emplace" << std::endl;
+    return construct(&ptr_, static_cast<Ts &&>(Args)...);
+  };
+  [[nodiscard]] constexpr c_resource(c_resource &&other) noexcept {
+    ptr_ = other.ptr_;
+    other.ptr_ = null;
+
+    std::cout << "copy104" << std::endl;
+  };
+  constexpr c_resource &operator=(c_resource &&rhs) noexcept {
+    if (!(this == &rhs)) {
+      _destruct(ptr_);
+      ptr_ = rhs.ptr_;
+      rhs.ptr_ = null;
+
+      std::cout << "operator=" << std::endl;
+    }
+    return *this;
+  };
+  constexpr void swap(c_resource &other) noexcept {
+    auto ptr = ptr_;
+    ptr_ = other.ptr_;
+    other.ptr_ = ptr;
+
+    std::cout << "swap" << std::endl;
+  };
 };
