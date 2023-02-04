@@ -2,3 +2,4 @@
   - Contemporary C++ in Action - Daniela Engert - CppCon 2022
   - https://github.com/DanielaE/CppInAction
   - this is a windows project
+  - c_resource.hpp is similar to 112_usb, but expands on the idea
