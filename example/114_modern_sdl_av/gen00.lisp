@@ -34,8 +34,27 @@
       (space
        "template <typename T, auto* ConstructFunction, auto* DestructFunction>"
        (defclass+ c_resource ()
+	 "public:"
 	 (using pointer T*
-		const_pointer "std::add_const_t<T>*")))
+		const_pointer "std::add_const_t<T>*"
+		element_type T)
+	 "private:"
+	 (using Constructor (decltype ConstructFunction)
+		Destructor (decltype DestructFunction))
+	 (let ((construct ConstructFunction)
+	       (destruct DestructFunction)
+	       (null c_resource_null_value<T>))
+	   (declare (type "static constexpr Constructor" construct)
+		    (type "static constexpr Destructor" destruct)
+		    (type "static constexpr T*" null))
+	   "struct construct_t {};")
+	 "public:"
+	 "static constexpr construct_t constructed = {};"
+	 "[[nodiscard]] constexpr c_resource() noexcept = default;"
+	 "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}{} template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null } { construct( &ptr_, static_cast<Ts &&> (Args)... ); } "
+	 ;; WTF! greater than inside a template
+	 
+	 ))
       ))))
 
 
