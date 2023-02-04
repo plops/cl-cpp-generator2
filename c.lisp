@@ -1465,7 +1465,7 @@ entry return-values contains a list of return values. currently supports type, v
 		    (emit
 		     `(progn
 			,@(mapcar #'emit slot-descriptions))))))
-      (setf (parse-setf code #'emit))
+      (setf (parse-setf code #'emit)) ;; FIXME: where is parse-setf defined?
       (const (parse-const code #'emit))
       (assign
        ;; assign {pair}*
