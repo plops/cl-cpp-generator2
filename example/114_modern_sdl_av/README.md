@@ -1,3 +1,4 @@
 - https://www.youtube.com/watch?v=yUIFdL3D0Vk
   - Contemporary C++ in Action - Daniela Engert - CppCon 2022
   - https://github.com/DanielaE/CppInAction
+  - this is a windows project
