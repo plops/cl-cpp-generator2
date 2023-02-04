@@ -150,6 +150,35 @@
 			std--endl)
 		  (return (!= ptr_ null))
 		  ))
+	 (space "[[nodiscard]]"
+		constexpr bool
+		(empty)
+		const noexcept
+		(progn
+		  (<< std--cout (string "empty")
+			std--endl)
+		  (return (== ptr_ null))))
+	 (space "[[nodiscard]]"
+		constexpr friend bool
+		(have "const c_resource& r")
+		noexcept
+		(progn
+		  (<< std--cout (string "have")
+			std--endl)
+		  (return (!= r.ptr_ null))))
+
+	 (space auto ("operator<=>" "const c_resource&") =delete)
+	 
+	 (space "[[nodiscard]]"
+		bool
+		(operator== "const c_resource& rhs")
+		const noexcept
+		(progn
+		  (<< std--cout (string "operator==")
+			std--endl)
+		  (return (== 0 (std--memcmp ptr_
+					     rhs.ptr_
+					     (sizeof T))))))
 
 	 
 	 ))

@@ -117,4 +117,17 @@ public:
     std::cout << "bool" << std::endl;
     return (ptr_) != (null);
   };
+  [[nodiscard]] constexpr bool empty() const noexcept {
+    std::cout << "empty" << std::endl;
+    return ptr_ == null;
+  };
+  [[nodiscard]] constexpr friend bool have(const c_resource &r) noexcept {
+    std::cout << "have" << std::endl;
+    return (r.ptr_) != (null);
+  };
+  auto operator<=>(const c_resource &) = delete;
+  [[nodiscard]] bool operator==(const c_resource &rhs) const noexcept {
+    std::cout << "operator==" << std::endl;
+    return 0 == std::memcmp(ptr_, rhs.ptr_, sizeof(T));
+  };
 };
