@@ -46,9 +46,15 @@
 
      ,@(loop for (e f) in `((SAMPLE_RATE 44100)
 			    (CHANNELS 2)
-			    (BUFFER_SIZE 8192))
+			    (BUFFER_SIZE 8192)
+			    )
 	     collect
 	     (format nil "constexpr int ~a = ~a;" e f))
+     (defclass data ()
+       "public:"
+       "pw_main_loop* loop=nullptr;"
+       "pwstream* stream;"
+       "double accumulator;")
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
