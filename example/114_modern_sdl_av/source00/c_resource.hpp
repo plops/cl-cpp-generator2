@@ -87,4 +87,34 @@ public:
 
     std::cout << "swap" << std::endl;
   };
+  static constexpr bool destructible =
+      ((std::is_invocable_v<Destructor, T *>) |
+       (std::is_invocable_v<Destructor, T **>));
+
+  constexpr ~c_resource() noexcept = delete;
+  constexpr ~c_resource() noexcept
+    requires destructible
+  {
+    _destruct(ptr_);
+    std::cout << "destruct129" << std::endl;
+  };
+  constexpr void clear() noexcept
+    requires destructible
+  {
+    _destruct(ptr_);
+    ptr_ = null;
+
+    std::cout << "clear" << std::endl;
+  };
+  constexpr c_resource &operator=(std::nullptr_t) noexcept
+    requires destructible
+  {
+    clear();
+    std::cout << "operator=137" << std::endl;
+    return *this;
+  };
+  [[nodiscard]] constexpr explicit operator bool() const noexcept {
+    std::cout << "bool" << std::endl;
+    return (ptr_) != (null);
+  };
 };

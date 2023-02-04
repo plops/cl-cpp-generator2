@@ -116,6 +116,40 @@
 		    (<< std--cout (string "swap")
 			std--endl)
 		    )))
+	 (space static constexpr bool
+		(setf destructible
+		      (or "std::is_invocable_v<Destructor, T*>"
+			  "std::is_invocable_v<Destructor, T**>")))
+
+	 (space constexpr (~c_resource) noexcept =delete)
+	 (space constexpr (~c_resource) noexcept
+		requires destructible
+		(progn
+		  (_destruct ptr_)
+		  (<< std--cout (string "destruct129")
+		      std--endl)))
+	 (space constexpr void (clear) noexcept
+		requires destructible
+		(progn
+		  (_destruct ptr_)
+		  (setf ptr_ null)
+		  (<< std--cout (string "clear")
+		      std--endl)))
+	 (space constexpr c_resource&
+		(operator= "std::nullptr_t") noexcept
+		requires destructible
+		(progn
+		  (clear)
+		  (<< std--cout (string "operator=137")
+		      std--endl)
+		  (return *this)))
+	 (space "[[nodiscard]]" constexpr explicit operator
+		(bool) const noexcept
+		(progn
+		  (<< std--cout (string "bool")
+			std--endl)
+		  (return (!= ptr_ null))
+		  ))
 
 	 
 	 ))
