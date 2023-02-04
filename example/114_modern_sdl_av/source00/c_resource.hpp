@@ -41,4 +41,14 @@ public:
       : ptr_{null} {
     construct(&ptr_, static_cast<Ts &&>(Args)...);
   }
+  template <typename... Ts>
+    requires(sizeof...(Ts) > 0 &&
+             requires(T * p, Ts... Args) {
+               { construct(&p, Args...) } -> std::same_as<void>;
+             })
+  [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
+      c_resource(Ts &&...Args) noexcept
+      : ptr_{null} {
+    construct(&ptr_, static_cast<Ts &&>(Args)...);
+  }
 };
