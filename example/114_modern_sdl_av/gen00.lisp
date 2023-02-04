@@ -51,9 +51,10 @@
 	 "public:"
 	 "static constexpr construct_t constructed = {};"
 	 "[[nodiscard]] constexpr c_resource() noexcept = default;"
-	 "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}{} template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null } { construct( &ptr_, static_cast<Ts &&> (Args)... ); } "
+	 "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}{} "
+	 "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null } { construct( &ptr_, static_cast<Ts &&> (Args)... ); } "
 	 ;; WTF! greater than inside a template
-	 
+	 ""
 	 ))
       ))))
 
