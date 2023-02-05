@@ -424,12 +424,12 @@
 					  -1
 					  (or SDL_RENDERER_ACCELERATED
 					      SDL_RENDERER_PRESENTVSYNC)))
-		   #+nil (do0 (SDL_SetWindowMinimumSize Window_
+		   (do0 (SDL_SetWindowMinimumSize Window_
 						  Viewport.Width Viewport.Height)
 			(SDL_RenderSetLogicalSize Renderer_
-						  Viewport.Width Viewport.Height))
-		  ;; (SDL_SetIntegerScale Renderer_ SDL_TRUE)
-		  ;; (SLD_SetRenderDrawColor Renderer_ 240 240 240 240)
+						  Viewport.Width Viewport.Height)
+			(SDL_RenderSetIntegerScale Renderer_ SDL_TRUE)
+			(SDL_SetRenderDrawColor Renderer_ 240 240 240 240))
 		   )
 		 )
 	       
