@@ -63,6 +63,7 @@
 		(progn
 		  (<< std--cout (string "construct75")
 		      std--endl)))
+	
 	 (space template "<typename... Ts>"
 		(requires (logand (< 0 (sizeof... Ts))
 			       "std::is_invocable_r_v<T*, Constructor, Ts...>")
@@ -78,7 +79,8 @@
 		ptr_
 		(curly (construct "static_cast<Ts &&>(Args)..."))
 		(progn
-		  (<< std--cout (string "construct83")
+		  (<< std--cout (string "construct83 ")
+		      __FUNCTION__
 		      std--endl)))
 	 ;; WTF! greater than inside a template
 	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null }"
@@ -119,7 +121,8 @@
 		    (_destruct ptr_)
 		    (setf ptr_ rhs.ptr_
 			  rhs.ptr_ null)
-		    (<< std--cout (string "operator=")
+		    (<< std--cout (string "operator= ")
+			__FUNCTION__
 			std--endl)
 		    )
 		  (return *this)))
@@ -144,7 +147,8 @@
 		requires destructible
 		(progn
 		  (_destruct ptr_)
-		  (<< std--cout (string "destruct129")
+		  (<< std--cout (string "destruct129 ")
+		      __FUNCTION__
 		      std--endl)))
 	 (space constexpr void (clear) noexcept
 		requires destructible
@@ -497,7 +501,8 @@
        (let ((w (FancyWindow (designated-initializer Width 320
 						     Height 240))))
 	 (w.updateFrom)
-	 (w.present))
+	 (while true
+	  (w.present)))
        (return 0))))
   )
 

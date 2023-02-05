@@ -40,7 +40,7 @@ public:
   [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
       c_resource(Ts &&...Args) noexcept
       : ptr_{construct(static_cast<Ts &&>(Args)...)} {
-    std::cout << "construct83" << std::endl;
+    std::cout << "construct83 " << __FUNCTION__ << std::endl;
   };
   template <typename... Ts>
     requires(sizeof...(Ts) > 0 &&
@@ -74,7 +74,7 @@ public:
       ptr_ = rhs.ptr_;
       rhs.ptr_ = null;
 
-      std::cout << "operator=" << std::endl;
+      std::cout << "operator= " << __FUNCTION__ << std::endl;
     }
     return *this;
   };
@@ -94,7 +94,7 @@ public:
     requires destructible
   {
     _destruct(ptr_);
-    std::cout << "destruct129" << std::endl;
+    std::cout << "destruct129 " << __FUNCTION__ << std::endl;
   };
   constexpr void clear() noexcept
     requires destructible
