@@ -518,7 +518,7 @@
 	
 	 (while true
 	    (w.present)
-	   ;(SDL_Delay 3000)
+	   (SDL_Delay 15)
 	   ))
        (return 0))))
   )

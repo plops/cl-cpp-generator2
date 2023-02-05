@@ -5,6 +5,7 @@ int main(int argc, char **argv) {
   w.updateFrom();
   while (true) {
     w.present();
+    SDL_Delay(15);
   }
 
   return 0;
