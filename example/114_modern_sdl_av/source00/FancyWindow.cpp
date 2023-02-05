@@ -25,17 +25,6 @@ static auto centeredBox(tDimensions Dimensions, int Monitor) noexcept {
 }
 FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
   const auto Viewport = centeredBox(Dimensions);
-  Window_ = {"Look at me!",   Viewport.x,
-             Viewport.y,      Viewport.Width,
-             Viewport.Height, ((SDL_WINDOW_RESIZABLE) | (SDL_WINDOW_HIDDEN))};
-
-  Renderer_ = {Window_, -1,
-               ((SDL_RENDERER_ACCELERATED) | (SDL_RENDERER_PRESENTVSYNC))};
-
-  SDL_SetWindowMinimumSize(Window_, Viewport.Width, Viewport.Height);
-  SDL_RenderSetLogicalSize(Renderer_, Viewport.Width, Viewport.Height);
-  SDL_SetIntegerScale(Renderer_, SDL_TRUE);
-  SLD_SetRenderDrawColor(Renderer_, 240, 240, 240, 240);
 }
 
 bool isAlive() noexcept {

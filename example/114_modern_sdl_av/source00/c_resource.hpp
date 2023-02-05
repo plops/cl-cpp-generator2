@@ -147,6 +147,8 @@ public:
     return std::forward_like<decltype(self)>(self.ptr_);
   };
 #else
+  // this is the code that clang++ uses (my case)
+
   [[nodiscard]] constexpr operator pointer() noexcept { return like(*this); };
   [[nodiscard]] constexpr operator const_pointer() const noexcept {
     return like(*this);

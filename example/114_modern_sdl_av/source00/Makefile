@@ -11,7 +11,7 @@ all: main
 	$(CXX) $(CXXFLAGS) $< -c
 
 main:  FancyWindow.o main.o
-	$(CXX)  -o main $<  $(LDFLAGS)
+	$(CXX)  -o main $^  $(LDFLAGS)
 
 clean:
 	rm main.o FancyWindow.o main
