@@ -146,6 +146,19 @@ public:
   [[nodiscard]] constexpr auto get(this auto &&self) noexcept {
     return std::forward_like<decltype(self)>(self.ptr_);
   };
+#else
+  [[nodiscard]] constexpr operator pointer() noexcept { return like(*this); };
+  [[nodiscard]] constexpr operator const_pointer() const noexcept {
+    return like(*this);
+  };
+  [[nodiscard]] constexpr pointer operator->() noexcept { return like(*this); };
+  [[nodiscard]] constexpr const_pointer operator->() const noexcept {
+    return like(*this);
+  };
+  [[nodiscard]] constexpr pointer get() noexcept { return like(*this); };
+  [[nodiscard]] constexpr const_pointer get() const noexcept {
+    return like(*this);
+  };
 #endif
 public:
   constexpr void reset(pointer ptr = null) noexcept {

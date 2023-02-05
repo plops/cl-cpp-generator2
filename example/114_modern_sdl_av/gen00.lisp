@@ -231,7 +231,44 @@
 		noexcept
 		(progn
 		  (return ("std::forward_like<decltype(self)>" self.ptr_))))
-	 
+	 "#else"
+	 (comments "this is the code that clang++ uses (my case)")
+	 (space "[[nodiscard]]"
+		constexpr operator
+		(pointer)
+		noexcept
+		(progn
+		  (return (like *this))))
+	 (space "[[nodiscard]]"
+		constexpr operator
+		(const_pointer)
+		const noexcept
+		(progn
+		  (return (like *this))))
+	 (space "[[nodiscard]]"
+		constexpr pointer
+		(operator->)
+		noexcept
+		(progn
+		  (return (like *this))))
+	 (space "[[nodiscard]]"
+		constexpr const_pointer
+		(operator->)
+		const noexcept
+		(progn
+		  (return (like *this))))
+	 (space "[[nodiscard]]"
+		constexpr pointer
+		(get)
+		noexcept
+		(progn
+		  (return (like *this))))
+	 (space "[[nodiscard]]"
+		constexpr const_pointer
+		(get)
+		const noexcept
+		(progn
+		  (return (like *this))))
 	 "#endif"
 	 "public:"
 	 (space constexpr void
