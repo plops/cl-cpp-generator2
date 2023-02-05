@@ -294,6 +294,19 @@
 		       )
 		Box (designated-initializer Width Dimensions.Width
 					    Height Dimensions.Height))
+	       "SDL_Rect Display;"
+	       (when (and (< 0 Monitor)
+			  (successful (SDL_GetDisplayBounds (- Monitor 1)
+							    &Display)))
+		 (setf Box.Width (std--min Display.w Box.Width)
+		       Box.Height (std--min Display.h Box.Height)
+		       Box.x (+ Display.x (/ (- Display.w
+						Box.Width)
+					     2))
+		       Box.y (+ Display.y (/ (- Display.h
+						Box.Height)
+					     2))))
+	       (return Box)
 	       )
 	     (defclass ,name ()
 	       "public:"
