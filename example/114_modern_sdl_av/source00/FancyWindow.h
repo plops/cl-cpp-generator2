@@ -11,6 +11,10 @@ struct tDimensions {
         uint16_t Height;
 };
 
+
+static constexpr bool successful (int Code)      ;  
+
+void centeredBox (tDimensions Dimensions, int Monitor = SDL_GetNumVideoDisplays())      ;  
 class FancyWindow  {
         public:
         explicit  FancyWindow (tDimensions Dimensions)   noexcept    ;  

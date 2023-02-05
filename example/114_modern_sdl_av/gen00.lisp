@@ -265,27 +265,28 @@
 			       (progn
 				 "uint16_t Width;"
 				 "uint16_t Height;"))
-			;(space bool (isAlive) noexcept)
+					
 			)
      :implementation-preamble `(do0
-				(setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
-				      "static constexpr auto TexttureFormat" SDL_PIXEL_FORMAT_ARGB8888)
-				(defun successful (Code)
-				  (declare (type int Code)
-					   (values "static constexpr bool"))
-				  (return (== 0 Code)))
-				#+nil(space bool (isAlive) noexcept
-				       (progn
-					 "SDL_Event event;"
-					 (while (SDL_PollEvent &event)
-					   (when (== SDL_QUIT
-						     event.type)
-					     (return false)))
-					 (return true)))
+				
+				
+				
 				
 				)
      :code `(do0
-	     
+	     (setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
+		   "static constexpr auto TexttureFormat" SDL_PIXEL_FORMAT_ARGB8888)
+	     (defun successful (Code)
+				  (declare (type int Code)
+					   (values "static constexpr bool"))
+				  (return (== 0 Code)))
+	     (defun centeredBox (Dimensions
+				 &key (Monitor (SDL_GetNumVideoDisplays)) 
+				 ;|Monitor=SDL_GetNumVideoDisplays()|
+				   )
+	       (declare (type tDimensions Dimensions)
+			(type int Monitor ;|Monitor=SDL_GetNumVideoDisplays()|
+			      )))
 	     (defclass ,name ()
 	       "public:"
 	       (defmethod ,name (Dimensions)
