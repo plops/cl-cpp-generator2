@@ -246,7 +246,8 @@
 		 noexcept
 		 (progn
 		   ;; FIXME: segfault happens here
-		   (return *this ;(like *this) 
+		   (return ;*this
+			   (like *this) 
  			   )))
 	  (space "[[nodiscard]]"
 		 constexpr operator
@@ -278,7 +279,18 @@
 		 const noexcept
 		 (progn
 		   (return (like *this)))))
-	 ;"#endif"
+					;"#endif"
+	 "private:"
+	 (defmethod like (self)
+	   (declare (type "c_resource&" self)
+		    (noexcept)
+		    (values "static constexpr auto"))
+	   (return self.ptr_))
+	 (defmethod like (self)
+	   (declare (type "const c_resource&" self)
+		    (noexcept)
+		    (values "static constexpr auto"))
+	   (return (static_cast<const_pointer> self.ptr_)))
 	 "public:"
 	 (space constexpr void
 		(reset "pointer ptr=null")

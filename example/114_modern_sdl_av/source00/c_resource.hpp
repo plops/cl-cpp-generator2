@@ -127,7 +127,7 @@ public:
     return 0 == std::memcmp(ptr_, rhs.ptr_, sizeof(T));
   };
   // this is the code that clang++ uses (my case)
-  [[nodiscard]] constexpr operator pointer() noexcept { return *this; };
+  [[nodiscard]] constexpr operator pointer() noexcept { return like(*this); };
   [[nodiscard]] constexpr operator const_pointer() const noexcept {
     return like(*this);
   };
@@ -139,6 +139,12 @@ public:
   [[nodiscard]] constexpr const_pointer get() const noexcept {
     return like(*this);
   };
+
+private:
+  static constexpr auto like(c_resource &self) noexcept { return self.ptr_; }
+  static constexpr auto like(const c_resource &self) noexcept {
+    return static_cast<const_pointer>(self.ptr_);
+  }
 
 public:
   constexpr void reset(pointer ptr = null) noexcept {
