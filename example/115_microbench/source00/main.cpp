@@ -3,7 +3,7 @@
 #include <iostream>
 constexpr int N = 1048576;
 
-constexpr int ITER = 100000;
+constexpr int ITER = 1000;
 
 int main(int argc, char **argv) {
   auto array = std::array<int, N>();
@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = ((end) - (start));
   std::cout << "elapsed: " << elapsed.count() << " ns" << std::endl;
+  std::cout << "sum: " << sum << std::endl;
 
   return 0;
 }
