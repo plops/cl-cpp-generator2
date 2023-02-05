@@ -64,8 +64,8 @@
 		  (<< std--cout (string "construct75")
 		      std--endl)))
 	 (space template "<typename... Ts>"
-		(requires (and (< 0 (sizeof... Ts))
-			       ("std::is_invocable_r_v<T*, Constructor, Ts...>"))
+		(requires (logand (< 0 (sizeof... Ts))
+			       "std::is_invocable_r_v<T*, Constructor, Ts...>")
 			  )
 		"[[nodiscard]]"
 		constexpr
@@ -154,8 +154,9 @@
 		  (<< std--cout (string "clear")
 		      std--endl)))
 	 (space constexpr c_resource&
-		(operator= "std::nullptr_t") noexcept
-		requires destructible
+		(operator= "std::nullptr_t")
+		noexcept
+		;requires destructible
 		(progn
 		  (clear)
 		  (<< std--cout (string "operator=137")
@@ -364,7 +365,7 @@
 				)
      :code `(do0
 	     (setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
-		   "static constexpr auto TexttureFormat" SDL_PIXELFORMAT_ARGB8888)
+		   "static constexpr auto TextureFormat" SDL_PIXELFORMAT_ARGB8888)
 	     (defun successful (Code)
 				  (declare (type int Code)
 					   (values "static constexpr bool"))
@@ -409,6 +410,8 @@
 		  (values :constructor))
 		 (let ((Viewport (centeredBox Dimensions)))
 		   (declare (type "const auto" Viewport))
+
+		   (comments "SDL_Window * SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags);")
 		   (setf Window_ (curly (string "Look at me!")
 					Viewport.x Viewport.y Viewport.Width Viewport.Height
 					(or SDL_WINDOW_RESIZABLE

@@ -2,7 +2,7 @@
 
 #include "FancyWindow.h"
 static const auto initializedSDL = SDL_Init(SDL_INIT_VIDEO);
-static constexpr auto TexttureFormat = SDL_PIXELFORMAT_ARGB8888;
+static constexpr auto TextureFormat = SDL_PIXELFORMAT_ARGB8888;
 
 static constexpr bool successful(int Code) { return 0 == Code; }
 
@@ -25,6 +25,8 @@ static auto centeredBox(tDimensions Dimensions, int Monitor) noexcept {
 }
 FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
   const auto Viewport = centeredBox(Dimensions);
+  // SDL_Window * SDL_CreateWindow(const char *title, int x, int y, int w, int
+  // h, Uint32 flags);
   Window_ = {"Look at me!",   Viewport.x,
              Viewport.y,      Viewport.Width,
              Viewport.Height, ((SDL_WINDOW_RESIZABLE) | (SDL_WINDOW_HIDDEN))};

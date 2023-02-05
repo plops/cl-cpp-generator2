@@ -35,8 +35,8 @@ public:
     std::cout << "construct75" << std::endl;
   };
   template <typename... Ts>
-    requires(((0 < sizeof...(Ts)) &
-              (std::is_invocable_r_v<T *, Constructor, Ts...>())))
+    requires(((0 < sizeof...(Ts)) &&
+              (std::is_invocable_r_v<T *, Constructor, Ts...>)))
   [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
       c_resource(Ts &&...Args) noexcept
       : ptr_{construct(static_cast<Ts &&>(Args)...)} {
@@ -104,9 +104,7 @@ public:
 
     std::cout << "clear" << std::endl;
   };
-  constexpr c_resource &operator=(std::nullptr_t) noexcept
-    requires destructible
-  {
+  constexpr c_resource &operator=(std::nullptr_t) noexcept {
     clear();
     std::cout << "operator=137" << std::endl;
     return *this;
