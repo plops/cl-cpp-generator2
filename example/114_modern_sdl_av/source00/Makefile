@@ -5,8 +5,13 @@ CXXFLAGS=-std=c++20 \
 
 LDFLAGS=`sdl2-config --libs`
 
+all: main
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -c
 
 main: main.o FancyWindow.o
 	$(CXX)  -o main $<  $(LDFLAGS)
+
+clean:
+	rm main.o FancyWindow.o main
