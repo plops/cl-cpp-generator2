@@ -7,10 +7,10 @@ LDFLAGS=`sdl2-config --libs`
 
 all: main
 
-%.o: %.cpp
+%.o: %.cpp FancyWindow.h c_resource.hpp
 	$(CXX) $(CXXFLAGS) $< -c
 
-main:  FancyWindow.o main.o
+main:  FancyWindow.o main.o 
 	$(CXX)  -o main $^  $(LDFLAGS)
 
 clean:

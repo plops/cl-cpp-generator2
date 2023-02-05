@@ -25,6 +25,9 @@ static auto centeredBox(tDimensions Dimensions, int Monitor) noexcept {
 }
 FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
   const auto Viewport = centeredBox(Dimensions);
+  Window_ = {"Look at me!",   Viewport.x,
+             Viewport.y,      Viewport.Width,
+             Viewport.Height, ((SDL_WINDOW_RESIZABLE) | (SDL_WINDOW_HIDDEN))};
 }
 
 bool isAlive() noexcept {

@@ -346,9 +346,9 @@
      :header-preamble `(do0
 			(include<> SDL2/SDL.h)
 			(include "c_resource.hpp")
-			(using Window ("c_resource<SDL_Window,SDL_CreateWindow,SDL_DestroyWindow>")
-			       Renderer ("c_resource<SDL_Renderer,SDL_CreateRenderer,SDL_DestroyRenderer>")
-			       Texture ("c_resource<SDL_Texture,SDL_CreateTexture,SDL_DestroyTexture>"))
+			(using Window "c_resource<SDL_Window,SDL_CreateWindow,SDL_DestroyWindow>"
+			       Renderer "c_resource<SDL_Renderer,SDL_CreateRenderer,SDL_DestroyRenderer>"
+			       Texture "c_resource<SDL_Texture,SDL_CreateTexture,SDL_DestroyTexture>")
 			(space struct
 			       tDimensions
 			       (progn
@@ -409,7 +409,7 @@
 		  (values :constructor))
 		 (let ((Viewport (centeredBox Dimensions)))
 		   (declare (type "const auto" Viewport))
-		  #+nil  (setf Window_ (curly (string "Look at me!")
+		   (setf Window_ (curly (string "Look at me!")
 					Viewport.x Viewport.y Viewport.Width Viewport.Height
 					(or SDL_WINDOW_RESIZABLE
 					    SDL_WINDOW_HIDDEN)))
