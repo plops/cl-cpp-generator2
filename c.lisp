@@ -377,8 +377,8 @@ entry return-values contains a list of return values. currently supports type, v
 														 (break "can't find type for keyword parameter ~a in defun"
 															name)))
 													   name
-													   (format nil "= ~a" (funcall emit init))
-													   #+nil  (when header-only ;; only in class definition
+													   
+													   (when header-only ;; only in class definition
 													     (format nil "= ~a" (funcall emit init))))))
 				  ))
 		  ;; 9 const keyword / or '=0' for pure function
@@ -806,6 +806,10 @@ entry return-values contains a list of return values. currently supports type, v
 		   (let ((args (cdr code)))
 		     (format nil "{~{~a~^, ~}}" (mapcar #'emit args))))
 		  (designated-initializer
+		   ;; designated-initializer {key val}*
+		   ;; (designated-initializer Width Dimensions.Width Height Dimensions.Height)
+		   ;; => {.Width = Dimensions.Width, .Height = Dimensions.Height}
+					    
 		   (let* ((args (cdr code)))
 		     (format nil "~a"
 			     (emit `(curly ,@(loop for (e f) on args by #'cddr

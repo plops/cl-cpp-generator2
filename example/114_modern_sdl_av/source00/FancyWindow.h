@@ -14,7 +14,7 @@ struct tDimensions {
 
 static constexpr bool successful (int Code)      ;  
 
-void centeredBox (tDimensions Dimensions, int Monitor = SDL_GetNumVideoDisplays())      ;  
+static auto centeredBox (tDimensions Dimensions, int Monitor = SDL_GetNumVideoDisplays())   noexcept   ;  
 class FancyWindow  {
         public:
         explicit  FancyWindow (tDimensions Dimensions)   noexcept    ;  

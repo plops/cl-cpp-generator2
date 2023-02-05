@@ -6,8 +6,14 @@ static constexpr auto TexttureFormat = SDL_PIXEL_FORMAT_ARGB8888;
 
 static constexpr bool successful(int Code) { return 0 == Code; }
 
-void centeredBox(tDimensions Dimensions,
-                 int Monitor = SDL_GetNumVideoDisplays()) {}
+static auto centeredBox(tDimensions Dimensions, int Monitor) noexcept {
+  struct {
+    int x = SDL_WINDOWPOS_CENTERED;
+    int y = SDL_WINDOWPOS_CENTERED;
+
+    int Width, Height;
+  } Box{.Width = Dimensions.Width, .Height = Dimensions.Height};
+}
 FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {}
 
 bool isAlive() noexcept {

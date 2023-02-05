@@ -281,12 +281,20 @@
 					   (values "static constexpr bool"))
 				  (return (== 0 Code)))
 	     (defun centeredBox (Dimensions
-				 &key (Monitor (SDL_GetNumVideoDisplays)) 
-				 ;|Monitor=SDL_GetNumVideoDisplays()|
-				   )
+				 &key (Monitor (SDL_GetNumVideoDisplays)))
 	       (declare (type tDimensions Dimensions)
-			(type int Monitor ;|Monitor=SDL_GetNumVideoDisplays()|
-			      )))
+			(type int Monitor)
+			(noexcept)
+			(values "static auto"))
+	       (space
+		struct
+		(progn (setf "int x" SDL_WINDOWPOS_CENTERED
+			     "int y" SDL_WINDOWPOS_CENTERED)
+		       "int Width, Height;"
+		       )
+		Box (designated-initializer Width Dimensions.Width
+					    Height Dimensions.Height))
+	       )
 	     (defclass ,name ()
 	       "public:"
 	       (defmethod ,name (Dimensions)
