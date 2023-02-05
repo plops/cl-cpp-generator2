@@ -245,8 +245,9 @@
 		 (pointer)
 		 noexcept
 		 (progn
-		   (return *this ;(like *this)
-			   )))
+		   ;; FIXME: segfault happens here
+		   (return *this ;(like *this) 
+ 			   )))
 	  (space "[[nodiscard]]"
 		 constexpr operator
 		 (const_pointer)
@@ -502,7 +503,8 @@
 						     Height 240))))
 	 (w.updateFrom)
 	 (while true
-	  (w.present)))
+	   (w.present)
+	   (SDL_Delay 3000)))
        (return 0))))
   )
 
