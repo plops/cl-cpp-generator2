@@ -14,7 +14,7 @@ static auto centeredBox(tDimensions Dimensions, int Monitor) noexcept {
     int Width, Height;
   } Box{.Width = Dimensions.Width, .Height = Dimensions.Height};
   SDL_Rect Display;
-  if (((0 < Monitor) &
+  if (((0 < Monitor) &&
        (successful(SDL_GetDisplayBounds(((Monitor) - (1)), &Display))))) {
     Box.Width = std::min(Display.w, Box.Width);
     Box.Height = std::min(Display.h, Box.Height);

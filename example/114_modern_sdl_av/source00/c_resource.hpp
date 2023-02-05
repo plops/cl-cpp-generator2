@@ -128,9 +128,25 @@ public:
     std::cout << "operator==" << std::endl;
     return 0 == std::memcmp(ptr_, rhs.ptr_, sizeof(T));
   };
-  // here should be some get and pointer methods whose implementation depends on
-  // __cpp_explicit_this_parameter
+#if defined(__cpp_explicit_this_parameter)
+  template <typename U, typename V>
+  static constexpr bool less_const = std-- is_const_v<U> < std-- is_const_v<V>;
 
+  template <typename U, typename V>
+  static constexpr bool similar = std::is_same_v<std::remove_const_t<U>, T>;
+
+  template <typename U, typename Self>
+    requires(((similar<U, T>)&&(!less_const<U, Self>)))
+  [[nodiscard]] constexpr operator U(this Self &&self) noexcept {
+    return std::forward_like<Self>(self.ptr_);
+  };
+  [[nodiscard]] constexpr auto operator->(this auto &&self) noexcept {
+    return std::forward_like<decltype(self)>(self.ptr_);
+  };
+  [[nodiscard]] constexpr auto get(this auto &&self) noexcept {
+    return std::forward_like<decltype(self)>(self.ptr_);
+  };
+#endif
 public:
   constexpr void reset(pointer ptr = null) noexcept {
     _destruct(ptr_);

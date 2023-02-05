@@ -165,7 +165,7 @@
 		(bool) const noexcept
 		(progn
 		  (<< std--cout (string "bool")
-			std--endl)
+		      std--endl)
 		  (return (!= ptr_ null))
 		  ))
 	 (space "[[nodiscard]]"
@@ -174,7 +174,7 @@
 		const noexcept
 		(progn
 		  (<< std--cout (string "empty")
-			std--endl)
+		      std--endl)
 		  (return (== ptr_ null))))
 	 (space "[[nodiscard]]"
 		constexpr friend bool
@@ -182,7 +182,7 @@
 		noexcept
 		(progn
 		  (<< std--cout (string "have")
-			std--endl)
+		      std--endl)
 		  (return (!= r.ptr_ null))))
 
 	 (space auto ("operator<=>" "const c_resource&") =delete)
@@ -193,11 +193,46 @@
 		const noexcept
 		(progn
 		  (<< std--cout (string "operator==")
-			std--endl)
+		      std--endl)
 		  (return (== 0 (std--memcmp ptr_
 					     rhs.ptr_
 					     (sizeof T))))))
-	 (comments "here should be some get and pointer methods whose implementation depends on __cpp_explicit_this_parameter")
+	 #+nil(comments "here should be some get and pointer methods whose implementation depends on __cpp_explicit_this_parameter")
+	 "#if defined(__cpp_explicit_this_parameter)"
+	 (space template "<typename U, typename V>"
+		static constexpr bool
+		(setf less_const (< std--is_const_v<U>
+				    std--is_const_v<V>)))
+	 (space template "<typename U, typename V>"
+		static constexpr bool
+		(setf similar "std::is_same_v< std::remove_const_t<U>, T >"))
+
+	 (space template "<typename U, typename Self>"
+		(requires (logand "similar<U,T>"
+				  "!less_const<U,Self>"))
+		"[[nodiscard]]"
+		constexpr operator
+		U
+		(* "this Self && self")
+		noexcept
+		(progn
+		  (return (std--forward_like<Self> self.ptr_))))
+	 (space "[[nodiscard]]"
+		constexpr
+		auto
+		(operator-> "this auto && self")
+		noexcept
+		(progn
+		  (return ("std::forward_like<decltype(self)>" self.ptr_))))
+	 (space "[[nodiscard]]"
+		constexpr
+		auto
+		(get "this auto && self")
+		noexcept
+		(progn
+		  (return ("std::forward_like<decltype(self)>" self.ptr_))))
+	 
+	 "#endif"
 	 "public:"
 	 (space constexpr void
 		(reset "pointer ptr=null")
@@ -205,15 +240,15 @@
 		(progn
 		  (_destruct ptr_)
 		  (setf ptr_ ptr)
-		   (<< std--cout (string "reset")
-		       std--endl)))
+		  (<< std--cout (string "reset")
+		      std--endl)))
 	 (space constexpr pointer
 		(release)
 		noexcept
 		(progn
 		  (let ((ptr ptr_))
 		    (setf ptr_ null)
-		   (<< std--cout (string "release")
+		    (<< std--cout (string "release")
 			std--endl) 
 		    (return ptr))
 		  ))
@@ -240,7 +275,7 @@
 			   (<< std--cout (string "~guard")
 			       std--endl)))
 		  "private:"
-		   "pointer ptr_;"))
+		  "pointer ptr_;"))
 	 "private:"
 	 (space constexpr static void
 		(_destruct "pointer& p")
@@ -249,7 +284,7 @@
 		(progn
 		  (unless (== p null)
 		    (<< std--cout (string "_destruct224 T*")
-			       std--endl)
+			std--endl)
 		    (destruct p))))
 	 (space constexpr static void
 		(_destruct "pointer& p")
@@ -258,12 +293,10 @@
 		(progn
 		  (unless (== p null)
 		    (<< std--cout (string "_destruct230 T**")
-			       std--endl)
+			std--endl)
 		    (destruct &p))))
 	 
-	 "pointer ptr_ = null;"
-	 
-	 ))
+	 "pointer ptr_ = null;"))
       )))
 
   (let ((name `FancyWindow))
@@ -314,7 +347,7 @@
 		Box (designated-initializer Width Dimensions.Width
 					    Height Dimensions.Height))
 	       "SDL_Rect Display;"
-	       (when (and (< 0 Monitor)
+	       (when (logand (< 0 Monitor)
 			  (successful (SDL_GetDisplayBounds (- Monitor 1)
 							    &Display)))
 		 (setf Box.Width (std--min Display.w Box.Width)
