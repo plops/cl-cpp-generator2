@@ -41,6 +41,30 @@ FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
   SDL_RenderSetIntegerScale(Renderer_, SDL_TRUE);
   SDL_SetRenderDrawColor(Renderer_, 240, 240, 240, 240);
 }
+void FancyWindow::updateFrom() noexcept {
+  Width_ = 320;
+  Height_ = 240;
+  PixelsPitch_ = 240;
+  SourceFormat_ = SDL_PIXELFORMAT_ARGB8888;
+
+  Texture_ = Texture(Renderer_, TextureFormat, SDL_TEXTUREACCESS_STREAMING,
+                     Width_, Height_);
+
+  SDL_SetWindowMinimumSize(Window_, Width_, Height_);
+  SDL_RenderSetLogicalSize(Renderer_, Width_, Height_);
+  SDL_ShowWindow(Window_);
+}
+void FancyWindow::present() noexcept {
+  SDL_RenderClear(Renderer_);
+  void *TextureData;
+  int TexturePitch;
+  if (successful(
+          SDL_LockTexture(Texture_, nullptr, &TextureData, &TexturePitch))) {
+    SDL_UnlockTexture(Texture_);
+    SDL_RenderCopy(Renderer_, Texture_, nullptr, nullptr);
+  }
+  SDL_RenderPresent(Renderer_);
+}
 
 bool isAlive() noexcept {
   SDL_Event event;

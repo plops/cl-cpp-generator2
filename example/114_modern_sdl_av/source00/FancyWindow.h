@@ -19,6 +19,8 @@ static auto centeredBox (tDimensions Dimensions, int Monitor = SDL_GetNumVideoDi
 class FancyWindow  {
         public:
         explicit  FancyWindow (tDimensions Dimensions)   noexcept    ;  
+        void updateFrom ()   noexcept    ;  
+        void present ()   noexcept    ;  
         private:
         Window Window_;
         Renderer Renderer_;

@@ -432,6 +432,38 @@
 			(SDL_SetRenderDrawColor Renderer_ 240 240 240 240))
 		   )
 		 )
+	       (defmethod updateFrom ()
+		 (declare (noexcept))
+		 (setf Width_ 320
+		       Height_ 240
+		       PixelsPitch_ 240
+		       SourceFormat_ SDL_PIXELFORMAT_ARGB8888)
+		 (setf Texture_ (Texture Renderer_
+					 TextureFormat
+					 SDL_TEXTUREACCESS_STREAMING
+					 Width_
+					 Height_))
+		 (SDL_SetWindowMinimumSize Window_ Width_ Height_)
+		 (SDL_RenderSetLogicalSize Renderer_ Width_ Height_)
+		 (SDL_ShowWindow Window_)
+		 )
+
+	       (defmethod present ()
+		 (declare (noexcept))
+		 (SDL_RenderClear Renderer_)
+		 "void* TextureData;"
+		 "int TexturePitch;"
+		 (when (successful
+			(SDL_LockTexture Texture_
+					 nullptr
+					 &TextureData
+					 &TexturePitch)
+			)
+		   ;; SDL_ConvertPixels
+		   (SDL_UnlockTexture Texture_)
+		   (SDL_RenderCopy Renderer_ Texture_ nullptr nullptr)
+		   )
+		 (SDL_RenderPresent Renderer_))
 	       
 	       "private:"
 	       "Window Window_;"
@@ -463,7 +495,9 @@
 		(type char** argv)
 		(values int))
        (let ((w (FancyWindow (designated-initializer Width 320
-						     Height 240)))))
+						     Height 240))))
+	 (w.updateFrom)
+	 (w.present))
        (return 0))))
   )
 
