@@ -1,20 +1,15 @@
 (defun lprint (&key (msg "")
-		    (level "info")
 		    (vars nil)
-		    (svars nil)
+
 		    )
-  `(,(format nil "spdlog::~a" level)
-    (string ,(format nil "~a~{ ~a~}~{ ~a~}"
+  `(fmt--print
+    (string ,(format nil "~a~{ ~a~}\\n"
 		     msg
 		     (loop for e in vars
 			   collect
-			   (format nil " ~a='{}'" (emit-c :code e)))
-		     (loop for e in svars
-			   collect
 			   (format nil " ~a='{}'" (emit-c :code e)))))
     ,@vars
-    ,@svars))
-
+    ))
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
 										    (list "-i"  (namestring ,fn)

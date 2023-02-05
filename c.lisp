@@ -152,6 +152,8 @@ entry return-values contains a list of return values. currently supports type, v
 	(inline-p nil)
 	(static-p nil)
 	(virtual-p nil)
+	(noexcept-p nil)
+	(final-p nil)
 	(override-p nil)
 	(pure-p nil)
 	(template nil)
@@ -187,6 +189,10 @@ entry return-values contains a list of return values. currently supports type, v
 		      (setf inline-p t))
 		    (when (eq (first declaration) 'virtual)
 		      (setf virtual-p t))
+		    (when (eq (first declaration) 'noexcept)
+			  (setf noexcept-p t))
+		    (when (eq (first declaration) 'final)
+			  (setf final-p t))
 		    (when (eq (first declaration) 'override)
 		      (setf override-p t))
 		    (when (eq (first declaration) 'pure)
@@ -216,7 +222,7 @@ entry return-values contains a list of return values. currently supports type, v
 		(push e new-body)))
 	  (push e new-body)))
     (values (reverse new-body) env (reverse captures) (reverse constructs)
-	    const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)))
+	    const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance)))
 
 (defun lookup-type (name &key env)
   "get the type of a variable from an environment"
@@ -274,7 +280,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
   (destructuring-bind (decls &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body)
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
 	(format s "~a"
 		(funcall emit
@@ -294,7 +300,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defun parse-defun (code emit &key header-only (class nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 			    key-param other-key-p
 			    aux-param key-exist-p)
@@ -391,10 +397,14 @@ entry return-values contains a list of return values. currently supports type, v
 	  (unless header-only
 	    (format s "~a~%" (funcall emit `(progn ,@body)))))))))
 
+;; https://stackoverflow.com/questions/21577466/the-order-of-override-and-noexcept-in-the-standard
+;; This states that override and final have to come after noexcept.
+;; void f() final is the same as virtual f() final override
+
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
   ;; defun function-name lambda-list [declaration*] form*
   (destructuring-bind (name lambda-list &rest body) (cdr code)
-    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance) (consume-declare body) ;; py
+    (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
 			    key-param other-key-p
 			    aux-param key-exist-p)
@@ -413,12 +423,12 @@ entry return-values contains a list of return values. currently supports type, v
 	  (return-from parse-defmethod (format nil "// virtual method ~a" name)))
 
 	(with-output-to-string (s)
-	  ;;         template          static          inline  virtual ret   params                                header-only
+	  ;;         template          static          inline  virtual ret   params               noexc,fina         header-only
 	  ;;                                   explicit                   name  const   pure      override                       constructs
 	  ;;         1                 2       3       4       5       6  7  8  9       9b        9c               10               11
 					; format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;;~]  ~@[: ~a~]"
 
-	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~]  ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;noexcept~] ~:[~;final~] ~:[~;override~]  ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -497,6 +507,8 @@ entry return-values contains a list of return values. currently supports type, v
 			     (not header-only))
 			"const")
 		  (when header-only pure-p)
+		  (when header-only noexcept-p)
+		  (when header-only final-p)
 		  (when header-only override-p) ;; FIXME: not working in defclass+
 		  ;; semicolon if header only
 		  (and (not inline-p) header-only)
@@ -1218,7 +1230,7 @@ entry return-values contains a list of return values. currently supports type, v
 				 (emit `(progn ,@body)))))
 		  (for-range (destructuring-bind ((var range) &rest body)
 				 (cdr code)
-			       (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)
+			       (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance)
 				   (consume-declare body)
 				 (format str "for(~a ~a: ~a) ~a"
 					 (or (lookup-type var :env env)
@@ -1227,7 +1239,7 @@ entry return-values contains a list of return values. currently supports type, v
 					 (emit range)
 					 (emit `(progn ,@body))))))
 		  (dotimes (destructuring-bind ((i n &optional (step 1)) &rest body) (cdr code)
-			     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p override-p pure-p template template-instance)
+			     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance)
 				 (consume-declare body)
 			       (emit `(for (,(format nil "~a ~a = 0"
 

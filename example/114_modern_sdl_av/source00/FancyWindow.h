@@ -14,7 +14,7 @@ bool isAlive() noexcept;
 
 class FancyWindow  {
         public:
-        explicit  FancyWindow (tDimensions Dimensions)     ;  
+        explicit  FancyWindow (tDimensions Dimensions)   noexcept    ;  
         private:
         Window Window_;
         Renderer Renderer_;

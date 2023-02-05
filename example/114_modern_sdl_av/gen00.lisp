@@ -12,7 +12,7 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
   
-  
+  (load "util.lisp")
   
   (write-source
    (asdf:system-relative-pathname
@@ -246,7 +246,57 @@
 	 "pointer ptr_ = null;"
 	 
 	 ))
-      ))))
+      )))
+
+  (let ((name `FancyWindow))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> SDL2/SDL.h)
+			(using Window ("c_resource<SDL_Window,SDL_CreateWindow,SDL_DestroyWindow>")
+			       Renderer ("c_resource<SDL_Renderer,SDL_CreateRenderer,SDL_DestroyRenderer>")
+			       Texture ("c_resource<SDL_Texture,SDL_CreateTexture,SDL_DestroyTexture>"))
+			(space struct
+			       tDimensions
+			       (progn
+				 "uint16_t Width;"
+				 "uint16_t Height;"))
+			(space bool (isAlive) noexcept)
+			)
+     :implementation-preamble `(do0
+				(space bool (isAlive) noexcept
+				       (progn
+					 "SDL_Event event;"
+					 (while (SDL_PollEvent &event)
+					   (when (== SDL_QUIT
+						     event.type)
+					     (return false)))
+					 (return true)))
+				)
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (Dimensions)
+		 (declare
+		  (type tDimensions Dimensions)
+		  (construct
+		   )
+		  (explicit)
+		  (noexcept)
+		  (values :constructor))
+		 )
+	       
+	       "private:"
+	       "Window Window_;"
+	       "Renderer Renderer_;"
+	       "Texture Texture_;"
+	       "int Width_, Height_, PixelsPitch_, SourceFormat_;"))))
+  )
 
 
   
