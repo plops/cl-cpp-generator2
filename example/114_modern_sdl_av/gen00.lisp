@@ -80,7 +80,7 @@
 		(curly (construct "static_cast<Ts &&>(Args)..."))
 		(progn
 		  (<< std--cout (string "construct83 ")
-		      __FUNCTION__
+		      __PRETTY_FUNCTION__
 		      std--endl)))
 	 ;; WTF! greater than inside a template
 	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null }"
@@ -122,7 +122,7 @@
 		    (setf ptr_ rhs.ptr_
 			  rhs.ptr_ null)
 		    (<< std--cout (string "operator= ")
-			__FUNCTION__
+			__PRETTY_FUNCTION__
 			std--endl)
 		    )
 		  (return *this)))
@@ -148,9 +148,7 @@
 		(progn
 		  (_destruct ptr_)
 		  (<< std--cout (string "destruct129 ")
-		      __FUNCTION__ (string " ")
-		      __PRETTY_FUNCTION__ (string " ")
-		      __func__
+		      __PRETTY_FUNCTION__ 
 		      std--endl)))
 	 (space constexpr void (clear) noexcept
 		requires destructible
