@@ -318,6 +318,22 @@
 		  (explicit)
 		  (noexcept)
 		  (values :constructor))
+		 (let ((Viewport (centeredBox Dimensions)))
+		   (declare (type "const auto" Viewport))
+		   (setf Window_ (curly (string "Look at me!")
+					Viewport.x Viewport.y Viewport.Width Viewport.Height
+					(or SDL_WINDOW_RESIZABLE
+					    SDL_WINDOW_HIDDEN)))
+		   (setf Renderer_ (curly Window_
+					  -1
+					  (or SDL_RENDERER_ACCELERATED
+					      SDL_RENDERER_PRESENTVSYNC)))
+		   (SDL_SetWindowMinimumSize Window_
+					     Viewport.Width Viewport.Height)
+		   (SDL_RenderSetLogicalSize Renderer_
+					     Viewport.Width Viewport.Height)
+		   (SDL_SetIntegerScale Renderer_ SDL_True)
+		   (SLD_SetRenderDrawColor Renderer_ 240 240 240 240))
 		 )
 	       
 	       "private:"
