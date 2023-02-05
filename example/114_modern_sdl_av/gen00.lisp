@@ -199,78 +199,81 @@
 					     rhs.ptr_
 					     (sizeof T))))))
 	 #+nil(comments "here should be some get and pointer methods whose implementation depends on __cpp_explicit_this_parameter")
-	 "#if defined(__cpp_explicit_this_parameter)"
-	 (space template "<typename U, typename V>"
-		static constexpr bool
-		(setf less_const (< std--is_const_v<U>
-				    std--is_const_v<V>)))
-	 (space template "<typename U, typename V>"
-		static constexpr bool
-		(setf similar "std::is_same_v< std::remove_const_t<U>, T >"))
+	 ;"#if defined(__cpp_explicit_this_parameter)"
+	 #+nil (do0
+	  (space template "<typename U, typename V>"
+		 static constexpr bool
+		 (setf less_const (< "std::is_const_v<U>"
+				     "std::is_const_v<V>")))
+	  (space template "<typename U, typename V>"
+		 static constexpr bool
+		 (setf similar "std::is_same_v< std::remove_const_t<U>, T >"))
 
-	 (space template "<typename U, typename Self>"
-		(requires (logand "similar<U,T>"
-				  "!less_const<U,Self>"))
-		"[[nodiscard]]"
-		constexpr operator
-		U
-		(* "this Self && self")
-		noexcept
-		(progn
-		  (return (std--forward_like<Self> self.ptr_))))
-	 (space "[[nodiscard]]"
-		constexpr
-		auto
-		(operator-> "this auto && self")
-		noexcept
-		(progn
-		  (return ("std::forward_like<decltype(self)>" self.ptr_))))
-	 (space "[[nodiscard]]"
-		constexpr
-		auto
-		(get "this auto && self")
-		noexcept
-		(progn
-		  (return ("std::forward_like<decltype(self)>" self.ptr_))))
-	 "#else"
-	 (comments "this is the code that clang++ uses (my case)")
-	 (space "[[nodiscard]]"
-		constexpr operator
-		(pointer)
-		noexcept
-		(progn
-		  (return (like *this))))
-	 (space "[[nodiscard]]"
-		constexpr operator
-		(const_pointer)
-		const noexcept
-		(progn
-		  (return (like *this))))
-	 (space "[[nodiscard]]"
-		constexpr pointer
-		(operator->)
-		noexcept
-		(progn
-		  (return (like *this))))
-	 (space "[[nodiscard]]"
-		constexpr const_pointer
-		(operator->)
-		const noexcept
-		(progn
-		  (return (like *this))))
-	 (space "[[nodiscard]]"
-		constexpr pointer
-		(get)
-		noexcept
-		(progn
-		  (return (like *this))))
-	 (space "[[nodiscard]]"
-		constexpr const_pointer
-		(get)
-		const noexcept
-		(progn
-		  (return (like *this))))
-	 "#endif"
+	  (space template "<typename U, typename Self>"
+		 (requires (logand "similar<U,T>"
+				   "!less_const<U,Self>"))
+		 "[[nodiscard]]"
+		 constexpr operator
+		 U
+		 (* "this Self && self")
+		 noexcept
+		 (progn
+		   (return ("std::forward_like<Self>" self.ptr_))))
+	  (space "[[nodiscard]]"
+		 constexpr
+		 auto
+		 (operator-> "this auto && self")
+		 noexcept
+		 (progn
+		   (return ("std::forward_like<decltype(self)>" self.ptr_))))
+	  (space "[[nodiscard]]"
+		 constexpr
+		 auto
+		 (get "this auto && self")
+		 noexcept
+		 (progn
+		   (return ("std::forward_like<decltype(self)>" self.ptr_)))))
+	 ;"#else"
+	 #-nil (do0
+	  (comments "this is the code that clang++ uses (my case)")
+	  (space "[[nodiscard]]"
+		 constexpr operator
+		 (pointer)
+		 noexcept
+		 (progn
+		   (return *this ;(like *this)
+			   )))
+	  (space "[[nodiscard]]"
+		 constexpr operator
+		 (const_pointer)
+		 const noexcept
+		 (progn
+		   (return (like *this))))
+	  (space "[[nodiscard]]"
+		 constexpr pointer
+		 (operator->)
+		 noexcept
+		 (progn
+		   (return (like *this))))
+	  (space "[[nodiscard]]"
+		 constexpr const_pointer
+		 (operator->)
+		 const noexcept
+		 (progn
+		   (return (like *this))))
+	  (space "[[nodiscard]]"
+		 constexpr pointer
+		 (get)
+		 noexcept
+		 (progn
+		   (return (like *this))))
+	  (space "[[nodiscard]]"
+		 constexpr const_pointer
+		 (get)
+		 const noexcept
+		 (progn
+		   (return (like *this)))))
+	 ;"#endif"
 	 "public:"
 	 (space constexpr void
 		(reset "pointer ptr=null")
@@ -278,8 +281,8 @@
 		(progn
 		  (_destruct ptr_)
 		  (setf ptr_ ptr)
-		  (<< std--cout (string "reset")
-		      std--endl)))
+		  (<< "std::cout" (string "reset")
+		      "std::endl")))
 	 (space constexpr pointer
 		(release)
 		noexcept
@@ -416,14 +419,15 @@
 					Viewport.x Viewport.y Viewport.Width Viewport.Height
 					(or SDL_WINDOW_RESIZABLE
 					    SDL_WINDOW_HIDDEN)))
-		  #+nil  (setf Renderer_ (curly Window_
+		   (comments "SDL_Renderer * SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags);")
+		   (setf Renderer_ (curly Window_
 					  -1
 					  (or SDL_RENDERER_ACCELERATED
 					      SDL_RENDERER_PRESENTVSYNC)))
-		  #+nil  (SDL_SetWindowMinimumSize Window_
-					     Viewport.Width Viewport.Height)
-		#+nil   (SDL_RenderSetLogicalSize Renderer_
-					     Viewport.Width Viewport.Height)
+		   #+nil (do0 (SDL_SetWindowMinimumSize Window_
+						  Viewport.Width Viewport.Height)
+			(SDL_RenderSetLogicalSize Renderer_
+						  Viewport.Width Viewport.Height))
 		  ;; (SDL_SetIntegerScale Renderer_ SDL_TRUE)
 		  ;; (SLD_SetRenderDrawColor Renderer_ 240 240 240 240)
 		   )

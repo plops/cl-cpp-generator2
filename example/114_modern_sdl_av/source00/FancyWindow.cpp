@@ -30,6 +30,11 @@ FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
   Window_ = {"Look at me!",   Viewport.x,
              Viewport.y,      Viewport.Width,
              Viewport.Height, ((SDL_WINDOW_RESIZABLE) | (SDL_WINDOW_HIDDEN))};
+
+  // SDL_Renderer * SDL_CreateRenderer(SDL_Window * window, int index, Uint32
+  // flags);
+  Renderer_ = {Window_, -1,
+               ((SDL_RENDERER_ACCELERATED) | (SDL_RENDERER_PRESENTVSYNC))};
 }
 
 bool isAlive() noexcept {
