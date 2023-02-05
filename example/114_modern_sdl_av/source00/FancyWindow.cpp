@@ -34,7 +34,7 @@ FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {
 
   SDL_SetWindowMinimumSize(Window_, Viewport.Width, Viewport.Height);
   SDL_RenderSetLogicalSize(Renderer_, Viewport.Width, Viewport.Height);
-  SDL_SetIntegerScale(Renderer_, SDL_True);
+  SDL_SetIntegerScale(Renderer_, SDL_TRUE);
   SLD_SetRenderDrawColor(Renderer_, 240, 240, 240, 240);
 }
 

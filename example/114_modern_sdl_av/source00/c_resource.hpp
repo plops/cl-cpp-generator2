@@ -1,6 +1,7 @@
 #pragma once
 #include <concepts>
 #include <cstring>
+#include <iostream>
 #include <type_traits>
 template <typename T> constexpr inline T *c_resource_null_value = nullptr;
 // two api schemas for destructors and constructor

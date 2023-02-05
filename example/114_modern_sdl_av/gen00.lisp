@@ -23,7 +23,8 @@
      "#pragma once"
      (include<> concepts
 		cstring
-		type_traits)
+		type_traits
+		iostream)
      (do0
       "template <typename T> constexpr inline T *c_resource_null_value=nullptr;"
       (comments "two api schemas for destructors and constructor"
@@ -257,6 +258,7 @@
      :headers `()
      :header-preamble `(do0
 			(include<> SDL2/SDL.h)
+			(include "c_resource.hpp")
 			(using Window ("c_resource<SDL_Window,SDL_CreateWindow,SDL_DestroyWindow>")
 			       Renderer ("c_resource<SDL_Renderer,SDL_CreateRenderer,SDL_DestroyRenderer>")
 			       Texture ("c_resource<SDL_Texture,SDL_CreateTexture,SDL_DestroyTexture>"))
@@ -332,7 +334,7 @@
 					     Viewport.Width Viewport.Height)
 		   (SDL_RenderSetLogicalSize Renderer_
 					     Viewport.Width Viewport.Height)
-		   (SDL_SetIntegerScale Renderer_ SDL_True)
+		   (SDL_SetIntegerScale Renderer_ SDL_TRUE)
 		   (SLD_SetRenderDrawColor Renderer_ 240 240 240 240))
 		 )
 	       
@@ -351,6 +353,23 @@
 		   (return false)))
 	       (return true)
 	       ))))
+
+  (write-source
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2
+    (merge-pathnames #P"main.cpp"
+		     *source-dir*))
+   `(do0
+     #+nil
+     (include<> )
+     (include "FancyWindow.h")
+     (defun main (argc argv)
+       (declare (type int argc)
+		(type char** argv)
+		(values int))
+       (let ((w (FancyWindow (designated-initializer Width 320
+						     Height 240)))))
+       (return 0))))
   )
 
 

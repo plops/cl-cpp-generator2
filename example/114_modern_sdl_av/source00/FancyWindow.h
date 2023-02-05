@@ -2,6 +2,7 @@
 #define FANCYWINDOW_H
 
 #include <SDL2/SDL.h>
+#include "c_resource.hpp"
 using Window=c_resource<SDL_Window,SDL_CreateWindow,SDL_DestroyWindow>();
 using Renderer=c_resource<SDL_Renderer,SDL_CreateRenderer,SDL_DestroyRenderer>();
 using Texture=c_resource<SDL_Texture,SDL_CreateTexture,SDL_DestroyTexture>();
