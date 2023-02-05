@@ -9,4 +9,4 @@ bool isAlive() noexcept {
   return true;
 };
 #include "FancyWindow.h"
-FancyWindow::FancyWindow(tDimensions Dimensions) {}
+FancyWindow::FancyWindow(tDimensions Dimensions) noexcept {}
