@@ -514,9 +514,12 @@
        (let ((w (FancyWindow (designated-initializer Width 320
 						     Height 240))))
 	 (w.updateFrom)
+	
+	
 	 (while true
-	   (w.present)
-	   (SDL_Delay 3000)))
+	    (w.present)
+	   ;(SDL_Delay 3000)
+	   ))
        (return 0))))
   )
 
