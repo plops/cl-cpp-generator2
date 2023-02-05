@@ -41,8 +41,7 @@ public:
              })
   [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
       c_resource(Ts &&...Args) noexcept
-      : ptr_{null} {
-    construct(&ptr_, static_cast<Ts &&>(Args)...);
+      : ptr_{construct(static_cast<Ts &&>(Args)...)} {
     std::cout << "construct83" << std::endl;
   };
   template <typename... Ts>
@@ -50,12 +49,7 @@ public:
              requires(T * p, Ts... Args) {
                { construct(&p, Args...) } -> std::same_as<void>;
              })
-  [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
-      c_resource(Ts &&...Args) noexcept
-      : ptr_{null} {
-    construct(&ptr_, static_cast<Ts &&>(Args)...);
-    std::cout << "construct93" << std::endl;
-  };
+
   template <typename... Ts>
     requires(std::is_invocable_v<Constructor, T **, Ts...>)
   [[nodiscard]] constexpr auto emplace(Ts &&...Args) noexcept {

@@ -1,5 +1,5 @@
 CXX = clang++
-CXXFLAGS=-std=c++20 \
+CXXFLAGS=-std=gnu++2b \
  `sdl2-config --cflags` \
  -ggdb3 -O1
 
@@ -10,7 +10,7 @@ all: main
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -c
 
-main: main.o FancyWindow.o
+main:  FancyWindow.o main.o
 	$(CXX)  -o main $<  $(LDFLAGS)
 
 clean:

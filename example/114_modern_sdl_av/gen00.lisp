@@ -56,11 +56,10 @@
 		(progn
 		  (<< std--cout (string "construct75")
 		      std--endl)))
-	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ null }"
+	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ construct(static_cast<Ts &&>(Args)...) }"
 		(progn
 		  
-		  (construct &ptr_
-			     "static_cast<Ts &&> (Args)... ")
+		 
 		  (<< std--cout (string "construct83")
 		      std--endl)))
 	 ;; WTF! greater than inside a template
