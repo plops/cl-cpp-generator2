@@ -10,7 +10,6 @@ struct tDimensions {
         uint16_t Width;
         uint16_t Height;
 };
-bool isAlive() noexcept;
 
 class FancyWindow  {
         public:
@@ -21,5 +20,7 @@ class FancyWindow  {
         Texture Texture_;
         int Width_, Height_, PixelsPitch_, SourceFormat_;
 };
+
+bool isAlive ()   noexcept   ;  
 
 #endif /* !FANCYWINDOW_H */

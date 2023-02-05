@@ -313,7 +313,7 @@ entry return-values contains a list of return values. currently supports type, v
 	  ;;         template          static          inline  virtual ret   params     pure      override         header-only
 	  ;;                                   explicit                   name  const                                        constructs
 	  ;;         1                 2       3       4       5       6  7  8  9a      9b        9c               10        11
-	  (format s "~%~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;override~] ~:[~;;~]  ~@[: ~a~]"
+	  (format s "~%~@[template<~a> ~]~@[~a ~]~@[~a ~]~@[~a ~]~@[~a ~]~a ~a ~a ~@[~a~] ~:[~;=0~] ~:[~;noexcept~] ~:[~;final~] ~:[~;override~] ~:[~;;~]  ~@[: ~a~]"
 		  ;; 1 template
 		  (when template
 		    template)
@@ -387,6 +387,8 @@ entry return-values contains a list of return values. currently supports type, v
 			"const")
 
 		  nil ;; pure not applicable
+		  noexcept-p
+		  final-p
 		  nil ;; override-p not applicable
 		  ;; 10 semicolon if header only
 		  header-only

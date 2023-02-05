@@ -265,7 +265,7 @@
 			       (progn
 				 "uint16_t Width;"
 				 "uint16_t Height;"))
-			(space bool (isAlive) noexcept)
+			;(space bool (isAlive) noexcept)
 			)
      :implementation-preamble `(do0
 				(setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
@@ -274,7 +274,7 @@
 				  (declare (type int Code)
 					   (values "static constexpr bool"))
 				  (return (== 0 Code)))
-				(space bool (isAlive) noexcept
+				#+nil(space bool (isAlive) noexcept
 				       (progn
 					 "SDL_Event event;"
 					 (while (SDL_PollEvent &event)
@@ -282,6 +282,7 @@
 						     event.type)
 					     (return false)))
 					 (return true)))
+				
 				)
      :code `(do0
 	     
@@ -301,7 +302,17 @@
 	       "Window Window_;"
 	       "Renderer Renderer_;"
 	       "Texture Texture_;"
-	       "int Width_, Height_, PixelsPitch_, SourceFormat_;"))))
+	       "int Width_, Height_, PixelsPitch_, SourceFormat_;")
+	     (defun isAlive ()
+	       (declare (values bool)
+			(noexcept))
+	       "SDL_Event event;"
+	       (while (SDL_PollEvent &event)
+		 (when (== SDL_QUIT
+			   event.type)
+		   (return false)))
+	       (return true)
+	       ))))
   )
 
 
