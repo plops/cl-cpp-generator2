@@ -268,6 +268,12 @@
 			(space bool (isAlive) noexcept)
 			)
      :implementation-preamble `(do0
+				(setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
+				      "static constexpr auto TexttureFormat" SDL_PIXEL_FORMAT_ARGB8888)
+				(defun successful (Code)
+				  (declare (type int Code)
+					   (values "static constexpr bool"))
+				  (return (== 0 Code)))
 				(space bool (isAlive) noexcept
 				       (progn
 					 "SDL_Event event;"
