@@ -29,16 +29,14 @@ private:
 public:
   static constexpr construct_t constructed = {};
   [[nodiscard]] constexpr c_resource() noexcept = default;
-  [[nodiscard]] constexpr explicit c_resource(construct_t)
+  [[nodiscard]] constexpr explicit c_resource(construct_t) noexcept
     requires std::is_invocable_r_v<T *, Constructor>
       : ptr_{construct()} {
     std::cout << "construct75" << std::endl;
   };
   template <typename... Ts>
-    requires(sizeof...(Ts) > 0 &&
-             requires(T * p, Ts... Args) {
-               { construct(&p, Args...) } -> std::same_as<void>;
-             })
+    requires(((0 < sizeof...(Ts)) &
+              (std::is_invocable_r_v<T *, Constructor, Ts...>())))
   [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
       c_resource(Ts &&...Args) noexcept
       : ptr_{construct(static_cast<Ts &&>(Args)...)} {
@@ -49,7 +47,12 @@ public:
              requires(T * p, Ts... Args) {
                { construct(&p, Args...) } -> std::same_as<void>;
              })
-
+  [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1)
+      c_resource(Ts &&...Args) noexcept
+      : ptr_{null} {
+    construct(&ptr_, static_cast<Ts &&>(Args)...);
+    std::cout << "construct93" << std::endl;
+  };
   template <typename... Ts>
     requires(std::is_invocable_v<Constructor, T **, Ts...>)
   [[nodiscard]] constexpr auto emplace(Ts &&...Args) noexcept {

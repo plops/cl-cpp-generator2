@@ -2,7 +2,7 @@
 
 #include "FancyWindow.h"
 static const auto initializedSDL = SDL_Init(SDL_INIT_VIDEO);
-static constexpr auto TexttureFormat = SDL_PIXEL_FORMAT_ARGB8888;
+static constexpr auto TexttureFormat = SDL_PIXELFORMAT_ARGB8888;
 
 static constexpr bool successful(int Code) { return 0 == Code; }
 

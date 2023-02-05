@@ -52,14 +52,32 @@
 	 "public:"
 	 "static constexpr construct_t constructed = {};"
 	 "[[nodiscard]] constexpr c_resource() noexcept = default;"
-	 (space "[[nodiscard]] constexpr explicit c_resource(construct_t) requires std::is_invocable_r_v<T*,Constructor>:ptr_{construct()}"
+	 (space "[[nodiscard]]"
+		constexpr explicit
+		(c_resource construct_t)
+		noexcept
+		requires "std::is_invocable_r_v<T*,Constructor>"
+		":"
+		ptr_
+		(curly (construct))
 		(progn
 		  (<< std--cout (string "construct75")
 		      std--endl)))
-	 (space "template <typename... Ts> requires(sizeof...(Ts) > 0 && requires(T*p, Ts... Args) { { construct(&p, Args...) } -> std::same_as<void>; }) [[nodiscard]] constexpr explicit(sizeof...(Ts) == 1) c_resource(Ts &&... Args) noexcept : ptr_{ construct(static_cast<Ts &&>(Args)...) }"
+	 (space template "<typename... Ts>"
+		(requires (and (< 0 (sizeof... Ts))
+			       ("std::is_invocable_r_v<T*, Constructor, Ts...>"))
+			  )
+		"[[nodiscard]]"
+		constexpr
+
+		(explicit (== (sizeof... Ts)
+			      1))
+		(c_resource "Ts &&... Args")
+		noexcept
+		":"
+		ptr_
+		(curly (construct "static_cast<Ts &&>(Args)..."))
 		(progn
-		  
-		 
 		  (<< std--cout (string "construct83")
 		      std--endl)))
 	 ;; WTF! greater than inside a template
@@ -276,7 +294,7 @@
 				)
      :code `(do0
 	     (setf "static const auto initializedSDL" (SDL_Init SDL_INIT_VIDEO)
-		   "static constexpr auto TexttureFormat" SDL_PIXEL_FORMAT_ARGB8888)
+		   "static constexpr auto TexttureFormat" SDL_PIXELFORMAT_ARGB8888)
 	     (defun successful (Code)
 				  (declare (type int Code)
 					   (values "static constexpr bool"))
