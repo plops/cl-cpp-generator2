@@ -94,7 +94,8 @@ public:
     requires destructible
   {
     _destruct(ptr_);
-    std::cout << "destruct129 " << __FUNCTION__ << std::endl;
+    std::cout << "destruct129 " << __FUNCTION__ << " " << __PRETTY_FUNCTION__
+              << " " << __func__ << std::endl;
   };
   constexpr void clear() noexcept
     requires destructible

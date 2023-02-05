@@ -148,7 +148,9 @@
 		(progn
 		  (_destruct ptr_)
 		  (<< std--cout (string "destruct129 ")
-		      __FUNCTION__
+		      __FUNCTION__ (string " ")
+		      __PRETTY_FUNCTION__ (string " ")
+		      __func__
 		      std--endl)))
 	 (space constexpr void (clear) noexcept
 		requires destructible
