@@ -21,15 +21,10 @@ int main(int argc, char **argv) {
   pw_init(&argc, &argv);
   fmt::print("  pw_get_headers_version()='{}'  pw_get_library_version()='{}'\n",
              pw_get_headers_version(), pw_get_library_version());
-  MainLoop main_loop(nullptr);
-  Context context;
-  context = {pw_main_loop_get_loop(main_loop), nullptr, 0};
-
-  Core core;
-  core = {context, nullptr, 0};
-
-  Registry registry;
-  registry = {core, PW_VERSION_REGISTRY, 0};
+  auto main_loop = MainLoop(nullptr);
+  auto context = Context(pw_main_loop_get_loop(main_loop), nullptr, 0);
+  auto core = Core(context, nullptr, 0);
+  auto registry = Registry(core, PW_VERSION_REGISTRY, 0);
 
   return 0;
 }

@@ -88,15 +88,16 @@
 	       (pw_init &argc &argv)
 	       ,(lprint :vars `((pw_get_headers_version)
 				(pw_get_library_version)))
-	       "MainLoop main_loop(nullptr);"
-	       "Context context;"
-	       (setf context (curly (pw_main_loop_get_loop main_loop)
-				    nullptr
-				    0))
-	       "Core core;"
-	       (setf core (curly context nullptr 0))
-	       "Registry registry;"
-	       (setf registry (curly core PW_VERSION_REGISTRY 0))
+	      
+					
+	       (let ((main_loop (MainLoop nullptr))
+		     (context (Context (pw_main_loop_get_loop main_loop)
+				       nullptr
+				       0))
+		     (core (Core context nullptr 0))
+		     (registry (Registry core PW_VERSION_REGISTRY 0)))
+					
+		 )
 	       #+nil
 	       (do0 "spa_handle_factory *factory;"
 		    (spa_handle_factory_enum &factory
