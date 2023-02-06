@@ -100,9 +100,12 @@
 		     (context (Context (pw_main_loop_get_loop main_loop)
 				       nullptr
 				       0))
+		     ;; https://docs.pipewire.org/page_tutorial2.html
+		     ;; documentation says we should do error handling here
 		     (core (Core context nullptr 0))
 		     (registry (Registry core PW_VERSION_REGISTRY 0))
 		     (registry_listener (spa_hook)))
+		 
 		 (spa_zero registry_listener)
 		 (setf "pw_registry_events registry_events" (designated-initializer
 						  version PW_VERSION_REGISTRY_EVENTS
