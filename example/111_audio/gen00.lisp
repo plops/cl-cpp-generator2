@@ -101,7 +101,7 @@
 				       nullptr
 				       0))
 		     ;; https://docs.pipewire.org/page_tutorial2.html
-		     ;; documentation says we should do error handling here
+		     ;; FIXME: documentation says we should do error handling here
 		     (core (Core context nullptr 0))
 		     (registry (Registry core PW_VERSION_REGISTRY 0))
 		     (registry_listener (spa_hook)))
