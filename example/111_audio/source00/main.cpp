@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   auto core = ([&context]() {
     auto v = Core(context, nullptr, 0);
     if (nullptr == v) {
-      fmt::print("error: core\n");
+      fmt::print("error: connection with pipewire daemon failed\n");
     }
     return v;
   })();

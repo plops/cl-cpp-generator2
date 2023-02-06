@@ -106,7 +106,7 @@
 			      (declare (capture "&context"))
 			      (let ((v (Core context nullptr 0)))
 				(when (== nullptr v)
-				  ,(lprint :msg "error: core"))
+				  ,(lprint :msg "error: connection with pipewire daemon failed"))
 				(return v)))))
 		     (registry (Registry core PW_VERSION_REGISTRY 0))
 		     (registry_listener (spa_hook)))
@@ -124,12 +124,10 @@
 					
 		 )
 	       (pw_main_loop_run main_loop)
-	       #+nil
-	       (do0 "spa_handle_factory *factory;"
-		    (spa_handle_factory_enum &factory
-					     SPA_TYPE_INTERFACE_Node
-					     0
-					     0))
+	       ;; FIXME: this is still an infinite loop. tutorial 3
+	       ;; teaches how to close connection when all objects
+	       ;; were visited
+
 	       (return 0)))))
 
 
