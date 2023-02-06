@@ -29,7 +29,13 @@ int main(int argc, char **argv) {
              pw_get_headers_version(), pw_get_library_version());
   auto main_loop = MainLoop(nullptr);
   auto context = Context(pw_main_loop_get_loop(main_loop), nullptr, 0);
-  auto core = Core(context, nullptr, 0);
+  auto core = ([&context]() {
+    auto v = Core(context, nullptr, 0);
+    if (nullptr == v) {
+      fmt::print("error: core\n");
+    }
+    return v;
+  })();
   auto registry = Registry(core, PW_VERSION_REGISTRY, 0);
   auto registry_listener = spa_hook();
   spa_zero(registry_listener);

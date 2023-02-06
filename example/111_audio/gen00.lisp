@@ -102,7 +102,12 @@
 				       0))
 		     ;; https://docs.pipewire.org/page_tutorial2.html
 		     ;; FIXME: documentation says we should do error handling here
-		     (core (Core context nullptr 0))
+		     (core ((lambda ()
+			      (declare (capture "&context"))
+			      (let ((v (Core context nullptr 0)))
+				(when (== nullptr v)
+				  ,(lprint :msg "error: core"))
+				(return v)))))
 		     (registry (Registry core PW_VERSION_REGISTRY 0))
 		     (registry_listener (spa_hook)))
 		 
