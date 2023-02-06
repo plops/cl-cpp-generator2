@@ -115,6 +115,7 @@
 		       nullptr)
 					
 		 )
+	       (pw_main_loop_run main_loop)
 	       #+nil
 	       (do0 "spa_handle_factory *factory;"
 		    (spa_handle_factory_enum &factory

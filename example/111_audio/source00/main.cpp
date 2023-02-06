@@ -39,5 +39,6 @@ int main(int argc, char **argv) {
   pw_registry_add_listener(reinterpret_cast<spa_interface *>(registry.get()),
                            &registry_listener, &registry_events, nullptr);
 
+  pw_main_loop_run(main_loop);
   return 0;
 }
