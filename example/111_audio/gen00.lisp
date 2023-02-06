@@ -53,17 +53,27 @@
 		     (format nil "constexpr int ~a = ~a;" e f))
      ;; https://docs.pipewire.org/tutorial2_8c-example.html
      ,@(loop for e in `(main-loop context
-				  ;core registry properties filter global map-insert
-				  ;protocol resource stream thread-loop work-queue
+					;core registry properties filter global map-insert
+					;protocol resource stream thread-loop work-queue
 				  )
-			   collect
-			   (let* ((str (format nil "~a" e))
-				  (pascal (cl-change-case:pascal-case str))
-				  (snake (cl-change-case:snake-case str)))
-			     `(using ,pascal
-				     ,(format nil "stdex::c_resource< pw_~a, pw_~a_new, pw_~a_destroy >"
-					      snake snake snake))))
-     
+	     collect
+	     (let* ((str (format nil "~a" e))
+		    (pascal (cl-change-case:pascal-case str))
+		    (snake (cl-change-case:snake-case str)))
+	       `(using ,pascal
+		       ,(format nil "stdex::c_resource< pw_~a, pw_~a_new, pw_~a_destroy >"
+				snake snake snake))))
+
+     (defun local_pw_registry_destroy (registry)
+       (declare (type pw_registry* registry))
+       (pw_proxy_destroy (reinterpret_cast<pw_proxy*> registry)))
+     ,@(loop for (name type create destroy) in
+	     `((Core pw_core pw_context_connect pw_core_disconnect)
+	       (Registry pw_registry pw_core_get_registry local_pw_registry_destroy))
+	     collect
+	     `(using ,name
+		     ,(format nil "stdex::c_resource< ~a, ~a, ~a >"
+			      type create destroy)))
      
      #+nil (defclass data ()
 	       "public:"
@@ -83,6 +93,10 @@
 	       (setf context (curly (pw_main_loop_get_loop main_loop)
 				    nullptr
 				    0))
+	       "Core core;"
+	       (setf core (curly context nullptr 0))
+	       "Registry registry;"
+	       (setf registry (curly core PW_VERSION_REGISTRY 0))
 	       #+nil
 	       (do0 "spa_handle_factory *factory;"
 		    (spa_handle_factory_enum &factory

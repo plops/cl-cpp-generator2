@@ -9,6 +9,14 @@ using MainLoop =
 using Context =
     stdex::c_resource<pw_context, pw_context_new, pw_context_destroy>;
 
+void local_pw_registry_destroy(pw_registry *registry) {
+  pw_proxy_destroy(reinterpret_cast<pw_proxy *>(registry));
+}
+using Core = stdex::c_resource<pw_core, pw_context_connect, pw_core_disconnect>;
+
+using Registry = stdex::c_resource<pw_registry, pw_core_get_registry,
+                                   local_pw_registry_destroy>;
+
 int main(int argc, char **argv) {
   pw_init(&argc, &argv);
   fmt::print("  pw_get_headers_version()='{}'  pw_get_library_version()='{}'\n",
@@ -16,6 +24,12 @@ int main(int argc, char **argv) {
   MainLoop main_loop(nullptr);
   Context context;
   context = {pw_main_loop_get_loop(main_loop), nullptr, 0};
+
+  Core core;
+  core = {context, nullptr, 0};
+
+  Registry registry;
+  registry = {core, PW_VERSION_REGISTRY, 0};
 
   return 0;
 }
