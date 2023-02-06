@@ -42,35 +42,54 @@
    `(do0
      
      (include "fatheader.hpp")
+     (include "c_resource.hpp")
 					;"import fatheader;"
 
      ,@(loop for (e f) in `((SAMPLE_RATE 44100)
-			    (CHANNELS 2)
-			    (BUFFER_SIZE 8192)
-			    )
-	     collect
-	     (format nil "constexpr int ~a = ~a;" e f))
-     (defclass data ()
-       "public:"
-       "pw_main_loop* loop=nullptr;"
-       "pwstream* stream;"
-       "double accumulator;")
+				    (CHANNELS 2)
+				    (BUFFER_SIZE 8192)
+				    )
+		     collect
+		     (format nil "constexpr int ~a = ~a;" e f))
+     ;; https://docs.pipewire.org/tutorial2_8c-example.html
+     ,@(loop for e in `(main-loop context
+				  ;core registry properties filter global map-insert
+				  ;protocol resource stream thread-loop work-queue
+				  )
+			   collect
+			   (let* ((str (format nil "~a" e))
+				  (pascal (cl-change-case:pascal-case str))
+				  (snake (cl-change-case:snake-case str)))
+			     `(using ,pascal
+				     ,(format nil "stdex::c_resource< pw_~a, pw_~a_new, pw_~a_destroy >"
+					      snake snake snake))))
+     
+     
+     #+nil (defclass data ()
+	       "public:"
+	       "pw_main_loop* loop=nullptr;"
+	       "pwstream* stream;"
+	       "double accumulator;")
      (defun main (argc argv)
-       (declare (type int argc)
-		(type char** argv)
-		(values int))
+	       (declare (type int argc)
+			(type char** argv)
+			(values int))
 
-       (pw_init &argc &argv)
-       ,(lprint :vars `((pw_get_headers_version)
-			(pw_get_library_version)))
-       
-       #+nil
-       (do0 "spa_handle_factory *factory;"
-	    (spa_handle_factory_enum &factory
-				     SPA_TYPE_INTERFACE_Node
-				     0
-				     0))
-       (return 0)))))
+	       (pw_init &argc &argv)
+	       ,(lprint :vars `((pw_get_headers_version)
+				(pw_get_library_version)))
+	       "MainLoop main_loop(nullptr);"
+	       "Context context;"
+	       (setf context (curly (pw_main_loop_get_loop main_loop)
+				    nullptr
+				    0))
+	       #+nil
+	       (do0 "spa_handle_factory *factory;"
+		    (spa_handle_factory_enum &factory
+					     SPA_TYPE_INTERFACE_Node
+					     0
+					     0))
+	       (return 0)))))
 
 
   
