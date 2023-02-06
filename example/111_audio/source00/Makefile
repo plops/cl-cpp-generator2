@@ -1,17 +1,20 @@
 CXX = clang++
 CXXFLAGS=-std=gnu++2b \
- `sdl2-config --cflags` \
- -ggdb3 -O0
+ `pkg-config libpipewire-0.3 --cflags` \
+ `pkg-config fmt --cflags` \
+  -ggdb3 -O0
 
-LDFLAGS=`sdl2-config --libs`
+LDFLAGS=`pkg-config libpipewire-0.3 --libs` \
+        `pkg-config fmt --libs` \
+
 
 all: main
 
-%.o: %.cpp FancyWindow.h c_resource.hpp
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -c
 
-main:  FancyWindow.o main.o 
+main:  main.o
 	$(CXX)  -o main $^  $(LDFLAGS)
 
 clean:
-	rm main.o FancyWindow.o main
+	rm *.o main

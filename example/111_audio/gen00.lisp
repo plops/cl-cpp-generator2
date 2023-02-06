@@ -80,6 +80,12 @@
 	       "pw_main_loop* loop=nullptr;"
 	       "pwstream* stream;"
 	       "double accumulator;")
+     (defun registry_event_global (data id permissions type version props)
+       (declare (type void* data)
+		(type uint32_t id permissions version)
+		(type "const char*" type)
+		(type "const struct spa_dict*" props))
+       ,(lprint :vars `(id type version)))
      (defun main (argc argv)
 	       (declare (type int argc)
 			(type char** argv)
@@ -95,7 +101,17 @@
 				       nullptr
 				       0))
 		     (core (Core context nullptr 0))
-		     (registry (Registry core PW_VERSION_REGISTRY 0)))
+		     (registry (Registry core PW_VERSION_REGISTRY 0))
+		     (registry_listener (spa_hook)))
+		 (spa_zero registry_listener)
+		 (setf "pw_registry_events registry_events" (designated-initializer
+						  version PW_VERSION_REGISTRY_EVENTS
+						  global registry_event_global))
+		 #+Nil(pw_registry_add_listener ;(reinterpret_cast<spa_interface*> (registry.get))
+		       registry
+		       &registry_listener
+		       &registry_events
+		       nullptr)
 					
 		 )
 	       #+nil
