@@ -36,5 +36,8 @@ int main(int argc, char **argv) {
   pw_registry_events registry_events = {.version = PW_VERSION_REGISTRY_EVENTS,
                                         .global = registry_event_global};
 
+  pw_registry_add_listener(reinterpret_cast<spa_interface *>(registry.get()),
+                           &registry_listener, &registry_events, nullptr);
+
   return 0;
 }

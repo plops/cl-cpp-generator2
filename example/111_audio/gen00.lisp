@@ -107,8 +107,9 @@
 		 (setf "pw_registry_events registry_events" (designated-initializer
 						  version PW_VERSION_REGISTRY_EVENTS
 						  global registry_event_global))
-		 #+Nil(pw_registry_add_listener ;(reinterpret_cast<spa_interface*> (registry.get))
-		       registry
+		 (pw_registry_add_listener
+		  (reinterpret_cast<spa_interface*> (registry.get))
+		  
 		       &registry_listener
 		       &registry_events
 		       nullptr)
