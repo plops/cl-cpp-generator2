@@ -76,6 +76,5 @@ int main(int argc, char **argv) {
                            &registry_listener, &registry_events, nullptr);
   roundtrip(core, main_loop);
 
-  pw_main_loop_run(main_loop);
   return 0;
 }

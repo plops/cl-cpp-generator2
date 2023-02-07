@@ -141,11 +141,7 @@
 		 (roundtrip core main_loop)
 					
 		 )
-	       (pw_main_loop_run main_loop)
-	       ;; FIXME: this is still an infinite loop. tutorial 3
-	       ;; teaches how to close connection when all objects
-	       ;; were visited
-
+	       
 	       (return 0)))))
 
 
