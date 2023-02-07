@@ -51,7 +51,7 @@
 				    )
 		     collect
 		     (format nil "constexpr int ~a = ~a;" e f))
-     ;; https://docs.pipewire.org/tutorial2_8c-example.html
+     (comments "https://docs.pipewire.org/tutorial2_8c-example.html")
      ,@(loop for e in `(main-loop context
 					;core registry properties filter global map-insert
 					;protocol resource stream thread-loop work-queue

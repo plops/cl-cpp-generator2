@@ -3,6 +3,7 @@
 constexpr int SAMPLE_RATE = 44100;
 constexpr int CHANNELS = 2;
 constexpr int BUFFER_SIZE = 8192;
+// https://docs.pipewire.org/tutorial2_8c-example.html
 using MainLoop =
     stdex::c_resource<pw_main_loop, pw_main_loop_new, pw_main_loop_destroy>;
 
