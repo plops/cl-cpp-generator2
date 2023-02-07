@@ -41,7 +41,20 @@
 		     *source-dir*))
    `(do0
      
-     (include "fatheader.hpp")
+					;(include "fatheader.hpp")
+     (include
+  
+      ,@(loop for e in `(; iostream
+			 algorithm
+			; cstdlib
+			 cstring
+			 spa/pod/parser.h
+			 spa/pod/builder.h
+			 pipewire/pipewire.h
+			 fmt/core.h)
+	      collect
+	      (format nil "<~a>" e))
+      )
      (include "c_resource.hpp")
 					;"import fatheader;"
 
