@@ -3,8 +3,6 @@
 #include <cstring>
 #include <fmt/core.h>
 #include <pipewire/pipewire.h>
-#include <spa/pod/builder.h>
-#include <spa/pod/parser.h>
 constexpr int SAMPLE_RATE = 44100;
 constexpr int CHANNELS = 2;
 constexpr int BUFFER_SIZE = 8192;

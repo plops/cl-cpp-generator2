@@ -6,34 +6,13 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (defparameter *source-dir* #P"example/111_audio/source00/")
+  (defparameter *source-dir* #P"example/111_audio/source01/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
-  (write-source
-   (asdf:system-relative-pathname
-    'cl-cpp-generator2
-    (merge-pathnames #P"fatheader.hpp"
-		     *source-dir*))
-   `(do0
-     "#pragma once"
-     (include
   
-      ,@(loop for e in `(iostream
-			 algorithm
-			 cstdlib
-			 cstring
-			 spa/pod/parser.h
-			 spa/pod/builder.h
-			 pipewire/pipewire.h
-			 fmt/core.h)
-	      collect
-	      (format nil "<~a>" e))
-      )))
-  
-
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -55,16 +34,9 @@
 	      collect
 	      (format nil "<~a>" e))
       )
-     (include "c_resource.hpp")
-					;"import fatheader;"
-
-     ,@(loop for (e f) in `((SAMPLE_RATE 44100)
-				    (CHANNELS 2)
-				    (BUFFER_SIZE 8192)
-				    )
-		     collect
-		     (format nil "constexpr int ~a = ~a;" e f))
-     (comments "https://docs.pipewire.org/tutorial2_8c-example.html")
+     (include "../source00/c_resource.hpp")
+				
+     (comments "https://docs.pipewire.org/tutorial3_8c-example.html")
      ,@(loop for e in `(main-loop context
 					;core registry properties filter global map-insert
 					;protocol resource stream thread-loop work-queue
@@ -79,6 +51,7 @@
 
      (defun local_pw_registry_destroy (registry)
        (declare (type pw_registry* registry))
+       ,(lprint :msg "local_pw_registry_destroy")
        (pw_proxy_destroy (reinterpret_cast<pw_proxy*> registry)))
      ,@(loop for (name type create destroy) in
 	     `((Core pw_core pw_context_connect pw_core_disconnect)
@@ -87,12 +60,45 @@
 	     `(using ,name
 		     ,(format nil "stdex::c_resource< ~a, ~a, ~a >"
 			      type create destroy)))
+
+     (space struct
+	    RoundtripData
+	    (progn
+	      "int pending;"
+	      "pw_main_loop* loop;"))
+
+     (defun on_core_done (data id seq)
+       (declare (type void* data)
+		(type uint32_t id)
+		(type int seq))
+       ,(lprint :msg "on_core_done")
+       (let ((d (reinterpret_cast<RoundtripData*> data)))
+	 (when (logand  (== PW_ID_CORE id)
+			(== d->pending seq))
+	   (pw_main_loop_quit d->loop))))
+
+     (defun roundtrip (core loop)
+       (declare (type pw_core* core)
+		(type pw_main_loop* loop))
+       ,(lprint :msg "roundtrip")
+       (setf "static const pw_core_events core_events"
+	     (designated-initializer
+	      version PW_VERSION_CORE_EVENTS
+	      done on_core_done))
+       (setf "RoundtripData d" (designated-initializer
+				loop loop))
+       "spa_hook core_listener;"
+       (pw_core_add_listener core
+			     &core_listener
+			     &core_events
+			     &d)
+       (setf d.pending
+	     (pw_core_sync core
+			   PW_ID_CORE
+			   0))
+       (pw_main_loop_run loop)
+       (spa_hook_remove &core_listener))
      
-     #+nil (defclass data ()
-	       "public:"
-	       "pw_main_loop* loop=nullptr;"
-	       "pwstream* stream;"
-	       "double accumulator;")
      (defun registry_event_global (data id permissions type version props)
        (declare (type void* data)
 		(type uint32_t id permissions version)
@@ -113,8 +119,6 @@
 		     (context (Context (pw_main_loop_get_loop main_loop)
 				       nullptr
 				       0))
-		     ;; https://docs.pipewire.org/page_tutorial2.html
-		     ;; FIXME: documentation says we should do error handling here
 		     (core ((lambda ()
 			      (declare (capture "&context"))
 			      (let ((v (Core context nullptr 0)))
@@ -134,6 +138,7 @@
 		       &registry_listener
 		       &registry_events
 		       nullptr)
+		 (roundtrip core main_loop)
 					
 		 )
 	       (pw_main_loop_run main_loop)

@@ -48,8 +48,8 @@
 			 algorithm
 			; cstdlib
 			 cstring
-			 spa/pod/parser.h
-			 spa/pod/builder.h
+			 ;spa/pod/parser.h
+			 ;spa/pod/builder.h
 			 pipewire/pipewire.h
 			 fmt/core.h)
 	      collect
