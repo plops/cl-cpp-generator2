@@ -10,5 +10,5 @@ interface MyService {
     result @0 :Int32;
   }
 
-  calculate (params :Params) -> (results :Results);
+  calculate @0 (params :Params) -> (results :Results);
 }

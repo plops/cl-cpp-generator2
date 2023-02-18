@@ -5,9 +5,12 @@
 
 class MyServiceImpl final : public MyService::Server {
 public:
-  kj::Promise<void> calculate(MyService::CalculateContext context) override {
-    int arg1 = context.getParams().getArg1();
-    int arg2 = context.getParams().getArg2();
+  kj::Promise<void> calculate(MyService::Server::CalculateContext context) override {
+      auto P = context.getParams();
+      auto arg1 = P.getArg1();
+      auto arg2 = P.getArg2();
+   // int arg1 = context.getParams().getArg1();
+   // int arg2 = context.getParams().getArg2();
 
     // Perform calculation...
     int result = arg1 + arg2;

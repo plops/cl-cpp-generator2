@@ -20,7 +20,7 @@ target_include_directories(my_service PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/my_service.capnp.c++
-  COMMAND capnp compile -oc++ ${CMAKE_CURRENT_SOURCE_DIR}/my_service.capnp -I${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND capnp compile -oc++ --src-prefix=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/my_service.capnp -I${CMAKE_CURRENT_SOURCE_DIR}
   DEPENDS my_service.capnp
 )
 
