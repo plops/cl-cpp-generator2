@@ -20,7 +20,7 @@ BSI Back-Side Illumination.
 BSIM Berkeley Short channel IGFET Model.
 BWI Bit-Wise Inversion.
 CCD Charge-Coupled Device.
-CDS Correlated Double Sampling.
+CDS Correlated Double Swwwqampling.
 CG Conversion Gain.
 CIS CMOS Image Sensors.
 CLA Column-Level Amplifier.

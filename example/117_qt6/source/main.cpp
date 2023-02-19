@@ -5,7 +5,10 @@
 #include <QtCharts/QLineSeries>
 #include <QtWidgets/QMainWindow>
 
-QT_CHARTS_USE_NAMESPACE
+// QT_CHARTS_USE_NAMESPACE
+// using namespace QtCharts;
+
+QT_USE_NAMESPACE
 
 int main(int argc, char *argv[]) {
     // Create a new Qt application

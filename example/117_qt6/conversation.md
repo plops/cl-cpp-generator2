@@ -102,9 +102,9 @@ previous answer, here are the steps to install the necessary
 dependencies on Fedora and create a CMake file to compile the program:
 
     Install Qt6 and the required libraries:
-
+```
 sudo dnf install qt6-qtbase-devel qt6-qtsvg-devel qt6-qtcharts-devel
-
+```
 This command installs the necessary Qt6 development libraries,
 including qtbase, qtsvg, and qtcharts.
 
