@@ -1,12 +1,33 @@
 #include <array>
 #include <chrono>
+#include <cstdint>
+#include <cstdio>
+#include <fcntl.h>
 #include <fmt/core.h>
 #include <immintrin.h>
 #include <iostream>
+#include <linux/perf_event.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 #define ARRAY_SIZE 1000000
 
+void configure_msr() {
+  auto fd = open("/dev/cpu/0/msr", O_RDWR);
+  auto msr_perf = 0x38F;
+  auto enable_all_counters = 0x00000007000000ffull;
+  auto val = uint64_t(0);
+  pread(fd, &val, sizeof(val), msr_perf);
+  fmt::print("  val='{}'\n", val);
+  pwrite(fd, &enable_all_counters, sizeof(enable_all_counters), msr_perf);
+  pread(fd, &val, sizeof(val), msr_perf);
+  fmt::print("  val='{}'\n", val);
+
+  close(fd);
+}
+
 int main(int argc, char **argv) {
-  fmt::print("14:48:27 of Saturday, 2023-02-25 (GMT+1)\n");
+  fmt::print("15:09:43 of Saturday, 2023-02-25 (GMT+1)\n");
+  configure_msr();
   std::srand(std::time(nullptr));
   auto array = std::array<int, ARRAY_SIZE>();
   for (auto &e : array) {
