@@ -56,12 +56,13 @@
 	   (let ((array ("std::array<int,ARRAY_SIZE>")))
 	    (foreach (e array)
 		     (setf e (std--rand))))
-	 (let (,@ (loop for e in l
-			 and e-i from 0
-			 collect
-			 `(,e (__rdpmc (+ (<< 1 30) ,e-i)))
-			 ))
-	    )
+	   (comments "if rdpmc crashes, run this: echo 2 | sudo tee /sys/devices/cpu/rdpmc ")
+	   (let (,@ (loop for e in l
+			  and e-i from 0
+			  collect
+			  `(,e (__rdpmc (+ (<< 1 30) ,e-i)))
+			  ))
+	     )
 	  (return 0)))))
   )
 
@@ -72,3 +73,6 @@
 
 ;; echo 1 > /proc/sys/kernel/nmi_watchdog
 ;; cat /proc/sys/kernel/nmi_watchdog 
+;; /sys/devices/cpu/rdpmc
+
+;; echo 2 | sudo tee /sys/devices/cpu/rdpmc    # enable RDPMC always, not just when a perf event is open
