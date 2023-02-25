@@ -6,13 +6,17 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (defparameter *source-dir* #P"example/115_microbench/source00/")
+  (defparameter *source-dir* #P"example/115_microbench/source01/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
-  
-  
+    (defparameter *day-names*
+    '("Monday" "Tuesday" "Wednesday"
+      "Thursday" "Friday" "Saturday"
+      "Sunday"))
+
+  (load "util.lisp")
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -23,51 +27,48 @@
      (include<> chrono
 		iostream
 		array
-		cmath)
-     ,(let* ((n (*
-		 (expt 2 (- 10 0))
-		 (expt 2 (- 10 0))))
-	     (nmax (*
-		    (expt 2 (- 10 0))
-		    (expt 2 (- 10 0))))
-	     (iter (floor
-		    (* nmax 10000)
-		    n)))
-	`(do0
-	  (space constexpr int64_t (setf N ,n))
-	  (space constexpr int64_t (setf ITER ,iter))))
-     (defun main (argc argv)
-       (declare (type int argc)
-		(type char** argv)
-		(values int))
-      
-       (let ((array ("std::array<int,N>")))
-	 (dotimes (i N)
-	   (setf (aref array i) i))
-	 (let ((sum (int32_t 0))
-	       (start (std--chrono--high_resolution_clock--now)))
-	   (dotimes (j ITER)
-	     (dotimes (i N)
-	       (incf sum (aref array i))))
-	   (let ((end (std--chrono--high_resolution_clock--now))
-		 (elapsed (- end start)))
-	     (<< std--cout
-		 (string "time per iteration and element: ")
-		 (/ (elapsed.count)
-		    (static_cast<double> (* N ITER)))
-		 (string " ns")
-		 std--endl
-		 )
-	     (<< std--cout
-		 (string "sum: ")
-		 sum
-		 (string " N: ")
-		 N
-		 std--endl
-		 ))
-	   ))
-       (return 0))))
+		immintrin.h
+		fmt/core.h)
+     "#define ARRAY_SIZE 1000000"
+
+     ,(let ((l `(cycles ; branches mispredicts
+		 )))
+	`(defun main (argc argv)
+	  (declare (type int argc)
+		   (type char** argv)
+		   (values int))
+	   ,(lprint :msg
+		    (multiple-value-bind
+			  (second minute hour date month year day-of-week dst-p tz)
+			(get-decoded-time)
+   (declare (ignorable dst-p))
+		      (format nil "~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+			      hour
+			      minute
+			      second
+			      (nth day-of-week *day-names*)
+			      year
+			      month
+			      date
+			      (- tz)))
+		    )
+	   (std--srand (std--time nullptr))
+	   (let ((array ("std::array<int,ARRAY_SIZE>")))
+	    (foreach (e array)
+		     (setf e (std--rand))))
+	 (let (,@ (loop for e in l
+			 and e-i from 0
+			 collect
+			 `(,e (__rdpmc (+ (<< 1 30) ,e-i)))
+			 ))
+	    )
+	  (return 0)))))
   )
 
 
   
+;; https://community.intel.com/t5/Software-Tuning-Performance/How-to-read-performance-counters-by-rdpmc-instruction/td-p/1009043
+
+
+;; echo 1 > /proc/sys/kernel/nmi_watchdog
+;; cat /proc/sys/kernel/nmi_watchdog 
