@@ -60,10 +60,36 @@
 	   (let (,@ (loop for e in l
 			  and e-i from 0
 			  collect
-			  `(,e (__rdpmc (+ (<< 1 30) ,e-i)))
+			  `(,e (__rdpmc (+ (<< 1 30)
+					   ,e-i)))
 			  ))
 	     )
-	  (return 0)))))
+
+	   (let ((count 0))
+	     (foreach (e array)
+		      ;(declare (type "const auto&" e))
+		      (when (== 0 (% e 2))
+			(incf count))))
+	   
+	   (let (,@ (loop for e in l
+			  and e-i from 0
+			  collect
+			  `(,(format nil "new_~a" e) (__rdpmc (+ (<< 1 30) ,e-i)))
+			  ))
+	     )
+
+	   (let (,@ (loop for e in l
+			  and e-i from 0
+			  collect
+			  `(,(format nil "~a_count" e)
+			    (- ,(format nil "new_~a" e)
+			       ,e))
+			  ))
+	     ,@(loop for e in l
+		     collect
+		     (lprint :vars `(,(format nil "~a_count" e))))
+	     )
+	   (return 0)))))
   )
 
 
