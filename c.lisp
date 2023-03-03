@@ -689,6 +689,17 @@ entry return-values contains a list of return values. currently supports type, v
 		     (format nil "~{~a~^ ~}" (mapcar #'emit args))))
 		  (comments (let ((args (cdr code)))
 			      (format nil "~{// ~a~%~}" args)))
+		  (doc ;; java doc comments
+		   (let ((args (cdr code)))
+		     (frmat nil "~a"
+			    (emit
+			     `(do0
+			       ,(format nil "/** ~a~%" (first args))
+			       ,@(loop for line in (rest args)
+				       collect
+				       (format nil "* ~a~%" line))
+			       ,(format nil "*/")))))
+		   )
 		  (paren*
 		   ;; paren arg
 		   ;; place a pair of parentheses only when needed
@@ -858,8 +869,8 @@ entry return-values contains a list of return values. currently supports type, v
 										when if unless
 										let pragma
 										split-header-and-code
-										defun defmethod defclass
-										comments comment
+										defun defun* defmethod defclass
+										comments comment doc
 										namespace))))
 						    ""
 						    (if (eq #\Newline (aref b (- (length b) 1))) ;; don't place semicolon after newline
