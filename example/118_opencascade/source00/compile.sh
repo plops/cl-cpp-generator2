@@ -1,1 +1,63 @@
-g++ main.cpp -I/usr/include/opencascade
+
+#pacman -Ql opencascade|grep .so$|cut -d / -f 4|cut -d "." -f1|cut -d "b" -f 2
+
+g++ main.cpp -I/usr/include/opencascade \
+-lTKBin \
+-lTKBinL \
+-lTKBinTO \
+-lTKBinXCAF \
+-lTKBO \
+-lTKBool \
+-lTKBRep \
+-lTKCAF \
+-lTKCDF \
+-lTKDCAF \
+-lTKDraw \
+-lTKernel \
+-lTKFeat \
+-lTKFillet \
+-lTKG2d \
+-lTKG3d \
+-lTKGeomAlgo \
+-lTKGeomBase \
+-lTKHLR \
+-lTKIGES \
+-lTKIVtk \
+-lTKIVtkDraw \
+-lTKLCAF \
+-lTKMath \
+-lTKMesh \
+-lTKMeshVS \
+-lTKOffset \
+-lTKOpenGl \
+-lTKOpenGlTest \
+-lTKPrim \
+-lTKQADraw \
+-lTKRWMesh \
+-lTKService \
+-lTKShHealing \
+-lTKStd \
+-lTKStdL \
+-lTKSTEP \
+-lTKSTEP209 \
+-lTKSTEPAttr \
+-lTKSTEPBase \
+-lTKSTL \
+-lTKTO \
+-lTKTopAlgo \
+-lTKTopTest \
+-lTKV3d \
+-lTKVCAF \
+-lTKViewerTest \
+-lTKVRML \
+-lTKXCAF \
+-lTKXDEDRAW \
+-lTKXDEIGES \
+-lTKXDESTEP \
+-lTKXMesh \
+-lTKXml \
+-lTKXmlL \
+-lTKXmlTO \
+-lTKXmlXCAF \
+-lTKXSBase \
+-lTKXSDRAW 
