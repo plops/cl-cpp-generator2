@@ -52,11 +52,23 @@
 						   (gp_Pnt "1.0" "2.0" "0.0")
 						   (gp_Pnt "2.0" "-1.0" "0.0")
 						   (gp_Pnt "3.0" "0.0" "0.0"))))
-	     (points (std--make_shared<TColgp_HArray1OfPnt>
-		      1 (control_points.size))))
-	 (dotimes (i (control_points.size))
-	   (points->SetValue (+ 1 i)
-			     (aref control_points i)))))
+	     (points #+nil
+		     (std--make_shared<TColgp_HArray1OfPnt>
+		      1 (control_points.size))
+		     (new (TColgp_HArray1OfPnt
+		       1 (control_points.size)))))
+	 (declare (type "Handle(TColgp_HArray1OfPnt)" points))
+	 (for-range (p control_points)
+		    (let ((i (- &p (ref (aref control_points 0)))))
+		      (points->SetValue (+ i 1)
+					(aref control_points i))))
+	 (let ((curve #+nil (std--make_shared<Geom_BSplineCurve> points
+							  knots
+							  3)
+		      (new (Geom_BSplineCurve points
+					  knots
+					  3))))
+	   (declare (type "Handle(Geom_BSplineCurve)" curve)))))
      
      (defun main (argc argv)
        (declare (type int argc)

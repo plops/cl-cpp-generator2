@@ -19,10 +19,13 @@ void display() {
   auto control_points =
       std::vector<gp_Pnt>({gp_Pnt(0.0, 0.0, 0.0), gp_Pnt(1.0, 2.0, 0.0),
                            gp_Pnt(2.0, -1.0, 0.0), gp_Pnt(3.0, 0.0, 0.0)});
-  auto points = std::make_shared<TColgp_HArray1OfPnt>(1, control_points.size());
-  for (auto i = 0; i < control_points.size(); i += 1) {
-    points->SetValue((1 + i), control_points[i]);
+  Handle(TColgp_HArray1OfPnt) points =
+      new TColgp_HArray1OfPnt(1, control_points.size());
+  for (auto p : control_points) {
+    auto i = ((&p) - (&(control_points[0])));
+    points->SetValue((i + 1), control_points[i]);
   }
+  Handle(Geom_BSplineCurve) curve = new Geom_BSplineCurve(points, knots, 3);
 }
 
 int main(int argc, char **argv) {
