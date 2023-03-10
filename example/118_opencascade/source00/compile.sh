@@ -4,7 +4,6 @@
 g++ main.cpp -I/usr/include/opencascade \
 -lTKBin \
 -lTKBinL \
--lTKBinTO \
 -lTKBinXCAF \
 -lTKBO \
 -lTKBool \
@@ -22,8 +21,6 @@ g++ main.cpp -I/usr/include/opencascade \
 -lTKGeomBase \
 -lTKHLR \
 -lTKIGES \
--lTKIVtk \
--lTKIVtkDraw \
 -lTKLCAF \
 -lTKMath \
 -lTKMesh \
@@ -43,7 +40,6 @@ g++ main.cpp -I/usr/include/opencascade \
 -lTKSTEPAttr \
 -lTKSTEPBase \
 -lTKSTL \
--lTKTO \
 -lTKTopAlgo \
 -lTKTopTest \
 -lTKV3d \
@@ -57,7 +53,7 @@ g++ main.cpp -I/usr/include/opencascade \
 -lTKXMesh \
 -lTKXml \
 -lTKXmlL \
--lTKXmlTO \
 -lTKXmlXCAF \
 -lTKXSBase \
--lTKXSDRAW 
+    -lTKXSDRAW \
+    -lGLEW
