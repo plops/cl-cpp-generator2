@@ -32,6 +32,15 @@ void main ()        {
   auto compiled = shaderc::Compiler().CompileGlslToSpv(
       printShader, shaderc_compute_shader, "hello_world.comp");
   auto spirv = std::vector<uint32_t>(compiled.cbegin(), compiled.cend());
+  auto shaderModule =
+      device->createShaderModuleUnique(ShaderModuleCreateInfo({}, spirv));
+  auto stageInfo = PipelineShaderStageCreateInfo(
+      {}, ShaderStageFlagBits::eCompute, *shaderModule, "main");
+  auto pipelineLayout =
+      device->createPipelineLayoutUnique(PipelineLayoutCreateInfo());
+  auto pipelineInfo = ComputePipelineCreateInfo({}, stageInfo, *pipelineLayout);
+  auto [status, pipeline] = device->createComputePipelineUnique(
+      *(device->createPipelineCacheUnique({})), pipelineInfo);
 
   return 0;
 }

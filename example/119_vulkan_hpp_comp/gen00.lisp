@@ -73,7 +73,22 @@
 						    shaderc_compute_shader
 						    (string "hello_world.comp"))))
 		   (spirv (std--vector<uint32_t> (compiled.cbegin)
-						 (compiled.cend))))))))
+						 (compiled.cend)))
+		   (shaderModule (device->createShaderModuleUnique
+				  (ShaderModuleCreateInfo "{}" spirv)))
+		   (stageInfo (PipelineShaderStageCreateInfo
+			       "{}" ShaderStageFlagBits--eCompute
+			       *shaderModule
+			       (string "main")))
+		   (pipelineLayout (device->createPipelineLayoutUnique
+				   (PipelineLayoutCreateInfo)))
+		   (pipelineInfo (ComputePipelineCreateInfo (curly)
+							    stageInfo
+							    *pipelineLayout))
+		   ((bracket status pipeline)
+		     (device->createComputePipelineUnique
+		      (deref (device->createPipelineCacheUnique (curly)))
+		      pipelineInfo)))))))
        (return 0))))
   )
 
