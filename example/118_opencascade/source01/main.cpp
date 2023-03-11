@@ -65,5 +65,6 @@ int main(int argc, char **argv) {
   wheelAxleProto.shape = BuildWheelAxle(wheelProto.shape, axleProto.shape, L);
   wheelAxleProto.label = ST->AddShape(wheelAxleProto.shape, true);
 
+  app->SaveAs(doc, "doc.xbf");
   return 0;
 }

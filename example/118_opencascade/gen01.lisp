@@ -148,7 +148,10 @@
 					 true)
 		       ))
 	       ))))
+
        
+       (app->SaveAs doc
+		    (string "doc.xbf"))
        (return 0))))
   )
 
