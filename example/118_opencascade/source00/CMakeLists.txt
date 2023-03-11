@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(opencascade_example)
+project(opencascade_example CXX)
 
 # Set the path to the OpenCASCADE installation directory
 set(OCC_DIR "/usr")
 
 # Find the OpenCASCADE libraries
-find_package(OpenCASCADE REQUIRED COMPONENTS FoundationClasses ModelingData Visualization)
+find_package(OpenCASCADE REQUIRED COMPONENTS FoundationClasses ModelingData ) #Visualization)
 
 # Add the OpenCASCADE include directories to the include path
-include_directories(${OpenCASCADE_INCLUDE_DIRS})
+include_directories(${OpenCASCADE_INCLUDE_DIRS} /usr/include/opencascade)
 
 # Add the executable target
 add_executable(opencascade_example main.cpp)
