@@ -70,7 +70,8 @@
        (declare (type "const double" OD W)
 		(values TopoDS_Shape))
        (return
-	 (BRepPrimAPI_MakeCylinder (gp_Ax2 (gp--Origin)
+	 (BRepPrimAPI_MakeCylinder (gp_Ax2 (gp_Pnt -W/2
+						    0 0)
 					   (gp--DX))
 				   (/ OD 2)
 				   W)))
@@ -78,10 +79,27 @@
        (declare (type "const double" D L)
 		(values TopoDS_Shape))
        (return
-	 (BRepPrimAPI_MakeCylinder (gp_Ax2 (gp--Origin)
+	 (BRepPrimAPI_MakeCylinder (gp_Ax2 (gp_Pnt -L/2 0 0)
 					   (gp--DX))
 				   (/ D 2)
 				   L)))
+
+     (defun BuildWheelAxle (wheel axle L)
+       (declare (type "const double" L)
+		(type "const TopoDS_Shape&" wheel axle)
+		(values TopoDS_Shape))
+       (let ((comp (TopoDS_Compound))
+	     (bbuilder (BRep_Builder))
+	     (wheelT_right (gp_Trsf))
+	     (wheelT_left (gp_Trsf))
+	     )
+	 (wheelT_right.SetTranslationPart (gp_Vec L/2 0 0))
+	 (wheelT_left.SetTranslationPart (gp_Vec -L/2 0 0))
+	 (bbuilder.MakeCompound comp)
+	 (bbuilder.Add comp (dot wheel (Moved wheelT_right)))
+	  (bbuilder.Add comp (dot wheel (Moved wheelT_left)))
+	 (bbuilder.Add comp axle)
+	 (return comp)))
 
      
      (defclass+ t_prototype ()
@@ -105,10 +123,30 @@
 	   
 	     (let ((OD 500d0)
 		   (W 100d0)
-		   (wheelProto (t_prototype)))
-	       (setf wheelProto.shape (BuildWheel OD W)
-					;  wheelProto.label
-		     )
+		   (D 50)
+		   (L 500)
+		   )
+	       (let ((wheelProto (t_prototype)))
+		 (setf wheelProto.shape (BuildWheel OD W)
+		       wheelProto.label (ST->AddShape
+					 wheelProto.shape
+					 false)))
+
+	       (let ((axleProto (t_prototype)))
+		 (setf axleProto.shape (BuildAxle D L)
+		       axleProto.label (ST->AddShape
+					 axleProto.shape
+					 false)
+		       ))
+
+	       (let ((wheelAxleProto (t_prototype)))
+		 (setf wheelAxleProto.shape (BuildWheelAxle wheelProto.shape
+							    axleProto.shape
+							    L)
+		       wheelAxleProto.label (ST->AddShape
+					 wheelAxleProto.shape
+					 true)
+		       ))
 	       ))))
        
        (return 0))))
