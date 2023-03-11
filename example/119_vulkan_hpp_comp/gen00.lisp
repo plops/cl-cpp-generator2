@@ -20,17 +20,60 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> vector
-		GL/glut.h
-		memory)
-     
 
+     (comments "sudo pacman -S vulkan-headers vulkan-devel")
+     (include<> vulkan/vulkan.hpp
+		shaderc/shaderc.hpp
+		vector)
+     
+     "using namespace vk;"
      
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
-
+       "(void) argc;"
+       "(void) argv;"
+       (let ((info (ApplicationInfo (string "hello world")
+				    0
+				    nullptr
+				    0
+				    VK_API_VERSION_1_3))
+	     (instance (createInstanceUnique (InstanceCreateInfo
+					      "{}" &info)))
+	     (physicalDevice (-> instance
+				 (aref (enumeratePhysicalDevices) 0)))
+	     (qProps (physicalDevice.getQueueFamilyProperties))
+	     (family 0))
+	 (for-range (qProp qProps)
+		    (when (and qProp.queueFlags
+			       QueueFlagBits--eCompute)
+		      break)
+		    (incf family))
+	 (let ((priority (curly 1s0)))
+	   (declare (type (array "constexpr float" 1) priority))
+	   (let ((qInfo (DeviceQueueCreateInfo "{}"
+					       family
+					       1
+					       priority))
+		 (device (physicalDevice.createDeviceUnique
+			  (DeviceCreateInfo "{}"
+					    qInfo)))
+		 (printShader (string-r ,(emit-c :code `(do0
+							 "#version 460"
+							 "#extension GL_EXT_debug_printf : require"
+							 (defun main ()
+							   (debugPrintfEXT
+							    (string "hello from thread %d\\n")
+							    gl_GlobalInvocationID.x))))))
+		 )
+	     (declare (type "const std::string" printShader))
+	     (let ((compiled (dot (shaderc--Compiler)
+				  (CompileGlslToSpv printShader
+						    shaderc_compute_shader
+						    (string "hello_world.comp"))))
+		   (spirv (std--vector<uint32_t> (compiled.cbegin)
+						 (compiled.cend))))))))
        (return 0))))
   )
 

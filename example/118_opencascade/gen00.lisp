@@ -39,14 +39,17 @@
 			(format nil "opencascade/~a.hxx" e)))
 
      (defun display ()
-       (let ((knots (std--vector<double> (curly "0.0"
-						"0.0"
-						"0.0"
-						"1.0"
-						"2.0"
-						"3.0"
-						"3.0"
-						"3.0")))
+       (let ((knots (std--vector<double> (curly 0 1 2 3)
+					 #+nil (curly "0.0"
+						      "0.0"
+						      "0.0"
+						      "1.0"
+						      "2.0"
+						      "3.0"
+						      "3.0"
+						      "3.0")))
+	     (knot_multi (std--vector<int> (curly 3 1 1 3)))
+	     
 	     (control_points (std--vector<gp_Pnt> (curly
 						   (gp_Pnt "0.0" "0.0" "0.0")
 						   (gp_Pnt "1.0" "2.0" "0.0")
@@ -67,6 +70,7 @@
 							  3)
 		      (new (Geom_BSplineCurve points
 					  knots
+					  knot_multi
 					  3))))
 	   (declare (type "Handle(Geom_BSplineCurve)" curve)))))
      
