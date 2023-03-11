@@ -88,7 +88,26 @@
 		   ((bracket status pipeline)
 		     (device->createComputePipelineUnique
 		      (deref (device->createPipelineCacheUnique (curly)))
-		      pipelineInfo)))))))
+		      pipelineInfo))
+		   (pool (device->createCommandPoolUnique (CommandPoolCreateInfo (curly)
+										 family)))
+		   (allocateInfo (CommandBufferAllocateInfo *pool
+							    CommandBufferLevel--ePrimary
+							    1))
+		   (cmdBuffers (device->allocateCommandBuffersUnique allocateInfo))
+		   )
+	       ,@(loop for e in `((begin "CommandBufferBeginInfo{}")
+				  (bindPipeline PipelineBindPoint--eCompute *pipeline)
+				  (dispatch 8 1 1)
+				  (end))
+		       collect
+		       `(-> (aref cmdBuffers 0)
+			    ,e))
+	       (dot (device->getQueue family 0)
+		    (submit (SubmitInfo (curly)
+					(curly)
+					(deref (aref cmdBuffers 0)))))
+	       (device->waitIdle)))))
        (return 0))))
   )
 

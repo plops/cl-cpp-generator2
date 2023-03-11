@@ -41,6 +41,17 @@ void main ()        {
   auto pipelineInfo = ComputePipelineCreateInfo({}, stageInfo, *pipelineLayout);
   auto [status, pipeline] = device->createComputePipelineUnique(
       *(device->createPipelineCacheUnique({})), pipelineInfo);
+  auto pool =
+      device->createCommandPoolUnique(CommandPoolCreateInfo({}, family));
+  auto allocateInfo =
+      CommandBufferAllocateInfo(*pool, CommandBufferLevel::ePrimary, 1);
+  auto cmdBuffers = device->allocateCommandBuffersUnique(allocateInfo);
+  cmdBuffers[0]->begin(CommandBufferBeginInfo{});
+  cmdBuffers[0]->bindPipeline(PipelineBindPoint::eCompute, *pipeline);
+  cmdBuffers[0]->dispatch(8, 1, 1);
+  cmdBuffers[0]->end();
+  device->getQueue(family, 0).submit(SubmitInfo({}, {}, *(cmdBuffers[0])));
+  device->waitIdle();
 
   return 0;
 }
