@@ -56,6 +56,18 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
       opencascade::handle<Geom_TrimmedCurve>(GC_MakeSegment(p1, p2));
   auto aSegment2 =
       opencascade::handle<Geom_TrimmedCurve>(GC_MakeSegment(p4, p5));
+  auto anEdge1 = BRepBuilderAPI_MakeEdge(aSegment1);
+  auto anEdge2 = BRepBuilderAPI_MakeEdge(anArcOfCircle);
+  auto anEdge3 = BRepBuilderAPI_MakeEdge(aSegment2);
+  auto aWire = BRepBuilderAPI_MakeWire(anEdge1, anEdge2, anEdge3);
+  auto aTrsf = ([]() {
+    auto xAxis = gp::OX();
+    auto a = gp_Trsf();
+    return a.SetMirror(xAxis);
+  })();
+  auto aBRepTrsf = BRepBuilderAPI_Transform(aWire, aTrsf);
+  auto aMirroredShape = aBRepTrsf.Shape();
+  auto aMirroredWire = TopoDS::Wire(aMirroredShape);
 }
 
 bool WriteStep(const Handle(TDocStd_Document) & doc, const char *filename) {

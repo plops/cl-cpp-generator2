@@ -95,7 +95,21 @@
 	     (p5 (gp_Pnt myWidth/2 0 0))
 	     (anArcOfCircle ,(ptr `(Geom_TrimmedCurve (GC_MakeArcOfCircle p2 p3 p4))))
 	     (aSegment1 ,(ptr `(Geom_TrimmedCurve (GC_MakeSegment p1 p2))))
-	     (aSegment2 ,(ptr `(Geom_TrimmedCurve (GC_MakeSegment p4 p5)))))))
+	     (aSegment2 ,(ptr `(Geom_TrimmedCurve (GC_MakeSegment p4 p5))))
+	     (anEdge1 (BRepBuilderAPI_MakeEdge aSegment1))
+	     (anEdge2 (BRepBuilderAPI_MakeEdge anArcOfCircle))
+	     (anEdge3 (BRepBuilderAPI_MakeEdge aSegment2))
+	     (aWire (BRepBuilderAPI_MakeWire anEdge1 anEdge2 anEdge3))
+	     
+	     (aTrsf ((lambda ()
+		       (let ((xAxis (gp--OX))
+			     (a (gp_Trsf)))
+			 (return (a.SetMirror xAxis))))))
+	     (aBRepTrsf (BRepBuilderAPI_Transform aWire aTrsf))
+	     (aMirroredShape (dot aBRepTrsf
+				(Shape)))
+	     (aMirroredWire (TopoDS--Wire aMirroredShape)))
+	 ))
 
      (defun WriteStep (doc filename)
        (declare (type "const char*" filename)
