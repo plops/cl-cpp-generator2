@@ -2,6 +2,7 @@
 #include <memory>
 #include <opencascade/BRepPrimAPI_MakeCylinder.hxx>
 #include <opencascade/BinXCAFDrivers.hxx>
+#include <opencascade/STEPCAFControl_Writer.hxx>
 #include <opencascade/TDocStd_Application.hxx>
 #include <opencascade/XCAFDoc_ColorTool.hxx>
 #include <opencascade/XCAFDoc_DocumentTool.hxx>
@@ -32,6 +33,30 @@ TopoDS_Shape BuildWheelAxle(const TopoDS_Shape &wheel, const TopoDS_Shape &axle,
   bbuilder.Add(comp, axle);
   return comp;
 }
+
+TopoDS_Shape BuildChassis(const TopoDS_Shape &wheelAxle, const double CL) {
+  auto comp = TopoDS_Compound();
+  auto bbuilder = BRep_Builder();
+  auto frontT = gp_Trsf();
+  auto rearT = gp_Trsf();
+  frontT.SetTranslationPart(gp_Vec(0, CL / 2, 0));
+  rearT.SetTranslationPart(gp_Vec(0, -CL / 2, 0));
+  bbuilder.MakeCompound(comp);
+  bbuilder.Add(comp, wheelAxle.Moved(frontT));
+  bbuilder.Add(comp, wheelAxle.Moved(rearT));
+  return comp;
+}
+
+bool WriteStep(const Handle(TDocStd_Document) & doc, const char *filename) {
+  auto Writer = STEPCAFControl_Writer();
+  if (!(Writer.Transfer(doc))) {
+    return false;
+  }
+  if (!(IFSelect_RetDone == Writer.Write(filename))) {
+    return false;
+  }
+  return true;
+}
 class t_prototype {
 public:
   TopoDS_Shape shape;
@@ -51,8 +76,9 @@ int main(int argc, char **argv) {
       XCAFDoc_DocumentTool::ColorTool(doc->Main()));
   auto OD = (5.00e+2);
   auto W = (1.00e+2);
-  auto D = 50;
-  auto L = 500;
+  auto D = (50.);
+  auto L = (5.00e+2);
+  auto CL = (6.00e+2);
   auto wheelProto = t_prototype();
   wheelProto.shape = BuildWheel(OD, W);
   wheelProto.label = ST->AddShape(wheelProto.shape, false);
@@ -65,6 +91,15 @@ int main(int argc, char **argv) {
   wheelAxleProto.shape = BuildWheelAxle(wheelProto.shape, axleProto.shape, L);
   wheelAxleProto.label = ST->AddShape(wheelAxleProto.shape, true);
 
-  app->SaveAs(doc, "doc.xbf");
+  auto chassisProto = t_prototype();
+  chassisProto.shape = BuildChassis(wheelAxleProto.shape, CL);
+  chassisProto.label = ST->AddShape(chassisProto.shape, true);
+
+  auto status = app->SaveAs(doc, "doc.xbf");
+  if (!(PCDM_SS_OK == status)) {
+    return 1;
+  }
+
+  WriteStep(doc, "o.stp");
   return 0;
 }
