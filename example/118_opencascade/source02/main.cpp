@@ -69,6 +69,24 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto aBRepTrsf = BRepBuilderAPI_Transform(aWire, aTrsf);
   auto aMirroredShape = aBRepTrsf.Shape();
   auto aMirroredWire = TopoDS::Wire(aMirroredShape);
+  auto mkWire = ([&]() -> auto{
+    auto a = BRepBuilderAPI_MakeWire();
+    a.Add(aWire);
+    a.Add(aMirroredWire);
+    return a;
+  })();
+  auto myWireProfile = mkWire.Wire();
+  auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
+  auto aPrismVec = gp_Vec(0, 0, myHeight);
+  auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
+  auto aRes = ([&]() -> auto{
+    auto a = TopoDS_Compound();
+    auto b = BRep_Builder();
+    b.MakeCompound(a);
+    b.Add(a, myBody);
+    return a;
+  })();
+  return aRes;
 }
 
 bool WriteStep(const Handle(TDocStd_Document) & doc, const char *filename) {
