@@ -232,13 +232,14 @@
 			       XCAFDoc_ColorSurf))
 	       ))))
 
-       
-       (let  ((status (app->SaveAs doc
-				   (string "doc.xbf"))))
-	 (unless (==  PCDM_SS_OK status)
-	   (return 1)))
 
-       (WriteStep doc (string "o.stp"))
+       (do0
+	(let  ((status (app->SaveAs doc
+				    (string "doc.xbf"))))
+	  (unless (==  PCDM_SS_OK status)
+	    (return 1)))
+
+	(WriteStep doc (string "o.stp")))
        (return 0))))
   )
 
