@@ -60,7 +60,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto anEdge2 = BRepBuilderAPI_MakeEdge(anArcOfCircle);
   auto anEdge3 = BRepBuilderAPI_MakeEdge(aSegment2);
   auto aWire = BRepBuilderAPI_MakeWire(anEdge1, anEdge2, anEdge3);
-  auto aTrsf = ([]() -> auto{
+  auto aTrsf = ([]() {
     auto xAxis = gp::OX();
     auto a = gp_Trsf();
     a.SetMirror(xAxis);
@@ -69,7 +69,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto aBRepTrsf = BRepBuilderAPI_Transform(aWire, aTrsf);
   auto aMirroredShape = aBRepTrsf.Shape();
   auto aMirroredWire = TopoDS::Wire(aMirroredShape);
-  auto mkWire = ([&]() -> auto{
+  auto mkWire = ([&]() {
     auto a = BRepBuilderAPI_MakeWire();
     a.Add(aWire);
     a.Add(aMirroredWire);
@@ -79,7 +79,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
   auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
-  auto aRes = ([&]() -> auto{
+  auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);

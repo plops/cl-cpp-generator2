@@ -100,9 +100,10 @@
 	     (anEdge2 (BRepBuilderAPI_MakeEdge anArcOfCircle))
 	     (anEdge3 (BRepBuilderAPI_MakeEdge aSegment2))
 	     (aWire (BRepBuilderAPI_MakeWire anEdge1 anEdge2 anEdge3))
-	     
+	     ;; i could use std::invoke to make the invocation more obvious
 	     (aTrsf ((lambda ()
-		       (declare (values auto))
+		     #+nil (declare (values auto)
+			)
 		       (let ((xAxis (gp--OX))
 			     (a (gp_Trsf)))
 			 (a.SetMirror xAxis)
@@ -112,7 +113,7 @@
 				(Shape)))
 	     (aMirroredWire (TopoDS--Wire aMirroredShape))
 	     (mkWire ((lambda ()
-			(declare (values auto)
+			(declare ;(values auto)
 				 (capture "&"))
 			(let ((a (BRepBuilderAPI_MakeWire)))
 			  (a.Add aWire)
@@ -124,7 +125,7 @@
 	     (myBody (BRepPrimAPI_MakePrism myFaceProfile
 					    aPrismVec))
 	     (aRes ((lambda ()
-			(declare (values auto)
+			(declare ;(values auto)
 				 (capture "&"))
 		      (let ((a (TopoDS_Compound))
 			    (b (BRep_Builder)))
