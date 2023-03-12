@@ -8,3 +8,8 @@ https://youtu.be/kPcD5liq8Cs
 
 cmake
 https://www.youtube.com/watch?v=SfRFG_Pk9pk
+
+
+I found this description of 'almost always
+auto'. https://www.quora.com/Is-it-good-practice-to-declare-most-variables-using-auto-in-C
+This is the style I use in my generated C++ code.
