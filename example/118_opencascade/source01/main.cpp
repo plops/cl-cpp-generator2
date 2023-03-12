@@ -1,13 +1,12 @@
-#include <GL/glut.h>
-#include <memory>
 #include <opencascade/BRepPrimAPI_MakeCylinder.hxx>
 #include <opencascade/BinXCAFDrivers.hxx>
+#include <opencascade/Quantity_Color.hxx>
 #include <opencascade/STEPCAFControl_Writer.hxx>
+#include <opencascade/TDataStd_Name.hxx>
 #include <opencascade/TDocStd_Application.hxx>
 #include <opencascade/XCAFDoc_ColorTool.hxx>
 #include <opencascade/XCAFDoc_DocumentTool.hxx>
 #include <opencascade/XCAFDoc_ShapeTool.hxx>
-#include <vector>
 
 TopoDS_Shape BuildWheel(const double OD, const double W) {
   return BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(-W / 2, 0, 0), gp::DX()),
@@ -83,17 +82,27 @@ int main(int argc, char **argv) {
   wheelProto.shape = BuildWheel(OD, W);
   wheelProto.label = ST->AddShape(wheelProto.shape, false);
 
+  TDataStd_Name::Set(wheelProto.label, "wheel");
+  CT->SetColor(wheelProto.label, Quantity_Color(1, 0, 0, Quantity_TOC_RGB),
+               XCAFDoc_ColorGen);
   auto axleProto = t_prototype();
   axleProto.shape = BuildAxle(D, L);
   axleProto.label = ST->AddShape(axleProto.shape, false);
 
+  TDataStd_Name::Set(axleProto.label, "axle");
+  CT->SetColor(axleProto.label, Quantity_Color(0, 1, 0, Quantity_TOC_RGB),
+               XCAFDoc_ColorGen);
   auto wheelAxleProto = t_prototype();
   wheelAxleProto.shape = BuildWheelAxle(wheelProto.shape, axleProto.shape, L);
   wheelAxleProto.label = ST->AddShape(wheelAxleProto.shape, true);
 
+  TDataStd_Name::Set(wheelAxleProto.label, "wheel-axle");
+
   auto chassisProto = t_prototype();
   chassisProto.shape = BuildChassis(wheelAxleProto.shape, CL);
   chassisProto.label = ST->AddShape(chassisProto.shape, true);
+
+  TDataStd_Name::Set(chassisProto.label, "chassis");
 
   auto status = app->SaveAs(doc, "doc.xbf");
   if (!(PCDM_SS_OK == status)) {

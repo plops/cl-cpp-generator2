@@ -40,7 +40,7 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> vector
+     #+nil (include<> vector
 		GL/glut.h
 		memory)
      (include<> ,@(loop for e in `(
@@ -63,6 +63,8 @@
 				   XCAFDoc_ColorTool
 				   XCAFDoc_DocumentTool
 				   STEPCAFControl_Writer
+				   TDataStd_Name
+				   Quantity_Color
 				   )
 			collect
 			(format nil "opencascade/~a.hxx" e)))
@@ -166,12 +168,12 @@
 		   (CL 600d0) ;; chassis-length
 		   )
 
-	       ,@(loop for e in `((:name wheel :params (OD W))
-				  (:name axle :params (D L))
+	       ,@(loop for e in `((:name wheel :params (OD W) :color (1 0 0))
+				  (:name axle :params (D L) :color (0 1 0))
 				  (:name wheel-axle :assemble (wheel axle) :params (L))
 				  (:name chassis :assemble (wheel-axle) :params (CL)))
 		       collect
-		       (destructuring-bind (&key name assemble params) e
+		       (destructuring-bind (&key name assemble params color) e
 			(let ((proto (cl-change-case:camel-case (format nil "~a-proto" name)))
 			      (build (cl-change-case:pascal-case (format nil "build-~a" name))))
 			  `(let ((,proto
@@ -187,7 +189,15 @@
 							   `(,build ,@params))
 				   (dot ,proto label) (ST->AddShape
 						       (dot ,proto shape)
-						       ,(if assemble `true `false)))))))
+						       ,(if assemble `true `false)))
+			     (TDataStd_Name--Set (dot ,proto label)
+						 (string ,name))
+			     ,(if color
+				 `(CT->SetColor (dot ,proto label)
+						(Quantity_Color ,@color
+								Quantity_TOC_RGB)
+						XCAFDoc_ColorGen)
+				 `"")))))
 
 	       #+nil (do0 
 		(let ((wheelProto (t_prototype)))
