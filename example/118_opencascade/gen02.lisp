@@ -130,7 +130,7 @@
 	     
 	   
 	     )
-	 (let ((mkFillet (;std--invoke
+	 #+nil (let ((mkFillet (;std--invoke
 			  (lambda ()
 			    (declare (capture "&"))
 			    (let ((fillet (BRepFilletAPI_MakeFillet myBody))
@@ -144,12 +144,12 @@
 			      ))))
 	       (myBody1 (mkFillet.Shape))))
 
-	 (let ((facesToRemove
+	 #-nil (let ((facesToRemove
 		 ((lambda ()
 		    (declare (capture "&"))
 		    (let ((faceToRemove (TopoDS_Face))
 			  (zMax (Standard_Real -1))
-			  (explorer (TopExp_Explorer myBody1  TopAbs_FACE)))
+			  (explorer (TopExp_Explorer myBody  TopAbs_FACE)))
 		      (while (explorer.More)
 			     (let ((aFace (TopoDS--Face (explorer.Current)))
 				   (bas (BRepAdaptor_Surface aFace)))
@@ -179,7 +179,7 @@
 	       (myBody2 ((lambda ()
 			   (declare (capture "&"))
 			   (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-			     (aSolidMaker.MakeThickSolidByJoin myBody1 facesToRemove
+			     (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
 							       -myThickness/50 1e-3)
 			     (return (aSolidMaker.Shape))))))))
 	 

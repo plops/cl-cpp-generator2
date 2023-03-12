@@ -79,21 +79,10 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
   auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
-  auto mkFillet = ([&]() {
-    auto fillet = BRepFilletAPI_MakeFillet(myBody);
-    auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
-    while (edgeExplorer.More()) {
-      auto edge = TopoDS::Edge(edgeExplorer.Current());
-      fillet.Add(((myThickness) / (12)), edge);
-      edgeExplorer.Next();
-    }
-    return fillet;
-  })();
-  auto myBody1 = mkFillet.Shape();
   auto facesToRemove = ([&]() {
     auto faceToRemove = TopoDS_Face();
     auto zMax = Standard_Real(-1);
-    auto explorer = TopExp_Explorer(myBody1, TopAbs_FACE);
+    auto explorer = TopExp_Explorer(myBody, TopAbs_FACE);
     while (explorer.More()) {
       auto aFace = TopoDS::Face(explorer.Current());
       auto bas = BRepAdaptor_Surface(aFace);
@@ -118,7 +107,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   })();
   auto myBody2 = ([&]() {
     auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
-    aSolidMaker.MakeThickSolidByJoin(myBody1, facesToRemove, -myThickness / 50,
+    aSolidMaker.MakeThickSolidByJoin(myBody, facesToRemove, -myThickness / 50,
                                      (1.00e-3f));
     return aSolidMaker.Shape();
   })();
