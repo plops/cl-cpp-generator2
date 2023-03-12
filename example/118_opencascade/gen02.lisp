@@ -16,7 +16,7 @@
 				   *source-dir*))
   (ensure-directories-exist *full-source-dir*)
   
-					;(load "util.lisp")
+  (load "util.lisp")
   (defun ptr0 (name)
     `(,(format nil "opencascade::handle<~a>" name)))
 
@@ -58,7 +58,7 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     ;(include<> functional)
+     (include<> iostream)
      ,@(inc `((b-rep tool)
 	      (b-rep-algo-a-p-i fuse)
 	      (b-rep-builder-a-p-i make-edge make-face make-wire transform)
@@ -79,13 +79,6 @@
 	      (x-c-a-f-doc shape-tool document-tool)
 	      ("STEPCAFControl" writer)))
 
-     ;; TDocStd_Application
-     ;; BinXCAFDrivers
-     ;; XCAFDoc_ShapeTool
-     ;; XCAFDoc_ColorTool
-     ;; XCAFDoc_DocumentTool
-     ;; STEPCAFControl_Writer
-				   				   
      (defun MakeBottle (myWidth myHeight myThickness)
        (declare (type "const Standard_Real" myWidth myHeight myThickness)
 		(values TopoDS_Shape))
@@ -130,7 +123,7 @@
 	     
 	   
 	     )
-	 #+nil (let ((mkFillet (;std--invoke
+	 #-nil (let ((mkFillet (;std--invoke
 			  (lambda ()
 			    (declare (capture "&"))
 			    (let ((fillet (BRepFilletAPI_MakeFillet myBody))
@@ -149,10 +142,12 @@
 		    (declare (capture "&"))
 		    (let ((faceToRemove (TopoDS_Face))
 			  (zMax (Standard_Real -1))
-			  (explorer (TopExp_Explorer myBody  TopAbs_FACE)))
-		      (while (explorer.More)
+			  
+			  (explorer (TopExp_Explorer myBody1  TopAbs_FACE)))
+		      (for (() (explorer.More) (explorer.Next))
 			     (let ((aFace (TopoDS--Face (explorer.Current)))
 				   (bas (BRepAdaptor_Surface aFace)))
+			       ,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
 			       (when (== GeomAbs_Plane
 					 (bas.GetType))
 				 (let ((plane (bas.Plane))
@@ -163,14 +158,15 @@
 						(IsParallel (gp--DZ)
 							    (/ (* 1.0 M_PI)
 							       180.0)))
+				    
 				     continue)
 				   (let ((aZ (aPnt.Z)))
 				     (when (< zMax aZ)
-					 (setf zMax aZ
-					       faceToRemove aFace)))
+				       ,(lprint :vars `(zMax aZ))
+				       (setf zMax aZ
+					     faceToRemove aFace)))
 				   ))
-			       
-			       (explorer.Next)))
+			       ))
 
 		      (let ((facesToRemove (TopTools_ListOfShape)))
 			(facesToRemove.Append faceToRemove)
@@ -179,7 +175,7 @@
 	       (myBody2 ((lambda ()
 			   (declare (capture "&"))
 			   (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-			     (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
+			     (aSolidMaker.MakeThickSolidByJoin myBody1 facesToRemove
 							       -myThickness/50 1e-3)
 			     (return (aSolidMaker.Shape))))))))
 	 

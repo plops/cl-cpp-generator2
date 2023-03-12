@@ -41,6 +41,7 @@
 #include <gp_Pnt2d.hxx>
 #include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
+#include <iostream>
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth,
                         const Standard_Real myHeight,
@@ -79,13 +80,27 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
   auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
+  auto mkFillet = ([&]() {
+    auto fillet = BRepFilletAPI_MakeFillet(myBody);
+    auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
+    while (edgeExplorer.More()) {
+      auto edge = TopoDS::Edge(edgeExplorer.Current());
+      fillet.Add(((myThickness) / (12)), edge);
+      edgeExplorer.Next();
+    }
+    return fillet;
+  })();
+  auto myBody1 = mkFillet.Shape();
   auto facesToRemove = ([&]() {
     auto faceToRemove = TopoDS_Face();
     auto zMax = Standard_Real(-1);
-    auto explorer = TopExp_Explorer(myBody, TopAbs_FACE);
-    while (explorer.More()) {
+    auto explorer = TopExp_Explorer(myBody1, TopAbs_FACE);
+    for (; explorer.More(); explorer.Next()) {
       auto aFace = TopoDS::Face(explorer.Current());
       auto bas = BRepAdaptor_Surface(aFace);
+      std::cout << "face"
+                << " bas.GetType()='" << bas.GetType() << "' "
+                << " GeomAbs_Plane='" << GeomAbs_Plane << "' " << std::endl;
       if (GeomAbs_Plane == bas.GetType()) {
         auto plane = bas.Plane();
         auto aPnt = plane.Location();
@@ -95,11 +110,13 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
         }
         auto aZ = aPnt.Z();
         if (zMax < aZ) {
+          std::cout << ""
+                    << " zMax='" << zMax << "' "
+                    << " aZ='" << aZ << "' " << std::endl;
           zMax = aZ;
           faceToRemove = aFace;
         }
       }
-      explorer.Next();
     }
     auto facesToRemove = TopTools_ListOfShape();
     facesToRemove.Append(faceToRemove);
@@ -107,7 +124,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   })();
   auto myBody2 = ([&]() {
     auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
-    aSolidMaker.MakeThickSolidByJoin(myBody, facesToRemove, -myThickness / 50,
+    aSolidMaker.MakeThickSolidByJoin(myBody1, facesToRemove, -myThickness / 50,
                                      (1.00e-3f));
     return aSolidMaker.Shape();
   })();
