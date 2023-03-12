@@ -9,6 +9,7 @@
 #include <opencascade/XCAFDoc_ColorTool.hxx>
 #include <opencascade/XCAFDoc_DocumentTool.hxx>
 #include <opencascade/XCAFDoc_ShapeTool.hxx>
+#include <opencascade/gp_Quaternion.hxx>
 
 TopoDS_Shape BuildWheel(const double OD, const double W) {
   return BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(-W / 2, 0, 0), gp::DX()),
@@ -25,9 +26,12 @@ TopoDS_Shape BuildWheelAxle(const TopoDS_Shape &wheel, const TopoDS_Shape &axle,
   auto comp = TopoDS_Compound();
   auto bbuilder = BRep_Builder();
   auto wheelT_right = gp_Trsf();
-  auto wheelT_left = gp_Trsf();
   wheelT_right.SetTranslationPart(gp_Vec(L / 2, 0, 0));
-  wheelT_left.SetTranslationPart(gp_Vec(-L / 2, 0, 0));
+  auto qn = gp_Quaternion(gp::DY(), M_PI);
+  auto Ry = gp_Trsf();
+  Ry.SetRotation(qn);
+  auto wheelT_left = (wheelT_right.Inverted() * Ry);
+
   bbuilder.MakeCompound(comp);
   bbuilder.Add(comp, wheel.Moved(wheelT_right));
   bbuilder.Add(comp, wheel.Moved(wheelT_left));

@@ -67,6 +67,7 @@
 				   Quantity_Color
 				   TopExp
 				   TopoDS
+				   gp_Quaternion
 				   )
 			collect
 			(format nil "opencascade/~a.hxx" e)))
@@ -93,17 +94,27 @@
        (declare (type "const double" L)
 		(type "const TopoDS_Shape&" wheel axle)
 		(values TopoDS_Shape))
+       
        (let ((comp (TopoDS_Compound))
 	     (bbuilder (BRep_Builder))
 	     (wheelT_right (gp_Trsf))
-	     (wheelT_left (gp_Trsf))
+	     
+	     
 	     )
-	
+	 
+
 	 (wheelT_right.SetTranslationPart (gp_Vec L/2 0 0))
-	 (wheelT_left.SetTranslationPart (gp_Vec -L/2 0 0))
+
+	 (let ((qn (gp_Quaternion (gp--DY)
+				M_PI))
+	       (Ry (gp_Trsf)))
+	   (Ry.SetRotation qn)
+	   (let ((wheelT_left (* (dot wheelT_right (Inverted))
+				 Ry)))
+	     ))
 	 (bbuilder.MakeCompound comp)
 	 (bbuilder.Add comp (dot wheel (Moved wheelT_right)))
-	  (bbuilder.Add comp (dot wheel (Moved wheelT_left)))
+	 (bbuilder.Add comp (dot wheel (Moved wheelT_left)))
 	 (bbuilder.Add comp axle)
 	 (return comp)))
 
@@ -214,7 +225,7 @@
 		 (setf (dot wheelProto frontFace) (TopoDS--Face (allWheelFaces 2))
 		       (dot wheelProto frontFaceLabel) (-> ST (AddSubShape wheelProto.label
 									   wheelProto.frontFace)))
-		 (CT->SetColor (dot wheelProto front FaceLabel)
+		 (CT->SetColor (dot wheelProto frontFaceLabel)
 			       (Quantity_Color 0 0 1
 					       Quantity_TOC_RGB)
 			       XCAFDoc_ColorSurf))
