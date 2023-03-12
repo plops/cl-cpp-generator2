@@ -79,11 +79,22 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
   auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
+  auto mkFillet = ([&]() {
+    auto fillet = BRepFilletAPI_MakeFillet(myBody);
+    auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
+    while (edgeExplorer.More()) {
+      auto edge = TopoDS::Edge(edgeExplorer.Current());
+      fillet.Add(((myThickness) / (12)), edge);
+      edgeExplorer.Next();
+    }
+    return fillet;
+  })();
+  auto myBody1 = mkFillet.Shape();
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);
-    b.Add(a, myBody);
+    b.Add(a, myBody1);
     return a;
   })();
   return aRes;
