@@ -90,11 +90,43 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     return fillet;
   })();
   auto myBody1 = mkFillet.Shape();
+  auto facesToRemove = ([&]() {
+    auto faceToRemove = TopoDS_Face();
+    auto zMax = Standard_Real(-1);
+    auto explorer = TopExp_Explorer(myBody1, TopAbs_FACE);
+    while (explorer.More()) {
+      auto aFace = TopoDS::Face(explorer.Current());
+      auto bas = BRepAdaptor_Surface(aFace);
+      if (GeomAbs_Plane == bas.GetType()) {
+        auto plane = bas.Plane();
+        auto aPnt = plane.Location();
+        if (!(plane.Axis().Direction().IsParallel(
+                gp::DZ(), (((1.0 * M_PI)) / ((1.80e+2f)))))) {
+          continue;
+        }
+        auto aZ = aPnt.Z();
+        if (zMax < aZ) {
+          zMax = aZ;
+          faceToRemove = aFace;
+        }
+      }
+      explorer.Next();
+    }
+    auto facesToRemove = TopTools_ListOfShape();
+    facesToRemove.Append(faceToRemove);
+    return facesToRemove;
+  })();
+  auto myBody2 = ([&]() {
+    auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
+    aSolidMaker.MakeThickSolidByJoin(myBody1, facesToRemove, -myThickness / 50,
+                                     (1.00e-3f));
+    return aSolidMaker.Shape();
+  })();
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);
-    b.Add(a, myBody1);
+    b.Add(a, myBody2);
     return a;
   })();
   return aRes;
