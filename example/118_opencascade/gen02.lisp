@@ -102,9 +102,11 @@
 	     (aWire (BRepBuilderAPI_MakeWire anEdge1 anEdge2 anEdge3))
 	     
 	     (aTrsf ((lambda ()
+		       (declare (values auto))
 		       (let ((xAxis (gp--OX))
 			     (a (gp_Trsf)))
-			 (return (a.SetMirror xAxis))))))
+			 (a.SetMirror xAxis)
+			 (return a)))))
 	     (aBRepTrsf (BRepBuilderAPI_Transform aWire aTrsf))
 	     (aMirroredShape (dot aBRepTrsf
 				(Shape)))

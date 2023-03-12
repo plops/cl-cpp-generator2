@@ -60,10 +60,11 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto anEdge2 = BRepBuilderAPI_MakeEdge(anArcOfCircle);
   auto anEdge3 = BRepBuilderAPI_MakeEdge(aSegment2);
   auto aWire = BRepBuilderAPI_MakeWire(anEdge1, anEdge2, anEdge3);
-  auto aTrsf = ([]() {
+  auto aTrsf = ([]() -> auto{
     auto xAxis = gp::OX();
     auto a = gp_Trsf();
-    return a.SetMirror(xAxis);
+    a.SetMirror(xAxis);
+    return a;
   })();
   auto aBRepTrsf = BRepBuilderAPI_Transform(aWire, aTrsf);
   auto aMirroredShape = aBRepTrsf.Shape();
