@@ -222,6 +222,7 @@
 		  wheelProto.shape
 		  TopAbs_FACE
 		  allWheelFaces)
+		 (comments "the 2 is a bit too magic in my opinion. he selected the face in an editor to find the index")
 		 (setf (dot wheelProto frontFace) (TopoDS--Face (allWheelFaces 2))
 		       (dot wheelProto frontFaceLabel) (-> ST (AddSubShape wheelProto.label
 									   wheelProto.frontFace)))

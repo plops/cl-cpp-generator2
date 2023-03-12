@@ -117,6 +117,8 @@ int main(int argc, char **argv) {
 
   auto allWheelFaces = TopTools_IndexedMapOfShape();
   TopExp::MapShapes(wheelProto.shape, TopAbs_FACE, allWheelFaces);
+  // the 2 is a bit too magic in my opinion. he selected the face in an editor
+  // to find the index
   wheelProto.frontFace = TopoDS::Face(allWheelFaces(2));
   wheelProto.frontFaceLabel =
       ST->AddSubShape(wheelProto.label, wheelProto.frontFace);
