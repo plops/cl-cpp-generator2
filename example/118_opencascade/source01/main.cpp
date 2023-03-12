@@ -4,6 +4,8 @@
 #include <opencascade/STEPCAFControl_Writer.hxx>
 #include <opencascade/TDataStd_Name.hxx>
 #include <opencascade/TDocStd_Application.hxx>
+#include <opencascade/TopExp.hxx>
+#include <opencascade/TopoDS.hxx>
 #include <opencascade/XCAFDoc_ColorTool.hxx>
 #include <opencascade/XCAFDoc_DocumentTool.hxx>
 #include <opencascade/XCAFDoc_ShapeTool.hxx>
@@ -61,6 +63,11 @@ public:
   TopoDS_Shape shape;
   TDF_Label label;
 };
+class t_wheelPrototype : public t_prototype {
+public:
+  TopoDS_Face frontFace;
+  TDF_Label frontFaceLabel;
+};
 
 int main(int argc, char **argv) {
   (void)argc;
@@ -78,7 +85,7 @@ int main(int argc, char **argv) {
   auto D = (50.);
   auto L = (5.00e+2);
   auto CL = (6.00e+2);
-  auto wheelProto = t_prototype();
+  auto wheelProto = t_wheelPrototype();
   wheelProto.shape = BuildWheel(OD, W);
   wheelProto.label = ST->AddShape(wheelProto.shape, false);
 
@@ -103,6 +110,15 @@ int main(int argc, char **argv) {
   chassisProto.label = ST->AddShape(chassisProto.shape, true);
 
   TDataStd_Name::Set(chassisProto.label, "chassis");
+
+  auto allWheelFaces = TopTools_IndexedMapOfShape();
+  TopExp::MapShapes(wheelProto.shape, TopAbs_FACE, allWheelFaces);
+  wheelProto.frontFace = TopoDS::Face(allWheelFaces(2));
+  wheelProto.frontFaceLabel =
+      ST->AddSubShape(wheelProto.label, wheelProto.frontFace);
+
+  CT->SetColor(wheelProto.frontFaceLabel,
+               Quantity_Color(0, 0, 1, Quantity_TOC_RGB), XCAFDoc_ColorSurf);
 
   auto status = app->SaveAs(doc, "doc.xbf");
   if (!(PCDM_SS_OK == status)) {

@@ -65,6 +65,8 @@
 				   STEPCAFControl_Writer
 				   TDataStd_Name
 				   Quantity_Color
+				   TopExp
+				   TopoDS
 				   )
 			collect
 			(format nil "opencascade/~a.hxx" e)))
@@ -146,6 +148,11 @@
        "public:"
        (space TopoDS_Shape shape)
        (space TDF_Label label))
+
+     (defclass+ t_wheelPrototype "public t_prototype"
+       "public:"
+       (space TopoDS_Face frontFace)
+       (space TDF_Label frontFaceLabel))
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -162,79 +169,60 @@
 		 (CT ,(ptr `(XCAFDoc_ColorTool (XCAFDoc_DocumentTool--ColorTool (doc->Main))))))
 	   
 	     (let ((OD 500d0) ;; wheel-diam
-		   (W 100d0) ;; wheel-width
-		   (D 50d0) ;; axle-diam
-		   (L 500d0) ;; axle-length
+		   (W 100d0)  ;; wheel-width
+		   (D 50d0)   ;; axle-diam
+		   (L 500d0)  ;; axle-length
 		   (CL 600d0) ;; chassis-length
 		   )
 
-	       ,@(loop for e in `((:name wheel :params (OD W) :color (1 0 0))
+	       ,@(loop for e in `((:name wheel :params (OD W) :color (1 0 0) :type t_wheelPrototype)
 				  (:name axle :params (D L) :color (0 1 0))
 				  (:name wheel-axle :assemble (wheel axle) :params (L))
 				  (:name chassis :assemble (wheel-axle) :params (CL)))
 		       collect
-		       (destructuring-bind (&key name assemble params color) e
-			(let ((proto (cl-change-case:camel-case (format nil "~a-proto" name)))
-			      (build (cl-change-case:pascal-case (format nil "build-~a" name))))
-			  `(let ((,proto
-				   (t_prototype)))
-			     (setf (dot ,proto shape) ,(if assemble
-							   `(,build
-							     ,@(loop for obj in assemble
-								     collect
-								     `(dot ,(cl-change-case:camel-case
-									     (format nil "~a-proto" obj))
-									   shape))
-							     ,@params)
-							   `(,build ,@params))
-				   (dot ,proto label) (ST->AddShape
-						       (dot ,proto shape)
-						       ,(if assemble `true `false)))
-			     (TDataStd_Name--Set (dot ,proto label)
-						 (string ,name))
-			     ,(if color
-				 `(CT->SetColor (dot ,proto label)
-						(Quantity_Color ,@color
-								Quantity_TOC_RGB)
-						XCAFDoc_ColorGen)
-				 `"")))))
+		       (destructuring-bind (&key name assemble params color (type 't_prototype)) e
+			 (let ((proto (cl-change-case:camel-case (format nil "~a-proto" name)))
+			       (build (cl-change-case:pascal-case (format nil "build-~a" name))))
+			   `(let ((,proto
+				    (,type)))
+			      (setf (dot ,proto shape) ,(if assemble
+							    `(,build
+							      ,@(loop for obj in assemble
+								      collect
+								      `(dot ,(cl-change-case:camel-case
+									      (format nil "~a-proto" obj))
+									    shape))
+							      ,@params)
+							    `(,build ,@params))
+				    (dot ,proto label) (ST->AddShape
+							(dot ,proto shape)
+							,(if assemble `true `false)))
+			      (TDataStd_Name--Set (dot ,proto label)
+						  (string ,name))
+			      ,(if color
+				   `(CT->SetColor (dot ,proto label)
+						  (Quantity_Color ,@color
+								  Quantity_TOC_RGB)
+						  XCAFDoc_ColorGen)
+				   `"")))))
 
-	       #+nil (do0 
-		(let ((wheelProto (t_prototype)))
-		  (setf wheelProto.shape (BuildWheel OD W)
-			wheelProto.label (ST->AddShape
-					  wheelProto.shape
-					  false)))
-
-		(let ((axleProto (t_prototype)))
-		  (setf axleProto.shape (BuildAxle D L)
-			axleProto.label (ST->AddShape
-					 axleProto.shape
-					 false)
-			))
-
-		(let ((wheelAxleProto (t_prototype)))
-		  (setf wheelAxleProto.shape (BuildWheelAxle wheelProto.shape
-							     axleProto.shape
-							     L)
-			wheelAxleProto.label (ST->AddShape
-					      wheelAxleProto.shape
-					      true)
-			))
-
-		(let ((chassisProto (t_prototype)))
-		  (setf chassisProto.shape (BuildChassis wheelAxleProto.shape
-							 
-							 CL)
-			chassisProto.label (ST->AddShape
-					    chassisProto.shape
-					    true)
-			)))
+	       (let ((allWheelFaces (TopTools_IndexedMapOfShape)))
+		 (TopExp--MapShapes
+		  wheelProto.shape
+		  TopAbs_FACE
+		  allWheelFaces)
+		 (setf (dot wheelProto frontFace) (TopoDS--Face (allWheelFaces 2))
+		       (dot wheelProto frontFaceLabel) (-> ST (AddSubShape wheelProto.label
+									   wheelProto.frontFace)))
+		 (CT->SetColor (dot wheelProto front FaceLabel)
+			       (Quantity_Color 0 0 1
+					       Quantity_TOC_RGB)
+			       XCAFDoc_ColorSurf))
 	       ))))
 
        
        (let  ((status (app->SaveAs doc
-			    (string "doc.xbf"))))
+				   (string "doc.xbf"))))
 	 (unless (==  PCDM_SS_OK status)
 	   (return 1)))
 
