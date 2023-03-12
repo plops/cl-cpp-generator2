@@ -44,7 +44,19 @@
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth,
                         const Standard_Real myHeight,
-                        const Standard_Real myThickness) {}
+                        const Standard_Real myThickness) {
+  auto p1 = gp_Pnt(-myWidth / 2, 0, 0);
+  auto p2 = gp_Pnt(-myWidth / 2, -myThickness / 4, 0);
+  auto p3 = gp_Pnt(0, -myThickness / 2, 0);
+  auto p4 = gp_Pnt(myWidth / 2, -myThickness / 4, 0);
+  auto p5 = gp_Pnt(myWidth / 2, 0, 0);
+  auto anArcOfCircle =
+      opencascade::handle<Geom_TrimmedCurve>(GC_MakeArcOfCircle(p2, p3, p4));
+  auto aSegment1 =
+      opencascade::handle<Geom_TrimmedCurve>(GC_MakeSegment(p1, p2));
+  auto aSegment2 =
+      opencascade::handle<Geom_TrimmedCurve>(GC_MakeSegment(p4, p5));
+}
 
 bool WriteStep(const Handle(TDocStd_Document) & doc, const char *filename) {
   auto Writer = STEPCAFControl_Writer();

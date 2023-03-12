@@ -87,7 +87,15 @@
 				   				   
      (defun MakeBottle (myWidth myHeight myThickness)
        (declare (type "const Standard_Real" myWidth myHeight myThickness)
-		(values TopoDS_Shape)))
+		(values TopoDS_Shape))
+       (let ((p1 (gp_Pnt -myWidth/2 0 0))
+	     (p2 (gp_Pnt -myWidth/2 -myThickness/4 0))
+	     (p3 (gp_Pnt          0 -myThickness/2 0))
+	     (p4 (gp_Pnt myWidth/2 -myThickness/4 0))
+	     (p5 (gp_Pnt myWidth/2 0 0))
+	     (anArcOfCircle ,(ptr `(Geom_TrimmedCurve (GC_MakeArcOfCircle p2 p3 p4))))
+	     (aSegment1 ,(ptr `(Geom_TrimmedCurve (GC_MakeSegment p1 p2))))
+	     (aSegment2 ,(ptr `(Geom_TrimmedCurve (GC_MakeSegment p4 p5)))))))
 
      (defun WriteStep (doc filename)
        (declare (type "const char*" filename)
