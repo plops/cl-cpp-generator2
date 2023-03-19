@@ -93,7 +93,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myBody1 = mkFillet.Shape();
   auto facesToRemove = ([&]() {
     auto faceToRemove = TopoDS_Face();
-    auto zMax = Standard_Real(-1);
+    auto zMax = Standard_Real(-100);
     auto explorer = TopExp_Explorer(myBody1, TopAbs_FACE);
     for (; explorer.More(); explorer.Next()) {
       auto aFace = TopoDS::Face(explorer.Current());

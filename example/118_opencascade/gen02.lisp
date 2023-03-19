@@ -141,7 +141,7 @@
 		 ((lambda ()
 		    (declare (capture "&"))
 		    (let ((faceToRemove (TopoDS_Face))
-			  (zMax (Standard_Real -1))
+			  (zMax (Standard_Real -100))
 			  
 			  (explorer (TopExp_Explorer myBody1  TopAbs_FACE)))
 		      (for (() (explorer.More) (explorer.Next))
