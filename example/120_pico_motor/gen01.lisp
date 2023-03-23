@@ -112,5 +112,40 @@
        )
 
      "%}")
+   :format nil :tidy nil)
+
+  #+nil
+  (write-source
+   (merge-pathnames #P"pacer.pio"
+		    *full-source-dir*)
+   `(do0
+
+     (lines ".program pacer"
+
+	    ;; shift value from osr to scratch x (using autopull)
+	    "out x, 32"
+	    "countloop:"
+	    ;; loop until x hits 0
+	    "jmp x-- countloop"
+
+	    ;; wiat for signal to pulse from counter state machine
+	    "wait 1 irq 2"
+	    ;; signal to send pulse
+
+	    "irq 3"
+	    
+	    "% c-sdk {")
+     (defun pacer_program_init (pio sm offset)
+       (declare (type PIO pio)
+		(type uint sm offset)
+		(values "static inline void"))
+       (let ((c (pacer_program_get_default_config offset)))
+	 (sm_config_set_out_shift &c 1 1 32)
+	 (sm_config_set_clkdiv &c 2)
+	 (pio_sm_init pio sm offset &c))
+       
+       )
+
+     "%}")
    :format nil :tidy nil))
 
