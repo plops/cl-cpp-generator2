@@ -40,7 +40,8 @@ void setupMotor1(unsigned int in1, irq_handler_t handler) {
   pio_sm_set_enabled(pio_0, pulse_sm_0, true);
   pio_sm_set_enabled(pio_0, count_sm_0, true);
   pio_interrupt_clear(pio_0, 1);
-  pio_set_irq0_source_enabled(pio_0, PIO_INTR_SM1_LSB, true);
+  pio_set_irq0_source_enabled(
+      pio_0, static_cast<pio_interrupt_source>(PIO_INTR_SM1_LSB), true);
   irq_set_exclusive_handler(PIO0_IRQ_0, handler);
   irq_set_enabled(PIO0_IRQ_0, true);
   auto c0 = dma_channel_get_default_config(dma_chan_0);
@@ -49,20 +50,26 @@ void setupMotor1(unsigned int in1, irq_handler_t handler) {
   channel_config_set_write_increment(&c0, false);
   channel_config_set_dreq(&c0, DREQ_PIO0_TX0);
   channel_config_set_chain_to(&c0, dma_chan_1);
-  dma_channel_configure(dma_chan_0, &c0, pio_0->txf[pulse_sm_0],
-                        address_pointer_motor1, 8, false);
+  dma_channel_configure(
+      dma_chan_0, &c0,
+      reinterpret_cast<volatile void *>(pio_0->txf[pulse_sm_0]),
+      address_pointer_motor1, 8, false);
   auto c1 = dma_channel_get_default_config(dma_chan_1);
   channel_config_set_transfer_data_size(&c1, DMA_SIZE_32);
   channel_config_set_read_increment(&c1, false);
   channel_config_set_write_increment(&c1, false);
   channel_config_set_chain_to(&c1, dma_chan_0);
-  dma_channel_configure(dma_chan_1, &c1, dma_hw->ch[dma_chan_0].read_addr,
-                        address_pointer_motor1, 1, false);
+  dma_channel_configure(
+      dma_chan_1, &c1,
+      reinterpret_cast<volatile void *>(dma_hw->ch[dma_chan_0].read_addr),
+      address_pointer_motor1, 1, false);
   auto c2 = dma_channel_get_default_config(dma_chan_2);
   channel_config_set_transfer_data_size(&c2, DMA_SIZE_32);
   channel_config_set_read_increment(&c2, false);
   channel_config_set_write_increment(&c2, false);
-  dma_channel_configure(dma_chan_2, &c2, pio_0->txf[count_sm_0],
-                        pulse_count_motor1_address_pointer, 1, false);
+  dma_channel_configure(
+      dma_chan_2, &c2,
+      reinterpret_cast<volatile void *>(pio_0->txf[count_sm_0]),
+      pulse_count_motor1_address_pointer, 1, false);
   dma_start_channel_mask(1u << dma_chan_0);
 }

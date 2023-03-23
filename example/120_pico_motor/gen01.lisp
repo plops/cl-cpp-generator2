@@ -153,7 +153,8 @@
 	 (pio_sm_set_enabled pio_0 count_sm_0 true)
 	 ;; setup interrupts
 	 (pio_interrupt_clear pio_0 1)
-	 (pio_set_irq0_source_enabled pio_0 PIO_INTR_SM1_LSB true)
+	 (pio_set_irq0_source_enabled pio_0
+				      (static_cast<pio_interrupt_source> PIO_INTR_SM1_LSB) true)
 	 (irq_set_exclusive_handler PIO0_IRQ_0 handler)
 	 (irq_set_enabled PIO0_IRQ_0 true)
 
@@ -171,8 +172,9 @@
 	   (dma_channel_configure
 	    dma_chan_0 ;; channel to be configured
 	    &c0	       ;; configuration we just created 
-	    (-> pio_0  ;; write address (stepper pio tx fifo
-		(aref txf pulse_sm_0))
+	    ("reinterpret_cast<volatile void *>"
+	     (-> pio_0 ;; write address (stepper pio tx fifo
+		 (aref txf pulse_sm_0)))
 	    address_pointer_motor1
 	    8	  ;; number of transfers, each is 4 bytes
 	    false ;; don't start immediatly
@@ -194,9 +196,10 @@
 	   (dma_channel_configure
 	    dma_chan_1 ;; channel to be configured
 	    &c1	       ;; configuration we just created 
-	    (-> dma_hw ;; write address: channel 0 read address
-		(dot (aref ch dma_chan_0)
-		     read_addr))
+	    ("reinterpret_cast<volatile void *>"
+	     (-> dma_hw ;; write address: channel 0 read address
+		 (dot (aref ch dma_chan_0)
+		      read_addr)))
 	    address_pointer_motor1 ;; read address
 	    1 
 	    false ;; don't start immediatly
@@ -216,8 +219,9 @@
 	   (dma_channel_configure
 	    dma_chan_2 ;; channel to be configured
 	    &c2	       ;; configuration we just created 
-	    (-> pio_0 ;; write to pacer pio tx fifo
-		(aref txf count_sm_0))
+	    ("reinterpret_cast<volatile void *>"
+	     (-> pio_0 ;; write to pacer pio tx fifo
+		 (aref txf count_sm_0)))
 	    pulse_count_motor1_address_pointer ;; read address
 	    1 
 	    false ;; don't start immediatly
@@ -284,41 +288,6 @@
 		(type uint sm offset)
 		(values "static inline void"))
        (let ((c (counter_program_get_default_config offset)))
-	 (pio_sm_init pio sm offset &c))
-       
-       )
-
-     "%}")
-   :format nil :tidy nil)
-
-  #+nil
-  (write-source
-   (merge-pathnames #P"pacer.pio"
-		    *full-source-dir*)
-   `(do0
-
-     (lines ".program pacer"
-
-	    ;; shift value from osr to scratch x (using autopull)
-	    "out x, 32"
-	    "countloop:"
-	    ;; loop until x hits 0
-	    "jmp x-- countloop"
-
-	    ;; wiat for signal to pulse from counter state machine
-	    "wait 1 irq 2"
-	    ;; signal to send pulse
-
-	    "irq 3"
-	    
-	    "% c-sdk {")
-     (defun pacer_program_init (pio sm offset)
-       (declare (type PIO pio)
-		(type uint sm offset)
-		(values "static inline void"))
-       (let ((c (pacer_program_get_default_config offset)))
-	 (sm_config_set_out_shift &c 1 1 32)
-	 (sm_config_set_clkdiv &c 2)
 	 (pio_sm_init pio sm offset &c))
        
        )
