@@ -1,7 +1,8 @@
+#include "pico/stdlib.h"
 #include <iostream>
 
-int main(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
+int main() {
+  setup_default_uart();
+  std::cout << "hello world" << std::endl;
   return 0;
 }
