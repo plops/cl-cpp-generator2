@@ -81,5 +81,36 @@
        )
 
      "%}")
+   :format nil :tidy nil)
+
+  (write-source
+   (merge-pathnames #P"counter.pio"
+		    *full-source-dir*)
+   `(do0
+
+     (lines ".program counter"
+
+	    "pull block"
+	    "mov x, osr"
+
+	    "countloop:"
+	    "jmp !x done"
+	    "irq wait 3"
+	    "jmp x-- countloop"
+
+	    "done:"
+	    "irq wait 1"
+	    
+	    "% c-sdk {")
+     (defun counter_program_init (pio sm offset)
+       (declare (type PIO pio)
+		(type uint sm offset)
+		(values "static inline void"))
+       (let ((c (counter_program_get_default_config offset)))
+	 (pio_sm_init pio sm offset &c))
+       
+       )
+
+     "%}")
    :format nil :tidy nil))
 
