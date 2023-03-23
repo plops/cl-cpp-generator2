@@ -1,0 +1,18 @@
+.program counter
+pull block
+mov x, osr
+countloop:
+jmp !x done
+irq wait 3
+jmp x-- countloop
+done:
+irq wait 1
+% c-sdk {
+
+
+static inline void counter_program_init (PIO pio, uint sm, uint offset)        {
+            auto c  = counter_program_get_default_config(offset);
+    pio_sm_init(pio, sm, offset, &c);
+
+}
+%}
