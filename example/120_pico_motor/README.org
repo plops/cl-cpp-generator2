@@ -21,3 +21,5 @@
 
 - drive two stepper motors using the pico's PIO state machines
   https://vanhunteradams.com/Pico/Steppers/Lorenz.html
+  - https://www.youtube.com/watch?v=IuZq3p86Ydg Raspberry Pi Pico
+    Lecture 25: PIO Stepper Motor Driver
