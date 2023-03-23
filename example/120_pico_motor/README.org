@@ -69,6 +69,10 @@ mkdir b
 cd b
 cmake .. -G Ninja -DPICO_SDK_PATH=/home/martin/src/pico-sdk
 
-# install hello_world.uf2 via drag and drop
+# install hello_world.uf2 via drag and drop or copy
+# plug pico pi into usb port
+sudo mount /dev/sda1 /mnt
+sudo cp hello_world.uf2 /mnt/
+
 
 ```

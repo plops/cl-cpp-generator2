@@ -1,3 +1,5 @@
+# keep bootset pressed and reconnect usb-a
+
 cmake .. -G Ninja -DPICO_SDK_PATH=/home/martin/src/pico-sdk
 ninja
 sudo mount /dev/sda1 /mnt
