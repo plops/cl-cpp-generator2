@@ -7,3 +7,10 @@
 
 - 2048 steps per revolution
 - 2ms per step
+
+- stepper library for arduino for uln2003
+
+- focus https://www.youtube.com/watch?v=e3WctzSnUvc
+-   https://www.youtube.com/watch?v=VM3S9CiyPzY 28BYJ-48 Stepper Motor
+  with Raspberry PI Pico (C++ and FreeRTOS)
+
