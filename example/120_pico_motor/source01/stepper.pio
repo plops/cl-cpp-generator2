@@ -1,0 +1,22 @@
+.program stepper
+wait 1 irq 3
+out pins, 4
+% c-sdk {
+
+
+static inline void stepper_program_init (PIO pio, uint sm, uint offset, uint pin)        {
+            auto c  = stepper_program_get_default_config(offset);
+    sm_config_set_out_pins(&c, pin, 4);
+    // max clock divider is 65536, a one cycle delay in assembler makes motors slow enough
+    sm_config_set_clkdiv(&c, 65000);
+    // setup autopull, 32bit threshold, right-shift osr
+    sm_config_set_out_shift(&c, 1, 1, 4);
+    gpio_gpio_init(pio, (pin+0));
+    gpio_gpio_init(pio, (pin+1));
+    gpio_gpio_init(pio, (pin+2));
+    gpio_gpio_init(pio, (pin+3));
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 4, true);
+    pio_sm_offset(&c);
+
+}
+%}
