@@ -13,4 +13,11 @@
 - focus https://www.youtube.com/watch?v=e3WctzSnUvc
 -   https://www.youtube.com/watch?v=VM3S9CiyPzY 28BYJ-48 Stepper Motor
   with Raspberry PI Pico (C++ and FreeRTOS)
+  -https://github.com/jondurrant/RPIPicoStepperExp
+  - slot detector to build an encoder
 
+- how to use both cores
+  https://www.youtube.com/watch?v=nD8XeWjn-2w
+
+- drive two stepper motors using the pico's PIO state machines
+  https://vanhunteradams.com/Pico/Steppers/Lorenz.html
