@@ -15,10 +15,8 @@
   #+nil (load "util.lisp")
   
   (write-source
-   (asdf:system-relative-pathname
-    'cl-cpp-generator2
-    (merge-pathnames #P"main.cpp"
-		     *source-dir*))
+   (merge-pathnames #P"main.cpp"
+		    *full-source-dir*)
    `(do0
      (include<> iostream)
      (include "pico/stdlib.h")
@@ -52,5 +50,36 @@
 	      (<< std--cout
 		  (string "hello world")
 		  std--endl))
-       (return 0)))))
+       (return 0))))
+  (write-source
+   (merge-pathnames #P"stepper.pio"
+		    *full-source-dir*)
+   `(do0
+
+     (lines ".program stepper"
+
+	    "wait 1 irq 3"
+	    "out pins, 4"
+	    
+	    "% c-sdk {")
+     (defun stepper_program_init (pio sm offset pin)
+       (declare (type PIO pio)
+		(type uint sm offset pin)
+		(values "static inline void"))
+       (let ((c (stepper_program_get_default_config offset)))
+	 (sm_config_set_out_pins &c pin 4)
+	 (comments "max clock divider is 65536, a one cycle delay in assembler makes motors slow enough")
+	 (sm_config_set_clkdiv &c 65000)
+	 (comments "setup autopull, 32bit threshold, right-shift osr")
+	 (sm_config_set_out_shift &c 1 1 4)
+	 ,@(loop for i below 4 collect
+		 `(gpio_gpio_init pio (+ pin ,i)))
+	 (pio_sm_set_consecutive_pindirs
+	  pio sm pin 4 true)
+	 (pio_sm_offset &c))
+       
+       )
+
+     "%}")
+   :format nil :tidy nil))
 

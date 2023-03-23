@@ -25,8 +25,10 @@
     Lecture 25: PIO Stepper Motor Driver
   - explains half stepping
   - number of steps, speed, direction
-- https://github.com/vha3/Hunter-Adams-RP2040-Demos/tree/master/Stepper_Motors/Stepper_Speed_Control
-
+  - https://github.com/vha3/Hunter-Adams-RP2040-Demos/tree/master/Stepper_Motors/Stepper_Speed_Control
+  - he has several versions of this code. i'm most interested in
+    position only control with 2 state machines
+    
 - sdk doc https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf
 
 - windows installer https://github.com/raspberrypi/pico-setup-windows/releases/

@@ -689,6 +689,9 @@ entry return-values contains a list of return values. currently supports type, v
 		     (format nil "~{~a~^ ~}" (mapcar #'emit args))))
 		  (comments (let ((args (cdr code)))
 			      (format nil "~{// ~a~%~}" args)))
+		  (lines (let ((args (cdr code)))
+			   ;; like comments but without the //
+			   (format nil "~{~a~%~}" args)))
 		  (doc ;; java doc comments
 		   (let ((args (cdr code)))
 		     (frmat nil "~a"
