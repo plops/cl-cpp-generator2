@@ -11,12 +11,12 @@ static inline void stepper_program_init (PIO pio, uint sm, uint offset, uint pin
     sm_config_set_clkdiv(&c, 65000);
     // setup autopull, 32bit threshold, right-shift osr
     sm_config_set_out_shift(&c, 1, 1, 4);
-    gpio_gpio_init(pio, (pin+0));
-    gpio_gpio_init(pio, (pin+1));
-    gpio_gpio_init(pio, (pin+2));
-    gpio_gpio_init(pio, (pin+3));
+    pio_gpio_init(pio, (pin+0));
+    pio_gpio_init(pio, (pin+1));
+    pio_gpio_init(pio, (pin+2));
+    pio_gpio_init(pio, (pin+3));
     pio_sm_set_consecutive_pindirs(pio, sm, pin, 4, true);
-    pio_sm_offset(&c);
+    pio_sm_init(pio, sm, offset, &c);
 
 }
 %}

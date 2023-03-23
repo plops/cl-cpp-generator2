@@ -13,13 +13,14 @@
   (ensure-directories-exist *full-source-dir*)
   
   #+nil (load "util.lisp")
+
   
   (write-source
    (merge-pathnames #P"main.cpp"
 		    *full-source-dir*)
    `(do0
      (include<> iostream)
-     (include "pico/stdlib.h")
+     (include "motor_library.hpp")
      (space enum
 	    "{"
 	    (comma
@@ -39,7 +40,7 @@
        (do0 (gpio_init LED_PIN)
 	    (gpio_set_dir LED_PIN GPIO_OUT))
        
-       ;(setup_default_uart)
+					;(setup_default_uart)
        (while true
 	      (do0
 	       (gpio_put LED_PIN GPIO_ON)
@@ -51,6 +52,23 @@
 		  (string "hello world")
 		  std--endl))
        (return 0))))
+
+  (write-source
+   (merge-pathnames #P"motor_library.hpp"
+		    *full-source-dir*)
+   `(do0
+     (include<> iostream)
+     ,@(loop for e in `((pico stdlib)
+			(hardware pio dma irq)
+			)
+	     appending
+	     (destructuring-bind (pre &rest rest) e
+	       (loop for r in rest
+		     collect
+		     `(include ,(format nil "~a/~a.h" pre r)))))
+     (include "stepper.pio.h"
+	      "counter.pio.h")
+    ))
   (write-source
    (merge-pathnames #P"stepper.pio"
 		    *full-source-dir*)
@@ -73,10 +91,10 @@
 	 (comments "setup autopull, 32bit threshold, right-shift osr")
 	 (sm_config_set_out_shift &c 1 1 4)
 	 ,@(loop for i below 4 collect
-		 `(gpio_gpio_init pio (+ pin ,i)))
+		 `(pio_gpio_init pio (+ pin ,i)))
 	 (pio_sm_set_consecutive_pindirs
 	  pio sm pin 4 true)
-	 (pio_sm_offset &c))
+	 (pio_sm_init pio sm offset &c))
        
        )
 
