@@ -36,10 +36,12 @@
      
      (defun main ()
        (declare (values int))
+
+       (stdio_init_all)
        (do0 (gpio_init LED_PIN)
 	    (gpio_set_dir LED_PIN GPIO_OUT))
        
-       (setup_default_uart)
+       ;(setup_default_uart)
        (while true
 	      (do0
 	       (gpio_put LED_PIN GPIO_ON)

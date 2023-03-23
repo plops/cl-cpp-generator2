@@ -74,5 +74,10 @@ cmake .. -G Ninja -DPICO_SDK_PATH=/home/martin/src/pico-sdk
 sudo mount /dev/sda1 /mnt
 sudo cp hello_world.uf2 /mnt/
 
+# show serial port (usb)
+
+sudo screen /dev/ttyACM0 115200
 
 ```
+
+
