@@ -1,0 +1,9 @@
+
+- video how to use https://www.youtube.com/watch?v=HDxrrG1RFaw
+
+- pico needs 100mA @ 5V
+
+- motor needs 250mA @ 5V (might also run at lower voltage ~3V)
+
+- 2048 steps per revolution
+- 2ms per step
