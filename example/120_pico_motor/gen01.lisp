@@ -79,9 +79,10 @@
    (merge-pathnames #P"motor_library.hpp"
 		    *full-source-dir*)
    `(do0
-     (include<> iostream)
+     (include<> iostream)  
+
      ,@(loop for e in `((pico stdlib)
-			(hardware pio dma irq)
+			(hardware  pio dma irq)
 			)
 	     appending
 	     (destructuring-bind (pre &rest rest) e
@@ -202,7 +203,7 @@
 	    (ref (-> dma_hw ;; write address: channel 0 read address
 		     (dot (aref ch dma_chan_0)
 			  read_addr)))
-	    address_pointer_motor1 ;; read address
+	    &address_pointer_motor1 ;; read address
 	    1 
 	    false ;; don't start immediatly
 	    )
@@ -233,7 +234,9 @@
 	 ;; start data channels
 	 (dma_start_channel_mask (<< 1u dma_chan_0))
 	 ))
-    ))
+    )
+   :format t
+   :tidy nil)
   (write-source
    (merge-pathnames #P"stepper.pio"
 		    *full-source-dir*)

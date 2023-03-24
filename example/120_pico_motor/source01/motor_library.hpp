@@ -58,7 +58,7 @@ void setupMotor1(unsigned int in1, irq_handler_t handler) {
   channel_config_set_write_increment(&c1, false);
   channel_config_set_chain_to(&c1, dma_chan_0);
   dma_channel_configure(dma_chan_1, &c1, &(dma_hw->ch[dma_chan_0].read_addr),
-                        address_pointer_motor1, 1, false);
+                        &address_pointer_motor1, 1, false);
   auto c2 = dma_channel_get_default_config(dma_chan_2);
   channel_config_set_transfer_data_size(&c2, DMA_SIZE_32);
   channel_config_set_read_increment(&c2, false);
