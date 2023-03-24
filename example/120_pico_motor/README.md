@@ -82,4 +82,5 @@ sudo screen /dev/ttyACM0 115200
 
 ```
 
-
+- state machine simulator
+https://rp2040pio-docs.readthedocs.io/en/latest/introduction.html
