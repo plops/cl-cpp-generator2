@@ -49,7 +49,7 @@
 		(SET_DIRECTION_MOTOR_1 STOPPED)
 		(setf state1 0)))
 	   )
-       (MOVE_STEPS_MOTOR_1 1024))
+       (MOVE_STEPS_MOTOR_1 4048))
      
      (defun main ()
        (declare (values int))
@@ -58,13 +58,13 @@
 
        (setupMotor1 MOTOR1_IN1 pio0_interrupt_handler)
 
-       #+nil
+       
        (do0 (gpio_init LED_PIN)
 	    (gpio_set_dir LED_PIN GPIO_OUT))
 
        (pio0_interrupt_handler)
        (while true
-	    #+nil   (do0
+	      (do0
 	       (gpio_put LED_PIN GPIO_ON)
 	       (sleep_ms 200)
 	       (gpio_put LED_PIN GPIO_OFF)
