@@ -28,7 +28,6 @@ int main() {
   setupMotor1(MOTOR1_IN1, pio0_interrupt_handler);
   pio0_interrupt_handler();
   while (true) {
-    std::cout << "hello world" << std::endl;
   }
   return 0;
 }

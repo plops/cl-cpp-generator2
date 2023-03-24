@@ -69,10 +69,10 @@
 	       (sleep_ms 200)
 	       (gpio_put LED_PIN GPIO_OFF)
 	       (sleep_ms 200)
-	       )
-	      (<< std--cout
-		  (string "hello world")
-		  std--endl))
+	       
+	       (<< std--cout
+		   (string "hello world")
+		   std--endl)))
        (return 0))))
 
   (write-source
@@ -155,7 +155,8 @@
 	 ;; setup interrupts
 	 (pio_interrupt_clear pio_0 1)
 	 (pio_set_irq0_source_enabled pio_0
-				      (static_cast<pio_interrupt_source> PIO_INTR_SM1_LSB) true)
+				      (static_cast<pio_interrupt_source>
+				       PIO_INTR_SM1_LSB) true)
 	 (irq_set_exclusive_handler PIO0_IRQ_0 handler)
 	 (irq_set_enabled PIO0_IRQ_0 true)
 
