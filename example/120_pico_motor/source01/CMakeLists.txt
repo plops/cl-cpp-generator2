@@ -24,8 +24,8 @@ target_link_libraries(hello_world PRIVATE
   hardware_irq
 )
 
-pico_enable_stdio_usb(hello_world 1)
-pico_enable_stdio_uart(hello_world 0)
+#pico_enable_stdio_usb(hello_world 1)
+#pico_enable_stdio_uart(hello_world 0)
 pico_generate_pio_header(hello_world ${CMAKE_CURRENT_LIST_DIR}/stepper.pio)
 pico_generate_pio_header(hello_world ${CMAKE_CURRENT_LIST_DIR}/counter.pio)
 

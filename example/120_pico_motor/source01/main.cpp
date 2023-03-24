@@ -26,16 +26,8 @@ void pio0_interrupt_handler() {
 int main() {
   stdio_init_all();
   setupMotor1(MOTOR1_IN1, pio0_interrupt_handler);
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
-
   pio0_interrupt_handler();
   while (true) {
-    gpio_put(LED_PIN, GPIO_ON);
-    sleep_ms(200);
-    gpio_put(LED_PIN, GPIO_OFF);
-    sleep_ms(200);
-
     std::cout << "hello world" << std::endl;
   }
   return 0;

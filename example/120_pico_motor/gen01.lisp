@@ -57,13 +57,14 @@
        (stdio_init_all)
 
        (setupMotor1 MOTOR1_IN1 pio0_interrupt_handler)
-       
+
+       #+nil
        (do0 (gpio_init LED_PIN)
 	    (gpio_set_dir LED_PIN GPIO_OUT))
 
        (pio0_interrupt_handler)
        (while true
-	      (do0
+	    #+nil   (do0
 	       (gpio_put LED_PIN GPIO_ON)
 	       (sleep_ms 200)
 	       (gpio_put LED_PIN GPIO_OFF)
@@ -142,8 +143,8 @@
        (declare (type "unsigned int" in1)
 		(type irq_handler_t handler))
        ;; load pio programs into pio0
-       (let ((pio0_offset_0 (pio_add_program pio0 &stepper_program))
-	     (pio0_offset_1 (pio_add_program pio0 &counter_program)))
+       (let ((pio0_offset_0 (pio_add_program pio_0 &stepper_program))
+	     (pio0_offset_1 (pio_add_program pio_0 &counter_program)))
 
 	 ;; initialize pio programs
 	 (stepper_program_init pio_0 pulse_sm_0 pio0_offset_0 in1)
@@ -172,9 +173,9 @@
 	   (dma_channel_configure
 	    dma_chan_0 ;; channel to be configured
 	    &c0	       ;; configuration we just created 
-	    ("reinterpret_cast<volatile void *>"
-	     (-> pio_0 ;; write address (stepper pio tx fifo
-		 (aref txf pulse_sm_0)))
+	    ;"reinterpret_cast<volatile void *>"
+	    (ref (-> pio_0 ;; write address (stepper pio tx fifo
+		     (aref txf pulse_sm_0)))
 	    address_pointer_motor1
 	    8	  ;; number of transfers, each is 4 bytes
 	    false ;; don't start immediatly
@@ -196,10 +197,10 @@
 	   (dma_channel_configure
 	    dma_chan_1 ;; channel to be configured
 	    &c1	       ;; configuration we just created 
-	    ("reinterpret_cast<volatile void *>"
-	     (-> dma_hw ;; write address: channel 0 read address
-		 (dot (aref ch dma_chan_0)
-		      read_addr)))
+	    ;"reinterpret_cast<volatile void *>"
+	    (ref (-> dma_hw ;; write address: channel 0 read address
+		     (dot (aref ch dma_chan_0)
+			  read_addr)))
 	    address_pointer_motor1 ;; read address
 	    1 
 	    false ;; don't start immediatly
@@ -219,9 +220,9 @@
 	   (dma_channel_configure
 	    dma_chan_2 ;; channel to be configured
 	    &c2	       ;; configuration we just created 
-	    ("reinterpret_cast<volatile void *>"
-	     (-> pio_0 ;; write to pacer pio tx fifo
-		 (aref txf count_sm_0)))
+	    ;"reinterpret_cast<volatile void *>"
+	    (ref (-> pio_0 ;; write to pacer pio tx fifo
+		     (aref txf count_sm_0)))
 	    pulse_count_motor1_address_pointer ;; read address
 	    1 
 	    false ;; don't start immediatly
