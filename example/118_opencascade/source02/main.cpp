@@ -79,7 +79,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myWireProfile = mkWire.Wire();
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
-  auto myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
+  TopoDS_Shape myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
   auto mkFillet = ([&]() {
     auto fillet = BRepFilletAPI_MakeFillet(myBody);
     auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
@@ -104,10 +104,10 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   // attach the neck to the body
   myBody = BRepAlgoAPI_Fuse(myBody, myNeck);
 
-  auto facesToRemove = ([&](auto body) {
+  auto facesToRemove = ([&]() {
     auto faceToRemove = TopoDS_Face();
     auto zMax = Standard_Real(-100);
-    auto explorer = TopExp_Explorer(body, TopAbs_FACE);
+    auto explorer = TopExp_Explorer(myBody, TopAbs_FACE);
     for (; explorer.More(); explorer.Next()) {
       auto aFace = TopoDS::Face(explorer.Current());
       auto bas = BRepAdaptor_Surface(aFace);
@@ -128,22 +128,22 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     auto facesToRemove = TopTools_ListOfShape();
     facesToRemove.Append(faceToRemove);
     return facesToRemove;
-  })(myBody);
+  })();
   // make inside of the bottle hollow
-  myBody = ([&](auto body) {
+  myBody = ([&]() {
     auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
-    aSolidMaker.MakeThickSolidByJoin(body, facesToRemove, -myThickness / 50,
+    aSolidMaker.MakeThickSolidByJoin(myBody, facesToRemove, -myThickness / 50,
                                      (1.00e-3f));
     return aSolidMaker.Shape();
-  })(myBody);
+  })();
 
-  auto aRes = ([&](auto body) {
+  auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);
-    b.Add(a, body);
+    b.Add(a, myBody);
     return a;
-  })(myBody);
+  })();
   return aRes;
 }
 

@@ -119,18 +119,19 @@
 	     ;; extruded outside shape of the body of the bottle
 	     (myBody (BRepPrimAPI_MakePrism myFaceProfile
 					    aPrismVec)))
+	 (declare (type TopoDS_Shape myBody))
 	 #-nil (let ((mkFillet (
-			  (lambda ()
-			    (declare (capture "&"))
-			    (let ((fillet (BRepFilletAPI_MakeFillet myBody))
-				  (edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
-			      (while (edgeExplorer.More)
-				     (let ((edge (TopoDS--Edge (edgeExplorer.Current))))
-				       (fillet.Add (/ myThickness 12)
-						   edge)
-				       (edgeExplorer.Next)))
-			      (return fillet)
-			      ))))
+				(lambda ()
+				  (declare (capture "&"))
+				  (let ((fillet (BRepFilletAPI_MakeFillet myBody))
+					(edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
+				    (while (edgeExplorer.More)
+					   (let ((edge (TopoDS--Edge (edgeExplorer.Current))))
+					     (fillet.Add (/ myThickness 12)
+							 edge)
+					     (edgeExplorer.Next)))
+				    (return fillet)
+				    ))))
 		     
 		     )
 		 (comments "make the outside of the body rounder")
@@ -150,13 +151,13 @@
 		       (BRepAlgoAPI_Fuse myBody myNeck)))
 	 
 	 #-nil (let ((facesToRemove
-		       ((lambda (body)
+		       ((lambda ()
 			  (declare (capture "&")
-				   (type auto body))
+				   )
 			  (let ((faceToRemove (TopoDS_Face))
 				(zMax (Standard_Real -100))
 			  
-				(explorer (TopExp_Explorer body  TopAbs_FACE)))
+				(explorer (TopExp_Explorer myBody  TopAbs_FACE)))
 			    (for (() (explorer.More) (explorer.Next))
 				 (let ((aFace (TopoDS--Face (explorer.Current)))
 				       (bas (BRepAdaptor_Surface aFace)))
@@ -184,32 +185,31 @@
 			    (let ((facesToRemove (TopTools_ListOfShape)))
 			      (facesToRemove.Append faceToRemove)
 			      (return facesToRemove))
-			    ))
-			myBody))
+			    ))))
 		     )
 		 (do0
 		       (comments "make inside of the bottle hollow")
 		       (setf myBody
 			     
-			     ((lambda (body)
+			     ((lambda ()
 				(declare (capture "&")
-					 (type auto body))
+					 )
 				(let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-				  (aSolidMaker.MakeThickSolidByJoin body facesToRemove
+				  (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
 								    -myThickness/50 1e-3)
 				  (return (aSolidMaker.Shape))))
-			      myBody))))
+			     ))))
 	 
-	 (let ((aRes ((lambda (body)
-			(declare	;(values auto)
+	 (let ((aRes ((lambda ()
+			(declare
+			
 			 (capture "&")
 			 (declare (type auto body)))
 			(let ((a (TopoDS_Compound))
 			      (b (BRep_Builder)))
 			  (b.MakeCompound a)
-			  (b.Add a body)
-			  (return a)))
-		      myBody)))
+			  (b.Add a myBody)
+			  (return a))))))
 	   (return aRes))
 	 ))
 
