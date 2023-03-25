@@ -256,7 +256,7 @@
 			 ))))
 
 
-	 (let ((thread
+	 (let ((myThreading
 		 ((lambda ()
 		    (declare (capture "&"))
 		    (let ((aCyl1 ,(ptr-new `(Geom_CylindricalSurface
@@ -277,8 +277,29 @@
 			  (anEllipsePnt1 (-> anEllipse1 (Value 0)))
 			  (anEllipsePnt2 (-> anEllipse1 (Value M_PI)))
 			  (aSegment ,(ptr  `(Geom2d_TrimmedCurve 
-					     (GCE2d_MakeSegment anEllipsePnt1 anEllipsePnt2))))))))))
-	   (comments "create thread"))
+					     (GCE2d_MakeSegment anEllipsePnt1 anEllipsePnt2))))
+			  
+			  ,@(loop for (a b c d) in `((1 1 anArc1 aCyl1)
+						     (2 1 aSegment aCyl1)
+						     (1 2 anArc2 aCyl2)
+						     (2 2 aSegment aCyl2)
+						     )
+				  collect
+				  `(,(format nil "anEdge~aOnSurf~a" a b) (BRepBuilderAPI_MakeEdge ,c ,d)))
+			  (threadingWire1 (BRepBuilderAPI_MakeWire anEdge1OnSurf1 anEdge2OnSurf1))
+			  (threadingWire2 (BRepBuilderAPI_MakeWire anEdge1OnSurf2 anEdge2OnSurf2))
+			  
+			  )
+		      (BRepLib--BuildCurves3d threadingWire1)
+		      (BRepLib--BuildCurves3d threadingWire2)
+		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
+			(aTool.AddWire threadingWire1)
+			(aTool.AddWire threadingWire2)
+			(comments "create thread")
+			(aTool.CheckCompatibility Standard_False)
+			(let ((myThreading (aTool.Shape)))
+			  (return myThreading))))))))
+	   )
 	 
 	 (let ((aRes ((lambda ()
 			(declare
@@ -289,6 +310,7 @@
 			      (b (BRep_Builder)))
 			  (b.MakeCompound a)
 			  (b.Add a myBody)
+			  (b.Add a myThreading)
 			  (return a))))))
 	   (return aRes))
 	 ))

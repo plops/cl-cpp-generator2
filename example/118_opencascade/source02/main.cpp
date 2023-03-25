@@ -168,7 +168,7 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     return aSolidMaker.Shape();
   })();
 
-  auto thread = ([&]() {
+  auto myThreading = ([&]() {
     auto aCyl1 = opencascade::handle<Geom_CylindricalSurface>(
         new Geom_CylindricalSurface(neckAx2, (0.99 * myNeckRadius)));
     auto aCyl2 = opencascade::handle<Geom_CylindricalSurface>(
@@ -190,14 +190,30 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     auto anEllipsePnt2 = anEllipse1->Value(M_PI);
     auto aSegment = opencascade::handle<Geom2d_TrimmedCurve>(
         GCE2d_MakeSegment(anEllipsePnt1, anEllipsePnt2));
+    auto anEdge1OnSurf1 = BRepBuilderAPI_MakeEdge(anArc1, aCyl1);
+    auto anEdge2OnSurf1 = BRepBuilderAPI_MakeEdge(aSegment, aCyl1);
+    auto anEdge1OnSurf2 = BRepBuilderAPI_MakeEdge(anArc2, aCyl2);
+    auto anEdge2OnSurf2 = BRepBuilderAPI_MakeEdge(aSegment, aCyl2);
+    auto threadingWire1 =
+        BRepBuilderAPI_MakeWire(anEdge1OnSurf1, anEdge2OnSurf1);
+    auto threadingWire2 =
+        BRepBuilderAPI_MakeWire(anEdge1OnSurf2, anEdge2OnSurf2);
+    BRepLib::BuildCurves3d(threadingWire1);
+    BRepLib::BuildCurves3d(threadingWire2);
+    auto aTool = BRepOffsetAPI_ThruSections(Standard_True);
+    aTool.AddWire(threadingWire1);
+    aTool.AddWire(threadingWire2);
+    // create thread
+    aTool.CheckCompatibility(Standard_False);
+    auto myThreading = aTool.Shape();
+    return myThreading;
   })();
-  // create thread
-
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);
     b.Add(a, myBody);
+    b.Add(a, myThreading);
     return a;
   })();
   return aRes;
