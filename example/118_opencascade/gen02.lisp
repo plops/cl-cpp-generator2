@@ -20,6 +20,22 @@
   (defun ptr0 (name)
     `(,(format nil "opencascade::handle<~a>" name)))
 
+  #+nil
+  (defun ptr-new (name-args)
+    ;; name can be a list (name type)  handle<name> new(type, *args)
+    (let ((name name-args)
+	  (args nil))
+      (when (listp name-args)
+	(setf name (first name-args)
+	      args (second name-args)))
+      (let ((type name))
+	(when (listp name)
+	  (setf type (second name)
+		name (first name)))
+	`(,(format nil "opencascade::handle<~a>" name)
+	  (new ,(if args
+		    `(,type ,@args)
+		    type))))))
   (defun ptr-new (name-args)
     (let ((name name-args)
 	  (args nil))
@@ -238,6 +254,31 @@
 							       -myThickness/50 1e-3)
 			     (return (aSolidMaker.Shape))))
 			 ))))
+
+
+	 (let ((thread
+		 ((lambda ()
+		    (declare (capture "&"))
+		    (let ((aCyl1 ,(ptr-new `(Geom_CylindricalSurface
+					     (neckAx2 (* .99 myNeckRadius)))))
+			  (aCyl2 ,(ptr-new `(Geom_CylindricalSurface
+					     (neckAx2 (* 1.05 myNeckRadius)))))
+			  (aPnt (gp_Pnt2d (* 2 M_PI)
+					  (/ myNeckHeight 2)))
+			  (aDir (gp_Dir2d (* 2 M_PI)
+					  (/ myNeckHeight 4)))
+			  (anAx2d (gp_Ax2d aPnt aDir))
+			  (aMajor (Standard_Real (* 2 M_PI)))
+			  (aMinor (Standard_Real (/ myNeckHeight 10)))
+			  (anEllipse1 ,(ptr-new `(Geom2d_Ellipse (anAx2d aMajor aMinor))))
+			  (anEllipse2 ,(ptr-new `(Geom2d_Ellipse (anAx2d aMajor (/ aMinor 4)))))
+			  (anArc1 ,(ptr-new `(Geom2d_TrimmedCurve (anEllipse1 0 M_PI))))
+			  (anArc2 ,(ptr-new `(Geom2d_TrimmedCurve (anEllipse2 0 M_PI))))
+			  (anEllipsePnt1 (-> anEllipse1 (Value 0)))
+			  (anEllipsePnt2 (-> anEllipse1 (Value M_PI)))
+			  (aSegment ,(ptr  `(Geom2d_TrimmedCurve 
+					     (GCE2d_MakeSegment anEllipsePnt1 anEllipsePnt2))))))))))
+	   (comments "create thread"))
 	 
 	 (let ((aRes ((lambda ()
 			(declare

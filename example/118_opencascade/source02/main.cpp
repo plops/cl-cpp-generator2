@@ -168,6 +168,31 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     return aSolidMaker.Shape();
   })();
 
+  auto thread = ([&]() {
+    auto aCyl1 = opencascade::handle<Geom_CylindricalSurface>(
+        new Geom_CylindricalSurface(neckAx2, (0.99 * myNeckRadius)));
+    auto aCyl2 = opencascade::handle<Geom_CylindricalSurface>(
+        new Geom_CylindricalSurface(neckAx2, (1.05 * myNeckRadius)));
+    auto aPnt = gp_Pnt2d((2 * M_PI), ((myNeckHeight) / (2)));
+    auto aDir = gp_Dir2d((2 * M_PI), ((myNeckHeight) / (4)));
+    auto anAx2d = gp_Ax2d(aPnt, aDir);
+    auto aMajor = Standard_Real((2 * M_PI));
+    auto aMinor = Standard_Real(((myNeckHeight) / (10)));
+    auto anEllipse1 = opencascade::handle<Geom2d_Ellipse>(
+        new Geom2d_Ellipse(anAx2d, aMajor, aMinor));
+    auto anEllipse2 = opencascade::handle<Geom2d_Ellipse>(
+        new Geom2d_Ellipse(anAx2d, aMajor, ((aMinor) / (4))));
+    auto anArc1 = opencascade::handle<Geom2d_TrimmedCurve>(
+        new Geom2d_TrimmedCurve(anEllipse1, 0, M_PI));
+    auto anArc2 = opencascade::handle<Geom2d_TrimmedCurve>(
+        new Geom2d_TrimmedCurve(anEllipse2, 0, M_PI));
+    auto anEllipsePnt1 = anEllipse1->Value(0);
+    auto anEllipsePnt2 = anEllipse1->Value(M_PI);
+    auto aSegment = opencascade::handle<Geom2d_TrimmedCurve>(
+        GCE2d_MakeSegment(anEllipsePnt1, anEllipsePnt2));
+  })();
+  // create thread
+
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
