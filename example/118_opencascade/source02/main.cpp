@@ -90,11 +90,20 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     }
     return fillet;
   })();
-  auto myBody1 = mkFillet.Shape();
-  auto facesToRemove = ([&]() {
+  auto myBody1 = myBody;
+  auto neckLocation = gp_Pnt(0, 0, myHeight);
+  auto neckAxis = gp::DZ();
+  auto neckAx2 = gp_Ax2(neckLocation, neckAxis);
+  auto myNeckRadius = ((myThickness) / ((4.0)));
+  auto myNeckHeight = ((myHeight) / ((10.)));
+  auto MKCylinder =
+      BRepPrimAPI_MakeCylinder(neckAx2, myNeckRadius, myNeckHeight);
+  auto myNeck = MKCylinder.Shape();
+  auto myBody2 = BRepAlgoAPI_Fuse(myBody1, myNeck);
+  auto facesToRemove = ([&](auto body) {
     auto faceToRemove = TopoDS_Face();
     auto zMax = Standard_Real(-100);
-    auto explorer = TopExp_Explorer(myBody1, TopAbs_FACE);
+    auto explorer = TopExp_Explorer(body, TopAbs_FACE);
     for (; explorer.More(); explorer.Next()) {
       auto aFace = TopoDS::Face(explorer.Current());
       auto bas = BRepAdaptor_Surface(aFace);
@@ -121,13 +130,8 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     auto facesToRemove = TopTools_ListOfShape();
     facesToRemove.Append(faceToRemove);
     return facesToRemove;
-  })();
-  auto myBody2 = ([&]() {
-    auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
-    aSolidMaker.MakeThickSolidByJoin(myBody1, facesToRemove, -myThickness / 50,
-                                     (1.00e-3f));
-    return aSolidMaker.Shape();
-  })();
+  })(myBody2);
+  auto myBody3 = myBody2;
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
@@ -143,10 +147,7 @@ bool WriteStep(const Handle(TDocStd_Document) & doc, const char *filename) {
   if (!(Writer.Transfer(doc))) {
     return false;
   }
-  if (!(IFSelect_RetDone == Writer.Write(filename))) {
-    return false;
-  }
-  return true;
+  return IFSelect_RetDone == Writer.Write(filename);
 }
 
 int main(int argc, char **argv) {

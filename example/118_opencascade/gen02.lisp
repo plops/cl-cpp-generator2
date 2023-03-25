@@ -123,7 +123,7 @@
 	     
 	   
 	     )
-	 #-nil (let ((mkFillet (;std--invoke
+	 #-nil (let ((mkFillet (
 			  (lambda ()
 			    (declare (capture "&"))
 			    (let ((fillet (BRepFilletAPI_MakeFillet myBody))
@@ -135,49 +135,64 @@
 				       (edgeExplorer.Next)))
 			      (return fillet)
 			      ))))
-	       (myBody1 (mkFillet.Shape))))
+	       (myBody1 myBody
+		 ;(mkFillet.Shape)
+		 )))
 
+	 #-nil (let ((neckLocation (gp_Pnt 0 0 myHeight))
+		     (neckAxis (gp--DZ))
+		     (neckAx2 (gp_Ax2 neckLocation neckAxis))
+		     (myNeckRadius (/ myThickness 4d0))
+		     (myNeckHeight (/ myHeight 10d0))
+		     (MKCylinder (BRepPrimAPI_MakeCylinder neckAx2 myNeckRadius myNeckHeight))
+		     (myNeck (MKCylinder.Shape ))
+		     (myBody2 ;myBody1
+			      (BRepAlgoAPI_Fuse myBody1 myNeck))))
+	 
 	 #-nil (let ((facesToRemove
-		 ((lambda ()
-		    (declare (capture "&"))
-		    (let ((faceToRemove (TopoDS_Face))
-			  (zMax (Standard_Real -100))
+		       ((lambda (body)
+			  (declare (capture "&")
+				   (type auto body))
+			  (let ((faceToRemove (TopoDS_Face))
+				(zMax (Standard_Real -100))
 			  
-			  (explorer (TopExp_Explorer myBody1  TopAbs_FACE)))
-		      (for (() (explorer.More) (explorer.Next))
-			     (let ((aFace (TopoDS--Face (explorer.Current)))
-				   (bas (BRepAdaptor_Surface aFace)))
-			       ,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
-			       (when (== GeomAbs_Plane
-					 (bas.GetType))
-				 (let ((plane (bas.Plane))
-				       (aPnt (plane.Location)))
-				   (unless (dot plane
-						(Axis)
-						(Direction)
-						(IsParallel (gp--DZ)
-							    (/ (* 1.0 M_PI)
-							       180.0)))
+				(explorer (TopExp_Explorer body  TopAbs_FACE)))
+			    (for (() (explorer.More) (explorer.Next))
+				 (let ((aFace (TopoDS--Face (explorer.Current)))
+				       (bas (BRepAdaptor_Surface aFace)))
+				   ,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
+				   (when (== GeomAbs_Plane
+					     (bas.GetType))
+				     (let ((plane (bas.Plane))
+					   (aPnt (plane.Location)))
+				       (unless (dot plane
+						    (Axis)
+						    (Direction)
+						    (IsParallel (gp--DZ)
+								(/ (* 1.0 M_PI)
+								   180.0)))
 				    
-				     continue)
-				   (let ((aZ (aPnt.Z)))
-				     (when (< zMax aZ)
-				       ,(lprint :vars `(zMax aZ))
-				       (setf zMax aZ
-					     faceToRemove aFace)))
+					 continue)
+				       (let ((aZ (aPnt.Z)))
+					 (when (< zMax aZ)
+					   ,(lprint :vars `(zMax aZ))
+					   (setf zMax aZ
+						 faceToRemove aFace)))
+				       ))
 				   ))
-			       ))
 
-		      (let ((facesToRemove (TopTools_ListOfShape)))
-			(facesToRemove.Append faceToRemove)
-			(return facesToRemove))
-		      ))))
-	       (myBody2 ((lambda ()
-			   (declare (capture "&"))
-			   (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-			     (aSolidMaker.MakeThickSolidByJoin myBody1 facesToRemove
-							       -myThickness/50 1e-3)
-			     (return (aSolidMaker.Shape))))))))
+			    (let ((facesToRemove (TopTools_ListOfShape)))
+			      (facesToRemove.Append faceToRemove)
+			      (return facesToRemove))
+			    ))
+			myBody2))
+		     (myBody3 myBody2 #+nil
+			      ((lambda ()
+				 (declare (capture "&"))
+				 (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
+				   (aSolidMaker.MakeThickSolidByJoin myBody2 facesToRemove
+								     -myThickness/50 1e-3)
+				   (return (aSolidMaker.Shape))))))))
 	 
 	 (let ((aRes ((lambda ()
 			(declare	;(values auto)
@@ -198,10 +213,9 @@
 	 (unless 
 	  (Writer.Transfer doc)
 	   (return false))
-	 (unless (== IFSelect_RetDone
+	 (return (== IFSelect_RetDone
 		     (Writer.Write filename))
-	   (return false))
-	 (return true))
+	   ))
        )
      (defun main (argc argv)
        (declare (type int argc)
