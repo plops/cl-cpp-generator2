@@ -23,3 +23,5 @@ auto'. https://www.quora.com/Is-it-good-practice-to-declare-most-variables-using
 This is the style I use in my generated C++ code.
 
 
+disconnect part from plate in freezer
+https://www.youtube.com/watch?v=Jo1aoHnRY5Q
