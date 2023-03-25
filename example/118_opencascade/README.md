@@ -25,3 +25,10 @@ This is the style I use in my generated C++ code.
 
 disconnect part from plate in freezer
 https://www.youtube.com/watch?v=Jo1aoHnRY5Q
+
+how to design spur gears
+https://www.youtube.com/watch?v=8bml2pK6Ra0
+
+https://www.youtube.com/watch?v=IBcGLpQnfYk
+
+
