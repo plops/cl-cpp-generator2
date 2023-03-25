@@ -95,7 +95,8 @@
 	      (t-doc-std application)
 	      (bin-x-c-a-f-drivers "")
 	      (x-c-a-f-doc shape-tool document-tool)
-	      ("STEPCAFControl" writer)))
+	      ("STEPCAFControl" writer)
+	      (shape-upgrade unify-same-domain)))
 
      (defun MakeBottle (myWidth myHeight myThickness)
        (declare (type "const Standard_Real" myWidth myHeight myThickness)
@@ -295,8 +296,9 @@
 		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
 			(aTool.AddWire threadingWire1)
 			(aTool.AddWire threadingWire2)
-			(comments "create thread")
+			(comments "because they come from ellipses, the splines will be compatible")
 			(aTool.CheckCompatibility Standard_False)
+			(comments "create thread")
 			(let ((myThreading (aTool.Shape)))
 			  (return myThreading))))))))
 	   )
@@ -308,9 +310,18 @@
 			 (declare (type auto body)))
 			(let ((a (TopoDS_Compound))
 			      (b (BRep_Builder)))
+			  (comments "return compound so that we still see output in case a boolean operation fails")
 			  (b.MakeCompound a)
+			  (setf myBody
+			   (BRepAlgoAPI_Fuse myBody myThreading))
+			  (let ((unify (ShapeUpgrade_UnifySameDomain myBody)))
+			    (comments "remove unneccessary seams")
+			    (unify.Build)
+			    (setf myBody
+				  (dot unify
+				       (Shape))))
 			  (b.Add a myBody)
-			  (b.Add a myThreading)
+			  
 			  (return a))))))
 	   (return aRes))
 	 ))

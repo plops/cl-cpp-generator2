@@ -22,6 +22,7 @@
 #include <Geom_Surface.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <STEPCAFControl_Writer.hxx>
+#include <ShapeUpgrade_UnifySameDomain.hxx>
 #include <TDocStd_Application.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListOfShape.hxx>
@@ -203,17 +204,26 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     auto aTool = BRepOffsetAPI_ThruSections(Standard_True);
     aTool.AddWire(threadingWire1);
     aTool.AddWire(threadingWire2);
-    // create thread
+    // because they come from ellipses, the splines will be compatible
     aTool.CheckCompatibility(Standard_False);
+    // create thread
     auto myThreading = aTool.Shape();
     return myThreading;
   })();
   auto aRes = ([&]() {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
+    // return compound so that we still see output in case a boolean operation
+    // fails
     b.MakeCompound(a);
+    myBody = BRepAlgoAPI_Fuse(myBody, myThreading);
+
+    auto unify = ShapeUpgrade_UnifySameDomain(myBody);
+    // remove unneccessary seams
+    unify.Build();
+    myBody = unify.Shape();
+
     b.Add(a, myBody);
-    b.Add(a, myThreading);
     return a;
   })();
   return aRes;
