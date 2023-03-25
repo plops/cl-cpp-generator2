@@ -123,6 +123,8 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
       })();
       std::cout << ""
                 << " mz='" << mz << "' " << std::endl;
+      // i want to fillet the edge where the neck attaches to the body but not
+      // the top of the neck
       if (mz <= 40) {
         fillet.Add(((myThickness) / (12)), edge);
       }
