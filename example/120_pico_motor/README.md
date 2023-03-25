@@ -84,6 +84,7 @@ sudo screen /dev/ttyACM0 115200
 
 - state machine simulator
 https://rp2040pio-docs.readthedocs.io/en/latest/introduction.html
-
+ - i have compiled it but did not try it
+ 
 - pulley and belt
 https://youtu.be/0sKqc5IwQQQ?t=648
