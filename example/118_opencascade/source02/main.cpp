@@ -90,7 +90,9 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     }
     return fillet;
   })();
-  auto myBody1 = myBody;
+  // make the outside of the body rounder
+  myBody = mkFillet.Shape();
+
   auto neckLocation = gp_Pnt(0, 0, myHeight);
   auto neckAxis = gp::DZ();
   auto neckAx2 = gp_Ax2(neckLocation, neckAxis);
@@ -99,7 +101,9 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto MKCylinder =
       BRepPrimAPI_MakeCylinder(neckAx2, myNeckRadius, myNeckHeight);
   auto myNeck = MKCylinder.Shape();
-  auto myBody2 = BRepAlgoAPI_Fuse(myBody1, myNeck);
+  // attach the neck to the body
+  myBody = BRepAlgoAPI_Fuse(myBody, myNeck);
+
   auto facesToRemove = ([&](auto body) {
     auto faceToRemove = TopoDS_Face();
     auto zMax = Standard_Real(-100);
@@ -107,9 +111,6 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     for (; explorer.More(); explorer.Next()) {
       auto aFace = TopoDS::Face(explorer.Current());
       auto bas = BRepAdaptor_Surface(aFace);
-      std::cout << "face"
-                << " bas.GetType()='" << bas.GetType() << "' "
-                << " GeomAbs_Plane='" << GeomAbs_Plane << "' " << std::endl;
       if (GeomAbs_Plane == bas.GetType()) {
         auto plane = bas.Plane();
         auto aPnt = plane.Location();
@@ -119,9 +120,6 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
         }
         auto aZ = aPnt.Z();
         if (zMax < aZ) {
-          std::cout << ""
-                    << " zMax='" << zMax << "' "
-                    << " aZ='" << aZ << "' " << std::endl;
           zMax = aZ;
           faceToRemove = aFace;
         }
@@ -130,15 +128,22 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
     auto facesToRemove = TopTools_ListOfShape();
     facesToRemove.Append(faceToRemove);
     return facesToRemove;
-  })(myBody2);
-  auto myBody3 = myBody2;
-  auto aRes = ([&]() {
+  })(myBody);
+  // make inside of the bottle hollow
+  myBody = ([&](auto body) {
+    auto aSolidMaker = BRepOffsetAPI_MakeThickSolid();
+    aSolidMaker.MakeThickSolidByJoin(body, facesToRemove, -myThickness / 50,
+                                     (1.00e-3f));
+    return aSolidMaker.Shape();
+  })(myBody);
+
+  auto aRes = ([&](auto body) {
     auto a = TopoDS_Compound();
     auto b = BRep_Builder();
     b.MakeCompound(a);
-    b.Add(a, myBody2);
+    b.Add(a, body);
     return a;
-  })();
+  })(myBody);
   return aRes;
 }
 
