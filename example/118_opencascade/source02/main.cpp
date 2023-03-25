@@ -16,6 +16,7 @@
 #include <GC_MakeSegment.hxx>
 #include <Geom2d_Ellipse.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
+#include <Geom_Curve.hxx>
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
@@ -31,6 +32,7 @@
 #include <TopoDS_Wire.hxx>
 #include <XCAFDoc_DocumentTool.hxx>
 #include <XCAFDoc_ShapeTool.hxx>
+#include <algorithm>
 #include <gp.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Ax2.hxx>
@@ -42,6 +44,7 @@
 #include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
 #include <iostream>
+#include <vector>
 
 TopoDS_Shape MakeBottle(const Standard_Real myWidth,
                         const Standard_Real myHeight,
@@ -80,19 +83,6 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myFaceProfile = BRepBuilderAPI_MakeFace(myWireProfile);
   auto aPrismVec = gp_Vec(0, 0, myHeight);
   TopoDS_Shape myBody = BRepPrimAPI_MakePrism(myFaceProfile, aPrismVec);
-  auto mkFillet = ([&]() {
-    auto fillet = BRepFilletAPI_MakeFillet(myBody);
-    auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
-    while (edgeExplorer.More()) {
-      auto edge = TopoDS::Edge(edgeExplorer.Current());
-      fillet.Add(((myThickness) / (12)), edge);
-      edgeExplorer.Next();
-    }
-    return fillet;
-  })();
-  // make the outside of the body rounder
-  myBody = mkFillet.Shape();
-
   auto neckLocation = gp_Pnt(0, 0, myHeight);
   auto neckAxis = gp::DZ();
   auto neckAx2 = gp_Ax2(neckLocation, neckAxis);
@@ -103,6 +93,45 @@ TopoDS_Shape MakeBottle(const Standard_Real myWidth,
   auto myNeck = MKCylinder.Shape();
   // attach the neck to the body
   myBody = BRepAlgoAPI_Fuse(myBody, myNeck);
+
+  auto mkFillet = ([&]() {
+    auto fillet = BRepFilletAPI_MakeFillet(myBody);
+    auto edgeExplorer = TopExp_Explorer(myBody, TopAbs_EDGE);
+    while (edgeExplorer.More()) {
+      auto cur = edgeExplorer.Current();
+      auto edge = TopoDS::Edge(cur);
+      auto mz = ([&]() {
+        auto uStart = Standard_Real(0);
+        auto uEnd = Standard_Real(0);
+        auto curve = opencascade::handle<Geom_Curve>(
+            BRep_Tool::Curve(edge, uStart, uEnd));
+        auto N = 100;
+        auto deltaU = ((((uEnd) - (uStart))) / ((1.0 * N)));
+        auto points = ([&]() {
+          auto points = std::vector<gp_Pnt>();
+          for (auto i = 0; i < N; i += 1) {
+            auto u = (uStart + (deltaU * i));
+            points.emplace_back(curve->Value(u));
+          }
+          return points;
+        })();
+        auto maxPointIt =
+            std::max_element(points.begin(), points.end(),
+                             [](auto a, auto b) { return a.Z() < b.Z(); });
+        auto maxPoint = *(maxPointIt);
+        return maxPoint.Z();
+      })();
+      std::cout << ""
+                << " mz='" << mz << "' " << std::endl;
+      if (mz <= 40) {
+        fillet.Add(((myThickness) / (12)), edge);
+      }
+      edgeExplorer.Next();
+    }
+    return fillet;
+  })();
+  // make the outside of the body rounder
+  myBody = mkFillet.Shape();
 
   auto facesToRemove = ([&]() {
     auto faceToRemove = TopoDS_Face();

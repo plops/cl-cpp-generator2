@@ -58,7 +58,9 @@
     (merge-pathnames #P"main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> iostream)
+     (include<> iostream
+		vector
+		algorithm)
      ,@(inc `((b-rep tool)
 	      (b-rep-algo-a-p-i fuse)
 	      (b-rep-builder-a-p-i make-edge make-face make-wire transform)
@@ -69,7 +71,7 @@
 	      (g-c make-arc-of-circle make-segment)
 	      (g-c-e2d make-segment)
 	      ("gp" "" ax1 ax2 ax2d dir dir2d pnt pnt2d trsf vec)
-	      (geom cylindrical-surface plane surface trimmed-curve)
+	      (geom cylindrical-surface plane surface trimmed-curve curve)
 	      (geom2d ellipse trimmed-curve)
 	      (top-exp explorer)
 	      (topo-d-s edge face wire shape compound)
@@ -120,23 +122,8 @@
 	     (myBody (BRepPrimAPI_MakePrism myFaceProfile
 					    aPrismVec)))
 	 (declare (type TopoDS_Shape myBody))
-	 #-nil (let ((mkFillet (
-				(lambda ()
-				  (declare (capture "&"))
-				  (let ((fillet (BRepFilletAPI_MakeFillet myBody))
-					(edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
-				    (while (edgeExplorer.More)
-					   (let ((edge (TopoDS--Edge (edgeExplorer.Current))))
-					     (fillet.Add (/ myThickness 12)
-							 edge)
-					     (edgeExplorer.Next)))
-				    (return fillet)
-				    ))))
-		     
-		     )
-		 (comments "make the outside of the body rounder")
-		 (setf myBody (mkFillet.Shape)))
-
+	 
+	 
 	 #-nil (let ((neckLocation (gp_Pnt 0 0 myHeight))
 		     (neckAxis (gp--DZ))
 		     (neckAx2 (gp_Ax2 neckLocation neckAxis))
@@ -149,6 +136,56 @@
 		 (comments "attach the neck to the body")
 		 (setf myBody
 		       (BRepAlgoAPI_Fuse myBody myNeck)))
+
+
+	 #-nil (let ((mkFillet (
+				(lambda ()
+				  (declare (capture "&"))
+				  (let ((fillet (BRepFilletAPI_MakeFillet myBody))
+					(edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
+				    (while (edgeExplorer.More)
+					   (let ((cur (edgeExplorer.Current))
+						 (edge (TopoDS--Edge cur))
+						 (mz ((lambda ()
+							(declare (capture "&"))
+							(let ((uStart (Standard_Real 0))
+							      (uEnd (Standard_Real 0))
+							      (curve
+								,(ptr
+								  `(Geom_Curve (BRep_Tool--Curve edge
+												 uStart
+												 uEnd))))
+							      (N 100)
+							      (deltaU (/ (- uEnd uStart) (* 1s0 N)))
+							      (points ((lambda ()
+									 (declare (capture "&"))
+									 (let ((points (std--vector<gp_Pnt>)))
+									  (dotimes (i N)
+									    (let ((u (+ uStart (* deltaU i)
+										)))
+									     (points.emplace_back (curve->Value u))))
+									   (return points)))))
+							      
+							      (maxPointIt (std--max_element
+									   (points.begin)
+									   (points.end)
+									   (lambda (a b)
+									     (return (< (a.Z)
+											(b.Z)))))))
+							  (let ((maxPoint (deref maxPointIt) ; (curve->Value uEnd)
+									  ))
+							    (return (maxPoint.Z))))))))
+					     ,(lprint :vars `(mz))
+					    (when (<= mz 40)
+					      (fillet.Add (/ myThickness 12)
+							  edge))
+					     (edgeExplorer.Next)))
+				    (return fillet)
+				    ))))
+		     
+		     )
+		 (comments "make the outside of the body rounder")
+		 (setf myBody (mkFillet.Shape)))
 	 
 	 #-nil (let ((facesToRemove
 		       ((lambda ()
@@ -161,7 +198,7 @@
 			    (for (() (explorer.More) (explorer.Next))
 				 (let ((aFace (TopoDS--Face (explorer.Current)))
 				       (bas (BRepAdaptor_Surface aFace)))
-				   ;,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
+					;,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
 				   (when (== GeomAbs_Plane
 					     (bas.GetType))
 				     (let ((plane (bas.Plane))
@@ -176,7 +213,7 @@
 					 continue)
 				       (let ((aZ (aPnt.Z)))
 					 (when (< zMax aZ)
-					   ;,(lprint :vars `(zMax aZ))
+					;,(lprint :vars `(zMax aZ))
 					   (setf zMax aZ
 						 faceToRemove aFace)))
 				       ))
@@ -188,17 +225,17 @@
 			    ))))
 		     )
 		 (do0
-		       (comments "make inside of the bottle hollow")
-		       (setf myBody
+		  (comments "make inside of the bottle hollow")
+		  (setf myBody
 			     
-			     ((lambda ()
-				(declare (capture "&")
-					 )
-				(let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-				  (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
-								    -myThickness/50 1e-3)
-				  (return (aSolidMaker.Shape))))
-			     ))))
+			((lambda ()
+			   (declare (capture "&")
+				    )
+			   (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
+			     (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
+							       -myThickness/50 1e-3)
+			     (return (aSolidMaker.Shape))))
+			 ))))
 	 
 	 (let ((aRes ((lambda ()
 			(declare
