@@ -292,3 +292,87 @@ gp_Circ c = C->Circ();
   - TopExp
     - TopExp_Explorer: return all sub-shapes, select a kind of entity
       (e.g. only faces)
+
+ - BRepTools_WireExplorer return edges of a wire in the order of their
+   connection
+   
+ - TopExp::MapShapes detect common elements
+ 
+ - TopExp::MapShapesAndAncestors
+   - all entities that reference another one
+   - you have to use this facility because there are no back pointer
+     from sub-shapes to shapes
+
+ - example how to add chamfer to all edges
+ 
+ 
+- boundary representation
+   - entities are represented by their boundaries
+   - mixes geometry with topology
+   - BRep_T{Vertex,Edge,Face} inherit from TopoDS_TShape
+   - BRep_TVertex curve limited by vertices ...
+	 - gp_Pnt (3d)
+	 - list of points on curves
+	 - list of points on surfaces
+	 
+   - BRep_TEdge
+	 - Geom_Curve and 2 vertices
+	 - list of curves on surfaces
+	 
+   - SameParameter property forces point to have same parameter value
+     on 3d curve and each 2d curve
+	 
+   - BRep_TFACE
+	 - Geom_Surface stores geometry
+	 - location stored with TopLoc
+	 
+   - BRep tools
+	 - BRepAdaptor to access geometry
+	 
+   - BRep_Tool
+	 - Tolerance, Surface, Curve, CurveOnSurface, Pnt
+	 
+   - BRep_BUilder
+    - create a compound
+	
+   - BRepAdaptor_{Surface,Curve,Curve2d}
+	 - geometric computation on topological datastructures
+	 
+- modeling algo
+  - BRepAlgoAPI
+      - Cut boolean subtraction
+	  - Fuse boolean or
+	  - Common  boolean and
+	  - Section 
+  -BRepBuilderAPI
+	  - MakeVertex from points
+	  - MakeEdge from curves
+	  - MakePolygon wire from points
+	  - MakeWire
+	  - MakeFace face from surface
+	  - MakeShell shell from non C2 surface
+	  - MakeSolid
+	  - Transform
+	  - Copy duplicate shapes
+  -BRepFilletAPI
+	  - MakeFillet
+	  - MakeFillet2d
+	  - MakeChamfer
+  - BRepFeat
+  -BRepOffsetAPI
+	  - MakeThickSolid
+	  - DraftAngle
+	  - MakePipe
+	  - MakeEvolved
+  -BRepPrimAPI (primitive objects)
+	  - MakeBox
+	  - MakeWedge
+	  - MakeSphere
+	  - MakeCone
+	  - MakeCylinder
+	  - MakeTorus
+	  - sweeps:
+		  - MakeHalfSpace builds solid from a face or a shell and a point
+		  - MakePrism linear prism from shape
+		  - MakeRevol
+  
