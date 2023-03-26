@@ -64,8 +64,40 @@ http://www.creativecadtechnology.com/OCC/ShowScript?userName=learnMoreAboutOCC&g
     define complex shapes
 	
 - elementary geometry
-  - components: 
+  - components are in separate packages: 
     - abstraction .. minimal data abstraction
+	  - perennial .. new controls can be added without changing the
+        abstraction
+      - minimal .. controls are created as needed during the session
+	  - controls have a lifetime, intermediate results can be queried
+        before validation
 	- presentation .. interactive services for end user
 	- control .. connected behaviour, non-standard creation, high
       level management
+  - example 2d circle:
+    - abstraction: axis and radius
+	- control: build circle from center and radius, build circle
+      through 3 points
+    - presentation: the object you display in a viewer
+  - applied controls in open cascade can be:
+	- direct construction
+	- constraint constructions in 2D
+	- algorithms (intersect, boolean operations)
+	
+- basic geometry packages
+  - manipulated by value, no inheritance
+  - data abstraction entity defintion `gp`: gp_Pnt, gp_Vec, gp_Lin2d,
+      gp_Circ
+  - controls direct construction `gce`: gce_MakeCircle, gce_MakeLin2d
+  - constrained construction in 2D `GccAna`: GccAna_Circ2d2TanRad
+
+  - 2D gp: 
+	- XY, Pnt2d, Mat2d, Trsf2d, GTrsf2d
+	- Vec2d, Dir2d, Ax2d, Lin2d, Circ2d, Elips2d, Hypr2d, Parab2d
+	- Ax22d
+	
+  - 3D gp:
+	- XYZ, Pnt, Mat, Trsf, GTrsf
+	- Vec, Dir, Ax1, Lin, Circ, Elips, Hypr, Parab
+	- Ax2, Ax3, Pin
+	- Cylinder, Sphere, Torus
