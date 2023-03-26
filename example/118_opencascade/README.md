@@ -364,6 +364,10 @@ gp_Circ c = C->Circ();
 	  - DraftAngle
 	  - MakePipe
 	  - MakeEvolved
+	  - ThruSections shell or solid from wire
+	  - Sewing shell from faces
+	  - FindContiguousEdges with given tolerance
+	  
   -BRepPrimAPI (primitive objects)
 	  - MakeBox
 	  - MakeWedge
@@ -376,3 +380,9 @@ gp_Circ c = C->Circ();
 		  - MakePrism linear prism from shape
 		  - MakeRevol
   
+  - BRepMesh triangulation of shapes
+  - BRepLProp Local properties (tan, curv)
+  - BrepGProp Global properties (inertia, mass)
+
+
+- features
