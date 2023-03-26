@@ -101,3 +101,22 @@ http://www.creativecadtechnology.com/OCC/ShowScript?userName=learnMoreAboutOCC&g
 	- Vec, Dir, Ax1, Lin, Circ, Elips, Hypr, Parab
 	- Ax2, Ax3, Pin
 	- Cylinder, Sphere, Torus
+	
+- advanced geometry
+ - 3D
+   - abstraction entities definition: Geom_BezierCurve
+   - controls direct construction: GC_MakeTrimmedCylinder
+ - 2d
+   - entities definition: Geom2d_BoundedCurve
+   - controls direct construction: GCE2d_MakeArcOfParabola
+   - constrained construction: Geom2DGcc_Circ2d3Tan
+   
+ - hierarchy of classes is STEP compliant
+ - tools allow to go back and forth from Geom to gp:
+
+```
+Handle(Geom_Circle) C = new Geom_Circle(gp_Circ c);
+gp_Circ c = C->Circ();
+```
+ - entities from GC, GCE2d and Geom2dGcc are manipulated by value
+   (control classes)
