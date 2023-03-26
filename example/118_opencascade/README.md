@@ -48,6 +48,9 @@ http://www.creativecadtechnology.com/OCC/ShowScript?userName=learnMoreAboutOCC&g
 
 # presentation with 180 slides about opencascade
 - http://slideplayer.com/slide/5112213/
+- i think this presentation is what was missing. it gives an overview
+  about the class naming conventions and the design methology that
+  underlies opencascade
 	
 - handles
   - DynamicType, IsInstance, IsKind
@@ -120,3 +123,39 @@ gp_Circ c = C->Circ();
 ```
  - entities from GC, GCE2d and Geom2dGcc are manipulated by value
    (control classes)
+
+- Geom_Geometry
+ - Geom_Point
+   - Geom_CartesianPoint
+ - Geom_Vector
+   - Geom_Direction
+   - Geom_VectorWithMagnitude
+ - Geom_Curve
+   - Geom_BoundedCurve
+     - Geom_BSplineCurve
+	 - Geom_BezierCurve
+	 - Geom_TrimmedCurve
+   - Geom_Conic
+     - Geom_Circle
+	 - Geom_Ellipse
+	 - Geom_Hyperbola
+	 - Geom_Parabola
+   - Geom_Line
+   - Geom_OffsetCurve
+ - Geom_Surface
+   - Geom_BoundedSurface
+     - Geom_BSplineSurface
+	 - Geom_BezierSurface
+	 - Geom_RectangularTrimmedSurface
+   - Geom_SweptSurface
+     - Geom_SurfaceOfLinearExtrusion
+	 - Geom_SurfaceOfRevolution
+   - Geom_OffsetSurface
+   - Geom_PlateSurface
+   - Geom_ElementarySurface
+     - Geom_ConicalSurface
+	 - Geom_CylindricalSurface
+	 - Geom_Plane
+	 - Geom_SphericalSurface
+	 - Geom_ToroidalSurface
+	 
