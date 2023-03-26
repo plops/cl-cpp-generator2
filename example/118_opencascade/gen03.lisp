@@ -76,6 +76,7 @@
 	      (b-rep-algo-a-p-i fuse cut common)
 	      (b-rep-builder-a-p-i make-edge make-face make-wire transform)
 	      (b-rep-fillet-a-p-i make-fillet)
+	      ;(b-rep-chamfer-a-p-i make-chamfer)
 	      (b-rep-lib "")
 	      (b-rep-offset-a-p-i make-thick-solid thru-sections)
 	      (b-rep-prim-a-p-i make-cylinder make-prism make-revol MakeSphere MakeBox)
@@ -131,17 +132,18 @@
 	       (destructuring-bind (&key (radius 1.0) shape) thickness-shape
 		`((lambda ()
 		    (declare (capture "&"))
-		    (let ((fillet (BRepFilletAPI_MakeFillet ,shape))
+		    (let ((fillet (BRepFilletAPI_MakeFillet
+				   ,shape))
 			  (edgeExplorer (TopExp_Explorer ,shape TopAbs_EDGE)))
 		      (while (edgeExplorer.More)
 			     (let ((cur (edgeExplorer.Current))
 				   (edge (TopoDS--Edge cur))
 				   )
-						 
+				,(lprint :msg "add fillet")		 
 			       (fillet.Add ,radius
 					   edge)
 			       (edgeExplorer.Next)))
-		      (return fillet)))))))
+		      (return fillet )))))))
 
 	
 	`(defun MakeParabolicCrownedPulley (shaftDiameter centralDiameter pulleyThickness
@@ -169,7 +171,8 @@
 						     (dot shaftFlattening	(Shape))))
 		 #+nil (cylShaft3 )
 	     
-		 (disk ,(fillet `(:radius 3.0 :shape ,(common `(sphere cylBig))))
+		 (disk ;,(fillet `(:radius .2 :shape ,(common `(sphere cylBig))))
+		       ,(common `(sphere cylBig))
 		       #+nil(BRepAlgoAPI_Common (sphere.Shape)
 						(cylBig.Shape)))
 		 #+nil (diskWithHole (BRepAlgoAPI_Cut (disk.Shape)
@@ -189,9 +192,18 @@
 			       cylShaft3 )
 		     
 			      (Shape)
-			      )))
+			      ))
+		 )
+	     
 	     (declare (type TopoDS_Shape shape))
-	 
+	 (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
+	       (comments "remove unneccessary seams")
+	       (unify.Build)
+	       (setf shape
+		     (dot unify
+			  (Shape))))
+	     (setf shape ,(fillet `(:radius 1.0 :shape shape)))
+	     (return shape)
 	 
 	     #+nil (let ((neckLocation (gp_Pnt 0 0 myHeight))
 			 (neckAxis (gp--DZ))
@@ -308,14 +320,7 @@
 				 (return (aSolidMaker.Shape))))
 			     ))))
 
-	     (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
-	       (comments "remove unneccessary seams")
-	       (unify.Build)
-	       (setf shape
-		     (dot unify
-			  (Shape))))
-	 
-	     (return shape)
+	   
 	     #+nil (let ((aRes ((lambda ()
 				  (declare
 			
