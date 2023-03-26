@@ -130,17 +130,16 @@
       `(defun MakeParabolicCrownedPulley (shaftDiameter centralDiameter edgeDiameter pulleyThickness)
 	(declare (type "const Standard_Real" shaftDiameter centralDiameter edgeDiameter pulleyThickness)
 		 (values TopoDS_Shape))
-	(let ((sphere (BRepPrimAPI_MakeSphere (gp_Pnt 0 0 0)
+	(let ((sphere (BRepPrimAPI_MakeSphere (gp_Pnt 0 0 pulleyThickness/2)
 					      centralDiameter/2))
 	      (axis (gp_Ax2 (gp_Pnt 0 0 0)
 			    (gp_Dir 0 0 1)))
-	      (cylBig ,(translate `(:z -pulleyThickness/2
-				      :code (BRepPrimAPI_MakeCylinder axis centralDiameter/2 pulleyThickness))))
+	      (cylBig (BRepPrimAPI_MakeCylinder axis centralDiameter/2 pulleyThickness))
 	      (cylShaft (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 (- 8.31 5.87)))
-	      (cylShaftFullLength (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 pulleyThickness))
+	      (cylShaftFullLength (BRepPrimAPI_MakeCylinder axis shaftDiameter/2*.9 pulleyThickness))
 	      (shaftFlattening ,(translate `(:x -2.94/2
 						:y -10
-						:z (+ -pulleyThickness/2 (- 8.31 5.87))
+						:z (- 8.31 5.87)
 				      :code (BRepPrimAPI_MakeBox 2.94 20 5.87))))
 	      (cylShaft2 ,(common `(cylShaftFullLength
 				    shaftFlattening))
@@ -156,9 +155,10 @@
 							(Shape))))
 	     
 	     
-	      (shape (dot		;diskWithHole
+	      (shape ,(cut `(disk ,(fuse `(cylShaft2 cylShaft))))
+		     #+nil(dot		;diskWithHole
 
-		      disk
+		      cylShaft2
 		      #+nil shaftFlattening
 		      #+nil cylShaft3
 		      #+nil
