@@ -45,6 +45,7 @@ https://www.youtube.com/watch?v=gt_Ofn95ML0 involute f
 - website with opencascade
 http://www.creativecadtechnology.com/OCC/ShowScript?userName=learnMoreAboutOCC&groupName=demo&scriptName=MakeBottle
 
+- crowned pulley that keeps the rubberband centered https://www.youtube.com/watch?v=TNuzi-jMXoY
 
 # presentation with 180 slides about opencascade
 - http://slideplayer.com/slide/5112213/
