@@ -265,3 +265,30 @@ gp_Circ c = C->Circ();
 |                                        |                                     | TopExp explore graph of shapes |
 | BRep geometric boundary representation | BrepAlogAPI (boolean)               | BRepFeat (modeling features)   |
 |                                        |                                     |                                |
+
+- shape is defined by
+  - TShape: pointer descirbing the object in default coordinate system
+  - TopLoc local coordinate system
+  - TopAbs orientation
+
+- two objects are connected if they share the same sub-shape
+- all shapes can be subdivided into subshapes:
+  Solid->Shell->Face->Wire->Edge->Vertex
+
+- TopoDS_Shape
+  - IsNull, Nullify
+  - Location Move Moved
+  - Orientation Reverse
+  - ShapeType
+  - IsPartner
+  - IsSame
+  - IsEqual
+  
+  
+- topological tools
+  - TopTools
+	- write and read location
+	- create TCollections
+  - TopExp
+    - TopExp_Explorer: return all sub-shapes, select a kind of entity
+      (e.g. only faces)
