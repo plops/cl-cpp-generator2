@@ -159,3 +159,35 @@ gp_Circ c = C->Circ();
 	 - Geom_SphericalSurface
 	 - Geom_ToroidalSurface
 	 
+
+- constraint geometry
+  - solution and argument are `outside` each other
+  - solution encompasses the argument `enclosing`
+  - solution is encompassed by the argument `enclosed`
+  - arguments are ordered, this gives implicit orientation
+	- by convention, the interior of a countour is on the left
+      according to the positive direction of the contour description
+	  
+	  
+- geometry digest
+
+| basic         | adv           | adv         | explanation                                         |
+| 2d & 3d       | adv 2d        | adv 3d      |                                                     |
+|---------------|---------------|-------------|-----------------------------------------------------|
+| gp            | Geom2d*       | Geom*       | basic entities                                      |
+| TColgp        | TColGeom2d*   | TColGeom*   | collection of basic entities                        |
+| gce           | GCE2d         | GC          | direct construction (1 solution)                    |
+| GccAna        | Geom2dGcc     |             | constrained construction (n solutions)              |
+|               | Geom2dAPI     | GeomAPI     | projections, extrema, intersections, approximations |
+| Adaptor2d, 3d | Geom2dAdaptor | GeomAdaptor | entities and computation info                       |
+| CPnts         | GCPnts        | GCPnts      | points on a curve                                   |
+| LProp         | Geom2dLProp   | GeomLProp   | local properties                                    |
+| Convert       | Geom2dConvert | GeomConvert | Formalism, conversion                               |
+|               |               |             |                                                     |
+
+- with star (*) .. manipulated by handle
+
+	- GeomAbs: enumeration for geometric algorithms (curve-type, surface-type, continuity)
+	- GccEnt: conversion to qualified line/circle for GccAna
+	- Precision: standard precision values (points angles)
+	- GeomTools: dump, read, write
