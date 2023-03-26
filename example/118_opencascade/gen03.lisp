@@ -4,13 +4,8 @@
 	   (ql:quickload "cl-change-case"))
 
 (in-package :cl-cpp-generator2)
-
-;; lesson 18
-;; video: https://youtu.be/kPcD5liq8Cs?list=PL_WFkJrQIY2iVVchOPhl77xl432jeNYfQ
-;; documentation: https://dev.opencascade.org/doc/overview/html/occt__tutorial.html
-;; listing: https://git.dev.opencascade.org/gitweb/?p=occt.git;a=blob;f=samples/qt/Tutorial/src/MakeBottle.cxx;h=c89b96df84dc54bcedfd7bcc57c061aee386321b;hb=HEAD
 (progn
-  (defparameter *source-dir* #P"example/118_opencascade/source02/")
+  (defparameter *source-dir* #P"example/118_opencascade/source03/")
   (defparameter *full-source-dir* (asdf:system-relative-pathname
 				   'cl-cpp-generator2
 				   *source-dir*))

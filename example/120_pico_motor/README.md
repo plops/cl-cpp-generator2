@@ -88,3 +88,35 @@ https://rp2040pio-docs.readthedocs.io/en/latest/introduction.html
  
 - pulley and belt
 https://youtu.be/0sKqc5IwQQQ?t=648
+
+
+- uart protocol options
+- https://github.com/bmellink/IBusBM 
+  - 140 stars
+  - flysky rc protocol
+  
+- https://github.com/MightyPork/TinyFrame
+  - 266 stars
+  - C99
+  - 
+  
+-  https://github.com/MaJerle/lwow
+  - 133 stars
+  - C99
+  
+-  https://github.com/lexus2k/tinyproto
+  - 180 stars
+  - layer 2
+  - C, C++
+  - i like this most, protocol buffers can be used on top
+  - based on rfc 1662  PPP in HDLC-like Framing
+  - https://www.rfc-editor.org/rfc/rfc1662 
+- https://github.com/lexus2k/tinyslip
+ - 2 stars
+ - 3 years old
+ - rfc 1055 "A NONSTANDARD FOR TRANSMISSION OF IP DATAGRAMS OVER SERIAL LINES: SLIP"
+ - https://www.rfc-editor.org/rfc/rfc1055.html
+ - no error detection
+- https://embeddedproto.com/
+  - C++
+  - only free for non-commercial use
