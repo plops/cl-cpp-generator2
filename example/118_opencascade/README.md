@@ -212,3 +212,35 @@ gp_Circ c = C->Circ();
   - GeomAPI_ProjectPointOnCurve
   - GeomAPI_ProjectPointOnSurf
   - GeomAPI_IntCS .. from intersections
+
+  - build curve from points
+	- FairCurve_Batten: simulate physical splines with constant or
+      linearly increasing section
+    - GeomAPI_PointsToBSpline: 3d bspline curve that approximates a
+      set of points
+
+  - project curve
+    - onto plane GeomAPI::To{2,3}d
+	- onto any surface: GeomProjLib::Project
+	
+  - intersection of curves and surfaces
+	- Geom2dAPI_InterCurveCurve 
+	- GeomAPI_IntSS
+
+  - extrema
+	- GeomAPI_ExtremaCurveCurve
+	- GeomAPI_ExtremaCurveSurface
+	
+  - extrapolation extend a bounded curve to a point
+	- GeomLib::ExtentCurveToPoint
+
+  - Information
+	- local properties of curve: GeomLProp_CurveTool
+	
+
+- surfaces (p. 56)
+  - from points
+  - from curves
+  - extremas
+  - extrapolation extend bounded surface along one of its boundaries
+  - information
