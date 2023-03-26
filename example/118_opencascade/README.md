@@ -196,10 +196,19 @@ gp_Circ c = C->Circ();
   - gp_Pnt(X,Y,Z)
   - gp::Origin()
   - from points: 
-    - Barycenter of 2 points
+    - gp_Pnt::Barycenter of 2 points
 	- Translate
 	- Translated
 	- Rotate
 	- Rotated
 	- Gprop_PEquation::Point .. mean of a collection of points,
       considered to be coincident
+	  
+- curve
+  - gp_Circle::Location .. center of a circle
+  - GCPnts, CPnts .. compute points on a 2D or 3D curve
+  - LProp_CLProps .. compute local point on a curve
+  - Geom_Curve::D0.. compute point by parameter
+  - GeomAPI_ProjectPointOnCurve
+  - GeomAPI_ProjectPointOnSurf
+  - GeomAPI_IntCS .. from intersections
