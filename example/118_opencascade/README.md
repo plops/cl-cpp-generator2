@@ -191,3 +191,15 @@ gp_Circ c = C->Circ();
 	- GccEnt: conversion to qualified line/circle for GccAna
 	- Precision: standard precision values (points angles)
 	- GeomTools: dump, read, write
+
+- points
+  - gp_Pnt(X,Y,Z)
+  - gp::Origin()
+  - from points: 
+    - Barycenter of 2 points
+	- Translate
+	- Translated
+	- Rotate
+	- Rotated
+	- Gprop_PEquation::Point .. mean of a collection of points,
+      considered to be coincident
