@@ -251,7 +251,7 @@
 	     (let ( (shape (MakeCrownedPulleyFlatShaft (+ .01 4.92) 20.0 8.31 8.31 5.87 (+ .01 2.94)))
 		   
 		   (label (ST->AddShape shape false))))
-	     (let ( (shape2 (MakeCrownedPulley (+ .01 12.82) 20.0 4.5 ))
+	     (let ( (shape2 (MakeCrownedPulley (+ .01 12.82) 20.0 8.31 ))
 		   
 		   (label2 (ST->AddShape shape2 false))))
 	     )))
