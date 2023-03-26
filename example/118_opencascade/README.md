@@ -385,4 +385,31 @@ gp_Circ c = C->Circ();
   - BrepGProp Global properties (inertia, mass)
 
 
-- features
+- BRepFeat features
+   	- boss, hole, rib, slot
+	- can be depressions or protrusions
+	- Draft Prism, Prism, Pipe, Revolved Feature
+	- MakePrism (prism interacting with a shape)
+	- MakeRevol
+	- Perform(Height) Perform(From, Until)
+	- MakeDPrism draft prism topologies
+	- MakePipe construct compound shapes with pipe features
+	- LinearForm
+	
+	- Gluer glue two solids along faces
+	- SplitShape split faces of a shape with wires or edges, new
+      entities share unmodified shapes
+
+- Visualization (p. 140)
+  - AIS application interactive services
+  - selection package
+  
+- Application framework (p. 160)
+ - ocaf
+ - helfs with saving to file
+  
+  
+ - commit a command
+ 
+ - Components (p. 175)
+  -TDOcStd
