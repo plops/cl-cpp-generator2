@@ -126,196 +126,218 @@
 		      do
 		      (setf res `(BRepAlgoAPI_Cut ,s ,res)))
 		res)
-	      ))
-      `(defun MakeParabolicCrownedPulley (shaftDiameter centralDiameter edgeDiameter pulleyThickness)
-	(declare (type "const Standard_Real" shaftDiameter centralDiameter edgeDiameter pulleyThickness)
-		 (values TopoDS_Shape))
-	(let ((sphere (BRepPrimAPI_MakeSphere (gp_Pnt 0 0 pulleyThickness/2)
-					      centralDiameter/2))
-	      (axis (gp_Ax2 (gp_Pnt 0 0 0)
-			    (gp_Dir 0 0 1)))
-	      (cylBig (BRepPrimAPI_MakeCylinder axis centralDiameter/2 pulleyThickness))
-	      (cylShaft (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 (- 8.31 5.87)))
-	      (cylShaftFullLength (BRepPrimAPI_MakeCylinder axis shaftDiameter/2*.9 pulleyThickness))
-	      (shaftFlattening ,(translate `(:x -2.94/2
-						:y -10
-						:z (- 8.31 5.87)
-				      :code (BRepPrimAPI_MakeBox 2.94 20 5.87))))
-	      (cylShaft2 ,(common `(cylShaftFullLength
-				    shaftFlattening))
-			 #+nil(BRepAlgoAPI_Common (cylShaftFullLength.Shape)
-					     (dot shaftFlattening	(Shape))))
-	      #+nil (cylShaft3 )
-	     
-	      (disk ,(common `(sphere cylBig))
-		    #+nil(BRepAlgoAPI_Common (sphere.Shape)
-					(cylBig.Shape)))
-	      #+nil (diskWithHole (BRepAlgoAPI_Cut (disk.Shape)
-						   (dot (BRepBuilderAPI_Transform cylShaft aTrsf)
-							(Shape))))
-	     
-	     
-	      (shape ,(cut `(disk ,(fuse `(cylShaft2 cylShaft))))
-		     #+nil(dot		;diskWithHole
-
-		      cylShaft2
-		      #+nil shaftFlattening
-		      #+nil cylShaft3
-		      #+nil
-		      (BRepAlgoAPI_Cut
-		       (disk.Shape)
-		       cylShaft3 )
-		     
-		      (Shape)
-		      )))
-	  (declare (type TopoDS_Shape shape))
-	 
-	 
-	  #+nil (let ((neckLocation (gp_Pnt 0 0 myHeight))
-		      (neckAxis (gp--DZ))
-		      (neckAx2 (gp_Ax2 neckLocation neckAxis))
-		      (myNeckRadius (/ myThickness 4d0))
-		      (myNeckHeight (/ myHeight 10d0))
-		      (MKCylinder (BRepPrimAPI_MakeCylinder neckAx2 myNeckRadius myNeckHeight))
-		      (myNeck (MKCylinder.Shape ))
-		     
-		      )
-		  (comments "attach the neck to the body")
-		  (setf myBody
-			(BRepAlgoAPI_Fuse myBody myNeck)))
-
-
-	  #+nil (let ((mkFillet (
-				 (lambda ()
-				   (declare (capture "&"))
-				   (let ((fillet (BRepFilletAPI_MakeFillet myBody))
-					 (edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
-				     (while (edgeExplorer.More)
-					    (let ((cur (edgeExplorer.Current))
-						  (edge (TopoDS--Edge cur))
+	      )
+	     (fillet (thickness-shape)
+	       (destructuring-bind (&key (radius 1.0) shape) thickness-shape
+		`((lambda ()
+		    (declare (capture "&"))
+		    (let ((fillet (BRepFilletAPI_MakeFillet ,shape))
+			  (edgeExplorer (TopExp_Explorer ,shape TopAbs_EDGE)))
+		      (while (edgeExplorer.More)
+			     (let ((cur (edgeExplorer.Current))
+				   (edge (TopoDS--Edge cur))
+				   )
 						 
-						  (mz ((lambda ()
-							 (declare (capture "&"))
-							 (let ((uStart (Standard_Real 0))
-							       (uEnd (Standard_Real 0))
-							       (curve
-								 ,(ptr
-								   `(Geom_Curve (BRep_Tool--Curve edge
-												  uStart
-												  uEnd))))
-							       (N 100)
-							       (deltaU (/ (- uEnd uStart) (* 1s0 N)))
-							       (points ((lambda ()
-									  (declare (capture "&"))
-									  (let ((points (std--vector<gp_Pnt>)))
-									    (dotimes (i N)
-									      (let ((u (+ uStart (* deltaU i)
-											  )))
-										(points.emplace_back (curve->Value u))))
-									    (return points)))))
-							      
-							       (maxPointIt (std--max_element
-									    (points.begin)
-									    (points.end)
-									    (lambda (a b)
-									      (return (< (a.Z)
-											 (b.Z)))))))
-							   (let ((maxPoint (deref maxPointIt) ; (curve->Value uEnd)
-									   ))
-							     (return (maxPoint.Z))))))))
-					      ,(lprint :vars `(mz))
-					      (comments "i want to fillet the edge where the neck attaches to the body but not the top of the neck")
-					      (when (<= mz 40)
-						(fillet.Add (/ myThickness 12)
-							    edge))
-					      (edgeExplorer.Next)))
-				     (return fillet)
-				     ))))
+			       (fillet.Add ,radius
+					   edge)
+			       (edgeExplorer.Next)))
+		      (return fillet)))))))
+
+	
+	`(defun MakeParabolicCrownedPulley (shaftDiameter centralDiameter pulleyThickness
+					    shaftLength flatLength flatThickness)
+	   (declare (type "const Standard_Real" shaftDiameter centralDiameter pulleyThickness shaftLength flatLength flatThickness)
+		    (values TopoDS_Shape))
+	   (let ((sphere (BRepPrimAPI_MakeSphere (gp_Pnt 0 0 pulleyThickness/2)
+						 centralDiameter/2))
+		 (axis (gp_Ax2 (gp_Pnt 0 0 0)
+			       (gp_Dir 0 0 1)))
+		 (cylBig (BRepPrimAPI_MakeCylinder axis centralDiameter/2 pulleyThickness))
+		 ;; full circular hole of the shaft
+		 (cylShaft ,(translate `(:z flatLength
+					 :code (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 (- shaftLength flatLength)))))
+		 ;; the hole through the entire disk (the flat sides will be added)
+		 (cylShaftFullLength (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 pulleyThickness))
+		 ;; the shaft is flattened at the top
+		 (shaftFlattening ,(translate `(:x -flatThickness/2
+						:y -centralDiameter/2
+						:z 0
+						:code (BRepPrimAPI_MakeBox flatThickness centralDiameter flatLength))))
+		 (cylShaft2 ,(common `(cylShaftFullLength
+				       shaftFlattening))
+			    #+nil(BRepAlgoAPI_Common (cylShaftFullLength.Shape)
+						     (dot shaftFlattening	(Shape))))
+		 #+nil (cylShaft3 )
+	     
+		 (disk ,(fillet `(:radius 3.0 :shape ,(common `(sphere cylBig))))
+		       #+nil(BRepAlgoAPI_Common (sphere.Shape)
+						(cylBig.Shape)))
+		 #+nil (diskWithHole (BRepAlgoAPI_Cut (disk.Shape)
+						      (dot (BRepBuilderAPI_Transform cylShaft aTrsf)
+							   (Shape))))
+	     
+	     
+		 (shape ,(cut `(disk ,(fuse `(cylShaft2 cylShaft))))
+			#+nil(dot	;diskWithHole
+
+			      cylShaft2
+			      #+nil shaftFlattening
+			      #+nil cylShaft3
+			      #+nil
+			      (BRepAlgoAPI_Cut
+			       (disk.Shape)
+			       cylShaft3 )
 		     
-		      )
-		  (comments "make the outside of the body rounder")
-		  (setf myBody (mkFillet.Shape)))
+			      (Shape)
+			      )))
+	     (declare (type TopoDS_Shape shape))
 	 
-	  #+nil (let ((facesToRemove
-			((lambda ()
-			   (declare (capture "&")
-				    )
-			   (let ((faceToRemove (TopoDS_Face))
-				 (zMax (Standard_Real -100))
+	 
+	     #+nil (let ((neckLocation (gp_Pnt 0 0 myHeight))
+			 (neckAxis (gp--DZ))
+			 (neckAx2 (gp_Ax2 neckLocation neckAxis))
+			 (myNeckRadius (/ myThickness 4d0))
+			 (myNeckHeight (/ myHeight 10d0))
+			 (MKCylinder (BRepPrimAPI_MakeCylinder neckAx2 myNeckRadius myNeckHeight))
+			 (myNeck (MKCylinder.Shape ))
+		     
+			 )
+		     (comments "attach the neck to the body")
+		     (setf myBody
+			   (BRepAlgoAPI_Fuse myBody myNeck)))
+
+
+	     #+nil (let ((mkFillet (
+				    (lambda ()
+				      (declare (capture "&"))
+				      (let ((fillet (BRepFilletAPI_MakeFillet myBody))
+					    (edgeExplorer (TopExp_Explorer myBody TopAbs_EDGE)))
+					(while (edgeExplorer.More)
+					       (let ((cur (edgeExplorer.Current))
+						     (edge (TopoDS--Edge cur))
+						 
+						     (mz ((lambda ()
+							    (declare (capture "&"))
+							    (let ((uStart (Standard_Real 0))
+								  (uEnd (Standard_Real 0))
+								  (curve
+								    ,(ptr
+								      `(Geom_Curve (BRep_Tool--Curve edge
+												     uStart
+												     uEnd))))
+								  (N 100)
+								  (deltaU (/ (- uEnd uStart) (* 1s0 N)))
+								  (points ((lambda ()
+									     (declare (capture "&"))
+									     (let ((points (std--vector<gp_Pnt>)))
+									       (dotimes (i N)
+										 (let ((u (+ uStart (* deltaU i)
+											     )))
+										   (points.emplace_back (curve->Value u))))
+									       (return points)))))
+							      
+								  (maxPointIt (std--max_element
+									       (points.begin)
+									       (points.end)
+									       (lambda (a b)
+										 (return (< (a.Z)
+											    (b.Z)))))))
+							      (let ((maxPoint (deref maxPointIt) ; (curve->Value uEnd)
+									      ))
+								(return (maxPoint.Z))))))))
+						 ,(lprint :vars `(mz))
+						 (comments "i want to fillet the edge where the neck attaches to the body but not the top of the neck")
+						 (when (<= mz 40)
+						   (fillet.Add (/ myThickness 12)
+							       edge))
+						 (edgeExplorer.Next)))
+					(return fillet)
+					))))
+		     
+			 )
+		     (comments "make the outside of the body rounder")
+		     (setf myBody (mkFillet.Shape)))
+	 
+	     #+nil (let ((facesToRemove
+			   ((lambda ()
+			      (declare (capture "&")
+				       )
+			      (let ((faceToRemove (TopoDS_Face))
+				    (zMax (Standard_Real -100))
 			  
-				 (explorer (TopExp_Explorer myBody  TopAbs_FACE)))
-			     (for (() (explorer.More) (explorer.Next))
-				  (let ((aFace (TopoDS--Face (explorer.Current)))
-					(bas (BRepAdaptor_Surface aFace)))
+				    (explorer (TopExp_Explorer myBody  TopAbs_FACE)))
+				(for (() (explorer.More) (explorer.Next))
+				     (let ((aFace (TopoDS--Face (explorer.Current)))
+					   (bas (BRepAdaptor_Surface aFace)))
 					;,(lprint :msg "face" :vars `( (bas.GetType) GeomAbs_Plane))
-				    (when (== GeomAbs_Plane
-					      (bas.GetType))
-				      (let ((plane (bas.Plane))
-					    (aPnt (plane.Location)))
-					(unless (dot plane
-						     (Axis)
-						     (Direction)
-						     (IsParallel (gp--DZ)
-								 (/ (* 1.0 M_PI)
-								    180.0)))
+				       (when (== GeomAbs_Plane
+						 (bas.GetType))
+					 (let ((plane (bas.Plane))
+					       (aPnt (plane.Location)))
+					   (unless (dot plane
+							(Axis)
+							(Direction)
+							(IsParallel (gp--DZ)
+								    (/ (* 1.0 M_PI)
+								       180.0)))
 				    
-					  continue)
-					(let ((aZ (aPnt.Z)))
-					  (when (< zMax aZ)
+					     continue)
+					   (let ((aZ (aPnt.Z)))
+					     (when (< zMax aZ)
 					;,(lprint :vars `(zMax aZ))
-					    (setf zMax aZ
-						  faceToRemove aFace)))
-					))
-				    ))
+					       (setf zMax aZ
+						     faceToRemove aFace)))
+					   ))
+				       ))
 
-			     (let ((facesToRemove (TopTools_ListOfShape)))
-			       (facesToRemove.Append faceToRemove)
-			       (return facesToRemove))
-			     ))))
-		      )
-		  (do0
-		   (comments "make inside of the bottle hollow")
-		   (setf myBody
+				(let ((facesToRemove (TopTools_ListOfShape)))
+				  (facesToRemove.Append faceToRemove)
+				  (return facesToRemove))
+				))))
+			 )
+		     (do0
+		      (comments "make inside of the bottle hollow")
+		      (setf myBody
 			     
-			 ((lambda ()
-			    (declare (capture "&")
-				     )
-			    (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
-			      (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
-								-myThickness/50 1e-3)
-			      (return (aSolidMaker.Shape))))
-			  ))))
+			    ((lambda ()
+			       (declare (capture "&")
+					)
+			       (let ((aSolidMaker (BRepOffsetAPI_MakeThickSolid)))
+				 (aSolidMaker.MakeThickSolidByJoin myBody facesToRemove
+								   -myThickness/50 1e-3)
+				 (return (aSolidMaker.Shape))))
+			     ))))
 
-	  (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
-	    (comments "remove unneccessary seams")
-	    (unify.Build)
-	    (setf shape
-		  (dot unify
-		       (Shape))))
+	     (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
+	       (comments "remove unneccessary seams")
+	       (unify.Build)
+	       (setf shape
+		     (dot unify
+			  (Shape))))
 	 
-	  (return shape)
-	  #+nil (let ((aRes ((lambda ()
-			       (declare
+	     (return shape)
+	     #+nil (let ((aRes ((lambda ()
+				  (declare
 			
-				(capture "&")
-				(declare (type auto body)))
-			       (let ((a (TopoDS_Compound))
-				     (b (BRep_Builder)))
-				 (comments "return compound so that we still see output in case a boolean operation fails")
-				 (b.MakeCompound a)
-				 (setf myBody
-				       (BRepAlgoAPI_Fuse myBody myThreading))
-				 (let ((unify (ShapeUpgrade_UnifySameDomain myBody)))
-				   (comments "remove unneccessary seams")
-				   (unify.Build)
-				   (setf myBody
-					 (dot unify
-					      (Shape))))
-				 (b.Add a myBody)
+				   (capture "&")
+				   (declare (type auto body)))
+				  (let ((a (TopoDS_Compound))
+					(b (BRep_Builder)))
+				    (comments "return compound so that we still see output in case a boolean operation fails")
+				    (b.MakeCompound a)
+				    (setf myBody
+					  (BRepAlgoAPI_Fuse myBody myThreading))
+				    (let ((unify (ShapeUpgrade_UnifySameDomain myBody)))
+				      (comments "remove unneccessary seams")
+				      (unify.Build)
+				      (setf myBody
+					    (dot unify
+						 (Shape))))
+				    (b.Add a myBody)
 			  
-				 (return a))))))
-		  (return aRes))
-	  )))
+				    (return a))))))
+		     (return aRes))
+	     )))
 
      (defun WriteStep (doc filename)
        (declare (type "const char*" filename)
@@ -344,12 +366,7 @@
 	   (let ((ST ,(ptr `(XCAFDoc_ShapeTool (XCAFDoc_DocumentTool--ShapeTool (doc->Main)))))
 					;(CT ,(ptr `(XCAFDoc_ColorTool (XCAFDoc_DocumentTool--ColorTool (doc->Main)))))
 		 )
-	     (let (
-		   (shaftDiameter 4.92)
-		   (centralDiameter 20.0)
-		   (edgeDiameter 16.0)
-		   (pulleyThickness 8.31)
-		   (shape (MakeParabolicCrownedPulley shaftDiameter centralDiameter edgeDiameter pulleyThickness))
+	     (let ( (shape (MakeParabolicCrownedPulley 4.92 20.0 8.31 8.31 5.87 2.94))
 		   
 		   (label (ST->AddShape shape false))))
 	     )))
