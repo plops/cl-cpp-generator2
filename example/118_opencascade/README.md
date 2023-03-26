@@ -244,3 +244,24 @@ gp_Circ c = C->Circ();
   - extremas
   - extrapolation extend bounded surface along one of its boundaries
   - information
+
+- topology
+  - topological entities are called shapes in opencascade
+  - vertex, wire, face, shell (faces connected by their edges), solid
+    (part of space limited by shells), compound (group of any type of
+    topological objects), compsolid (solids connected by their faces)
+	
+  - create shape
+	- abstract topology (TopoDS) references to an object, e.g. edge
+      described by two vertices
+	- boundary representation (edge on a curve and bounded by two
+      vertices)
+	  
+	  
+| abstraction                            | algo                                | tools                          |
+|----------------------------------------|-------------------------------------|--------------------------------|
+| TopoDS abstract topology datastructure | direct construction                 | BRepTools                      |
+|                                        | BRep{Builder,Prim,Offset,Fillet}API |                                |
+|                                        |                                     | TopExp explore graph of shapes |
+| BRep geometric boundary representation | BrepAlogAPI (boolean)               | BRepFeat (modeling features)   |
+|                                        |                                     |                                |
