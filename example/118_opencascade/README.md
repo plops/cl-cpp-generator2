@@ -4,7 +4,7 @@
 | gen01 | create a car chassis, color the wheel faces         |
 | gen02 | model a bottle                                      |
 | gen03 | model a crowned pulley to be used with 120  pico pi |
-| gen04 | model metric screw holes (M2, M3)                   |
+| gen04 | model holder                                        |
 |       |                                                     |
 
 https://ftp.fau.de/fosdem/2020/H.2213/opencascade.webm

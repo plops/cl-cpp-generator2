@@ -57,7 +57,7 @@
 		algorithm)
      ,@(inc `((b-rep tool)
 	      (b-rep-algo-a-p-i fuse cut common)
-	      (b-rep-builder-a-p-i make-edge make-face make-wire transform)
+	      (b-rep-builder-a-p-i make-edge make-polygon make-face make-wire transform)
 	      (b-rep-fillet-a-p-i make-fillet)
 	      ;(b-rep-chamfer-a-p-i make-chamfer)
 	      (b-rep-lib "")
@@ -130,123 +130,105 @@
 
 	
 	`(do0
-
-	  #+nil
-	  (myThreading
-	   ((lambda ()
-	      (declare (capture "&"))
-	      (let ((aCyl1 ,(ptr-new `(Geom_CylindricalSurface
-				       (neckAx2 (* .99 myNeckRadius)))))
-		    (aCyl2 ,(ptr-new `(Geom_CylindricalSurface
-				       (neckAx2 (* 1.05 myNeckRadius)))))
-		    (aPnt (gp_Pnt2d (* 2 M_PI)
-				    (/ myNeckHeight 2)))
-		    (aDir (gp_Dir2d (* 2 M_PI)
-				    (/ myNeckHeight 4)))
-		    (anAx2d (gp_Ax2d aPnt aDir))
-		    (aMajor (Standard_Real (* 2 M_PI)))
-		    (aMinor (Standard_Real (/ myNeckHeight 10)))
-		    (anEllipse1 ,(ptr-new `(Geom2d_Ellipse (anAx2d aMajor aMinor))))
-		    (anEllipse2 ,(ptr-new `(Geom2d_Ellipse (anAx2d aMajor (/ aMinor 4)))))
-		    (anArc1 ,(ptr-new `(Geom2d_TrimmedCurve (anEllipse1 0 M_PI))))
-		    (anArc2 ,(ptr-new `(Geom2d_TrimmedCurve (anEllipse2 0 M_PI))))
-		    (anEllipsePnt1 (-> anEllipse1 (Value 0)))
-		    (anEllipsePnt2 (-> anEllipse1 (Value M_PI)))
-		    (aSegment ,(ptr  `(Geom2d_TrimmedCurve 
-				       (GCE2d_MakeSegment anEllipsePnt1 anEllipsePnt2))))
-		    
-		    ,@(loop for (a b c d) in `((1 1 anArc1 aCyl1)
-					       (2 1 aSegment aCyl1)
-					       (1 2 anArc2 aCyl2)
-					       (2 2 aSegment aCyl2)
-					       )
-			    collect
-			    `(,(format nil "anEdge~aOnSurf~a" a b) (BRepBuilderAPI_MakeEdge ,c ,d)))
-		    (threadingWire1 (BRepBuilderAPI_MakeWire anEdge1OnSurf1 anEdge2OnSurf1))
-		    (threadingWire2 (BRepBuilderAPI_MakeWire anEdge1OnSurf2 anEdge2OnSurf2))
-			  
-		    )
-		(do0g (BRepLib--BuildCurves3d threadingWire1)
-		      (BRepLib--BuildCurves3d threadingWire2)
-		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
-			(aTool.AddWire threadingWire1)
-			(aTool.AddWire threadingWire2)
-			(comments "because they come from ellipses, the splines will be compatible")
-			(aTool.CheckCompatibility Standard_False)
-			(comments "create thread")
-			(let ((myThreading (aTool.Shape)))
-			  (return myThreading))))))))
+	 
 	  (comments "https://en.wikipedia.org/wiki/ISO_metric_screw_thread"
 		    "https://dev.opencascade.org/doc/overview/html/occt__tutorial.html")
-	  (defun MakeM2ScrewHole ()
+	  (defun MakeHolder ()
 	    (declare (type "const Standard_Real" )
 		     (values TopoDS_Shape))
 	   
-	    (let ((depth 10)
-		  (Dmaj 2d0)
-		  (P .4d0)
-		  (H (*  ,(* .5d0 (sqrt 3d0)) P))
-		  (Dmin (- Dmaj (* 2 5 (/ H 8))))
-		  (Dp (- Dmaj (* 2 3 (/ H 8))))
-		  (axis (gp_Ax2 (gp_Pnt 0 0 0)
+	    (let ((axis (gp_Ax2 (gp_Pnt 0 0 0)
 				(gp_Dir 0 0 1)))
-		  (pnt (gp_Pnt2d (* 2 M_PI)
-				 (* .5 depth)))
-		  (dir (gp_Dir2d (* 2 M_PI)
-				 (* .25 depth)))
-		  (neckLocation (gp_Pnt 0 0 0))
-		  (neckAxis (gp--DZ))
-		  (neckAx2 (gp_Ax2 neckLocation neckAxis))
-		  
-		  (cylWide (BRepPrimAPI_MakeCylinder axis Dmaj (* .5 depth)))
-		  (cylWideSurf ,(ptr-new `(Geom_CylindricalSurface
-					   (neckAx2 Dmaj))))
-		  (cylThin (BRepPrimAPI_MakeCylinder axis Dmin depth))
-		  (cylThinSurf ,(ptr-new `(Geom_CylindricalSurface
-					   (neckAx2 Dmin))))
-		  
-		  (anAx2d (gp_Ax2d pnt dir))
-		  (e1 ,(ptr-new `(Geom2d_Ellipse (anAx2d (* 2 M_PI)
-							 (- P (/ P 4))))))
-		  (e2 ,(ptr-new `(Geom2d_Ellipse (anAx2d (* 2 M_PI)
-							 (/ P 8)))))
-		  (arc1 ,(ptr-new `(Geom2d_TrimmedCurve (e1 0 M_PI))))
-		  (arc2 ,(ptr-new `(Geom2d_TrimmedCurve (e2 0 M_PI))))
-		  (ep1 (-> e1 (Value 0)))
-		  (ep2 (-> e1 (Value M_PI)))
-		  (seg ,(ptr `(Geom2d_TrimmedCurve
-			       (GCE2d_MakeSegment ep1 ep2))))
-		  ,@(loop for (a b c d) in `((1 1 arc1 cylThinSurf)
-					       (2 1 seg cylThinSurf)
-					       (1 2 arc2 cylWideSurf)
-					       (2 2 seg cylWideSurf)
-					       )
-			    collect
-			    `(,(format nil "anEdge~aOnSurf~a" a b) (BRepBuilderAPI_MakeEdge ,c ,d)))
-		  (threadingWire1 (BRepBuilderAPI_MakeWire anEdge1OnSurf1 anEdge2OnSurf1))
-		  (threadingWire2 (BRepBuilderAPI_MakeWire anEdge1OnSurf2 anEdge2OnSurf2))
-		
-		  
+		  (thick (- 5.0 .01))
+		  (adapterRad (* .5 (+ 29.49 .05)))
+		  (centralCylOut (BRepPrimAPI_MakeCylinder axis (+ adapterRad 5) thick))
+		  (centralCylIn (BRepPrimAPI_MakeCylinder axis adapterRad thick))
+		  (motorRadBottom (* .5 (+ 27.94 .04)))
+		  (motorRadMid (* .5 (+ 28.62 .04)))
+		  (leftMotorShiftX -31)
+		  (leftMotorHoleBottom ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis motorRadBottom thick))))
+		  (leftMotorHoleMid ,(translate `(:x leftMotorShiftX
+						  :z 1.4
+						  :code (BRepPrimAPI_MakeCylinder axis motorRadMid 20))))
+		  (leftMotorBlockMid ,(translate `(:x -55
+						      :y -20
+						   :z 1.4
+						  :code (BRepPrimAPI_MakeBox 20 40 12))))
+		  (leftMotorWall ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 1.5 motorRadMid)  10))))
+		  (leftPostHeight  (- 19.32 .83 .04))
+		  (leftScrewPostNorth
+		    ,(translate `(:x leftMotorShiftX
+				  :y (/ 35 2)
+				  :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+		  (leftScrewPostHoleNorth
+		    ,(translate `(:x leftMotorShiftX
+				  :y (/ 35 2)
+				  :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
+		  (leftScrewPostSouth  ,(translate `(:x leftMotorShiftX
+						     :y (/ -35 2)
+						     :code (BRepPrimAPI_MakeCylinder axis 3.5  leftPostHeight))))
+		  (leftScrewPostHoleSouth  ,(translate `(:x leftMotorShiftX
+						     :y (/ -35 2)
+						     :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93)  leftPostHeight))))
+
+		  (rightMotorShiftX (- leftMotorShiftX))
+		  (rightMotorWall ,(translate `(:x rightMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 1.5 motorRadMid) 5))))
+		  (rightMotorHoleMid ,(translate `(:x rightMotorShiftX
+						  :z 1.4
+						  :code (BRepPrimAPI_MakeCylinder axis motorRadMid 20))))
+		  (rightScrewPostNorth ,(translate `(:x rightMotorShiftX
+						     :y (/ 35 2)
+						     :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+		  (rightScrewPostSouth ,(translate `(:x rightMotorShiftX
+						     :y (/ -35 2)
+						     :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+		  (rightScrewPostHoleNorth ,(translate `(:x rightMotorShiftX
+							 :y (/ 35 2)
+							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
+		  (rightScrewPostHoleSouth ,(translate `(:x rightMotorShiftX
+							 :y (/ -35 2)
+							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
 		  
 		 
-	     	  (shape ,(fuse `(cylWide cylThin))
-			 ))
+		  #+nil  (cylShaft ,(translate `(:z flatLength
+						 :code (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 (- shaftLength flatLength)))))
+		 
+		 #+nil (shaftFlattening ,(translate `(:x -flatThickness/2
+						 :y -centralDiameter/2
+						 :z 0
+						 :code (BRepPrimAPI_MakeBox flatThickness centralDiameter flatLength))))
+		 #+nil (cylShaft2 ,(common `(cylShaftFullLength
+					shaftFlattening))
+			     )	     
+		 
+		  
+	     	 (shape ,(cut `(,(fuse `(leftMotorWall ,(cut `(leftScrewPostNorth leftScrewPostHoleNorth))
+							,(cut `(leftScrewPostSouth leftScrewPostHoleSouth))
+							,(cut `(rightScrewPostNorth rightScrewPostHoleNorth))
+							,(cut `(rightScrewPostSouth rightScrewPostHoleSouth))
+							rightMotorWall
+							centralCylOut 
+							))
+				 ,(fuse `(leftMotorHoleBottom
+					  leftMotorHoleMid
+					  leftMotorBlockMid
+					  rightMotorHoleMid
+					  centralCylIn))))
+			 )
+		  
+		 		  
+		  
+		  
+		  )
+	      
 	     
 	      (declare (type TopoDS_Shape shape))
 
-
-	      (do0 (BRepLib--BuildCurves3d threadingWire1)
-		      (BRepLib--BuildCurves3d threadingWire2)
-		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
-			(aTool.AddWire threadingWire1)
-			(aTool.AddWire threadingWire2)
-			(comments "because they come from ellipses, the splines will be compatible")
-			(aTool.CheckCompatibility Standard_False)
-			(comments "create thread")
-			(let ((myThreading (aTool.Shape)))
-			  )))
 	      
-	      (let ((unify (ShapeUpgrade_UnifySameDomain ,(fuse `(shape myThreading)))))
+	      
+	      
+	      
+	      (let ((unify (ShapeUpgrade_UnifySameDomain shape )))
 		(comments "remove unneccessary seams")
 		(unify.Build)
 		(setf shape
@@ -285,7 +267,7 @@
 	   (let ((ST ,(ptr `(XCAFDoc_ShapeTool (XCAFDoc_DocumentTool--ShapeTool (doc->Main)))))
 					;(CT ,(ptr `(XCAFDoc_ColorTool (XCAFDoc_DocumentTool--ColorTool (doc->Main)))))
 		 )
-	     (let ( (shape (MakeM2ScrewHole))
+	     (let ( (shape (MakeHolder))
 		    
 		   (label (ST->AddShape shape false))))
 	     
