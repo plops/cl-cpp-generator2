@@ -143,6 +143,7 @@
 		  (adapterRad (* .5 (+ 29.49 .05)))
 		  (centralCylOut (BRepPrimAPI_MakeCylinder axis (+ adapterRad 5) thick))
 		  (centralCylIn (BRepPrimAPI_MakeCylinder axis adapterRad thick))
+		  (centralCylClearance ,(translate `(:z thick :code (BRepPrimAPI_MakeCylinder axis (* .5 (+ 30.04 .2)) 20))))
 		  (motorRadBottom (* .5 (+ 27.94 .04)))
 		  (motorRadMid (* .5 (+ 28.62 .04)))
 		  (leftMotorShiftX -31)
@@ -154,7 +155,7 @@
 						      :y -20
 						   :z 1.4
 						  :code (BRepPrimAPI_MakeBox 20 40 12))))
-		  (leftMotorWall ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 1.5 motorRadMid)  10))))
+		  (leftMotorWall ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid)  10))))
 		  (leftPostHeight  (- 19.32 .83 .04))
 		  (leftScrewPostNorth
 		    ,(translate `(:x leftMotorShiftX
@@ -172,22 +173,35 @@
 						     :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93)  leftPostHeight))))
 
 		  (rightMotorShiftX (- leftMotorShiftX))
-		  (rightMotorWall ,(translate `(:x rightMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 1.5 motorRadMid) 5))))
+		  (rightMotorWall ,(translate `(:x rightMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid) 5))))
+		  
+		  (rightPostHeight (+ 9.42 7.9 8))
 		  (rightMotorHoleMid ,(translate `(:x rightMotorShiftX
-						  :z 1.4
-						  :code (BRepPrimAPI_MakeCylinder axis motorRadMid 20))))
+						   :z 1.4
+						   :code (BRepPrimAPI_MakeCylinder axis motorRadMid (- rightPostHeight 1.4))
+						   )))
+		  
 		  (rightScrewPostNorth ,(translate `(:x rightMotorShiftX
 						     :y (/ 35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+						     :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
 		  (rightScrewPostSouth ,(translate `(:x rightMotorShiftX
 						     :y (/ -35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+						     :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
 		  (rightScrewPostHoleNorth ,(translate `(:x rightMotorShiftX
 							 :y (/ 35 2)
-							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
+							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
 		  (rightScrewPostHoleSouth ,(translate `(:x rightMotorShiftX
 							 :y (/ -35 2)
-							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
+							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
+		  (rightMotorHoleMidFill ,(translate `(
+						       :y 40
+						       
+						       :code ,(cut `((BRepPrimAPI_MakeCylinder axis (- motorRadMid .1)
+											       (- rightPostHeight 1.4))
+								     (BRepPrimAPI_MakeCylinder axis (- motorRadMid .1 2)
+											       (- rightPostHeight 1.4)
+											       )))
+						       )))
 		  
 		 
 		  #+nil  (cylShaft ,(translate `(:z flatLength
@@ -207,13 +221,15 @@
 							,(cut `(rightScrewPostNorth rightScrewPostHoleNorth))
 							,(cut `(rightScrewPostSouth rightScrewPostHoleSouth))
 							rightMotorWall
-							centralCylOut 
+							centralCylOut
+						       rightMotorHoleMidFill
 							))
 				 ,(fuse `(leftMotorHoleBottom
 					  leftMotorHoleMid
 					  leftMotorBlockMid
 					  rightMotorHoleMid
-					  centralCylIn))))
+					  centralCylIn
+					  centralCylClearance))))
 			 )
 		  
 		 		  
