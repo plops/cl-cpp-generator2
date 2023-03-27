@@ -154,7 +154,7 @@
 		    (anEllipsePnt2 (-> anEllipse1 (Value M_PI)))
 		    (aSegment ,(ptr  `(Geom2d_TrimmedCurve 
 				       (GCE2d_MakeSegment anEllipsePnt1 anEllipsePnt2))))
-			  
+		    
 		    ,@(loop for (a b c d) in `((1 1 anArc1 aCyl1)
 					       (2 1 aSegment aCyl1)
 					       (1 2 anArc2 aCyl2)
@@ -166,39 +166,87 @@
 		    (threadingWire2 (BRepBuilderAPI_MakeWire anEdge1OnSurf2 anEdge2OnSurf2))
 			  
 		    )
-		(BRepLib--BuildCurves3d threadingWire1)
-		(BRepLib--BuildCurves3d threadingWire2)
-		(let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
-		  (aTool.AddWire threadingWire1)
-		  (aTool.AddWire threadingWire2)
-		  (comments "because they come from ellipses, the splines will be compatible")
-		  (aTool.CheckCompatibility Standard_False)
-		  (comments "create thread")
-		  (let ((myThreading (aTool.Shape)))
-		    (return myThreading)))))))
+		(do0g (BRepLib--BuildCurves3d threadingWire1)
+		      (BRepLib--BuildCurves3d threadingWire2)
+		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
+			(aTool.AddWire threadingWire1)
+			(aTool.AddWire threadingWire2)
+			(comments "because they come from ellipses, the splines will be compatible")
+			(aTool.CheckCompatibility Standard_False)
+			(comments "create thread")
+			(let ((myThreading (aTool.Shape)))
+			  (return myThreading))))))))
 	  (comments "https://en.wikipedia.org/wiki/ISO_metric_screw_thread"
 		    "https://dev.opencascade.org/doc/overview/html/occt__tutorial.html")
 	  (defun MakeM2ScrewHole ()
 	    (declare (type "const Standard_Real" )
 		     (values TopoDS_Shape))
 	   
-	    (let ((Dmaj 2d0)
+	    (let ((depth 10)
+		  (Dmaj 2d0)
 		  (P .4d0)
 		  (H (*  ,(* .5d0 (sqrt 3d0)) P))
 		  (Dmin (- Dmaj (* 2 5 (/ H 8))))
 		  (Dp (- Dmaj (* 2 3 (/ H 8))))
 		  (axis (gp_Ax2 (gp_Pnt 0 0 0)
 				(gp_Dir 0 0 1)))
-		  (depth 10)
+		  (pnt (gp_Pnt2d (* 2 M_PI)
+				 (* .5 depth)))
+		  (dir (gp_Dir2d (* 2 M_PI)
+				 (* .25 depth)))
+		  (neckLocation (gp_Pnt 0 0 0))
+		  (neckAxis (gp--DZ))
+		  (neckAx2 (gp_Ax2 neckLocation neckAxis))
+		  
 		  (cylWide (BRepPrimAPI_MakeCylinder axis Dmaj (* .5 depth)))
+		  (cylWideSurf ,(ptr-new `(Geom_CylindricalSurface
+					   (neckAx2 Dmaj))))
 		  (cylThin (BRepPrimAPI_MakeCylinder axis Dmin depth))
+		  (cylThinSurf ,(ptr-new `(Geom_CylindricalSurface
+					   (neckAx2 Dmin))))
+		  
+		  (anAx2d (gp_Ax2d pnt dir))
+		  (e1 ,(ptr-new `(Geom2d_Ellipse (anAx2d (* 2 M_PI)
+							 (- P (/ P 4))))))
+		  (e2 ,(ptr-new `(Geom2d_Ellipse (anAx2d (* 2 M_PI)
+							 (/ P 8)))))
+		  (arc1 ,(ptr-new `(Geom2d_TrimmedCurve (e1 0 M_PI))))
+		  (arc2 ,(ptr-new `(Geom2d_TrimmedCurve (e2 0 M_PI))))
+		  (ep1 (-> e1 (Value 0)))
+		  (ep2 (-> e1 (Value M_PI)))
+		  (seg ,(ptr `(Geom2d_TrimmedCurve
+			       (GCE2d_MakeSegment ep1 ep2))))
+		  ,@(loop for (a b c d) in `((1 1 arc1 cylThinSurf)
+					       (2 1 seg cylThinSurf)
+					       (1 2 arc2 cylWideSurf)
+					       (2 2 seg cylWideSurf)
+					       )
+			    collect
+			    `(,(format nil "anEdge~aOnSurf~a" a b) (BRepBuilderAPI_MakeEdge ,c ,d)))
+		  (threadingWire1 (BRepBuilderAPI_MakeWire anEdge1OnSurf1 anEdge2OnSurf1))
+		  (threadingWire2 (BRepBuilderAPI_MakeWire anEdge1OnSurf2 anEdge2OnSurf2))
+		
+		  
 		  
 		 
 	     	  (shape ,(fuse `(cylWide cylThin))
 			 ))
 	     
 	      (declare (type TopoDS_Shape shape))
-	      (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
+
+
+	      (do0 (BRepLib--BuildCurves3d threadingWire1)
+		      (BRepLib--BuildCurves3d threadingWire2)
+		      (let ((aTool (BRepOffsetAPI_ThruSections Standard_True)))
+			(aTool.AddWire threadingWire1)
+			(aTool.AddWire threadingWire2)
+			(comments "because they come from ellipses, the splines will be compatible")
+			(aTool.CheckCompatibility Standard_False)
+			(comments "create thread")
+			(let ((myThreading (aTool.Shape)))
+			  )))
+	      
+	      (let ((unify (ShapeUpgrade_UnifySameDomain ,(fuse `(shape myThreading)))))
 		(comments "remove unneccessary seams")
 		(unify.Build)
 		(setf shape
