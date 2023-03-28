@@ -57,6 +57,31 @@
 // https://en.wikipedia.org/wiki/ISO_metric_screw_thread
 // https://dev.opencascade.org/doc/overview/html/occt__tutorial.html
 
+TopoDS_Shape MakeCrownedPulley(const Standard_Real shaftDiameter,
+                               const Standard_Real centralDiameter,
+                               const Standard_Real pulleyThickness) {
+  auto sphere = BRepPrimAPI_MakeSphere(gp_Pnt(0, 0, pulleyThickness / 2),
+                                       centralDiameter / 2);
+  auto axis = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1));
+  auto cylBig =
+      BRepPrimAPI_MakeCylinder(axis, centralDiameter / 2, pulleyThickness);
+  auto cylShaftFullLength =
+      BRepPrimAPI_MakeCylinder(axis, shaftDiameter / 2, pulleyThickness);
+  auto disk = BRepAlgoAPI_Common(sphere, cylBig);
+  TopoDS_Shape shape = BRepBuilderAPI_Transform(
+      BRepAlgoAPI_Cut(disk, cylShaftFullLength), ([&]() {
+        auto a = gp_Trsf();
+        a.SetTranslation(gp_Vec(25, 0, 0));
+        return a;
+      })());
+  auto unify = ShapeUpgrade_UnifySameDomain(shape);
+  // remove unneccessary seams
+  unify.Build();
+  shape = unify.Shape();
+
+  return shape;
+}
+
 TopoDS_Shape MakeHolder() {
   auto axis = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1));
   auto thick = (((5.0f)) - ((1.00e-2f)));
@@ -231,6 +256,13 @@ int main(int argc, char **argv) {
       XCAFDoc_DocumentTool::ShapeTool(doc->Main()));
   auto shape = MakeHolder();
   auto label = ST->AddShape(shape, false);
+  auto shape2 = BRepBuilderAPI_Transform(
+      MakeCrownedPulley(((4.00e-2f) + (11.620f)), (20.f), (8.310f)), ([&]() {
+        auto a = gp_Trsf();
+        a.SetTranslation(gp_Vec(4, 0, 0));
+        return a;
+      })());
+  auto label2 = ST->AddShape(shape2, false);
 
   auto status = app->SaveAs(doc, "doc.xbf");
   if (!(PCDM_SS_OK == status)) {

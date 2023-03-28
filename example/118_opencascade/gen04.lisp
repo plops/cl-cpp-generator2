@@ -46,38 +46,7 @@
 						    p
 						    (cl-change-case:pascal-case (format nil "~a" header))))))
 				  headers)))))
-  (write-source
-   (asdf:system-relative-pathname
-    'cl-cpp-generator2
-    (merge-pathnames #P"main.cpp"
-		     *source-dir*))
-   `(do0
-     (include<> iostream
-		vector
-		algorithm)
-     ,@(inc `((b-rep tool)
-	      (b-rep-algo-a-p-i fuse cut common)
-	      (b-rep-builder-a-p-i make-edge make-polygon make-face make-wire transform)
-	      (b-rep-fillet-a-p-i make-fillet)
-	      ;(b-rep-chamfer-a-p-i make-chamfer)
-	      (b-rep-lib "")
-	      (b-rep-offset-a-p-i make-thick-solid thru-sections)
-	      (b-rep-prim-a-p-i make-cylinder make-prism make-revol MakeSphere MakeBox)
-	      (g-c make-arc-of-circle make-segment)
-	      (g-c-e2d make-segment)
-	      ("gp" "" ax1 ax2 ax2d dir dir2d pnt pnt2d trsf vec)
-	      (geom cylindrical-surface plane surface trimmed-curve curve parabola)
-	      (geom2d ellipse trimmed-curve parabola)
-	      (top-exp explorer)
-	      (topo-d-s edge face wire shape compound)
-	      (top-tools list-of-shape)
-	      (t-doc-std application)
-	      (bin-x-c-a-f-drivers "")
-	      (x-c-a-f-doc shape-tool document-tool)
-	      ("STEPCAFControl" writer)
-	      (shape-upgrade unify-same-domain)))
-
-     ,(flet (
+  (flet (
 	     (translate (xyz-code)
 	       (destructuring-bind (&key (x 0) (y 0) (z 0) code) xyz-code
 		`(BRepBuilderAPI_Transform
@@ -127,171 +96,237 @@
 					   edge)
 			       (edgeExplorer.Next)))
 		      (return fillet )))))))
+   (write-source
+    (asdf:system-relative-pathname
+     'cl-cpp-generator2
+     (merge-pathnames #P"main.cpp"
+		      *source-dir*))
+    `(do0
+      (include<> iostream
+		 vector
+		 algorithm)
+      ,@(inc `((b-rep tool)
+	       (b-rep-algo-a-p-i fuse cut common)
+	       (b-rep-builder-a-p-i make-edge make-polygon make-face make-wire transform)
+	       (b-rep-fillet-a-p-i make-fillet)
+					;(b-rep-chamfer-a-p-i make-chamfer)
+	       (b-rep-lib "")
+	       (b-rep-offset-a-p-i make-thick-solid thru-sections)
+	       (b-rep-prim-a-p-i make-cylinder make-prism make-revol MakeSphere MakeBox)
+	       (g-c make-arc-of-circle make-segment)
+	       (g-c-e2d make-segment)
+	       ("gp" "" ax1 ax2 ax2d dir dir2d pnt pnt2d trsf vec)
+	       (geom cylindrical-surface plane surface trimmed-curve curve parabola)
+	       (geom2d ellipse trimmed-curve parabola)
+	       (top-exp explorer)
+	       (topo-d-s edge face wire shape compound)
+	       (top-tools list-of-shape)
+	       (t-doc-std application)
+	       (bin-x-c-a-f-drivers "")
+	       (x-c-a-f-doc shape-tool document-tool)
+	       ("STEPCAFControl" writer)
+	       (shape-upgrade unify-same-domain)))
 
-	
-	`(do0
+      (do0
 	 
-	  (comments "https://en.wikipedia.org/wiki/ISO_metric_screw_thread"
-		    "https://dev.opencascade.org/doc/overview/html/occt__tutorial.html")
-	  (defun MakeHolder ()
-	    (declare (type "const Standard_Real" )
-		     (values TopoDS_Shape))
-	   
-	    (let ((axis (gp_Ax2 (gp_Pnt 0 0 0)
-				(gp_Dir 0 0 1)))
-		  (thick (- 5.0 .01))
-		  (adapterRad (* .5 (+ 29.49 .05)
-				 (/ 30.02 29.3) ;; the hole is a bit too small
-				 ))
-		  (centralCylOut (BRepPrimAPI_MakeCylinder axis (+ adapterRad 5) thick))
-		  (centralCylIn (BRepPrimAPI_MakeCylinder axis adapterRad thick))
-		  (centralCylClearance ,(translate `(:z thick :code (BRepPrimAPI_MakeCylinder axis (* .5 (+ 30.04 .2)
-												      (/ 30.02 29.3))
-											      20))))
-		  (motorRadBottom (* .5 (+ 27.94 .04)))
-		  (motorRadMid (* .5 (+ 28.62 .04)))
-		  (leftMotorShiftX -31)
-		  (leftMotorHoleBottom ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis motorRadBottom thick))))
-		  (leftMotorHoleMid ,(translate `(:x leftMotorShiftX
-						  :z 1.4
-						  :code (BRepPrimAPI_MakeCylinder axis motorRadMid 24))))
-		  (leftMotorBlockMid ,(translate `(:x -55
-						      :y -20
-						   :z 1.4
-						  :code (BRepPrimAPI_MakeBox 20 40 12))))
-		  (leftMotorWall ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid)  5 ;10
-												  ))))
-		  (leftPostHeight  (+ 4.12
-				      (- 19.32 .83 .04)))
-		  (leftScrewPostNorth
-		    ,(translate `(:x leftMotorShiftX
-				  :y (/ 35 2)
-				  :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
-		  (leftScrewPostHoleNorth
-		    ,(translate `(:x leftMotorShiftX
-				  :y (/ 35 2)
-				  :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
-		  (leftScrewPostSouth  ,(translate `(:x leftMotorShiftX
-						     :y (/ -35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis 3.5  leftPostHeight))))
-		  (leftScrewPostHoleSouth  ,(translate `(:x leftMotorShiftX
-						     :y (/ -35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93)  leftPostHeight))))
-
-		  (rightMotorShiftX (- leftMotorShiftX))
-		  (rightMotorWall ,(translate `(:x rightMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid) 5))))
-		  
-		  (rightPostHeight (- (+ 9.42 7.9 8)
-				      6.76))
-		  (rightMotorHoleMid ,(translate `(:x rightMotorShiftX
-						   ;:z 1.4
-						   :code (BRepPrimAPI_MakeCylinder axis motorRadMid rightPostHeight)
-						   )))
-		  
-		  (rightScrewPostNorth ,(translate `(:x rightMotorShiftX
-						     :y (/ 35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
-		  (rightScrewPostSouth ,(translate `(:x rightMotorShiftX
-						     :y (/ -35 2)
-						     :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
-		  (rightScrewPostHoleNorth ,(translate `(:x rightMotorShiftX
-							 :y (/ 35 2)
-							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
-		  (rightScrewPostHoleSouth ,(translate `(:x rightMotorShiftX
-							 :y (/ -35 2)
-							 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
-		  (rightMotorHoleMidFill ,(translate `(
-						       :y 40
-						       
-						       :code ,(cut `((BRepPrimAPI_MakeCylinder axis (- motorRadMid .1)
-											       (- rightPostHeight 1.4))
-								     (BRepPrimAPI_MakeCylinder axis (- motorRadMid .1 2)
-											       (- rightPostHeight 1.4)
-											       )))
-						       )))
-		  	     
+	 (comments "https://en.wikipedia.org/wiki/ISO_metric_screw_thread"
+		   "https://dev.opencascade.org/doc/overview/html/occt__tutorial.html")
+	 (defun MakeCrownedPulley (shaftDiameter centralDiameter pulleyThickness
+				   )
+	   (declare (type "const Standard_Real" shaftDiameter centralDiameter pulleyThickness )
+		    (values TopoDS_Shape))
+	   (let ((sphere (BRepPrimAPI_MakeSphere (gp_Pnt 0 0 pulleyThickness/2)
+						 centralDiameter/2))
+		 (axis (gp_Ax2 (gp_Pnt 0 0 0)
+			       (gp_Dir 0 0 1)))
+		 (cylBig (BRepPrimAPI_MakeCylinder axis centralDiameter/2 pulleyThickness))
 		 
-		  
-	     	 (shape ,(cut `(,(fuse `(leftMotorWall ,(cut `(leftScrewPostNorth leftScrewPostHoleNorth))
-							,(cut `(leftScrewPostSouth leftScrewPostHoleSouth))
-							,(cut `(rightScrewPostNorth rightScrewPostHoleNorth))
-							,(cut `(rightScrewPostSouth rightScrewPostHoleSouth))
-							rightMotorWall
-							centralCylOut
-						       ;rightMotorHoleMidFill
-							))
-				 ,(fuse `(leftMotorHoleBottom
-					  leftMotorHoleMid
-					  leftMotorBlockMid
-					  rightMotorHoleMid
-					  centralCylIn
-					  centralCylClearance))))
-			 )
-		  
-		 		  
-		  
-		  
-		  )
-	      
-	     
-	      (declare (type TopoDS_Shape shape))
-
-	      
-	      
-	      
-	      
-	      (let ((unify (ShapeUpgrade_UnifySameDomain shape )))
-		(comments "remove unneccessary seams")
-		(unify.Build)
-		(setf shape
-		      (dot unify
-			   (Shape))))
-	     
-	      (return shape)
-	     
-	      ))
-	  ))
-
-     (defun WriteStep (doc filename)
-       (declare (type "const char*" filename)
-		(type "const Handle(TDocStd_Document)&" doc)
-		(values bool))
-       (let ((Writer (STEPCAFControl_Writer)))
-	 (unless 
-	  (Writer.Transfer doc)
-	   (return false))
-	 (return (== IFSelect_RetDone
-		     (Writer.Write filename))
-	   ))
-       )
-     (defun main (argc argv)
-       (declare (type int argc)
-		(type char** argv)
-		(values int))
-       "(void) argc;"
-       "(void) argv;"
-
-       (let ((app ,(ptr-new `TDocStd_Application) ))
-	 (BinXCAFDrivers--DefineFormat app)
-	 (let ((doc ,(ptr0 `TDocStd_Document)))
-	   (app->NewDocument (string "BinXCAF")
-			     doc)
-	   (let ((ST ,(ptr `(XCAFDoc_ShapeTool (XCAFDoc_DocumentTool--ShapeTool (doc->Main)))))
-					;(CT ,(ptr `(XCAFDoc_ColorTool (XCAFDoc_DocumentTool--ColorTool (doc->Main)))))
+		 ;; the hole through the entire disk 
+		 (cylShaftFullLength (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 pulleyThickness))
+		 
+		 
+		 (disk 
+		   ,(common `(sphere cylBig)))
+		 
+	     	 (shape ,(translate `(:x 25 :code ,(cut `(disk cylShaftFullLength))))
+			)
 		 )
-	     (let ( (shape (MakeHolder))
-		    
-		   (label (ST->AddShape shape false))))
 	     
-	     )))
-       (do0
-	(let  ((status (app->SaveAs doc
-				    (string "doc.xbf"))))
-	  (unless (==  PCDM_SS_OK status)
-	    (return 1)))
+	     (declare (type TopoDS_Shape shape))
+	     (let ((unify (ShapeUpgrade_UnifySameDomain shape)))
+	       (comments "remove unneccessary seams")
+	       (unify.Build)
+	       (setf shape
+		     (dot unify
+			  (Shape))))
+	     
+	     (return  shape)
+	     
+	     ))
+	 
+	 (defun MakeHolder ()
+	   (declare (type "const Standard_Real" )
+		    (values TopoDS_Shape))
+	   
+	   (let ((axis (gp_Ax2 (gp_Pnt 0 0 0)
+			       (gp_Dir 0 0 1)))
+		 (thick (- 5.0 .01))
+		 (adapterRad (* .5 (+ 29.49 .05)
+				(/ 30.02 29.3) ;; the hole is a bit too small
+				))
+		 (centralCylOut (BRepPrimAPI_MakeCylinder axis (+ adapterRad 5) thick))
+		 (centralCylIn (BRepPrimAPI_MakeCylinder axis adapterRad thick))
+		 (centralCylClearance ,(translate `(:z thick :code (BRepPrimAPI_MakeCylinder axis (* .5 (+ 30.04 .2)
+												     (/ 30.02 29.3))
+											     20))))
+		 (motorRadBottom (* .5 (+ 27.94 .04)))
+		 (motorRadMid (* .5 (+ 28.62 .04)))
+		 (leftMotorShiftX -31)
+		 (leftMotorHoleBottom ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis motorRadBottom thick))))
+		 (leftMotorHoleMid ,(translate `(:x leftMotorShiftX
+						 :z 1.4
+						 :code (BRepPrimAPI_MakeCylinder axis motorRadMid 24))))
+		 (leftMotorBlockMid ,(translate `(:x -55
+						  :y -20
+						  :z 1.4
+						  :code (BRepPrimAPI_MakeBox 20 40 12))))
+		 (leftMotorWall ,(translate `(:x leftMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid)  5 ;10
+												 ))))
+		 (leftPostHeight  (+ 4.12
+				     (- 19.32 .83 .04)))
+		 (leftScrewPostNorth
+		   ,(translate `(:x leftMotorShiftX
+				 :y (/ 35 2)
+				 :code (BRepPrimAPI_MakeCylinder axis 3.5 leftPostHeight))))
+		 (leftScrewPostHoleNorth
+		   ,(translate `(:x leftMotorShiftX
+				 :y (/ 35 2)
+				 :code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) leftPostHeight))))
+		 (leftScrewPostSouth  ,(translate `(:x leftMotorShiftX
+						    :y (/ -35 2)
+						    :code (BRepPrimAPI_MakeCylinder axis 3.5  leftPostHeight))))
+		 (leftScrewPostHoleSouth  ,(translate `(:x leftMotorShiftX
+							:y (/ -35 2)
+							:code (BRepPrimAPI_MakeCylinder axis (* .5 2.93)  leftPostHeight))))
 
-	(WriteStep doc (string "o.stp")))
-       (return 0))))
+		 (rightMotorShiftX (- leftMotorShiftX))
+		 (rightMotorWall ,(translate `(:x rightMotorShiftX :code (BRepPrimAPI_MakeCylinder axis (+ 3 motorRadMid) 5))))
+		 
+		 (rightPostHeight (- (+ 9.42 7.9 8)
+				     6.76))
+		 (rightMotorHoleMid ,(translate `(:x rightMotorShiftX
+					;:z 1.4
+						     :code (BRepPrimAPI_MakeCylinder axis motorRadMid rightPostHeight)
+						     )))
+		 
+		 (rightScrewPostNorth ,(translate `(:x rightMotorShiftX
+						    :y (/ 35 2)
+						    :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
+		 (rightScrewPostSouth ,(translate `(:x rightMotorShiftX
+						    :y (/ -35 2)
+						    :code (BRepPrimAPI_MakeCylinder axis 3.5 rightPostHeight))))
+		 (rightScrewPostHoleNorth ,(translate `(:x rightMotorShiftX
+							:y (/ 35 2)
+							:code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
+		 (rightScrewPostHoleSouth ,(translate `(:x rightMotorShiftX
+							:y (/ -35 2)
+							:code (BRepPrimAPI_MakeCylinder axis (* .5 2.93) rightPostHeight))))
+		 (rightMotorHoleMidFill ,(translate `(
+						      :y 40
+						      
+						      :code ,(cut `((BRepPrimAPI_MakeCylinder axis (- motorRadMid .1)
+											      (- rightPostHeight 1.4))
+								    (BRepPrimAPI_MakeCylinder axis (- motorRadMid .1 2)
+											      (- rightPostHeight 1.4)
+											      )))
+						      )))
+		 
+		 
+		 
+	     	 (shape ,(cut `(,(fuse `(leftMotorWall ,(cut `(leftScrewPostNorth leftScrewPostHoleNorth))
+						       ,(cut `(leftScrewPostSouth leftScrewPostHoleSouth))
+						       ,(cut `(rightScrewPostNorth rightScrewPostHoleNorth))
+						       ,(cut `(rightScrewPostSouth rightScrewPostHoleSouth))
+						       rightMotorWall
+						       centralCylOut
+					;rightMotorHoleMidFill
+						       ))
+				,(fuse `(leftMotorHoleBottom
+					 leftMotorHoleMid
+					 leftMotorBlockMid
+					 rightMotorHoleMid
+					 centralCylIn
+					 centralCylClearance))))
+			)
+		 
+		 
+		 
+		 
+		 )
+	     
+	     
+	     (declare (type TopoDS_Shape shape))
+
+	     
+	     
+	     
+	     
+	     (let ((unify (ShapeUpgrade_UnifySameDomain shape )))
+	       (comments "remove unneccessary seams")
+	       (unify.Build)
+	       (setf shape
+		     (dot unify
+			  (Shape))))
+	     
+	     (return shape)
+	     
+	     ))
+	 )
+
+      (defun WriteStep (doc filename)
+	(declare (type "const char*" filename)
+		 (type "const Handle(TDocStd_Document)&" doc)
+		 (values bool))
+	(let ((Writer (STEPCAFControl_Writer)))
+	  (unless 
+	      (Writer.Transfer doc)
+	    (return false))
+	  (return (== IFSelect_RetDone
+		      (Writer.Write filename))
+		  ))
+	)
+      (defun main (argc argv)
+	(declare (type int argc)
+		 (type char** argv)
+		 (values int))
+	"(void) argc;"
+	"(void) argv;"
+
+	(let ((app ,(ptr-new `TDocStd_Application) ))
+	  (BinXCAFDrivers--DefineFormat app)
+	  (let ((doc ,(ptr0 `TDocStd_Document)))
+	    (app->NewDocument (string "BinXCAF")
+			      doc)
+	    (let ((ST ,(ptr `(XCAFDoc_ShapeTool (XCAFDoc_DocumentTool--ShapeTool (doc->Main)))))
+					;(CT ,(ptr `(XCAFDoc_ColorTool (XCAFDoc_DocumentTool--ColorTool (doc->Main)))))
+		  )
+	      (let ( (shape (MakeHolder))
+		    
+		     (label (ST->AddShape shape false))))
+	      (let ( (shape2 ,(translate `(:x 4
+					   :code (MakeCrownedPulley (+ .04 11.62) 20.0 8.31 ))))
+		   
+		     (label2 (ST->AddShape shape2 false))))
+	     
+	      )))
+	(do0
+	 (let  ((status (app->SaveAs doc
+				     (string "doc.xbf"))))
+	   (unless (==  PCDM_SS_OK status)
+	     (return 1)))
+
+	 (WriteStep doc (string "o.stp")))
+	(return 0)))))
   )
 
 
