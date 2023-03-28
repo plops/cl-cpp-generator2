@@ -60,11 +60,14 @@
 TopoDS_Shape MakeHolder() {
   auto axis = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1));
   auto thick = (((5.0f)) - ((1.00e-2f)));
-  auto adapterRad = ((0.50f) * ((29.490f) + (5.00e-2f)));
+  auto adapterRad =
+      ((0.50f) * ((29.490f) + (5.00e-2f)) * (((30.020f)) / ((29.30f))));
   auto centralCylOut = BRepPrimAPI_MakeCylinder(axis, (adapterRad + 5), thick);
   auto centralCylIn = BRepPrimAPI_MakeCylinder(axis, adapterRad, thick);
   auto centralCylClearance = BRepBuilderAPI_Transform(
-      BRepPrimAPI_MakeCylinder(axis, ((0.50f) * ((30.040f) + (0.20f))), 20),
+      BRepPrimAPI_MakeCylinder(
+          axis, ((0.50f) * ((30.040f) + (0.20f)) * (((30.020f)) / ((29.30f)))),
+          20),
       ([&]() {
         auto a = gp_Trsf();
         a.SetTranslation(gp_Vec(0, 0, thick));
@@ -179,25 +182,21 @@ TopoDS_Shape MakeHolder() {
       })());
   TopoDS_Shape shape = BRepAlgoAPI_Cut(
       BRepAlgoAPI_Fuse(
-          rightMotorHoleMidFill,
+          centralCylOut,
           BRepAlgoAPI_Fuse(
-              centralCylOut,
+              rightMotorWall,
               BRepAlgoAPI_Fuse(
-                  rightMotorWall,
+                  BRepAlgoAPI_Cut(rightScrewPostSouth, rightScrewPostHoleSouth),
                   BRepAlgoAPI_Fuse(
-                      BRepAlgoAPI_Cut(rightScrewPostSouth,
-                                      rightScrewPostHoleSouth),
+                      BRepAlgoAPI_Cut(rightScrewPostNorth,
+                                      rightScrewPostHoleNorth),
                       BRepAlgoAPI_Fuse(
-                          BRepAlgoAPI_Cut(rightScrewPostNorth,
-                                          rightScrewPostHoleNorth),
+                          BRepAlgoAPI_Cut(leftScrewPostSouth,
+                                          leftScrewPostHoleSouth),
                           BRepAlgoAPI_Fuse(
-                              BRepAlgoAPI_Cut(leftScrewPostSouth,
-                                              leftScrewPostHoleSouth),
-                              BRepAlgoAPI_Fuse(
-                                  leftMotorWall,
-                                  BRepAlgoAPI_Cut(
-                                      leftScrewPostNorth,
-                                      leftScrewPostHoleNorth)))))))),
+                              leftMotorWall,
+                              BRepAlgoAPI_Cut(leftScrewPostNorth,
+                                              leftScrewPostHoleNorth))))))),
       BRepAlgoAPI_Fuse(
           centralCylClearance,
           BRepAlgoAPI_Fuse(

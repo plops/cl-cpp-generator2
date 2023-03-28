@@ -613,6 +613,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defparameter *precedence* `(#+nil
 			     ("::")
 			     (hex)
+			     (char)
 			     (string)
 			     (	       ; incf decf (only with a++ a--)
 			      ;; unary+ unary-

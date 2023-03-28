@@ -140,10 +140,14 @@
 	    (let ((axis (gp_Ax2 (gp_Pnt 0 0 0)
 				(gp_Dir 0 0 1)))
 		  (thick (- 5.0 .01))
-		  (adapterRad (* .5 (+ 29.49 .05)))
+		  (adapterRad (* .5 (+ 29.49 .05)
+				 (/ 30.02 29.3) ;; the hole is a bit too small
+				 ))
 		  (centralCylOut (BRepPrimAPI_MakeCylinder axis (+ adapterRad 5) thick))
 		  (centralCylIn (BRepPrimAPI_MakeCylinder axis adapterRad thick))
-		  (centralCylClearance ,(translate `(:z thick :code (BRepPrimAPI_MakeCylinder axis (* .5 (+ 30.04 .2)) 20))))
+		  (centralCylClearance ,(translate `(:z thick :code (BRepPrimAPI_MakeCylinder axis (* .5 (+ 30.04 .2)
+												      (/ 30.02 29.3))
+											      20))))
 		  (motorRadBottom (* .5 (+ 27.94 .04)))
 		  (motorRadMid (* .5 (+ 28.62 .04)))
 		  (leftMotorShiftX -31)
@@ -202,18 +206,7 @@
 											       (- rightPostHeight 1.4)
 											       )))
 						       )))
-		  
-		 
-		  #+nil  (cylShaft ,(translate `(:z flatLength
-						 :code (BRepPrimAPI_MakeCylinder axis shaftDiameter/2 (- shaftLength flatLength)))))
-		 
-		 #+nil (shaftFlattening ,(translate `(:x -flatThickness/2
-						 :y -centralDiameter/2
-						 :z 0
-						 :code (BRepPrimAPI_MakeBox flatThickness centralDiameter flatLength))))
-		 #+nil (cylShaft2 ,(common `(cylShaftFullLength
-					shaftFlattening))
-			     )	     
+		  	     
 		 
 		  
 	     	 (shape ,(cut `(,(fuse `(leftMotorWall ,(cut `(leftScrewPostNorth leftScrewPostHoleNorth))
@@ -222,7 +215,7 @@
 							,(cut `(rightScrewPostSouth rightScrewPostHoleSouth))
 							rightMotorWall
 							centralCylOut
-						       rightMotorHoleMidFill
+						       ;rightMotorHoleMidFill
 							))
 				 ,(fuse `(leftMotorHoleBottom
 					  leftMotorHoleMid
