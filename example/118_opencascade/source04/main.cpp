@@ -83,7 +83,7 @@ TopoDS_Shape MakeHolder() {
         return a;
       })());
   auto leftMotorHoleMid = BRepBuilderAPI_Transform(
-      BRepPrimAPI_MakeCylinder(axis, motorRadMid, 20), ([&]() {
+      BRepPrimAPI_MakeCylinder(axis, motorRadMid, 24), ([&]() {
         auto a = gp_Trsf();
         a.SetTranslation(gp_Vec(leftMotorShiftX, 0, (1.40f)));
         return a;
@@ -95,12 +95,12 @@ TopoDS_Shape MakeHolder() {
                                  return a;
                                })());
   auto leftMotorWall = BRepBuilderAPI_Transform(
-      BRepPrimAPI_MakeCylinder(axis, (3 + motorRadMid), 10), ([&]() {
+      BRepPrimAPI_MakeCylinder(axis, (3 + motorRadMid), 5), ([&]() {
         auto a = gp_Trsf();
         a.SetTranslation(gp_Vec(leftMotorShiftX, 0, 0));
         return a;
       })());
-  auto leftPostHeight = (((19.320f)) - ((0.830f)) - ((4.00e-2f)));
+  auto leftPostHeight = ((4.120f) + (((19.320f)) - ((0.830f)) - ((4.00e-2f))));
   auto leftScrewPostNorth = BRepBuilderAPI_Transform(
       BRepPrimAPI_MakeCylinder(axis, (3.50f), leftPostHeight), ([&]() {
         auto a = gp_Trsf();
@@ -134,13 +134,11 @@ TopoDS_Shape MakeHolder() {
         a.SetTranslation(gp_Vec(rightMotorShiftX, 0, 0));
         return a;
       })());
-  auto rightPostHeight = ((9.420f) + (7.90f) + 8);
+  auto rightPostHeight = ((((9.420f) + (7.90f) + 8)) - ((6.760f)));
   auto rightMotorHoleMid = BRepBuilderAPI_Transform(
-      BRepPrimAPI_MakeCylinder(axis, motorRadMid,
-                               ((rightPostHeight) - ((1.40f)))),
-      ([&]() {
+      BRepPrimAPI_MakeCylinder(axis, motorRadMid, rightPostHeight), ([&]() {
         auto a = gp_Trsf();
-        a.SetTranslation(gp_Vec(rightMotorShiftX, 0, (1.40f)));
+        a.SetTranslation(gp_Vec(rightMotorShiftX, 0, 0));
         return a;
       })());
   auto rightScrewPostNorth = BRepBuilderAPI_Transform(
