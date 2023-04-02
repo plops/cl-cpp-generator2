@@ -426,3 +426,8 @@ gp_Circ c = C->Circ();
 - https://www.thingiverse.com/thing:4154708 box with 4 inlets, lamella
 - https://www.thingiverse.com/thing:1536407/apps strohalme
 - https://www.thingiverse.com/thing:2585464 gyroid
+
+# ultrasonic microphone
+
+- https://www.youtube.com/watch?v=Hhg83cqY5rA EM258 capsule from micbooster (20$), vxlr plus rhode 
+- on microbooster.com 7GBP or 22GBP for module , on aliexpress 10 CHF for two 
