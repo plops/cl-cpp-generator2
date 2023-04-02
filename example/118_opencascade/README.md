@@ -433,3 +433,4 @@ gp_Circ c = C->Circ();
 - on microbooster.com 7GBP or 22GBP for module , on aliexpress 10 CHF for two 
 - https://www.zachpoff.com/resources/cheap-microphones-for-ultrasound/ good overview, also lists some mems
 - https://www.analog.com/media/en/technical-documentation/technical-articles/Analog-and-Digital-MEMS-Microphone-Design-Considerations-MS-2472.pdf
+- https://mdpi-res.com/d_attachment/plants/plants-11-02391/article_deploy/plants-11-02391.pdf?version=1663146822 application for plants
