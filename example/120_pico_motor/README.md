@@ -120,3 +120,9 @@ https://youtu.be/0sKqc5IwQQQ?t=648
 - https://embeddedproto.com/
   - C++
   - only free for non-commercial use
+
+# what is the best way to communicate from pico to pc
+
+You cannot use a USB CDC serial connection during debugging. 
+
+https://github.com/hathach/tinyusb

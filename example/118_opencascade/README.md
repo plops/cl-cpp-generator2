@@ -415,3 +415,6 @@ gp_Circ c = C->Circ();
  
  - Components (p. 175)
   -TDOcStd
+
+
+- focus using a bhatinov mask https://www.youtube.com/watch?v=uBuk3DD-yxw
