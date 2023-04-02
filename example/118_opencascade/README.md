@@ -416,5 +416,13 @@ gp_Circ c = C->Circ();
  - Components (p. 175)
   -TDOcStd
 
-
+# focus telescope
 - focus using a bhatinov mask https://www.youtube.com/watch?v=uBuk3DD-yxw
+
+# heat exchanger 
+
+- https://www.thingiverse.com/thing:1916301/files pipes as input
+- https://www.sciencedirect.com/science/article/pii/S1359431122002976 paper on gyroid
+- https://www.thingiverse.com/thing:4154708 box with 4 inlets, lamella
+- https://www.thingiverse.com/thing:1536407/apps strohalme
+- https://www.thingiverse.com/thing:2585464 gyroid
