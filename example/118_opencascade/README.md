@@ -431,3 +431,5 @@ gp_Circ c = C->Circ();
 
 - https://www.youtube.com/watch?v=Hhg83cqY5rA EM258 capsule from micbooster (20$), vxlr plus rhode 
 - on microbooster.com 7GBP or 22GBP for module , on aliexpress 10 CHF for two 
+- https://www.zachpoff.com/resources/cheap-microphones-for-ultrasound/ good overview, also lists some mems
+- https://www.analog.com/media/en/technical-documentation/technical-articles/Analog-and-Digital-MEMS-Microphone-Design-Considerations-MS-2472.pdf
