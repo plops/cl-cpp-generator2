@@ -126,3 +126,6 @@ https://youtu.be/0sKqc5IwQQQ?t=648
 You cannot use a USB CDC serial connection during debugging. 
 
 https://github.com/hathach/tinyusb
+
+
+hitec servo https://www.youtube.com/watch?v=iBbFxsB6KV0
