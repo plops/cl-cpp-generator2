@@ -4,3 +4,17 @@ message TestMessage {
   string str = 1;
   uint64 datetime = 2;
 }
+
+message DataRequest {
+  uint64 count = 1;
+  int64 start_index = 2;
+}
+
+message DataResponse {
+  uint64 index = 1;
+  uint64 datetime = 2;
+  float pressure = 3;
+  float humidity = 4;
+  float temperature = 5;
+  float co2_concentration = 6;
+}

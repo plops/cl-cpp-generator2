@@ -78,16 +78,45 @@
 		 ; vector
 		 ; algorithm
 		  ;cmath
-		  sys/socket.h
+		  )
+       (space "extern \"C\" "
+		(progn
+		  (include<>
+		   sys/socket.h
 		  sys/types.h
 		  netinet/in.h
-		  )
+		  unistd.h
+		  pb.h
+		  pb_encode.h
+		  pb_decode.h)
+		  (include data.pb.h
+			   
+			   )
+
+		  
+		  ))
 
        (do0
 	"#define FMT_HEADER_ONLY"
 	(include "core.h"))
 
+      
+
        (do0
+	
+	(defun pb_istream_from_socket (fd)
+	  (declare (type int fd)
+		   (values pb_istream_t))
+	  (let ((stream (pb_istream_t)))
+	    (return stream)))
+	
+	(defun handle_connection (connfd)
+	  (declare (type int connfd))
+	  (let ((input (pb_istream_from_socket connfd))
+		(request (DataRequest)))
+	    (unless (pb_decode_delimited &input
+					 DataRequest_fields
+					 &request))))
 	(defun main (argc argv)
 	  (declare (values int)
 		   (type int argc)
@@ -134,7 +163,7 @@
 			,(lprint :msg "error accept"))
 		      (handle_connection connfd)
 		      (close connfd)
-		     ))))
+		      ))))
 	  (return 0)))
 
        
