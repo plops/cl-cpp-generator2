@@ -12,8 +12,25 @@ extern "C" {
 #define FMT_HEADER_ONLY
 #include "core.h"
 
+bool read_callback(pb_istream_t *stream, uint8_t *buf, size_t count) {
+  auto fd = reinterpret_cast<intptr_t>(stream->state);
+
+  if (0 == count) {
+    return true;
+  }
+  auto result = recv(fd, buf, count, MSG_WAITALL);
+  if (0 == result) {
+    // EOF
+    stream->bytes_left = 0;
+  }
+  return count == result;
+}
+
 pb_istream_t pb_istream_from_socket(int fd) {
-  auto stream = pb_istream_t();
+  auto stream = pb_istream_t(
+      {.callback = read_callback,
+       .state = reinterpret_cast<void *>(static_cast<intptr_t>(fd)),
+       .bytes_left = SIZE_MAX});
   return stream;
 }
 
@@ -21,11 +38,14 @@ void handle_connection(int connfd) {
   auto input = pb_istream_from_socket(connfd);
   auto request = DataRequest();
   if (!(pb_decode_delimited(&input, DataRequest_fields, &request))) {
+    fmt::print("error decode  PB_GET_ERROR(&input)='{}'\n",
+               PB_GET_ERROR(&input));
   }
+  auto response = DataResponse();
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 20:32:23 of Monday, 2023-04-10 (GMT+1)\n");
+  fmt::print("generation date 20:46:07 of Monday, 2023-04-10 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));

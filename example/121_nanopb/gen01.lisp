@@ -103,11 +103,28 @@
       
 
        (do0
-	
+	(defun read_callback (stream buf count)
+	  (declare (type pb_istream_t* stream)
+		   (type uint8_t* buf)
+		   (type size_t count)
+		   (values bool))
+	  (let ((fd (reinterpret_cast<intptr_t> stream->state))))
+	  (when (== 0 count)
+	    (return true))
+	  (let ((result (recv fd buf count MSG_WAITALL)))
+	    (when (== 0 result)
+	      (comments "EOF")
+	      (setf stream->bytes_left 0))
+	    (return (== count result))))
 	(defun pb_istream_from_socket (fd)
 	  (declare (type int fd)
 		   (values pb_istream_t))
-	  (let ((stream (pb_istream_t)))
+	  (let (
+		(stream (pb_istream_t (designated-initializer :callback read_callback
+							      :state (reinterpret_cast<void*>
+								      (static_cast<intptr_t>
+								       fd))
+							      :bytes_left SIZE_MAX))))
 	    (return stream)))
 	
 	(defun handle_connection (connfd)
@@ -116,7 +133,10 @@
 		(request (DataRequest)))
 	    (unless (pb_decode_delimited &input
 					 DataRequest_fields
-					 &request))))
+					 &request)
+	      ,(lprint :msg "error decode"
+		       :vars `((PB_GET_ERROR &input))))
+	    (let ((response (DataResponse))))))
 	(defun main (argc argv)
 	  (declare (values int)
 		   (type int argc)
