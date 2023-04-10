@@ -1,9 +1,5 @@
 syntax = "proto3";
 
-message TestMessage {
-  string str = 1;
-  uint64 datetime = 2;
-}
 
 message DataRequest {
   uint64 count = 1;

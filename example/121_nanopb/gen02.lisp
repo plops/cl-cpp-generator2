@@ -5,9 +5,9 @@
 (in-package :cl-py-generator)
 
 (progn
-  (defparameter *project* "105_amd_opencv")
-  (defparameter *idx* "00")
-  (defparameter *path* (format nil "/home/martin/stage/cl-py-generator/example/~a" *project*))
+  (defparameter *project* "121_nanopb")
+  (defparameter *idx* "02")
+  (defparameter *path* (format nil "/home/martin/stage/cl-cpp-generator2/example/~a" *project*))
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -24,21 +24,22 @@
 
   
   
-  (let* ((notebook-name "opencv_cl")
+  (let* ((notebook-name "pb_client")
 	 #+nil (cli-args `(
 		     (:short "-v" :long "--verbose" :help "enable verbose output" :action "store_true" :required nil))))
     (write-source
-     (format nil "~a/source/p~a_~a" *path* *idx* notebook-name)
+     (format nil "~a/source01/p~a_~a" *path* *idx* notebook-name)
      `(do0
        (do0
 	,(format nil "#|default_exp p~a_~a" *idx* notebook-name))
 	 (do0
-	  (comment "sudo pacman -S python-opencv rocm-opencl-runtime python-mss"
-		   ;"python3 -m pip install --user mediapipe"
-		   )
+	  (comment "pip3 install --user protobuf"
+		   "cd /home/martin/stage/cl-cpp-generator2/example/121_nanopb/source01; protoc --proto_path=. --python_out=. data.proto")
 	  (imports (;	os
 					;sys
-			time
+		    time
+		    socket
+		    struct
 					;docopt
 			;pathlib
 					;(np numpy)
@@ -56,8 +57,8 @@
 					;sklearn.linear_model
 					;itertools
 					;datetime
-					 (np numpy)
-					(cv cv2)
+					;  (np numpy)
+					;(cv cv2)
 					;(mp mediapipe)
 					;jax
 					; jax.random
@@ -69,7 +70,7 @@
 					;io.StringIO
 					;bs4
 					;requests
-					mss
+					;mss
 			
 					;(np jax.numpy)
 					;(mpf mplfinance)
@@ -78,6 +79,8 @@
 					;torch
 					
 			)))
+
+	 (imports-from  (data_pb2 DataRequest DataResponse))
 	 
 	 (setf start_time (time.time)
 	       debug True)
@@ -104,60 +107,25 @@
 			     date
 			     (- tz)))))
 	 (do0
-)
-
-
-	 
-	 (do0
-	  ,(lprint :vars `((cv.ocl.haveOpenCL)))
-	  (setf loop_time (time.time))
-	  (setf clahe (cv.createCLAHE :clipLimit 7.0
-				      :tileGridSize (tuple 12 12)))
-	  (with (as (mss.mss)
-		    sct)
-		(setf loop_start (time.time))
-		(setf count 0)
-		(while True
-		       (do0
-			(incf count)
-			      
-			(setf img
-			      (np.array (sct.grab (dictionary :top 160
-							      :left 0
-							      :width (// 1920 2)
-							      :height (// 1080 2)))))
-			
-			#+nil
-			(setf imgr (cv.cvtColor img ;cv.COLOR_RGB2BGR
-						cv.COLOR_RGB2GRAY))
-			(setf lab (cv.cvtColor img 
-					       cv.COLOR_RGB2LAB)
-			      lab_planes (cv.split lab)
-			      lclahe
-			      (clahe.apply (aref lab_planes 0))
-			      lab (cv.merge (list lclahe 
-						  (aref lab_planes 1)
-						  (aref lab_planes 2)))
-			      imgr (cv.cvtColor lab cv.COLOR_LAB2RGB))
-			(cv.imshow (string "screen")
-				   imgr
-				   )
-			(do0
-			 (setf delta (- (time.time)
-					loop_time))
-			 (setf target_period (- (/ 1 60.0)
-						.0001))
-			 (when (< delta target_period)
-			   (time.sleep (- target_period delta)
-				       ))
-			 (setf fps (/ 1 delta)
-			       fps_wait (/ 1 (- (time.time)
-						loop_time)))
-			 (setf loop_time (time.time))
-			 (when (== 0 (% count 100))
-			   ,(lprint :vars `(fps fps_wait))))
-			(when (== (ord (string "q"))
-				  (cv.waitKey 1))
-			  (cv.destroyAllWindows)
-			  break)))))))))
+	  (setf s (socket.socket socket.AF_INET
+				 socket.SOCK_STREAM))
+	  (s.connect (tuple (string "localhost")
+			    1234))
+	  (setf request (DataRequest :count 0
+				     :start_index 0)
+		request_string (request.SerializeToString))
+	  (s.sendall (+ (struct.pack
+			 (string ">I")
+			 (len request_string))
+			request_string))
+	  (setf data (s.recv 1024))
+	  (setf response_length (aref (struct.unpack (string ">I")
+						     (aref data (slice "" 4)))
+				      0))
+	  (setf response (DataResponse.FromString (aref data (slice 4 ""))))
+	  (print response)
+	  (s.close)
+	  
+	  )
+	 ))))
 
