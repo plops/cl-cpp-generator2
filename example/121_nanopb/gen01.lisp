@@ -84,6 +84,26 @@
 	"#define FMT_HEADER_ONLY"
 	(include "core.h"))
 
+       (do0
+	(defun main (argc argv)
+	  (declare (values int)
+		   (type int argc)
+		   (type char** argv))
+	  ,(lprint :msg (multiple-value-bind
+			      (second minute hour date month year day-of-week dst-p tz)
+			    (get-decoded-time)
+			  (declare (ignorable dst-p))
+			  (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				  hour
+				  minute
+				  second
+				  (nth day-of-week *day-names*)
+				  year
+				  month
+				  date
+				  (- tz))))
+	  (return 0)))
+
        
 ))))
 
