@@ -116,6 +116,15 @@
 	      (comments "EOF")
 	      (setf stream->bytes_left 0))
 	    (return (== count result))))
+
+	(defun write_callback (stream buf count)
+	  (declare (type pb_ostream_t* stream)
+		   (type "const pb_byte_t*" buf)
+		   (type size_t count)
+		   (values bool))
+	  (let ((fd (reinterpret_cast<intptr_t> stream->state))))
+	  (return (== count
+		      (send fd buf count 0))))
 	(defun pb_istream_from_socket (fd)
 	  (declare (type int fd)
 		   (values pb_istream_t))
@@ -125,6 +134,18 @@
 								      (static_cast<intptr_t>
 								       fd))
 							      :bytes_left SIZE_MAX))))
+	    (return stream)))
+
+	(defun pb_ostream_from_socket (fd)
+	  (declare (type int fd)
+		   (values pb_ostream_t))
+	  (let (
+		(stream (pb_ostream_t (designated-initializer :callback write_callback
+							      :state (reinterpret_cast<void*>
+								      (static_cast<intptr_t>
+								       fd))
+							      :max_size SIZE_MAX
+							      :bytes_written 0))))
 	    (return stream)))
 	
 	(defun handle_connection (connfd)
