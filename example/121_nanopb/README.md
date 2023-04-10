@@ -1,0 +1,2 @@
+- try to understand how to use nanopb
+- https://github.com/nanopb/nanopb/tree/master/examples/network_server
