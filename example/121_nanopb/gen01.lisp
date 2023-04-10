@@ -78,6 +78,9 @@
 		 ; vector
 		 ; algorithm
 		  ;cmath
+		  sys/socket.h
+		  sys/types.h
+		  netinet/in.h
 		  )
 
        (do0
@@ -102,6 +105,22 @@
 				  month
 				  date
 				  (- tz))))
+
+	  (do0
+	   (let ((listenfd (socket AF_INET SOCK_STREAM 0))
+		 (reuse (int 1)))
+	     (setsockopt listenfd SOL_SOCKET
+			 SO_REUSEADDR
+			 &reuse
+			 (sizeof reuse))
+	     (let ((servaddr (sockaddr_in)))
+	       (memset &servaddr 0 (sizeof servaddr))
+	       ,@(loop for (e f) in `((sin_family AF_INET)
+				      (sin_addr.s_addr (htonl INADDR_LOOPBACK))
+				      (sin_port (htons 1234)))
+		       collect
+		       `(setf (dot servaddr ,e )
+			      ,f)))))
 	  (return 0)))
 
        
