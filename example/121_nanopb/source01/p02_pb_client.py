@@ -6,9 +6,9 @@ import struct
 from data_pb2 import DataRequest, DataResponse
 start_time=time.time()
 debug=True
-_code_git_version="93479861c2b11e84b9c0d41b344fe0f71fc806ce"
+_code_git_version="5c9cc377c4896687b656d4f740ab38c67c49484d"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/121_nanopb/source/"
-_code_generation_time="23:43:49 of Monday, 2023-04-10 (GMT+1)"
+_code_generation_time="23:59:45 of Monday, 2023-04-10 (GMT+1)"
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost",1234,))
 request=DataRequest(count=123, start_index=12345)

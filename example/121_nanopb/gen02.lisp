@@ -115,11 +115,13 @@
 				     :start_index 12345)
 		request_string (request.SerializeToString))
 	  ,(lprint :vars `(request_string))
-	  (s.sendall request_string
+	  (s.sendall #-nil request_string
+		     #+nil (bytes (dot (bytearray request_string)
+				  (append 0)))
 		     #+nil (+ (struct.pack
-			 (string ">I")
-			 (len request_string))
-			request_string))
+			       (string ">I")
+			       (len request_string))
+			      request_string))
 	  (time.sleep .2)
 	  (setf data (s.recv 1024))
 	  ,(lprint :vars `(data))
@@ -128,7 +130,8 @@
 					   0))
 	       ,(lprint :vars `(response_length)))
 	  (setf response (DataResponse))
-	  (response.ParseFromString data)
+	  #-nil (response.ParseFromString data)
+	  #+nil (response.ParseFromString (aref data (slice 4 "")))
 	  ,(lprint :vars `(response))
 	  (s.close)
 	  
