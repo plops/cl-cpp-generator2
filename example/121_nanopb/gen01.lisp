@@ -152,9 +152,13 @@
 	  (declare (type int connfd))
 	  (let ((input (pb_istream_from_socket connfd))
 		(request (DataRequest)))
-	    (unless (pb_decode_delimited &input
-					 DataRequest_fields
-					 &request)
+	    (unless #+nil
+	      (pb_decode_delimited &input
+				   DataRequest_fields
+				   &request)
+	      (pb_decode &input
+				   DataRequest_fields
+				   &request)
 	      ,(lprint :msg "error decode"
 		       :vars `((PB_GET_ERROR &input))))
 	    ,(lprint :msg "request"
@@ -172,8 +176,9 @@
 		      (destructuring-bind (&key name value) e
 			`(setf (dot response ,name)
 			      ,value)))
-	      (unless (pb_encode_delimited &output DataResponse_fields &response)
-		,(lprint :msg "error encoding"))
+	      (unless #+nil (pb_encode_delimited &output DataResponse_fields &response)
+		      (pb_encode &output DataResponse_fields &response)
+		      ,(lprint :msg "error encoding"))
 	      )))
 	(defun main (argc argv)
 	  (declare (values int)

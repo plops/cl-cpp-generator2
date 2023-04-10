@@ -62,7 +62,7 @@ pb_ostream_t pb_ostream_from_socket(int fd) {
 void handle_connection(int connfd) {
   auto input = pb_istream_from_socket(connfd);
   auto request = DataRequest();
-  if (!(pb_decode_delimited(&input, DataRequest_fields, &request))) {
+  if (!(pb_decode(&input, DataRequest_fields, &request))) {
     fmt::print("error decode  PB_GET_ERROR(&input)='{}'\n",
                PB_GET_ERROR(&input));
   }
@@ -82,13 +82,13 @@ void handle_connection(int connfd) {
 
   response.co2_concentration = (456.f);
 
-  if (!(pb_encode_delimited(&output, DataResponse_fields, &response))) {
+  if (!(pb_encode(&output, DataResponse_fields, &response))) {
     fmt::print("error encoding\n");
   }
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 23:17:23 of Monday, 2023-04-10 (GMT+1)\n");
+  fmt::print("generation date 23:38:53 of Monday, 2023-04-10 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
