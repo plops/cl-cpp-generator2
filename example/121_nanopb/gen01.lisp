@@ -157,7 +157,24 @@
 					 &request)
 	      ,(lprint :msg "error decode"
 		       :vars `((PB_GET_ERROR &input))))
-	    (let ((response (DataResponse))))))
+	    ,(lprint :msg "request"
+		     :vars `(request.count
+			     request.start_index))
+	    (let ((response (DataResponse))
+		  (output (pb_ostream_from_socket connfd)))
+	      ,@(loop for e in `((:name index :value 0)
+				 (:name datetime :value 123)
+				 (:name pressure :value 1234.5)
+				 (:name humidity :value 47.3)
+				 (:name temperature :value 23.2)
+				 (:name co2_concentration :value 456.0))
+		      collect
+		      (destructuring-bind (&key name value) e
+			`(setf (dot response ,name)
+			      ,value)))
+	      (unless (pb_encode_delimited &output DataResponse_fields &response)
+		,(lprint :msg "error encoding"))
+	      )))
 	(defun main (argc argv)
 	  (declare (values int)
 		   (type int argc)

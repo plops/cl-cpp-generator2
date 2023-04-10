@@ -56,11 +56,29 @@ void handle_connection(int connfd) {
     fmt::print("error decode  PB_GET_ERROR(&input)='{}'\n",
                PB_GET_ERROR(&input));
   }
+  fmt::print("request  request.count='{}'  request.start_index='{}'\n",
+             request.count, request.start_index);
   auto response = DataResponse();
+  auto output = pb_ostream_from_socket(connfd);
+  response.index = 0;
+
+  response.datetime = 123;
+
+  response.pressure = (1234.50f);
+
+  response.humidity = (47.30f);
+
+  response.temperature = (23.20f);
+
+  response.co2_concentration = (456.f);
+
+  if (!(pb_encode_delimited(&output, DataResponse_fields, &response))) {
+    fmt::print("error encoding\n");
+  }
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 21:42:21 of Monday, 2023-04-10 (GMT+1)\n");
+  fmt::print("generation date 21:49:24 of Monday, 2023-04-10 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
