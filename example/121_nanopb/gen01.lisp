@@ -120,7 +120,21 @@
 				      (sin_port (htons 1234)))
 		       collect
 		       `(setf (dot servaddr ,e )
-			      ,f)))))
+			      ,f)))
+	     (unless (== 0 (bind listenfd
+			     ("reinterpret_cast<sockaddr*>"
+			      &servaddr)
+			     (sizeof servaddr)))
+	       ,(lprint :msg "error bind"))
+	     (unless (== 0 (listen listenfd 5))
+	       ,(lprint :msg "error listen"))
+	     (while true
+		    (let ((connfd (accept listenfd nullptr nullptr)))
+		      (when (< connfd 0)
+			,(lprint :msg "error accept"))
+		      (handle_connection connfd)
+		      (close connfd)
+		     ))))
 	  (return 0)))
 
        
