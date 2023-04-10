@@ -115,7 +115,8 @@
 				     :start_index 12345)
 		request_string (request.SerializeToString))
 	  ,(lprint :vars `(request_string))
-	  (s.sendall (+ (struct.pack
+	  (s.sendall request_string
+		     #+nil (+ (struct.pack
 			 (string ">I")
 			 (len request_string))
 			request_string))
