@@ -18,7 +18,14 @@ bool read_callback(pb_istream_t *stream, uint8_t *buf, size_t count) {
   if (0 == count) {
     return true;
   }
+  // operation should block until full request is satisfied. may still return
+  // less than requested (upon signal, error or disconnect)
+
   auto result = recv(fd, buf, count, MSG_WAITALL);
+  fmt::print("read_callback  count='{}'  result='{}'\n", count, result);
+  for (auto i = 0; i < count; i += 1) {
+    fmt::print("r  i='{}'  buf[i]='{}'\n", i, buf[i]);
+  }
   if (0 == result) {
     // EOF
     stream->bytes_left = 0;
@@ -29,6 +36,9 @@ bool read_callback(pb_istream_t *stream, uint8_t *buf, size_t count) {
 bool write_callback(pb_ostream_t *stream, const pb_byte_t *buf, size_t count) {
   auto fd = reinterpret_cast<intptr_t>(stream->state);
 
+  for (auto i = 0; i < count; i += 1) {
+    fmt::print("w  i='{}'  buf[i]='{}'\n", i, buf[i]);
+  }
   return count == send(fd, buf, count, 0);
 }
 
@@ -78,7 +88,7 @@ void handle_connection(int connfd) {
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 21:49:24 of Monday, 2023-04-10 (GMT+1)\n");
+  fmt::print("generation date 23:17:23 of Monday, 2023-04-10 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));

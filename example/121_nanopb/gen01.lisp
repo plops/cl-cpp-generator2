@@ -89,18 +89,11 @@
 		  pb.h
 		  pb_encode.h
 		  pb_decode.h)
-		  (include data.pb.h
-			   
-			   )
-
-		  
-		  ))
+		  (include data.pb.h)))
 
        (do0
 	"#define FMT_HEADER_ONLY"
 	(include "core.h"))
-
-      
 
        (do0
 	(defun read_callback (stream buf count)
@@ -111,7 +104,12 @@
 	  (let ((fd (reinterpret_cast<intptr_t> stream->state))))
 	  (when (== 0 count)
 	    (return true))
+	  
+	  (comments "operation should block until full request is satisfied. may still return less than requested (upon signal, error or disconnect)")
 	  (let ((result (recv fd buf count MSG_WAITALL)))
+	    ,(lprint :msg "read_callback" :vars `(count result))
+	    (dotimes (i count)
+	      ,(lprint :msg "r" :vars `(i (aref buf i))))
 	    (when (== 0 result)
 	      (comments "EOF")
 	      (setf stream->bytes_left 0))
@@ -123,6 +121,8 @@
 		   (type size_t count)
 		   (values bool))
 	  (let ((fd (reinterpret_cast<intptr_t> stream->state))))
+	  (dotimes (i count)
+	    ,(lprint :msg "w" :vars `(i (aref buf i))))
 	  (return (== count
 		      (send fd buf count 0))))
 	(defun pb_istream_from_socket (fd)
