@@ -21,3 +21,8 @@ add_executable(server
  ${PROTO_SRCS}
  ${PROTO_HDRS}
  )
+add_executable(client
+ client.cpp
+ ${PROTO_SRCS}
+ ${PROTO_HDRS}
+ )

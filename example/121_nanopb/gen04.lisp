@@ -36,40 +36,13 @@
 	     )
 					;(:name gas_resistance :hue 100)
 	    )))
-    (let ((name `TcpServer))
-      (write-class
-       :dir (asdf:system-relative-pathname
-	     'cl-cpp-generator2
-	     *source-dir*)
-       :name name
-       :headers `()
-       :header-preamble `(do0
-			  )
-       :implementation-preamble
-       `(do0
-	 #+nil (space "extern \"C\" "
-		(progn
-		  ))
-	 (do0
-	  "#define FMT_HEADER_ONLY"
-	  (include "core.h")))
-       :code `(do0
-	       (defclass ,name ()	 
-		 "public:"
-		 (defmethod ,name ()
-		   (declare
-		    (construct
-		     )
-		    (explicit)	    
-		    (values :constructor))
-
-		   )))))
+    
     
     
     (write-source
      (asdf:system-relative-pathname
       'cl-cpp-generator2
-      (merge-pathnames #P"main.cpp"
+      (merge-pathnames #P"client.cpp"
 		       *source-dir*))
      `(do0
        
@@ -182,6 +155,24 @@
 		    (pb_encode &output DataResponse_fields &response)
 		  ,(lprint :msg "error encoding response")))
 	      )))
+
+	(defun talk ()
+	  (let ((s (socket AF_INET
+			   SOCK_STREAM
+			   0))
+		(server_addr (sockaddr_in (designate-initializer
+					   :sin_family AF_INET
+					   :sin_port (htons 1234)
+					   ))))
+	    (inet_pton AF_INET
+		       (string "127.0.0.1")
+		       &server_addr.sin_addr)
+	    (connect s (reinterpret_cast<sockaddr*>
+			&server_addr)
+		     (sizeof server_addr))
+	    (let ((request (std--make_unique<DataRequest>)))
+	      (request))))
+	
 	(defun main (argc argv)
 	  (declare (values int)
 		   (type int argc)
