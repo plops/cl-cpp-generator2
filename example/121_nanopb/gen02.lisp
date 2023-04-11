@@ -107,40 +107,38 @@
 			     date
 			     (- tz)))))
 	 (do0
-	  (setf s (socket.socket socket.AF_INET
-				 socket.SOCK_STREAM))
-	  (s.connect (tuple (string "localhost")
-			    1234))
-	  (setf request (DataRequest :count 123
-				     :start_index 12345)
-		request_string (request.SerializeToString))
-	  ,(lprint :vars `(request_string))
-	  (setf opacket (Packet :length (len request_string)
-				:payload request_string))
-	  (setf opacket_string (opacket.SerializeToString))
-	  ,(lprint :vars `(opacket_string))
-	  (s.sendall opacket_string
-		     #+nil request_string
-		     #+nil (bytes (dot (bytearray request_string)
-				       (append 0)))
-		     #+nil (+ (struct.pack
-			       (string ">I")
-			       (len request_string))
-			      request_string))
-	  (time.sleep .2)
-	  (setf data (s.recv 9600))
-	  ,(lprint :vars `(data))
-	  #+nil (do0 (setf response_length (aref (struct.unpack (string ">I")
-						      (aref data (slice "" 4)))
-					   0))
-	       ,(lprint :vars `(response_length)))
-	  (setf response_packet (Packet))
-	  (response_packet.ParseFromString data)
-	  (setf response (DataResponse))
-	  #-nil (response.ParseFromString response_packet.payload)
-	  #+nil (response.ParseFromString (aref data (slice 4 "")))
-	  ,(lprint :vars `(response))
-	  (s.close)
+	  (def talk ()
+	    (setf s (socket.socket socket.AF_INET
+				   socket.SOCK_STREAM))
+	    (s.connect (tuple (string "localhost")
+			      1234))
+	    (setf request (DataRequest :count 123
+				       :start_index 12345)
+		  request_string (request.SerializeToString))
+	    ,(lprint :vars `(request_string))
+	    (s.sendall 
+		      request_string
+		     )
+	    (comments "close the write channel of the socket, so that the server receives EOF and knows the request has finished")
+	    (s.shutdown socket.SHUT_WR)
+	    (comments "this sends a FIN. The server will respond with ACK once it received all remaining bytes of the request")
+	    (comments "https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket/23483487#23483487")
+	    (comments "what remains is to wait until recv returns 0 (the server finished its response and closed his socket)")
+	    (setf buf "b''")
+	    (while True
+		   (setf data (s.recv 1024))
+		   (unless data
+		     (comments "recv return 0 (EOF), so we break out of loop")
+		     break)
+		   (incf buf data))
+	    (do0 ,(lprint :vars `(buf))
+	       	 (setf response (DataResponse))
+		 (response.ParseFromString buf)
+		 ,(lprint :vars `(,@(loop for e in `(index datetime pressure humidity temperature co2_concentration)
+					  collect
+					  `(dot response ,e))				  )))
+	    (s.close))
+	  (talk)
 	  
 	  )
 	 ))))
