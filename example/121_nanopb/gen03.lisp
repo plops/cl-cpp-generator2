@@ -6,7 +6,7 @@
 
 (progn
   (defparameter *project* "121_nanopb")
-  (defparameter *idx* "02")
+  (defparameter *idx* "03")
   (defparameter *path* (format nil "/home/martin/stage/cl-cpp-generator2/example/~a" *project*))
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
@@ -24,7 +24,7 @@
 
   
   
-  (let* ((notebook-name "pb_client")
+  (let* ((notebook-name "pb_server")
 	 #+nil (cli-args `(
 		     (:short "-v" :long "--verbose" :help "enable verbose output" :action "store_true" :required nil))))
     (write-source
@@ -107,38 +107,32 @@
 			     date
 			     (- tz)))))
 	 (do0
-	  (def talk ()
-	    (setf s (socket.socket socket.AF_INET
-				   socket.SOCK_STREAM))
-	    (s.connect (tuple (string "localhost")
-			      1234))
-	    (setf request (DataRequest :count 123
-				       :start_index 12345)
-		  request_string (request.SerializeToString))
-	    ,(lprint :vars `(request_string))
-	    (s.sendall 
-		      request_string
-		     )
-	    (comments "close the write channel of the socket, so that the server receives EOF and knows the request has finished")
-	    (s.shutdown socket.SHUT_WR)
-	    (comments "this sends a FIN. The server will respond with ACK once it received all remaining bytes of the request")
-	    (comments "https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket/23483487#23483487")
-	    (comments "what remains is to wait until recv returns 0 (the server finished its response and closed his socket)")
-	    (setf buf "b''")
-	    (while True
-		   (setf data (s.recv 1024))
-		   (unless data
-		     (comments "recv return 0 (EOF), so we break out of loop")
-		     break)
-		   (incf buf data))
-	    (do0 ,(lprint :vars `(buf))
-	       	 (setf response (DataResponse))
-		 (response.ParseFromString buf)
-		 ,(lprint :vars `(,@(loop for e in `(index datetime pressure humidity temperature co2_concentration)
-					  collect
-					  `(dot response ,e))				  )))
-	    (s.close))
-	  (talk)
+	  (def listen ()
+	    (with (as (socket.socket socket.AF_INET
+				     socket.SOCK_STREAM)
+		      s)
+		  (s.bind (tuple (string "localhost")
+				 1234))
+		  (s.listen)
+		  ,(lprint :msg "listening on localhost:1234")
+		  (while True
+			 (setf (ntuple conn addr) (s.accept))
+			 (with conn
+			       ,(lprint :msg "connection" :vars `(addr))
+			       (setf data (conn.recv 1024))
+			       (setf buf data)
+			       (while data
+				      (setf data (conn.recv 1024))
+				      (incf buf data))
+			       (setf request (dot (DataRequest)
+						  (ParseFromString buf)))
+			       ,(lprint :vars `(request))
+			       (setf reply (dot (DataResponse :datetime 123) 
+						(SerializeToString)))
+			       (conn.sendall reply)
+			       ,(lprint :msg "connection closed"))))
+	    )
+	  (listen)
 	  
 	  )
 	 ))))

@@ -2,6 +2,7 @@
 |-------|--------------------|
 | gen01 | C++ server code    |
 | gen02 | Python client code |
+| gen03 | Python server code |
 |       |                    |
 
 - try to understand how to use nanopb
