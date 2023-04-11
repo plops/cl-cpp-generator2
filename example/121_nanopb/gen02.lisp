@@ -115,13 +115,14 @@
 				     :start_index 12345)
 		request_string (request.SerializeToString))
 	  ,(lprint :vars `(request_string))
-	  (setf opacket (Packet :length (length request_string)
+	  (setf opacket (Packet :length (len request_string)
 				:payload request_string))
+	  (setf opacket_string (opacket.SerializeToString))
 	  
-	  (s.sendall opacket
+	  (s.sendall opacket_string
 		     #+nil request_string
 		     #+nil (bytes (dot (bytearray request_string)
-				  (append 0)))
+				       (append 0)))
 		     #+nil (+ (struct.pack
 			       (string ">I")
 			       (len request_string))
