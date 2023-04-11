@@ -25,8 +25,9 @@ bool read_callback(pb_istream_t *stream, uint8_t *buf, size_t count) {
   auto result = recv(fd, buf, count, MSG_WAITALL);
   fmt::print("read_callback  count='{}'  result='{}'\n", count, result);
   for (auto i = 0; i < count; i += 1) {
-    fmt::print("r  i='{}'  buf[i]='{}'\n", i, buf[i]);
+    fmt::print("{:02x} ", buf[i]);
   }
+  fmt::print("\n");
   if (0 == result) {
     // EOF
     stream->bytes_left = 0;
@@ -109,7 +110,7 @@ void handle_connection(int connfd) {
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 07:04:05 of Tuesday, 2023-04-11 (GMT+1)\n");
+  fmt::print("generation date 07:59:45 of Tuesday, 2023-04-11 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));

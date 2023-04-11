@@ -118,7 +118,7 @@
 	  (setf opacket (Packet :length (len request_string)
 				:payload request_string))
 	  (setf opacket_string (opacket.SerializeToString))
-	  
+	  ,(lprint :vars `(opacket_string))
 	  (s.sendall opacket_string
 		     #+nil request_string
 		     #+nil (bytes (dot (bytearray request_string)
