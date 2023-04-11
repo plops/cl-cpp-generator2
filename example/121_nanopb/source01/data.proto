@@ -1,5 +1,11 @@
 syntax = "proto3";
 
+import "nanopb.proto";
+
+message Packet {
+  fixed32 length = 1;
+  bytes payload = 2 [(nanopb).max_size = 9600];
+}
 
 message DataRequest {
   uint64 count = 1;

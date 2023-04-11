@@ -75,6 +75,7 @@
        
        (include<> deque
 		;  random
+		  array
 		 ; vector
 		 ; algorithm
 		  ;cmath
@@ -151,28 +152,27 @@
 	(defun handle_connection (connfd)
 	  (declare (type int connfd))
 	  (let ((input (pb_istream_from_socket connfd))
+		(packet (Packet))
 		(request (DataRequest)))
-	    (unless #-nil
-	      #+nil
-	      (pb_decode_delimited &input
-				   DataRequest_fields
-				   &request)
-	      #-nil
-	      (pb_decode &input
-			 DataRequest_fields
-			 &request)
-	      #+nil
-	      (pb_decode_ex &input
-			    DataRequest_fields
-			    &request
-			    PB_DECODE_NULLTERMINATED)
-	      ,(lprint :msg "error decode"
-		       :vars `((PB_GET_ERROR &input))))
+	    (unless (pb_decode &input Packet_fields &packet)
+	      ,(lprint :msg "error decode packet"))
+	    ,(lprint :msg "packet" :vars `(;packet.payload
+					   packet.length))
+	    (let ((packet_input (pb_istream_from_buffer packet.payload.bytes
+							packet.length)))
+	      (unless
+		  (pb_decode &packet_input
+			     DataRequest_fields
+			     &request)
+	      
+		,(lprint :msg "error decode"
+			 :vars `((PB_GET_ERROR &input)))))
 	    ,(lprint :msg "request"
 		     :vars `(request.count
 			     request.start_index))
 	    (let ((response (DataResponse))
-		  (output (pb_ostream_from_socket connfd)))
+		  (buffer ("std::array<uint8_t,9600>"))
+		  (output (pb_ostream_from_buffer (buffer.data) 9600)))
 	      ,@(loop for e in `((:name index :value 0)
 				 (:name datetime :value 123)
 				 (:name pressure :value 1234.5)
@@ -183,9 +183,25 @@
 		      (destructuring-bind (&key name value) e
 			`(setf (dot response ,name)
 			      ,value)))
-	      (unless #+nil (pb_encode_delimited &output DataResponse_fields &response)
-		      #-nil (pb_encode &output DataResponse_fields &response)
-		      ,(lprint :msg "error encoding"))
+	      (unless 
+		      (pb_encode &output DataResponse_fields &response)
+		      ,(lprint :msg "error encoding response"))
+	      (let ((opacket (Packet)))
+		(dotimes (i output.bytes_written)
+		  (setf (aref opacket.payload.bytes i)
+			(aref buffer i)))
+		,@(loop for e in `((:name length :value output.bytes_written)
+				   
+				   (:name payload.size :value output.bytes_written))
+			collect
+			(destructuring-bind (&key name value) e
+			  `(setf (dot opacket ,name)
+				 ,value)))
+		(let (
+		      (packet_output (pb_ostream_from_socket connfd)))
+		  (unless 
+		      (pb_encode &packet_output Packet_fields &opacket)
+		    ,(lprint :msg "error encoding response packet"))))
 	      )))
 	(defun main (argc argv)
 	  (declare (values int)

@@ -1,3 +1,4 @@
+#include <array>
 #include <deque>
 extern "C" {
 #include "data.pb.h"
@@ -61,15 +62,23 @@ pb_ostream_t pb_ostream_from_socket(int fd) {
 
 void handle_connection(int connfd) {
   auto input = pb_istream_from_socket(connfd);
+  auto packet = Packet();
   auto request = DataRequest();
-  if (!(pb_decode(&input, DataRequest_fields, &request))) {
+  if (!(pb_decode(&input, Packet_fields, &packet))) {
+    fmt::print("error decode packet\n");
+  }
+  fmt::print("packet  packet.length='{}'\n", packet.length);
+  auto packet_input =
+      pb_istream_from_buffer(packet.payload.bytes, packet.length);
+  if (!(pb_decode(&packet_input, DataRequest_fields, &request))) {
     fmt::print("error decode  PB_GET_ERROR(&input)='{}'\n",
                PB_GET_ERROR(&input));
   }
   fmt::print("request  request.count='{}'  request.start_index='{}'\n",
              request.count, request.start_index);
   auto response = DataResponse();
-  auto output = pb_ostream_from_socket(connfd);
+  auto buffer = std::array<uint8_t, 9600>();
+  auto output = pb_ostream_from_buffer(buffer.data(), 9600);
   response.index = 0;
 
   response.datetime = 123;
@@ -83,12 +92,24 @@ void handle_connection(int connfd) {
   response.co2_concentration = (456.f);
 
   if (!(pb_encode(&output, DataResponse_fields, &response))) {
-    fmt::print("error encoding\n");
+    fmt::print("error encoding response\n");
+  }
+  auto opacket = Packet();
+  for (auto i = 0; i < output.bytes_written; i += 1) {
+    opacket.payload.bytes[i] = buffer[i];
+  }
+  opacket.length = output.bytes_written;
+
+  opacket.payload.size = output.bytes_written;
+
+  auto packet_output = pb_ostream_from_socket(connfd);
+  if (!(pb_encode(&packet_output, Packet_fields, &opacket))) {
+    fmt::print("error encoding response packet\n");
   }
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 23:59:49 of Monday, 2023-04-10 (GMT+1)\n");
+  fmt::print("generation date 07:04:05 of Tuesday, 2023-04-11 (GMT+1)\n");
   auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
   auto reuse = int(1);
   setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
