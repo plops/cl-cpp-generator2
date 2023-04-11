@@ -80,7 +80,7 @@
 					
 			)))
 
-	 (imports-from  (data_pb2 DataRequest DataResponse))
+	 (imports-from  (data_pb2 Packet DataRequest DataResponse))
 	 
 	 (setf start_time (time.time)
 	       debug True)
@@ -115,7 +115,11 @@
 				     :start_index 12345)
 		request_string (request.SerializeToString))
 	  ,(lprint :vars `(request_string))
-	  (s.sendall #-nil request_string
+	  (setf opacket (Packet :length (length request_string)
+				:payload request_string))
+	  
+	  (s.sendall opacket
+		     #+nil request_string
 		     #+nil (bytes (dot (bytearray request_string)
 				  (append 0)))
 		     #+nil (+ (struct.pack
@@ -123,14 +127,16 @@
 			       (len request_string))
 			      request_string))
 	  (time.sleep .2)
-	  (setf data (s.recv 1024))
+	  (setf data (s.recv 9600))
 	  ,(lprint :vars `(data))
 	  #+nil (do0 (setf response_length (aref (struct.unpack (string ">I")
 						      (aref data (slice "" 4)))
 					   0))
 	       ,(lprint :vars `(response_length)))
+	  (setf response_packet (Packet))
+	  (response_packet.ParseFromString data)
 	  (setf response (DataResponse))
-	  #-nil (response.ParseFromString data)
+	  #-nil (response.ParseFromString response_packet.payload)
 	  #+nil (response.ParseFromString (aref data (slice 4 "")))
 	  ,(lprint :vars `(response))
 	  (s.close)

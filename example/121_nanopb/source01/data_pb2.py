@@ -11,17 +11,22 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+import nanopb_pb2 as nanopb__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\"1\n\x0b\x44\x61taRequest\x12\r\n\x05\x63ount\x18\x01 \x01(\x04\x12\x13\n\x0bstart_index\x18\x02 \x01(\x03\"\x83\x01\n\x0c\x44\x61taResponse\x12\r\n\x05index\x18\x01 \x01(\x04\x12\x10\n\x08\x64\x61tetime\x18\x02 \x01(\x04\x12\x10\n\x08pressure\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\x12\x13\n\x0btemperature\x18\x05 \x01(\x02\x12\x19\n\x11\x63o2_concentration\x18\x06 \x01(\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\x1a\x0cnanopb.proto\"1\n\x06Packet\x12\x0e\n\x06length\x18\x01 \x01(\x07\x12\x17\n\x07payload\x18\x02 \x01(\x0c\x42\x06\x92?\x03\x08\x80K\"1\n\x0b\x44\x61taRequest\x12\r\n\x05\x63ount\x18\x01 \x01(\x04\x12\x13\n\x0bstart_index\x18\x02 \x01(\x03\"\x83\x01\n\x0c\x44\x61taResponse\x12\r\n\x05index\x18\x01 \x01(\x04\x12\x10\n\x08\x64\x61tetime\x18\x02 \x01(\x04\x12\x10\n\x08pressure\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\x12\x13\n\x0btemperature\x18\x05 \x01(\x02\x12\x19\n\x11\x63o2_concentration\x18\x06 \x01(\x02\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'data_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _DATAREQUEST._serialized_start=14
-  _DATAREQUEST._serialized_end=63
-  _DATARESPONSE._serialized_start=66
-  _DATARESPONSE._serialized_end=197
+  _PACKET.fields_by_name['payload']._options = None
+  _PACKET.fields_by_name['payload']._serialized_options = b'\222?\003\010\200K'
+  _PACKET._serialized_start=28
+  _PACKET._serialized_end=77
+  _DATAREQUEST._serialized_start=79
+  _DATAREQUEST._serialized_end=128
+  _DATARESPONSE._serialized_start=131
+  _DATARESPONSE._serialized_end=262
 # @@protoc_insertion_point(module_scope)
