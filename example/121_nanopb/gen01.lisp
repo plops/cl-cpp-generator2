@@ -157,7 +157,7 @@
 	  (declare (type int connfd))
 	  (let ((input (pb_istream_from_socket connfd))
 		(request (DataRequest)))
-	    (unless (pb_decode &input DataRequest_fields &request)
+	    (unless (pb_decode &input DataRequest_fields &request) 
 	      ,(lprint :msg "error decode request"))
 	    
 	    
