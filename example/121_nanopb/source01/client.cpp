@@ -2,6 +2,7 @@
 #include <deque>
 extern "C" {
 #include "data.pb.h"
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pb.h>
 #include <pb_decode.h>
@@ -61,66 +62,34 @@ pb_ostream_t pb_ostream_from_socket(int fd) {
   return stream;
 }
 
-void handle_connection(int connfd) {
-  auto input = pb_istream_from_socket(connfd);
-  auto request = DataRequest();
-  if (!(pb_decode(&input, DataRequest_fields, &request))) {
-    fmt::print("error decode request\n");
-  }
-  fmt::print("request  request.count='{}'  request.start_index='{}'\n",
-             request.count, request.start_index);
-  auto response = DataResponse();
-  response.index = 0;
-  response.datetime = 123;
-  response.pressure = (1234.50f);
-  response.humidity = (47.30f);
-  response.temperature = (23.20f);
-  response.co2_concentration = (456.f);
-
-  auto output = pb_ostream_from_socket(connfd);
-  if (!(pb_encode(&output, DataResponse_fields, &response))) {
-    fmt::print("error encoding response\n");
-  }
-}
-
 void talk() {
   auto s = socket(AF_INET, SOCK_STREAM, 0);
-  auto server_addr = sockaddr_in(
-      designate - initializer(sin_family, AF_INET, sin_port, htons(1234)));
+  auto server_addr =
+      sockaddr_in({.sin_family = AF_INET, .sin_port = htons(1234)});
   inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
-  connect(s, reinterpret_cast<sockaddr *>(&server_addr), sizeof(server_addr));
-  auto request = std::make_unique<DataRequest>();
-  request();
+  if (connect(s, reinterpret_cast<sockaddr *>(&server_addr),
+              sizeof(server_addr))) {
+    fmt::print("error connecting\n");
+  }
+  auto omsg = DataResponse({.temperature = (12.340f)});
+  auto output = pb_ostream_from_socket(s);
+  if (!(pb_encode(&output, DataResponse_fields, &omsg))) {
+    fmt::print("error encoding\n");
+  }
+  // close the output stream of the socket, so that the server receives a FIN
+  // packet
+  shutdown(s, SHUT_WR);
+  auto imsg = DataRequest({});
+  auto input = pb_istream_from_socket(s);
+  if (!(pb_decode(&input, DataRequest_fields, &imsg))) {
+    fmt::print("error decoding\n");
+  }
+  fmt::print("  imsg.count='{}'  imsg.start_index='{}'\n", imsg.count,
+             imsg.start_index);
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 00:58:19 of Wednesday, 2023-04-12 (GMT+1)\n");
-  auto listenfd = socket(AF_INET, SOCK_STREAM, 0);
-  auto reuse = int(1);
-  setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-  auto servaddr = sockaddr_in();
-  memset(&servaddr, 0, sizeof(servaddr));
-  servaddr.sin_family = AF_INET;
-
-  servaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-
-  servaddr.sin_port = htons(1234);
-
-  if (!(0 == bind(listenfd, reinterpret_cast<sockaddr *>(&servaddr),
-                  sizeof(servaddr)))) {
-    fmt::print("error bind\n");
-  }
-  if (!(0 == listen(listenfd, 5))) {
-    fmt::print("error listen\n");
-  }
-  while (true) {
-    auto connfd = accept(listenfd, nullptr, nullptr);
-    if (connfd < 0) {
-      fmt::print("error accept\n");
-    }
-    handle_connection(connfd);
-    close(connfd);
-  }
-
+  fmt::print("generation date 08:37:59 of Wednesday, 2023-04-12 (GMT+1)\n");
+  talk();
   return 0;
 }

@@ -59,6 +59,7 @@
 		   sys/socket.h
 		  sys/types.h
 		  netinet/in.h
+		  arpa/inet.h
 		  unistd.h
 		  pb.h
 		  pb_encode.h
@@ -126,52 +127,43 @@
 							      :bytes_written 0))))
 	    (return stream)))
 	
-	(defun handle_connection (connfd)
-	  (declare (type int connfd))
-	  (let ((input (pb_istream_from_socket connfd))
-		(request (DataRequest)))
-	    (unless (pb_decode &input DataRequest_fields &request) 
-	      ,(lprint :msg "error decode request"))
-	    
-	    
-	    ,(lprint :msg "request"
-		     :vars `(request.count
-			     request.start_index))
-	    (let ((response (DataResponse))
-		  )
-	      (setf ,@(loop for e in `((:name index :value 0)
-				  (:name datetime :value 123)
-				  (:name pressure :value 1234.5)
-				  (:name humidity :value 47.3)
-				  (:name temperature :value 23.2)
-				  (:name co2_concentration :value 456.0))
-			    appending
-			    (destructuring-bind (&key name value) e
-			      `((dot response ,name)
-				,value))))
-	      
-	      (let ((output (pb_ostream_from_socket connfd)))
-		(unless 
-		    (pb_encode &output DataResponse_fields &response)
-		  ,(lprint :msg "error encoding response")))
-	      )))
+	
 
 	(defun talk ()
 	  (let ((s (socket AF_INET
 			   SOCK_STREAM
 			   0))
-		(server_addr (sockaddr_in (designate-initializer
+		(server_addr (sockaddr_in (designated-initializer
 					   :sin_family AF_INET
 					   :sin_port (htons 1234)
 					   ))))
 	    (inet_pton AF_INET
 		       (string "127.0.0.1")
 		       &server_addr.sin_addr)
-	    (connect s (reinterpret_cast<sockaddr*>
-			&server_addr)
-		     (sizeof server_addr))
-	    (let ((request (std--make_unique<DataRequest>)))
-	      (request))))
+	    (when (connect s (reinterpret_cast<sockaddr*>
+			      &server_addr)
+			   (sizeof server_addr))
+	      ,(lprint :msg "error connecting"))
+	    
+	    
+	    (let ((omsg (DataResponse (designated-initializer
+				    :temperature 12.34) ))
+		  (output (pb_ostream_from_socket s)))
+	      (unless (pb_encode &output
+				 DataResponse_fields
+				 &omsg)
+		,(lprint :msg "error encoding"))
+	      
+	      )
+	    (do0
+	     (comments "close the output stream of the socket, so that the server receives a FIN packet")
+	     (shutdown s SHUT_WR))
+	    (let ((imsg (DataRequest "{}"))
+		  (input (pb_istream_from_socket s)))
+	      (unless (pb_decode &input DataRequest_fields &imsg)
+		,(lprint :msg "error decoding"))
+	      ,(lprint :vars `(imsg.count
+			       imsg.start_index)))))
 	
 	(defun main (argc argv)
 	  (declare (values int)
@@ -191,35 +183,7 @@
 				  date
 				  (- tz))))
 
-	  (do0
-	   (let ((listenfd (socket AF_INET SOCK_STREAM 0))
-		 (reuse (int 1)))
-	     (setsockopt listenfd SOL_SOCKET
-			 SO_REUSEADDR
-			 &reuse
-			 (sizeof reuse))
-	     (let ((servaddr (sockaddr_in)))
-	       (memset &servaddr 0 (sizeof servaddr))
-	       ,@(loop for (e f) in `((sin_family AF_INET)
-				      (sin_addr.s_addr (htonl INADDR_LOOPBACK))
-				      (sin_port (htons 1234)))
-		       collect
-		       `(setf (dot servaddr ,e )
-			      ,f)))
-	     (unless (== 0 (bind listenfd
-			     ("reinterpret_cast<sockaddr*>"
-			      &servaddr)
-			     (sizeof servaddr)))
-	       ,(lprint :msg "error bind"))
-	     (unless (== 0 (listen listenfd 5))
-	       ,(lprint :msg "error listen"))
-	     (while true
-		    (let ((connfd (accept listenfd nullptr nullptr)))
-		      (when (< connfd 0)
-			,(lprint :msg "error accept"))
-		      (handle_connection connfd)
-		      (close connfd)
-		      ))))
+	  (talk)
 	  (return 0)))
 
        

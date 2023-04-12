@@ -124,10 +124,11 @@
 			       (while data
 				      (setf data (conn.recv 1024))
 				      (incf buf data))
-			       (setf request (dot (DataRequest)
+			       (setf request (dot (DataResponse)
 						  (ParseFromString buf)))
-			       ,(lprint :vars `(request))
-			       (setf reply (dot (DataResponse :datetime 123) 
+			       ,(lprint :vars `(request.temperature
+						request.co2_concentration))
+			       (setf reply (dot (DataRequest :start_index 123) 
 						(SerializeToString)))
 			       (conn.sendall reply)
 			       ,(lprint :msg "connection closed"))))

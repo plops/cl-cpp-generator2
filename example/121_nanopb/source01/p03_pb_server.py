@@ -6,9 +6,9 @@ import struct
 from data_pb2 import Packet, DataRequest, DataResponse
 start_time=time.time()
 debug=True
-_code_git_version="9e26f3915272c1701f1e85eb8124807613c3b09d"
+_code_git_version="513bb457a30c3a9eab6520bd23d703822dc6a3bc"
 _code_repository="https://github.com/plops/cl-py-generator/tree/master/example/121_nanopb/source/"
-_code_generation_time="00:41:05 of Wednesday, 2023-04-12 (GMT+1)"
+_code_generation_time="08:40:53 of Wednesday, 2023-04-12 (GMT+1)"
 def listen():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("localhost",1234,))
@@ -23,9 +23,9 @@ def listen():
                 while (data):
                     data=conn.recv(1024)
                     buf += data
-                request=DataRequest().ParseFromString(buf)
-                print("{} nil request={}".format(((time.time())-(start_time)), request))
-                reply=DataResponse(datetime=123).SerializeToString()
+                request=DataResponse().ParseFromString(buf)
+                print("{} nil request.temperature={} request.co2_concentration={}".format(((time.time())-(start_time)), request.temperature, request.co2_concentration))
+                reply=DataRequest(start_index=123).SerializeToString()
                 conn.sendall(reply)
                 print("{} connection closed ".format(((time.time())-(start_time))))
 listen()
