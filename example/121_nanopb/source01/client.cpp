@@ -71,14 +71,21 @@ void talk() {
               sizeof(server_addr))) {
     fmt::print("error connecting\n");
   }
-  auto omsg = DataResponse({.temperature = (12.340f)});
+  fmt::print("send measurement values in a DataResponse message\n");
+  auto omsg = DataResponse({.index = 7,
+                            .datetime = 1234,
+                            .pressure = (1023.30f),
+                            .humidity = (32.120f),
+                            .temperature = (5.60f),
+                            .co2_concentration = (531.f)});
   auto output = pb_ostream_from_socket(s);
   if (!(pb_encode(&output, DataResponse_fields, &omsg))) {
     fmt::print("error encoding\n");
   }
-  // close the output stream of the socket, so that the server receives a FIN
-  // packet
+  fmt::print("close the output stream of the socket, so that the server "
+             "receives a FIN packet\n");
   shutdown(s, SHUT_WR);
+  fmt::print("read DataRequest\n");
   auto imsg = DataRequest({});
   auto input = pb_istream_from_socket(s);
   if (!(pb_decode(&input, DataRequest_fields, &imsg))) {
@@ -89,7 +96,7 @@ void talk() {
 }
 
 int main(int argc, char **argv) {
-  fmt::print("generation date 08:37:59 of Wednesday, 2023-04-12 (GMT+1)\n");
+  fmt::print("generation date 20:01:33 of Wednesday, 2023-04-12 (GMT+1)\n");
   talk();
   return 0;
 }

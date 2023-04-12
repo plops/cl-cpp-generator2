@@ -144,10 +144,16 @@
 			      &server_addr)
 			   (sizeof server_addr))
 	      ,(lprint :msg "error connecting"))
-	    
+	    ,(lprint :msg "send measurement values in a DataResponse message")
 	    
 	    (let ((omsg (DataResponse (designated-initializer
-				    :temperature 12.34) ))
+				       :index 7
+				       :datetime 1234
+				       :pressure 1023.3
+				       
+				       :humidity 32.12
+				       :temperature 5.6
+				       :co2_concentration 531.0) ))
 		  (output (pb_ostream_from_socket s)))
 	      (unless (pb_encode &output
 				 DataResponse_fields
@@ -156,8 +162,9 @@
 	      
 	      )
 	    (do0
-	     (comments "close the output stream of the socket, so that the server receives a FIN packet")
+	     ,(lprint :msg "close the output stream of the socket, so that the server receives a FIN packet")
 	     (shutdown s SHUT_WR))
+	    ,(lprint :msg "read DataRequest")
 	    (let ((imsg (DataRequest "{}"))
 		  (input (pb_istream_from_socket s)))
 	      (unless (pb_decode &input DataRequest_fields &imsg)
