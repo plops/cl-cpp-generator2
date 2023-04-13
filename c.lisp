@@ -707,10 +707,10 @@ entry return-values contains a list of return values. currently supports type, v
 		  (paren*
 		   ;; paren arg
 		   ;; place a pair of parentheses only when needed
-		   #+nil
-		   (format nil "(~a)" (emit (cadr code)))
 		   #-nil
-		   (progn
+		   (format nil "(~a)" (emit (cadr code)))
+		   #+nil
+		   (progn ;; FIXME % together with * is not handled properly
 		     (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
 		     (let ((arg (cadr code)))
