@@ -13,3 +13,5 @@
 
 - std::ratio is only for compile time. there doesn't seem to be
   standard rational type for c++ (except by pulling in boost)
+
+- just remember to multiply first and then divide
