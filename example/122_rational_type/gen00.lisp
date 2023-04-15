@@ -32,6 +32,11 @@
       "#define FMT_HEADER_ONLY"
       (include "core.h"))
 
+     (defun convert_hp (old_hp old_maxhp new_maxhp)
+       (declare (type float new_maxhp old_hp old_maxhp)
+		(values float))
+       (return (* new_maxhp (/ old_hp old_maxhp))))
+
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
@@ -49,6 +54,24 @@
 			       month
 			       date
 			       (- tz))))
+       (let ((old_hp 1s0)
+	     (old_maxhp 55s0)
+	     (new_maxhp 55s0)
+	     (r1over55 "std::ratio<1,55>")
+	     (r55over1  "std::ratio<55,1>"))
+	,(lprint :msg "func" :vars `((convert_hp old_hp old_maxhp new_maxhp)))
+	 ,@(loop for e in `((:name buggy :code (* new_maxhp (/ old_hp
+							       old_maxhp)))
+			    (:name mul_first :code (/ (* new_maxhp old_hp)
+						      old_maxhp))
+			    ;(:name cpp_ratio :code "std::ratio_add<r55over1,r1over55>")
+			    (:name lisp_ratio :code ,(* 55 (/ 1 55)))
+			    (:name lisp_float :code ,(* 55s0 (/ 1s0 55s0))))
+		 collect
+		 (destructuring-bind (&key name code) e
+		   (lprint :msg (format nil "~a" name)
+			   :vars `(,code)))))
+
 
       
        (return 0)))))
