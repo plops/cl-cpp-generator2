@@ -1,7 +1,5 @@
 // no preamble
-#define FMT_HEADER_ONLY
 #include "WavetableOscillator.h"
-#include "core.h"
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -12,7 +10,7 @@ WavetableOscillator::WavetableOscillator(double sample_rate,
     : sample_rate_(sample_rate), wavetable_(wavetable),
       wavetable_size_(wavetable.size()), current_index_((0.)), step_(0) {
   if ((wavetable.empty())) {
-    throw std::invalid_argument(fmt::format("Wavetable cannot be empty.\n"));
+    throw std::invalid_argument("Wavetable cannot be empty.");
   }
 }
 void WavetableOscillator::set_frequency(double frequency) {

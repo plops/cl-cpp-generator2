@@ -40,6 +40,7 @@
 	 #+nil (space "extern \"C\" "
 		(progn
 		  ))
+	 #+log
 	 (do0
 	  "#define FMT_HEADER_ONLY"
 	  (include "core.h"))
@@ -89,7 +90,7 @@
 		    (explicit)	    
 		    (values :constructor))
 		   (when (wavetable.empty)
-		     (throw (std--invalid_argument ,(sprint :msg "Wavetable cannot be empty."))))
+		     (throw (std--invalid_argument (string "Wavetable cannot be empty."))))
 		   )
 
 		 (defmethod set_frequency (frequency)
@@ -135,45 +136,51 @@
 		)
      (include "WavetableOscillator.h")
 
-     (do0
-      "#define FMT_HEADER_ONLY"
-      (include "core.h"))
+    #+log
+    (do0
+     "#define FMT_HEADER_ONLY"
+     (include "core.h"))
+    (include<> cmath
+	       iostream)
 
      
 
-     (defun main (argc argv)
-       (declare (values int)
-		(type int argc)
-		(type char** argv))
-       ,(lprint :msg (multiple-value-bind
-			   (second minute hour date month year day-of-week dst-p tz)
-			 (get-decoded-time)
-		       (declare (ignorable dst-p))
-		       (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-			       hour
-			       minute
-			       second
-			       (nth day-of-week *day-names*)
-			       year
-			       month
-			       date
-			       (- tz))))
+    (defun main (argc argv)
+      (declare (values int)
+	       (type int argc)
+	       (type char** argv))
+      #+log ,(lprint :msg (multiple-value-bind
+				(second minute hour date month year day-of-week dst-p tz)
+			      (get-decoded-time)
+			    (declare (ignorable dst-p))
+			    (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				    hour
+				    minute
+				    second
+				    (nth day-of-week *day-names*)
+				    year
+				    month
+				    date
+				    (- tz))))
        
-       (let ((sample_rate 44100d0)
-	     (wavetable_size 1024u)
-	     (wavetable ((lambda (size)
-			   (let ((wavetable (std--vector<double> size)))
-			     (dotimes (i size)
-			       (setf (aref wavetable i)
-				     (std--sin (/ (* 2 M_PI i)
-						  (static_cast<double> size)))))
-			     (return wavetable)))
-			 wavetable_size))
-	     (osc (WavetableOscillator sample_rate wavetable)))
-	 (osc.set_frequency 440d0)
-	 (dotimes (i 100)
-	   ,(lprint :vars `(i (osc.next_sample)))))
-       (return 0)))))
+      (let ((sample_rate 44100d0)
+	    (wavetable_size 1024u)
+	    (wavetable ((lambda (size)
+			  (let ((wavetable (std--vector<double> size)))
+			    (dotimes (i size)
+			      (setf (aref wavetable i)
+				    (std--sin (/ (* 2 M_PI i)
+						 (static_cast<double> size)))))
+			    (return wavetable)))
+			wavetable_size))
+	    (osc (WavetableOscillator sample_rate wavetable)))
+	(osc.set_frequency 440d0)
+	(dotimes (i 100)
+	  (<< std--cout
+	      (osc.next_sample)
+	      std--endl)
+	  #+log ,(lprint :vars `(i (osc.next_sample)))))
+      (return 0)))))
 
 
 
