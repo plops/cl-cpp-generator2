@@ -91,6 +91,28 @@
 		   (when (wavetable.empty)
 		     (throw (std--invalid_argument ,(sprint :msg "Wavetable cannot be empty."))))
 		   )
+
+		 (defmethod set_frequency (frequency)
+		   (declare (type double frequency))
+		   (setf step_ (/ (* frequency wavetable_size_)
+				  sample_rate_)))
+
+		 (defmethod next_sample ()
+		   (declare (values double))
+		   (let ((index_1 (static_cast<std--size_t> current_index_))
+			 (index_2 (% (+ index_1
+					1)
+				     wavetable_size))
+			 (fraction (- current_index_
+				      index_1))
+			 (sample (+ (* (aref wavetable_ index_1)
+				       (- 1d0 fraction))
+				    (* (aref wavetable_ index_2)
+				       fraction))))
+		     (incf current_index_ step_)
+		     (when (< wavetable_size_ current_index_)
+		       (decf current_indxe_ wavetable_size_))
+		     (return sample)))
 		 "private:"
 		 ,@(remove-if #'null
 				  (loop for e in members

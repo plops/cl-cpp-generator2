@@ -7,6 +7,8 @@
 class WavetableOscillator  {
         public:
         explicit  WavetableOscillator (double sample_rate, std::vector<double> wavetable)       ;  
+        void set_frequency (double frequency)       ;  
+        double next_sample ()       ;  
         private:
         double sample_rate_;
         std::vector<double> wavetable_;
