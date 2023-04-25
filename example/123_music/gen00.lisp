@@ -102,7 +102,7 @@
 		   (let ((index_1 (static_cast<std--size_t> current_index_))
 			 (index_2 (% (+ index_1
 					1)
-				     wavetable_size))
+				     wavetable_size_))
 			 (fraction (- current_index_
 				      index_1))
 			 (sample (+ (* (aref wavetable_ index_1)
@@ -111,7 +111,7 @@
 				       fraction))))
 		     (incf current_index_ step_)
 		     (when (< wavetable_size_ current_index_)
-		       (decf current_indxe_ wavetable_size_))
+		       (decf current_index_ wavetable_size_))
 		     (return sample)))
 		 "private:"
 		 ,@(remove-if #'null
@@ -159,7 +159,20 @@
 			       date
 			       (- tz))))
        
-      
+       (let ((sample_rate 44100d0)
+	     (wavetable_size 1024u)
+	     (wavetable ((lambda (size)
+			   (let ((wavetable (std--vector<double> size)))
+			     (dotimes (i size)
+			       (setf (aref wavetable i)
+				     (std--sin (/ (* 2 M_PI i)
+						  (static_cast<double> size)))))
+			     (return wavetable)))
+			 wavetable_size))
+	     (osc (WavetableOscillator sample_rate wavetable)))
+	 (osc.set_frequency 440d0)
+	 (dotimes (i 100)
+	   ,(lprint :vars `(i (osc.next_sample)))))
        (return 0)))))
 
 

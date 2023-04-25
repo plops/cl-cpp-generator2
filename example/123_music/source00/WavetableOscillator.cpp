@@ -20,13 +20,13 @@ void WavetableOscillator::set_frequency(double frequency) {
 }
 double WavetableOscillator::next_sample() {
   auto index_1 = static_cast<std::size_t>(current_index_);
-  auto index_2 = ((index_1) + (1)) % wavetable_size;
+  auto index_2 = ((index_1) + (1)) % wavetable_size_;
   auto fraction = ((current_index_) - (index_1));
   auto sample = ((((wavetable_[index_1]) * ((((1.0)) - (fraction))))) +
                  (((wavetable_[index_2]) * (fraction))));
   (current_index_) += (step_);
   if (((wavetable_size_) < (current_index_))) {
-    (current_indxe_) -= (wavetable_size_);
+    (current_index_) -= (wavetable_size_);
   }
   return sample;
 }
