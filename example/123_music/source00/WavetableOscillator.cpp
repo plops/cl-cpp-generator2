@@ -9,5 +9,9 @@
 #include <vector>
 WavetableOscillator::WavetableOscillator(double sample_rate,
                                          std::vector<double> wavetable)
-    : sample_rate(sample_rate), wavetable(wavetable),
-      wavetable_size(wavetable.size()), current_index((0.f)), step(0) {}
+    : sample_rate_(sample_rate), wavetable_(wavetable),
+      wavetable_size_(wavetable.size()), current_index_((0.)), step_(0) {
+  if ((wavetable.empty())) {
+    throw std::invalid_argument(fmt::format("Wavetable cannot be empty.\n"));
+  }
+}

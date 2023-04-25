@@ -57,14 +57,23 @@
        (let ((old_hp 1s0)
 	     (old_maxhp 55s0)
 	     (new_maxhp 55s0)
-	     (r1over55 "std::ratio<1,55>")
-	     (r55over1  "std::ratio<55,1>"))
-	,(lprint :msg "func" :vars `((convert_hp old_hp old_maxhp new_maxhp)))
+	     (dold_hp 1d0)
+	     (dold_maxhp 55d0)
+	     (dnew_maxhp 55d0)
+	     
+	     ;(r1over55 "std::ratio<1,55>")
+	     ;(r55over1  "std::ratio<55,1>")
+	     )
+	 ,(lprint :msg "when the computation is <1, this is due to a floating point rounding error and leads to a x")
+	 ,(lprint :msg "func" :vars `((convert_hp old_hp old_maxhp new_maxhp)))
+	 
 	 ,@(loop for e in `((:name buggy :code (* new_maxhp (/ old_hp
 							       old_maxhp)))
+			    (:name buggy_double :code (* dnew_maxhp (/ dold_hp
+								       dold_maxhp)))
 			    (:name mul_first :code (/ (* new_maxhp old_hp)
 						      old_maxhp))
-			    ;(:name cpp_ratio :code "std::ratio_add<r55over1,r1over55>")
+					;(:name cpp_ratio :code "std::ratio_add<r55over1,r1over55>")
 			    (:name lisp_ratio :code ,(* 55 (/ 1 55)))
 			    (:name lisp_float :code ,(* 55s0 (/ 1s0 55s0))))
 		 collect

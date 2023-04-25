@@ -8,7 +8,7 @@
 
 (progn
    (progn
-    (defparameter *source-dir* #P"example/122_rational_type/source00/")
+    (defparameter *source-dir* #P"example/123_music/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -18,6 +18,88 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
+
+  (let ((name `WavetableOscillator)
+	(members `((sample-rate :type double :param t)
+		   (wavetable :type "std::vector<double>" :param t)
+		   (wavetable-size :type std--size_t :initform (wavetable.size))
+		   (current-index :type double :initform 0d0)
+		   (step :type double))))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  )
+       :implementation-preamble
+       `(do0
+	 #+nil (space "extern \"C\" "
+		(progn
+		  ))
+	 (do0
+	  "#define FMT_HEADER_ONLY"
+	  (include "core.h"))
+	 (include<>
+	  iostream
+	  vector
+	  cmath
+	  cstdint
+	  stdexcept))
+       :code `(do0
+	       (defclass ,name ()	 
+		 "public:"
+		 (defmethod ,name (,@(remove-if #'null
+				      (loop for e in members
+					    collect
+					    (destructuring-bind (name &key type param (initform 0)) e
+					     (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		   (declare
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (name &key type param (initform 0)) e
+					 (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					   (when param
+					   
+					     `(type ,type ,nname))))))
+		    (construct
+		     ,@(remove-if #'null
+				  (loop for e in members
+					collect
+					(destructuring-bind (name &key type param (initform 0)) e
+					  (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+						(nname_ (format nil "~a_"
+								(cl-change-case:snake-case (format nil "~a" name)))))
+					    (cond
+					      (param
+					       `(,nname_ ,nname))
+					      (initform
+					       `(,nname_ ,initform)))))))
+		     )
+		    (explicit)	    
+		    (values :constructor))
+		   (when (wavetable.empty)
+		     (throw (std--invalid_argument ,(sprint :msg "Wavetable cannot be empty."))))
+		   )
+		 "private:"
+		 ,@(remove-if #'null
+				  (loop for e in members
+					collect
+					(destructuring-bind (name &key type param (initform 0)) e
+					  (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+						(nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					    `(space ,type ,nname_)))))
+
+		 ))))
+  
   (write-source
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -25,17 +107,15 @@
 		     *source-dir*))
    `(do0
      
-     (include<> ratio
+     (include<> vector
 		)
+     (include "WavetableOscillator.h")
 
      (do0
       "#define FMT_HEADER_ONLY"
       (include "core.h"))
 
-     (defun convert_hp (old_hp old_maxhp new_maxhp)
-       (declare (type float new_maxhp old_hp old_maxhp)
-		(values float))
-       (return (* new_maxhp (/ old_hp old_maxhp))))
+     
 
      (defun main (argc argv)
        (declare (values int)
@@ -54,34 +134,7 @@
 			       month
 			       date
 			       (- tz))))
-       (let ((old_hp 1s0)
-	     (old_maxhp 55s0)
-	     (new_maxhp 55s0)
-	     (dold_hp 1d0)
-	     (dold_maxhp 55d0)
-	     (dnew_maxhp 55d0)
-	     
-	     ;(r1over55 "std::ratio<1,55>")
-	     ;(r55over1  "std::ratio<55,1>")
-	     )
-	 ,(lprint :msg "when the computation is <1, this is due to a floating point rounding error and leads to a x")
-	 ,(lprint :msg "func" :vars `((convert_hp old_hp old_maxhp new_maxhp)))
-	 
-	 ,@(loop for e in `((:name buggy :code (* new_maxhp (/ old_hp
-							       old_maxhp)))
-			    (:name buggy_double :code (* dnew_maxhp (/ dold_hp
-								       dold_maxhp)))
-			    (:name mul_first :code (/ (* new_maxhp old_hp)
-						      old_maxhp))
-					;(:name cpp_ratio :code "std::ratio_add<r55over1,r1over55>")
-			    (:name lisp_ratio :code ,(* 55 (/ 1 55)))
-			    (:name lisp_float :code ,(* 55s0 (/ 1s0 55s0))))
-		 collect
-		 (destructuring-bind (&key name code) e
-		   (lprint :msg (format nil "~a" name)
-			   :vars `(,code)))))
-
-
+       
       
        (return 0)))))
 
