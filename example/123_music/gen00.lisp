@@ -32,6 +32,8 @@
        :name name
        :headers `()
        :header-preamble `(do0
+			  (include<> vector
+				     cstdint)
 			  )
        :implementation-preamble
        `(do0

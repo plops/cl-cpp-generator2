@@ -1,7 +1,8 @@
 #ifndef WAVETABLEOSCILLATOR_H
 #define WAVETABLEOSCILLATOR_H
 
-
+#include <vector>
+#include <cstdint>
 
 class WavetableOscillator  {
         public:
