@@ -902,6 +902,8 @@ entry return-values contains a list of return values. currently supports type, v
 		  (pragma (let ((args (cdr code)))
 			    (format nil "#pragma ~{~a~^ ~}" args)))
 		  (include (let ((args (cdr code)))
+			     (when (null args)
+				 (break "no arguments in include"))
 			     ;; include {name}*
 			     ;; (include <stdio.h>)   => #include <stdio.h>
 			     ;; (include interface.h) => #include "interface.h"
@@ -919,6 +921,8 @@ entry return-values contains a list of return values. currently supports type, v
 			       ;; include {name}*
 			       ;; (include<> stdio.h stddef.h)   => #include <stdio.h>\n #include<stddef.h>
 
+			       (when (null args)
+				 (break "no arguments in include<>"))
 			       (let ((str (with-output-to-string (s)
 					    (loop for e in args do
 
