@@ -11,11 +11,11 @@ EnvelopeGenerator::EnvelopeGenerator(double sample_rate, double attack,
     : sample_rate_(sample_rate), attack_(attack), decay_(decay),
       sustain_(sustain), release_(release),
       current_state_(EnvelopeGeneratorState::Idle), current_amplitude_((0.)),
-      attach_increment_((0.)), decay_increment_((0.)),
+      attack_increment_((0.)), decay_increment_((0.)),
       release_increment_((0.)) {}
 void EnvelopeGenerator::note_on() {
   current_state_ = EnvelopeGeneratorState::Attack;
-  attach_increment_ = (((1.0)) / (((sample_rate_) * (attack_))));
+  attack_increment_ = (((1.0)) / (((sample_rate_) * (attack_))));
 }
 void EnvelopeGenerator::note_off() {
   current_state_ = EnvelopeGeneratorState::Release;

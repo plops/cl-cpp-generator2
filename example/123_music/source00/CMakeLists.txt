@@ -4,4 +4,5 @@ project(music)
 add_executable(music
  main.cpp
  WavetableOscillator.cpp
+ EnvelopeGenerator.cpp
  )

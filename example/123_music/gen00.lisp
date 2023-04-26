@@ -124,6 +124,144 @@
 					    `(space ,type ,nname_)))))
 
 		 ))))
+
+  (let ((name `EnvelopeGenerator)
+	(members `(,@(loop for e in `(sample-rate attack decay sustain release)
+			   collect
+			   `(,e :type double :param t))
+		   (current-state :type EnvelopeGeneratorState :initform EnvelopeGeneratorState--Idle)
+		   ,@(loop for e in `(current-amplitude
+				      attack-increment
+				      decay-increment
+				      release-increment)
+			   collect
+			   `(,e :type double :param nil :initform 0d0)))))
+      (write-class
+       :dir (asdf:system-relative-pathname
+	     'cl-cpp-generator2
+	     *source-dir*)
+       :name name
+       :headers `()
+       :header-preamble `(do0
+			  (include<> vector
+				     cstdint)
+			  )
+       :implementation-preamble
+       `(do0
+	 #+nil (space "extern \"C\" "
+		(progn
+		  ))
+	 #+log
+	 (do0
+	  "#define FMT_HEADER_ONLY"
+	  (include "core.h"))
+	 (include<>
+	  iostream
+	  vector
+	  cmath
+	  cstdint
+	  stdexcept))
+       :code `(do0
+	       (defclass ,name ()	 
+		 "public:"
+		 (defmethod ,name (,@(remove-if #'null
+				      (loop for e in members
+					    collect
+					    (destructuring-bind (name &key type param (initform 0)) e
+					     (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		   (declare
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (name &key type param (initform 0)) e
+					 (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					   (when param
+					   
+					     `(type ,type ,nname))))))
+		    (construct
+		     ,@(remove-if #'null
+				  (loop for e in members
+					collect
+					(destructuring-bind (name &key type param (initform 0)) e
+					  (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+						(nname_ (format nil "~a_"
+								(cl-change-case:snake-case (format nil "~a" name)))))
+					    (cond
+					      (param
+					       `(,nname_ ,nname))
+					      (initform
+					       `(,nname_ ,initform)))))))
+		     )
+		    (explicit)	    
+		    (values :constructor))
+		   
+		   )
+
+		 (defmethod note_on ()
+		   (setf current_state_ EnvelopeGeneratorState--Attack
+			 attack_increment_ (/ 1d0
+					      (* sample_rate_
+						 attack_))))
+
+		 (defmethod note_off ()
+		   (setf current_state_ EnvelopeGeneratorState--Release
+			 release_increment_ (/ (- current_amplitude_
+						  0d0)
+					      (* sample_rate_
+						 release_))))
+		 (defmethod next_amplitude ()
+		   (declare (values double))
+		   (case current_state_
+		     (EnvelopeGeneratorState--Attack
+		      (incf current_amplitude_ attack_increment_)
+		      (when (<= 1d0 current_amplitude_)
+			(setf current_amplitude_ 1d0
+			      current_state_ EnvelopeGeneratorState--Decay
+			      decay_increment_ (/ (- 1d0 sustain_)
+						  (* sample_rate_
+						     decay_)))))
+		     (EnvelopeGeneratorState--Decay
+		      (decf current_amplitude_ decay_increment_)
+		      (when (<= current_amplitude_ sustain_)
+			(setf current_amplitude_ sustain_
+			      current_state_ EnvelopeGeneratorState--Sustain)))
+		     (EnvelopeGeneratorState--Sustain
+		      (comments "amplitude remains constant"))
+		     (EnvelopeGeneratorState--Release
+		      (decf current_amplitude_ release_increment_)
+		      (when (<= current_amplitude_ 0d0)
+			(setf current_amplitude_ 0d0
+			      current_state_ EnvelopeGeneratorState--Idle)))
+		     (EnvelopeGeneratorState--Idle
+		      (comments "amplitude remains zero"))
+		     (t
+		      (comments "amplitude remains zero"))
+		     
+		     )
+		   (return current_amplitude_))
+		 
+
+		 "private:"
+
+		 (space enum class EnvelopeGeneratorState
+			(curly
+			 Idle Attack Decay Sustain Release))
+		 
+		 ,@(remove-if #'null
+			      (loop for e in members
+				    collect
+				    (destructuring-bind (name &key type param (initform 0)) e
+				      (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					    (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					`(space ,type ,nname_)))))
+
+		 ))))
   
   (write-source
    (asdf:system-relative-pathname
@@ -134,53 +272,86 @@
      
      (include<> vector
 		)
-     (include "WavetableOscillator.h")
+     (include "WavetableOscillator.h"
+	      "EnvelopeGenerator.h")
 
-    #+log
-    (do0
-     "#define FMT_HEADER_ONLY"
-     (include "core.h"))
-    (include<> cmath
-	       iostream)
+     #+log
+     (do0
+      "#define FMT_HEADER_ONLY"
+      (include "core.h"))
+     (include<> cmath
+		iostream)
 
      
 
-    (defun main (argc argv)
-      (declare (values int)
-	       (type int argc)
-	       (type char** argv))
-      #+log ,(lprint :msg (multiple-value-bind
-				(second minute hour date month year day-of-week dst-p tz)
-			      (get-decoded-time)
-			    (declare (ignorable dst-p))
-			    (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-				    hour
-				    minute
-				    second
-				    (nth day-of-week *day-names*)
-				    year
-				    month
-				    date
-				    (- tz))))
+     (defun main (argc argv)
+       (declare (values int)
+		(type int argc)
+		(type char** argv))
+       #+log ,(lprint :msg (multiple-value-bind
+				 (second minute hour date month year day-of-week dst-p tz)
+			       (get-decoded-time)
+			     (declare (ignorable dst-p))
+			     (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+				     hour
+				     minute
+				     second
+				     (nth day-of-week *day-names*)
+				     year
+				     month
+				     date
+				     (- tz))))
        
-      (let ((sample_rate 44100d0)
-	    (wavetable_size 1024u)
-	    (wavetable ((lambda (size)
-			  (let ((wavetable (std--vector<double> size)))
-			    (dotimes (i size)
-			      (setf (aref wavetable i)
-				    (std--sin (/ (* 2 M_PI i)
-						 (static_cast<double> size)))))
-			    (return wavetable)))
-			wavetable_size))
-	    (osc (WavetableOscillator sample_rate wavetable)))
-	(osc.set_frequency 440d0)
-	(dotimes (i 100)
-	  (<< std--cout
-	      (osc.next_sample)
-	      std--endl)
-	  #+log ,(lprint :vars `(i (osc.next_sample)))))
-      (return 0)))))
+       (let ((sample_rate 44100d0)
+	     (wavetable_size 1024u)
+	     (wavetable ((lambda (size)
+			   (let ((wavetable (std--vector<double> size)))
+			     (dotimes (i size)
+			       (setf (aref wavetable i)
+				     (std--sin (/ (* 2 M_PI i)
+						  (static_cast<double> size)))))
+			     (return wavetable)))
+			 wavetable_size))
+	     (osc (WavetableOscillator sample_rate wavetable)))
+	 (osc.set_frequency 440d0)
+	 (let ((attack 0.01d0)
+	       (decay 0.2d0)
+	       (sustain 0.6d0)
+	       (release 0.5d0)
+	       (env (EnvelopeGenerator
+		     sample_rate
+		     attack
+		     decay
+		     sustain
+		     release))))
+	 (env.note_on)
+	 (let ((count 0))
+	  (dotimes (i 2000)
+	    (let ((osc_output (osc.next_sample))
+		  (env_amplitude (env.next_amplitude))
+		  (output_sample (* osc_output env_amplitude)))
+	      (do0
+	       (<< std--cout
+		   count
+		   (string " ")
+		   output_sample
+		   std--endl)
+	       (incf count)))
+	    #+log ,(lprint :vars `(i (osc.next_sample)))))
+	 (env.note_off)
+	 (dotimes (i 22050)
+	   (let ((osc_output (osc.next_sample))
+		 (env_amplitude (env.next_amplitude))
+		 (output_sample (* osc_output env_amplitude)))
+	     (do0
+	       (<< std--cout
+		   count
+		   (string " ")
+		   output_sample
+		   std--endl)
+	       (incf count)))
+	   #+log ,(lprint :vars `(i (osc.next_sample)))))
+       (return 0)))))
 
 
 

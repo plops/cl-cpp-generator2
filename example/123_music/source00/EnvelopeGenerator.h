@@ -19,7 +19,7 @@ class EnvelopeGenerator  {
         double release_;
         EnvelopeGeneratorState current_state_;
         double current_amplitude_;
-        double attach_increment_;
+        double attack_increment_;
         double decay_increment_;
         double release_increment_;
 };
