@@ -275,7 +275,7 @@
      (include "WavetableOscillator.h"
 	      "EnvelopeGenerator.h")
 
-     #+log
+     ;#+log
      (do0
       "#define FMT_HEADER_ONLY"
       (include "core.h"))
@@ -352,37 +352,60 @@
 		     sustain
 		     release))))
 
-	 (do0
-	  (let ((err (Pa_Initialize)))))
+	 ,(flet ((pa (code)
+		   `(progn
+		      (let ((err ,code))
+			(unless (== paNoError err)
+			  ,(lprint :vars `((Pa_GetErrorText err)))
+			  (return 1))))))
+	    `(do0
+	     ,(pa `(Pa_Initialize))
+	     
+	     (let ((stream nullptr)
+		   (userData (std--make_pair &osc &env)))
+	       (declare (type PaStream* stream))
+
+	       ,(pa `(Pa_OpenDefaultStream
+		      &stream
+		      0 2 paFloat32 sample_rate
+		      256
+		      paCallback
+		      &userData))
+
+	       ,(pa `(Pa_StartStream stream))
+	       )))
 	 
 	 
 	 (env.note_on)
-	 (let ((count 0))
-	   (dotimes (i 2000)
-	     (let ((osc_output (osc.next_sample))
-		   (env_amplitude (env.next_amplitude))
-		   (output_sample (* osc_output env_amplitude)))
-	       (do0
-		(<< std--cout
-		    count
-		    (string " ")
-		    output_sample
-		    std--endl)
-		(incf count)))
-	     #+log ,(lprint :vars `(i (osc.next_sample)))))
-	 (env.note_off)
-	 (dotimes (i 22050)
-	   (let ((osc_output (osc.next_sample))
-		 (env_amplitude (env.next_amplitude))
-		 (output_sample (* osc_output env_amplitude)))
-	     (do0
-	      (<< std--cout
-		  count
-		  (string " ")
-		  output_sample
-		  std--endl)
-	      (incf count)))
-	   #+log ,(lprint :vars `(i (osc.next_sample)))))
+	 (Pa_Sleep 1000)
+	 #+nil
+	 (do0
+	  (let ((count 0))
+	    (dotimes (i 2000)
+	      (let ((osc_output (osc.next_sample))
+		    (env_amplitude (env.next_amplitude))
+		    (output_sample (* osc_output env_amplitude)))
+		(do0
+		 (<< std--cout
+		     count
+		     (string " ")
+		     output_sample
+		     std--endl)
+		 (incf count)))
+	      #+log ,(lprint :vars `(i (osc.next_sample)))))
+	  (env.note_off)
+	  (dotimes (i 22050)
+	    (let ((osc_output (osc.next_sample))
+		  (env_amplitude (env.next_amplitude))
+		  (output_sample (* osc_output env_amplitude)))
+	      (do0
+	       (<< std--cout
+		   count
+		   (string " ")
+		   output_sample
+		   std--endl)
+	       (incf count)))
+	    #+log ,(lprint :vars `(i (osc.next_sample))))))
        (return 0)))))
 
 

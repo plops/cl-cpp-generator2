@@ -1,9 +1,11 @@
 #include "EnvelopeGenerator.h"
 #include "WavetableOscillator.h"
+#include <vector>
+#define FMT_HEADER_ONLY
+#include "core.h"
 #include <cmath>
 #include <iostream>
 #include <portaudio.h>
-#include <vector>
 
 static int paCallback(const void *input_buffer, void *output_buffer,
                       unsigned long frames_per_buffer,
@@ -44,25 +46,33 @@ int main(int argc, char **argv) {
   auto sustain = (0.600000000000000000000000000000);
   auto release = (0.50);
   auto env = EnvelopeGenerator(sample_rate, attack, decay, sustain, release);
-  auto err = Pa_Initialize();
+  {
+    auto err = Pa_Initialize();
+    if ((!((paNoError) == (err)))) {
+      fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));
+      return 1;
+    }
+  }
+  PaStream *stream = nullptr;
+  auto userData = std::make_pair(&osc, &env);
+  {
+    auto err = Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, sample_rate, 256,
+                                    paCallback, &userData);
+    if ((!((paNoError) == (err)))) {
+      fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));
+      return 1;
+    }
+  }
+  {
+    auto err = Pa_StartStream(stream);
+    if ((!((paNoError) == (err)))) {
+      fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));
+      return 1;
+    }
+  }
 
   env.note_on();
-  auto count = 0;
-  for (auto i = 0; (i) < (2000); (i) += (1)) {
-    auto osc_output = osc.next_sample();
-    auto env_amplitude = env.next_amplitude();
-    auto output_sample = ((osc_output) * (env_amplitude));
-    std::cout << count << (" ") << output_sample << std::endl;
-    (count)++;
-  }
-  env.note_off();
-  for (auto i = 0; (i) < (22050); (i) += (1)) {
-    auto osc_output = osc.next_sample();
-    auto env_amplitude = env.next_amplitude();
-    auto output_sample = ((osc_output) * (env_amplitude));
-    std::cout << count << (" ") << output_sample << std::endl;
-    (count)++;
-  }
+  Pa_Sleep(1000);
 
   return 0;
 }
