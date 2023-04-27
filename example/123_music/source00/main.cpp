@@ -11,12 +11,10 @@ static int paCallback(const void *input_buffer, void *output_buffer,
                       unsigned long frames_per_buffer,
                       const PaStreamCallbackTimeInfo *time_info,
                       PaStreamCallbackFlags status_flags, void *user_data) {
-  auto *data =
-      static_cast<std::pair<WavetableOscillator *, EnvelopeGenerator *> *>(
-          user_data);
-  auto *osc = data->first;
-  auto *env = data->second;
   auto *out = static_cast<float *>(output_buffer);
+  auto [osc, env] =
+      *(static_cast<std::pair<WavetableOscillator *, EnvelopeGenerator *> *>(
+          user_data));
   for (auto i = 0; (i) < (frames_per_buffer); (i) += (1)) {
     auto osc_ = osc->next_sample();
     auto env_ = env->next_amplitude();
