@@ -70,9 +70,25 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-
   env.note_on();
   Pa_Sleep(1000);
+  env.note_off();
+  Pa_Sleep(2000);
+  {
+    auto err = Pa_StopStream(stream);
+    if ((!((paNoError) == (err)))) {
+      fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));
+      return 1;
+    }
+  }
+  {
+    auto err = Pa_CloseStream(stream);
+    if ((!((paNoError) == (err)))) {
+      fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));
+      return 1;
+    }
+  }
+  Pa_Terminate();
 
   return 0;
 }

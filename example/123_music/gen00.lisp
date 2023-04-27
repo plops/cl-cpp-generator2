@@ -373,11 +373,17 @@
 		      &userData))
 
 	       ,(pa `(Pa_StartStream stream))
+	       (do0
+	  (env.note_on)
+	  (Pa_Sleep 1000)
+	  (env.note_off)
+	  (Pa_Sleep 2000)
+	  ,(pa `(Pa_StopStream stream))
+	  ,(pa `(Pa_CloseStream stream))
+	  (Pa_Terminate))
 	       )))
 	 
 	 
-	 (env.note_on)
-	 (Pa_Sleep 1000)
 	 #+nil
 	 (do0
 	  (let ((count 0))
