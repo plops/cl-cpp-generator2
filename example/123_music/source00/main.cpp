@@ -2,7 +2,29 @@
 #include "WavetableOscillator.h"
 #include <cmath>
 #include <iostream>
+#include <portaudio.h>
 #include <vector>
+
+static int paCallback(const void *input_buffer, void *output_buffer,
+                      unsigned long frames_per_buffer,
+                      const PaStreamCallbackTimeInfo *time_info,
+                      PaStreamCallbackFlags status_flags, void *user_data) {
+  auto *data =
+      static_cast<std::pair<WavetableOscillator *, EnvelopeGenerator *> *>(
+          user_data);
+  auto *osc = data->first;
+  auto *env = data->second;
+  auto *out = static_cast<float *>(output_buffer);
+  for (auto i = 0; (i) < (frames_per_buffer); (i) += (1)) {
+    auto osc_ = osc->next_sample();
+    auto env_ = env->next_amplitude();
+    auto out_ = ((osc_) * (env_));
+    // left and right channel
+    *out++ = static_cast<float>(out_);
+    *out++ = static_cast<float>(out_);
+  }
+  return paContinue;
+}
 
 int main(int argc, char **argv) {
   auto sample_rate = (4.410e+4);
@@ -22,6 +44,8 @@ int main(int argc, char **argv) {
   auto sustain = (0.600000000000000000000000000000);
   auto release = (0.50);
   auto env = EnvelopeGenerator(sample_rate, attack, decay, sustain, release);
+  auto err = Pa_Initialize();
+
   env.note_on();
   auto count = 0;
   for (auto i = 0; (i) < (2000); (i) += (1)) {

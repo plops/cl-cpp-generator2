@@ -282,7 +282,34 @@
      (include<> cmath
 		iostream)
 
-     
+
+     (include<> portaudio.h)
+
+
+     (defun paCallback (input_buffer
+			output_buffer
+			frames_per_buffer
+			time_info
+			status_flags
+			user_data)
+       (declare (type "const void*" input_buffer )
+		(type "unsigned long" frames_per_buffer)
+		(type "const PaStreamCallbackTimeInfo*" time_info)
+		(type PaStreamCallbackFlags status_flags)
+		(type "void*" user_data output_buffer)
+		(values "static int"))
+       (let ((data ("static_cast<std::pair<WavetableOscillator*,EnvelopeGenerator*>*>" user_data))
+	     (osc data->first)
+	     (env data->second)
+	     (out (static_cast<float*> output_buffer)))
+	 (dotimes (i frames_per_buffer)
+	   (let ((osc_ (osc->next_sample))
+		 (env_ (env->next_amplitude))
+		 (out_ (* osc_ env_)))
+	     (comments "left and right channel")
+	     (setf *out++ (static_cast<float> out_)
+		   *out++ (static_cast<float> out_))))
+	 (return paContinue)))
 
      (defun main (argc argv)
        (declare (values int)
@@ -324,32 +351,37 @@
 		     decay
 		     sustain
 		     release))))
+
+	 (do0
+	  (let ((err (Pa_Initialize)))))
+	 
+	 
 	 (env.note_on)
 	 (let ((count 0))
-	  (dotimes (i 2000)
-	    (let ((osc_output (osc.next_sample))
-		  (env_amplitude (env.next_amplitude))
-		  (output_sample (* osc_output env_amplitude)))
-	      (do0
-	       (<< std--cout
-		   count
-		   (string " ")
-		   output_sample
-		   std--endl)
-	       (incf count)))
-	    #+log ,(lprint :vars `(i (osc.next_sample)))))
+	   (dotimes (i 2000)
+	     (let ((osc_output (osc.next_sample))
+		   (env_amplitude (env.next_amplitude))
+		   (output_sample (* osc_output env_amplitude)))
+	       (do0
+		(<< std--cout
+		    count
+		    (string " ")
+		    output_sample
+		    std--endl)
+		(incf count)))
+	     #+log ,(lprint :vars `(i (osc.next_sample)))))
 	 (env.note_off)
 	 (dotimes (i 22050)
 	   (let ((osc_output (osc.next_sample))
 		 (env_amplitude (env.next_amplitude))
 		 (output_sample (* osc_output env_amplitude)))
 	     (do0
-	       (<< std--cout
-		   count
-		   (string " ")
-		   output_sample
-		   std--endl)
-	       (incf count)))
+	      (<< std--cout
+		  count
+		  (string " ")
+		  output_sample
+		  std--endl)
+	      (incf count)))
 	   #+log ,(lprint :vars `(i (osc.next_sample)))))
        (return 0)))))
 
