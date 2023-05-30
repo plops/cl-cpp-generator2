@@ -81,9 +81,6 @@ complete list of supported expressions, refer to the documentation.
 | return                                                              |                                                                |                                                          |
 | (uint32_t*) 42                                                      | (cast uint32_t* 42)                                            |                                                          |
 
-
-## Documentation
-
 In cl-cpp-generator2, several operators can interpret a declare
 statement. These include `for-range`, `dotimes`, `let`, `defun`,
 `defmethod`, and `lambda`. Similar to Common Lisp, this feature can be
