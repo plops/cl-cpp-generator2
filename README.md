@@ -129,26 +129,43 @@ constructors, constructor initializer lists, and attributes like
 `static`, `inline`, `virtual`, `final`, and `override`. This enables
 users to have finer control over their code generation.
 
-
 ## Project Status
+This project is continually evolving with occasional new features
+being added to enhance its functionality. One of the main ongoing
+improvements is the reduction of unnecessary parentheses in the
+generated expressions. The ideal scenario would be to use an external
+tool such as clang-format to address this issue, but no suitable
+options have been identified thus far. The use of paid solutions like
+Clion, despite its capabilities, remains less preferred due to the
+cost and the cumbersome process involved.
 
-This project is under active development, with improvements and
-features being added occasionally. One of the key areas of focus is
-minimizing the number of parentheses in the generated expressions, as
-they may currently appear in higher than necessary amounts.
+Recently, exploratory work has been initiated on separating headers
+and implementation for C++ classes in a user-friendly manner, which
+can be found in more recent examples (usually defined in a file named
+util.lisp).
 
-The ideal solution for handling this would be to utilize a separate
-tool, such as clang-format, to manage it outside of the
-project. However, no suitable tool has been found yet. While Clion
-does offer some relevant capabilities, its usage is not free and it
-can be cumbersome to execute.
+Looking ahead, one of the project's long-term goals is to develop a
+comprehensive test suite to ensure the quality and reliability of the
+code. However, this is a complex endeavor that requires stable output,
+specifically, minimized parentheses and elimination of superfluous
+semicolons. At this stage, such stabilization is yet to be achieved,
+and the task remains a future goal. The inherent high information
+density of the code, as illustrated by the for loop code generator,
+adds to the complexity of this effort, making it a challenging yet
+exciting future prospect.
 
-Another area of active experimentation is the separation of headers
-and implementation for C++ classes in a user-friendly way. This
-exploration is visible in the more recent examples, typically defined
-in a file named 'util.lisp'. We encourage users and contributors to
-check these examples out for a deeper understanding of the current
-development direction.
+```
+ (for (destructuring-bind ((start end iter) &rest body) (cdr code)
+			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
+				 (emit start)
+				 (emit end)
+				 (emit iter)
+				 (emit `(progn ,@body)))))
+```
+
+The conditional operator `~@[` of format is used to only print the
+start parameter if it is not nil. A thorough test of can require a lot
+of cases.
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
