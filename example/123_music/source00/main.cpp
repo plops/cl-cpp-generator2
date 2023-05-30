@@ -27,6 +27,7 @@ static int paCallback(const void *input_buffer, void *output_buffer,
 }
 
 int main(int argc, char **argv) {
+  fmt::print("generation date 00:41:39 of Friday, 2023-04-28 (GMT+1)\n");
   auto sample_rate = (4.410e+4);
   auto wavetable_size = 1024U;
   auto wavetable = ([](auto size) {
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
   PaStream *stream = nullptr;
   auto userData = std::make_pair(&osc, &env);
   {
-    auto err = Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, sample_rate, 256,
+    auto err = Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, sample_rate, 4096,
                                     paCallback, &userData);
     if ((!((paNoError) == (err)))) {
       fmt::print("  Pa_GetErrorText(err)='{}'\n", Pa_GetErrorText(err));

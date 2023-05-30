@@ -318,19 +318,20 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-       #+log ,(lprint :msg (multiple-value-bind
-				 (second minute hour date month year day-of-week dst-p tz)
-			       (get-decoded-time)
-			     (declare (ignorable dst-p))
-			     (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
-				     hour
-				     minute
-				     second
-				     (nth day-of-week *day-names*)
-				     year
-				     month
-				     date
-				     (- tz))))
+       ;#+log
+       ,(lprint :msg (multiple-value-bind
+			   (second minute hour date month year day-of-week dst-p tz)
+			 (get-decoded-time)
+		       (declare (ignorable dst-p))
+		       (format nil "generation date ~2,'0d:~2,'0d:~2,'0d of ~a, ~d-~2,'0d-~2,'0d (GMT~@d)"
+			       hour
+			       minute
+			       second
+			       (nth day-of-week *day-names*)
+			       year
+			       month
+			       date
+			       (- tz))))
        
        (let ((sample_rate 44100d0)
 	     (wavetable_size 1024u)
@@ -371,7 +372,7 @@
 	       ,(pa `(Pa_OpenDefaultStream
 		      &stream
 		      0 2 paFloat32 sample_rate
-		      256
+		      4096 ; 256
 		      paCallback
 		      &userData))
 
