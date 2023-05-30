@@ -218,6 +218,8 @@ code simpler and more readable.
 
 Here is an overview of supported expressions:
 
+| short name                                                      | lisp                                                           | C++                                                      |
+|-----------------------------------------------------------------+----------------------------------------------------------------+----------------------------------------------------------|
 | defun name lambda-list [declaration*] form*                     | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
 | let ({var \vert (var [init-form])}*) declaration* form*"        | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
 | setf {pair}*                                                    | (setf a 3 b (+ a 3))                                           | a=3; b=a+3;                                              |
@@ -247,7 +249,7 @@ Here is an overview of supported expressions:
 | defstruct0 name {slot-description}*                             | (defstruct0 Point (x int) (y int))                             | struct { int x; int y} Point; typedef sruct Point Point; |
 | throw                                                           |                                                                |                                                          |
 | return                                                          |                                                                |                                                          |
-| (uint32_t*) 42                                                  |  (cast uint32_t* 42)                                           |                                                          |
+| (uint32_t*) 42                                                  | (cast uint32_t* 42)                                            |                                                          |
 
 ** Collect function declarations
 

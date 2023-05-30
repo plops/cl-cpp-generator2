@@ -48,6 +48,91 @@ conventions as much as possible. However, conditional expressions do
 not return a value to keep the C code simpler and more readable. For a
 complete list of supported expressions, refer to the documentation.
 
+| short name                                                          | lisp                                                           | C++                                                      |
+|---------------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------|
+| defun name lambda-list [declaration*] form*                         | (defun foo (a) (declare (type int a) (values int)) (return 2)) | int foo(int a){ return 2;}                               |
+| let ({var \vert (var [init-form])}*) declaration* form*"            | (let (a (b 3) (c 3)) (declare (type int a b)) ...              | int a; int b=3; auto c=3;                                |
+| setf {pair}*                                                        | (setf a 3 b (+ a 3))                                           | a=3; b=a+3;                                              |
+| + {summands}*, /, *,  -                                             | (+ a b c)                                                      | a+b+c                                                    |
+| logior {arg}*                                                       | (logior a b)                                                   | a \vert b                                                |
+| logand {arg}*                                                       | (logand a b)                                                   | a & b                                                    |
+| or {arg}*                                                           | (or a b)                                                       | a \vert \vert b                                          |
+| and {arg}*                                                          | (and a b)                                                      | a && b                                                   |
+| /= a b, *=, <=, !=, ==, ^=                                          | (/= a b)                                                       | a /= b                                                   |
+| <<, >>, <                                                           | (<< a b)                                                       | a << b                                                   |
+| incf a [b=1], decf                                                  | (incf a 2)                                                     | a+=2                                                     |
+| when                                                                | (when a b)                                                     | if(a) { b; }                                             |
+| unless                                                              | (unless a b)                                                   | if(!a) { b; }                                            |
+| if                                                                  | (if a (do0 b) (do0 c))                                         | if(a) { b; } else {c;}                                   |
+| case                                                                | (case a (b (return 3)) (t (return 4)))                         | switch a ..                                              |
+| string                                                              | (string "a")                                                   | "a"                                                      |
+| char                                                                | (char "a")                                                     | 'a'                                                      |
+| aref                                                                | (aref a 2 3)                                                   | a[2][3]                                                  |
+| dot                                                                 | (dot b (f 3))                                                  | b.f(3)                                                   |
+| lambda                                                              | (lambda (x) y)                                                 | [&]() { return 3; }                                      |
+| defclass  name ({superclass}*) ({slot-specifier}*) [[class-option]] | (defclass Employee (Person) ... TBD                            | class Employee : Person { ...                            |
+| for start end iter                                                  | (for ((= a 0) (< a 12) (incf a)) ...)                          | for (a=0; a<12;a++){ ...                                 |
+| dotimes i n                                                         | (dotimes (i 12) ...)                                           | for (int i=0; i<12; i++) { ...                           |
+| while cond                                                          | (while (== a 1) ...)                                           | while (a==1) { ...                                       |
+| foreach item collection                                             | (foreach (a data) ...)                                         | for (auto& a: data) { ...                                |
+| deftype name lambda-list {form}*                                    | (deftype csf64 () "complex float")                             | typedef complex float csf64                              |
+| defstruct0 name {slot-description}*                                 | (defstruct0 Point (x int) (y int))                             | struct { int x; int y} Point; typedef sruct Point Point; |
+| throw                                                               |                                                                |                                                          |
+| return                                                              |                                                                |                                                          |
+| (uint32_t*) 42                                                      | (cast uint32_t* 42)                                            |                                                          |
+
+
+## Documentation
+
+In cl-cpp-generator2, several operators can interpret a declare
+statement. These include `for-range`, `dotimes`, `let`, `defun`,
+`defmethod`, and `lambda`. Similar to Common Lisp, this feature can be
+utilized for defining variable types, function parameter types, and
+function return values.
+
+### Variable Types
+
+Variables types can be defined using `let` as demonstrated below:
+
+```lisp
+(let ((outfile))
+  (declare (type "std::ofstream" outfile))
+  ...
+)
+```
+
+### Function Parameter Types
+
+The type of a function parameter can be defined within the function's
+declare statement.
+
+```lisp
+(defun open (dev)
+  (declare (type device& dev))
+  ...
+)
+```
+
+### Function Return Values
+
+Similarly, function return values can be specified using declare:
+
+```lisp
+(defun try_release ()
+  (declare (values int))
+  ...
+)
+```
+
+### C/C++ Specifics
+
+In addition to the basic uses, cl-cpp-generator2 uses the declare
+statement to define C/C++ specifics such as lambda captures,
+constructors, constructor initializer lists, and attributes like
+`static`, `inline`, `virtual`, `final`, and `override`. This enables
+users to have finer control over their code generation.
+
+
 ## Project Status
 
 This project is under active development, with improvements and
