@@ -130,14 +130,21 @@ constructors, constructor initializer lists, and attributes like
 users to have finer control over their code generation.
 
 ## Project Status
+
 This project is continually evolving with occasional new features
 being added to enhance its functionality. One of the main ongoing
 improvements is the reduction of unnecessary parentheses in the
 generated expressions. The ideal scenario would be to use an external
 tool such as clang-format to address this issue, but no suitable
-options have been identified thus far. The use of paid solutions like
-Clion, despite its capabilities, remains less preferred due to the
-cost and the cumbersome process involved.
+options have been identified thus far.
+
+One such tool, StyleCop by Microsoft, which is part of the
+[StyleCopAnalyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)
+project, does a great job of handling these cases, but unfortunately,
+it only works for C# and not for our context of C or C++
+languages. The use of paid solutions like Clion, despite its
+capabilities, remains less preferred due to the cost and the
+cumbersome process involved.
 
 Recently, exploratory work has been initiated on separating headers
 and implementation for C++ classes in a user-friendly manner, which
@@ -153,6 +160,7 @@ and the task remains a future goal. The inherent high information
 density of the code, as illustrated by the for loop code generator,
 adds to the complexity of this effort, making it a challenging yet
 exciting future prospect.
+
 
 ```
  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
