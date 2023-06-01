@@ -138,7 +138,7 @@ generated expressions. The ideal scenario would be to use an external
 tool such as clang-format to address this issue, but no suitable
 options have been identified thus far.
 
-One such tool, StyleCop by Microsoft, which is part of the
+One such tool, StyleCop.Analyzers, which is part of the
 [StyleCopAnalyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)
 project, does a great job of handling these cases, but unfortunately,
 it only works for C# and not for our context of C or C++
