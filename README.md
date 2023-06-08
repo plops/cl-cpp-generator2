@@ -144,7 +144,11 @@ project, does a great job of handling these cases, but unfortunately,
 it only works for C# and not for our context of C or C++
 languages. The use of paid solutions like Clion, despite its
 capabilities, remains less preferred due to the cost and the
-cumbersome process involved.
+cumbersome process involved. It's worth mentioning that SonarLint
+could potentially serve as an option. Licensed under LGPL, SonarLint
+isn't a standalone tool, necessitating operation within an IDE, like
+Visual Studio Code.
+
 
 Recently, exploratory work has been initiated on separating headers
 and implementation for C++ classes in a user-friendly manner, which

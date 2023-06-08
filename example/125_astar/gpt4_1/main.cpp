@@ -4,8 +4,11 @@
 #include <iostream>
 
 struct Node {
-    int x, y;
-    int g, h, f;
+    int x;
+    int y;
+    int g;
+    int h;
+    int f;
 
     bool operator==(const Node& other) const {
         return x == other.x && y == other.y;
@@ -28,7 +31,7 @@ bool a_star(std::vector<std::vector<int>> grid, Node start, Node goal, std::vect
     came_from[start] = start;
     cost_so_far[start] = 0;
 
-    while (!open.empty()) {
+    while (!(open.empty())) {
         auto current = open.top();
         open.pop();
 
@@ -44,11 +47,11 @@ bool a_star(std::vector<std::vector<int>> grid, Node start, Node goal, std::vect
 
         for (auto& dir : {Node{-1, 0}, Node{1, 0}, Node{0, -1}, Node{0, 1}}) {
             auto next = Node{current.x + dir.x, current.y + dir.y};
-            if (next.x < 0 || next.y < 0 || next.x >= grid.size() || next.y >= grid[0].size() || grid[next.x][next.y] == 1)
+            if (next.x < 0 || next.y < 0 || next.x >= grid.size() || next.y >= grid[0].size() || grid[next.x][next.y] ==  1)
                 continue;
 
             auto new_cost = cost_so_far[current] + 1;
-            if (cost_so_far.find(next) == cost_so_far.end() || new_cost < cost_so_far[next]) {
+            if (cost_so_far.find(next) == cost_so_far.end() || (new_cost < cost_so_far[next])) {
                 cost_so_far[next] = new_cost;
                 auto h = abs(goal.x - next.x) + abs(goal.y - next.y);
                 auto f = new_cost + h;
@@ -74,8 +77,7 @@ int main() {
     };
     auto start = Node{0, 0};
     auto goal = Node{4, 4};
-    std::vector<Node> path;
-    if (a_star(grid, start, goal, path)) {
+    if (std::vector<Node> path; a_star(grid, start, goal, path)) {
         for (auto it = path.rbegin(); it != path.rend(); ++it)
             std::cout << "(" << it->x << ", " << it->y << ")\n";
     } else {
