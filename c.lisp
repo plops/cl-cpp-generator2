@@ -632,13 +632,10 @@ entry return-values contains a list of return values. currently supports type, v
 				  delete[]
 				  )
 			     #+nil (.* ->*)
-			     (%)
-			     (*  /  ;%
-				 )
-			     ;(/)
-			     ;(%)
-			     (+)
-			     (-)
+			     
+			     (*  / %)
+			     
+			     (+ -)
 			     (<< >>)
 					;(<=>)
 			     (< <= > >=)
@@ -793,8 +790,10 @@ entry return-values contains a list of return values. currently supports type, v
 										  ))))
 								  (progn
 								    ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-								    (format nil (if diag "3symstrnum.~a" "~a") e ;(emit e)
-									    ))))))))
+								    ;; unfortunately, if it is a string it could be "1+2" and might need parentheses
+								    (if (stringp e)
+									(format nil (if diag "3str.~a" "(~a)") (emit e))
+									(format nil (if diag "3symnum.~a" "~a") (emit e))))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think

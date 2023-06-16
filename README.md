@@ -179,6 +179,13 @@ The conditional operator `~@[` of format is used to only print the
 start parameter if it is not nil. A thorough test of can require a lot
 of cases.
 
+## Avoid redundant parentheses (Work in progress)
+
+I can't just return strings anymore. I will also have to return the
+most recent operator, so that I can compare precedence with the
+operator that is in the next higher level of the abstract syntax tree.
+
+
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
 builds on the learnings and experiences from various other projects
