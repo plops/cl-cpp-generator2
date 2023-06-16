@@ -695,7 +695,7 @@ entry return-values contains a list of return values. currently supports type, v
 			   (format nil "~{~a~%~}" args)))
 		  (doc ;; java doc comments
 		   (let ((args (cdr code)))
-		     (frmat nil "~a"
+		     (format nil "~a"
 			    (emit
 			     `(do0
 			       ,(format nil "/** ~a~%" (first args))
