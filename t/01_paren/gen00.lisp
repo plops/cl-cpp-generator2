@@ -47,7 +47,7 @@
 	       (let ((emit-str (emit-c :code code :diag nil))
 		     (emit-str-diag (emit-c :code code :diag t)))
 		 (if (string= emit-str reference)
-		     (format s "~2,'0d ~a works diag ~a~%" e-i emit-str emit-str-diag)
+		     (format s "~2,'0d ~a works~%" e-i emit-str)
 		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
 			     emit-str reference emit-str-diag))
 		 (write-source

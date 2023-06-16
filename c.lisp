@@ -632,10 +632,11 @@ entry return-values contains a list of return values. currently supports type, v
 				  delete[]
 				  )
 			     #+nil (.* ->*)
-			     (* ;/ %
-			      )
-			     (/)
 			     (%)
+			     (*  /  ;%
+				 )
+			     ;(/)
+			     ;(%)
 			     (+)
 			     (-)
 			     (<< >>)
@@ -727,7 +728,9 @@ entry return-values contains a list of return values. currently supports type, v
 			  (format nil (if diag "0symbol.~a" "~a") arg))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
-			  (format nil (if diag "0number.~a" "~a") (emit-c :code arg)))
+			  (if (< 0 arg)
+			      (format nil (if diag "0number.~a" "~a") (emit-c :code arg))
+			      (format nil (if diag "0number.~a" "(~a)") (emit-c :code arg))))
 			 ((stringp arg)
 			  ;; no parens around string
 			  (format nil (if diag  "0string.~a" "~a") arg)
@@ -1100,61 +1103,63 @@ entry return-values contains a list of return values. currently supports type, v
 									     (b (elt args (+ 1 i))))
 									 `(space using (= ,a ,b)))))))))
 		  
-		  (not (format nil "!(~a)" (emit (car (cdr code)))))
-		  (bitwise-not (format nil "~~(~a)" (emit (car (cdr code)))))
-		  (deref (format nil "*(~a)" (emit (car (cdr code)))))
-		  (ref (format nil "&(~a)" (emit (car (cdr code)))))
+		  (not (format nil "!~a" (emit `(paren* ,(car (cdr code))))))
+		  (bitwise-not (format nil "~~~a" (emit `(paren* ,(car (cdr code))))))
+		  (deref (format nil "*~a" (emit `(paren* ,(car (cdr code))))))
+		  (ref (format nil "&~a" (emit `(paren* ,(car (cdr code))))))
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
-		       (format nil "(~{~a~^+~})"
+		       (format nil "~{~a~^+~}"
 
 			       (mapcar
 				#'(lambda (x) (emit `(paren* ,x)))
 				args))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
-			   (format nil "(-(~a))" (emit (car args))) ;; py
-			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
+			   (format nil "-~a" (emit `(paren*, (car args)))) ;; py
+			   (format nil "~{(~a)~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (* (let ((args (cdr code)))
 		       (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (^ (let ((args (cdr code)))
 		       (format nil "~{(~a)~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (xor `(^ ,@(cdr code)))
 		  (& (let ((args (cdr code)))
-		       (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
+		       (format nil "(~{(~a)~^&~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (/ (let ((args (cdr code)))
 		       (if (eq 1 (length args))
-			   (format nil "(1.0/(~a))" (emit `(paren* ,(car args)))) ;; py
-			   (format nil "(~{(~a)~^/~})" (mapcar #'emit args)))))
+			   (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
+			   (format nil "~{(~a)~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 
 		  (or (let ((args (cdr code))) ;; py
-			(format nil "(~{(~a)~^ | ~})" (mapcar #'emit args))))
+			(format nil "~{(~a)~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (and (let ((args (cdr code))) ;; py
-			 (format nil "(~{(~a)~^ & ~})" (mapcar #'emit args))))
+			 (format nil "~{(~a)~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  #+nil (xor (let ((args (cdr code))) ;; py
 			       (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
 		  (logior (let ((args (cdr code)))
-			    (format nil "(~{(~a)~^||~})" (mapcar #'emit args))))
+			    (format nil "~{(~a)~^||~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (logand (let ((args (cdr code)))
-			    (format nil "(~{(~a)~^&&~})" (mapcar #'emit args))))
+			    (format nil "~{~a~^&&~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (= (destructuring-bind (a b) (cdr code)
 		       ;; = pair
-		       (format nil "~a=~a" (emit a) (emit b))))
+		       (format nil "~a=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (/= (destructuring-bind (a b) (cdr code)
-			(format nil "~a/=(~a)" (emit a) (emit b))))
+			(format nil "~a/=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (*= (destructuring-bind (a b) (cdr code)
-			(format nil "~a*=(~a)" (emit a) (emit b))))
+			(format nil "~a*=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (^= (destructuring-bind (a b) (cdr code)
 			(format nil "~a^=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (<= (destructuring-bind (a b &optional c) (cdr code)
 			(if c
-			    (format nil "(((~a)<=(~a)) && ((~a)<=(~a)))" (emit a) (emit b)
-				    (emit b) (emit c))
+			    (format nil "~a<=~a && ~a<=~a"
+				    (emit `(paren* ,a)) (emit `(paren* ,b))
+				    (emit `(paren* ,b)) (emit `(paren* ,c)))
 			    (format nil "~a<=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (< (destructuring-bind (a b &optional c) (cdr code)
 		       (if c
-			   (format nil "(((~a)<(~a)) && ((~a)<(~a)))" (emit a) (emit b)
-				   (emit b) (emit c))
+			   (format nil "~a<~a && ~a<~a"
+				   (emit `(paren* ,a)) (emit `(paren* ,b))
+				   (emit `(paren* ,b)) (emit `(paren* ,c)))
 			   (format nil "~a<~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (!= (destructuring-bind (a b) (cdr code)
 			(format nil "~a!=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
@@ -1165,16 +1170,10 @@ entry return-values contains a list of return values. currently supports type, v
 		       (format nil "~a%~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (<< (destructuring-bind (a &rest rest) (cdr code)
 			(format nil "~a~{<<~a~}"
-				(if (symbolp a)
-				    (emit a)
-				    (emit `(paren* ,a)))
-				(mapcar #'(lambda (a)
-					    (if (symbolp a)
-						(emit a)
-						(emit `(paren* ,a))))
-					rest))))
+				(emit `(paren* ,a))
+				(mapcar #'(lambda (x) (emit `(paren* ,x))) rest))))
 		  (>> (destructuring-bind (a &rest rest) (cdr code)
-			(format nil "(~a)~{>>(~a)~}" (emit a) (mapcar #'emit rest))))
+			(format nil "~a~{>>~a~}" (emit `(paren* ,a)) (mapcar #'(lambda (x) (emit `(paren* ,x))) rest))))
 		  #+nil (>> (destructuring-bind (a b) (cdr code)
 			      (format nil "(~a)>>~a" (emit a) (emit b))))
 		  (incf (destructuring-bind (a &optional b) (cdr code) ;; py
@@ -1183,8 +1182,8 @@ entry return-values contains a list of return values. currently supports type, v
 			      (format nil "~a++" (emit `(paren* ,a))))))
 		  (decf (destructuring-bind (a &optional b) (cdr code)
 			  (if b
-			      (format nil "(~a)-=(~a)" (emit a) (emit b))
-			      (format nil "(~a)--" (emit a)))))
+			      (format nil "~a-=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
+			      (format nil "~a--" (emit `(paren* ,a))))))
 		  (string (format nil "\"~a\"" (cadr code)))
 		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be intrduced, like R"x( .. )" .. )x"
 		  (string-r (format nil "R\"(~a)\"" (cadr code)))
@@ -1194,12 +1193,12 @@ entry return-values contains a list of return values. currently supports type, v
 			 (format nil "0x~x" number)))
 		  (? (destructuring-bind (a b &optional c) (cdr code)
 		       (if c
-			   (format nil "(~a) ? (~a) : (~a)" (emit a) (emit b) (emit c))
-			   (format nil "(~a) ? (~a)" (emit a) (emit b)))))
+			   (format nil "~a ? ~a : ~a" (emit `(paren* ,a)) (emit `(paren* ,b)) (emit `(paren* ,c)))
+			   (format nil "~a ? ~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
-				  (emit `(paren* ,condition))
+				  (emit condition)
 				  (emit `(progn ,true-statement)))
 			  (when false-statement
 			    (format s " else ~a"
@@ -1220,10 +1219,10 @@ entry return-values contains a list of return values. currently supports type, v
 
 		  (aref (destructuring-bind (name &rest indices) (cdr code)
 					;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
-			  (format nil "~a~{[~a]~}" (emit name) (mapcar #'emit indices))))
+			  (format nil "~a~{[~a]~}" (emit `(paren* name)) (mapcar #'(lambda (x) (emit `(paren* ,x))) indices))))
 
 		  (-> (let ((args (cdr code)))
-			(format nil "~{~a~^->~}" (mapcar #'emit args))))
+			(format nil "~{~a~^->~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) indices))))
 
 		  (lambda (parse-lambda code #'emit))
 
@@ -1235,7 +1234,7 @@ entry return-values contains a list of return values. currently supports type, v
 		      (destructuring-bind (keyform &rest clauses)
 			  (cdr code)
 			(format
-			 nil "switch(~a) ~a"
+			 nil "switch ( ~a ) ~a"
 			 (emit keyform)
 			 (emit
 			  `(progn
@@ -1256,7 +1255,7 @@ entry return-values contains a list of return values. currently supports type, v
 											      forms)
 									break)))))))))))
 		  (for (destructuring-bind ((start end iter) &rest body) (cdr code)
-			 (format nil "for (~@[~a~];~@[~a~];~@[~a~]) ~a"
+			 (format nil "for ( ~@[~a~];~@[~a~];~@[~a~] ) ~a"
 				 (emit start)
 				 (emit end)
 				 (emit iter)
@@ -1265,7 +1264,7 @@ entry return-values contains a list of return values. currently supports type, v
 				 (cdr code)
 			       (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance)
 				   (consume-declare body)
-				 (format str "for(~a ~a: ~a) ~a"
+				 (format str "for ( ~a ~a: ~a ) ~a"
 					 (or (lookup-type var :env env)
 					     *auto-keyword*)
 					 (emit var)
@@ -1285,7 +1284,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ,@body)))))
 		  #-generic-c
 		  (foreach (destructuring-bind ((item collection) &rest body) (cdr code)
-			     (format nil "for (auto& ~a : ~a) ~a"
+			     (format nil "for ( auto& ~a : ~a ) ~a"
 				     (emit item)
 				     (emit collection)
 				     (emit `(progn ,@body)))))
@@ -1302,7 +1301,7 @@ entry return-values contains a list of return values. currently supports type, v
 				     (progn ,@body))))))))
 		  (while ;; while condition {forms}*
 		   (destructuring-bind (condition &rest body) (cdr code)
-		     (format nil "while (~a) ~a"
+		     (format nil "while ( ~a ) ~a"
 			     (emit condition)
 			     (emit `(progn ,@body)))))
 		  (deftype
@@ -1419,8 +1418,8 @@ entry return-values contains a list of return values. currently supports type, v
 		 (cond ((integerp code) (format str "~a" code))
 		       ((floatp code)
 			(typecase code
-			  (single-float (format str "(~a)" (print-sufficient-digits-f32 code)))
-			  (double-float (format str "(~a)" (print-sufficient-digits-f64 code)))
+			  (single-float (format str "~a" (print-sufficient-digits-f32 code)))
+			  (double-float (format str "~a" (print-sufficient-digits-f64 code)))
 			  )
 			#+nil (format str "(~a)" (print-sufficient-digits-f64 code)))))))
 	  "")))
