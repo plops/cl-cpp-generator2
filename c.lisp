@@ -632,8 +632,12 @@ entry return-values contains a list of return values. currently supports type, v
 				  delete[]
 				  )
 			     #+nil (.* ->*)
-			     (* / %)
-			     (+ -)
+			     (* ;/ %
+			      )
+			     (/)
+			     (%)
+			     (+)
+			     (-)
 			     (<< >>)
 					;(<=>)
 			     (< <= > >=)
@@ -753,7 +757,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; arguments to see if we
 					   ;; need parentheses
 					   (format nil
-						   "~a"
+						   "/*760*/~a"
 						   (emit
 						    `(,op
 						      ,@(loop for e in rest
@@ -771,20 +775,21 @@ entry return-values contains a list of return values. currently supports type, v
 										  (if (< p0 p1)
 										      (progn
 											;; no parens required if first op has higher precedence
-											(format nil "~a" (emit e)))
+											(format nil "/*778*/~a" (emit e)))
 										      (progn
 											;; parens required
-											(format nil "~a" (emit `(paren* ,e))))))
+											(format nil "/*781*/~a" (emit `(paren* ,e))))))
 										(progn
 										  (break "operator of unknown precedence '~a'" (first e))
 										  ;; i think we should place parens
-										  (format nil "~a" (emit `(paren* ,e)))
+										  
+										  (format nil "/*786*/~a" (emit `(paren* ,e)))
 										  ))))
 									(progn ;; not an operator, so must be a function call
-									  (format nil "~a" (emit e)))))
+									  (format nil "/*789*/~a" (emit e)))))
 								  (progn
 								    ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-								    (format nil "~a" (emit e)))))))))
+								    (format nil "/*792*/~a" (emit e)))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think
@@ -792,14 +797,14 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; code without thinking
 					   ;; about parens
 					   (break "unsupported codepath ~a" arg)
-					   (format nil "~a"
+					   (format nil "/*800*/~a"
 						   (emit arg))))))
 
 				 (progn
 				   ;; if the first element is not an
 				   ;; operator, then we must deal with a
 				   ;; function call
-				   (format nil "~a" (emit arg))
+				   (format nil "/*807*/~a" (emit arg))
 				   ))))
 			 (t
 			  (break "unsupported argument for paren* '~a'" arg)))))
