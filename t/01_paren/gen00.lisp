@@ -44,11 +44,12 @@
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference) e
-	       (let ((emit-str (emit-c :code code)))
+	       (let ((emit-str (emit-c :code code :diag nil))
+		     (emit-str-diag (emit-c :code code :diag t)))
 		 (if (string= emit-str reference)
-		     (format s "~2,'0d ~a works~%" e-i emit-str)
-		     (format s "~2,'0d ~a should be ~a~%" e-i
-			     emit-str reference))
+		     (format s "~2,'0d ~a works diag ~a~%" e-i emit-str emit-str-diag)
+		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
+			     emit-str reference emit-str-diag))
 		 (write-source
 		  (asdf:system-relative-pathname
 		   'cl-cpp-generator2
