@@ -29,7 +29,9 @@
 		     (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 		     (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)")
 		     (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
-		     (:name hex1 :code (+ (hex ad) 3) :lisp-code (+ #xad 3) :reference "0xad+3"))
+		     (:name hex1 :code (+ (hex ad) 3) :lisp-code (+ #xad 3) :reference "0xad+3")
+		     (:name div0 :code (/ 17 5)  :lisp-code (floor 17 5) :reference "17/5")
+		     (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "17/5+3"))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference) e
@@ -53,6 +55,7 @@
 		      (assert (== ,code
 				  ,(eval lisp-code)))
 		      (return 0)))))))))
+
 
 
 
