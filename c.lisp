@@ -724,13 +724,13 @@ entry return-values contains a list of return values. currently supports type, v
 		       (cond
 			 ((symbolp arg)
 			  ;; no parens for symbol needed
-			  (format nil (if diag "726symbol.~a" "~a") arg))
+			  (format nil (if diag "0symbol.~a" "~a") arg))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
-			  (format nil (if diag "729number.~a" "~a") (emit-c :code arg)))
+			  (format nil (if diag "0number.~a" "~a") (emit-c :code arg)))
 			 ((stringp arg)
 			  ;; no parens around string
-			  (format nil (if diag  "732string.~a" "~a") arg)
+			  (format nil (if diag  "0string.~a" "~a") arg)
 			  #+nil (progn
 				  ;; a string may contain operators
 				  ;; only add parens if there are not already parens
@@ -758,7 +758,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; arguments to see if we
 					   ;; need parentheses
 					   (format nil
-						   (if diag "760intable.~a" "~a")
+						   (if diag "1intable.~a" "~a")
 						   (emit
 						    `(,op
 						      ,@(loop for e in rest
@@ -775,21 +775,23 @@ entry return-values contains a list of return values. currently supports type, v
 										  (if (< p0 p1)
 										      (progn
 											;; no parens required if first op has higher precedence
-											(format nil (if diag "778hi.~a" "~a") (emit e)))
+											(format nil (if diag "2hi.~a" "~a") (emit e)))
 										      (progn
 											;; parens required
-											(format nil (if diag "781lo.~a" "~a") (emit `(paren* ,e))))))
+											(format nil (if diag "2lo.~a" "~a") (emit `(paren* ,e))))))
 										(progn
 										  (break "operator of unknown precedence '~a'" (first e))
 										  ;; i think we should place parens
 										  
-										  (format nil (if diag "786unknown.~a" "~a") (emit `(paren* ,e)))
+										  (format nil (if diag "2unknown.~a" "~a") (emit `(paren* ,e)))
 										  ))))
 									(progn ;; not an operator, so must be a function call
-									  (format nil (if diag "789call.~a" "~a") (emit e)))))
+									  (format nil (if diag "2call.~a" "~a") (emit e)
+										  ))))
 								  (progn
 								    ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-								    (format nil (if diag "792symstrnum.~a" "~a") (emit e)))))))))
+								    (format nil (if diag "3symstrnum.~a" "~a") e ;(emit e)
+									    ))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think
@@ -797,14 +799,14 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; code without thinking
 					   ;; about parens
 					   (break "unsupported codepath ~a" arg)
-					   (format nil (if diag "800unsupported.~a" "~a")
+					   (format nil (if diag "3unsupported.~a" "~a")
 						   (emit arg))))))
 
 				 (progn
 				   ;; if the first element is not an
 				   ;; operator, then we must deal with a
 				   ;; function call
-				   (format nil (if diag "807call2.~a" "~a") (emit arg))
+				   (format nil (if diag "4call.~a" "~a") (emit arg))
 				   ))))
 			 (t
 			  (break "unsupported argument for paren* '~a'" arg)))))
@@ -1114,15 +1116,15 @@ entry return-values contains a list of return values. currently supports type, v
 			   (format nil "(-(~a))" (emit (car args))) ;; py
 			   (format nil "(~{(~a)~^-~})" (mapcar #'emit args)))))
 		  (* (let ((args (cdr code)))
-		       (format nil "(~{~a~^*~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
+		       (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (^ (let ((args (cdr code)))
-		       (format nil "(~{(~a)~^^~})" (mapcar #'emit args))))
+		       (format nil "~{(~a)~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))
 		  (xor `(^ ,@(cdr code)))
 		  (& (let ((args (cdr code)))
 		       (format nil "(~{(~a)~^&~})" (mapcar #'emit args))))
 		  (/ (let ((args (cdr code)))
 		       (if (eq 1 (length args))
-			   (format nil "(1.0/(~a))" (emit (car args))) ;; py
+			   (format nil "(1.0/(~a))" (emit `(paren* ,(car args)))) ;; py
 			   (format nil "(~{(~a)~^/~})" (mapcar #'emit args)))))
 
 		  (or (let ((args (cdr code))) ;; py
@@ -1143,7 +1145,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (*= (destructuring-bind (a b) (cdr code)
 			(format nil "~a*=(~a)" (emit a) (emit b))))
 		  (^= (destructuring-bind (a b) (cdr code)
-			(format nil "(~a)^=(~a)" (emit a) (emit b))))
+			(format nil "~a^=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (<= (destructuring-bind (a b &optional c) (cdr code)
 			(if c
 			    (format nil "(((~a)<=(~a)) && ((~a)<=(~a)))" (emit a) (emit b)
@@ -1155,12 +1157,12 @@ entry return-values contains a list of return values. currently supports type, v
 				   (emit b) (emit c))
 			   (format nil "~a<~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (!= (destructuring-bind (a b) (cdr code)
-			(format nil "(~a)!=(~a)" (emit a) (emit b))))
+			(format nil "~a!=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (== (destructuring-bind (a b) (cdr code)
 			(format nil "~a==~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
-
+		  
 		  (% (destructuring-bind (a b) (cdr code)
-		       (format nil "~a%~a" (emit a) (emit b))))
+		       (format nil "~a%~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))
 		  (<< (destructuring-bind (a &rest rest) (cdr code)
 			(format nil "~a~{<<~a~}"
 				(if (symbolp a)
