@@ -723,13 +723,13 @@ entry return-values contains a list of return values. currently supports type, v
 		       (cond
 			 ((symbolp arg)
 			  ;; no parens for symbol needed
-			  (format nil "~a" arg))
+			  (format nil "/*726symbol*/~a" arg))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
-			  (format nil "~a" (emit-c :code arg)))
+			  (format nil "/*729number*/~a" (emit-c :code arg)))
 			 ((stringp arg)
 			  ;; no parens around string
-			  (format nil "~a" arg)
+			  (format nil "/*732string*/~a" arg)
 			  #+nil (progn
 				  ;; a string may contain operators
 				  ;; only add parens if there are not already parens
@@ -757,7 +757,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; arguments to see if we
 					   ;; need parentheses
 					   (format nil
-						   "/*760*/~a"
+						   "/*760intable*/~a"
 						   (emit
 						    `(,op
 						      ,@(loop for e in rest
@@ -775,21 +775,21 @@ entry return-values contains a list of return values. currently supports type, v
 										  (if (< p0 p1)
 										      (progn
 											;; no parens required if first op has higher precedence
-											(format nil "/*778*/~a" (emit e)))
+											(format nil "/*778firstophigh*/~a" (emit e)))
 										      (progn
 											;; parens required
-											(format nil "/*781*/~a" (emit `(paren* ,e))))))
+											(format nil "/*781firstolow*/~a" (emit `(paren* ,e))))))
 										(progn
 										  (break "operator of unknown precedence '~a'" (first e))
 										  ;; i think we should place parens
 										  
-										  (format nil "/*786*/~a" (emit `(paren* ,e)))
+										  (format nil "/*786unknown*/~a" (emit `(paren* ,e)))
 										  ))))
 									(progn ;; not an operator, so must be a function call
-									  (format nil "/*789*/~a" (emit e)))))
+									  (format nil "/*789call*/~a" (emit e)))))
 								  (progn
 								    ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-								    (format nil "/*792*/~a" (emit e)))))))))
+								    (format nil "/*792symstrnum*/~a" (emit e)))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think
@@ -797,14 +797,14 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; code without thinking
 					   ;; about parens
 					   (break "unsupported codepath ~a" arg)
-					   (format nil "/*800*/~a"
+					   (format nil "/*800unsupported*/~a"
 						   (emit arg))))))
 
 				 (progn
 				   ;; if the first element is not an
 				   ;; operator, then we must deal with a
 				   ;; function call
-				   (format nil "/*807*/~a" (emit arg))
+				   (format nil "/*807call*/~a" (emit arg))
 				   ))))
 			 (t
 			  (break "unsupported argument for paren* '~a'" arg)))))
