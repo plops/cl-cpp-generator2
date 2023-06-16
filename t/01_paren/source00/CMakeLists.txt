@@ -5,7 +5,7 @@ project(my_cpp_programs)
 set(CMAKE_CXX_STANDARD 14)
 
 # Add all cpp files in the current directory as executables
-file(GLOB CPP_FILES *.cpp)
+file(GLOB CPP_FILES /home/martin/stage/cl-cpp-generator2/t/01_paren/source00/*.cpp)
 
 # Output the total number of cpp files found
 message(STATUS "Found ${CPP_FILES} .cpp files.")
