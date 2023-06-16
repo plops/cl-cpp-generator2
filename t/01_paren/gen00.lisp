@@ -25,7 +25,9 @@
     ;; the following tests check if paren* avoids redundant parentheses
     (loop for e in `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 		     (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
-		     (:name basic3 :code (* (+ 3 4) (/ 3 4) (/ (+ 1 2) 5)) :reference "(3+4)*3/4*(1+2)/5")
+		     (:name basic3 :code (* (+ 3 4) (/ 3 4) (/ (+ 1 2) 5))
+		      :lisp-code (* (+ 3 4) (floor 3 4) (floor (+ 1 2) 5))
+			    :reference "(3+4)*3/4*(1+2)/5")
 		     (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 		     (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)")
 		     (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
