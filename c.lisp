@@ -659,6 +659,22 @@ entry return-values contains a list of return values. currently supports type, v
 	   (when (member op e)
 	     (return e-i))))
 
+;; the emit function used to expand branches of the abstract syntax
+;; tree into strings. in order to avoid placing redundant parentheses
+;; i have to introduce the string-op class that will print like a
+;; string but also remembers the most recent operator. the operator
+;; can be used to perform a lookup and precedence comparison with the
+;; next operator.
+(defclass string-op ()
+  ((string :accessor string-of
+	   :initarg :string
+	   :initform (error "Must supply a string."))
+   (operator :accessor operator-of
+	     :initarg :operator
+	     :initform (error "Must supply an operator."))))
+(defmethod print-object ((object string-op) stream)
+  (format stream "~a" (string-of object)))
+
 (progn
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil) (in-class nil) (diag nil))
     "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
@@ -699,13 +715,13 @@ entry return-values contains a list of return values. currently supports type, v
 		  (doc ;; java doc comments
 		   (let ((args (cdr code)))
 		     (format nil "~a"
-			    (emit
-			     `(do0
-			       ,(format nil "/** ~a~%" (first args))
-			       ,@(loop for line in (rest args)
-				       collect
-				       (format nil "* ~a~%" line))
-			       ,(format nil "*/")))))
+			     (emit
+			      `(do0
+				,(format nil "/** ~a~%" (first args))
+				,@(loop for line in (rest args)
+					collect
+					(format nil "* ~a~%" line))
+				,(format nil "*/")))))
 		   )
 		  (paren*
 		   ;; paren arg
@@ -912,7 +928,7 @@ entry return-values contains a list of return values. currently supports type, v
 			    (format nil "#pragma ~{~a~^ ~}" args)))
 		  (include (let ((args (cdr code)))
 			     (when (null args)
-				 (break "no arguments in include"))
+			       (break "no arguments in include"))
 			     ;; include {name}*
 			     ;; (include <stdio.h>)   => #include <stdio.h>
 			     ;; (include interface.h) => #include "interface.h"
