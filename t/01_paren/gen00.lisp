@@ -56,7 +56,7 @@
 	    (:name div0 :code (/ 17 5)  :lisp-code (floor 17 5) :reference "17/5")
 	    (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "(17/5)+3")
 		 (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)")
-		 (:name array0 :code (+ (aref a 0) (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+(17/5)"
+		 (:name array0 :code (+ (aref a 0) 3 (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+3+(17/5)"
 			:pre (do0 "int a[1]={1};")))
 	  and e-i from 0
 	  do
