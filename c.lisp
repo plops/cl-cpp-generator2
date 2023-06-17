@@ -828,7 +828,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   (not (member op0 `(hex aref))))
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
-				(break "unknown operator '~a'" op))))
+				(break "unknown operator '~a'" op0))))
 			 ((and (typep arg 'string-op))
 			  (string-of arg))
 			 (t
