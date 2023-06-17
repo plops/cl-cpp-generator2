@@ -4,6 +4,9 @@ project(my_cpp_programs)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# Enable sanitizer and comprehensive warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -Wall -Wextra -Wpedantic")
+
 # Add all cpp files in the current directory as executables
 file(GLOB CPP_FILES *.cpp)
 

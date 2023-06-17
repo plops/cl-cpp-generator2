@@ -79,6 +79,8 @@
 		      (declare (values int)
 			       (type int argc)
 			       (type char** argv))
+		      "(void) argc;"
+		      "(void) argv;"
 		      (comments ,reference)
 		      ,(if pre
 			   pre
