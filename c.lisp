@@ -807,7 +807,7 @@ entry return-values contains a list of return values. currently supports type, v
 				(rest (cdr arg)))
 			    (assert (symbolp op0))
 			    (assert (listp rest))
-			    #-nil
+			    
 			    (if (member op0 *operators*)
 				(let ((p0 (lookup-precedence op0))
 				      (p1 (loop for e in rest
@@ -826,83 +826,7 @@ entry return-values contains a list of return values. currently supports type, v
 				  (if (< p0 p1)
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
-				(break "unknown operator '~a'" op))
-			    #+nil
-			    (if  (member op0 *operators*)
-				 (progn ;; we deal with a known operator
-				   (let ((p0 (lookup-precedence op0)))
-				     (if p0
-					 (progn
-					   ;; operator was found in
-					   ;; precedence table. look at
-					   ;; operators in all
-					   ;; arguments to see if we
-					   ;; need parentheses
-					   (m op0
-					      (format nil
-						      (if diag "Btable.(~a)" "(~a)")
-						      (emit
-						       `(,op0
-							 ,@(loop for e in rest
-								 collect
-								 (if (or (listp e)
-									 (typep e 'string-op))
-								     (let ((most-recent-op (cond ((listp e) (first e))
-												 ((typep e 'string-op) (operator-of e))
-												 (t (break "unknown most-recent-operator '~a'" e)))))
-								       
-					; argument is a list or a string-op, we should lookup the precedence of this operator with the operator from the upper level
-								       (if (member most-recent-op *operators*)
-									   (progn ;; known operator
-									     (let ((p1 (lookup-precedence most-recent-op)))
-									       (format t "<paren* op0='~a' p0=~a op1='~a' p1=~a>~%" op0 p0 most-recent-op p1)
-									       (if p1
-										   (progn
-										     ;; operator is present in precedence table
-										     (if (< p0 p1)
-											 (progn
-											   ;; no parens required if first op has higher precedence
-											   (m most-recent-op
-											      (format nil (if diag "Chi.~a" "~a") (emit e))))
-											 (progn
-											   ;; parens required
-											   (m most-recent-op
-											      (format nil (if diag "Clo.~a" "~a") (emit e))))))
-										   (progn
-										     (break "operator of unknown precedence '~a'" (first e))
-										     ;; i think we should place parens
-										     (m most-recent-op
-											(format nil (if diag "Cunknown.(~a)" "(~a)") (emit e)))
-										     ))))
-									   (progn ;; not an operator, so must be a function call
-									     (m 'call
-										(format nil (if diag "Ccall.~a" "~a") (emit e))))))
-								     (progn
-								       ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-
-								       ;; if it is a string it can't be "1+2" and will not need parentheses
-								       
-								       ;; any compound strings like "1+2" will actually be an object of type string-op that also stores the most recent operator and has been handled above
-								       (m op0
-									  (format nil (if diag "Dsymstrnum.~a" "~a") (emit e)))))))))))
-					 (progn
-					   ;; operator was not found in
-					   ;; precedence table. i think
-					   ;; we should just emit the
-					   ;; code without thinking
-					   ;; about parens
-					   (break "unsupported codepath ~a" arg)
-					   (m op0
-					      (format nil (if diag "Eunsupported.~a" "~a")
-						      (emit arg)))))))
-
-				 (progn
-				   ;; if the first element is not an
-				   ;; operator, then we must deal with a
-				   ;; function call
-				   (m 'call
-				      (format nil (if diag "Fcall.~a" "~a") (emit arg)))
-				   ))))
+				(break "unknown operator '~a'" op))))
 			 ((and (typep arg 'string-op))
 			  (string-of arg))
 			 (t
