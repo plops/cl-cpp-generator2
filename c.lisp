@@ -773,7 +773,7 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
 			  (m 'number
-			     (if (< 0 arg)
+			     (if (<= 0 arg)
 				 (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
 				 (format nil (if diag "Anumber.(~a)" "(~a)") (emit-c :code arg)))))
 			 ((stringp arg)
@@ -825,7 +825,7 @@ entry return-values contains a list of return values. currently supports type, v
 				  ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 				  ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
 				  (if (and (< p0 p1)
-					   (not (member op0 `(hex))))
+					   (not (member op0 `(hex aref))))
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
 				(break "unknown operator '~a'" op))))
@@ -1272,7 +1272,7 @@ entry return-values contains a list of return values. currently supports type, v
 		  (aref (m 'aref
 			   (destructuring-bind (name &rest indices) (cdr code)
 					;(format t "aref: ~a ~a~%" (emit name) (mapcar #'emit indices))
-			     (format nil "~a~{[~a]~}" (emit `(paren* name)) (mapcar #'(lambda (x) (emit `(paren* ,x))) indices)))))
+			     (format nil "~a~{[~a]~}" (emit `(paren* ,name)) (mapcar #'(lambda (x) (emit `(paren* ,x))) indices)))))
 
 		  (-> (m '->
 			 (let ((args (cdr code)))

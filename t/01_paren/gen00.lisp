@@ -55,17 +55,19 @@
 	    (:name hex1 :code (+ (hex ad) 3) :lisp-code (+ #xad 3) :reference "0xad+3")
 	    (:name div0 :code (/ 17 5)  :lisp-code (floor 17 5) :reference "17/5")
 	    (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "(17/5)+3")
-	    (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)"))
+		 (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)")
+		 (:name array0 :code (+ (aref a 0) (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+(17/5)"
+			:pre (do0 "int a[1]={1};")))
 	  and e-i from 0
 	  do
-	     (destructuring-bind (&key code name (lisp-code code) reference) e
+	     (destructuring-bind (&key code name (lisp-code code) reference pre) e
 	       (let ((emit-str (emit-c :code code :diag nil))
 		     (emit-str-diag (emit-c :code code :diag t)))
 		 (if (string= (m-of emit-str) reference)
 		     (format s "~2,'0d ~a works~%" e-i emit-str)
 		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
 			     emit-str reference emit-str-diag))
-		 (write-source
+		 (write-source 
 		  (asdf:system-relative-pathname
 		   'cl-cpp-generator2
 		   (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
@@ -78,15 +80,20 @@
 			       (type int argc)
 			       (type char** argv))
 		      (comments ,reference)
+		      ,(if pre
+			   pre
+			   "")
 		      (if (== ,code
 			      ,(eval lisp-code))
 			  (<< "std::cout" (string ,(format nil "~a OK" reference))
 			      "std::endl")
-			  (<< "std::cout" (string ,(format nil "~a FAIL " reference))
+			  (<< "std::cout" (string ,(format nil "~a \\033[31mFAIL\\033[0m " reference))
 			      ,code
 			      (string " != ")
 			      ,(eval lisp-code)
 			      "std::endl"))
-		      (return 0)))))))))
+		      (return 0)))
+		  :format nil
+		  :tidy nil))))))
 
 
