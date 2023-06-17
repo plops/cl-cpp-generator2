@@ -70,20 +70,23 @@
 		   :pre (defun H (n)
 			  (declare (type int n)
 				   (values int))
-			  (return 1)))
+			  (return (+ 1 (* 0 n)))))
 	    (:name colon0 :code (<< bla--i (+ 3 1))
 		   :lisp-code (ash 3 (+ 3 1))
 		   :reference "bla::i<<(3+1)"
 		   :pre (namespace bla
 				   "int i = 3;"))
-	    (:name string0 :code (+ (string "hello ")
-				    (string "world"))
-		   :lisp-code (string "hello world")
-		   :reference "\"hello \"+\"world\""
-		   ))
+	    (:name string0
+	     :code (+ str
+		      (string "hello ")
+		      (string "worlds"))
+	     :pre "std::string str =\"\";"
+	     :lisp-code "hello worlds"
+	     :reference "str+\"hello \"+\"worlds\""
+	     :supersede-fail (<< std--cout (string "hello world \\033[31mFAIL\\033[0m ")  std--endl)))
 	  and e-i from 0
 	  do
-	     (destructuring-bind (&key code name (lisp-code code) reference pre) e
+	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
 	       (let ((emit-str (emit-c :code code :diag nil))
 		     (emit-str-diag (emit-c :code code :diag t)))
 		 (if (string= (m-of emit-str) reference)
@@ -95,30 +98,35 @@
 		   'cl-cpp-generator2
 		   (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
 				    *source-dir*))
-		  `(do0
-		    (include<> cassert
-			       iostream)
-		    ,(if pre
-			   pre
-			   `(comments "no pre"))
-		    (defun main (argc argv)
-		      (declare (values int)
-			       (type int argc)
-			       (type char** argv))
-		      "(void) argc;"
-		      "(void) argv;"
-		      (comments ,reference)
+		  (let ((lisp-var (if (stringp lisp-code)
+				    `(string ,lisp-code)
+				    (eval lisp-code))))
+		   `(do0
+		     (include<> cassert
+				iostream)
+		     ,(if pre
+			  pre
+			  `(comments "no pre"))
+		     (defun main (argc argv)
+		       (declare (values int)
+				(type int argc)
+				(type char** argv))
+		       "(void) argc;"
+		       "(void) argv;"
+		       (comments ,reference)
 		      
-		      (if (== ,code
-			      ,(eval lisp-code))
-			  (<< "std::cout" (string ,(format nil "~a OK" reference))
-			      "std::endl")
-			  (<< "std::cout" (string ,(format nil "~a \\033[31mFAIL\\033[0m " reference))
-			      ,code
-			      (string " != ")
-			      ,(eval lisp-code)
-			      "std::endl"))
-		      (return 0)))
+		       (if (== ,code
+			       ,lisp-var)
+			   (<< "std::cout" (string ,(format nil "~a OK" (substitute #\' #\" reference)))
+			       "std::endl")
+			   ,(if supersede-fail
+			       supersede-fail
+			       `(<< "std::cout" (string ,(format nil "~a \\033[31mFAIL\\033[0m " (substitute #\' #\" reference)))
+				   ,code
+				   (string " != ")
+				   ,lisp-var
+				   "std::endl")))
+		       (return 0))))
 		  :format nil
 		  :tidy nil))))))
 

@@ -616,6 +616,7 @@ entry return-values contains a list of return values. currently supports type, v
 			     (hex)
 			     (char)
 			     (string)
+			     (paren) ;; ?? does that go here
 			     (	       ; incf decf (only with a++ a--)
 			      ;; unary+ unary-
 			      aref	; call cast
@@ -646,10 +647,11 @@ entry return-values contains a list of return values. currently supports type, v
 			     (or )
 			     (logand &&)
 			     (logior )
-			     (? throw co_yield setf	   ;+= -=
+			     (? throw co_yield setf incf decf	   ;+= -=
 				= *= /= %= <<= >>= &= ^= ; |=
 				)
-			     (comma )))
+			     (comma )
+			     ))
 
 
 
