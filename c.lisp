@@ -825,7 +825,7 @@ entry return-values contains a list of return values. currently supports type, v
 				  ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 				  ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
 				  (if (and (< p0 p1)
-					   (not (member op0 `(hex aref))))
+					   (not (member op0 `(hex aref string))))
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
 				(progn

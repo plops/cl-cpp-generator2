@@ -79,7 +79,7 @@
 	    (:name string0 :code (+ (string "hello ")
 				    (string "world"))
 		   :lisp-code (string "hello world")
-		   :reference "\"hello\"+\"world\""
+		   :reference "\"hello \"+\"world\""
 		   ))
 	  and e-i from 0
 	  do
