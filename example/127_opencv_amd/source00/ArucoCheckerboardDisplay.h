@@ -1,9 +1,9 @@
-#ifndef AURCOCHECKERBOARDDISPLAY_H
-#define AURCOCHECKERBOARDDISPLAY_H
+#ifndef ARUCOCHECKERBOARDDISPLAY_H
+#define ARUCOCHECKERBOARDDISPLAY_H
 
 #include "CheckerboardDisplayInterface.hpp"
 
-class AurcoCheckerboardDisplay  {
+class ArucoCheckerboardDisplay : public CheckerboardDisplayInterface {
         public:
         void displayCheckerboard (int squaresX, int squaresY, int squareLength, cv::Ptr<cv::aruco::Dictionary> dictionary)       ;  
         private:
@@ -11,8 +11,7 @@ class AurcoCheckerboardDisplay  {
         int squares_y_;
         int square_length_;
         cv::Ptr<cv::aruco::Dictionary> dictionary_;
-        cv::Size board_size_;
         cv::Mat board_image_;
 };
 
-#endif /* !AURCOCHECKERBOARDDISPLAY_H */
+#endif /* !ARUCOCHECKERBOARDDISPLAY_H */

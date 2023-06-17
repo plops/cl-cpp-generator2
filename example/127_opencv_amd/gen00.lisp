@@ -24,7 +24,8 @@
 		   (squares-y :type int :param t)
 		   (square-length :type int :param t)
 		   (dictionary :type "cv::Ptr<cv::aruco::Dictionary>" :param t)
-		   (board-size :type "cv::Size" :initform (paren squaresX squaresY))
+		   #+nil (board-size :type "cv::Size" ;:initform (paren squaresX squaresY)
+			       )
 		   (board-image :type "cv::Mat")
 		   )))
 
@@ -32,7 +33,7 @@
      (asdf:system-relative-pathname
       'cl-cpp-generator2
       (merge-pathnames (format nil "~a.hpp"
-			       interface-name)
+			       interface-name) 
 		       *source-dir*))
      `(do0
        "#pragma once"
@@ -61,7 +62,7 @@
      `(do0
        )
      :code `(do0
-	     (defclass ,name ()	 
+	     (defclass ,name "public CheckerboardDisplayInterface"	 
 	       "public:"
 	       #+nil (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
@@ -104,7 +105,7 @@
 		 (defmethod displayCheckerboard (squaresX squaresY squareLength dictionary)
 		   (declare (type int squaresX squaresY squareLength)
 			    (type "cv::Ptr<cv::aruco::Dictionary>" dictionary))
-		   (cv--aruco--drawCharucoBoard boardSize
+		   (cv--aruco--drawCharucoBoard (cv--Size squaresX squaresY) ; boardSize
 						squareLength
 					       (/ squareLength 2)
 					       dictionary
@@ -129,9 +130,14 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> 
+     (include<>
+      fruit/fruit.h
       iostream
       opencv2/core/ocl.hpp)
+     (include "CheckerboardDisplayInterface.hpp"
+	      "ArucoCheckerboardDisplay.h")
+
+     "using fruit::Component;"
      
      (defun main (argc argv)
        (declare (values int)
@@ -140,6 +146,14 @@
        "(void) argc;"
        "(void) argv;"
        ,(lprint :vars `((cv--ocl--haveOpenCL)))
+
+       (let ((injector (fruit--Injector<CheckerBoardDisplayInterface>
+			(getCheckerboardDisplayComponent)))
+	     (display (injector.get<CheckerboardDisplayInterface*>))
+	     (dictionary (cv--aruco--getPredefinedDictionary cv--aruco--DICT_6x6_250))
+	     )
+	 (display->displayCheckerboard 5 7 100 dictionary))
+       
        (return 0)))
    :format t
    :tidy t))

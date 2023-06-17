@@ -18,7 +18,10 @@ include_directories(
  ${OpenCV_INCLUDE_DIRS}
  ${FRUIT_INCLUDE_DIR} )
 
-add_executable(OpenCLCheck main.cpp)
+add_executable(OpenCLCheck
+  main.cpp
+  ArucoCheckerboardDisplay.cpp
+)
 
 target_link_libraries(OpenCLCheck
   ${OpenCV_LIBS} # needs vtk and hdf5

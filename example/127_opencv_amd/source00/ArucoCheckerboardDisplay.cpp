@@ -1,11 +1,11 @@
 // no preamble
 
-#include "AurcoCheckerboardDisplay.h"
-void AurcoCheckerboardDisplay::displayCheckerboard(
+#include "ArucoCheckerboardDisplay.h"
+void ArucoCheckerboardDisplay::displayCheckerboard(
     int squaresX, int squaresY, int squareLength,
     cv::Ptr<cv::aruco::Dictionary> dictionary) {
-  cv::aruco::drawCharucoBoard(boardSize, squareLength, squareLength / 2,
-                              dictionary, boardImage);
+  cv::aruco::drawCharucoBoard(cv::Size(squaresX, squaresY), squareLength,
+                              squareLength / 2, dictionary, boardImage);
   cv::imshow("checkerboard", boardImage);
   cv::waitKey(0);
 }
