@@ -24,46 +24,44 @@
 		     *source-dir*))
    `(do0
      (include<> armadillo
-		iostream)
-     (defun main (argc argv)
-       (declare (values int)
-		(type int argc)
-		(type char** argv))
-       "(void) argc;"
-       "(void) argv;"
+		iostream
+		memory
+		SFML/Graphics.hpp)
 
+     (defun compute_psi ()
+       (declare (values "arma::vec"))
        (comments "N .. Number of discretizatino points"
 		 "L .. Size of the box"
 		 "dx .. Grid spacing")
        (let ((N 1000)
 	     (L 1d0)
 	     (dx (/ L (+ N 1)))
-	    #+nil (main_diag (*  (arma--ones<arma--vec> N)
-			    (/ 2d0 (* dx dx))))
-	   #+nil  (off_diag (*  (arma--ones<arma--vec> (- N 1))
-			    (/ -1d0 (* dx dx))))
+	     #+nil (main_diag (*  (arma--ones<arma--vec> N)
+				  (/ 2d0 (* dx dx))))
+	     #+nil  (off_diag (*  (arma--ones<arma--vec> (- N 1))
+				  (/ -1d0 (* dx dx))))
 	     (H (arma--sp_mat N N)
 		#+nil (arma--spdiagmat (curly off_diag
-				     main_diag
-				     off_diag)
-			      (curly -1 0 1))))
-	  (dotimes (i N)
+					      main_diag
+					      off_diag)
+				       (curly -1 0 1))))
+	 (dotimes (i N)
 	   (when (< 0 i)
 	     (comments "subdiagonal")
 	     (setf (H i (- i 1))
 
 		   (/ -1d0
 		      (* dx dx))))
-	    (comments "main diagonal")
-	    (setf (H i i)
-		  (/ 2d0
-		     (* dx dx)))
+	   (comments "main diagonal")
+	   (setf (H i i)
+		 (/ 2d0
+		    (* dx dx)))
 	   
-	    (when (< i (- N 1))
-	      (comments "superdiagonal")
-	      (setf (H i (+ i 1))
-		    (/ -1d0
-		       (* dx dx)))))
+	   (when (< i (- N 1))
+	     (comments "superdiagonal")
+	     (setf (H i (+ i 1))
+		   (/ -1d0
+		      (* dx dx)))))
 	 (comments "Initialize a random vector")
 	 (let ((psi ("arma::randu<arma::vec>" N)))
 	   #+nil (dotimes (iter 10000)
@@ -79,11 +77,25 @@
 		   (string "Eigensolver failed.")
 		   energy
 		   std--endl)
-	       (return -1))
+	       )
 	     (<< std--cout
 		 (string "Ground state energy: ")
 		 (energy 0)
 		 std--endl))))
+       (return psi))
+     
+     (defun main (argc argv)
+       (declare (values int)
+		(type int argc)
+		(type char** argv))
+       "(void) argc;"
+       "(void) argv;"
+       (let ((psi (compute_psi))
+	     (win (std--make_unique<sf--RenderWindow>
+		   (sf--VideoMode 800 600)
+		   (string "psi plot")))))
+       
+       
        
        (return 0)))
    :format t

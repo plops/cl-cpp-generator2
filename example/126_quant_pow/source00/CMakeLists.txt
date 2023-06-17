@@ -9,6 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add Armadillo library directory
 link_directories(/home/martin/src/armadillo-code/b/)
 
+# Find SFML
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+
 # Add include directory
 # Assuming that Armadillo headers are in the 'include' subdirectory of armadillo-code
 include_directories(/home/martin/src/armadillo-code/include/)
@@ -17,4 +20,7 @@ include_directories(/home/martin/src/armadillo-code/include/)
 add_executable(ParticleInABox main.cpp)
 
 # Link Armadillo
-target_link_libraries(ParticleInABox armadillo lapack blas)
+target_link_libraries(ParticleInABox
+armadillo lapack blas
+sfml-graphics sfml-window sfml-system
+)

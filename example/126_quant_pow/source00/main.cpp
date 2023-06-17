@@ -1,9 +1,9 @@
+#include <SFML/Graphics.hpp>
 #include <armadillo>
 #include <iostream>
+#include <memory>
 
-int main(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
+arma::vec compute_psi() {
   // N .. Number of discretizatino points
   // L .. Size of the box
   // dx .. Grid spacing
@@ -34,9 +34,18 @@ int main(int argc, char **argv) {
   auto status = arma::eigs_sym(energy, psi, H, 1, "sm");
   if (false == status) {
     std::cout << "Eigensolver failed." << energy << std::endl;
-    return -1;
   }
   std::cout << "Ground state energy: " << energy(0) << std::endl;
+
+  return psi;
+}
+
+int main(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
+  auto psi = compute_psi();
+  auto win =
+      std::make_unique<sf::RenderWindow>(sf::VideoMode(800, 600), "psi plot");
 
   return 0;
 }
