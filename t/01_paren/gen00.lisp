@@ -64,18 +64,23 @@
 				   3 (/ 17 5))
 	     :lisp-code (+ 2 3 (floor 17 5)) :reference "a[(12*(3+4))-83]+3+(17/5)"
 	     :pre "int a[2]={1,2};")
-	    (:name call :code (* 3  (H (+ 3 1)))
+	    (:name call0 :code (* 3  (H (+ 3 1)))
 		   :lisp-code (* 3 1)
 		   :reference "3*H(3+1)"
 		   :pre (defun H (n)
 			  (declare (type int n)
 				   (values int))
 			  (return 1)))
-	    (:name colon :code (<< bla--i (+ 3 1))
+	    (:name colon0 :code (<< bla--i (+ 3 1))
 		   :lisp-code (ash 3 (+ 3 1))
 		   :reference "bla::i<<(3+1)"
 		   :pre (namespace bla
-				   "int i = 3;")))
+				   "int i = 3;"))
+	    (:name string0 :code (+ (string "hello ")
+				    (string "world"))
+		   :lisp-code (string "hello world")
+		   :reference "\"hello\"+\"world\""
+		   ))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre) e
