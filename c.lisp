@@ -822,8 +822,10 @@ entry return-values contains a list of return values. currently supports type, v
 							     p1
 							     (+ 1 (length *precedence*))))
 						       (+ 1 (length *precedence*))))))
-				  ;(format t "<paren* p0=~a p1=~a>~%" p0 p1)
-				  (if (< p0 p1)
+				  ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
+				  ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
+				  (if (and (< p0 p1)
+					   (not (member op0 `(hex))))
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
 				(break "unknown operator '~a'" op))))
