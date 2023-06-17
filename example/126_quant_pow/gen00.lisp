@@ -49,28 +49,36 @@
 			      (curly -1 0 1))))
 	  (dotimes (i N)
 	   (when (< 0 i)
+	     (comments "subdiagonal")
 	     (setf (H i (- i 1))
+
 		   (/ -1d0
 		      (* dx dx))))
-	   (setf (H i i)
-		 (/ 2d0
-		    (* dx dx)))
-	   (when (< i (- N 1))
-	     (setf (H i (+ i 1))
-		   (/ -1d0
-		      (* dx dx)))))
+	    (comments "main diagonal")
+	    (setf (H i i)
+		  (/ 2d0
+		     (* dx dx)))
+	   
+	    (when (< i (- N 1))
+	      (comments "superdiagonal")
+	      (setf (H i (+ i 1))
+		    (/ -1d0
+		       (* dx dx)))))
+	 (comments "Initialize a random vector")
 	 (let ((psi ("arma::randu<arma::vec>" N)))
 	   #+nil (dotimes (iter 10000)
-	     (setf psi (* H psi))
-	     (/= psi (arma--norm psi)))
+		   (setf psi (* H psi))
+		   (/= psi (arma--norm psi)))
+	   (comments "Normalize psi")
+	   (/= psi (arma--norm psi))
 	   (let ((energy (arma--vec))
 		 ;; smallest magnitude
 		 (status (arma--eigs_sym energy psi H 1 (string "sm"))))
 	     (when (== false status)
 	       (<< std--cout
-		 (string "Eigensolver failed.")
-		 energy
-		 std--endl)
+		   (string "Eigensolver failed.")
+		   energy
+		   std--endl)
 	       (return -1))
 	     (<< std--cout
 		 (string "Ground state energy: ")
