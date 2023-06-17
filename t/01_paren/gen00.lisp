@@ -71,16 +71,22 @@
 		   (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
 				    *source-dir*))
 		  `(do0
-		    (include<> cassert)
+		    (include<> cassert
+			       iostream)
 		    (defun main (argc argv)
 		      (declare (values int)
 			       (type int argc)
 			       (type char** argv))
 		      (comments ,reference)
-		      (assert (== ,code
-				  ,(eval lisp-code)))
+		      (if (== ,code
+			      ,(eval lisp-code))
+			  (<< "std::cout" (string ,(format nil "~a OK" reference))
+			      "std::endl")
+			  (<< "std::cout" (string ,(format nil "~a FAIL " reference))
+			      ,code
+			      (string " != ")
+			      ,(eval lisp-code)
+			      "std::endl"))
 		      (return 0)))))))))
-
-
 
 
