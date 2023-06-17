@@ -70,7 +70,12 @@
 		   :pre (defun H (n)
 			  (declare (type int n)
 				   (values int))
-			  (return 1))))
+			  (return 1)))
+	    (:name colon :code (<< bla--i (+ 3 1))
+		   :lisp-code (ash 3 (+ 3 1))
+		   :reference "bla::i<<(3+1)"
+		   :pre (namespace bla
+				   "int i = 3;")))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre) e

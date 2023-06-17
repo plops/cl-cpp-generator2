@@ -769,7 +769,7 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((symbolp arg)
 			  ;; no parens for symbol needed
 			  (m 'symbol
-			     (format nil (if diag "Asymbol.~a" "~a") arg)))
+			     (format nil (if diag "Asymbol.~a" "~a") (emit-c :code arg))))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
 			  (m 'number
