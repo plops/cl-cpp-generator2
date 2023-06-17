@@ -761,6 +761,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (format nil "(~a)" (emit (cadr code)))
 		   #-nil
 		   (progn ;; FIXME % together with * is not handled properly
+		     ;(format t "<paren* code='~a'>~%" code)
 		     (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
 		     (let ((arg (cadr code)))
@@ -943,32 +944,41 @@ entry return-values contains a list of return values. currently supports type, v
 				    (mapcar
 				     #'(lambda (xx)
 					 (let* ((x (m-of xx))
-						(b (emit `(indent ,x) :dl 0)))
-					   (format t "<int-do0 type='~a' code='~a' b='~a'>~%" (type-of xx) xx b)
+						(bx (emit `(indent ,x) :dl 0))
+						(b (m-of bx))
+						(semicolon-maybe
+						  (cond
+						    ((and (typep b 'sequence)
+							  (or (eq #\; (aref b (- (length b) 1)))
+							      (and (typep x 'string))
+							      (and (typep x '(array character (*))))
+							      (and (listp x)
+								   (member (car x) `(defun do do0 progn
+										      for for-range dotimes
+										      while
+										      include include<> case
+										      when if unless
+										      let pragma
+										      split-header-and-code
+										      defun defun* defmethod defclass
+										      comments comment doc
+										      namespace)))))
+						     "")
+						    ((and (typep b 'sequence)
+							  (eq #\Newline (aref b (- (length b) 1)))) ;; don't place semicolon after newline
+						     #\Newline)
+						    ((not (typep b 'sequence))
+						     (break "not a sequence type='~a' variable='~a'" (type-of b) b1))
+						    (t ";"))))
+					   (format t "<int-do0 type='~a' code='~a' b='~a' semicolon='~a'>~%"
+						   (type-of xx) xx b semicolon-maybe)
 					   
 					   (format nil "~a~a"
 						   b
 						   ;; don't add semicolon if there is already one
 						   ;; or if x contains a string
 						   ;; or if x is an s-expression with a c thing that doesn't end with semicolon
-						   (if (or (eq #\; (aref b (- (length b) 1)))
-							   (and (typep x 'string))
-							   (and (typep x '(array character (*))))
-							   (and (listp x)
-								(member (car x) `(defun do do0 progn
-										   for for-range dotimes
-										   while
-										   include include<> case
-										   when if unless
-										   let pragma
-										   split-header-and-code
-										   defun defun* defmethod defclass
-										   comments comment doc
-										   namespace))))
-						       ""
-						       (if (eq #\Newline (aref b (- (length b) 1))) ;; don't place semicolon after newline
-							   #\Newline
-							   ";")))))
+						   semicolon-maybe)))
 				     (cdr code)))
 			    (terpri s)
 			    (format t "</do0>~%")
