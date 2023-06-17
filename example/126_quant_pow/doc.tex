@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\begin{document}
+
+\title{Ground State Simulation of a Particle in a Box Using Power Iteration}
+\author{Author's Name}
+\date{\today}
+\maketitle
+
+\section{Introduction}
+We present a simple C++ implementation for finding the ground state of
+a quantum particle in a one-dimensional box using power iteration. The
+box is discretized into $N$ points and the Hamiltonian of the system
+is approximated as a sparse, tridiagonal matrix.
+
+\section{Method}
+The Hamiltonian of the particle in the box is given by
+\begin{equation}
+H = -\frac{{\hbar}^2}{2m} \frac{d^2}{dx^2},
+\end{equation}
+where $\hbar$ is the reduced Planck constant, $m$ is the mass of the
+particle, and $x$ is the position. For simplicity, we have set $\hbar
+= m = 1$.
+
+We discretize the interval $0 < x < L$ into $N$ points and approximate
+the second derivative using finite differences. The Hamiltonian is
+then represented as a sparse matrix, $H$, of size $N \times N$.
+
+To find the ground state of the system, we use the power iteration
+method. We initialize a random vector, $\psi$, and update it by
+repeated multiplication with $H$ and normalization.
+
+\section{Implementation}
+The code uses the Armadillo C++ library for linear algebra
+operations. A sparse matrix is created for the Hamiltonian, reducing
+memory requirements and improving the efficiency of the matrix-vector
+multiplication in the power iteration method. After the power
+iteration converges, the ground state energy and wavefunction of the
+system are calculated.
+
+\end{document}
