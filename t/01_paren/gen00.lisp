@@ -1,3 +1,9 @@
+(declaim (optimize (debug 3)
+		   (speed 0)
+		   (safety 3)))
+
+(setf sb-ext:*muffled-warnings* nil)
+
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "cl-ppcre")
@@ -5,8 +11,11 @@
 
 (in-package :cl-cpp-generator2)
 
+#+nil
+(trace emit-c)
+
 (progn
-   (progn
+  (progn
     (defparameter *source-dir* #P"t/01_paren/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
@@ -18,22 +27,26 @@
   (ensure-directories-exist *full-source-dir*)
 
   (with-open-file (s "/home/martin/stage/cl-cpp-generator2/t/01_paren/source00/strings.txt"
-			    :if-exists :supersede
-			    :if-does-not-exist :create
-			     :direction :output)
+		     :if-exists :supersede
+		     :if-does-not-exist :create
+		     :direction :output)
 
     ;; the following tests check if paren* avoids redundant parentheses
     (loop for e in `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 		     (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 		     (:name basic3 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
 		      :lisp-code (* (+ 3 4) (floor 13 4) (floor (+ 171 2) 5))
-			    :reference "(3+4)*3/4*(1+2)/5")
-		      (:name basic4 :code (* (+ 3 4) (- 7 3))
-			    :reference "(3+4)*(7-3)")
+		      :reference "(3+4)*3/4*(1+2)/5")
+		     (:name basic4 :code (* (+ 3 4) (- 7 3))
+		      :reference "(3+4)*(7-3)")
 		     (:name basic5 :code (+ (+ 3 4) (- 7 3))
-			    :reference "3+4+7-3")
+		      :reference "3+4+7-3")
 		     (:name basic6 :code (- (+ 3 4) (- 7 3))
-			    :reference "3+4-(7-3)")
+		      :reference "3+4-(7-3)")
+		     (:name basic7 :code (* 2 -1)
+		      :reference "2*-1")
+		     (:name basic8 :code (- 2 -1)
+		      :reference "2-(-1)")
 		     (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 		     (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)")
 		     (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
@@ -46,10 +59,10 @@
 	     (destructuring-bind (&key code name (lisp-code code) reference) e
 	       (let ((emit-str (emit-c :code code :diag nil))
 		     (emit-str-diag (emit-c :code code :diag t)))
-		 (if (string= emit-str reference)
-		     (format s "~2,'0d ~a works~%" e-i emit-str)
-		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
-			     emit-str reference emit-str-diag))
+		 #+nil (if (string= emit-str reference)
+			   (format s "~2,'0d ~a works~%" e-i emit-str)
+			   (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
+				   emit-str reference emit-str-diag))
 		 (write-source
 		  (asdf:system-relative-pathname
 		   'cl-cpp-generator2

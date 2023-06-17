@@ -87,9 +87,10 @@
 				 ignore-hash
 				 (format t)
 				 (tidy t))
+  (format t "<write-source code='~a'>~%" code)
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
-	 (code-str (emit-c :code code :header-only nil))
+	 (code-str (m-of (emit-c :code code :header-only nil)))
 	 (fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
 
@@ -675,11 +676,25 @@ entry return-values contains a list of return values. currently supports type, v
 (defmethod print-object ((object string-op) stream)
   (format stream "~a" (string-of object)))
 
-(defmethod m (op str)
+(defun m (op str)
   "I need to make a lot of these instances, so a short function name is important."
   (make-instance 'string-op
 		 :string str
 		 :operator op))
+
+(defun m-of (obj-or-string)
+  "This function is a shortcut to convert all types that can occur inside emit-c into a string. Except lists: Those stay lists."
+  (typecase obj-or-string
+    (string-op
+     (string-of obj-or-string))
+    (string
+     obj-or-string)
+    (cons
+     obj-or-string)
+    (symbol
+     (format nil "~a" obj-or-string))
+    (t
+     (break "variable '~a' of unknown type '~a'" obj-or-string (type-of obj-or-string)))))
 
 (progn
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil) (in-class nil) (diag nil))
@@ -697,6 +712,7 @@ entry return-values contains a list of return values. currently supports type, v
 		     :header-only header-only-p
 		     :in-class in-class-p
 		     :diag current-diag)))
+      (format t "<emit-c type='~a' code='~a'>~%" (type-of code) code)
       (if code
 	  (if (listp code)
 	      (progn
@@ -729,14 +745,14 @@ entry return-values contains a list of return values. currently supports type, v
 		  (doc ;; java doc comments
 		   (let ((args (cdr code)))
 		     (m 'doc
-		      (format nil "~a"
-			      (emit
-			       `(do0
-				 ,(format nil "/** ~a~%" (first args))
-				 ,@(loop for line in (rest args)
-					 collect
-					 (format nil "* ~a~%" line))
-				 ,(format nil "*/"))))))
+			(format nil "~a"
+				(emit
+				 `(do0
+				   ,(format nil "/** ~a~%" (first args))
+				   ,@(loop for line in (rest args)
+					   collect
+					   (format nil "* ~a~%" line))
+				   ,(format nil "*/"))))))
 		   )
 		  (paren*
 		   ;; paren arg
@@ -751,10 +767,8 @@ entry return-values contains a list of return values. currently supports type, v
 		       (cond
 			 ((symbolp arg)
 			  ;; no parens for symbol needed
-			  (make-instance 'string-op
-					 :string (format nil (if diag "0symbol.~a" "~a") arg)
-					 :operator 'symbol)
-			  )
+			  (m 'symbol
+			     (format nil (if diag "0symbol.~a" "~a") arg)))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
 			  (m 'number
@@ -864,115 +878,29 @@ entry return-values contains a list of return values. currently supports type, v
 				      (format nil (if diag "4call.~a" "~a") (emit arg)))
 				   ))))
 			 ((and (typep arg 'string-op))
-			  (break "unsupported argument for paren* '~a' op='~a'" arg (operator-of arg)))
+			  (string-of arg))
 			 (t
-			  (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg))))
-
-		       #+nil (cond
-			       
-			       
-			       
-			       ((listp arg)
-				;; a list can be an arbitrary abstract syntax tree of operators
-				;; use precedence list to check if parens are needed
-				(let ((op (car arg))
-				      (rest (cdr arg)))
-				  (assert (symbolp op))
-				  (assert (listp rest))
-				  (if  (member op *operators*)
-				       (progn ;; we deal with a known operator
-					 (let ((p0 (lookup-precedence op)))
-					   (if p0
-					       (progn
-						 ;; operator was found in
-						 ;; precedence table. look at
-						 ;; operators in all
-						 ;; arguments to see if we
-						 ;; need parentheses
-						 (m op
-						    (format nil
-							    (if diag "1intable.~a" "~a")
-							    (emit
-							     `(,op
-							       ,@(loop for e in rest
-								       collect
-								       (if (listp e)
-									   (progn
-									     ;; argument is a list, we should look for operators
-									     (if (member (first e) *operators*)
-										 (progn ;; known operator
-										   (let ((p1 (lookup-precedence (first e))))
-										     (if p1
-											 (progn
-											   ;; operator is present in precedence table
-											   (if (< p0 p1)
-											       (progn
-												 ;; no parens required if first op has higher precedence
-												 (m p0
-												    (format nil (if diag "2hi.~a" "~a") (emit e))))
-											       (progn
-												 ;; parens required
-												 (m p0
-												    (format nil (if diag "2lo.~a" "~a") (emit `(paren* ,e)))))))
-											 (progn
-											   (break "operator of unknown precedence '~a'" (first e))
-											   ;; i think we should place parens
-											   (m p0
-											      (format nil (if diag "2unknown.~a" "~a") (emit `(paren* ,e))))
-											   ))))
-										 (progn ;; not an operator, so must be a function call
-										   (m 'call
-										      (format nil (if diag "2call.~a" "~a") (emit e)
-											      )))))
-									   (progn
-									     ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-									     ;; unfortunately, if it is a string it could be "1+2" and might need parentheses
-									     (m op
-										(if (stringp e)
-									 
-										    (format nil (if diag "3str.~a" "(~a)") (emit e))
-										    (format nil (if diag "3symnum.~a" "~a") (emit e))))))))))))
-					       (progn
-						 ;; operator was not found in
-						 ;; precedence table. i think
-						 ;; we should just emit the
-						 ;; code without thinking
-						 ;; about parens
-						 (break "unsupported codepath ~a" arg)
-						 (m op
-						    (format nil (if diag "3unsupported.~a" "~a")
-							    (emit arg)))))))
-
-				       (progn
-					 ;; if the first element is not an
-					 ;; operator, then we must deal with a
-					 ;; function call
-					 (m 'call
-					    (format nil (if diag "4call.~a" "~a") (emit arg)))
-					 ))))
-			       (t
-				(break "unsupported argument for paren* '~a'" arg)))))
-		   )
+			  (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg)))))))
 		  (paren
 		   ;; paren {args}*
 		   ;; parentheses with comma separated values
 		   (let ((args (cdr code)))
 		     (m 'paren
-		      (format nil "(~{~a~^, ~})" (mapcar #'emit args)))))
+			(format nil "(~{~a~^, ~})" (mapcar #'emit args)))))
 		  (angle
 		   (let ((args (cdr code)))
 		     (m 'angle
-		      (format nil "<~{~a~^, ~}>" (mapcar #'emit args)))))
+			(format nil "<~{~a~^, ~}>" (mapcar #'emit args)))))
 		  (bracket
 		   ;; bracket {args}*
 		   (let ((args (cdr code)))
 		     (m 'bracket
-		      (format nil "[~{~a~^, ~}]" (mapcar #'emit args)))))
+			(format nil "[~{~a~^, ~}]" (mapcar #'emit args)))))
 		  (curly
 		   ;; curly {args}*
 		   (let ((args (cdr code)))
 		     (m 'curly
-		      (format nil "{~{~a~^, ~}}" (mapcar #'emit args)))))
+			(format nil "{~{~a~^, ~}}" (mapcar #'emit args)))))
 		  (designated-initializer
 		   ;; designated-initializer {key val}*
 		   ;; (designated-initializer Width Dimensions.Width Height Dimensions.Height)
@@ -980,24 +908,24 @@ entry return-values contains a list of return values. currently supports type, v
 					    
 		   (let* ((args (cdr code)))
 		     (m 'designated-initializer
-		      (format nil "~a"
-			      (emit `(curly ,@(loop for (e f) on args by #'cddr
-						    collect
-						    (if (symbolp e)
-							`(= ,(format nil ".~a" e) ,f)
-							`(= ,(format nil "~a" (emit e)) ,f)))))))))
+			(format nil "~a"
+				(emit `(curly ,@(loop for (e f) on args by #'cddr
+						      collect
+						      (if (symbolp e)
+							  `(= ,(format nil ".~a" e) ,f)
+							  `(= ,(format nil "~a" (emit e)) ,f)))))))))
 		  (new
 		   ;; new arg
 		   (let ((arg (cadr code)))
 		     (m 'new
-		       (format nil "new ~a" (emit arg)))))
+			(format nil "new ~a" (emit arg)))))
 		  (indent
 		   ;; indent form
-		   (m (operator-of (cadr code))
-		    (format nil "~{~a~}~a"
-			    ;; print indentation characters
-			    (loop for i below level collect "    ")
-			    (emit (cadr code)))))
+		   (m 'string
+		      (format nil "~{~a~}~a"
+			      ;; print indentation characters
+			      (loop for i below level collect "    ")
+			      (emit (cadr code)))))
 		  (split-header-and-code
 		   (let ((args (cdr code)))
 		     (destructuring-bind (arg0 arg1) args
@@ -1010,10 +938,14 @@ entry return-values contains a list of return values. currently supports type, v
 			  (with-output-to-string (s)
 			    ;; do0 {form}*
 			    ;; write each form into a newline, keep current indentation level
+			    (format t "<do0 type='~a' code='~a'>~%" (type-of (cadr code)) (cadr code) )
 			    (format s "~{~&~a~}"
 				    (mapcar
-				     #'(lambda (x)
-					 (let ((b (emit `(indent ,x) :dl 0)))
+				     #'(lambda (xx)
+					 (let* ((x (m-of xx))
+						(b (emit `(indent ,x) :dl 0)))
+					   (format t "<int-do0 type='~a' code='~a' b='~a'>~%" (type-of xx) xx b)
+					   
 					   (format nil "~a~a"
 						   b
 						   ;; don't add semicolon if there is already one
@@ -1039,6 +971,7 @@ entry return-values contains a list of return values. currently supports type, v
 							   ";")))))
 				     (cdr code)))
 			    (terpri s)
+			    (format t "</do0>~%")
 
 			    #+nil
 			    (let ((a (emit (cadr code))))
@@ -1056,39 +989,42 @@ entry return-values contains a list of return values. currently supports type, v
 							 ""
 							 ";"))))
 				       (cddr code)))))))
-		  (pragma (let ((args (cdr code)))
-			    (m 'pragma
-			     (format nil "#pragma ~{~a~^ ~}" args))))
-		  (include (let ((args (cdr code)))
-			     (when (null args)
-			       (break "no arguments in include"))
-			     ;; include {name}*
-			     ;; (include <stdio.h>)   => #include <stdio.h>
-			     ;; (include interface.h) => #include "interface.h"
-			     (let ((str (with-output-to-string (s)
-					  (loop for e in args do
-					    ;; emit string if first character is not <
-					    (format s "~&#include ~a"
-						    (emit (if (eq #\< (aref (format nil "~a" e) 0))
-							      e
-							      `(string ,e))))))))
-			       (when hook-defclass
-				 (funcall hook-defclass (format nil "~a~%" str)))
-			       str)))
-		  (include<> (let ((args (cdr code)))
-			       ;; include {name}*
-			       ;; (include<> stdio.h stddef.h)   => #include <stdio.h>\n #include<stddef.h>
+		  (pragma (m 'pragma
+			     (let ((args (cdr code)))
+			       (m 'pragma
+				  (format nil "#pragma ~{~a~^ ~}" args)))))
+		  (include (m 'include
+			      (let ((args (cdr code)))
+				(when (null args)
+				  (break "no arguments in include"))
+				;; include {name}*
+				;; (include <stdio.h>)   => #include <stdio.h>
+				;; (include interface.h) => #include "interface.h"
+				(let ((str (with-output-to-string (s)
+					     (loop for e in args do
+					       ;; emit string if first character is not <
+					       (format s "~&#include ~a"
+						       (emit (if (eq #\< (aref (format nil "~a" e) 0))
+								 e
+								 `(string ,e))))))))
+				  (when hook-defclass
+				    (funcall hook-defclass (format nil "~a~%" str)))
+				  str))))
+		  (include<> (m 'include
+				(let ((args (cdr code)))
+				  ;; include {name}*
+				  ;; (include<> stdio.h stddef.h)   => #include <stdio.h>\n #include<stddef.h>
 
-			       (when (null args)
-				 (break "no arguments in include<>"))
-			       (let ((str (with-output-to-string (s)
-					    (loop for e in args do
+				  (when (null args)
+				    (break "no arguments in include<>"))
+				  (let ((str (with-output-to-string (s)
+					       (loop for e in args do
 
-					      (format s "~&#include <~a>"
-						      (emit e))))))
-				 (when hook-defclass
-				   (funcall hook-defclass (format nil "~a~%" str)))
-				 str)))
+						 (format s "~&#include <~a>"
+							 (emit e))))))
+				    (when hook-defclass
+				      (funcall hook-defclass (format nil "~a~%" str)))
+				    str))))
 		  (progn (with-output-to-string (s)
 			   ;; progn {form}*
 			   ;; like do but surrounds forms with braces.
@@ -1224,9 +1160,9 @@ entry return-values contains a list of return values. currently supports type, v
 		  (throw (m 'throw (format nil "throw ~a" (emit (car (cdr code))))))
 		  (cast (destructuring-bind (type value) (cdr code)
 			  (m 'cast
-			   (format nil "(~a) ~a"
-				   (emit type)
-				   (emit value)))))
+			     (format nil "(~a) ~a"
+				     (emit type)
+				     (emit value)))))
 
 		  (let (parse-let code #'emit))
 		  (setf
@@ -1235,13 +1171,13 @@ entry return-values contains a list of return values. currently supports type, v
 		     ;; (setf var 5) => var = 5;
 		     ;; (setf a 5 b 4) => a=5; b=4;
 		     (m 'setf
-		      (format nil "~a"
-			      (emit
-			       `(do0
-				 ,@(loop for i below (length args) by 2 collect
-									(let ((a (elt args i))
-									      (b (elt args (+ 1 i))))
-									  `(= ,a ,b)))))))))
+			(format nil "~a"
+				(emit
+				 `(do0
+				   ,@(loop for i below (length args) by 2 collect
+									  (let ((a (elt args i))
+										(b (elt args (+ 1 i))))
+									    `(= ,a ,b)))))))))
 		  (using
 		   (let ((args (cdr code)))
 		     ;; "using {pair}*"
@@ -1263,11 +1199,11 @@ entry return-values contains a list of return values. currently supports type, v
 		  (+ (let ((args (cdr code)))
 		       ;; + {summands}*
 		       (m '+
-			(format nil "~{~a~^+~}"
+			  (format nil "~{~a~^+~}"
 
-				(mapcar
-				 #'(lambda (x) (emit `(paren* ,x)))
-				 args)))))
+				  (mapcar
+				   #'(lambda (x) (emit `(paren* ,x)))
+				   args)))))
 		  (- (m '-
 			(let ((args (cdr code)))
 			  (if (eq 1 (length args))
@@ -1277,80 +1213,80 @@ entry return-values contains a list of return values. currently supports type, v
 			(let ((args (cdr code)))
 			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (^ (m '^ (let ((args (cdr code)))
-			 (format nil "~{(~a)~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			     (format nil "~{(~a)~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (xor `(^ ,@(cdr code)))
 		  (& (m '& (let ((args (cdr code)))
-			(format nil "(~{(~a)~^&~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			     (format nil "(~{(~a)~^&~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (/ (m '/ (let ((args (cdr code)))
-			(if (eq 1 (length args))
-			    (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
-			    (format nil "~{(~a)~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
+			     (if (eq 1 (length args))
+				 (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
+				 (format nil "~{(~a)~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 
 		  (or (m 'or (let ((args (cdr code))) ;; py
-			 (format nil "~{(~a)~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			       (format nil "~{(~a)~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (and (m 'and (let ((args (cdr code))) ;; py
-			  (format nil "~{(~a)~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+				 (format nil "~{(~a)~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  #+nil (xor (let ((args (cdr code))) ;; py
 			       (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
 		  (logior (m 'logior (let ((args (cdr code)))
-			     (format nil "~{(~a)~^||~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+				       (format nil "~{(~a)~^||~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (logand (m 'logand (let ((args (cdr code)))
-			     (format nil "~{~a~^&&~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+				       (format nil "~{~a~^&&~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (= (m '= (destructuring-bind (a b) (cdr code)
-			;; = pair
-			(format nil "~a=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			     ;; = pair
+			     (format nil "~a=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (/= (m '/= (destructuring-bind (a b) (cdr code)
-			 (format nil "~a/=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			       (format nil "~a/=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (*= (m '*= (destructuring-bind (a b) (cdr code)
-			 (format nil "~a*=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			       (format nil "~a*=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (^= (m '^= (destructuring-bind (a b) (cdr code)
-			 (format nil "~a^=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			       (format nil "~a^=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (<= (m '<= (destructuring-bind (a b &optional c) (cdr code)
-			 (if c
-			     (format nil "~a<=~a && ~a<=~a"
-				     (emit `(paren* ,a)) (emit `(paren* ,b))
-				     (emit `(paren* ,b)) (emit `(paren* ,c)))
-			     (format nil "~a<=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
+			       (if c
+				   (format nil "~a<=~a && ~a<=~a"
+					   (emit `(paren* ,a)) (emit `(paren* ,b))
+					   (emit `(paren* ,b)) (emit `(paren* ,c)))
+				   (format nil "~a<=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
 		  (< (m '< (destructuring-bind (a b &optional c) (cdr code)
-			(if c
-			    (format nil "~a<~a && ~a<~a"
-				    (emit `(paren* ,a)) (emit `(paren* ,b))
-				    (emit `(paren* ,b)) (emit `(paren* ,c)))
-			    (format nil "~a<~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
+			     (if c
+				 (format nil "~a<~a && ~a<~a"
+					 (emit `(paren* ,a)) (emit `(paren* ,b))
+					 (emit `(paren* ,b)) (emit `(paren* ,c)))
+				 (format nil "~a<~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
 		  (!= (m '!= (destructuring-bind (a b) (cdr code)
-			 (format nil "~a!=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			       (format nil "~a!=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (== (m '== (destructuring-bind (a b) (cdr code)
-			 (format nil "~a==~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			       (format nil "~a==~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  
 		  (% (m '% (destructuring-bind (a b) (cdr code)
-			(format nil "~a%~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+			     (format nil "~a%~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (<< (m '<< (destructuring-bind (a &rest rest) (cdr code)
-			 (format nil "~a~{<<~a~}"
-				 (emit `(paren* ,a))
-				 (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
+			       (format nil "~a~{<<~a~}"
+				       (emit `(paren* ,a))
+				       (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
 		  (>> (m '>> (destructuring-bind (a &rest rest) (cdr code)
-			 (format nil "~a~{>>~a~}" (emit `(paren* ,a)) (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
+			       (format nil "~a~{>>~a~}" (emit `(paren* ,a)) (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
 		  #+nil (>> (destructuring-bind (a b) (cdr code)
 			      (format nil "(~a)>>~a" (emit a) (emit b))))
 		  (incf (m 'incf (destructuring-bind (a &optional b) (cdr code) ;; py
-			   (if b
-			       (format nil "~a+=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
-			       (format nil "~a++" (emit `(paren* ,a)))))))
+				   (if b
+				       (format nil "~a+=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
+				       (format nil "~a++" (emit `(paren* ,a)))))))
 		  (decf (m 'decf (destructuring-bind (a &optional b) (cdr code)
-			   (if b
-			       (format nil "~a-=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
-			       (format nil "~a--" (emit `(paren* ,a)))))))
+				   (if b
+				       (format nil "~a-=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
+				       (format nil "~a--" (emit `(paren* ,a)))))))
 		  (string (m 'string (format nil "\"~a\"" (cadr code))))
 		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be intrduced, like R"x( .. )" .. )x"
 		  (string-r (m 'string (format nil "R\"(~a)\"" (cadr code))))
 		  (string-u8 (m 'string (format nil "u8\"(~a)\"" (cadr code))))
 		  (char (m 'string (format nil "'~a'" (cadr code))))
 		  (hex (m 'string (destructuring-bind (number) (cdr code)
-			  (format nil "0x~x" number))))
+				    (format nil "0x~x" number))))
 		  (? (m '? (destructuring-bind (a b &optional c) (cdr code)
-			(if c
-			    (format nil "~a ? ~a : ~a" (emit `(paren* ,a)) (emit `(paren* ,b)) (emit `(paren* ,c)))
-			    (format nil "~a ? ~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
+			     (if c
+				 (format nil "~a ? ~a : ~a" (emit `(paren* ,a)) (emit `(paren* ,b)) (emit `(paren* ,c)))
+				 (format nil "~a ? ~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)
 			  (format s "if ( ~a ) ~a"
@@ -1565,7 +1501,10 @@ entry return-values contains a list of return values. currently supports type, v
 			     (format nil "~a~a"
 				     (emit name)
 				     (emit `(paren ,@args)))))))))
+	      
 	      (cond
+		((typep code 'string-op)
+		 code)
 		((symbolp code)
 					;(cl-ppcre::regex-replace-all "--" "bla--fub" "::")
 		 (m 'symbol (cl-ppcre::regex-replace-all "--" (format nil "~a" code) "::"))
@@ -1582,7 +1521,8 @@ entry return-values contains a list of return values. currently supports type, v
 			     (double-float (format str "~a" (print-sufficient-digits-f64 code)))
 			     )
 			   #+nil (format str "(~a)" (print-sufficient-digits-f64 code))))))))
-	  "")))
+	  (m 'empty
+	     ""))))
   #+nil (progn
 	  (defparameter *bla*
 	    (emit-c :code `(do0
