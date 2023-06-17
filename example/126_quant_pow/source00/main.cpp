@@ -12,24 +12,14 @@ int main(int argc, char **argv) {
   auto L = 1.0;
   auto dx = L / (N + 1);
   auto H = arma::sp_mat(N, N);
-  for (auto i = 0; i < N; i += 1) {
-    if (0 < i) {
-      H(i, i - 1) = (-1.0) / (dx * dx);
-    }
-    H(i, i) = 2.0 / (dx * dx);
-
-    if (i < (N - 1)) {
-      H(i, i + 1) = (-1.0) / (dx * dx);
-    }
-  }
   auto psi = arma::randu<arma::vec>(N);
-  for (auto iter = 0; iter < 10000; iter += 1) {
-    psi = (H * psi);
-
-    psi /= arma::norm(psi);
+  auto energy = arma::vec();
+  auto status = arma::eigs_sym(energy, psi, H, 1, "sm");
+  if (false == status) {
+    std::cout << "Eigensolver failed." << energy << std::endl;
+    return -1;
   }
-  auto energy = arma::dot(psi, H * psi);
-  std::cout << "Ground state energy: " << energy << std::endl;
+  std::cout << "Ground state energy: " << energy(0) << std::endl;
 
   return 0;
 }

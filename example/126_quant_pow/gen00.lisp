@@ -38,8 +38,16 @@
        (let ((N 1000)
 	     (L 1d0)
 	     (dx (/ L (+ N 1)))
-	     (H (arma--sp_mat N N)))
-	 (dotimes (i N)
+	    #+nil (main_diag (*  (arma--ones<arma--vec> N)
+			    (/ 2d0 (* dx dx))))
+	   #+nil  (off_diag (*  (arma--ones<arma--vec> (- N 1))
+			    (/ -1d0 (* dx dx))))
+	     (H (arma--sp_mat N N)
+		#+nil (arma--spdiagmat (curly off_diag
+				     main_diag
+				     off_diag)
+			      (curly -1 0 1))))
+	 #+-il (dotimes (i N)
 	   (when (< 0 i)
 	     (setf (H i (- i 1))
 		   (/ -1d0
@@ -52,13 +60,21 @@
 		   (/ -1d0
 		      (* dx dx)))))
 	 (let ((psi ("arma::randu<arma::vec>" N)))
-	   (dotimes (iter 10000)
+	   #+nil (dotimes (iter 10000)
 	     (setf psi (* H psi))
 	     (/= psi (arma--norm psi)))
-	   (let ((energy (arma--dot psi (* H psi))))
+	   (let ((energy (arma--vec))
+		 ;; smallest magnitude
+		 (status (arma--eigs_sym energy psi H 1 (string "sm"))))
+	     (when (== false status)
+	       (<< std--cout
+		 (string "Eigensolver failed.")
+		 energy
+		 std--endl)
+	       (return -1))
 	     (<< std--cout
 		 (string "Ground state energy: ")
-		 energy
+		 (energy 0)
 		 std--endl))))
        
        (return 0)))
