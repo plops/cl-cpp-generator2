@@ -30,7 +30,7 @@
 
      (defun compute_psi ()
        (declare (values "arma::vec"))
-       (comments "N .. Number of discretizatino points"
+       (comments "N .. Number of discretization points"
 		 "L .. Size of the box"
 		 "dx .. Grid spacing")
        (let ((N 1000)

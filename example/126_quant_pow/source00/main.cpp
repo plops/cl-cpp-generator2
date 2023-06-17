@@ -4,7 +4,7 @@
 #include <memory>
 
 arma::vec compute_psi() {
-  // N .. Number of discretizatino points
+  // N .. Number of discretization points
   // L .. Size of the box
   // dx .. Grid spacing
 
