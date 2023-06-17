@@ -1,16 +1,9 @@
-(declaim (optimize (debug 3)
-		   (speed 0)
-		   (safety 3)))
-
-(setf sb-ext:*muffled-warnings* nil)
-
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (ql:quickload "cl-cpp-generator2")
   (ql:quickload "cl-ppcre")
   (ql:quickload "cl-change-case"))
 
 (in-package :cl-cpp-generator2)
-
 
 (progn
   (progn
