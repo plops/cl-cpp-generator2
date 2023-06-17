@@ -760,7 +760,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   #+nil
 		   (format nil "(~a)" (emit (cadr code)))
 		   #-nil
-		   (progn ;; FIXME % together with * is not handled properly
+		   (progn 
 					;(format t "<paren* code='~a'>~%" code)
 		     (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
@@ -822,7 +822,7 @@ entry return-values contains a list of return values. currently supports type, v
 							     p1
 							     (+ 1 (length *precedence*))))
 						       (+ 1 (length *precedence*))))))
-				  (format t "<paren* p0=~a p1=~a>~%" p0 p1)
+				  ;(format t "<paren* p0=~a p1=~a>~%" p0 p1)
 				  (if (< p0 p1)
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
@@ -1225,8 +1225,6 @@ entry return-values contains a list of return values. currently supports type, v
 				       (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
 		  (>> (m '>> (destructuring-bind (a &rest rest) (cdr code)
 			       (format nil "~a~{>>~a~}" (emit `(paren* ,a)) (mapcar #'(lambda (x) (emit `(paren* ,x))) rest)))))
-		  #+nil (>> (destructuring-bind (a b) (cdr code)
-			      (format nil "(~a)>>~a" (emit a) (emit b))))
 		  (incf (m 'incf (destructuring-bind (a &optional b) (cdr code) ;; py
 				   (if b
 				       (format nil "~a+=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))

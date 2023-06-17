@@ -186,6 +186,13 @@ most recent operator, so that I can compare precedence with the
 operator that is in the next higher level of the abstract syntax tree.
 
 
+I rather place more parentheses than necessary: I prefer
+`(3+4)*(13/4)*((171+2)/5)` to `(3+4)*3/4*(171+2)/5`.
+
+
+What I find important is that monstrosities like this are dealt with:
+`(static_cast<int>(((1) & ((v) >> (1)))))`.
+
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
 builds on the learnings and experiences from various other projects
