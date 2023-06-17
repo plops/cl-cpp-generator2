@@ -83,7 +83,29 @@
 	     :pre "std::string str =\"\";"
 	     :lisp-code "hello worlds"
 	     :reference "str+\"hello \"+\"worlds\""
-	     :supersede-fail (<< std--cout (string "hello world \\033[31mFAIL\\033[0m ")  std--endl)))
+	     :supersede-fail (<< std--cout (string "hello world \\033[31mFAIL\\033[0m ")  std--endl))
+
+	    (:name deref0
+	     :code (-> car (dot w j))
+	     :pre (do0
+		   (defclass+ Wheel ()
+		     "public:"
+		     "int j;"
+		     (defmethod Wheel (jj)
+		       (declare (type int jj)
+				(construct (j jj))
+				(values :constructor))))
+		   (defclass+ Car ()
+		     "public:"
+		     "int i;"
+		     "Wheel w;"
+		     (defmethod Car (ii jj) 
+		       (declare (type int ii jj)
+				(construct (i ii) (w (Wheel jj)))
+				(values :constructor))))
+		   "Car car[1]={Car(1,2)};")
+	     :lisp-code 2
+	     :reference "car->w.j"))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
