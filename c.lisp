@@ -87,7 +87,7 @@
 				 ignore-hash
 				 (format t)
 				 (tidy t))
-  (format t "<write-source code='~a'>~%" code)
+  ;(format t "<write-source code='~a'>~%" code)
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
 	 (code-str (m-of (emit-c :code code :header-only nil)))
@@ -712,7 +712,7 @@ entry return-values contains a list of return values. currently supports type, v
 		     :header-only header-only-p
 		     :in-class in-class-p
 		     :diag current-diag)))
-      (format t "<emit-c type='~a' code='~a'>~%" (type-of code) code)
+					;(format t "<emit-c type='~a' code='~a'>~%" (type-of code) code)
       (if code
 	  (if (listp code)
 	      (progn
@@ -761,7 +761,7 @@ entry return-values contains a list of return values. currently supports type, v
 		   (format nil "(~a)" (emit (cadr code)))
 		   #-nil
 		   (progn ;; FIXME % together with * is not handled properly
-		     ;(format t "<paren* code='~a'>~%" code)
+					;(format t "<paren* code='~a'>~%" code)
 		     (unless (eq 2 (length code))
 		       (break "paren* expects only one argument"))
 		     (let ((arg (cadr code)))
@@ -769,17 +769,17 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((symbolp arg)
 			  ;; no parens for symbol needed
 			  (m 'symbol
-			     (format nil (if diag "0symbol.~a" "~a") arg)))
+			     (format nil (if diag "Asymbol.~a" "~a") arg)))
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
 			  (m 'number
 			     (if (< 0 arg)
-				 (format nil (if diag "0number.~a" "~a") (emit-c :code arg))
-				 (format nil (if diag "0number.~a" "(~a)") (emit-c :code arg)))))
+				 (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
+				 (format nil (if diag "Anumber.~a" "(~a)") (emit-c :code arg)))))
 			 ((stringp arg)
 			  ;; no parens around string
 			  (m 'string
-			     (format nil (if diag  "0string.~a" "~a") arg))
+			     (format nil (if diag  "Astring.~a" "~a") arg))
 			  #+nil (progn
 				  ;; a string may contain operators
 				  ;; only add parens if there are not already parens
@@ -792,14 +792,14 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((and (typep arg 'string-op) (eq (operator-of arg) 'symbol))
 			  ;; no parens for symbol needed
 			  (make-instance 'string-op
-					 :string (format nil (if diag "0symbol.~a" "~a") arg)
+					 :string (format nil (if diag "Asymbol.~a" "~a") arg)
 					 :operator 'symbol)
 			  )
 			
 			 ((and (typep arg 'string-op) (eq (operator-of arg) 'string))
 			  ;; no parens around string
 			  (m 'string
-			     (format nil (if diag  "0string.~a" "~a") arg)))
+			     (format nil (if diag  "Astring.~a" "~a") arg)))
 			 ((listp arg)
 			  ;; a list can be an arbitrary abstract syntax tree of operators
 			  ;; use precedence list to check if parens are needed
@@ -819,17 +819,22 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; need parentheses
 					   (m op
 					      (format nil
-						      (if diag "1intable.~a" "~a")
+						      (if diag "Btable.~a" "~a")
 						      (emit
 						       `(,op
 							 ,@(loop for e in rest
 								 collect
-								 (if (listp e)
-								     (progn
-								       ;; argument is a list, we should look for operators
-								       (if (member (first e) *operators*)
+								 (if (or (listp e)
+									 (typep e 'string-op))
+								     (let ((most-recent-op (cond ((listp e) (first e))
+												 ((typep e 'string-op) (operator-of e))
+												 (t (break "unknown most-recent-operator '~a'" e)))))
+								       
+								       ; argument is a list or a string-op, we should lookup the precedence of this operator with the operator from the upper level
+								       (if (member most-recent-op *operators*)
 									   (progn ;; known operator
-									     (let ((p1 (lookup-precedence (first e))))
+									     (let ((p1 (lookup-precedence most-recent-op)))
+									       (format t "<paren* op0='~a' p0=~a op1='~a' p1=~a>~%" op p0 most-recent-op p1)
 									       (if p1
 										   (progn
 										     ;; operator is present in precedence table
@@ -837,29 +842,33 @@ entry return-values contains a list of return values. currently supports type, v
 											 (progn
 											   ;; no parens required if first op has higher precedence
 											   (m p0
-											      (format nil (if diag "2hi.~a" "~a") (emit e))))
+											      (format nil (if diag "Chi.~a" "~a") (emit e))))
 											 (progn
 											   ;; parens required
 											   (m p0
-											      (format nil (if diag "2lo.~a" "~a") (emit `(paren* ,e)))))))
+											      (format nil (if diag "Clo.(~a)" "(~a)") (emit e))))))
 										   (progn
 										     (break "operator of unknown precedence '~a'" (first e))
 										     ;; i think we should place parens
 										     (m p0
-											(format nil (if diag "2unknown.~a" "~a") (emit `(paren* ,e))))
+											(format nil (if diag "Cunknown.(~a)" "(~a)") (emit e)))
 										     ))))
 									   (progn ;; not an operator, so must be a function call
 									     (m 'call
-										(format nil (if diag "2call.~a" "~a") (emit e)
-											)))))
+										(format nil (if diag "Ccall.~a" "~a") (emit e))))))
 								     (progn
 								       ;; argument is not a list. it must be a symbol, string or number literal. we don't need parentheses
-								       ;; unfortunately, if it is a string it could be "1+2" and might need parentheses
+
+								       ;; if it is a string it can't be "1+2" and will not need parentheses
+								       
+								       ;; any compound strings like "1+2" will actually be an object of type string-op that also stores the most recent operator
 								       (m op
-									  (if (stringp e)
-									 
-									      (format nil (if diag "3str.~a" "(~a)") (emit e))
-									      (format nil (if diag "3symnum.~a" "~a") (emit e))))))))))))
+									  (if 
+									    (stringp e)
+									    
+									    (format nil (if diag "Dstr.~a" "~a") (emit e))
+									    
+									    (format nil (if diag "Dsymnum.~a" "~a") (emit e))))))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think
@@ -868,7 +877,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; about parens
 					   (break "unsupported codepath ~a" arg)
 					   (m op
-					      (format nil (if diag "3unsupported.~a" "~a")
+					      (format nil (if diag "Eunsupported.~a" "~a")
 						      (emit arg)))))))
 
 				 (progn
@@ -876,7 +885,7 @@ entry return-values contains a list of return values. currently supports type, v
 				   ;; operator, then we must deal with a
 				   ;; function call
 				   (m 'call
-				      (format nil (if diag "4call.~a" "~a") (emit arg)))
+				      (format nil (if diag "Fcall.~a" "~a") (emit arg)))
 				   ))))
 			 ((and (typep arg 'string-op))
 			  (string-of arg))
@@ -939,7 +948,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  (with-output-to-string (s)
 			    ;; do0 {form}*
 			    ;; write each form into a newline, keep current indentation level
-			    (format t "<do0 type='~a' code='~a'>~%" (type-of (cadr code)) (cadr code) )
+					;(format t "<do0 type='~a' code='~a'>~%" (type-of (cadr code)) (cadr code) )
 			    (format s "~{~&~a~}"
 				    (mapcar
 				     #'(lambda (xx)
@@ -970,8 +979,8 @@ entry return-values contains a list of return values. currently supports type, v
 						    ((not (typep b 'sequence))
 						     (break "not a sequence type='~a' variable='~a'" (type-of b) b1))
 						    (t ";"))))
-					   (format t "<int-do0 type='~a' code='~a' b='~a' semicolon='~a'>~%"
-						   (type-of xx) xx b semicolon-maybe)
+					   #+nil (format t "<int-do0 type='~a' code='~a' b='~a' semicolon='~a'>~%"
+							 (type-of xx) xx b semicolon-maybe)
 					   
 					   (format nil "~a~a"
 						   b
@@ -981,7 +990,7 @@ entry return-values contains a list of return values. currently supports type, v
 						   semicolon-maybe)))
 				     (cdr code)))
 			    (terpri s)
-			    (format t "</do0>~%")
+					;(format t "</do0>~%")
 
 			    #+nil
 			    (let ((a (emit (cadr code))))

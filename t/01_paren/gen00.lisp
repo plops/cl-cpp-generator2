@@ -36,7 +36,7 @@
 		     (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 		     (:name basic3 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
 		      :lisp-code (* (+ 3 4) (floor 13 4) (floor (+ 171 2) 5))
-		      :reference "(3+4)*3/4*(1+2)/5")
+		      :reference "(3+4)*3/4*(171+2)/5")
 		     (:name basic4 :code (* (+ 3 4) (- 7 3))
 		      :reference "(3+4)*(7-3)")
 		     (:name basic5 :code (+ (+ 3 4) (- 7 3))
@@ -59,10 +59,10 @@
 	     (destructuring-bind (&key code name (lisp-code code) reference) e
 	       (let ((emit-str (emit-c :code code :diag nil))
 		     (emit-str-diag (emit-c :code code :diag t)))
-		 #+nil (if (string= emit-str reference)
-			   (format s "~2,'0d ~a works~%" e-i emit-str)
-			   (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
-				   emit-str reference emit-str-diag))
+		 (if (string= (m-of emit-str) reference)
+		     (format s "~2,'0d ~a works~%" e-i emit-str)
+		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
+			     emit-str reference emit-str-diag))
 		 (write-source
 		  (asdf:system-relative-pathname
 		   'cl-cpp-generator2
