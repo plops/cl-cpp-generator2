@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
       std::make_unique<sf::RenderWindow>(sf::VideoMode(800, 600), "psi plot");
   auto plot = sf::VertexArray(sf::LinesStrip, psi.n_elem);
   for (auto i = 0; i < psi.n_elem; i += 1) {
-    auto x = float(i) / (psi.n_elem - 1) * win->(getSize().x);
-    auto y = (1.0f - std::abs(psi(i))) * win->(getSize().y);
+    auto x = float(i) / (psi.n_elem - 1) * win->getSize().x;
+    auto y = (1.0f - std::abs(psi(i))) * win->getSize().y;
     plot[i].position = sf::Vector2f(x, y);
   }
   while (win->isOpen()) {
