@@ -57,7 +57,10 @@
 	    (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "(17/5)+3")
 		 (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)")
 		 (:name array0 :code (+ (aref a 0) 3 (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+3+(17/5)"
-			:pre (do0 "int a[1]={1};")))
+			:pre (do0 "int a[1]={1};"))
+		  (:name array1 :code (+ (aref a (- (* 12 (+ 3 4))
+						    83)) 3 (/ 17 5)) :lisp-code (+ 2 3 (floor 17 5)) :reference "a[(12*(3+4))-83]+3+(17/5)"
+			:pre (do0 "int a[2]={1,2};")))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre) e
