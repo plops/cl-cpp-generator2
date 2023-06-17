@@ -51,7 +51,15 @@
 	     (setf (H i (+ i 1))
 		   (/ -1d0
 		      (* dx dx)))))
-	 (let ((psi ("arma::randu<arma::vec>" N)))))
+	 (let ((psi ("arma::randu<arma::vec>" N)))
+	   (dotimes (iter 10000)
+	     (setf psi (* H psi))
+	     (/= psi (arma--norm psi)))
+	   (let ((energy (arma--dot psi (* H psi))))
+	     (<< std--cout
+		 (string "Ground state energy: ")
+		 energy
+		 std--endl))))
        
        (return 0)))
    :format t

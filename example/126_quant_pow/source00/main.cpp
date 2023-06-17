@@ -23,6 +23,13 @@ int main(int argc, char **argv) {
     }
   }
   auto psi = arma::randu<arma::vec>(N);
+  for (auto iter = 0; iter < 10000; iter += 1) {
+    psi = (H * psi);
+
+    psi /= arma::norm(psi);
+  }
+  auto energy = arma::dot(psi, H * psi);
+  std-- cout << ("Ground state energy: ") << energy << std-- endl;
 
   return 0;
 }
