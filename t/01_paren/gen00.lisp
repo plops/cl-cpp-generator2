@@ -34,7 +34,8 @@
     ;; the following tests check if paren* avoids redundant parentheses
     (loop for e in
 	  #+nil `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)"))
-	  #-nil`((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
+	  #-nil
+	  `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 	    (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 	    (:name basic3 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
 	     :lisp-code (* (+ 3 4) (floor 13 4) (floor (+ 171 2) 5))
@@ -55,12 +56,14 @@
 	    (:name hex1 :code (+ (hex ad) 3) :lisp-code (+ #xad 3) :reference "0xad+3")
 	    (:name div0 :code (/ 17 5)  :lisp-code (floor 17 5) :reference "17/5")
 	    (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "(17/5)+3")
-		 (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)")
-		 (:name array0 :code (+ (aref a 0) 3 (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+3+(17/5)"
-			:pre (do0 "int a[1]={1};"))
-		  (:name array1 :code (+ (aref a (- (* 12 (+ 3 4))
-						    83)) 3 (/ 17 5)) :lisp-code (+ 2 3 (floor 17 5)) :reference "a[(12*(3+4))-83]+3+(17/5)"
-			:pre (do0 "int a[2]={1,2};")))
+	    (:name div2 :code (+ 3 (/ 17 5)) :lisp-code (+ 3 (floor 17 5)) :reference "3+(17/5)")
+	    (:name array0 :code (+ (aref a 0) 3 (/ 17 5)) :lisp-code (+ 1 3 (floor 17 5)) :reference "a[0]+3+(17/5)"
+	     :pre (do0 "int a[1]={1};"))
+	    (:name array1 :code (+ (aref a (- (* 12 (+ 3 4))
+					      83))
+				   3 (/ 17 5))
+	     :lisp-code (+ 2 3 (floor 17 5)) :reference "a[(12*(3+4))-83]+3+(17/5)"
+	     :pre (do0 "int a[2]={1,2};")))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre) e
