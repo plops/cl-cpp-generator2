@@ -47,7 +47,7 @@
 				     main_diag
 				     off_diag)
 			      (curly -1 0 1))))
-	 #+-il (dotimes (i N)
+	  (dotimes (i N)
 	   (when (< 0 i)
 	     (setf (H i (- i 1))
 		   (/ -1d0
