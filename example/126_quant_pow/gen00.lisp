@@ -30,7 +30,7 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     (include<> cassert
+     (include<> armadillo
 		iostream)
      (defun main (argc argv)
        (declare (values int)
@@ -38,6 +38,14 @@
 		(type char** argv))
        "(void) argc;"
        "(void) argv;"
+
+       (comments "N .. Number of discretizatino points"
+		 "L .. Size of the box"
+		 "dx .. Grid spacing")
+       (let ((N 1000)
+	     (L 1d0)
+	     (dx (/ L (+ N 1)))
+	     (H (arma--sp_mat N N))))
        
        (return 0)))
    :format t
