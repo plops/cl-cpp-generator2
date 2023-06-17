@@ -775,7 +775,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  (m 'number
 			     (if (< 0 arg)
 				 (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
-				 (format nil (if diag "Anumber.~a" "(~a)") (emit-c :code arg)))))
+				 (format nil (if diag "Anumber.(~a)" "(~a)") (emit-c :code arg)))))
 			 ((stringp arg)
 			  ;; no parens around string
 			  (m 'string
@@ -803,13 +803,34 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((listp arg)
 			  ;; a list can be an arbitrary abstract syntax tree of operators
 			  ;; use precedence list to check if parens are needed
-			  (let ((op (car arg))
+			  (let ((op0 (car arg))
 				(rest (cdr arg)))
-			    (assert (symbolp op))
+			    (assert (symbolp op0))
 			    (assert (listp rest))
-			    (if  (member op *operators*)
+			    #-nil
+			    (if (member op0 *operators*)
+				(let ((p0 (lookup-precedence op0))
+				      (p1 (loop for e in rest
+						   minimize
+						   (if (or (listp e)
+							   (typep e 'string-op))
+						       (let* ((op1 (cond ((listp e) (first e))
+									 ((typep e 'string-op) (operator-of e))
+									 (t (break "unknown operator '~a'" e))))
+							    (p1 (lookup-precedence op1)))
+							 (if p1
+							     p1
+							     (+ 1 (length *precedence*))))
+						       (+ 1 (length *precedence*))))))
+				  (format t "<paren* p0=~a p1=~a>~%" p0 p1)
+				  (if (< p0 p1)
+				      (emit `(paren (,op0 ,@rest)))
+				      (emit `(,op0 ,@rest))))
+				(break "unknown operator '~a'" op))
+			    #+nil
+			    (if  (member op0 *operators*)
 				 (progn ;; we deal with a known operator
-				   (let ((p0 (lookup-precedence op)))
+				   (let ((p0 (lookup-precedence op0)))
 				     (if p0
 					 (progn
 					   ;; operator was found in
@@ -817,11 +838,11 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; operators in all
 					   ;; arguments to see if we
 					   ;; need parentheses
-					   (m op
+					   (m op0
 					      (format nil
-						      (if diag "Btable.~a" "~a")
+						      (if diag "Btable.(~a)" "(~a)")
 						      (emit
-						       `(,op
+						       `(,op0
 							 ,@(loop for e in rest
 								 collect
 								 (if (or (listp e)
@@ -830,27 +851,27 @@ entry return-values contains a list of return values. currently supports type, v
 												 ((typep e 'string-op) (operator-of e))
 												 (t (break "unknown most-recent-operator '~a'" e)))))
 								       
-								       ; argument is a list or a string-op, we should lookup the precedence of this operator with the operator from the upper level
+					; argument is a list or a string-op, we should lookup the precedence of this operator with the operator from the upper level
 								       (if (member most-recent-op *operators*)
 									   (progn ;; known operator
 									     (let ((p1 (lookup-precedence most-recent-op)))
-									       (format t "<paren* op0='~a' p0=~a op1='~a' p1=~a>~%" op p0 most-recent-op p1)
+									       (format t "<paren* op0='~a' p0=~a op1='~a' p1=~a>~%" op0 p0 most-recent-op p1)
 									       (if p1
 										   (progn
 										     ;; operator is present in precedence table
 										     (if (< p0 p1)
 											 (progn
 											   ;; no parens required if first op has higher precedence
-											   (m p0
+											   (m most-recent-op
 											      (format nil (if diag "Chi.~a" "~a") (emit e))))
 											 (progn
 											   ;; parens required
-											   (m p0
-											      (format nil (if diag "Clo.(~a)" "(~a)") (emit e))))))
+											   (m most-recent-op
+											      (format nil (if diag "Clo.~a" "~a") (emit e))))))
 										   (progn
 										     (break "operator of unknown precedence '~a'" (first e))
 										     ;; i think we should place parens
-										     (m p0
+										     (m most-recent-op
 											(format nil (if diag "Cunknown.(~a)" "(~a)") (emit e)))
 										     ))))
 									   (progn ;; not an operator, so must be a function call
@@ -861,14 +882,9 @@ entry return-values contains a list of return values. currently supports type, v
 
 								       ;; if it is a string it can't be "1+2" and will not need parentheses
 								       
-								       ;; any compound strings like "1+2" will actually be an object of type string-op that also stores the most recent operator
-								       (m op
-									  (if 
-									    (stringp e)
-									    
-									    (format nil (if diag "Dstr.~a" "~a") (emit e))
-									    
-									    (format nil (if diag "Dsymnum.~a" "~a") (emit e))))))))))))
+								       ;; any compound strings like "1+2" will actually be an object of type string-op that also stores the most recent operator and has been handled above
+								       (m op0
+									  (format nil (if diag "Dsymstrnum.~a" "~a") (emit e)))))))))))
 					 (progn
 					   ;; operator was not found in
 					   ;; precedence table. i think
@@ -876,7 +892,7 @@ entry return-values contains a list of return values. currently supports type, v
 					   ;; code without thinking
 					   ;; about parens
 					   (break "unsupported codepath ~a" arg)
-					   (m op
+					   (m op0
 					      (format nil (if diag "Eunsupported.~a" "~a")
 						      (emit arg)))))))
 
@@ -1227,28 +1243,28 @@ entry return-values contains a list of return values. currently supports type, v
 			(let ((args (cdr code)))
 			  (if (eq 1 (length args))
 			      (format nil "-~a" (emit `(paren*, (car args)))) ;; py
-			      (format nil "~{(~a)~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
+			      (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 		  (* (m '*
 			(let ((args (cdr code)))
 			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (^ (m '^ (let ((args (cdr code)))
-			     (format nil "~{(~a)~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			     (format nil "~{~a~^^~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (xor `(^ ,@(cdr code)))
 		  (& (m '& (let ((args (cdr code)))
-			     (format nil "(~{(~a)~^&~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			     (format nil "(~{~a~^&~})" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (/ (m '/ (let ((args (cdr code)))
 			     (if (eq 1 (length args))
 				 (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
-				 (format nil "~{(~a)~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
+				 (format nil "~{~a~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 
 		  (or (m 'or (let ((args (cdr code))) ;; py
-			       (format nil "~{(~a)~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (and (m 'and (let ((args (cdr code))) ;; py
-				 (format nil "~{(~a)~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+				 (format nil "~{~a~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  #+nil (xor (let ((args (cdr code))) ;; py
 			       (format nil "(~{(~a)~^ ^ ~})" (mapcar #'emit args))))
 		  (logior (m 'logior (let ((args (cdr code)))
-				       (format nil "~{(~a)~^||~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+				       (format nil "~{~a~^||~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (logand (m 'logand (let ((args (cdr code)))
 				       (format nil "~{~a~^&&~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (= (m '= (destructuring-bind (a b) (cdr code)
