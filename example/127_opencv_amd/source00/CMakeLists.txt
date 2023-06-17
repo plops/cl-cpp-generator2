@@ -12,4 +12,5 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(OpenCLCheck main.cpp)
 
-target_link_libraries(OpenCLCheck ${OpenCV_LIBS})
+target_link_libraries(OpenCLCheck ${OpenCV_LIBS}) # needs vtk and hdf5
+# target_link_libraries(OpenCLCheck ${OpenCV_core_LIBS} ${OpenCV_highgui_LIBS})
