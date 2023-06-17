@@ -17,4 +17,4 @@ include_directories(/home/martin/src/armadillo-code/include/)
 add_executable(ParticleInABox main.cpp)
 
 # Link Armadillo
-target_link_libraries(ParticleInABox armadillo)
+target_link_libraries(ParticleInABox armadillo lapack blas)
