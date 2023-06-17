@@ -93,11 +93,33 @@
        (let ((psi (compute_psi))
 	     (win (std--make_unique<sf--RenderWindow>
 		   (sf--VideoMode 800 600)
-		   (string "psi plot")))))
+		   (string "psi plot")))
+	     (plot (sf--VertexArray sf--LinesStrip
+				    psi.n_elem)))
+	 (dotimes (i psi.n_elem)
+	   (let ((x (/ (float i)
+		       (* (- psi.n_elem 1)
+			  (-> win (dot (getSize) x)))))
+		 (y (* (- 1s0
+			  (std--abs (psi i)))
+		       (-> win (dot (getSize) y)))))
+	     (setf (dot (aref plot i)
+			position)
+		   (sf--Vector2f x y))))
+	 (while (win->isOpen)
+		(let ((event (sf--Event)))
+		  (while (win->pollEvent event)
+			 (when (== sf--Event--Closed
+				   event.type)
+			   (win->close)))
+		  (win->clear)
+		  (win->draw plot)
+		  (win->display)
+		  )))
        
        
        
-       (return 0)))
+       (return EXIT_SUCCESS)))
    :format t
    :tidy t))
 

@@ -1,5 +1,5 @@
 Some code that ChatGPT created
 
 ```
-pacman -S openblas superlu
+pacman -S openblas superlu sfml
 ```
