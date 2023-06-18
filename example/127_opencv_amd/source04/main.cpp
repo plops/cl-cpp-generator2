@@ -9,12 +9,14 @@ using namespace cv;
 int main(int argc, char **argv) {
   (void)argc;
   (void)argv;
-  auto dict = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
+  Ptr<aruco::Dictionary> dict = makePtr<aruco::Dictionary>(
+      aruco::getPredefinedDictionary(aruco::DICT_6X6_250));
   auto img = imread("/home/martin/charucoboard.png", IMREAD_COLOR);
   auto markerIds = std::vector<int>();
   auto markerCorners = std::vector<std::vector<Point2f>>();
   aruco::detectMarkers(img, dict, markerCorners, markerIds);
-  imshow("charuco board", img);
+  aruco::drawDetectedMarkers(img, markerCorners, markerIds);
+  imshow("charuco board with detected markers", img);
   waitKey(0);
 
   return 0;

@@ -29,6 +29,7 @@
       opencv2/opencv.hpp
       opencv2/aruco.hpp
       opencv2/aruco/charuco.hpp
+      ;opencv2/aruco_detector.hpp
       opencv2/highgui.hpp
       opencv2/imgcodecs.hpp)
 
@@ -40,21 +41,29 @@
        "(void) argc;"
        "(void) argv;"
 
+       (comments "https://github.com/opencv/opencv_contrib/blob/7a4c0dfa861bbd4e5df7081949f685696eb9a94f/modules/aruco/samples/tutorial_charuco_create_detect.cpp#L53")
        (let (
-	     (dict (aruco--getPredefinedDictionary
-		    aruco--DICT_6X6_250))
+	     (dict (makePtr<aruco--Dictionary>
+		    (aruco--getPredefinedDictionary
+		     aruco--DICT_6X6_250)))
 	     
 	     (img (imread (string "/home/martin/charucoboard.png")
 			  IMREAD_COLOR))
 	     (markerIds (std--vector<int>))
 	     (markerCorners (std--vector<std--vector<Point2f>>))
 	     )
+	 (declare (type "Ptr<aruco::Dictionary>" dict))
 	 (aruco--detectMarkers img dict
 			       markerCorners
 			       markerIds)
+
+	 (aruco--drawDetectedMarkers
+	  img
+	  markerCorners
+	  markerIds)
 	 
 					
-	 (imshow (string "charuco board")
+	 (imshow (string "charuco board with detected markers")
 		 img)
 	 (waitKey 0)
 	 )
