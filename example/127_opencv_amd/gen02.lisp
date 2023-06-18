@@ -7,7 +7,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/127_opencv_amd/source01/")
+    (defparameter *source-dir* #P"example/127_opencv_amd/source02/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -26,7 +26,8 @@
    `(do0
      (include<>
       iostream
-      opencv2/opencv.hpp)
+      opencv2/opencv.hpp
+      opencv2/aruco/charuco.hpp)
           
      (defun main (argc argv)
        (declare (values int)
@@ -35,15 +36,17 @@
        "(void) argc;"
        "(void) argv;"
 
-       (let ((img (cv--imread (string "/home/martin/cow.jpg"))))
-	 (when (img.empty)
-	   ,(lprint :msg "could not open or find the image.")
-	   (return -1))
-	 (cv--namedWindow (string "window")
-			  cv--WINDOW_NORMAL)
-	 (cv--imshow (string "window")
-		     img)
-	 (cv--waitKey 0))
+       (let ((x 8)
+	     (y 3)
+	     (square_len 4s-2)
+	     (dict (cv--aruco--getPredefinedDictionary
+		    cv--aruco--DICT_6X6_250))
+	     (board
+	       (cv--makePtr<cv--aruco--CharucoBoard>
+		x y square_len
+		(* .5 square_len)
+		dict)))
+	 )
        
        (return 0)))))
 
