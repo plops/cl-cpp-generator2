@@ -1,5 +1,4 @@
 // no preamble
-;
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -29,11 +28,12 @@ Charuco::Charuco(int squares_x_, int squares_y_, float square_length_,
     auto lock = std::unique_lock<std::mutex>(g_stdout_mutex);
     std::chrono::duration<double> timestamp =
         std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("opencv initialization") << (" ") << (std::endl)
-                << (std::flush);
+    std::cout << std::setw(10) << timestamp.count() << " "
+              << std::this_thread::get_id() << " " << __FILE__ << ":"
+              << __LINE__ << " " << __func__ << " "
+              << "opencv initialization"
+              << " " << std::endl
+              << std::flush;
   }
   board->draw(cv::Size(1600, 800), board_img3, 10, 1);
   cv::cvtColor(board_img3, board_img, cv::COLOR_BGR2RGBA);
@@ -42,11 +42,12 @@ Charuco::Charuco(int squares_x_, int squares_y_, float square_length_,
     auto lock = std::unique_lock<std::mutex>(g_stdout_mutex);
     std::chrono::duration<double> timestamp =
         std::chrono::high_resolution_clock::now() - g_start_time;
-    (std::cout) << (std::setw(10)) << (timestamp.count()) << (" ")
-                << (std::this_thread::get_id()) << (" ") << (__FILE__) << (":")
-                << (__LINE__) << (" ") << (__func__) << (" ")
-                << ("charuco board has been converted to RGBA") << (" ")
-                << (std::endl) << (std::flush);
+    std::cout << std::setw(10) << timestamp.count() << " "
+              << std::this_thread::get_id() << " " << __FILE__ << ":"
+              << __LINE__ << " " << __func__ << " "
+              << "charuco board has been converted to RGBA"
+              << " " << std::endl
+              << std::flush;
   }
 }
 int Charuco::get_squares_x() { return squares_x; }

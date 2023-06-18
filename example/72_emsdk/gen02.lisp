@@ -228,10 +228,11 @@
 	    (out "emcmake python  ./platforms/js/build_js.py build_wasm  ~{--~a~^ ~}  --cmake_option=\"-DOPENCV_EXTRA_MODULES_PATH=/home/martin/src/opencv_contrib/modules ~{-DBUILD_opencv_~a=OFF~^ ~}\""
 		 build-options
 		 contrib-modules-off))))
+      #+nil
       (sb-ext:run-program "/home/martin/.local/bin/beautysh"
 			  (list "-i"  (namestring fn)))
       )
-
+    
     (let ((fn (format nil "~a/CMakeLists.txt" *source*)))
       ;; pip install cmakelang
       (with-open-file (s fn
@@ -277,6 +278,7 @@
 	    (out "add_executable( index ${SRCS} )")
 	    (out "target_link_libraries( index ${OpenCV_LIBS} )")
 	    )))
+      #+nil
       (sb-ext:run-program "/home/martin/.local/bin/cmake-format"
 			  (list "-i"  (namestring fn))))))
 
