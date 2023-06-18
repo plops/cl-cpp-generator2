@@ -110,9 +110,13 @@
 		   :pre (do0
 			 (include<> sstream
 				    iomanip)
-			 "std::ostringstsream oss;")
-		   :code (<< oss ("std::setw" 3) 3.14159)
-		   :reference "oss<<std::setw(3)<<3.14159"
+			 "std::ostringstream oss;")
+		   :code (paren
+			  (comma (<< oss
+				     "std::fixed"
+				     ("std::setprecision" 3) 3.141590s0)
+				 (dot oss (str))))
+		   :reference "(oss<<std::fixed<<std::setprecision(3)<<3.141590f, oss.str())"
 		   :lisp-code "3.142"))
 	  and e-i from 0
 	  do
