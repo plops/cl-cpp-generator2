@@ -7,7 +7,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/127_opencv_amd/source02/")
+    (defparameter *source-dir* #P"example/127_opencv_amd/source03/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -28,7 +28,8 @@
       iostream
       opencv2/opencv.hpp
       opencv2/aruco.hpp
-      opencv2/aruco/charuco.hpp)
+      opencv2/aruco/charuco.hpp
+      opencv2/highgui.hpp)
 
      "using namespace cv;"
      (defun main (argc argv)
@@ -38,7 +39,6 @@
        "(void) argc;"
        "(void) argv;"
 
-       (comments "https://github.com/opencv/opencv_contrib/blob/7a4c0dfa861bbd4e5df7081949f685696eb9a94f/modules/aruco/samples/detect_board_charuco.cpp#L148")
        (let ((x 8)
 	     (y 3)
 	     (square_len 4s-2)
@@ -58,13 +58,11 @@
 		      10 ;; marginsize
 		      1 ;; bordebits
 		      )
-	 (unless (cv--imwrite (string "/home/martin/charucoboard.png")
-			      img)
-	   ,(lprint :msg "Failed to save the image.")
-	   (return -1))
+	 (imshow (string "charuco board")
+		     img)
+	 (waitKey 0)
 	 )
 
-       ,(lprint :msg "charucoboard has been saved.")
        
        (return 0)))))
 

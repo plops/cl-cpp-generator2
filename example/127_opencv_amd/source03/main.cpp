@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
       new aruco::CharucoBoard(Size(x, y), square_len, 0.50f * square_len, dict);
   auto img = Mat();
   board->generateImage(cv::Size(800, 600), img, 10, 1);
-  cv::imshow("charuco board", board);
-  cv::waitKey(0);
+  imshow("charuco board", img);
+  waitKey(0);
 
   return 0;
 }
