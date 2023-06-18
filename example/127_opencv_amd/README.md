@@ -23,3 +23,4 @@ cmake .. -G Ninja -DBUILD_JAVA=OFF \
 ```
 
 - the code that gpt4 calls doesn't seem to work (drawCharucoBoard)
+- in the example 72_emsdk i already tried something similar
