@@ -10,16 +10,21 @@ https://github.com/google/fruit/archive/refs/tags/v3.7.1.tar.gz
 ```
 cd ~/src
 wget https://github.com/opencv/opencv/archive/4.7.0.zip
+wget https://github.com/opencv/opencv_contrib/archive/refs/tags/4.7.0.tar.gz
 unzip 4.7.0.zip
-cd opencv-4.7.0
-mkdir b
-cd b
-cmake .. -G Ninja
-ccmake ..
-cmake .. -G Ninja -DBUILD_JAVA=OFF \
+
+mkdir opencv_build
+cd opencv_build
+
+cmake \
+-G Ninja \
+-DBUILD_JAVA=OFF \
 -DENABLE_FAST_MATH=ON \
 -DOPENCV_ENABLE_NONFREE=ON \
--DWITH_OPENGL=ON 
+-DWITH_OPENGL=OFF \
+-DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.7.0/modules ../opencv-4.7.0
+
+ccmake ../opencv-4.7.0
 ```
 
 - the code that gpt4 calls doesn't seem to work (drawCharucoBoard)
