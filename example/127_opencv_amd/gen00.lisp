@@ -60,6 +60,10 @@
 			(include ,(format nil "~a.hpp" interface-name)))
      :implementation-preamble
      `(do0
+       (include<> opencv2/highgui.hpp
+		  opencv2/aruco.hpp
+		  opencv2/charuco.hpp
+		  )
        )
      :code `(do0
 	     (defclass ,name "public CheckerboardDisplayInterface"	 
@@ -105,13 +109,18 @@
 		 (defmethod displayCheckerboard (squaresX squaresY squareLength dictionary)
 		   (declare (type int squaresX squaresY squareLength)
 			    (type "cv::Ptr<cv::aruco::Dictionary>" dictionary))
-		   (cv--aruco--drawCharucoBoard (cv--Size squaresX squaresY) ; boardSize
-						squareLength
-					       (/ squareLength 2)
-					       dictionary
-					       boardImage)
+		   (let ((board
+			  (cv--aruco--CharucoBoard--create
+			   squaresX squaresY
+			   squareLength
+			   (/ squareLength 2) ;; marker length
+			   dictionary
+			   ))))
+		   (board->draw (cv--Size 800 600)
+				board_image_
+				10 1)
 		   (cv--imshow (string "checkerboard")
-			       boardImage)
+			       board_image_)
 		   (cv--waitKey 0))
 	       "private:"
 	       ,@(remove-if #'null

@@ -22,9 +22,13 @@ cmake \
 -DENABLE_FAST_MATH=ON \
 -DOPENCV_ENABLE_NONFREE=ON \
 -DWITH_OPENGL=OFF \
+-DCMAKE_INSTALL_PREFIX=/home/martin/opencv \
 -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.7.0/modules ../opencv-4.7.0
 
 ccmake ../opencv-4.7.0
+
+ninja
+ninja install
 ```
 
 - the code that gpt4 calls doesn't seem to work (drawCharucoBoard)

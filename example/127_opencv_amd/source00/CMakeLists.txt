@@ -6,17 +6,23 @@ project(OpenCLCheck)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(OpenCV REQUIRED)
+# add the 'cmake' directory to the CMake module path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+# find_package(OpenCV REQUIRED)
 
+# specify the location of the local opencv build
+set(OpenCV_DIR "/home/martin/opencv")
 
-# specify the location of the fruit library
-set(FRUIT_INCLUDE_DIR "/home/martin/src/fruit-3.7.1/include")
-set(FRUIT_LIBRARY "/home/martin/src/fruit-3.7.1/b/src/libfruit.so")
+find_package(OpenCV REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
+find_package(Fruit REQUIRED)
+
 
 include_directories(
  ${OpenCV_INCLUDE_DIRS}
- ${FRUIT_INCLUDE_DIR} )
+ ${Fruit_INCLUDE_DIRS}
+ # /home/martin/opencv/include/opencv4/
+)
 
 add_executable(OpenCLCheck
   main.cpp
@@ -24,6 +30,6 @@ add_executable(OpenCLCheck
 )
 
 target_link_libraries(OpenCLCheck
-  ${OpenCV_LIBS} # needs vtk and hdf5
-  ${FRUIT_LIBRARY}
+  ${OpenCV_LIBS}
+  ${Fruit_LIBRARIES}
 )
