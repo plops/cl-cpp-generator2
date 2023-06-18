@@ -105,7 +105,15 @@
 				(values :constructor))))
 		   "Car car[1]={Car(1,2)};")
 	     :lisp-code 2
-	     :reference "car->w.j"))
+	     :reference "car->w.j")
+	    (:name insertion0
+		   :pre (do0
+			 (include<> sstream
+				    iomanip)
+			 "std::ostringstsream oss;")
+		   :code (<< oss ("std::setw" 3) 3.14159)
+		   :reference "oss<<std::setw(3)<<3.14159"
+		   :lisp-code "3.142"))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e

@@ -809,7 +809,8 @@ entry return-values contains a list of return values. currently supports type, v
 			  ;; use precedence list to check if parens are needed
 			  (let ((op0 (car arg))
 				(rest (cdr arg)))
-			    (assert (symbolp op0))
+			    (assert (symbolp op0)
+				    )
 			    (assert (listp rest))
 			    
 			    (if (member op0 *operators*)
