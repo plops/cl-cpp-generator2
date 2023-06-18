@@ -14,13 +14,22 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 # specify the location of the local opencv build
 set(OpenCV_DIR "/home/martin/opencv")
 
+
+# specify the location of the fruit library
+set(FRUIT_INCLUDE_DIR "/home/martin/fruit/include")
+set(FRUIT_LIBRARY "/home/martin/fruit/lib/libfruit.so")
+
+#message(STATUS "Trying to find Fruit library in: ${FRUIT_LIBRARY}")
+#message(STATUS "Trying to find Fruit headers in: ${FRUIT_INCLUDE_DIR}")
+
 find_package(OpenCV REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
-find_package(Fruit REQUIRED)
+#find_package(Fruit REQUIRED)
+
 
 
 include_directories(
  ${OpenCV_INCLUDE_DIRS}
- ${Fruit_INCLUDE_DIRS}
+ ${FRUIT_INCLUDE_DIR}
  # /home/martin/opencv/include/opencv4/
 )
 
@@ -31,5 +40,5 @@ add_executable(OpenCLCheck
 
 target_link_libraries(OpenCLCheck
   ${OpenCV_LIBS}
-  ${Fruit_LIBRARIES}
+  ${FRUIT_LIBRARY}
 )

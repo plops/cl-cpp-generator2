@@ -4,7 +4,9 @@ sudo pacman -S opencv vtk hdf5
 - install google fruit
 ```
 https://github.com/google/fruit/archive/refs/tags/v3.7.1.tar.gz
- cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release \
+ -DCMAKE_INSTALL_PREFIX=/home/martin/fruit
+ 
 ```
 - compile opencv from source
 ```

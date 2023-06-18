@@ -38,7 +38,8 @@
      `(do0
        "#pragma once"
        (include<> 
-	opencv2/aruco.hpp)
+	opencv2/aruco.hpp
+	opencv2/objdetect/aruco_dictionary.hpp)
        (defclass+ ,interface-name ()
 	 "public:"
 	 ,(format nil "virtual ~~~a() = default;" interface-name)
@@ -62,7 +63,9 @@
      `(do0
        (include<> opencv2/highgui.hpp
 		  opencv2/aruco.hpp
-		  opencv2/charuco.hpp
+		  opencv2/aruco/charuco.hpp
+		  opencv2/objdetect/aruco_dictionary.hpp
+		  opencv2/core/mat.hpp
 		  )
        )
      :code `(do0
@@ -110,11 +113,12 @@
 		   (declare (type int squaresX squaresY squareLength)
 			    (type "cv::Ptr<cv::aruco::Dictionary>" dictionary))
 		   (let ((board
-			  (cv--aruco--CharucoBoard--create
-			   squaresX squaresY
-			   squareLength
-			   (/ squareLength 2) ;; marker length
+			  (cv--makePtr<cv--aruco--CharucoBoard>
+			   (cv--Size squaresX squaresY)
+			   (* 1s0 squareLength)
+			   (* .5s0 squareLength) ;; marker length
 			   dictionary
+			   (cv--noArray)
 			   ))))
 		   (board->draw (cv--Size 800 600)
 				board_image_
@@ -147,6 +151,12 @@
 	      "ArucoCheckerboardDisplay.h")
 
      "using fruit::Component;"
+
+     (defun getCheckerboardDisplayComponent ()
+       (declare (values auto))
+       (return (dot
+		(fruit--createComponent)
+		("bind<CheckerboardDisplayInterface,ArucoCheckerboardDisplay>"))))
      
      (defun main (argc argv)
        (declare (values int)
@@ -156,10 +166,10 @@
        "(void) argv;"
        ,(lprint :vars `((cv--ocl--haveOpenCL)))
 
-       (let ((injector (fruit--Injector<CheckerBoardDisplayInterface>
+       #+nil (let ((injector (fruit--Injector<CheckerboardDisplayInterface>
 			(getCheckerboardDisplayComponent)))
 	     (display (injector.get<CheckerboardDisplayInterface*>))
-	     (dictionary (cv--aruco--getPredefinedDictionary cv--aruco--DICT_6x6_250))
+	     (dictionary (cv--aruco--getPredefinedDictionary cv--aruco--DICT_6X6_250))
 	     )
 	 (display->displayCheckerboard 5 7 100 dictionary))
        
