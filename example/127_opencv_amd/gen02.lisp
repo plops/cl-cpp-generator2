@@ -49,9 +49,22 @@
 		(aruco--CharucoBoard
 		 (Size x y) square_len
 		 (* .5 square_len)
-		 dict))))
-	 (declare (type "Ptr<aruco::CharucoBoard>" board))
+		 dict)))
+	     (img (Mat))
+	     )
+	 ;(declare (type "Ptr<aruco::CharucoBoard>" board))
+	 (board->generateImage (cv--Size 800 600)
+		      img
+		      10 ;; marginsize
+		      1 ;; bordebits
+		      )
+	 (unless (cv--imwrite (string "/home/martin/charucoboard.png")
+			      img)
+	   ,(lprint :msg "Failed to save the image.")
+	   (return -1))
 	 )
+
+       ,(lprint :msg "charucoboard has been saved.")
        
        (return 0)))))
 
