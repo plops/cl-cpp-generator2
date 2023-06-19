@@ -797,9 +797,7 @@ entry return-values contains a list of return values. currently supports type, v
 			  ;; no parens for symbol needed
 			  (make-instance 'string-op
 					 :string (format nil (if diag "Asymbol.~a" "~a") arg)
-					 :operator 'symbol)
-			  )
-			
+					 :operator 'symbol))
 			 ((and (typep arg 'string-op) (eq (operator-of arg) 'string))
 			  ;; no parens around string
 			  (m 'string
@@ -812,7 +810,6 @@ entry return-values contains a list of return values. currently supports type, v
 			    (assert (or (symbolp op0)
 					(stringp op0)))
 			    (assert (listp rest))
-			    
 			    (if (member op0 *operators*)
 				(let ((p0 (lookup-precedence op0))
 				      (p1 (loop for e in rest
@@ -830,16 +827,18 @@ entry return-values contains a list of return values. currently supports type, v
 				  ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 				  ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
 				  (if (and (< p0 p1)
-					   (not (member op0 `(hex aref string -> dot))))
+					   (not (member op0 `(hex aref string -> dot or))))
 				      (emit `(paren (,op0 ,@rest)))
 				      (emit `(,op0 ,@rest))))
 				(progn
-				 ;(break "unknown operator '~a'" op0)
+				  ;; (break "unknown operator '~a'" op0)
 				  ;; function call
 				  (emit `(,op0 ,@rest))
 				  ))))
-			 ((and (typep arg 'string-op))
-			  (string-of arg))
+			 ((typep arg 'string-op)
+			  (break "string-op ~a" arg)
+			  arg ;(string-of arg)
+			  )
 			 (t
 			  (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg)))))))
 		  (paren

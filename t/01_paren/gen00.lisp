@@ -118,10 +118,15 @@
 				 (dot oss (str))))
 		   :reference "(oss<<std::fixed<<std::setprecision(3)<<3.141590f, oss.str())"
 		   :lisp-code "3.142")
-	    (:name singleor
+	    (:name singleor0
 		   :code (bitwise-not (or 255))
 		   :lisp-code (lognot (or 255))
 		   :reference "~255"
+		   )
+	    (:name doubleor0
+		   :code (bitwise-not (or #xf0 #x0f))
+		   :lisp-code (lognot (or #xf0 #x0f))
+		   :reference ,(format nil "~~(~a|~a)" #xf0 #x0f)
 		   ))
 	  and e-i from 0
 	  do
