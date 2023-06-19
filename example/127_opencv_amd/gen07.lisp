@@ -47,14 +47,18 @@
 	 (let ((x 8)
 	     (y 3)
 	     (square_len 4s-2)
-	     (dict (aruco--getPredefinedDictionary
+	       (dict0 (aruco--getPredefinedDictionary
 		    aruco--DICT_6X6_250))
-	     (board
-	       (new
-		(aruco--CharucoBoard
-		 (Size x y) square_len
-		 (* .5 square_len)
-		 dict)))
+	       (dict (makePtr<aruco--Dictionary>
+			(aruco--getPredefinedDictionary
+			 aruco--DICT_6X6_250))
+		       )
+	       (board
+		 (new
+		  (aruco--CharucoBoard
+		   (Size x y) square_len
+		   (* .5 square_len)
+		   dict0)))
 	     (img (Mat))
 	     )
 	 ;(declare (type "Ptr<aruco::CharucoBoard>" board))
@@ -76,9 +80,7 @@
 	 (let ((waitTime 10))
 	   (comments "waitTime in milliseconds")
 	   
-	   (let ((dict (makePtr<aruco--Dictionary>
-			(aruco--getPredefinedDictionary
-			 aruco--DICT_6X6_250)))
+	   (let (
 		 (frame (Mat))
 		 (ids (std--vector<int>))
 		 (corners (std--vector<std--vector<Point2f>>))
@@ -97,25 +99,26 @@
 		     #+nil (when (< 0 (ids.size))
 		       (aruco--drawDetectedMarkers frame corners ids)))
 
-		    (do0 (comments "interpolate charuco corners")
-			 (let ((charucoCorners (Mat))
-			       (charucoIds (Mat)))
-			   (aruco--interpolateCornersCharuco
-			    corners
-			    ids
-			    frame
-			    board
-			    charucoCorners
-			    charucoIds)
-			   (when (< 0 (charucoCorners.total))
-			     (comments "If at leas one charuco corner detected, draw the corners")
-			     (aruco--drawDetectedCornersCharuco
-			      frame
-			      charucoCorners
-			      charucoIds)
-			     (commments "Collect data for calibration")
-			     (allCorners.push_back corners)
-			     (allIds.push_back ids))))
+		    (when (< 0 (ids.size))
+		     (do0 (comments "interpolate charuco corners")
+			  (let ((charucoCorners (Mat))
+				(charucoIds (Mat)))
+			    (aruco--interpolateCornersCharuco
+			     corners
+			     ids
+			     frame
+			     board
+			     charucoCorners
+			     charucoIds)
+			    (when (< 0 (charucoCorners.total))
+			      (comments "If at leas one charuco corner detected, draw the corners")
+			      (aruco--drawDetectedCornersCharuco
+			       frame
+			       charucoCorners
+			       charucoIds)
+			      (comments "Collect data for calibration")
+			      (allCorners.push_back corners)
+			      (allIds.push_back ids)))))
 		    (imshow title
 			    frame)
 		    (when (<= 0 (waitKey 1))
