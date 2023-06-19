@@ -84,7 +84,7 @@
 		 (frame (Mat))
 		 (ids (std--vector<int>))
 		 (corners (std--vector<std--vector<Point2f>>))
-		 (allCorners (std--vector<std--vector<std--vector<Point2f>>>))
+		 (allCorners (std--vector<std--vector<Point2f>>))
 		 (allIds (std--vector<std--vector<int>>))
 		 )
 	     (while true
@@ -99,26 +99,28 @@
 		     #+nil (when (< 0 (ids.size))
 		       (aruco--drawDetectedMarkers frame corners ids)))
 
+		    (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
+		    (comments "https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html")
 		    (when (< 0 (ids.size))
-		     (do0 (comments "interpolate charuco corners")
-			  (let ((charucoCorners (Mat))
-				(charucoIds (Mat)))
-			    (aruco--interpolateCornersCharuco
-			     corners
-			     ids
-			     frame
-			     board
-			     charucoCorners
-			     charucoIds)
-			    (when (< 0 (charucoCorners.total))
-			      (comments "If at leas one charuco corner detected, draw the corners")
-			      (aruco--drawDetectedCornersCharuco
-			       frame
-			       charucoCorners
-			       charucoIds)
-			      (comments "Collect data for calibration")
-			      (allCorners.push_back corners)
-			      (allIds.push_back ids)))))
+		      (do0 (comments "interpolate charuco corners")
+			   (let ((charucoCorners (Mat))
+				 (charucoIds (Mat)))
+			     (aruco--interpolateCornersCharuco
+			      corners
+			      ids
+			      frame
+			      board
+			      charucoCorners
+			      charucoIds)
+			     (when (< 0 (charucoCorners.total))
+			       (comments "If at leas one charuco corner detected, draw the corners")
+			       (aruco--drawDetectedCornersCharuco
+				frame
+				charucoCorners
+				charucoIds)
+			       (comments "Collect data for calibration")
+			       (allCorners.push_back charucoCorners)
+			       (allIds.push_back charucoIds)))))
 		    (imshow title
 			    frame)
 		    (let ((key (cast char (waitKey waitTime))))
@@ -142,6 +144,8 @@
 							      tvecs))
 		     (fs (FileStorage (string "calibration.yaml")
 				      FileStorage--WRITE)))
+
+		 (comments "rvecs and tvecs are camera pose estimates")
 		 (<< fs (string "cameraMatrix")
 		     cameraMatrix
 		     (string "distCoeffs")

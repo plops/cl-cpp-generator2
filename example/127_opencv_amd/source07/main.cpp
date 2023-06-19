@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   auto frame = Mat();
   auto ids = std::vector<int>();
   auto corners = std::vector<std::vector<Point2f>>();
-  auto allCorners = std::vector<std::vector<std::vector<Point2f>>>();
+  auto allCorners = std::vector<std::vector<Point2f>>();
   auto allIds = std::vector<std::vector<int>>();
   while (true) {
     // capture image
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
         aruco::drawDetectedCornersCharuco(frame, charucoCorners, charucoIds);
         // Collect data for calibration
 
-        allCorners.push_back(corners);
-        allIds.push_back(ids);
+        allCorners.push_back(charucoCorners);
+        allIds.push_back(charucoIds);
       }
     }
     imshow(title, frame);
@@ -77,6 +77,8 @@ int main(int argc, char **argv) {
         aruco::calibrateCameraCharuco(allCorners, allIds, board, Size(640, 480),
                                       cameraMatrix, distCoeffs, rvecs, tvecs);
     auto fs = FileStorage("calibration.yaml", FileStorage::WRITE);
+    // rvecs and tvecs are camera pose estimates
+
     fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
     fs.release();
   }
