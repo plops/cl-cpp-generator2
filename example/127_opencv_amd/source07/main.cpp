@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
                                        0.50f * square_len, *dict);
   auto img = Mat();
   board->generateImage(cv::Size(800, 600), img, 10, 1);
-  auto detector = aruco::CharucoDetector(*board);
+  auto markerDetector = aruco::ArucoDetector(*dict);
+  auto boardDetector = aruco::CharucoDetector(*board);
 
   if (!camera.isOpened()) {
     std::cout << "Error: Could not open camera." << std::endl;
@@ -31,6 +32,7 @@ int main(int argc, char **argv) {
   auto frame = Mat();
   auto ids = std::vector<int>();
   auto corners = std::vector<std::vector<Point2f>>();
+  auto marker_rejected = std::vector<std::vector<Point2f>>();
   auto allCorners = std::vector<Mat>();
   auto allIds = std::vector<Mat>();
   while (true) {
@@ -43,7 +45,9 @@ int main(int argc, char **argv) {
 
     // detect markers
 
-    aruco::detectMarkers(frame, dict, corners, ids);
+    markerDetector.detectMarkers(frame, corners, ids, marker_rejected);
+    markerDetector.refineDetectedMarkers(frame, *board, corners, ids,
+                                         marker_rejected);
 
     if (0 < ids.size()) {
       std::cout << ""
@@ -53,7 +57,8 @@ int main(int argc, char **argv) {
 
       auto charucoCorners = Mat();
       auto charucoIds = Mat();
-      detector.detectBoard(frame, corners, ids, charucoCorners, charucoIds);
+      boardDetector.detectBoard(frame, charucoCorners, charucoIds, corners,
+                                ids);
       aruco::drawDetectedMarkers(frame, corners, ids);
     }
     imshow(title, frame);

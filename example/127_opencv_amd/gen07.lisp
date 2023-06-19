@@ -68,7 +68,8 @@
 		      1 ;; bordebits
 		      )
 
-	   (let ((detector (aruco--CharucoDetector *board))))
+	   (let ((markerDetector (aruco--ArucoDetector *dict))
+		 (boardDetector (aruco--CharucoDetector *board))))
 	   )
 
 	 
@@ -86,7 +87,7 @@
 		 (frame (Mat))
 		 (ids (std--vector<int>))
 		 (corners (std--vector<std--vector<Point2f>>))
-		 ;(marker_rejected (std--vector<std--vector<Point2f>>))
+		 (marker_rejected (std--vector<std--vector<Point2f>>))
 		 (allCorners (std--vector<Mat>))
 		 (allIds (std--vector<Mat>))
 		 )
@@ -102,10 +103,12 @@
 		    
 		     (do0
 			   (comments "detect markers")
-			   (let (;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
-				 )
-			     (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
-					 	   ))
+			   (markerDetector.detectMarkers frame corners ids marker_rejected)
+			   (markerDetector.refineDetectedMarkers frame *board corners ids marker_rejected)
+			   #+nil (let (	;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
+				       )
+				   (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
+					 		 ))
 
 
 			   
@@ -137,7 +140,7 @@
 		      (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
 			   (let ((charucoCorners (Mat))
 				 (charucoIds (Mat)))
-			     (detector.detectBoard frame corners ids charucoCorners charucoIds)
+			     (boardDetector.detectBoard frame charucoCorners charucoIds corners ids )
 			     
 			     #+nil (let ((res0 (aruco--interpolateCornersCharuco
 						corners
