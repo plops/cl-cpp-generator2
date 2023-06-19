@@ -922,7 +922,8 @@ entry return-values contains a list of return values. currently supports type, v
 										      split-header-and-code
 										      defun defun* defmethod defclass
 										      comments comment doc
-										      namespace)))))
+										      namespace
+										      handler-case)))))
 						     "")
 						    ((and (typep b 'sequence)
 							  (eq #\Newline (aref b (- (length b) 1)))) ;; don't place semicolon after newline
