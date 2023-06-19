@@ -1193,8 +1193,12 @@ entry return-values contains a list of return values. currently supports type, v
 				 (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
 				 (format nil "~{~a~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 
-		  (or (m 'or (let ((args (cdr code))) ;; py
-			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
+		  (or (let ((args (cdr code))) ;; py
+			(if (< (length args) 2)
+			    (m 'string
+			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))
+			    (m 'or
+			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 		  (and (m 'and (let ((args (cdr code))) ;; py
 				 (format nil "~{~a~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  #+nil (xor (let ((args (cdr code))) ;; py
