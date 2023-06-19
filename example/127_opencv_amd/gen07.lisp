@@ -152,7 +152,7 @@
 				     ,(lprint :vars `(res0)
 					      ))
 			     (aruco--drawDetectedMarkers frame corners ids)
-			     #+nil (when (<= 4 (dot charucoCorners
+			      (when (<= 4 (dot charucoCorners
 					      (size)
 					      height))
 			       ,(lprint :vars `((dot charucoCorners

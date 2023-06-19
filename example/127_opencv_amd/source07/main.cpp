@@ -60,6 +60,14 @@ int main(int argc, char **argv) {
       boardDetector.detectBoard(frame, charucoCorners, charucoIds, corners,
                                 ids);
       aruco::drawDetectedMarkers(frame, corners, ids);
+      if (4 <= charucoCorners.size().height) {
+        std::cout << ""
+                  << " charucoCorners.size().height='"
+                  << charucoCorners.size().height << "' " << std::endl;
+        aruco::drawDetectedCornersCharuco(frame, charucoCorners, charucoIds);
+        allCorners.push_back(charucoCorners);
+        allIds.push_back(charucoIds);
+      }
     }
     imshow(title, frame);
     auto key = (char)waitKey(waitTime);
