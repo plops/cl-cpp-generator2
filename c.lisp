@@ -917,26 +917,42 @@ entry return-values contains a list of return values. currently supports type, v
 						(b (m-of bx))
 						(semicolon-maybe
 						  (cond
-						    ((and (typep b 'sequence)
-							  (or (eq #\; (aref b (- (length b) 1)))
-							      (and (typep x 'string))
-							      (and (typep x '(array character (*))))
-							      (and (listp x)
-								   (member (car x) `(defun do do0 progn
-										      for for-range dotimes
-										      while
-										      include include<> case
-										      when if unless
-										      let pragma
-										      split-header-and-code
-										      defun defun* defmethod defclass
-										      comments comment doc
-										      namespace
-										      handler-case)))))
-						     "")
-						    ((and (typep b 'sequence)
-							  (eq #\Newline (aref b (- (length b) 1)))) ;; don't place semicolon after newline
-						     #\Newline)
+						    ((typep b 'sequence)
+						     (cond
+						       ((eq #\; (aref b (- (length b) 1)))
+							;; don't place second semicolon
+							" " ; ".1."
+							)
+						       ((eq (type-of xx) 'string) ;(typep x 'string)
+							;; don't place semicolon after strings
+						        ".2."
+							)
+						       ((typep xx '(array character (*)))
+							;; don't place semicolon after array of characters
+							".3.")
+						       ((and (listp x)
+							     (member (car x) `(defun do do0 progn
+										for for-range dotimes
+										while
+										include include<> case
+										when if unless
+										let pragma
+										split-header-and-code
+										defun defun* defmethod defclass
+										comments comment doc
+										namespace
+										handler-case)))
+							;; don't place semicolon after specific operators
+							" " ;; ".4."
+							)
+						       ((eq #\Newline (aref b (- (length b) 1)))
+							;; don't place semicolon after newline
+							#\Newline ;; ".5."
+							)
+						       (t
+							";" ;; ".6."
+							)))
+						    
 						    ((not (typep b 'sequence))
 						     (break "not a sequence type='~a' variable='~a'" (type-of b) b1))
 						    (t ";"))))

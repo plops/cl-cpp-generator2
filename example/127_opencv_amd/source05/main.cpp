@@ -16,11 +16,11 @@ int main(int argc, char **argv) {
   while (true) {
     camera >> frame;
     if (frame.empty()) {
-      break
+      break;
     }
     imshow(title, frame);
     if (0 <= waitKey(1)) {
-      break
+      break;
     }
   }
 
