@@ -105,7 +105,7 @@
 			   (let (;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
 				 )
 			     (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
-						   ))
+					 	   ))
 
 
 			   
