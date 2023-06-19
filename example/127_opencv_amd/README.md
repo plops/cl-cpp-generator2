@@ -66,7 +66,8 @@ write in sequence:
 
 3. Display an ArUco Marker: Enhance the first program to display the
    generated ArUco marker. This will help you understand how to use
-   the markers with HighGUI window.
+   the markers with HighGUI window. (Note: I actually show the a
+   board).
 
 4. Detect ArUco Marker: Write a program to detect the ArUco marker
    from an image. This will ensure that you understand how to process
@@ -80,15 +81,7 @@ write in sequence:
    detection code to detect ArUco markers in the video feed from the
    webcam.
 
-7. Generate a Charuco Board: Create a program that can generate a
-   Charuco board and display it on the screen. This is a first step to
-   calibrating the camera.
-
-8. Detect Charuco Board: Write a program that can detect the Charuco
-   board from an image or video feed. This will help you understand
-   how to detect complex patterns.
-
-9. Calibrate Camera using Charuco Board: Write a program that uses the
+7. Calibrate Camera using Charuco Board: Write a program that uses the
    detected Charuco board to calibrate the camera. This will be a
    crucial part of your final program.
 
