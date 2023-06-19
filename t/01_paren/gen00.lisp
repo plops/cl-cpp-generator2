@@ -125,8 +125,8 @@
 		   )
 	    (:name doubleor0
 		   :code (bitwise-not (or #xf0 #x0f))
-		   :lisp-code (lognot (or #xf0 #x0f))
-		   :reference ,(format nil "~~(~a|~a)" #xf0 #x0f)
+		   :lisp-code (lognot (logior #xf0 #x0f))
+		   :reference ,(format nil "~~(~a | ~a)" #xf0 #x0f)
 		   ))
 	  and e-i from 0
 	  do

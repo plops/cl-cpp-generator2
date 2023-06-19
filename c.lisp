@@ -804,37 +804,47 @@ entry return-values contains a list of return values. currently supports type, v
 			     (format nil (if diag  "Astring.~a" "~a") arg)))
 			 ((listp arg)
 			  ;; a list can be an arbitrary abstract syntax tree of operators
-			  ;; use precedence list to check if parens are needed
-			  (let ((op0 (car arg))
-				(rest (cdr arg)))
-			    (assert (or (symbolp op0)
-					(stringp op0)))
-			    (assert (listp rest))
-			    (if (member op0 *operators*)
-				(let ((p0 (lookup-precedence op0))
-				      (p1 (loop for e in rest
+
+			  (cond
+			    ((< (length arg) 3)
+			     ;; two or one elements doesn't need paren
+			     (let ((op0 (car arg)) 
+				   (rest (cdr arg)))
+			       (assert (or (symbolp op0)
+					   (stringp op0)))
+			       (assert (listp rest))
+			       (emit `(,op0 ,@rest))))
+			    (t
+			     (let ((op0 (car arg)) ;; use precedence list to check if parens are needed
+				   (rest (cdr arg)))
+			       (assert (or (symbolp op0)
+					   (stringp op0)))
+			       (assert (listp rest))
+			       (if (member op0 *operators*)
+				   (let ((p0 (lookup-precedence op0))
+					 (p1 (loop for e in rest
 						   minimize
 						   (if (or (listp e)
 							   (typep e 'string-op))
 						       (let* ((op1 (cond ((listp e) (first e))
 									 ((typep e 'string-op) (operator-of e))
 									 (t (break "unknown operator '~a'" e))))
-							    (p1 (lookup-precedence op1)))
+							      (p1 (lookup-precedence op1)))
 							 (if p1
 							     p1
 							     (+ 1 (length *precedence*))))
 						       (+ 1 (length *precedence*))))))
-				  ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
-				  ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
-				  (if (and (< p0 p1)
-					   (not (member op0 `(hex aref string -> dot or))))
-				      (emit `(paren (,op0 ,@rest)))
-				      (emit `(,op0 ,@rest))))
-				(progn
-				  ;; (break "unknown operator '~a'" op0)
-				  ;; function call
-				  (emit `(,op0 ,@rest))
-				  ))))
+				     ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
+				     ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
+				     (if (and (< p0 p1)
+					      (not (member op0 `(hex aref string -> dot))))
+					 (emit `(paren (,op0 ,@rest)))
+					 (emit `(,op0 ,@rest))))
+				   (progn
+				     ;; (break "unknown operator '~a'" op0)
+				     ;; function call
+				     (emit `(,op0 ,@rest))
+				     ))))))
 			 ((typep arg 'string-op)
 			  (break "string-op ~a" arg)
 			  arg ;(string-of arg)
@@ -1163,7 +1173,7 @@ entry return-values contains a list of return values. currently supports type, v
 									 `(space using (= ,a ,b)))))))))
 		  
 		  (not (m 'not (format nil "!~a" (emit `(paren* ,(car (cdr code)))))))
-		  (bitwise-not (m 'bitwise-not (format nil "~~~a" (emit `(paren* ,(car (cdr code)))))))
+		  (bitwise-not (m 'bitwise-not (format nil "~~~a" (emit `(paren* ,(cadr code))))))
 		  (deref (m 'deref (format nil "*~a" (emit `(paren* ,(car (cdr code)))))))
 		  (ref (m 'ref (format nil "&~a" (emit `(paren* ,(car (cdr code)))))))
 		  (+ (let ((args (cdr code)))
@@ -1191,13 +1201,9 @@ entry return-values contains a list of return values. currently supports type, v
 			     (if (eq 1 (length args))
 				 (format nil "1.0/~a" (emit `(paren* ,(car args)))) ;; py
 				 (format nil "~{~a~^/~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
-
 		  (or (let ((args (cdr code))) ;; py
-			(if (< (length args) 2)
-			    (m 'string
-			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))
-			    (m 'or
-			       (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
+			(m 'or
+			   (format nil "~{~a~^ | ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  (and (m 'and (let ((args (cdr code))) ;; py
 				 (format nil "~{~a~^ & ~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))
 		  #+nil (xor (let ((args (cdr code))) ;; py
