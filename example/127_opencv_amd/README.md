@@ -90,3 +90,8 @@ start integrating them into a class-based system using Google
 Fruit. This approach will ensure that you understand each component of
 your final program and can debug them individually before trying to
 assemble everything together.
+
+## Note
+
+It would be better to develop the camera calibration with a bunch of
+images. The webcam version crashes too much.
