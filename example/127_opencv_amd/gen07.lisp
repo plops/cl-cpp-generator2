@@ -67,6 +67,8 @@
 		      10 ;; marginsize
 		      1 ;; bordebits
 		      )
+
+	   (let ((detector (aruco--CharucoDetector *board))))
 	   )
 
 	 
@@ -84,30 +86,40 @@
 		 (frame (Mat))
 		 (ids (std--vector<int>))
 		 (corners (std--vector<std--vector<Point2f>>))
-		 (marker_rejected (std--vector<std--vector<Point2f>>))
+		 ;(marker_rejected (std--vector<std--vector<Point2f>>))
 		 (allCorners (std--vector<Mat>))
 		 (allIds (std--vector<Mat>))
 		 )
-	     (allCorners.reserve 100)
-	     (allIds.reserve 100)
+	     ;(allCorners.reserve 100)
+	     ;(allIds.reserve 100)
 	     (while true
 		    (do0
 		     (comments "capture image")
 		     (>> camera frame)
 		     (when (frame.empty)
 		       break))
-		    (do0
-		     (comments "detect markers")
-		     (let ((detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters))))
-		      (aruco--detectMarkers frame dict corners ids detector_params marker_rejected))
 
-		     #+nil (do0 (comments "refinement will possibly find more markers")
+		    
+		     (do0
+			   (comments "detect markers")
+			   (let (;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
+				 )
+			     (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
+						   ))
 
-			  (aruco--refineDetectedMarkers frame board corners ids marker_rejected))
-		     #+nil (when (< 0 (ids.size))
-			     (aruco--drawDetectedMarkers frame corners ids)))
 
-		    #+nil 
+			   
+			   #+nil (do0 (comments "refinement will possibly find more markers")
+
+				      (aruco--refineDetectedMarkers frame board corners ids marker_rejected))
+
+			   
+			   
+			   #+nil (when (< 0 (ids.size))
+				   (aruco--drawDetectedMarkers frame corners ids)))
+
+		     
+		     #+nil 
 		    (do0
 		     (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
 		     (comments "corners ids = detectMarkers img dict"
@@ -120,20 +132,22 @@
 			       "contains example of how to accumulate allCharucoCorners")
 
 		     (comments "https://github.com/UoA-CARES/stereo_calibration"))
-		    (when (< 0 (ids.size))
+		     (when (< 0 (ids.size))
 		      ,(lprint :vars `((ids.size)))
 		      (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
 			   (let ((charucoCorners (Mat))
 				 (charucoIds (Mat)))
+			     (detector.detectBoard frame corners ids charucoCorners charucoIds)
+			     
 			     #+nil (let ((res0 (aruco--interpolateCornersCharuco
-					  corners
-					  ids
-					  frame
-					  board
-					  charucoCorners
-					  charucoIds)))
-			       ,(lprint :vars `(res0)
-					))
+						corners
+						ids
+						frame
+						board
+						charucoCorners
+						charucoIds)))
+				     ,(lprint :vars `(res0)
+					      ))
 			     (aruco--drawDetectedMarkers frame corners ids)
 			     #+nil (when (<= 4 (dot charucoCorners
 					      (size)
