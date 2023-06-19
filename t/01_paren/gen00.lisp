@@ -117,7 +117,12 @@
 				     ("std::setprecision" 3) 3.141590s0)
 				 (dot oss (str))))
 		   :reference "(oss<<std::fixed<<std::setprecision(3)<<3.141590f, oss.str())"
-		   :lisp-code "3.142"))
+		   :lisp-code "3.142")
+	    (:name singleor
+		   :code (bitwise-not (or 255))
+		   :lisp-code (lognot (or 255))
+		   :reference "~255"
+		   ))
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
@@ -163,5 +168,3 @@
 		       (return 0))))
 		  :format nil
 		  :tidy nil))))))
-
-
