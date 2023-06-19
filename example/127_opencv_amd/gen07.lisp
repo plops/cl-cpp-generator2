@@ -47,7 +47,7 @@
 	 (let ((x 8)
 	     (y 3)
 	     (square_len 4s-2)
-	       (dict0 (aruco--getPredefinedDictionary
+	       #+nil(dict0 (aruco--getPredefinedDictionary
 		    aruco--DICT_6X6_250))
 	       (dict (makePtr<aruco--Dictionary>
 			(aruco--getPredefinedDictionary
@@ -58,7 +58,7 @@
 		  (aruco--CharucoBoard
 		   (Size x y) square_len
 		   (* .5 square_len)
-		   dict0)))
+		   *dict)))
 	     (img (Mat))
 	     )
 	 ;(declare (type "Ptr<aruco::CharucoBoard>" board))
@@ -84,9 +84,12 @@
 		 (frame (Mat))
 		 (ids (std--vector<int>))
 		 (corners (std--vector<std--vector<Point2f>>))
-		 (allCorners (std--vector<std--vector<Point2f>>))
-		 (allIds (std--vector<std--vector<int>>))
+		 (marker_rejected (std--vector<std--vector<Point2f>>))
+		 (allCorners (std--vector<Mat>))
+		 (allIds (std--vector<Mat>))
 		 )
+	     (allCorners.reserve 100)
+	     (allIds.reserve 100)
 	     (while true
 		    (do0
 		     (comments "capture image")
@@ -95,32 +98,53 @@
 		       break))
 		    (do0
 		     (comments "detect markers")
-		     (aruco--detectMarkers frame dict corners ids)
-		     #+nil (when (< 0 (ids.size))
-		       (aruco--drawDetectedMarkers frame corners ids)))
+		     (let ((detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters))))
+		      (aruco--detectMarkers frame dict corners ids detector_params marker_rejected))
 
-		    (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
-		    (comments "https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html")
+		     #+nil (do0 (comments "refinement will possibly find more markers")
+
+			  (aruco--refineDetectedMarkers frame board corners ids marker_rejected))
+		     #+nil (when (< 0 (ids.size))
+			     (aruco--drawDetectedMarkers frame corners ids)))
+
+		    #+nil 
+		    (do0
+		     (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
+		     (comments "corners ids = detectMarkers img dict"
+			       "(drawDetectedMakers img corners)"
+			       "charucoCorners charucoIds = interpolateCorners corners ids img board"
+			       "collect charucoCorners")
+		     
+		     (comments "https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html")
+		     (comments "https://github.com/CopterExpress/charuco_calibration/blob/master/charuco_calibration/src/calibrator.cpp"
+			       "contains example of how to accumulate allCharucoCorners")
+
+		     (comments "https://github.com/UoA-CARES/stereo_calibration"))
 		    (when (< 0 (ids.size))
-		      (do0 (comments "interpolate charuco corners")
+		      ,(lprint :vars `((ids.size)))
+		      (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
 			   (let ((charucoCorners (Mat))
 				 (charucoIds (Mat)))
-			     (aruco--interpolateCornersCharuco
-			      corners
-			      ids
-			      frame
-			      board
-			      charucoCorners
-			      charucoIds)
-			     (when (< 0 (charucoCorners.total))
-			       (comments "If at leas one charuco corner detected, draw the corners")
-			       (aruco--drawDetectedCornersCharuco
-				frame
-				charucoCorners
-				charucoIds)
-			       (comments "Collect data for calibration")
+			     #+nil (let ((res0 (aruco--interpolateCornersCharuco
+					  corners
+					  ids
+					  frame
+					  board
+					  charucoCorners
+					  charucoIds)))
+			       ,(lprint :vars `(res0)
+					))
+			     (aruco--drawDetectedMarkers frame corners ids)
+			     #+nil (when (<= 4 (dot charucoCorners
+					      (size)
+					      height))
+			       ,(lprint :vars `((dot charucoCorners
+						     (size)
+						     height)))
+			       (aruco--drawDetectedCornersCharuco frame charucoCorners charucoIds)
 			       (allCorners.push_back charucoCorners)
-			       (allIds.push_back charucoIds)))))
+			       (allIds.push_back charucoIds))
+			     )))
 		    (imshow title
 			    frame)
 		    (let ((key (cast char (waitKey waitTime))))

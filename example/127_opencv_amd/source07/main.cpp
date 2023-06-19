@@ -12,11 +12,10 @@ int main(int argc, char **argv) {
   auto x = 8;
   auto y = 3;
   auto square_len = 4.00e-2f;
-  auto dict0 = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
   auto dict = makePtr<aruco::Dictionary>(
       aruco::getPredefinedDictionary(aruco::DICT_6X6_250));
   auto board = new aruco::CharucoBoard(Size(x, y), square_len,
-                                       0.50f * square_len, dict0);
+                                       0.50f * square_len, *dict);
   auto img = Mat();
   board->generateImage(cv::Size(800, 600), img, 10, 1);
 
@@ -31,8 +30,11 @@ int main(int argc, char **argv) {
   auto frame = Mat();
   auto ids = std::vector<int>();
   auto corners = std::vector<std::vector<Point2f>>();
-  auto allCorners = std::vector<std::vector<Point2f>>();
-  auto allIds = std::vector<std::vector<int>>();
+  auto marker_rejected = std::vector<std::vector<Point2f>>();
+  auto allCorners = std::vector<Mat>();
+  auto allIds = std::vector<Mat>();
+  allCorners.reserve(100);
+  allIds.reserve(100);
   while (true) {
     // capture image
 
@@ -43,24 +45,20 @@ int main(int argc, char **argv) {
 
     // detect markers
 
-    aruco::detectMarkers(frame, dict, corners, ids);
+    auto detector_params =
+        makePtr<aruco::DetectorParameters>(aruco::DetectorParameters());
+    aruco::detectMarkers(frame, dict, corners, ids, detector_params,
+                         marker_rejected);
 
     if (0 < ids.size()) {
-      // interpolate charuco corners
+      std::cout << ""
+                << " ids.size()='" << ids.size() << "' " << std::endl;
+      // interpolate charuco corners (checker board corners, not the aruco
+      // markers)
 
       auto charucoCorners = Mat();
       auto charucoIds = Mat();
-      aruco::interpolateCornersCharuco(corners, ids, frame, board,
-                                       charucoCorners, charucoIds);
-      if (0 < charucoCorners.total()) {
-        // If at leas one charuco corner detected, draw the corners
-
-        aruco::drawDetectedCornersCharuco(frame, charucoCorners, charucoIds);
-        // Collect data for calibration
-
-        allCorners.push_back(charucoCorners);
-        allIds.push_back(charucoIds);
-      }
+      aruco::drawDetectedMarkers(frame, corners, ids);
     }
     imshow(title, frame);
     auto key = (char)waitKey(waitTime);
