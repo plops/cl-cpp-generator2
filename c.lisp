@@ -1255,7 +1255,7 @@ entry return-values contains a list of return values. currently supports type, v
 				       (format nil "~a-=~a" (emit `(paren* ,a)) (emit `(paren* ,b)))
 				       (format nil "~a--" (emit `(paren* ,a)))))))
 		  (string (m 'string (format nil "\"~a\"" (cadr code))))
-		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be intrduced, like R"x( .. )" .. )x"
+		  ;; if raw string contains )" it will stop, in order to prevent this a pre and suffix can be introduced, like R"x( .. )" .. )x"
 		  (string-r (m 'string (format nil "R\"(~a)\"" (cadr code))))
 		  (string-u8 (m 'string (format nil "u8\"(~a)\"" (cadr code))))
 		  (char (m 'string (format nil "'~a'" (cadr code))))
