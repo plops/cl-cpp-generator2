@@ -63,9 +63,22 @@ int main(int argc, char **argv) {
       }
     }
     imshow(title, frame);
-    if (0 <= waitKey(1)) {
+    auto key = (char)waitKey(waitTime);
+    if (key == 27) {
       break;
     }
+  }
+  if (0 < allIds.size()) {
+    auto cameraMatrix = Mat();
+    auto distCoeffs = Mat();
+    auto rvecs = std::vector<Mat>();
+    auto tvecs = std::vector<Mat>();
+    auto repError =
+        aruco::calibrateCameraCharuco(allCorners, allIds, board, Size(640, 480),
+                                      cameraMatrix, distCoeffs, rvecs, tvecs);
+    auto fs = FileStorage("calibration.yaml", FileStorage::WRITE);
+    fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
+    fs.release();
   }
 
   return 0;

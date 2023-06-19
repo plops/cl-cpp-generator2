@@ -121,8 +121,33 @@
 			      (allIds.push_back ids)))))
 		    (imshow title
 			    frame)
+		    (let ((key (cast char (waitKey waitTime))))
+		      (when (== key 27)
+			break))
+		    #+nil
 		    (when (<= 0 (waitKey 1))
-		      break)))))
+		      break))
+	     (when (< 0 (allIds.size))
+	       (let ((cameraMatrix (Mat))
+		     (distCoeffs (Mat))
+		     (rvecs (std--vector<Mat>))
+		     (tvecs (std--vector<Mat>))
+		     (repError (aruco--calibrateCameraCharuco allCorners
+							      allIds
+							      board
+							      (Size 640 480)
+							      cameraMatrix
+							      distCoeffs
+							      rvecs
+							      tvecs))
+		     (fs (FileStorage (string "calibration.yaml")
+				      FileStorage--WRITE)))
+		 (<< fs (string "cameraMatrix")
+		     cameraMatrix
+		     (string "distCoeffs")
+		     distCoeffs)
+		 (fs.release)
+		 )))))
        
        (return 0)))))
 
