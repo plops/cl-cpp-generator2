@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
   auto dict = makePtr<aruco::Dictionary>(
       aruco::getPredefinedDictionary(aruco::DICT_6X6_250));
   auto frame = Mat();
-  auto markerIds = std::vector<int>();
-  auto markerCorners = std::vector<std::vector<Point2f>>();
+  auto ids = std::vector<int>();
+  auto corners = std::vector<std::vector<Point2f>>();
   while (true) {
     camera >> frame;
     if (frame.empty()) {
