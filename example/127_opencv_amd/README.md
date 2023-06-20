@@ -12,7 +12,7 @@ https://github.com/google/fruit/archive/refs/tags/v3.7.1.tar.gz
 ```
 cd ~/src
 wget https://github.com/opencv/opencv/archive/4.7.0.zip
-wget https://github.com/opencv/opencv_contrib/archive/refs/tags/4.7.0.tar.gz
+# wget https://github.com/opencv/opencv_contrib/archive/refs/tags/4.7.0.tar.gz
 unzip 4.7.0.zip
 
 mkdir opencv_build
@@ -25,13 +25,17 @@ cmake \
 -DOPENCV_ENABLE_NONFREE=ON \
 -DWITH_OPENGL=OFF \
 -DCMAKE_INSTALL_PREFIX=/home/martin/opencv \
--DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.7.0/modules ../opencv-4.7.0
+../opencv-4.7.
+0 
+# -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-4.7.0/modules 
 
 ccmake ../opencv-4.7.0
 
 ninja
 ninja install
 ```
+
+- aruco is now in core, contrib is not requiredz
 
 - the code that gpt4 calls doesn't seem to work (drawCharucoBoard)
 - in the example 72_emsdk i already tried something similar

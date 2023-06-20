@@ -1,6 +1,8 @@
 #include <iostream>
-#include <opencv2/aruco.hpp>
-#include <opencv2/aruco/charuco.hpp>
+#include <opencv2/objdetect/aruco_board.hpp>
+#include <opencv2/objdetect/aruco_detector.hpp>
+#include <opencv2/objdetect/aruco_dictionary.hpp>
+#include <opencv2/objdetect/charuco_detector.hpp>
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
@@ -74,20 +76,6 @@ int main(int argc, char **argv) {
     if (key == 27) {
       break;
     }
-  }
-  if (0 < allIds.size()) {
-    auto cameraMatrix = Mat();
-    auto distCoeffs = Mat();
-    auto rvecs = std::vector<Mat>();
-    auto tvecs = std::vector<Mat>();
-    auto repError =
-        aruco::calibrateCameraCharuco(allCorners, allIds, board, Size(640, 480),
-                                      cameraMatrix, distCoeffs, rvecs, tvecs);
-    auto fs = FileStorage("calibration.yaml", FileStorage::WRITE);
-    // rvecs and tvecs are camera pose estimates
-
-    fs << "cameraMatrix" << cameraMatrix << "distCoeffs" << distCoeffs;
-    fs.release();
   }
 
   return 0;

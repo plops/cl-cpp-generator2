@@ -27,8 +27,10 @@
      (include<>
       iostream
       opencv2/opencv.hpp
-      opencv2/aruco/charuco.hpp
-      opencv2/aruco.hpp
+      opencv2/objdetect/aruco_dictionary.hpp
+      opencv2/objdetect/aruco_board.hpp
+      opencv2/objdetect/aruco_detector.hpp
+      opencv2/objdetect/charuco_detector.hpp
       )
 
      "using namespace cv;"
@@ -170,6 +172,7 @@
 		    #+nil
 		    (when (<= 0 (waitKey 1))
 		      break))
+	     #+nil
 	     (when (< 0 (allIds.size))
 	       (let ((cameraMatrix (Mat))
 		     (distCoeffs (Mat))
