@@ -35,6 +35,62 @@
 
      "using namespace cv;"
      
+
+     ,(let ((l-param
+	      `((:name DetectorParameters
+		       :fields (   adaptiveThreshWinSizeMin 
+			     adaptiveThreshWinSizeMax 
+			     adaptiveThreshWinSizeStep 
+			     adaptiveThreshConstant
+			     minMarkerPerimeterRate 
+			     maxMarkerPerimeterRate 
+			     polygonalApproxAccuracyRate 
+			     minCornerDistanceRate 
+			     minDistanceToBorder 
+			     minMarkerDistanceRate 
+			     cornerRefinementMethod 
+			     cornerRefinementWinSize 
+			     cornerRefinementMaxIterations 
+			     cornerRefinementMinAccuracy
+			     markerBorderBits 
+			     perspectiveRemovePixelPerCell 
+			     perspectiveRemoveIgnoredMarginPerCell 
+			     maxErroneousBitsInBorderRate
+			     minOtsuStdDev 
+			     errorCorrectionRate 
+			     aprilTagQuadDecimate 
+			     aprilTagQuadSigma 
+			     aprilTagMinClusterPixels 
+			     aprilTagMaxNmaxima
+			     aprilTagCriticalRad 
+			     aprilTagMaxLineFitMse 
+			     aprilTagMinWhiteBlackDiff 
+			     aprilTagDeglitch
+			     detectInvertedMarker 
+			     useAruco3Detection
+			     minSideLengthCanonicalImg 
+			     minMarkerLengthRatioOriginalImg ) )
+		(:name RefineParameters
+		       :fields  (
+				  minRepDistance
+				  errorCorrectionRate
+				  checkAllOrders
+				  ))
+		(:name CharucoParameters
+		       :fields (minMarkers 
+				 tryRefineMarkers
+				 ) ))))
+	`(do0
+	  ,@(loop for e in l-param
+		  collect
+		  (destructuring-bind (&key name fields) e
+		    `(defun print (p ) ;,(format nil "print~a" name) (p)
+		       (declare (type ,(format nil "const aruco::~a" name) p))
+		       ,@(loop for e in fields
+			       collect
+			       (lprint :msg name :vars `((dot p ,e)))))))))
+     
+     
      
      (defun main (argc argv)
        (declare (values int)
@@ -47,75 +103,41 @@
 	     )
 
 	 (let ((x 8)
-	     (y 3)
-	     (square_len 4s-2)
+	       (y 3)
+	       (square_len 4s-2)
 	       #+nil(dict0 (aruco--getPredefinedDictionary
-		    aruco--DICT_6X6_250))
+			    aruco--DICT_6X6_250))
 	       (dict (makePtr<aruco--Dictionary>
-			(aruco--getPredefinedDictionary
-			 aruco--DICT_6X6_250))
-		       )
+		      (aruco--getPredefinedDictionary
+		       aruco--DICT_6X6_250))
+		     )
 	       (board
 		 (new
 		  (aruco--CharucoBoard
 		   (Size x y) square_len
 		   (* .5 square_len)
 		   *dict)))
-	     (img (Mat))
-	     )
-	 ;(declare (type "Ptr<aruco::CharucoBoard>" board))
-	 (board->generateImage (cv--Size 800 600)
-		      img
-		      10 ;; marginsize
-		      1 ;; bordebits
-		      )
+	       (img (Mat))
+	       )
+					;(declare (type "Ptr<aruco::CharucoBoard>" board))
+	   (board->generateImage (cv--Size 800 600)
+				 img
+				 10 ;; marginsize
+				 1  ;; bordebits
+				 )
 
 	   (let ((dp (aruco--DetectorParameters)))
-	     ,@(loop for e in `(   adaptiveThreshWinSizeMin 
-        adaptiveThreshWinSizeMax 
-        adaptiveThreshWinSizeStep 
-        adaptiveThreshConstant
-        minMarkerPerimeterRate 
-        maxMarkerPerimeterRate 
-        polygonalApproxAccuracyRate 
-        minCornerDistanceRate 
-        minDistanceToBorder 
-        minMarkerDistanceRate 
-        cornerRefinementMethod 
-        cornerRefinementWinSize 
-        cornerRefinementMaxIterations 
-        cornerRefinementMinAccuracy
-        markerBorderBits 
-        perspectiveRemovePixelPerCell 
-        perspectiveRemoveIgnoredMarginPerCell 
-        maxErroneousBitsInBorderRate
-        minOtsuStdDev 
-        errorCorrectionRate 
-        aprilTagQuadDecimate 
-        aprilTagQuadSigma 
-        aprilTagMinClusterPixels 
-        aprilTagMaxNmaxima
-        aprilTagCriticalRad 
-        aprilTagMaxLineFitMse 
-        aprilTagMinWhiteBlackDiff 
-        aprilTagDeglitch
-        detectInvertedMarker 
-        useAruco3Detection
-        minSideLengthCanonicalImg 
-        minMarkerLengthRatioOriginalImg )
-		     collect
-		     (lprint :vars `((dot dp ,e)))))
+
+	     (print dp)
+	     
+	     )
 	   (let ((rp (aruco--RefineParameters)))
-	     ,@(loop for e in `(
-minRepDistance
-errorCorrectionRate
-checkAllOrders
-)
-		     collect
-		     (lprint :vars `((dot rp ,e)))))
+	     (print rp))
+	   (let ((cp (aruco--CharucoParameters)))
+	     (print cp))
 	   
 	   (let ((markerDetector (aruco--ArucoDetector *dict dp rp))
-		 (boardDetector (aruco--CharucoDetector *board))))
+		 (boardDetector (aruco--CharucoDetector *board cp dp rp))))
 	   )
 
 	 
@@ -137,8 +159,8 @@ checkAllOrders
 		 (allCorners (std--vector<Mat>))
 		 (allIds (std--vector<Mat>))
 		 )
-	     ;(allCorners.reserve 100)
-	     ;(allIds.reserve 100)
+					;(allCorners.reserve 100)
+					;(allIds.reserve 100)
 	     (while true
 		    (do0
 		     (comments "capture image")
@@ -147,28 +169,28 @@ checkAllOrders
 		       break))
 
 		    
-		     (do0
-			   (comments "detect markers")
-			   (markerDetector.detectMarkers frame corners ids marker_rejected)
-			   (markerDetector.refineDetectedMarkers frame *board corners ids marker_rejected)
-			   #+nil (let (	;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
-				       )
-				   (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
-					 		 ))
+		    (do0
+		     (comments "detect markers")
+		     (markerDetector.detectMarkers frame corners ids marker_rejected)
+		     (markerDetector.refineDetectedMarkers frame *board corners ids marker_rejected)
+		     #+nil (let ( ;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
+				 )
+			     (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
+					 	   ))
 
 
 			   
-			   #+nil (do0 (comments "refinement will possibly find more markers")
+		     #+nil (do0 (comments "refinement will possibly find more markers")
 
-				      (aruco--refineDetectedMarkers frame board corners ids marker_rejected))
+				(aruco--refineDetectedMarkers frame board corners ids marker_rejected))
 
 			   
 			   
-			   #+nil (when (< 0 (ids.size))
-				   (aruco--drawDetectedMarkers frame corners ids)))
+		     #+nil (when (< 0 (ids.size))
+			     (aruco--drawDetectedMarkers frame corners ids)))
 
 		     
-		     #+nil 
+		    #+nil 
 		    (do0
 		     (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
 		     (comments "corners ids = detectMarkers img dict"
@@ -181,7 +203,7 @@ checkAllOrders
 			       "contains example of how to accumulate allCharucoCorners")
 
 		     (comments "https://github.com/UoA-CARES/stereo_calibration"))
-		     (when (< 0 (ids.size))
+		    (when (< 0 (ids.size))
 		      ,(lprint :vars `((ids.size)))
 		      (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
 			   (let ((charucoCorners (Mat))
@@ -198,7 +220,7 @@ checkAllOrders
 				     ,(lprint :vars `(res0)
 					      ))
 			     (aruco--drawDetectedMarkers frame corners ids)
-			      (when (<= 4 (dot charucoCorners
+			     (when (<= 4 (dot charucoCorners
 					      (size)
 					      height))
 			       ,(lprint :vars `((dot charucoCorners
