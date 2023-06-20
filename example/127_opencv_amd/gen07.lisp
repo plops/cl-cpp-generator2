@@ -85,7 +85,7 @@
 		  collect
 		  (destructuring-bind (&key name fields) e
 		    `(defun print (p ) ;,(format nil "print~a" name) (p)
-		       (declare (type ,(format nil "const aruco::~a" name) p))
+		       (declare (type ,(format nil "aruco::~a const &" name) p))
 		       ,@(loop for e in fields
 			       collect
 			       (lprint :msg name :vars `((dot p ,e)))))))))
@@ -112,7 +112,7 @@
 		       aruco--DICT_6X6_250))
 		     )
 	       (board
-		 (new
+		 (std--make_unique<aruco--CharucoBoard> ;new
 		  (aruco--CharucoBoard
 		   (Size x y) square_len
 		   (* .5 square_len)
@@ -164,77 +164,79 @@
 	     (while true
 		    (do0
 		     (comments "capture image")
-		     (>> camera frame)
-		     (when (frame.empty)
-		       break))
-
-		    
-		    (do0
-		     (comments "detect markers")
-		     (markerDetector.detectMarkers frame corners ids marker_rejected)
-		     (markerDetector.refineDetectedMarkers frame *board corners ids marker_rejected)
-		     #+nil (let ( ;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
-				 )
-			     (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
-					 	   ))
-
-
-			   
-		     #+nil (do0 (comments "refinement will possibly find more markers")
-
-				(aruco--refineDetectedMarkers frame board corners ids marker_rejected))
-
-			   
-			   
-		     #+nil (when (< 0 (ids.size))
-			     (aruco--drawDetectedMarkers frame corners ids)))
+		     (let ((key (cast char (waitKey waitTime))))
+		       (>> camera frame)
+		       (when (logior (frame.empty)
+				     (== key 27))
+			 break))
 
 		     
-		    #+nil 
-		    (do0
-		     (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
-		     (comments "corners ids = detectMarkers img dict"
-			       "(drawDetectedMakers img corners)"
-			       "charucoCorners charucoIds = interpolateCorners corners ids img board"
-			       "collect charucoCorners")
-		     
-		     (comments "https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html")
-		     (comments "https://github.com/CopterExpress/charuco_calibration/blob/master/charuco_calibration/src/calibrator.cpp"
-			       "contains example of how to accumulate allCharucoCorners")
 
-		     (comments "https://github.com/UoA-CARES/stereo_calibration"))
-		    (when (< 0 (ids.size))
-		      ,(lprint :vars `((ids.size)))
-		      (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
-			   (let ((charucoCorners (Mat))
-				 (charucoIds (Mat)))
-			     (boardDetector.detectBoard frame charucoCorners charucoIds corners ids )
-			     
-			     #+nil (let ((res0 (aruco--interpolateCornersCharuco
-						corners
-						ids
-						frame
-						board
-						charucoCorners
-						charucoIds)))
-				     ,(lprint :vars `(res0)
-					      ))
-			     (aruco--drawDetectedMarkers frame corners ids)
-			     (when (<= 4 (dot charucoCorners
-					      (size)
-					      height))
-			       ,(lprint :vars `((dot charucoCorners
-						     (size)
-						     height)))
-			       (aruco--drawDetectedCornersCharuco frame charucoCorners charucoIds)
-			       (allCorners.push_back charucoCorners)
-			       (allIds.push_back charucoIds))
-			     )))
-		    (imshow title
-			    frame)
-		    (let ((key (cast char (waitKey waitTime))))
-		      (when (== key 27)
-			break))
+		     
+		     (do0
+		      (comments "detect markers")
+		      (markerDetector.detectMarkers frame corners ids marker_rejected)
+		      (markerDetector.refineDetectedMarkers frame *board corners ids marker_rejected)
+		      #+nil (let ( ;(detector_params (makePtr<aruco--DetectorParameters> (aruco--DetectorParameters)))
+				  )
+			      (aruco--detectMarkers frame dict corners ids ;detector_params marker_rejected
+					 	    ))
+
+
+		      
+		      #+nil (do0 (comments "refinement will possibly find more markers")
+
+				 (aruco--refineDetectedMarkers frame board corners ids marker_rejected))
+
+		      
+		      
+		      #+nil (when (< 0 (ids.size))
+			      (aruco--drawDetectedMarkers frame corners ids)))
+
+		     
+		     #+nil 
+		     (do0
+		      (comments "https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByCharucoBoard/CalibrateCamera.py")
+		      (comments "corners ids = detectMarkers img dict"
+				"(drawDetectedMakers img corners)"
+				"charucoCorners charucoIds = interpolateCorners corners ids img board"
+				"collect charucoCorners")
+		      
+		      (comments "https://mecaruco2.readthedocs.io/en/latest/notebooks_rst/Aruco/sandbox/ludovic/aruco_calibration_rotation.html")
+		      (comments "https://github.com/CopterExpress/charuco_calibration/blob/master/charuco_calibration/src/calibrator.cpp"
+				"contains example of how to accumulate allCharucoCorners")
+
+		      (comments "https://github.com/UoA-CARES/stereo_calibration"))
+		     (unless (ids.empty)
+		       ,(lprint :vars `((ids.size)))
+		       (do0 (comments "interpolate charuco corners (checker board corners, not the aruco markers)")
+			    (let ((charucoCorners (Mat))
+				  (charucoIds (Mat)))
+			      (boardDetector.detectBoard frame charucoCorners charucoIds corners ids )
+			      
+			      #+nil (let ((res0 (aruco--interpolateCornersCharuco
+						 corners
+						 ids
+						 frame
+						 board
+						 charucoCorners
+						 charucoIds)))
+				      ,(lprint :vars `(res0)
+					       ))
+			      (aruco--drawDetectedMarkers frame corners ids)
+			      (when (<= 4 (dot charucoCorners
+					       (size)
+					       height))
+				,(lprint :vars `((dot charucoCorners
+						      (size)
+						      height)))
+				(aruco--drawDetectedCornersCharuco frame charucoCorners charucoIds)
+				(allCorners.push_back charucoCorners)
+				(allIds.push_back charucoIds))
+			      )))
+		     (imshow title
+			     frame)
+		     )
 		    #+nil
 		    (when (<= 0 (waitKey 1))
 		      break))

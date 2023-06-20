@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
-void print(const aruco::DetectorParameters p) {
+void print(aruco::DetectorParameters const &p) {
   std::cout << "DetectorParameters"
             << " p.adaptiveThreshWinSizeMin='" << p.adaptiveThreshWinSizeMin
             << "' " << std::endl;
@@ -104,7 +104,7 @@ void print(const aruco::DetectorParameters p) {
             << p.minMarkerLengthRatioOriginalImg << "' " << std::endl;
 }
 
-void print(const aruco::RefineParameters p) {
+void print(aruco::RefineParameters const &p) {
   std::cout << "RefineParameters"
             << " p.minRepDistance='" << p.minRepDistance << "' " << std::endl;
   std::cout << "RefineParameters"
@@ -114,7 +114,7 @@ void print(const aruco::RefineParameters p) {
             << " p.checkAllOrders='" << p.checkAllOrders << "' " << std::endl;
 }
 
-void print(const aruco::CharucoParameters p) {
+void print(aruco::CharucoParameters const &p) {
   std::cout << "CharucoParameters"
             << " p.minMarkers='" << p.minMarkers << "' " << std::endl;
   std::cout << "CharucoParameters"
@@ -132,8 +132,8 @@ int main(int argc, char **argv) {
   auto square_len = 4.00e-2f;
   auto dict = makePtr<aruco::Dictionary>(
       aruco::getPredefinedDictionary(aruco::DICT_6X6_250));
-  auto board = new aruco::CharucoBoard(Size(x, y), square_len,
-                                       0.50f * square_len, *dict);
+  auto board = std::make_unique<aruco::CharucoBoard>(
+      aruco::CharucoBoard(Size(x, y), square_len, 0.50f * square_len, *dict));
   auto img = Mat();
   board->generateImage(cv::Size(800, 600), img, 10, 1);
   auto dp = aruco::DetectorParameters();
@@ -165,8 +165,9 @@ int main(int argc, char **argv) {
   while (true) {
     // capture image
 
+    auto key = (char)waitKey(waitTime);
     camera >> frame;
-    if (frame.empty()) {
+    if (frame.empty() || (key == 27)) {
       break;
     }
 
@@ -176,7 +177,7 @@ int main(int argc, char **argv) {
     markerDetector.refineDetectedMarkers(frame, *board, corners, ids,
                                          marker_rejected);
 
-    if (0 < ids.size()) {
+    if (!ids.empty()) {
       std::cout << ""
                 << " ids.size()='" << ids.size() << "' " << std::endl;
       // interpolate charuco corners (checker board corners, not the aruco
@@ -196,11 +197,7 @@ int main(int argc, char **argv) {
         allIds.push_back(charucoIds);
       }
     }
-    imshow(title, frame);
-    auto key = (char)waitKey(waitTime);
-    if (key == 27) {
-      break;
-    }
+    imshow(title, frame);ccy
   }
 
   return 0;
