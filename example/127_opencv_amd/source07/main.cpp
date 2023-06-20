@@ -20,7 +20,113 @@ int main(int argc, char **argv) {
                                        0.50f * square_len, *dict);
   auto img = Mat();
   board->generateImage(cv::Size(800, 600), img, 10, 1);
-  auto markerDetector = aruco::ArucoDetector(*dict);
+  auto dp = aruco::DetectorParameters();
+  std::cout << ""
+            << " dp.adaptiveThreshWinSizeMin='" << dp.adaptiveThreshWinSizeMin
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.adaptiveThreshWinSizeMax='" << dp.adaptiveThreshWinSizeMax
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.adaptiveThreshWinSizeStep='" << dp.adaptiveThreshWinSizeStep
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.adaptiveThreshConstant='" << dp.adaptiveThreshConstant
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.minMarkerPerimeterRate='" << dp.minMarkerPerimeterRate
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.maxMarkerPerimeterRate='" << dp.maxMarkerPerimeterRate
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.polygonalApproxAccuracyRate='"
+            << dp.polygonalApproxAccuracyRate << "' " << std::endl;
+  std::cout << ""
+            << " dp.minCornerDistanceRate='" << dp.minCornerDistanceRate << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.minDistanceToBorder='" << dp.minDistanceToBorder << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.minMarkerDistanceRate='" << dp.minMarkerDistanceRate << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.cornerRefinementMethod='" << dp.cornerRefinementMethod
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.cornerRefinementWinSize='" << dp.cornerRefinementWinSize
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.cornerRefinementMaxIterations='"
+            << dp.cornerRefinementMaxIterations << "' " << std::endl;
+  std::cout << ""
+            << " dp.cornerRefinementMinAccuracy='"
+            << dp.cornerRefinementMinAccuracy << "' " << std::endl;
+  std::cout << ""
+            << " dp.markerBorderBits='" << dp.markerBorderBits << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.perspectiveRemovePixelPerCell='"
+            << dp.perspectiveRemovePixelPerCell << "' " << std::endl;
+  std::cout << ""
+            << " dp.perspectiveRemoveIgnoredMarginPerCell='"
+            << dp.perspectiveRemoveIgnoredMarginPerCell << "' " << std::endl;
+  std::cout << ""
+            << " dp.maxErroneousBitsInBorderRate='"
+            << dp.maxErroneousBitsInBorderRate << "' " << std::endl;
+  std::cout << ""
+            << " dp.minOtsuStdDev='" << dp.minOtsuStdDev << "' " << std::endl;
+  std::cout << ""
+            << " dp.errorCorrectionRate='" << dp.errorCorrectionRate << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagQuadDecimate='" << dp.aprilTagQuadDecimate << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagQuadSigma='" << dp.aprilTagQuadSigma << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagMinClusterPixels='" << dp.aprilTagMinClusterPixels
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.aprilTagMaxNmaxima='" << dp.aprilTagMaxNmaxima << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagCriticalRad='" << dp.aprilTagCriticalRad << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagMaxLineFitMse='" << dp.aprilTagMaxLineFitMse << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.aprilTagMinWhiteBlackDiff='" << dp.aprilTagMinWhiteBlackDiff
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.aprilTagDeglitch='" << dp.aprilTagDeglitch << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.detectInvertedMarker='" << dp.detectInvertedMarker << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.useAruco3Detection='" << dp.useAruco3Detection << "' "
+            << std::endl;
+  std::cout << ""
+            << " dp.minSideLengthCanonicalImg='" << dp.minSideLengthCanonicalImg
+            << "' " << std::endl;
+  std::cout << ""
+            << " dp.minMarkerLengthRatioOriginalImg='"
+            << dp.minMarkerLengthRatioOriginalImg << "' " << std::endl;
+
+  auto rp = aruco::RefineParameters();
+  std::cout << ""
+            << " rp.minRepDistance='" << rp.minRepDistance << "' " << std::endl;
+  std::cout << ""
+            << " rp.errorCorrectionRate='" << rp.errorCorrectionRate << "' "
+            << std::endl;
+  std::cout << ""
+            << " rp.checkAllOrders='" << rp.checkAllOrders << "' " << std::endl;
+
+  auto markerDetector = aruco::ArucoDetector(*dict, dp, rp);
   auto boardDetector = aruco::CharucoDetector(*board);
 
   if (!camera.isOpened()) {

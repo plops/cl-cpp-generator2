@@ -70,7 +70,51 @@
 		      1 ;; bordebits
 		      )
 
-	   (let ((markerDetector (aruco--ArucoDetector *dict))
+	   (let ((dp (aruco--DetectorParameters)))
+	     ,@(loop for e in `(   adaptiveThreshWinSizeMin 
+        adaptiveThreshWinSizeMax 
+        adaptiveThreshWinSizeStep 
+        adaptiveThreshConstant
+        minMarkerPerimeterRate 
+        maxMarkerPerimeterRate 
+        polygonalApproxAccuracyRate 
+        minCornerDistanceRate 
+        minDistanceToBorder 
+        minMarkerDistanceRate 
+        cornerRefinementMethod 
+        cornerRefinementWinSize 
+        cornerRefinementMaxIterations 
+        cornerRefinementMinAccuracy
+        markerBorderBits 
+        perspectiveRemovePixelPerCell 
+        perspectiveRemoveIgnoredMarginPerCell 
+        maxErroneousBitsInBorderRate
+        minOtsuStdDev 
+        errorCorrectionRate 
+        aprilTagQuadDecimate 
+        aprilTagQuadSigma 
+        aprilTagMinClusterPixels 
+        aprilTagMaxNmaxima
+        aprilTagCriticalRad 
+        aprilTagMaxLineFitMse 
+        aprilTagMinWhiteBlackDiff 
+        aprilTagDeglitch
+        detectInvertedMarker 
+        useAruco3Detection
+        minSideLengthCanonicalImg 
+        minMarkerLengthRatioOriginalImg )
+		     collect
+		     (lprint :vars `((dot dp ,e)))))
+	   (let ((rp (aruco--RefineParameters)))
+	     ,@(loop for e in `(
+minRepDistance
+errorCorrectionRate
+checkAllOrders
+)
+		     collect
+		     (lprint :vars `((dot rp ,e)))))
+	   
+	   (let ((markerDetector (aruco--ArucoDetector *dict dp rp))
 		 (boardDetector (aruco--CharucoDetector *board))))
 	   )
 
