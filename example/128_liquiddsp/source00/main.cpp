@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
 
   for (auto i = 0; i < wLen; i += 1) {
     w[i] = i == (wLen / 2) ? 1.0f : 0.f;
+    b[i] = 0.f;
   }
   auto bufIndex = 0;
   auto rd = random_device();

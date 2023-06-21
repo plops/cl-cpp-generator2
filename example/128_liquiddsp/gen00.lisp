@@ -42,6 +42,7 @@
        "(void) argv;"
        (comments "M .. phase shift keying modulation order"
 		 "wLen .. equalizer length"
+		 "w .. equalizer weights (initially only a 1 in the middle)"
 		 "mu .. equalizer learning rate"
 		 "alpha .. channel filter bandwidth")
        (let ((M (<< 1 3))
@@ -54,10 +55,13 @@
 	     (xPrime (complex<float> 0s0)))
 	 (comments "Initialize arrays")
 	 (dotimes (i wLen)
+	  
 	   (setf (aref w i)
 		 (? (== i (/ wLen 2))
 		    1s0
-		    0s0)))
+		    0s0)
+		 (aref b i)
+		 0s0))
 	 (let ((bufIndex 0)
 	       (rd (random_device))
 	       (gen (default_random_engine (rd)))
