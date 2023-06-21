@@ -194,7 +194,12 @@ What I find important is that monstrosities like this are dealt with:
 `(static_cast<int>(((1) & ((v) >> (1)))))`.
 
 Maybe I have to tell paren* if the operators are to the left or to the
-right or on both sides of the current element?
+right or on both sides of the current element? This was chat gpt says about this:
+
+ You generally only need to know the precedence of each operator to
+ correctly order the operations, and you only need to know the
+ associativity of an operator when dealing with multiple instances of
+ the same operator.
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
