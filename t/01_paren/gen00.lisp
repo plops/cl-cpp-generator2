@@ -132,11 +132,11 @@
 	    (:name ternary0
 		   :code (? (== 5 3) 1 2)
 		   :lisp-code (if (eq 5 3) 1 2)
-		   :reference "(5==3) ? 1 : 2")
+		   :reference "5==3 ? 1 : 2")
 	    (:name ternary1
 		   :code (- 7 (? (== 5 3) 1 2))
 		   :lisp-code (- 7 (if (eq 5 3) 1 2))
-		   :reference "7-((5==3) ? 1 : 2)")
+		   :reference "7-(5==3 ? 1 : 2)")
 	    (:name ternary2
 		   :code (== (? (== 5 3) 1 2) 7 )
 		   :lisp-code (let ((v (eq (if (eq 5 3) 1 2)
@@ -144,7 +144,7 @@
 				       
 				       ))
 				(if v v 0))
-		   :reference "((5==3) ? 1 : 2)==7")
+		   :reference "(5==3 ? 1 : 2)==7")
 
 	    (:name unary0
 		   :code (== -1 2)
@@ -161,6 +161,19 @@
 		   :code (logior true (logand false true))
 		   :lisp-code 'true
 		   :reference "true||false&&true")
+	    ;; bitwise AND ('&') has lower precedence than equality '=='
+	    (:name logandeq0
+		   :code (logand 5 (logior (== 1 1)))
+		   :lisp-code 1
+		   :reference "5&1==1")
+	    ;; assignment and equality
+	    (:name assigneq0
+		   :code (setf y (== x 10))
+		    :pre (do0
+			 "int y = 0;"
+			 "int x = 10;")
+	     :lisp-code 'true
+	     :reference "y=x==10")
 	    )
 	  and e-i from 0
 	  do

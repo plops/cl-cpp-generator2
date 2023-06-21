@@ -1299,7 +1299,8 @@ entry return-values contains a list of return values. currently supports type, v
 				    (format nil "0x~x" number))))
 		  (? (m '? (destructuring-bind (a b &optional c) (cdr code)
 			     (if c
-				 (format nil "~a ? ~a : ~a" (emit `(paren* ,a)) (emit `(paren* ,b)) (emit `(paren* ,c)))
+				 (format nil "~a ? ~a : ~a" (emit `(paren* ,a))
+					 (emit `(paren* ,b)) (emit `(paren* ,c)))
 				 (format nil "~a ? ~a" (emit `(paren* ,a)) (emit `(paren* ,b)))))))
 		  (if (destructuring-bind (condition true-statement &optional false-statement) (cdr code)
 			(with-output-to-string (s)

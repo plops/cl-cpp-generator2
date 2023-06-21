@@ -193,6 +193,9 @@ I rather place more parentheses than necessary: I prefer
 What I find important is that monstrosities like this are dealt with:
 `(static_cast<int>(((1) & ((v) >> (1)))))`.
 
+Maybe I have to tell paren* if the operators are to the left or to the
+right or on both sides of the current element?
+
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
 builds on the learnings and experiences from various other projects
