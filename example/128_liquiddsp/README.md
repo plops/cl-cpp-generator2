@@ -1,5 +1,5 @@
+- https://liquidsdr.org/blog/lms-equalizer/#equalizer
 
-cd 
 ```
 cd ~/src
 git clone https://github.com/jgaeddert/liquid-dsp/
