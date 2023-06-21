@@ -611,6 +611,7 @@ entry return-values contains a list of return values. currently supports type, v
 (defparameter *operators*
   `(comma semicolon space comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case))
 
+;; https://en.cppreference.com/w/cpp/language/operator_precedence
 (defparameter *precedence* `(#+nil
 			     ("::")
 			     (hex)
@@ -622,7 +623,7 @@ entry return-values contains a list of return values. currently supports type, v
 			      ;; unary+ unary-
 			      aref	; call cast
 
-			     -> dot 
+			      -> dot 
 			      )
 			     
 			     (not bitwise-not
@@ -649,9 +650,19 @@ entry return-values contains a list of return values. currently supports type, v
 			     (or )
 			     (logand &&)
 			     (logior )
-			     (? throw co_yield setf incf decf	   ;+= -=
-				= *= /= %= <<= >>= &= ^= ; |=
-				)
+			     (? )
+			     (throw )
+			     (co_yield)
+			     (setf =)
+			     (incf decf)
+			     (*= /= %=)
+			     (<<= >>=)
+			     (&= ^- ; |=
+				 )
+			     (comma)
+			     #+nil (throw co_yield setf incf decf  ;+= -=
+				    = *= /= %= <<= >>= &= ^= ; |=
+				    )
 			     (comma )
 			     ))
 

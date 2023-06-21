@@ -127,7 +127,17 @@
 		   :code (bitwise-not (or #xf0 #x0f))
 		   :lisp-code (lognot (logior #xf0 #x0f))
 		   :reference ,(format nil "~~(~a | ~a)" #xf0 #x0f)
-		   ))
+		   )
+
+	    (:name ternary0
+		   :code (? (== 5 3) 1 2)
+		   :lisp-code (if (eq 5 3) 1 2)
+		   :reference "(5==3) ? 1 : 2")
+	    (:name ternary1
+		   :code (== 7 (? (== 5 3) 1 2))
+		   :lisp-code (eq 7 (if (eq 5 3) 1 2))
+		   :reference "7==((5==3) ? 1 : 2)")
+	    )
 	  and e-i from 0
 	  do
 	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
