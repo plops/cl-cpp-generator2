@@ -145,6 +145,17 @@
 				       ))
 				(if v v 0))
 		   :reference "((5==3) ? 1 : 2)==7")
+
+	    (:name unary0
+		   :code (== -1 2)
+		   :lisp-code (let ((v (eq -1 2)))
+				(if v v 0))
+	     :reference "-1==2")
+	    (:name unary0
+		   :code (== 2 -1)
+		   :lisp-code (let ((v (eq 2 -1)))
+				(if v v 0))
+	     :reference "2==-1")
 	    )
 	  and e-i from 0
 	  do
