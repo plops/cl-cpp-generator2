@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
         allIds.push_back(charucoIds);
       }
     }
-    imshow(title, frame);ccy
+    imshow(title, frame);
   }
 
   return 0;
