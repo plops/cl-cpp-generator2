@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     // y .. computed received signal to be stored in buffer b
 
     auto x = exp(complex<float>(0, 1) * 2.0f * static_cast<float>(M_PI) *
-                 (static_cast<float>(dis(gen)) / M));
+                 (static_cast<float>(dis(gen)) / static_cast<float>(M)));
     auto y = (sqrt(1 - alpha) * x) + alpha + xPrime;
     xPrime = y;
     b[bufIndex] = y;

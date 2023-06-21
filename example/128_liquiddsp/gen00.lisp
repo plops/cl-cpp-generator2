@@ -70,7 +70,7 @@
 			       2s0
 			       (static_cast<float> M_PI)
 			       (/ (static_cast<float> (dis gen))
-				  M))))
+				  (static_cast<float> M)))))
 		    (y (+ (* (sqrt (- 1 alpha))
 			     x)
 			  alpha xPrime)))
