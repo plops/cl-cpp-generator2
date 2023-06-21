@@ -29,12 +29,13 @@ int main(int argc, char **argv) {
   auto bufIndex = 0;
   auto rd = random_device();
   auto gen = default_random_engine(rd());
-  auto dis = uniform_real_distribution<float>(0, 2 * M_PI);
+  auto dis = uniform_int_distribution<unsigned int>(0, M - 1);
   for (auto n = 0; n < numSymbols; n += 1) {
     // x .. random transmitted phase-shift keying symbol
     // y .. computed received signal to be stored in buffer b
 
-    auto x = exp(complex<float>(0, 1) * dis(gen));
+    auto x = exp(complex<float>(0, 1) * 2.0f * static_cast<float>(M_PI) *
+                 (static_cast<float>(dis(gen)) / M));
     auto y = (sqrt(1 - alpha) * x) + alpha + xPrime;
     xPrime = y;
     b[bufIndex] = y;

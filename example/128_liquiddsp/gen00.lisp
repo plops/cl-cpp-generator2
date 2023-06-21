@@ -61,14 +61,16 @@
 	 (let ((bufIndex 0)
 	       (rd (random_device))
 	       (gen (default_random_engine (rd)))
-	       (dis (uniform_real_distribution<float>  0 (* 2 M_PI))))
+	       (dis ("uniform_int_distribution<unsigned int>"  0 (- M 1))))
 	   (dotimes (n numSymbols)
 	     (do0
 	      (comments "x .. random transmitted phase-shift keying symbol"
 			"y .. computed received signal to be stored in buffer b")
 	      (let ((x (exp (* (complex<float> 0 1)
-			       
-			       (dis gen))))
+			       2s0
+			       (static_cast<float> M_PI)
+			       (/ (static_cast<float> (dis gen))
+				  M))))
 		    (y (+ (* (sqrt (- 1 alpha))
 			     x)
 			  alpha xPrime)))
