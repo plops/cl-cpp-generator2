@@ -648,11 +648,13 @@ entry return-values contains a list of return values. currently supports type, v
 					;(<=>)
 			     (< <= > >=)
 			     ;; 10
+			     
 			     (== !=)
 			     ;; 11
 			     (and &)
 			     (xor ^)
 			     (or )
+			     
 			     (logand &&)
 			     ;; 15
 			     (logior )
@@ -823,7 +825,6 @@ entry return-values contains a list of return values. currently supports type, v
 			     (format nil (if diag  "Astring.~a" "~a") arg)))
 			 ((listp arg)
 			  ;; a list can be an arbitrary abstract syntax tree of operators
-
 			  (cond
 			    ((< (length arg) 3)
 			     ;; two or one elements doesn't need paren
@@ -948,7 +949,8 @@ entry return-values contains a list of return values. currently supports type, v
 							)
 						       ((typep xx '(array character (*)))
 							;; don't place semicolon after array of characters
-							".3.")
+							"" ; ".3."
+							)
 						       ((and (listp x)
 							     (member (car x) `(defun do do0 progn
 										for for-range dotimes
@@ -1219,11 +1221,10 @@ entry return-values contains a list of return values. currently supports type, v
 				  (mapcar
 				   #'(lambda (x) (emit `(paren* ,x)))
 				   args)))))
-		  (- (m '-
-			(let ((args (cdr code)))
-			  (if (eq 1 (length args))
-			      (format nil "-~a" (emit `(paren*, (car args)))) ;; py
-			      (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
+		  (- (let ((args (cdr code)))
+		       (if (eq 1 (length args))
+			   (m '-unary (format nil "-~a" (emit `(paren*, (car args))))) ;; py
+			   (m '- (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 		  (* (m '*
 			(let ((args (cdr code)))
 			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args)))))

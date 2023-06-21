@@ -151,11 +151,16 @@
 		   :lisp-code (let ((v (eq -1 2)))
 				(if v v 0))
 	     :reference "-1==2")
-	    (:name unary0
+	    (:name unary1
 		   :code (== 2 -1)
 		   :lisp-code (let ((v (eq 2 -1)))
 				(if v v 0))
 	     :reference "2==-1")
+	    ;; the && operator has higher precedence than, this can give unexpected results
+	    (:name logorand0
+		   :code (logior true (logand false true))
+		   :lisp-code 'true
+		   :reference "true||false&&true")
 	    )
 	  and e-i from 0
 	  do
@@ -188,13 +193,14 @@
 		       "(void) argv;"
 		       (comments ,reference)
 		      
-		       (if (== ,code
-			       ,lisp-var)
-			   (<< "std::cout" (string ,(format nil "~a OK" (substitute #\' #\" reference)))
+		       (if (== (paren ,code)
+			       (paren ,lisp-var))
+			   (<< "std::cout" (string ,(format nil "~2,'0d ~a OK" e-i (substitute #\' #\" reference)))
 			       "std::endl")
 			   ,(if supersede-fail
 			       supersede-fail
-			       `(<< "std::cout" (string ,(format nil "~a \\033[31mFAIL\\033[0m " (substitute #\' #\" reference)))
+			       `(<< "std::cout" (string ,(format nil "~2,'0d ~a \\033[31mFAIL\\033[0m "
+								 e-i (substitute #\' #\" reference)))
 				   (paren ,code)
 				   (string " != ")
 				   (paren ,lisp-var)
