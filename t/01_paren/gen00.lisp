@@ -134,9 +134,17 @@
 		   :lisp-code (if (eq 5 3) 1 2)
 		   :reference "(5==3) ? 1 : 2")
 	    (:name ternary1
-		   :code (== 7 (? (== 5 3) 1 2))
-		   :lisp-code (eq 7 (if (eq 5 3) 1 2))
-		   :reference "7==((5==3) ? 1 : 2)")
+		   :code (- 7 (? (== 5 3) 1 2))
+		   :lisp-code (- 7 (if (eq 5 3) 1 2))
+		   :reference "7-((5==3) ? 1 : 2)")
+	    (:name ternary2
+		   :code (== (? (== 5 3) 1 2) 7 )
+		   :lisp-code (let ((v (eq (if (eq 5 3) 1 2)
+					   7)
+				       
+				       ))
+				(if v v 0))
+		   :reference "((5==3) ? 1 : 2)==7")
 	    )
 	  and e-i from 0
 	  do
@@ -176,10 +184,12 @@
 			   ,(if supersede-fail
 			       supersede-fail
 			       `(<< "std::cout" (string ,(format nil "~a \\033[31mFAIL\\033[0m " (substitute #\' #\" reference)))
-				   ,code
+				   (paren ,code)
 				   (string " != ")
-				   ,lisp-var
+				   (paren ,lisp-var)
 				   "std::endl")))
 		       (return 0))))
 		  :format nil
 		  :tidy nil))))))
+
+
