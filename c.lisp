@@ -730,6 +730,13 @@ entry return-values contains a list of return values. currently supports type, v
 	    (when (member operator op)
 	      (return e-i)))))
 
+(defun lookup-associativity (operator )
+  (loop for e in *precedence*
+	do
+	   (destructuring-bind (&key op (assoc 'l)) e
+	     (when (member operator op)
+	       (return assoc)))))
+
 ;; the emit function used to expand branches of the abstract syntax
 ;; tree into strings. in order to avoid placing redundant parentheses
 ;; i have to introduce the string-op class that will print like a
@@ -894,22 +901,30 @@ entry return-values contains a list of return values. currently supports type, v
 			       (assert (listp rest))
 			       (if (member op0 *operators*)
 				   (let ((p0 (lookup-precedence op0))
-					 (p1 (loop for e in rest
-						   minimize
-						   (if (or (listp e)
-							   (typep e 'string-op))
-						       (let* ((op1 (cond ((listp e) (first e))
-									 ((typep e 'string-op) (operator-of e))
-									 (t (break "unknown operator '~a'" e))))
-							      (p1 (lookup-precedence op1)))
-							 (if p1
-							     p1
-							     (+ 1 (length *precedence*))))
-						       (+ 1 (length *precedence*))))))
+					 (p0assoc (lookup-associativity op0))
+					 (p1 (+ 1 (length *precedence*)))
+					 (p1assoc 'l)
+					 )
+				     (loop for e in rest
+					       do
+						  (when (or (listp e)
+							    (typep e 'string-op))
+						    (let* ((op1 (cond ((listp e) (first e))
+								      ((typep e 'string-op) (operator-of e))
+								      (t (break "unknown operator '~a'" e))))
+							   (p1v (lookup-precedence op1))
+							   (p1a (lookup-associativity op1)))
+						      (when p1
+							(setf p1 p1v
+							      p1assoc p1a)
+							))))
 				     ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 				     ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
-				     (if (and (< p0 p1)
-					      (not (member op0 `(hex aref string -> dot))))
+				     (if #+nil (and (< p0 p1)
+						    (not (member op0 `(hex aref string -> dot))))
+					 (or (< p0 p1)
+					     (and (eq p0 p1)
+						  (not (eq p0assoc p1assoc))))
 					 (emit `(paren (,op0 ,@rest)))
 					 (emit `(,op0 ,@rest))))
 				   (progn
