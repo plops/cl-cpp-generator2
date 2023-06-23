@@ -615,37 +615,40 @@ entry return-values contains a list of return values. currently supports type, v
 ;; FIXME: how to handle Associativity (right-to-left or
 ;; left-to-right). do i need a table or is this implicitly handled in
 ;; emit-c for each symbol itself?
+#+nil
 (defparameter *precedence* `(#+nil
 			     ("::")
 			     (hex)
 			     (char)
 			     (string)
-			     (paren) ;; ?? does that go here
+			     ((paren) l) ;; ?? does that go here
 			     
-			     (	       ; incf decf (only with a++ a--)
-			      ;; unary+ unary-
-			      aref	; call cast
+			     ((	       ; incf decf (only with a++ a--)
+			       ;; unary+ unary-
+			       aref	; call cast
 
-			      -> dot 
-			      )
+			       -> dot 
+			       ) l)
+					; ((prefix++ prefix--) r)
 			     
-			     (not bitwise-not
-				  cast ref
-				  deref
-				  sizeof
-				  co_await
-				  new
-				  new[]
-				  delete
-				  delete[]
-				  )
+			     (-unary
+			      not bitwise-not
+			      cast ref
+			      deref
+			      sizeof
+			      co_await
+			      new
+			      new[]
+			      delete
+			      delete[]
+			      )
 			     #+nil (.* ->*)
 			     
 			     (*  / %)
 			     
 			     (+ -)
 			     (<< >>)
-					;(<=>)
+			     (<=>)
 			     (< <= > >=)
 			     ;; 10
 			     
@@ -670,20 +673,62 @@ entry return-values contains a list of return values. currently supports type, v
 			     (&= ^-	; |=
 				 )
 			     
-			     #+nil (throw co_yield setf incf decf ;+= -=
-					  = *= /= %= <<= >>= &= ^= ; |=
-					  )
+			     
 			     (comma )
+			     ))
+
+(defparameter *precedence* `((:op (scope))
+			     (:op (hex))
+			     (:op (char))
+			     (:op (string))
+			     (:op (paren aref dot ->) :assoc l) 
+			     (:op (-unary
+				   not bitwise-not
+				   cast
+				   deref
+				   ref
+				   sizeof
+				   co_await
+				   new
+				   new[]
+				   delete
+				   delete[]
+				   )
+				  :assoc r)
+			     #+nil (.* ->*) ;; pointer to member
+			     (:op (*  / %) :assoc l)
+			     (:op (+ -) :assoc l)
+			     (:op (<< >>) :assoc l)
+			     (:op (<=>) :assoc l)
+			     (:op (< <= > >=) :assoc l)
+			     ;; 10
+			     (:op (== !=) :assoc l)
+			     ;; 11
+			     (:op (and &) :assoc l)
+			     (:op (xor ^) :assoc l) 
+			     (:op (or) :assoc l)
+			     (:op (logand &&) :assoc l)
+			     ;; 15
+			     (:op (logior) :assoc l)
+			     ;; 16
+			     (:op (? throw co_yield setf =
+				     incf decf
+				     *= /= %=
+				     <<= >>=
+				     &= ^-	; |=
+				     ) :assoc r)
+			     (:op (comma) :assoc l)
 			     ))
 
 
 
-(defun lookup-precedence (op)
+(defun lookup-precedence (operator )
   (loop for e in *precedence*
 	and e-i from 0
 	do
-	   (when (member op e)
-	     (return e-i))))
+	   (destructuring-bind (&key op assoc) e
+	    (when (member operator op)
+	      (return e-i)))))
 
 ;; the emit function used to expand branches of the abstract syntax
 ;; tree into strings. in order to avoid placing redundant parentheses
@@ -751,6 +796,13 @@ entry return-values contains a list of return values. currently supports type, v
 		   ;; semicolon {args}*
 		   (let ((args (cdr code)))
 		     (m 'semicolon (format nil "~{~a~^; ~}" (mapcar #'emit args)))))
+
+		  (scope
+		   ;; scope {args}*
+		   ;; double colons between arguments
+		   (let ((args (cdr code)))
+		     (m 'scope (format nil "~{~a~^::~}" (mapcar #'emit args)))))
+		  
 		  (space
 		   ;; space {args}*
 		   (let ((args (cdr code)))
@@ -1257,6 +1309,8 @@ entry return-values contains a list of return values. currently supports type, v
 			       (format nil "~a*=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (^= (m '^= (destructuring-bind (a b) (cdr code)
 			       (format nil "~a^=~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
+		  (<=> (m '<=> (destructuring-bind (a b) (cdr code)
+				 (format nil "~a<=>~a" (emit `(paren* ,a)) (emit `(paren* ,b))))))
 		  (<= (m '<= (destructuring-bind (a b &optional c) (cdr code)
 			       (if c
 				   (format nil "~a<=~a && ~a<=~a"
