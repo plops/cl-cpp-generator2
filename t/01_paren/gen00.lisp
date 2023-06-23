@@ -145,11 +145,27 @@
 				       ))
 				(if v v 0))
 		   :reference "(5==3 ? 1 : 2)==7")
+	    (:name ternary3
+		   :code (== (paren (? (- 5 3) 1 2)) 7 )
+		   :lisp-code (let ((v (eq (if (- 5 3) 1 2)
+					   7)
+				       
+				       ))
+				(if v v 0))
+		   :reference "(5-3 ? 1 : 2)==7")
+	    (:name ternary4
+		   :code (== (paren (? (- 5 3) 2)) 2 )
+		   :lisp-code (let ((v (eq (if (- 5 3) 2 0)
+					   2)
+				       
+				       ))
+				(if v v 0))
+		   :reference "(5-3 ? 2)==7")
 
 	    (:name unary0
-		   :code (== -1 2)
-		   :lisp-code (let ((v (eq -1 2)))
-				(if v v 0))
+	     :code (== -1 2)
+	     :lisp-code (let ((v (eq -1 2)))
+			  (if v v 0))
 	     :reference " -1==2")
 	    (:name unary1
 		   :code (== 2 -1)
