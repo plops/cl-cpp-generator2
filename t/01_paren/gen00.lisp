@@ -47,9 +47,9 @@
 	    (:name basic6 :code (- (+ 3 4) (- 7 3))
 	     :reference "(3+4)-(7-3)")
 	    (:name basic7 :code (* 2 -1)
-	     :reference "2*-1")
+	     :reference "2* -1")
 	    (:name basic8 :code (- 2 -1)
-	     :reference "2--1")
+	     :reference "2- -1")
 	    (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 	    (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)")
 	    (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
@@ -150,12 +150,12 @@
 		   :code (== -1 2)
 		   :lisp-code (let ((v (eq -1 2)))
 				(if v v 0))
-	     :reference "-1==2")
+	     :reference " -1==2")
 	    (:name unary1
 		   :code (== 2 -1)
 		   :lisp-code (let ((v (eq 2 -1)))
 				(if v v 0))
-	     :reference "2==-1")
+	     :reference "2== -1")
 	    ;; the && operator has higher precedence than, this can give unexpected results
 	    (:name logorand0
 		   :code (logior true (logand false true))
