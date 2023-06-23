@@ -905,6 +905,7 @@ entry return-values contains a list of return values. currently supports type, v
 			       (if (member op0 *operators*)
 				   (let ((p0 (lookup-precedence op0))
 					 (p0assoc (lookup-associativity op0))
+					 (op1 "")
 					 (p1 (+ 1 (length *precedence*)))
 					 (p1assoc 'l)
 					 )
@@ -912,13 +913,15 @@ entry return-values contains a list of return values. currently supports type, v
 					   do
 					      (when (or (listp e)
 							(typep e 'string-op))
-						(let* ((op1 (cond ((listp e) (first e))
+						(let* ((op1v (cond ((listp e) (first e))
 								  ((typep e 'string-op) (operator-of e))
 								  (t (break "unknown operator '~a'" e))))
-						       (p1v (lookup-precedence op1))
-						       (p1a (lookup-associativity op1)))
+						       
+						       (p1v (lookup-precedence op1v))
+						       (p1a (lookup-associativity op1v)))
 						  (when p1
-						    (setf p1 p1v
+						    (setf op1 op1v
+							  p1 p1v
 							  p1assoc p1a)
 						    ))))
 				     ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
@@ -926,11 +929,11 @@ entry return-values contains a list of return values. currently supports type, v
 				     (if #+nil (and (< p0 p1)
 						    (not (member op0 `(hex aref string -> dot))))
 					 (and
-					  (not (member op0 `(hex aref string -> dot)))
+					  (not (member op0 `(hex aref string -> dot ?)))
 					  (or (< p0 p1)
 					      (and (eq p0 p1)
 						   (not (eq p0assoc p1assoc)))))
-					 (emit `(paren (,op0 ,@rest)))
+					 (emit `(paren (space ,(format nil "'~a' '~a' ~a" op0 op1 (list  p0 p1 p0assoc p1assoc)) (,op0 ,@rest))))
 					 (emit `(,op0 ,@rest))))
 				   (progn
 				     ;; (break "unknown operator '~a'" op0)
