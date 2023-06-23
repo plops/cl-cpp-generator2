@@ -47,9 +47,9 @@
 	    (:name basic6 :code (- (+ 3 4) (- 7 3))
 	     :reference "(3+4)-(7-3)")
 	    (:name basic7 :code (* 2 -1)
-	     :reference "2*(-1)")
+	     :reference "2*-1")
 	    (:name basic8 :code (- 2 -1)
-	     :reference "2-(-1)")
+	     :reference "2--1")
 	    (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 	    (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)")
 	    (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
@@ -71,7 +71,7 @@
 			  (declare (type int n)
 				   (values int))
 			  (return (+ 1 (* 0 n)))))
-	    (:name colon0 :code (<< bla--i (+ 3 1))
+	    (:name colon0 :code (<< (scope bla i) (+ 3 1))
 		   :lisp-code (ash 3 (+ 3 1))
 		   :reference "bla::i<<(3+1)"
 		   :pre (namespace bla

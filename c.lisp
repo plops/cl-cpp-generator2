@@ -681,7 +681,9 @@ entry return-values contains a list of return values. currently supports type, v
 			     (:op (hex))
 			     (:op (char))
 			     (:op (string))
-			     (:op (paren aref dot ->) :assoc l) 
+			     (:op (paren
+				   paren*
+				   aref dot ->) :assoc l) 
 			     (:op (-unary
 				   not bitwise-not
 				   cast
@@ -857,9 +859,10 @@ entry return-values contains a list of return values. currently supports type, v
 			 ((numberp arg)
 			  ;; no parens for number needed (maybe for negative?)
 			  (m 'number
+			     #+nil (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
 			     (if (<= 0 arg)
 				 (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
-				 (format nil (if diag "Anumber.(~a)" "(~a)") (emit-c :code arg)))))
+				 (format nil (if diag "Anumber.~a" " ~a") (emit-c :code arg)))))
 			 ((stringp arg)
 			  ;; no parens around string
 			  (m 'string
@@ -906,25 +909,27 @@ entry return-values contains a list of return values. currently supports type, v
 					 (p1assoc 'l)
 					 )
 				     (loop for e in rest
-					       do
-						  (when (or (listp e)
-							    (typep e 'string-op))
-						    (let* ((op1 (cond ((listp e) (first e))
-								      ((typep e 'string-op) (operator-of e))
-								      (t (break "unknown operator '~a'" e))))
-							   (p1v (lookup-precedence op1))
-							   (p1a (lookup-associativity op1)))
-						      (when p1
-							(setf p1 p1v
-							      p1assoc p1a)
-							))))
+					   do
+					      (when (or (listp e)
+							(typep e 'string-op))
+						(let* ((op1 (cond ((listp e) (first e))
+								  ((typep e 'string-op) (operator-of e))
+								  (t (break "unknown operator '~a'" e))))
+						       (p1v (lookup-precedence op1))
+						       (p1a (lookup-associativity op1)))
+						  (when p1
+						    (setf p1 p1v
+							  p1assoc p1a)
+						    ))))
 				     ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 				     ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
 				     (if #+nil (and (< p0 p1)
 						    (not (member op0 `(hex aref string -> dot))))
-					 (or (< p0 p1)
-					     (and (eq p0 p1)
-						  (not (eq p0assoc p1assoc))))
+					 (and
+					  (not (member op0 `(hex aref string -> dot)))
+					  (or (< p0 p1)
+					      (and (eq p0 p1)
+						   (not (eq p0assoc p1assoc)))))
 					 (emit `(paren (,op0 ,@rest)))
 					 (emit `(,op0 ,@rest))))
 				   (progn
@@ -934,7 +939,7 @@ entry return-values contains a list of return values. currently supports type, v
 				     ))))))
 			 ((typep arg 'string-op)
 			  (break "string-op ~a" arg)
-			  arg ;(string-of arg)
+			  arg		;(string-of arg)
 			  )
 			 (t
 			  (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg)))))))
@@ -1258,10 +1263,11 @@ entry return-values contains a list of return values. currently supports type, v
 			(format nil "~a"
 				(emit
 				 `(do0
-				   ,@(loop for i below (length args) by 2 collect
-									  (let ((a (elt args i))
-										(b (elt args (+ 1 i))))
-									    `(= ,a ,b)))))))))
+				   ,@(loop for i below (length args) by 2
+					   collect
+					   (let ((a (elt args i))
+						 (b (elt args (+ 1 i))))
+					     `(= ,a ,b)))))))))
 		  (using
 		   (let ((args (cdr code)))
 		     ;; "using {pair}*"
@@ -1271,11 +1277,11 @@ entry return-values contains a list of return values. currently supports type, v
 		     (format nil "~a"
 			     (emit
 			      `(do0
-				,@(loop for i below (length args) by 2 collect
-								       (let ((a (elt args i))
-									     (b (elt args (+ 1 i))))
-									 `(space using (= ,a ,b)))))))))
-		  
+				,@(loop for i below (length args) by 2
+					collect
+					(let ((a (elt args i))
+					      (b (elt args (+ 1 i))))
+					  `(space using (= ,a ,b)))))))))
 		  (not (m 'not (format nil "!~a" (emit `(paren* ,(car (cdr code)))))))
 		  (bitwise-not (m 'bitwise-not (format nil "~~~a" (emit `(paren* ,(cadr code))))))
 		  (deref (m 'deref (format nil "*~a" (emit `(paren* ,(car (cdr code)))))))
@@ -1290,7 +1296,7 @@ entry return-values contains a list of return values. currently supports type, v
 				   args)))))
 		  (- (let ((args (cdr code)))
 		       (if (eq 1 (length args))
-			   (m '-unary (format nil "-~a" (emit `(paren*, (car args))))) ;; py
+			   (m '-unary (format nil " -~a" (emit `(paren*, (car args))))) ;; py
 			   (m '- (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* ,x))) args))))))
 		  (* (m '*
 			(let ((args (cdr code)))
