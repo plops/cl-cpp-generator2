@@ -181,7 +181,7 @@ of cases.
 
 ## Efficient Parentheses Management (Under Development)
 
-In this module, I discuss the paren* operator which inspects its
+In this section, I discuss the paren* operator which inspects its
 arguments and adds parentheses only when necessary. Alternatively, you
 can use the paren operator to enforce the inclusion of parentheses,
 leading to potential redundancy but ensuring that the syntax tree,
