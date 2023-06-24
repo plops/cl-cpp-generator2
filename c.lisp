@@ -863,7 +863,7 @@ entry return-values contains a list of return values. currently supports type, v
 			    #+nil (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
 			    (if (<= 0 arg)
 				(format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
-				(format nil (if diag "Anumber.~a" " ~a") (emit-c :code arg)))))
+				(format nil (if diag "Anegnumber.~a" " ~a") (emit-c :code arg)))))
 			((stringp arg)
 			 ;; no parens around string
 			 (m 'string
@@ -889,17 +889,20 @@ entry return-values contains a list of return values. currently supports type, v
 			((listp arg)
 			 ;; a list can be an arbitrary abstract syntax tree of operators
 			 (cond
-			   ((< (length arg) 3)
+			   ((<= (length arg) 2)
 			    ;; two or one elements doesn't need paren
 			    (let ((op0 (car arg)) 
 				  (rest (cdr arg)))
 			      (assert (or (symbolp op0)
 					  (stringp op0)))
 			      (assert (listp rest))
-			      (emit `(,op0 ,@rest))))
+			      (emit (if diag
+					`(space ,(format nil "/*<~a len=~a>*/" arg (length arg) )
+						 (,op0 ,@rest))
+					`(,op0 ,@rest)))))
 			   (t
-			    (let ((op0 ;parent-op
-				       (car arg)
+			    (let ((op0 parent-op
+				       ;(car arg)
 				       ) ;; use precedence list to check if parens are needed
 				  (rest ; arg
 					(cdr arg)
@@ -907,15 +910,21 @@ entry return-values contains a list of return values. currently supports type, v
 			      (assert (or (symbolp op0)
 					  (stringp op0)))
 			      (assert (listp rest))
-			      (if (member  op0
-					  *operators*)
-				  (let ((p0 (lookup-precedence op0))
+			      (if (and (member  op0
+					    *operators*)
+				       (member  (car arg)
+					    *operators*))
+				  (let* ((p0 (lookup-precedence op0))
 					(p0assoc (lookup-associativity op0))
-					(op1)
-					(p1 (+ 1 (length *precedence*)))
-					(p1assoc 'l)
+					(op1 (car arg))
+					(p1 (lookup-precedence op1)
+					    ;(+ 1 (length *precedence*))
+					    )
+					(p1assoc ;'l
+					  (lookup-associativity op1)
+					  )
 					)
-				    (loop for e in rest
+				    #+nil (loop for e in rest
 					  do
 					     (when (or (listp e)
 						       (typep e 'string-op))
@@ -940,18 +949,18 @@ entry return-values contains a list of return values. currently supports type, v
 					     (and (eq p0 p1)
 						  (not (eq p0assoc p1assoc)))))
 					(emit `(paren  ,(if diag
-							   `(space ,(format nil "/*{'~a' '~a' ~a}*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
-								  (,op0 ,@rest))
-							   `(,op0 ,@rest))))
+							   `(space ,(format nil "/*{op0='~a' op1='~a' arg=~a ~a}*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+								  (,op1 ,@rest))
+							   `(,op1 ,@rest))))
 					(emit (if diag
-						   `(space ,(format nil "/*<'~a' '~a' ~a>*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
-							   (,op0 ,@rest))
-						   `(,op0 ,@rest))
+						   `(space ,(format nil "/*<parent-op='~a' op0='~a' op1='~a' arg=~a ~a>*/" parent-op op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+							   (,op1 ,@rest))
+						   `(,op1 ,@rest))
 					      )))
 				  (progn
 				    ;; (break "unknown operator '~a'" op0)
 				    ;; function call
-				    (emit `(,op0 ,@rest))
+				    (emit `(,(car arg) ,@rest))
 				    ))))))
 			((typep arg 'string-op)
 			 (break "string-op ~a" arg)
