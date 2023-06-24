@@ -181,13 +181,33 @@ of cases.
 
 ## Avoid redundant parentheses (Work in progress)
 
-I can't just return strings anymore. I will also have to return the
-most recent operator, so that I can compare precedence with the
-operator that is in the next higher level of the abstract syntax tree.
+I introduced the operator paren* that will look at its arguments and
+place parentheses only if required. There will always be the option to
+replace paren* with paren. Then all parentheses will be emitted (a lot
+of redundant ones) and one can be sure that the syntax tree given by
+the s-expression input is accurately represented by the C++ output
+string.
 
+If I want to implement paren* I can't just return strings anymore. I
+will also have to return the most recent operator, so that I can
+compare precedence with the operator that is in the next higher level
+of the abstract syntax tree. To this end I define the class
+`string-op` in c.lisp. This class and the helper functions `m
+<operator> <string>` and `m-of <string-op>` are now used throughout
+c.lisp to represent the string as well as the current operator.
 
-I rather place more parentheses than necessary: I prefer
-`(3+4)*(13/4)*((171+2)/5)` to `(3+4)*3/4*(171+2)/5`.
+In the folder 't/' I started implementing tests for the paren*
+operator. I define an s-expression the expected C++ string and a
+Common Lisp function that results in the same value. For every test a
+C++ file is generated that verifies that the C++ code that has been
+generated from the s-expression gives the same result as the Common
+Lisp code. Now that I write about this I think it may be easier to
+compare code that uses the new `paren*` operator with code that uses
+`paren`. Then I don't have to write manual lisp code for every test.
+
+If I have the choice I would rather place more parentheses than
+necessary: I prefer `(3+4)*(13/4)*((171+2)/5)` to
+`(3+4)*3/4*(171+2)/5`.
 
 
 What I find important is that monstrosities like this are dealt with:

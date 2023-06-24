@@ -944,10 +944,13 @@ entry return-values contains a list of return values. currently supports type, v
 				    (if #+nil (and (< p0 p1)
 						   (not (member op0 `(hex aref string -> dot))))
 					(and
+					 (not (and (eq op0 op1)
+					       (member op0 `(- % /))))
 					;(not (member op0 `(hex aref string -> dot ?)))
 					 (or (< p0 p1)
 					     (and (eq p0 p1)
-						  (not (eq p0assoc p1assoc)))))
+						  (not (eq p0assoc p1assoc)))
+					     ))
 					(emit `(paren  ,(if diag
 							   `(space ,(format nil "/*{op0='~a' op1='~a' arg=~a ~a}*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
 								  (,op1 ,@rest))
