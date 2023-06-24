@@ -198,48 +198,50 @@ a string-op class in c.lisp. Along with the helper functions m
 throughout c.lisp to represent both the string and the current
 operator.
 
+Testing for the paren* operator has begun in the 't/01_paren'
+directory. Here, I establish an s-expression, the expected C++ string,
+and a Common Lisp function that yields the same value. Each test
+generates a C++ file to confirm that the C++ code, derived from the
+s-expression, matches the result of the Common Lisp code. However, I
+believe it may be simpler to contrast code utilizing the new paren*
+operator with that using paren. This approach would eliminate the need
+for creating manual Lisp code for each test.
 
-In the folder 't/' I started implementing tests for the paren*
-operator. I define an s-expression the expected C++ string and a
-Common Lisp function that results in the same value. For every test a
-C++ file is generated that verifies that the C++ code that has been
-generated from the s-expression gives the same result as the Common
-Lisp code. Now that I write about this I think it may be easier to
-compare code that uses the new `paren*` operator with code that uses
-`paren`. Then I don't have to write manual lisp code for every test.
+As a general guideline, if given a choice, I lean towards
+over-employing parentheses. For instance, I prefer
+(3+4)*(13/4)*((171+2)/5) over (3+4)*13/4*(171+2)/5.
 
-If I have the choice I would rather place more parentheses than
-necessary: I prefer `(3+4)*(13/4)*((171+2)/5)` to
-`(3+4)*3/4*(171+2)/5`.
+However, it is crucial to properly handle complex cases such as
+(static_cast<int>(((1) & ((v) >> (1))))).
 
 
-What I find important is that monstrosities like this are dealt with:
-`(static_cast<int>(((1) & ((v) >> (1)))))`.
 
-Maybe I have to tell paren* if the operators are to the left or to the
-right or on both sides of the current element? This was chat gpt says about this:
+A lingering question is whether paren* needs to know if the operators
+are positioned to the left, right, or both sides of the current
+element. In response to this, ChatGPT-4 says:
 
- You generally only need to know the precedence of each operator to
- correctly order the operations, and you only need to know the
- associativity of an operator when dealing with multiple instances of
- the same operator.
- 
-I think this is wrong. Here is a counter example:
+    You generally only need to know the precedence of each operator to
+    correctly order the operations, and you only need to know the
+    associativity of an operator when dealing with multiple instances of
+    the same operator.
 
-The lisp expression `(- (+ 3 4) (- 7 3))` will be the infix
-expression`3+4-7-3` but it should be `3+4-(7-3)`
- 
-chatgpt4 says this:
+Despite this, I encountered a contradiction in the Lisp expression (-
+(+ 3 4) (- 7 3)), which translates to the infix expression 3+4-7-3 but
+should ideally be 3+4-(7-3).
 
-In this case, we have the subtraction operator -, which is left
-associative, being used twice. The right operand of the first
-subtraction is another subtraction. Even though the - operator is left
-associative, the right operand needs to be parenthesized to correctly
-represent the original expression. This is because the subtraction in
-the right operand should be evaluated before the first subtraction.
+ChatGPT-4 provided this explanation:
 
-I'm not sure what to make of this. I think it just changes the
-precedence table, so that - and + have a different precedence.
+    In this case, we have the subtraction operator -, which is left
+    associative, being used twice. The right operand of the first
+    subtraction is another subtraction. Even though the - operator is left
+    associative, the right operand needs to be parenthesized to correctly
+    represent the original expression. This is because the subtraction in
+    the right operand should be evaluated before the first subtraction.
+
+Although this is insightful, I am uncertain of the implications. It
+may suggest the need to modify the precedence table, differentiating
+between the - and + operators.
+
  
 
 ## History
