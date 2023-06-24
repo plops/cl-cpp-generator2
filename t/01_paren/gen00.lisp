@@ -13,8 +13,8 @@
 
 #+nil
 (trace emit-c)
-
-(progn
+(handler-case
+    (progn
   (progn
     (defparameter *source-dir* #P"t/01_paren/source00/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
@@ -33,8 +33,8 @@
 
     ;; the following tests check if paren* avoids redundant parentheses
     (loop for e in
-	  #+nil `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)"))
-	  #-nil
+	  #-nil `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)"))
+	  #+nil
 	  `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 	    (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 	    (:name basic3 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
@@ -207,8 +207,15 @@
 				    *source-dir*))
 		  (let ((lisp-var (if (stringp lisp-code)
 				    `(string ,lisp-code)
-				    (eval lisp-code))))
-		   `(do0
+				    (eval lisp-code)))
+			(code-str (format nil "~a"
+					  (substitute #\' #\"
+						      (format nil "~a"
+							      (emit-c :code code)))))
+			(ref-str (format nil "~a"
+					 (substitute #\' #\"
+						     reference))))
+		    `(do0
 		     (include<> cassert
 				iostream)
 		     ,(if pre
@@ -224,12 +231,14 @@
 		      
 		       (if (== (paren ,code)
 			       (paren ,lisp-var))
-			   (<< "std::cout" (string ,(format nil "~2,'0d ~a OK" e-i (substitute #\' #\" reference)))
+			   (<< "std::cout" (string ,(format nil "~2,'0d ~a ref: ~a OK" e-i code-str ref-str))
 			       "std::endl")
 			   ,(if supersede-fail
 			       supersede-fail
-			       `(<< "std::cout" (string ,(format nil "~2,'0d ~a \\033[31mFAIL\\033[0m "
-								 e-i (substitute #\' #\" reference)))
+			       `(<< "std::cout" (string ,(format nil "~2,'0d ~a ~a \\033[31mFAIL\\033[0m "
+								 e-i 
+								 code-str
+								 ref-str))
 				   (paren ,code)
 				   (string " != ")
 				   (paren ,lisp-var)
@@ -237,5 +246,13 @@
 		       (return 0))))
 		  :format nil
 		  :tidy nil))))))
+  (sb-kernel::arg-count-error ()
+    (lambda (condition)
+      (format *error-output*
+              "Error in ~A~%"
+              condition)
+      (break)
+      (abort))))
+
 
 

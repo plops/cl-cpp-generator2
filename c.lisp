@@ -850,7 +850,7 @@ entry return-values contains a list of return values. currently supports type, v
 					;(format t "<paren* code='~a'>~%" code)
 		     (unless (eq 3 (length code))
 		       (break "paren* expects only two arguments"))
-		     (destructuring-bind (parent-op arg) (cdr code)
+		     (destructuring-bind (parent-op arg &rest rest) (cdr code)
 					;let ((arg (second (cdr code))))
 		      (cond
 			((symbolp arg)
@@ -898,15 +898,20 @@ entry return-values contains a list of return values. currently supports type, v
 			      (assert (listp rest))
 			      (emit `(,op0 ,@rest))))
 			   (t
-			    (let ((op0 (car arg)) ;; use precedence list to check if parens are needed
-				  (rest (cdr arg)))
+			    (let ((op0 ;parent-op
+				       (car arg)
+				       ) ;; use precedence list to check if parens are needed
+				  (rest ; arg
+					(cdr arg)
+					))
 			      (assert (or (symbolp op0)
 					  (stringp op0)))
 			      (assert (listp rest))
-			      (if (member op0 *operators*)
+			      (if (member  op0
+					  *operators*)
 				  (let ((p0 (lookup-precedence op0))
 					(p0assoc (lookup-associativity op0))
-					(op1 "")
+					(op1)
 					(p1 (+ 1 (length *precedence*)))
 					(p1assoc 'l)
 					)
@@ -934,7 +939,10 @@ entry return-values contains a list of return values. currently supports type, v
 					 (or (< p0 p1)
 					     (and (eq p0 p1)
 						  (not (eq p0assoc p1assoc)))))
-					(emit `(paren (space ,(format nil "'~a' '~a' ~a" op0 op1 (list  p0 p1 p0assoc p1assoc)) (,op0 ,@rest))))
+					(emit `(paren  #-nil (space ,(format nil "/*'~a' '~a' ~a*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
+							      (,op0 ,@rest))
+						      #+nil (,op0 ,@rest)
+						       ))
 					(emit `(,op0 ,@rest))))
 				  (progn
 				    ;; (break "unknown operator '~a'" op0)
@@ -1304,7 +1312,7 @@ entry return-values contains a list of return values. currently supports type, v
 			   (m '- (format nil "~{~a~^-~}" (mapcar #'(lambda (x) (emit `(paren* - ,x))) args))))))
 		  (* (m '*
 			(let ((args (cdr code)))
-			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* / ,x))) args)))))
+			  (format nil "~{~a~^*~}" (mapcar #'(lambda (x) (emit `(paren* * ,x))) args)))))
 		  (^ (m '^ (let ((args (cdr code)))
 			     (format nil "~{~a~^^~}" (mapcar #'(lambda (x) (emit `(paren* ^ ,x))) args)))))
 		  (xor `(^ ,@(cdr code)))
