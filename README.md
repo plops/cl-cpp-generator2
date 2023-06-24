@@ -200,6 +200,23 @@ right or on both sides of the current element? This was chat gpt says about this
  correctly order the operations, and you only need to know the
  associativity of an operator when dealing with multiple instances of
  the same operator.
+ 
+I think this is wrong. Here is a counter example:
+
+The lisp expression `(- (+ 3 4) (- 7 3))` will be the infix
+expression`3+4-7-3` but it should be `3+4-(7-3)`
+ 
+chatgpt4 says this:
+
+In this case, we have the subtraction operator -, which is left
+associative, being used twice. The right operand of the first
+subtraction is another subtraction. Even though the - operator is left
+associative, the right operand needs to be parenthesized to correctly
+represent the original expression. This is because the subtraction in
+the right operand should be evaluated before the first subtraction.
+
+I'm not sure what to make of this.
+ 
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
