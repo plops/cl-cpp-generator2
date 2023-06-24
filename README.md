@@ -179,22 +179,25 @@ The conditional operator `~@[` of format is used to only print the
 start parameter if it is not nil. A thorough test of can require a lot
 of cases.
 
-## Avoid redundant parentheses (Work in progress)
+## Efficient Parentheses Management (Under Development)
 
-I introduced the operator paren* that will look at its arguments and
-place parentheses only if required. There will always be the option to
-replace paren* with paren. Then all parentheses will be emitted (a lot
-of redundant ones) and one can be sure that the syntax tree given by
-the s-expression input is accurately represented by the C++ output
-string.
+In this module, I discuss the paren* operator which inspects its
+arguments and adds parentheses only when necessary. Alternatively, you
+can use the paren operator to enforce the inclusion of parentheses,
+leading to potential redundancy but ensuring that the syntax tree,
+constructed from the s-expression input, is precisely mirrored by the
+resulting C++ output string.
 
-If I want to implement paren* I can't just return strings anymore. I
-will also have to return the most recent operator, so that I can
-compare precedence with the operator that is in the next higher level
-of the abstract syntax tree. To this end I define the class
-`string-op` in c.lisp. This class and the helper functions `m
-<operator> <string>` and `m-of <string-op>` are now used throughout
-c.lisp to represent the string as well as the current operator.
+
+Implementing the paren* operator means we can't just return strings
+anymore. Instead, we must return the most recent operator so that we
+can evaluate its precedence against the operator at the next higher
+level in the abstract syntax tree. To facilitate this, I have defined
+a string-op class in c.lisp. Along with the helper functions m
+<operator> <string> and m-of <string-op>, the string-op class is used
+throughout c.lisp to represent both the string and the current
+operator.
+
 
 In the folder 't/' I started implementing tests for the paren*
 operator. I define an s-expression the expected C++ string and a
