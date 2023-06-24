@@ -33,8 +33,8 @@
 
     ;; the following tests check if paren* avoids redundant parentheses
     (loop for e in
-	  #-nil `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)"))
-	  #+nil
+	  #+nil `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)"))
+	  #-nil
 	  `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 	    (:name basic2 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 	    (:name basic3 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))

@@ -939,11 +939,15 @@ entry return-values contains a list of return values. currently supports type, v
 					 (or (< p0 p1)
 					     (and (eq p0 p1)
 						  (not (eq p0assoc p1assoc)))))
-					(emit `(paren  #-nil (space ,(format nil "/*'~a' '~a' ~a*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
-							      (,op0 ,@rest))
-						      #+nil (,op0 ,@rest)
-						       ))
-					(emit `(,op0 ,@rest))))
+					(emit `(paren  ,(if diag
+							   `(space ,(format nil "/*{'~a' '~a' ~a}*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
+								  (,op0 ,@rest))
+							   `(,op0 ,@rest))))
+					(emit (if diag
+						   `(space ,(format nil "/*<'~a' '~a' ~a>*/" op0 op1 (list  p0 p1 p0assoc p1assoc))
+							   (,op0 ,@rest))
+						   `(,op0 ,@rest))
+					      )))
 				  (progn
 				    ;; (break "unknown operator '~a'" op0)
 				    ;; function call
