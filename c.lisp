@@ -699,11 +699,7 @@ entry return-values contains a list of return values. currently supports type, v
 				  :assoc r)
 			     #+nil (.* ->*) ;; pointer to member
 			     (:op (*  / %) :assoc l)
-
-			     (:op (-) :assoc l)
-			     (:op (+) :assoc l)
-			     
-			     
+			     (:op (+ -) :assoc l)
 			     (:op (<< >>) :assoc l)
 			     (:op (<=>) :assoc l)
 			     (:op (< <= > >=) :assoc l)
