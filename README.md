@@ -215,7 +215,8 @@ associative, the right operand needs to be parenthesized to correctly
 represent the original expression. This is because the subtraction in
 the right operand should be evaluated before the first subtraction.
 
-I'm not sure what to make of this.
+I'm not sure what to make of this. I think it just changes the
+precedence table, so that - and + have a different precedence.
  
 
 ## History
