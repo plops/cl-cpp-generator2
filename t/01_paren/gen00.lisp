@@ -59,8 +59,10 @@
 	    (:name basicb :code (- 2 -1)
 	     :reference "2- -1")
 	    (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "3*5%4")
-	    (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%3*5")
-	    (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%17/5")
+	    (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)"
+		   ;; when multiple operators have the same precedence (like multiplication and modulus), the expression is evaluated from left to right (if parentheses don't dictate otherwise)
+		   )
+	    (:name mod3 :code (% 74 (/ 17 5)) :lisp-code (mod 74 (floor 17 5)) :reference "74%(17/5)")
 	    (:name hex1 :code (+ (hex ad) 3) :lisp-code (+ #xad 3) :reference "0xad+3")
 	    (:name div0 :code (/ 17 5)  :lisp-code (floor 17 5) :reference "17/5")
 	    (:name div1 :code (+ (/ 17 5) 3) :lisp-code (+ (floor 17 5) 3) :reference "(17/5)+3")
@@ -273,38 +275,47 @@
 			      ,(if supersede-fail
 				   supersede-fail
 				   `(<< "std::cout" (string
-						     ,(format nil "~2,'0d loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
-							      e-i 
+						     ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
+							      e-i
+							      name
 							      code-loparen-str
 							      ref-str
 							      code-str))
 					(string " fullparen: ")
+					(string ,(format nil "~a=" emit-loparen-str))
 					(paren ,emit-loparen-str)
 					(? fullparensuccess (string " == ") (string " != "))
 					(paren ,emit-str)
-
+					(string ,(format nil "=~a" emit-str))
 
 					(string " fullref: ")
+					(string ,(format nil "~a=" emit-str))
 					(paren ,emit-str)
 					(? (== (paren ,emit-str)
 					       (paren ,reference))
 					   (string " == ")
 					   (string " != "))
 					(paren ,reference)
+					(string ,(format nil "=~a" reference))
 					
 					,@(if (and (not lisp-code-present-p)
 						   lisp-code)
 					      `((string " lispcompare: ")
+						(string ,(format nil "~a=" emit-loparen-str))
 						(paren ,emit-loparen-str)
 						(? lispcomparesuccess (string " == ") (string " != "))
 						(paren ,lisp-var)
+						(string ,(format nil "=~a" lisp-var))
+						
 						(string " lispref: ")
+						(string ,(format nil "~a=" lisp-var))
 						(paren ,lisp-var)
 						(? (== (paren ,lisp-var)
 						       (paren ,reference))
 						   (string " == ")
 						   (string " != "))
 						(paren ,reference)
+						(string ,(format nil "=~a" reference))
 						)
 					      `((string "")))
 
