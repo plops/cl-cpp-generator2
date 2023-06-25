@@ -87,14 +87,13 @@
 				 ignore-hash
 				 (format t)
 				 (tidy t)
-				 ;(omit-parens nil)
+				 (omit-parens nil)
 				 )
   ;(format t "<write-source code='~a'>~%" code)
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
 	 (code-str (m-of (emit-c :code code :header-only nil
-				 ;:omit-redundant-parentheses omit-parens
-				 )))
+				 :omit-redundant-parentheses omit-parens)))
 	 (fn-hash (sxhash fn))
 	 (code-hash (sxhash code-str)))
 

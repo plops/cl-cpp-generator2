@@ -11,7 +11,7 @@
 
 (in-package :cl-cpp-generator2)
 
-(handler-case
+(progn ;handler-case
     (progn
   (progn
     (defparameter *source-dir* #P"t/01_paren/source00/")
@@ -218,7 +218,7 @@
 		       (format s "~2,'0d ~a ~a works~%" e-i name emit-loparen-str)
 		       (format s "~2,'0d ~a ~a should be ~a diag ~a~%" e-i name
 			       emit-loparen-str reference emit-str-diag))
-		   #+nil (write-source 
+		   (write-source 
 		    (asdf:system-relative-pathname
 		     'cl-cpp-generator2
 		     (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
@@ -331,118 +331,11 @@
 					
 					"std::endl")))
 			  (return 0))))
-		    (let ((lisp-var (if (stringp lisp-code)
-					`(string ,lisp-code)
-					(eval lisp-code)))
-			  (code-str (format nil "~a"
-					    (substitute #\' #\"
-							(format nil "~a"
-								emit-str))))
-			  (code-loparen-str (format nil "~a"
-					    (substitute #\' #\"
-							(format nil "~a"
-								emit-loparen-str))))
-			  (ref-str (format nil "~a"
-					   (substitute #\' #\"
-						       reference))))
-		      `(do0
-			(include<> cassert
-				   iostream)
-			,(if pre
-			     pre
-			     `(comments "no pre"))
-			(defun main (argc argv)
-			  (declare (values int)
-				   (type int argc)
-				   (type char** argv))
-			  "(void) argc;"
-			  "(void) argv;"
-			  "/*"
-			  ,(format nil "name:        '~a'" name)
-			  ,(format nil "reference:   '~a'" reference)
-			  ,(format nil "s-expr lisp: '~a'" lisp-code)
-			  ,(format nil "s-expr C++:  '~a'" code)
-			  ,(format nil "fullparen:   '~a'" (m-of emit-str))
-			  ,(format nil "low paren:   '~a'" (m-of emit-loparen-str))
-			  "*/"
-			  (let ((success false)
-				(fullparensuccess false)
-				(lispcomparesuccess false)
-				(lisprefsuccess false)))
-			  (when (== (paren ,emit-str)
-				    (paren ,emit-loparen-str))
-			    (setf success true
-				  fullparensuccess true))
-			  ,(if (and (not lisp-code-present-p)
-				    lisp-code)
-			       `(when (== (paren ,emit-loparen-str)
-					  (paren ,lisp-var))
-				  (setf success (and success true)
-					lispcomparesuccess true ))
-			       `(comments "no lisp-code"))
-			  (if success
-			      (<< "std::cout" (string
-					       ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a OK" e-i name code-loparen-str ref-str code-str))
-				  "std::endl")
-			      ,(if supersede-fail
-				   supersede-fail
-				   `(<< "std::cout" (string
-						     ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
-							      e-i
-							      name
-							      code-loparen-str
-							      ref-str
-							      code-str))
-					;; compear full parens with reduced parens
-					(string " fullparen: ")
-					(string ,(format nil "~a=" emit-loparen-str))
-					(paren ,emit-loparen-str)
-					(? fullparensuccess (string " == ") (string " != "))
-					(paren ,emit-str)
-					(string ,(format nil "=~a" emit-str))
 
-					;; compare reference with full parens
-					(string " fullref: ")
-					(string ,(format nil "~a=" emit-str))
-					(paren ,emit-str)
-					(? (== (paren ,emit-str)
-					       (paren ,reference))
-					   (string " == ")
-					   (string " != "))
-					(paren ,reference)
-					(string ,(format nil "=~a" reference))
-					
-					,@(if (and (not lisp-code-present-p)
-						   lisp-code)
-					      `(
-						;; compare lisp code with reduced parens
-						(string " lispcompare: ")
-						(string ,(format nil "~a=" emit-loparen-str))
-						(paren ,emit-loparen-str)
-						(? lispcomparesuccess (string " == ") (string " != "))
-						(paren ,lisp-var)
-						(string ,(format nil "=~a" lisp-var))
-
-						;; compare lisp code with reference
-						(string " lispref: ")
-						(string ,(format nil "~a=" lisp-var))
-						(paren ,lisp-var)
-						(? (== (paren ,lisp-var)
-						       (paren ,reference))
-						   (string " == ")
-						   (string " != "))
-						(paren ,reference)
-						(string ,(format nil "=~a" reference))
-						)
-					      `((string "")))
-
-					
-					"std::endl")))
-			  (return 0))))
-		    ;:omit-parens nil
 		    :format nil
-		    :tidy nil)))))))
-  (sb-kernel::arg-count-error ()
+		    :tidy nil
+		    :omit-parens t)))))))
+  #+nil (sb-kernel::arg-count-error ()
     (lambda (condition)
       (format *error-output*
               "Error in ~A~%"
