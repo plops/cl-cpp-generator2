@@ -36,12 +36,14 @@
 	  `((:name basic1 :code (* 3 (+ 1 2)) :reference "3*(1+2)")
 	    (:name basic2 :code (+ (* 3 1) 2) :reference "3*1+2")
 	    (:name basic3 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
-	    (:name basic4 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
+	    (:name basic4 :code (* (+ 3 4)
+				   (/ 13 4)
+				   (/ (+ 171 2) 5))
 	     :lisp-code (* (+ 3 4) (floor 13 4) (floor (+ 171 2) 5))
 	     ;; differences arise due to the precision of intermediate
 	     ;; calculations and the truncation of integers during
 	     ;; division
-	     :reference "(3+4)*(13/4)*(171+2)/5")
+	     :reference "(3+4)*(13/4)*((171+2)/5)")
 	    (:name basic5 :code (* (+ 3 4) (- 7 3))
 	     :reference "(3+4)*(7-3)")
 	    (:name basic6 :code (+ (+ 3 4) (- 7 3))
