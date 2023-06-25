@@ -38,7 +38,10 @@
 	    (:name basic3 :code (* (+ 3 4) 3 (+ 1 2)) :reference "(3+4)*3*(1+2)")
 	    (:name basic4 :code (* (+ 3 4) (/ 13 4) (/ (+ 171 2) 5))
 	     :lisp-code (* (+ 3 4) (floor 13 4) (floor (+ 171 2) 5))
-	     :reference "(3+4)*13/4*(171+2)/5")
+	     ;; differences arise due to the precision of intermediate
+	     ;; calculations and the truncation of integers during
+	     ;; division
+	     :reference "(3+4)*(13/4)*(171+2)/5")
 	    (:name basic5 :code (* (+ 3 4) (- 7 3))
 	     :reference "(3+4)*(7-3)")
 	    (:name basic6 :code (+ (+ 3 4) (- 7 3))
@@ -248,7 +251,8 @@
 				    ,(format nil "low paren:   '~a'" (m-of emit-loparen-str)))
 			  (let ((success false)
 				(fullparensuccess false)
-				(lispcomparesuccess false)))
+				(lispcomparesuccess false)
+				(lisprefsuccess false)))
 			  (when (== (paren ,emit-str)
 				    (paren ,emit-loparen-str))
 			    (setf success true
@@ -273,14 +277,34 @@
 							      ref-str
 							      code-str))
 					(string " fullparen: ")
-					(paren ,emit-str)
+					(paren ,emit-loparen-str)
 					(? fullparensuccess (string " == ") (string " != "))
-					(paren ,emit-loparen-str)
-					(string " & lispcompare: ")
+					(paren ,emit-str)
+
+
+					(string " fullref: ")
+					(paren ,emit-str)
+					(? (== (paren ,emit-str)
+					       (paren ,reference))
+					   (string " == ")
+					   (string " != "))
+					(paren ,reference)
 					
-					(paren ,emit-loparen-str)
-					(? lispcomparesuccess (string " -= ") (string " != "))
-					(paren ,lisp-var)
+					,@(if (and (not lisp-code-present-p)
+						   lisp-code)
+					      `((string " lispcompare: ")
+						(paren ,emit-loparen-str)
+						(? lispcomparesuccess (string " == ") (string " != "))
+						(paren ,lisp-var)
+						(string " lispref: ")
+						(paren ,lisp-var)
+						(? (== (paren ,lisp-var)
+						       (paren ,reference))
+						   (string " == ")
+						   (string " != "))
+						(paren ,reference)
+						)
+					      `((string "")))
 
 					
 					"std::endl")))
