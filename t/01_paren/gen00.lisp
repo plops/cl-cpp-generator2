@@ -220,7 +220,11 @@
 			  (code-str (format nil "~a"
 					    (substitute #\' #\"
 							(format nil "~a"
-								(emit-c :code code)))))
+								emit-str))))
+			  (code-loparen-str (format nil "~a"
+					    (substitute #\' #\"
+							(format nil "~a"
+								emit-loparen-str))))
 			  (ref-str (format nil "~a"
 					   (substitute #\' #\"
 						       reference))))
@@ -254,14 +258,17 @@
 				  (setf success (and success true)))
 			       `(comments "no lisp-code"))
 			  (if success
-			      (<< "std::cout" (string ,(format nil "~2,'0d ~a ~a ref: ~a OK" e-i name code-str ref-str))
+			      (<< "std::cout" (string
+					       ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a OK" e-i name code-loparen-str ref-str code-str))
 				  "std::endl")
 			      ,(if supersede-fail
 				   supersede-fail
-				   `(<< "std::cout" (string ,(format nil "~2,'0d ~a ~a \\033[31mFAIL\\033[0m "
-								     e-i 
-								     code-str
-								     ref-str))
+				   `(<< "std::cout" (string
+						     ,(format nil "~2,'0d loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m "
+							      e-i 
+							      code-loparen-str
+							      ref-str
+							      code-str))
 					(paren ,code)
 					(string " != ")
 					(paren ,lisp-var)
