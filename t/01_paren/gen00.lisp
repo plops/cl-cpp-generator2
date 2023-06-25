@@ -99,6 +99,7 @@
 
 	    (:name deref0
 	     :code (dot (-> car w) j)
+	     :fullparen nil
 	     :pre (do0
 		   (defclass+ Wheel ()
 		     "public:"
@@ -205,7 +206,7 @@
 	    )
 	  and e-i from 0
 	  do
-	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
+	     (destructuring-bind (&key code name (lisp-code code) (fullparen t) reference pre supersede-fail) e
 	       (let ((lisp-code-present-p (member :lisp-code e)))
 		 ;; you can override lisp-code by setting it
 		 ;; explicitly to nil, otherwise the s-expr in code
@@ -254,17 +255,21 @@
 			  ,(format nil "reference:   '~a'" reference)
 			  ,(format nil "s-expr lisp: '~a'" lisp-code)
 			  ,(format nil "s-expr C++:  '~a'" code)
-			  ,(format nil "fullparen:   '~a'" (m-of emit-str))
+			  ,(if fullparen
+			       (format nil "fullparen:   '~a'" (m-of emit-str))
+			       "")
 			  ,(format nil "low paren:   '~a'" (m-of emit-loparen-str))
 			  "*/"
 			  (let ((success false)
 				(fullparensuccess false)
 				(lispcomparesuccess false)
 				(lisprefsuccess false)))
-			  (when (== (paren ,emit-str)
-				    (paren ,emit-loparen-str))
-			    (setf success true
-				  fullparensuccess true))
+			  ,(if fullparen
+			       `(when (== (paren ,emit-str)
+					 (paren ,emit-loparen-str))
+				 (setf success true
+				       fullparensuccess true))
+			       `(comments "no fullparen"))
 			  ,(if (and (not lisp-code-present-p)
 				    lisp-code)
 			       `(when (== (paren ,emit-loparen-str)
@@ -279,30 +284,35 @@
 			      ,(if supersede-fail
 				   supersede-fail
 				   `(<< "std::cout" (string
-						     ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
+						     ,(format nil "~2,'0d ~a loparen: ~a ref: ~a~@[ ~a~] \\033[31mFAIL\\033[0m"
 							      e-i
 							      name
-							      code-loparen-str
+							      (when fullparen `("fullparen:" code-loparen-str))
 							      ref-str
 							      code-str))
-					;; compear full parens with reduced parens
-					(string " fullparen: ")
-					(string ,(format nil "~a=" emit-loparen-str))
-					(paren ,emit-loparen-str)
-					(? fullparensuccess (string " == ") (string " != "))
-					(paren ,emit-str)
-					(string ,(format nil "=~a" emit-str))
+					,@ (if fullparen
+					       `(
+						 ;; compare full parens with reduced parens
+						 (string " fullparen: ")
+						 (string ,(format nil "~a=" emit-loparen-str))
+						 (paren ,emit-loparen-str)
+						 (? fullparensuccess (string " == ") (string " != "))
+						 (paren ,emit-str)
+						 (string ,(format nil "=~a" emit-str))
+						 
 
-					;; compare reference with full parens
-					(string " fullref: ")
-					(string ,(format nil "~a=" emit-str))
-					(paren ,emit-str)
-					(? (== (paren ,emit-str)
-					       (paren ,reference))
-					   (string " == ")
-					   (string " != "))
-					(paren ,reference)
-					(string ,(format nil "=~a" reference))
+						 ;; compare reference with full parens
+						 (string " fullref: ")
+						 (string ,(format nil "~a=" emit-str))
+						 (paren ,emit-str)
+						 (? (== (paren ,emit-str)
+							(paren ,reference))
+						    (string " == ")
+						    (string " != "))
+						 (paren ,reference)
+						 (string ,(format nil "=~a" reference)))
+					       `((string ""))
+					       )
 					
 					,@(if (and (not lisp-code-present-p)
 						   lisp-code)
