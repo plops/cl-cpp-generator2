@@ -47,18 +47,18 @@
 	    (:name basic5 :code (* (+ 3 4) (- 7 3))
 	     :reference "(3+4)*(7-3)")
 	    (:name basic6 :code (+ (+ 3 4) (- 7 3))
-	     :reference "3+4+7-3")
+	     :reference "3+4+(7-3)")
 	    (:name basic7 :code (- (+ 3 4) (- 7 3))
-	     :reference "3+4-(7-3)")
+	     :reference "(3+4)-(7-3)")
 	    (:name basic8 :code (- (- 7 3) (+ 3 4) )
-	     :reference "7-3-(3+4)")
+	     :reference "(7-3)-(3+4)")
 	    (:name basic9 :code (+ (- 7 3) (+ 3 4) )
-	     :reference "7-3+3+4")
+	     :reference "(7-3)+3+4")
 	    (:name basica :code (* 2 -1)
 	     :reference "2* -1")
 	    (:name basicb :code (- 2 -1)
 	     :reference "2- -1")
-	    (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "3*5%4")
+	    (:name mod1 :code (% (* 3 5) 4) :lisp-code (mod (* 3 5) 4) :reference "(3*5)%4")
 	    (:name mod2 :code (% 74 (* 3 5)) :lisp-code (mod 74 (* 3 5)) :reference "74%(3*5)"
 		   ;; when multiple operators have the same precedence (like multiplication and modulus), the expression is evaluated from left to right (if parentheses don't dictate otherwise)
 		   )
@@ -72,7 +72,9 @@
 	     (:name array1 :code (+ (aref a (- (* 12 (+ 3 4))
 					      83))
 				   3 (/ 17 5))
-	     :lisp-code (+ 2 3 (floor 17 5)) :reference "a[(12*(3+4))-83]+3+(17/5)"
+	     :lisp-code (+ 2 3 (floor 17 5)) :reference
+	     "a[((12*(3+4))-83)]+3+(17/5)"
+	     ;"a[(12*(3+4))-83]+3+(17/5)"
 	     :pre "int a[2]={1,2};")
 	    (:name call0 :code (* 3  (H (+ 3 1)))
 		   :lisp-code (* 3 1)
@@ -83,7 +85,7 @@
 			  (return (+ 1 (* 0 n)))))
 	    (:name colon0 :code (<< (scope bla i) (+ 3 1))
 		   :lisp-code (ash 3 (+ 3 1))
-		   :reference "bla::i<<(3+1)"
+		   :reference "bla::i<<3+1"
 		   :pre (namespace bla
 				   "int i = 3;"))
 	    (:name string0
@@ -96,7 +98,7 @@
 	     :supersede-fail (<< std--cout (string "hello world \\033[31mFAIL\\033[0m ")  std--endl))
 
 	    (:name deref0
-	     :code (-> car (dot w j))
+	     :code (dot (-> car w) j)
 	     :pre (do0
 		   (defclass+ Wheel ()
 		     "public:"
@@ -162,7 +164,7 @@
 				       
 				       ))
 				(if v v 0))
-		   :reference "(5-3 ? 1 : 2)==7")
+		   :reference "((5-3) ? 1 : 2)==7")
 	    (:name ternary4
 		   :code (== (paren (? (- 5 3) 2)) 2 )
 		   :lisp-code (let ((v (eq (if (- 5 3) 2 0)
@@ -170,7 +172,7 @@
 				       
 				       ))
 				(if v v 0))
-		   :reference "(5-3 ? 2)==7")
+		   :reference "((5-3) ? 2)==2")
 
 	    (:name unary0
 	     :code (== -1 2)
@@ -188,13 +190,13 @@
 		   :lisp-code 'true
 		   :reference "true||false&&true")
 	    ;; bitwise AND ('&') has lower precedence than equality '=='
-	    (:name logandeq0
-		   :code (logand 5 (logior (== 1 1)))
+	    (:name andeq0
+		   :code (and 5 (logior (== 1 1)))
 		   :lisp-code 1
-		   :reference "5&1==1")
+		   :reference "5 & 1==1")
 	    ;; assignment and equality
 	    (:name assigneq0
-		   :code (setf y (== x 10))
+		   :code (= y (== x 10))
 		    :pre (do0
 			 "int y = 0;"
 			 "int x = 10;")
@@ -213,10 +215,10 @@
 		       (emit-str-diag (emit-c :code code :diag t  :omit-redundant-parentheses t)))
 		   ;(format s "~fullparen: a~%loparen: ~a~%" emit-str emit-loparen-str)
 		   (if (string= (m-of emit-loparen-str) reference)
-		       (format s "~2,'0d ~a works~%" e-i emit-loparen-str)
-		       (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
+		       (format s "~2,'0d ~a ~a works~%" e-i name emit-loparen-str)
+		       (format s "~2,'0d ~a ~a should be ~a diag ~a~%" e-i name
 			       emit-loparen-str reference emit-str-diag))
-		   (write-source 
+		   #+nil (write-source 
 		    (asdf:system-relative-pathname
 		     'cl-cpp-generator2
 		     (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
@@ -329,6 +331,115 @@
 					
 					"std::endl")))
 			  (return 0))))
+		    (let ((lisp-var (if (stringp lisp-code)
+					`(string ,lisp-code)
+					(eval lisp-code)))
+			  (code-str (format nil "~a"
+					    (substitute #\' #\"
+							(format nil "~a"
+								emit-str))))
+			  (code-loparen-str (format nil "~a"
+					    (substitute #\' #\"
+							(format nil "~a"
+								emit-loparen-str))))
+			  (ref-str (format nil "~a"
+					   (substitute #\' #\"
+						       reference))))
+		      `(do0
+			(include<> cassert
+				   iostream)
+			,(if pre
+			     pre
+			     `(comments "no pre"))
+			(defun main (argc argv)
+			  (declare (values int)
+				   (type int argc)
+				   (type char** argv))
+			  "(void) argc;"
+			  "(void) argv;"
+			  "/*"
+			  ,(format nil "name:        '~a'" name)
+			  ,(format nil "reference:   '~a'" reference)
+			  ,(format nil "s-expr lisp: '~a'" lisp-code)
+			  ,(format nil "s-expr C++:  '~a'" code)
+			  ,(format nil "fullparen:   '~a'" (m-of emit-str))
+			  ,(format nil "low paren:   '~a'" (m-of emit-loparen-str))
+			  "*/"
+			  (let ((success false)
+				(fullparensuccess false)
+				(lispcomparesuccess false)
+				(lisprefsuccess false)))
+			  (when (== (paren ,emit-str)
+				    (paren ,emit-loparen-str))
+			    (setf success true
+				  fullparensuccess true))
+			  ,(if (and (not lisp-code-present-p)
+				    lisp-code)
+			       `(when (== (paren ,emit-loparen-str)
+					  (paren ,lisp-var))
+				  (setf success (and success true)
+					lispcomparesuccess true ))
+			       `(comments "no lisp-code"))
+			  (if success
+			      (<< "std::cout" (string
+					       ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a OK" e-i name code-loparen-str ref-str code-str))
+				  "std::endl")
+			      ,(if supersede-fail
+				   supersede-fail
+				   `(<< "std::cout" (string
+						     ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
+							      e-i
+							      name
+							      code-loparen-str
+							      ref-str
+							      code-str))
+					;; compear full parens with reduced parens
+					(string " fullparen: ")
+					(string ,(format nil "~a=" emit-loparen-str))
+					(paren ,emit-loparen-str)
+					(? fullparensuccess (string " == ") (string " != "))
+					(paren ,emit-str)
+					(string ,(format nil "=~a" emit-str))
+
+					;; compare reference with full parens
+					(string " fullref: ")
+					(string ,(format nil "~a=" emit-str))
+					(paren ,emit-str)
+					(? (== (paren ,emit-str)
+					       (paren ,reference))
+					   (string " == ")
+					   (string " != "))
+					(paren ,reference)
+					(string ,(format nil "=~a" reference))
+					
+					,@(if (and (not lisp-code-present-p)
+						   lisp-code)
+					      `(
+						;; compare lisp code with reduced parens
+						(string " lispcompare: ")
+						(string ,(format nil "~a=" emit-loparen-str))
+						(paren ,emit-loparen-str)
+						(? lispcomparesuccess (string " == ") (string " != "))
+						(paren ,lisp-var)
+						(string ,(format nil "=~a" lisp-var))
+
+						;; compare lisp code with reference
+						(string " lispref: ")
+						(string ,(format nil "~a=" lisp-var))
+						(paren ,lisp-var)
+						(? (== (paren ,lisp-var)
+						       (paren ,reference))
+						   (string " == ")
+						   (string " != "))
+						(paren ,reference)
+						(string ,(format nil "=~a" reference))
+						)
+					      `((string "")))
+
+					
+					"std::endl")))
+			  (return 0))))
+		    ;:omit-parens nil
 		    :format nil
 		    :tidy nil)))))))
   (sb-kernel::arg-count-error ()
