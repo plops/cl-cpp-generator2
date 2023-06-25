@@ -245,17 +245,20 @@
 				    ,(format nil "s-expr lisp: '~a'" lisp-code)
 				    ,(format nil "s-expr C++:  '~a'" code)
 				    ,(format nil "fullparen:   '~a'" (m-of emit-str))
-				    ,(format nil "low paren:   '~a'" (m-of emit-loparen-str))
-				    )
-			  (let ((success false)))
+				    ,(format nil "low paren:   '~a'" (m-of emit-loparen-str)))
+			  (let ((success false)
+				(fullparensuccess false)
+				(lispcomparesuccess false)))
 			  (when (== (paren ,emit-str)
 				    (paren ,emit-loparen-str))
-			    (setf success true))
+			    (setf success true
+				  fullparensuccess true))
 			  ,(if (and (not lisp-code-present-p)
 				    lisp-code)
 			       `(when (== (paren ,emit-loparen-str)
 					  (paren ,lisp-var))
-				  (setf success (and success true)))
+				  (setf success (and success true)
+					lispcomparesuccess true ))
 			       `(comments "no lisp-code"))
 			  (if success
 			      (<< "std::cout" (string
@@ -264,14 +267,22 @@
 			      ,(if supersede-fail
 				   supersede-fail
 				   `(<< "std::cout" (string
-						     ,(format nil "~2,'0d loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m "
+						     ,(format nil "~2,'0d loparen: ~a ref: ~a fullparen: ~a \\033[31mFAIL\\033[0m"
 							      e-i 
 							      code-loparen-str
 							      ref-str
 							      code-str))
-					(paren ,code)
-					(string " != ")
+					(string " fullparen: ")
+					(paren ,emit-str)
+					(? fullparensuccess (string " == ") (string " != "))
+					(paren ,emit-loparen-str)
+					(string " & lispcompare: ")
+					
+					(paren ,emit-loparen-str)
+					(? lispcomparesuccess (string " -= ") (string " != "))
 					(paren ,lisp-var)
+
+					
 					"std::endl")))
 			  (return 0))))
 		    :format nil
