@@ -270,13 +270,19 @@
 				 (setf success true
 				       fullparensuccess true))
 			       `(comments "no fullparen"))
-			  ,(if (and (not lisp-code-present-p)
-				    lisp-code)
-			       `(when (== (paren ,emit-loparen-str)
-					  (paren ,lisp-var))
-				  (setf success (and success true)
-					lispcomparesuccess true ))
-			       `(comments "no lisp-code"))
+			  ,(cond ((and (not lisp-code-present-p)
+				       lisp-code)
+				  `(when (== (paren ,emit-loparen-str)
+					     (paren ,lisp-var))
+				     (setf success (and success true)
+					   lispcomparesuccess true )))
+				 ((and lisp-code-present-p
+				       lisp-code)
+				  `(when (== (paren ,emit-loparen-str)
+					     (paren ,lisp-var))
+				     (setf success (and success true)
+					   lispcomparesuccess true )))
+				 (t `(comments "no lisp-code")))
 			  (if success
 			      (<< "std::cout" (string
 					       ,(format nil "~2,'0d ~a loparen: ~a ref: ~a fullparen: ~a OK" e-i name code-loparen-str ref-str code-str))
