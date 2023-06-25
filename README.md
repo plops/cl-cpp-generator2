@@ -202,10 +202,12 @@ Testing for the paren* operator has begun in the 't/01_paren'
 directory. Here, I establish an s-expression, the expected C++ string,
 and a Common Lisp function that yields the same value. Each test
 generates a C++ file to confirm that the C++ code, derived from the
-s-expression, matches the result of the Common Lisp code. However, I
-believe it may be simpler to contrast code utilizing the new paren*
-operator with that using paren. This approach would eliminate the need
-for creating manual Lisp code for each test.
+s-expression, matches the result of the Common Lisp code. 
+
+Additionally, we draw a comparison between code that employs the newly
+introduced paren* operator, which eliminates superfluous parentheses,
+and code that still includes the full set of parentheses.
+
 
 As a general guideline, if given a choice, I lean towards
 over-employing parentheses. For instance, I prefer
