@@ -11,8 +11,6 @@
 
 (in-package :cl-cpp-generator2)
 
-#+nil
-(trace emit-c)
 (handler-case
     (progn
   (progn
@@ -198,9 +196,11 @@
 	    )
 	  and e-i from 0
 	  do
-	     (destructuring-bind (&key code name (lisp-code code) reference pre supersede-fail) e
+	     (destructuring-bind (&key code name lisp-code reference pre supersede-fail) e
 	       (let ((emit-str (emit-c :code code :diag nil))
+		     (emit-loparen-str (emit-c :code code :diag nil :omit-redundant-parentheses t))
 		     (emit-str-diag (emit-c :code code :diag t)))
+		 (format s "~fullparen: a~%loparen: ~a~%" emit-str emit-loparen-str)
 		 (if (string= (m-of emit-str) reference)
 		     (format s "~2,'0d ~a works~%" e-i emit-str)
 		     (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
@@ -211,8 +211,8 @@
 		   (merge-pathnames (format nil "c~2,'0d_~a.cpp" e-i name)
 				    *source-dir*))
 		  (let ((lisp-var (if (stringp lisp-code)
-				    `(string ,lisp-code)
-				    (eval lisp-code)))
+				      `(string ,lisp-code)
+				      (eval lisp-code)))
 			(code-str (format nil "~a"
 					  (substitute #\' #\"
 						      (format nil "~a"
@@ -221,34 +221,46 @@
 					 (substitute #\' #\"
 						     reference))))
 		    `(do0
-		     (include<> cassert
-				iostream)
-		     ,(if pre
-			  pre
-			  `(comments "no pre"))
-		     (defun main (argc argv)
-		       (declare (values int)
-				(type int argc)
-				(type char** argv))
-		       "(void) argc;"
-		       "(void) argv;"
-		       (comments ,reference)
-		      
-		       (if (== (paren ,code)
-			       (paren ,lisp-var))
-			   (<< "std::cout" (string ,(format nil "~2,'0d ~a ref: ~a OK" e-i code-str ref-str))
-			       "std::endl")
-			   ,(if supersede-fail
-			       supersede-fail
-			       `(<< "std::cout" (string ,(format nil "~2,'0d ~a ~a \\033[31mFAIL\\033[0m "
-								 e-i 
-								 code-str
-								 ref-str))
-				   (paren ,code)
-				   (string " != ")
-				   (paren ,lisp-var)
-				   "std::endl")))
-		       (return 0))))
+		      (include<> cassert
+				 iostream)
+		      ,(if pre
+			   pre
+			   `(comments "no pre"))
+		      (defun main (argc argv)
+			(declare (values int)
+				 (type int argc)
+				 (type char** argv))
+			"(void) argc;"
+			"(void) argv;"
+			(comments ,(format nil "name:      '~a'" name)
+				  ,(format nil "reference: '~a'" reference)
+				  ,(format nil "s-express: ~a" code)
+				  ,(format nil "fullparen: '~a'" (m-of emit-str))
+				  ,(format nil "low paren: '~a'" (m-of emit-loparen-str))
+				  )
+			(let ((success false)))
+			(when (== (paren ,emit-str)
+				  (paren ,emit-loparen-str))
+			  (setf success true))
+			,(if lisp-code
+			     `(when (== (paren ,emit-loparen-str)
+					(paren ,lisp-var))
+				(setf success (and success true)))
+			     `(comments "no lisp-code"))
+			(if success
+			    (<< "std::cout" (string ,(format nil "~2,'0d ~a ~a ref: ~a OK" e-i name code-str ref-str))
+				"std::endl")
+			    ,(if supersede-fail
+				       supersede-fail
+				       `(<< "std::cout" (string ,(format nil "~2,'0d ~a ~a \\033[31mFAIL\\033[0m "
+									 e-i 
+									 code-str
+									 ref-str))
+					    (paren ,code)
+					    (string " != ")
+					    (paren ,lisp-var)
+					    "std::endl")))
+			(return 0))))
 		  :format nil
 		  :tidy nil))))))
   (sb-kernel::arg-count-error ()

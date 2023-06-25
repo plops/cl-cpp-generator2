@@ -776,12 +776,18 @@ entry return-values contains a list of return values. currently supports type, v
      (break "variable '~a' of unknown type '~a'" obj-or-string (type-of obj-or-string)))))
 
 (progn
-  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass) (current-class nil) (header-only nil) (in-class nil) (diag nil))
-    "evaluate s-expressions in code, emit a string. if hook-defun is not nil, hook-defun will be called with every function definition. this functionality is intended to collect function declarations."
+  (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass)
+		   (current-class nil) (header-only nil) (in-class nil) (diag nil)
+		   (omit-redundant-parentheses nil))
+    "evaluate s-expressions in code, emit a string or string-op class. if hook-defun is not nil, 
+     hook-defun will be called with every function definition. this functionality is intended to collect function 
+     declarations. When omit-redundant-parentheses is not nil, the feature to avoid redundant parentheses is active."
+    
 					;(format t "~a~%" code)
 					;(format t "header-only=~a~%" header-only)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
-			 (hook-class hook-defclass) (in-class-p in-class) (current-diag diag))
+			 (hook-class hook-defclass) (in-class-p in-class) (current-diag diag)
+			 (current-omit-redundant-parentheses omit-redundant-parentheses))
 	     "change the indentation level. this is used in do"
 	     (emit-c :code code
 		     :level (+ dl level)
@@ -790,7 +796,8 @@ entry return-values contains a list of return values. currently supports type, v
 		     :current-class class
 		     :header-only header-only-p
 		     :in-class in-class-p
-		     :diag current-diag)))
+		     :diag current-diag
+		     :omit-redundant-parentheses current-omit-redundant-parentheses)))
 					;(format t "<emit-c type='~a' code='~a'>~%" (type-of code) code)
       (if code
 	  (if (listp code)
@@ -843,134 +850,133 @@ entry return-values contains a list of return values. currently supports type, v
 		  (paren*
 		   ;; paren* parent-op arg
 		   ;; place a pair of parentheses only when needed
-		   #+nil
-		   (format nil "(~a)" (emit (cadr code)))
-		   #-nil
-		   (progn  
+		   (if (not omit-redundant-parentheses)
+		       (format nil "(~a)" (emit (cadr code)))
+		       (progn  
 					;(format t "<paren* code='~a'>~%" code)
-		     (unless (eq 3 (length code))
-		       (break "paren* expects only two arguments"))
-		     (destructuring-bind (parent-op arg &rest rest) (cdr code)
+			 (unless (eq 3 (length code))
+			   (break "paren* expects only two arguments"))
+			 (destructuring-bind (parent-op arg &rest rest) (cdr code)
 					;let ((arg (second (cdr code))))
-		      (cond
-			((symbolp arg)
-			 ;; no parens for symbol needed
-			 (m 'symbol
-			    (format nil (if diag "Asymbol.~a" "~a") (emit-c :code arg))))
-			((numberp arg)
-			 ;; no parens for number needed (maybe for negative?)
-			 (m 'number
-			    #+nil (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
-			    (if (<= 0 arg)
-				(format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
-				(format nil (if diag "Anegnumber.~a" " ~a") (emit-c :code arg)))))
-			((stringp arg)
-			 ;; no parens around string
-			 (m 'string
-			    (format nil (if diag  "Astring.~a" "~a") arg))
-			 #+nil (progn
-				 ;; a string may contain operators
-				 ;; only add parens if there are not already parens
+			   (cond
+			     ((symbolp arg)
+			      ;; no parens for symbol needed
+			      (m 'symbol
+				 (format nil (if diag "Asymbol.~a" "~a") (emit-c :code arg))))
+			     ((numberp arg)
+			      ;; no parens for number needed (maybe for negative?)
+			      (m 'number
+				 #+nil (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
+				 (if (<= 0 arg)
+				     (format nil (if diag "Anumber.~a" "~a") (emit-c :code arg))
+				     (format nil (if diag "Anegnumber.~a" " ~a") (emit-c :code arg)))))
+			     ((stringp arg)
+			      ;; no parens around string
+			      (m 'string
+				 (format nil (if diag  "Astring.~a" "~a") arg))
+			      #+nil (progn
+				      ;; a string may contain operators
+				      ;; only add parens if there are not already parens
 
-				 (if (and (eq #\( (aref arg 0))
-					  (eq #\) (aref arg (- (length arg)
-							       1))))
-				     (format nil "~a" arg)
-				     (format nil "_~a_" arg))))
-			((and (typep arg 'string-op) (eq (operator-of arg) 'symbol))
-			 ;; no parens for symbol needed
-			 (make-instance 'string-op
-					:string (format nil (if diag "Asymbol.~a" "~a") arg)
-					:operator 'symbol))
-			((and (typep arg 'string-op) (eq (operator-of arg) 'string))
-			 ;; no parens around string
-			 (m 'string
-			    (format nil (if diag  "Astring.~a" "~a") arg)))
-			((listp arg)
-			 ;; a list can be an arbitrary abstract syntax tree of operators
-			 (cond
-			   ((<= (length arg) 2)
-			    ;; two or one elements doesn't need paren
-			    (let ((op0 (car arg)) 
-				  (rest (cdr arg)))
-			      (assert (or (symbolp op0)
-					  (stringp op0)))
-			      (assert (listp rest))
-			      (emit (if diag
-					`(space ,(format nil "/*<~a len=~a>*/" arg (length arg) )
-						 (,op0 ,@rest))
-					`(,op0 ,@rest)))))
-			   (t
-			    (let ((op0 parent-op
-				       ;(car arg)
-				       ) ;; use precedence list to check if parens are needed
-				  (rest ; arg
-					(cdr arg)
-					))
-			      (assert (or (symbolp op0)
-					  (stringp op0)))
-			      (assert (listp rest))
-			      (if (and (member  op0
-					    *operators*)
-				       (member  (car arg)
-					    *operators*))
-				  (let* ((p0 (lookup-precedence op0))
-					(p0assoc (lookup-associativity op0))
-					(op1 (car arg))
-					(p1 (lookup-precedence op1)
-					    ;(+ 1 (length *precedence*))
-					    )
-					(p1assoc ;'l
-					  (lookup-associativity op1)
-					  )
-					)
-				    #+nil (loop for e in rest
-					  do
-					     (when (or (listp e)
-						       (typep e 'string-op))
-					       (let* ((op1v (cond ((listp e) (first e))
-								  ((typep e 'string-op) (operator-of e))
-								  (t (break "unknown operator '~a'" e))))
-						       
-						      (p1v (lookup-precedence op1v))
-						      (p1a (lookup-associativity op1v)))
-						 (when p1
-						   (setf op1 op1v
-							 p1 p1v
-							 p1assoc p1a)
-						   ))))
-				    ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
-				    ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
-				    (if #+nil (and (< p0 p1)
-						   (not (member op0 `(hex aref string -> dot))))
-					(and
-					 (not (and (eq op0 op1)
-					       (member op0 `(- % /))))
+				      (if (and (eq #\( (aref arg 0))
+					       (eq #\) (aref arg (- (length arg)
+								    1))))
+					  (format nil "~a" arg)
+					  (format nil "_~a_" arg))))
+			     ((and (typep arg 'string-op) (eq (operator-of arg) 'symbol))
+			      ;; no parens for symbol needed
+			      (make-instance 'string-op
+					     :string (format nil (if diag "Asymbol.~a" "~a") arg)
+					     :operator 'symbol))
+			     ((and (typep arg 'string-op) (eq (operator-of arg) 'string))
+			      ;; no parens around string
+			      (m 'string
+				 (format nil (if diag  "Astring.~a" "~a") arg)))
+			     ((listp arg)
+			      ;; a list can be an arbitrary abstract syntax tree of operators
+			      (cond
+				((<= (length arg) 2)
+				 ;; two or one elements doesn't need paren
+				 (let ((op0 (car arg)) 
+				       (rest (cdr arg)))
+				   (assert (or (symbolp op0)
+					       (stringp op0)))
+				   (assert (listp rest))
+				   (emit (if diag
+					     `(space ,(format nil "/*<~a len=~a>*/" arg (length arg) )
+						     (,op0 ,@rest))
+					     `(,op0 ,@rest)))))
+				(t
+				 (let ((op0 parent-op
+					;(car arg)
+					    ) ;; use precedence list to check if parens are needed
+				       (rest ; arg
+					 (cdr arg)
+					 ))
+				   (assert (or (symbolp op0)
+					       (stringp op0)))
+				   (assert (listp rest))
+				   (if (and (member  op0
+						     *operators*)
+					    (member  (car arg)
+						     *operators*))
+				       (let* ((p0 (lookup-precedence op0))
+					      (p0assoc (lookup-associativity op0))
+					      (op1 (car arg))
+					      (p1 (lookup-precedence op1)
+					;(+ 1 (length *precedence*))
+						  )
+					      (p1assoc ;'l
+						(lookup-associativity op1)
+						)
+					      )
+					 #+nil (loop for e in rest
+						     do
+							(when (or (listp e)
+								  (typep e 'string-op))
+							  (let* ((op1v (cond ((listp e) (first e))
+									     ((typep e 'string-op) (operator-of e))
+									     (t (break "unknown operator '~a'" e))))
+								 
+								 (p1v (lookup-precedence op1v))
+								 (p1a (lookup-associativity op1v)))
+							    (when p1
+							      (setf op1 op1v
+								    p1 p1v
+								    p1assoc p1a)
+							      ))))
+					 ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
+					 ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
+					 (if #+nil (and (< p0 p1)
+							(not (member op0 `(hex aref string -> dot))))
+					     (and
+					      (not (and (eq op0 op1)
+							(member op0 `(- % /))))
 					;(not (member op0 `(hex aref string -> dot ?)))
-					 (or (< p0 p1)
-					     (and (eq p0 p1)
-						  (not (eq p0assoc p1assoc)))
-					     ))
-					(emit `(paren  ,(if diag
-							   `(space ,(format nil "/*{op0='~a' op1='~a' arg=~a ~a}*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
-								  (,op1 ,@rest))
-							   `(,op1 ,@rest))))
-					(emit (if diag
-						   `(space ,(format nil "/*<parent-op='~a' op0='~a' op1='~a' arg=~a ~a>*/" parent-op op0 op1 arg (list  p0 p1 p0assoc p1assoc))
-							   (,op1 ,@rest))
-						   `(,op1 ,@rest))
-					      )))
-				  (progn
-				    ;; (break "unknown operator '~a'" op0)
-				    ;; function call
-				    (emit `(,(car arg) ,@rest))
-				    ))))))
-			((typep arg 'string-op)
-			 (break "string-op ~a" arg)
-			 arg		;(string-of arg)
-			 )
-			(t
-			 (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg)))))))
+					      (or (< p0 p1)
+						  (and (eq p0 p1)
+						       (not (eq p0assoc p1assoc)))
+						  ))
+					     (emit `(paren  ,(if diag
+								 `(space ,(format nil "/*{op0='~a' op1='~a' arg=~a ~a}*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+									 (,op1 ,@rest))
+								 `(,op1 ,@rest))))
+					     (emit (if diag
+						       `(space ,(format nil "/*<parent-op='~a' op0='~a' op1='~a' arg=~a ~a>*/" parent-op op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+							       (,op1 ,@rest))
+						       `(,op1 ,@rest))
+						   )))
+				       (progn
+					 ;; (break "unknown operator '~a'" op0)
+					 ;; function call
+					 (emit `(,(car arg) ,@rest))
+					 ))))))
+			     ((typep arg 'string-op)
+			      (break "string-op ~a" arg)
+			      arg		;(string-of arg)
+			      )
+			     (t
+			      (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg))))))))
 		  (paren
 		   ;; paren {args}*
 		   ;; parentheses with comma separated values
