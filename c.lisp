@@ -854,11 +854,8 @@ entry return-values contains a list of return values. currently supports type, v
 		   
 		   (if (not omit-redundant-parentheses)
 		       (destructuring-bind (parent-op &rest args) (cdr code)
-			 #+nil (format nil "~a" (emit-c :code `(paren ,@rest)))
 			 (m 'paren
-			    (format nil "(~{~a~^, ~})" (mapcar #'(lambda (x)
-								   (emit x)) args)))
-			 )
+			    (format nil "~a" (emit-c :code `(paren ,@args)))))
 		       (progn  
 					;(format t "<paren* code='~a'>~%" code)
 			 (unless (eq 3 (length code))
