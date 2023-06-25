@@ -850,8 +850,15 @@ entry return-values contains a list of return values. currently supports type, v
 		  (paren*
 		   ;; paren* parent-op arg
 		   ;; place a pair of parentheses only when needed
+		   ;; if omit-redundant-parentheses=true, act the same as paren
+		   
 		   (if (not omit-redundant-parentheses)
-		       (format nil "(~a)" (emit (cadr code)))
+		       (destructuring-bind (parent-op &rest args) (cdr code)
+			 #+nil (format nil "~a" (emit-c :code `(paren ,@rest)))
+			 (m 'paren
+			    (format nil "(~{~a~^, ~})" (mapcar #'(lambda (x)
+								   (emit x)) args)))
+			 )
 		       (progn  
 					;(format t "<paren* code='~a'>~%" code)
 			 (unless (eq 3 (length code))
@@ -910,7 +917,7 @@ entry return-values contains a list of return values. currently supports type, v
 				 (let ((op0 parent-op
 					;(car arg)
 					    ) ;; use precedence list to check if parens are needed
-				       (rest ; arg
+				       (rest  ; arg
 					 (cdr arg)
 					 ))
 				   (assert (or (symbolp op0)
@@ -973,7 +980,7 @@ entry return-values contains a list of return values. currently supports type, v
 					 ))))))
 			     ((typep arg 'string-op)
 			      (break "string-op ~a" arg)
-			      arg		;(string-of arg)
+			      arg	;(string-of arg)
 			      )
 			     (t
 			      (break "unsupported argument for paren* '~a' type='~a'" arg (type-of arg))))))))
