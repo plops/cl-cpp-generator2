@@ -247,12 +247,14 @@
 				   (type char** argv))
 			  "(void) argc;"
 			  "(void) argv;"
-			  (comments ,(format nil "name:        '~a'" name)
-				    ,(format nil "reference:   '~a'" reference)
-				    ,(format nil "s-expr lisp: '~a'" lisp-code)
-				    ,(format nil "s-expr C++:  '~a'" code)
-				    ,(format nil "fullparen:   '~a'" (m-of emit-str))
-				    ,(format nil "low paren:   '~a'" (m-of emit-loparen-str)))
+			  "/*"
+			  ,(format nil "name:        '~a'" name)
+			  ,(format nil "reference:   '~a'" reference)
+			  ,(format nil "s-expr lisp: '~a'" lisp-code)
+			  ,(format nil "s-expr C++:  '~a'" code)
+			  ,(format nil "fullparen:   '~a'" (m-of emit-str))
+			  ,(format nil "low paren:   '~a'" (m-of emit-loparen-str))
+			  "*/"
 			  (let ((success false)
 				(fullparensuccess false)
 				(lispcomparesuccess false)
