@@ -951,25 +951,21 @@ entry return-values contains a list of return values. currently supports type, v
 							      ))))
 					 ;; <paren* op0=hex p0=0 p1=18 rest=(ad) type=cons>
 					 ;; (format t "<paren* op0=~a p0=~a p1=~a rest=~a type=~a>~%" op0 p0 p1 rest (type-of rest))
-					 (if #+nil (and (< p0 p1)
-							(not (member op0 `(hex aref string -> dot))))
-					     (and
-					      (not (and (eq op0 op1)
-							(member op0 `(- % /))))
-					;(not (member op0 `(hex aref string -> dot ?)))
-					      (or (< p0 p1)
-						  (and (eq p0 p1)
-						       (not (eq p0assoc p1assoc)))
-						  ))
+					 (if 
+					     (or (< p0 p1)
+						 (and (eq p0 p1)
+						      (not (eq p0assoc p1assoc))
+							  )
+						 (member op0 `(/ % -))
+						 (member op1 `(/ % -)))
 					     (emit `(paren  ,(if diag
-								 `(space ,(format nil "/*{op0='~a' op1='~a' arg=~a ~a}*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+								 `(space ,(format nil "/*(op0='~a' op1='~a' arg=~a ~a)*/" op0 op1 arg (list  p0 p1 p0assoc p1assoc))
 									 (,op1 ,@rest))
 								 `(,op1 ,@rest))))
 					     (emit (if diag
-						       `(space ,(format nil "/*<parent-op='~a' op0='~a' op1='~a' arg=~a ~a>*/" parent-op op0 op1 arg (list  p0 p1 p0assoc p1assoc))
+						       `(space ,(format nil "/*nopar op0='~a' (~a) op1='~a' arg=~a ~a*/" op0 (type-of op0) op1 arg (list  p0 p1 p0assoc p1assoc))
 							       (,op1 ,@rest))
-						       `(,op1 ,@rest))
-						   )))
+						       `(,op1 ,@rest)))))
 				       (progn
 					 ;; (break "unknown operator '~a'" op0)
 					 ;; function call

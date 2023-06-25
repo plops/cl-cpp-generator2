@@ -210,12 +210,12 @@
 		 ;; will be used
 		 (let ((emit-str (emit-c :code code :diag nil))
 		       (emit-loparen-str (emit-c :code code :diag nil :omit-redundant-parentheses t))
-		       (emit-str-diag (emit-c :code code :diag t)))
-		   (format s "~fullparen: a~%loparen: ~a~%" emit-str emit-loparen-str)
-		   (if (string= (m-of emit-str) reference)
-		       (format s "~2,'0d ~a works~%" e-i emit-str)
+		       (emit-str-diag (emit-c :code code :diag t  :omit-redundant-parentheses t)))
+		   ;(format s "~fullparen: a~%loparen: ~a~%" emit-str emit-loparen-str)
+		   (if (string= (m-of emit-loparen-str) reference)
+		       (format s "~2,'0d ~a works~%" e-i emit-loparen-str)
 		       (format s "~2,'0d ~a should be ~a diag ~a~%" e-i
-			       emit-str reference emit-str-diag))
+			       emit-loparen-str reference emit-str-diag))
 		   (write-source 
 		    (asdf:system-relative-pathname
 		     'cl-cpp-generator2
@@ -281,6 +281,7 @@
 							      code-loparen-str
 							      ref-str
 							      code-str))
+					;; compear full parens with reduced parens
 					(string " fullparen: ")
 					(string ,(format nil "~a=" emit-loparen-str))
 					(paren ,emit-loparen-str)
@@ -288,6 +289,7 @@
 					(paren ,emit-str)
 					(string ,(format nil "=~a" emit-str))
 
+					;; compare reference with full parens
 					(string " fullref: ")
 					(string ,(format nil "~a=" emit-str))
 					(paren ,emit-str)
@@ -300,13 +302,16 @@
 					
 					,@(if (and (not lisp-code-present-p)
 						   lisp-code)
-					      `((string " lispcompare: ")
+					      `(
+						;; compare lisp code with reduced parens
+						(string " lispcompare: ")
 						(string ,(format nil "~a=" emit-loparen-str))
 						(paren ,emit-loparen-str)
 						(? lispcomparesuccess (string " == ") (string " != "))
 						(paren ,lisp-var)
 						(string ,(format nil "=~a" lisp-var))
-						
+
+						;; compare lisp code with reference
 						(string " lispref: ")
 						(string ,(format nil "~a=" lisp-var))
 						(paren ,lisp-var)
