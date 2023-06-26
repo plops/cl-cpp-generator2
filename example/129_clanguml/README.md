@@ -5,10 +5,14 @@ cd ~/src
 git clone https://github.com/bkryza/clang-uml
 cd clang-uml
 sudo pacman -S llvm yaml-cpp
-#make release
 
-mkdir b
-cd b
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+
+cmake -G Ninja \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_INSTALL_PREFIX=/home/martin/clang-uml \
+-DBUILD_TESTS=OFF \
+-DCMAKE_CXX_COMPILER=clang++ \
+..
+
 
 ```
