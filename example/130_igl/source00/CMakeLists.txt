@@ -1,28 +1,31 @@
 cmake_minimum_required(VERSION 3.16)
-project(YourProjectName)
+project(MainProject)
 
-set(CMAKE_CXX_STANDARD 17)
+add_executable(main main.cpp)
 
-# location of IGL library
-set(IGL_DIR "/home/martin/igl/")
+target_include_directories(main PRIVATE /home/martin/src/igl/src)
 
-# I assume the path "/home/martin/igl/include" has the necessary include files for IGL
-include_directories(${IGL_DIR}/include)
+target_link_libraries(main PRIVATE 
+    /home/martin/src/igl/b/shell/windows/libIGLShellPlatform.a
+    /home/martin/src/igl/b/shell/windows/libIGLShellApp_opengl.a
+    /home/martin/src/igl/b/shell/libIGLShellShared.a
+    /home/martin/src/igl/b/src/igl/opengl/libIGLOpenGL.a
+    /home/martin/src/igl/b/src/igl/libIGLLibrary.a
+    /home/martin/src/igl/b/IGLU/libIGLUmanagedUniformBuffer.a
+    /home/martin/src/igl/b/IGLU/libIGLUimgui.a
+    /home/martin/src/igl/b/IGLU/libIGLUuniform.a
+    /home/martin/src/igl/b/IGLU/libIGLUsimple_renderer.a
+    /home/martin/src/igl/b/IGLU/libIGLUtexture_accessor.a
+    /home/martin/src/igl/b/third-party/deps/src/bc7enc/libbc7enc.a
+    /home/martin/src/igl/b/third-party/deps/src/glfw/src/libglfw3.a
+    /home/martin/src/igl/b/libIGLstb.a
+    /home/martin/igl/lib/libglfw3.a
+    /home/martin/igl/lib/libfmt.a
+    /home/martin/igl/lib/libtinyobjloader.a
+    /home/martin/igl/lib/libmeshoptimizer.a
+    X11 
+    GL 
+    EGL
+)
 
-add_executable(YourProjectName main.cpp)
-
-# I assume the necessary IGL, tinyobjloader and meshoptimizer libraries are in "/home/martin/igl/lib"
-find_library(IGLLIBRARY IGLLibrary HINTS ${IGL_DIR}/lib)
-find_library(TINYOBJLOADER tinyobjloader HINTS ${IGL_DIR}/lib)
-find_library(MESHOPTIMIZER meshoptimizer HINTS ${IGL_DIR}/lib)
-
-target_link_libraries(YourProjectName PRIVATE ${IGLLIBRARY} ${TINYOBJLOADER} ${MESHOPTIMIZER})
-
-# Additional library dependencies as per your setup
-if(UNIX)
-  target_link_libraries(YourProjectName PRIVATE EGL)
-endif()
-
-# include GLFW if it's installed in the system
-find_package(glfw3 REQUIRED)
-target_link_libraries(YourProjectName PRIVATE glfw)
+target_compile_definitions(main PRIVATE IGL_CMAKE_BUILD)

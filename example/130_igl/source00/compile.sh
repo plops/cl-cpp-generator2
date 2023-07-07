@@ -1,5 +1,5 @@
 g++ -o main \
-    Tiny.cpp \
+    main.cpp \
     -I/home/martin/src/igl/src \
     /home/martin/src/igl/b/shell/windows/libIGLShellPlatform.a \
     /home/martin/src/igl/b/shell/windows/libIGLShellApp_opengl.a \
@@ -18,5 +18,5 @@ g++ -o main \
     /home/martin/igl/lib/libfmt.a \
     /home/martin/igl/lib/libtinyobjloader.a \
     /home/martin/igl/lib/libmeshoptimizer.a \
-    -lX11 -lGL \
+    -lX11 -lGL -lEGL \
     -DIGL_CMAKE_BUILD

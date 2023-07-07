@@ -45,15 +45,15 @@ void main ()        {
 )";
 
 GLFWwindow *window_ = nullptr;
-int width_ = 0;
-int height_ = 0;
+int width_ = 800;
+int height_ = 600;
 std::unique_ptr<IDevice> device_;
 std::shared_ptr<ICommandQueue> commandQueue_;
 RenderPassDesc renderPass_;
-std::shared_ptr<IFrameBuffer> framebuffer_;
+std::shared_ptr<IFramebuffer> framebuffer_;
 std::shared_ptr<IRenderPipelineState> renderPipelineState_Triangle_;
 
-static bool initWindow(GLFWwindow *outWindow) {
+static bool initWindow(GLFWwindow **outWindow) {
   if (!glfwInit()) {
     return false;
   }
@@ -65,6 +65,48 @@ static bool initWindow(GLFWwindow *outWindow) {
   glfwWindowHint(GLFW_SRGB_CAPABLE, true);
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  auto *window =
+      glfwCreateWindow(800, 600, "OpenGL Triangle", nullptr, nullptr);
+  if (!window) {
+    glfwTerminate();
+    return false;
+  }
+  glfwSetErrorCallback([](int err, const char *desc) {
+    std::cout << "GLFW Error"
+              << " err='" << err << "' "
+              << " desc='" << desc << "' " << std::endl;
+  });
+  glfwSetKeyCallback(window,
+                     [](GLFWwindow *window, int key, int a, int action, int b) {
+                       if (key == GLFW_KEY_ESCAPE & action == GLFW_PRESS) {
+                         glfwSetWindowShouldClose(window, GLFW_TRUE);
+                       }
+                     });
+  glfwSetWindowSizeCallback(
+      window, [](GLFWwindow *window, int width, int height) {
+        std::cout << "window resized"
+                  << " width='" << width << "' "
+                  << " height='" << height << "' " << std::endl;
+        width_ = width;
+        height_ = height;
+      });
+  glfwGetWindowSize(window, &width_, &height_);
+  if (outWindow) {
+    *outWindow = window;
+  }
+  return true;
+}
+
+void initGL() {
+  auto ctx = std::make_unique<igl::opengl::glx::Context>(
+      nullptr, glfwGetX11Display(),
+      reinterpret_cast<igl::opengl::glx::GLXDrawable>(
+          glfwGetX11Window(window_)),
+      reinterpret_cast<igl::opengl::glx::GLXContext>(
+          glfwGetGLXContext(window_)));
+  device_ = std::make_unique<igl::opengl::glx::Device>(std::move(ctx));
+
+  IGL_ASSERT(device_);
 }
 
 int main(int argc, char **argv) {

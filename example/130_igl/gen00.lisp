@@ -94,12 +94,12 @@
 		       :omit-redundant-parentheses t)))
 
      ,@(loop for e in `((window GLFWwindow* nullptr)
-			(width int 0)
-			(height int 0)
+			(width int 800)
+			(height int 600)
 			(device ,(uniq `IDevice))
 			(commandQueue ,(share 'ICommandQueue))
 			(renderPass RenderPassDesc)
-			(framebuffer ,(share 'IFrameBuffer))
+			(framebuffer ,(share 'IFramebuffer))
 			(renderPipelineState_Triangle ,(share 'IRenderPipelineState)))
 	     collect
 	     (destructuring-bind (name type &optional value)
@@ -107,7 +107,7 @@
 	       (format nil "~a ~a_~@[ = ~a~];" type name value)))
 
      (defun initWindow (outWindow)
-       (declare (type GLFWwindow* outWindow)
+       (declare (type GLFWwindow** outWindow)
 		(values "static bool"))
        (unless (glfwInit)
 	 (return false))
@@ -127,8 +127,40 @@
        (let ((*window (glfwCreateWindow 800 600 (string "OpenGL Triangle") nullptr nullptr)))
 	 (unless window
 	   (glfwTerminate)
-	   (return false)))
+	   (return false))
+
+	 (glfwSetErrorCallback (lambda (err desc)
+				 (declare (type int err)
+					  (type "const char*" desc))
+				 ,(lprint :msg "GLFW Error" :vars `(err desc))))
+	 (glfwSetKeyCallback window
+			     (lambda (window key a action b)
+			       (declare (type GLFWwindow* window)
+					(type int key a action b))
+			       (when (and (== key GLFW_KEY_ESCAPE)
+					  (== action GLFW_PRESS))
+				 (glfwSetWindowShouldClose window GLFW_TRUE))))
+	 (glfwSetWindowSizeCallback window
+				   (lambda (window width height)
+			       (declare (type GLFWwindow* window)
+					(type int width height))
+				     ,(lprint :msg "window resized" :vars `(width height))
+				     (setf width_ width
+					   height_ height)))
+	 (glfwGetWindowSize window &width_ &height_)
+	 (when outWindow
+	   (setf *outWindow window))
+	 (return true))
        )
+
+     (defun initGL ()
+       (let ((ctx ("std::make_unique<igl::opengl::glx::Context>"
+		   nullptr
+		   (glfwGetX11Display)
+		   ("reinterpret_cast<igl::opengl::glx::GLXDrawable>" (glfwGetX11Window window_))
+		   ("reinterpret_cast<igl::opengl::glx::GLXContext>" (glfwGetGLXContext window_)))))
+	 (setf device_ ("std::make_unique<igl::opengl::glx::Device>" (std--move ctx)))
+	 (IGL_ASSERT device_)))
      
      (defun main (argc argv)
        (declare (values int)
