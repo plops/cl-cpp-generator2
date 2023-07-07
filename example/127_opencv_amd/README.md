@@ -41,6 +41,35 @@ ninja install
 - in the example 72_emsdk i already tried something similar
 - aruco seems to be in opencv_contrib
 
+# build opencv 4.8.0
+
+```
+pacman -S qt5
+# it actually links with qt6, it seems
+
+mkdir opencv_build_48
+cd opencv_build_48
+
+cmake \
+-G Ninja \
+-DWITH_GTK=OFF \
+-DWITH_QT=ON \
+-DCMAKE_BUILD_TYPE=Release \
+-DBUILD_JAVA=OFF \
+-DENABLE_FAST_MATH=ON \
+-DOPENCV_ENABLE_NONFREE=ON \
+-DWITH_OPENGL=ON \
+-DBUILD_DOCS=ON \
+-DCMAKE_INSTALL_PREFIX=/home/martin/opencv \
+../opencv-4.8.0
+
+ccmake ../opencv-4.8.0
+
+ninja
+ninja install
+```
+
+
 
 # Ask GPT4
 

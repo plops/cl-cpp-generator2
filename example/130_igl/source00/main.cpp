@@ -16,7 +16,11 @@
 #include <iostream>
 #include <regex>
 static const uint32_t kNumColorAttachments = 1;
-(std::string codeVS) = (R"(#version 460)");
+(std::string codeVS) = (R"(#version 460
+layout (location=0) out vec3 color; 
+const vec2 pos[3]  = vec2[3](vec2(-0.60f, -0.40f), vec2(0.60f, -0.40f), vec2(0.f, 0.60f)); 
+ 
+)");
 
 int main(int argc, char **argv) {
   (void)argc;
