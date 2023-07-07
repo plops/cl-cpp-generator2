@@ -44,7 +44,7 @@
       GLFW/glfw3.h
       GLFW/glfw3native.h
       cassert
-      regex
+      ;regex
       iostream
       igl/IGL.h
       igl/opengl/glx/Context.h
@@ -74,7 +74,8 @@
 			       (declare (type (array "const vec2" 3) pos)
 					(type (array "const vec3" 3) col))
 			       (defun main ()
-				 (setf gl_Position (vec4 (aref pos gl_VertexIndex)
+				 (setf gl_Position (vec4 (aref pos gl_VertexID ;Index
+							       )
 							 .0
 							 1.)
 				       color (aref gl_VertexIndex))))
@@ -160,7 +161,57 @@
 		   ("reinterpret_cast<igl::opengl::glx::GLXDrawable>" (glfwGetX11Window window_))
 		   ("reinterpret_cast<igl::opengl::glx::GLXContext>" (glfwGetGLXContext window_)))))
 	 (setf device_ ("std::make_unique<igl::opengl::glx::Device>" (std--move ctx)))
-	 (IGL_ASSERT device_)))
+	 (IGL_ASSERT device_)
+
+	 "CommandQueueDesc desc{CommandQueueType::Graphics};"
+	 (setf commandQueue_ (-> device_
+				 (createCommandQueue desc nullptr)))
+	 (dotimes (i kNumColorAttachments)
+	   (when (& i (hex 1))
+	     continue)
+	   (setf (dot renderPass_ (aref colorAttachments i))
+		 "igl::RenderPassDesc::ColorAttachmentDesc{}")
+	   ,@(loop for (name value) in `((loadAction "LoadAction::Clear")
+					 (storeAction "StoreAction::Store")
+					 (clearColor "{1.f,1.f,1.f,1.f}")
+					 )
+		   collect
+		   `(setf (dot renderPass_ (aref colorAttachments i) ,name)
+			  ,value)))
+	 (setf (dot renderPass_
+		    depthAttachment
+		    loadAction)
+	       "LoadAction::DontCare")
+
+	 ))
+     (defun createRenderPIpeline ()
+       (when renderPipelineState_Triangle_
+	 return)
+       (IGL_ASSERT framebuffer_)
+       (let ((desc (RenderPipelineDesc)))
+	 (dot desc
+	      targetDesc
+	      colorAttachments
+	      (resize kNumColorAttachments))
+	 (dotimes (i kNumColorAttachments)
+	   (when (-> framebuffer_
+		     (getColorAttachment i))
+	     (setf (dot desc
+			targetDesc
+			(aref colorAttachments i)
+			textureFormat)
+		   (-> framebuffer_
+		       (getColorAttachment i)
+		       (getFormat)))))
+	 (when (-> framebuffer_
+		   (getDepthAttachment))
+	   (setf (dot desc
+		      targetDesc
+		      depthAttachmentFormat
+		      )
+		 (-> framebuffer_
+		     (getDepthAttachment)
+		     (getFormat))))))
      
      (defun main (argc argv)
        (declare (values int)

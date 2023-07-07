@@ -14,7 +14,6 @@
 #include <igl/opengl/glx/HWDevice.h>
 #include <igl/opengl/glx/PlatformDevice.h>
 #include <iostream>
-#include <regex>
 using namespace igl;
 static const uint32_t kNumColorAttachments = 1;
 std::string codeVS = R"(#version 460
@@ -23,7 +22,7 @@ const vec2 pos[3]  = vec2[3](vec2(-0.60f, -0.40f), vec2(0.60f, -0.40f), vec2(0.f
 const vec3 col[3]  = vec3[3](vec3(1.0f, 0.f, 0.f), vec3(0.f, 1.0f, 0.f), vec3(0.f, 0.f, 1.0f)); 
 
 void main ()        {
-            gl_Position=vec4(pos[gl_VertexIndex], 0.f, 1);
+            gl_Position=vec4(pos[gl_VertexID], 0.f, 1);
     color=gl_VertexIndex;
 
 
@@ -107,6 +106,42 @@ void initGL() {
   device_ = std::make_unique<igl::opengl::glx::Device>(std::move(ctx));
 
   IGL_ASSERT(device_);
+  CommandQueueDesc desc{CommandQueueType::Graphics};
+  commandQueue_ = device_->createCommandQueue(desc, nullptr);
+
+  for (auto i = 0; i < kNumColorAttachments; i += 1) {
+    if ((i & 0x1)) {
+      continue;
+    }
+    renderPass_.colorAttachments[i] =
+        igl::RenderPassDesc::ColorAttachmentDesc{};
+
+    renderPass_.colorAttachments[i].loadAction = LoadAction::Clear;
+
+    renderPass_.colorAttachments[i].storeAction = StoreAction::Store;
+
+    renderPass_.colorAttachments[i].clearColor = {1.f, 1.f, 1.f, 1.f};
+  }
+  renderPass_.depthAttachment.loadAction = LoadAction::DontCare;
+}
+
+void createRenderPIpeline() {
+  if (renderPipelineState_Triangle_) {
+    return;
+  }
+  IGL_ASSERT(framebuffer_);
+  auto desc = RenderPipelineDesc();
+  desc.targetDesc.colorAttachments.resize(kNumColorAttachments);
+  for (auto i = 0; i < kNumColorAttachments; i += 1) {
+    if (framebuffer_->getColorAttachment(i)) {
+      desc.targetDesc.colorAttachments[i].textureFormat =
+          framebuffer_->getColorAttachment(i)->getFormat();
+    }
+  }
+  if (framebuffer_->getDepthAttachment()) {
+    desc.targetDesc.depthAttachmentFormat =
+        framebuffer_->getDepthAttachment()->getFormat();
+  }
 }
 
 int main(int argc, char **argv) {
