@@ -20,7 +20,7 @@ cd ~/src
 git clone https://github.com/facebook/igl
 # this downloads 25MB 
 
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/martin/igl
 
 ```
 - cmake this downloads some more dependencies: meshoptimizer, glslang,

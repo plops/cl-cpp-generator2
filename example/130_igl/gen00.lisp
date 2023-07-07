@@ -17,7 +17,12 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
-    
+
+
+  (defun share (name)
+    (format nil "std::shared_ptr<~a>" name))
+  (defun uniq (name)
+    (format nil "std::unique_ptr<~a>" name))
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -50,6 +55,7 @@
 
      (include<> fmt/core.h)
      
+     "using namespace igl;"
      
      "static const uint32_t kNumColorAttachments = 1;"
 
@@ -61,10 +67,69 @@
 			     "layout (location=0) out vec3 color;"
 			     (let ((pos ("vec2[3]" (vec2 -.6 -.4)
 						   (vec2 .6 -.4)
-						   (vec2 .0 .6))))
-			       (declare (type (array "const vec2" 3) pos)))
-			     ))))
+						   (vec2 .0 .6)))
+				   (col ("vec3[3]" (vec3 1.0 .0 .0)
+						   (vec3 .0 1.0 .0)
+						   (vec3 .0 .0 1.0))))
+			       (declare (type (array "const vec2" 3) pos)
+					(type (array "const vec3" 3) col))
+			       (defun main ()
+				 (setf gl_Position (vec4 (aref pos gl_VertexIndex)
+							 .0
+							 1.)
+				       color (aref gl_VertexIndex))))
+			     )
+		       :omit-redundant-parentheses t
+		       )))
 
+     (setf "std::string codeFS"
+	   (string-r ,(emit-c
+		       :code
+		       `(do0 "#version 460"
+			     "layout (location=0) in vec3 color;"
+			     "layout (location=0) out vec4 out_FragColor;"
+			     (defun main ()
+			       (setf out_FragColor (vec4 color 1.)))
+			     )
+		       :omit-redundant-parentheses t)))
+
+     ,@(loop for e in `((window GLFWwindow* nullptr)
+			(width int 0)
+			(height int 0)
+			(device ,(uniq `IDevice))
+			(commandQueue ,(share 'ICommandQueue))
+			(renderPass RenderPassDesc)
+			(framebuffer ,(share 'IFrameBuffer))
+			(renderPipelineState_Triangle ,(share 'IRenderPipelineState)))
+	     collect
+	     (destructuring-bind (name type &optional value)
+		 e
+	       (format nil "~a ~a_~@[ = ~a~];" type name value)))
+
+     (defun initWindow (outWindow)
+       (declare (type GLFWwindow* outWindow)
+		(values "static bool"))
+       (unless (glfwInit)
+	 (return false))
+
+       ,@(loop for e in `((context-version-major 4)
+			  (context-version-minor 1)
+			  (opengl-profile GLFW_OPENGL_COMPAT_PROFILE)
+			  (visible true)
+			  (doublebuffer true)
+			  (srgb-capable true)
+			  (client-api GLFW_OPENGL_API)
+			  (resizable GLFW_TRUE))
+	       collect
+	       (destructuring-bind (name value) e
+		 `(glfwWindowHint ,(cl-change-case:constant-case (format nil "glfw-~a" name))
+				  ,value)))
+       (let ((*window (glfwCreateWindow 800 600 (string "OpenGL Triangle") nullptr nullptr)))
+	 (unless window
+	   (glfwTerminate)
+	   (return false)))
+       )
+     
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
@@ -72,6 +137,7 @@
        "(void) argc;"
        "(void) argv;"
               
-       (return 0)))))
+       (return 0)))
+   :omit-parens t))
 
 
