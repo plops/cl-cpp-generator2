@@ -1,44 +1,52 @@
-# Trying out IGL by facebook
+# Intermediate Graphics Library (IGL) Experiment
 
-- it is a library to render realtime
-- open-source Intermediate Graphics Library (IGL)
+This repository is dedicated to experimenting with Facebook's
+open-source Intermediate Graphics Library (IGL).
 
-- supports the following rendering backends
+## About IGL
 
-Metal 2+
-OpenGL 2.x (requires GL_ARB_framebuffer_object)
-OpenGL 3.1+
-OpenGL ES 2.0+
-Vulkan 1.1 (requires VK_KHR_buffer_device_address and VK_EXT_descriptor_indexing)
-WebGL 2.0
+IGL is a real-time rendering library that supports a variety of
+rendering backends:
 
+- Metal 2+
+- OpenGL 2.x (requires GL_ARB_framebuffer_object)
+- OpenGL 3.1+
+- OpenGL ES 2.0+
+- Vulkan 1.1 (requires VK_KHR_buffer_device_address and VK_EXT_descriptor_indexing)
+- WebGL 2.0
 
-## compile the library
+## Compilation
 
-```
+To compile the library, follow the steps below:
+
+1. Clone the repository:
+```bash
 cd ~/src
 git clone https://github.com/facebook/igl
-# this downloads 25MB 
-
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/martin/igl
-
 ```
-- cmake this downloads some more dependencies: meshoptimizer, glslang,
- glfw, stb, tinyobjloader, gli, glm, imgui, fmt ...
+Note: This operation downloads approximately 25MB of data.
 
-- after this the directory is 917MB
+2. Prepare the build:
+```bash
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/martin/igl
+```
 
+This command also downloads additional dependencies: meshoptimizer,
+glslang, glfw, stb, tinyobjloader, gli, glm, imgui, fmt. The size of
+the directory after this operation is approximately 917MB.
 
-## first example gen00
+## Exploring First Example: gen00
 
-- go through
-  https://github.com/facebook/igl/blob/main/samples/desktop/Tiny/Tiny.cpp
+The first example that I explored was
+[Tiny.cpp](https://github.com/facebook/igl/blob/main/samples/desktop/Tiny/Tiny.cpp).
 
--  it has many parallel implementations and chooses between them with
-  preprocessor ifdefs (vulkan, opengl, platforms)
+- The example contains multiple parallel implementations and chooses
+  between them using preprocessor ifdefs (vulkan, opengl, platforms).
 
-- i decided to only implement opengl
+- For this exploration, I decided to only implement the opengl
+  version.
 
-- it requires a rediculus amount of code to draw a triangle. ideally i
-  want a small graphics library that allows me to draw polygons with
-  some shadows. i think this is not it.
+- Please note, the example requires a significant amount of code to
+  simply draw a triangle. For those looking for a small graphics
+  library that allows for drawing polygons with some shadows, this
+  library may not be the best fit.
