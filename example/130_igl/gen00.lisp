@@ -125,7 +125,7 @@
 	       (destructuring-bind (name value) e
 		 `(glfwWindowHint ,(cl-change-case:constant-case (format nil "glfw-~a" name))
 				  ,value)))
-       (let ((*window (glfwCreateWindow 800 600 (string "OpenGL Triangle") nullptr nullptr)))
+       (let ((*window (glfwCreateWindow width_ height_ (string "OpenGL Triangle") nullptr nullptr)))
 	 (unless window
 	   (glfwTerminate)
 	   (return false))
@@ -211,7 +211,98 @@
 		      )
 		 (-> framebuffer_
 		     (getDepthAttachment)
-		     (getFormat))))))
+		     (getFormat))))
+
+	 (setf desc.shaderStages (ShaderStagesCreator--fromModuleStringInput
+				  *device_
+				  (codeVS.c_str)
+				  (string "main")
+				  (string "")
+				  (codeFS.c_str)
+				  (string "main")
+				  (string "")
+				  nullptr)
+	       renderPipelineState_Triangle_ (-> device_
+						 (createRenderPipeline desc nullptr)))
+	 (IGL_ASSERT renderPipelineState_Triangle_)))
+
+     (defun getNativeDrawable ()
+       (declare (static)
+		(values ,(share 'ITexture)))
+       (let ((ret (Result))
+	     (drawable (,(share 'ITexture)))
+	     (platformDevice (-> device_
+				 ("getPlatformDevice<opengl::glx::PlatformDevice>"))))
+	 (IGL_ASSERT (!= platformDevice nullptr))
+	 (setf drawable (platformDevice->createTextureFromNativeDrawable width_
+									 height_
+									 &ret))
+	 (IGL_ASSERT_MSG (ret.isOk)
+			 (ret.message.c_str))
+	 (IGL_ASSERT (!= drawable nullptr))
+	 (return drawable)))
+
+     (defun createFramebuffer (nativeDrawable)
+       (declare (static)
+		(type "const std::shared_ptr<ITexture>&" nativeDrawable))
+       (let ((framebufferDesc (FramebufferDesc))
+	     )
+	 (setf (dot framebufferDesc
+		    (aref colorAttachments 0)
+		    texture)
+	       nativeDrawable)
+	 (dotimes (i kNumColorAttachments)
+	   (when (and i (hex 1))
+	     continue)
+	   (let ((desc (TextureDesc--new2D (-> nativeDrawable (getFormat))
+					   (-> nativeDrawable (dot (getDimensions) width))
+					   (-> nativeDrawable (dot (getDimensions) height))
+					   (or TextureDesc--TextureUsageBits--Attachment
+					       TextureDesc--TextureUsageBits--Sampled)
+					   (string "C"))))
+	     (setf (dot framebufferDesc
+			(aref colorAttachments i)
+			texture)
+		   (-> device_
+		       (createTexture desc nullptr)))))
+	 (setf framebuffer_ (-> device_
+				(createFramebuffer framebufferDesc nullptr)))
+	 (IGL_ASSERT framebuffer_)))
+
+     (defun render (nativeDrawable)
+       (declare (static)
+		(type "const std::shared_ptr<ITexture>&" nativeDrawable))
+       (let ((size (-> framebuffer_
+		       (getColorAttachment 0)
+		       (getSize))))
+	 (if (logior (!= size.width width_)
+		     (!= size.height height_))
+	     (createFramebuffer nativeDrawable)
+	     (framebuffer_->updateDrawable nativeDrawable))
+	 (let ((cbDesc (CommandBufferDesc))
+	       (buffer (-> commandQueue_
+			   (createCommandBuffer cbDesc nullptr)))
+	       (viewport (igl--Viewport (curly 0s0 0s0 (static_cast<float> width_)
+					       (static_cast<float> height_)
+					       0s0 1s0)))
+	       (scissor (igl--ScissorRect (curly 0 0
+						 (static_cast<uint32_t> width_)
+					       (static_cast<uint32_t> height_))))
+	       (commands (buffer->createRenderCommandEncoder renderPass_
+							     framebuffer_)))
+	   ,@(loop for e in `((bindRenderPipelineState renderPipelineState_Triangle_)
+			      (bindViewport viewport)
+			      (bindScissorRect scissor)
+			      (pushDebugGroupLabel (string "render triangle")
+						   (igl--Color 1 0 0))
+			      (draw PrimitiveType--Triangle 0 3)
+			      (popDebugGroupLabel)
+			      (endEncoding))
+		   collect
+		   (destructuring-bind (name &rest args) e
+		     `(-> commands (,name ,@args))))
+	   (buffer->present nativeDrawable)
+	   (commandQueue_->submit *buffer))))
      
      (defun main (argc argv)
        (declare (values int)

@@ -65,7 +65,7 @@ static bool initWindow(GLFWwindow **outWindow) {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
   auto *window =
-      glfwCreateWindow(800, 600, "OpenGL Triangle", nullptr, nullptr);
+      glfwCreateWindow(width_, height_, "OpenGL Triangle", nullptr, nullptr);
   if (!window) {
     glfwTerminate();
     return false;
@@ -142,6 +142,73 @@ void createRenderPIpeline() {
     desc.targetDesc.depthAttachmentFormat =
         framebuffer_->getDepthAttachment()->getFormat();
   }
+  desc.shaderStages = ShaderStagesCreator::fromModuleStringInput(
+      *device_, codeVS.c_str(), "main", "", codeFS.c_str(), "main", "",
+      nullptr);
+  renderPipelineState_Triangle_ = device_->createRenderPipeline(desc, nullptr);
+
+  IGL_ASSERT(renderPipelineState_Triangle_);
+}
+
+std::shared_ptr<ITexture> getNativeDrawable() {
+  auto ret = Result();
+  auto drawable = std::shared_ptr<ITexture>();
+  auto platformDevice =
+      device_->getPlatformDevice<opengl::glx::PlatformDevice>();
+  IGL_ASSERT(platformDevice != nullptr);
+  drawable =
+      platformDevice->createTextureFromNativeDrawable(width_, height_, &ret);
+
+  IGL_ASSERT_MSG(ret.isOk(), ret.message.c_str());
+  IGL_ASSERT(drawable != nullptr);
+  return drawable;
+}
+
+void createFramebuffer(const std::shared_ptr<ITexture> &nativeDrawable) {
+  auto framebufferDesc = FramebufferDesc();
+  framebufferDesc.colorAttachments[0].texture = nativeDrawable;
+
+  for (auto i = 0; i < kNumColorAttachments; i += 1) {
+    if (i & 0x1) {
+      continue;
+    }
+    auto desc = TextureDesc::new2D(nativeDrawable->getFormat(),
+                                   nativeDrawable->getDimensions().width,
+                                   nativeDrawable->getDimensions().height,
+                                   TextureDesc::TextureUsageBits::Attachment |
+                                       TextureDesc::TextureUsageBits::Sampled,
+                                   "C");
+    framebufferDesc.colorAttachments[i].texture =
+        device_->createTexture(desc, nullptr);
+  }
+  framebuffer_ = device_->createFramebuffer(framebufferDesc, nullptr);
+
+  IGL_ASSERT(framebuffer_);
+}
+
+void render(const std::shared_ptr<ITexture> &nativeDrawable) {
+  auto size = framebuffer_->getColorAttachment(0)->getSize();
+  if (size.width != width_ || size.height != height_) {
+    createFramebuffer(nativeDrawable);
+  } else {
+    framebuffer_->updateDrawable(nativeDrawable);
+  }
+  auto cbDesc = CommandBufferDesc();
+  auto buffer = commandQueue_->createCommandBuffer(cbDesc, nullptr);
+  auto viewport = igl::Viewport({0.f, 0.f, static_cast<float>(width_),
+                                 static_cast<float>(height_), 0.f, 1.0f});
+  auto scissor = igl::ScissorRect(
+      {0, 0, static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)});
+  auto commands = buffer->createRenderCommandEncoder(renderPass_, framebuffer_);
+  commands->bindRenderPipelineState(renderPipelineState_Triangle_);
+  commands->bindViewport(viewport);
+  commands->bindScissorRect(scissor);
+  commands->pushDebugGroupLabel("render triangle", igl::Color(1, 0, 0));
+  commands->draw(PrimitiveType::Triangle, 0, 3);
+  commands->popDebugGroupLabel();
+  commands->endEncoding();
+  buffer->present(nativeDrawable);
+  commandQueue_->submit(*buffer);
 }
 
 int main(int argc, char **argv) {
