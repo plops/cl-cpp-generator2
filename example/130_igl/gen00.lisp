@@ -168,7 +168,7 @@
 	 (setf commandQueue_ (-> device_
 				 (createCommandQueue desc nullptr)))
 	 (dotimes (i kNumColorAttachments)
-	   (when (& i (hex 1))
+	   (when (and i 1)
 	     continue)
 	   (setf (dot renderPass_ (aref colorAttachments i))
 		 "igl::RenderPassDesc::ColorAttachmentDesc{}")
@@ -182,9 +182,7 @@
 	 (setf (dot renderPass_
 		    depthAttachment
 		    loadAction)
-	       "LoadAction::DontCare")
-
-	 ))
+	       "LoadAction::DontCare")))
      (defun createRenderPipeline ()
        (when renderPipelineState_Triangle_
 	 return)
@@ -253,7 +251,7 @@
 		    texture)
 	       nativeDrawable)
 	 (dotimes (i kNumColorAttachments)
-	   (when (and i (hex 1))
+	   (when (and i 1)
 	     continue)
 	   (let ((desc (TextureDesc--new2D (-> nativeDrawable (getFormat))
 					   (-> nativeDrawable (dot (getDimensions) width))

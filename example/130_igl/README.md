@@ -33,3 +33,12 @@ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/martin
 
 - go through
   https://github.com/facebook/igl/blob/main/samples/desktop/Tiny/Tiny.cpp
+
+-  it has many parallel implementations and chooses between them with
+  preprocessor ifdefs (vulkan, opengl, platforms)
+
+- i decided to only implement opengl
+
+- it requires a rediculus amount of code to draw a triangle. ideally i
+  want a small graphics library that allows me to draw polygons with
+  some shadows. i think this is not it.

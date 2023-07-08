@@ -110,7 +110,7 @@ void initIGL() {
   commandQueue_ = device_->createCommandQueue(desc, nullptr);
 
   for (auto i = 0; i < kNumColorAttachments; i += 1) {
-    if ((i & 0x1)) {
+    if (i & 1) {
       continue;
     }
     renderPass_.colorAttachments[i] =
@@ -169,7 +169,7 @@ void createFramebuffer(const std::shared_ptr<ITexture> &nativeDrawable) {
   framebufferDesc.colorAttachments[0].texture = nativeDrawable;
 
   for (auto i = 0; i < kNumColorAttachments; i += 1) {
-    if (i & 0x1) {
+    if (i & 1) {
       continue;
     }
     auto desc = TextureDesc::new2D(nativeDrawable->getFormat(),
