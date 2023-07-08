@@ -23,7 +23,7 @@ const vec3 col[3]  = vec3[3](vec3(1.0f, 0.f, 0.f), vec3(0.f, 1.0f, 0.f), vec3(0.
 
 void main ()        {
             gl_Position=vec4(pos[gl_VertexID], 0.f, 1);
-    color=gl_VertexIndex;
+    color=col[gl_VertexID];
 
 
 }
@@ -96,7 +96,7 @@ static bool initWindow(GLFWwindow **outWindow) {
   return true;
 }
 
-void initGL() {
+void initIGL() {
   auto ctx = std::make_unique<igl::opengl::glx::Context>(
       nullptr, glfwGetX11Display(),
       reinterpret_cast<igl::opengl::glx::GLXDrawable>(
@@ -125,7 +125,7 @@ void initGL() {
   renderPass_.depthAttachment.loadAction = LoadAction::DontCare;
 }
 
-void createRenderPIpeline() {
+void createRenderPipeline() {
   if (renderPipelineState_Triangle_) {
     return;
   }
@@ -214,5 +214,21 @@ void render(const std::shared_ptr<ITexture> &nativeDrawable) {
 int main(int argc, char **argv) {
   (void)argc;
   (void)argv;
+  renderPass_.colorAttachments.resize(kNumColorAttachments);
+  initWindow(&window_);
+  initIGL();
+  createFramebuffer(getNativeDrawable());
+  createRenderPipeline();
+  while (!glfwWindowShouldClose(window_)) {
+    render(getNativeDrawable());
+    glfwPollEvents();
+  }
+  renderPipelineState_Triangle_ = nullptr;
+
+  framebuffer_ = nullptr;
+
+  device_.reset(nullptr);
+  glfwDestroyWindow(window_);
+  glfwTerminate();
   return 0;
 }

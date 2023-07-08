@@ -78,7 +78,8 @@
 							       )
 							 .0
 							 1.)
-				       color (aref gl_VertexIndex))))
+				       color (aref col gl_VertexID ;Index
+						   ))))
 			     )
 		       :omit-redundant-parentheses t
 		       )))
@@ -154,7 +155,7 @@
 	 (return true))
        )
 
-     (defun initGL ()
+     (defun initIGL ()
        (let ((ctx ("std::make_unique<igl::opengl::glx::Context>"
 		   nullptr
 		   (glfwGetX11Display)
@@ -184,7 +185,7 @@
 	       "LoadAction::DontCare")
 
 	 ))
-     (defun createRenderPIpeline ()
+     (defun createRenderPipeline ()
        (when renderPipelineState_Triangle_
 	 return)
        (IGL_ASSERT framebuffer_)
@@ -310,7 +311,21 @@
 		(type char** argv))
        "(void) argc;"
        "(void) argv;"
-              
+
+       (renderPass_.colorAttachments.resize kNumColorAttachments)
+       (initWindow &window_)
+       (initIGL)
+       (createFramebuffer (getNativeDrawable))
+       (createRenderPipeline)
+       (while (!glfwWindowShouldClose window_)
+	      (render (getNativeDrawable))
+	      (glfwPollEvents))
+       (setf renderPipelineState_Triangle_ nullptr)
+       (setf framebuffer_ nullptr
+	     )
+       (device_.reset nullptr)
+       (glfwDestroyWindow window_)
+       (glfwTerminate)
        (return 0)))
    :omit-parens t))
 
