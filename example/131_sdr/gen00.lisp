@@ -46,10 +46,33 @@
 		(type char** argv))
        "(void) argc;"
        "(void) argv;"
-       (let ((results (SoapySDR--Device--enumerate))
-	     ))
+       (let ((results (SoapySDR--Device--enumerate)))
+	 (dotimes (i (results.size))
+	   ,(lprint :msg "found device"
+		    :vars `(i)))
+	 (let ((args (aref results 0))
+	       (*sdr (SoapySDR--Device--make args)))
+	   (when (== nullptr sdr)
+	     ,(lprint :msg "make failed")
+	     (return -1))
+	   ,@(loop for e in `((:fun listAntennas)
+			      (:fun listGains)
+			      (:fun getFrequencyRange :print ((val.minimum)
+							      (val.maximum))))
+		   collect
+		   (destructuring-bind (&key fun print) e
+		    `(progn
+		       (let ((vals ((-> sdr ,fun) SOAPY_SDR_RX 0)))
+			 (for-range
+			  (val vals)
+			  ,(lprint :msg (format nil "~a" fun)
+				   :vars (if print
+					     `(,@print)
+					     `(val))))))))
+	   ))
        (return 0)))
    :omit-parens t
-   :format nil))
+   :format nil
+   :tidy nil))
 
 
