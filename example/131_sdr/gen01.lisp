@@ -129,13 +129,17 @@
 		      collect
 		      (destructuring-bind (&key name short default type help parse) e
 			`(,name ,type))))
+
 	  (defstruct0 Option
 	      (longOpt "std::string")
 	    (shortOpt "std::string")
 	    (description "std::string")
+	    (defaultValue "std::string")
 	    (handler "std::function<void(const std::string&)>"))
+	  
 	  (defun printHelpAndExit (options)
-	    (declare (type "const std::vector<Option>&" options))
+	    (declare (type "const std::vector<Option>&" options)
+		     )
 	    (<< std--cout
 		(string "Usage: ./my_project [OPTIONS]")
 		std--endl)
@@ -147,6 +151,8 @@
 			   opt.shortOpt
 			   (string ": ")
 			   opt.description
+			   (string " default: ")
+			   opt.defaultValue
 			   std--endl))
 	    (exit 0))
 	  (defun processArgs (args)
@@ -167,6 +173,7 @@
 					 :longOpt (string ,(format nil "--~a" name))
 					 :shortOpt (string ,(format nil "-~a" short))
 					 :description (string ,help)
+					 :defaultValue (std--to_string (dot result ,name))
 					 :handler
 					 (paren
 					  (lambda (x)
@@ -178,10 +185,6 @@
 					      (const ("std::invalid_argument&")
 						(throw (ArgException (string ,(format nil "Invalid value for --~a" name)))))))))))))))
 	      (let ((it (args.begin)))
-					;for
-		#+nil ((= "auto it" (args.begin))
-		       (!= it (args.end))
-		       (incf it))
 		(while (!= it (args.end))
 		       (if (logior (== *it (string "--help"))
 				   (== *it (string "-h")))
@@ -285,31 +288,34 @@
 		    (buf  
 		      (std--vector<std--complex<float>> numElems)))
 		,(lprint :msg "allocate CF32 buffer" :vars `(numElems numBytes))
-		(dotimes (i 10)		  
-		  (let ((buffs (std--vector<void*> (curly (buf.data))))
-			(flags 0)
-			(time_ns 0LL)
-			(start (std--chrono--high_resolution_clock--now))
-			(ret (-> sdr
-				 (readStream rx_stream
-					     (buffs.data)
-					     numElems
-					     flags
-					     time_ns
-					     1e5)))
-			(end (std--chrono--high_resolution_clock--now))
-			(elapsed (std--chrono--duration<double> (- end start))))
-		    ,(lprint :msg "data block acquisition took (seconds)"
-			     :vars `((elapsed.count)))
-		    (when (< ret 0)
-		      ,(lprint :msg "readStream failed"
-			       :vars `(ret))
-		      (do0 (-> sdr (deactivateStream rx_stream 0 0))
-			   (-> sdr (closeStream rx_stream))
-			   (SoapySDR--Device--unmake sdr))
-		      (exit -1))
-		    (when (!= ret numElems)
-		     ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns)))))))
+		(let ((start (std--chrono--high_resolution_clock--now)))
+		 (dotimes (i 10)		  
+		   (let ((buffs (std--vector<void*> (curly (buf.data))))
+			 (flags 0)
+			 (time_ns 0LL)
+			
+			 (ret (-> sdr
+				  (readStream rx_stream
+					      (buffs.data)
+					      numElems
+					      flags
+					      time_ns
+					      1e5)))
+			 (end (std--chrono--high_resolution_clock--now))
+			 (elapsed (std--chrono--duration<double> (- end start)))
+			 (elapsed_ms (* 1000 (elapsed.count))))
+		     ,(lprint :msg "data block acquisition took"
+			      :vars `(elapsed_ms))
+		     (setf start end)
+		     (when (< ret 0)
+		       ,(lprint :msg "readStream failed"
+				:vars `(ret))
+		       (do0 (-> sdr (deactivateStream rx_stream 0 0))
+			    (-> sdr (closeStream rx_stream))
+			    (SoapySDR--Device--unmake sdr))
+		       (exit -1))
+		     (when (!= ret numElems)
+		       ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns))))))))
 	     (do0 (-> sdr (deactivateStream rx_stream 0 0))
 		  (-> sdr (closeStream rx_stream))
 		  (SoapySDR--Device--unmake sdr))
