@@ -1497,7 +1497,8 @@ entry return-values contains a list of return values. currently supports type, v
 				   (consume-declare body)
 				 (format str "for ( ~a ~a: ~a ) ~a"
 					 (or (lookup-type var :env env)
-					     *auto-keyword*)
+					     "const auto&" ; *auto-keyword*
+					     )
 					 (emit var)
 					 (emit range)
 					 (emit `(progn ,@body))))))

@@ -51,24 +51,26 @@
 	   ,(lprint :msg "found device"
 		    :vars `(i)))
 	 (let ((args (aref results 0))
-	       (*sdr (SoapySDR--Device--make args)))
+	       (sdr (SoapySDR--Device--make args)))
+	   (declare (type "const auto&" args)
+		    (type "const auto*" sdr))
 	   (when (== nullptr sdr)
 	     ,(lprint :msg "make failed")
 	     (return -1))
-	   ,@(loop for e in `((:fun listAntennas)
-			      (:fun listGains)
-			      (:fun getFrequencyRange :print ((val.minimum)
-							      (val.maximum))))
+	   ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
+			      (:fun listGains :el gain :values gains)
+			      (:fun getFrequencyRange :el range :values ranges
+			       :print ((range.minimum)
+				       (range.maximum))))
 		   collect
-		   (destructuring-bind (&key fun print) e
-		    `(progn
-		       (let ((vals ((-> sdr ,fun) SOAPY_SDR_RX 0)))
-			 (for-range
-			  (val vals)
-			  ,(lprint :msg (format nil "~a" fun)
-				   :vars (if print
-					     `(,@print)
-					     `(val))))))))
+		   (destructuring-bind (&key fun print el values) e
+		    `(let ((,values ((-> sdr ,fun) SOAPY_SDR_RX 0)))
+		       (for-range
+			(,el ,values)
+			,(lprint :msg (format nil "~a" fun)
+				 :vars (if print
+					   `(,@print)
+					   `(,el)))))))
 	   ))
        (return 0)))
    :omit-parens t
