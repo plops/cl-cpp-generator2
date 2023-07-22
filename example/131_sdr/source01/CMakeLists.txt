@@ -19,7 +19,8 @@ add_compile_options(
     -Wshadow
     -fvisibility=hidden
     -fno-strict-overflow -Wno-strict-overflow
-    -fsanitize=undefined  -fanalyzer
+    -fsanitize=undefined
+    #-fanalyzer
 )
 
 find_package(SoapySDR REQUIRED)

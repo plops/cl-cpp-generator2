@@ -118,17 +118,14 @@
 
      ,(let ((cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
 			(:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
-			(:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
-			  
-			)
+			(:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi"))
 		      ))
 	`(do0
 	  (defstruct0 Args
 	      ,@(loop for e in cli-args
 		      collect
 		      (destructuring-bind (&key name short default type help parse) e
-			`(,name ,type)))
-	    )
+			`(,name ,type))))
 	  (defun processArgs (args)
 	    (declare (type "const std::vector<std::string>&" args)
 		     
@@ -173,26 +170,8 @@
 				       (throw (ArgException (string ,(format nil "Invalid value for --~a" name))))))
 				   (incf it)))))
 		     (t (throw (ArgException (+ (string "Unknown argument: ")
-				       *it)))))
-		   
-	       
-	       )
-	      (return result))
-       
-	    #+nil (let ((options (cxxopts--Options (string "SDR Application")
-						   (string "my_project"))))
-		    ,@(loop for e in cli-args
-			    collect
-			    (destructuring-bind (&key name short default type help) e
-			      `(let ((,name ,default))
-				 (declare (type ,type ,name))
-				 (dot options ("add_options()"
-					       (string ,(format nil "~a,~a" short name))
-					       (string ,help)
-					       (,(format nil "cxxopts::value<~a>" type) ,name))
-				      ))))
-		    (let ((cmd_result (options.parse argc argv)))))
-	    )))
+				       *it))))))
+	      (return result)))))
      
      (defun main (argc argv)
        (declare (values int)
@@ -263,16 +242,13 @@
 	     (do0
 	      (comments "reusable buffer of rx samples")
 	      (let ((numElems parameters.bufferSize)
-		    (buf  ;(std--vector<std--complex<short>> numElems)
-		      (std--vector<std--complex<float>> numElems)
-					;("std::array<std::complex<float>,numElems>")
-		      ))
-		(declare (type "const auto" n))
+		    (numBytes (* parameters.bufferSize
+				 (sizeof std--complex<float>)))
+		    (buf  
+		      (std--vector<std--complex<float>> numElems)))
+		,(lprint :msg "allocate CF32 buffer" :vars `(numElems numBytes))
 		(dotimes (i 10)		  
-		  (let ((buffs #+nil ("std::array<void*,1>" (curly (buf.data)
-								   ))
-			       (std--vector<void*> (curly (buf.data)
-							  )))
+		  (let ((buffs (std--vector<void*> (curly (buf.data))))
 			(flags 0)
 			(time_ns 0LL)
 			
