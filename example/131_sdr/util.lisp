@@ -41,8 +41,12 @@
 	       ,formatter)
 	     (setf (gethash fn-hash ,hash-db) code-hash)
 	     ))))))
+(defun share (name)
+    (format nil "std::shared_ptr<~a>" name))
+(defun uniq (name)
+  (format nil "std::unique_ptr<~a>" name))
 
-(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble )
+(defun write-class (&key name dir code headers header-preamble implementation-preamble preamble format)
   "split class definition in .h file and implementation in .cpp file. use defclass in code. headers will only be included into the .cpp file. the .h file will get forward class declarations. additional headers can be added to the .h file with header-preamble and to the .cpp file with implementation preamble."
   (let* ((fn-h (format nil "~a/~a.h" dir name))
 	 (once-guard (string-upcase (format nil "~a_H" name)))
@@ -73,11 +77,18 @@
 					 (format sh "~a~%" str))
 			 :hook-defclass #'(lambda (str)
 					    (format sh "~a;~%" str))
-			 :header-only t))
+			 :header-only t
+			 ))
 	       (format sh "~%#endif /* !~a */" once-guard))))
-      (only-write-when-hash-changed
-       fn-h
-       fn-h-str))
+      (if format
+	  (only-write-when-hash-changed
+	   fn-h
+	   fn-h-str
+	   )
+	  (only-write-when-hash-changed
+	   fn-h
+	   fn-h-str
+	   :formatter nil)))
     (write-source fn-cpp
 		  `(do0
 		    ,(if preamble
@@ -92,4 +103,7 @@
 	       	    (include ,(format nil "~a" fn-h-nodir))
 		    ,(if code
 			 code
-			 `(comments "no code"))))))
+			 `(comments "no code")))
+		  :format nil
+		  :tidy nil
+		  :omit-parens t)))

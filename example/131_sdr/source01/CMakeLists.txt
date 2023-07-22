@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
 # set your source files
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp ArgException.cpp)
 
 # set compiler flags
 #    -fsanitize=undefined  -fanalyzer
