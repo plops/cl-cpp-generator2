@@ -48,6 +48,7 @@
        "(void) argv;"
        (let ((results (SoapySDR--Device--enumerate)))
 	 (dotimes (i (results.size))
+	   (declare (type "unsigned long" i))
 	   ,(lprint :msg "found device"
 		    :vars `(i)))
 	 (let ((args (aref results 0))
