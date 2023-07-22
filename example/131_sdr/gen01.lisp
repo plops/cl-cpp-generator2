@@ -109,6 +109,7 @@
       complex
       vector
       algorithm
+      functional
       SoapySDR/Device.hpp
 					;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
@@ -126,51 +127,82 @@
 		      collect
 		      (destructuring-bind (&key name short default type help parse) e
 			`(,name ,type))))
-	  (defun processArgs (args)
+	  (defstruct0 Option
+	    (longOpt "std::string")
+	    (shortOpt "std::string")
+	    (description "std::string")
+	    (handler "std::function<void(const std::string&)>"))
+	  (defun printHelpAndExit (options)
+	    (declare (type "const std::vector<Option>&" options))
+	    (<< std--cout
+		(string "Usage: ./my_project [OPTIONS]")
+		std--endl)
+	    (for-range (opt options)
+		       (<< std--cout
+			   (string " ")
+			   opt.longOpt
+			   (string " or ")
+			   opt.shortOpt
+			   (string ": ")
+			   opt.description
+			   std--endl))
+	    (exit 0))
+	 (defun processArgs (args)
 	    (declare (type "const std::vector<std::string>&" args)
 		     
 		     (values Args))
-	    (let ((result (Args #+nil (curly ,@(loop for e in cli-args
-					       collect
-					       (destructuring-bind (&key name short default type help parse) e
-						 default)))
-				(designated-initializer
-				 ,@(loop for e in cli-args
-					 appending
-					 (destructuring-bind (&key name short default type help parse) e
-					   `(,name ,default)))))))
-	      (for ((= "auto it" (args.begin))
+	    (let ((result (Args  (designated-initializer
+				  ,@(loop for e in cli-args
+					  appending
+					  (destructuring-bind (&key name short default type help parse) e
+					    `(,name ,default))))))
+		  (options (std--vector<Option>
+			    (curly
+			     ,@(loop for e in cli-args
+				     collect
+				     (destructuring-bind (&key name short default type help parse) e
+				       `(designated-initializer
+					 :longOpt (string ,(format nil "--~a" name))
+					 :shortOpt (string ,(format nil "-~a" short))
+					 :description (string ,help)
+					 :handler
+					 (paren
+					  (lambda (x)
+					    (declare (type "const std::string&" x)
+						     (capture "&result"))
+					    (handler-case
+						(setf (dot result ,name)
+						      (,parse x))
+					      (const ("std::invalid_argument&")
+						(throw (ArgException (string ,(format nil "Invalid value for --~a" name)))))))))))))))
+	       (for ((= "auto it" (args.begin))
 		    (!= it (args.end))
 		    (incf it))
-		   (cond
-		     ((logior (== *it (string "--help"))
-			      (== *it (string "-h")))
-		      (<< std--cout (string "Usage: ./program [OPTIONS]") std--endl
-			  (string "Options:") std--endl
-			  ,@(loop for e in cli-args
-				  appending
-				  (destructuring-bind (&key name short default type help parse) e
-				    `( (string ,(format nil " --~a or -~a: ~a (default: ~a)" name short help default))
-				       std--endl))))
-		      (exit 0))
-		     ,@(loop for e in cli-args
-			   collect
-			   (destructuring-bind (&key name short default type help parse) e
-			     `((logior (== *it (string ,(format nil "--~a" name)))
-					    (== *it (string ,(format nil "-~a" short))))
-				  (do0
-				   (handler-case
-				       (do0
-					(when (== (+ it 1) (args.end))
-					  (throw (ArgException (string ,(format nil "Expected value after --~a" name)))))
-					(setf (dot result ,name)
-					      (,parse (aref it 1)))
-					)
-				     (const ("std::invalid_argument&")
-				       (throw (ArgException (string ,(format nil "Invalid value for --~a" name))))))
-				   (incf it)))))
-		     (t (throw (ArgException (+ (string "Unknown argument: ")
-				       *it))))))
+		   (if (logior (== *it (string "--help"))
+			       (== *it (string "-h")))
+		       (printHelpAndExit options)
+		       (do0
+			(comments "Find matching option")
+			(let ((optIt (std--find_if (options.begin)
+						   (options.end)
+						   (lambda (opt)
+						     (declare (type "const Option&" opt)
+							      (capture "&it"))
+						     (return (logior (== *it
+									 opt.longOpt)
+								     (== *it
+									 opt.shortOpt)))))))
+			  (if (== optIt (options.end))
+			      (throw (ArgException (+ (string "Unknown argument: ")
+						      *it)))
+			      (do0
+			       (when (== (+ it 1)
+					 (args.end))
+				 (throw (ArgException (+ (string "Expected value after ")
+							 *it))))
+			       (optIt->handler (aref it 1))
+			       (incf it))
+			      )))))
 	      (return result)))))
      
      (defun main (argc argv)
