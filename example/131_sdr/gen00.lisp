@@ -34,10 +34,10 @@
       iostream
       string
       complex
-      array
-      map
+      vector
+      
       SoapySDR/Device.hpp
-      SoapySDR/Types.hpp
+      ;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
       )
      
@@ -95,17 +95,21 @@
 		   (-> sdr (activateStream rx_stream flags timeNs numElems))))))
 	     (do0
 	      (comments "reusable buffer of rx samples")
-	      (let ((n 1024)
-		    (buf ("std::array<std::complex<float>,n>")))
+	      (let ((n 512)
+		    (buf (std--vector<std--complex<float>> n) ;("std::array<std::complex<float>,n>")
+			 ))
 		(declare (type "const auto" n))
-		(dotimes (i 10)
-		  "void *buffs[] = {buf.data()};"
-		  (let ((flags 0)
+		(dotimes (i 10)		  
+		  (let ((buffs #+nil ("std::array<void*,1>" (curly (buf.data)
+							     ))
+			       (std--vector<void*> (curly (buf.data)
+							     )))
+			(flags 0)
 			(time_ns 0LL)
 			
 			(ret (-> sdr
 				 (readStream rx_stream
-					     buffs
+					     (buffs.data)
 					     n
 					     flags
 					     time_ns
