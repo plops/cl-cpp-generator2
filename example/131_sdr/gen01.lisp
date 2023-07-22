@@ -295,11 +295,18 @@
 					     flags
 					     time_ns
 					     1e5))))
-		    ,(lprint :vars `(ret flags time_ns))))))
-	     (-> sdr (deactivateStream rx_stream 0 0)
-		 )
-	     (-> sdr (closeStream rx_stream))
-	     (SoapySDR--Device--unmake sdr)
+		    (when (< ret 0)
+		      ,(lprint :msg "readStream failed"
+			       :vars `(ret))
+		      (do0 (-> sdr (deactivateStream rx_stream 0 0))
+			   (-> sdr (closeStream rx_stream))
+			   (SoapySDR--Device--unmake sdr))
+		      (exit -1))
+		    (unless (== ret numElems)
+		     ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns)))))))
+	     (do0 (-> sdr (deactivateStream rx_stream 0 0))
+		  (-> sdr (closeStream rx_stream))
+		  (SoapySDR--Device--unmake sdr))
 	     
 	     )
 	   ))))
