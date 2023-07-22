@@ -1438,6 +1438,8 @@ entry return-values contains a list of return values. currently supports type, v
 				       (do0
 					,@forms)))))
 
+		 #+nil (cond (destructuring-bind (condition )))
+
 		  (dot (m 'dot
 			  (let ((args (cdr code)))
 			    (format nil "~{~a~^.~}" (mapcar #'emit (remove-if #'null

@@ -10,7 +10,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
 set(SOURCE_FILES main.cpp ArgException.cpp)
 
 # set compiler flags
-#    -fsanitize=undefined  -fanalyzer
 
 add_compile_options(
     -g -g3 -ggdb -gdwarf-4
@@ -20,6 +19,7 @@ add_compile_options(
     -Wshadow
     -fvisibility=hidden
     -fno-strict-overflow -Wno-strict-overflow
+    -fsanitize=undefined  -fanalyzer
 )
 
 find_package(SoapySDR REQUIRED)

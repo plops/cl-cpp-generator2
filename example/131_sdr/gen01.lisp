@@ -142,23 +142,40 @@
 					 appending
 					 (destructuring-bind (&key name short default type help parse) e
 					   `(,name ,default)))))))
-	      (for-range
-	       (arg args)
-	       ,@(loop for e in cli-args
-		       collect
-		       (destructuring-bind (&key name short default type help parse) e
-			 `(if (== arg (string ,(format nil "--~a" name)))
-			      (handler-case
+	      (for ((= "auto it" (args.begin))
+		    (!= it (args.end))
+		    (incf it))
+		   (cond
+		     ((logior (== *it (string "--help"))
+			      (== *it (string "-h")))
+		      (<< std--cout (string "Usage: ./program [OPTIONS]") std--endl
+			  (string "Options:") std--endl
+			  ,@(loop for e in cli-args
+				  appending
+				  (destructuring-bind (&key name short default type help parse) e
+				    `( (string ,(format nil " --~a or -~a: ~a (default: ~a)" name short help default))
+				       std--endl))))
+		      (exit 0))
+		     ,@(loop for e in cli-args
+			   collect
+			   (destructuring-bind (&key name short default type help parse) e
+			     `((logior (== *it (string ,(format nil "--~a" name)))
+					    (== *it (string ,(format nil "-~a" short))))
 				  (do0
-				   (when (== &arg (&args.back))
-				     (throw (ArgException (string ,(format nil "Expected value after --~a" name)))))
-				   (setf (dot result ,name)
-					 (,parse (aref (std--find &arg (args.end) arg) 1)))
-				   )
-				(const ("std::invalid_argument&")
-				  (throw (ArgException (string ,(format nil "Invalid value for --~a" name)))))))))
-	       (throw (ArgException (+ (string "Unknown argument: ")
-				       arg)))
+				   (handler-case
+				       (do0
+					(when (== (+ it 1) (args.end))
+					  (throw (ArgException (string ,(format nil "Expected value after --~a" name)))))
+					(setf (dot result ,name)
+					      (,parse (aref it 1)))
+					)
+				     (const ("std::invalid_argument&")
+				       (throw (ArgException (string ,(format nil "Invalid value for --~a" name))))))
+				   (incf it)))))
+		     (t (throw (ArgException (+ (string "Unknown argument: ")
+				       *it)))))
+		   
+	       
 	       )
 	      (return result))
        
