@@ -267,69 +267,78 @@
 		 ))
 	     (-> sdr (setSampleRate direction channel parameters.sampleRate))
 	     (-> sdr (setFrequency direction channel parameters.frequency))
-	     
-	     (do0
+
+	     ,(let (;(acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
+		    (acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
+		    )
+		`(do0
 					;(comments "read complex floats")
-	      (let ((rx_stream (-> sdr (setupStream direction
-						    SOAPY_SDR_CF32
-					; SOAPY_SDR_CS16
-						    ))))
-		(when (== nullptr rx_stream)
-		  ,(lprint :msg "stream setup failed")
-		  (SoapySDR--Device--unmake sdr)
-		  (return -1))
-		,(lprint :vars `((-> sdr
-				  (getStreamMTU rx_stream))))
-		(when true
-		  (let ((flags 0)
-			(timeNs 0)
-			(numElems 0))
-		    (-> sdr (activateStream rx_stream flags timeNs numElems))))))
-	     (do0
-	      (comments "reusable buffer of rx samples")
-	      (let ((numElems parameters.bufferSize)
-		    (numBytes (* parameters.bufferSize
-				 (sizeof std--complex<float>)))
-		    (buf  
-		      (std--vector<std--complex<float>> numElems)))
-		,(lprint :msg "allocate CF32 buffer" :vars `(numElems numBytes))
-		(let ((start (std--chrono--high_resolution_clock--now)))
-		 (dotimes (i parameters.numberBuffers)		  
-		   (let ((buffs (std--vector<void*> (curly (buf.data))))
-			 (flags 0)
-			 (time_ns 0LL)
-			
-			 (ret (-> sdr
-				  (readStream rx_stream
-					      (buffs.data)
-					      numElems
-					      flags
-					      time_ns
-					      1e5)))
-			 (end (std--chrono--high_resolution_clock--now))
-			 (elapsed (std--chrono--duration<double> (- end start)))
-			 (elapsed_ms (* 1000 (elapsed.count)))
-			 (expected_ms (/ (* 1000d0 ret)
-					 parameters.sampleRate )))
-		     ,(lprint :msg "data block acquisition took"
-			      :vars `(i elapsed_ms expected_ms))
-		     (setf start end)
-		     (when (== ret SOAPY_SDR_TIMEOUT)
-		       ,(lprint :msg "warning: timeout"))
-		     (when (== ret SOAPY_SDR_OVERFLOW)
-		       ,(lprint :msg "warning: overflow"))
-		     (when (== ret SOAPY_SDR_UNDERFLOW)
-		       ,(lprint :msg "warning: underflow"))
-		     (when (< ret 0)
-		       ,(lprint :msg "readStream failed"
-				:vars `(ret
-					(SoapySDR--errToStr ret)))
-		       (do0 (-> sdr (deactivateStream rx_stream 0 0))
-			    (-> sdr (closeStream rx_stream))
-			    (SoapySDR--Device--unmake sdr))
-		       (exit -1))
-		     (when (!= ret numElems)
-		       ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns))))))))
+		  (let ((rx_stream (-> sdr (setupStream direction
+							,acq-sdr-type
+					;SOAPY_SDR_CF32
+					;SOAPY_SDR_CS16
+							))))
+		    (when (== nullptr rx_stream)
+		      ,(lprint :msg "stream setup failed")
+		      (SoapySDR--Device--unmake sdr)
+		      (return -1))
+		    ,(lprint :vars `((-> sdr
+					 (getStreamMTU rx_stream))))
+		    (when true
+		      (let ((flags 0)
+			    (timeNs 0)
+			    (numElems 0))
+			(-> sdr (activateStream rx_stream flags timeNs numElems)))))
+		  (do0
+		 (comments "reusable buffer of rx samples")
+		 (let ((numElems parameters.bufferSize)
+		       (numBytes (* parameters.bufferSize
+				    (sizeof ,acq-type
+					;std--complex<float>
+					    )))
+		       (buf  
+			 (	     ;std--vector<std--complex<float>>
+			  ,(format nil "std::vector<~a>" acq-type)
+			  numElems)))
+		   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
+		   (let ((start (std--chrono--high_resolution_clock--now)))
+		     (dotimes (i parameters.numberBuffers)		  
+		       (let ((buffs (std--vector<void*> (curly (buf.data))))
+			     (flags 0)
+			     (time_ns 0LL)
+			     
+			     (ret (-> sdr
+				      (readStream rx_stream
+						  (buffs.data)
+						  numElems
+						  flags
+						  time_ns
+						  1e5)))
+			     (end (std--chrono--high_resolution_clock--now))
+			     (elapsed (std--chrono--duration<double> (- end start)))
+			     (elapsed_ms (* 1000 (elapsed.count)))
+			     (expected_ms (/ (* 1000d0 ret)
+					     parameters.sampleRate )))
+			 ,(lprint :msg "data block acquisition took"
+				  :vars `(i elapsed_ms expected_ms))
+			 (setf start end)
+			 (when (== ret SOAPY_SDR_TIMEOUT)
+			   ,(lprint :msg "warning: timeout"))
+			 (when (== ret SOAPY_SDR_OVERFLOW)
+			   ,(lprint :msg "warning: overflow"))
+			 (when (== ret SOAPY_SDR_UNDERFLOW)
+			   ,(lprint :msg "warning: underflow"))
+			 (when (< ret 0)
+			   ,(lprint :msg "readStream failed"
+				    :vars `(ret
+					    (SoapySDR--errToStr ret)))
+			   (do0 (-> sdr (deactivateStream rx_stream 0 0))
+				(-> sdr (closeStream rx_stream))
+				(SoapySDR--Device--unmake sdr))
+			   (exit -1))
+			 (when (!= ret numElems)
+			   ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns)))))))))
+		)
 	     (do0 (-> sdr (deactivateStream rx_stream 0 0))
 		  (-> sdr (closeStream rx_stream))
 		  (SoapySDR--Device--unmake sdr))
