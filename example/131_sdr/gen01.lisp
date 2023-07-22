@@ -121,7 +121,8 @@
      (comments "./my_project -b $((2**10))")
      ,(let ((cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
 			(:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
-			(:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi"))
+			(:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
+			(:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi"))
 		      ))
 	`(do0
 	  (defstruct0 Args
@@ -289,7 +290,7 @@
 		      (std--vector<std--complex<float>> numElems)))
 		,(lprint :msg "allocate CF32 buffer" :vars `(numElems numBytes))
 		(let ((start (std--chrono--high_resolution_clock--now)))
-		 (dotimes (i 10)		  
+		 (dotimes (i parameters.numberBuffers)		  
 		   (let ((buffs (std--vector<void*> (curly (buf.data))))
 			 (flags 0)
 			 (time_ns 0LL)
@@ -307,7 +308,7 @@
 			 (expected_ms (/ (* 1000d0 ret)
 					 parameters.sampleRate )))
 		     ,(lprint :msg "data block acquisition took"
-			      :vars `(elapsed_ms expected_ms))
+			      :vars `(i elapsed_ms expected_ms))
 		     (setf start end)
 		     (when (< ret 0)
 		       ,(lprint :msg "readStream failed"
