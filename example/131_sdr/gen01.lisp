@@ -192,17 +192,18 @@
 									 opt.longOpt)
 								     (== *it
 									 opt.shortOpt)))))))
-			  (if (== optIt (options.end))
+			  (when (== optIt (options.end))
 			      (throw (ArgException (+ (string "Unknown argument: ")
 						      *it)))
-			      (do0
+			      
+			      )
+			  (do0
 			       (when (== (+ it 1)
 					 (args.end))
 				 (throw (ArgException (+ (string "Expected value after ")
 							 *it))))
 			       (optIt->handler (aref it 1))
-			       (incf it))
-			      )))))
+			       (incf it))))))
 	      (return result)))))
      
      (defun main (argc argv)
