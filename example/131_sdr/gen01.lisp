@@ -139,7 +139,7 @@
 	    (defaultValue "std::string")
 	    (handler "std::function<void(const std::string&)>"))
 	  
-	  (defun printHelpAndExit (options)
+	  (defun printHelp (options)
 	    (declare (type "const std::vector<Option>&" options)
 		     )
 	    (<< std--cout
@@ -155,8 +155,7 @@
 			   opt.description
 			   (string " default: ")
 			   opt.defaultValue
-			   std--endl))
-	    (exit 0))
+			   std--endl)))
 	  (defun processArgs (args)
 	    (declare (type "const std::vector<std::string>&" args)
 		     
@@ -190,7 +189,9 @@
 		(while (!= it (args.end))
 		       (if (logior (== *it (string "--help"))
 				   (== *it (string "-h")))
-			   (printHelpAndExit options)
+			   (do0
+			    (printHelp options)
+			    (exit 0))
 			   (do0
 			    (comments "Find matching option")
 			    (let ((optIt (std--find_if (options.begin)
@@ -220,24 +221,20 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-       #+nil (do0 "(void) argc;"
-		  "(void) argv;")
-       ;"std::vector<std::string> args(argv+1,argv+argc);"
-       (let ((cmdlineargs (std--vector<std--string> (+ argv 1)
+       
+       (let ((cmdlineArgs (std--vector<std--string> (+ argv 1)
 					     (+ argv argc))))
 	(handler-case
 	    (do0
-	     (let ((parameters (processArgs cmdlineargs)))
+	     (let ((parameters (processArgs cmdlineArgs)))
 	       (let ((results (SoapySDR--Device--enumerate)))
 	 (dotimes (i (results.size))
 	   (declare (type "unsigned long" i))
 	   ,(lprint :msg "found device"
 		    :vars `(i)))
-	 (let ((sdrargs (aref results 0))
-	       (sdr (SoapySDR--Device--make sdrargs)))
-	   (declare (type "const auto&" sdrargs)
-					;(type "const auto*" sdr)
-		    )
+	 (let ((soapyDeviceArgs (aref results 0))
+	       (sdr (SoapySDR--Device--make soapyDeviceArgs)))
+	   (declare (type "const auto&" soapyDeviceArgs))
 	   (when (== nullptr sdr)
 	     ,(lprint :msg "make failed")
 	     (return -1))
@@ -260,45 +257,40 @@
 					    direction
 					    channel
 					    ))))))
-	     (when true
-	       (let ((fullScale 0d0))
-		 ,(lprint :vars `((-> sdr (getNativeStreamFormat direction channel fullScale))
-				  fullScale))
-		 ))
+	     ((lambda ()
+		(declare (capture "&"))
+		(let ((fullScale 0d0))
+		  ,(lprint :vars `((-> sdr (getNativeStreamFormat direction channel fullScale))
+				   fullScale))
+		  )))
 	     (-> sdr (setSampleRate direction channel parameters.sampleRate))
 	     (-> sdr (setFrequency direction channel parameters.frequency))
 
-	     ,(let (;(acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
-		    (acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
+	     ,(let ((acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
+		    ;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
 		    )
 		`(do0
-					;(comments "read complex floats")
 		  (let ((rx_stream (-> sdr (setupStream direction
-							,acq-sdr-type
-					;SOAPY_SDR_CF32
-					;SOAPY_SDR_CS16
-							))))
+							,acq-sdr-type))))
 		    (when (== nullptr rx_stream)
 		      ,(lprint :msg "stream setup failed")
 		      (SoapySDR--Device--unmake sdr)
 		      (return -1))
 		    ,(lprint :vars `((-> sdr
 					 (getStreamMTU rx_stream))))
-		    (when true
-		      (let ((flags 0)
-			    (timeNs 0)
-			    (numElems 0))
-			(-> sdr (activateStream rx_stream flags timeNs numElems)))))
+		    ((lambda ()
+		       (declare (capture "&"))
+		       (let ((flags 0)
+			     (timeNs 0)
+			     (numElems 0))
+			 (-> sdr (activateStream rx_stream flags timeNs numElems))))))
 		  (do0
 		 (comments "reusable buffer of rx samples")
 		 (let ((numElems parameters.bufferSize)
 		       (numBytes (* parameters.bufferSize
-				    (sizeof ,acq-type
-					;std--complex<float>
-					    )))
+				    (sizeof ,acq-type)))
 		       (buf  
-			 (	     ;std--vector<std--complex<float>>
-			  ,(format nil "std::vector<~a>" acq-type)
+			 (,(format nil "std::vector<~a>" acq-type)
 			  numElems)))
 		   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 		   (let ((start (std--chrono--high_resolution_clock--now)))
@@ -341,10 +333,7 @@
 		)
 	     (do0 (-> sdr (deactivateStream rx_stream 0 0))
 		  (-> sdr (closeStream rx_stream))
-		  (SoapySDR--Device--unmake sdr))
-	     
-	     )
-	   ))))
+		  (SoapySDR--Device--unmake sdr)))))))
 	  
 	  ("const ArgException&" (e)
 	    (do0 ,(lprint :msg "Error processing command line arguments"
