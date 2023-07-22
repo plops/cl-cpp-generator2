@@ -1065,7 +1065,7 @@ entry return-values contains a list of return values. currently supports type, v
 										for for-range dotimes
 										while
 										include include<> case
-										when if unless
+										when if unless cond
 										let pragma
 										split-header-and-code
 										defun defun* defmethod defclass
@@ -1438,7 +1438,25 @@ entry return-values contains a list of return values. currently supports type, v
 				       (do0
 					,@forms)))))
 
-		 #+nil (cond (destructuring-bind (condition )))
+		  (cond
+		    ;; (cond (condition1 code1)
+		    ;;       (condition2 code2)
+		    ;;       (t          coden))
+		    (with-output-to-string (s)
+		     (destructuring-bind (&rest clauses) (cdr code)
+		       (loop for clause in clauses
+			     and i from 0
+			     do
+				(destructuring-bind (condition &rest expressions) clause
+				  (if (equal condition t)
+				      (format s "else ~a"
+					      (emit `(progn ,@expressions)))
+				      (format s "~a ( ~a ) ~a"
+					      (if (eq i 0) 
+						"if"
+						"else if")
+					      (emit condition)
+					      (emit `(progn ,@expressions)))))))))
 
 		  (dot (m 'dot
 			  (let ((args (cdr code)))
