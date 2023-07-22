@@ -303,9 +303,11 @@
 					      1e5)))
 			 (end (std--chrono--high_resolution_clock--now))
 			 (elapsed (std--chrono--duration<double> (- end start)))
-			 (elapsed_ms (* 1000 (elapsed.count))))
+			 (elapsed_ms (* 1000 (elapsed.count)))
+			 (expected_ms (/ (* 1000d0 ret)
+					 parameters.sampleRate )))
 		     ,(lprint :msg "data block acquisition took"
-			      :vars `(elapsed_ms))
+			      :vars `(elapsed_ms expected_ms))
 		     (setf start end)
 		     (when (< ret 0)
 		       ,(lprint :msg "readStream failed"
