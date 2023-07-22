@@ -40,7 +40,7 @@
       ;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
       )
-     (include "CLI11.hpp")
+     (include "cxxopts.hpp")
      
      (defun main (argc argv)
        (declare (values int)
@@ -57,17 +57,19 @@
 			))
 	 `(do0
        
-	   (let ((app (CLI--App (string "SDR Application")
-				(string "my_project"))))
+	   (let ((options (cxxopts--Options (string "SDR Application")
+					(string "my_project"))))
 	     ,@(loop for e in cli-args
 		     collect
 		     (destructuring-bind (&key name short default type help) e
 		       `(let ((,name ,default))
 			  (declare (type ,type ,name))
-			  (app.add_option (string ,(format nil "-~a,--~a" short name))
-					  ,name
-					  (string ,help)))))
-	     (CLI11_PARSE app argc argv))))
+			  (dot options ("add_options()"
+					(string ,(format nil "~a,~a" short name))
+					(string ,help)
+					(,(format nil "cxxopts::value<~a>" type) ,name))
+			       ))))
+	     (let ((cmd_result (options.parse argc argv)))))))
        
        (let ((results (SoapySDR--Device--enumerate)))
 	 (dotimes (i (results.size))
