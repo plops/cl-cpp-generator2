@@ -294,8 +294,10 @@
 			  numElems)))
 		   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 		   (let ((start (std--chrono--high_resolution_clock--now))
-			 (expAvgElapsed_ms 0d0)
-			 (alpha .04))
+			 (expected_ms (/ (* 1000d0 numElems)
+					     parameters.sampleRate ))
+			 (expAvgElapsed_ms expected_ms)
+			 (alpha .01))
 		     (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 			       ".04 seems to average over 60 values in the history")
 		     (dotimes (i parameters.numberBuffers)		  
@@ -313,9 +315,10 @@
 			     (end (std--chrono--high_resolution_clock--now))
 			     (elapsed (std--chrono--duration<double> (- end start)))
 			     (elapsed_ms (* 1000 (elapsed.count)))
-			     
 			     (expected_ms (/ (* 1000d0 ret)
-					     parameters.sampleRate )))
+					     parameters.sampleRate ))
+			     
+			     )
 			 (setf expAvgElapsed_ms (+ (* alpha elapsed_ms
 						      )
 						   (* (- 1d0 alpha)
