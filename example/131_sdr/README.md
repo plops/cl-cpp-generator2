@@ -24,3 +24,15 @@ SoapySDRUtil --find
 ```
 
 - https://github.com/pothosware/SoapySDR/wiki/Cpp_API_Example
+
+
+- command line parser
+
+```
+
+cd ~/src
+git clone https://github.com/CLIUtils/CLI11
+
+wget https://github.com/CLIUtils/CLI11/releases/download/v2.3.2/CLI11.hpp
+
+```
