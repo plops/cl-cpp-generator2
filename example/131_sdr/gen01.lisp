@@ -114,6 +114,7 @@
       SoapySDR/Device.hpp
 					;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
+      SoapySDR/Errors.hpp
       )
      (include "ArgException.h")
 					;(include "cxxopts.hpp")
@@ -266,6 +267,7 @@
 		 ))
 	     (-> sdr (setSampleRate direction channel parameters.sampleRate))
 	     (-> sdr (setFrequency direction channel parameters.frequency))
+	     
 	     (do0
 					;(comments "read complex floats")
 	      (let ((rx_stream (-> sdr (setupStream direction
@@ -276,6 +278,8 @@
 		  ,(lprint :msg "stream setup failed")
 		  (SoapySDR--Device--unmake sdr)
 		  (return -1))
+		,(lprint :vars `((-> sdr
+				  (getStreamMTU rx_stream))))
 		(when true
 		  (let ((flags 0)
 			(timeNs 0)
@@ -310,9 +314,16 @@
 		     ,(lprint :msg "data block acquisition took"
 			      :vars `(i elapsed_ms expected_ms))
 		     (setf start end)
+		     (when (== ret SOAPY_SDR_TIMEOUT)
+		       ,(lprint :msg "warning: timeout"))
+		     (when (== ret SOAPY_SDR_OVERFLOW)
+		       ,(lprint :msg "warning: overflow"))
+		     (when (== ret SOAPY_SDR_UNDERFLOW)
+		       ,(lprint :msg "warning: underflow"))
 		     (when (< ret 0)
 		       ,(lprint :msg "readStream failed"
-				:vars `(ret))
+				:vars `(ret
+					(SoapySDR--errToStr ret)))
 		       (do0 (-> sdr (deactivateStream rx_stream 0 0))
 			    (-> sdr (closeStream rx_stream))
 			    (SoapySDR--Device--unmake sdr))
