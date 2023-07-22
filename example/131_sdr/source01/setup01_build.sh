@@ -9,6 +9,6 @@ g++ \
     -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
     -fsanitize=undefined  -fanalyzer \
     -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000 \
-    -Wshadow -Werror \
+    -Wshadow \
     -fvisibility=hidden \
     -fno-strict-overflow -Wno-strict-overflow
