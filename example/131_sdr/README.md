@@ -18,4 +18,9 @@ EOF
 MAKEOPTS=-j12 sudo emerge -av sdrplay net-wireless/soapysdr soapysdrplay
 
 
+sudo /usr/bin/sdrplay_apiService 
+SoapySDRUtil --find
+
 ```
+
+- https://github.com/pothosware/SoapySDR/wiki/Cpp_API_Example
