@@ -33,7 +33,8 @@
      (include<>
       iostream
       string
-      vector
+      complex
+      array
       map
       SoapySDR/Device.hpp
       SoapySDR/Types.hpp
@@ -54,24 +55,68 @@
 	 (let ((args (aref results 0))
 	       (sdr (SoapySDR--Device--make args)))
 	   (declare (type "const auto&" args)
-		    (type "const auto*" sdr))
+		    ;(type "const auto*" sdr)
+		    )
 	   (when (== nullptr sdr)
 	     ,(lprint :msg "make failed")
 	     (return -1))
-	   ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
-			      (:fun listGains :el gain :values gains)
-			      (:fun getFrequencyRange :el range :values ranges
-			       :print ((range.minimum)
-				       (range.maximum))))
-		   collect
-		   (destructuring-bind (&key fun print el values) e
-		    `(let ((,values ((-> sdr ,fun) SOAPY_SDR_RX 0)))
-		       (for-range
-			(,el ,values)
-			,(lprint :msg (format nil "~a" fun)
-				 :vars (if print
-					   `(,@print)
-					   `(,el)))))))
+	   (let ((direction SOAPY_SDR_RX)
+		 (channel 0))
+	    ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
+			       (:fun listGains :el gain :values gains)
+			       (:fun getFrequencyRange :el range :values ranges
+				:print ((range.minimum)
+					(range.maximum))))
+		    collect
+		    (destructuring-bind (&key fun print el values) e
+		      `(let ((,values ((-> sdr ,fun) direction channel)))
+			 (for-range
+			  (,el ,values)
+			  ,(lprint :msg (format nil "~a" fun)
+				   :vars `(,@(if print
+						 `(,@print)
+						 `(,el))
+					   direction
+					   channel
+					   ))))))
+	     (-> sdr (setSampleRate direction channel 10e6))
+	     (-> sdr (setFrequency direction channel 433e6))
+	     (do0
+	      (comments "read complex floats")
+	      (let ((rx_stream (-> sdr (setupStream direction SOAPY_SDR_CF32))))
+		(when (== nullptr rx_stream)
+		  ,(lprint :msg "stream setup failed")
+		  (SoapySDR--Device--unmake sdr)
+		  (return -1))
+		(progn
+		 (let ((flags 0)
+		       (timeNs 0)
+		       (numElems 0))
+		   (-> sdr (activateStream rx_stream flags timeNs numElems))))))
+	     (do0
+	      (comments "reusable buffer of rx samples")
+	      (let ((n 1024)
+		    (buf ("std::array<std::complex<float>,n>")))
+		(declare (type "const auto" n))
+		(dotimes (i 10)
+		  "void *buffs[] = {buf.data()};"
+		  (let ((flags 0)
+			(time_ns 0LL)
+			
+			(ret (-> sdr
+				 (readStream rx_stream
+					     buffs
+					     n
+					     flags
+					     time_ns
+					     1e5))))
+		    ,(lprint :vars `(ret flags time_ns))))))
+	     (-> sdr (deactivateStream rx_stream 0 0)
+		 )
+	     (-> sdr (closeStream rx_stream))
+	     (SoapySDR--Device--unmake sdr)
+	     
+	     )
 	   ))
        (return 0)))
    :omit-parens t
