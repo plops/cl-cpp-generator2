@@ -110,6 +110,7 @@
       vector
       algorithm
       functional
+      chrono
       SoapySDR/Device.hpp
 					;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
@@ -117,6 +118,7 @@
      (include "ArgException.h")
 					;(include "cxxopts.hpp")
 
+     (comments "./my_project -b $((2**10))")
      ,(let ((cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
 			(:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
 			(:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi"))
@@ -128,7 +130,7 @@
 		      (destructuring-bind (&key name short default type help parse) e
 			`(,name ,type))))
 	  (defstruct0 Option
-	    (longOpt "std::string")
+	      (longOpt "std::string")
 	    (shortOpt "std::string")
 	    (description "std::string")
 	    (handler "std::function<void(const std::string&)>"))
@@ -147,7 +149,7 @@
 			   opt.description
 			   std--endl))
 	    (exit 0))
-	 (defun processArgs (args)
+	  (defun processArgs (args)
 	    (declare (type "const std::vector<std::string>&" args)
 		     
 		     (values Args))
@@ -175,38 +177,38 @@
 						      (,parse x))
 					      (const ("std::invalid_argument&")
 						(throw (ArgException (string ,(format nil "Invalid value for --~a" name)))))))))))))))
-	       (let ((it (args.begin)))
-		 ;for
-		 #+nil ((= "auto it" (args.begin))
-		  (!= it (args.end))
-		  (incf it))
-		 (while (!= it (args.end))
-		  (if (logior (== *it (string "--help"))
-			      (== *it (string "-h")))
-		      (printHelpAndExit options)
-		      (do0
-		       (comments "Find matching option")
-		       (let ((optIt (std--find_if (options.begin)
-						  (options.end)
-						  (lambda (opt)
-						    (declare (type "const Option&" opt)
-							     (capture "&it"))
-						    (return (logior (== *it
-									opt.longOpt)
-								    (== *it
-									opt.shortOpt)))))))
-			 (when (== optIt (options.end))
-			   (throw (ArgException (+ (string "Unknown argument: ")
-						   *it))))
-			 (comments "Move to next item, which should be the value for the option")
-			 (incf it)
-			 (when (== it
-				   (args.end))
-			   (throw (ArgException (+ (string "Expected value after ")
-						   *it))))
-			 (optIt->handler *it)
-			 (comments "Move to next item, which should be the next option")
-			 (incf it))))))
+	      (let ((it (args.begin)))
+					;for
+		#+nil ((= "auto it" (args.begin))
+		       (!= it (args.end))
+		       (incf it))
+		(while (!= it (args.end))
+		       (if (logior (== *it (string "--help"))
+				   (== *it (string "-h")))
+			   (printHelpAndExit options)
+			   (do0
+			    (comments "Find matching option")
+			    (let ((optIt (std--find_if (options.begin)
+						       (options.end)
+						       (lambda (opt)
+							 (declare (type "const Option&" opt)
+								  (capture "&it"))
+							 (return (logior (== *it
+									     opt.longOpt)
+									 (== *it
+									     opt.shortOpt)))))))
+			      (when (== optIt (options.end))
+				(throw (ArgException (+ (string "Unknown argument: ")
+							*it))))
+			      (comments "Move to next item, which should be the value for the option")
+			      (incf it)
+			      (when (== it
+					(args.end))
+				(throw (ArgException (+ (string "Expected value after ")
+							*it))))
+			      (optIt->handler *it)
+			      (comments "Move to next item, which should be the next option")
+			      (incf it))))))
 	      (return result)))))
      
      (defun main (argc argv)
@@ -287,14 +289,18 @@
 		  (let ((buffs (std--vector<void*> (curly (buf.data))))
 			(flags 0)
 			(time_ns 0LL)
-			
+			(start (std--chrono--high_resolution_clock--now))
 			(ret (-> sdr
 				 (readStream rx_stream
 					     (buffs.data)
 					     numElems
 					     flags
 					     time_ns
-					     1e5))))
+					     1e5)))
+			(end (std--chrono--high_resolution_clock--now))
+			(elapsed (std--chrono--duration<double> (- end start))))
+		    ,(lprint :msg "data block acquisition took (seconds)"
+			     :vars `((elapsed.count)))
 		    (when (< ret 0)
 		      ,(lprint :msg "readStream failed"
 			       :vars `(ret))
