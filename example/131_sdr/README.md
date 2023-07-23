@@ -70,4 +70,11 @@ cp -ar /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build
 
     - enable debug build in clion
 
-    - i can't get it to work. if i copy the _deps folder, cmake complains that the CMakeCache.txt is from the wrong folder
+    - i have to delete the CMakeCache.txt file inside the _deps folder. then i can speed up the running download by overwriting the _deps folder
+	
+	
+```
+martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02/_deps $ find .|grep CMakeCache|xargs rm
+martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ cp -ar _deps/ cmake-build-release/
+
+```
