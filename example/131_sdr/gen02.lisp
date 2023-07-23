@@ -310,10 +310,10 @@
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
 	     (daemon-fullpath (format nil "~a~a" daemon-path daemon-name))
-	     (daemon-shm-files `("/dev/shm/Glbl\\sdrSrvRespSema"
-				 "/dev/shm/Glbl\\sdrSrvCmdSema"
-				 "/dev/shm/Glbl\\sdrSrvComMtx"
-				 "/dev/shm/Glbl\\sdrSrvComShMem")))
+	     (daemon-shm-files `("/dev/shm/Glbl\\\\sdrSrvRespSema"
+				 "/dev/shm/Glbl\\\\sdrSrvCmdSema"
+				 "/dev/shm/Glbl\\\\sdrSrvComMtx"
+				 "/dev/shm/Glbl\\\\sdrSrvComShMem")))
 	`(do0
 	 (defun isDaemonRunning ()
 	   (declare (values bool))
