@@ -286,12 +286,20 @@
       SoapySDR/Formats.hpp
       SoapySDR/Errors.hpp
       )
-     (include "ArgException.h"
-	      "ArgParser.h")
+     (include
+      immapp/immapp.h
+      implot/implot.h
+      imgui_md_wrapper.h
+      )
+     (include ArgException.h
+	      ArgParser.h)
 					;(include "cxxopts.hpp")
 
      (comments "./my_project -b $((2**10))")
-     
+
+     (defun Gui ()
+       (ImGuiMd--RenderUnindented
+	(string-r "Bla")))
      
      (defun main (argc argv)
        (declare (values int)
@@ -304,12 +312,23 @@
 	     (do0
 	      (let ((argParser (ArgParser cmdlineArgs))
 		    (parameters (argParser.getParsedArgs)))
-		(let ((results (SoapySDR--Device--enumerate)))
-		  (dotimes (i (results.size))
+
+		(let (
+		      (runnerParams (HelloImGui--SimpleRunnerParams (designated-initializer
+								     :guiFunction Gui
+								     :windowTitle (string "imgui_soapysdr")
+								     :windowSize (curly 800 600)
+								     )))
+		      (addOnsParams (ImmApp--AddOnsParams (designated-initializer
+							   :withMarkdown true
+							   :withImplot true)))))
+		
+		(let ((sdrResults (SoapySDR--Device--enumerate)))
+		  (dotimes (i (sdrResults.size))
 		    (declare (type "unsigned long" i))
 		    ,(lprint :msg "found device"
 			     :vars `(i)))
-		  (let ((soapyDeviceArgs (aref results 0))
+		  (let ((soapyDeviceArgs (aref sdrResults 0))
 			(sdr (SoapySDR--Device--make soapyDeviceArgs)))
 		    (declare (type "const auto&" soapyDeviceArgs))
 		    (when (== nullptr sdr)
@@ -372,7 +391,7 @@
 			      ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 			      (let ((start (std--chrono--high_resolution_clock--now))
 				    (expected_ms0 (/ (* 1000d0 numElems)
-						    parameters.sampleRate ))
+						     parameters.sampleRate ))
 				    (expAvgElapsed_ms expected_ms0)
 				    (alpha .01))
 				(comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"

@@ -686,6 +686,7 @@ entry return-values contains a list of return values. currently supports type, v
 			     (:op (string))
 			     (:op (paren
 				   paren*
+				   curly
 				   aref dot ->) :assoc l) 
 			     (:op (-unary
 				   not bitwise-not
