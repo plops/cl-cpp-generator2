@@ -19,7 +19,7 @@
   (load "util.lisp")
 
   (let ((name `ArgException)
-	(members `((msg :type "std::string" :param t)
+	(members `((msg :type "const std::string&" :param t)
 		   ;(wavetable :type "std::vector<double>" :param t)
 		   ;(wavetable-size :type std--size_t :initform (wavetable.size))
 		   ;(current-index :type double :initform 0d0)
@@ -83,7 +83,7 @@
 		 (declare (const)
 			  (noexcept)
 			  (override)
-			  (values "const char*"))
+			  (values "[[nodiscard]] const char*"))
 		 (return (msg_.c_str)))
 	       "private:"
 	       ,@(remove-if #'null
