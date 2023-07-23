@@ -258,21 +258,25 @@
 				 :vars `(
 					 hasAutomaticGain))
 			 (when hasAutomaticGain
-			   (let ((automatic true))
+			   (let ((automatic false ;true
+					    )
+				 )
 			     (-> sdr_ (setGainMode direction channel automatic))
+			     (-> sdr_ (setGain direction channel (string "IFGR") 59))
+			     (-> sdr_ (setGain direction channel (string "RFGR") 3))
 			     (let ((ifgrGain (-> sdr_ (getGain direction channel (string "IFGR"))))
 				   (ifgrGainRange (-> sdr_ (getGainRange direction channel (string "IFGR"))))
 				   (rfgrGain (-> sdr_ (getGain direction channel (string "RFGR"))))
 				   (rfgrGainRange (-> sdr_ (getGainRange direction channel (string "RFGR")))))
-			      ,(lprint :msg "automatic gain"
-				       :vars `((-> sdr_ (getGainMode direction channel))
-					       ifgrGain
-					       (ifgrGainRange.minimum)
-					       (ifgrGainRange.maximum)
-					       rfgrGain
-					       (rfgrGainRange.minimum)
-					       (rfgrGainRange.maximum)
-					       ))))))
+			       ,(lprint :msg "automatic gain"
+					:vars `((-> sdr_ (getGainMode direction channel))
+						ifgrGain
+						(ifgrGainRange.minimum)
+						(ifgrGainRange.maximum)
+						rfgrGain
+						(rfgrGainRange.minimum)
+						(rfgrGainRange.maximum)
+						))))))
 		       ((lambda ()
 			  (declare (capture "&"))
 			  (let ((fullScale 0d0))
