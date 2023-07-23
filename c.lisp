@@ -1600,7 +1600,7 @@ entry return-values contains a list of return values. currently supports type, v
 											(destructuring-bind (slot-name &optional type value) desc
 											  (declare (ignorable value))
 											  (format nil "~a ~a;" (emit type) (emit slot-name)))))))
-				     (deftype ,name () (struct ,name)))))))
+				     #+generic-c (deftype ,name () (struct ,name)))))))
 		  (handler-case
 		      ;; handler-case expression [[{error-clause}*]]
 ;;; error-clause::= (typespec ([var]) declaration* form*) ;; note: declarations are currently unsupported
