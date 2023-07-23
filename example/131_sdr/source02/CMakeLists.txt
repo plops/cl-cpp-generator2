@@ -34,11 +34,11 @@ find_package(SoapySDR REQUIRED)
 ##########################################################
 # Call imgui_bundle_add_app
 
-
+include_directories(${CMAKE_SOURCE_DIR}/src)
 imgui_bundle_add_app(imgui_soapysdr
-        main.cpp
-        ArgException.cpp
-        ArgParser.cpp
+        src/main.cpp
+        src/ArgException.cpp
+        src/ArgParser.cpp
 )
 
 target_link_libraries(imgui_soapysdr PRIVATE SoapySDR)

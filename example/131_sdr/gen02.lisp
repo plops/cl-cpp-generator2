@@ -7,7 +7,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/131_sdr/source02/")
+    (defparameter *source-dir* #P"example/131_sdr/source02/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -371,9 +371,9 @@
 				     numElems)))
 			      ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 			      (let ((start (std--chrono--high_resolution_clock--now))
-				    (expected_ms (/ (* 1000d0 numElems)
+				    (expected_ms0 (/ (* 1000d0 numElems)
 						    parameters.sampleRate ))
-				    (expAvgElapsed_ms expected_ms)
+				    (expAvgElapsed_ms expected_ms0)
 				    (alpha .01))
 				(comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 					  ".04 seems to average over 60 values in the history")
@@ -382,17 +382,18 @@
 					(flags 0)
 					(time_ns 0LL)
 			     
-					(ret (-> sdr
-						 (readStream rx_stream
-							     (buffs.data)
-							     numElems
-							     flags
-							     time_ns
-							     1e5)))
+					(readStreamRet
+					  (-> sdr
+					      (readStream rx_stream
+							  (buffs.data)
+							  numElems
+							  flags
+							  time_ns
+							  1e5)))
 					(end (std--chrono--high_resolution_clock--now))
 					(elapsed (std--chrono--duration<double> (- end start)))
 					(elapsed_ms (* 1000 (elapsed.count)))
-					(expected_ms (/ (* 1000d0 ret)
+					(expected_ms (/ (* 1000d0 readStreamRet)
 							parameters.sampleRate ))
 			     
 					)
@@ -403,22 +404,22 @@
 				    ,(lprint :msg "data block acquisition took"
 					     :vars `(i elapsed_ms expAvgElapsed_ms expected_ms ))
 				    (setf start end)
-				    (when (== ret SOAPY_SDR_TIMEOUT)
+				    (when (== readStreamRet SOAPY_SDR_TIMEOUT)
 				      ,(lprint :msg "warning: timeout"))
-				    (when (== ret SOAPY_SDR_OVERFLOW)
+				    (when (== readStreamRet SOAPY_SDR_OVERFLOW)
 				      ,(lprint :msg "warning: overflow"))
-				    (when (== ret SOAPY_SDR_UNDERFLOW)
+				    (when (== readStreamRet SOAPY_SDR_UNDERFLOW)
 				      ,(lprint :msg "warning: underflow"))
-				    (when (< ret 0)
+				    (when (< readStreamRet 0)
 				      ,(lprint :msg "readStream failed"
-					       :vars `(ret
-						       (SoapySDR--errToStr ret)))
+					       :vars `(readStreamRet
+						       (SoapySDR--errToStr readStreamRet)))
 				      (do0 (-> sdr (deactivateStream rx_stream 0 0))
 					   (-> sdr (closeStream rx_stream))
 					   (SoapySDR--Device--unmake sdr))
 				      (exit -1))
-				    (when (!= ret numElems)
-				      ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(ret flags time_ns)))))))))
+				    (when (!= readStreamRet numElems)
+				      ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(readStreamRet flags time_ns)))))))))
 			 )
 		      (do0 (-> sdr (deactivateStream rx_stream 0 0))
 			   (-> sdr (closeStream rx_stream))
