@@ -1,3 +1,9 @@
+| file  | state | lang | comment                      |
+|-------|-------|------|------------------------------|
+| gen01 |       | C++  | read ADC data using soapysdr |
+| gen02 |       | C++  | GUI with imgui bundle        |
+|       |       |      |                              |
+
 
 - https://youtu.be/ANry8tAPjN4?t=1799
 ```
@@ -43,3 +49,6 @@ wget https://raw.githubusercontent.com/jarro2783/cxxopts/master/include/cxxopts.
 
 - examples of wxwidgets https://github.com/gammasoft71/Examples_wxWidgets
 - bundle for imgui https://github.com/pthom/imgui_bundle#install-for-c
+  - _example_integration shows how to use imgui_bundle in your own project
+  - no need to add imgui_bundle as a submodule or install it, cmake
+    will fetch it

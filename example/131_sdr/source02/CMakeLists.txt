@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(helloworld_with_helloimgui)
+project(imgui_soapysdr_project)
 set(CMAKE_CXX_STANDARD 17)
 
 
@@ -30,7 +30,11 @@ include(imgui_bundle_add_app)
 # Build your app
 ##########################################################
 # Call imgui_bundle_add_app
-imgui_bundle_add_app(hello_world hello_world.cpp)
+imgui_bundle_add_app(imgui_soapysdr
+  main.cpp
+  ArgException.cpp
+  ArgParse.cpp
+  )
 
 # Now you can build your app with
 #     mkdir build && cd build && cmake .. && cmake --build .
