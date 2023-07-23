@@ -42,3 +42,4 @@ wget https://raw.githubusercontent.com/jarro2783/cxxopts/master/include/cxxopts.
 - gui
 
 - examples of wxwidgets https://github.com/gammasoft71/Examples_wxWidgets
+- bundle for imgui https://github.com/pthom/imgui_bundle#install-for-c
