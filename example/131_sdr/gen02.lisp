@@ -94,22 +94,298 @@
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(space ,type ,nname_)))))
 
+	       )
+
+	     ,(let ((name 'SdrException))
+	      `(defclass ,name "public std::exception"	 
+		"public:"
+		(defmethod ,name (,@(remove-if #'null
+				     (loop for e in members
+					   collect
+					   (destructuring-bind (name &key type param (initform 0)) e
+					     (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					       (when param
+						 nname))))))
+		  (declare
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (intern
+						      (string-upcase
+						       (cl-change-case:snake-case (format nil "~a" name))))))
+					  (when param
+					   
+					    `(type ,type ,nname))))))
+		   (construct
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (name &key type param (initform 0)) e
+					 (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					       (nname_ (format nil "~a_"
+							       (cl-change-case:snake-case (format nil "~a" name)))))
+					   (cond
+					     (param
+					      `(,nname_ ,nname))
+					     (initform
+					      `(,nname_ ,initform)))))))
+		    )
+		   (explicit)	    
+		   (values :constructor))
+		 
+		  )
+		(defmethod what ()
+		  (declare (const)
+			   (noexcept)
+			   (override)
+			   (values "[[nodiscard]] const char*"))
+		  (return (msg_.c_str)))
+		"private:"
+		,@(remove-if #'null
+			     (loop for e in members
+				   collect
+				   (destructuring-bind (name &key type param (initform 0)) e
+				     (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					   (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				       `(space ,type ,nname_)))))
+
+		)))))
+
+  (let* ((name `SdrManager)
+	(acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
+	;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
+	
+	(members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
+		   (parameters :type "Args" :param t)
+		   (buf :type ,(format nil "std::vector<~a>" acq-type) :param nil )
+		   (rx-stream :type "SoapySDR::Stream*")
+					;(step :type double)
+		   )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> SoapySDR/Device.hpp)
+			(include ArgParser.h)
+			)
+     :implementation-preamble
+     `(do0
+       (include<> SoapySDR/Device.hpp
+					;SoapySDR/Types.hpp
+		  SoapySDR/Formats.hpp
+		  SoapySDR/Errors.hpp
+
+		  chrono
+		  iostream)
+
+       )
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 
+		 )
+	       
+	       
+
+
+	       (defmethod Initialize ()
+		 (declare (values bool))
+		 (let ((sdrResults (SoapySDR--Device--enumerate)))
+		   (dotimes (i (sdrResults.size))
+		     (declare (type "unsigned long" i))
+		     ,(lprint :msg "found device"
+			      :vars `(i)))
+		   (let ((soapyDeviceArgs (aref sdrResults 0)))
+		     (declare (type "const auto&" soapyDeviceArgs))
+		     (setf sdr_ (SoapySDR--Device--make soapyDeviceArgs))
+		   
+		     (when (== nullptr sdr_)
+		       ,(lprint :msg "make failed")
+		       (return false))
+		     (let ((direction SOAPY_SDR_RX)
+			   (channel 0))
+		       ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
+					  (:fun listGains :el gain :values gains)
+					  (:fun getFrequencyRange :el range :values ranges
+					   :print ((range.minimum)
+						   (range.maximum))))
+			       collect
+			       (destructuring-bind (&key fun print el values) e
+				 `(let ((,values (-> sdr_ (,fun direction channel))))
+				    (for-range
+				     (,el ,values)
+				     ,(lprint :msg (format nil "~a" fun)
+					      :vars `(,@(if print
+							    `(,@print)
+							    `(,el))
+						      direction
+						      channel
+						      ))))))
+		       ((lambda ()
+			  (declare (capture "&"))
+			  (let ((fullScale 0d0))
+			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction channel fullScale))
+					     fullScale)))))
+		       (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
+		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
+
+		       (do0
+			  (let ((rx_stream_ (-> sdr_ (setupStream direction
+								,acq-sdr-type))))
+			    (when (== nullptr rx_stream_)
+			      ,(lprint :msg "stream setup failed")
+			      (SoapySDR--Device--unmake sdr_)
+			      (return false))
+			    ,(lprint :vars `((-> sdr_
+						 (getStreamMTU rx_stream_))))
+			    ((lambda ()
+			       (declare (capture "&"))
+			       (let ((flags 0)
+				     (timeNs 0)
+				     (numElems 0))
+				 (-> sdr_ (activateStream rx_stream_ flags timeNs numElems))))))
+			  (do0
+			   (comments "reusable buffer of rx samples")
+			   (let ((numElems parameters_.bufferSize)
+				 (numBytes (* parameters_.bufferSize
+					      (sizeof ,acq-type)))
+				 )
+			     (setf buf_  
+				   (,(format nil "std::vector<~a>" acq-type)
+				    numElems))
+			     ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
+			     )))
+		       
+		       ))))
+
+
+	       (defmethod Capture ()
+		 (let ((start (std--chrono--high_resolution_clock--now))
+		       (numElems parameters_.bufferSize)
+		       (expected_ms0 (/ (* 1000d0 numElems)
+					parameters_.sampleRate ))
+		       (expAvgElapsed_ms expected_ms0)
+		       (alpha .01))
+		   (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
+			     ".04 seems to average over 60 values in the history")
+		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
+			 (flags 0)
+			 (time_ns 0LL)
+			 
+			 (readStreamRet
+			   (-> sdr_
+			       (readStream rx_stream_
+					   (buffs.data)
+					   numElems
+					   flags
+					   time_ns
+					   1e5)))
+			 (end (std--chrono--high_resolution_clock--now))
+			 (elapsed (std--chrono--duration<double> (- end start)))
+			 (elapsed_ms (* 1000 (elapsed.count)))
+			 (expected_ms (/ (* 1000d0 readStreamRet)
+					 parameters_.sampleRate ))
+			 
+			 )
+		     (setf expAvgElapsed_ms (+ (* alpha elapsed_ms
+						  )
+					       (* (- 1d0 alpha)
+						  expAvgElapsed_ms)))
+		     ,(lprint :msg "data block acquisition took"
+			      :vars `(elapsed_ms expAvgElapsed_ms expected_ms ))
+		     (setf start end)
+		     (when (== readStreamRet SOAPY_SDR_TIMEOUT)
+		       ,(lprint :msg "warning: timeout"))
+		     (when (== readStreamRet SOAPY_SDR_OVERFLOW)
+		       ,(lprint :msg "warning: overflow"))
+		     (when (== readStreamRet SOAPY_SDR_UNDERFLOW)
+		       ,(lprint :msg "warning: underflow"))
+		     (when (< readStreamRet 0)
+		       ,(lprint :msg "readStream failed"
+				:vars `(readStreamRet
+					(SoapySDR--errToStr readStreamRet)))
+
+		       (Close))
+		     (when (!= readStreamRet numElems)
+		       ,(lprint :msg "warning: readStream returned unexpected number of elements"
+				:vars `(readStreamRet flags time_ns)))
+		     )))
+
+	       (defmethod Close ()
+		 (do0 (-> sdr_ (deactivateStream rx_stream_ 0 0))
+		      (-> sdr_ (closeStream rx_stream_))
+		      (SoapySDR--Device--unmake sdr_))
+		 )
+	       
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))
+
 	       ))))
 
 
+  
+  
   (let* ((name `ArgParser)
-	(cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
-		    (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
-		    (:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
-		    (:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi"))
-		  )
-	(members `((cmdlineArgs :type "const std::vector<std::string>&" :param t)
-		   (parsedArgs :type "Args" :param nil
-			       :initform (Args (designated-initializer
-						,@(loop for e in cli-args
-							appending
-							(destructuring-bind (&key name short default type help parse) e
-							  `(,name ,default)))))))))
+	 (cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
+		     (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
+		     (:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
+		     (:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi"))
+		   )
+	 (members `((cmdlineArgs :type "const std::vector<std::string>&" :param t)
+		    (parsedArgs :type "Args" :param nil
+				:initform (Args (designated-initializer
+						 ,@(loop for e in cli-args
+							 appending
+							 (destructuring-bind (&key name short default type help parse) e
+							   `(,name ,default)))))))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -187,7 +463,7 @@
 	       "private:"
 	       (defmethod printHelp (options)
 		 (declare (type "const std::vector<Option>&" options)
-			  ;(const)
+					;(const)
 			  (static))
 		 (<< std--cout
 		     (string "Usage: ./imgui_soapysdr [OPTIONS]")
@@ -286,26 +562,55 @@
       filesystem
       unistd.h
       cstdlib
+
+      cmath
       
-      SoapySDR/Device.hpp
-					;SoapySDR/Types.hpp
-      SoapySDR/Formats.hpp
-      SoapySDR/Errors.hpp
-      )
+            )
      (include
       immapp/immapp.h
       implot/implot.h
       imgui_md_wrapper.h
       )
      (include ArgException.h
-	      ArgParser.h)
+	      ArgParser.h
+	      SdrManager.h)
 					;(include "cxxopts.hpp")
 
      (comments "./my_project -b $((2**10))")
 
+     (defun DemoImplot ()
+       (let ((x)
+	     (y1)
+	     (y2))
+	 (declare (type "static std::vector<double>" x y1 y2))
+	 (when (x.empty)
+	   (dotimes (i 1000)
+	     (let ((x_ (* #.pi (/ 4d0 1000d0) i)))
+	       (x.push_back x_)
+	       (y1.push_back (cos x_))
+	       (y2.push_back (sin x_)))))
+	 (ImGuiMd--Render (string "# This is a plot"))
+	 (when (ImPlot--BeginPlot (string "Plot"))
+	   ,@(loop for e in `(y1 y2)
+			     collect
+			     `(ImPlot--PlotLine (string ,e)
+					       (x.data)
+					       (dot ,e (data))
+					       (x.size)))
+	   (ImPlot--EndPlot))))
+
+     
+     
+     (defun DemoSDR ()
+       
+       
+       )
+     
      (defun Gui ()
+					; ,(lprint :msg "GUI")
        (ImGuiMd--RenderUnindented
-	(string-r "Bla")))
+	(string-r "# Bundle"))
+       (DemoImplot))
 
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
@@ -318,10 +623,13 @@
 	 (defun isDaemonRunning ()
 	   (declare (values bool))
 	   (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
-		 (shm_files_exist (logand
-				   ,@(loop for e in daemon-shm-files
-					   collect
-					   `(std--filesystem--exists (string ,e))))))
+		 (shm_files_exist true ))
+	     ,@(loop for e in daemon-shm-files
+		     collect
+		     `(unless (std--filesystem--exists (string ,e))
+			,(lprint :msg (format nil "file ~a does not exist" e)
+				 )
+			(return false)))
 	     (return (logand (== 0 (WEXITSTATUS exit_code))
 			     shm_files_exist))))
 	 (defun startDaemonIfNotRunning ()
@@ -342,6 +650,9 @@
 	      (let ((argParser (ArgParser cmdlineArgs))
 		    (parameters (argParser.getParsedArgs)))
 		(startDaemonIfNotRunning)
+
+		
+		
 		(let (
 		      (runnerParams (HelloImGui--SimpleRunnerParams (designated-initializer
 								     :guiFunction Gui
@@ -355,126 +666,7 @@
 		  (ImmApp--Run runnerParams
 			       addOnsParams))
 		
-		(let ((sdrResults (SoapySDR--Device--enumerate)))
-		  (dotimes (i (sdrResults.size))
-		    (declare (type "unsigned long" i))
-		    ,(lprint :msg "found device"
-			     :vars `(i)))
-		  (let ((soapyDeviceArgs (aref sdrResults 0))
-			(sdr (SoapySDR--Device--make soapyDeviceArgs)))
-		    (declare (type "const auto&" soapyDeviceArgs))
-		    (when (== nullptr sdr)
-		      ,(lprint :msg "make failed")
-		      (return -1))
-		    (let ((direction SOAPY_SDR_RX)
-			  (channel 0))
-		      ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
-					 (:fun listGains :el gain :values gains)
-					 (:fun getFrequencyRange :el range :values ranges
-					  :print ((range.minimum)
-						  (range.maximum))))
-			      collect
-			      (destructuring-bind (&key fun print el values) e
-				`(let ((,values (-> sdr (,fun direction channel))))
-				   (for-range
-				    (,el ,values)
-				    ,(lprint :msg (format nil "~a" fun)
-					     :vars `(,@(if print
-							   `(,@print)
-							   `(,el))
-						     direction
-						     channel
-						     ))))))
-		      ((lambda ()
-			 (declare (capture "&"))
-			 (let ((fullScale 0d0))
-			   ,(lprint :vars `((-> sdr (getNativeStreamFormat direction channel fullScale))
-					    fullScale))
-			   )))
-		      (-> sdr (setSampleRate direction channel parameters.sampleRate))
-		      (-> sdr (setFrequency direction channel parameters.frequency))
-
-		      ,(let ((acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
-					;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
-			     )
-			 `(do0
-			   (let ((rx_stream (-> sdr (setupStream direction
-								 ,acq-sdr-type))))
-			     (when (== nullptr rx_stream)
-			       ,(lprint :msg "stream setup failed")
-			       (SoapySDR--Device--unmake sdr)
-			       (return -1))
-			     ,(lprint :vars `((-> sdr
-						  (getStreamMTU rx_stream))))
-			     ((lambda ()
-				(declare (capture "&"))
-				(let ((flags 0)
-				      (timeNs 0)
-				      (numElems 0))
-				  (-> sdr (activateStream rx_stream flags timeNs numElems))))))
-			   (do0
-			    (comments "reusable buffer of rx samples")
-			    (let ((numElems parameters.bufferSize)
-				  (numBytes (* parameters.bufferSize
-					       (sizeof ,acq-type)))
-				  (buf  
-				    (,(format nil "std::vector<~a>" acq-type)
-				     numElems)))
-			      ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
-			      (let ((start (std--chrono--high_resolution_clock--now))
-				    (expected_ms0 (/ (* 1000d0 numElems)
-						     parameters.sampleRate ))
-				    (expAvgElapsed_ms expected_ms0)
-				    (alpha .01))
-				(comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
-					  ".04 seems to average over 60 values in the history")
-				(dotimes (i parameters.numberBuffers)		  
-				  (let ((buffs (std--vector<void*> (curly (buf.data))))
-					(flags 0)
-					(time_ns 0LL)
-			     
-					(readStreamRet
-					  (-> sdr
-					      (readStream rx_stream
-							  (buffs.data)
-							  numElems
-							  flags
-							  time_ns
-							  1e5)))
-					(end (std--chrono--high_resolution_clock--now))
-					(elapsed (std--chrono--duration<double> (- end start)))
-					(elapsed_ms (* 1000 (elapsed.count)))
-					(expected_ms (/ (* 1000d0 readStreamRet)
-							parameters.sampleRate ))
-			     
-					)
-				    (setf expAvgElapsed_ms (+ (* alpha elapsed_ms
-								 )
-							      (* (- 1d0 alpha)
-								 expAvgElapsed_ms)))
-				    ,(lprint :msg "data block acquisition took"
-					     :vars `(i elapsed_ms expAvgElapsed_ms expected_ms ))
-				    (setf start end)
-				    (when (== readStreamRet SOAPY_SDR_TIMEOUT)
-				      ,(lprint :msg "warning: timeout"))
-				    (when (== readStreamRet SOAPY_SDR_OVERFLOW)
-				      ,(lprint :msg "warning: overflow"))
-				    (when (== readStreamRet SOAPY_SDR_UNDERFLOW)
-				      ,(lprint :msg "warning: underflow"))
-				    (when (< readStreamRet 0)
-				      ,(lprint :msg "readStream failed"
-					       :vars `(readStreamRet
-						       (SoapySDR--errToStr readStreamRet)))
-				      (do0 (-> sdr (deactivateStream rx_stream 0 0))
-					   (-> sdr (closeStream rx_stream))
-					   (SoapySDR--Device--unmake sdr))
-				      (exit -1))
-				    (when (!= readStreamRet numElems)
-				      ,(lprint :msg "warning: readStream returned unexpected number of elements" :vars `(readStreamRet flags time_ns)))))))))
-			 )
-		      (do0 (-> sdr (deactivateStream rx_stream 0 0))
-			   (-> sdr (closeStream rx_stream))
-			   (SoapySDR--Device--unmake sdr)))))))
+		))
 	  
 	   ("const ArgException&" (e)
 	     (do0 ,(lprint :msg "Error processing command line arguments"

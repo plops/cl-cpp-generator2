@@ -39,6 +39,7 @@ imgui_bundle_add_app(imgui_soapysdr
         src/main.cpp
         src/ArgException.cpp
         src/ArgParser.cpp
+	src/SdrManager.cpp
 )
 
 target_link_libraries(imgui_soapysdr PRIVATE SoapySDR)
