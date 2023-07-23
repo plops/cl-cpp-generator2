@@ -19,12 +19,7 @@
   (load "util.lisp")
 
   (let ((name `ArgException)
-	(members `((msg :type "const std::string&" :param t)
-		   ;(wavetable :type "std::vector<double>" :param t)
-		   ;(wavetable-size :type std--size_t :initform (wavetable.size))
-		   ;(current-index :type double :initform 0d0)
-		   ;(step :type double)
-		   )))
+	(members `((msg :type "const std::string&" :param t))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -163,7 +158,7 @@
 		   (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
 		   (rx-stream :type "SoapySDR::Stream*" :initform nullptr :param nil)
 		   (average-elapsed-ms :type double :initform 0d0 :param nil)
-		   (alpha :type double :initform .01 :param nil)
+		   (alpha :type double :initform .08 :param nil)
 		   )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -183,9 +178,7 @@
 		  SoapySDR/Errors.hpp
 
 		  chrono
-		  iostream)
-
-       )
+		  iostream))
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
@@ -224,13 +217,8 @@
 					     `(,nname_ ,initform)))))))
 		   )
 		  (explicit)	    
-		  (values :constructor))
-		 
-		 )
+		  (values :constructor)))
 	       
-	       
-
-
 	       (defmethod Initialize ()
 		 (declare (values bool))
 		 (let ((sdrResults (SoapySDR--Device--enumerate)))
@@ -301,24 +289,18 @@
 						    parameters_.sampleRate )))
 			       (setf average_elapsed_ms_ expected_ms0))
 			     )))
-		       
-		       ))))
-
+		       (return true)))))
 
 	       (defmethod Capture ()
 		 (let ((start (std--chrono--high_resolution_clock--now))
-		       (numElems parameters_.bufferSize)
-		       
-		       
-		       )
+		       (numElems parameters_.bufferSize))
 		   (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 			     ".04 seems to average over 60 values in the history")
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
 			 (timeout_us ;10000L
-			   1000000L
-			   )
+			   100000L)
 			 (readStreamRet
 			   (-> sdr_
 			       (readStream rx_stream_
@@ -331,11 +313,8 @@
 			 (elapsed (std--chrono--duration<double> (- end start)))
 			 (elapsed_ms (* 1000 (elapsed.count)))
 			 (expected_ms (/ (* 1000d0 readStreamRet)
-					 parameters_.sampleRate ))
-			 
-			 )
-		     (setf
-			   average_elapsed_ms_
+					 parameters_.sampleRate)))
+		     (setf average_elapsed_ms_
 			   (+ (* alpha_ elapsed_ms)
 			      (* (- 1d0 alpha_)
 				 average_elapsed_ms_)))
@@ -346,10 +325,7 @@
 			,(lprint :msg "warning: timeout"))
 		       ((== readStreamRet SOAPY_SDR_OVERFLOW)
 		       ,(lprint :msg "warning: overflow"))
-		       
-		       
-		       
-		       
+		       		       
 		       ((== readStreamRet SOAPY_SDR_UNDERFLOW)
 			 ,(lprint :msg "warning: underflow"))
 		       ((< readStreamRet 0)
@@ -361,14 +337,12 @@
 			)
 		       ((!= readStreamRet numElems)
 			 ,(lprint :msg "warning: readStream returned unexpected number of elements"
-				  :vars `(readStreamRet flags time_ns))))
-		     )))
+				  :vars `(readStreamRet flags time_ns)))))))
 
 	       (defmethod Close ()
 		 (do0 (-> sdr_ (deactivateStream rx_stream_ 0 0))
 		      (-> sdr_ (closeStream rx_stream_))
-		      (SoapySDR--Device--unmake sdr_))
-		 )
+		      (SoapySDR--Device--unmake sdr_)))
 	       
 	       "private:"
 	       ,@(remove-if #'null
@@ -377,13 +351,8 @@
 				  (destructuring-bind (name &key type param (initform 0)) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))
+				      `(space ,type ,nname_)))))))))
 
-	       ))))
-
-
-  
-  
   (let* ((name `ArgParser)
 	 (cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
 		     (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
@@ -418,13 +387,11 @@
 			  (shortOpt "std::string")
 			  (description "std::string")
 			  (defaultValue "std::string")
-			  (handler "std::function<void(const std::string&)>"))
-			)
+			  (handler "std::function<void(const std::string&)>")))
      :implementation-preamble
      `(do0
        (include<> iostream
-		  vector)
-       )
+		  vector))
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
@@ -464,8 +431,7 @@
 		   )
 		  (explicit)	    
 		  (values :constructor))
-		 (processArgs cmdline_args_)
-		 )
+		 (processArgs cmdline_args_))
 	       (defmethod getParsedArgs ()
 		 (declare (values "[[nodiscard]] Args")
 			  (const))
@@ -514,7 +480,8 @@
 						     (setf (dot this->parsed_args_ ,name)
 							   (,parse x))
 						   (const ("std::invalid_argument&")
-						     (throw (ArgException (string ,(format nil "Invalid value for --~a" name)))))))))))))))
+						     (throw (ArgException
+							     (string ,(format nil "Invalid value for --~a" name)))))))))))))))
 		   (let ((it (args.begin)))
 		     (while (!= it (args.end))
 			    (if (logior (== *it (string "--help"))
@@ -574,9 +541,7 @@
       unistd.h
       cstdlib
 
-      cmath
-      
-            )
+      cmath)
      (include
       immapp/immapp.h
       implot/implot.h
@@ -610,15 +575,10 @@
 					       (x.size)))
 	   (ImPlot--EndPlot))))
 
-     
-     
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
-       
        (manager.Capture)) 
-     
-     
-
+    
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
 	     (daemon-fullpath (format nil "~a~a" daemon-path daemon-name))
@@ -681,10 +641,7 @@
 							   ))))
 		  (ImmApp--Run runnerParams
 			       addOnsParams)
-		  (manager.Close))
-		
-		
-		))
+		  (manager.Close))))
 	  
 	   ("const ArgException&" (e)
 	     (do0 ,(lprint :msg "Error processing command line arguments"
