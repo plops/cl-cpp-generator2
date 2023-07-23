@@ -237,6 +237,7 @@
 			   (channel 0))
 		       ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
 					  (:fun listGains :el gain :values gains)
+					  (:fun listFrequencies :el element :values elements)
 					  (:fun getFrequencyRange :el range :values ranges
 					   :print ((range.minimum)
 						   (range.maximum)))
@@ -282,38 +283,41 @@
 			  (let ((fullScale 0d0))
 			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction channel fullScale))
 					     fullScale)))))
+		       (for-range (rate (-> sdr_ (listSampleRates direction channel)))
+			,(lprint :vars `(rate)))
 		       (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
 		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
+		       ,(lprint :vars `((-> sdr_ (getFrequency direction channel))) )
 
 		       (do0
-			  (setf rx_stream_ (-> sdr_ (setupStream direction
-								 ,acq-sdr-type)))
-			  (when (== nullptr rx_stream_)
-			    ,(lprint :msg "stream setup failed")
-			    (SoapySDR--Device--unmake sdr_)
-			    (return false))
-			  ,(lprint :vars `((-> sdr_
-					       (getStreamMTU rx_stream_))))
-			  ((lambda ()
-			     (declare (capture "&"))
-			     (let ((flags 0)
-				   (timeNs 0)
-				   (numElems 0))
-			       (-> sdr_ (activateStream rx_stream_ flags timeNs numElems)))))
-			  (do0
-			   (comments "reusable buffer of rx samples")
-			   (let ((numElems parameters_.bufferSize)
-				 (numBytes (* parameters_.bufferSize
-					      (sizeof ,acq-type)))
-				 )
-			     (setf buf_  
-				   (,(format nil "std::vector<~a>" acq-type)
-				    numElems))
-			     ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
-			     (let ((expected_ms0 (/ (* 1000d0 numElems)
-						    parameters_.sampleRate )))
-			       (setf average_elapsed_ms_ expected_ms0))
-			     )))
+			(setf rx_stream_ (-> sdr_ (setupStream direction
+							       ,acq-sdr-type)))
+			(when (== nullptr rx_stream_)
+			  ,(lprint :msg "stream setup failed")
+			  (SoapySDR--Device--unmake sdr_)
+			  (return false))
+			,(lprint :vars `((-> sdr_
+					     (getStreamMTU rx_stream_))))
+			((lambda ()
+			   (declare (capture "&"))
+			   (let ((flags 0)
+				 (timeNs 0)
+				 (numElems 0))
+			     (-> sdr_ (activateStream rx_stream_ flags timeNs numElems)))))
+			(do0
+			 (comments "reusable buffer of rx samples")
+			 (let ((numElems parameters_.bufferSize)
+			       (numBytes (* parameters_.bufferSize
+					    (sizeof ,acq-type)))
+			       )
+			   (setf buf_  
+				 (,(format nil "std::vector<~a>" acq-type)
+				  numElems))
+			   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
+			   (let ((expected_ms0 (/ (* 1000d0 numElems)
+						  parameters_.sampleRate )))
+			     (setf average_elapsed_ms_ expected_ms0))
+			   )))
 		       (return true)))))
 
 	       (defmethod getBuf ()
