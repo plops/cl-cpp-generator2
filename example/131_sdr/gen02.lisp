@@ -160,8 +160,8 @@
 	
 	(members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
 		   (parameters :type "Args" :param t)
-		   (buf :type ,(format nil "std::vector<~a>" acq-type) :param nil )
-		   (rx-stream :type "SoapySDR::Stream*")
+		   (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
+		   (rx-stream :type "SoapySDR::Stream*" :initform nullptr)
 					;(step :type double)
 		   )))
     (write-class
@@ -272,20 +272,20 @@
 		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
 
 		       (do0
-			  (let ((rx_stream_ (-> sdr_ (setupStream direction
-								,acq-sdr-type))))
-			    (when (== nullptr rx_stream_)
-			      ,(lprint :msg "stream setup failed")
-			      (SoapySDR--Device--unmake sdr_)
-			      (return false))
-			    ,(lprint :vars `((-> sdr_
-						 (getStreamMTU rx_stream_))))
-			    ((lambda ()
-			       (declare (capture "&"))
-			       (let ((flags 0)
-				     (timeNs 0)
-				     (numElems 0))
-				 (-> sdr_ (activateStream rx_stream_ flags timeNs numElems))))))
+			  (setf rx_stream_ (-> sdr_ (setupStream direction
+								 ,acq-sdr-type)))
+			  (when (== nullptr rx_stream_)
+			    ,(lprint :msg "stream setup failed")
+			    (SoapySDR--Device--unmake sdr_)
+			    (return false))
+			  ,(lprint :vars `((-> sdr_
+					       (getStreamMTU rx_stream_))))
+			  ((lambda ()
+			     (declare (capture "&"))
+			     (let ((flags 0)
+				   (timeNs 0)
+				   (numElems 0))
+			       (-> sdr_ (activateStream rx_stream_ flags timeNs numElems)))))
 			  (do0
 			   (comments "reusable buffer of rx samples")
 			   (let ((numElems parameters_.bufferSize)
@@ -313,7 +313,7 @@
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
-			 
+			 (timeout_us 10000L)
 			 (readStreamRet
 			   (-> sdr_
 			       (readStream rx_stream_
@@ -321,7 +321,7 @@
 					   numElems
 					   flags
 					   time_ns
-					   1e5)))
+					   timeout_us)))
 			 (end (std--chrono--high_resolution_clock--now))
 			 (elapsed (std--chrono--duration<double> (- end start)))
 			 (elapsed_ms (* 1000 (elapsed.count)))
@@ -553,11 +553,11 @@
      (include<>
       iostream
       string
-      complex
+      ;complex
       vector
-      algorithm
+      ;algorithm
       
-      chrono
+      ;chrono
 
       filesystem
       unistd.h
