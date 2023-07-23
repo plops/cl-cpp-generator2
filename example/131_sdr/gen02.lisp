@@ -601,16 +601,12 @@
 
      
      
-     (defun DemoSDR ()
+     (defun DemoSdr (manager)
+       (declare (type SdrManager& manager))
        
-       
-       )
+       (manager.Capture)) 
      
-     (defun Gui ()
-					; ,(lprint :msg "GUI")
-       (ImGuiMd--RenderUnindented
-	(string-r "# Bundle"))
-       (DemoImplot))
+     
 
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
@@ -648,23 +644,34 @@
 	 (handler-case
 	     (do0
 	      (let ((argParser (ArgParser cmdlineArgs))
-		    (parameters (argParser.getParsedArgs)))
+		    (parameters (argParser.getParsedArgs))
+		    (manager (SdrManager parameters)))
 		(startDaemonIfNotRunning)
-
+		(manager.Initialize)
 		
 		
-		(let (
-		      (runnerParams (HelloImGui--SimpleRunnerParams (designated-initializer
-								     :guiFunction Gui
-								     :windowTitle (string "imgui_soapysdr")
-								     :windowSize (curly 800 600)
-								     )))
+		(let ((runnerParams (HelloImGui--SimpleRunnerParams
+				     (designated-initializer
+				      :guiFunction
+				      (paren
+				       (lambda ()
+					 (declare (capture "&manager"))
+					; ,(lprint :msg "GUI")
+					 (ImGuiMd--RenderUnindented
+					  (string-r "# Bundle"))
+					 (DemoImplot)
+					 (DemoSdr manager)))
+				      :windowTitle (string "imgui_soapysdr")
+				      :windowSize (curly 800 600)
+				      )))
 		      (addOnsParams (ImmApp--AddOnsParams (designated-initializer
 							   :withImplot true
 							   :withMarkdown true
 							   ))))
 		  (ImmApp--Run runnerParams
-			       addOnsParams))
+			       addOnsParams)
+		  (manager.Close))
+		
 		
 		))
 	  
