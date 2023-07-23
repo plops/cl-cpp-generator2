@@ -55,3 +55,15 @@ wget https://raw.githubusercontent.com/jarro2783/cxxopts/master/include/cxxopts.
   - this fetches a 550MB of dependencies
   - after release build (154 files) cmake-build-release/ contains
     577MB (27MB more)
+  - i don't want to download the dependencies twice. try to reuse
+    dependencies from cmake-build-release/ in cmake-build-debug/.
+    - disable release build in clion
+	- create debug directory and create link
+```
+mkdir -p /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build-debug
+ln -s /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build-release/_deps /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build-debug 
+
+
+```
+
+    - enable debug build in clion
