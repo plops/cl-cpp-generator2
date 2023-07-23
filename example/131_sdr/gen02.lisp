@@ -285,10 +285,15 @@
 					     fullScale)))))
 		       (for-range (rate (-> sdr_ (listSampleRates direction channel)))
 			,(lprint :vars `(rate)))
+		       (for-range (bw (-> sdr_ (listBandwidths direction channel)))
+			,(lprint :vars `(bw)))
 		       
 		       (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
+		       (-> sdr_ (setBandwidth direction channel parameters_.bandwidth))
 		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
-		       ,(lprint :vars `((-> sdr_ (getFrequency direction channel))) )
+		       ,(lprint :vars `((-> sdr_ (getSampleRate direction channel))
+					(-> sdr_ (getBandwidth direction channel))
+					(-> sdr_ (getFrequency direction channel))) )
 		       ,@(loop for e in `(RF CORR)
 			       collect
 			       (let ((name (format nil "frequency_range_~a" e)))
@@ -399,6 +404,7 @@
 
   (let* ((name `ArgParser)
 	 (cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
+		     (:name bandwidth :short B :default  8d6 :type double :help "Bandwidth in Hz" :parse "std::stod")
 		     (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
 		     (:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
 		     (:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi"))
