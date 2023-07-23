@@ -70,3 +70,4 @@ cp -ar /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build
 
     - enable debug build in clion
 
+    - i can't get it to work. if i copy the _deps folder, cmake complains that the CMakeCache.txt is from the wrong folder
