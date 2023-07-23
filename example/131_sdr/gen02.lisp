@@ -258,6 +258,10 @@
 			,(lprint :msg "has automatic gain control"
 				 :vars `(
 					 hasAutomaticGain))
+			 ,(lprint :msg "balance"
+				 :vars `((-> sdr_ (hasIQBalance direction channel))
+					 (-> sdr_ (hasIQBalanceMode direction channel))
+					 ))
 			 (when hasAutomaticGain
 			   (let ((automatic false ;true
 					    )
@@ -301,7 +305,17 @@
 			    (for-range (bw (-> sdr_ (listBandwidths direction channel)))
 				       ,(lprint :vars `(bw)))
 			    (for-range (clk (-> sdr_ (listClockSources))) ;; none
-				       ,(lprint :vars `(clk))))
+				       ,(lprint :vars `(clk)))
+			    (for-range (time_src (-> sdr_ (listTimeSources))) ;; none
+				       ,(lprint :vars `(time_src)))
+			    (for-range (sensor (-> sdr_ (listSensors))) ;; none
+				       ,(lprint :vars `(sensor)))
+			    (for-range (reg (-> sdr_ (listRegisterInterfaces))) ;; none
+				       ,(lprint :vars `(reg)))
+			    (for-range (gpio (-> sdr_ (listGPIOBanks))) ;; none
+				       ,(lprint :vars `(gpio)))
+			    (for-range (uart (-> sdr_ (listUARTs))) ;; none
+				       ,(lprint :vars `(uart))))
 		       
 		       ,@(loop for e in `(RF CORR)
 			       collect
