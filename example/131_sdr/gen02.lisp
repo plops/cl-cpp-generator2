@@ -258,10 +258,14 @@
 			,(lprint :msg "has automatic gain control"
 				 :vars `(
 					 hasAutomaticGain))
-			 ,(lprint :msg "balance"
-				 :vars `((-> sdr_ (hasIQBalance direction channel))
-					 (-> sdr_ (hasIQBalanceMode direction channel))
-					 ))
+			 ,(lprint :msg "balance" ;; none 
+				  :vars `((-> sdr_ (hasIQBalance direction channel))
+					  (-> sdr_ (hasIQBalanceMode direction channel))
+					  ))
+			 ,(lprint :msg "offset" 
+				  :vars `((-> sdr_ (hasDCOffset direction channel))
+					  (-> sdr_ (hasDCOffsetMode direction channel)) ;; supported
+					  ))
 			 (when hasAutomaticGain
 			   (let ((automatic false ;true
 					    )
