@@ -239,7 +239,8 @@
 					  (:fun listGains :el gain :values gains)
 					  (:fun getFrequencyRange :el range :values ranges
 					   :print ((range.minimum)
-						   (range.maximum))))
+						   (range.maximum)))
+					  )
 			       collect
 			       (destructuring-bind (&key fun print el values) e
 				 `(let ((,values (-> sdr_ (,fun direction channel))))
@@ -252,6 +253,15 @@
 						      direction
 						      channel
 						      ))))))
+		       (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction channel))))
+			,(lprint :msg "has automatic gain control"
+				 :vars `(
+					 hasAutomaticGain))
+			 (when hasAutomaticGain
+			   (let ((automatic true))
+			     (-> sdr_ (setGainMode direction channel automatic))
+			     ,(lprint :msg "automatic gain"
+				      :vars `((-> sdr_ (getGainMode direction channel)))))))
 		       ((lambda ()
 			  (declare (capture "&"))
 			  (let ((fullScale 0d0))
