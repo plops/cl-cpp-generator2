@@ -320,8 +320,11 @@
 								     :windowSize (curly 800 600)
 								     )))
 		      (addOnsParams (ImmApp--AddOnsParams (designated-initializer
+							   :withImplot true
 							   :withMarkdown true
-							   :withImplot true)))))
+							   ))))
+		  (ImmApp--Run runnerParams
+			      addOnsParams))
 		
 		(let ((sdrResults (SoapySDR--Device--enumerate)))
 		  (dotimes (i (sdrResults.size))
