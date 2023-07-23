@@ -161,8 +161,9 @@
 	(members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
 		   (parameters :type "Args" :param t)
 		   (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
-		   (rx-stream :type "SoapySDR::Stream*" :initform nullptr)
-					;(step :type double)
+		   (rx-stream :type "SoapySDR::Stream*" :initform nullptr :param nil)
+		   (average-elapsed-ms :type double :initform 0d0 :param nil)
+		   (alpha :type double :initform .01 :param nil)
 		   )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -296,6 +297,9 @@
 				   (,(format nil "std::vector<~a>" acq-type)
 				    numElems))
 			     ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
+			     (let ((expected_ms0 (/ (* 1000d0 numElems)
+						    parameters_.sampleRate )))
+			       (setf average_elapsed_ms_ expected_ms0))
 			     )))
 		       
 		       ))))
@@ -304,16 +308,17 @@
 	       (defmethod Capture ()
 		 (let ((start (std--chrono--high_resolution_clock--now))
 		       (numElems parameters_.bufferSize)
-		       (expected_ms0 (/ (* 1000d0 numElems)
-					parameters_.sampleRate ))
-		       (expAvgElapsed_ms expected_ms0)
-		       (alpha .01))
+		       
+		       
+		       )
 		   (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 			     ".04 seems to average over 60 values in the history")
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
-			 (timeout_us 10000L)
+			 (timeout_us ;10000L
+			   1000000L
+			   )
 			 (readStreamRet
 			   (-> sdr_
 			       (readStream rx_stream_
@@ -329,28 +334,34 @@
 					 parameters_.sampleRate ))
 			 
 			 )
-		     (setf expAvgElapsed_ms (+ (* alpha elapsed_ms
-						  )
-					       (* (- 1d0 alpha)
-						  expAvgElapsed_ms)))
+		     (setf
+			   average_elapsed_ms_
+			   (+ (* alpha_ elapsed_ms)
+			      (* (- 1d0 alpha_)
+				 average_elapsed_ms_)))
 		     ,(lprint :msg "data block acquisition took"
-			      :vars `(elapsed_ms expAvgElapsed_ms expected_ms ))
-		     (setf start end)
-		     (when (== readStreamRet SOAPY_SDR_TIMEOUT)
-		       ,(lprint :msg "warning: timeout"))
-		     (when (== readStreamRet SOAPY_SDR_OVERFLOW)
+			      :vars `(elapsed_ms average_elapsed_ms_ expected_ms ))
+		     (cond
+		       ((== readStreamRet SOAPY_SDR_TIMEOUT)
+			,(lprint :msg "warning: timeout"))
+		       ((== readStreamRet SOAPY_SDR_OVERFLOW)
 		       ,(lprint :msg "warning: overflow"))
-		     (when (== readStreamRet SOAPY_SDR_UNDERFLOW)
-		       ,(lprint :msg "warning: underflow"))
-		     (when (< readStreamRet 0)
-		       ,(lprint :msg "readStream failed"
-				:vars `(readStreamRet
-					(SoapySDR--errToStr readStreamRet)))
+		       
+		       
+		       
+		       
+		       ((== readStreamRet SOAPY_SDR_UNDERFLOW)
+			 ,(lprint :msg "warning: underflow"))
+		       ((< readStreamRet 0)
+			 ,(lprint :msg "readStream failed"
+				  :vars `(readStreamRet
+					  (SoapySDR--errToStr readStreamRet)))
 
-		       (Close))
-		     (when (!= readStreamRet numElems)
-		       ,(lprint :msg "warning: readStream returned unexpected number of elements"
-				:vars `(readStreamRet flags time_ns)))
+			;(Close)
+			)
+		       ((!= readStreamRet numElems)
+			 ,(lprint :msg "warning: readStream returned unexpected number of elements"
+				  :vars `(readStreamRet flags time_ns))))
 		     )))
 
 	       (defmethod Close ()
