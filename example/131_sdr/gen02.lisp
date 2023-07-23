@@ -292,13 +292,16 @@
 					(-> sdr_ (getBandwidth direction channel))
 					(-> sdr_ (getFrequency direction channel))
 					(-> sdr_ (getMasterClockRate)) ;; zero
+					(-> sdr_ (getReferenceClockRate)) ;; zero
 
 					) )
 
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction channel)))
 				       ,(lprint :vars `(rate)))
 			    (for-range (bw (-> sdr_ (listBandwidths direction channel)))
-				       ,(lprint :vars `(bw))))
+				       ,(lprint :vars `(bw)))
+			    (for-range (clk (-> sdr_ (listClockSources))) ;; none
+				       ,(lprint :vars `(clk))))
 		       
 		       ,@(loop for e in `(RF CORR)
 			       collect
