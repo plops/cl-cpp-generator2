@@ -52,4 +52,6 @@ wget https://raw.githubusercontent.com/jarro2783/cxxopts/master/include/cxxopts.
   - _example_integration shows how to use imgui_bundle in your own project
   - no need to add imgui_bundle as a submodule or install it, cmake
     will fetch it
-  - this fetches a bunch of stuff, after release build this uses 550MB
+  - this fetches a 550MB of dependencies
+  - after release build (154 files) cmake-build-release/ contains
+    577MB (27MB more)
