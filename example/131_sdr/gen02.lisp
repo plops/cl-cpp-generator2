@@ -291,7 +291,11 @@
 			     )))
 		       (return true)))))
 
+	       (defmethod getBuf ()
+		 (declare (values ,(format nil "const std::vector<~a>&" acq-type)))
+		 (return buf_))
 	       (defmethod Capture ()
+		 (declare (values int))
 		 (let ((start (std--chrono--high_resolution_clock--now))
 		       (numElems parameters_.bufferSize))
 		   (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
@@ -299,7 +303,7 @@
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
-			 (timeout_us ;10000L
+			 (timeout_us	;10000L
 			   100000L)
 			 (readStreamRet
 			   (-> sdr_
@@ -322,22 +326,24 @@
 			      :vars `(elapsed_ms average_elapsed_ms_ expected_ms ))
 		     (cond
 		       ((== readStreamRet SOAPY_SDR_TIMEOUT)
-			,(lprint :msg "warning: timeout"))
+			,(lprint :msg "warning: timeout")
+			(return 0))
 		       ((== readStreamRet SOAPY_SDR_OVERFLOW)
-		       ,(lprint :msg "warning: overflow"))
-		       		       
+			,(lprint :msg "warning: overflow")
+			(return 0))
 		       ((== readStreamRet SOAPY_SDR_UNDERFLOW)
-			 ,(lprint :msg "warning: underflow"))
+			,(lprint :msg "warning: underflow")
+			(return 0))
 		       ((< readStreamRet 0)
-			 ,(lprint :msg "readStream failed"
-				  :vars `(readStreamRet
-					  (SoapySDR--errToStr readStreamRet)))
-
-			;(Close)
-			)
+			,(lprint :msg "readStream failed"
+				 :vars `(readStreamRet
+					 (SoapySDR--errToStr readStreamRet)))
+			(return 0))
 		       ((!= readStreamRet numElems)
-			 ,(lprint :msg "warning: readStream returned unexpected number of elements"
-				  :vars `(readStreamRet flags time_ns)))))))
+			,(lprint :msg "warning: readStream returned unexpected number of elements"
+				 :vars `(readStreamRet flags time_ns))
+			(return readStreamRet)))
+		     (return numElems))))
 
 	       (defmethod Close ()
 		 (do0 (-> sdr_ (deactivateStream rx_stream_ 0 0))
@@ -554,7 +560,7 @@
 
      (comments "./my_project -b $((2**10))")
 
-     (defun DemoImplot ()
+     #+nil (defun DemoImplot ()
        (let ((x)
 	     (y1)
 	     (y2))
@@ -568,16 +574,36 @@
 	 (ImGuiMd--Render (string "# This is a plot"))
 	 (when (ImPlot--BeginPlot (string "Plot"))
 	   ,@(loop for e in `(y1 y2)
-			     collect
-			     `(ImPlot--PlotLine (string ,e)
-					       (x.data)
-					       (dot ,e (data))
-					       (x.size)))
+		   collect
+		   `(ImPlot--PlotLine (string ,e)
+				      (x.data)
+				      (dot ,e (data))
+				      (x.size)))
 	   (ImPlot--EndPlot))))
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
-       (manager.Capture)) 
+       (let ((n (manager.Capture)))
+	(when (< 0 n)
+	  (let ((buf (manager.getBuf)))
+	    (let ((x)
+		  (y1)
+		  (y2))
+	      (declare (type "std::vector<double>" x y1 y2))
+	      (dotimes (i n)
+		(x.push_back i)
+		(y1.push_back (dot  (aref buf i) (real)) )
+		(y2.push_back (dot  (aref buf i) (imag)) ))
+	      (ImGuiMd--Render (string "# This is a plot"))
+	      (when (ImPlot--BeginPlot (string "Plot"))
+		,@(loop for e in `(y1 y2)
+			collect
+			`(ImPlot--PlotLine (string ,e)
+					   (x.data)
+					   (dot ,e (data))
+					   (x.size)))
+		(ImPlot--EndPlot)))
+	    )))) 
     
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
@@ -630,7 +656,7 @@
 					; ,(lprint :msg "GUI")
 					 (ImGuiMd--RenderUnindented
 					  (string-r "# Bundle"))
-					 (DemoImplot)
+					 ;(DemoImplot)
 					 (DemoSdr manager)))
 				      :windowTitle (string "imgui_soapysdr")
 				      :windowSize (curly 800 600)
