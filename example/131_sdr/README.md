@@ -76,5 +76,7 @@ cp -ar /home/martin/stage/cl-cpp-generator2/example/131_sdr/source02/cmake-build
 ```
 martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02/_deps $ find .|grep CMakeCache|xargs rm
 martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ cp -ar _deps/ cmake-build-release/
+martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_get_assets.sh
 
 ```
+- make sure to copy the assets into the new folder as well (roboto font) before running the release build
