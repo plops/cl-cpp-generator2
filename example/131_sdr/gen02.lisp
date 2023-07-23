@@ -180,14 +180,15 @@
 		 (processArgs cmdline_args_)
 		 )
 	       (defmethod getParsedArgs ()
-		 (declare (values Args)
+		 (declare (values "[[nodiscard]] Args")
 			  (const))
 		 (return parsed_args_))
 	       
 	       "private:"
 	       (defmethod printHelp (options)
 		 (declare (type "const std::vector<Option>&" options)
-			  (const))
+			  ;(const)
+			  (static))
 		 (<< std--cout
 		     (string "Usage: ./imgui_soapysdr [OPTIONS]")
 		     std--endl)
@@ -281,6 +282,11 @@
       algorithm
       
       chrono
+
+      filesystem
+      unistd.h
+      cstdlib
+      
       SoapySDR/Device.hpp
 					;SoapySDR/Types.hpp
       SoapySDR/Formats.hpp
@@ -300,6 +306,29 @@
      (defun Gui ()
        (ImGuiMd--RenderUnindented
 	(string-r "Bla")))
+
+     ,(let* ((daemon-name "sdrplay_apiService")
+	     (daemon-path "/usr/bin/")
+	     (daemon-fullpath (format nil "~a~a" daemon-path daemon-name))
+	     (daemon-shm-files `("/dev/shm/Glbl\\sdrSrvRespSema"
+				 "/dev/shm/Glbl\\sdrSrvCmdSema"
+				 "/dev/shm/Glbl\\sdrSrvComMtx"
+				 "/dev/shm/Glbl\\sdrSrvComShMem")))
+	`(do0
+	 (defun isDaemonRunning ()
+	   (declare (values bool))
+	   (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
+		 (shm_files_exist (logand
+				   ,@(loop for e in daemon-shm-files
+					   collect
+					   `(std--filesystem--exists (string ,e))))))
+	     (return (logand (== 0 (WEXITSTATUS exit_code))
+			     shm_files_exist))))
+	 (defun startDaemonIfNotRunning ()
+	   (unless (isDaemonRunning)
+	     ,(lprint :msg "sdrplay daemon is not running. start it")
+	     (system (string ,(format nil "~a &" daemon-fullpath)))
+	     (sleep 1)))))
      
      (defun main (argc argv)
        (declare (values int)
@@ -312,7 +341,7 @@
 	     (do0
 	      (let ((argParser (ArgParser cmdlineArgs))
 		    (parameters (argParser.getParsedArgs)))
-
+		(startDaemonIfNotRunning)
 		(let (
 		      (runnerParams (HelloImGui--SimpleRunnerParams (designated-initializer
 								     :guiFunction Gui
@@ -324,7 +353,7 @@
 							   :withMarkdown true
 							   ))))
 		  (ImmApp--Run runnerParams
-			      addOnsParams))
+			       addOnsParams))
 		
 		(let ((sdrResults (SoapySDR--Device--enumerate)))
 		  (dotimes (i (sdrResults.size))
