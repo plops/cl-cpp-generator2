@@ -285,9 +285,18 @@
 					     fullScale)))))
 		       (for-range (rate (-> sdr_ (listSampleRates direction channel)))
 			,(lprint :vars `(rate)))
+		       
 		       (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
 		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
 		       ,(lprint :vars `((-> sdr_ (getFrequency direction channel))) )
+		       ,@(loop for e in `(RF CORR)
+			       collect
+			       (let ((name (format nil "frequency_range_~a" e)))
+				`(let ((,name (-> sdr_ (getFrequencyRange direction channel (string ,e)))))
+				   (for-range (r ,name)
+				    ,(lprint :msg (format nil "~a" name)
+					     :vars `((dot r (minimum))
+						     (dot r (maximum))) )))))
 
 		       (do0
 			(setf rx_stream_ (-> sdr_ (setupStream direction
