@@ -290,7 +290,10 @@
 		       (-> sdr_ (setFrequency direction channel parameters_.frequency))
 		       ,(lprint :vars `((-> sdr_ (getSampleRate direction channel))
 					(-> sdr_ (getBandwidth direction channel))
-					(-> sdr_ (getFrequency direction channel))) )
+					(-> sdr_ (getFrequency direction channel))
+					(-> sdr_ (getMasterClockRate)) ;; zero
+
+					) )
 
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction channel)))
 				       ,(lprint :vars `(rate)))
