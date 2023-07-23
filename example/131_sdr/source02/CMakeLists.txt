@@ -33,13 +33,15 @@ find_package(SoapySDR REQUIRED)
 # Build your app
 ##########################################################
 # Call imgui_bundle_add_app
+
+
 imgui_bundle_add_app(imgui_soapysdr
         main.cpp
         ArgException.cpp
         ArgParser.cpp
 )
 
-target_link_libraries(imgui_soapysdr SoapySDR)
+target_link_libraries(imgui_soapysdr PRIVATE SoapySDR)
 
 # Now you can build your app with
 #     mkdir build && cd build && cmake .. && cmake --build .
