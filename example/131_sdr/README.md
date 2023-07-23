@@ -38,3 +38,7 @@ wget https://github.com/CLIUtils/CLI11/releases/download/v2.3.2/CLI11.hpp
 wget https://raw.githubusercontent.com/jarro2783/cxxopts/master/include/cxxopts.hpp
 
 ```
+
+- gui
+
+- examples of wxwidgets https://github.com/gammasoft71/Examples_wxWidgets
