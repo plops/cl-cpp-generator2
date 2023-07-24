@@ -106,16 +106,20 @@
 		 (close fd_))
 
 	       (defmethod startCapturing ()
+		 ,(lprint :msg "startCapturing")
 		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
 		   ,(xioctl `(:request STREAMON :var &type))))
 	       
 	       (defmethod stopCapturing ()
+		 ,(lprint :msg "stopCapturing")
 		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
 		   ,(xioctl `(:request STREAMOFF :var &type))
 		   ))
 
 	       (defmethod setupFormat (width height pixelFormat)
 		 (declare (type int width height pixelFormat))
+		 ,(lprint :msg "setupFormat"
+			  :vars `(width height pixelFormat))
 		 (let ((f (v4l2_format (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE))))
 		   (setf (dot f fmt pix pixelformat ) pixelFormat
 			 (dot f fmt pix width) width
@@ -128,7 +132,7 @@
 		   (let ((r (v4l2_requestbuffers (designated-initializer :count 1
 									 :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
 									 :memory V4L2_MEMORY_MMAP))))
-		     ,(xioctl `(:request reqbufs :var &r));(xioctl VIDIOC_REQBUFS &r)
+		     ,(xioctl `(:request reqbufs :var &r)) ;(xioctl VIDIOC_REQBUFS &r)
 		     (buffers_.resize r.count)
 		     (dotimes (i r.count)
 		       (let ((buf (v4l2_buffer
@@ -137,7 +141,7 @@
 				    :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
 				    :memory V4L2_MEMORY_MMAP
 				    ))))
-			 ;(xioctl VIDIOC_QUERYBUF &buf)
+					;(xioctl VIDIOC_QUERYBUF &buf)
 			 ,(xioctl `(:request querybuf :var &buf))
 			 (setf (dot (aref buffers_ i)
 				    length) buf.length
@@ -225,7 +229,8 @@
       unistd.h
       cstdlib
 
-      cmath)
+      cmath
+      linux/videodev2.h)
      #+nil (include
       immapp/immapp.h
       implot/implot.h
@@ -240,7 +245,13 @@
 		(type char** argv))
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0"))))
+	     (cap.setupFormat 640 480 V4L2_PIX_FMT_BGR24)
 	     (cap.startCapturing)
+	     (dotimes (i 9)
+	       (cap.getFrame (+ (string "/dev/shm/frame_")
+				(std--to_string i)
+				(string ".ppm"))))
+	     (cap.stopCapturing)
 	     
 	     )
 	 ("const std::runtime_error&" (e)
