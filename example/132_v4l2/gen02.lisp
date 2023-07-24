@@ -124,6 +124,13 @@
 		 (declare (type int width height pixelFormat))
 		 ,(lprint :msg "setupFormat"
 			  :vars `(width height pixelFormat))
+
+		 (let ((str (v4l2_streamparm (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE))))
+		   ,(xioctl `(:request g-parm :var &str))
+		   (setf (dot str parm capture timeperframe numerator) 1)
+		   (setf (dot str parm capture timeperframe denominator  ) 10)
+		   ,(xioctl `(:request s-parm :var &str)))
+		 
 		 (let ((f (v4l2_format (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE))))
 		   (setf (dot f fmt pix pixelformat ) pixelFormat
 			 (dot f fmt pix width) width
@@ -407,12 +414,14 @@
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
 				    3)))
-	     (let ((w 1280)
-		   (h 720))
+	     (let ((w 320 ;1280
+		      )
+		   (h 240 ; 720
+		      ))
 	      (cap.setupFormat w h
-					;V4L2_PIX_FMT_RGB24
+			       V4L2_PIX_FMT_RGB24
 					;V4L2_PIX_FMT_YUYV
-			       V4L2_PIX_FMT_YUV420
+			       ;V4L2_PIX_FMT_YUV420
 			       ))
 	     (cap.startCapturing)
 
@@ -440,7 +449,7 @@
 				     GL_RGB
 				     w h
 				     0
-				     GL_RED
+				     GL_RGB
 				     GL_UNSIGNED_BYTE
 				     data
 				     )
