@@ -335,6 +335,15 @@
 	  )
 
 	(do0
+	 ,(lprint :msg "get extensions")
+	 (let ((ext (glGetString GL_EXTENSIONS)))
+	   (unless (== nullptr ext)
+	     (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
+	       ,(lprint :msg "extensions"
+			:vars `(extstr)
+			)))))
+
+	(do0
 	 (IMGUI_CHECKVERSION)
 	 (ImGui--CreateContext)
 	 (ImGui_ImplGlfw_InitForOpenGL window true)
@@ -444,18 +453,18 @@
 		       (declare (type void* data)
 				(type size_t size)
 				(capture "&"))
-		       (glPixelStorei GL_UNPACK_ALIGNMENT 1)
-		       (glPixelStorei GL_UNPACK_ROW_LENGTH (/ w 2))
-		       (glPixelStorei GL_UNPACK_SKIP_PIXELS 0)
-		       (glPixelStorei GL_UNPACK_SKIP_ROWS 0)
+		       #+nil (do0 (glPixelStorei GL_UNPACK_ALIGNMENT 1)
+			    (glPixelStorei GL_UNPACK_ROW_LENGTH (/ w 2))
+			    (glPixelStorei GL_UNPACK_SKIP_PIXELS 0)
+			    (glPixelStorei GL_UNPACK_SKIP_ROWS 0))
 		       
 		       (glBindTexture GL_TEXTURE_2D texture)
 		       (glTexImage2D GL_TEXTURE_2D
 				     0
-				     GL_RGB
+				     GL_RGBA
 				     w h
 				     0
-				     GL_RED
+				     GL_RG
 				     GL_UNSIGNED_BYTE
 				     data
 				     )
