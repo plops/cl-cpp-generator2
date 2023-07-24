@@ -5,6 +5,9 @@
 
 (in-package :cl-cpp-generator2)
 
+(setf *features* (set-difference *features* (list :more)))
+(setf *features* (set-exclusive-or *features* (list :more)))
+
 (progn
   (progn
     (defparameter *source-dir* #P"example/132_v4l2/source02/src/")
@@ -20,9 +23,9 @@
 
   (defun xioctl (args)
     (destructuring-bind (&key request var) args
-     `(xioctl ,(cl-change-case:constant-case (format nil "vidioc-~a" request))
-	      ,var
-	      (string ,request))))
+      `(xioctl ,(cl-change-case:constant-case (format nil "vidioc-~a" request))
+	       ,var
+	       #+more (string ,request))))
 
   (let* ((name `V4L2Capture)
 	 (members `((device :type "const std::string&" :param t)
@@ -98,7 +101,7 @@
 				 O_RDWR))
 		 (when (== -1 fd_)
 		   (throw (std--runtime_error (+ (string "opening video device failed")
-						 (std--string (std--strerror errno)))))))
+						 #+more (std--string (std--strerror errno)))))))
 
 	       (defmethod ~V4L2Capture ()
 		 (declare (values :constructor))
@@ -155,8 +158,8 @@
 			       (dot (aref buffers_ i)
 				    start) (mmap nullptr buf.length (or PROT_READ
 									PROT_WRITE)
-						 MAP_SHARED fd_ buf.m.offset) 
-				    )
+				    MAP_SHARED fd_ buf.m.offset) 
+			       )
 			 ,(lprint :msg "mmap memory for buffer"
 				  :vars `(i buf.length (dot (aref buffers_ i) start)))
 			 (when (== MAP_FAILED (dot (aref buffers_ i) start))
@@ -189,7 +192,7 @@
 		   (start void*)
 		 (length size_t))
 
-	       (defmethod xioctl (request arg str)
+	       (defmethod xioctl (request arg #+more str)
 		 (declare (type "unsigned long" request)
 			  (type void* arg)
 			  (type "const std::string&" str))
@@ -200,10 +203,10 @@
 			  while (paren (logand (== -1 r)
 					       (== EINTR errno))))
 		   (when (== -1 r)
-		     (throw (std--runtime_error (+ (string "ioctl ")
-						   str
-						   (string " ")
-						   (std--strerror errno)
+		     (throw (std--runtime_error  (+ (string "ioctl ")
+						    #+more str
+						   #+more (string " ")
+						   #+more (std--strerror errno)
 						   ))))))
 
 	       
@@ -227,11 +230,11 @@
      (include<>
       iostream
       string
-      ;complex
+					;complex
       vector
-      ;algorithm
+					;algorithm
       
-      ;chrono
+					;chrono
       thread
       
       filesystem
@@ -241,7 +244,7 @@
       cmath
       linux/videodev2.h
 
-            )
+      )
 
      (include<>
       glad/gl.h)
@@ -278,7 +281,7 @@
 			       (setf outColor (vec4 1 0 0 1))))
 		     :omit-redundant-parentheses t)))
 
-     (defun message_callback (source type id severity length message user_param)
+     #+more (defun message_callback (source type id severity length message user_param)
        (declare (type GLenum source type severity)
 		(type GLuint id)
 		(type GLsizei length)
@@ -320,11 +323,11 @@
 
 	(do0
 	 (glEnable GL_CULL_FACE)
-	 (glEnable GL_DEBUG_OUTPUT)
-	 (glDebugMessageCallback message_callback nullptr))
+	 #+more (glEnable GL_DEBUG_OUTPUT)
+	 #+more (glDebugMessageCallback message_callback nullptr))
 
 	(do0
-	 ,(lprint :msg "Compile shader")
+	 #+more ,(lprint :msg "Compile shader")
 	 (let ((success 0)
 	       
 	       (vertexShader (glCreateShader GL_VERTEX_SHADER)))
@@ -333,12 +336,13 @@
 
 	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
 	   (unless success
-	     (let ((n 512) (infoLog (std--vector<char> n)))
+	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
 	       (glGetShaderInfoLog vertexShader n nullptr (infoLog.data) )
 	       ,(lprint :msg "vertex shader compilation failed"
 			:vars `((std--string (infoLog.begin)
 					     (infoLog.end))))
-	       (exit -1)))
+	       )
+	     (exit -1))
 	   )
 	 (let ((fragmentShader (glCreateShader GL_FRAGMENT_SHADER)))
 	   (glShaderSource fragmentShader 1 &fragmentShaderSrc 0)
@@ -346,12 +350,13 @@
 
 	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)
 	   (unless success
-	     (let ((n 512) (infoLog (std--vector<char> n)))
+	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
 	       (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data) )
 	       ,(lprint :msg "fragment shader compilation failed"
 			:vars `((std--string (infoLog.begin)
 					     (infoLog.end))))
-	       (exit -1)))
+	       )
+	     (exit -1))
 	   )
 	 (let ((program (glCreateProgram )))
 	   (glAttachShader program vertexShader)
@@ -359,12 +364,13 @@
 	   (glLinkProgram program)
 	   (glGetProgramiv program GL_LINK_STATUS &success)
 	   (unless success
-	     (let ((n 512) (infoLog (std--vector<char> n)))
+	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
 	       (glGetShaderInfoLog program n nullptr (infoLog.data) )
 	       ,(lprint :msg "shader linking failed"
 			:vars `((std--string (infoLog.begin)
 					     (infoLog.end))))
-	       (exit -1)))
+	       )
+	     (exit -1))
 	   )
 	 (glDetachShader program vertexShader)
 	 (glDetachShader program fragmentShader))
@@ -373,15 +379,16 @@
 	)
 
        (do0
-	,(lprint :msg "Create vertex array and buffers")
-	(comments "TBD")
+	#+more
+	(do0 ,(lprint :msg "Create vertex array and buffers")
+	     (comments "TBD"))
 
 	(glUseProgram program)
 	(glClearColor 1 1 1 1)
 
 	(while (!glfwWindowShouldClose window)
 	       (glfwPollEvents)
-	       ;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
+					;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
 	       (ImGui_ImplOpenGL3_NewFrame)
 	       (ImGui_ImplGlfw_NewFrame)
 	       (ImGui--NewFrame)
@@ -417,7 +424,7 @@
 	     
 	     )
 	 ("const std::runtime_error&" (e)
-	   ,(lprint :msg "error"
+	   #+more ,(lprint :msg "error"
 		    :vars `((e.what)))
 	   (return 1)))
 
