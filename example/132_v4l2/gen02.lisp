@@ -381,7 +381,7 @@
        (do0
 	#+more
 	(do0 ,(lprint :msg "Create vertex array and buffers")
-	     (comments "TBD"))
+	     (comments "TBD")) 
 
 	(glUseProgram program)
 	(glClearColor 1 1 1 1)
