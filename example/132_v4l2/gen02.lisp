@@ -416,7 +416,7 @@
 				    3)))
 	     (let ((w 320 ;1280
 		      )
-		   (h 240 ; 720
+		   (h 180 ; 720
 		      ))
 	      (cap.setupFormat w h
 			       V4L2_PIX_FMT_RGB24
