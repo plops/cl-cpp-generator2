@@ -7,7 +7,7 @@
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/132_v4l2/source01/src/")
+    (defparameter *source-dir* #P"example/132_v4l2/source02/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -232,31 +232,149 @@
       ;algorithm
       
       ;chrono
-
+      thread
+      
       filesystem
       unistd.h
       cstdlib
 
       cmath
-      linux/videodev2.h)
-     #+nil (include
-      immapp/immapp.h
-      implot/implot.h
-      imgui_md_wrapper.h
+      linux/videodev2.h
+
+            )
+
+     (include<>
+      glad/gl.h)
+     
+     (include<>
+
+      GLFW/glfw3.h
+      
+      glm/glm.hpp
+      imgui.h
+      imgui_impl_glfw.h
+      imgui_impl_opengl3.h
+      
+
       )
      (include 
-	      V4L2Capture.h)
+      V4L2Capture.h)
+
+     (setf "const char *vertexShaderSrc"
+	   (string-r
+	    ,(emit-c :code `(do0
+			     "#version 450"
+			     (space layout (paren (= location 0)) in vec2 aPos)
+			     (defun main ()
+			       (setf gl_Position (vec4 aPos 1 1))))
+		     :omit-redundant-parentheses t)))
+
+     (setf "const char *fragmentShaderSrc"
+	   (string-r
+	    ,(emit-c :code `(do0
+			     "#version 450"
+			     (space layout (paren (= location 0)) out vec4 outColor)
+			     (defun main ()
+			       (setf outColor (vec4 1 0 0 1))))
+		     :omit-redundant-parentheses t)))
+
+     (defun message_callback (source type id severity length message user_param)
+       (declare (type GLenum source type severity)
+		(type GLuint id)
+		(type GLsizei length)
+		(type "GLchar const *" message)
+		(type "void const *" user_param))
+       ,(lprint :msg "gl"
+		:vars `(source type id severity message)))
 					     
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
 		(type char** argv))
+
+       (do0
+	(glfwInit)
+	(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 4)
+	(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 5)
+	(glfwWindowHint GLFW_OPENGL_PROFILE GLFW_OPENGL_CORE_PROFILE)
+
+	(let ((window (glfwCreateWindow 800 600
+					(string "v4l")
+					nullptr nullptr)))
+	  (unless window
+	    (throw (std--runtime_error (string "Error creating glfw window")))))
+
+	(glfwMakeContextCurrent window)
+	(glfwSwapInterval 1)
+
+	(unless (gladLoaderLoadGL)
+	  (throw (std--runtime_error (string "Error initializing glad")))
+	  )
+
+	(do0
+	 (IMGUI_CHECKVERSION)
+	 (ImGui--CreateContext)
+	 (ImGui_ImplGlfw_InitForOpenGL window true)
+	 (ImGui_ImplOpenGL3_Init (string "#version 450 core"))
+	 (ImGui--StyleColorsClassic))
+
+	(do0
+	 (glEnable GL_CULL_FACE)
+	 (glEnable GL_DEBUG_OUTPUT)
+	 (glDebugMessageCallback message_callback nullptr))
+
+	(do0
+	 ,(lprint :msg "Compile shader")
+	 (let ((success 0)
+	       
+	       (vertexShader (glCreateShader GL_VERTEX_SHADER)))
+	   (glShaderSource vertexShader 1 &vertexShaderSrc 0)
+	   (glCompileShader vertexShader)
+
+	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
+	   (unless success
+	     (let ((n 512) (infoLog (std--vector<char> n)))
+	       (glGetShaderInfoLog vertexShader n nullptr (infoLog.data) )
+	       ,(lprint :msg "vertex shader compilation failed"
+			:vars `((std--string (infoLog.begin)
+					     (infoLog.end))))
+	       (exit -1)))
+	   )
+	 (let ((fragmentShader (glCreateShader GL_FRAGMENT_SHADER)))
+	   (glShaderSource fragmentShader 1 &fragmentShaderSrc 0)
+	   (glCompileShader fragmentShader)
+
+	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)
+	   (unless success
+	     (let ((n 512) (infoLog (std--vector<char> n)))
+	       (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data) )
+	       ,(lprint :msg "fragment shader compilation failed"
+			:vars `((std--string (infoLog.begin)
+					     (infoLog.end))))
+	       (exit -1)))
+	   )
+	 (let ((program (glCreateProgram )))
+	   (glAttachShader program vertexShader)
+	   (glAttachShader program fragmentShader)
+	   (glLinkProgram program)
+	   (glGetProgramiv program GL_LINK_STATUS &success)
+	   (unless success
+	     (let ((n 512) (infoLog (std--vector<char> n)))
+	       (glGetShaderInfoLog program n nullptr (infoLog.data) )
+	       ,(lprint :msg "shader linking failed"
+			:vars `((std--string (infoLog.begin)
+					     (infoLog.end))))
+	       (exit -1)))
+	   ))
+	
+	)
+       
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
 				    3)))
 	     (cap.setupFormat 1280 720
-			      ;V4L2_PIX_FMT_RGB24
-			      ;V4L2_PIX_FMT_YUYV
+					;V4L2_PIX_FMT_RGB24
+					;V4L2_PIX_FMT_YUYV
 			      V4L2_PIX_FMT_YUV420
 			      )
 	     (cap.startCapturing)
