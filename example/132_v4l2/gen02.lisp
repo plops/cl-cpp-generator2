@@ -280,7 +280,7 @@
      (comments "wget https://raw.githubusercontent.com/nothings/stb/master/stb_image.h")
      
      (include 
-      stb_image.h
+     ; stb_image.h
       V4L2Capture.h)
 
      (setf "const char *vertexShaderSrc"
@@ -419,8 +419,8 @@
 		   (h 180 ; 720
 		      ))
 	      (cap.setupFormat w h
-			       V4L2_PIX_FMT_RGB24
-					;V4L2_PIX_FMT_YUYV
+			       ;V4L2_PIX_FMT_RGB24
+			       V4L2_PIX_FMT_YUYV
 			       ;V4L2_PIX_FMT_YUV420
 			       ))
 	     (cap.startCapturing)
@@ -444,12 +444,18 @@
 		       (declare (type void* data)
 				(type size_t size)
 				(capture "&"))
+		       (glPixelStorei GL_UNPACK_ALIGNMENT 1)
+		       (glPixelStorei GL_UNPACK_ROW_LENGTH (/ w 2))
+		       (glPixelStorei GL_UNPACK_SKIP_PIXELS 0)
+		       (glPixelStorei GL_UNPACK_SKIP_ROWS 0)
+		       
+		       (glBindTexture GL_TEXTURE_2D texture)
 		       (glTexImage2D GL_TEXTURE_2D
 				     0
 				     GL_RGB
 				     w h
 				     0
-				     GL_RGB
+				     GL_RED
 				     GL_UNSIGNED_BYTE
 				     data
 				     )
