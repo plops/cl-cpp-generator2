@@ -365,9 +365,39 @@
 			:vars `((std--string (infoLog.begin)
 					     (infoLog.end))))
 	       (exit -1)))
-	   ))
+	   )
+	 (glDetachShader program vertexShader)
+	 (glDetachShader program fragmentShader))
+	
 	
 	)
+
+       (do0
+	,(lprint :msg "Create vertex array and buffers")
+	(comments "TBD")
+
+	(glUseProgram program)
+	(glClearColor 1 1 1 1)
+
+	(while (!glfwWindowShouldClose window)
+	       (glfwPollEvents)
+	       ;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
+	       (ImGui_ImplOpenGL3_NewFrame)
+	       (ImGui_ImplGlfw_NewFrame)
+	       (ImGui--NewFrame)
+
+
+	       (space static bool (setf showDemo false))
+	       (ImGui--ShowDemoWindow &showDemo)
+	       (ImGui--Render)
+	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+	       (glfwSwapBuffers window)
+	       (glClear GL_COLOR_BUFFER_BIT)
+	       (std--this_thread--sleep_for (std--chrono--milliseconds 16))
+	       )
+	)
+
+       
        
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
@@ -379,7 +409,7 @@
 			      )
 	     (cap.startCapturing)
 	     (usleep 64000)
-	     (dotimes (i 9)
+	     (dotimes (i 9) 
 	       (cap.getFrame (+ (string "/dev/shm/frame_")
 				(std--to_string i)
 				(string ".ppm"))))
@@ -390,6 +420,13 @@
 	   ,(lprint :msg "error"
 		    :vars `((e.what)))
 	   (return 1)))
+
+       (do0
+	(ImGui_ImplOpenGL3_Shutdown)
+	(ImGui_ImplGlfw_Shutdown)
+	(ImGui--DestroyContext)
+	(glfwDestroyWindow window)
+	(glfwTerminate))
        (return 0)))
    :omit-parens t
    :format nil
