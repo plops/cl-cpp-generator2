@@ -42,7 +42,7 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			
+		       (include<> functional)
 			)
      :implementation-preamble
      `(do0
@@ -166,7 +166,7 @@
 			   (throw (std--runtime_error (string "mmap failed"))))
 			 ,(xioctl `(:request qbuf :var &buf)))))))
 
-	       (defmethod getFrame (filename)
+	       (defmethod getFrameAndStore (filename)
 		 (declare (type "const std::string&" filename))
 		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
 								 :memory V4L2_MEMORY_MMAP))))
@@ -186,6 +186,16 @@
 				  buf.bytesused)
 		   (outFile.close)
 		   ,(xioctl `(:request qbuf :var &buf))))
+
+	       (defmethod getFrame (fun)
+		 (declare (type "std::function<void(void*,size_t)>" fun))
+		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
+								 :memory V4L2_MEMORY_MMAP))))
+					
+		   ,(xioctl `(:request dqbuf :var &buf)))
+		 (let ((b  (aref buffers_ buf.index)))
+		   (fun b.start b.length))
+		 ,(xioctl `(:request qbuf :var &buf)))
 	       	       
 	       "private:"
 	       (defstruct0 buffer
@@ -258,9 +268,12 @@
       imgui_impl_glfw.h
       imgui_impl_opengl3.h
       
-
+      
       )
+     (comments "wget https://raw.githubusercontent.com/nothings/stb/master/stb_image.h")
+     
      (include 
+      stb_image.h
       V4L2Capture.h)
 
      (setf "const char *vertexShaderSrc"
@@ -386,22 +399,7 @@
 	(glUseProgram program)
 	(glClearColor 1 1 1 1)
 
-	(while (!glfwWindowShouldClose window)
-	       (glfwPollEvents)
-					;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
-	       (ImGui_ImplOpenGL3_NewFrame)
-	       (ImGui_ImplGlfw_NewFrame)
-	       (ImGui--NewFrame)
-
-
-	       (space static bool (setf showDemo false))
-	       (ImGui--ShowDemoWindow &showDemo)
-	       (ImGui--Render)
-	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-	       (glfwSwapBuffers window)
-	       (glClear GL_COLOR_BUFFER_BIT)
-	       (std--this_thread--sleep_for (std--chrono--milliseconds 16))
-	       )
+	
 	)
 
        
@@ -409,17 +407,63 @@
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
 				    3)))
-	     (cap.setupFormat 1280 720
+	     (let ((w 1280)
+		   (h 720))
+	      (cap.setupFormat w h
 					;V4L2_PIX_FMT_RGB24
 					;V4L2_PIX_FMT_YUYV
-			      V4L2_PIX_FMT_YUV420
-			      )
+			       V4L2_PIX_FMT_YUV420
+			       ))
 	     (cap.startCapturing)
-	     (usleep 64000)
-	     (dotimes (i 9) 
-	       (cap.getFrame (+ (string "/dev/shm/frame_")
-				(std--to_string i)
-				(string ".ppm"))))
+
+	     (do0
+	      (let ((texture (GLuint 0)))
+		(glGenTextures 1 &texture)
+		(glBindTexture GL_TEXTURE_2D texture)
+		
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)))
+	     
+	     (while (!glfwWindowShouldClose window)
+		    (glfwPollEvents)
+					;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
+		    (ImGui_ImplOpenGL3_NewFrame)
+		    (ImGui_ImplGlfw_NewFrame)
+		    (ImGui--NewFrame)
+		    (cap.getFrame
+		     (lambda (data size)
+		       (declare (type void* data)
+				(type size_t size)
+				(capture "&"))
+		       (glTexImage2D GL_TEXTURE_2D
+				     0
+				     GL_RGB
+				     w h
+				     0
+				     GL_RED
+				     GL_UNSIGNED_BYTE
+				     data
+				     )
+		       (ImGui--Begin (string "camera feed"))
+		       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+				     (ImVec2 w h))
+		       (ImGui--End)
+		  
+		       ))
+
+		    (space static bool (setf showDemo false))
+		    (ImGui--ShowDemoWindow &showDemo)
+		    (ImGui--Render)
+		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+		    (glfwSwapBuffers window)
+		    (glClear GL_COLOR_BUFFER_BIT)
+		    (std--this_thread--sleep_for (std--chrono--milliseconds 16))
+		    )
+	     
+	     
+	     #+nil (cap.getFrame (+ (string "/dev/shm/frame_")
+			      (std--to_string i)
+			      (string ".ppm")))
 	     (cap.stopCapturing)
 	     
 	     )
