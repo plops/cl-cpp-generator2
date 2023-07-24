@@ -17,12 +17,20 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
-  
+
+  (defun xioctl (args)
+    (destructuring-bind (&key request var) args
+     `(xioctl ,(cl-change-case:constant-case (format nil "vidioc-~a" request))
+	      ,var
+	      (string ,request))))
 
   (let* ((name `V4L2Capture)
 	 (members `((device :type "const std::string&" :param t)
 		    (buffers :type "std::vector<buffer>" :param nil)
-		    (fd :type "int" :param nil))))
+		    (fd :type "int" :param nil)
+		    (width :type int)
+		    (height :type int))))
+    
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -89,8 +97,7 @@
 				 O_RDWR))
 		 (when (== -1 fd_)
 		   (throw (std--runtime_error (+ (string "opening video device failed")
-						 (std--string (std--strerror errno)))))
-		   ))
+						 (std--string (std--strerror errno)))))))
 
 	       (defmethod ~V4L2Capture ()
 		 (declare (values :constructor))
@@ -100,11 +107,12 @@
 
 	       (defmethod startCapturing ()
 		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
-		   (xioctl VIDIOC_STREAMON &type)))
+		   ,(xioctl `(:request STREAMON :var &type))))
 	       
 	       (defmethod stopCapturing ()
 		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
-		   (xioctl VIDIOC_STREAMOFF &type)))
+		   ,(xioctl `(:request STREAMOFF :var &type))
+		   ))
 
 	       (defmethod setupFormat (width height pixelFormat)
 		 (declare (type int width height pixelFormat))
@@ -113,11 +121,14 @@
 			 (dot f fmt pix width) width
 			 (dot f fmt pix height) height
 			 )
-		   (xioctl VIDIOC_S_FMT &f)
+		   ,(xioctl `(:request s-fmt :var &f))
+		   #+nil (xioctl VIDIOC_S_FMT &f)
+		   (setf width_ (dot f fmt pix width)
+			 height_ (dot f fmt pix height))
 		   (let ((r (v4l2_requestbuffers (designated-initializer :count 1
 									 :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
 									 :memory V4L2_MEMORY_MMAP))))
-		     (xioctl VIDIOC_REQBUFS &r)
+		     ,(xioctl `(:request reqbufs :var &r));(xioctl VIDIOC_REQBUFS &r)
 		     (buffers_.resize r.count)
 		     (dotimes (i r.count)
 		       (let ((buf (v4l2_buffer
@@ -126,25 +137,50 @@
 				    :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
 				    :memory V4L2_MEMORY_MMAP
 				    ))))
-			 (xioctl VIDIOC_QUERYBUF &buf)
+			 ;(xioctl VIDIOC_QUERYBUF &buf)
+			 ,(xioctl `(:request querybuf :var &buf))
 			 (setf (dot (aref buffers_ i)
 				    length) buf.length
-			       (dot (aref buffers_ i)
-				    start) (mmap nullptr buf.length (or PROT_READ
-									PROT_WRITE)
-						 MAP_SHARED fd_ buf.m.offset) 
+				    (dot (aref buffers_ i)
+					 start) (mmap nullptr buf.length (or PROT_READ
+									     PROT_WRITE)
+					 MAP_SHARED fd_ buf.m.offset) 
 				    )
 			 (when (== MAP_FAILED (dot (aref buffers_ i) start))
 			   (throw (std--runtime_error (string "mmap failed")))))))))
+
+	       (defmethod getFrame (filename)
+		 (declare (type "std::string" filename))
+		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
+								 :memory V4L2_MEMORY_MMAP))))
+		   ;(xioctl VIDIOC_DQBUF &buf)
+		   ,(xioctl `(:request dqbuf :var &buf))
+		   )
+		 (let ((outFile (std--ofstream filename std--ios--binary)))
+		   (<< outFile (string "P6\\n")
+		       width_
+		       (string " ")
+		       height_
+		       (string " 255\\n")
+		       
+		       )
+		   (outFile.write (static_cast<char*> (dot (aref buffers_ buf.index)
+							   start))
+				  buf.bytesused)
+		   (outFile.close)
+		   ,(xioctl `(:request qbuf :var &buf))
+					;(xioctl VIDIOC_QBUF &buf)
+		   ))
 	       	       
 	       "private:"
 	       (defstruct0 buffer
-		 (start void*)
+		   (start void*)
 		 (length size_t))
 
-	       (defmethod xioctl (request arg)
+	       (defmethod xioctl (request arg str)
 		 (declare (type "unsigned long" request)
-			  (type void* arg))
+			  (type void* arg)
+			  (type "const std::string&" str))
 		 (let ((r 0))
 		   (space do
 			  (progn
@@ -152,7 +188,11 @@
 			  while (paren (logand (== -1 r)
 					       (== EINTR errno))))
 		   (when (== -1 r)
-		     (throw (std--runtime_error (std--strerror errno))))))
+		     (throw (std--runtime_error (+ (string "ioctl ")
+						   str
+						   (string " ")
+						   (std--strerror errno)
+						   ))))))
 
 	       
 	       ,@(remove-if #'null
@@ -198,11 +238,16 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-       
-       (let ((cap (V4L2Capture  (string "/dev/video0"))))
-	 (cap.startCapturing)
-       
-	 (return 0))))
+       (handler-case
+	   (let ((cap (V4L2Capture  (string "/dev/video0"))))
+	     (cap.startCapturing)
+	     
+	     )
+	 ("const std::runtime_error&" (e)
+	   ,(lprint :msg "error"
+		    :vars `((e.what)))
+	   (return 1)))
+       (return 0)))
    :omit-parens t
    :format nil
    :tidy nil))
