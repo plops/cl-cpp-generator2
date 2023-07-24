@@ -164,7 +164,7 @@
 			 ,(xioctl `(:request qbuf :var &buf)))))))
 
 	       (defmethod getFrame (filename)
-		 (declare (type "std::string" filename))
+		 (declare (type "const std::string&" filename))
 		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
 								 :memory V4L2_MEMORY_MMAP))))
 					
@@ -254,7 +254,11 @@
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
 				    3)))
-	     (cap.setupFormat 320 240 V4L2_PIX_FMT_RGB24)
+	     (cap.setupFormat 1280 720
+			      ;V4L2_PIX_FMT_RGB24
+			      ;V4L2_PIX_FMT_YUYV
+			      V4L2_PIX_FMT_YUV420
+			      )
 	     (cap.startCapturing)
 	     (usleep 64000)
 	     (dotimes (i 9)
