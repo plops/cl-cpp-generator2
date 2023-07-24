@@ -423,9 +423,11 @@
        (handler-case
 	   (let ((cap (V4L2Capture  (string "/dev/video0")
 				    3)))
-	     (let ((w 320 ;1280
+	     (let ((w ;320 ;
+		      1280
 		      )
-		   (h 180 ; 720
+		   (h ;180 ;
+		      720
 		      ))
 	      (cap.setupFormat w h
 			       ;V4L2_PIX_FMT_RGB24
