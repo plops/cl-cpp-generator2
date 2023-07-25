@@ -404,14 +404,7 @@
 			 (time_ns 0LL)
 			 (timeout_us	;10000L
 			   100000L)
-			 (readStreamRet
-			   (-> sdr_
-			       (readStream rx_stream_
-					   (buffs.data)
-					   numElems
-					   flags
-					   time_ns
-					   timeout_us)))
+			 
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
 				  (elapsed (std--chrono--duration<double> (- end start)))
@@ -425,7 +418,17 @@
 			      ,(lprint :msg "data block acquisition took"
 				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
 		     (cond
-		       ((== readStreamRet SOAPY_SDR_TIMEOUT)
+		       ((space
+			 (setf "auto  readStreamRet"
+			       (-> sdr_
+				   (readStream rx_stream_
+					       (buffs.data)
+					       numElems
+					       flags
+					       time_ns
+					       timeout_us)))
+			 
+			 (== readStreamRet SOAPY_SDR_TIMEOUT))
 			,(lprint :msg "warning: timeout")
 			(return 0))
 		       ((== readStreamRet SOAPY_SDR_OVERFLOW)
@@ -456,7 +459,7 @@
 
 	       (defmethod stopCapture ()
 		 (progn
-		   (let ((lock (std--lock_guard<std--mutex> mtx_)))
+		   (let ((lock (std--scoped_lock mtx_)))
 		     (setf stop_ true)))
 		 (dot cv_ (notify_all))
 		 (when (capture_thread_.joinable)
@@ -464,13 +467,13 @@
 
 	       (defmethod getFifo ()
 		 (declare (values "std::deque<std::complex<float>>"))
-		 (let ((lock (std--lock_guard<std--mutex> mtx_)))
+		 (let ((lock (std--scoped_lock mtx_)))
 		   (return fifo_)))
 
 	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
 		 (declare (type "const std::function<void(const std::deque<std::complex<float>>&)> &" func)
 			  (type "std::size_t" n))
-		 (let ((lock (std--lock_guard<std--mutex> mtx_))
+		 (let ((lock (std--scoped_lock mtx_))
 		       (n0 (std--min n (fifo_.size))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
 		   (if (<= (fifo_.size) n0)
@@ -488,7 +491,7 @@
 		 (declare (type "Func " func)
 			  (type "std::size_t" n)
 			  (values "template<typename Func> void"))
-		 (let ((lock (std--lock_guard<std--mutex> mtx_))
+		 (let ((lock (std--scoped_lock mtx_))
 		       (n0 (std--min n (fifo_.size))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
 		   (if (<= (fifo_.size) n0)
@@ -514,15 +517,15 @@
 			  (when stop_
 			    break))
 			(do0 (comments "capture and push to buffer")
-			     (let ((numElems (capture)))
-			       (when (< 0 numElems)
-				 (comments "Insert new elements into the deque")
-				 (dot fifo_ (insert (fifo_.end)
-						    (buf_.begin)
-						    (+
-						     (buf_.begin)
-						     numElems)))
-				 )))
+			     (when (space (setf "auto numElems" (capture))
+					  (< 0 numElems))
+			       (comments "Insert new elements into the deque")
+			       (dot fifo_ (insert (fifo_.end)
+						  (buf_.begin)
+						  (+
+						   (buf_.begin)
+						   numElems)))
+			       ))
 			
 			(comments "Remove old elements if size exceeds 2048")
 			(when (< 2048 (fifo_.size))
