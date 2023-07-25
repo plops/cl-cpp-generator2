@@ -240,7 +240,7 @@
 		  (explicit)	    
 		  (values :constructor)))
 	       
-	       (defmethod Initialize ()
+	       (defmethod initialize ()
 		 (declare (values bool))
 		 (let ((sdrResults (SoapySDR--Device--enumerate)))
 		   #+more (dotimes (i (sdrResults.size))
@@ -388,12 +388,14 @@
 	       (defmethod getBuf ()
 		 (declare (values ,(format nil "const std::vector<~a>&" acq-type)))
 		 (return buf_))
-	       (defmethod Capture ()
+
+	       
+	       (defmethod capture ()
 		 (declare (values int))
 		 (let (#+more (start (std--chrono--high_resolution_clock--now))
 		       (numElems parameters_.bufferSize))
 		   #+more (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
-			     ".04 seems to average over 60 values in the history")
+				    ".04 seems to average over 60 values in the history")
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
@@ -409,16 +411,16 @@
 					   timeout_us)))
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
-			   (elapsed (std--chrono--duration<double> (- end start)))
-			  (elapsed_ms (* 1000 (elapsed.count)))
-			  (expected_ms (/ (* 1000d0 readStreamRet)
-					  parameters_.sampleRate))) 
-		       (setf average_elapsed_ms_
-			    (+ (* alpha_ elapsed_ms)
-			       (* (- 1d0 alpha_)
-				  average_elapsed_ms_)))
-		       ,(lprint :msg "data block acquisition took"
-				:vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
+				  (elapsed (std--chrono--duration<double> (- end start)))
+				  (elapsed_ms (* 1000 (elapsed.count)))
+				  (expected_ms (/ (* 1000d0 readStreamRet)
+						  parameters_.sampleRate))) 
+			      (setf average_elapsed_ms_
+				    (+ (* alpha_ elapsed_ms)
+				       (* (- 1d0 alpha_)
+					  average_elapsed_ms_)))
+			      ,(lprint :msg "data block acquisition took"
+				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
 		     (cond
 		       ((== readStreamRet SOAPY_SDR_TIMEOUT)
 			,(lprint :msg "warning: timeout")
@@ -440,12 +442,47 @@
 			(return readStreamRet)))
 		     (return numElems))))
 
-	       (defmethod Close ()
+	       (defmethod close ()
 		 (do0 (-> sdr_ (deactivateStream rx_stream_ 0 0))
 		      (-> sdr_ (closeStream rx_stream_))
 		      (SoapySDR--Device--unmake sdr_)))
+
+	       (defmethod startCapture ()
+		 (setf capture_thread_ (std--thread &SdrManager--captureThread
+						    this)))
+
+	       (defmethod stopCapture ()
+		 (progn
+		   (let ((lock (std--lock_guard<std--mutex> mtx_)))
+		     (setf stop_ true)))
+		 (dot cv_ (notify_all))
+		 (when (capture_thread_.joinable)
+		   (capture_thread_.join)))
+
+	       (defmethod getFifo ()
+		 (declare (values "std::deque<std::complex<float>>"))
+		 (let ((lock (std--lock_guard<std--mutex> mtx_)))
+		   (return fifo_)))
+
+	       (defmethod processFifo (func)
+		 (declare (type "std::function<void(const std::deque<std::complex<float>>&)>" func))
+		 (let ((lock (std--lock_guard<std--mutex> mtx_)))
+		   (func fifo_)))
 	       
 	       "private:"
+
+	       (defmethod captureThread ()
+		 (while true
+			(let ((lock (std--unique_lock<std--mutex> mtx_)))
+			  (cv_.wait lock
+				    (lambda ()
+				      (declare (capture "&"))
+				      (return stop_)))
+			  (when stop_
+			    break))
+			(comments "capture and push to buffer")
+			(when (< 2048 (fifo_.size))
+			  (fifo_.pop_front))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -681,7 +718,7 @@
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
-       (let ((n (manager.Capture)))
+       (let ((n (manager.capture)))
 	 (when (< 0 n)
 	   (let ((buf (manager.getBuf)))
 	     (let ((x)
@@ -742,7 +779,7 @@
 		    (parameters (argParser.getParsedArgs))
 		    (manager (SdrManager parameters)))
 		(startDaemonIfNotRunning)
-		(manager.Initialize)
+		(manager.initialize)
 				
 		(let ((runnerParams (HelloImGui--SimpleRunnerParams
 				     (designated-initializer
@@ -764,7 +801,7 @@
 							   ))))
 		  (ImmApp--Run runnerParams
 			       addOnsParams)
-		  (manager.Close))))
+		  (manager.close))))
 	  
 	   ("const ArgException&" (e)
 	     (do0 ,(lprint :msg "Error processing command line arguments"
