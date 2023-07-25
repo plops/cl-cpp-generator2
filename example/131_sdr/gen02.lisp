@@ -300,8 +300,8 @@
 					    )
 				 )
 			     (-> sdr_ (setGainMode direction channel automatic))
-			     (-> sdr_ (setGain direction channel (string "IFGR") 59))
-			     (-> sdr_ (setGain direction channel (string "RFGR") 3))
+			     (-> sdr_ (setGain direction channel (string "IFGR") 20))
+			     (-> sdr_ (setGain direction channel (string "RFGR") 0))
 			     #+more
 			     (let ((ifgrGain (-> sdr_ (getGain direction channel (string "IFGR"))))
 				   (ifgrGainRange (-> sdr_ (getGainRange direction channel (string "IFGR"))))
@@ -312,9 +312,11 @@
 						ifgrGain
 						(ifgrGainRange.minimum)
 						(ifgrGainRange.maximum)
+						(ifgrGainRange.step)
 						rfgrGain
 						(rfgrGainRange.minimum)
 						(rfgrGainRange.maximum)
+						(rfgrGainRange.step)
 						))))))
 		       #+more
 		       ((lambda ()
@@ -393,6 +395,12 @@
 			   )))
 		       (return true)))))
 
+	       ,@(loop for e in `(IF RF)
+		       collect
+		       `(defmethod ,(format nil "setGain~a" e) (value)
+			  (declare (type int value))
+			  (-> sdr_ (setGain SOAPY_SDR_RX 0 (string ,(format nil "~aGR" e)) value))))
+	       
 	       (defmethod getBuf ()
 		 (declare (values ,(format nil "const std::vector<~a>&" acq-type))
 			  (const))
@@ -803,6 +811,19 @@
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
+
+       (do0
+	,@(loop for e in `((:name IF :min 0 :max 59)
+			  (:name RF :min 0 :max 3))
+	       collect
+	       (destructuring-bind (&key name min max) e
+		(let ((gain (format nil "gain~a" name)))
+		  `(let ((,gain ,min))
+		     (declare (type "static int" ,gain))
+		     (when (ImGui--SliderInt (string ,gain)
+					     (ref ,gain) ,min ,max)
+		       (dot manager (,(format nil "setGain~a" name) ,gain))))))))
+       
        (let ((x)
 	     (y1)
 	     (y2)
