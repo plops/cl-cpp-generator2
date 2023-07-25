@@ -5,6 +5,10 @@
 
 (in-package :cl-cpp-generator2)
 
+(setf *features* (set-difference *features* (list :more)))
+(setf *features* (set-exclusive-or *features* (list :more)))
+
+
 (progn
   (progn
     (defparameter *source-dir* #P"example/131_sdr/source02/src/")
@@ -92,74 +96,74 @@
 	       )
 
 	     ,(let ((name 'SdrException))
-	      `(defclass ,name "public std::exception"	 
-		"public:"
-		(defmethod ,name (,@(remove-if #'null
-				     (loop for e in members
-					   collect
-					   (destructuring-bind (name &key type param (initform 0)) e
-					     (let ((nname (intern
-							   (string-upcase
-							    (cl-change-case:snake-case (format nil "~a" name))))))
-					       (when param
-						 nname))))))
-		  (declare
+		`(defclass ,name "public std::exception"	 
+		   "public:"
+		   (defmethod ,name (,@(remove-if #'null
+					(loop for e in members
+					      collect
+					      (destructuring-bind (name &key type param (initform 0)) e
+						(let ((nname (intern
+							      (string-upcase
+							       (cl-change-case:snake-case (format nil "~a" name))))))
+						  (when param
+						    nname))))))
+		     (declare
+		      ,@(remove-if #'null
+				   (loop for e in members
+					 collect
+					 (destructuring-bind (name &key type param (initform 0)) e
+					   (let ((nname (intern
+							 (string-upcase
+							  (cl-change-case:snake-case (format nil "~a" name))))))
+					     (when param
+					   
+					       `(type ,type ,nname))))))
+		      (construct
+		       ,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+						  (nname_ (format nil "~a_"
+								  (cl-change-case:snake-case (format nil "~a" name)))))
+					      (cond
+						(param
+						 `(,nname_ ,nname))
+						(initform
+						 `(,nname_ ,initform)))))))
+		       )
+		      (explicit)	    
+		      (values :constructor))
+		 
+		     )
+		   (defmethod what ()
+		     (declare (const)
+			      (noexcept)
+			      (override)
+			      (values "[[nodiscard]] const char*"))
+		     (return (msg_.c_str)))
+		   "private:"
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
 				      (destructuring-bind (name &key type param (initform 0)) e
-					(let ((nname (intern
-						      (string-upcase
-						       (cl-change-case:snake-case (format nil "~a" name))))))
-					  (when param
-					   
-					    `(type ,type ,nname))))))
-		   (construct
-		    ,@(remove-if #'null
-				 (loop for e in members
-				       collect
-				       (destructuring-bind (name &key type param (initform 0)) e
-					 (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					       (nname_ (format nil "~a_"
-							       (cl-change-case:snake-case (format nil "~a" name)))))
-					   (cond
-					     (param
-					      `(,nname_ ,nname))
-					     (initform
-					      `(,nname_ ,initform)))))))
-		    )
-		   (explicit)	    
-		   (values :constructor))
-		 
-		  )
-		(defmethod what ()
-		  (declare (const)
-			   (noexcept)
-			   (override)
-			   (values "[[nodiscard]] const char*"))
-		  (return (msg_.c_str)))
-		"private:"
-		,@(remove-if #'null
-			     (loop for e in members
-				   collect
-				   (destructuring-bind (name &key type param (initform 0)) e
-				     (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					   (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				       `(space ,type ,nname_)))))
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					  `(space ,type ,nname_)))))
 
-		)))))
+		   )))))
 
   (let* ((name `SdrManager)
-	(acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
-	;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
+	 (acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
+	 ;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
 	
-	(members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
-		   (parameters :type "Args" :param t)
-		   (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
-		   (rx-stream :type "SoapySDR::Stream*" :initform nullptr :param nil)
-		   (average-elapsed-ms :type double :initform 0d0 :param nil)
-		   (alpha :type double :initform .08 :param nil)
-		   )))
+	 (members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
+		    (parameters :type "Args" :param t)
+		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
+		    (rx-stream :type "SoapySDR::Stream*" :initform nullptr :param nil)
+		    (average-elapsed-ms :type double :initform 0d0 :param nil)
+		    (alpha :type double :initform .08 :param nil)
+		    )))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -222,7 +226,7 @@
 	       (defmethod Initialize ()
 		 (declare (values bool))
 		 (let ((sdrResults (SoapySDR--Device--enumerate)))
-		   (dotimes (i (sdrResults.size))
+		   #+more (dotimes (i (sdrResults.size))
 		     (declare (type "unsigned long" i))
 		     ,(lprint :msg "found device"
 			      :vars `(i)))
@@ -235,6 +239,7 @@
 		       (return false))
 		     (let ((direction SOAPY_SDR_RX)
 			   (channel 0))
+		       #+more
 		       ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
 					  (:fun listGains :el gain :values gains)
 					  (:fun listFrequencies :el element :values elements)
@@ -255,17 +260,18 @@
 						      channel
 						      ))))))
 		       (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction channel))))
-			,(lprint :msg "has automatic gain control"
-				 :vars `(
-					 hasAutomaticGain))
-			 ,(lprint :msg "balance" ;; none 
-				  :vars `((-> sdr_ (hasIQBalance direction channel))
-					  (-> sdr_ (hasIQBalanceMode direction channel))
-					  ))
-			 ,(lprint :msg "offset" 
-				  :vars `((-> sdr_ (hasDCOffset direction channel))
-					  (-> sdr_ (hasDCOffsetMode direction channel)) ;; supported
-					  ))
+			 #+more (do0
+			  ,(lprint :msg "has automatic gain control"
+				   :vars `(
+					   hasAutomaticGain))
+			  ,(lprint :msg "balance" ;; none 
+				   :vars `((-> sdr_ (hasIQBalance direction channel))
+					   (-> sdr_ (hasIQBalanceMode direction channel))
+					   ))
+			  ,(lprint :msg "offset" 
+				   :vars `((-> sdr_ (hasDCOffset direction channel))
+					   (-> sdr_ (hasDCOffsetMode direction channel)) ;; supported
+					   )))
 			 (when hasAutomaticGain
 			   (let ((automatic false ;true
 					    )
@@ -304,6 +310,7 @@
 
 					) )
 
+		       #+more
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction channel)))
 				       ,(lprint :vars `(rate)))
 			    (for-range (bw (-> sdr_ (listBandwidths direction channel)))
@@ -320,7 +327,8 @@
 				       ,(lprint :vars `(gpio)))
 			    (for-range (uart (-> sdr_ (listUARTs))) ;; none
 				       ,(lprint :vars `(uart))))
-		       
+
+		       #+more
 		       ,@(loop for e in `(RF CORR)
 			       collect
 			       (let ((name (format nil "frequency_range_~a" e)))
@@ -349,8 +357,7 @@
 			 (comments "reusable buffer of rx samples")
 			 (let ((numElems parameters_.bufferSize)
 			       (numBytes (* parameters_.bufferSize
-					    (sizeof ,acq-type)))
-			       )
+					    (sizeof ,acq-type))))
 			   (setf buf_  
 				 (,(format nil "std::vector<~a>" acq-type)
 				  numElems))
@@ -366,9 +373,9 @@
 		 (return buf_))
 	       (defmethod Capture ()
 		 (declare (values int))
-		 (let ((start (std--chrono--high_resolution_clock--now))
+		 (let (#+more (start (std--chrono--high_resolution_clock--now))
 		       (numElems parameters_.bufferSize))
-		   (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
+		   #+more (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 			     ".04 seems to average over 60 values in the history")
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
@@ -383,17 +390,18 @@
 					   flags
 					   time_ns
 					   timeout_us)))
-			 (end (std--chrono--high_resolution_clock--now))
-			 (elapsed (std--chrono--duration<double> (- end start)))
-			 (elapsed_ms (* 1000 (elapsed.count)))
-			 (expected_ms (/ (* 1000d0 readStreamRet)
-					 parameters_.sampleRate)))
-		     (setf average_elapsed_ms_
-			   (+ (* alpha_ elapsed_ms)
-			      (* (- 1d0 alpha_)
-				 average_elapsed_ms_)))
-		     ,(lprint :msg "data block acquisition took"
-			      :vars `(elapsed_ms average_elapsed_ms_ expected_ms ))
+			 )
+		     #+more (let ((end (std--chrono--high_resolution_clock--now))
+			   (elapsed (std--chrono--duration<double> (- end start)))
+			  (elapsed_ms (* 1000 (elapsed.count)))
+			  (expected_ms (/ (* 1000d0 readStreamRet)
+					  parameters_.sampleRate))) 
+		       (setf average_elapsed_ms_
+			    (+ (* alpha_ elapsed_ms)
+			       (* (- 1d0 alpha_)
+				  average_elapsed_ms_)))
+		       ,(lprint :msg "data block acquisition took"
+				:vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
 		     (cond
 		       ((== readStreamRet SOAPY_SDR_TIMEOUT)
 			,(lprint :msg "warning: timeout")
@@ -536,9 +544,7 @@
 	       
 	       (defmethod processArgs (args)
 		 (declare (type "const std::vector<std::string>&" args))
-		 
-		 (let (
-		       (options (std--vector<Option>
+		 (let ((options (std--vector<Option>
 				 (curly
 				  ,@(loop for e in cli-args
 					  collect
@@ -608,11 +614,11 @@
      (include<>
       iostream
       string
-      ;complex
+					;complex
       vector
-      ;algorithm
+					;algorithm
       
-      ;chrono
+					;chrono
 
       filesystem
       unistd.h
@@ -632,49 +638,49 @@
      (comments "./my_project -b $((2**10))")
 
      #+nil (defun DemoImplot ()
-       (let ((x)
-	     (y1)
-	     (y2))
-	 (declare (type "static std::vector<double>" x y1 y2))
-	 (when (x.empty)
-	   (dotimes (i 1000)
-	     (let ((x_ (* #.pi (/ 4d0 1000d0) i)))
-	       (x.push_back x_)
-	       (y1.push_back (cos x_))
-	       (y2.push_back (sin x_)))))
-	 (ImGuiMd--Render (string "# This is a plot"))
-	 (when (ImPlot--BeginPlot (string "Plot"))
-	   ,@(loop for e in `(y1 y2)
-		   collect
-		   `(ImPlot--PlotLine (string ,e)
-				      (x.data)
-				      (dot ,e (data))
-				      (x.size)))
-	   (ImPlot--EndPlot))))
+	     (let ((x)
+		   (y1)
+		   (y2))
+	       (declare (type "static std::vector<double>" x y1 y2))
+	       (when (x.empty)
+		 (dotimes (i 1000)
+		   (let ((x_ (* #.pi (/ 4d0 1000d0) i)))
+		     (x.push_back x_)
+		     (y1.push_back (cos x_))
+		     (y2.push_back (sin x_)))))
+	       (ImGuiMd--Render (string "# This is a plot"))
+	       (when (ImPlot--BeginPlot (string "Plot"))
+		 ,@(loop for e in `(y1 y2)
+			 collect
+			 `(ImPlot--PlotLine (string ,e)
+					    (x.data)
+					    (dot ,e (data))
+					    (x.size)))
+		 (ImPlot--EndPlot))))
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
        (let ((n (manager.Capture)))
-	(when (< 0 n)
-	  (let ((buf (manager.getBuf)))
-	    (let ((x)
-		  (y1)
-		  (y2))
-	      (declare (type "std::vector<double>" x y1 y2))
-	      (dotimes (i n)
-		(x.push_back i)
-		(y1.push_back (dot  (aref buf i) (real)) )
-		(y2.push_back (dot  (aref buf i) (imag)) ))
-	      (ImGuiMd--Render (string "# This is a plot"))
-	      (when (ImPlot--BeginPlot (string "Plot"))
-		,@(loop for e in `(y1 y2)
-			collect
-			`(ImPlot--PlotLine (string ,e)
-					   (x.data)
-					   (dot ,e (data))
-					   (x.size)))
-		(ImPlot--EndPlot)))
-	    )))) 
+	 (when (< 0 n)
+	   (let ((buf (manager.getBuf)))
+	     (let ((x)
+		   (y1)
+		   (y2))
+	       (declare (type "std::vector<double>" x y1 y2))
+	       (dotimes (i n)
+		 (x.push_back i)
+		 (y1.push_back (dot  (aref buf i) (real)) )
+		 (y2.push_back (dot  (aref buf i) (imag)) ))
+	       (ImGuiMd--Render (string "# This is a plot"))
+	       (when (ImPlot--BeginPlot (string "Plot"))
+		 ,@(loop for e in `(y1 y2)
+			 collect
+			 `(ImPlot--PlotLine (string ,e)
+					    (x.data)
+					    (dot ,e (data))
+					    (x.size)))
+		 (ImPlot--EndPlot)))
+	     )))) 
     
      ,(let* ((daemon-name "sdrplay_apiService")
 	     (daemon-path "/usr/bin/")
@@ -684,23 +690,23 @@
 				 "/dev/shm/Glbl\\\\sdrSrvComMtx"
 				 "/dev/shm/Glbl\\\\sdrSrvComShMem")))
 	`(do0
-	 (defun isDaemonRunning ()
-	   (declare (values bool))
-	   (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
-		 (shm_files_exist true ))
-	     ,@(loop for e in daemon-shm-files
-		     collect
-		     `(unless (std--filesystem--exists (string ,e))
-			,(lprint :msg (format nil "file ~a does not exist" e)
-				 )
-			(return false)))
-	     (return (logand (== 0 (WEXITSTATUS exit_code))
-			     shm_files_exist))))
-	 (defun startDaemonIfNotRunning ()
-	   (unless (isDaemonRunning)
-	     ,(lprint :msg "sdrplay daemon is not running. start it")
-	     (system (string ,(format nil "~a &" daemon-fullpath)))
-	     (sleep 1)))))
+	  (defun isDaemonRunning ()
+	    (declare (values bool))
+	    (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
+		  (shm_files_exist true ))
+	      ,@(loop for e in daemon-shm-files
+		      collect
+		      `(unless (std--filesystem--exists (string ,e))
+			 ,(lprint :msg (format nil "file ~a does not exist" e)
+				  )
+			 (return false)))
+	      (return (logand (== 0 (WEXITSTATUS exit_code))
+			      shm_files_exist))))
+	  (defun startDaemonIfNotRunning ()
+	    (unless (isDaemonRunning)
+	      ,(lprint :msg "sdrplay daemon is not running. start it")
+	      (system (string ,(format nil "~a &" daemon-fullpath)))
+	      (sleep 1)))))
      
      (defun main (argc argv)
        (declare (values int)
@@ -716,8 +722,7 @@
 		    (manager (SdrManager parameters)))
 		(startDaemonIfNotRunning)
 		(manager.Initialize)
-		
-		
+				
 		(let ((runnerParams (HelloImGui--SimpleRunnerParams
 				     (designated-initializer
 				      :guiFunction
@@ -727,7 +732,7 @@
 					; ,(lprint :msg "GUI")
 					 (ImGuiMd--RenderUnindented
 					  (string-r "# Bundle"))
-					 ;(DemoImplot)
+					;(DemoImplot)
 					 (DemoSdr manager)))
 				      :windowTitle (string "imgui_soapysdr")
 				      :windowSize (curly 800 600)
