@@ -814,21 +814,53 @@
 
        (do0
 	,@(loop for e in `((:name IF :min 0 :max 59)
-			  (:name RF :min 0 :max 3))
+			   (:name RF :min 0 :max 3))
 	       collect
 	       (destructuring-bind (&key name min max) e
 		(let ((gain (format nil "gain~a" name)))
 		  `(let ((,gain ,min))
 		     (declare (type "static int" ,gain))
 		     (when (ImGui--SliderInt (string ,gain)
-					     (ref ,gain) ,min ,max)
+					     (ref ,gain) ,min ,max
+					     (string "%02d")
+					     ImGuiSliderFlags_AlwaysClamp)
 		       (dot manager (,(format nil "setGain~a" name) ,gain))))))))
+
+       ,@(loop for e in `((:name viewBlockSize :min 0 :max ,(expt 2 16))
+			  (:name histogramSize :min 0 :max ,(expt 2 10))
+			  )
+	       collect
+	       (destructuring-bind (&key name min max) e
+		(let ((var (format nil "~a" name)))
+		  `(let ((,var (/ (+ ,max ,min) 2)))
+		     (declare (type "static int" ,var))
+		     (when (ImGui--SliderInt (string ,var)
+					     (ref ,var) ,min ,max
+					     (string "%06d")
+					     ;ImGuiSliderFlags_AlwaysClamp
+					     )
+		       (comments " just use value"))))))
+       ,@(loop for e in `((:name histogramAlpha :min 0 :max 1 :default .04))
+	       collect
+	       (destructuring-bind (&key name min max default) e
+		(let ((var (format nil "~a" name)))
+		  `(let ((,var ,default))
+		     (declare (type "static float" ,var))
+		     (when (ImGui--SliderFloat (string ,var)
+					       (ref ,var) ,min ,max
+					       )
+		       (comments " just use value"))))))
        
        (let ((x)
 	     (y1)
 	     (y2)
 	     )
 	 (declare (type "std::vector<double>" x y1 y2)))
+
+       (let ((maxVal (std--numeric_limits<float>--min))
+	     (minVal (std--numeric_limits<float>--max))
+	     )
+	 (declare (type float maxVal minVal)))
        (do0
 	(manager.processFifo
 	 (lambda (fifo)
@@ -838,9 +870,17 @@
 	   (let ((n (fifo.size)))
 	     (dotimes (i n)
 	       (x.push_back i)
-	       (y1.push_back (dot  (aref fifo i) (real)) )
-	       (y2.push_back (dot  (aref fifo i) (imag)) ))))
-	 ,(expt 2 16))
+	       (let ((re (dot  (aref fifo i) (real)) )
+		     (im (dot  (aref fifo i) (imag)) )))
+	       (y1.push_back re)
+	       (y2.push_back im)
+	       (setf maxVal (std--max maxVal (std--max re im)))
+	       (setf minVal (std--min minVal (std--min re im))))))
+	 viewBlockSize ;,(expt 2 16)
+	 )
+
+	
+	
 	(do0 (ImGuiMd--Render (string "# This is a plot"))
 	     (when (ImPlot--BeginPlot (string "Plot"))
 	       ,@(loop for e in `(y1 y2)
@@ -849,7 +889,35 @@
 					  (x.data)
 					  (dot ,e (data))
 					  (x.size)))
-	       (ImPlot--EndPlot))))
+	       (ImPlot--EndPlot)))
+
+	(do0
+	 (comments "Apply exponential filter to stablilize histogram boundaries")
+	 (let ((alpha histogramAlpha)
+	       (filteredMax maxVal)
+	       (filteredMin minVal))
+	   (declare (type "static float" filteredMax filteredMin))
+	   (setf filteredMax (+ (* (- 1 alpha) filteredMax)
+				(* alpha maxVal)))
+	   (setf filteredMin (+ (* (- 1 alpha) filteredMin)
+				(* alpha minVal)))
+	   
+	   )
+	 ,(lprint :msg "histogram"
+		  :vars `(minVal maxVal)
+	   )
+	 (when (ImPlot--BeginPlot (string "Histogram"))
+	   ,@(loop for e in `(y1 y2)
+		   collect
+		   `(ImPlot--PlotHistogram (string ,(format nil "histogram ~a" e))
+				      
+					   (dot ,e (data))
+					   (dot ,e (size))
+					   histogramSize
+					   1.0
+					   (ImPlotRange filteredMin filteredMax)
+					   ))
+	   (ImPlot--EndPlot))))
        #+ni 
        (let ((n (manager.capture)))
 	 (when (< 0 n)
