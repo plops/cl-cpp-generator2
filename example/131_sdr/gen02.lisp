@@ -181,7 +181,9 @@
 		  SoapySDR/Formats.hpp
 		  SoapySDR/Errors.hpp
 
-		  chrono
+		  )
+       #+more
+       (include<> chrono
 		  iostream))
      :code `(do0
 	     (defclass ,name ()
