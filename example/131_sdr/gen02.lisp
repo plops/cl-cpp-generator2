@@ -490,6 +490,8 @@
 	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
 		 (declare (type "const std::function<void(const std::deque<std::complex<float>>&)> &" func)
 			  (type "std::size_t" n))
+		 ,(lprint :msg "processFifo"
+			  :vars `(n))
 		 (let ((lock (std--scoped_lock mtx_))
 		       (n0 (std--min n (fifo_.size))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
@@ -529,33 +531,34 @@
 		 (let ((captureSleepUs parameters_.captureSleepUs))
 		  (while true
 					;,(lprint :msg "get lock")
-			 (let ((lock (std--scoped_lock mtx_)))
+			 (progn
+			   (let ((lock (std--scoped_lock mtx_)))
 			  
-			   (when stop_
-			     ,(lprint :msg "stopping captureThread")
-			     break))
-			 (do0 (comments "capture and push to buffer")
+			     (when stop_
+			       ,(lprint :msg "stopping captureThread")
+			       break))
+			   (do0 (comments "capture and push to buffer")
 					;,(lprint :msg "capture")
-			      (when (space (setf "auto numElems" (capture))
-					   (< 0 numElems))
-				(comments "Insert new elements into the deque")
-				(dot fifo_ (insert (fifo_.end)
-						   (buf_.begin)
-						   (+
-						    (buf_.begin)
-						    numElems)))
-				))
+				(when (space (setf "auto numElems" (capture))
+					     (< 0 numElems))
+				  (comments "Insert new elements into the deque")
+				  (dot fifo_ (insert (fifo_.end)
+						     (buf_.begin)
+						     (+
+						      (buf_.begin)
+						      numElems)))
+				  ))
 
-			 #+nil
-			 ,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
-				  :vars `(parameters_.fifoSize (fifo_.size)))
-			 #+nil (while (< parameters_.fifoSize (fifo_.size))
-				      (fifo_.pop_front))
-			 (when (< parameters_.fifoSize (fifo_.size))
-			   (fifo_.erase (fifo_.begin)
-					(+ (fifo_.begin)
-					   (- (fifo_.size)
-					      parameters_.fifoSize ))))
+			   #+nil
+			   ,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
+				    :vars `(parameters_.fifoSize (fifo_.size)))
+			   #+nil (while (< parameters_.fifoSize (fifo_.size))
+					(fifo_.pop_front))
+			   (when (< parameters_.fifoSize (fifo_.size))
+			     (fifo_.erase (fifo_.begin)
+					  (+ (fifo_.begin)
+					     (- (fifo_.size)
+						parameters_.fifoSize )))))
 			(when (< 0 captureSleepUs)
 			 (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))))
 	       ,@(remove-if #'null
@@ -799,32 +802,31 @@
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
        (let ((x)
-		(y1)
-		(y2)
-		)
-	    (declare (type "std::vector<double>" x y1 y2))
-	    
-	    
-	    )
-       (manager.processFifo
-	(lambda (fifo)
-	  (declare (type "const std::deque<std::complex<float>>&" fifo)
-		   (capture "&"))
-	  (let ((n (fifo.size)))
-	    (dotimes (i n)
-	      (x.push_back i)
-	      (y1.push_back (dot  (aref fifo i) (real)) )
-	      (y2.push_back (dot  (aref fifo i) (imag)) ))))
-	1024)
-       (do0 (ImGuiMd--Render (string "# This is a plot"))
-		 (when (ImPlot--BeginPlot (string "Plot"))
-		   ,@(loop for e in `(y1 y2)
-			   collect
-			   `(ImPlot--PlotLine (string ,e)
-					      (x.data)
-					      (dot ,e (data))
-					      (x.size)))
-		   (ImPlot--EndPlot)))
+	     (y1)
+	     (y2)
+	     )
+	 (declare (type "std::vector<double>" x y1 y2)))
+       (do0
+	(manager.processFifo
+	 (lambda (fifo)
+	   (declare (type "const std::deque<std::complex<float>>&" fifo)
+		    (capture "&"))
+	   ,(lprint :msg "processFifo_cb")
+	   (let ((n (fifo.size)))
+	     (dotimes (i n)
+	       (x.push_back i)
+	       (y1.push_back (dot  (aref fifo i) (real)) )
+	       (y2.push_back (dot  (aref fifo i) (imag)) ))))
+	 2048)
+	(do0 (ImGuiMd--Render (string "# This is a plot"))
+	     (when (ImPlot--BeginPlot (string "Plot"))
+	       ,@(loop for e in `(y1 y2)
+		       collect
+		       `(ImPlot--PlotLine (string ,e)
+					  (x.data)
+					  (dot ,e (data))
+					  (x.size)))
+	       (ImPlot--EndPlot))))
        #+ni 
        (let ((n (manager.capture)))
 	 (when (< 0 n)
