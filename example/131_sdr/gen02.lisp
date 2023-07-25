@@ -160,9 +160,10 @@
 	 (acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
 	 ;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
 	
-	 (members `((sdr :type "SoapySDR::Device*" :param nil :initform-class nullptr)
+	 (members `(
 		    (parameters :type "const Args&" :param t)
-		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform-class  (,(format nil "std::vector<~a>" acq-type) 512) :param nil )
+		    (sdr :type "SoapySDR::Device*" :param nil :initform-class nullptr)
+		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform  (,(format nil "std::vector<~a>" acq-type) parameters_.bufferSize) :param nil )
 		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
 		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
 		    #+more (alpha :type double :initform .08 :param nil)
@@ -402,8 +403,10 @@
 		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
 			 (flags 0)
 			 (time_ns 0LL)
-			 (timeout_us	;10000L
-			   100000L)
+			 (timeout_us
+			   10000L
+			   ;100000L
+			   )
 			 (readStreamRet (-> sdr_
 				   (readStream rx_stream_
 					       (buffs.data)
@@ -517,15 +520,16 @@
 	       "private:"
 
 	       (defmethod captureThread ()
+		 ,(lprint :msg "captureThread")
 		 (while true
-			(let ((lock (std--unique_lock<std--mutex> mtx_)))
-			  (cv_.wait lock
-				    (lambda ()
-				      (declare (capture "this"))
-				      (return stop_)))
+			;,(lprint :msg "get lock")
+			(let ((lock (std--scoped_lock mtx_)))
+			  
 			  (when stop_
+			    ,(lprint :msg "stopping captureThread")
 			    break))
 			(do0 (comments "capture and push to buffer")
+			     ;,(lprint :msg "capture")
 			     (when (space (setf "auto numElems" (capture))
 					  (< 0 numElems))
 			       (comments "Insert new elements into the deque")
@@ -535,10 +539,18 @@
 						   (buf_.begin)
 						   numElems)))
 			       ))
-			
-			(comments "Remove old elements if size exceeds 2048")
-			(when (< 2048 (fifo_.size))
-			  (fifo_.pop_front))))
+
+			#+nil
+			,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
+				 :vars `(parameters_.fifoSize (fifo_.size)))
+			#+nil (while (< parameters_.fifoSize (fifo_.size))
+			  (fifo_.pop_front))
+			(when (< parameters_.fifoSize (fifo_.size))
+			  (fifo_.erase (fifo_.begin)
+				       (+ (fifo_.begin)
+					  (- (fifo_.size)
+					     parameters_.fifoSize ))))
+			(std--this_thread--sleep_for (std--chrono--milliseconds 16))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -554,7 +566,9 @@
 		     (:name bandwidth :short B :default  8d6 :type double :help "Bandwidth in Hz" :parse "std::stod")
 		     (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
 		     (:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
-		     (:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi"))
+		     (:name fifoSize :short F :default 2048 :type int :help "Fifo Buffer Size (number of elements)" :parse "std::stoi")
+		     ;(:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi")
+		     )
 		   )
 	 (members `((cmdlineArgs :type "const std::vector<std::string>&" :param t)
 		    (parsedArgs :type "Args" :param nil
@@ -774,29 +788,33 @@
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
-       (manager.processFifo
-	(lambda (fifo)
-	  (declare (type "const std::deque<std::complex<float>>&" fifo))
-	  (let ((x)
+       (let ((x)
 		(y1)
 		(y2)
-		(n (fifo.size)))
+		)
 	    (declare (type "std::vector<double>" x y1 y2))
 	    
+	    
+	    )
+       (manager.processFifo
+	(lambda (fifo)
+	  (declare (type "const std::deque<std::complex<float>>&" fifo)
+		   (capture "&"))
+	  (let ((n (fifo.size)))
 	    (dotimes (i n)
 	      (x.push_back i)
 	      (y1.push_back (dot  (aref fifo i) (real)) )
-	      (y2.push_back (dot  (aref fifo i) (imag)) ))
-	    (ImGuiMd--Render (string "# This is a plot"))
-	    (when (ImPlot--BeginPlot (string "Plot"))
-	      ,@(loop for e in `(y1 y2)
-		      collect
-		      `(ImPlot--PlotLine (string ,e)
-					 (x.data)
-					 (dot ,e (data))
-					 (x.size)))
-	      (ImPlot--EndPlot))))
-	256)
+	      (y2.push_back (dot  (aref fifo i) (imag)) ))))
+	1024)
+       (do0 (ImGuiMd--Render (string "# This is a plot"))
+		 (when (ImPlot--BeginPlot (string "Plot"))
+		   ,@(loop for e in `(y1 y2)
+			   collect
+			   `(ImPlot--PlotLine (string ,e)
+					      (x.data)
+					      (dot ,e (data))
+					      (x.size)))
+		   (ImPlot--EndPlot)))
        #+ni 
        (let ((n (manager.capture)))
 	 (when (< 0 n)
