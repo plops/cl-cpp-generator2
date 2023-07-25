@@ -404,11 +404,18 @@
 			 (time_ns 0LL)
 			 (timeout_us	;10000L
 			   100000L)
-			 
+			 (readStreamRet (-> sdr_
+				   (readStream rx_stream_
+					       (buffs.data)
+					       numElems
+					       flags
+					       time_ns
+					       timeout_us)))
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
 				  (elapsed (std--chrono--duration<double> (- end start)))
 				  (elapsed_ms (* 1000 (elapsed.count)))
+				  
 				  (expected_ms (/ (* 1000d0 readStreamRet)
 						  parameters_.sampleRate))) 
 			      (setf average_elapsed_ms_
@@ -419,7 +426,7 @@
 				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
 		     (cond
 		       ((space
-			 (setf "auto  readStreamRet"
+			 #-more (setf "auto  readStreamRet"
 			       (-> sdr_
 				   (readStream rx_stream_
 					       (buffs.data)
@@ -454,10 +461,12 @@
 		      (SoapySDR--Device--unmake sdr_)))
 
 	       (defmethod startCapture ()
+		 ,(lprint :msg "startCapture")
 		 (setf capture_thread_ (std--thread &SdrManager--captureThread
 						    this)))
 
 	       (defmethod stopCapture ()
+		 ,(lprint :msg "stopCapture")
 		 (progn
 		   (let ((lock (std--scoped_lock mtx_)))
 		     (setf stop_ true)))
@@ -487,7 +496,7 @@
 			      (lastElements (std--deque<std--complex<float>> start (fifo_.end))))
 			  (func lastElements))))))
 
-	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
+	       (defmethod processFifoT (func &key (n (std--numeric_limits<std--size_t>--max)))
 		 (declare (type "Func " func)
 			  (type "std::size_t" n)
 			  (values "template<typename Func> void"))
@@ -765,9 +774,34 @@
 
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
+       (manager.processFifo
+	(lambda (fifo)
+	  (declare (type "const std::deque<std::complex<float>>&" fifo))
+	  (let ((x)
+		(y1)
+		(y2)
+		(n (fifo.size)))
+	    (declare (type "std::vector<double>" x y1 y2))
+	    
+	    (dotimes (i n)
+	      (x.push_back i)
+	      (y1.push_back (dot  (aref fifo i) (real)) )
+	      (y2.push_back (dot  (aref fifo i) (imag)) ))
+	    (ImGuiMd--Render (string "# This is a plot"))
+	    (when (ImPlot--BeginPlot (string "Plot"))
+	      ,@(loop for e in `(y1 y2)
+		      collect
+		      `(ImPlot--PlotLine (string ,e)
+					 (x.data)
+					 (dot ,e (data))
+					 (x.size)))
+	      (ImPlot--EndPlot))))
+	256)
+       #+ni 
        (let ((n (manager.capture)))
 	 (when (< 0 n)
-	   (let ((buf (manager.getBuf)))
+	   (let ((buf (manager.getBuf))
+		 )
 	     (let ((x)
 		   (y1)
 		   (y2))
@@ -827,6 +861,7 @@
 		    (manager (SdrManager parameters)))
 		(startDaemonIfNotRunning)
 		(manager.initialize)
+		(manager.startCapture)
 				
 		(let ((runnerParams (HelloImGui--SimpleRunnerParams
 				     (designated-initializer
@@ -848,6 +883,7 @@
 							   ))))
 		  (ImmApp--Run runnerParams
 			       addOnsParams)
+		  (manager.stopCapture)
 		  (manager.close))))
 	  
 	   ("const ArgException&" (e)
