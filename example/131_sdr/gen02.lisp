@@ -43,7 +43,7 @@
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
+					  (destructuring-bind (name &key type param initform initform-class) e
 					    (let ((nname (intern
 							  (string-upcase
 							   (cl-change-case:snake-case (format nil "~a" name))))))
@@ -53,7 +53,7 @@
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
-				     (destructuring-bind (name &key type param (initform 0)) e
+				     (destructuring-bind (name &key type param initform initform-class) e
 				       (let ((nname (intern
 						     (string-upcase
 						      (cl-change-case:snake-case (format nil "~a" name))))))
@@ -64,7 +64,7 @@
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
+				      (destructuring-bind (name &key type param initform initform-class) e
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_"
 							      (cl-change-case:snake-case (format nil "~a" name)))))
@@ -88,7 +88,7 @@
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
+				  (destructuring-bind (name &key type param initform initform-class) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(space ,type ,nname_)))))
@@ -101,7 +101,7 @@
 		   (defmethod ,name (,@(remove-if #'null
 					(loop for e in members
 					      collect
-					      (destructuring-bind (name &key type param (initform 0)) e
+					      (destructuring-bind (name &key type param initform initform-class) e
 						(let ((nname (intern
 							      (string-upcase
 							       (cl-change-case:snake-case (format nil "~a" name))))))
@@ -111,7 +111,7 @@
 		      ,@(remove-if #'null
 				   (loop for e in members
 					 collect
-					 (destructuring-bind (name &key type param (initform 0)) e
+					 (destructuring-bind (name &key type param initform initform-class) e
 					   (let ((nname (intern
 							 (string-upcase
 							  (cl-change-case:snake-case (format nil "~a" name))))))
@@ -122,7 +122,7 @@
 		       ,@(remove-if #'null
 				    (loop for e in members
 					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
+					  (destructuring-bind (name &key type param initform initform-class) e
 					    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 						  (nname_ (format nil "~a_"
 								  (cl-change-case:snake-case (format nil "~a" name)))))
@@ -130,7 +130,8 @@
 						(param
 						 `(,nname_ ,nname))
 						(initform
-						 `(,nname_ ,initform)))))))
+						 `(,nname_ ,initform))
+						)))))
 		       )
 		      (explicit)	    
 		      (values :constructor))
@@ -146,10 +147,12 @@
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
+				      (destructuring-bind (name &key type param initform initform-class) e
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-					  `(space ,type ,nname_)))))
+					  (if initform-class
+					      `(space ,type (setf ,nname_ ,initform-class))
+					      `(space ,type ,nname_))))))
 
 		   )))))
 
@@ -160,9 +163,17 @@
 	 (members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
 		    (parameters :type "Args" :param t)
 		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
-		    (rx-stream :type "SoapySDR::Stream*" :initform nullptr :param nil)
-		    (average-elapsed-ms :type double :initform 0d0 :param nil)
-		    (alpha :type double :initform .08 :param nil)
+		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
+		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
+		    #+more (alpha :type double :initform .08 :param nil)
+
+		    ;; members related to the capture thread
+		    (capture-thread :type "std::thread" :initform nil :param nil)
+		    (mtx :type "std::mutex" :initform nil :param nil)
+		    (stop :type "bool" :initform-class false :param nil)
+		    (cv :type "std::condition_variable" :initform nil :param nil)
+		    (fifo :type "std::deque<std::complex<float>>" :initform nil :param nil)
+		    
 		    )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -171,7 +182,11 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> SoapySDR/Device.hpp)
+			(include<> SoapySDR/Device.hpp
+				   thread
+				   mutex
+				   deque
+				   condition_variable)
 			(include ArgParser.h)
 			)
      :implementation-preamble
@@ -191,7 +206,7 @@
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
+					  (destructuring-bind (name &key type param initform initform-class) e
 					    (let ((nname (intern
 							  (string-upcase
 							   (cl-change-case:snake-case (format nil "~a" name))))))
@@ -201,7 +216,7 @@
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
-				     (destructuring-bind (name &key type param (initform 0)) e
+				     (destructuring-bind (name &key type param initform initform-class) e
 				       (let ((nname (intern
 						     (string-upcase
 						      (cl-change-case:snake-case (format nil "~a" name))))))
@@ -212,7 +227,7 @@
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
+				      (destructuring-bind (name &key type param initform initform-class) e
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_"
 							      (cl-change-case:snake-case (format nil "~a" name)))))
@@ -364,7 +379,7 @@
 				 (,(format nil "std::vector<~a>" acq-type)
 				  numElems))
 			   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
-			   (let ((expected_ms0 (/ (* 1000d0 numElems)
+			   #+more (let ((expected_ms0 (/ (* 1000d0 numElems)
 						  parameters_.sampleRate )))
 			     (setf average_elapsed_ms_ expected_ms0))
 			   )))
@@ -434,10 +449,12 @@
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
+				  (destructuring-bind (name &key type param initform initform-class) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))))))
+				      (if initform-class
+					  `(space ,type (= ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))))))
 
   (let* ((name `ArgParser)
 	 (cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
@@ -485,7 +502,7 @@
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
+					  (destructuring-bind (name &key type param initform initform-class) e
 					    (let ((nname (intern
 							  (string-upcase
 							   (cl-change-case:snake-case (format nil "~a" name))))))
@@ -495,7 +512,7 @@
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
-				     (destructuring-bind (name &key type param (initform 0)) e
+				     (destructuring-bind (name &key type param initform initform-class) e
 				       (let ((nname (intern
 						     (string-upcase
 						      (cl-change-case:snake-case (format nil "~a" name))))))
@@ -506,7 +523,7 @@
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
+				      (destructuring-bind (name &key type param initform initform-class) e
 					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					      (nname_ (format nil "~a_"
 							      (cl-change-case:snake-case (format nil "~a" name)))))
@@ -601,10 +618,12 @@
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
+				  (destructuring-bind (name &key type param initform initform-class) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))))))
+			              (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))))))
   
   (write-source 
    (asdf:system-relative-pathname
