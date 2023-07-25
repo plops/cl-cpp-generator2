@@ -167,9 +167,12 @@
 		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
 		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
 		    #+more (alpha :type double :initform .08 :param nil)
-
-		    ;; members related to the capture thread
-		    (capture-thread :type "std::thread" :initform nil :param nil)
+		    (start :type "std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<long,std::ratio<1,1000000000>>>"
+			   :initform (std--chrono--high_resolution_clock--now)
+			   :param nil)
+		  
+		  ;; members related to the capture thread
+		  (capture-thread :type "std::thread" :initform nil :param nil)
 		    (mtx :type "std::mutex" :initform nil :param nil)
 		    (stop :type "bool" :initform-class false :param nil)
 		    (cv :type "std::condition_variable" :initform nil :param nil)
@@ -396,7 +399,7 @@
 	       
 	       (defmethod capture ()
 		 (declare (values int))
-		 (let (#+more (start (std--chrono--high_resolution_clock--now))
+		 (let (;#+more (start (std--chrono--high_resolution_clock--now))
 		       (numElems parameters_.bufferSize))
 		   #+more (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 				    ".04 seems to average over 60 values in the history")
@@ -404,7 +407,8 @@
 			 (flags 0)
 			 (time_ns 0LL)
 			 (timeout_us
-			   10000L
+			   parameters_.timeoutUs
+					;10000L
 			   ;100000L
 			   )
 			 (readStreamRet (-> sdr_
@@ -416,16 +420,17 @@
 					       timeout_us)))
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
-				  (elapsed (std--chrono--duration<double> (- end start)))
+				  (elapsed (std--chrono--duration<double> (- end start_)))
 				  (elapsed_ms (* 1000 (elapsed.count)))
 				  
 				  (expected_ms (/ (* 1000d0 readStreamRet)
-						  parameters_.sampleRate))) 
+						  parameters_.sampleRate)))
+			      (setf start_ end)
 			      (setf average_elapsed_ms_
 				    (+ (* alpha_ elapsed_ms)
 				       (* (- 1d0 alpha_)
 					  average_elapsed_ms_)))
-			      ,(lprint :msg "data block acquisition took"
+			      ,(lprint :msg "data block acquired"
 				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
 		     (cond
 		       ((space
@@ -521,36 +526,38 @@
 
 	       (defmethod captureThread ()
 		 ,(lprint :msg "captureThread")
-		 (while true
-			;,(lprint :msg "get lock")
-			(let ((lock (std--scoped_lock mtx_)))
+		 (let ((captureSleepUs parameters_.captureSleepUs))
+		  (while true
+					;,(lprint :msg "get lock")
+			 (let ((lock (std--scoped_lock mtx_)))
 			  
-			  (when stop_
-			    ,(lprint :msg "stopping captureThread")
-			    break))
-			(do0 (comments "capture and push to buffer")
-			     ;,(lprint :msg "capture")
-			     (when (space (setf "auto numElems" (capture))
-					  (< 0 numElems))
-			       (comments "Insert new elements into the deque")
-			       (dot fifo_ (insert (fifo_.end)
-						  (buf_.begin)
-						  (+
+			   (when stop_
+			     ,(lprint :msg "stopping captureThread")
+			     break))
+			 (do0 (comments "capture and push to buffer")
+					;,(lprint :msg "capture")
+			      (when (space (setf "auto numElems" (capture))
+					   (< 0 numElems))
+				(comments "Insert new elements into the deque")
+				(dot fifo_ (insert (fifo_.end)
 						   (buf_.begin)
-						   numElems)))
-			       ))
+						   (+
+						    (buf_.begin)
+						    numElems)))
+				))
 
-			#+nil
-			,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
-				 :vars `(parameters_.fifoSize (fifo_.size)))
-			#+nil (while (< parameters_.fifoSize (fifo_.size))
-			  (fifo_.pop_front))
-			(when (< parameters_.fifoSize (fifo_.size))
-			  (fifo_.erase (fifo_.begin)
-				       (+ (fifo_.begin)
-					  (- (fifo_.size)
-					     parameters_.fifoSize ))))
-			(std--this_thread--sleep_for (std--chrono--milliseconds 16))))
+			 #+nil
+			 ,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
+				  :vars `(parameters_.fifoSize (fifo_.size)))
+			 #+nil (while (< parameters_.fifoSize (fifo_.size))
+				      (fifo_.pop_front))
+			 (when (< parameters_.fifoSize (fifo_.size))
+			   (fifo_.erase (fifo_.begin)
+					(+ (fifo_.begin)
+					   (- (fifo_.size)
+					      parameters_.fifoSize ))))
+			(when (< 0 captureSleepUs)
+			 (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -567,7 +574,10 @@
 		     (:name frequency :short f :default 433d6 :type double :help "Center frequency in Hz" :parse "std::stod")
 		     (:name bufferSize :short b :default 512 :type int :help "Buffer Size (number of elements)" :parse "std::stoi")
 		     (:name fifoSize :short F :default 2048 :type int :help "Fifo Buffer Size (number of elements)" :parse "std::stoi")
-		     ;(:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi")
+		     (:name timeoutUs :short T :default 20000 :type int :help "Timeout to read buffer of b samples (microseconds)" :parse "std::stoi")
+		     (:name captureSleepUs :short t :default 5000 :type int :help "Delay to wait before next read attempt of b samples (microseconds)" :parse "std::stoi")
+		     
+					;(:name numberBuffers :short n :default 100 :type int :help "How many buffers to request" :parse "std::stoi")
 		     )
 		   )
 	 (members `((cmdlineArgs :type "const std::vector<std::string>&" :param t)
