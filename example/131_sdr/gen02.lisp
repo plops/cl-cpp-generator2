@@ -206,6 +206,7 @@
 		  iostream))
      :code `(do0
 	     (defclass ,name ()
+	       
 	       "public:"
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
@@ -217,6 +218,7 @@
 					      (when param
 						nname))))))
 		 (declare
+		  (explicit)
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
@@ -817,7 +819,7 @@
 	       (x.push_back i)
 	       (y1.push_back (dot  (aref fifo i) (real)) )
 	       (y2.push_back (dot  (aref fifo i) (imag)) ))))
-	 ,(expt 2 15))
+	 ,(expt 2 16))
 	(do0 (ImGuiMd--Render (string "# This is a plot"))
 	     (when (ImPlot--BeginPlot (string "Plot"))
 	       ,@(loop for e in `(y1 y2)
