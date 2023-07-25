@@ -160,9 +160,9 @@
 	 (acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
 	 ;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
 	
-	 (members `((sdr :type "SoapySDR::Device*" :param nil :initform nullptr)
-		    (parameters :type "Args" :param t)
-		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform 512 :param nil )
+	 (members `((sdr :type "SoapySDR::Device*" :param nil :initform-class nullptr)
+		    (parameters :type "const Args&" :param t)
+		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform-class  (,(format nil "std::vector<~a>" acq-type) 512) :param nil )
 		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
 		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
 		    #+more (alpha :type double :initform .08 :param nil)
@@ -296,6 +296,7 @@
 			     (-> sdr_ (setGainMode direction channel automatic))
 			     (-> sdr_ (setGain direction channel (string "IFGR") 59))
 			     (-> sdr_ (setGain direction channel (string "RFGR") 3))
+			     #+more
 			     (let ((ifgrGain (-> sdr_ (getGain direction channel (string "IFGR"))))
 				   (ifgrGainRange (-> sdr_ (getGainRange direction channel (string "IFGR"))))
 				   (rfgrGain (-> sdr_ (getGain direction channel (string "RFGR"))))
@@ -309,6 +310,7 @@
 						(rfgrGainRange.minimum)
 						(rfgrGainRange.maximum)
 						))))))
+		       #+more
 		       ((lambda ()
 			  (declare (capture "&"))
 			  (let ((fullScale 0d0))
@@ -373,7 +375,7 @@
 			(do0
 			 (comments "reusable buffer of rx samples")
 			 (let ((numElems parameters_.bufferSize)
-			       (numBytes (* parameters_.bufferSize
+			       #+more (numBytes (* parameters_.bufferSize
 					    (sizeof ,acq-type))))
 			   (setf buf_  
 				 (,(format nil "std::vector<~a>" acq-type)
@@ -386,7 +388,8 @@
 		       (return true)))))
 
 	       (defmethod getBuf ()
-		 (declare (values ,(format nil "const std::vector<~a>&" acq-type)))
+		 (declare (values ,(format nil "const std::vector<~a>&" acq-type))
+			  (const))
 		 (return buf_))
 
 	       
@@ -464,10 +467,40 @@
 		 (let ((lock (std--lock_guard<std--mutex> mtx_)))
 		   (return fifo_)))
 
-	       (defmethod processFifo (func)
-		 (declare (type "std::function<void(const std::deque<std::complex<float>>&)>" func))
-		 (let ((lock (std--lock_guard<std--mutex> mtx_)))
-		   (func fifo_)))
+	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
+		 (declare (type "const std::function<void(const std::deque<std::complex<float>>&)> &" func)
+			  (type "std::size_t" n))
+		 (let ((lock (std--lock_guard<std--mutex> mtx_))
+		       (n0 (std--min n (fifo_.size))))
+		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
+		   (if (<= (fifo_.size) n0)
+		       (do0
+			(func fifo_))
+		       (do0
+			(comments "If n is less than fifo_.size(), create a sub-deque with the last n elements and pass it to func")
+			(comments "Get an iterator to the nth element from the end")
+			(let ((start (- (fifo_.end)
+					n0))
+			      (lastElements (std--deque<std--complex<float>> start (fifo_.end))))
+			  (func lastElements))))))
+
+	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
+		 (declare (type "Func " func)
+			  (type "std::size_t" n)
+			  (values "template<typename Func> void"))
+		 (let ((lock (std--lock_guard<std--mutex> mtx_))
+		       (n0 (std--min n (fifo_.size))))
+		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
+		   (if (<= (fifo_.size) n0)
+		       (do0
+			(func fifo_))
+		       (do0
+			(comments "If n is less than fifo_.size(), create a sub-deque with the last n elements and pass it to func")
+			(comments "Get an iterator to the nth element from the end")
+			(let ((start (- (fifo_.end)
+					n0))
+			      (lastElements (std--deque<std--complex<float>> start (fifo_.end))))
+			  (func lastElements))))))
 	       
 	       "private:"
 
@@ -476,11 +509,22 @@
 			(let ((lock (std--unique_lock<std--mutex> mtx_)))
 			  (cv_.wait lock
 				    (lambda ()
-				      (declare (capture "&"))
+				      (declare (capture "this"))
 				      (return stop_)))
 			  (when stop_
 			    break))
-			(comments "capture and push to buffer")
+			(do0 (comments "capture and push to buffer")
+			     (let ((numElems (capture)))
+			       (when (< 0 numElems)
+				 (comments "Insert new elements into the deque")
+				 (dot fifo_ (insert (fifo_.end)
+						    (buf_.begin)
+						    (+
+						     (buf_.begin)
+						     numElems)))
+				 )))
+			
+			(comments "Remove old elements if size exceeds 2048")
 			(when (< 2048 (fifo_.size))
 			  (fifo_.pop_front))))
 	       ,@(remove-if #'null
