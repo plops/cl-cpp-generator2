@@ -22,7 +22,7 @@
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
-      "Sunday"))
+      "sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
 
@@ -203,7 +203,7 @@
 					;SoapySDR/Types.hpp
 		  SoapySDR/Formats.hpp
 		  SoapySDR/Errors.hpp
-
+		  fstream                                                                                         
 		  )
        #+more
        (include<> chrono
@@ -542,39 +542,46 @@
 
 	       (defmethod captureThread ()
 		 ,(lprint :msg "captureThread")
-		 (let ((captureSleepUs parameters_.captureSleepUs))
-		  (while true
+		 (let ((outputFile (std--ofstream (string "capturedData.bin")
+						  (or std--ios--binary
+						      std--ios--app))))
+		  (let ((captureSleepUs parameters_.captureSleepUs))
+		    (while true
 					;,(lprint :msg "get lock")
-			 (progn
-			   (let ((lock (std--scoped_lock mtx_)))
+			   (progn
+			     (let ((lock (std--scoped_lock mtx_)))
 			  
-			     (when stop_
-			       ,(lprint :msg "stopping captureThread")
-			       break))
-			   (do0 (comments "capture and push to buffer")
+			       (when stop_
+				 ,(lprint :msg "stopping captureThread")
+				 break))
+			     (do0 (comments "capture and push to buffer")
 					;,(lprint :msg "capture")
-				(when (space (setf "auto numElems" (capture))
-					     (< 0 numElems))
-				  (comments "Insert new elements into the deque")
-				  (dot fifo_ (insert (fifo_.end)
-						     (buf_.begin)
-						     (+
-						      (buf_.begin)
-						      numElems)))
-				  ))
+				  (when (space (setf "auto numElems" (capture))
+					       (< 0 numElems))
+				    (comments "Insert new elements into the deque")
+				    (dot fifo_ (insert (fifo_.end)
+						       (buf_.begin)
+						       (+
+							(buf_.begin)
+							numElems)))
+				    (comments "Write data to file")
+				    (outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
+						      (* numElems (sizeof ,acq-type)))
+				    ))
 
-			   #+nil
-			   ,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
-				    :vars `(parameters_.fifoSize (fifo_.size)))
-			   #+nil (while (< parameters_.fifoSize (fifo_.size))
-					(fifo_.pop_front))
-			   (when (< parameters_.fifoSize (fifo_.size))
-			     (fifo_.erase (fifo_.begin)
-					  (+ (fifo_.begin)
-					     (- (fifo_.size)
-						parameters_.fifoSize )))))
-			(when (< 0 captureSleepUs)
-			 (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))))
+			     #+nil
+			     ,(lprint :msg "Remove old elements if size exceeds <fifoSize>"
+				      :vars `(parameters_.fifoSize (fifo_.size)))
+			     #+nil (while (< parameters_.fifoSize (fifo_.size))
+					  (fifo_.pop_front))
+			     (when (< parameters_.fifoSize (fifo_.size))
+			       (fifo_.erase (fifo_.begin)
+					    (+ (fifo_.begin)
+					       (- (fifo_.size)
+						  parameters_.fifoSize )))))
+			   (when (< 0 captureSleepUs)
+			     (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))
+		    (outputFile.close))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect

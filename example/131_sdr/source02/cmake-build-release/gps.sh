@@ -28,3 +28,9 @@
 # bit/s navigation message and the result phase modulates the carrier
 # as previously described. These codes only match up, or strongly
 # autocorrelate when they are almost exactly aligned.
+
+
+# For a stationary GPS receiver the maximum Doppler frequency shift
+# for the L1 frequency is around ±5 kHz and for a GPS receiver moving
+# at high speed it is reasonable to assume that the maximum Doppler
+# shift is ±10 kHz.
