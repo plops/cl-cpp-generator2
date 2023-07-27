@@ -80,3 +80,9 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 
 ```
 - make sure to copy the assets into the new folder as well (roboto font) before running the release build
+
+
+# GPS
+
+- http://www.taroz.net/GNSS-Radar.html
+- http://www.taroz.net/img/data/SDR_SummerSchool_2014.pdf
