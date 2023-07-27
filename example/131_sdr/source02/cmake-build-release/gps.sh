@@ -1,4 +1,6 @@
-./imgui_soapysdr  -f 1575.42e6 -b 64512 -F 1000000 -r 10000000 -B 1.536e+06
+./imgui_soapysdr  -f 1575.42e6 -b 64512 -F 1000000 -r 10000000 -B 5e6
+
+# -B 1.536e+06
 
 # The 1575.42 MHz ± 12 MHz (10.23 MHz × 154) frequency is used to
 # transmit the Global Positioning System (GPS)

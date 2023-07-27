@@ -86,3 +86,4 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 
 - http://www.taroz.net/GNSS-Radar.html
 - http://www.taroz.net/img/data/SDR_SummerSchool_2014.pdf
+ 
