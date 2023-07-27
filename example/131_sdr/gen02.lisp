@@ -9,7 +9,11 @@
 (setf *features* (set-exclusive-or *features* (list :more)))
 
 
-(progn
+(let* ( ;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
+      (elem-type "short") (acq-sdr-type 'SOAPY_SDR_CS16)
+      (acq-type (format nil "std::complex<~a>" elem-type))
+      (fifo-type (format nil "std::deque<~a>" acq-type)))
+	
   (progn
     (defparameter *source-dir* #P"example/131_sdr/source02/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
@@ -157,8 +161,7 @@
 		   )))))
 
   (let* ((name `SdrManager)
-	 (acq-type "std::complex<float>") (acq-sdr-type 'SOAPY_SDR_CF32)
-	 ;;(acq-type "std::complex<short>") (acq-sdr-type 'SOAPY_SDR_CS16)
+	 
 	
 	 (members `(
 		    (parameters :type "const Args&" :param t)
@@ -176,7 +179,8 @@
 		    (mtx :type "std::mutex" :initform nil :param nil)
 		    (stop :type "bool" :initform-class false :param nil)
 		    (cv :type "std::condition_variable" :initform nil :param nil)
-		    (fifo :type "std::deque<std::complex<float>>" :initform nil :param nil)
+		    (fifo :type ,fifo-type
+			  :initform nil :param nil)
 		    
 		    )))
     (write-class
@@ -493,12 +497,12 @@
 		   (capture_thread_.join)))
 
 	       (defmethod getFifo ()
-		 (declare (values "std::deque<std::complex<float>>"))
+		 (declare (values ,fifo-type))
 		 (let ((lock (std--scoped_lock mtx_)))
 		   (return fifo_)))
 
 	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
-		 (declare (type "const std::function<void(const std::deque<std::complex<float>>&)> &" func)
+		 (declare (type ,(format nil "const std::function<void(const ~a&)> &" fifo-type) func)
 			  (type "std::size_t" n))
 		 #+nil ,(lprint :msg "processFifo"
 			  :vars `(n))
@@ -513,7 +517,7 @@
 			(comments "Get an iterator to the nth element from the end")
 			(let ((start (- (fifo_.end)
 					n0))
-			      (lastElements (std--deque<std--complex<float>> start (fifo_.end))))
+			      (lastElements (,fifo-type start (fifo_.end))))
 			  (func lastElements))))))
 
 	       (defmethod processFifoT (func &key (n (std--numeric_limits<std--size_t>--max)))
@@ -531,7 +535,7 @@
 			(comments "Get an iterator to the nth element from the end")
 			(let ((start (- (fifo_.end)
 					n0))
-			      (lastElements (std--deque<std--complex<float>> start (fifo_.end))))
+			      (lastElements (,fifo-type start (fifo_.end))))
 			  (func lastElements))))))
 	       
 	       "private:"
@@ -847,8 +851,7 @@
 		  `(let ((,var ,default))
 		     (declare (type "static float" ,var))
 		     (when (ImGui--SliderFloat (string ,var)
-					       (ref ,var) ,min ,max
-					       )
+					       (ref ,var) ,min ,max)
 		       (comments " just use value"))))))
        
        (let ((x)
@@ -857,14 +860,13 @@
 	     )
 	 (declare (type "std::vector<double>" x y1 y2)))
 
-       (let ((maxVal (std--numeric_limits<float>--min))
-	     (minVal (std--numeric_limits<float>--max))
-	     )
-	 (declare (type float maxVal minVal)))
+       (let ((maxVal (,(format nil "std::numeric_limits<~a>::min" elem-type)))
+	     (minVal (,(format nil "std::numeric_limits<~a>::max" elem-type))))
+	 (declare (type ,elem-type maxVal minVal)))
        (do0
 	(manager.processFifo
 	 (lambda (fifo)
-	   (declare (type "const std::deque<std::complex<float>>&" fifo)
+	   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
 		    (capture "&"))
 	   ;;,(lprint :msg "processFifo_cb")
 	   (let ((n (fifo.size)))
@@ -1016,5 +1018,6 @@
        (return 0)))
    :omit-parens t
    :format nil
-   :tidy nil))
+   :tidy nil)
 
+  )
