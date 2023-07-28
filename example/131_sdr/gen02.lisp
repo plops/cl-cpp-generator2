@@ -900,6 +900,15 @@
 		 (return (^ (g1_.back)
 			    (^ (aref g2 (- delay1 1))
 			       (aref g2 (- delay2 1))))))
+	       (defmethod generate_sequence (n)
+		 (declare (type size_t n)
+			  (values "std::vector<bool>"))
+		 (let ((sequence (std--vector<bool>)))
+		   (sequence.reserve n)
+		   (dotimes (i n)
+		     (declare (type size_t i))
+		     (sequence.push_back (step)))
+		   (return sequence)))
 	       "private:"
 	       ,@(remove-if #'null
 				(loop for e in members
