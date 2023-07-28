@@ -9,7 +9,8 @@
 			       ))
 	      ,@(loop for e in vars
 		      appending
-		      `((string ,(format nil " ~a='" (emit-c :code e)))
+		      `((string ,(format nil " ~a='" (emit-c :code e
+							     :omit-redundant-parentheses t)))
 			,e
 			(string "' ")))   
 	      std--endl))
@@ -69,7 +70,8 @@
 		     do
 			(when e
 			  (format sh "~a~%"
-				  (emit-c :code e))))
+				  (emit-c :code e
+					  :omit-redundant-parentheses t))))
 	       (when code
 		 (emit-c :code
 			 `(do0
