@@ -86,4 +86,6 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 
 - http://www.taroz.net/GNSS-Radar.html
 - http://www.taroz.net/img/data/SDR_SummerSchool_2014.pdf
-- http://www.aholme.co.uk/GPS/Main.htm Homemade GPS Receiverx
+- http://www.aholme.co.uk/GPS/Main.htm Homemade GPS Receiver
+  - sample 40000 points at 10MHz, rotate in Fourierspace by +/- 20
+    bins to find doppler shift
