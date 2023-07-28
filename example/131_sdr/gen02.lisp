@@ -42,7 +42,7 @@
      `(do0
        )
      :code `(do0
-	     (defclass ,name "public std::exception"	 
+	     (defclass ,name "public std::exception"	  
 	       "public:"
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
