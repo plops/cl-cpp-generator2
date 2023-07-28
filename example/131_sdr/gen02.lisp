@@ -880,8 +880,9 @@
 			       (< ,(length sat-def) prn_ ))
 		   (throw (std--invalid_argument (+ (string "Invalid PRN: ")
 						    (std--to_string prn_))))
-		   (g1_.resize register_size_ true)
-		   (g2_.resize register_size_ true))
+		   )
+		 (do0 (g1_.resize register_size_ true)
+			(g2_.resize register_size_ true))
 		 )
 	       
 	       (defmethod generate_sequence (n)
