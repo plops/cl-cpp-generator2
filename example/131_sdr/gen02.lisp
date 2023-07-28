@@ -816,7 +816,7 @@
 			     :param nil)
 		   (g1 :type "std::deque<bool>")
 		   (g2 :type "std::deque<bool>")
-		   (prn :type int)
+		   (prn :type int :param t)
 		   )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -832,6 +832,8 @@
 			)
      :implementation-preamble
      `(do0
+       (include<> stdexcept
+		  cstring)
        )
      :code `(do0
 	     (defclass ,name "public std::exception"	 
@@ -872,7 +874,10 @@
 		   )
 		  (explicit)	    
 		  (values :constructor))
-		 
+		 (when (logior (< prn_ 1)
+			       (< ,(length sat-def) prn_ ))
+		   (throw (std--invalid_argument (+ (string "Invalid PRN: ")
+						    (std--to_string prn_)))))
 		 )
 	       "private:"
 	       ,@(remove-if #'null
