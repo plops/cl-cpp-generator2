@@ -833,7 +833,9 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  cstring)
+		  cstring
+		  cmath
+		  iostream)
        )
      :code `(do0
 	     (defclass ,name "public std::exception"	 
@@ -881,6 +883,30 @@
 		   (g1_.resize register_size_ true)
 		   (g2_.resize register_size_ true))
 		 )
+	       
+	       (defmethod generate_sequence (n)
+		 (declare (type size_t n)
+			  (values "std::vector<bool>"))
+		 (let ((sequence (std--vector<bool>)))
+		   (sequence.reserve n)
+		   (dotimes (i n)
+		     (declare (type size_t i))
+		     (sequence.push_back (step)))
+		   (return sequence)))
+
+	       (defmethod print_square (v)
+		 (declare (type "const std::vector<bool> &" v))
+		 (let ((size (v.size))
+		       (side (static_cast<size_t> (std--sqrt size))))
+		   (dotimes (i size)
+		     (declare (type size_t i))
+		     (let ((o (? (aref v i)
+				 (string "\\u2588")
+				 (string " "))))
+		      (<< std--cout o)
+		       (when (== 0 (% (+ i 1 ) side))
+			 (<< std--cout (string "\\n")))))))
+	       "private:"
 	       (defmethod step ()
 		 (declare (values bool))
 		 (let ((new_g1_bit false))
@@ -898,27 +924,17 @@
 		       (delay2 (dot (aref g2_shifts_ (- prn_ 1))
 				    second))))
 		 (return (^ (g1_.back)
-			    (^ (aref g2 (- delay1 1))
-			       (aref g2 (- delay2 1))))))
-	       (defmethod generate_sequence (n)
-		 (declare (type size_t n)
-			  (values "std::vector<bool>"))
-		 (let ((sequence (std--vector<bool>)))
-		   (sequence.reserve n)
-		   (dotimes (i n)
-		     (declare (type size_t i))
-		     (sequence.push_back (step)))
-		   (return sequence)))
-	       "private:"
+			    (^ (aref g2_ (- delay1 1))
+			       (aref g2_ (- delay2 1))))))
 	       ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (name &key type param initform initform-class) e
-					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					      (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-					  (if initform-class
-					      `(space ,type (setf ,nname_ ,initform-class))
-					      `(space ,type ,nname_))))))
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
 
 	       )
 
@@ -953,7 +969,8 @@
       )
      (include ArgException.h
 	      ArgParser.h
-	      SdrManager.h)
+	      SdrManager.h
+	      GpsCACodeGenerator.h)
 					;(include "cxxopts.hpp")
 
      (comments "./my_project -b $((2**10))")
@@ -1140,45 +1157,49 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
+
+       (let ((ca (GpsCACodeGenerator 4)))
+	 ,(lprint :msg "CA")
+	 (ca.print_square (ca.generate_sequence 1023)))
        
-       (let ((cmdlineArgs (std--vector<std--string> (+ argv 1)
-						    (+ argv argc))))
-	 (handler-case
-	     (do0
-	      (let ((argParser (ArgParser cmdlineArgs))
-		    (parameters (argParser.getParsedArgs))
-		    (manager (SdrManager parameters)))
-		(startDaemonIfNotRunning)
-		(manager.initialize)
-		(manager.startCapture)
-				
-		(let ((runnerParams (HelloImGui--SimpleRunnerParams
-				     (designated-initializer
-				      :guiFunction
-				      (paren
-				       (lambda ()
-					 (declare (capture "&manager"))
+       #+nil (let ((cmdlineArgs (std--vector<std--string> (+ argv 1)
+							  (+ argv argc))))
+	       (handler-case
+		   (do0
+		    (let ((argParser (ArgParser cmdlineArgs))
+			  (parameters (argParser.getParsedArgs))
+			  (manager (SdrManager parameters)))
+		      (startDaemonIfNotRunning)
+		      (manager.initialize)
+		      (manager.startCapture)
+		
+		      (let ((runnerParams (HelloImGui--SimpleRunnerParams
+					   (designated-initializer
+					    :guiFunction
+					    (paren
+					     (lambda ()
+					       (declare (capture "&manager"))
 					; ,(lprint :msg "GUI")
-					 (ImGuiMd--RenderUnindented
-					  (string-r "# Bundle"))
+					       (ImGuiMd--RenderUnindented
+						(string-r "# Bundle"))
 					;(DemoImplot)
-					 (DemoSdr manager)))
-				      :windowTitle (string "imgui_soapysdr")
-				      :windowSize (curly 800 600)
-				      )))
-		      (addOnsParams (ImmApp--AddOnsParams (designated-initializer
-							   :withImplot true
-							   :withMarkdown true
-							   ))))
-		  (ImmApp--Run runnerParams
-			       addOnsParams)
-		  (manager.stopCapture)
-		  (manager.close))))
-	  
-	   ("const ArgException&" (e)
-	     (do0 ,(lprint :msg "Error processing command line arguments"
-			   :vars `((e.what)))
-		  (return -1)))))
+					       (DemoSdr manager)))
+					    :windowTitle (string "imgui_soapysdr")
+					    :windowSize (curly 800 600)
+					    )))
+			    (addOnsParams (ImmApp--AddOnsParams (designated-initializer
+								 :withImplot true
+								 :withMarkdown true
+								 ))))
+			(ImmApp--Run runnerParams
+				     addOnsParams)
+			(manager.stopCapture)
+			(manager.close))))
+	   
+		 ("const ArgException&" (e)
+		   (do0 ,(lprint :msg "Error processing command line arguments"
+				 :vars `((e.what)))
+			(return -1)))))
        
        
        (return 0)))
