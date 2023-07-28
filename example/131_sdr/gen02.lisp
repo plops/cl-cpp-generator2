@@ -25,7 +25,7 @@
       "sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
-
+  
   (let ((name `ArgException)
 	(members `((msg :type "const std::string&" :param t))))
     (write-class
@@ -161,8 +161,6 @@
 		   )))))
 
   (let* ((name `SdrManager)
-	 
-	
 	 (members `(
 		    (parameters :type "const Args&" :param t)
 		    (sdr :type "SoapySDR::Device*" :param nil :initform-class nullptr)
@@ -592,6 +590,8 @@
 					  `(space ,type (= ,nname_ ,initform-class))
 					  `(space ,type ,nname_))))))))))
 
+  
+
   (let* ((name `ArgParser)
 	 (cli-args `((:name sampleRate :short r :default 10d6 :type double :help "Sample rate in Hz" :parse "std::stod")
 		     (:name bandwidth :short B :default  8d6 :type double :help "Bandwidth in Hz" :parse "std::stod")
@@ -765,6 +765,130 @@
 			              (if initform-class
 					  `(space ,type (setf ,nname_ ,initform-class))
 					  `(space ,type ,nname_))))))))))
+
+
+
+
+  (let* ((name `GpsCACodeGenerator)
+	(sat-def `((2 6)
+		   (3 7)
+		   (4 8)
+		   (5 9)
+		   (1 9)
+		   (2 10)
+		   (1 8)
+		   (2 9)
+		   (3 10)
+		   (2 3)
+		   (3 4)
+		   (5 6)
+		   (6 7)
+		   (7 8)
+		   (8 9)
+		   (9 10)
+		   (1 4)
+		   (2 5)
+		   (3 6)
+		   (4 7)
+		   (5 8)
+		   (6 9)
+		   (1 3)
+		   (4 6)
+		   (5 7)
+		   (6 8)
+		   (7 9)
+		   (8 10)
+		   (1 6)
+		   (2 7)
+		  (3 8)
+		   (4 9)))
+	(members `((registerSize :type "static constexpr size_t" :initform-class 10 :param nil)
+		   (g1FeedbackBits :type "static constexpr std::array<int,2>"
+				   :initform-class (curly 3 10) :param nil)
+		   (g2FeedbackBits :type "static constexpr std::array<int,6>"
+				   :initform-class (curly 2 3 6 8 9 10) :param nil)
+		   (g2Shifts :type ,(format nil "static constexpr std::array<std::pair<int,int>,~a>" (length sat-def))
+			     :initform-class
+			     (curly ,@(loop for (e f)
+					      in sat-def
+					    collect
+					    `(std--make_pair ,e ,f)) )
+			     :param nil)
+		   (g1 :type "std::deque<bool>")
+		   (g2 :type "std::deque<bool>")
+		   (prn :type int)
+		   )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector
+				   array
+				   deque
+				   cstddef)
+			)
+     :implementation-preamble
+     `(do0
+       )
+     :code `(do0
+	     (defclass ,name "public std::exception"	 
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 
+		 )
+	       "private:"
+	       ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+					  (if initform-class
+					      `(space ,type (setf ,nname_ ,initform-class))
+					      `(space ,type ,nname_))))))
+
+	       )
+
+	     )))
+  
   
   (write-source 
    (asdf:system-relative-pathname
@@ -826,40 +950,40 @@
        (do0
 	,@(loop for e in `((:name IF :min 0 :max 59)
 			   (:name RF :min 0 :max 3))
-	       collect
-	       (destructuring-bind (&key name min max) e
-		(let ((gain (format nil "gain~a" name)))
-		  `(let ((,gain ,min))
-		     (declare (type "static int" ,gain))
-		     (when (ImGui--SliderInt (string ,gain)
-					     (ref ,gain) ,min ,max
-					     (string "%02d")
-					     ImGuiSliderFlags_AlwaysClamp)
-		       (dot manager (,(format nil "setGain~a" name) ,gain))))))))
+		collect
+		(destructuring-bind (&key name min max) e
+		  (let ((gain (format nil "gain~a" name)))
+		    `(let ((,gain ,min))
+		       (declare (type "static int" ,gain))
+		       (when (ImGui--SliderInt (string ,gain)
+					       (ref ,gain) ,min ,max
+					       (string "%02d")
+					       ImGuiSliderFlags_AlwaysClamp)
+			 (dot manager (,(format nil "setGain~a" name) ,gain))))))))
 
        ,@(loop for e in `((:name viewBlockSize :min 0 :max ,(expt 2 16))
 			  (:name histogramSize :min 0 :max ,(expt 2 10))
 			  )
 	       collect
 	       (destructuring-bind (&key name min max) e
-		(let ((var (format nil "~a" name)))
-		  `(let ((,var (/ (+ ,max ,min) 2)))
-		     (declare (type "static int" ,var))
-		     (when (ImGui--SliderInt (string ,var)
-					     (ref ,var) ,min ,max
-					     (string "%06d")
-					     ;ImGuiSliderFlags_AlwaysClamp
-					     )
-		       (comments " just use value"))))))
+		 (let ((var (format nil "~a" name)))
+		   `(let ((,var (/ (+ ,max ,min) 2)))
+		      (declare (type "static int" ,var))
+		      (when (ImGui--SliderInt (string ,var)
+					      (ref ,var) ,min ,max
+					      (string "%06d")
+					;ImGuiSliderFlags_AlwaysClamp
+					      )
+			(comments " just use value"))))))
        ,@(loop for e in `((:name histogramAlpha :min 0 :max 1 :default .04))
 	       collect
 	       (destructuring-bind (&key name min max default) e
-		(let ((var (format nil "~a" name)))
-		  `(let ((,var ,default))
-		     (declare (type "static float" ,var))
-		     (when (ImGui--SliderFloat (string ,var)
-					       (ref ,var) ,min ,max)
-		       (comments " just use value"))))))
+		 (let ((var (format nil "~a" name)))
+		   `(let ((,var ,default))
+		      (declare (type "static float" ,var))
+		      (when (ImGui--SliderFloat (string ,var)
+						(ref ,var) ,min ,max)
+			(comments " just use value"))))))
        
        (let ((x)
 	     (y1)
@@ -885,7 +1009,7 @@
 	       (y2.push_back im)
 	       (setf maxVal (std--max maxVal (std--max re im)))
 	       (setf minVal (std--min minVal (std--min re im))))))
-	 viewBlockSize ;,(expt 2 16)
+	 viewBlockSize			;,(expt 2 16)
 	 )
 
 	
@@ -914,7 +1038,7 @@
 	   )
 	 ,(lprint :msg "histogram"
 		  :vars `(minVal maxVal)
-	   )
+		  )
 	 (when (ImPlot--BeginPlot (string "Histogram"))
 	   ,@(loop for e in `(y1 y2)
 		   collect
