@@ -34,3 +34,7 @@
 # for the L1 frequency is around ±5 kHz and for a GPS receiver moving
 # at high speed it is reasonable to assume that the maximum Doppler
 # shift is ±10 kHz.
+
+# From northern latitudes, more GPS satellites will generally be found
+# in the southern sky i.e. towards the equator.
+
