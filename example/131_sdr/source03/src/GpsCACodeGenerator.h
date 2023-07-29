@@ -6,11 +6,11 @@
 #include <deque>
 #include <cstddef> 
 
-class GpsCACodeGenerator : public std::exception {
+class GpsCACodeGenerator  {
         public:
         explicit  GpsCACodeGenerator (int prn)       ;   
         std::vector<bool> generate_sequence (size_t n)       ;   
-        static void print_square (const std::vector<bool> & v)       ;   
+        void print_square (const std::vector<bool> & v)       ;   
         private:
         bool step ()       ;   
         static constexpr size_t     register_size_=10;

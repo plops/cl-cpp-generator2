@@ -21,12 +21,14 @@ endif ()
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(
         ${PROJECT_NAME}
         src/main.cpp
         src/GpsCACodeGenerator.cpp
+        src/MemoryMappedComplexShortFile.cpp
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp
@@ -43,6 +45,7 @@ target_link_libraries(
         PRIVATE
         glfw
         OpenGL::GL
+	Boost::iostreams
 )
 
 # Now you can build your app with

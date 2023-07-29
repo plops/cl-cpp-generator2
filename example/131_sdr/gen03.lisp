@@ -95,7 +95,7 @@
 		  iostream)
        )
      :code `(do0
-	     (defclass ,name "public std::exception"	 
+	     (defclass ,name ()
 	       "public:"
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
@@ -196,7 +196,102 @@
 
 	       )
 
-	     )))
+	     ))
+
+    )
+
+  (let* ((name `MemoryMappedComplexShortFile)
+	 (members `((file :type "boost::iostreams::mapped_file_source" :param nil)
+		    (data :type "std::complex<short>*" :initform-class nullptr :param nil)
+		    (filename :type "const std::string&" :param t)
+		   
+		   )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> iostream
+				   fstream
+				   vector
+				   complex
+				   boost/iostreams/device/mapped_file.hpp)
+			)
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+			)
+       )
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 (file_.open filename)
+		 (when (!file_.is_open)
+		   (throw (std--runtime_error (+ (string "Unable to open file: ")
+						 filename))))
+		 (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
+		 )
+
+	       (defmethod "operator[]" (index)
+		 (declare (type "std::size_t" index)
+			  (values "std::complex<short>&"))
+		 (return (aref data_ index)))
+
+	       (defmethod ~MemoryMappedComplexShortFile ()
+		 (declare (values :constructor))
+		 (file_.close))
+	       
+	       "private:"
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_)))))))))
+
+    )
   
   
   (write-source 
@@ -208,16 +303,16 @@
      
      (include<>
       iostream
-      ;string
+					;string
 					;complex
       vector
 					;algorithm
       
 					;chrono
 
-      ;filesystem
-      ;unistd.h
-      ;cstdlib
+					;filesystem
+					;unistd.h
+					;cstdlib
 
       cmath)
      (include
@@ -229,7 +324,8 @@
       GLFW/glfw3.h
       )
      (include
-	      GpsCACodeGenerator.h)
+      GpsCACodeGenerator.h
+      MemoryMappedComplexShortFile.h)
 	
 
      (defun glfw_error_callback (err desc)
@@ -249,7 +345,7 @@
 		     (x.push_back x_)
 		     (y1.push_back (cos x_))
 		     (y2.push_back (sin x_)))))
-	       ;(ImGuiMd--Render (string "# This is a plot"))
+					;(ImGuiMd--Render (string "# This is a plot"))
 	       (when (ImPlot--BeginPlot (string "Plot"))
 		 ,@(loop for e in `(y1 y2)
 			 collect
@@ -259,137 +355,8 @@
 					    (static_cast<int> (x.size))))
 		 (ImPlot--EndPlot))))
 
-     #+nil
-     (defun DemoSdr (manager)
-       (declare (type SdrManager& manager))
-
-       (do0
-	,@(loop for e in `((:name IF :min 0 :max 59)
-			   (:name RF :min 0 :max 3))
-		collect
-		(destructuring-bind (&key name min max) e
-		  (let ((gain (format nil "gain~a" name)))
-		    `(let ((,gain ,min))
-		       (declare (type "static int" ,gain))
-		       (when (ImGui--SliderInt (string ,gain)
-					       (ref ,gain) ,min ,max
-					       (string "%02d")
-					       ImGuiSliderFlags_AlwaysClamp)
-			 (dot manager (,(format nil "setGain~a" name) ,gain))))))))
-
-       ,@(loop for e in `((:name viewBlockSize :min 0 :max ,(expt 2 16))
-			  (:name histogramSize :min 0 :max ,(expt 2 10))
-			  )
-	       collect
-	       (destructuring-bind (&key name min max) e
-		 (let ((var (format nil "~a" name)))
-		   `(let ((,var (/ (+ ,max ,min) 2)))
-		      (declare (type "static int" ,var))
-		      (when (ImGui--SliderInt (string ,var)
-					      (ref ,var) ,min ,max
-					      (string "%06d")
-					;ImGuiSliderFlags_AlwaysClamp
-					      )
-			(comments " just use value"))))))
-       ,@(loop for e in `((:name histogramAlpha :min 0 :max 1 :default .04))
-	       collect
-	       (destructuring-bind (&key name min max default) e
-		 (let ((var (format nil "~a" name)))
-		   `(let ((,var ,default))
-		      (declare (type "static float" ,var))
-		      (when (ImGui--SliderFloat (string ,var)
-						(ref ,var) ,min ,max)
-			(comments " just use value"))))))
-       
-       (let ((x)
-	     (y1)
-	     (y2)
-	     )
-	 (declare (type "std::vector<double>" x y1 y2)))
-
-       (let ((maxVal (,(format nil "std::numeric_limits<~a>::min" elem-type)))
-	     (minVal (,(format nil "std::numeric_limits<~a>::max" elem-type))))
-	 (declare (type ,elem-type maxVal minVal)))
-       (do0
-	(manager.processFifo
-	 (lambda (fifo)
-	   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
-		    (capture "&"))
-	   ;;,(lprint :msg "processFifo_cb")
-	   (let ((n (fifo.size)))
-	     (dotimes (i n)
-	       (x.push_back i)
-	       (let ((re (dot  (aref fifo i) (real)) )
-		     (im (dot  (aref fifo i) (imag)) )))
-	       (y1.push_back re)
-	       (y2.push_back im)
-	       (setf maxVal (std--max maxVal (std--max re im)))
-	       (setf minVal (std--min minVal (std--min re im))))))
-	 viewBlockSize			;,(expt 2 16)
-	 )
-
-	
-	
-	(do0 (ImGuiMd--Render (string "# This is a plot"))
-	     (when (ImPlot--BeginPlot (string "Plot"))
-	       ,@(loop for e in `(y1 y2)
-		       collect
-		       `(ImPlot--PlotLine (string ,e)
-					  (x.data)
-					  (dot ,e (data))
-					  (x.size)))
-	       (ImPlot--EndPlot)))
-
-	(do0
-	 (comments "Apply exponential filter to stablilize histogram boundaries")
-	 (let ((alpha histogramAlpha)
-	       (filteredMax maxVal)
-	       (filteredMin minVal))
-	   (declare (type "static float" filteredMax filteredMin))
-	   (setf filteredMax (+ (* (- 1 alpha) filteredMax)
-				(* alpha maxVal)))
-	   (setf filteredMin (+ (* (- 1 alpha) filteredMin)
-				(* alpha minVal)))
-	   
-	   )
-	 ,(lprint :msg "histogram"
-		  :vars `(minVal maxVal)
-		  )
-	 (when (ImPlot--BeginPlot (string "Histogram"))
-	   ,@(loop for e in `(y1 y2)
-		   collect
-		   `(ImPlot--PlotHistogram (string ,(format nil "histogram ~a" e))
-				      
-					   (dot ,e (data))
-					   (dot ,e (size))
-					   histogramSize
-					   1.0
-					   (ImPlotRange filteredMin filteredMax)
-					   ))
-	   (ImPlot--EndPlot))))
-       #+ni 
-       (let ((n (manager.capture)))
-	 (when (< 0 n)
-	   (let ((buf (manager.getBuf))
-		 )
-	     (let ((x)
-		   (y1)
-		   (y2))
-	       (declare (type "std::vector<double>" x y1 y2))
-	       (dotimes (i n)
-		 (x.push_back i)
-		 (y1.push_back (dot  (aref buf i) (real)) )
-		 (y2.push_back (dot  (aref buf i) (imag)) ))
-	       (ImGuiMd--Render (string "# This is a plot"))
-	       (when (ImPlot--BeginPlot (string "Plot"))
-		 ,@(loop for e in `(y1 y2)
-			 collect
-			 `(ImPlot--PlotLine (string ,e)
-					    (x.data)
-					    (dot ,e (data))
-					    (x.size)))
-		 (ImPlot--EndPlot)))
-	     )))) 
+     
+      
     
     
      
@@ -398,6 +365,8 @@
 		(type int argc)
 		(type char** argv))
 
+
+       
 
        (glfwSetErrorCallback glfw_error_callback)
        (when (== 0 (glfwInit))
@@ -421,7 +390,7 @@
 	 (let ((&io (ImGui--GetIO)))
 	   (setf io.ConfigFlags (or io.ConfigFlags
 				    ImGuiConfigFlags_NavEnableKeyboard)))
-	 ;(ImGui--StyleColorsDark)
+					;(ImGui--StyleColorsDark)
 	 (ImGui_ImplGlfw_InitForOpenGL window true)
 	 (ImGui_ImplOpenGL3_Init glsl_version)
 	 )
@@ -430,21 +399,32 @@
 	 ,(lprint :msg "CA")
 	 (ca.print_square (ca.generate_sequence 1023)))
 
-       (while (!glfwWindowShouldClose window)
-	      (glfwPollEvents)
-	      (ImGui_ImplOpenGL3_NewFrame)
-	      (ImGui_ImplGlfw_NewFrame)
-	      (ImGui--NewFrame)
-	      (DemoImplot)
-	      (ImGui--Render)
-	      (let ((w 0)
-		    (h 0))
-		(glfwGetFramebufferSize window &w &h)
-		(glViewport 0 0 w h)
-		(glClearColor  0 0 0 1)
-		(glClear GL_COLOR_BUFFER_BIT)
-		(ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData)))
-	      (glfwSwapBuffers window))
+       (handler-case
+	   (do0
+	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
+		  (file (MemoryMappedComplexShortFile
+			 fn)))
+	      ,(lprint :msg "first element"
+		       :vars `(fn (dot (aref file 0) (real)))))
+	    (while (!glfwWindowShouldClose window)
+		   (glfwPollEvents)
+		   (ImGui_ImplOpenGL3_NewFrame)
+		   (ImGui_ImplGlfw_NewFrame)
+		   (ImGui--NewFrame)
+		   (DemoImplot)
+		   (ImGui--Render)
+		   (let ((w 0)
+			 (h 0))
+		     (glfwGetFramebufferSize window &w &h)
+		     (glViewport 0 0 w h)
+		     (glClearColor  0 0 0 1)
+		     (glClear GL_COLOR_BUFFER_BIT)
+		     (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData)))
+		   (glfwSwapBuffers window)))
+	 ("const std::runtime_error&" (e)
+	   ,(lprint :msg "error:"
+		    :vars `((e.what)))
+	   (return -1)))
 
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)

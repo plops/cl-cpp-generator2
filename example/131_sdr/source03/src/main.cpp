@@ -1,5 +1,6 @@
 #include "GLFW/glfw3.h"
 #include "GpsCACodeGenerator.h"
+#include "MemoryMappedComplexShortFile.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
   if (0 == glfwInit()) {
     return 1;
   }
-  const auto *glsl_version = "#version 130";
+  auto glsl_version = "#version 130";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
@@ -60,24 +61,37 @@ int main(int argc, char **argv) {
 
   auto ca = GpsCACodeGenerator(4);
   std::cout << "CA" << std::endl;
-  GpsCACodeGenerator::print_square(ca.generate_sequence(1023));
+  ca.print_square(ca.generate_sequence(1023));
 
-  while (glfwWindowShouldClose(window) == 0) {
-    glfwPollEvents();
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    DemoImplot();
-    ImGui::Render();
-    auto w = 0;
-    auto h = 0;
-    glfwGetFramebufferSize(window, &w, &h);
-    glViewport(0, 0, w, h);
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  try {
+    auto fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";
+    auto file = MemoryMappedComplexShortFile(fn);
+    std::cout << "first element"
+              << " fn='" << fn << "' "
+              << " file[0].real()='" << file[0].real() << "' " << std::endl;
 
-    glfwSwapBuffers(window);
+    while (!glfwWindowShouldClose(window)) {
+      glfwPollEvents();
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+      DemoImplot();
+      ImGui::Render();
+      auto w = 0;
+      auto h = 0;
+      glfwGetFramebufferSize(window, &w, &h);
+      glViewport(0, 0, w, h);
+      glClearColor(0, 0, 0, 1);
+      glClear(GL_COLOR_BUFFER_BIT);
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+      glfwSwapBuffers(window);
+    }
+
+  } catch (const std::runtime_error &e) {
+    std::cout << "error:"
+              << " e.what()='" << e.what() << "' " << std::endl;
+    return -1;
   }
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

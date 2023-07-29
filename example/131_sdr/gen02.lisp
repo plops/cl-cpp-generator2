@@ -838,7 +838,7 @@
 		  iostream)
        )
      :code `(do0
-	     (defclass ,name "public std::exception"	 
+	     (defclass ,name ()
 	       "public:"
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
