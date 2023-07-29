@@ -90,7 +90,7 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  cstring
+		 ; cstring
 		  cmath
 		  iostream)
        )
@@ -208,16 +208,16 @@
      
      (include<>
       iostream
-      string
+      ;string
 					;complex
       vector
 					;algorithm
       
 					;chrono
 
-      filesystem
-      unistd.h
-      cstdlib
+      ;filesystem
+      ;unistd.h
+      ;cstdlib
 
       cmath)
      (include
@@ -256,7 +256,7 @@
 			 `(ImPlot--PlotLine (string ,e)
 					    (x.data)
 					    (dot ,e (data))
-					    (x.size)))
+					    (static_cast<int> (x.size))))
 		 (ImPlot--EndPlot))))
 
      #+nil
