@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(imgui_soapysdr_project)
+project(imgui_dsp)
 set(CMAKE_CXX_STANDARD 23)
 
 # set compiler flags
@@ -19,13 +19,21 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 
 
-find_package(SoapySDR REQUIRED)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
-imgui_bundle_add_app(imgui_dsp
+add_executable(
+        ${PROJECT_NAME}
         src/main.cpp
-	src/GpsCACodeGenerator.cpp
+        src/GpsCACodeGenerator.cpp
+        src/imgui.cpp
+        src/imgui_draw.cpp
+        src/imgui_impl_opengl3.cpp
+        src/imgui_stdlib.cpp
+        src/imgui_tables.cpp
+        src/imgui_widgets.cpp
+        src/implot.cpp
+        src/implot_items.cpp
 )
 
 # target_link_libraries(imgui_soapysdr PRIVATE SoapySDR)

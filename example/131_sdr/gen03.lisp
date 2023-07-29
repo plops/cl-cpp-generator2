@@ -223,17 +223,14 @@
      (include
       immapp/immapp.h
       implot/implot.h
-      imgui_md_wrapper.h
+      
       )
-     (include ArgException.h
-	      ArgParser.h
-	      SdrManager.h
+     (include
 	      GpsCACodeGenerator.h)
-					;(include "cxxopts.hpp")
+	
 
-     (comments "./my_project -b $((2**10))")
 
-     #+nil (defun DemoImplot ()
+     #-nil (defun DemoImplot ()
 	     (let ((x)
 		   (y1)
 		   (y2))
@@ -254,6 +251,7 @@
 					    (x.size)))
 		 (ImPlot--EndPlot))))
 
+     #+nil
      (defun DemoSdr (manager)
        (declare (type SdrManager& manager))
 
@@ -385,31 +383,7 @@
 		 (ImPlot--EndPlot)))
 	     )))) 
     
-     ,(let* ((daemon-name "sdrplay_apiService")
-	     (daemon-path "/usr/bin/")
-	     (daemon-fullpath (format nil "~a~a" daemon-path daemon-name))
-	     (daemon-shm-files `("/dev/shm/Glbl\\\\sdrSrvRespSema"
-				 "/dev/shm/Glbl\\\\sdrSrvCmdSema"
-				 "/dev/shm/Glbl\\\\sdrSrvComMtx"
-				 "/dev/shm/Glbl\\\\sdrSrvComShMem")))
-	`(do0
-	  (defun isDaemonRunning ()
-	    (declare (values bool))
-	    (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
-		  (shm_files_exist true ))
-	      ,@(loop for e in daemon-shm-files
-		      collect
-		      `(unless (std--filesystem--exists (string ,e))
-			 ,(lprint :msg (format nil "file ~a does not exist" e)
-				  )
-			 (return false)))
-	      (return (logand (== 0 (WEXITSTATUS exit_code))
-			      shm_files_exist))))
-	  (defun startDaemonIfNotRunning ()
-	    (unless (isDaemonRunning)
-	      ,(lprint :msg "sdrplay daemon is not running. start it")
-	      (system (string ,(format nil "~a &" daemon-fullpath)))
-	      (sleep 1)))))
+    
      
      (defun main (argc argv)
        (declare (values int)
@@ -420,44 +394,6 @@
 	 ,(lprint :msg "CA")
 	 (ca.print_square (ca.generate_sequence 1023)))
        
-       #+nil (let ((cmdlineArgs (std--vector<std--string> (+ argv 1)
-							  (+ argv argc))))
-	       (handler-case
-		   (do0
-		    (let ((argParser (ArgParser cmdlineArgs))
-			  (parameters (argParser.getParsedArgs))
-			  (manager (SdrManager parameters)))
-		      (startDaemonIfNotRunning)
-		      (manager.initialize)
-		      (manager.startCapture)
-		
-		      (let ((runnerParams (HelloImGui--SimpleRunnerParams
-					   (designated-initializer
-					    :guiFunction
-					    (paren
-					     (lambda ()
-					       (declare (capture "&manager"))
-					; ,(lprint :msg "GUI")
-					       (ImGuiMd--RenderUnindented
-						(string-r "# Bundle"))
-					;(DemoImplot)
-					       (DemoSdr manager)))
-					    :windowTitle (string "imgui_soapysdr")
-					    :windowSize (curly 800 600)
-					    )))
-			    (addOnsParams (ImmApp--AddOnsParams (designated-initializer
-								 :withImplot true
-								 :withMarkdown true
-								 ))))
-			(ImmApp--Run runnerParams
-				     addOnsParams)
-			(manager.stopCapture)
-			(manager.close))))
-	   
-		 ("const ArgException&" (e)
-		   (do0 ,(lprint :msg "Error processing command line arguments"
-				 :vars `((e.what)))
-			(return -1)))))
        
        
        (return 0)))
