@@ -221,14 +221,22 @@
 
       cmath)
      (include
-      immapp/immapp.h
-      implot/implot.h
       
+      implot.h
+      imgui.h
+      imgui_impl_glfw.h
+      imgui_impl_opengl3.h
+      GLFW/glfw3.h
       )
      (include
 	      GpsCACodeGenerator.h)
 	
 
+     (defun glfw_error_callback (err desc)
+       (declare (type int err)
+		(type "const char*" desc))
+       ,(lprint :msg "GLFW erro:"
+		:vars `(err desc)))
 
      #-nil (defun DemoImplot ()
 	     (let ((x)
@@ -241,7 +249,7 @@
 		     (x.push_back x_)
 		     (y1.push_back (cos x_))
 		     (y2.push_back (sin x_)))))
-	       (ImGuiMd--Render (string "# This is a plot"))
+	       ;(ImGuiMd--Render (string "# This is a plot"))
 	       (when (ImPlot--BeginPlot (string "Plot"))
 		 ,@(loop for e in `(y1 y2)
 			 collect
@@ -390,9 +398,57 @@
 		(type int argc)
 		(type char** argv))
 
+
+       (glfwSetErrorCallback glfw_error_callback)
+       (when (== 0 (glfwInit))
+	 (return 1))
+       (let ((glsl_version (string "#version 130")))
+	 (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+	 (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
+       (let ((*window (glfwCreateWindow 800 600
+					(string "imgui_dsp")
+					nullptr nullptr)))
+	 (when (== nullptr window)
+	   (return 1))
+	 (glfwMakeContextCurrent window)
+	 #+more ,(lprint :msg "enable vsync")
+	 (glfwSwapInterval 1)
+	 (IMGUI_CHECKVERSION)
+	 (ImGui--CreateContext)
+	 (let ((&io (ImGui--GetIO)))
+	   (setf io.ConfigFlags (or io.ConfigFlags
+				    ImGuiConfigFlags_NavEnableKeyboard)))
+	 ;(ImGui--StyleColorsDark)
+	 (ImGui_ImplGlfw_InitForOpenGL window true)
+	 (ImGui_ImplOpenGL3_Init glsl_version)
+	 )
+       
        (let ((ca (GpsCACodeGenerator 4)))
 	 ,(lprint :msg "CA")
 	 (ca.print_square (ca.generate_sequence 1023)))
+
+       (while (!glfwWindowxShouldClose window)
+	      (glfwPollEvents)
+	      (ImGui_ImplOpenGL3_NewFrame)
+	      (ImGui_ImplGlfw_NewFrame)
+	      (ImGui--NewFrame)
+	      (DemoImplot)
+	      (ImGui--Render)
+	      (let ((w 0)
+		    (h 0))
+		(glfwGetFramebufferSize window &w &h)
+		(glViewport 0 0 w h)
+		(glClearColor  0 0 0 1)
+		(glClear GL_COLOR_BUFFER_BIT)
+		(ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData)))
+	      (glfwSwapBuffers window))
+
+       (do0
+	(ImGui_ImplOpenGL3_Shutdown)
+	(ImGui_ImplGlfw_Shutdown)
+	(ImGui--DestroyContext)
+	(glfwDestroyWindow window)
+	(glfwTerminate))
        
        
        

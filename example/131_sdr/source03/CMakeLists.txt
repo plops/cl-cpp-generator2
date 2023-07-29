@@ -19,7 +19,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 
 
-
+find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(
@@ -29,6 +30,7 @@ add_executable(
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp
+        src/imgui_impl_glfw.cpp
         src/imgui_stdlib.cpp
         src/imgui_tables.cpp
         src/imgui_widgets.cpp
@@ -36,7 +38,12 @@ add_executable(
         src/implot_items.cpp
 )
 
-# target_link_libraries(imgui_soapysdr PRIVATE SoapySDR)
+target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE
+        glfw
+        OpenGL::GL
+)
 
 # Now you can build your app with
 #     mkdir build && cd build && cmake .. && cmake --build .
