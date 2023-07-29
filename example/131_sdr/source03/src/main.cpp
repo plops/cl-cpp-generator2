@@ -34,6 +34,8 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
       ImPlot::PlotLine("y2", x.data(), y2.data(), windowSize);
       ImPlot::EndPlot();
     }
+    static bool logScale = false;
+    ImGui::Checkbox("Logarithmic Y-axis", &logScale);
     try {
       auto man = FFTWManager();
       auto in = std::vector<std::complex<double>>(windowSize);
@@ -45,8 +47,14 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
         in[i] = z;
       }
       auto out = man.fft(in, windowSize);
-      for (auto i = 0; i < windowSize; i += 1) {
-        y1[i] = std::abs(out[i]);
+      if (logScale) {
+        for (auto i = 0; i < windowSize; i += 1) {
+          y1[i] = 10. * log10(std::abs(out[i]));
+        }
+      } else {
+        for (auto i = 0; i < windowSize; i += 1) {
+          y1[i] = std::abs(out[i]);
+        }
       }
       if (ImPlot::BeginPlot("FFT")) {
         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);

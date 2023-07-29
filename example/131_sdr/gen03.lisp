@@ -319,7 +319,7 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-			)
+		  fstream)
        )
      :code `(do0
 	     (defclass ,name ()
@@ -367,8 +367,15 @@
 			  (values fftw_plan))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
+
+		 (let ((wisdom_filename (+ (string "wisdom_")
+					   (std--to_string windowSize)
+					   (string ".wis")))))
+		 
 		 (let ((iter (plans_.find windowSize)))
 		   (when (== (plans_.end) iter)
+		     
+		     
 		     (let ((*in (fftw_alloc_real windowSize))
 			   (*out (fftw_alloc_complex windowSize)))
 		       (when (logior !in
@@ -376,22 +383,36 @@
 			 (do0 (fftw_free in)
 			      (fftw_free out)
 			      (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
-		       (let ((p (fftw_plan_dft_r2c_1d windowSize
-						      in out
-						      FFTW_EXHAUSTIVE)))
-			 (when !p
-			   (do0 (fftw_free in)
-			      (fftw_free out)
-			      (throw (std--runtime_error (string "Failed to create fftw plan"))))
+
+		     (let ((wisdomFile (std--ifstream wisdom_filename)))
+		       (when (wisdomFile.good)
+			   ,(lprint :msg "read wisdom from file")
+			   (fftw_import_wisdom_from_filename (wisdom_filename.c_str))
 			   )
-			 (fftw_export_wisdom_to_filename (string "wisdom.wis"))
-			 (do0 (fftw_free in)
-			      (fftw_free out)
-			      )
-			 (setf iter (dot plans_
-					 (insert (curly windowSize p))
-					 first))
-			 )))
+		       (do0
+			
+			    (let ((p (fftw_plan_dft_r2c_1d windowSize
+							   in out
+							   ;FFTW_MEASURE
+							   FFTW_EXHAUSTIVE
+							   )))
+			      (when !p
+				(do0 (fftw_free in)
+				     (fftw_free out)
+				     (throw (std--runtime_error (string "Failed to create fftw plan"))))
+				)))
+		       (unless (wisdomFile.good)
+			 (fftw_export_wisdom_to_filename (wisdom_filename.c_str))
+			   
+			   )
+		       (wisdomFile.close))
+		       (do0 (do0 (fftw_free in)
+			       (fftw_free out)
+			       )
+			      (setf iter (dot plans_
+					      (insert (curly windowSize p))
+					      first)))
+		       ))
 		   (return iter->second)))
 
 	       (defmethod fft (in windowSize)
@@ -504,30 +525,37 @@
 					windowSize))
 	     (ImPlot--EndPlot))
 
-	   (handler-case
-	       (let ((man (FFTWManager))
-		     (in (std--vector<std--complex<double>> windowSize)))
-		 (dotimes (i windowSize)
-		   (let ((zs (aref file (+ start i)))
-			 (zr (static_cast<double> (zs.real)))
-			 (zi (static_cast<double> (zs.imag)))
-			 (z (std--complex<double> zr zi)))
-		    (setf (aref in i) z)))
-		 (let ((out (man.fft in windowSize)))
+	   (let ((logScale false))
+	     (declare (type "static bool" logScale))
+	     (ImGui--Checkbox (string "Logarithmic Y-axis")
+			      &logScale)
+	     (handler-case
+		 (let ((man (FFTWManager))
+		       (in (std--vector<std--complex<double>> windowSize)))
 		   (dotimes (i windowSize)
-		     (setf (aref y1 i) (std--abs (aref out i))))
-		   (when (ImPlot--BeginPlot (string "FFT"))
-		     ,@(loop for e in `(y1)
-			     collect
-			     `(ImPlot--PlotLine (string ,e)
-						(x.data)
-						(dot ,e (data))
-						windowSize))
-	     (ImPlot--EndPlot))
-		   ))
-	     ("const std::exception&" (e)
-	       (ImGui--Text (string "Error while processing FFT: %s")
-			    (e.what))))
+		     (let ((zs (aref file (+ start i)))
+			   (zr (static_cast<double> (zs.real)))
+			   (zi (static_cast<double> (zs.imag)))
+			   (z (std--complex<double> zr zi)))
+		       (setf (aref in i) z)))
+		   (let ((out (man.fft in windowSize)))
+		     (if logScale
+		      (dotimes (i windowSize)
+			(setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))
+		      (dotimes (i windowSize)
+			(setf (aref y1 i) (std--abs (aref out i)))))
+		     (when (ImPlot--BeginPlot (string "FFT"))
+		       ,@(loop for e in `(y1)
+			       collect
+			       `(ImPlot--PlotLine (string ,e)
+						  (x.data)
+						  (dot ,e (data))
+						  windowSize))
+		       (ImPlot--EndPlot))
+		     ))
+	       ("const std::exception&" (e)
+		 (ImGui--Text (string "Error while processing FFT: %s")
+			      (e.what)))))
 	   
 	   )))
 

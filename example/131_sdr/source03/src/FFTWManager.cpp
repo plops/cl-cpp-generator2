@@ -1,5 +1,6 @@
 // no preamble
 
+#include <fstream>
 #include <stdexcept>
 
 #include "FFTWManager.h"
@@ -8,22 +9,34 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
   if (windowSize <= 0) {
     throw std::invalid_argument("window size must be positive");
   }
+  auto wisdom_filename = "wisdom_" + std::to_string(windowSize) + ".wis";
+
   auto iter = plans_.find(windowSize);
   if (plans_.end() == iter) {
     auto *in = fftw_alloc_real(windowSize);
     auto *out = fftw_alloc_complex(windowSize);
-    if ((in == nullptr) || (out == nullptr)) {
+    if (!in || !out) {
       fftw_free(in);
       fftw_free(out);
       throw std::runtime_error("Failed to allocate memory for fftw plan");
     }
-    auto *p = fftw_plan_dft_r2c_1d(windowSize, in, out, FFTW_EXHAUSTIVE);
-    if (p == nullptr) {
+    auto wisdomFile = std::ifstream(wisdom_filename);
+    if (wisdomFile.good()) {
+
+      fftw_import_wisdom_from_filename(wisdom_filename.c_str());
+    }
+    auto p = fftw_plan_dft_r2c_1d(windowSize, in, out, FFTW_EXHAUSTIVE);
+    if (!p) {
       fftw_free(in);
       fftw_free(out);
       throw std::runtime_error("Failed to create fftw plan");
     }
-    fftw_export_wisdom_to_filename("wisdom.wis");
+
+    if (!wisdomFile.good()) {
+      fftw_export_wisdom_to_filename(wisdom_filename.c_str());
+    }
+    wisdomFile.close();
+
     fftw_free(in);
     fftw_free(out);
 
