@@ -301,7 +301,8 @@
 
   (let* ((name `FFTWManager)
 	 (members `((plans :type "std::map<int,fftw_plan>" :param nil)
-		    (window_size :type "int" :initform 512 :param t))))
+		    ;(window_size :type "int" :initform 512 :param t)
+		    )))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -359,13 +360,57 @@
 		   )
 		  (explicit)	    
 		  (values :constructor))
-		 (when (<= window_size_ 0)
-		   (throw (std--invalid_argument (string "window size must be positive"))))
-		 (let ((iter (plans.find window_size_)))))
+		 )
 
-	       	       (defmethod ~FFTWManager ()
+	       (defmethod get_plan (windowSize)
+		 (declare (type int windowSize)
+			  (values fftw_plan))
+		 (when (<= windowSize 0)
+		   (throw (std--invalid_argument (string "window size must be positive"))))
+		 (let ((iter (plans_.find windowSize)))
+		   (when (== (plans_.end) iter)
+		     (let ((*in (fftw_alloc_real windowSize))
+			   (*out (fftw_alloc_complex windowSize)))
+		       (when (logior !in
+				     !out)
+			 (do0 (fftw_free in)
+			      (fftw_free out)
+			      (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
+		       (let ((p (fftw_plan_dft_r2c_1d windowSize
+						      in out
+						      FFTW_EXHAUSTIVE)))
+			 (when !p
+			   (do0 (fftw_free in)
+			      (fftw_free out)
+			      (throw (std--runtime_error (string "Failed to create fftw plan"))))
+			   )
+			 (fftw_export_wisdom_to_filename (string "wisdom.wis"))
+			 (do0 (fftw_free in)
+			      (fftw_free out)
+			      )
+			 (setf iter (dot plans_
+					 (insert (curly windowSize p))
+					 first))
+			 )))
+		   (return iter->second)))
+
+	       (defmethod fft (in windowSize)
+		 (declare (type int windowSize)
+			  (type "const std::vector<std::complex<double>>&" in)
+			  (values "std::vector<std::complex<double>>"))
+		 (when (!= windowSize (in.size))
+		   (throw (std--invalid_argument (string "Input size must match window size."))))
+		 (let ((out (std--vector<std--complex<double>> windowSize)))
+		   (fftw_execute_dft (get_plan windowSize)
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (in.data)))
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (out.data))))
+		   (return out)))
+
+	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
-		 (for-range (kv plans)
+		 (for-range (kv plans_)
 			    (fftw_destroy_plan kv.second)))
 	       
 	       "private:"
@@ -414,7 +459,8 @@
       )
      (include
       GpsCACodeGenerator.h
-      MemoryMappedComplexShortFile.h)
+      MemoryMappedComplexShortFile.h
+      FFTWManager.h)
 	
 
      (defun glfw_error_callback (err desc)
@@ -438,6 +484,7 @@
 	 )
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
+
 	 (let ((x (std--vector<double> windowSize))
 	       (y1 (std--vector<double> windowSize))
 	       (y2 (std--vector<double> windowSize)))
@@ -455,7 +502,34 @@
 					(x.data)
 					(dot ,e (data))
 					windowSize))
-	     (ImPlot--EndPlot)))))
+	     (ImPlot--EndPlot))
+
+	   (handler-case
+	       (let ((man (FFTWManager))
+		     (in (std--vector<std--complex<double>> windowSize)))
+		 (dotimes (i windowSize)
+		   (let ((zs (aref file (+ start i)))
+			 (zr (static_cast<double> (zs.real)))
+			 (zi (static_cast<double> (zs.imag)))
+			 (z (std--complex<double> zr zi)))
+		    (setf (aref in i) z)))
+		 (let ((out (man.fft in windowSize)))
+		   (dotimes (i windowSize)
+		     (setf (aref y1 i) (std--abs (aref out i))))
+		   (when (ImPlot--BeginPlot (string "FFT"))
+		     ,@(loop for e in `(y1)
+			     collect
+			     `(ImPlot--PlotLine (string ,e)
+						(x.data)
+						(dot ,e (data))
+						windowSize))
+	     (ImPlot--EndPlot))
+		   ))
+	     ("const std::exception&" (e)
+	       (ImGui--Text (string "Error while processing FFT: %s")
+			    (e.what))))
+	   
+	   )))
 
      
       

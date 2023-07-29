@@ -1,3 +1,4 @@
+#include "FFTWManager.h"
 #include "GLFW/glfw3.h"
 #include "GpsCACodeGenerator.h"
 #include "MemoryMappedComplexShortFile.h"
@@ -33,6 +34,28 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
       ImPlot::PlotLine("y2", x.data(), y2.data(), windowSize);
       ImPlot::EndPlot();
     }
+    try {
+      auto man = FFTWManager();
+      auto in = std::vector<std::complex<double>>(windowSize);
+      for (auto i = 0; i < windowSize; i += 1) {
+        auto zs = file[(start + i)];
+        auto zr = static_cast<double>(zs.real());
+        auto zi = static_cast<double>(zs.imag());
+        auto z = std::complex<double>(zr, zi);
+        in[i] = z;
+      }
+      auto out = man.fft(in, windowSize);
+      for (auto i = 0; i < windowSize; i += 1) {
+        y1[i] = std::abs(out[i]);
+      }
+      if (ImPlot::BeginPlot("FFT")) {
+        ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
+        ImPlot::EndPlot();
+      }
+
+    } catch (const std::exception &e) {
+      ImGui::Text("Error while processing FFT: %s", e.what());
+    }
   }
 }
 
@@ -61,10 +84,10 @@ int main(int argc, char **argv) {
   glClearColor(0, 0, 0, 1);
 
   try {
-    auto fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";
+    const auto *fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";
     auto file = MemoryMappedComplexShortFile(fn);
 
-    while (!glfwWindowShouldClose(window)) {
+    while (glfwWindowShouldClose(window) == 0) {
       glfwPollEvents();
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();

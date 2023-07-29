@@ -8,11 +8,12 @@
 
 class FFTWManager  {
         public:
-        explicit  FFTWManager (int window_size)       ;   
+        explicit  FFTWManager ()       ;   
+        fftw_plan get_plan (int windowSize)       ;   
+        std::vector<std::complex<double>> fft (const std::vector<std::complex<double>>& in, int windowSize)       ;   
          ~FFTWManager ()       ;   
         private:
         std::map<int,fftw_plan> plans_;
-        int window_size_;
 };
 
 #endif /* !FFTWMANAGER_H */
