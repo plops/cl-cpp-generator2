@@ -414,7 +414,10 @@
 	 #+more ,(lprint :msg "enable vsync")
 	 (glfwSwapInterval 1)
 	 (IMGUI_CHECKVERSION)
+	 
 	 (ImGui--CreateContext)
+	 (ImPlot--CreateContext)
+
 	 (let ((&io (ImGui--GetIO)))
 	   (setf io.ConfigFlags (or io.ConfigFlags
 				    ImGuiConfigFlags_NavEnableKeyboard)))
@@ -427,7 +430,7 @@
 	 ,(lprint :msg "CA")
 	 (ca.print_square (ca.generate_sequence 1023)))
 
-       (while (!glfwWindowxShouldClose window)
+       (while (!glfwWindowShouldClose window)
 	      (glfwPollEvents)
 	      (ImGui_ImplOpenGL3_NewFrame)
 	      (ImGui_ImplGlfw_NewFrame)
@@ -446,6 +449,7 @@
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)
 	(ImGui_ImplGlfw_Shutdown)
+	(ImPlot--DestroyContext)
 	(ImGui--DestroyContext)
 	(glfwDestroyWindow window)
 	(glfwTerminate))
