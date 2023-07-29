@@ -376,7 +376,7 @@
 		   (when (== (plans_.end) iter)
 		     
 		     
-		     (let ((*in (fftw_alloc_real windowSize))
+		     (let ((*in (fftw_alloc_complex windowSize))
 			   (*out (fftw_alloc_complex windowSize)))
 		       (when (logior !in
 				     !out)
@@ -387,25 +387,27 @@
 		     (let ((wisdomFile (std--ifstream wisdom_filename)))
 		       (when (wisdomFile.good)
 			   ,(lprint :msg "read wisdom from file")
+			   (wisdomFile.close)
 			   (fftw_import_wisdom_from_filename (wisdom_filename.c_str))
 			   )
-		       (do0
-			
-			    (let ((p (fftw_plan_dft_r2c_1d windowSize
-							   in out
-							   ;FFTW_MEASURE
-							   FFTW_EXHAUSTIVE
-							   )))
-			      (when !p
-				(do0 (fftw_free in)
-				     (fftw_free out)
-				     (throw (std--runtime_error (string "Failed to create fftw plan"))))
-				)))
+		       (let ((p (fftw_plan_dft_1d windowSize
+						      in out
+						      FFTW_FORWARD
+					; FFTW_MEASURE
+						      FFTW_PATIENT
+					;FFTW_EXHAUSTIVE
+						      
+						      )))
+			 (when !p
+			   (do0 (fftw_free in)
+				(fftw_free out)
+				(throw (std--runtime_error (string "Failed to create fftw plan"))))))
 		       (unless (wisdomFile.good)
-			 (fftw_export_wisdom_to_filename (wisdom_filename.c_str))
-			   
-			   )
-		       (wisdomFile.close))
+			 ,(lprint :msg "store wisdom to file"
+				  :vars `(wisdom_filename))
+			 (wisdomFile.close)
+			 (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
+		       )
 		       (do0 (do0 (fftw_free in)
 			       (fftw_free out)
 			       )

@@ -13,7 +13,7 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
 
   auto iter = plans_.find(windowSize);
   if (plans_.end() == iter) {
-    auto *in = fftw_alloc_real(windowSize);
+    auto *in = fftw_alloc_complex(windowSize);
     auto *out = fftw_alloc_complex(windowSize);
     if (!in || !out) {
       fftw_free(in);
@@ -23,9 +23,10 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
     auto wisdomFile = std::ifstream(wisdom_filename);
     if (wisdomFile.good()) {
 
+      wisdomFile.close();
       fftw_import_wisdom_from_filename(wisdom_filename.c_str());
     }
-    auto p = fftw_plan_dft_r2c_1d(windowSize, in, out, FFTW_EXHAUSTIVE);
+    auto p = fftw_plan_dft_1d(windowSize, in, out, FFTW_FORWARD, FFTW_PATIENT);
     if (!p) {
       fftw_free(in);
       fftw_free(out);
@@ -33,9 +34,10 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
     }
 
     if (!wisdomFile.good()) {
+
+      wisdomFile.close();
       fftw_export_wisdom_to_filename(wisdom_filename.c_str());
     }
-    wisdomFile.close();
 
     fftw_free(in);
     fftw_free(out);
