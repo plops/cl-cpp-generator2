@@ -10,7 +10,8 @@
 class MemoryMappedComplexShortFile  {
         public:
         explicit  MemoryMappedComplexShortFile (const std::string& filename)       ;   
-        std::complex<short>& operator[] (std::size_t index)       ;   
+        std::complex<short>& operator[] (std::size_t index) const      ;   
+        std::size_t size () const      ;   
          ~MemoryMappedComplexShortFile ()       ;   
         private:
         boost::iostreams::mapped_file_source file_;

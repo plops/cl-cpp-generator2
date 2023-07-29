@@ -272,9 +272,15 @@
 
 	       (defmethod "operator[]" (index)
 		 (declare (type "std::size_t" index)
-			  (values "std::complex<short>&"))
+			  (values "std::complex<short>&")
+			  (const))
 		 (return (aref data_ index)))
 
+	       (defmethod size ()
+		 (declare (values "std::size_t")
+			  (const))
+		 (return (dot file_ (size))))
+	       
 	       (defmethod ~MemoryMappedComplexShortFile ()
 		 (declare (values :constructor))
 		 (file_.close))
@@ -334,26 +340,39 @@
        ,(lprint :msg "GLFW erro:"
 		:vars `(err desc)))
 
-     #-nil (defun DemoImplot ()
-	     (let ((x)
-		   (y1)
-		   (y2))
-	       (declare (type "static std::vector<double>" x y1 y2))
-	       (when (x.empty)
-		 (dotimes (i 1000)
-		   (let ((x_ (* #.pi (/ 4d0 1000d0) i)))
-		     (x.push_back x_)
-		     (y1.push_back (cos x_))
-		     (y2.push_back (sin x_)))))
-					;(ImGuiMd--Render (string "# This is a plot"))
-	       (when (ImPlot--BeginPlot (string "Plot"))
-		 ,@(loop for e in `(y1 y2)
-			 collect
-			 `(ImPlot--PlotLine (string ,e)
-					    (x.data)
-					    (dot ,e (data))
-					    (static_cast<int> (x.size))))
-		 (ImPlot--EndPlot))))
+     (defun DrawPlot (file)
+       (declare (type "const MemoryMappedComplexShortFile&" file))
+
+       (let ((start 0)
+	     (windowSize 512)
+	     (maxStart (static_cast<int> (/ (file.size)
+					    (sizeof "std::complex<short>")))))
+	 (declare (type "static int" start windowSize))
+	 (ImGui--SliderInt (string "Start")
+			   &start 0 maxStart)
+	 (ImGui--InputInt (string "Window size")
+			  &windowSize)
+	 )
+       (when (logand (<= (+ start windowSize) maxStart)
+		     (< 0 windowSize))
+	(let ((x (std--vector<double> windowSize))
+	      (y1 (std--vector<double> windowSize))
+	      (y2 (std--vector<double> windowSize)))
+	  (dotimes (i windowSize)
+	    (let ((z (aref file (+ start i))))
+	      (setf (aref x i) i
+		    (aref y1 i) (z.real)
+		    (aref y2 i) (z.imag))))
+	  
+					
+	  (when (ImPlot--BeginPlot (string "Plot"))
+	    ,@(loop for e in `(y1 y2)
+		    collect
+		    `(ImPlot--PlotLine (string ,e)
+				       (x.data)
+				       (dot ,e (data))
+				       windowSize))
+	    (ImPlot--EndPlot)))))
 
      
       
@@ -370,17 +389,21 @@
 
        (glfwSetErrorCallback glfw_error_callback)
        (when (== 0 (glfwInit))
+	 ,(lprint :msg "glfw init failed")
 	 (return 1))
-       (let ((glsl_version (string "#version 130")))
+       
+       #+more
+       (do0 ;let ((glsl_version (string "#version 130")))
 	 (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
 	 (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
        (let ((*window (glfwCreateWindow 800 600
 					(string "imgui_dsp")
 					nullptr nullptr)))
 	 (when (== nullptr window)
+	   ,(lprint :msg "failed to create glfw window")
 	   (return 1))
 	 (glfwMakeContextCurrent window)
-	 #+more ,(lprint :msg "enable vsync")
+	 ,(lprint :msg "enable vsync")
 	 (glfwSwapInterval 1)
 	 (IMGUI_CHECKVERSION)
 	 
@@ -392,10 +415,11 @@
 				    ImGuiConfigFlags_NavEnableKeyboard)))
 					;(ImGui--StyleColorsDark)
 	 (ImGui_ImplGlfw_InitForOpenGL window true)
-	 (ImGui_ImplOpenGL3_Init glsl_version)
+	 (ImGui_ImplOpenGL3_Init (string "#version 130"))
+	 (glClearColor  0 0 0 1)
 	 )
        
-       (let ((ca (GpsCACodeGenerator 4)))
+       #+nil (let ((ca (GpsCACodeGenerator 4)))
 	 ,(lprint :msg "CA")
 	 (ca.print_square (ca.generate_sequence 1023)))
 
@@ -405,28 +429,30 @@
 		  (file (MemoryMappedComplexShortFile
 			 fn)))
 	      ,(lprint :msg "first element"
-		       :vars `(fn (dot (aref file 0) (real)))))
+		       :vars `(fn (dot (aref file 0) (real))))
+	    #+nil  (let ((z0 (aref file 0)))))
 	    (while (!glfwWindowShouldClose window)
 		   (glfwPollEvents)
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
-		   (DemoImplot)
+		   (DrawPlot file)
 		   (ImGui--Render)
 		   (let ((w 0)
 			 (h 0))
 		     (glfwGetFramebufferSize window &w &h)
 		     (glViewport 0 0 w h)
-		     (glClearColor  0 0 0 1)
+		   
 		     (glClear GL_COLOR_BUFFER_BIT)
-		     (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData)))
+		     )
+		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window)))
 	 ("const std::runtime_error&" (e)
 	   ,(lprint :msg "error:"
 		    :vars `((e.what)))
 	   (return -1)))
 
-       (do0
+      #+nil (do0
 	(ImGui_ImplOpenGL3_Shutdown)
 	(ImGui_ImplGlfw_Shutdown)
 	(ImPlot--DestroyContext)

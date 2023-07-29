@@ -14,7 +14,8 @@ MemoryMappedComplexShortFile::MemoryMappedComplexShortFile(
       reinterpret_cast<std::complex<short> *>(const_cast<char *>(file_.data()));
 }
 std::complex<short> &
-MemoryMappedComplexShortFile::operator[](std::size_t index) {
+MemoryMappedComplexShortFile::operator[](std::size_t index) const {
   return data_[index];
 }
+std::size_t MemoryMappedComplexShortFile::size() const { return file_.size(); }
 MemoryMappedComplexShortFile::~MemoryMappedComplexShortFile() { file_.close(); }
