@@ -15,7 +15,7 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
   if (plans_.end() == iter) {
     auto *in = fftw_alloc_complex(windowSize);
     auto *out = fftw_alloc_complex(windowSize);
-    if (!in || !out) {
+    if ((in == nullptr) || (out == nullptr)) {
       fftw_free(in);
       fftw_free(out);
       throw std::runtime_error("Failed to allocate memory for fftw plan");
@@ -26,8 +26,8 @@ fftw_plan FFTWManager::get_plan(int windowSize) {
       wisdomFile.close();
       fftw_import_wisdom_from_filename(wisdom_filename.c_str());
     }
-    auto p = fftw_plan_dft_1d(windowSize, in, out, FFTW_FORWARD, FFTW_PATIENT);
-    if (!p) {
+    auto *p = fftw_plan_dft_1d(windowSize, in, out, FFTW_FORWARD, FFTW_PATIENT);
+    if (p == nullptr) {
       fftw_free(in);
       fftw_free(out);
       throw std::runtime_error("Failed to create fftw plan");

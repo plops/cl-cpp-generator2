@@ -513,19 +513,21 @@
 	       (y2 (std--vector<double> windowSize)))
 	   (dotimes (i windowSize)
 	     (let ((z (aref file (+ start i))))
-	       (setf (aref x i) i
+	       (setf (aref x i) i ;(+ start i)
 		     (aref y1 i) (z.real)
 		     (aref y2 i) (z.imag))))
-	  
-					
-	   (when (ImPlot--BeginPlot (string "Plot"))
-	     ,@(loop for e in `(y1 y2)
-		     collect
-		     `(ImPlot--PlotLine (string ,e)
-					(x.data)
-					(dot ,e (data))
-					windowSize))
-	     (ImPlot--EndPlot))
+
+	   (do0
+	    
+	    (when (ImPlot--BeginPlot (string "Plot"))
+	      (ImPlot--SetNextAxisLimits ImAxis_X1 start (+ start windowSize))				
+	      ,@(loop for e in `(y1 y2)
+		      collect
+		      `(ImPlot--PlotLine (string ,e)
+					 (x.data)
+					 (dot ,e (data))
+					 windowSize))
+	      (ImPlot--EndPlot)))
 
 	   (let ((logScale false))
 	     (declare (type "static bool" logScale))
@@ -533,7 +535,17 @@
 			      &logScale)
 	     (handler-case
 		 (let ((man (FFTWManager))
-		       (in (std--vector<std--complex<double>> windowSize)))
+		       (in (std--vector<std--complex<double>> windowSize))
+		       (nyquist (/ windowSize 2d0))
+		       (sampleRate 10d6))
+		   (dotimes (i (+ 1 (/ windowSize 2)))
+		     (setf (aref x i) (/ (* 1d0 i)
+					 nyquist)))
+		   #+nil (dotimes (i (/ windowSize 2))
+		     (setf (aref x i) (- (* .5 sampleRate)
+					 (* sampleRate (/ (* 1d0 i)
+							  nyquist)))))
+		   
 		   (dotimes (i windowSize)
 		     (let ((zs (aref file (+ start i)))
 			   (zr (static_cast<double> (zs.real)))
@@ -545,15 +557,19 @@
 		      (dotimes (i windowSize)
 			(setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))
 		      (dotimes (i windowSize)
-			(setf (aref y1 i) (std--abs (aref out i)))))
-		     (when (ImPlot--BeginPlot (string "FFT"))
-		       ,@(loop for e in `(y1)
-			       collect
-			       `(ImPlot--PlotLine (string ,e)
-						  (x.data)
-						  (dot ,e (data))
-						  windowSize))
-		       (ImPlot--EndPlot))
+			(setf (aref y1 i) (std--abs (aref out i))))
+		      )
+		     (do0
+		       (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))				
+		      (when (ImPlot--BeginPlot (string "FFT"))
+			
+			,@(loop for e in `(y1)
+				collect
+				`(ImPlot--PlotLine (string ,e)
+						   (x.data)
+						   (dot ,e (data))
+						   windowSize))
+			(ImPlot--EndPlot)))
 		     ))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")

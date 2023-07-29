@@ -30,15 +30,22 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
       y2[i] = z.imag();
     }
     if (ImPlot::BeginPlot("Plot")) {
+      ImPlot::SetNextAxisLimits(ImAxis_X1, start, start + windowSize);
       ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
       ImPlot::PlotLine("y2", x.data(), y2.data(), windowSize);
       ImPlot::EndPlot();
     }
+
     static bool logScale = false;
     ImGui::Checkbox("Logarithmic Y-axis", &logScale);
     try {
       auto man = FFTWManager();
       auto in = std::vector<std::complex<double>>(windowSize);
+      auto nyquist = windowSize / 2.0;
+      auto sampleRate = 1.00e+7;
+      for (auto i = 0; i < 1 + (windowSize / 2); i += 1) {
+        x[i] = ((1.0 * i) / nyquist);
+      }
       for (auto i = 0; i < windowSize; i += 1) {
         auto zs = file[(start + i)];
         auto zr = static_cast<double>(zs.real());
@@ -56,6 +63,8 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
           y1[i] = std::abs(out[i]);
         }
       }
+      ImPlot::SetNextAxisLimits(ImAxis_X1, -0.50F * sampleRate,
+                                0.50F * sampleRate);
       if (ImPlot::BeginPlot("FFT")) {
         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
         ImPlot::EndPlot();
