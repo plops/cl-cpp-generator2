@@ -458,7 +458,7 @@
        
        (return 0)))
    :omit-parens t
-   :format nil
-   :tidy nil)
+   :format t
+   :tidy t)
 
   )
