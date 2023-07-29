@@ -298,6 +298,89 @@
 					  `(space ,type ,nname_)))))))))
 
     )
+
+  (let* ((name `FFTWManager)
+	 (members `((plans :type "std::map<int,fftw_plan>" :param nil)
+		    (window_size :type "int" :initform 512 :param t))))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> fftw3.h
+				   map
+				   vector
+				   complex
+				   )
+			)
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+			)
+       )
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 (when (<= window_size_ 0)
+		   (throw (std--invalid_argument (string "window size must be positive"))))
+		 (let ((iter (plans.find window_size_)))))
+
+	       	       (defmethod ~FFTWManager ()
+		 (declare (values :constructor))
+		 (for-range (kv plans)
+			    (fftw_destroy_plan kv.second)))
+	       
+	       "private:"
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_)))))))))
+
+    )
   
   
   (write-source 
@@ -355,24 +438,24 @@
 	 )
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
-	(let ((x (std--vector<double> windowSize))
-	      (y1 (std--vector<double> windowSize))
-	      (y2 (std--vector<double> windowSize)))
-	  (dotimes (i windowSize)
-	    (let ((z (aref file (+ start i))))
-	      (setf (aref x i) i
-		    (aref y1 i) (z.real)
-		    (aref y2 i) (z.imag))))
+	 (let ((x (std--vector<double> windowSize))
+	       (y1 (std--vector<double> windowSize))
+	       (y2 (std--vector<double> windowSize)))
+	   (dotimes (i windowSize)
+	     (let ((z (aref file (+ start i))))
+	       (setf (aref x i) i
+		     (aref y1 i) (z.real)
+		     (aref y2 i) (z.imag))))
 	  
 					
-	  (when (ImPlot--BeginPlot (string "Plot"))
-	    ,@(loop for e in `(y1 y2)
-		    collect
-		    `(ImPlot--PlotLine (string ,e)
-				       (x.data)
-				       (dot ,e (data))
-				       windowSize))
-	    (ImPlot--EndPlot)))))
+	   (when (ImPlot--BeginPlot (string "Plot"))
+	     ,@(loop for e in `(y1 y2)
+		     collect
+		     `(ImPlot--PlotLine (string ,e)
+					(x.data)
+					(dot ,e (data))
+					windowSize))
+	     (ImPlot--EndPlot)))))
 
      
       
@@ -393,9 +476,9 @@
 	 (return 1))
        
        #+more
-       (do0 ;let ((glsl_version (string "#version 130")))
-	 (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
-	 (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
+       (do0		 ;let ((glsl_version (string "#version 130")))
+	(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+	(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
        (let ((*window (glfwCreateWindow 800 600
 					(string "imgui_dsp")
 					nullptr nullptr)))
@@ -420,8 +503,8 @@
 	 )
        
        #+nil (let ((ca (GpsCACodeGenerator 4)))
-	 ,(lprint :msg "CA")
-	 (ca.print_square (ca.generate_sequence 1023)))
+	       ,(lprint :msg "CA")
+	       (ca.print_square (ca.generate_sequence 1023)))
 
        (handler-case
 	   (do0
@@ -430,7 +513,7 @@
 			 fn)))
 	      ,(lprint :msg "first element"
 		       :vars `(fn (dot (aref file 0) (real))))
-	    #+nil  (let ((z0 (aref file 0)))))
+	      #+nil  (let ((z0 (aref file 0)))))
 	    (while (!glfwWindowShouldClose window)
 		   (glfwPollEvents)
 		   (ImGui_ImplOpenGL3_NewFrame)
@@ -452,13 +535,13 @@
 		    :vars `((e.what)))
 	   (return -1)))
 
-      #+nil (do0
-	(ImGui_ImplOpenGL3_Shutdown)
-	(ImGui_ImplGlfw_Shutdown)
-	(ImPlot--DestroyContext)
-	(ImGui--DestroyContext)
-	(glfwDestroyWindow window)
-	(glfwTerminate))
+       #+nil (do0
+	      (ImGui_ImplOpenGL3_Shutdown)
+	      (ImGui_ImplGlfw_Shutdown)
+	      (ImPlot--DestroyContext)
+	      (ImGui--DestroyContext)
+	      (glfwDestroyWindow window)
+	      (glfwTerminate))
        
        
        

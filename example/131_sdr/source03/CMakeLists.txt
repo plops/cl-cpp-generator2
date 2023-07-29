@@ -22,13 +22,21 @@ endif ()
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
+# find_package(FFTW3 REQUIRED) # not working on gentoo as it configures fftw using autotools and fftw's cmake install is broken
+#include_directories(${FFTW_INCLUDES})
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
+
 add_executable(
         ${PROJECT_NAME}
         src/main.cpp
         src/GpsCACodeGenerator.cpp
         src/MemoryMappedComplexShortFile.cpp
+        src/FFTWManager.cpp
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp
@@ -46,6 +54,8 @@ target_link_libraries(
         glfw
         OpenGL::GL
 	Boost::iostreams
+	#${FFTW_LIBRARIES}
+	PkgConfig::FFTW
 )
 
 # Now you can build your app with
