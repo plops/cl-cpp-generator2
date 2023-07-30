@@ -1235,6 +1235,7 @@
 		       (nyquist (/ windowSize 2d0))
 		       (sampleRate 10d6)
 		       (centerFrequency (sdr.get_frequency)))
+		   (declare (type "static double" centerFrequency))
 		   (dotimes (i windowSize)
 		     (setf (aref x i) (+ centerFrequency
 					 (* sampleRate
@@ -1324,10 +1325,9 @@
 			     (when (logand (ImPlot--IsPlotHovered)
 					   (logior (ImGui--IsMouseClicked 2)
 						   (ImGui--IsMouseDragging 2)))
-			       (let ((frequency (dot (ImPlot--GetPlotMousePos) x)))
-				 (sdr.set_frequency frequency
-						    #+nil (+ (sdr.get_frequency)
-							     frequency)))))
+			       (do0
+				 (setf centerFrequency (dot (ImPlot--GetPlotMousePos) x))
+				 (sdr.set_frequency centerFrequency))))
 			(ImPlot--EndPlot)))))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")

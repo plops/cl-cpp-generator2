@@ -192,7 +192,7 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
       auto in = std::vector<std::complex<double>>(windowSize);
       auto nyquist = windowSize / 2.0;
       auto sampleRate = 1.00e+7;
-      auto centerFrequency = sdr.get_frequency();
+      static double centerFrequency = sdr.get_frequency();
       for (auto i = 0; i < windowSize; i += 1) {
         x[i] = centerFrequency +
                sampleRate *
@@ -275,8 +275,9 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
 
         if (ImPlot::IsPlotHovered() &&
             (ImGui::IsMouseClicked(2) || ImGui::IsMouseDragging(2))) {
-          auto frequency = ImPlot::GetPlotMousePos().x;
-          sdr.set_frequency(frequency);
+          centerFrequency = ImPlot::GetPlotMousePos().x;
+
+          sdr.set_frequency(centerFrequency);
         }
 
         ImPlot::EndPlot();
