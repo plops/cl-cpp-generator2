@@ -131,4 +131,4 @@ done
 # Book: El Rabani: Introduction to GPS (2002)
 
 - p 54. Figure 4.1 depicts GPS signal vs thermal noise power at 2MHz
-  bandwidth
+  bandwidth and 290K
