@@ -294,7 +294,7 @@
     )
 
   (let* ((name `FFTWManager)
-	 (members `((plans :type "std::map<int,fftw_plan>" :param nil)
+	 (members `((plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
 		    ;(window_size :type "int" :initform 512 :param t)
 		    )))
     (write-class
@@ -313,7 +313,8 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  fstream)
+		  fstream
+		  #+more iostream)
        )
      :code `(do0
 	     (defclass ,name ()
@@ -356,68 +357,110 @@
 		  (values :constructor))
 		 )
 
+	       (defmethod print_plans ()
+		 (declare (const))
+		 (for-range (pair plans_)
+		      (let ((windowSize pair.first.first)
+			    (nThreads pair.first.second)
+			    (planAddress pair.second))
+		       ,(lprint :msg "plans_"
+				:vars `(windowSize
+					nThreads
+					;planAddress
+					)))))
+
 	       (defmethod get_plan (windowSize &key (nThreads 1))
 		 (declare (type int windowSize nThreads)
 			  (values fftw_plan))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 
-		 (let ((wisdom_filename (+ (string "wisdom_")
-					   (std--to_string windowSize)
-					   (string ".wis")))))
-		 (when (< 1 nThreads
-			  )
-		   (setf wisdom_filename
-			 (+ (string "wisdom_")
-					   (std--to_string windowSize)
-					   (string "_threads")
-					   (std--to_string nThreads)
-					   (string ".wis"))))
-		 (let ((iter (plans_.find windowSize)))
-		   (when (== (plans_.end) iter)
-		     
-		     
-		     (let ((*in (fftw_alloc_complex windowSize))
-			   (*out (fftw_alloc_complex windowSize)))
-		       (when (logior !in
-				     !out)
-			 (do0 (fftw_free in)
-			      (fftw_free out)
-			      (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
+		 
+		#-nil (print_plans)
+		 ,(lprint :msg "lookup plan"
+			 :vars `(windowSize nThreads))
+		
+		 (let ((iter (plans_.find (curly windowSize nThreads))))
+		   (if (== (plans_.end) iter)
+		       (do0 ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
+				     :vars `(windowSize nThreads))
 
-		     (let ((wisdomFile (std--ifstream wisdom_filename)))
-		       (when (wisdomFile.good)
-			   ,(lprint :msg "read wisdom from file")
-			   (wisdomFile.close)
-			   (fftw_import_wisdom_from_filename (wisdom_filename.c_str))
-			   )
-		       (when (< 1 nThreads)
-			 (fftw_plan_with_nthreads nThreads))
-		       (let ((p (fftw_plan_dft_1d windowSize
-						  in out
-						  FFTW_FORWARD
-					; FFTW_MEASURE
-						  FFTW_PATIENT
-					;FFTW_EXHAUSTIVE
-						      
-						  )))
-			 (when !p
-			   (do0 (fftw_free in)
-				(fftw_free out)
-				(throw (std--runtime_error (string "Failed to create fftw plan"))))))
-		       (unless (wisdomFile.good)
-			 ,(lprint :msg "store wisdom to file"
-				  :vars `(wisdom_filename))
-			 (wisdomFile.close)
-			 (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
-		       )
-		       (do0 (do0 (fftw_free in)
-			       (fftw_free out)
-			       )
-			      (setf iter (dot plans_
-					      (insert (curly windowSize p))
-					      first)))
-		       ))
+			    (do0 (let ((wisdom_filename (+ (string "wisdom_")
+							   (std--to_string windowSize)
+							   (string ".wis")))))
+				 (when (< 1 nThreads)
+				   (setf wisdom_filename
+					 (+ (string "wisdom_")
+					    (std--to_string windowSize)
+					    (string "_threads")
+					    (std--to_string nThreads)
+					    (string ".wis")))))
+			    
+			    (let ((*in (fftw_alloc_complex windowSize))
+				  (*out (fftw_alloc_complex windowSize)))
+			      (when (logior !in
+					    !out)
+				(do0 (fftw_free in)
+				     (fftw_free out)
+				     (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
+
+			      (let ((wisdomFile (std--ifstream wisdom_filename)))
+				(when (wisdomFile.good)
+				  ,(lprint :msg "read wisdom from existing file"
+					   :vars `(wisdom_filename))
+				  (wisdomFile.close)
+				  (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
+				(if (< 1 nThreads)
+				    (do0 ,(lprint :msg "plan 1d fft with threads"
+						  :vars `(nThreads))
+					 (fftw_plan_with_nthreads nThreads))
+				    ,(lprint :msg "plan 1d fft without threads"
+					     :vars `(nThreads)))
+				#+nil (let ((p (fftw_plan_dft_1d windowSize
+								 in out
+								 FFTW_FORWARD
+								 FFTW_MEASURE
+								 ))))
+				(let ((dim (fftw_iodim (designated-initializer :n windowSize
+									       :is 1
+									       :os 1)))
+				      (p 
+					(fftw_plan_guru_dft 1 ;; rank
+							    &dim ;; dims
+							    0 ;; howmany_rank
+							    nullptr ;; howmany_dims
+							    in	;; in 
+							    out ;; out
+							    FFTW_FORWARD ;; sign
+					;FFTW_MEASURE ;; flags
+							    (or FFTW_MEASURE FFTW_UNALIGNED)
+							    )))
+				  )
+				(when !p
+				  (do0 (fftw_free in)
+				       (fftw_free out)
+				       (throw (std--runtime_error (string "Failed to create fftw plan")))))
+				,(lprint :msg "plan successfully created")
+				(unless (wisdomFile.good)
+				  ,(lprint :msg "store wisdom to file"
+					   :vars `(wisdom_filename))
+				  (wisdomFile.close)
+				  (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
+				)
+			      (do0 (do0
+				    ,(lprint :msg "free in and out")
+				    (fftw_free in)
+				    (fftw_free out)
+				    )
+				   ,(lprint :msg "store plan in class"
+					    :vars `(windowSize nThreads))
+				   (setf iter (dot plans_
+						   (insert (curly (curly windowSize nThreads) p))
+						   first))
+				   )
+			      ))
+		       (do0
+			,(lprint :msg "plan has been used recently, reuse it.")))
 		   (return iter->second)))
 
 	       
@@ -697,7 +740,5 @@
        
        (return 0)))
    :omit-parens t
-   :format t
-   :tidy nil)
-
-  )
+   :format nil
+   :tidy nil))

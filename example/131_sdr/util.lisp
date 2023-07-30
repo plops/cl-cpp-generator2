@@ -13,7 +13,8 @@
 							     :omit-redundant-parentheses t)))
 			,e
 			(string "' ")))   
-	      std--endl))
+	      std--endl
+	      std--flush))
 
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"
@@ -92,7 +93,7 @@
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
-	   ;;:formatter nil
+	   :formatter nil
 	   )))
     (write-source fn-cpp
 		  `(do0
@@ -109,6 +110,6 @@
 		    ,(if code
 			 code
 			 `(comments "no code")))
-		  :format t
-		  :tidy t
+		  :format nil
+		  :tidy nil
 		  :omit-parens t)))
