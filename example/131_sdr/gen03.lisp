@@ -201,6 +201,454 @@
 
 	       ))))
 
+  (let* ((name `SdrManager)
+	 (members `(
+		    ;(parameters :type "const Args&" :param t)
+		    (bufferSize :type "const int" :param t)
+		    (fifoSize :type "const int" :param t)
+		    (timeout_us :type "const int" :param t)
+		    (capture_sleep_us :type "const int" :param t)
+		    
+		    (direction :type "const int" :initform-class SOAPY_SDR_RX)
+		    (channel :type "const int" :initform-class 0)
+		    (sdr :type "SoapySDR::Device*" :param nil :initform-class nullptr)
+		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform  (,(format nil "std::vector<~a>" acq-type) buffer_size) :param nil )
+		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
+		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
+		    #+more (alpha :type double :initform .08 :param nil)
+		    (start :type "std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<long,std::ratio<1,1000000000>>>"
+			   :initform (std--chrono--high_resolution_clock--now)
+			   :param nil)
+		  
+		  ;; members related to the capture thread
+		  (capture-thread :type "std::thread" :initform nil :param nil)
+		    (mtx :type "std::mutex" :initform nil :param nil)
+		    (stop :type "bool" :initform-class false :param nil)
+		    (cv :type "std::condition_variable" :initform nil :param nil)
+		    (fifo :type ,fifo-type
+			  :initform nil :param nil)
+		    
+		    )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> SoapySDR/Device.hpp
+				   thread
+				   mutex
+				   deque
+				   condition_variable
+				   functional)
+			
+			)
+     :implementation-preamble
+     `(do0
+       (include<> SoapySDR/Device.hpp
+					;SoapySDR/Types.hpp
+		  SoapySDR/Formats.hpp
+		  SoapySDR/Errors.hpp
+		  fstream                                                                                         
+		  )
+       #+more
+       (include<> chrono
+		  iostream))
+     :code `(do0
+	     (defclass ,name ()
+	       
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  (explicit)
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform))))))))
+		  (explicit)	    
+		  (values :constructor)))
+	       
+	       (defmethod initialize ()
+		 (declare (values bool))
+		 (let ((sdrResults (SoapySDR--Device--enumerate)))
+		   #+more (dotimes (i (sdrResults.size))
+		     (declare (type "unsigned long" i))
+		     ,(lprint :msg "found device"
+			      :vars `(i)))
+		   (let ((soapyDeviceArgs (aref sdrResults 0)))
+		     (declare (type "const auto&" soapyDeviceArgs))
+		     (setf sdr_ (SoapySDR--Device--make soapyDeviceArgs))
+		   
+		     (when (== nullptr sdr_)
+		       ,(lprint :msg "make failed")
+		       (return false))
+		     (let () 
+		       #+more
+		       ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
+					  (:fun listGains :el gain :values gains)
+					  (:fun listFrequencies :el element :values elements)
+					  (:fun getFrequencyRange :el range :values ranges
+					   :print ((range.minimum)
+						   (range.maximum)))
+					  )
+			       collect
+			       (destructuring-bind (&key fun print el values) e
+				 `(let ((,values (-> sdr_ (,fun direction channel))))
+				    (for-range
+				     (,el ,values)
+				     ,(lprint :msg (format nil "~a" fun)
+					      :vars `(,@(if print
+							    `(,@print)
+							    `(,el))
+						      direction
+						      channel
+						      ))))))
+		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction channel))))
+			 #+more (do0
+			  ,(lprint :msg "has automatic gain control"
+				   :vars `(
+					   hasAutomaticGain))
+			  ,(lprint :msg "balance" ;; none 
+				   :vars `((-> sdr_ (hasIQBalance direction channel))
+					   (-> sdr_ (hasIQBalanceMode direction channel))
+					   ))
+			  ,(lprint :msg "offset" 
+				   :vars `((-> sdr_ (hasDCOffset direction channel))
+					   (-> sdr_ (hasDCOffsetMode direction channel)) ;; supported
+					   )))
+			       (when hasAutomaticGain
+				 (let ((automatic false ;true
+					    )
+				 )
+			     (-> sdr_ (setGainMode direction channel automatic))
+			     (-> sdr_ (setGain direction channel (string "IFGR") 20))
+			     (-> sdr_ (setGain direction channel (string "RFGR") 0))
+			     #+more
+			     (let ((ifgrGain (-> sdr_ (getGain direction channel (string "IFGR"))))
+				   (ifgrGainRange (-> sdr_ (getGainRange direction channel (string "IFGR"))))
+				   (rfgrGain (-> sdr_ (getGain direction channel (string "RFGR"))))
+				   (rfgrGainRange (-> sdr_ (getGainRange direction channel (string "RFGR")))))
+			       ,(lprint :msg "automatic gain"
+					:vars `((-> sdr_ (getGainMode direction channel))
+						ifgrGain
+						(ifgrGainRange.minimum)
+						(ifgrGainRange.maximum)
+						(ifgrGainRange.step)
+						rfgrGain
+						(rfgrGainRange.minimum)
+						(rfgrGainRange.maximum)
+						(rfgrGainRange.step)
+						))))))
+		       #+more
+		       ((lambda ()
+			  (declare (capture "&"))
+			  (let ((fullScale 0d0))
+			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction channel fullScale))
+					     fullScale)))))
+		       
+		       
+		       
+		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction channel))
+					(-> sdr_ (getBandwidth direction channel))
+					(-> sdr_ (getFrequency direction channel))
+					(-> sdr_ (getMasterClockRate)) ;; zero
+					(-> sdr_ (getReferenceClockRate)) ;; zero
+
+					) )
+
+		       #+more
+		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction channel)))
+				       ,(lprint :vars `(rate)))
+			    (for-range (bw (-> sdr_ (listBandwidths direction channel)))
+				       ,(lprint :vars `(bw)))
+			    (for-range (clk (-> sdr_ (listClockSources))) ;; none
+				       ,(lprint :vars `(clk)))
+			    (for-range (time_src (-> sdr_ (listTimeSources))) ;; none
+				       ,(lprint :vars `(time_src)))
+			    (for-range (sensor (-> sdr_ (listSensors))) ;; none
+				       ,(lprint :vars `(sensor)))
+			    (for-range (reg (-> sdr_ (listRegisterInterfaces))) ;; none
+				       ,(lprint :vars `(reg)))
+			    (for-range (gpio (-> sdr_ (listGPIOBanks))) ;; none
+				       ,(lprint :vars `(gpio)))
+			    (for-range (uart (-> sdr_ (listUARTs))) ;; none
+				       ,(lprint :vars `(uart))))
+
+		       #+more
+		       ,@(loop for e in `(RF CORR)
+			       collect
+			       (let ((name (format nil "frequency_range_~a" e)))
+				 `(let ((,name (-> sdr_ (getFrequencyRange direction channel (string ,e)))))
+				    (for-range (r ,name)
+					       ,(lprint :msg (format nil "~a" name)
+							:vars `((dot r (minimum))
+								(dot r (maximum))) )))))
+
+		       (do0
+			(setf rx_stream_ (-> sdr_ (setupStream direction_
+							       ,acq-sdr-type)))
+			(when (== nullptr rx_stream_)
+			  ,(lprint :msg "stream setup failed")
+			  (SoapySDR--Device--unmake sdr_)
+			  (return false))
+			,(lprint :vars `((-> sdr_
+					     (getStreamMTU rx_stream_))))
+			((lambda ()
+			   (declare (capture "&"))
+			   (let ((flags 0)
+				 (timeNs 0)
+				 (numElems 0))
+			     (-> sdr_ (activateStream rx_stream_ flags timeNs numElems)))))
+			(do0
+			 (comments "reusable buffer of rx samples")
+			 (let ((numElems buffer_size_)
+			       #+more (numBytes (* buffer_size_
+					    (sizeof ,acq-type))))
+			   (setf buf_  
+				 (,(format nil "std::vector<~a>" acq-type)
+				  numElems))
+			   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
+			   #+more (let ((expected_ms0 (/ (* 1000d0 numElems)
+						  sample_rate_ )))
+			     (setf average_elapsed_ms_ expected_ms0))
+			   )))
+		       (return true)))))
+
+	       ,@(loop for e in `((:name sample-rate :type double)
+				  (:name bandwidth :type double)
+				  (:name frequency :type double)
+				  (:name gain-mode :type bool))
+		       appending
+		       (destructuring-bind (&key name type) e
+			(let ((setter (cl-change-case:snake-case (format nil "set-~a" name)))
+			      (Setter (cl-change-case:camel-case (format nil "set-~a" name)))
+			      (getter (cl-change-case:snake-case (format nil "get-~a" name)))
+			      (Getter (cl-change-case:camel-case (format nil "get-~a" name))))
+			  `(
+			    (defmethod ,setter (v)
+			      (declare (type ,type v))
+			      (-> sdr_ (,Setter direction_ channel_ v)))
+			    (defmethod ,getter ()
+			      (declare (values ,type))
+			      (return (-> sdr_ (,Getter direction_ channel_))))))))
+
+	       #+nil 
+	       (do0 (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
+		    (-> sdr_ (setBandwidth direction channel parameters_.bandwidth))
+		    (-> sdr_ (setFrequency direction channel parameters_.frequency))
+		    (-> sdr_ (setGainMode direction channel automatic)))
+
+	       ,@(loop for e in `(IF RF)
+		       collect
+		       `(defmethod ,(format nil "setGain~a" e) (value)
+			  (declare (type int value))
+			  (-> sdr_ (setGain direction_ channel_ (string ,(format nil "~aGR" e)) value))))
+	       
+	       (defmethod getBuf ()
+		 (declare (values ,(format nil "const std::vector<~a>&" acq-type))
+			  (const))
+		 (return buf_))
+
+	       
+	       (defmethod capture ()
+		 (declare (values int))
+		 (let (;#+more (start (std--chrono--high_resolution_clock--now))
+		       (numElems buffer_size_))
+		   #+more (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
+				    ".04 seems to average over 60 values in the history")
+		   (let ((buffs (std--vector<void*> (curly (buf_.data))))
+			 (flags 0)
+			 (time_ns 0LL)
+			 
+			 (readStreamRet (-> sdr_
+				   (readStream rx_stream_
+					       (buffs.data)
+					       numElems
+					       flags
+					       time_ns
+					       timeout_us_)))
+			 )
+		     #+more (let ((end (std--chrono--high_resolution_clock--now))
+				  (elapsed (std--chrono--duration<double> (- end start_)))
+				  (elapsed_ms (* 1000 (elapsed.count)))
+				  
+				  (expected_ms (/ (* 1000d0 readStreamRet)
+						  parameters_.sampleRate)))
+			      (setf start_ end)
+			      (setf average_elapsed_ms_
+				    (+ (* alpha_ elapsed_ms)
+				       (* (- 1d0 alpha_)
+					  average_elapsed_ms_)))
+			      ,(lprint :msg "data block acquired"
+				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
+		     (cond
+		       ((space
+			 #-more (setf "auto  readStreamRet"
+			       (-> sdr_
+				   (readStream rx_stream_
+					       (buffs.data)
+					       numElems
+					       flags
+					       time_ns
+					       timeout_us_)))
+			 
+			 (== readStreamRet SOAPY_SDR_TIMEOUT))
+			,(lprint :msg "warning: timeout")
+			(return 0))
+		       ((== readStreamRet SOAPY_SDR_OVERFLOW)
+			,(lprint :msg "warning: overflow")
+			(return 0))
+		       ((== readStreamRet SOAPY_SDR_UNDERFLOW)
+			,(lprint :msg "warning: underflow")
+			(return 0))
+		       ((< readStreamRet 0)
+			,(lprint :msg "readStream failed"
+				 :vars `(readStreamRet
+					 (SoapySDR--errToStr readStreamRet)))
+			(return 0))
+		       ((!= readStreamRet numElems)
+			,(lprint :msg "warning: readStream returned unexpected number of elements"
+				 :vars `(readStreamRet flags time_ns))
+			(return readStreamRet)))
+		     (return numElems))))
+
+	       (defmethod close ()
+		 (do0 (-> sdr_ (deactivateStream rx_stream_ 0 0))
+		      (-> sdr_ (closeStream rx_stream_))
+		      (SoapySDR--Device--unmake sdr_)))
+
+	       (defmethod startCapture ()
+		 ,(lprint :msg "startCapture")
+		 (setf capture_thread_ (std--thread &SdrManager--captureThread
+						    this)))
+
+	       (defmethod stopCapture ()
+		 ,(lprint :msg "stopCapture")
+		 (progn
+		   (let ((lock (std--scoped_lock mtx_)))
+		     (setf stop_ true)))
+		 (dot cv_ (notify_all))
+		 (when (capture_thread_.joinable)
+		   (capture_thread_.join)))
+
+	       (defmethod getFifo ()
+		 (declare (values ,fifo-type))
+		 (let ((lock (std--scoped_lock mtx_)))
+		   (return fifo_)))
+
+	       (defmethod processFifo (func &key (n (std--numeric_limits<std--size_t>--max)))
+		 (declare (type ,(format nil "const std::function<void(const ~a&)> &" fifo-type) func)
+			  (type "std::size_t" n))
+		 #+nil ,(lprint :msg "processFifo"
+			  :vars `(n))
+		 (let ((lock (std--scoped_lock mtx_))
+		       (n0 (std--min n (fifo_.size))))
+		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
+		   (if (<= (fifo_.size) n0)
+		       (do0
+			(func fifo_))
+		       (do0
+			(comments "If n is less than fifo_.size(), create a sub-deque with the last n elements and pass it to func")
+			(comments "Get an iterator to the nth element from the end")
+			(let ((start (- (fifo_.end)
+					n0))
+			      (lastElements (,fifo-type start (fifo_.end))))
+			  (func lastElements))))))
+
+	       (defmethod processFifoT (func &key (n (std--numeric_limits<std--size_t>--max)))
+		 (declare (type "Func " func)
+			  (type "std::size_t" n)
+			  (values "template<typename Func> void"))
+		 (let ((lock (std--scoped_lock mtx_))
+		       (n0 (std--min n (fifo_.size))))
+		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
+		   (if (<= (fifo_.size) n0)
+		       (do0
+			(func fifo_))
+		       (do0
+			(comments "If n is less than fifo_.size(), create a sub-deque with the last n elements and pass it to func")
+			(comments "Get an iterator to the nth element from the end")
+			(let ((start (- (fifo_.end)
+					n0))
+			      (lastElements (,fifo-type start (fifo_.end))))
+			  (func lastElements))))))
+	       
+	       "private:"
+	       (defmethod captureThread ()
+		 ,(lprint :msg "captureThread")
+		 (let ((outputFile (std--ofstream (string "capturedData.bin")
+						  (or std--ios--binary
+						      std--ios--app))))
+		  (let ((captureSleepUs capture_sleep_us_))
+		    (while true
+					;,(lprint :msg "get lock")
+			   (progn
+			     (let ((lock (std--scoped_lock mtx_)))
+			  
+			       (when stop_
+				 ,(lprint :msg "stopping captureThread")
+				 break))
+			     (do0 (comments "capture and push to buffer")
+					;,(lprint :msg "capture")
+				  (when (space (setf "auto numElems" (capture))
+					       (< 0 numElems))
+				    (comments "Insert new elements into the deque")
+				    (dot fifo_ (insert (fifo_.end)
+						       (buf_.begin)
+						       (+
+							(buf_.begin)
+							numElems)))
+				    (comments "Write data to file")
+				    (outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
+						      (* numElems (sizeof ,acq-type)))
+				    ))
+
+			     (when (< fifo_size_ (fifo_.size))
+			       (fifo_.erase (fifo_.begin)
+					    (+ (fifo_.begin)
+					       (- (fifo_.size)
+						  fifo_size_ )))))
+			   (when (< 0 captureSleepUs)
+			     (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))
+		    (outputFile.close))))
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (= ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))))))
+  
   (let* ((name `MemoryMappedComplexShortFile)
 	 (members `((file :type "boost::iostreams::mapped_file_source" :param nil)
 		    (data :type "std::complex<short>*" :initform-class nullptr :param nil)
@@ -221,7 +669,7 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-			)
+		  )
        )
      :code `(do0
 	     (defclass ,name ()

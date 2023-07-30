@@ -37,6 +37,7 @@ add_executable(
         src/GpsCACodeGenerator.cpp
         src/MemoryMappedComplexShortFile.cpp
         src/FFTWManager.cpp
+        src/SdrManager.cpp
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp

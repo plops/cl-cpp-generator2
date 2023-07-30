@@ -1,2 +1,2 @@
 
-clang-format -i FFTWManager.* GpsCACodeGenerator.* main.cpp MemoryMappedComplexShortFile.*
+clang-format -i FFTWManager.* GpsCACodeGenerator.* main.cpp MemoryMappedComplexShortFile.* SdrManager.*
