@@ -5,8 +5,13 @@
 
 (in-package :cl-cpp-generator2)
 
-(setf *features* (set-difference *features* (list :more)))
-(setf *features* (set-exclusive-or *features* (list :more)))
+(setf *features* (set-difference *features* (list :more
+						  :memoize-plan
+						  :guru-plan)))
+(setf *features* (set-exclusive-or *features* (list :more
+						    ;:guru-plan
+						    ;:memoize-plan
+						    )))
 
 
 (let* ( ;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
@@ -294,7 +299,7 @@
     )
 
   (let* ((name `FFTWManager)
-	 (members `((plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
+	 (members `(#+memoize-plan (plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
 		    ;(window_size :type "int" :initform 512 :param t)
 		    )))
     (write-class
@@ -357,17 +362,13 @@
 		  (values :constructor))
 		 )
 
-	       (defmethod print_plans ()
+	       #+nil (defmethod print_plans ()
 		 (declare (const))
 		 (for-range (pair plans_)
 		      (let ((windowSize pair.first.first)
 			    (nThreads pair.first.second)
 			    (planAddress pair.second))
-		       ,(lprint :msg "plans_"
-				:vars `(windowSize
-					nThreads
-					;planAddress
-					)))))
+		       ,(lprint :msg "print_plans"))))
 
 	       (defmethod get_plan (windowSize &key (nThreads 1))
 		 (declare (type int windowSize nThreads)
@@ -376,13 +377,13 @@
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 
 		 
-		#-nil (print_plans)
+		#+nil (print_plans)
 		 ,(lprint :msg "lookup plan"
 			 :vars `(windowSize nThreads))
-		
-		 (let ((iter (plans_.find (curly windowSize nThreads))))
-		   (if (== (plans_.end) iter)
-		       (do0 ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
+		 #+memoize-plan (let ((iter (plans_.find (curly windowSize nThreads))))) 
+		 (do0 
+		   (if #-memoize-plan true #+memoize-plan (== (plans_.end) iter)
+		       (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
 				     :vars `(windowSize nThreads))
 
 			    (do0 (let ((wisdom_filename (+ (string "wisdom_")
@@ -416,12 +417,12 @@
 					 (fftw_plan_with_nthreads nThreads))
 				    ,(lprint :msg "plan 1d fft without threads"
 					     :vars `(nThreads)))
-				#+nil (let ((p (fftw_plan_dft_1d windowSize
+				#-guru-plan (let ((p (fftw_plan_dft_1d windowSize
 								 in out
 								 FFTW_FORWARD
 								 FFTW_MEASURE
 								 ))))
-				(let ((dim (fftw_iodim (designated-initializer :n windowSize
+				#+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
 									       :is 1
 									       :os 1)))
 				      (p 
@@ -451,17 +452,23 @@
 				    ,(lprint :msg "free in and out")
 				    (fftw_free in)
 				    (fftw_free out)
+				    #-memoize-plan (return p)
 				    )
-				   ,(lprint :msg "store plan in class"
-					    :vars `(windowSize nThreads))
-				   (setf iter (dot plans_
-						   (insert (curly (curly windowSize nThreads) p))
-						   first))
+				   #+memoize-plan(do0
+				    ,(lprint :msg "store plan in class"
+					     :vars `(windowSize nThreads))
+				     (let ((insertResult (dot plans_
+									    (insert (curly (curly windowSize nThreads) p))
+									    )))
+						     (setf iter (dot insertResult first))
+						     ,(lprint :msg "inserted new key"
+							      :vars `((plans_.size) insertResult.second))))
 				   )
 			      ))
-		       (do0
+		       #+memoize-plan (do0
 			,(lprint :msg "plan has been used recently, reuse it.")))
-		   (return iter->second)))
+		   
+ 		   #+memoize-plan (return iter->second)))
 
 	       
 	       (defmethod fftshift (in)
@@ -492,6 +499,7 @@
 
 	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
+		 #+memoize-plan
 		 (for-range (kv plans_)
 			    (fftw_destroy_plan kv.second)))
 	       
