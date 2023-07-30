@@ -123,12 +123,12 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
   static int bandwidthIndex = 7;
   static int old_bandwidthIndex = 7;
   auto bandwidthItemsNum =
-      std::vector<double>({2.00e+5f, 3.00e+5f, 6.00e+5f, 1.5e+6f, 5.0e+6f,
-                           6.0e+6f, 7.0e+6f, 8.0e+6f});
+      std::vector<double>({2.00e+5, 3.00e+5, 6.00e+5, 1.5360e+6, 5.00e+6,
+                           6.00e+6, 7.00e+6, 8.00e+6});
   auto bandwidthValue = bandwidthItemsNum[bandwidthIndex];
   auto bandwidthItemsStr = std::vector<std::string>(
-      {"200000.0", "300000.0", "600000.0", "1536000.0", "5000000.0",
-       "6000000.0", "7000000.0", "8000000.0"});
+      {"200000.0d0", "300000.0d0", "600000.0d0", "1536000.0d0", "5000000.0d0",
+       "6000000.0d0", "7000000.0d0", "8000000.0d0"});
   if (ImGui::BeginCombo("bandwidth",
                         bandwidthItemsStr[bandwidthIndex].c_str())) {
     for (auto i = 0; i < bandwidthItemsStr.size(); i += 1) {

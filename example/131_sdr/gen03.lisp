@@ -255,7 +255,8 @@
 		  )
        #+more
        (include<> chrono
-		  iostream))
+		  iostream
+		  iomanip))
      :code `(do0
 	     (defclass ,name ()
 	       
@@ -376,7 +377,7 @@
 			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction_ channel_ fullScale))
 					     fullScale)))))
 		       
-		       
+		       (<< std--cout std--fixed (std--setprecision 10) 1d0  std--endl)
 		       
 		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction_ channel_))
 					(-> sdr_ (getBandwidth direction_ channel_))
@@ -390,7 +391,8 @@
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction_ channel_)))
 				       ,(lprint :vars `(rate)))
 			    (for-range (bw (-> sdr_ (listBandwidths direction_ channel_)))
-				       ,(lprint :vars `(bw)))
+				       ,(lprint :vars `(bw))
+				       )
 			    (for-range (clk (-> sdr_ (listClockSources))) ;; none
 				       ,(lprint :vars `(clk)))
 			    (for-range (time_src (-> sdr_ (listTimeSources))) ;; none
@@ -1129,7 +1131,7 @@
 	       (ImGui--EndCombo))))
 
        ,(let* ((combo-name "bandwidth")
-	       (l-combo `(200e3 300e3 600e3 1.536e6 5e6 6e6 7e6 8e6))
+	       (l-combo `(200d3 300d3 600d3 1.536d6 5d6 6d6 7d6 8d6))
 	       (l-default-index (- (length l-combo) 1))
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
