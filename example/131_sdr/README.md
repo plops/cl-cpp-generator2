@@ -132,3 +132,12 @@ done
 
 - p 54. Figure 4.1 depicts GPS signal vs thermal noise power at 2MHz
   bandwidth and 290K
+
+Received GNSS signals are right-hand circularly polarized (RHCP), and
+the antenna should be designed as such.
+
+When the GNSS signal is reﬂected off an object, an undesirable
+situation for a system attempting to measure time- of-ﬂight, the
+polarization will ﬂip to left-hand circular polarization (LHCP). An
+RHCP antenna is quite effective in suppressing the LHCP reﬂection and
+mini- mizing this error source.
