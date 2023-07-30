@@ -17,6 +17,7 @@
 (let* ( ;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
       (elem-type "short") (acq-sdr-type 'SOAPY_SDR_CS16)
       (acq-type (format nil "std::complex<~a>" elem-type))
+      (acq-vec-type (format nil "std::vector<std::complex<~a>>" elem-type))
       (fifo-type (format nil "std::deque<~a>" acq-type)))
 	
   (progn
@@ -616,8 +617,8 @@
 			       (when stop_
 				 ,(lprint :msg "stopping captureThread")
 				 break))
-			     (do0 (comments "capture and push to buffer")
-					;,(lprint :msg "capture")
+			     (do0 
+				 #+nil ,(lprint :msg "capture and push to fifo")
 				  (when (space (setf "auto numElems" (capture))
 					       (< 0 numElems))
 				    (comments "Insert new elements into the deque")
@@ -626,9 +627,10 @@
 						       (+
 							(buf_.begin)
 							numElems)))
-				    (comments "Write data to file")
-				    (outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
-						      (* numElems (sizeof ,acq-type)))
+				    #+nil (do0
+				     (comments "Write data to file")
+				     (outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
+						       (* numElems (sizeof ,acq-type))))
 				    ))
 
 			     (when (< fifo_size_ (fifo_.size))
@@ -1038,6 +1040,30 @@
        (declare (type "const MemoryMappedComplexShortFile&" file)
 		(type SdrManager& sdr))
 
+       ,@(loop for e in `((:name sample-rate :type double)
+			  (:name bandwidth :type double)
+			  (:name frequency :type double)
+			  (:name gain-mode :type bool))
+	       collect
+	       (destructuring-bind (&key name type) e
+		 (let ((getter (cl-change-case:snake-case (format nil "get-~a" name))))
+		  `(do0
+		    (ImGui--Text (string ,(format nil "~a:" name))
+				 )
+		    (ImGui--SameLine)
+		    (ImGui--TextColored (ImVec4 1 1 0 1)
+					,(case type
+					   (`double `(string "%f"))
+					   (`bool `(string "%s")))
+					,(case type
+					   (`double `(dot sdr (,getter)))
+					   (`bool `(? (dot sdr (,getter))
+						      (string "True")
+						      (string "False"))))
+					
+					)
+		    ))))
+       
        ,@(loop for e in `((:name IF :min 0 :max 59)
 			  (:name RF :min 0 :max 3))
 	       collect
@@ -1067,14 +1093,11 @@
 	       (l-sizes `(,@(loop for i from l-size-start upto l-size-end
 				  collect
 				  (format nil "~a" (expt 2 i))))))
-	  `(let (
-	       
-		 (windowSizeIndex ,l-size-init)
+	  `(let ((windowSizeIndex ,l-size-init)
 		 (itemsInt (std--vector<int> (curly ,@l-sizes)))
 		 (windowSize (aref itemsInt windowSizeIndex))
 		 (items (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-								   l-sizes))))
-		 )
+								   l-sizes)))))
 	     (declare (type "static int" windowSizeIndex))
 	     (when (ImGui--BeginCombo (string "Window size")
 				      (dot (aref items windowSizeIndex)
@@ -1088,43 +1111,45 @@
 			   windowSize (aref itemsInt windowSizeIndex)))
 		   (when is_selected
 		     (ImGui--SetItemDefaultFocus))))
-	       (ImGui--EndCombo))
-	     ))
+	       (ImGui--EndCombo))))
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
 
 	 (let ((x (std--vector<double> windowSize))
 	       (y1 (std--vector<double> windowSize))
-	       (y2 (std--vector<double> windowSize)))
+	       (y2 (std--vector<double> windowSize))
+	       (zfifo (,acq-vec-type windowSize)))
 
 
 	   (let ((realtimeDisplay true))
 	     (declare (type "static bool" realtimeDisplay))
 	     (ImGui--Checkbox (string "Realtime display")
-			      &realtimeDisplay)
-	     )
+			      &realtimeDisplay))
 
 	   (if realtimeDisplay
 	       (do0
-
-	    
-	    (do0
-	     (sdr.processFifo
-	      (lambda (fifo)
-		(declare (type ,(format nil "const ~a &" fifo-type) fifo)
-			 (capture "&"))
-		;;,(lprint :msg "processFifo_cb")
-		(let ((n windowSize ;(fifo.size)
-			 ))
-		  (dotimes (i n)
-		    (x.push_back i)
-		    (let ((re (dot  (aref fifo i) (real)) )
-			  (im (dot  (aref fifo i) (imag)) )))
-		    (y1.push_back re)
-		    (y2.push_back im)
-		    )))
-	      windowSize
-	      )))
+		(sdr.processFifo
+		 (lambda (fifo)
+		   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
+			    (capture "&"))
+		   ;;,(lprint :msg "processFifo_cb")
+		   (let ((n windowSize ;(fifo.size)
+			    ))
+		     (dotimes (i n)
+		       (let ((z (aref fifo i)))
+			 (setf (aref zfifo i) z)
+			 (setf (aref x i) i
+			       (aref y1 i) (z.real)
+			       (aref y2 i) (z.imag)))
+		       #+nil
+		       (do0
+			(x.push_back i)
+			(let ((re (dot  (aref fifo i) (real)) )
+			      (im (dot  (aref fifo i) (imag)) )))
+			(y1.push_back re)
+			(y2.push_back im))
+		       )))
+		 windowSize))
 	       (dotimes (i windowSize)
 		 (let ((z (aref file (+ start i))))
 		   (setf (aref x i) i	;(+ start i)
@@ -1150,31 +1175,24 @@
 	     (ImGui--Checkbox (string "Logarithmic Y-axis")
 			      &logScale)
 	     (handler-case
-		 (let 
-		     ((fftw (FFTWManager))
-		      
-		      
-			  (in (std--vector<std--complex<double>> windowSize))
-			  (nyquist (/ windowSize 2d0))
-			  (sampleRate 10d6))
-
-		   
-		   
-		   
+		 (let ((fftw (FFTWManager))
+		       (in (std--vector<std--complex<double>> windowSize))
+		       (nyquist (/ windowSize 2d0))
+		       (sampleRate 10d6))
 		   (dotimes (i windowSize)
 		     (setf (aref x i) (* sampleRate
 					 (/ (static_cast<double> (- i (/ windowSize 2)))
 					    windowSize)) ))
 		  
-		   
 		   (dotimes (i windowSize)
-		     (let ((zs (aref file (+ start i)))
+		     (let ((zs (aref zfifo i)
+			       ;(aref file (+ start i))
+			       )
 			   (zr (static_cast<double> (zs.real)))
 			   (zi (static_cast<double> (zs.imag)))
 			   (z (std--complex<double> zr zi)))
 		       (setf (aref in i) z)))
 		   (let ((out (fftw.fft in windowSize)))
-		     
 		     (if logScale
 			 (dotimes (i windowSize)
 			   (setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))

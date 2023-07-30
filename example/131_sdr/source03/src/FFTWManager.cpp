@@ -1,6 +1,7 @@
 // no preamble
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 
 #include "FFTWManager.h"
@@ -9,7 +10,10 @@ fftw_plan FFTWManager::get_plan(int windowSize, int nThreads) {
   if (windowSize <= 0) {
     throw std::invalid_argument("window size must be positive");
   }
-
+  std::cout << "lookup plan"
+            << " windowSize='" << windowSize << "' "
+            << " nThreads='" << nThreads << "' " << std::endl
+            << std::flush;
   if (true) {
     auto wisdom_filename = "wisdom_" + std::to_string(windowSize) + ".wis";
 
@@ -27,15 +31,22 @@ fftw_plan FFTWManager::get_plan(int windowSize, int nThreads) {
     }
     auto wisdomFile = std::ifstream(wisdom_filename);
     if (wisdomFile.good()) {
-
+      std::cout << "read wisdom from existing file"
+                << " wisdom_filename='" << wisdom_filename << "' " << std::endl
+                << std::flush;
       wisdomFile.close();
       fftw_import_wisdom_from_filename(wisdom_filename.c_str());
     }
     if (1 < nThreads) {
-
+      std::cout << "plan 1d fft with threads"
+                << " nThreads='" << nThreads << "' " << std::endl
+                << std::flush;
       fftw_plan_with_nthreads(nThreads);
 
     } else {
+      std::cout << "plan 1d fft without threads"
+                << " nThreads='" << nThreads << "' " << std::endl
+                << std::flush;
     }
     auto p = fftw_plan_dft_1d(windowSize, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
@@ -44,13 +55,16 @@ fftw_plan FFTWManager::get_plan(int windowSize, int nThreads) {
       fftw_free(out);
       throw std::runtime_error("Failed to create fftw plan");
     }
-
+    std::cout << "plan successfully created" << std::endl << std::flush;
     if (!wisdomFile.good()) {
-
+      std::cout << "store wisdom to file"
+                << " wisdom_filename='" << wisdom_filename << "' " << std::endl
+                << std::flush;
       wisdomFile.close();
       fftw_export_wisdom_to_filename(wisdom_filename.c_str());
     }
 
+    std::cout << "free in and out" << std::endl << std::flush;
     fftw_free(in);
     fftw_free(out);
     return p;
