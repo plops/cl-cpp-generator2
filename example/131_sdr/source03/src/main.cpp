@@ -82,8 +82,8 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
     old_automaticGainMode = automaticGainMode;
   }
 
-  static int gainIF = 0;
-  if (ImGui::SliderInt("gainIF", &gainIF, 0, 59, "%02d",
+  static int gainIF = 20;
+  if (ImGui::SliderInt("gainIF", &gainIF, 20, 59, "%02d",
                        ImGuiSliderFlags_AlwaysClamp)) {
     sdr.setGainIF(gainIF);
   }
@@ -98,14 +98,14 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
   auto maxStart = static_cast<int>(file.size() / sizeof(std::complex<short>));
   ImGui::SliderInt("Start", &start, 0, maxStart);
 
-  static int windowSizeIndex = 4;
+  static int windowSizeIndex = 8;
   auto itemsInt =
-      std::vector<int>({32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
-                        32768, 65536, 131072, 262144, 524288, 1048576});
+      std::vector<int>({16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
+                        16384, 32768, 65536, 131072, 262144, 524288, 1048576});
   auto windowSize = itemsInt[windowSizeIndex];
   auto items = std::vector<std::string>(
-      {"32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384",
-       "32768", "65536", "131072", "262144", "524288", "1048576"});
+      {"16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192",
+       "16384", "32768", "65536", "131072", "262144", "524288", "1048576"});
   if (ImGui::BeginCombo("Window size", items[windowSizeIndex].c_str())) {
     for (auto i = 0; i < items.size(); i += 1) {
       auto is_selected = windowSizeIndex == i;
@@ -216,6 +216,14 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
       if (ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)"
                                      : "FFT magnitude (linear)")) {
         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
+        // handle user input. clicking into the graph allow tuning the sdr
+        // receiver to the specified frequency.
+
+        if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
+          auto frequency = ImPlot::GetPlotMousePos().x;
+          sdr.set_frequency(sdr.get_frequency() + frequency);
+        }
+
         ImPlot::EndPlot();
       }
 
@@ -256,9 +264,9 @@ int main(int argc, char **argv) {
     auto sdr = SdrManager(64512, 1000000, 50000, 5000);
     startDaemonIfNotRunning();
     sdr.initialize();
-    sdr.set_frequency(1575.420f * 1.0e+6f);
-    sdr.set_sample_rate(10 * 1.0e+6f);
-    sdr.set_bandwidth(8 * 1.0e+6f);
+    sdr.set_frequency(1.575420e+9);
+    sdr.set_sample_rate(1.00e+7);
+    sdr.set_bandwidth(8.00e+6);
     sdr.startCapture();
 
     auto fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";

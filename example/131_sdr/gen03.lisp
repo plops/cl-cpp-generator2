@@ -334,42 +334,45 @@
 						      direction_
 						      channel_
 						      ))))))
+
+		       (do0 
+				    (-> sdr_ (setGainMode direction_ channel_ false))
+				    (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
+				    (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
 		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
-			 #+more (do0
-			  ,(lprint :msg "has automatic gain control"
-				   :vars `(
-					   hasAutomaticGain))
-			  ,(lprint :msg "balance" ;; none 
-				   :vars `((-> sdr_ (hasIQBalance direction_ channel_))
-					   (-> sdr_ (hasIQBalanceMode direction_ channel_))
-					   ))
-			  ,(lprint :msg "offset" 
-				   :vars `((-> sdr_ (hasDCOffset direction_ channel_))
-					   (-> sdr_ (hasDCOffsetMode direction_ channel_)) ;; supported
-					   )))
+			       #+more (do0
+				       ,(lprint :msg "has automatic gain control"
+						:vars `(
+							hasAutomaticGain))
+				       ,(lprint :msg "balance" ;; none 
+						:vars `((-> sdr_ (hasIQBalance direction_ channel_))
+							(-> sdr_ (hasIQBalanceMode direction_ channel_))
+							))
+				       ,(lprint :msg "offset" 
+						:vars `((-> sdr_ (hasDCOffset direction_ channel_))
+							(-> sdr_ (hasDCOffsetMode direction_ channel_)) ;; supported
+							)))
 			       (when hasAutomaticGain
 				 (let ((automatic false ;true
-					    )
-				 )
-			     (-> sdr_ (setGainMode direction_ channel_ automatic))
-			     (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
-			     (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0))
-			     #+more
-			     (let ((ifgrGain (-> sdr_ (getGain direction_ channel_ (string "IFGR"))))
-				   (ifgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "IFGR"))))
-				   (rfgrGain (-> sdr_ (getGain direction_ channel_ (string "RFGR"))))
-				   (rfgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "RFGR")))))
-			       ,(lprint :msg "automatic gain"
-					:vars `((-> sdr_ (getGainMode direction_ channel_))
-						ifgrGain
-						(ifgrGainRange.minimum)
-						(ifgrGainRange.maximum)
-						(ifgrGainRange.step)
-						rfgrGain
-						(rfgrGainRange.minimum)
-						(rfgrGainRange.maximum)
-						(rfgrGainRange.step)
-						))))))
+						  )
+				       )
+				   
+				   #+more
+				   (let ((ifgrGain (-> sdr_ (getGain direction_ channel_ (string "IFGR"))))
+					 (ifgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "IFGR"))))
+					 (rfgrGain (-> sdr_ (getGain direction_ channel_ (string "RFGR"))))
+					 (rfgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "RFGR")))))
+				     ,(lprint :msg "automatic gain"
+					      :vars `((-> sdr_ (getGainMode direction_ channel_))
+						      ifgrGain
+						      (ifgrGainRange.minimum)
+						      (ifgrGainRange.maximum)
+						      (ifgrGainRange.step)
+						      rfgrGain
+						      (rfgrGainRange.minimum)
+						      (rfgrGainRange.maximum)
+						      (rfgrGainRange.step)
+						      ))))))
 		       #+more
 		       ((lambda ()
 			  (declare (capture "&"))
@@ -1080,7 +1083,7 @@
 	   (setf old_automaticGainMode
 		 automaticGainMode)))
        
-       ,@(loop for e in `((:name IF :min 0 :max 59)
+       ,@(loop for e in `((:name IF :min 20 :max 59)
 			  (:name RF :min 0 :max 3))
 	       collect
 	       (destructuring-bind (&key name min max) e
@@ -1104,9 +1107,9 @@
 	 
 	 )
 
-       ,(let* ((l-size-start 5)
+       ,(let* ((l-size-start 4)
 	       (l-size-end 20)
-	       (l-size-init (- 9 l-size-start))
+	       (l-size-init (- 12 l-size-start))
 	       (l-sizes `(,@(loop for i from l-size-start upto l-size-end
 				  collect
 				  (format nil "~a" (expt 2 i))))))
@@ -1262,6 +1265,12 @@
 						   (x.data)
 						   (dot ,e (data))
 						   windowSize))
+			(do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
+			     (when (logand (ImPlot--IsPlotHovered)
+					   (ImGui--IsMouseClicked 0))
+			       (let ((frequency (dot (ImPlot--GetPlotMousePos) x)))
+				 (sdr.set_frequency (+ (sdr.get_frequency)
+						       frequency)))))
 			(ImPlot--EndPlot)))))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")
@@ -1317,9 +1326,9 @@
 				   )))
 	      (startDaemonIfNotRunning)
 	      (sdr.initialize)
-	      (sdr.set_frequency (* 1575.42 1e6))
-	      (sdr.set_sample_rate (* 10 1e6))
-	      (sdr.set_bandwidth (* 8 1e6))
+	      (sdr.set_frequency 1575.42d6)
+	      (sdr.set_sample_rate 10d6)
+	      (sdr.set_bandwidth 8d6)
 	      (sdr.startCapture))
 	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
 		  (file (MemoryMappedComplexShortFile
