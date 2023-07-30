@@ -192,9 +192,11 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
       auto in = std::vector<std::complex<double>>(windowSize);
       auto nyquist = windowSize / 2.0;
       auto sampleRate = 1.00e+7;
+      auto centerFrequency = sdr.get_frequency();
       for (auto i = 0; i < windowSize; i += 1) {
-        x[i] = sampleRate *
-               (static_cast<double>(i - (windowSize / 2)) / windowSize);
+        x[i] = centerFrequency +
+               sampleRate *
+                   (static_cast<double>(i - (windowSize / 2)) / windowSize);
       }
       for (auto i = 0; i < windowSize; i += 1) {
         auto zs = zfifo[i];
@@ -213,15 +215,67 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
           y1[i] = std::abs(out[i]);
         }
       }
+      // If there are more points than pixels on the screen, then I want to
+      // combine all the points under one pixel into three curves: the maximum,
+      // the mean and the minimum.
+
       if (ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)"
                                      : "FFT magnitude (linear)")) {
-        ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
+        auto pointsPerPixel =
+            static_cast<int>(x.size() / (ImGui::GetContentRegionAvail().x));
+
+        if (pointsPerPixel <= 1) {
+          ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
+
+        } else {
+          // Calculate upper bound for the number of pixels, preallocate memory
+          // for vectors, initialize counter.
+
+          auto pixels = (x.size() + pointsPerPixel + -1) / pointsPerPixel;
+          auto x_downsampled = std::vector<double>(pixels);
+          auto y_max = std::vector<double>(pixels);
+          auto y_mean = std::vector<double>(pixels);
+          auto y_min = std::vector<double>(pixels);
+          auto count = 0;
+          // Iterate over the data with steps of pointsPerPixel
+
+          for (int i = 0; i < x.size(); i += pointsPerPixel) {
+            auto max_val = y1[i];
+            auto min_val = y1[i];
+            auto sum_val = y1[i];
+            // Iterate over the points under the same pixel
+
+            for (int j = i + 1; j < i + pointsPerPixel && j < x.size(); j++) {
+              max_val = std::max(max_val, y1[j]);
+
+              min_val = std::min(min_val, y1[j]);
+
+              sum_val += y1[j];
+            }
+            x_downsampled[count] = x[i];
+            y_max[count] = max_val;
+            y_min[count] = min_val;
+            y_mean[count] = (sum_val / pointsPerPixel);
+
+            count++;
+          }
+          x_downsampled.resize(count);
+          y_max.resize(count);
+          y_min.resize(count);
+          y_mean.resize(count);
+          ImPlot::PlotLine("y_max", x_downsampled.data(), y_max.data(),
+                           x_downsampled.size());
+          ImPlot::PlotLine("y_min", x_downsampled.data(), y_min.data(),
+                           x_downsampled.size());
+          ImPlot::PlotLine("y_mean", x_downsampled.data(), y_mean.data(),
+                           x_downsampled.size());
+        }
         // handle user input. clicking into the graph allow tuning the sdr
         // receiver to the specified frequency.
 
         if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
           auto frequency = ImPlot::GetPlotMousePos().x;
-          sdr.set_frequency(sdr.get_frequency() + frequency);
+          sdr.set_frequency(frequency);
         }
 
         ImPlot::EndPlot();

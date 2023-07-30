@@ -1233,11 +1233,13 @@
 		 (let ((fftw (FFTWManager))
 		       (in (std--vector<std--complex<double>> windowSize))
 		       (nyquist (/ windowSize 2d0))
-		       (sampleRate 10d6))
+		       (sampleRate 10d6)
+		       (centerFrequency (sdr.get_frequency)))
 		   (dotimes (i windowSize)
-		     (setf (aref x i) (* sampleRate
-					 (/ (static_cast<double> (- i (/ windowSize 2)))
-					    windowSize)) ))
+		     (setf (aref x i) (+ centerFrequency
+					 (* sampleRate
+					    (/ (static_cast<double> (- i (/ windowSize 2)))
+					       windowSize))) ))
 		  
 		   (dotimes (i windowSize)
 		     (let ((zs (aref zfifo i)
@@ -1254,23 +1256,77 @@
 			 (dotimes (i windowSize)
 			   (setf (aref y1 i) (std--abs (aref out i)))))
 		     (do0
-		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))				
+		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))
+		      #+nil 
+		      (ImPlot--SetNextAxisLimits ImAxis_X2
+						 (- centerFrequency (* .5 sampleRate))
+						 (+ centerFrequency (* .5 sampleRate)))
+
+		      (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
 		      (when (ImPlot--BeginPlot (? logScale
 						  (string "FFT magnitude (dB)")
 						  (string "FFT magnitude (linear)")))
 			
-			,@(loop for e in `(y1)
-				collect
-				`(ImPlot--PlotLine (string ,e)
-						   (x.data)
-						   (dot ,e (data))
-						   windowSize))
+
+			(let (
+			      (pointsPerPixel (static_cast<int> (/ (x.size)
+								   (dot (ImGui--GetContentRegionAvail)
+									x))))))
+			(if (<= pointsPerPixel 1)
+			    (do0 ,@(loop for e in `(y1)
+				     collect
+				     `(ImPlot--PlotLine (string ,e)
+							(x.data)
+							(dot ,e (data))
+							windowSize)))
+
+			    (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
+				 (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
+						  pointsPerPixel))
+				       (x_downsampled (std--vector<double> pixels))
+				       (y_max (std--vector<double> pixels))
+				       (y_mean (std--vector<double> pixels))
+				       (y_min (std--vector<double> pixels))
+				       (count 0))
+				   (comments "Iterate over the data with steps of pointsPerPixel")
+				   (for ((= "int i" 0)
+					 (< i (x.size))
+					 (incf i pointsPerPixel))
+					(let ((max_val (aref y1 i))
+					      (min_val (aref y1 i))
+					      (sum_val (aref y1 i)))
+					  (comments "Iterate over the points under the same pixel")
+					  (for ((= "int j" (+ i 1))
+						(logand (< j (+ i pointsPerPixel))
+							(< j (x.size)))
+						(incf j))
+					       (setf max_val (std--max max_val (aref y1 j)))
+					       (setf min_val (std--min min_val (aref y1 j)))
+					       (incf sum_val  (aref y1 j)))
+
+					  (setf (aref x_downsampled count) (aref x i)
+						(aref y_max count) max_val
+						(aref y_min count) min_val
+						(aref y_mean count) (/ sum_val pointsPerPixel))
+					  (incf count)))
+				   ,@(loop for e in `(x_downsampled y_max y_min y_mean)
+					   collect
+					   `(dot ,e (resize count)))
+				   ,@(loop for e in `(y_max y_min y_mean)
+					   collect
+					   `(ImPlot--PlotLine (string ,e)
+							      (x_downsampled.data)
+							      (dot ,e (data))
+							      (x_downsampled.size))))))
+
+			
 			(do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
 			     (when (logand (ImPlot--IsPlotHovered)
 					   (ImGui--IsMouseClicked 0))
 			       (let ((frequency (dot (ImPlot--GetPlotMousePos) x)))
-				 (sdr.set_frequency (+ (sdr.get_frequency)
-						       frequency)))))
+				 (sdr.set_frequency frequency
+						    #+nil (+ (sdr.get_frequency)
+							     frequency)))))
 			(ImPlot--EndPlot)))))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")
