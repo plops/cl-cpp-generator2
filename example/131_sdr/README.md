@@ -141,3 +141,6 @@ situation for a system attempting to measure time- of-ﬂight, the
 polarization will ﬂip to left-hand circular polarization (LHCP). An
 RHCP antenna is quite effective in suppressing the LHCP reﬂection and
 mini- mizing this error source.
+
+- in figure 4.6 he describes a noticable peak of the gps signal,
+  perhaps 4dB above the noise
