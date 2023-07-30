@@ -635,7 +635,9 @@
 		       (nyquist (/ windowSize 2d0))
 		       (sampleRate 10d6))
 		   (dotimes (i windowSize)
-		     (setf (aref x i) i))
+		     (setf (aref x i) (* sampleRate
+					 (/ (static_cast<double> (- i (/ windowSize 2)))
+					    windowSize)) ))
 		  
 		   
 		   (dotimes (i windowSize)
@@ -653,7 +655,9 @@
 			   (setf (aref y1 i) (std--abs (aref out i)))))
 		     (do0
 		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))				
-		      (when (ImPlot--BeginPlot (string "FFT"))
+		      (when (ImPlot--BeginPlot (? logScale
+						  (string "FFT magnitude (dB)")
+						  (string "FFT magnitude (linear)")))
 			
 			,@(loop for e in `(y1)
 				collect
