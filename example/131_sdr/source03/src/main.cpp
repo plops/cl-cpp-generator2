@@ -273,7 +273,8 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
         // handle user input. clicking into the graph allow tuning the sdr
         // receiver to the specified frequency.
 
-        if (ImPlot::IsPlotHovered() && ImGui::IsMouseClicked(0)) {
+        if (ImPlot::IsPlotHovered() &&
+            (ImGui::IsMouseClicked(2) || ImGui::IsMouseDragging(2))) {
           auto frequency = ImPlot::GetPlotMousePos().x;
           sdr.set_frequency(frequency);
         }

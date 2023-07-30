@@ -1322,7 +1322,8 @@
 			
 			(do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
 			     (when (logand (ImPlot--IsPlotHovered)
-					   (ImGui--IsMouseClicked 0))
+					   (logior (ImGui--IsMouseClicked 2)
+						   (ImGui--IsMouseDragging 2)))
 			       (let ((frequency (dot (ImPlot--GetPlotMousePos) x)))
 				 (sdr.set_frequency frequency
 						    #+nil (+ (sdr.get_frequency)
