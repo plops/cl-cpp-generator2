@@ -1253,9 +1253,11 @@
 		   (let ((out (fftw.fft in windowSize)))
 		     (if logScale
 			 (dotimes (i windowSize)
-			   (setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))
+			   (setf (aref y1 i) (* 10d0 (log10 (/ (std--abs (aref out i))
+							       (std--sqrt windowSize))))))
 			 (dotimes (i windowSize)
-			   (setf (aref y1 i) (std--abs (aref out i)))))
+			   (setf (aref y1 i) (/ (std--abs (aref out i))
+						(std--sqrt windowSize)))))
 		     (do0
 		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))
 		      #+nil 

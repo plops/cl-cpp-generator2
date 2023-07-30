@@ -208,11 +208,11 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
       auto out = fftw.fft(in, windowSize);
       if (logScale) {
         for (auto i = 0; i < windowSize; i += 1) {
-          y1[i] = 10. * log10(std::abs(out[i]));
+          y1[i] = 10. * log10(std::abs(out[i]) / std::sqrt(windowSize));
         }
       } else {
         for (auto i = 0; i < windowSize; i += 1) {
-          y1[i] = std::abs(out[i]);
+          y1[i] = (std::abs(out[i]) / std::sqrt(windowSize));
         }
       }
       // If there are more points than pixels on the screen, then I want to
