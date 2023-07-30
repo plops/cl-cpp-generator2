@@ -26,7 +26,7 @@ find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
 #include_directories(${FFTW_INCLUDES})
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

@@ -9,7 +9,8 @@
 class FFTWManager  {
         public:
         explicit  FFTWManager ()       ;   
-        fftw_plan get_plan (int windowSize)       ;   
+        fftw_plan get_plan (int windowSize, int nThreads = 1)       ;   
+        static std::vector<std::complex<double>> fftshift (const std::vector<std::complex<double>>& in)       ;   
         std::vector<std::complex<double>> fft (const std::vector<std::complex<double>>& in, int windowSize)       ;   
          ~FFTWManager ()       ;   
         private:

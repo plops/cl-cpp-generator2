@@ -194,18 +194,12 @@
 					  `(space ,type (setf ,nname_ ,initform-class))
 					  `(space ,type ,nname_))))))
 
-	       )
-
-	     ))
-
-    )
+	       ))))
 
   (let* ((name `MemoryMappedComplexShortFile)
 	 (members `((file :type "boost::iostreams::mapped_file_source" :param nil)
 		    (data :type "std::complex<short>*" :initform-class nullptr :param nil)
-		    (filename :type "const std::string&" :param t)
-		   
-		   )))
+		    (filename :type "const std::string&" :param t))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -362,8 +356,8 @@
 		  (values :constructor))
 		 )
 
-	       (defmethod get_plan (windowSize)
-		 (declare (type int windowSize)
+	       (defmethod get_plan (windowSize &key (nThreads 1))
+		 (declare (type int windowSize nThreads)
 			  (values fftw_plan))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
@@ -371,7 +365,14 @@
 		 (let ((wisdom_filename (+ (string "wisdom_")
 					   (std--to_string windowSize)
 					   (string ".wis")))))
-		 
+		 (when (< 1 nThreads
+			  )
+		   (setf wisdom_filename
+			 (+ (string "wisdom_")
+					   (std--to_string windowSize)
+					   (string "_threads")
+					   (std--to_string nThreads)
+					   (string ".wis"))))
 		 (let ((iter (plans_.find windowSize)))
 		   (when (== (plans_.end) iter)
 		     
@@ -390,14 +391,16 @@
 			   (wisdomFile.close)
 			   (fftw_import_wisdom_from_filename (wisdom_filename.c_str))
 			   )
+		       (when (< 1 nThreads)
+			 (fftw_plan_with_nthreads nThreads))
 		       (let ((p (fftw_plan_dft_1d windowSize
-						      in out
-						      FFTW_FORWARD
+						  in out
+						  FFTW_FORWARD
 					; FFTW_MEASURE
-						      FFTW_PATIENT
+						  FFTW_PATIENT
 					;FFTW_EXHAUSTIVE
 						      
-						      )))
+						  )))
 			 (when !p
 			   (do0 (fftw_free in)
 				(fftw_free out)
@@ -417,6 +420,19 @@
 		       ))
 		   (return iter->second)))
 
+	       
+	       (defmethod fftshift (in)
+		 (declare 
+		  (type "const std::vector<std::complex<double>>&" in)
+		  (values "std::vector<std::complex<double>>"))
+		 (let ((mid (+ (in.begin)
+			       (/ (in.size) 2)))
+		       (out (std--vector<std--complex<double>> (in.size))))
+		   (std--copy mid (in.end) (out.begin))
+		   (std--copy (in.begin) mid (+ (out.begin)
+						(std--distance mid (in.end))))
+		   (return out)))
+
 	       (defmethod fft (in windowSize)
 		 (declare (type int windowSize)
 			  (type "const std::vector<std::complex<double>>&" in)
@@ -424,12 +440,12 @@
 		 (when (!= windowSize (in.size))
 		   (throw (std--invalid_argument (string "Input size must match window size."))))
 		 (let ((out (std--vector<std--complex<double>> windowSize)))
-		   (fftw_execute_dft (get_plan windowSize)
+		   (fftw_execute_dft (get_plan windowSize 6)
 				     (reinterpret_cast<fftw_complex*>
 				      (const_cast<std--complex<double>*> (in.data)))
 				     (reinterpret_cast<fftw_complex*>
 				      (const_cast<std--complex<double>*> (out.data))))
-		   (return out)))
+		   (return (fftshift out))))
 
 	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
@@ -496,15 +512,44 @@
        (declare (type "const MemoryMappedComplexShortFile&" file))
 
        (let ((start 0)
-	     (windowSize 512)
+	    
+	     
 	     (maxStart (static_cast<int> (/ (file.size)
 					    (sizeof "std::complex<short>")))))
-	 (declare (type "static int" start windowSize))
+	 (declare (type "static int" start ))
 	 (ImGui--SliderInt (string "Start")
 			   &start 0 maxStart)
-	 (ImGui--InputInt (string "Window size")
-			  &windowSize)
+	 
 	 )
+       ,(let* ((l-size-start 5)
+	      (l-size-end 20)
+	      (l-size-init (- 9 l-size-start))
+	      (l-sizes `(,@(loop for i from l-size-start upto l-size-end
+				collect
+				(format nil "~a" (expt 2 i))))))
+	 `(let (
+	       
+	       (windowSizeIndex ,l-size-init)
+	       (itemsInt (std--vector<int> (curly ,@l-sizes)))
+	       (windowSize (aref itemsInt windowSizeIndex))
+	       (items (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
+								 l-sizes))))
+	       )
+	   (declare (type "static int" windowSizeIndex))
+	    (when (ImGui--BeginCombo (string "Window size")
+				    (dot (aref items windowSizeIndex)
+					 (c_str)))
+	      (dotimes (i (items.size))
+		(let ((is_selected (== windowSizeIndex i)))
+		  (when (ImGui--Selectable (dot (aref items i)
+						(c_str))
+					   is_selected)
+		    (setf windowSizeIndex i
+			  windowSize (aref itemsInt windowSizeIndex)))
+		  (when is_selected
+		    (ImGui--SetItemDefaultFocus))))
+	      (ImGui--EndCombo))
+	   ))
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
 
@@ -513,14 +558,14 @@
 	       (y2 (std--vector<double> windowSize)))
 	   (dotimes (i windowSize)
 	     (let ((z (aref file (+ start i))))
-	       (setf (aref x i) i ;(+ start i)
+	       (setf (aref x i) i	;(+ start i)
 		     (aref y1 i) (z.real)
 		     (aref y2 i) (z.imag))))
 
 	   (do0
 	    
-	    (when (ImPlot--BeginPlot (string "Plot"))
-	      (ImPlot--SetNextAxisLimits ImAxis_X1 start (+ start windowSize))				
+	    (when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
+	      #+nil (ImPlot--SetNextAxisLimits ImAxis_X1 start (+ start windowSize))				
 	      ,@(loop for e in `(y1 y2)
 		      collect
 		      `(ImPlot--PlotLine (string ,e)
@@ -538,13 +583,9 @@
 		       (in (std--vector<std--complex<double>> windowSize))
 		       (nyquist (/ windowSize 2d0))
 		       (sampleRate 10d6))
-		   (dotimes (i (+ 1 (/ windowSize 2)))
-		     (setf (aref x i) (/ (* 1d0 i)
-					 nyquist)))
-		   #+nil (dotimes (i (/ windowSize 2))
-		     (setf (aref x i) (- (* .5 sampleRate)
-					 (* sampleRate (/ (* 1d0 i)
-							  nyquist)))))
+		   (dotimes (i windowSize)
+		     (setf (aref x i) i))
+		  
 		   
 		   (dotimes (i windowSize)
 		     (let ((zs (aref file (+ start i)))
@@ -553,14 +594,14 @@
 			   (z (std--complex<double> zr zi)))
 		       (setf (aref in i) z)))
 		   (let ((out (man.fft in windowSize)))
+		     
 		     (if logScale
-		      (dotimes (i windowSize)
-			(setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))
-		      (dotimes (i windowSize)
-			(setf (aref y1 i) (std--abs (aref out i))))
-		      )
+			 (dotimes (i windowSize)
+			   (setf (aref y1 i) (* 10d0 (log10 (std--abs (aref out i))))))
+			 (dotimes (i windowSize)
+			   (setf (aref y1 i) (std--abs (aref out i)))))
 		     (do0
-		       (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))				
+		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))				
 		      (when (ImPlot--BeginPlot (string "FFT"))
 			
 			,@(loop for e in `(y1)
@@ -569,26 +610,15 @@
 						   (x.data)
 						   (dot ,e (data))
 						   windowSize))
-			(ImPlot--EndPlot)))
-		     ))
+			(ImPlot--EndPlot)))))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")
-			      (e.what)))))
-	   
-	   )))
-
-     
-      
-    
-    
+			      (e.what))))))))
      
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-
-
-       
 
        (glfwSetErrorCallback glfw_error_callback)
        (when (== 0 (glfwInit))
@@ -668,6 +698,6 @@
        (return 0)))
    :omit-parens t
    :format t
-   :tidy t)
+   :tidy nil)
 
   )

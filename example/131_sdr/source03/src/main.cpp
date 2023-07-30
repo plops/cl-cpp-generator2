@@ -14,10 +14,30 @@ void glfw_error_callback(int err, const char *desc) {}
 
 void DrawPlot(const MemoryMappedComplexShortFile &file) {
   static int start = 0;
-  static int windowSize = 512;
   auto maxStart = static_cast<int>(file.size() / sizeof(std::complex<short>));
   ImGui::SliderInt("Start", &start, 0, maxStart);
-  ImGui::InputInt("Window size", &windowSize);
+
+  static int windowSizeIndex = 4;
+  auto itemsInt =
+      std::vector<int>({32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
+                        32768, 65536, 131072, 262144, 524288, 1048576});
+  auto windowSize = itemsInt[windowSizeIndex];
+  auto items = std::vector<std::string>(
+      {"32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384",
+       "32768", "65536", "131072", "262144", "524288", "1048576"});
+  if (ImGui::BeginCombo("Window size", items[windowSizeIndex].c_str())) {
+    for (auto i = 0; i < items.size(); i += 1) {
+      auto is_selected = windowSizeIndex == i;
+      if (ImGui::Selectable(items[i].c_str(), is_selected)) {
+        windowSizeIndex = i;
+        windowSize = itemsInt[windowSizeIndex];
+      }
+      if (is_selected) {
+        ImGui::SetItemDefaultFocus();
+      }
+    }
+    ImGui::EndCombo();
+  }
 
   if (start + windowSize <= maxStart && 0 < windowSize) {
     auto x = std::vector<double>(windowSize);
@@ -29,8 +49,7 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
       y1[i] = z.real();
       y2[i] = z.imag();
     }
-    if (ImPlot::BeginPlot("Plot")) {
-      ImPlot::SetNextAxisLimits(ImAxis_X1, start, start + windowSize);
+    if (ImPlot::BeginPlot("Waveform (I/Q)")) {
       ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
       ImPlot::PlotLine("y2", x.data(), y2.data(), windowSize);
       ImPlot::EndPlot();
@@ -43,8 +62,8 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
       auto in = std::vector<std::complex<double>>(windowSize);
       auto nyquist = windowSize / 2.0;
       auto sampleRate = 1.00e+7;
-      for (auto i = 0; i < 1 + (windowSize / 2); i += 1) {
-        x[i] = ((1.0 * i) / nyquist);
+      for (auto i = 0; i < windowSize; i += 1) {
+        x[i] = i;
       }
       for (auto i = 0; i < windowSize; i += 1) {
         auto zs = file[(start + i)];
@@ -63,8 +82,6 @@ void DrawPlot(const MemoryMappedComplexShortFile &file) {
           y1[i] = std::abs(out[i]);
         }
       }
-      ImPlot::SetNextAxisLimits(ImAxis_X1, -0.50F * sampleRate,
-                                0.50F * sampleRate);
       if (ImPlot::BeginPlot("FFT")) {
         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
         ImPlot::EndPlot();
@@ -101,10 +118,10 @@ int main(int argc, char **argv) {
   glClearColor(0, 0, 0, 1);
 
   try {
-    const auto *fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";
+    auto fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";
     auto file = MemoryMappedComplexShortFile(fn);
 
-    while (glfwWindowShouldClose(window) == 0) {
+    while (!glfwWindowShouldClose(window)) {
       glfwPollEvents();
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();

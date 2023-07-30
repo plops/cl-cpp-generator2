@@ -92,7 +92,8 @@
 	  (only-write-when-hash-changed
 	   fn-h
 	   fn-h-str
-	   :formatter nil)))
+	   ;;:formatter nil
+	   )))
     (write-source fn-cpp
 		  `(do0
 		    ,(if preamble
