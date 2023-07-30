@@ -85,14 +85,14 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 
 # GPS
 
-- http://www.taroz.net/GNSS-Radar.html which gps satellites are currently visible
+- http://www.taroz.net/GNSS-Radar.html which gps satellites are currently visible 
 - http://www.taroz.net/img/data/SDR_SummerSchool_2014.pdf
 - http://www.aholme.co.uk/GPS/Main.htm Homemade GPS Receiver
   - sample 40000 points at 10MHz, rotate in Fourierspace by +/- 20
     bins to find doppler shift
 - MIT Licensed receiver:
   https://github.com/hamsternz/Full_Stack_GPS_Receiver/blob/master/fast_fsgps/gold_codes.c
-
+- http://www.jks.com/gps/gps.html
 # gen03
 
 - pull in minimal code for implot
