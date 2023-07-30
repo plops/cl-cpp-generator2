@@ -74,6 +74,14 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
   ImGui::TextColored(ImVec4(1, 1, 0, 1), "%s",
                      sdr.get_gain_mode() ? "True" : "False");
 
+  static bool automaticGainMode = true;
+  static bool old_automaticGainMode = true;
+  ImGui::Checkbox("Automatic Gain Mode", &automaticGainMode);
+  if (automaticGainMode != old_automaticGainMode) {
+    sdr.set_gain_mode(automaticGainMode);
+    old_automaticGainMode = automaticGainMode;
+  }
+
   static int gainIF = 0;
   if (ImGui::SliderInt("gainIF", &gainIF, 0, 59, "%02d",
                        ImGuiSliderFlags_AlwaysClamp)) {
@@ -220,9 +228,9 @@ int main(int argc, char **argv) {
     auto sdr = SdrManager(64512, 1000000, 50000, 5000);
     startDaemonIfNotRunning();
     sdr.initialize();
-    sdr.set_frequency(1.6e+9f);
-    sdr.set_sample_rate(1.0e+7f);
-    sdr.set_bandwidth(8.0e+6f);
+    sdr.set_frequency(1575.420f * 1.0e+6f);
+    sdr.set_sample_rate(10 * 1.0e+6f);
+    sdr.set_bandwidth(8 * 1.0e+6f);
     sdr.startCapture();
 
     auto fn = "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin";

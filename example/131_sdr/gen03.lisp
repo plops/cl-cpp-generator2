@@ -456,6 +456,8 @@
 			  `(
 			    (defmethod ,setter (v)
 			      (declare (type ,type v))
+			      ,(lprint :msg setter
+				       :vars `(v))
 			      (-> sdr_ (,Setter direction_ channel_ v)))
 			    (defmethod ,getter ()
 			      (declare (values ,type))
@@ -1063,6 +1065,17 @@
 					
 					)
 		    ))))
+
+       (let ((automaticGainMode true)
+	     (old_automaticGainMode true))
+	 (declare (type "static bool" automaticGainMode old_automaticGainMode))
+	 (ImGui--Checkbox (string "Automatic Gain Mode")
+			  &automaticGainMode)
+	 (when (!= automaticGainMode
+		   old_automaticGainMode)
+	   (sdr.set_gain_mode automaticGainMode)
+	   (setf old_automaticGainMode
+		 automaticGainMode)))
        
        ,@(loop for e in `((:name IF :min 0 :max 59)
 			  (:name RF :min 0 :max 3))
@@ -1265,9 +1278,9 @@
 				   )))
 	      (startDaemonIfNotRunning)
 	      (sdr.initialize)
-	      (sdr.set_frequency 1575.42e6)
-	      (sdr.set_sample_rate 10e6)
-	      (sdr.set_bandwidth 8e6)
+	      (sdr.set_frequency (* 1575.42 1e6))
+	      (sdr.set_sample_rate (* 10 1e6))
+	      (sdr.set_bandwidth (* 8 1e6))
 	      (sdr.startCapture))
 	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
 		  (file (MemoryMappedComplexShortFile
