@@ -321,43 +321,43 @@
 					  )
 			       collect
 			       (destructuring-bind (&key fun print el values) e
-				 `(let ((,values (-> sdr_ (,fun direction channel))))
+				 `(let ((,values (-> sdr_ (,fun direction_ channel_))))
 				    (for-range
 				     (,el ,values)
 				     ,(lprint :msg (format nil "~a" fun)
 					      :vars `(,@(if print
 							    `(,@print)
 							    `(,el))
-						      direction
-						      channel
+						      direction_
+						      channel_
 						      ))))))
-		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction channel))))
+		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
 			 #+more (do0
 			  ,(lprint :msg "has automatic gain control"
 				   :vars `(
 					   hasAutomaticGain))
 			  ,(lprint :msg "balance" ;; none 
-				   :vars `((-> sdr_ (hasIQBalance direction channel))
-					   (-> sdr_ (hasIQBalanceMode direction channel))
+				   :vars `((-> sdr_ (hasIQBalance direction_ channel_))
+					   (-> sdr_ (hasIQBalanceMode direction_ channel_))
 					   ))
 			  ,(lprint :msg "offset" 
-				   :vars `((-> sdr_ (hasDCOffset direction channel))
-					   (-> sdr_ (hasDCOffsetMode direction channel)) ;; supported
+				   :vars `((-> sdr_ (hasDCOffset direction_ channel_))
+					   (-> sdr_ (hasDCOffsetMode direction_ channel_)) ;; supported
 					   )))
 			       (when hasAutomaticGain
 				 (let ((automatic false ;true
 					    )
 				 )
-			     (-> sdr_ (setGainMode direction channel automatic))
-			     (-> sdr_ (setGain direction channel (string "IFGR") 20))
-			     (-> sdr_ (setGain direction channel (string "RFGR") 0))
+			     (-> sdr_ (setGainMode direction_ channel_ automatic))
+			     (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
+			     (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0))
 			     #+more
-			     (let ((ifgrGain (-> sdr_ (getGain direction channel (string "IFGR"))))
-				   (ifgrGainRange (-> sdr_ (getGainRange direction channel (string "IFGR"))))
-				   (rfgrGain (-> sdr_ (getGain direction channel (string "RFGR"))))
-				   (rfgrGainRange (-> sdr_ (getGainRange direction channel (string "RFGR")))))
+			     (let ((ifgrGain (-> sdr_ (getGain direction_ channel_ (string "IFGR"))))
+				   (ifgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "IFGR"))))
+				   (rfgrGain (-> sdr_ (getGain direction_ channel_ (string "RFGR"))))
+				   (rfgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "RFGR")))))
 			       ,(lprint :msg "automatic gain"
-					:vars `((-> sdr_ (getGainMode direction channel))
+					:vars `((-> sdr_ (getGainMode direction_ channel_))
 						ifgrGain
 						(ifgrGainRange.minimum)
 						(ifgrGainRange.maximum)
@@ -371,23 +371,23 @@
 		       ((lambda ()
 			  (declare (capture "&"))
 			  (let ((fullScale 0d0))
-			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction channel fullScale))
+			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction_ channel_ fullScale))
 					     fullScale)))))
 		       
 		       
 		       
-		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction channel))
-					(-> sdr_ (getBandwidth direction channel))
-					(-> sdr_ (getFrequency direction channel))
+		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction_ channel_))
+					(-> sdr_ (getBandwidth direction_ channel_))
+					(-> sdr_ (getFrequency direction_ channel_))
 					(-> sdr_ (getMasterClockRate)) ;; zero
 					(-> sdr_ (getReferenceClockRate)) ;; zero
 
 					) )
 
 		       #+more
-		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction channel)))
+		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction_ channel_)))
 				       ,(lprint :vars `(rate)))
-			    (for-range (bw (-> sdr_ (listBandwidths direction channel)))
+			    (for-range (bw (-> sdr_ (listBandwidths direction_ channel_)))
 				       ,(lprint :vars `(bw)))
 			    (for-range (clk (-> sdr_ (listClockSources))) ;; none
 				       ,(lprint :vars `(clk)))
@@ -406,7 +406,7 @@
 		       ,@(loop for e in `(RF CORR)
 			       collect
 			       (let ((name (format nil "frequency_range_~a" e)))
-				 `(let ((,name (-> sdr_ (getFrequencyRange direction channel (string ,e)))))
+				 `(let ((,name (-> sdr_ (getFrequencyRange direction_ channel_ (string ,e)))))
 				    (for-range (r ,name)
 					       ,(lprint :msg (format nil "~a" name)
 							:vars `((dot r (minimum))
@@ -437,7 +437,7 @@
 				  numElems))
 			   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 			   #+more (let ((expected_ms0 (/ (* 1000d0 numElems)
-						  sample_rate_ )))
+							 (get_sample_rate))))
 			     (setf average_elapsed_ms_ expected_ms0))
 			   )))
 		       (return true)))))
@@ -501,7 +501,7 @@
 				  (elapsed_ms (* 1000 (elapsed.count)))
 				  
 				  (expected_ms (/ (* 1000d0 readStreamRet)
-						  parameters_.sampleRate)))
+						  (get_sample_rate))))
 			      (setf start_ end)
 			      (setf average_elapsed_ms_
 				    (+ (* alpha_ elapsed_ms)
@@ -982,7 +982,7 @@
       
 					;chrono
 
-					;filesystem
+					filesystem
 					;unistd.h
 					;cstdlib
 
@@ -998,7 +998,8 @@
      (include
       GpsCACodeGenerator.h
       MemoryMappedComplexShortFile.h
-      FFTWManager.h)
+      FFTWManager.h
+      SdrManager.h)
 	
 
      (defun glfw_error_callback (err desc)
@@ -1007,9 +1008,49 @@
        ,(lprint :msg "GLFW erro:"
 		:vars `(err desc)))
 
-     (defun DrawPlot (file)
-       (declare (type "const MemoryMappedComplexShortFile&" file))
+     ,(let* ((daemon-name "sdrplay_apiService")
+	     (daemon-path "/usr/bin/")
+	     (daemon-fullpath (format nil "~a~a" daemon-path daemon-name))
+	     (daemon-shm-files `("/dev/shm/Glbl\\\\sdrSrvRespSema"
+				 "/dev/shm/Glbl\\\\sdrSrvCmdSema"
+				 "/dev/shm/Glbl\\\\sdrSrvComMtx"
+				 "/dev/shm/Glbl\\\\sdrSrvComShMem")))
+	`(do0
+	  (defun isDaemonRunning ()
+	    (declare (values bool))
+	    (let ((exit_code (system (string ,(format nil "pidof ~a > /dev/null" daemon-name))))
+		  (shm_files_exist true ))
+	      ,@(loop for e in daemon-shm-files
+		      collect
+		      `(unless (std--filesystem--exists (string ,e))
+			 ,(lprint :msg (format nil "file ~a does not exist" e)
+				  )
+			 (return false)))
+	      (return (logand (== 0 (WEXITSTATUS exit_code))
+			      shm_files_exist))))
+	  (defun startDaemonIfNotRunning ()
+	    (unless (isDaemonRunning)
+	      ,(lprint :msg "sdrplay daemon is not running. start it")
+	      (system (string ,(format nil "~a &" daemon-fullpath)))
+	      (sleep 1)))))
+     
+     (defun DrawPlot (file sdr)
+       (declare (type "const MemoryMappedComplexShortFile&" file)
+		(type SdrManager& sdr))
 
+       ,@(loop for e in `((:name IF :min 0 :max 59)
+			  (:name RF :min 0 :max 3))
+	       collect
+	       (destructuring-bind (&key name min max) e
+		 (let ((gain (format nil "gain~a" name)))
+		   `(let ((,gain ,min))
+		      (declare (type "static int" ,gain))
+		      (when (ImGui--SliderInt (string ,gain)
+					      (ref ,gain) ,min ,max
+					      (string "%02d")
+					      ImGuiSliderFlags_AlwaysClamp)
+			(dot sdr (,(format nil "setGain~a" name) ,gain)))))))
+       
        (let ((start 0)
 	    
 	     
@@ -1021,45 +1062,76 @@
 	 
 	 )
        ,(let* ((l-size-start 5)
-	      (l-size-end 20)
-	      (l-size-init (- 9 l-size-start))
-	      (l-sizes `(,@(loop for i from l-size-start upto l-size-end
-				collect
-				(format nil "~a" (expt 2 i))))))
-	 `(let (
+	       (l-size-end 20)
+	       (l-size-init (- 9 l-size-start))
+	       (l-sizes `(,@(loop for i from l-size-start upto l-size-end
+				  collect
+				  (format nil "~a" (expt 2 i))))))
+	  `(let (
 	       
-	       (windowSizeIndex ,l-size-init)
-	       (itemsInt (std--vector<int> (curly ,@l-sizes)))
-	       (windowSize (aref itemsInt windowSizeIndex))
-	       (items (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-								 l-sizes))))
-	       )
-	   (declare (type "static int" windowSizeIndex))
-	    (when (ImGui--BeginCombo (string "Window size")
-				    (dot (aref items windowSizeIndex)
-					 (c_str)))
-	      (dotimes (i (items.size))
-		(let ((is_selected (== windowSizeIndex i)))
-		  (when (ImGui--Selectable (dot (aref items i)
-						(c_str))
-					   is_selected)
-		    (setf windowSizeIndex i
-			  windowSize (aref itemsInt windowSizeIndex)))
-		  (when is_selected
-		    (ImGui--SetItemDefaultFocus))))
-	      (ImGui--EndCombo))
-	   ))
+		 (windowSizeIndex ,l-size-init)
+		 (itemsInt (std--vector<int> (curly ,@l-sizes)))
+		 (windowSize (aref itemsInt windowSizeIndex))
+		 (items (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
+								   l-sizes))))
+		 )
+	     (declare (type "static int" windowSizeIndex))
+	     (when (ImGui--BeginCombo (string "Window size")
+				      (dot (aref items windowSizeIndex)
+					   (c_str)))
+	       (dotimes (i (items.size))
+		 (let ((is_selected (== windowSizeIndex i)))
+		   (when (ImGui--Selectable (dot (aref items i)
+						 (c_str))
+					    is_selected)
+		     (setf windowSizeIndex i
+			   windowSize (aref itemsInt windowSizeIndex)))
+		   (when is_selected
+		     (ImGui--SetItemDefaultFocus))))
+	       (ImGui--EndCombo))
+	     ))
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
 
 	 (let ((x (std--vector<double> windowSize))
 	       (y1 (std--vector<double> windowSize))
 	       (y2 (std--vector<double> windowSize)))
-	   (dotimes (i windowSize)
-	     (let ((z (aref file (+ start i))))
-	       (setf (aref x i) i	;(+ start i)
-		     (aref y1 i) (z.real)
-		     (aref y2 i) (z.imag))))
+
+
+	   (let ((realtimeDisplay true))
+	     (declare (type "static bool" realtimeDisplay))
+	     (ImGui--Checkbox (string "Realtime display")
+			      &realtimeDisplay)
+	     )
+
+	   (if realtimeDisplay
+	       (do0
+
+	    
+	    (do0
+	     (sdr.processFifo
+	      (lambda (fifo)
+		(declare (type ,(format nil "const ~a &" fifo-type) fifo)
+			 (capture "&"))
+		;;,(lprint :msg "processFifo_cb")
+		(let ((n windowSize ;(fifo.size)
+			 ))
+		  (dotimes (i n)
+		    (x.push_back i)
+		    (let ((re (dot  (aref fifo i) (real)) )
+			  (im (dot  (aref fifo i) (imag)) )))
+		    (y1.push_back re)
+		    (y2.push_back im)
+		    )))
+	      windowSize
+	      )))
+	       (dotimes (i windowSize)
+		 (let ((z (aref file (+ start i))))
+		   (setf (aref x i) i	;(+ start i)
+			 (aref y1 i) (z.real)
+			 (aref y2 i) (z.imag)))))
+
+	   
 
 	   (do0
 	    
@@ -1078,10 +1150,17 @@
 	     (ImGui--Checkbox (string "Logarithmic Y-axis")
 			      &logScale)
 	     (handler-case
-		 (let ((man (FFTWManager))
-		       (in (std--vector<std--complex<double>> windowSize))
-		       (nyquist (/ windowSize 2d0))
-		       (sampleRate 10d6))
+		 (let 
+		     ((fftw (FFTWManager))
+		      
+		      
+			  (in (std--vector<std--complex<double>> windowSize))
+			  (nyquist (/ windowSize 2d0))
+			  (sampleRate 10d6))
+
+		   
+		   
+		   
 		   (dotimes (i windowSize)
 		     (setf (aref x i) (* sampleRate
 					 (/ (static_cast<double> (- i (/ windowSize 2)))
@@ -1094,7 +1173,7 @@
 			   (zi (static_cast<double> (zs.imag)))
 			   (z (std--complex<double> zr zi)))
 		       (setf (aref in i) z)))
-		   (let ((out (man.fft in windowSize)))
+		   (let ((out (fftw.fft in windowSize)))
 		     
 		     (if logScale
 			 (dotimes (i windowSize)
@@ -1161,6 +1240,17 @@
 
        (handler-case
 	   (do0
+	    (let ((sdr (SdrManager 64512
+				   1000000 
+				   50000
+				   5000
+				   )))
+	      (startDaemonIfNotRunning)
+	      (sdr.initialize)
+	      (sdr.set_frequency 1575.42e6)
+	      (sdr.set_sample_rate 10e6)
+	      (sdr.set_bandwidth 8e6)
+	      (sdr.startCapture))
 	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
 		  (file (MemoryMappedComplexShortFile
 			 fn)))
@@ -1172,7 +1262,7 @@
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
-		   (DrawPlot file)
+		   (DrawPlot file sdr)
 		   (ImGui--Render)
 		   (let ((w 0)
 			 (h 0))
@@ -1182,11 +1272,18 @@
 		     (glClear GL_COLOR_BUFFER_BIT)
 		     )
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-		   (glfwSwapBuffers window)))
+		   (glfwSwapBuffers window))
+	    (do0 (sdr.stopCapture)
+		 (sdr.close)))
+	 
 	 ("const std::runtime_error&" (e)
 	   ,(lprint :msg "error:"
 		    :vars `((e.what)))
-	   (return -1)))
+	   (return -1))
+	 ("const std::exception&" (e)
+	   ,(lprint :msg "error:"
+		    :vars `((e.what)))
+	    (return -1)))
 
        #+nil (do0
 	      (ImGui_ImplOpenGL3_Shutdown)

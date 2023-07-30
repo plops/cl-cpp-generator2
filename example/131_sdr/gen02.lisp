@@ -1044,66 +1044,67 @@
 	     )
 	 (declare (type "std::vector<double>" x y1 y2)))
 
-       (let ((maxVal (,(format nil "std::numeric_limits<~a>::min" elem-type)))
-	     (minVal (,(format nil "std::numeric_limits<~a>::max" elem-type))))
-	 (declare (type ,elem-type maxVal minVal)))
        (do0
-	(manager.processFifo
-	 (lambda (fifo)
-	   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
-		    (capture "&"))
-	   ;;,(lprint :msg "processFifo_cb")
-	   (let ((n (fifo.size)))
-	     (dotimes (i n)
-	       (x.push_back i)
-	       (let ((re (dot  (aref fifo i) (real)) )
-		     (im (dot  (aref fifo i) (imag)) )))
-	       (y1.push_back re)
-	       (y2.push_back im)
-	       (setf maxVal (std--max maxVal (std--max re im)))
-	       (setf minVal (std--min minVal (std--min re im))))))
-	 viewBlockSize			;,(expt 2 16)
-	 )
-
-	
-	
-	(do0 (ImGuiMd--Render (string "# This is a plot"))
-	     (when (ImPlot--BeginPlot (string "Plot"))
-	       ,@(loop for e in `(y1 y2)
-		       collect
-		       `(ImPlot--PlotLine (string ,e)
-					  (x.data)
-					  (dot ,e (data))
-					  (x.size)))
-	       (ImPlot--EndPlot)))
-
+	(let ((maxVal (,(format nil "std::numeric_limits<~a>::min" elem-type)))
+	      (minVal (,(format nil "std::numeric_limits<~a>::max" elem-type))))
+	  (declare (type ,elem-type maxVal minVal)))
 	(do0
-	 (comments "Apply exponential filter to stablilize histogram boundaries")
-	 (let ((alpha histogramAlpha)
-	       (filteredMax maxVal)
-	       (filteredMin minVal))
-	   (declare (type "static float" filteredMax filteredMin))
-	   (setf filteredMax (+ (* (- 1 alpha) filteredMax)
-				(* alpha maxVal)))
-	   (setf filteredMin (+ (* (- 1 alpha) filteredMin)
-				(* alpha minVal)))
-	   
-	   )
-	 ,(lprint :msg "histogram"
-		  :vars `(minVal maxVal)
-		  )
-	 (when (ImPlot--BeginPlot (string "Histogram"))
-	   ,@(loop for e in `(y1 y2)
-		   collect
-		   `(ImPlot--PlotHistogram (string ,(format nil "histogram ~a" e))
-				      
+	 (manager.processFifo
+	  (lambda (fifo)
+	    (declare (type ,(format nil "const ~a &" fifo-type) fifo)
+		     (capture "&"))
+	    ;;,(lprint :msg "processFifo_cb")
+	    (let ((n (fifo.size)))
+	      (dotimes (i n)
+		(x.push_back i)
+		(let ((re (dot  (aref fifo i) (real)) )
+		      (im (dot  (aref fifo i) (imag)) )))
+		(y1.push_back re)
+		(y2.push_back im)
+		(setf maxVal (std--max maxVal (std--max re im)))
+		(setf minVal (std--min minVal (std--min re im))))))
+	  viewBlockSize			;,(expt 2 16)
+	  )
+
+	 
+	 
+	 (do0 (ImGuiMd--Render (string "# This is a plot"))
+	      (when (ImPlot--BeginPlot (string "Plot"))
+		,@(loop for e in `(y1 y2)
+			collect
+			`(ImPlot--PlotLine (string ,e)
+					   (x.data)
 					   (dot ,e (data))
-					   (dot ,e (size))
-					   histogramSize
-					   1.0
-					   (ImPlotRange filteredMin filteredMax)
-					   ))
-	   (ImPlot--EndPlot))))
+					   (x.size)))
+		(ImPlot--EndPlot)))
+
+	 (do0
+	  (comments "Apply exponential filter to stablilize histogram boundaries")
+	  (let ((alpha histogramAlpha)
+		(filteredMax maxVal)
+		(filteredMin minVal))
+	    (declare (type "static float" filteredMax filteredMin))
+	    (setf filteredMax (+ (* (- 1 alpha) filteredMax)
+				 (* alpha maxVal)))
+	    (setf filteredMin (+ (* (- 1 alpha) filteredMin)
+				 (* alpha minVal)))
+	    
+	    )
+	  ,(lprint :msg "histogram"
+		   :vars `(minVal maxVal)
+		   )
+	  (when (ImPlot--BeginPlot (string "Histogram"))
+	    ,@(loop for e in `(y1 y2)
+		    collect
+		    `(ImPlot--PlotHistogram (string ,(format nil "histogram ~a" e))
+					    
+					    (dot ,e (data))
+					    (dot ,e (size))
+					    histogramSize
+					    1.0
+					    (ImPlotRange filteredMin filteredMax)
+					    ))
+	    (ImPlot--EndPlot)))))
        #+ni 
        (let ((n (manager.capture)))
 	 (when (< 0 n)
