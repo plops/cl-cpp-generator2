@@ -318,7 +318,8 @@
 					  (:fun listFrequencies :el element :values elements)
 					  (:fun getFrequencyRange :el range :values ranges
 					   :print ((range.minimum)
-						   (range.maximum)))
+						   (range.maximum)
+						   (range.step)))
 					  )
 			       collect
 			       (destructuring-bind (&key fun print el values) e
@@ -1100,6 +1101,7 @@
 			   &start 0 maxStart)
 	 
 	 )
+
        ,(let* ((l-size-start 5)
 	       (l-size-end 20)
 	       (l-size-init (- 9 l-size-start))
@@ -1125,6 +1127,41 @@
 		   (when is_selected
 		     (ImGui--SetItemDefaultFocus))))
 	       (ImGui--EndCombo))))
+
+       ,(let* ((combo-name "bandwidth")
+	       (l-combo `(200e3 300e3 600e3 1.536e6 5e6 6e6 7e6 8e6))
+	       (l-default-index (- (length l-combo) 1))
+	       (var-index (format nil "~aIndex" combo-name))
+	       (old-var-index (format nil "old_~aIndex" combo-name))
+	       (items-num (format nil "~aItemsNum" combo-name))
+	       (items-str (format nil "~aItemsStr" combo-name))
+	       (var-value (format nil "~aValue" combo-name)))
+	  `(let ((,var-index ,l-default-index)
+		 (,old-var-index ,l-default-index)
+		 (,items-num (std--vector<double> (curly ,@l-combo)))
+		 (,var-value (aref ,items-num ,var-index))
+		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
+								   l-combo)))))
+	     (declare (type "static int" ,var-index ,old-var-index))
+	     (when (ImGui--BeginCombo (string ,combo-name)
+				      (dot (aref ,items-str ,var-index)
+					   (c_str)))
+	       (dotimes (i (dot ,items-str (size)))
+		 (let ((is_selected (== ,var-index i)))
+		   (when (ImGui--Selectable (dot (aref ,items-str i)
+						 (c_str))
+					    is_selected)
+		     (setf ,var-index i
+			   ,var-value (aref ,items-num i)))
+		   (when is_selected
+		     (ImGui--SetItemDefaultFocus))))
+	       (ImGui--EndCombo))
+	     (when (!= ,old-var-index
+		       ,var-index)
+	       (sdr.set_bandwidth (aref ,items-num ,var-index))
+	       (setf ,old-var-index ,var-index))))
+
+       
        (when (logand (<= (+ start windowSize) maxStart)
 		     (< 0 windowSize))
 
@@ -1146,7 +1183,7 @@
 		   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
 			    (capture "&"))
 		   ;;,(lprint :msg "processFifo_cb")
-		   (let ((n windowSize ;(fifo.size)
+		   (let ((n windowSize	;(fifo.size)
 			    ))
 		     (dotimes (i n)
 		       (let ((z (aref fifo i)))
@@ -1199,7 +1236,7 @@
 		  
 		   (dotimes (i windowSize)
 		     (let ((zs (aref zfifo i)
-			       ;(aref file (+ start i))
+					;(aref file (+ start i))
 			       )
 			   (zr (static_cast<double> (zs.real)))
 			   (zi (static_cast<double> (zs.imag)))

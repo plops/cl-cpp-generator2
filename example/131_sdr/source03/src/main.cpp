@@ -120,6 +120,34 @@ void DrawPlot(const MemoryMappedComplexShortFile &file, SdrManager &sdr) {
     ImGui::EndCombo();
   }
 
+  static int bandwidthIndex = 7;
+  static int old_bandwidthIndex = 7;
+  auto bandwidthItemsNum =
+      std::vector<double>({2.00e+5f, 3.00e+5f, 6.00e+5f, 1.5e+6f, 5.0e+6f,
+                           6.0e+6f, 7.0e+6f, 8.0e+6f});
+  auto bandwidthValue = bandwidthItemsNum[bandwidthIndex];
+  auto bandwidthItemsStr = std::vector<std::string>(
+      {"200000.0", "300000.0", "600000.0", "1536000.0", "5000000.0",
+       "6000000.0", "7000000.0", "8000000.0"});
+  if (ImGui::BeginCombo("bandwidth",
+                        bandwidthItemsStr[bandwidthIndex].c_str())) {
+    for (auto i = 0; i < bandwidthItemsStr.size(); i += 1) {
+      auto is_selected = bandwidthIndex == i;
+      if (ImGui::Selectable(bandwidthItemsStr[i].c_str(), is_selected)) {
+        bandwidthIndex = i;
+        bandwidthValue = bandwidthItemsNum[i];
+      }
+      if (is_selected) {
+        ImGui::SetItemDefaultFocus();
+      }
+    }
+    ImGui::EndCombo();
+  }
+  if (old_bandwidthIndex != bandwidthIndex) {
+    sdr.set_bandwidth(bandwidthItemsNum[bandwidthIndex]);
+    old_bandwidthIndex = bandwidthIndex;
+  }
+
   if (start + windowSize <= maxStart && 0 < windowSize) {
     auto x = std::vector<double>(windowSize);
     auto y1 = std::vector<double>(windowSize);
