@@ -49,7 +49,9 @@ void startDaemonIfNotRunning ()        {
         std::cout<<"verify that sdr daemon is running"<<std::endl<<std::flush;
         if ( !isDaemonRunning() ) {
                         std::cout<<"sdrplay daemon is not running. start it"<<std::endl<<std::flush;
-        system("/usr/bin/sdrplay_apiService &");
+                auto daemon_exit  = system("/usr/bin/sdrplay_apiService &"); 
+ 
+        std::cout<<"return value"<<" daemon_exit='"<<daemon_exit<<"' "<<std::endl<<std::flush;
         sleep(1);
  
 } 
@@ -331,20 +333,26 @@ int main (int argc, char** argv)        {
     ImGui_ImplOpenGL3_Init("#version 130");
     glClearColor(0, 0, 0, 1);
  
-                auto sampleRate  = 1.00e+7; 
+            // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
+ 
+        auto sampleRate  = 1.00e+7; 
     auto caFrequency  = 1.0230e+6; 
     auto caStep  = caFrequency/sampleRate; 
     auto corrWindowTime_ms  = 8; 
     auto corrLength  = static_cast<int>((corrWindowTime_ms*sampleRate)/1000); 
-        auto codes  = std(); 
-    for ( auto i = 0;i<32;i+=1 ) {
-                        auto ca  = GpsCACodeGenerator(i); 
-        auto chips  = ca.generate_sequence(1023); 
+    auto caSequenceLength  = 1023; 
+    std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<std::endl<<std::flush;
+        auto codes  = std::vector<std::vector<std::complex<double>>>(32); 
+    for ( auto i = 0;i<31;i+=1 ) {
+                // chatGPT decided to start PRN index with 1. I don't like it but leave it for now.
+ 
+                        auto ca  = GpsCACodeGenerator(i+1); 
+        auto chips  = ca.generate_sequence(caSequenceLength); 
         auto code  = std::vector<std::complex<double>>(corrLength); 
         auto caPhase  = 0.    ; 
         auto chipIndex  = 0; 
         for ( auto i = 0;i<corrLength;i+=1 ) {
-                                    code[i]=chips[chipIndex];
+                                    code[i]=chips[(chipIndex%caSequenceLength)] ? 1.0     :  -1.0    ;
 
 
                         caPhase+=caStep;
@@ -354,6 +362,7 @@ int main (int argc, char** argv)        {
  
 } 
 } 
+        codes.push_back(std::move(code));
  
 } 
  

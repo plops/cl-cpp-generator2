@@ -521,8 +521,12 @@
 				    (+ (* alpha_ elapsed_ms)
 				       (* (- 1d0 alpha_)
 					  average_elapsed_ms_)))
-			      ,(lprint :msg "data block acquired"
-				       :vars `(elapsed_ms average_elapsed_ms_ expected_ms )))
+			      (let ((dataBlockCount 0))
+				(declare (type "static int" dataBlockCount))
+				(incf dataBlockCount)
+				(when (== 0 (% dataBlockCount 100))
+				  ,(lprint :msg "data block acquired"
+					   :vars `(dataBlockCount elapsed_ms average_elapsed_ms_ expected_ms )))))
 		     (cond
 		       ((space
 			 #-more (setf "auto  readStreamRet"
@@ -841,7 +845,7 @@
 
 		 
 		#+nil (print_plans)
-		 ,(lprint :msg "lookup plan"
+		 #+nil ,(lprint :msg "lookup plan"
 			 :vars `(windowSize nThreads))
 		 #+memoize-plan (let ((iter (plans_.find (curly windowSize nThreads))))) 
 		 (do0 
@@ -870,15 +874,15 @@
 
 			      (let ((wisdomFile (std--ifstream wisdom_filename)))
 				(when (wisdomFile.good)
-				  ,(lprint :msg "read wisdom from existing file"
+				  #+nil ,(lprint :msg "read wisdom from existing file"
 					   :vars `(wisdom_filename))
 				  (wisdomFile.close)
 				  (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
 				(if (< 1 nThreads)
-				    (do0 ,(lprint :msg "plan 1d fft with threads"
+				    (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
 						  :vars `(nThreads))
 					 (fftw_plan_with_nthreads nThreads))
-				    ,(lprint :msg "plan 1d fft without threads"
+				    #+nil ,(lprint :msg "plan 1d fft without threads"
 					     :vars `(nThreads)))
 				#-guru-plan (let ((p (fftw_plan_dft_1d windowSize
 								 in out
@@ -904,15 +908,15 @@
 				  (do0 (fftw_free in)
 				       (fftw_free out)
 				       (throw (std--runtime_error (string "Failed to create fftw plan")))))
-				,(lprint :msg "plan successfully created")
+				#+nil ,(lprint :msg "plan successfully created")
 				(unless (wisdomFile.good)
-				  ,(lprint :msg "store wisdom to file"
+				  #+nil ,(lprint :msg "store wisdom to file"
 					   :vars `(wisdom_filename))
 				  (wisdomFile.close)
 				  (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
 				)
 			      (do0 (do0
-				    ,(lprint :msg "free in and out")
+				    ;,(lprint :msg "free in and out")
 				    (fftw_free in)
 				    (fftw_free out)
 				    #-memoize-plan (return p)
@@ -1047,7 +1051,9 @@
 	    ,(lprint :msg "verify that sdr daemon is running")
 	    (unless (isDaemonRunning)
 	      ,(lprint :msg "sdrplay daemon is not running. start it")
-	      (system (string ,(format nil "~a &" daemon-fullpath)))
+	      (let ((daemon_exit (system (string ,(format nil "~a &" daemon-fullpath))))))
+	      ,(lprint :msg "return value"
+		       :vars `(daemon_exit))
 	      (sleep 1)))))
      
      (defun DrawPlot (file sdr)
@@ -1379,26 +1385,34 @@
 	 )
 
        (do0
+	(comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
 	(let ((sampleRate 10.0d6)
 	      (caFrequency 1.023d6)
 	      (caStep (/ caFrequency
 			 sampleRate))
 	      (corrWindowTime_ms 8)
 	      (corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
-			      1000))))
-	  (let ((codes (std)))
-	   (dotimes (i 32)
-	     (let ((ca (GpsCACodeGenerator i))
-		   (chips (ca.generate_sequence 1023))
-		   (code (std--vector<std--complex<double>> corrLength))
-		   (caPhase 0d0)
-		   (chipIndex 0))
-	       (dotimes (i corrLength)
-		 (setf (aref code i) (aref chips chipIndex))
-		 (incf caPhase caStep)
-		 (when (<= 1 caPhase)
-		   (decf caPhase 1d0)
-		   (incf chipIndex))))))))
+					       1000)))
+	      (caSequenceLength 1023))
+	  ,(lprint :msg "prepare CA code chips"
+		   :vars `(corrLength))
+	  (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
+	    (dotimes (i 31)
+	      (comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
+	      (let ((ca (GpsCACodeGenerator (+ i 1)))
+		    (chips (ca.generate_sequence caSequenceLength))
+		    (code (std--vector<std--complex<double>> corrLength))
+		    (caPhase 0d0)
+		    (chipIndex 0))
+		(dotimes (i corrLength)
+		  (setf (aref code i) (? (aref chips (% chipIndex
+							caSequenceLength))
+					 1d0 -1d0))
+		  (incf caPhase caStep)
+		  (when (<= 1 caPhase)
+		    (decf caPhase 1d0)
+		    (incf chipIndex)))
+		(codes.push_back (std--move code)))))))
 
        (handler-case
 	   (do0
