@@ -837,6 +837,42 @@
 			    (planAddress pair.second))
 		       ,(lprint :msg "print_plans"))))
 
+	       
+
+	       
+	       (defmethod fftshift (in)
+		 (declare 
+		  (type "const std::vector<std::complex<double>>&" in)
+		  (values "std::vector<std::complex<double>>"))
+		 (let ((mid (+ (in.begin)
+			       (/ (in.size) 2)))
+		       (out (std--vector<std--complex<double>> (in.size))))
+		   (std--copy mid (in.end) (out.begin))
+		   (std--copy (in.begin) mid (+ (out.begin)
+						(std--distance mid (in.end))))
+		   (return out)))
+
+	       (defmethod fft (in windowSize)
+		 (declare (type int windowSize)
+			  (type "const std::vector<std::complex<double>>&" in)
+			  (values "std::vector<std::complex<double>>"))
+		 (when (!= windowSize (in.size))
+		   (throw (std--invalid_argument (string "Input size must match window size."))))
+		 (let ((out (std--vector<std--complex<double>> windowSize)))
+		   (fftw_execute_dft (get_plan windowSize 6)
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (in.data)))
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (out.data))))
+		   (return (fftshift out))))
+
+	       (defmethod ~FFTWManager ()
+		 (declare (values :constructor))
+		 #+memoize-plan
+		 (for-range (kv plans_)
+			    (fftw_destroy_plan kv.second)))
+	       
+	       "private:"
 	       (defmethod get_plan (windowSize &key (nThreads 1))
 		 (declare (type int windowSize nThreads)
 			  (values fftw_plan))
@@ -873,11 +909,13 @@
 				     (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
 
 			      (let ((wisdomFile (std--ifstream wisdom_filename)))
-				(when (wisdomFile.good)
-				  #+nil ,(lprint :msg "read wisdom from existing file"
-					   :vars `(wisdom_filename))
-				  (wisdomFile.close)
-				  (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
+				(if (wisdomFile.good)
+				    (do0 #+nil ,(lprint :msg "read wisdom from existing file"
+							:vars `(wisdom_filename))
+					 (wisdomFile.close)
+					 (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
+				    ,(lprint :msg "can't find wisdom file"
+					     :vars `(wisdom_filename)))
 				(if (< 1 nThreads)
 				    (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
 						  :vars `(nThreads))
@@ -887,7 +925,7 @@
 				#-guru-plan (let ((p (fftw_plan_dft_1d windowSize
 								 in out
 								 FFTW_FORWARD
-								 FFTW_MEASURE
+								 FFTW_PATIENT ;MEASURE
 								 ))))
 				#+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
 									       :is 1
@@ -910,7 +948,7 @@
 				       (throw (std--runtime_error (string "Failed to create fftw plan")))))
 				#+nil ,(lprint :msg "plan successfully created")
 				(unless (wisdomFile.good)
-				  #+nil ,(lprint :msg "store wisdom to file"
+				  ,(lprint :msg "store wisdom to file"
 					   :vars `(wisdom_filename))
 				  (wisdomFile.close)
 				  (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
@@ -936,42 +974,6 @@
 			,(lprint :msg "plan has been used recently, reuse it.")))
 		   
  		   #+memoize-plan (return iter->second)))
-
-	       
-	       (defmethod fftshift (in)
-		 (declare 
-		  (type "const std::vector<std::complex<double>>&" in)
-		  (values "std::vector<std::complex<double>>"))
-		 (let ((mid (+ (in.begin)
-			       (/ (in.size) 2)))
-		       (out (std--vector<std--complex<double>> (in.size))))
-		   (std--copy mid (in.end) (out.begin))
-		   (std--copy (in.begin) mid (+ (out.begin)
-						(std--distance mid (in.end))))
-		   (return out)))
-
-	       (defmethod fft (in windowSize)
-		 (declare (type int windowSize)
-			  (type "const std::vector<std::complex<double>>&" in)
-			  (values "std::vector<std::complex<double>>"))
-		 (when (!= windowSize (in.size))
-		   (throw (std--invalid_argument (string "Input size must match window size."))))
-		 (let ((out (std--vector<std--complex<double>> windowSize)))
-		   (fftw_execute_dft (get_plan windowSize 6)
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (in.data)))
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (out.data))))
-		   (return (fftshift out))))
-
-	       (defmethod ~FFTWManager ()
-		 (declare (values :constructor))
-		 #+memoize-plan
-		 (for-range (kv plans_)
-			    (fftw_destroy_plan kv.second)))
-	       
-	       "private:"
-	       
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -1119,6 +1121,7 @@
 	 
 	 )
 
+       #+nil
        ,(let* ((l-size-start 4)
 	       (l-size-end 20)
 	       (l-size-init (- 12 l-size-start))
@@ -1145,6 +1148,39 @@
 		     (ImGui--SetItemDefaultFocus))))
 	       (ImGui--EndCombo))))
 
+       ,(let* ((combo-name "windowSize")
+	       (l-combo `(1024 8192 65536 80000 1048576))
+	       (l-default-index 3)
+	       (var-index (format nil "~aIndex" combo-name))
+	       (old-var-index (format nil "old_~aIndex" combo-name))
+	       (items-num (format nil "~aItemsNum" combo-name))
+	       (items-str (format nil "~aItemsStr" combo-name))
+	       (var-value (format nil "~a" combo-name)))
+	  `(let ((,var-index ,l-default-index)
+		 (,old-var-index ,l-default-index)
+		 (,items-num (std--vector<double> (curly ,@l-combo)))
+		 (,var-value (aref ,items-num ,var-index))
+		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
+								   l-combo)))))
+	     (declare (type "static int" ,var-index ,old-var-index))
+	     (when (ImGui--BeginCombo (string ,combo-name)
+				      (dot (aref ,items-str ,var-index)
+					   (c_str)))
+	       (dotimes (i (dot ,items-str (size)))
+		 (let ((is_selected (== ,var-index i)))
+		   (when (ImGui--Selectable (dot (aref ,items-str i)
+						 (c_str))
+					    is_selected)
+		     (setf ,var-index i
+			   ,var-value (aref ,items-num i)))
+		   (when is_selected
+		     (ImGui--SetItemDefaultFocus))))
+	       (ImGui--EndCombo))
+	     (when (!= ,old-var-index
+		       ,var-index)
+	       ;(sdr.set_bandwidth (aref ,items-num ,var-index))
+	       (setf ,old-var-index ,var-index))))
+
        ,(let* ((combo-name "bandwidth")
 	       (l-combo `(200d3 300d3 600d3 1.536d6 5d6 6d6 7d6 8d6))
 	       (l-default-index (- (length l-combo) 1))
@@ -1158,7 +1194,7 @@
 		 (,items-num (std--vector<double> (curly ,@l-combo)))
 		 (,var-value (aref ,items-num ,var-index))
 		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-								   l-combo)))))
+									l-combo)))))
 	     (declare (type "static int" ,var-index ,old-var-index))
 	     (when (ImGui--BeginCombo (string ,combo-name)
 				      (dot (aref ,items-str ,var-index)
@@ -1352,6 +1388,7 @@
 		(type int argc)
 		(type char** argv))
 
+       (let ((fftw (FFTWManager))))
        (glfwSetErrorCallback glfw_error_callback)
        (when (== 0 (glfwInit))
 	 ,(lprint :msg "glfw init failed")
@@ -1393,7 +1430,8 @@
 	      (corrWindowTime_ms 8)
 	      (corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
 					       1000)))
-	      (caSequenceLength 1023))
+	      (caSequenceLength 1023)
+	      )
 	  ,(lprint :msg "prepare CA code chips"
 		   :vars `(corrLength))
 	  (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
@@ -1412,7 +1450,9 @@
 		  (when (<= 1 caPhase)
 		    (decf caPhase 1d0)
 		    (incf chipIndex)))
-		(codes.push_back (std--move code)))))))
+		,(lprint :msg "compute FFT"
+			 :vars `(i))
+		(codes.push_back (fftw.fft code corrLength)))))))
 
        (handler-case
 	   (do0
