@@ -310,8 +310,10 @@
 		     (setf sdr_ (SoapySDR--Device--make soapyDeviceArgs))
 		   
 		     (when (== nullptr sdr_)
-		       ,(lprint :msg "make failed")
-		       (return false))
+		       ;,(lprint :msg "soapysdr device make failed")
+		       (throw (std--runtime_error (string "sdr device make failed")))
+		       ;(return false)
+		       )
 		     (let () 
 		       #+more
 		       ,@(loop for e in `((:fun listAntennas :el antenna :values antennas)
@@ -335,8 +337,9 @@
 						      channel_
 						      ))))))
 
-		       (do0 
-				    (-> sdr_ (setGainMode direction_ channel_ false))
+		       (do0
+			,(lprint :msg "set highest gain")
+			(-> sdr_ (setGainMode direction_ channel_ false))
 				    (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
 				    (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
 		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
@@ -423,9 +426,11 @@
 			(setf rx_stream_ (-> sdr_ (setupStream direction_
 							       ,acq-sdr-type)))
 			(when (== nullptr rx_stream_)
-			  ,(lprint :msg "stream setup failed")
+			  ;,(lprint :msg "stream setup failed")
 			  (SoapySDR--Device--unmake sdr_)
-			  (return false))
+			  (throw (std--runtime_error (string "sdr stream setup failed")))
+					;(return false)
+			  )
 			,(lprint :vars `((-> sdr_
 					     (getStreamMTU rx_stream_))))
 			((lambda ()
@@ -1039,6 +1044,7 @@
 	      (return (logand (== 0 (WEXITSTATUS exit_code))
 			      shm_files_exist))))
 	  (defun startDaemonIfNotRunning ()
+	    ,(lprint :msg "verify that sdr daemon is running")
 	    (unless (isDaemonRunning)
 	      ,(lprint :msg "sdrplay daemon is not running. start it")
 	      (system (string ,(format nil "~a &" daemon-fullpath)))
@@ -1287,35 +1293,35 @@
 				 (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
 						  pointsPerPixel))
 				       (x_downsampled (std--vector<double> pixels))
-				       (y_max (std--vector<double> pixels))
+				       #+extra (y_max (std--vector<double> pixels))
 				       (y_mean (std--vector<double> pixels))
-				       (y_min (std--vector<double> pixels))
+				       #+extra (y_min (std--vector<double> pixels))
 				       (count 0))
 				   (comments "Iterate over the data with steps of pointsPerPixel")
 				   (for ((= "int i" 0)
 					 (< i (x.size))
 					 (incf i pointsPerPixel))
-					(let ((max_val (aref y1 i))
-					      (min_val (aref y1 i))
+					(let (#+extra (max_val (aref y1 i))
+					      #+extra (min_val (aref y1 i))
 					      (sum_val (aref y1 i)))
 					  (comments "Iterate over the points under the same pixel")
 					  (for ((= "int j" (+ i 1))
 						(logand (< j (+ i pointsPerPixel))
 							(< j (x.size)))
 						(incf j))
-					       (setf max_val (std--max max_val (aref y1 j)))
-					       (setf min_val (std--min min_val (aref y1 j)))
+					       #+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
+						    (setf min_val (std--min min_val (aref y1 j))))
 					       (incf sum_val  (aref y1 j)))
-
+					  #+extra (setf (aref y_max count) max_val
+						(aref y_min count) min_val)
 					  (setf (aref x_downsampled count) (aref x i)
-						(aref y_max count) max_val
-						(aref y_min count) min_val
+						
 						(aref y_mean count) (/ sum_val pointsPerPixel))
 					  (incf count)))
-				   ,@(loop for e in `(x_downsampled y_max y_min y_mean)
+				   ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
 					   collect
 					   `(dot ,e (resize count)))
-				   ,@(loop for e in `(y_max y_min y_mean)
+				   ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
 					   collect
 					   `(ImPlot--PlotLine (string ,e)
 							      (x_downsampled.data)
@@ -1359,7 +1365,7 @@
 	 ,(lprint :msg "enable vsync")
 	 (glfwSwapInterval 1)
 	 (IMGUI_CHECKVERSION)
-	 
+	 ,(lprint :msg "create imgui context")
 	 (ImGui--CreateContext)
 	 (ImPlot--CreateContext)
 
@@ -1371,23 +1377,45 @@
 	 (ImGui_ImplOpenGL3_Init (string "#version 130"))
 	 (glClearColor  0 0 0 1)
 	 )
-       
-       #+nil (let ((ca (GpsCACodeGenerator 4)))
-	       ,(lprint :msg "CA")
-	       (ca.print_square (ca.generate_sequence 1023)))
+
+       (do0
+	(let ((sampleRate 10.0d6)
+	      (caFrequency 1.023d6)
+	      (caStep (/ caFrequency
+			 sampleRate))
+	      (corrWindowTime_ms 8)
+	      (corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
+			      1000))))
+	  (let ((codes (std)))
+	   (dotimes (i 32)
+	     (let ((ca (GpsCACodeGenerator i))
+		   (chips (ca.generate_sequence 1023))
+		   (code (std--vector<std--complex<double>> corrLength))
+		   (caPhase 0d0)
+		   (chipIndex 0))
+	       (dotimes (i corrLength)
+		 (setf (aref code i) (aref chips chipIndex))
+		 (incf caPhase caStep)
+		 (when (<= 1 caPhase)
+		   (decf caPhase 1d0)
+		   (incf chipIndex))))))))
 
        (handler-case
 	   (do0
 	    (let ((sdr (SdrManager 64512
-				   1000000 
+				   1100000 
 				   50000
 				   5000
 				   )))
+	      
 	      (startDaemonIfNotRunning)
+	      ,(lprint :msg "initialize sdr manager")
 	      (sdr.initialize)
-	      (sdr.set_frequency 1575.42d6)
-	      (sdr.set_sample_rate 10d6)
-	      (sdr.set_bandwidth 8d6)
+	      
+	      (do0
+	       (sdr.set_frequency 1575.42d6)
+	       (sdr.set_sample_rate sampleRate)
+	       (sdr.set_bandwidth 8d6))
 	      (sdr.startCapture))
 	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
 		  (file (MemoryMappedComplexShortFile
@@ -1415,11 +1443,11 @@
 		 (sdr.close)))
 	 
 	 ("const std::runtime_error&" (e)
-	   ,(lprint :msg "error:"
+	   ,(lprint :msg "error 1422:"
 		    :vars `((e.what)))
 	   (return -1))
 	 ("const std::exception&" (e)
-	   ,(lprint :msg "error:"
+	   ,(lprint :msg "error 1426:"
 		    :vars `((e.what)))
 	    (return -1)))
 
