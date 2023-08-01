@@ -14,11 +14,11 @@
 						    )))
 
 
-(let* ( ;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
-      (elem-type "short") (acq-sdr-type 'SOAPY_SDR_CS16)
-      (acq-type (format nil "std::complex<~a>" elem-type))
-      (acq-vec-type (format nil "std::vector<std::complex<~a>>" elem-type))
-      (fifo-type (format nil "std::deque<~a>" acq-type)))
+(let* (;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
+       (elem-type "short") (acq-sdr-type 'SOAPY_SDR_CS16)
+       (acq-type (format nil "std::complex<~a>" elem-type))
+       (acq-vec-type (format nil "std::vector<std::complex<~a>>" elem-type))
+       (fifo-type (format nil "std::deque<~a>" acq-type)))
 	
   (progn
     (defparameter *source-dir* #P"example/131_sdr/source03/src/")
@@ -31,56 +31,68 @@
       "sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
+
+  (defun benchmark (code)
+    (let ((start "startBenchmark")
+		(end "endBenchmark"))
+      `(let ((,start (std--chrono--high_resolution_clock--now)))
+	 ,code
+	 (let ((,end (std--chrono--high_resolution_clock--now))
+	       (elapsed (std--chrono--duration<double> (- ,end ,start)))
+	       (elapsed_ms (* 1000 (elapsed.count)))
+	       )
+	   ,(lprint ; :msg (format nil "~a" (emit-c :code code :omit-redundant-parentheses t))
+	     :vars `(elapsed_ms))))))
   
   (let* ((name `GpsCACodeGenerator)
-	(sat-def `((2 6)
-		   (3 7)
-		   (4 8)
-		   (5 9)
-		   (1 9)
-		   (2 10)
-		   (1 8)
-		   (2 9)
-		   (3 10)
-		   (2 3)
-		   (3 4)
-		   (5 6)
-		   (6 7)
-		   (7 8)
-		   (8 9)
-		   (9 10)
-		   (1 4)
-		   (2 5)
-		   (3 6)
-		   (4 7)
-		   (5 8)
-		   (6 9)
-		   (1 3)
-		   (4 6)
-		   (5 7)
-		   (6 8)
-		   (7 9)
-		   (8 10)
-		   (1 6)
-		   (2 7)
-		  (3 8)
-		   (4 9)))
-	(members `((registerSize :type "static constexpr size_t" :initform-class 10 :param nil)
-		   (g1FeedbackBits :type "static constexpr std::array<int,2>"
-				   :initform-class (curly 3 10) :param nil)
-		   (g2FeedbackBits :type "static constexpr std::array<int,6>"
-				   :initform-class (curly 2 3 6 8 9 10) :param nil)
-		   (g2Shifts :type ,(format nil "static constexpr std::array<std::pair<int,int>,~a>" (length sat-def))
-			     :initform-class
-			     (curly ,@(loop for (e f)
-					      in sat-def
-					    collect
-					    `(std--make_pair ,e ,f)) )
-			     :param nil)
-		   (g1 :type "std::deque<bool>")
-		   (g2 :type "std::deque<bool>")
-		   (prn :type int :param t)
-		   )))
+	 (sat-def `((2 6)
+		    (3 7)
+		    (4 8)
+		    (5 9)
+		    (1 9)
+		    (2 10)
+		    (1 8)
+		    (2 9)
+		    (3 10)
+		    (2 3)
+		    (3 4)
+		    (5 6)
+		    (6 7)
+		    (7 8)
+		    (8 9)
+		    (9 10)
+		    (1 4)
+		    (2 5)
+		    (3 6)
+		    (4 7)
+		    (5 8)
+		    (6 9)
+		    (1 3)
+		    (4 6)
+		    (5 7)
+		    (6 8)
+		    (7 9)
+		    (8 10)
+		    (1 6)
+		    (2 7)
+		    (3 8)
+		    (4 9)))
+	 (members `((registerSize :type "static constexpr size_t" :initform-class 10 :param nil)
+		    (g1FeedbackBits :type "static constexpr std::array<int,2>"
+				    :initform-class (curly 3 10) :param nil)
+		    (g2FeedbackBits :type "static constexpr std::array<int,6>"
+				    :initform-class (curly 2 3 6 8 9 10) :param nil)
+		    (g2Shifts :type ,(format nil "static constexpr std::array<std::pair<int,int>,~a>" (length sat-def))
+			      :initform-class
+			      (curly ,@(loop for (e f)
+					       in sat-def
+					     collect
+					     `(std--make_pair ,e ,f)) )
+			      :param nil)
+		    (g1 :type "std::deque<bool>")
+		    (g2 :type "std::deque<bool>")
+		    (prn :type int :param t)
+		    )))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -96,7 +108,7 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		 ; cstring
+					; cstring
 		  cmath
 		  iostream)
        )
@@ -145,7 +157,7 @@
 						    (std--to_string prn_))))
 		   )
 		 (do0 (g1_.resize register_size_ true)
-			(g2_.resize register_size_ true))
+		      (g2_.resize register_size_ true))
 		 )
 	       
 	       (defmethod generate_sequence (n)
@@ -167,7 +179,7 @@
 		     (let ((o (? (aref v i)
 				 (string "\\u2588")
 				 (string " "))))
-		      (<< std--cout o)
+		       (<< std--cout o)
 		       (when (== 0 (% (+ i 1 ) side))
 			 (<< std--cout (string "\\n")))))))
 	       "private:"
@@ -204,7 +216,7 @@
 
   (let* ((name `SdrManager)
 	 (members `(
-		    ;(parameters :type "const Args&" :param t)
+					;(parameters :type "const Args&" :param t)
 		    (bufferSize :type "const int" :param t)
 		    (fifoSize :type "const int" :param t)
 		    (timeout_us :type "const int" :param t)
@@ -221,8 +233,8 @@
 			   :initform (std--chrono--high_resolution_clock--now)
 			   :param nil)
 		  
-		  ;; members related to the capture thread
-		  (capture-thread :type "std::thread" :initform nil :param nil)
+		    ;; members related to the capture thread
+		    (capture-thread :type "std::thread" :initform nil :param nil)
 		    (mtx :type "std::mutex" :initform nil :param nil)
 		    (stop :type "bool" :initform-class false :param nil)
 		    (cv :type "std::condition_variable" :initform nil :param nil)
@@ -302,17 +314,17 @@
 		 (declare (values bool))
 		 (let ((sdrResults (SoapySDR--Device--enumerate)))
 		   #+more (dotimes (i (sdrResults.size))
-		     (declare (type "unsigned long" i))
-		     ,(lprint :msg "found device"
-			      :vars `(i)))
+			    (declare (type "unsigned long" i))
+			    ,(lprint :msg "found device"
+				     :vars `(i)))
 		   (let ((soapyDeviceArgs (aref sdrResults 0)))
 		     (declare (type "const auto&" soapyDeviceArgs))
 		     (setf sdr_ (SoapySDR--Device--make soapyDeviceArgs))
 		   
 		     (when (== nullptr sdr_)
-		       ;,(lprint :msg "soapysdr device make failed")
+					;,(lprint :msg "soapysdr device make failed")
 		       (throw (std--runtime_error (string "sdr device make failed")))
-		       ;(return false)
+					;(return false)
 		       )
 		     (let () 
 		       #+more
@@ -340,8 +352,8 @@
 		       (do0
 			,(lprint :msg "set highest gain")
 			(-> sdr_ (setGainMode direction_ channel_ false))
-				    (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
-				    (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
+			(-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
+			(-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
 		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
 			       #+more (do0
 				       ,(lprint :msg "has automatic gain control"
@@ -386,12 +398,12 @@
 		       (<< std--cout std--fixed (std--setprecision 10) 1d0  std--endl)
 		       
 		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction_ channel_))
-					(-> sdr_ (getBandwidth direction_ channel_))
-					(-> sdr_ (getFrequency direction_ channel_))
-					(-> sdr_ (getMasterClockRate)) ;; zero
-					(-> sdr_ (getReferenceClockRate)) ;; zero
+					       (-> sdr_ (getBandwidth direction_ channel_))
+					       (-> sdr_ (getFrequency direction_ channel_))
+					       (-> sdr_ (getMasterClockRate)) ;; zero
+					       (-> sdr_ (getReferenceClockRate)) ;; zero
 
-					) )
+					       ) )
 
 		       #+more
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction_ channel_)))
@@ -426,7 +438,7 @@
 			(setf rx_stream_ (-> sdr_ (setupStream direction_
 							       ,acq-sdr-type)))
 			(when (== nullptr rx_stream_)
-			  ;,(lprint :msg "stream setup failed")
+					;,(lprint :msg "stream setup failed")
 			  (SoapySDR--Device--unmake sdr_)
 			  (throw (std--runtime_error (string "sdr stream setup failed")))
 					;(return false)
@@ -443,14 +455,14 @@
 			 (comments "reusable buffer of rx samples")
 			 (let ((numElems buffer_size_)
 			       #+more (numBytes (* buffer_size_
-					    (sizeof ,acq-type))))
+						   (sizeof ,acq-type))))
 			   (setf buf_  
 				 (,(format nil "std::vector<~a>" acq-type)
 				  numElems))
 			   ,(lprint :msg (format nil "allocate ~a buffer" acq-sdr-type) :vars `(numElems numBytes))
 			   #+more (let ((expected_ms0 (/ (* 1000d0 numElems)
 							 (get_sample_rate))))
-			     (setf average_elapsed_ms_ expected_ms0))
+				    (setf average_elapsed_ms_ expected_ms0))
 			   )))
 		       (return true)))))
 
@@ -460,19 +472,19 @@
 				  (:name gain-mode :type bool))
 		       appending
 		       (destructuring-bind (&key name type) e
-			(let ((setter (cl-change-case:snake-case (format nil "set-~a" name)))
-			      (Setter (cl-change-case:camel-case (format nil "set-~a" name)))
-			      (getter (cl-change-case:snake-case (format nil "get-~a" name)))
-			      (Getter (cl-change-case:camel-case (format nil "get-~a" name))))
-			  `(
-			    (defmethod ,setter (v)
-			      (declare (type ,type v))
-			      ,(lprint :msg setter
-				       :vars `(v))
-			      (-> sdr_ (,Setter direction_ channel_ v)))
-			    (defmethod ,getter ()
-			      (declare (values ,type))
-			      (return (-> sdr_ (,Getter direction_ channel_))))))))
+			 (let ((setter (cl-change-case:snake-case (format nil "set-~a" name)))
+			       (Setter (cl-change-case:camel-case (format nil "set-~a" name)))
+			       (getter (cl-change-case:snake-case (format nil "get-~a" name)))
+			       (Getter (cl-change-case:camel-case (format nil "get-~a" name))))
+			   `(
+			     (defmethod ,setter (v)
+			       (declare (type ,type v))
+			       ,(lprint :msg setter
+					:vars `(v))
+			       (-> sdr_ (,Setter direction_ channel_ v)))
+			     (defmethod ,getter ()
+			       (declare (values ,type))
+			       (return (-> sdr_ (,Getter direction_ channel_))))))))
 
 	       #+nil 
 	       (do0 (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
@@ -494,7 +506,7 @@
 	       
 	       (defmethod capture ()
 		 (declare (values int))
-		 (let (;#+more (start (std--chrono--high_resolution_clock--now))
+		 (let (	;#+more (start (std--chrono--high_resolution_clock--now))
 		       (numElems buffer_size_))
 		   #+more (comments "choose alpha in [0,1]. for small values old measurements have less impact on the average"
 				    ".04 seems to average over 60 values in the history")
@@ -503,12 +515,12 @@
 			 (time_ns 0LL)
 			 
 			 (readStreamRet (-> sdr_
-				   (readStream rx_stream_
-					       (buffs.data)
-					       numElems
-					       flags
-					       time_ns
-					       timeout_us_)))
+					    (readStream rx_stream_
+							(buffs.data)
+							numElems
+							flags
+							time_ns
+							timeout_us_)))
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
 				  (elapsed (std--chrono--duration<double> (- end start_)))
@@ -530,13 +542,13 @@
 		     (cond
 		       ((space
 			 #-more (setf "auto  readStreamRet"
-			       (-> sdr_
-				   (readStream rx_stream_
-					       (buffs.data)
-					       numElems
-					       flags
-					       time_ns
-					       timeout_us_)))
+				      (-> sdr_
+					  (readStream rx_stream_
+						      (buffs.data)
+						      numElems
+						      flags
+						      time_ns
+						      timeout_us_)))
 			 
 			 (== readStreamRet SOAPY_SDR_TIMEOUT))
 			,(lprint :msg "warning: timeout")
@@ -586,7 +598,7 @@
 		 (declare (type ,(format nil "const std::function<void(const ~a&)> &" fifo-type) func)
 			  (type "std::size_t" n))
 		 #+nil ,(lprint :msg "processFifo"
-			  :vars `(n))
+				:vars `(n))
 		 (let ((lock (std--scoped_lock mtx_))
 		       (n0 (std--min n (fifo_.size))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
@@ -625,39 +637,39 @@
 		 (let ((outputFile (std--ofstream (string "capturedData.bin")
 						  (or std--ios--binary
 						      std--ios--app))))
-		  (let ((captureSleepUs capture_sleep_us_))
-		    (while true
+		   (let ((captureSleepUs capture_sleep_us_))
+		     (while true
 					;,(lprint :msg "get lock")
-			   (progn
-			     (let ((lock (std--scoped_lock mtx_)))
+			    (progn
+			      (let ((lock (std--scoped_lock mtx_)))
 			  
-			       (when stop_
-				 ,(lprint :msg "stopping captureThread")
-				 break))
-			     (do0 
-				 #+nil ,(lprint :msg "capture and push to fifo")
-				  (when (space (setf "auto numElems" (capture))
-					       (< 0 numElems))
-				    (comments "Insert new elements into the deque")
-				    (dot fifo_ (insert (fifo_.end)
-						       (buf_.begin)
-						       (+
-							(buf_.begin)
-							numElems)))
-				    #+nil (do0
-				     (comments "Write data to file")
-				     (outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
-						       (* numElems (sizeof ,acq-type))))
-				    ))
+				(when stop_
+				  ,(lprint :msg "stopping captureThread")
+				  break))
+			      (do0 
+			       #+nil ,(lprint :msg "capture and push to fifo")
+			       (when (space (setf "auto numElems" (capture))
+					    (< 0 numElems))
+				 (comments "Insert new elements into the deque")
+				 (dot fifo_ (insert (fifo_.end)
+						    (buf_.begin)
+						    (+
+						     (buf_.begin)
+						     numElems)))
+				 #+nil (do0
+					(comments "Write data to file")
+					(outputFile.write ("reinterpret_cast<const char*>" (buf_.data))
+							  (* numElems (sizeof ,acq-type))))
+				 ))
 
-			     (when (< fifo_size_ (fifo_.size))
-			       (fifo_.erase (fifo_.begin)
-					    (+ (fifo_.begin)
-					       (- (fifo_.size)
-						  fifo_size_ )))))
-			   (when (< 0 captureSleepUs)
-			     (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))
-		    (outputFile.close))))
+			      (when (< fifo_size_ (fifo_.size))
+				(fifo_.erase (fifo_.begin)
+					     (+ (fifo_.begin)
+						(- (fifo_.size)
+						   fifo_size_ )))))
+			    (when (< 0 captureSleepUs)
+			      (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))
+		     (outputFile.close))))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -767,7 +779,7 @@
 
   (let* ((name `FFTWManager)
 	 (members `(#+memoize-plan (plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
-		    ;(window_size :type "int" :initform 512 :param t)
+					;(window_size :type "int" :initform 512 :param t)
 		    )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -830,18 +842,19 @@
 		 )
 
 	       #+nil (defmethod print_plans ()
-		 (declare (const))
-		 (for-range (pair plans_)
-		      (let ((windowSize pair.first.first)
-			    (nThreads pair.first.second)
-			    (planAddress pair.second))
-		       ,(lprint :msg "print_plans"))))
+		       (declare (const))
+		       (for-range (pair plans_)
+				  (let ((windowSize pair.first.first)
+					(nThreads pair.first.second)
+					(planAddress pair.second))
+				    ,(lprint :msg "print_plans"))))
 
 	       
 
 	       
 	       (defmethod fftshift (in)
-		 (declare 
+		 (declare
+		  (const)
 		  (type "const std::vector<std::complex<double>>&" in)
 		  (values "std::vector<std::complex<double>>"))
 		 (let ((mid (+ (in.begin)
@@ -854,6 +867,7 @@
 
 	       (defmethod fft (in windowSize)
 		 (declare (type int windowSize)
+			  (const)
 			  (type "const std::vector<std::complex<double>>&" in)
 			  (values "std::vector<std::complex<double>>"))
 		 (when (!= windowSize (in.size))
@@ -875,105 +889,106 @@
 	       "private:"
 	       (defmethod get_plan (windowSize &key (nThreads 1))
 		 (declare (type int windowSize nThreads)
-			  (values fftw_plan))
+			  (values fftw_plan)
+			  (const))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 
 		 
-		#+nil (print_plans)
+		 #+nil (print_plans)
 		 #+nil ,(lprint :msg "lookup plan"
-			 :vars `(windowSize nThreads))
+				:vars `(windowSize nThreads))
 		 #+memoize-plan (let ((iter (plans_.find (curly windowSize nThreads))))) 
 		 (do0 
-		   (if #-memoize-plan true #+memoize-plan (== (plans_.end) iter)
-		       (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
-				     :vars `(windowSize nThreads))
+		  (if #-memoize-plan true #+memoize-plan (== (plans_.end) iter)
+		      (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
+						   :vars `(windowSize nThreads))
 
-			    (do0 (let ((wisdom_filename (+ (string "wisdom_")
-							   (std--to_string windowSize)
-							   (string ".wis")))))
-				 (when (< 1 nThreads)
-				   (setf wisdom_filename
-					 (+ (string "wisdom_")
-					    (std--to_string windowSize)
-					    (string "_threads")
-					    (std--to_string nThreads)
-					    (string ".wis")))))
+			   (do0 (let ((wisdom_filename (+ (string "wisdom_")
+							  (std--to_string windowSize)
+							  (string ".wis")))))
+				(when (< 1 nThreads)
+				  (setf wisdom_filename
+					(+ (string "wisdom_")
+					   (std--to_string windowSize)
+					   (string "_threads")
+					   (std--to_string nThreads)
+					   (string ".wis")))))
 			    
-			    (let ((*in (fftw_alloc_complex windowSize))
-				  (*out (fftw_alloc_complex windowSize)))
-			      (when (logior !in
-					    !out)
-				(do0 (fftw_free in)
-				     (fftw_free out)
-				     (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
-
-			      (let ((wisdomFile (std--ifstream wisdom_filename)))
-				(if (wisdomFile.good)
-				    (do0 #+nil ,(lprint :msg "read wisdom from existing file"
-							:vars `(wisdom_filename))
-					 (wisdomFile.close)
-					 (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
-				    ,(lprint :msg "can't find wisdom file"
-					     :vars `(wisdom_filename)))
-				(if (< 1 nThreads)
-				    (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
-						  :vars `(nThreads))
-					 (fftw_plan_with_nthreads nThreads))
-				    #+nil ,(lprint :msg "plan 1d fft without threads"
-					     :vars `(nThreads)))
-				#-guru-plan (let ((p (fftw_plan_dft_1d windowSize
-								 in out
-								 FFTW_FORWARD
-								 FFTW_PATIENT ;MEASURE
-								 ))))
-				#+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
-									       :is 1
-									       :os 1)))
-				      (p 
-					(fftw_plan_guru_dft 1 ;; rank
-							    &dim ;; dims
-							    0 ;; howmany_rank
-							    nullptr ;; howmany_dims
-							    in	;; in 
-							    out ;; out
-							    FFTW_FORWARD ;; sign
-					;FFTW_MEASURE ;; flags
-							    (or FFTW_MEASURE FFTW_UNALIGNED)
-							    )))
-				  )
-				(when !p
-				  (do0 (fftw_free in)
-				       (fftw_free out)
-				       (throw (std--runtime_error (string "Failed to create fftw plan")))))
-				#+nil ,(lprint :msg "plan successfully created")
-				(unless (wisdomFile.good)
-				  ,(lprint :msg "store wisdom to file"
-					   :vars `(wisdom_filename))
-				  (wisdomFile.close)
-				  (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
-				)
-			      (do0 (do0
-				    ;,(lprint :msg "free in and out")
-				    (fftw_free in)
+			   (let ((*in (fftw_alloc_complex windowSize))
+				 (*out (fftw_alloc_complex windowSize)))
+			     (when (logior !in
+					   !out)
+			       (do0 (fftw_free in)
 				    (fftw_free out)
-				    #-memoize-plan (return p)
-				    )
-				   #+memoize-plan(do0
-				    ,(lprint :msg "store plan in class"
-					     :vars `(windowSize nThreads))
-				     (let ((insertResult (dot plans_
-									    (insert (curly (curly windowSize nThreads) p))
-									    )))
-						     (setf iter (dot insertResult first))
-						     ,(lprint :msg "inserted new key"
-							      :vars `((plans_.size) insertResult.second))))
+				    (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
+
+			     (let ((wisdomFile (std--ifstream wisdom_filename)))
+			       (if (wisdomFile.good)
+				   (do0 #+nil ,(lprint :msg "read wisdom from existing file"
+						       :vars `(wisdom_filename))
+					(wisdomFile.close)
+					(fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
+				   ,(lprint :msg "can't find wisdom file"
+					    :vars `(wisdom_filename)))
+			       (if (< 1 nThreads)
+				   (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
+						       :vars `(nThreads))
+					(fftw_plan_with_nthreads nThreads))
+				   #+nil ,(lprint :msg "plan 1d fft without threads"
+						  :vars `(nThreads)))
+			       #-guru-plan (let ((p (fftw_plan_dft_1d windowSize
+								      in out
+								      FFTW_FORWARD
+								      FFTW_MEASURE
+								      ))))
+			       #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
+											  :is 1
+											  :os 1)))
+						 (p 
+						   (fftw_plan_guru_dft 1 ;; rank
+								       &dim ;; dims
+								       0 ;; howmany_rank
+								       nullptr ;; howmany_dims
+								       in ;; in 
+								       out ;; out
+								       FFTW_FORWARD ;; sign
+					;FFTW_MEASURE ;; flags
+								       (or FFTW_MEASURE FFTW_UNALIGNED)
+								       )))
+					     )
+			       (when !p
+				 (do0 (fftw_free in)
+				      (fftw_free out)
+				      (throw (std--runtime_error (string "Failed to create fftw plan")))))
+			       #+nil ,(lprint :msg "plan successfully created")
+			       (unless (wisdomFile.good)
+				 ,(lprint :msg "store wisdom to file"
+					  :vars `(wisdom_filename))
+				 (wisdomFile.close)
+				 (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
+			       )
+			     (do0 (do0
+					;,(lprint :msg "free in and out")
+				   (fftw_free in)
+				   (fftw_free out)
+				   #-memoize-plan (return p)
 				   )
-			      ))
-		       #+memoize-plan (do0
-			,(lprint :msg "plan has been used recently, reuse it.")))
+				  #+memoize-plan(do0
+						 ,(lprint :msg "store plan in class"
+							  :vars `(windowSize nThreads))
+						 (let ((insertResult (dot plans_
+									  (insert (curly (curly windowSize nThreads) p))
+									  )))
+						   (setf iter (dot insertResult first))
+						   ,(lprint :msg "inserted new key"
+							    :vars `((plans_.size) insertResult.second))))
+				  )
+			     ))
+		      #+memoize-plan (do0
+				      ,(lprint :msg "plan has been used recently, reuse it.")))
 		   
- 		   #+memoize-plan (return iter->second)))
+ 		  #+memoize-plan (return iter->second)))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -1003,7 +1018,7 @@
       
 					;chrono
 
-					filesystem
+      filesystem
 					;unistd.h
 					;cstdlib
 
@@ -1058,8 +1073,10 @@
 		       :vars `(daemon_exit))
 	      (sleep 1)))))
      
-     (defun DrawPlot (file sdr)
+     (defun DrawPlot (file sdr fftw codes)
        (declare (type "const MemoryMappedComplexShortFile&" file)
+		(type "const FFTWManager&" fftw)
+		(type "const std::vector<std::vector<std::complex<double>>> &" codes)
 		(type SdrManager& sdr))
 
        ,@(loop for e in `((:name sample-rate :type double)
@@ -1069,22 +1086,21 @@
 	       collect
 	       (destructuring-bind (&key name type) e
 		 (let ((getter (cl-change-case:snake-case (format nil "get-~a" name))))
-		  `(do0
-		    (ImGui--Text (string ,(format nil "~a:" name))
-				 )
-		    (ImGui--SameLine)
-		    (ImGui--TextColored (ImVec4 1 1 0 1)
-					,(case type
-					   (`double `(string "%f"))
-					   (`bool `(string "%s")))
-					,(case type
-					   (`double `(dot sdr (,getter)))
-					   (`bool `(? (dot sdr (,getter))
-						      (string "True")
-						      (string "False"))))
+		   `(do0
+		     (ImGui--Text (string ,(format nil "~a:" name)))
+		     (ImGui--SameLine)
+		     (ImGui--TextColored (ImVec4 1 1 0 1)
+					 ,(case type
+					    (`double `(string "%f"))
+					    (`bool `(string "%s")))
+					 ,(case type
+					    (`double `(dot sdr (,getter)))
+					    (`bool `(? (dot sdr (,getter))
+						       (string "True")
+						       (string "False"))))
 					
-					)
-		    ))))
+					 )
+		     ))))
 
        (let ((automaticGainMode true)
 	     (old_automaticGainMode true))
@@ -1117,40 +1133,12 @@
 					    (sizeof "std::complex<short>")))))
 	 (declare (type "static int" start ))
 	 (ImGui--SliderInt (string "Start")
-			   &start 0 maxStart)
-	 
-	 )
+			   &start 0 maxStart))
 
-       #+nil
-       ,(let* ((l-size-start 4)
-	       (l-size-end 20)
-	       (l-size-init (- 12 l-size-start))
-	       (l-sizes `(,@(loop for i from l-size-start upto l-size-end
-				  collect
-				  (format nil "~a" (expt 2 i))))))
-	  `(let ((windowSizeIndex ,l-size-init)
-		 (itemsInt (std--vector<int> (curly ,@l-sizes)))
-		 (windowSize (aref itemsInt windowSizeIndex))
-		 (items (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-								   l-sizes)))))
-	     (declare (type "static int" windowSizeIndex))
-	     (when (ImGui--BeginCombo (string "Window size")
-				      (dot (aref items windowSizeIndex)
-					   (c_str)))
-	       (dotimes (i (items.size))
-		 (let ((is_selected (== windowSizeIndex i)))
-		   (when (ImGui--Selectable (dot (aref items i)
-						 (c_str))
-					    is_selected)
-		     (setf windowSizeIndex i
-			   windowSize (aref itemsInt windowSizeIndex)))
-		   (when is_selected
-		     (ImGui--SetItemDefaultFocus))))
-	       (ImGui--EndCombo))))
 
        ,(let* ((combo-name "windowSize")
 	       (l-combo `(1024 8192 65536 80000 1048576))
-	       (l-default-index 3)
+	       (l-default-index 2)
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
@@ -1159,9 +1147,9 @@
 	  `(let ((,var-index ,l-default-index)
 		 (,old-var-index ,l-default-index)
 		 (,items-num (std--vector<double> (curly ,@l-combo)))
-		 (,var-value (aref ,items-num ,var-index))
+		 (,var-value (static_cast<int> (aref ,items-num ,var-index)))
 		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-								   l-combo)))))
+									l-combo)))))
 	     (declare (type "static int" ,var-index ,old-var-index))
 	     (when (ImGui--BeginCombo (string ,combo-name)
 				      (dot (aref ,items-str ,var-index)
@@ -1172,13 +1160,13 @@
 						 (c_str))
 					    is_selected)
 		     (setf ,var-index i
-			   ,var-value (aref ,items-num i)))
+			   ,var-value (static_cast<int> (aref ,items-num i))))
 		   (when is_selected
 		     (ImGui--SetItemDefaultFocus))))
 	       (ImGui--EndCombo))
 	     (when (!= ,old-var-index
 		       ,var-index)
-	       ;(sdr.set_bandwidth (aref ,items-num ,var-index))
+					;(sdr.set_bandwidth (aref ,items-num ,var-index))
 	       (setf ,old-var-index ,var-index))))
 
        ,(let* ((combo-name "bandwidth")
@@ -1235,23 +1223,13 @@
 		 (lambda (fifo)
 		   (declare (type ,(format nil "const ~a &" fifo-type) fifo)
 			    (capture "&"))
-		   ;;,(lprint :msg "processFifo_cb")
-		   (let ((n windowSize	;(fifo.size)
-			    ))
+		   (let ((n windowSize))
 		     (dotimes (i n)
 		       (let ((z (aref fifo i)))
 			 (setf (aref zfifo i) z)
 			 (setf (aref x i) i
 			       (aref y1 i) (z.real)
-			       (aref y2 i) (z.imag)))
-		       #+nil
-		       (do0
-			(x.push_back i)
-			(let ((re (dot  (aref fifo i) (real)) )
-			      (im (dot  (aref fifo i) (imag)) )))
-			(y1.push_back re)
-			(y2.push_back im))
-		       )))
+			       (aref y2 i) (z.imag))))))
 		 windowSize))
 	       (dotimes (i windowSize)
 		 (let ((z (aref file (+ start i))))
@@ -1259,10 +1237,7 @@
 			 (aref y1 i) (z.real)
 			 (aref y2 i) (z.imag)))))
 
-	   
-
 	   (do0
-	    
 	    (when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
 	      #+nil (ImPlot--SetNextAxisLimits ImAxis_X1 start (+ start windowSize))				
 	      ,@(loop for e in `(y1 y2)
@@ -1278,7 +1253,7 @@
 	     (ImGui--Checkbox (string "Logarithmic Y-axis")
 			      &logScale)
 	     (handler-case
-		 (let ((fftw (FFTWManager))
+		 (let (			;(fftw (FFTWManager))
 		       (in (std--vector<std--complex<double>> windowSize))
 		       (nyquist (/ windowSize 2d0))
 		       (sampleRate 10d6)
@@ -1313,72 +1288,78 @@
 						 (- centerFrequency (* .5 sampleRate))
 						 (+ centerFrequency (* .5 sampleRate)))
 
-		      (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
-		      (when (ImPlot--BeginPlot (? logScale
-						  (string "FFT magnitude (dB)")
-						  (string "FFT magnitude (linear)")))
-			
+		      (do0
+		       (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
+		       (when (ImPlot--BeginPlot (? logScale
+						   (string "FFT magnitude (dB)")
+						   (string "FFT magnitude (linear)")))
+			 
+			 (let ((pointsPerPixel (static_cast<int> (/ (x.size)
+								    (dot (ImGui--GetContentRegionAvail)
+									 x))))))
+			 (if (<= pointsPerPixel 1)
+			     (do0 ,@(loop for e in `(y1)
+					  collect
+					  `(ImPlot--PlotLine (string ,e)
+							     (x.data)
+							     (dot ,e (data))
+							     windowSize)))
 
-			(let (
-			      (pointsPerPixel (static_cast<int> (/ (x.size)
-								   (dot (ImGui--GetContentRegionAvail)
-									x))))))
-			(if (<= pointsPerPixel 1)
-			    (do0 ,@(loop for e in `(y1)
-				     collect
-				     `(ImPlot--PlotLine (string ,e)
-							(x.data)
-							(dot ,e (data))
-							windowSize)))
+			     (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
+				  (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
+						   pointsPerPixel))
+					(x_downsampled (std--vector<double> pixels))
+					#+extra (y_max (std--vector<double> pixels))
+					(y_mean (std--vector<double> pixels))
+					#+extra (y_min (std--vector<double> pixels))
+					(count 0))
+				    (comments "Iterate over the data with steps of pointsPerPixel")
+				    (for ((= "int i" 0)
+					  (< i (x.size))
+					  (incf i pointsPerPixel))
+					 (let (#+extra (max_val (aref y1 i))
+					       #+extra (min_val (aref y1 i))
+					       (sum_val (aref y1 i)))
+					   (comments "Iterate over the points under the same pixel")
+					   (for ((= "int j" (+ i 1))
+						 (logand (< j (+ i pointsPerPixel))
+							 (< j (x.size)))
+						 (incf j))
+						#+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
+							     (setf min_val (std--min min_val (aref y1 j))))
+						(incf sum_val  (aref y1 j)))
+					   #+extra (setf (aref y_max count) max_val
+							 (aref y_min count) min_val)
+					   (setf (aref x_downsampled count) (aref x i)
+						 
+						 (aref y_mean count) (/ sum_val pointsPerPixel))
+					   (incf count)))
+				    ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
+					    collect
+					    `(dot ,e (resize count)))
+				    ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
+					    collect
+					    `(ImPlot--PlotLine (string ,e)
+							       (x_downsampled.data)
+							       (dot ,e (data))
+							       (x_downsampled.size))))))
 
-			    (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
-				 (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
-						  pointsPerPixel))
-				       (x_downsampled (std--vector<double> pixels))
-				       #+extra (y_max (std--vector<double> pixels))
-				       (y_mean (std--vector<double> pixels))
-				       #+extra (y_min (std--vector<double> pixels))
-				       (count 0))
-				   (comments "Iterate over the data with steps of pointsPerPixel")
-				   (for ((= "int i" 0)
-					 (< i (x.size))
-					 (incf i pointsPerPixel))
-					(let (#+extra (max_val (aref y1 i))
-					      #+extra (min_val (aref y1 i))
-					      (sum_val (aref y1 i)))
-					  (comments "Iterate over the points under the same pixel")
-					  (for ((= "int j" (+ i 1))
-						(logand (< j (+ i pointsPerPixel))
-							(< j (x.size)))
-						(incf j))
-					       #+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
-						    (setf min_val (std--min min_val (aref y1 j))))
-					       (incf sum_val  (aref y1 j)))
-					  #+extra (setf (aref y_max count) max_val
-						(aref y_min count) min_val)
-					  (setf (aref x_downsampled count) (aref x i)
-						
-						(aref y_mean count) (/ sum_val pointsPerPixel))
-					  (incf count)))
-				   ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
-					   collect
-					   `(dot ,e (resize count)))
-				   ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
-					   collect
-					   `(ImPlot--PlotLine (string ,e)
-							      (x_downsampled.data)
-							      (dot ,e (data))
-							      (x_downsampled.size))))))
-
-			
-			(do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
-			     (when (logand (ImPlot--IsPlotHovered)
-					   (logior (ImGui--IsMouseClicked 2)
-						   (ImGui--IsMouseDragging 2)))
-			       (do0
+			 
+			 (do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
+			      (when (logand (ImPlot--IsPlotHovered)
+					    (logior (ImGui--IsMouseClicked 2)
+						    (ImGui--IsMouseDragging 2)))
+				(do0
 				 (setf centerFrequency (dot (ImPlot--GetPlotMousePos) x))
 				 (sdr.set_frequency centerFrequency))))
-			(ImPlot--EndPlot)))))
+			 (ImPlot--EndPlot)))
+
+		      (let ((codesSize (dot (aref codes 0) (size))))
+			(if (== windowSize codesSize)
+			    (ImGui--Text (string "Perform correlation"))
+			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
+					 windowSize codesSize)
+			    )))))
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")
 			      (e.what))))))))
@@ -1421,38 +1402,47 @@
 	 (glClearColor  0 0 0 1)
 	 )
 
-       (do0
-	(comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
-	(let ((sampleRate 10.0d6)
-	      (caFrequency 1.023d6)
-	      (caStep (/ caFrequency
-			 sampleRate))
-	      (corrWindowTime_ms 8)
-	      (corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
-					       1000)))
-	      (caSequenceLength 1023)
-	      )
-	  ,(lprint :msg "prepare CA code chips"
-		   :vars `(corrLength))
-	  (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
-	    (dotimes (i 31)
-	      (comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
-	      (let ((ca (GpsCACodeGenerator (+ i 1)))
-		    (chips (ca.generate_sequence caSequenceLength))
-		    (code (std--vector<std--complex<double>> corrLength))
-		    (caPhase 0d0)
-		    (chipIndex 0))
-		(dotimes (i corrLength)
-		  (setf (aref code i) (? (aref chips (% chipIndex
-							caSequenceLength))
-					 1d0 -1d0))
-		  (incf caPhase caStep)
-		  (when (<= 1 caPhase)
-		    (decf caPhase 1d0)
-		    (incf chipIndex)))
-		,(lprint :msg "compute FFT"
-			 :vars `(i))
-		(codes.push_back (fftw.fft code corrLength)))))))
+       (let ((sampleRate 10.0d6))
+	 (do0
+	  (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
+	  (let (
+		(caFrequency 1.023d6)
+		(caStep (/ caFrequency
+			   sampleRate))
+		(corrWindowTime_ms 6.55361)
+		(corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
+						 1000)))
+		(caSequenceLength 1023))
+	    ,(lprint :msg "prepare CA code chips"
+		     :vars `(corrLength))
+	    
+	    (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
+	      (dotimes (i 31)
+		(comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
+		(let ((ca (GpsCACodeGenerator (+ i 1)))
+		      (chips (ca.generate_sequence caSequenceLength))
+		      (code (std--vector<std--complex<double>> corrLength))
+		      (caPhase 0d0)
+		      (chipIndex 0))
+		  (dotimes (i corrLength)
+		    (setf (aref code i) (? (aref chips (% chipIndex
+							  caSequenceLength))
+					   1d0 -1d0))
+		    (incf caPhase caStep)
+		    (when (<= 1 caPhase)
+		      (decf caPhase 1d0)
+		      (incf chipIndex)))
+		  ,(lprint :msg "compute FFT"
+			   :vars `(i))
+		  (progn
+		    #-nil ,(benchmark `(let ((out (fftw.fft code corrLength))))
+		      
+		      )
+		    
+		    #+nil,(benchmark 
+		      `(fftw.fft code corrLength))
+		    (codes.push_back out)
+		    )))))))
 
        (handler-case
 	   (do0
@@ -1482,7 +1472,7 @@
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
-		   (DrawPlot file sdr)
+		   (DrawPlot file sdr fftw codes)
 		   (ImGui--Render)
 		   (let ((w 0)
 			 (h 0))
@@ -1503,7 +1493,7 @@
 	 ("const std::exception&" (e)
 	   ,(lprint :msg "error 1426:"
 		    :vars `((e.what)))
-	    (return -1)))
+	   (return -1)))
 
        #+nil (do0
 	      (ImGui_ImplOpenGL3_Shutdown)

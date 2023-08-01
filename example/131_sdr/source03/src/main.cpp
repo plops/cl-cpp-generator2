@@ -59,7 +59,7 @@ void startDaemonIfNotRunning ()        {
  
  
 
-void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)        {
+void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes)        {
             ImGui::Text("sample-rate:");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "%f", sdr.get_sample_rate());
@@ -103,16 +103,17 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
     auto maxStart  = static_cast<int>(file.size()/sizeof(std::complex<short>)); 
     ImGui::SliderInt("Start", &start, 0, maxStart);
  
-            static int windowSizeIndex  = 8; 
-    auto itemsInt  = std::vector<int>({16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576}); 
-    auto windowSize  = itemsInt[windowSizeIndex]; 
-    auto items  = std::vector<std::string>({"16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384", "32768", "65536", "131072", "262144", "524288", "1048576"}); 
-    if ( ImGui::BeginCombo("Window size", items[windowSizeIndex].c_str()) ) {
-                        for ( auto i = 0;i<items.size();i+=1 ) {
+            static int windowSizeIndex  = 2; 
+    static int old_windowSizeIndex  = 2; 
+    auto windowSizeItemsNum  = std::vector<double>({1024, 8192, 65536, 80000, 1048576}); 
+    auto windowSize  = static_cast<int>(windowSizeItemsNum[windowSizeIndex]); 
+    auto windowSizeItemsStr  = std::vector<std::string>({"1024", "8192", "65536", "80000", "1048576"}); 
+    if ( ImGui::BeginCombo("windowSize", windowSizeItemsStr[windowSizeIndex].c_str()) ) {
+                        for ( auto i = 0;i<windowSizeItemsStr.size();i+=1 ) {
                                     auto is_selected  = windowSizeIndex==i; 
-            if ( ImGui::Selectable(items[i].c_str(), is_selected) ) {
+            if ( ImGui::Selectable(windowSizeItemsStr[i].c_str(), is_selected) ) {
                                                                 windowSizeIndex=i;
-                windowSize=itemsInt[windowSizeIndex];
+                windowSize=static_cast<int>(windowSizeItemsNum[i]);
 
 
  
@@ -124,6 +125,12 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
  
 } 
         ImGui::EndCombo();
+ 
+} 
+    if ( old_windowSizeIndex!=windowSizeIndex ) {
+                                old_windowSizeIndex=windowSizeIndex;
+
+
  
 } 
  
@@ -205,8 +212,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
                 static bool logScale  = false; 
         ImGui::Checkbox("Logarithmic Y-axis", &logScale);
         try {
-                                    auto fftw  = FFTWManager(); 
-            auto in  = std::vector<std::complex<double>>(windowSize); 
+                                    auto in  = std::vector<std::complex<double>>(windowSize); 
             auto nyquist  = windowSize/2.0    ; 
             auto sampleRate  = 1.00e+7; 
             static double centerFrequency  = sdr.get_frequency(); 
@@ -239,7 +245,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
 
 } 
 } 
-                        // If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.
+                                    // If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.
  
             if ( ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)" : "FFT magnitude (linear)") ) {
                                                                 auto pointsPerPixel  = static_cast<int>(x.size()/(ImGui::GetContentRegionAvail().x)); 
@@ -289,6 +295,14 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
  
 } 
  
+                        auto codesSize  = codes[0].size(); 
+            if ( windowSize==codesSize ) {
+                                ImGui::Text("Perform correlation");
+} else {
+                                ImGui::Text("Don't perform correlation windowSize=%d codesSize=%ld", windowSize, codesSize);
+} 
+ 
+ 
  
  
 }catch (const std::exception& e) {
@@ -302,6 +316,8 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr)       
  
 
 int main (int argc, char** argv)        {
+            auto fftw  = FFTWManager(); 
+ 
         glfwSetErrorCallback(glfw_error_callback);
         if ( 0==glfwInit() ) {
                         std::cout<<"glfw init failed"<<std::endl<<std::flush;
@@ -333,12 +349,12 @@ int main (int argc, char** argv)        {
     ImGui_ImplOpenGL3_Init("#version 130");
     glClearColor(0, 0, 0, 1);
  
-            // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
+            auto sampleRate  = 1.00e+7; 
+        // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
  
-        auto sampleRate  = 1.00e+7; 
-    auto caFrequency  = 1.0230e+6; 
+        auto caFrequency  = 1.0230e+6; 
     auto caStep  = caFrequency/sampleRate; 
-    auto corrWindowTime_ms  = 8; 
+    auto corrWindowTime_ms  = 6.553610f; 
     auto corrLength  = static_cast<int>((corrWindowTime_ms*sampleRate)/1000); 
     auto caSequenceLength  = 1023; 
     std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<std::endl<<std::flush;
@@ -362,9 +378,22 @@ int main (int argc, char** argv)        {
  
 } 
 } 
-        codes.push_back(std::move(code));
+        std::cout<<"compute FFT"<<" i='"<<i<<"' "<<std::endl<<std::flush;
+        {
+                                    auto startBenchmark  = std::chrono::high_resolution_clock::now(); 
+                        auto out  = fftw.fft(code, corrLength); 
+ 
+                        auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
+            auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
+            auto elapsed_ms  = 1000*elapsed.count(); 
+            std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
+ 
+ 
+                        codes.push_back(out);
+} 
  
 } 
+ 
  
  
  
@@ -388,7 +417,7 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_NewFrame();
                         ImGui_ImplGlfw_NewFrame();
                         ImGui::NewFrame();
-                        DrawPlot(file, sdr);
+                        DrawPlot(file, sdr, fftw, codes);
                         ImGui::Render();
                                     auto w  = 0; 
             auto h  = 0; 
