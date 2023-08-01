@@ -1417,6 +1417,7 @@
 		     :vars `(corrLength))
 	    
 	    (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
+	      
 	      (dotimes (i 31)
 		(comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
 		(let ((ca (GpsCACodeGenerator (+ i 1)))
@@ -1435,13 +1436,12 @@
 		  ,(lprint :msg "compute FFT"
 			   :vars `(i))
 		  (progn
-		    #-nil ,(benchmark `(let ((out (fftw.fft code corrLength))))
-		      
-		      )
-		    
-		    #+nil,(benchmark 
-		      `(fftw.fft code corrLength))
-		    (codes.push_back out)
+		     (when (== i 0)
+		       (comments "the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster")
+		       (let ((mini (std--vector<std--complex<double>> 32)))
+			 ,(benchmark `(fftw.fft mini 32))))
+		     ,(benchmark `(let ((out (fftw.fft code corrLength)))))
+		     (codes.push_back out)
 		    )))))))
 
        (handler-case

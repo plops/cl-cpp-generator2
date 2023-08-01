@@ -380,6 +380,21 @@ int main (int argc, char** argv)        {
 } 
         std::cout<<"compute FFT"<<" i='"<<i<<"' "<<std::endl<<std::flush;
         {
+                        if ( i==0 ) {
+                                                // the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
+ 
+                                auto mini  = std::vector<std::complex<double>>(32); 
+                                auto startBenchmark  = std::chrono::high_resolution_clock::now(); 
+                fftw.fft(mini, 32);
+                                auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
+                auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
+                auto elapsed_ms  = 1000*elapsed.count(); 
+                std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
+ 
+ 
+ 
+ 
+} 
                                     auto startBenchmark  = std::chrono::high_resolution_clock::now(); 
                         auto out  = fftw.fft(code, corrLength); 
  
