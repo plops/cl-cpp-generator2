@@ -1405,8 +1405,8 @@
 
 
        ,(let* ((combo-name "windowSize")
-	       (l-combo `(1024 8192 10000 65536 80000 1048576))
-	       (l-default-index 2)
+	       (l-combo `(1024 5456 8192 10000 65536 80000 1048576))
+	       (l-default-index 1)
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
@@ -1752,7 +1752,8 @@
 	 (glClearColor  0 0 0 1)
 	 )
 
-       (let ((sampleRate 10.0d6))
+       (let ((sampleRate 5456d3 ;10.0d6
+			 ))
 	 (do0
 	  (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
 	  (let (
