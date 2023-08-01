@@ -1525,12 +1525,13 @@
 		       (nyquist (/ windowSize 2d0))
 		       (sampleRate (? realtimeDisplay
 				      10d6
-				      5.456d6)
-				   )
+				      5.456d6))
+		       (gps_freq 1575.42d6)
+		       (lo_freq 4.092d6)
 		       (centerFrequency (? realtimeDisplay
 					   (sdr.get_frequency)
-					   4.092d6)))
-		   (declare (type "static double" centerFrequency))
+					   (- gps_freq lo_freq))))
+		   (declare (type "static double" centerFrequency lo_freq))
 		   (dotimes (i windowSize)
 		     (setf (aref x i) (+ centerFrequency
 					 (* sampleRate
@@ -1538,7 +1539,7 @@
 					       windowSize))) ))
 
 		   (let ((lo_phase 0d0)
-			 (lo_freq 4092d3)
+			 
 			 (lo_rate (* (/ lo_freq sampleRate) 4)))
 		    (dotimes (i windowSize)
 		      (let ((zs (? realtimeDisplay
@@ -1644,13 +1645,29 @@
 
 			 
 			 (do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
+			      (let ((xmouse (dot (ImPlot--GetPlotMousePos) x))))
 			      (when (logand (ImPlot--IsPlotHovered)
 					    (logior (ImGui--IsMouseClicked 2)
 						    (ImGui--IsMouseDragging 2)))
-				(do0
-				 (setf centerFrequency (dot (ImPlot--GetPlotMousePos) x))
-				 (sdr.set_frequency centerFrequency))))
-			 (ImPlot--EndPlot)))
+				
+				(if realtimeDisplay
+				    (do0
+				     (setf centerFrequency xmouse)
+				     (sdr.set_frequency centerFrequency))
+				    (do0
+				     
+				     (setf lo_freq
+					   (- xmouse
+					      centerFrequency))))))
+			 (ImPlot--EndPlot)
+			 (ImGui--Text (string "lo_freq: %6.10f MHz")
+				      (* lo_freq 1d-6))
+			 (ImGui--Text (string "xmouse: %6.10f GHz")
+				      (* xmouse 1d-9))
+			 (ImGui--Text (string "gps_freq-xmouse: %6.10f MHz")
+				      (* (- gps_freq xmouse) 1d-6))
+			 (ImGui--Text (string "centerFrequency-xmouse: %6.10f MHz")
+				      (* (- centerFrequency xmouse) 1d-6))))
 
 		      (let ((codesSize (dot (aref codes 0) (size))))
 			(if (== windowSize codesSize)
@@ -1658,8 +1675,7 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      (dotimes (code_idx 1 ;32
-						 )
+			      (dotimes (code_idx 2)
 				(let ((code (aref codes code_idx))
 				      (len (out.size))
 				      (prod (std--vector<std--complex<double>> len))
@@ -1671,7 +1687,6 @@
 					(<= dop dopEnd)
 					(incf dop))
 				       (do0
-					
 					(dotimes (i (out.size))
 					  (let ((i1 (% (+ i -dop len) len)))
 					   (setf (aref prod i)
@@ -1689,10 +1704,7 @@
 										   (* 100 code_idx)
 										   dop))
 							   :points 100))))
-
-				  )
-				
-				)
+				  ))
 			      
 			      (ImPlot--EndPlot))
 			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
@@ -1799,8 +1811,7 @@
 	    (let ((sdr (SdrManager 64512
 				   1100000 
 				   50000
-				   5000
-				   )))
+				   5000)))
 	      
 	      (startDaemonIfNotRunning)
 	      ,(lprint :msg "initialize sdr manager")
@@ -1829,9 +1840,7 @@
 			 (h 0))
 		     (glfwGetFramebufferSize window &w &h)
 		     (glViewport 0 0 w h)
-		   
-		     (glClear GL_COLOR_BUFFER_BIT)
-		     )
+		     (glClear GL_COLOR_BUFFER_BIT))
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window))
 	    (do0 (sdr.stopCapture)
