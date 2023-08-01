@@ -1546,6 +1546,9 @@
 		      (code (std--vector<std--complex<double>> corrLength))
 		      (caPhase 0d0)
 		      (chipIndex 0))
+		  (dotimes (j (chips.size))
+		    (<< std--cerr (+ i 1) (string " ") j (string " ") (? (aref chips j) 1 -1)
+			std--endl))
 		  (dotimes (i corrLength)
 		    (setf (aref code i) (? (aref chips (% chipIndex
 							  caSequenceLength))

@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         }
 
         for (i=0;i<Len; i++){
-            std::cout << PRN << " " << Navstar << " " <<  i << " " << code[i][0] << std::endl;
+            std::cout << PRN << " " <<  i << " " << code[i][0] << std::endl;
         }
         /******************************************
         * Now run the FFT on the C/A code stream  *
