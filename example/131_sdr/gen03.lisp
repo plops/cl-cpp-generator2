@@ -7,8 +7,14 @@
 
 (setf *features* (set-difference *features* (list :more
 						  :memoize-plan
-						  :guru-plan)))
+						  :guru-plan
+						  :dec-max
+						  :dec-min
+						  :dec-mean)))
 (setf *features* (set-exclusive-or *features* (list :more
+						    :dec-max
+						    ;:dec-min
+						    ;:dec-mean
 						    ;:guru-plan
 						    ;:memoize-plan
 						    )))
@@ -43,6 +49,74 @@
 	       )
 	   ,(lprint ; :msg (format nil "~a" (emit-c :code code :omit-redundant-parentheses t))
 	     :vars `(elapsed_ms))))))
+
+ (defun decimate-plots (args)
+   (destructuring-bind (&key x ys idx (points `(dot (ImGui--GetContentRegionAvail)
+						    x)))
+       args
+     `(progn
+       (let ((pointsPerPixel (static_cast<int> (/ (dot ,x (size))
+						  ,points )))))
+       (if (<= pointsPerPixel 1)
+	   (do0 ,@(loop for e in ys
+			collect
+			`(ImPlot--PlotLine (string ,e)
+					   (dot ,x (data))
+					   (dot ,e (data))
+					   windowSize)))
+
+	   (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
+		
+		(let ((pixels (/ (+ (dot ,x (size)) pointsPerPixel -1)
+				 pointsPerPixel))
+		      (x_downsampled (std--vector<double> pixels))
+		      )
+		  ,@(loop for y1 in ys
+			  collect
+			  `(do0
+			    (let (#+dec-mean ( y_mean (std--vector<double> pixels))
+				  #+dec-max (y_max (std--vector<double> pixels))
+				  #+dec-min (y_min (std--vector<double> pixels))
+				  (count 0))
+			      (comments "Iterate over the data with steps of pointsPerPixel")
+			      (for ((= "int i" 0)
+				    (< i (dot ,x (size)))
+				    (incf i pointsPerPixel))
+				   (let (#+dec-max (max_val (aref ,y1 i))
+					 #+dec-min (min_val (aref ,y1 i))
+					 #+dec-mean (sum_val (aref ,y1 i)))
+				     (comments "Iterate over the points under the same pixel")
+				     (for ((= "int j" (+ i 1))
+					   (logand (< j (+ i pointsPerPixel))
+						   (< j (dot ,x (size))))
+					   (incf j))
+					   #+dec-max (setf max_val (std--max max_val (aref ,y1 j)))
+					   #+dec-min (setf min_val (std--min min_val (aref ,y1 j)))
+					  #+dec-mean (incf sum_val  (aref ,y1 j)))
+				     #+dec-max (setf (aref y_max count) max_val)
+				     #+dec-min (setf (aref y_min count) min_val)
+				     (setf (aref x_downsampled count) (aref ,x i))
+				     #+dec-mean
+				     (setf (aref y_mean count) (/ sum_val pointsPerPixel))
+				     (incf count))))
+
+			    
+			    ,@(loop for e in `(x_downsampled
+					       #+dec-max y_max
+					       #+dec-min y_min
+					       #+dec-mean y_mean)
+				    collect
+				    `(dot ,e (resize count)))
+			    ,@(loop for e in `(#+dec-max y_max
+					       #+dec-min y_min
+					       #+dec-mean y_mean)
+				    collect
+				    `(ImPlot--PlotLine (dot (paren (+ (std--string (string ,(format nil "~a_~a_" e y1)))
+								      ,idx))
+							    (c_str))
+						       (x_downsampled.data)
+						       (dot ,e (data))
+						       (x_downsampled.size)))))))))))
   
   (let* ((name `GpsCACodeGenerator)
 	 (sat-def `((2 6)
@@ -263,7 +337,8 @@
 					;SoapySDR/Types.hpp
 		  SoapySDR/Formats.hpp
 		  SoapySDR/Errors.hpp
-		  fstream                                                                                         
+		  fstream
+                  
 		  )
        #+more
        (include<> chrono
@@ -780,6 +855,7 @@
   (let* ((name `FFTWManager)
 	 (members `(#+memoize-plan (plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
 					;(window_size :type "int" :initform 512 :param t)
+		    (number_threads :type "int" :initform-class 6 :param t)
 		    )))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -873,12 +949,28 @@
 		 (when (!= windowSize (in.size))
 		   (throw (std--invalid_argument (string "Input size must match window size."))))
 		 (let ((out (std--vector<std--complex<double>> windowSize)))
-		   (fftw_execute_dft (get_plan windowSize 6)
+		   (fftw_execute_dft (get_plan windowSize FFTW_FORWARD number_threads_)
 				     (reinterpret_cast<fftw_complex*>
 				      (const_cast<std--complex<double>*> (in.data)))
 				     (reinterpret_cast<fftw_complex*>
 				      (const_cast<std--complex<double>*> (out.data))))
 		   (return (fftshift out))))
+
+	       (defmethod ifft (in windowSize)
+		 (declare (type int windowSize)
+			  (const)
+			  (type "const std::vector<std::complex<double>>&" in)
+			  (values "std::vector<std::complex<double>>"))
+		 (when (!= windowSize (in.size))
+		   (throw (std--invalid_argument (string "Input size must match window size."))))
+		 (let ((in2 (fftshift in))
+		       (out (std--vector<std--complex<double>> windowSize)))
+		   (fftw_execute_dft (get_plan windowSize FFTW_BACKWARD number_threads_)
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (in2.data)))
+				     (reinterpret_cast<fftw_complex*>
+				      (const_cast<std--complex<double>*> (out.data))))
+		   (return out)))
 
 	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
@@ -887,8 +979,8 @@
 			    (fftw_destroy_plan kv.second)))
 	       
 	       "private:"
-	       (defmethod get_plan (windowSize &key (nThreads 1))
-		 (declare (type int windowSize nThreads)
+	       (defmethod get_plan (windowSize &key (direction FFTW_FORWARD) (nThreads 1) )
+		 (declare (type int windowSize nThreads direction)
 			  (values fftw_plan)
 			  (const))
 		 (when (<= windowSize 0)
@@ -939,7 +1031,7 @@
 						  :vars `(nThreads)))
 			       #-guru-plan (let ((p (fftw_plan_dft_1d windowSize
 								      in out
-								      FFTW_FORWARD
+								      direction ;FFTW_FORWARD
 								      FFTW_MEASURE
 								      ))))
 			       #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
@@ -952,7 +1044,7 @@
 								       nullptr ;; howmany_dims
 								       in ;; in 
 								       out ;; out
-								       FFTW_FORWARD ;; sign
+								       direction ;FFTW_FORWARD ;; sign
 					;FFTW_MEASURE ;; flags
 								       (or FFTW_MEASURE FFTW_UNALIGNED)
 								       )))
@@ -1137,7 +1229,7 @@
 
 
        ,(let* ((combo-name "windowSize")
-	       (l-combo `(1024 8192 65536 80000 1048576))
+	       (l-combo `(1024 8192 10000 65536 80000 1048576))
 	       (l-default-index 2)
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
@@ -1290,59 +1382,63 @@
 
 		      (do0
 		       (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
+
+		       
+		       
 		       (when (ImPlot--BeginPlot (? logScale
 						   (string "FFT magnitude (dB)")
 						   (string "FFT magnitude (linear)")))
-			 
-			 (let ((pointsPerPixel (static_cast<int> (/ (x.size)
-								    (dot (ImGui--GetContentRegionAvail)
-									 x))))))
-			 (if (<= pointsPerPixel 1)
-			     (do0 ,@(loop for e in `(y1)
-					  collect
-					  `(ImPlot--PlotLine (string ,e)
-							     (x.data)
-							     (dot ,e (data))
-							     windowSize)))
+			 ,(decimate-plots `(:x x :ys (y1) :idx (string "")))
+			 #+nil (do0
+			  (let ((pointsPerPixel (static_cast<int> (/ (x.size)
+								     (dot (ImGui--GetContentRegionAvail)
+									  x))))))
+			  (if (<= pointsPerPixel 1)
+			      (do0 ,@(loop for e in `(y1)
+					   collect
+					   `(ImPlot--PlotLine (string ,e)
+							      (x.data)
+							      (dot ,e (data))
+							      windowSize)))
 
-			     (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
-				  (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
-						   pointsPerPixel))
-					(x_downsampled (std--vector<double> pixels))
-					#+extra (y_max (std--vector<double> pixels))
-					(y_mean (std--vector<double> pixels))
-					#+extra (y_min (std--vector<double> pixels))
-					(count 0))
-				    (comments "Iterate over the data with steps of pointsPerPixel")
-				    (for ((= "int i" 0)
-					  (< i (x.size))
-					  (incf i pointsPerPixel))
-					 (let (#+extra (max_val (aref y1 i))
-					       #+extra (min_val (aref y1 i))
-					       (sum_val (aref y1 i)))
-					   (comments "Iterate over the points under the same pixel")
-					   (for ((= "int j" (+ i 1))
-						 (logand (< j (+ i pointsPerPixel))
-							 (< j (x.size)))
-						 (incf j))
-						#+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
-							     (setf min_val (std--min min_val (aref y1 j))))
-						(incf sum_val  (aref y1 j)))
-					   #+extra (setf (aref y_max count) max_val
-							 (aref y_min count) min_val)
-					   (setf (aref x_downsampled count) (aref x i)
-						 
-						 (aref y_mean count) (/ sum_val pointsPerPixel))
-					   (incf count)))
-				    ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
-					    collect
-					    `(dot ,e (resize count)))
-				    ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
-					    collect
-					    `(ImPlot--PlotLine (string ,e)
-							       (x_downsampled.data)
-							       (dot ,e (data))
-							       (x_downsampled.size))))))
+			      (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
+				   (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
+						    pointsPerPixel))
+					 (x_downsampled (std--vector<double> pixels))
+					 #+extra (y_max (std--vector<double> pixels))
+					 (y_mean (std--vector<double> pixels))
+					 #+extra (y_min (std--vector<double> pixels))
+					 (count 0))
+				     (comments "Iterate over the data with steps of pointsPerPixel")
+				     (for ((= "int i" 0)
+					   (< i (x.size))
+					   (incf i pointsPerPixel))
+					  (let (#+extra (max_val (aref y1 i))
+						#+extra (min_val (aref y1 i))
+						(sum_val (aref y1 i)))
+					    (comments "Iterate over the points under the same pixel")
+					    (for ((= "int j" (+ i 1))
+						  (logand (< j (+ i pointsPerPixel))
+							  (< j (x.size)))
+						  (incf j))
+						 #+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
+							      (setf min_val (std--min min_val (aref y1 j))))
+						 (incf sum_val  (aref y1 j)))
+					    #+extra (setf (aref y_max count) max_val
+							  (aref y_min count) min_val)
+					    (setf (aref x_downsampled count) (aref x i)
+						  
+						  (aref y_mean count) (/ sum_val pointsPerPixel))
+					    (incf count)))
+				     ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
+					     collect
+					     `(dot ,e (resize count)))
+				     ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
+					     collect
+					     `(ImPlot--PlotLine (string ,e)
+								(x_downsampled.data)
+								(dot ,e (data))
+								(x_downsampled.size)))))))
 
 			 
 			 (do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
@@ -1356,7 +1452,31 @@
 
 		      (let ((codesSize (dot (aref codes 0) (size))))
 			(if (== windowSize codesSize)
-			    (ImGui--Text (string "Perform correlation"))
+			    (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
+			      (let ((x_corr (std--vector<double> (out.size))))
+				(dotimes (i (x_corr.size))
+				  (setf (aref x_corr i) (* 1d0 i))))
+			      (;let ((i 0)) ;
+				dotimes (i 31)
+				(let ((code (aref codes i))
+				      (prod (std--vector<std--complex<double>> (out.size))))
+				  (dotimes (i (out.size))
+				    (setf (aref prod i)
+					  (* (std--conj (aref out i))
+					     (aref code i))))
+				  (let ((corr (fftw.ifft prod (prod.size)))
+					(corrAbs2 (std--vector<double> (out.size)))
+					)
+				    (dotimes (i (out.size))
+				      (let ((v (std--abs (aref corr i))))
+					(setf (aref corrAbs2 i) (* 10 (std--log10
+								       (/ (* v v)
+									  windowSize))))))))
+				,(decimate-plots `(:x x_corr :ys (corrAbs2) :idx (std--to_string i)
+						      :points 100))
+				)
+			      
+			      (ImPlot--EndPlot))
 			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
 					 windowSize codesSize)
 			    )))))
@@ -1369,7 +1489,7 @@
 		(type int argc)
 		(type char** argv))
 
-       (let ((fftw (FFTWManager))))
+       (let ((fftw (FFTWManager 6))))
        (glfwSetErrorCallback glfw_error_callback)
        (when (== 0 (glfwInit))
 	 ,(lprint :msg "glfw init failed")
@@ -1409,14 +1529,15 @@
 		(caFrequency 1.023d6)
 		(caStep (/ caFrequency
 			   sampleRate))
-		(corrWindowTime_ms 6.55361)
+		(corrWindowTime_ms 1d0  ;6.55361
+				   )
 		(corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
 						 1000)))
 		(caSequenceLength 1023))
 	    ,(lprint :msg "prepare CA code chips"
 		     :vars `(corrLength))
 	    
-	    (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
+	    (let ((codes ("std::vector<std::vector<std::complex<double>>>")))
 	      
 	      (dotimes (i 31)
 		(comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
@@ -1441,6 +1562,8 @@
 		       (let ((mini (std--vector<std--complex<double>> 32)))
 			 ,(benchmark `(fftw.fft mini 32))))
 		     ,(benchmark `(let ((out (fftw.fft code corrLength)))))
+		     ,(lprint :msg "codes"
+			      :vars `(i (codes.size) (out.size)))
 		     (codes.push_back out)
 		    )))))))
 
