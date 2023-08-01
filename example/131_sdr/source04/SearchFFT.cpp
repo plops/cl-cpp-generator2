@@ -180,9 +180,12 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        std::cerr << PRN << std::endl;
         for (i=0;i<Len; i++){
-            std::cout << PRN << " " <<  i << " " << code[i][0] << std::endl;
+            std::cerr << code[i][0] << " ";
         }
+        std::cerr << std::endl;
+
         /******************************************
         * Now run the FFT on the C/A code stream  *
         ******************************************/

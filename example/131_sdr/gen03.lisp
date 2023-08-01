@@ -399,7 +399,7 @@
 		  (explicit)	    
 		  (values :constructor))
 		 (when (logior (< prn_ 1)
-			       (< ,(length sat-def) prn_ ))
+			       (<= ,(length sat-def) prn_ ))
 		   (throw (std--invalid_argument (+ (string "Invalid PRN: ")
 						    (std--to_string prn_))))
 		   )
@@ -448,8 +448,10 @@
 	       
 	       (defmethod step ()
 		 (declare (values bool))
-		 (clock)
-		 (return (chip)))
+		 (let ((value (chip)))
+		   (clock)
+		   (return value)))
+	       
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -1720,17 +1722,21 @@
 		      (code (std--vector<std--complex<double>> corrLength))
 		      (caPhase 0d0)
 		      (chipIndex 0))
+		  (<< std--cerr (+ i 1) std--endl)
 		  (dotimes (j (chips.size))
-		    (<< std--cerr (+ i 1) (string " ") j (string " ") (? (aref chips j) 1 -1)
-			std--endl))
+		    (<< std--cerr
+			(? (aref chips j) -1 1)
+			(string " ")))
+		  (<< std--cerr std--endl)
+		  
 		  (dotimes (i corrLength)
-		    (setf (aref code i) (? (aref chips (% chipIndex
-							  caSequenceLength))
-					   1d0 -1d0))
-		    (incf caPhase caStep)
-		    (when (<= 1 caPhase)
-		      (decf caPhase 1d0)
-		      (incf chipIndex)))
+				    (setf (aref code i) (? (aref chips (% chipIndex
+									  caSequenceLength))
+							   1d0 -1d0))
+				    (incf caPhase caStep)
+				    (when (<= 1 caPhase)
+				      (decf caPhase 1d0)
+				      (incf chipIndex)))
 		  ,(lprint :msg "compute FFT"
 			   :vars `(i))
 		  (progn
