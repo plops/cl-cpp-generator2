@@ -1536,15 +1536,35 @@
 					 (* sampleRate
 					    (/ (static_cast<double> (- i (/ windowSize 2)))
 					       windowSize))) ))
-		  
-		   (dotimes (i windowSize)
-		     (let ((zs (? realtimeDisplay
-				  (aref zfifo i)
-				  (aref file (+ start i))))
-			   (zr (static_cast<double> (zs.real)))
-			   (zi (static_cast<double> (zs.imag)))
-			   (z (std--complex<double> zr zi)))
-		       (setf (aref in i) z)))
+
+		   (let ((lo_phase 0d0)
+			 (lo_rate (* (/ centerFrequency sampleRate) 4)))
+		    (dotimes (i windowSize)
+		      (let ((zs (? realtimeDisplay
+				   (aref zfifo i)
+				   (aref file (+ start i))))
+			    (zr (static_cast<double> (zs.real)))
+			    (zi (static_cast<double> (zs.imag)))
+			    (z (std--complex<double> zr zi)))
+			(if realtimeDisplay
+			    (do0
+			     (setf (aref in i) z))
+			    (do0
+			     (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
+				   (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
+			       (declare (type "const auto " lo_sin lo_cos))
+			       (setf (aref in i)
+				     (std--complex<double>
+				      (? (^ (zs.real)
+					    (aref lo_sin (static_cast<int> lo_phase)))
+					 -1 1)
+				      (? (^ (zs.real)
+					    (aref lo_cos (static_cast<int> lo_phase)))
+					 -1 1)))
+			       (incf lo_phase lo_rate)
+			       (when (<= 4 lo_phase)
+				   (decf lo_phase 4))))
+			    ))))
 		   (let ((out (fftw.fft in windowSize)))
 		     (if logScale
 			 (dotimes (i windowSize)
@@ -1636,7 +1656,8 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      (dotimes (code_idx 32)
+			      (dotimes (code_idx 1 ;32
+						 )
 				(let ((code (aref codes code_idx))
 				      (len (out.size))
 				      (prod (std--vector<std--complex<double>> len))
