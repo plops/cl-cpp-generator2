@@ -118,6 +118,7 @@
 						       (dot ,e (data))
 						       (x_downsampled.size)))))))))))
   
+  #+nil
   (let* ((name `GpsCACodeGenerator)
 	 (sat-def `((2 6)
 		    (3 7)
@@ -237,13 +238,13 @@
 	       (defmethod generate_sequence (n)
 		 (declare (type size_t n)
 			  (values "std::vector<bool>"))
-		 (let ((sequence (std--vector<bool>)))
-		   (sequence.reserve n)
+		 (let ((sequence (std--vector<bool> n)))
 		   (dotimes (i n)
 		     (declare (type size_t i))
-		     (sequence.push_back (step)))
+		     (setf (aref sequence i)  (step)))
 		   (return sequence)))
-
+	       
+	       #+nil
 	       (defmethod print_square (v)
 		 (declare (type "const std::vector<bool> &" v))
 		 (let ((size (v.size))
@@ -276,6 +277,179 @@
 		 (return (^ (g1_.back)
 			    (^ (aref g2_ (- delay1 1))
 			       (aref g2_ (- delay2 1))))))
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
+
+	       ))))
+
+
+  (let* ((name `GpsCACodeGenerator)
+	 (sat-def `((2 6)
+		    (3 7)
+		    (4 8)
+		    (5 9)
+		    (1 9)
+		    (2 10)
+		    (1 8)
+		    (2 9)
+		    (3 10)
+		    (2 3)
+		    (3 4)
+		    (5 6)
+		    (6 7)
+		    (7 8)
+		    (8 9)
+		    (9 10)
+		    (1 4)
+		    (2 5)
+		    (3 6)
+		    (4 7)
+		    (5 8)
+		    (6 9)
+		    (1 3)
+		    (4 6)
+		    (5 7)
+		    (6 8)
+		    (7 9)
+		    (8 10)
+		    (1 6)
+		    (2 7)
+		    (3 8)
+		    (4 9)))
+	 (members `((g1 :type "std::array<char,11>" :initform-class (curly ,@(loop for i below 11 collect 0)))
+		    (g2 :type "std::array<char,11>" :initform-class (curly ,@(loop for i below 11 collect 0)))
+		    (tap :type "std::array<char*,2>")
+		    (lut :type ,(format nil "static constexpr std::array<std::pair<int,int>,~a>" (length sat-def))
+			 :initform-class
+			 (curly ,@(loop for (e f) in sat-def
+					collect
+					`(std--make_pair ,e ,f))))
+		    (prn :type "const int" :param t)
+		    )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector
+				   map
+				   array
+				   cstddef)
+			)
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+		  cstring
+		  cmath
+		  iostream
+		  
+		  )
+
+       #+nil (include GpsCACodeGenerator.h)
+       #+nil 
+       (space "const std::map<int, std::pair<int,int>> GpsCACodeGenerator::lut_ = "
+	      )
+       )
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 (when (logior (< prn_ 1)
+			       (< ,(length sat-def) prn_ ))
+		   (throw (std--invalid_argument (+ (string "Invalid PRN: ")
+						    (std--to_string prn_))))
+		   )
+		 (let (
+		       (t0 (dot (aref lut_ (- prn_ 1)) first)
+			   )
+		       (t1 (dot (aref lut_ (- prn_ 1)) second)
+			   ))
+		   (declare (type "const auto" t0 t1))
+		   (setf (aref tap_ 0) (+ (g2_.data) t0))
+		   (setf (aref tap_ 1) (+ (g2_.data) t1)))
+		 (std--memset (+ (g1_.data) 1) 1 10)
+		 (std--memset (+ (g2_.data) 1) 1 10)
+		 )
+	       
+	       (defmethod generate_sequence (n)
+		 (declare (type size_t n)
+			  (values "std::vector<bool>"))
+		 (let ((sequence (std--vector<bool> n)))
+		   (dotimes (i n)
+		     (declare (type size_t i))
+		     (setf (aref sequence i)  (step)))
+		   (return sequence)))
+	       
+	       "private:"
+
+	       (defmethod chip ()
+		 (declare (values int))
+		 (return (^ (aref g1_ 10)
+			    (aref (aref tap_ 0) 0)
+			    (aref (aref tap_ 1) 0)
+			    )))
+
+	       (defmethod clock ()
+		 (setf (aref g1_ 0) (^ (aref g1_ 3)
+				      (aref g1_ 10)))
+		 (setf (aref g2_ 0) (^ (aref g2_ 2)
+				      (aref g2_ 3)
+				      (aref g2_ 6)
+				      (aref g2_ 8)
+				      (aref g2_ 9)
+				      (aref g2_ 10)))
+		 (do0
+		  (std--memmove (+ (g1_.data) 1) (g1_.data) 10)
+		  (std--memmove (+ (g2_.data) 1) (g2_.data) 10)))
+	       
+	       (defmethod step ()
+		 (declare (values bool))
+		 (clock)
+		 (return (chip)))
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
