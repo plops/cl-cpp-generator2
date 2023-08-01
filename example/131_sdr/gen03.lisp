@@ -1521,11 +1521,15 @@
 	     (ImGui--Checkbox (string "Logarithmic Y-axis")
 			      &logScale)
 	     (handler-case
-		 (let (			;(fftw (FFTWManager))
-		       (in (std--vector<std--complex<double>> windowSize))
+		 (let ((in (std--vector<std--complex<double>> windowSize))
 		       (nyquist (/ windowSize 2d0))
-		       (sampleRate 10d6)
-		       (centerFrequency (sdr.get_frequency)))
+		       (sampleRate (? realtimeDisplay
+				      10d6
+				      5.456d6)
+				   )
+		       (centerFrequency (? realtimeDisplay
+					   (sdr.get_frequency)
+					   4.092d6)))
 		   (declare (type "static double" centerFrequency))
 		   (dotimes (i windowSize)
 		     (setf (aref x i) (+ centerFrequency
@@ -1534,9 +1538,9 @@
 					       windowSize))) ))
 		  
 		   (dotimes (i windowSize)
-		     (let ((zs (aref zfifo i)
-					;(aref file (+ start i))
-			       )
+		     (let ((zs (? realtimeDisplay
+				  (aref zfifo i)
+				  (aref file (+ start i))))
 			   (zr (static_cast<double> (zs.real)))
 			   (zi (static_cast<double> (zs.imag)))
 			   (z (std--complex<double> zr zi)))
@@ -1737,12 +1741,14 @@
 		      (code (std--vector<std--complex<double>> corrLength))
 		      (caPhase 0d0)
 		      (chipIndex 0))
-		  (<< std--cerr (+ i 1) std--endl)
-		  (dotimes (j (chips.size))
-		    (<< std--cerr
-			(? (aref chips j) -1 1)
-			(string " ")))
-		  (<< std--cerr std--endl)
+
+		  #+nil
+		  (do0(<< std--cerr (+ i 1) std--endl)
+		      (dotimes (j (chips.size))
+			(<< std--cerr
+			    (? (aref chips j) -1 1)
+			    (string " ")))
+		      (<< std--cerr std--endl))
 		  
 		  (dotimes (i corrLength)
 				    (setf (aref code i) (? (aref chips (% chipIndex
@@ -1782,7 +1788,8 @@
 	       (sdr.set_sample_rate sampleRate)
 	       (sdr.set_bandwidth 8d6))
 	      (sdr.startCapture))
-	    (let ((fn (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"))
+	    (let ((fn #+nil (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin")
+		      (string "/mnt5/gps.samples.cs16.fs5456.if4092.dat"))
 		  (file (MemoryMappedComplexShortFile
 			 fn)))
 	      ,(lprint :msg "first element"
