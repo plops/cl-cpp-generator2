@@ -1,0 +1,1 @@
+ g++ SearchFFT.cpp -lfftw

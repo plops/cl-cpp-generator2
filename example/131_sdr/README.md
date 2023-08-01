@@ -1,9 +1,10 @@
-| file  | state | lang | comment                                                             |
-|-------|-------|------|---------------------------------------------------------------------|
-| gen01 |       | C++  | read ADC data using soapysdr                                        |
-| gen02 |       | C++  | GUI with imgui bundle (sdr control, recording, realtime processing) |
-| gen03 |       | C++  | GUI to decode GPS of recording                                      |
-|       |       |      |                                                                     |
+| file     | state | lang | comment                                                             |
+|----------|-------|------|---------------------------------------------------------------------|
+| gen01    |       | C++  | read ADC data using soapysdr                                        |
+| gen02    |       | C++  | GUI with imgui bundle (sdr control, recording, realtime processing) |
+| gen03    |       | C++  | GUI to decode GPS of recording                                      |
+| source04 |       | C    | reference PRN from http://www.jks.com/gps/SearchFFT.cpp             |
+|          |       |      |                                                                     |
 
 
 - https://youtu.be/ANry8tAPjN4?t=1799
