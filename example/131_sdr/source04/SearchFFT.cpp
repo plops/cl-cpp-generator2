@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <iostream>
 
 #include "fftw3.h"
 
@@ -179,6 +180,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        for (i=0;i<Len; i++){
+            std::cout << PRN << " " << Navstar << " " <<  i << " " << code[i][0] << std::endl;
+        }
         /******************************************
         * Now run the FFT on the C/A code stream  *
         ******************************************/
@@ -191,92 +195,92 @@ int main(int argc, char *argv[]) {
         * Now generate the same for the sample data, but
         * removing the Local Oscillator from the samples.
         *************************************************/
-
-        const int lo_sin[] = {1,1,0,0};
-        const int lo_cos[] = {1,0,0,1};
-
-        double lo_freq = fc, lo_phase = 0, lo_rate = lo_freq/fs*4;
-
-        for (i=0; i<Len; i++) {
-
-            data[i][0] = (sample_data[i] ^ lo_sin[int(lo_phase)]) ? -1:1;
-            data[i][1] = (sample_data[i] ^ lo_cos[int(lo_phase)]) ? -1:1;
-            //printf("%i %i\n",lo_sin[int(lo_phase)],lo_cos[int(lo_phase)]);
-            lo_phase += lo_rate;
-            if (lo_phase >= 4) lo_phase -= 4;
-        }
-
-        p = fftw_plan_dft_1d(Len, data, data, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_execute(p);
-        fftw_destroy_plan(p);
+//
+//        const int lo_sin[] = {1,1,0,0};
+//        const int lo_cos[] = {1,0,0,1};
+//
+//        double lo_freq = fc, lo_phase = 0, lo_rate = lo_freq/fs*4;
+//
+//        for (i=0; i<Len; i++) {
+//
+//            data[i][0] = (sample_data[i] ^ lo_sin[int(lo_phase)]) ? -1:1;
+//            data[i][1] = (sample_data[i] ^ lo_cos[int(lo_phase)]) ? -1:1;
+//            //printf("%i %i\n",lo_sin[int(lo_phase)],lo_cos[int(lo_phase)]);
+//            lo_phase += lo_rate;
+//            if (lo_phase >= 4) lo_phase -= 4;
+//        }
+//
+//        p = fftw_plan_dft_1d(Len, data, data, FFTW_FORWARD, FFTW_ESTIMATE);
+//        fftw_execute(p);
+//        fftw_destroy_plan(p);
 
         /***********************************************
         * Generate the execution plan for the Inverse
         * FFT (which will be reused multiple times
         ***********************************************/
-
-        p = fftw_plan_dft_1d(Len, prod, prod, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-        double max_snr=0;
-        int max_snr_dop, max_snr_i;
+//
+//        p = fftw_plan_dft_1d(Len, prod, prod, FFTW_BACKWARD, FFTW_ESTIMATE);
+//
+//        double max_snr=0;
+//        int max_snr_dop, max_snr_i;
 
         /************************************************
         * Test at different doppler shifts (+/- 5kHz)
         ************************************************/
-        for (int dop=-5000*Len/fs; dop<=5000*Len/fs; dop++) {
-            double max_pwr=0, tot_pwr=0;
-            int max_pwr_i;
-
-            /*********************************************
-            * Complex muiltiply the C/A code spectrum
-            * with the spectrum that came from the data
-            ********************************************/
-            for (i=0; i<Len; i++) {
-                int j=(i-dop+Len)%Len;
-                prod[i][0] = data[i][0]*code[j][0] + data[i][1]*code[j][1];
-                prod[i][1] = data[i][0]*code[j][1] - data[i][1]*code[j][0];
-            }
-
-
-            /**********************************
-            * Run the inverse FFT
-            **********************************/
-            fftw_execute(p);
-
-            /*********************************
-            * Look through the result to find
-            * the point of max absolute power
-            *********************************/
-            for (i=0; i<fs/1000; i++) {
-                double pwr = prod[i][0]*prod[i][0] + prod[i][1]*prod[i][1];
-                if (pwr>max_pwr) max_pwr=pwr, max_pwr_i=i;
-                tot_pwr += pwr;
-            }
-            /*****************************************
-            * Normalise the units and find the maximum
-            *****************************************/
-            double ave_pwr = tot_pwr/i;
-            double snr = max_pwr/ave_pwr;
-            if (snr>max_snr) max_snr=snr, max_snr_dop=dop, max_snr_i=max_pwr_i;
-        }
-        fftw_destroy_plan(p);
-
-
-        /*****************************************
-        * Display the result
-        *****************************************/
-        printf("%-2d %4d %7.0f %8.1f %7.1f    ",
-            PRN,
-            Navstar,
-            max_snr_dop*double(fs)/Len,
-            (max_snr_i*1023.0)/(fs/1000),
-            max_snr);
-
-        for (i=int(max_snr)/10; i--; ) putchar('*');
-        putchar('\n');
-
-
-    }
+//        for (int dop=-5000*Len/fs; dop<=5000*Len/fs; dop++) {
+//            double max_pwr=0, tot_pwr=0;
+//            int max_pwr_i;
+//
+//            /*********************************************
+//            * Complex muiltiply the C/A code spectrum
+//            * with the spectrum that came from the data
+//            ********************************************/
+//            for (i=0; i<Len; i++) {
+//                int j=(i-dop+Len)%Len;
+//                prod[i][0] = data[i][0]*code[j][0] + data[i][1]*code[j][1];
+//                prod[i][1] = data[i][0]*code[j][1] - data[i][1]*code[j][0];
+//            }
+//
+//
+//            /**********************************
+//            * Run the inverse FFT
+//            **********************************/
+//            fftw_execute(p);
+//
+//            /*********************************
+//            * Look through the result to find
+//            * the point of max absolute power
+//            *********************************/
+//            for (i=0; i<fs/1000; i++) {
+//                double pwr = prod[i][0]*prod[i][0] + prod[i][1]*prod[i][1];
+//                if (pwr>max_pwr) max_pwr=pwr, max_pwr_i=i;
+//                tot_pwr += pwr;
+//            }
+//            /*****************************************
+//            * Normalise the units and find the maximum
+//            *****************************************/
+//            double ave_pwr = tot_pwr/i;
+//            double snr = max_pwr/ave_pwr;
+//            if (snr>max_snr) max_snr=snr, max_snr_dop=dop, max_snr_i=max_pwr_i;
+//        }
+//        fftw_destroy_plan(p);
+//
+//
+//        /*****************************************
+//        * Display the result
+//        *****************************************/
+//        printf("%-2d %4d %7.0f %8.1f %7.1f    ",
+//            PRN,
+//            Navstar,
+//            max_snr_dop*double(fs)/Len,
+//            (max_snr_i*1023.0)/(fs/1000),
+//            max_snr);
+//
+//        for (i=int(max_snr)/10; i--; ) putchar('*');
+//        putchar('\n');
+//
+//
+   }
 
     fftw_free(code);
     fftw_free(data);
