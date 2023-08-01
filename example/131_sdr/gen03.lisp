@@ -1538,7 +1538,8 @@
 					       windowSize))) ))
 
 		   (let ((lo_phase 0d0)
-			 (lo_rate (* (/ centerFrequency sampleRate) 4)))
+			 (lo_freq 4092d3)
+			 (lo_rate (* (/ lo_freq sampleRate) 4)))
 		    (dotimes (i windowSize)
 		      (let ((zs (? realtimeDisplay
 				   (aref zfifo i)
@@ -1553,14 +1554,15 @@
 			     (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
 				   (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
 			       (declare (type "const auto " lo_sin lo_cos))
-			       (setf (aref in i)
-				     (std--complex<double>
-				      (? (^ (zs.real)
-					    (aref lo_sin (static_cast<int> lo_phase)))
-					 -1 1)
-				      (? (^ (zs.real)
-					    (aref lo_cos (static_cast<int> lo_phase)))
-					 -1 1)))
+			       (let ((re (? (^ (zs.real)
+					     (aref lo_sin (static_cast<int> lo_phase)))
+					  -1 1))
+				     (im (? (^ (zs.real)
+					     (aref lo_cos (static_cast<int> lo_phase)))
+					  -1 1)))
+				(setf (aref in i)
+				      (std--complex<double>
+				       re im)))
 			       (incf lo_phase lo_rate)
 			       (when (<= 4 lo_phase)
 				   (decf lo_phase 4))))
