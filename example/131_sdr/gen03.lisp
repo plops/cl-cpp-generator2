@@ -1521,8 +1521,9 @@
 			 (aref y2 i) (z.imag)))))
 
 	   (do0
+	    ;(ImPlot--SetNextAxisLimits ImAxis_Y1 -30000 30000  ImPlotCond_Always)				
 	    (when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
-	      #+nil (ImPlot--SetNextAxisLimits ImAxis_X1 start (+ start windowSize))				
+	      
 	      ,@(loop for e in `(y1 y2)
 		      collect
 		      `(ImPlot--PlotLine (string ,e)
