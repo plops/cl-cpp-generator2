@@ -602,7 +602,7 @@
 
 		       (do0
 			,(lprint :msg "set highest gain")
-			(-> sdr_ (setGainMode direction_ channel_ false))
+			(-> sdr_ (setGainMode direction_ channel_ true))
 			(-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
 			(-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
 		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
@@ -1382,8 +1382,8 @@
 					 )
 		     ))))
 
-       (let ((automaticGainMode true)
-	     (old_automaticGainMode true))
+       (let ((automaticGainMode (sdr.get_gain_mode))
+	     (old_automaticGainMode automaticGainMode))
 	 (declare (type "static bool" automaticGainMode old_automaticGainMode))
 	 (ImGui--Checkbox (string "Automatic Gain Mode")
 			  &automaticGainMode)
@@ -1418,8 +1418,8 @@
 
 
        ,(let* ((combo-name "windowSize")
-	       (l-combo `(1024 5456 8192 10000 65536 80000 1048576))
-	       (l-default-index 1)
+	       (l-combo `(1024 5456 8192 10000 20000 32768 40000 50000 65536 80000 100000 140000 1048576))
+	       (l-default-index 10)
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
@@ -1452,7 +1452,8 @@
 
        ,(let* ((combo-name "bandwidth")
 	       (l-combo `(200d3 300d3 600d3 1.536d6 5d6 6d6 7d6 8d6))
-	       (l-default-index (- (length l-combo) 1))
+	       (l-default-index 3 ;(- (length l-combo) 1)
+		 )
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
@@ -1523,7 +1524,15 @@
 	   (do0
 	    ;(ImPlot--SetNextAxisLimits ImAxis_Y1 -30000 30000  ImPlotCond_Always)				
 	    (when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
-	      
+	      #+nil
+	      (do0
+	       ,(decimate-plots `(:x x :ys (y1)
+				  :idx (string "y1")
+				  :points 100))
+	       ,(decimate-plots `(:x x :ys (y2)
+				  :idx (string "y2")
+				  :points 100)))
+	      #-nil
 	      ,@(loop for e in `(y1 y2)
 		      collect
 		      `(ImPlot--PlotLine (string ,e)
@@ -1696,36 +1705,42 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      (dotimes (code_idx 32)
-				(let ((code (aref codes code_idx))
-				      (len (out.size))
-				      (prod (std--vector<std--complex<double>> len))
-				      (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
-								     sampleRate)))
-				      (dopEnd (static_cast<int> (/ (* 5000 len)
-								   sampleRate))))
-				  (for ((= "int dop" dopStart)
-					(<= dop dopEnd)
-					(incf dop))
-				       (do0
-					(dotimes (i (out.size))
-					  (let ((i1 (% (+ i -dop len) len)))
+			      (;let ((code_idx 23))		;dotimes
+			       #+nil(code_idx 3 ; 32
+					 )
+			       for-range (code_idx (std--vector<int> (curly ;10 14 17 23
+									    24)))
+			       (let ((code (aref codes code_idx))
+				     (len (out.size))
+				     (prod (std--vector<std--complex<double>> len))
+				     (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
+								    sampleRate)))
+				     (dopEnd (static_cast<int> (/ (* 5000 len)
+								  sampleRate))))
+				 (for ((= "int dop" dopStart)
+				       (<= dop dopEnd)
+				       (incf dop))
+				      (do0
+				       (dotimes (i (out.size))
+					 (let ((i1 (% (+ i -dop len) len)))
 					   (setf (aref prod i)
 						 (* (std--conj (aref out i))
 						    (aref code i1)))))
-					(let ((corr (fftw.ifft prod (prod.size)))
-					      (corrAbs2 (std--vector<double> (out.size))))
-					  (dotimes (i (out.size))
-					    (let ((v (std--abs (aref corr i))))
-					      (setf (aref corrAbs2 i) (* 10 (std--log10
-									     (/ (* v v)
-										windowSize)))))))
-					,(decimate-plots `(:x x_corr :ys (corrAbs2)
-							   :idx (std--to_string (+ 100
-										   (* 100 code_idx)
-										   dop))
-							   :points 100))))
-				  ))
+				       (let ((corr (fftw.ifft prod (prod.size)))
+					     (corrAbs2 (std--vector<double> (out.size))))
+					 (dotimes (i (out.size))
+					   (let ((v (std--abs (aref corr i))))
+					     (setf (aref corrAbs2 i) #+nil (* 10 (std--log10
+										  ))
+								     (/ (* v v)
+									windowSize)))))
+				       ,(decimate-plots `(:x x_corr :ys (corrAbs2)
+							  :idx (+ (std--to_string code_idx
+										  )
+								  (string "_")
+								  (std--to_string dop))
+							  :points 100))))
+				 ))
 			      
 			      (ImPlot--EndPlot))
 			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
@@ -1782,7 +1797,13 @@
 		(caFrequency 1.023d6)
 		(caStep (/ caFrequency
 			   sampleRate))
-		(corrWindowTime_ms 1d0  ;6.55361
+		(corrWindowTime_ms 1d0
+		  
+		  ;2d0
+		  ;10d0
+					;6.55361d0
+					;4d0
+				   ;3.27681d0
 				   )
 		(corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
 						 1000)))
@@ -1808,8 +1829,8 @@
 			    (string " ")))
 		      (<< std--cerr std--endl))
 		  
-		  (dotimes (i corrLength)
-				    (setf (aref code i) (? (aref chips (% chipIndex
+		  (dotimes (l corrLength)
+				    (setf (aref code l) (? (aref chips (% chipIndex
 									  caSequenceLength))
 							   1d0 -1d0))
 				    (incf caPhase caStep)
