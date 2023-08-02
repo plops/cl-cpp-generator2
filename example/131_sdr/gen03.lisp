@@ -884,11 +884,16 @@
 	       
 	       "private:"
 	       (defmethod captureThread ()
-		 ,(lprint :msg "captureThread")
+		 
 		 (let ((outputFile (std--ofstream (string "capturedData.bin")
 						  (or std--ios--binary
 						      std--ios--app))))
 		   (let ((captureSleepUs capture_sleep_us_))
+		     ,(lprint :msg "captureThread starting"
+			      :vars `(captureSleepUs
+				      fifo_size_
+				      buffer_size_
+				      timeout_us_))
 		     (while true
 					;,(lprint :msg "get lock")
 			    (progn
@@ -934,7 +939,8 @@
   (let* ((name `MemoryMappedComplexShortFile)
 	 (members `((file :type "boost::iostreams::mapped_file_source" :param nil)
 		    (data :type "std::complex<short>*" :initform-class nullptr :param nil)
-		    (filename :type "const std::string&" :param t))))
+		    (filename :type "const std::string&" :param t)
+		    (ready :type "bool" :initform-class false :param nil))))
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -951,7 +957,7 @@
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  )
+		  filesystem)
        )
      :code `(do0
 	     (defclass ,name ()
@@ -992,12 +998,13 @@
 		   )
 		  (explicit)	    
 		  (values :constructor))
-		 (file_.open filename)
-		 (when (!file_.is_open)
-		   (throw (std--runtime_error (+ (string "Unable to open file: ")
-						 filename))))
-		 (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
-		 )
+		 ,(lprint :msg "try to mmap file"
+			  :vars `(filename (std--filesystem--exists filename)))
+		 (when (std--filesystem--exists filename)
+		   (file_.open filename)
+		   (when (file_.is_open)
+		     (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
+		     (setf ready_ true))))
 
 	       (defmethod "operator[]" (index)
 		 (declare (type "std::size_t" index)
@@ -1009,6 +1016,11 @@
 		 (declare (values "std::size_t")
 			  (const))
 		 (return (dot file_ (size))))
+	       (defmethod ready ()
+		 (declare (values bool)
+			  (const)
+			  )
+		 (return ready_))
 	       
 	       (defmethod ~MemoryMappedComplexShortFile ()
 		 (declare (values :constructor))
@@ -1400,8 +1412,9 @@
 	     (maxStart (static_cast<int> (/ (file.size)
 					    (sizeof "std::complex<short>")))))
 	 (declare (type "static int" start ))
-	 (ImGui--SliderInt (string "Start")
-			   &start 0 maxStart))
+	 (when (file.ready)
+	  (ImGui--SliderInt (string "Start")
+			    &start 0 maxStart)))
 
 
        ,(let* ((combo-name "windowSize")
@@ -1471,8 +1484,9 @@
 	       (setf ,old-var-index ,var-index))))
 
        
-       (when (logand (<= (+ start windowSize) maxStart)
-		     (< 0 windowSize))
+       (when (logior (not (file.ready))
+		     (logand (<= (+ start windowSize) maxStart)
+			     (< 0 windowSize)))
 
 	 (let ((x (std--vector<double> windowSize))
 	       (y1 (std--vector<double> windowSize))
@@ -1482,8 +1496,9 @@
 
 	   (let ((realtimeDisplay true))
 	     (declare (type "static bool" realtimeDisplay))
-	     (ImGui--Checkbox (string "Realtime display")
-			      &realtimeDisplay))
+	     (when (file.ready)
+	       (ImGui--Checkbox (string "Realtime display")
+				&realtimeDisplay)))
 
 	   (if realtimeDisplay
 	       (do0
@@ -1541,33 +1556,36 @@
 		   (let ((lo_phase 0d0)
 			 
 			 (lo_rate (* (/ lo_freq sampleRate) 4)))
-		    (dotimes (i windowSize)
-		      (let ((zs (? realtimeDisplay
-				   (aref zfifo i)
-				   (aref file (+ start i))))
-			    (zr (static_cast<double> (zs.real)))
-			    (zi (static_cast<double> (zs.imag)))
-			    (z (std--complex<double> zr zi)))
-			(if realtimeDisplay
-			    (do0
-			     (setf (aref in i) z))
-			    (do0
+		     (if realtimeDisplay
+			 (do0
+			  (dotimes (i windowSize)
+			   (let ((zs (aref zfifo i))
+				 (zr (static_cast<double> (zs.real)))
+				 (zi (static_cast<double> (zs.imag)))
+				 (z (std--complex<double> zr zi)))
+			     (setf (aref in i) z))))
+			 (do0
+			  (dotimes (i windowSize)
+			   (let ((zs (aref file (+ start i)))
+				 (zr (static_cast<double> (zs.real)))
+				 (zi (static_cast<double> (zs.imag)))
+				 (z (std--complex<double> zr zi)))
 			     (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
 				   (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
 			       (declare (type "const auto " lo_sin lo_cos))
 			       (let ((re (? (^ (zs.real)
-					     (aref lo_sin (static_cast<int> lo_phase)))
-					  -1 1))
+					       (aref lo_sin (static_cast<int> lo_phase)))
+					    -1 1))
 				     (im (? (^ (zs.real)
-					     (aref lo_cos (static_cast<int> lo_phase)))
-					  -1 1)))
-				(setf (aref in i)
-				      (std--complex<double>
-				       re im)))
+					       (aref lo_cos (static_cast<int> lo_phase)))
+					    -1 1)))
+				 (setf (aref in i)
+				       (std--complex<double>
+					re im)))
 			       (incf lo_phase lo_rate)
 			       (when (<= 4 lo_phase)
-				   (decf lo_phase 4))))
-			    ))))
+				 (decf lo_phase 4)))
+			     )))))
 		   (let ((out (fftw.fft in windowSize)))
 		     (if logScale
 			 (dotimes (i windowSize)
@@ -1667,7 +1685,9 @@
 			 (ImGui--Text (string "gps_freq-xmouse: %6.10f MHz")
 				      (* (- gps_freq xmouse) 1d-6))
 			 (ImGui--Text (string "centerFrequency-xmouse: %6.10f MHz")
-				      (* (- centerFrequency xmouse) 1d-6))))
+				      (* (- centerFrequency xmouse) 1d-6))
+			 (ImGui--Text (string "centerFrequency-gps_freq: %6.10f MHz")
+				      (* (- centerFrequency gps_freq) 1d-6))))
 
 		      (let ((codesSize (dot (aref codes 0) (size))))
 			(if (== windowSize codesSize)
@@ -1675,7 +1695,7 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      (dotimes (code_idx 2)
+			      (dotimes (code_idx 32)
 				(let ((code (aref codes code_idx))
 				      (len (out.size))
 				      (prod (std--vector<std--complex<double>> len))
@@ -1752,7 +1772,8 @@
 	 (glClearColor  0 0 0 1)
 	 )
 
-       (let ((sampleRate 5456d3 ;10.0d6
+       (let ((sampleRate ;5456d3
+			 10.0d6
 			 ))
 	 (do0
 	  (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
@@ -1827,8 +1848,9 @@
 		      (string "/mnt5/gps.samples.cs16.fs5456.if4092.dat"))
 		  (file (MemoryMappedComplexShortFile
 			 fn)))
-	      ,(lprint :msg "first element"
-		       :vars `(fn (dot (aref file 0) (real))))
+	      (when (file.ready)
+	       ,(lprint :msg "first element"
+			:vars `(fn (dot (aref file 0) (real)))))
 	      #+nil  (let ((z0 (aref file 0)))))
 	    (while (!glfwWindowShouldClose window)
 		   (glfwPollEvents)
