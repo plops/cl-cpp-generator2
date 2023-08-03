@@ -11,12 +11,12 @@
 						  :dec-max
 						  :dec-min
 						  :dec-mean)))
-(setf *features* (set-exclusive-or *features* (list :more
+(setf *features* (set-exclusive-or *features* (list ; :more
 						    :dec-max
-						    ;:dec-min
-						    ;:dec-mean
-						    ;:guru-plan
-						    ;:memoize-plan
+					;:dec-min
+					;:dec-mean
+					;:guru-plan
+					;:memoize-plan
 						    )))
 
 
@@ -646,15 +646,17 @@
 			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction_ channel_ fullScale))
 					     fullScale)))))
 		       
-		       (<< std--cout std--fixed (std--setprecision 10) 1d0  std--endl)
 		       
-		       #+more ,(lprint :vars `((-> sdr_ (getSampleRate direction_ channel_))
-					       (-> sdr_ (getBandwidth direction_ channel_))
-					       (-> sdr_ (getFrequency direction_ channel_))
-					       (-> sdr_ (getMasterClockRate)) ;; zero
-					       (-> sdr_ (getReferenceClockRate)) ;; zero
+		       
+		       #+more (do0
+			       (<< std--cout std--fixed (std--setprecision 10) 1d0  std--endl)
+			       ,(lprint :vars `((-> sdr_ (getSampleRate direction_ channel_))
+						(-> sdr_ (getBandwidth direction_ channel_))
+						(-> sdr_ (getFrequency direction_ channel_))
+						(-> sdr_ (getMasterClockRate)) ;; zero
+						(-> sdr_ (getReferenceClockRate)) ;; zero
 
-					       ) )
+						) ))
 
 		       #+more
 		       (do0 (for-range (rate (-> sdr_ (listSampleRates direction_ channel_)))
@@ -849,7 +851,7 @@
 		 (declare (type ,(format nil "const std::function<void(const ~a&)> &" fifo-type) func)
 			  (type "std::size_t" n))
 		 #+nil ,(lprint :msg "processFifo"
-				:vars `(n))
+				:vars `(n (fifo_.size)))
 		 (let ((lock (std--scoped_lock mtx_))
 		       (n0 (std--min n (fifo_.size))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
@@ -1486,8 +1488,8 @@
 
        
        (when (logior (not (file.ready))
-		     (logand (<= (+ start windowSize) maxStart)
-			     (< 0 windowSize)))
+		     (paren (logand (<= (+ start windowSize) maxStart)
+			      (< 0 windowSize))))
 
 	 (let ((x (std--vector<double> windowSize))
 	       (y1 (std--vector<double> windowSize))
@@ -1709,7 +1711,7 @@
 			       #+nil(code_idx 3 ; 32
 					 )
 			       for-range (code_idx (std--vector<int> (curly ;10 14 17 23
-									    24)))
+									    27 18)))
 			       (let ((code (aref codes code_idx))
 				     (len (out.size))
 				     (prod (std--vector<std--complex<double>> len))
@@ -1811,7 +1813,7 @@
 	    ,(lprint :msg "prepare CA code chips"
 		     :vars `(corrLength))
 	    
-	    (let ((codes ("std::vector<std::vector<std::complex<double>>>")))
+	    (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
 	      
 	      (dotimes (i 32)
 		(comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
@@ -1847,7 +1849,7 @@
 		     ,(benchmark `(let ((out (fftw.fft code corrLength)))))
 		     ,(lprint :msg "codes"
 			      :vars `(i (codes.size) (out.size)))
-		     (codes.push_back out)
+		     (setf (aref codes i) out)
 		    )))))))
 
        (handler-case
@@ -1855,16 +1857,18 @@
 	    (let ((sdr (SdrManager 64512
 				   1100000 
 				   50000
-				   5000)))
+				   2000)))
 	      
 	      (startDaemonIfNotRunning)
 	      ,(lprint :msg "initialize sdr manager")
 	      (sdr.initialize)
 	      
 	      (do0
+	       (sdr.set_gain_mode false)
 	       (sdr.set_frequency 1575.42d6)
 	       (sdr.set_sample_rate sampleRate)
-	       (sdr.set_bandwidth 8d6))
+	       (sdr.set_bandwidth 1.536d6 ; 8d6
+				  ))
 	      (sdr.startCapture))
 	    (let ((fn #+nil (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin")
 		      (string "/mnt5/gps.samples.cs16.fs5456.if4092.dat"))
