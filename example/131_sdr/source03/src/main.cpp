@@ -215,7 +215,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
  
 } 
  
-                static bool logScale  = false; 
+                static bool logScale  = true; 
         ImGui::Checkbox("Logarithmic Y-axis", &logScale);
         try {
                                     auto in  = std::vector<std::complex<double>>(windowSize); 
@@ -284,6 +284,20 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 } 
                                     // If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.
  
+                                    static std::array<bool,32> selectedSatellites  = {false}; 
+            if ( ImGui::Begin("Satellite") ) {
+                                                for ( auto i = 0;i<32;i+=1 ) {
+                                        ImGui::Checkbox(std::to_string(1+i).c_str(), &selectedSatellites[i]);
+                                        if ( i!=(32-1) ) {
+                                                                        ImGui::SameLine();
+ 
+} 
+} 
+                ImGui::End();
+ 
+} 
+ 
+ 
             if ( ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)" : "FFT magnitude (linear)") ) {
                                                 {
                                                             auto pointsPerPixel  = static_cast<int>((x.size())/(ImGui::GetContentRegionAvail().x)); 
@@ -296,21 +310,14 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
  
                                                 auto pixels  = (x.size()+pointsPerPixel+ -1)/pointsPerPixel; 
                         auto x_downsampled  = std::vector<double>(pixels); 
-                                                                        auto y_max  = std::vector<double>(pixels); 
-                        auto count  = 0; 
+                                                                        auto count  = 0; 
                         // Iterate over the data with steps of pointsPerPixel
  
                         for ( int i=0;i<x.size();i+=pointsPerPixel ) {
-                                                                                    auto max_val  = y1[i]; 
-                            // Iterate over the points under the same pixel
+                                                                                    // Iterate over the points under the same pixel
  
                             for ( int j=i+1;j<i+pointsPerPixel&&j<x.size();j++ ) {
-                                                                                                max_val=std::max(max_val, y1[j]);
-
-
 } 
-                                                        y_max[count]=max_val;
-
                                                         x_downsampled[count]=x[i];
 
                             count++;
@@ -318,8 +325,6 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 } 
  
                         x_downsampled.resize(count);
-                        y_max.resize(count);
-                        ImPlot::PlotLine((std::string("y_max_y1_")+"").c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
  
  
  
@@ -349,7 +354,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
                 ImGui::Text("xmouse: %6.10f GHz", xmouse*1.00e-9);
                 ImGui::Text("gps_freq-xmouse: %6.10f MHz", (gps_freq-xmouse)*10.00e-7);
                 ImGui::Text("centerFrequency-xmouse: %6.10f MHz", (centerFrequency-xmouse)*10.00e-7);
-                ImGui::Text("centerFrequency-gps_freq: %6.10f MHz", (centerFrequency-gps_freq)*10.00e-7);
+                ImGui::Text("centerFrequency-gps_freq: %8.0f kHz", (centerFrequency-gps_freq)*1.00e-3);
  
 } 
  
@@ -363,65 +368,57 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 
 } 
  
-                    for ( const auto& code_idx: std::vector<int>({27, 18}) ) {
-                                                                        auto code  = codes[code_idx]; 
-                        auto len  = out.size(); 
-                        auto prod  = std::vector<std::complex<double>>(len); 
-                        auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
-                        auto dopEnd  = static_cast<int>((5000*len)/sampleRate); 
-                        for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
-                                                                                    for ( auto i = 0;i<out.size();i+=1 ) {
-                                                                                                auto i1  = (i+-dop+len)%len; 
-                                                                prod[i]=std::conj(out[i])*code[i1];
+                    for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
+                                                if ( selectedSatellites[code_idx] ) {
+                                                                                                                auto code  = codes[code_idx]; 
+                            auto len  = out.size(); 
+                            auto prod  = std::vector<std::complex<double>>(len); 
+                            auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
+                            auto dopEnd  = static_cast<int>((5000*len)/sampleRate); 
+                            for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
+                                                                                                for ( auto i = 0;i<out.size();i+=1 ) {
+                                                                                                            auto i1  = (i+-dop+len)%len; 
+                                                                        prod[i]=std::conj(out[i])*code[i1];
 
 
  
 } 
-                                                        auto corr  = fftw.ifft(prod, prod.size()); 
-                            auto corrAbs2  = std::vector<double>(out.size()); 
-                            for ( auto i = 0;i<out.size();i+=1 ) {
-                                                                                                auto v  = std::abs(corr[i]); 
-                                                                corrAbs2[i]=((v*v)/windowSize);
+                                                                auto corr  = fftw.ifft(prod, prod.size()); 
+                                auto corrAbs2  = std::vector<double>(out.size()); 
+                                for ( auto i = 0;i<out.size();i+=1 ) {
+                                                                                                            auto v  = std::abs(corr[i]); 
+                                                                        corrAbs2[i]=((v*v)/windowSize);
 
 
  
 } 
  
-                            {
-                                                                                                auto pointsPerPixel  = static_cast<int>((x_corr.size())/100); 
+                                {
+                                                                                                            auto pointsPerPixel  = static_cast<int>((x_corr.size())/100); 
  
-                                                                if ( pointsPerPixel<=1 ) {
-                                                                                                            ImPlot::PlotLine("corrAbs2", x_corr.data(), corrAbs2.data(), windowSize);
+                                                                        if ( pointsPerPixel<=1 ) {
+                                                                                                                        ImPlot::PlotLine("corrAbs2", x_corr.data(), corrAbs2.data(), windowSize);
  
 } else {
-                                                                                                            // Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.
+                                                                                                                        // Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.
  
-                                                                        auto pixels  = (x_corr.size()+pointsPerPixel+ -1)/pointsPerPixel; 
-                                    auto x_downsampled  = std::vector<double>(pixels); 
-                                                                                                            auto y_max  = std::vector<double>(pixels); 
-                                    auto count  = 0; 
-                                    // Iterate over the data with steps of pointsPerPixel
+                                                                                auto pixels  = (x_corr.size()+pointsPerPixel+ -1)/pointsPerPixel; 
+                                        auto x_downsampled  = std::vector<double>(pixels); 
+                                                                                                                        auto count  = 0; 
+                                        // Iterate over the data with steps of pointsPerPixel
  
-                                    for ( int i=0;i<x_corr.size();i+=pointsPerPixel ) {
-                                                                                                                        auto max_val  = corrAbs2[i]; 
-                                        // Iterate over the points under the same pixel
+                                        for ( int i=0;i<x_corr.size();i+=pointsPerPixel ) {
+                                                                                                                                    // Iterate over the points under the same pixel
  
-                                        for ( int j=i+1;j<i+pointsPerPixel&&j<x_corr.size();j++ ) {
-                                                                                                                                    max_val=std::max(max_val, corrAbs2[j]);
+                                            for ( int j=i+1;j<i+pointsPerPixel&&j<x_corr.size();j++ ) {
+} 
+                                                                                        x_downsampled[count]=x_corr[i];
 
-
-} 
-                                                                                y_max[count]=max_val;
-
-                                                                                x_downsampled[count]=x_corr[i];
-
-                                        count++;
+                                            count++;
  
 } 
  
-                                    x_downsampled.resize(count);
-                                    y_max.resize(count);
-                                    ImPlot::PlotLine((std::string("y_max_corrAbs2_")+std::to_string(code_idx)+"_"+std::to_string(dop)).c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
+                                        x_downsampled.resize(count);
  
  
  
@@ -430,6 +427,8 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
  
 } 
  
+ 
+} 
 } 
                     ImPlot::EndPlot();
  
@@ -554,6 +553,8 @@ int main (int argc, char** argv)        {
         
         sdr.initialize();
                 sdr.set_gain_mode(false);
+        sdr.setGainIF(20);
+        sdr.setGainRF(0);
         sdr.set_frequency(1.575420e+9);
         sdr.set_sample_rate(sampleRate);
         sdr.set_bandwidth(1.5360e+6);

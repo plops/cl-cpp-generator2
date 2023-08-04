@@ -1,21 +1,29 @@
 // no preamble
  
-#include <stdexcept> 
+#include <stdexcept>
+#include <filesystem> 
  
 #include "MemoryMappedComplexShortFile.h" 
  MemoryMappedComplexShortFile::MemoryMappedComplexShortFile (const std::string& filename)         : filename_(filename){
-        file_.open(filename);
-        if ( !file_.is_open() ) {
-                        throw std::runtime_error("Unable to open file: "+filename);
+        
+        if ( std::filesystem::exists(filename) ) {
+                        file_.open(filename);
+        if ( file_.is_open() ) {
+                                                data_=reinterpret_cast<std::complex<short>*>(const_cast<char*>(file_.data()));
+
+                        ready_=true;
+
+
  
 } 
-            data_=reinterpret_cast<std::complex<short>*>(const_cast<char*>(file_.data()));
-
-
+ 
+} 
 }std::complex<short>& MemoryMappedComplexShortFile::operator[] (std::size_t index) const        {
         return data_[index];
 }std::size_t MemoryMappedComplexShortFile::size () const        {
         return file_.size();
+}bool MemoryMappedComplexShortFile::ready () const        {
+        return ready_;
 } MemoryMappedComplexShortFile::~MemoryMappedComplexShortFile ()         {
         file_.close();
 } 

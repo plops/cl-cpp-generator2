@@ -16,7 +16,7 @@
 					;:dec-min
 					;:dec-mean
 					;:guru-plan
-					;:memoize-plan
+					:memoize-plan
 						    )))
 
 
@@ -600,7 +600,7 @@
 						      channel_
 						      ))))))
 
-		       (do0
+		       #+nil(do0
 			,(lprint :msg "set highest gain")
 			(-> sdr_ (setGainMode direction_ channel_ true))
 			(-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
@@ -767,7 +767,7 @@
 			 (flags 0)
 			 (time_ns 0LL)
 			 
-			 (readStreamRet (-> sdr_
+			 #+nil (readStreamRet (-> sdr_
 					    (readStream rx_stream_
 							(buffs.data)
 							numElems
@@ -1197,7 +1197,7 @@
 					   (std--to_string nThreads)
 					   (string ".wis")))))
 			    
-			   (let ((*in (fftw_alloc_complex windowSize))
+			   (let ((*in (fftw_alloc_complex windowSize)) ;; FIXME: memory leak
 				 (*out (fftw_alloc_complex windowSize)))
 			     (when (logior !in
 					   !out)
@@ -1543,7 +1543,7 @@
 					 windowSize))
 	      (ImPlot--EndPlot)))
 
-	   (let ((logScale false))
+	   (let ((logScale true))
 	     (declare (type "static bool" logScale))
 	     (ImGui--Checkbox (string "Logarithmic Y-axis")
 			      &logScale)
@@ -1616,7 +1616,17 @@
 		      (do0
 		       (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
 
-		       
+		       ,(let ((n-sat 32))
+			 `(do0
+			   (let ((selectedSatellites (curly false)))
+			     (declare (type ,(format nil "static std::array<bool,~a>" n-sat) selectedSatellites))
+			     (when (ImGui--Begin (string "Satellite"))
+			       (dotimes (i ,n-sat)
+				 (ImGui--Checkbox (dot (std--to_string (+ 1 i)) (c_str))
+						  (aref &selectedSatellites i))
+				 (when (!= i (- ,n-sat 1))
+				   (ImGui--SameLine)))
+			       (ImGui--End)))))
 		       
 		       (when (ImPlot--BeginPlot (? logScale
 						   (string "FFT magnitude (dB)")
@@ -1698,8 +1708,10 @@
 				      (* (- gps_freq xmouse) 1d-6))
 			 (ImGui--Text (string "centerFrequency-xmouse: %6.10f MHz")
 				      (* (- centerFrequency xmouse) 1d-6))
-			 (ImGui--Text (string "centerFrequency-gps_freq: %6.10f MHz")
-				      (* (- centerFrequency gps_freq) 1d-6))))
+			 (ImGui--Text (string "centerFrequency-gps_freq: %8.0f kHz")
+				      (* (- centerFrequency gps_freq) 1d-3))))
+
+		      
 
 		      (let ((codesSize (dot (aref codes 0) (size))))
 			(if (== windowSize codesSize)
@@ -1707,42 +1719,46 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      (;let ((code_idx 23))		;dotimes
+			      (	;let ((code_idx 23))		;dotimes
 			       #+nil(code_idx 3 ; 32
-					 )
-			       for-range (code_idx (std--vector<int> (curly ;10 14 17 23
-									    27 18)))
-			       (let ((code (aref codes code_idx))
-				     (len (out.size))
-				     (prod (std--vector<std--complex<double>> len))
-				     (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
-								    sampleRate)))
-				     (dopEnd (static_cast<int> (/ (* 5000 len)
-								  sampleRate))))
-				 (for ((= "int dop" dopStart)
-				       (<= dop dopEnd)
-				       (incf dop))
-				      (do0
-				       (dotimes (i (out.size))
-					 (let ((i1 (% (+ i -dop len) len)))
-					   (setf (aref prod i)
-						 (* (std--conj (aref out i))
-						    (aref code i1)))))
-				       (let ((corr (fftw.ifft prod (prod.size)))
-					     (corrAbs2 (std--vector<double> (out.size))))
-					 (dotimes (i (out.size))
-					   (let ((v (std--abs (aref corr i))))
-					     (setf (aref corrAbs2 i) #+nil (* 10 (std--log10
-										  ))
-								     (/ (* v v)
-									windowSize)))))
-				       ,(decimate-plots `(:x x_corr :ys (corrAbs2)
-							  :idx (+ (std--to_string code_idx
-										  )
-								  (string "_")
-								  (std--to_string dop))
-							  :points 100))))
-				 ))
+					      )
+			       ;for-range
+			       #+nil (code_idx (std--vector<int> (curly ;10 14 17 23
+							    9 ; 27 18
+							    )))
+			       dotimes (code_idx 32)
+			       (when (aref selectedSatellites code_idx)
+				(let ((code (aref codes code_idx))
+				      (len (out.size))
+				      (prod (std--vector<std--complex<double>> len))
+				      (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
+								     sampleRate)))
+				      (dopEnd (static_cast<int> (/ (* 5000 len)
+								   sampleRate))))
+				  (for ((= "int dop" dopStart)
+					(<= dop dopEnd)
+					(incf dop))
+				       (do0
+					(dotimes (i (out.size))
+					  (let ((i1 (% (+ i -dop len) len)))
+					    (setf (aref prod i)
+						  (* (std--conj (aref out i))
+						     (aref code i1)))))
+					(let ((corr (fftw.ifft prod (prod.size)))
+					      (corrAbs2 (std--vector<double> (out.size))))
+					  (dotimes (i (out.size))
+					    (let ((v (std--abs (aref corr i))))
+					      (setf (aref corrAbs2 i) #+nil (* 10 (std--log10
+										   ))
+								      (/ (* v v)
+									 windowSize)))))
+					,(decimate-plots `(:x x_corr :ys (corrAbs2)
+							   :idx (+ (std--to_string code_idx
+										   )
+								   (string "_")
+								   (std--to_string dop))
+							   :points 100))))
+				  )))
 			      
 			      (ImPlot--EndPlot))
 			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
@@ -1804,7 +1820,7 @@
 		  ;2d0
 		  ;10d0
 					;6.55361d0
-					;4d0
+				   ;4d0
 				   ;3.27681d0
 				   )
 		(corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
@@ -1864,7 +1880,10 @@
 	      (sdr.initialize)
 	      
 	      (do0
+	       
 	       (sdr.set_gain_mode false)
+	       (sdr.setGainIF 20)
+	       (sdr.setGainRF 0)
 	       (sdr.set_frequency 1575.42d6)
 	       (sdr.set_sample_rate sampleRate)
 	       (sdr.set_bandwidth 1.536d6 ; 8d6

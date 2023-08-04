@@ -12,19 +12,17 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -Wshadow
             -fvisibility=hidden
             -fno-strict-overflow -Wno-strict-overflow
-            -fsanitize=undefined
+           # -fsanitize=undefined
+	   -fsanitize=address
             #-fanalyzer
     )
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif ()
 
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
-# find_package(FFTW3 REQUIRED) # not working on gentoo as it configures fftw using autotools and fftw's cmake install is broken
-#include_directories(${FFTW_INCLUDES})
-
 find_package(SoapySDR REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
@@ -56,7 +54,6 @@ target_link_libraries(
         glfw
         OpenGL::GL
 	Boost::iostreams
-	#${FFTW_LIBRARIES}
 	PkgConfig::FFTW
 	SoapySDR
 )

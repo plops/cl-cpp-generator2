@@ -12,6 +12,7 @@ class MemoryMappedComplexShortFile  {
         explicit  MemoryMappedComplexShortFile (const std::string& filename)       ;   
         std::complex<short>& operator[] (std::size_t index) const      ;   
         std::size_t size () const      ;   
+        bool ready () const      ;   
          ~MemoryMappedComplexShortFile ()       ;   
         private:
         boost::iostreams::mapped_file_source file_;
@@ -19,6 +20,9 @@ class MemoryMappedComplexShortFile  {
 
 
         const std::string& filename_;
+        bool     ready_=false;
+
+
 };
 
 #endif /* !MEMORYMAPPEDCOMPLEXSHORTFILE_H */

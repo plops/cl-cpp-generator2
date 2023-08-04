@@ -196,3 +196,20 @@ PRN Nav Doppler   Phase   MaxSNR
 Process finished with exit code 0
 
 ```
+
+
+# Power supply via Bias-Tee
+
+
+- above 5V the amplifier seems to become unstable
+- even normal USB voltage makes it unstable
+- on a programmable powersupply i saw 5V and 17mA
+
+- on laptop i saw occasionally this:
+```
+[15161.065417] usb usb2-port2: over-current condition
+
+```
+
+- i now have a 3.3v buck boost convert (i think) 
+
