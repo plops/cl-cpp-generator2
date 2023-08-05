@@ -13,7 +13,7 @@
 							     :omit-redundant-parentheses t)))
 			,e
 			(string "' ")))   
-	      std--endl
+	      (string "\\n")
 	      std--flush))
 
 

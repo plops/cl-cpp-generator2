@@ -17,7 +17,7 @@
 #include "ProcessMemoryInfo.h" 
 
 void glfw_error_callback (int err, const char* desc)        {
-        std::cout<<"GLFW error:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<std::endl<<std::flush;
+        std::cout<<"GLFW error:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<"\n"<<std::flush;
 }
  
 
@@ -25,22 +25,22 @@ bool isDaemonRunning ()        {
             auto exit_code  = system("pidof sdrplay_apiService > /dev/null"); 
     auto shm_files_exist  = true; 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvRespSema") ) {
-                        std::cout<<"file /dev/shm/Glbl\\sdrSrvRespSema does not exist"<<std::endl<<std::flush;
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvRespSema does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvCmdSema") ) {
-                        std::cout<<"file /dev/shm/Glbl\\sdrSrvCmdSema does not exist"<<std::endl<<std::flush;
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvCmdSema does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComMtx") ) {
-                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComMtx does not exist"<<std::endl<<std::flush;
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComMtx does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComShMem") ) {
-                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComShMem does not exist"<<std::endl<<std::flush;
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComShMem does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
@@ -51,18 +51,18 @@ bool isDaemonRunning ()        {
 
 void stopDaemon ()        {
             auto ret  = std::system("ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"); 
-    std::cout<<"stop daemon"<<" ret='"<<ret<<"' "<<std::endl<<std::flush;
+    std::cout<<"stop daemon"<<" ret='"<<ret<<"' "<<"\n"<<std::flush;
  
 }
  
 
 void startDaemonIfNotRunning ()        {
-        std::cout<<"verify that sdr daemon is running"<<std::endl<<std::flush;
+        std::cout<<"verify that sdr daemon is running"<<"\n"<<std::flush;
         if ( !isDaemonRunning() ) {
-                        std::cout<<"sdrplay daemon is not running. start it"<<std::endl<<std::flush;
+                        std::cout<<"sdrplay daemon is not running. start it"<<"\n"<<std::flush;
                 auto daemon_exit  = system("/usr/bin/sdrplay_apiService &"); 
  
-        std::cout<<"return value"<<" daemon_exit='"<<daemon_exit<<"' "<<std::endl<<std::flush;
+        std::cout<<"return value"<<" daemon_exit='"<<daemon_exit<<"' "<<"\n"<<std::flush;
         sleep(1);
  
 } 
@@ -517,30 +517,25 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
 } 
 }
  
-
-int main (int argc, char** argv)        {
-            auto fftw  = FFTWManager(6); 
- 
-        glfwSetErrorCallback(glfw_error_callback);
-        if ( 0==glfwInit() ) {
-                        std::cout<<"glfw init failed"<<std::endl<<std::flush;
-        return 1;
+auto initGL  = [] (){
+            glfwSetErrorCallback(glfw_error_callback);
+    if ( 0==glfwInit() ) {
+                        std::cout<<"glfw init failed"<<"\n"<<std::flush;
  
 } 
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
  
-            auto *window  = glfwCreateWindow(800, 600, "imgui_dsp", nullptr, nullptr); 
+        auto *window  = glfwCreateWindow(800, 600, "imgui_dsp", nullptr, nullptr); 
     if ( nullptr==window ) {
-                        std::cout<<"failed to create glfw window"<<std::endl<<std::flush;
-        return 1;
+                        std::cout<<"failed to create glfw window"<<"\n"<<std::flush;
  
 } 
     glfwMakeContextCurrent(window);
-    std::cout<<"enable vsync"<<std::endl<<std::flush;
+    std::cout<<"enable vsync"<<"\n"<<std::flush;
     glfwSwapInterval(1);
     IMGUI_CHECKVERSION();
-    std::cout<<"create imgui context"<<std::endl<<std::flush;
+    std::cout<<"create imgui context"<<"\n"<<std::flush;
     ImGui::CreateContext();
     ImPlot::CreateContext();
         auto &io  = ImGui::GetIO(); 
@@ -552,15 +547,19 @@ int main (int argc, char** argv)        {
     ImGui_ImplOpenGL3_Init("#version 130");
     glClearColor(0, 0, 0, 1);
  
-            auto sampleRate  = 1.00e+7; 
-        // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
+ 
+        return window;
+}; 
+ 
+auto initGps  = [] (double sampleRate, FFTWManager& fftw){
+            // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
  
         auto caFrequency  = 1.0230e+6; 
     auto caStep  = caFrequency/sampleRate; 
     auto corrWindowTime_ms  = 1.0    ; 
     auto corrLength  = static_cast<int>((corrWindowTime_ms*sampleRate)/1000); 
     auto caSequenceLength  = 1023; 
-    std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<std::endl<<std::flush;
+    std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<"\n"<<std::flush;
         auto codes  = std::vector<std::vector<std::complex<double>>>(32); 
     for ( auto i = 0;i<32;i+=1 ) {
                 // chatGPT decided to start PRN index with 1. I don't like it but leave it for now.
@@ -581,7 +580,7 @@ int main (int argc, char** argv)        {
  
 } 
 } 
-        std::cout<<"compute FFT"<<" i='"<<i<<"' "<<std::endl<<std::flush;
+        std::cout<<"compute FFT"<<" i='"<<i<<"' "<<"\n"<<std::flush;
         {
                         if ( i==0 ) {
                                                 // the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
@@ -592,7 +591,7 @@ int main (int argc, char** argv)        {
                                 auto endBenchmark00  = std::chrono::high_resolution_clock::now(); 
                 auto elapsed00  = std::chrono::duration<double>(endBenchmark00-startBenchmark00); 
                 auto elapsed_ms00  = 1000*elapsed00.count(); 
-                std::cout<<""<<" elapsed_ms00='"<<elapsed_ms00<<"' "<<std::endl<<std::flush;
+                std::cout<<""<<" elapsed_ms00='"<<elapsed_ms00<<"' "<<"\n"<<std::flush;
  
  
  
@@ -604,39 +603,52 @@ int main (int argc, char** argv)        {
                         auto endBenchmark01  = std::chrono::high_resolution_clock::now(); 
             auto elapsed01  = std::chrono::duration<double>(endBenchmark01-startBenchmark01); 
             auto elapsed_ms01  = 1000*elapsed01.count(); 
-            std::cout<<""<<" elapsed_ms01='"<<elapsed_ms01<<"' "<<std::endl<<std::flush;
+            std::cout<<""<<" elapsed_ms01='"<<elapsed_ms01<<"' "<<"\n"<<std::flush;
  
  
-                        std::cout<<"codes"<<" i='"<<i<<"' "<<" codes.size()='"<<codes.size()<<"' "<<" out.size()='"<<out.size()<<"' "<<std::endl<<std::flush;
+                        std::cout<<"codes"<<" i='"<<i<<"' "<<" codes.size()='"<<codes.size()<<"' "<<" out.size()='"<<out.size()<<"' "<<"\n"<<std::flush;
                                     codes[i]=out;
 
 
 } 
  
 } 
+    return codes;
  
  
  
+}; 
  
+auto initSdr  = [] (auto sampleRate){
+            auto sdr  = std::make_unique<SdrManager>(64512, 1100000, 50000, 2000); 
+    stopDaemon();
+    startDaemonIfNotRunning();
+    std::cout<<"initialize sdr manager"<<"\n"<<std::flush;
+    sdr->initialize();
+    sdr->set_gain_mode(false);
+    sdr->setGainIF(20);
+    sdr->setGainRF(0);
+    sdr->set_frequency(1.575420e+9);
+    sdr->set_sample_rate(sampleRate);
+    sdr->set_bandwidth(1.5360e+6);
+    sdr->startCapture();
+ 
+        return sdr;
+}; 
+ 
+
+int main (int argc, char** argv)        {
         try {
-                                auto sdr  = SdrManager(64512, 1100000, 50000, 2000); 
-        stopDaemon();
-        startDaemonIfNotRunning();
-        std::cout<<"initialize sdr manager"<<std::endl<<std::flush;
-        sdr.initialize();
-                sdr.set_gain_mode(false);
-        sdr.setGainIF(20);
-        sdr.setGainRF(0);
-        sdr.set_frequency(1.575420e+9);
-        sdr.set_sample_rate(sampleRate);
-        sdr.set_bandwidth(1.5360e+6);
- 
-        sdr.startCapture();
+                                auto fftw  = FFTWManager(6); 
+        auto *window  = initGL(); 
+        auto sampleRate  = 1.00e+7; 
+        auto codes  = initGps(sampleRate, fftw); 
+        auto sdr  = initSdr(sampleRate); 
  
                 auto fn  = "/mnt5/gps.samples.cs16.fs5456.if4092.dat"; 
         auto file  = MemoryMappedComplexShortFile(fn); 
         if ( file.ready() ) {
-                                    std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<std::endl<<std::flush;
+                                    std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<"\n"<<std::flush;
  
 } 
  
@@ -645,7 +657,7 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_NewFrame();
                         ImGui_ImplGlfw_NewFrame();
                         ImGui::NewFrame();
-                        DrawPlot(file, sdr, fftw, codes);
+                        DrawPlot(file, *sdr, fftw, codes);
                         ImGui::Render();
                                     auto w  = 0; 
             auto h  = 0; 
@@ -656,24 +668,24 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                         glfwSwapBuffers(window);
 } 
-                sdr.stopCapture();
-        sdr.close();
+                sdr->stopCapture();
+        sdr->close();
+ 
+                ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImPlot::DestroyContext();
+        ImGui::DestroyContext();
+        glfwDestroyWindow(window);
+        glfwTerminate();
  
  
 }catch (const std::runtime_error& e) {
-                std::cout<<"error 1422:"<<" e.what()='"<<e.what()<<"' "<<std::endl<<std::flush;
+                std::cout<<"error 1422:"<<" e.what()='"<<e.what()<<"' "<<"\n"<<std::flush;
                 return -1;
 }catch (const std::exception& e) {
-                std::cout<<"error 1426:"<<" e.what()='"<<e.what()<<"' "<<std::endl<<std::flush;
+                std::cout<<"error 1426:"<<" e.what()='"<<e.what()<<"' "<<"\n"<<std::flush;
                 return -1;
 } 
-            ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImPlot::DestroyContext();
-    ImGui::DestroyContext();
-    glfwDestroyWindow(window);
-    glfwTerminate();
- 
         return 0;
 }
  

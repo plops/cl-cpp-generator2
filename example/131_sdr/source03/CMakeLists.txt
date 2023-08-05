@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(imgui_dsp)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -21,6 +21,7 @@ else ()
      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)

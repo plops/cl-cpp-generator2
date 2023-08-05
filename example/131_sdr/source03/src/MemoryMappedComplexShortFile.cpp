@@ -5,7 +5,7 @@
  
 #include "MemoryMappedComplexShortFile.h" 
  MemoryMappedComplexShortFile::MemoryMappedComplexShortFile (const std::string& filename)         : filename_(filename){
-        std::cout<<"try to mmap file"<<" filename='"<<filename<<"' "<<" std::filesystem::exists(filename)='"<<std::filesystem::exists(filename)<<"' "<<std::endl<<std::flush;
+        std::cout<<"try to mmap file"<<" filename='"<<filename<<"' "<<" std::filesystem::exists(filename)='"<<std::filesystem::exists(filename)<<"' "<<"\n"<<std::flush;
         if ( std::filesystem::exists(filename_) ) {
                         file_.open(filename);
         if ( file_.is_open() ) {

@@ -1691,128 +1691,128 @@
 	       ("const std::exception&" (e)
 		 (ImGui--Text (string "Error while processing FFT: %s")
 			      (e.what))))))))
-     
-     (defun main (argc argv)
-       (declare (values int)
-		(type int argc)
-		(type char** argv))
 
-       (let ((fftw (FFTWManager 6))))
-       (glfwSetErrorCallback glfw_error_callback)
-       (when (== 0 (glfwInit))
-	 ,(lprint :msg "glfw init failed")
-	 (return 1))
-       
-       #+more
-       (do0		 ;let ((glsl_version (string "#version 130")))
-	(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
-	(glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
-       (let ((*window (glfwCreateWindow 800 600
-					(string "imgui_dsp")
-					nullptr nullptr)))
-	 (when (== nullptr window)
-	   ,(lprint :msg "failed to create glfw window")
-	   (return 1))
-	 (glfwMakeContextCurrent window)
-	 ,(lprint :msg "enable vsync")
-	 (glfwSwapInterval 1)
-	 (IMGUI_CHECKVERSION)
-	 ,(lprint :msg "create imgui context")
-	 (ImGui--CreateContext)
-	 (ImPlot--CreateContext)
+     (let ((initGL (lambda ()
+		     (do0 (glfwSetErrorCallback glfw_error_callback)
+	    (when (== 0 (glfwInit))
+	      ,(lprint :msg "glfw init failed"))
+	    
+	    #+more
+	    (do0		 ;let ((glsl_version (string "#version 130")))
+	     (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+	     (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
+	    (let ((*window (glfwCreateWindow 800 600
+					     (string "imgui_dsp")
+					     nullptr nullptr)))
+	      (when (== nullptr window)
+		,(lprint :msg "failed to create glfw window")
+		)
+	      (glfwMakeContextCurrent window)
+	      ,(lprint :msg "enable vsync")
+	      (glfwSwapInterval 1)
+	      (IMGUI_CHECKVERSION)
+	      ,(lprint :msg "create imgui context")
+	      (ImGui--CreateContext)
+	      (ImPlot--CreateContext)
 
-	 (let ((&io (ImGui--GetIO)))
-	   (setf io.ConfigFlags (or io.ConfigFlags
-				    ImGuiConfigFlags_NavEnableKeyboard)))
+	      (let ((&io (ImGui--GetIO)))
+		(setf io.ConfigFlags (or io.ConfigFlags
+					 ImGuiConfigFlags_NavEnableKeyboard)))
 					;(ImGui--StyleColorsDark)
-	 (ImGui_ImplGlfw_InitForOpenGL window true)
-	 (ImGui_ImplOpenGL3_Init (string "#version 130"))
-	 (glClearColor  0 0 0 1)
-	 )
+	      (ImGui_ImplGlfw_InitForOpenGL window true)
+	      (ImGui_ImplOpenGL3_Init (string "#version 130"))
+	      (glClearColor  0 0 0 1)
+	      ))
+		     (return window)
+		     ))))
 
-       (let ((sampleRate		;5456d3
-	       10.0d6
-	       ))
-	 (do0
-	  (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
-	  (let (
-		(caFrequency 1.023d6)
-		(caStep (/ caFrequency
-			   sampleRate))
-		(corrWindowTime_ms 1d0
-				   
+
+     (let ((initGps (lambda (sampleRate fftw)
+		      (declare (type double sampleRate) (type "FFTWManager&" fftw))
+		      (do0
+		       (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
+		       (let (
+			     (caFrequency 1.023d6)
+			     (caStep (/ caFrequency
+					sampleRate))
+			     (corrWindowTime_ms 1d0
+						
 					;2d0
 					;10d0
 					;6.55361d0
 					;4d0
 					;3.27681d0
-				   )
-		(corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
-						 1000)))
-		(caSequenceLength 1023))
-	    ,(lprint :msg "prepare CA code chips"
-		     :vars `(corrLength))
-	    
-	    (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
-	      
-	      (dotimes (i 32)
-		(comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
-		(let ((ca (GpsCACodeGenerator (+ i 1)))
-		      (chips (ca.generate_sequence caSequenceLength))
-		      (code (std--vector<std--complex<double>> corrLength))
-		      (caPhase 0d0)
-		      (chipIndex 0))
+						)
+			     (corrLength (static_cast<int> (/ (* corrWindowTime_ms sampleRate)
+							      1000)))
+			     (caSequenceLength 1023))
+			 ,(lprint :msg "prepare CA code chips"
+				  :vars `(corrLength))
+			 
+			 (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
+			   
+			   (dotimes (i 32)
+			     (comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
+			     (let ((ca (GpsCACodeGenerator (+ i 1)))
+				   (chips (ca.generate_sequence caSequenceLength))
+				   (code (std--vector<std--complex<double>> corrLength))
+				   (caPhase 0d0)
+				   (chipIndex 0))
 
-		  #+nil
-		  (do0(<< std--cerr (+ i 1) std--endl)
-		      (dotimes (j (chips.size))
-			(<< std--cerr
-			    (? (aref chips j) -1 1)
-			    (string " ")))
-		      (<< std--cerr std--endl))
-		  
-		  (dotimes (l corrLength)
-		    (setf (aref code l) (? (aref chips (% chipIndex
-							  caSequenceLength))
-					   1d0 -1d0))
-		    (incf caPhase caStep)
-		    (when (<= 1 caPhase)
-		      (decf caPhase 1d0)
-		      (incf chipIndex)))
-		  ,(lprint :msg "compute FFT"
-			   :vars `(i))
-		  (progn
-		    (when (== i 0)
-		      (comments "the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster")
-		      (let ((mini (std--vector<std--complex<double>> 32)))
-			,(benchmark `(fftw.fft mini 32))))
-		    ,(benchmark `(let ((out (fftw.fft code corrLength)))))
-		    ,(lprint :msg "codes"
-			     :vars `(i (codes.size) (out.size)))
-		    (setf (aref codes i) out)
-		    )))))))
+			       (dotimes (l corrLength)
+				 (setf (aref code l) (? (aref chips (% chipIndex
+								       caSequenceLength))
+							1d0 -1d0))
+				 (incf caPhase caStep)
+				 (when (<= 1 caPhase)
+				   (decf caPhase 1d0)
+				   (incf chipIndex)))
+			       ,(lprint :msg "compute FFT"
+					:vars `(i))
+			       (progn
+				 (when (== i 0)
+				   (comments "the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster")
+				   (let ((mini (std--vector<std--complex<double>> 32)))
+				     ,(benchmark `(fftw.fft mini 32))))
+				 ,(benchmark `(let ((out (fftw.fft code corrLength)))))
+				 ,(lprint :msg "codes"
+					  :vars `(i (codes.size) (out.size)))
+				 (setf (aref codes i) out)
+				 )))
+			   (return codes))))))))
+
+     (let ((initSdr (lambda (sampleRate)
+		      (let ((sdr (std--make_unique<SdrManager> 64512
+							       1100000 
+							       50000
+							       2000)))
+			(stopDaemon)
+			(startDaemonIfNotRunning)
+			,(lprint :msg "initialize sdr manager")
+			(sdr->initialize)
+			
+			(sdr->set_gain_mode false)
+			(sdr->setGainIF 20)
+			(sdr->setGainRF 0)
+			(sdr->set_frequency 1575.42d6)
+			(sdr->set_sample_rate sampleRate)
+			(sdr->set_bandwidth 1.536d6)
+			(sdr->startCapture))
+		      (return sdr)))))
+     (defun main (argc argv)
+       (declare (values int)
+		(type int argc)
+		(type char** argv))
 
        (handler-case
 	   (do0
-	    (let ((sdr (SdrManager 64512
-				   1100000 
-				   50000
-				   2000)))
-	      (stopDaemon)
-	      (startDaemonIfNotRunning)
-	      ,(lprint :msg "initialize sdr manager")
-	      (sdr.initialize)
-	      
-	      (do0
-	       
-	       (sdr.set_gain_mode false)
-	       (sdr.setGainIF 20)
-	       (sdr.setGainRF 0)
-	       (sdr.set_frequency 1575.42d6)
-	       (sdr.set_sample_rate sampleRate)
-	       (sdr.set_bandwidth 1.536d6 ; 8d6
-				  ))
-	      (sdr.startCapture))
+	    (let ((fftw (FFTWManager 6))
+		  (*window (initGL))
+		  (sampleRate		;5456d3
+		    10.0d6)
+		  (codes (initGps sampleRate fftw))
+		  (sdr (initSdr sampleRate))))	    
+	    
 	    (let ((fn #+nil (string "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin")
 		      (string "/mnt5/gps.samples.cs16.fs5456.if4092.dat"))
 		  (file (MemoryMappedComplexShortFile
@@ -1826,7 +1826,7 @@
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
-		   (DrawPlot file sdr fftw codes)
+		   (DrawPlot file *sdr fftw codes)
 		   (ImGui--Render)
 		   (let ((w 0)
 			 (h 0))
@@ -1835,8 +1835,15 @@
 		     (glClear GL_COLOR_BUFFER_BIT))
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window))
-	    (do0 (sdr.stopCapture)
-		 (sdr.close)))
+	    (do0 (sdr->stopCapture)
+		 (sdr->close))
+	    (do0
+	     (ImGui_ImplOpenGL3_Shutdown)
+	     (ImGui_ImplGlfw_Shutdown)
+	     (ImPlot--DestroyContext)
+	     (ImGui--DestroyContext)
+	     (glfwDestroyWindow window)
+	     (glfwTerminate)))
 	 
 	 ("const std::runtime_error&" (e)
 	   ,(lprint :msg "error 1422:"
@@ -1846,16 +1853,6 @@
 	   ,(lprint :msg "error 1426:"
 		    :vars `((e.what)))
 	   (return -1)))
-
-       #-nil (do0
-	      (ImGui_ImplOpenGL3_Shutdown)
-	      (ImGui_ImplGlfw_Shutdown)
-	      (ImPlot--DestroyContext)
-	      (ImGui--DestroyContext)
-	      (glfwDestroyWindow window)
-	      (glfwTerminate))
-       
-       
        
        (return 0)))
    :omit-parens t
