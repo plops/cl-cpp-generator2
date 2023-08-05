@@ -8,8 +8,9 @@
  
 #include "FFTWManager.h" 
  FFTWManager::FFTWManager (int number_threads)         : number_threads_(number_threads){
-}std::vector<std::complex<double>> FFTWManager::fftshift (const std::vector<std::complex<double>>& in) const        {
-            auto mid  = in.begin()+(in.size()/2); 
+}[[nodiscard]] std::vector<std::complex<double>> FFTWManager::fftshift (const std::vector<std::complex<double>>& in) const        {
+            auto insize2  = in.size()/2; 
+    auto mid  = in.begin()+static_cast<long>(insize2); 
     auto out  = std::vector<std::complex<double>>(in.size()); 
     std::copy(mid, in.end(), out.begin());
     std::copy(in.begin(), mid, out.begin()+std::distance(mid, in.end()));

@@ -183,7 +183,7 @@
        (include<> stdexcept
 		  cstring
 		  cmath
-		  iostream
+		  ;iostream
 		  ))
      :code `(do0
 	     (defclass ,name ()
@@ -344,20 +344,20 @@
 		  (explicit)	    
 		  (values :constructor)))
 
-	       (defmethod getVirtualMemorySize ()
+	       #+nil (defmethod getVirtualMemorySize ()
 		 (declare (const)
 			  (values int))
 		 (return (getMemoryInfo (string "VmSize:"))))
 	       (defmethod getResidentMemorySize ()
 		 (declare (const)
-			  (values int))
+			  (values "[[nodiscard]] int"))
 		 (return (getMemoryInfo (string "VmRSS:"))))
 	       
 	       "private:"
 	       (defmethod getMemoryInfo (key)
 		 (declare (const)
 			  (type "const std::string&" key)
-			  (values int))
+			  (values "[[nodiscard]] int"))
 		 (let ((filepath (+ (std--string (string "/proc/"))
 				    (std--to_string pid_)
 				    (string "/status")))
@@ -404,7 +404,7 @@
 		    (buf :type ,(format nil "std::vector<~a>" acq-type) :initform  (,(format nil "std::vector<~a>" acq-type) buffer_size) :param nil )
 		    (rx-stream :type "SoapySDR::Stream*" :initform-class nullptr :param nil)
 		    #+more (average-elapsed-ms :type double :initform 0d0 :param nil)
-		    #+more (alpha :type double :initform .08 :param nil)
+		    #+more (alpha :type double :initform .08d0 :param nil)
 		    (start :type "std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<long,std::ratio<1,1000000000>>>"
 			   :initform (std--chrono--high_resolution_clock--now)
 			   :param nil)
@@ -629,7 +629,7 @@
 			  (declare (type int value))
 			  (-> sdr_ (setGain direction_ channel_ (string ,(format nil "~aGR" e)) value))))
 	       
-	       (defmethod getBuf ()
+	       #+nil (defmethod getBuf ()
 		 (declare (values ,(format nil "const std::vector<~a>&" acq-type))
 			  (const))
 		 (return buf_))
@@ -720,6 +720,7 @@
 		 (when (capture_thread_.joinable)
 		   (capture_thread_.join)))
 
+	       #+nil
 	       (defmethod getFifo ()
 		 (declare (values ,fifo-type))
 		 (let ((lock (std--scoped_lock mtx_)))
@@ -740,16 +741,17 @@
 			(comments "If n is less than fifo_.size(), create a sub-deque with the last n elements and pass it to func")
 			(comments "Get an iterator to the nth element from the end")
 			(let ((start (- (fifo_.end)
-					n0))
+					(static_cast<long> n0)))
 			      (lastElements (,fifo-type start (fifo_.end))))
 			  (func lastElements))))))
 
+	       #+nil
 	       (defmethod processFifoT (func &key (n (std--numeric_limits<std--size_t>--max)))
 		 (declare (type "Func " func)
 			  (type "std::size_t" n)
 			  (values "template<typename Func> void"))
 		 (let ((lock (std--scoped_lock mtx_))
-		       (n0 (std--min n (fifo_.size))))
+		       (n0 (static_cast<long> (std--min (fifo_.size) n ))))
 		   (comments "If n covers the entire fifo_, pass the whole fifo_ to func")
 		   (if (<= (fifo_.size) n0)
 		       (do0
@@ -801,8 +803,8 @@
 			      (when (< fifo_size_ (fifo_.size))
 				(fifo_.erase (fifo_.begin)
 					     (+ (fifo_.begin)
-						(- (fifo_.size)
-						   fifo_size_ )))))
+						(- (static_cast<long> (fifo_.size))
+						   (static_cast<long> fifo_size_) )))))
 			    (when (< 0 captureSleepUs)
 			      (std--this_thread--sleep_for (std--chrono--microseconds captureSleepUs))))
 		     (outputFile.close))))
@@ -880,7 +882,7 @@
 		  (values :constructor))
 		 ,(lprint :msg "try to mmap file"
 			  :vars `(filename (std--filesystem--exists filename)))
-		 (when (std--filesystem--exists filename)
+		 (when (std--filesystem--exists filename_)
 		   (file_.open filename)
 		   (when (file_.is_open)
 		     (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
@@ -1002,9 +1004,10 @@
 		 (declare
 		  (const)
 		  (type "const std::vector<std::complex<double>>&" in)
-		  (values "std::vector<std::complex<double>>"))
-		 (let ((mid (+ (in.begin)
-			       (/ (in.size) 2)))
+		  (values "[[nodiscard]] std::vector<std::complex<double>>"))
+		 (let ((insize2 (/ (in.size) 2))
+		       (mid (+ (in.begin)
+			       (static_cast<long> insize2)))
 		       (out (std--vector<std--complex<double>> (in.size))))
 		   (std--copy mid (in.end) (out.begin))
 		   (std--copy (in.begin) mid (+ (out.begin)

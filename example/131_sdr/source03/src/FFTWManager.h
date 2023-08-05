@@ -9,7 +9,7 @@
 class FFTWManager  {
         public:
         explicit  FFTWManager (int number_threads)       ;   
-        std::vector<std::complex<double>> fftshift (const std::vector<std::complex<double>>& in) const      ;   
+        [[nodiscard]] std::vector<std::complex<double>> fftshift (const std::vector<std::complex<double>>& in) const      ;   
         std::vector<std::complex<double>> fft (const std::vector<std::complex<double>>& in, size_t windowSize)       ;   
         std::vector<std::complex<double>> ifft (const std::vector<std::complex<double>>& in, size_t windowSize)       ;   
          ~FFTWManager ()       ;   
