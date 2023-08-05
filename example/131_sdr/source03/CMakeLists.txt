@@ -19,6 +19,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 else ()
      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
+     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
 endif ()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
