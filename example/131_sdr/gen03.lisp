@@ -10,13 +10,15 @@
 						  :guru-plan
 						  :dec-max
 						  :dec-min
-						  :dec-mean)))
-(setf *features* (set-exclusive-or *features* (list ; :more
+						  :dec-mean
+						  :leak)))
+(setf *features* (set-exclusive-or *features* (list  :more
 						    :dec-max
 					;:dec-min
 					;:dec-mean
-					;:guru-plan
+					:guru-plan
 					:memoize-plan
+						     ;:leak
 						    )))
 
 
@@ -464,6 +466,204 @@
 
 	       ))))
 
+  (let* ((name `ProcessMemoryInfo)
+	 (members `((pid :type "const int" :initform (getpid)))))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> fstream)
+			)
+     :implementation-preamble
+     `(do0
+       (include<> fstream string sstream unistd.h iostream))
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)))
+
+	       (defmethod getVirtualMemorySize ()
+		 (declare (const)
+			  (values int))
+		 (return (getMemoryInfo (string "VmSize:"))))
+	       (defmethod getResidentMemorySize ()
+		 (declare (const)
+			  (values int))
+		 (return (getMemoryInfo (string "VmRSS:"))))
+	       
+	       "private:"
+	       (defmethod getMemoryInfo (key)
+		 (declare (const)
+			  (type "const std::string&" key)
+			  (values int))
+		 (let ((filepath (+ (std--string (string "/proc/"))
+				    (std--to_string pid_)
+				    (string "/status")))
+		       (file (std--ifstream filepath)))
+		   (unless file
+		     ,(lprint :msg "failed to open status file"
+			      :vars `(pid_ filepath))
+		     (return -1))
+		   (let ((line (std--string)))
+		     (while (std--getline file line)
+			    (when (== 0 (line.find key))
+			      (let ((iss (std--istringstream (line.substr (key.length))))
+				    (value 0))
+				(>> iss value)
+				(return value))))
+		     ,(lprint :msg "error: key not found in status file"
+			     :vars `(key filepath))
+		     (return -1)))
+		 )
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
+
+	       ))))
+
+  #+nil
+  (let* ((name `FFTWAllocator)
+	 (members `()))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector complex limits)
+			)
+     :implementation-preamble
+     `(do0
+       (include<> cstddef new)
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:"
+	       (space  using (setf  value_type std--complex<double>))
+	       (space  using (setf  size_type std--size_t))
+	       (space  using (setf  difference_type std--ptrdiff_t))
+	       (space  using (setf  propagate_on_container_move_assignment
+				    std--true_type))
+	       (space  using (setf  is_always_equal
+				    std--true_type))
+	       
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (noexcept)	    
+		  (values :constructor)))
+
+	       (defmethod FFTWAllocator (a)
+		 (declare (type "const FFTWAllocator&" a)
+			  (values "template<class U>")
+			  (noexcept)))
+	       
+	       (defmethod allocate (n)
+		 (declare (type "std::size_t" n)
+			  (values "FFTWAllocator::value_type*"))
+		 (return (static_cast<value_type*>
+			  (std--aligned_alloc 16 (* n (sizeof value_type))))))
+
+	       (defmethod deallocate (p n)
+		 (declare (type "std::size_t" n)
+			  (type "value_type*" p)
+			  (noexcept))
+		 (std--free p)
+		 )
+	       
+	       "private:"
+	       
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
+
+	       ))))
+
   (let* ((name `SdrManager)
 	 (members `(
 					;(parameters :type "const Args&" :param t)
@@ -601,10 +801,10 @@
 						      ))))))
 
 		       #+nil(do0
-			,(lprint :msg "set highest gain")
-			(-> sdr_ (setGainMode direction_ channel_ true))
-			(-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
-			(-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
+			     ,(lprint :msg "set highest gain")
+			     (-> sdr_ (setGainMode direction_ channel_ true))
+			     (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
+			     (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
 		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
 			       #+more (do0
 				       ,(lprint :msg "has automatic gain control"
@@ -767,13 +967,13 @@
 			 (flags 0)
 			 (time_ns 0LL)
 			 
-			 #+nil (readStreamRet (-> sdr_
-					    (readStream rx_stream_
-							(buffs.data)
-							numElems
-							flags
-							time_ns
-							timeout_us_)))
+			 #+more (readStreamRet (-> sdr_
+						   (readStream rx_stream_
+							       (buffs.data)
+							       numElems
+							       flags
+							       time_ns
+							       timeout_us_)))
 			 )
 		     #+more (let ((end (std--chrono--high_resolution_clock--now))
 				  (elapsed (std--chrono--duration<double> (- end start_)))
@@ -1064,7 +1264,12 @@
      `(do0
        (include<> stdexcept
 		  fstream
+		  
 		  #+more iostream)
+       
+       #-leak (do0
+	       (include<> vector)
+	       #+nil (include  FFTWAllocator.h))
        )
      :code `(do0
 	     (defclass ,name ()
@@ -1132,8 +1337,8 @@
 		   (return out)))
 
 	       (defmethod fft (in windowSize)
-		 (declare (type int windowSize)
-			  (const)
+		 (declare (type size_t windowSize)
+			  #-memoize-plan (const)
 			  (type "const std::vector<std::complex<double>>&" in)
 			  (values "std::vector<std::complex<double>>"))
 		 (when (!= windowSize (in.size))
@@ -1147,8 +1352,8 @@
 		   (return (fftshift out))))
 
 	       (defmethod ifft (in windowSize)
-		 (declare (type int windowSize)
-			  (const)
+		 (declare (type size_t windowSize)
+			  #-memoize-plan (const)
 			  (type "const std::vector<std::complex<double>>&" in)
 			  (values "std::vector<std::complex<double>>"))
 		 (when (!= windowSize (in.size))
@@ -1172,7 +1377,7 @@
 	       (defmethod get_plan (windowSize &key (direction FFTW_FORWARD) (nThreads 1) )
 		 (declare (type int windowSize nThreads direction)
 			  (values fftw_plan)
-			  (const))
+			  #-memoize-plan (const))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 
@@ -1197,14 +1402,20 @@
 					   (std--to_string nThreads)
 					   (string ".wis")))))
 			    
-			   (let ((*in (fftw_alloc_complex windowSize)) ;; FIXME: memory leak
-				 (*out (fftw_alloc_complex windowSize)))
-			     (when (logior !in
+			   (let #-leak (#+nil (in0 ("std::vector<std::complex<double>,FFTWAllocator>" windowSize))
+					#+nil (out0 ("std::vector<std::complex<double>,FFTWAllocator>" windowSize))
+					(in0 ("std::vector<std::complex<double>>" windowSize))
+					(out0 ("std::vector<std::complex<double>>" windowSize))
+					(*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
+					(*out ("reinterpret_cast<double(*)[2]>" (out0.data))))
+			       #+leak ((*in (fftw_alloc_complex windowSize)) ;; FIXME: memory leak
+				       (*out (fftw_alloc_complex windowSize)))
+			     #+leak (when (logior !in
 					   !out)
 			       (do0 (fftw_free in)
 				    (fftw_free out)
 				    (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
-
+			     
 			     (let ((wisdomFile (std--ifstream wisdom_filename)))
 			       (if (wisdomFile.good)
 				   (do0 #+nil ,(lprint :msg "read wisdom from existing file"
@@ -1235,11 +1446,12 @@
 								       in ;; in 
 								       out ;; out
 								       direction ;FFTW_FORWARD ;; sign
-					;FFTW_MEASURE ;; flags
-								       (or FFTW_MEASURE FFTW_UNALIGNED)
+								       FFTW_MEASURE ;; flags
+								       #+nil (or FFTW_MEASURE
+									   FFTW_UNALIGNED)
 								       )))
 					     )
-			       (when !p
+			       #+leak (when !p
 				 (do0 (fftw_free in)
 				      (fftw_free out)
 				      (throw (std--runtime_error (string "Failed to create fftw plan")))))
@@ -1252,8 +1464,8 @@
 			       )
 			     (do0 (do0
 					;,(lprint :msg "free in and out")
-				   (fftw_free in)
-				   (fftw_free out)
+				   #+leak (do0 (fftw_free in)
+					(fftw_free out))
 				   #-memoize-plan (return p)
 				   )
 				  #+memoize-plan(do0
@@ -1296,13 +1508,14 @@
 					;string
 					;complex
       vector
-					;algorithm
-      
+					algorithm
+      ;queue
+      deque
 					;chrono
 
       filesystem
 					;unistd.h
-					;cstdlib
+      cstdlib
 
       cmath)
      (include
@@ -1317,7 +1530,8 @@
       GpsCACodeGenerator.h
       MemoryMappedComplexShortFile.h
       FFTWManager.h
-      SdrManager.h)
+      SdrManager.h
+      ProcessMemoryInfo.h)
 	
 
      (defun glfw_error_callback (err desc)
@@ -1346,6 +1560,9 @@
 			 (return false)))
 	      (return (logand (== 0 (WEXITSTATUS exit_code))
 			      shm_files_exist))))
+	  (defun stopDaemon ()
+	    (std--system (string "ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"))
+	    )
 	  (defun startDaemonIfNotRunning ()
 	    ,(lprint :msg "verify that sdr daemon is running")
 	    (unless (isDaemonRunning)
@@ -1357,10 +1574,52 @@
      
      (defun DrawPlot (file sdr fftw codes)
        (declare (type "const MemoryMappedComplexShortFile&" file)
-		(type "const FFTWManager&" fftw)
+		(type #-memoize-plan "const FFTWManager&" #+memoize-plan "FFTWManager&" fftw)
 		(type "const std::vector<std::vector<std::complex<double>>> &" codes)
 		(type SdrManager& sdr))
+       (let ((memoryInfo)
+	     (residentMemoryFifo)
+	     )
+	 (declare (type "static ProcessMemoryInfo" memoryInfo)
+		  (type "static std::deque<int>" residentMemoryFifo)
+		  )
+	 (let ((residentMemorySize (memoryInfo.getResidentMemorySize))
+	       (sampleIndex (residentMemoryFifo.size)))
+	   (residentMemoryFifo.push_back residentMemorySize)
+	   (when (< 2000 (residentMemoryFifo.size))
+	     (residentMemoryFifo.pop_front)))
 
+
+	 (do0
+	  (let ((helpx (std--vector<int> (residentMemoryFifo.size)))
+		  (helpy (std--vector<int> (residentMemoryFifo.size))))
+	      (dotimes (i (residentMemoryFifo.size))
+		(setf (aref helpx i) i)
+		(setf (aref helpy i) (aref residentMemoryFifo i)))
+	      )
+	  
+	  (do0
+	   (ImPlot--SetNextAxisLimits ImAxis_X1 0 (residentMemoryFifo.size))
+	   (ImPlot--SetNextAxisLimits ImAxis_Y3 
+				      (deref
+				       (std--min_element (helpy.begin)
+							 (helpy.end)))
+				      (deref (std--max_element (helpy.begin)
+							       (helpy.end)))))
+	  (when (ImPlot--BeginPlot (string "Resident Memory Usage")
+				   (string "Sample")
+				   (string "Size (kB)")
+				   )
+	    
+	    (ImPlot--PlotLine (string "Resident Memory")
+			      (helpx.data)
+			      (helpy.data)
+			      (helpy.size))
+	    (ImPlot--EndPlot)
+	    ))
+	 
+	 )
+       
        ,@(loop for e in `((:name sample-rate :type double)
 			  (:name bandwidth :type double)
 			  (:name frequency :type double)
@@ -1700,8 +1959,9 @@
 					   (- xmouse
 					      centerFrequency))))))
 			 (ImPlot--EndPlot)
-			 (ImGui--Text (string "lo_freq: %6.10f MHz")
-				      (* lo_freq 1d-6))
+			 (unless realtimeDisplay
+			  (ImGui--Text (string "lo_freq: %6.10f MHz")
+				       (* lo_freq 1d-6)))
 			 (ImGui--Text (string "xmouse: %6.10f GHz")
 				      (* xmouse 1d-9))
 			 (ImGui--Text (string "gps_freq-xmouse: %6.10f MHz")
@@ -1874,7 +2134,7 @@
 				   1100000 
 				   50000
 				   2000)))
-	      
+	      (stopDaemon)
 	      (startDaemonIfNotRunning)
 	      ,(lprint :msg "initialize sdr manager")
 	      (sdr.initialize)

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <deque>
 #include <filesystem>
+#include <cstdlib>
 #include <cmath> 
 #include "implot.h"
 #include "imgui.h"
@@ -10,10 +13,11 @@
 #include "GpsCACodeGenerator.h"
 #include "MemoryMappedComplexShortFile.h"
 #include "FFTWManager.h"
-#include "SdrManager.h" 
+#include "SdrManager.h"
+#include "ProcessMemoryInfo.h" 
 
 void glfw_error_callback (int err, const char* desc)        {
-        
+        std::cout<<"GLFW erro:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<std::endl<<std::flush;
 }
  
 
@@ -21,22 +25,22 @@ bool isDaemonRunning ()        {
             auto exit_code  = system("pidof sdrplay_apiService > /dev/null"); 
     auto shm_files_exist  = true; 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvRespSema") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvRespSema does not exist"<<std::endl<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvCmdSema") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvCmdSema does not exist"<<std::endl<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComMtx") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComMtx does not exist"<<std::endl<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComShMem") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComShMem does not exist"<<std::endl<<std::flush;
         return false;
  
 } 
@@ -45,13 +49,18 @@ bool isDaemonRunning ()        {
 }
  
 
+void stopDaemon ()        {
+        std::system("ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9");
+}
+ 
+
 void startDaemonIfNotRunning ()        {
-        
+        std::cout<<"verify that sdr daemon is running"<<std::endl<<std::flush;
         if ( !isDaemonRunning() ) {
-                        
+                        std::cout<<"sdrplay daemon is not running. start it"<<std::endl<<std::flush;
                 auto daemon_exit  = system("/usr/bin/sdrplay_apiService &"); 
  
-        
+        std::cout<<"return value"<<" daemon_exit='"<<daemon_exit<<"' "<<std::endl<<std::flush;
         sleep(1);
  
 } 
@@ -59,7 +68,38 @@ void startDaemonIfNotRunning ()        {
  
  
 
-void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes)        {
+void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes)        {
+            static ProcessMemoryInfo memoryInfo ; 
+    static std::deque<int> residentMemoryFifo ; 
+        auto residentMemorySize  = memoryInfo.getResidentMemorySize(); 
+    auto sampleIndex  = residentMemoryFifo.size(); 
+    residentMemoryFifo.push_back(residentMemorySize);
+    if ( 2000<residentMemoryFifo.size() ) {
+                        residentMemoryFifo.pop_front();
+ 
+} 
+ 
+            auto helpx  = std::vector<int>(residentMemoryFifo.size()); 
+    auto helpy  = std::vector<int>(residentMemoryFifo.size()); 
+    for ( auto i = 0;i<residentMemoryFifo.size();i+=1 ) {
+                        helpx[i]=i;
+
+
+                        helpy[i]=residentMemoryFifo[i];
+
+
+} 
+ 
+        ImPlot::SetNextAxisLimits(ImAxis_X1, 0, residentMemoryFifo.size());
+    ImPlot::SetNextAxisLimits(ImAxis_Y3, *std::min_element(helpy.begin(), helpy.end()), *std::max_element(helpy.begin(), helpy.end()));
+ 
+    if ( ImPlot::BeginPlot("Resident Memory Usage", "Sample", "Size (kB)") ) {
+                        ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), helpy.size());
+        ImPlot::EndPlot();
+ 
+} 
+ 
+ 
             ImGui::Text("sample-rate:");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "%f", sdr.get_sample_rate());
@@ -310,14 +350,21 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
  
                                                 auto pixels  = (x.size()+pointsPerPixel+ -1)/pointsPerPixel; 
                         auto x_downsampled  = std::vector<double>(pixels); 
-                                                                        auto count  = 0; 
+                                                                        auto y_max  = std::vector<double>(pixels); 
+                        auto count  = 0; 
                         // Iterate over the data with steps of pointsPerPixel
  
                         for ( int i=0;i<x.size();i+=pointsPerPixel ) {
-                                                                                    // Iterate over the points under the same pixel
+                                                                                    auto max_val  = y1[i]; 
+                            // Iterate over the points under the same pixel
  
                             for ( int j=i+1;j<i+pointsPerPixel&&j<x.size();j++ ) {
+                                                                                                max_val=std::max(max_val, y1[j]);
+
+
 } 
+                                                        y_max[count]=max_val;
+
                                                         x_downsampled[count]=x[i];
 
                             count++;
@@ -325,6 +372,8 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 } 
  
                         x_downsampled.resize(count);
+                        y_max.resize(count);
+                        ImPlot::PlotLine((std::string("y_max_y1_")+"").c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
  
  
  
@@ -350,7 +399,10 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 } 
  
                 ImPlot::EndPlot();
-                ImGui::Text("lo_freq: %6.10f MHz", lo_freq*10.00e-7);
+                if ( !realtimeDisplay ) {
+                                                            ImGui::Text("lo_freq: %6.10f MHz", lo_freq*10.00e-7);
+ 
+} 
                 ImGui::Text("xmouse: %6.10f GHz", xmouse*1.00e-9);
                 ImGui::Text("gps_freq-xmouse: %6.10f MHz", (gps_freq-xmouse)*10.00e-7);
                 ImGui::Text("centerFrequency-xmouse: %6.10f MHz", (centerFrequency-xmouse)*10.00e-7);
@@ -404,14 +456,21 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
  
                                                                                 auto pixels  = (x_corr.size()+pointsPerPixel+ -1)/pointsPerPixel; 
                                         auto x_downsampled  = std::vector<double>(pixels); 
-                                                                                                                        auto count  = 0; 
+                                                                                                                        auto y_max  = std::vector<double>(pixels); 
+                                        auto count  = 0; 
                                         // Iterate over the data with steps of pointsPerPixel
  
                                         for ( int i=0;i<x_corr.size();i+=pointsPerPixel ) {
-                                                                                                                                    // Iterate over the points under the same pixel
+                                                                                                                                    auto max_val  = corrAbs2[i]; 
+                                            // Iterate over the points under the same pixel
  
                                             for ( int j=i+1;j<i+pointsPerPixel&&j<x_corr.size();j++ ) {
+                                                                                                                                                max_val=std::max(max_val, corrAbs2[j]);
+
+
 } 
+                                                                                        y_max[count]=max_val;
+
                                                                                         x_downsampled[count]=x_corr[i];
 
                                             count++;
@@ -419,6 +478,8 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, const 
 } 
  
                                         x_downsampled.resize(count);
+                                        y_max.resize(count);
+                                        ImPlot::PlotLine((std::string("y_max_corrAbs2_")+std::to_string(code_idx)+"_"+std::to_string(dop)).c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
  
  
  
@@ -455,21 +516,24 @@ int main (int argc, char** argv)        {
  
         glfwSetErrorCallback(glfw_error_callback);
         if ( 0==glfwInit() ) {
-                        
+                        std::cout<<"glfw init failed"<<std::endl<<std::flush;
         return 1;
  
 } 
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+ 
             auto *window  = glfwCreateWindow(800, 600, "imgui_dsp", nullptr, nullptr); 
     if ( nullptr==window ) {
-                        
+                        std::cout<<"failed to create glfw window"<<std::endl<<std::flush;
         return 1;
  
 } 
     glfwMakeContextCurrent(window);
-    
+    std::cout<<"enable vsync"<<std::endl<<std::flush;
     glfwSwapInterval(1);
     IMGUI_CHECKVERSION();
-    
+    std::cout<<"create imgui context"<<std::endl<<std::flush;
     ImGui::CreateContext();
     ImPlot::CreateContext();
         auto &io  = ImGui::GetIO(); 
@@ -489,7 +553,7 @@ int main (int argc, char** argv)        {
     auto corrWindowTime_ms  = 1.0    ; 
     auto corrLength  = static_cast<int>((corrWindowTime_ms*sampleRate)/1000); 
     auto caSequenceLength  = 1023; 
-    
+    std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<std::endl<<std::flush;
         auto codes  = std::vector<std::vector<std::complex<double>>>(32); 
     for ( auto i = 0;i<32;i+=1 ) {
                 // chatGPT decided to start PRN index with 1. I don't like it but leave it for now.
@@ -510,7 +574,7 @@ int main (int argc, char** argv)        {
  
 } 
 } 
-        
+        std::cout<<"compute FFT"<<" i='"<<i<<"' "<<std::endl<<std::flush;
         {
                         if ( i==0 ) {
                                                 // the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
@@ -521,7 +585,7 @@ int main (int argc, char** argv)        {
                                 auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
                 auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
                 auto elapsed_ms  = 1000*elapsed.count(); 
-                
+                std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
  
  
  
@@ -533,10 +597,10 @@ int main (int argc, char** argv)        {
                         auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
             auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
             auto elapsed_ms  = 1000*elapsed.count(); 
-            
+            std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
  
  
-                        
+                        std::cout<<"codes"<<" i='"<<i<<"' "<<" codes.size()='"<<codes.size()<<"' "<<" out.size()='"<<out.size()<<"' "<<std::endl<<std::flush;
                                     codes[i]=out;
 
 
@@ -549,8 +613,9 @@ int main (int argc, char** argv)        {
  
         try {
                                 auto sdr  = SdrManager(64512, 1100000, 50000, 2000); 
+        stopDaemon();
         startDaemonIfNotRunning();
-        
+        std::cout<<"initialize sdr manager"<<std::endl<<std::flush;
         sdr.initialize();
                 sdr.set_gain_mode(false);
         sdr.setGainIF(20);
@@ -564,7 +629,7 @@ int main (int argc, char** argv)        {
                 auto fn  = "/mnt5/gps.samples.cs16.fs5456.if4092.dat"; 
         auto file  = MemoryMappedComplexShortFile(fn); 
         if ( file.ready() ) {
-                                    
+                                    std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<std::endl<<std::flush;
  
 } 
  
@@ -589,10 +654,10 @@ int main (int argc, char** argv)        {
  
  
 }catch (const std::runtime_error& e) {
-                
+                std::cout<<"error 1422:"<<" e.what()='"<<e.what()<<"' "<<std::endl<<std::flush;
                 return -1;
 }catch (const std::exception& e) {
-                
+                std::cout<<"error 1426:"<<" e.what()='"<<e.what()<<"' "<<std::endl<<std::flush;
                 return -1;
 } 
         return 0;
