@@ -1185,7 +1185,8 @@
 
       cmath
 
-      omp.h)
+      ;omp.h
+      )
      (include
       
       implot.h
@@ -1205,7 +1206,7 @@
      (defun glfw_error_callback (err desc)
        (declare (type int err)
 		(type "const char*" desc))
-       ,(lprint :msg "GLFW erro:"
+       ,(lprint :msg "GLFW error:"
 		:vars `(err desc)))
 
      ,(let* ((daemon-name "sdrplay_apiService")
@@ -1485,12 +1486,14 @@
 		       (lo_freq 4.092d6)
 		       (centerFrequency (? realtimeDisplay
 					   (sdr.get_frequency)
-					   (- gps_freq lo_freq))))
+					   (- gps_freq lo_freq)))
+		       (windowSize2 (/ windowSize 2)))
 		   (declare (type "static double" centerFrequency lo_freq))
 		   (dotimes (i windowSize)
+		    
 		     (setf (aref x i) (+ centerFrequency
 					 (* sampleRate
-					    (/ (static_cast<double> (- i (/ windowSize 2)))
+					    (/ (static_cast<double> (- i windowSize2))
 					       windowSize))) ))
 
 		   (let ((lo_phase 0d0)
@@ -1606,9 +1609,10 @@
 					  (destructuring-bind (&key name type) e
 					    (let ((aname (format nil "~a_vec" name)))
 					     `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
-				  "#pragma omp parallel for num_threads(12)"
-				 (dotimes (code_idx 32)
-				   (do0 ;when (aref selectedSatellites code_idx)
+				  #+nil "#pragma omp parallel for num_threads(12)"
+				  "#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
+				  (dotimes (code_idx 32)
+				    (do0 ;when (aref selectedSatellites code_idx)
 				     (let  ((maxSnrDop 0)
 					    (maxSnrIdx 0)
 					    (maxSnr 0d0))
@@ -1655,9 +1659,9 @@
 					 )
 				       ,@(loop for e in l-result
 					       collect
-					  (destructuring-bind (&key name type) e
-					    (let ((aname (format nil "~a_vec" name)))
-					     `(setf (aref ,aname code_idx) ,name))))
+					       (destructuring-bind (&key name type) e
+						 (let ((aname (format nil "~a_vec" name)))
+						   `(setf (aref ,aname code_idx) ,name))))
 				       
 				       #+nil 
 				       ,(lprint :msg "sat"
@@ -1776,7 +1780,7 @@
 			   :vars `(i))
 		  (progn
 		    (when (== i 0)
-		      (comments "the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster")
+		      (comments "the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster")
 		      (let ((mini (std--vector<std--complex<double>> 32)))
 			,(benchmark `(fftw.fft mini 32))))
 		    ,(benchmark `(let ((out (fftw.fft code corrLength)))))

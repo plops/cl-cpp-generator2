@@ -4,8 +4,7 @@
 #include <deque>
 #include <filesystem>
 #include <cstdlib>
-#include <cmath>
-#include <omp.h> 
+#include <cmath> 
 #include "implot.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -18,7 +17,7 @@
 #include "ProcessMemoryInfo.h" 
 
 void glfw_error_callback (int err, const char* desc)        {
-        std::cout<<"GLFW erro:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<std::endl<<std::flush;
+        std::cout<<"GLFW error:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<std::endl<<std::flush;
 }
  
 
@@ -263,8 +262,9 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
             auto gps_freq  = 1.575420e+9; 
             static double lo_freq  = 4.0920e+6; 
             static double centerFrequency  = realtimeDisplay ? sdr.get_frequency() : (gps_freq-lo_freq); 
+            auto windowSize2  = windowSize/2; 
             for ( auto i = 0;i<windowSize;i+=1 ) {
-                                                x[i]=centerFrequency+sampleRate*(static_cast<double>(i-(windowSize/2))/windowSize);
+                                                x[i]=centerFrequency+sampleRate*(static_cast<double>(i-windowSize2)/windowSize);
 
 
 } 
@@ -422,7 +422,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
                                         auto maxSnr_vec  = std::vector<double>(32); 
  
-                    #pragma omp parallel for num_threads(12)
+                    #pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)
                     for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
                                                                                                 auto maxSnrDop  = 0; 
                         auto maxSnrIdx  = 0; 
@@ -584,7 +584,7 @@ int main (int argc, char** argv)        {
         std::cout<<"compute FFT"<<" i='"<<i<<"' "<<std::endl<<std::flush;
         {
                         if ( i==0 ) {
-                                                // the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
+                                                // the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
  
                                 auto mini  = std::vector<std::complex<double>>(32); 
                                 auto startBenchmark00  = std::chrono::high_resolution_clock::now(); 
