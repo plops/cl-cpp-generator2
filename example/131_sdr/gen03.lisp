@@ -1610,7 +1610,7 @@
 	      (let ((realtimeDisplay (SelectRealtimeDisplay file))))
 
 	      
-
+ 
 	      (if realtimeDisplay
 		  (do0
 		   (sdr->processFifo
