@@ -61,7 +61,7 @@
 						     x)))
 	args
       `(progn
-	 (let ((pointsPerPixel (static_cast<int> (/ (dot ,x (size))
+	 (let ((pointsPerPixel (static_cast<int> (/ (static_cast<float> (dot ,x (size)))
 						    ,points )))))
 	 (if (<= pointsPerPixel 1)
 	     (do0 ,@(loop for e in ys
@@ -85,14 +85,14 @@
 				    #+dec-min (y_min (std--vector<double> pixels))
 				    (count 0))
 				(comments "Iterate over the data with steps of pointsPerPixel")
-				(for ((= "int i" 0)
+				(for ((= "size_t i" 0)
 				      (< i (dot ,x (size)))
 				      (incf i pointsPerPixel))
 				     (let (#+dec-max (max_val (aref ,y1 i))
 					   #+dec-min (min_val (aref ,y1 i))
 					   #+dec-mean (sum_val (aref ,y1 i)))
 				       (comments "Iterate over the points under the same pixel")
-				       (for ((= "int j" (+ i 1))
+				       (for ((= "size_t j" (+ i 1))
 					     (logand (< j (+ i pointsPerPixel))
 						     (< j (dot ,x (size))))
 					     (incf j))
@@ -122,7 +122,8 @@
 							      (c_str))
 							 (x_downsampled.data)
 							 (dot ,e (data))
-							 (x_downsampled.size)))))))))))
+							 (static_cast<int>
+							  (x_downsampled.size))))))))))))
   (let* ((name `GpsCACodeGenerator)
 	 (sat-def `((2 6)
 		    (3 7)
@@ -393,7 +394,7 @@
 	 (members `(
 					;(parameters :type "const Args&" :param t)
 		    (bufferSize :type "const int" :param t)
-		    (fifoSize :type "const int" :param t)
+		    (fifoSize :type "const size_t" :param t)
 		    (timeout_us :type "const int" :param t)
 		    (capture_sleep_us :type "const int" :param t)
 		    
@@ -1252,9 +1253,9 @@
 		  (type "static std::deque<int>" residentMemoryFifo)
 		  )
 	 (let ((residentMemorySize (memoryInfo.getResidentMemorySize))
-	       (sampleIndex (residentMemoryFifo.size)))
+	       )
 	   (residentMemoryFifo.push_back residentMemorySize)
-	   (when (< 2000 (residentMemoryFifo.size))
+	   (when (< (size_t 2000) (residentMemoryFifo.size))
 	     (residentMemoryFifo.pop_front)))
 
 
@@ -1262,12 +1263,13 @@
 	  (let ((helpx (std--vector<int> (residentMemoryFifo.size)))
 		(helpy (std--vector<int> (residentMemoryFifo.size))))
 	    (dotimes (i (residentMemoryFifo.size))
-	      (setf (aref helpx i) i)
+	      (declare (type size_t i))
+	      (setf (aref helpx i) (static_cast<int> i))
 	      (setf (aref helpy i) (aref residentMemoryFifo i)))
 	    )
 	  
 	  (do0
-	   (ImPlot--SetNextAxisLimits ImAxis_X1 0 (residentMemoryFifo.size))
+	   (ImPlot--SetNextAxisLimits ImAxis_X1 0 (static_cast<int> (residentMemoryFifo.size)))
 	   (ImPlot--SetNextAxisLimits ImAxis_Y3 
 				      (deref
 				       (std--min_element (helpy.begin)
@@ -1275,18 +1277,13 @@
 				      (deref (std--max_element (helpy.begin)
 							       (helpy.end)))))
 	  (when (ImPlot--BeginPlot (string "Resident Memory Usage")
-				   (string "Sample")
-				   (string "Size (kB)")
 				   )
 	    
 	    (ImPlot--PlotLine (string "Resident Memory")
 			      (helpx.data)
 			      (helpy.data)
-			      (helpy.size))
-	    (ImPlot--EndPlot)
-	    ))
-	 
-	 )
+			      (static_cast<int> (helpy.size)))
+	    (ImPlot--EndPlot))))
        
        ,@(loop for e in `((:name sample-rate :type double)
 			  (:name bandwidth :type double)
@@ -1360,11 +1357,12 @@
 		 (,var-value (static_cast<int> (aref ,items-num ,var-index)))
 		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
 									l-combo)))))
-	     (declare (type "static int" ,var-index ,old-var-index))
+	     (declare (type "static size_t" ,var-index ,old-var-index))
 	     (when (ImGui--BeginCombo (string ,combo-name)
 				      (dot (aref ,items-str ,var-index)
 					   (c_str)))
 	       (dotimes (i (dot ,items-str (size)))
+		 (declare (type size_t i))
 		 (let ((is_selected (== ,var-index i)))
 		   (when (ImGui--Selectable (dot (aref ,items-str i)
 						 (c_str))
@@ -1384,6 +1382,7 @@
 	       (l-default-index 3	;(- (length l-combo) 1)
 				)
 	       (var-index (format nil "~aIndex" combo-name))
+	       (i (format nil "~aIter" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
 	       (items-str (format nil "~aItemsStr" combo-name))
@@ -1391,20 +1390,22 @@
 	  `(let ((,var-index ,l-default-index)
 		 (,old-var-index ,l-default-index)
 		 (,items-num (std--vector<double> (curly ,@l-combo)))
-		 (,var-value (aref ,items-num ,var-index))
+		 ;(,var-value (aref ,items-num ,var-index))
 		 (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
 									l-combo)))))
-	     (declare (type "static int" ,var-index ,old-var-index))
+	     (declare (type "static size_t" ,var-index ,old-var-index))
 	     (when (ImGui--BeginCombo (string ,combo-name)
 				      (dot (aref ,items-str ,var-index)
 					   (c_str)))
-	       (dotimes (i (dot ,items-str (size)))
-		 (let ((is_selected (== ,var-index i)))
-		   (when (ImGui--Selectable (dot (aref ,items-str i)
+	       (dotimes (,i (dot ,items-str (size)))
+		 (declare (type size_t ,i))
+		 (let ((is_selected (== ,var-index ,i)))
+		   (when (ImGui--Selectable (dot (aref ,items-str ,i)
 						 (c_str))
 					    is_selected)
-		     (setf ,var-index i
-			   ,var-value (aref ,items-num i)))
+		     (setf ,var-index ,i
+			  ; ,var-value (aref ,items-num ,i)
+			   ))
 		   (when is_selected
 		     (ImGui--SetItemDefaultFocus))))
 	       (ImGui--EndCombo))
@@ -1476,7 +1477,7 @@
 			      &logScale)
 	     (handler-case
 		 (let ((in (std--vector<std--complex<double>> windowSize))
-		       (nyquist (/ windowSize 2d0))
+		       #+nil (nyquist (/ windowSize 2d0))
 		       (sampleRate (? realtimeDisplay
 				      10d6
 				      5.456d6))
@@ -1506,9 +1507,9 @@
 			 (do0
 			  (dotimes (i windowSize)
 			    (let ((zs (aref file (+ start i)))
-				  (zr (static_cast<double> (zs.real)))
-				  (zi (static_cast<double> (zs.imag)))
-				  (z (std--complex<double> zr zi)))
+				  #+nil (zr (static_cast<double> (zs.real)))
+				  #+nil (zi (static_cast<double> (zs.imag)))
+				  #+nil (z (std--complex<double> zr zi)))
 			      (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
 				    (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
 				(declare (type "const auto " lo_sin lo_cos))
@@ -1587,15 +1588,18 @@
 		      
 
 		      (let ((codesSize (dot (aref codes 0) (size))))
-			(if (== windowSize codesSize)
+			(if (== (static_cast<size_t> windowSize) codesSize)
 			    (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
-			      (let ((x_corr (std--vector<double> (out.size))))
+			      (let ((x_corr (std--vector<double> (out.size)))
+				    )
 				(dotimes (i (x_corr.size))
-				  (setf (aref x_corr i) (* 1d0 i))))
+				  (declare (type size_t i))
+				  (setf (aref x_corr i) (static_cast<double> i))))
 
 			      ,(let ((l-result `((:name maxSnrDop :type int)
 						 (:name maxSnrIdx :type int)
-						 (:name maxSnr :type double))))
+						 (:name maxSnr :type double)
+						 )))
 				`(do0
 				  ,@(loop for e in l-result
 					  collect
@@ -1613,13 +1617,14 @@
 					     (prod (std--vector<std--complex<double>> len))
 					     (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
 									    sampleRate)))
-					     (dopEnd (static_cast<int> (/ (* 5000 len)
+					     (dopEnd (static_cast<int> (/ (* 5000 (static_cast<double> len))
 									  sampleRate))))
 					 (for ((= "int dop" dopStart)
 					       (<= dop dopEnd)
 					       (incf dop))
 					      (do0
 					       (dotimes (i (out.size))
+						 (declare (type size_t i))
 						 (let ((i1 (% (+ i -dop len) len)))
 						   (setf (aref prod i)
 							 (* (std--conj (aref out i))
@@ -1629,7 +1634,7 @@
 						     (sumPwr 0d0)
 						     (maxPwr 0d0)
 						     (maxPwrIdx 0))
-						 (dotimes (i (out.size))
+						 (dotimes (i (static_cast<int> (out.size)))
 						   (let ((v (std--abs (aref corr i)))
 							 (pwr (/ (* v v)
 								 windowSize)))
@@ -1638,19 +1643,14 @@
 							     maxPwrIdx i))
 						     (setf (aref corrAbs2 i) pwr)
 						     (incf sumPwr pwr)))
-						 (let ((avgPwr (/ sumPwr (out.size)))
+						 (let ((avgPwr (/ sumPwr (static_cast<double> (out.size))))
 						       (snr (/ maxPwr avgPwr)))
 						   (when (< maxSnr snr)
 						     (setf maxSnr snr
 							   maxSnrDop dop
 							 
 							   maxSnrIdx maxPwrIdx))))
-					       #+nil ,(decimate-plots `(:x x_corr :ys (corrAbs2)
-									:idx (+ (std--to_string code_idx
-												)
-										(string "_")
-										(std--to_string dop))
-									:points 100))
+					       
 					       ))
 					 )
 				       ,@(loop for e in l-result
@@ -1662,14 +1662,18 @@
 				       #+nil 
 				       ,(lprint :msg "sat"
 						:vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
+
+				 (dotimes (pnr_idx 32)
+				   (if (< 18d0 (aref maxSnr_vec pnr_idx))
+				       (do0
+					(setf (aref selectedSatellites pnr_idx) true)
+					)
+				     (setf (aref selectedSatellites pnr_idx) false)))
+
+			
+				
+
 				 
-				 ,@(loop for e in l-result
-					 collect
-					 (destructuring-bind (&key name type) e
-					   (let ((aname (format nil "~a_vec" name)))
-					     `(dotimes (i 32)
-						(let ((,name (aref ,aname i)))
-						 ,(lprint :vars `(i ,name)))))))
 				 ))
 			      
 			      

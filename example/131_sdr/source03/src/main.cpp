@@ -75,17 +75,16 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
             static ProcessMemoryInfo memoryInfo ; 
     static std::deque<int> residentMemoryFifo ; 
         auto residentMemorySize  = memoryInfo.getResidentMemorySize(); 
-    auto sampleIndex  = residentMemoryFifo.size(); 
     residentMemoryFifo.push_back(residentMemorySize);
-    if ( 2000<residentMemoryFifo.size() ) {
+    if ( size_t(2000)<residentMemoryFifo.size() ) {
                         residentMemoryFifo.pop_front();
  
 } 
  
             auto helpx  = std::vector<int>(residentMemoryFifo.size()); 
     auto helpy  = std::vector<int>(residentMemoryFifo.size()); 
-    for ( auto i = 0;i<residentMemoryFifo.size();i+=1 ) {
-                        helpx[i]=i;
+    for ( size_t i = 0;i<residentMemoryFifo.size();i+=1 ) {
+                        helpx[i]=static_cast<int>(i);
 
 
                         helpy[i]=residentMemoryFifo[i];
@@ -93,11 +92,11 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
 
 } 
  
-        ImPlot::SetNextAxisLimits(ImAxis_X1, 0, residentMemoryFifo.size());
+        ImPlot::SetNextAxisLimits(ImAxis_X1, 0, static_cast<int>(residentMemoryFifo.size()));
     ImPlot::SetNextAxisLimits(ImAxis_Y3, *std::min_element(helpy.begin(), helpy.end()), *std::max_element(helpy.begin(), helpy.end()));
  
-    if ( ImPlot::BeginPlot("Resident Memory Usage", "Sample", "Size (kB)") ) {
-                        ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), helpy.size());
+    if ( ImPlot::BeginPlot("Resident Memory Usage") ) {
+                        ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), static_cast<int>(helpy.size()));
         ImPlot::EndPlot();
  
 } 
@@ -149,13 +148,13 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
 } 
  
-            static int windowSizeIndex  = 3; 
-    static int old_windowSizeIndex  = 3; 
+            static size_t windowSizeIndex  = 3; 
+    static size_t old_windowSizeIndex  = 3; 
     auto windowSizeItemsNum  = std::vector<double>({1024, 5456, 8192, 10000, 20000, 32768, 40000, 50000, 65536, 80000, 100000, 140000, 1048576}); 
     auto windowSize  = static_cast<int>(windowSizeItemsNum[windowSizeIndex]); 
     auto windowSizeItemsStr  = std::vector<std::string>({"1024", "5456", "8192", "10000", "20000", "32768", "40000", "50000", "65536", "80000", "100000", "140000", "1048576"}); 
     if ( ImGui::BeginCombo("windowSize", windowSizeItemsStr[windowSizeIndex].c_str()) ) {
-                        for ( auto i = 0;i<windowSizeItemsStr.size();i+=1 ) {
+                        for ( size_t i = 0;i<windowSizeItemsStr.size();i+=1 ) {
                                     auto is_selected  = windowSizeIndex==i; 
             if ( ImGui::Selectable(windowSizeItemsStr[i].c_str(), is_selected) ) {
                                                                 windowSizeIndex=i;
@@ -180,17 +179,15 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
 } 
  
-            static int bandwidthIndex  = 3; 
-    static int old_bandwidthIndex  = 3; 
+            static size_t bandwidthIndex  = 3; 
+    static size_t old_bandwidthIndex  = 3; 
     auto bandwidthItemsNum  = std::vector<double>({2.00e+5, 3.00e+5, 6.00e+5, 1.5360e+6, 5.00e+6, 6.00e+6, 7.00e+6, 8.00e+6}); 
-    auto bandwidthValue  = bandwidthItemsNum[bandwidthIndex]; 
     auto bandwidthItemsStr  = std::vector<std::string>({"200000.0d0", "300000.0d0", "600000.0d0", "1536000.0d0", "5000000.0d0", "6000000.0d0", "7000000.0d0", "8000000.0d0"}); 
     if ( ImGui::BeginCombo("bandwidth", bandwidthItemsStr[bandwidthIndex].c_str()) ) {
-                        for ( auto i = 0;i<bandwidthItemsStr.size();i+=1 ) {
-                                    auto is_selected  = bandwidthIndex==i; 
-            if ( ImGui::Selectable(bandwidthItemsStr[i].c_str(), is_selected) ) {
-                                                                bandwidthIndex=i;
-                bandwidthValue=bandwidthItemsNum[i];
+                        for ( size_t bandwidthIter = 0;bandwidthIter<bandwidthItemsStr.size();bandwidthIter+=1 ) {
+                                    auto is_selected  = bandwidthIndex==bandwidthIter; 
+            if ( ImGui::Selectable(bandwidthItemsStr[bandwidthIter].c_str(), is_selected) ) {
+                                                                bandwidthIndex=bandwidthIter;
 
 
  
@@ -262,7 +259,6 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
         ImGui::Checkbox("Logarithmic Y-axis", &logScale);
         try {
                                     auto in  = std::vector<std::complex<double>>(windowSize); 
-            auto nyquist  = windowSize/2.0    ; 
             auto sampleRate  = realtimeDisplay ? 1.00e+7 : 5.4560e+6; 
             auto gps_freq  = 1.575420e+9; 
             static double lo_freq  = 4.0920e+6; 
@@ -289,9 +285,6 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
 } else {
                                                 for ( auto i = 0;i<windowSize;i+=1 ) {
                                                             auto zs  = file[(start+i)]; 
-                    auto zr  = static_cast<double>(zs.real()); 
-                    auto zi  = static_cast<double>(zs.imag()); 
-                    auto z  = std::complex<double>(zr, zi); 
                                         const auto  lo_sin  = std::array<int,4>({1, 1, 0, 0}); 
                     const auto  lo_cos  = std::array<int,4>({1, 0, 0, 1}); 
                                         auto re  = zs.real()^lo_sin[static_cast<int>(lo_phase)] ?  -1 : 1; 
@@ -343,7 +336,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
             if ( ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)" : "FFT magnitude (linear)") ) {
                                                 {
-                                                            auto pointsPerPixel  = static_cast<int>((x.size())/(ImGui::GetContentRegionAvail().x)); 
+                                                            auto pointsPerPixel  = static_cast<int>(static_cast<float>(x.size())/(ImGui::GetContentRegionAvail().x)); 
  
                                         if ( pointsPerPixel<=1 ) {
                                                                         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
@@ -357,11 +350,11 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
                         auto count  = 0; 
                         // Iterate over the data with steps of pointsPerPixel
  
-                        for ( int i=0;i<x.size();i+=pointsPerPixel ) {
+                        for ( size_t i=0;i<x.size();i+=pointsPerPixel ) {
                                                                                     auto max_val  = y1[i]; 
                             // Iterate over the points under the same pixel
  
-                            for ( int j=i+1;j<i+pointsPerPixel&&j<x.size();j++ ) {
+                            for ( size_t j=i+1;j<i+pointsPerPixel&&j<x.size();j++ ) {
                                                                                                 max_val=std::max(max_val, y1[j]);
 
 
@@ -376,7 +369,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
                         x_downsampled.resize(count);
                         y_max.resize(count);
-                        ImPlot::PlotLine((std::string("y_max_y1_")+"").c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
+                        ImPlot::PlotLine((std::string("y_max_y1_")+"").c_str(), x_downsampled.data(), y_max.data(), static_cast<int>(x_downsampled.size()));
  
  
  
@@ -414,11 +407,11 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
 } 
  
                         auto codesSize  = codes[0].size(); 
-            if ( windowSize==codesSize ) {
+            if ( static_cast<size_t>(windowSize)==codesSize ) {
                                 if ( ImPlot::BeginPlot("Cross-Correlations with PRN sequences") ) {
                                                                                 auto x_corr  = std::vector<double>(out.size()); 
-                    for ( auto i = 0;i<x_corr.size();i+=1 ) {
-                                                                        x_corr[i]=1.0    *i;
+                    for ( size_t i = 0;i<x_corr.size();i+=1 ) {
+                                                                        x_corr[i]=static_cast<double>(i);
 
 
 } 
@@ -438,9 +431,9 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
                         auto len  = out.size(); 
                         auto prod  = std::vector<std::complex<double>>(len); 
                         auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
-                        auto dopEnd  = static_cast<int>((5000*len)/sampleRate); 
+                        auto dopEnd  = static_cast<int>((5000*static_cast<double>(len))/sampleRate); 
                         for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
-                                                                                    for ( auto i = 0;i<out.size();i+=1 ) {
+                                                                                    for ( size_t i = 0;i<out.size();i+=1 ) {
                                                                                                 auto i1  = (i+-dop+len)%len; 
                                                                 prod[i]=std::conj(out[i])*code[i1];
 
@@ -452,7 +445,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
                             auto sumPwr  = 0.    ; 
                             auto maxPwr  = 0.    ; 
                             auto maxPwrIdx  = 0; 
-                            for ( auto i = 0;i<out.size();i+=1 ) {
+                            for ( auto i = 0;i<static_cast<int>(out.size());i+=1 ) {
                                                                                                 auto v  = std::abs(corr[i]); 
                                 auto pwr  = (v*v)/windowSize; 
                                 if ( maxPwr<pwr ) {
@@ -467,7 +460,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
                                 sumPwr+=pwr;
  
 } 
-                                                        auto avgPwr  = sumPwr/out.size(); 
+                                                        auto avgPwr  = sumPwr/static_cast<double>(out.size()); 
                             auto snr  = maxPwr/avgPwr; 
                             if ( maxSnr<snr ) {
                                                                                                                                 maxSnr=snr;
@@ -492,20 +485,17 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
  
 } 
-                    for ( auto i = 0;i<32;i+=1 ) {
-                                                                        auto maxSnrDop  = maxSnrDop_vec[i]; 
-                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnrDop='"<<maxSnrDop<<"' "<<std::endl<<std::flush;
+                    for ( auto pnr_idx = 0;pnr_idx<32;pnr_idx+=1 ) {
+                                                if ( 18.    <maxSnr_vec[pnr_idx] ) {
+                                                                                                                selectedSatellites[pnr_idx]=true;
+
+
  
+} else {
+                                                                                    selectedSatellites[pnr_idx]=false;
+
+
 } 
-                    for ( auto i = 0;i<32;i+=1 ) {
-                                                                        auto maxSnrIdx  = maxSnrIdx_vec[i]; 
-                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnrIdx='"<<maxSnrIdx<<"' "<<std::endl<<std::flush;
- 
-} 
-                    for ( auto i = 0;i<32;i+=1 ) {
-                                                                        auto maxSnr  = maxSnr_vec[i]; 
-                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnr='"<<maxSnr<<"' "<<std::endl<<std::flush;
- 
 } 
  
                     ImPlot::EndPlot();
