@@ -11,14 +11,14 @@
 						  :dec-max
 						  :dec-min
 						  :dec-mean
-						  :leak)))
+						  )))
 (setf *features* (set-exclusive-or *features* (list  :more
 						    :dec-max
 					;:dec-min
 					;:dec-mean
 					:guru-plan
 					:memoize-plan
-						     ;:leak
+						  
 						    )))
 
 
@@ -119,179 +119,6 @@
 						       (x_downsampled.data)
 						       (dot ,e (data))
 						       (x_downsampled.size)))))))))))
-  
-  #+nil
-  (let* ((name `GpsCACodeGenerator)
-	 (sat-def `((2 6)
-		    (3 7)
-		    (4 8)
-		    (5 9)
-		    (1 9)
-		    (2 10)
-		    (1 8)
-		    (2 9)
-		    (3 10)
-		    (2 3)
-		    (3 4)
-		    (5 6)
-		    (6 7)
-		    (7 8)
-		    (8 9)
-		    (9 10)
-		    (1 4)
-		    (2 5)
-		    (3 6)
-		    (4 7)
-		    (5 8)
-		    (6 9)
-		    (1 3)
-		    (4 6)
-		    (5 7)
-		    (6 8)
-		    (7 9)
-		    (8 10)
-		    (1 6)
-		    (2 7)
-		    (3 8)
-		    (4 9)))
-	 (members `((registerSize :type "static constexpr size_t" :initform-class 10 :param nil)
-		    (g1FeedbackBits :type "static constexpr std::array<int,2>"
-				    :initform-class (curly 3 10) :param nil)
-		    (g2FeedbackBits :type "static constexpr std::array<int,6>"
-				    :initform-class (curly 2 3 6 8 9 10) :param nil)
-		    (g2Shifts :type ,(format nil "static constexpr std::array<std::pair<int,int>,~a>" (length sat-def))
-			      :initform-class
-			      (curly ,@(loop for (e f)
-					       in sat-def
-					     collect
-					     `(std--make_pair ,e ,f)) )
-			      :param nil)
-		    (g1 :type "std::deque<bool>")
-		    (g2 :type "std::deque<bool>")
-		    (prn :type int :param t)
-		    )))
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name name
-     :headers `()
-     :header-preamble `(do0
-			(include<> vector
-				   array
-				   deque
-				   cstddef)
-			)
-     :implementation-preamble
-     `(do0
-       (include<> stdexcept
-					; cstring
-		  cmath
-		  iostream)
-       )
-     :code `(do0
-	     (defclass ,name ()
-	       "public:"
-	       (defmethod ,name (,@(remove-if #'null
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (name &key type param initform initform-class) e
-					    (let ((nname (intern
-							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name))))))
-					      (when param
-						nname))))))
-		 (declare
-		  ,@(remove-if #'null
-			       (loop for e in members
-				     collect
-				     (destructuring-bind (name &key type param initform initform-class) e
-				       (let ((nname (intern
-						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name))))))
-					 (when param
-					   
-					   `(type ,type ,nname))))))
-		  (construct
-		   ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (name &key type param initform initform-class) e
-					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					      (nname_ (format nil "~a_"
-							      (cl-change-case:snake-case (format nil "~a" name)))))
-					  (cond
-					    (param
-					     `(,nname_ ,nname))
-					    (initform
-					     `(,nname_ ,initform)))))))
-		   )
-		  (explicit)	    
-		  (values :constructor))
-		 (when (logior (< prn_ 1)
-			       (< ,(length sat-def) prn_ ))
-		   (throw (std--invalid_argument (+ (string "Invalid PRN: ")
-						    (std--to_string prn_))))
-		   )
-		 (do0 (g1_.resize register_size_ true)
-		      (g2_.resize register_size_ true))
-		 )
-	       
-	       (defmethod generate_sequence (n)
-		 (declare (type size_t n)
-			  (values "std::vector<bool>"))
-		 (let ((sequence (std--vector<bool> n)))
-		   (dotimes (i n)
-		     (declare (type size_t i))
-		     (setf (aref sequence i)  (step)))
-		   (return sequence)))
-	       
-	       #+nil
-	       (defmethod print_square (v)
-		 (declare (type "const std::vector<bool> &" v))
-		 (let ((size (v.size))
-		       (side (static_cast<size_t> (std--sqrt size))))
-		   (dotimes (i size)
-		     (declare (type size_t i))
-		     (let ((o (? (aref v i)
-				 (string "\\u2588")
-				 (string " "))))
-		       (<< std--cout o)
-		       (when (== 0 (% (+ i 1 ) side))
-			 (<< std--cout (string "\\n")))))))
-	       "private:"
-	       (defmethod step ()
-		 (declare (values bool))
-		 (let ((new_g1_bit false))
-		   (for-range (i g1_feedback_bits_)
-			      (setf new_g1_bit (^ new_g1_bit (aref g1_ (- i 1))))))
-		 (let ((new_g2_bit false))
-		   (for-range (i g2_feedback_bits_)
-			      (setf new_g2_bit (^ new_g2_bit (aref g2_ (- i 1))))))
-		 (do0 (g1_.push_front new_g1_bit)
-		      (g1_.pop_back))
-		 (do0 (g2_.push_front new_g2_bit)
-		      (g2_.pop_back))
-		 (let ((delay1 (dot (aref g2_shifts_ (- prn_ 1))
-				    first))
-		       (delay2 (dot (aref g2_shifts_ (- prn_ 1))
-				    second))))
-		 (return (^ (g1_.back)
-			    (^ (aref g2_ (- delay1 1))
-			       (aref g2_ (- delay2 1))))))
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (name &key type param initform initform-class) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      (if initform-class
-					  `(space ,type (setf ,nname_ ,initform-class))
-					  `(space ,type ,nname_))))))
-
-	       ))))
-
-
   (let* ((name `GpsCACodeGenerator)
 	 (sat-def `((2 6)
 		    (3 7)
@@ -353,14 +180,7 @@
 		  cstring
 		  cmath
 		  iostream
-		  
-		  )
-
-       #+nil (include GpsCACodeGenerator.h)
-       #+nil 
-       (space "const std::map<int, std::pair<int,int>> GpsCACodeGenerator::lut_ = "
-	      )
-       )
+		  ))
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
@@ -566,104 +386,6 @@
 
 	       ))))
 
-  #+nil
-  (let* ((name `FFTWAllocator)
-	 (members `()))
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name name
-     :headers `()
-     :header-preamble `(do0
-			(include<> vector complex limits)
-			)
-     :implementation-preamble
-     `(do0
-       (include<> cstddef new)
-       )
-     :code `(do0
-	     
-	     (defclass ,name ()
-	       "public:"
-	       (space  using (setf  value_type std--complex<double>))
-	       (space  using (setf  size_type std--size_t))
-	       (space  using (setf  difference_type std--ptrdiff_t))
-	       (space  using (setf  propagate_on_container_move_assignment
-				    std--true_type))
-	       (space  using (setf  is_always_equal
-				    std--true_type))
-	       
-	       (defmethod ,name (,@(remove-if #'null
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (name &key type param initform initform-class) e
-					    (let ((nname (intern
-							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name))))))
-					      (when param
-						nname))))))
-		 (declare
-		  ,@(remove-if #'null
-			       (loop for e in members
-				     collect
-				     (destructuring-bind (name &key type param initform initform-class) e
-				       (let ((nname (intern
-						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name))))))
-					 (when param
-					   
-					   `(type ,type ,nname))))))
-		  (construct
-		   ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (name &key type param initform initform-class) e
-					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					      (nname_ (format nil "~a_"
-							      (cl-change-case:snake-case (format nil "~a" name)))))
-					  (cond
-					    (param
-					     `(,nname_ ,nname))
-					    (initform
-					     `(,nname_ ,initform)))))))
-		   )
-		  (noexcept)	    
-		  (values :constructor)))
-
-	       (defmethod FFTWAllocator (a)
-		 (declare (type "const FFTWAllocator&" a)
-			  (values "template<class U>")
-			  (noexcept)))
-	       
-	       (defmethod allocate (n)
-		 (declare (type "std::size_t" n)
-			  (values "FFTWAllocator::value_type*"))
-		 (return (static_cast<value_type*>
-			  (std--aligned_alloc 16 (* n (sizeof value_type))))))
-
-	       (defmethod deallocate (p n)
-		 (declare (type "std::size_t" n)
-			  (type "value_type*" p)
-			  (noexcept))
-		 (std--free p)
-		 )
-	       
-	       "private:"
-	       
-	       
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (name &key type param initform initform-class) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      (if initform-class
-					  `(space ,type (setf ,nname_ ,initform-class))
-					  `(space ,type ,nname_))))))
-
-	       ))))
-
   (let* ((name `SdrManager)
 	 (members `(
 					;(parameters :type "const Args&" :param t)
@@ -800,53 +522,12 @@
 						      channel_
 						      ))))))
 
-		       #+nil(do0
-			     ,(lprint :msg "set highest gain")
-			     (-> sdr_ (setGainMode direction_ channel_ true))
-			     (-> sdr_ (setGain direction_ channel_ (string "IFGR") 20))
-			     (-> sdr_ (setGain direction_ channel_ (string "RFGR") 0)))
-		       #+nil (let ((hasAutomaticGain (-> sdr_ (hasGainMode direction_ channel_))))
-			       #+more (do0
-				       ,(lprint :msg "has automatic gain control"
-						:vars `(
-							hasAutomaticGain))
-				       ,(lprint :msg "balance" ;; none 
-						:vars `((-> sdr_ (hasIQBalance direction_ channel_))
-							(-> sdr_ (hasIQBalanceMode direction_ channel_))
-							))
-				       ,(lprint :msg "offset" 
-						:vars `((-> sdr_ (hasDCOffset direction_ channel_))
-							(-> sdr_ (hasDCOffsetMode direction_ channel_)) ;; supported
-							)))
-			       (when hasAutomaticGain
-				 (let ((automatic false ;true
-						  )
-				       )
-				   
-				   #+more
-				   (let ((ifgrGain (-> sdr_ (getGain direction_ channel_ (string "IFGR"))))
-					 (ifgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "IFGR"))))
-					 (rfgrGain (-> sdr_ (getGain direction_ channel_ (string "RFGR"))))
-					 (rfgrGainRange (-> sdr_ (getGainRange direction_ channel_ (string "RFGR")))))
-				     ,(lprint :msg "automatic gain"
-					      :vars `((-> sdr_ (getGainMode direction_ channel_))
-						      ifgrGain
-						      (ifgrGainRange.minimum)
-						      (ifgrGainRange.maximum)
-						      (ifgrGainRange.step)
-						      rfgrGain
-						      (rfgrGainRange.minimum)
-						      (rfgrGainRange.maximum)
-						      (rfgrGainRange.step)
-						      ))))))
 		       #+more
 		       ((lambda ()
 			  (declare (capture "&"))
 			  (let ((fullScale 0d0))
 			    ,(lprint :vars `((-> sdr_ (getNativeStreamFormat direction_ channel_ fullScale))
 					     fullScale)))))
-		       
-		       
 		       
 		       #+more (do0
 			       (<< std--cout std--fixed (std--setprecision 10) 1d0  std--endl)
@@ -938,12 +619,6 @@
 			     (defmethod ,getter ()
 			       (declare (values ,type))
 			       (return (-> sdr_ (,Getter direction_ channel_))))))))
-
-	       #+nil 
-	       (do0 (-> sdr_ (setSampleRate direction channel parameters_.sampleRate))
-		    (-> sdr_ (setBandwidth direction channel parameters_.bandwidth))
-		    (-> sdr_ (setFrequency direction channel parameters_.frequency))
-		    (-> sdr_ (setGainMode direction channel automatic)))
 
 	       ,@(loop for e in `(IF RF)
 		       collect
@@ -1402,20 +1077,11 @@
 					   (std--to_string nThreads)
 					   (string ".wis")))))
 			    
-			   (let #-leak (#+nil (in0 ("std::vector<std::complex<double>,FFTWAllocator>" windowSize))
-					#+nil (out0 ("std::vector<std::complex<double>,FFTWAllocator>" windowSize))
-					(in0 ("std::vector<std::complex<double>>" windowSize))
-					(out0 ("std::vector<std::complex<double>>" windowSize))
-					(*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
-					(*out ("reinterpret_cast<double(*)[2]>" (out0.data))))
-			       #+leak ((*in (fftw_alloc_complex windowSize)) ;; FIXME: memory leak
-				       (*out (fftw_alloc_complex windowSize)))
-			     #+leak (when (logior !in
-					   !out)
-			       (do0 (fftw_free in)
-				    (fftw_free out)
-				    (throw (std--runtime_error (string "Failed to allocate memory for fftw plan")))))
-			     
+			   (let ((in0 ("std::vector<std::complex<double>>" windowSize))
+				 (out0 ("std::vector<std::complex<double>>" windowSize))
+				 (*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
+				 (*out ("reinterpret_cast<double(*)[2]>" (out0.data))))
+			     			     
 			     (let ((wisdomFile (std--ifstream wisdom_filename)))
 			       (if (wisdomFile.good)
 				   (do0 #+nil ,(lprint :msg "read wisdom from existing file"
@@ -1451,10 +1117,7 @@
 									   FFTW_UNALIGNED)
 								       )))
 					     )
-			       #+leak (when !p
-				 (do0 (fftw_free in)
-				      (fftw_free out)
-				      (throw (std--runtime_error (string "Failed to create fftw plan")))))
+			       
 			       #+nil ,(lprint :msg "plan successfully created")
 			       (unless (wisdomFile.good)
 				 ,(lprint :msg "store wisdom to file"
@@ -1464,8 +1127,7 @@
 			       )
 			     (do0 (do0
 					;,(lprint :msg "free in and out")
-				   #+leak (do0 (fftw_free in)
-					(fftw_free out))
+				   
 				   #-memoize-plan (return p)
 				   )
 				  #+memoize-plan(do0
@@ -1680,7 +1342,7 @@
 
        ,(let* ((combo-name "windowSize")
 	       (l-combo `(1024 5456 8192 10000 20000 32768 40000 50000 65536 80000 100000 140000 1048576))
-	       (l-default-index 10)
+	       (l-default-index 3)
 	       (var-index (format nil "~aIndex" combo-name))
 	       (old-var-index (format nil "old_~aIndex" combo-name))
 	       (items-num (format nil "~aItemsNum" combo-name))
@@ -1866,12 +1528,7 @@
 			   (setf (aref y1 i) (/ (std--abs (aref out i))
 						(std--sqrt windowSize)))))
 		     (do0
-		      ;; (ImPlot--SetNextAxisLimits ImAxis_X1 (* -.5 sampleRate) (* .5 sampleRate))
-		      #+nil 
-		      (ImPlot--SetNextAxisLimits ImAxis_X2
-						 (- centerFrequency (* .5 sampleRate))
-						 (+ centerFrequency (* .5 sampleRate)))
-
+		
 		      (do0
 		       (comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
 
@@ -1891,57 +1548,7 @@
 						   (string "FFT magnitude (dB)")
 						   (string "FFT magnitude (linear)")))
 			 ,(decimate-plots `(:x x :ys (y1) :idx (string "")))
-			 #+nil (do0
-			  (let ((pointsPerPixel (static_cast<int> (/ (x.size)
-								     (dot (ImGui--GetContentRegionAvail)
-									  x))))))
-			  (if (<= pointsPerPixel 1)
-			      (do0 ,@(loop for e in `(y1)
-					   collect
-					   `(ImPlot--PlotLine (string ,e)
-							      (x.data)
-							      (dot ,e (data))
-							      windowSize)))
-
-			      (do0 (comments "Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.")
-				   (let ((pixels (/ (+ (x.size) pointsPerPixel -1)
-						    pointsPerPixel))
-					 (x_downsampled (std--vector<double> pixels))
-					 #+extra (y_max (std--vector<double> pixels))
-					 (y_mean (std--vector<double> pixels))
-					 #+extra (y_min (std--vector<double> pixels))
-					 (count 0))
-				     (comments "Iterate over the data with steps of pointsPerPixel")
-				     (for ((= "int i" 0)
-					   (< i (x.size))
-					   (incf i pointsPerPixel))
-					  (let (#+extra (max_val (aref y1 i))
-						#+extra (min_val (aref y1 i))
-						(sum_val (aref y1 i)))
-					    (comments "Iterate over the points under the same pixel")
-					    (for ((= "int j" (+ i 1))
-						  (logand (< j (+ i pointsPerPixel))
-							  (< j (x.size)))
-						  (incf j))
-						 #+extra (do0 (setf max_val (std--max max_val (aref y1 j)))
-							      (setf min_val (std--min min_val (aref y1 j))))
-						 (incf sum_val  (aref y1 j)))
-					    #+extra (setf (aref y_max count) max_val
-							  (aref y_min count) min_val)
-					    (setf (aref x_downsampled count) (aref x i)
-						  
-						  (aref y_mean count) (/ sum_val pointsPerPixel))
-					    (incf count)))
-				     ,@(loop for e in `(x_downsampled #+extra y_max #+extra y_min y_mean)
-					     collect
-					     `(dot ,e (resize count)))
-				     ,@(loop for e in `(#+extra y_max #+extra y_min y_mean)
-					     collect
-					     `(ImPlot--PlotLine (string ,e)
-								(x_downsampled.data)
-								(dot ,e (data))
-								(x_downsampled.size)))))))
-
+		
 			 
 			 (do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
 			      (let ((xmouse (dot (ImPlot--GetPlotMousePos) x))))
@@ -2183,7 +1790,7 @@
 		    :vars `((e.what)))
 	   (return -1)))
 
-       #+nil (do0
+       #-nil (do0
 	      (ImGui_ImplOpenGL3_Shutdown)
 	      (ImGui_ImplGlfw_Shutdown)
 	      (ImPlot--DestroyContext)

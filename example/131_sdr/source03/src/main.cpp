@@ -146,8 +146,8 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
  
 } 
  
-            static int windowSizeIndex  = 10; 
-    static int old_windowSizeIndex  = 10; 
+            static int windowSizeIndex  = 3; 
+    static int old_windowSizeIndex  = 3; 
     auto windowSizeItemsNum  = std::vector<double>({1024, 5456, 8192, 10000, 20000, 32768, 40000, 50000, 65536, 80000, 100000, 140000, 1048576}); 
     auto windowSize  = static_cast<int>(windowSizeItemsNum[windowSizeIndex]); 
     auto windowSizeItemsStr  = std::vector<std::string>({"1024", "5456", "8192", "10000", "20000", "32768", "40000", "50000", "65536", "80000", "100000", "140000", "1048576"}); 
