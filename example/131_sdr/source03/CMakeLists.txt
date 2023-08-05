@@ -17,6 +17,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             #-fanalyzer
     )
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+else ()
+     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
 
 

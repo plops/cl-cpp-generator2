@@ -660,6 +660,13 @@ int main (int argc, char** argv)        {
                 std::cout<<"error 1426:"<<" e.what()='"<<e.what()<<"' "<<std::endl<<std::flush;
                 return -1;
 } 
+            ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+ 
         return 0;
 }
  

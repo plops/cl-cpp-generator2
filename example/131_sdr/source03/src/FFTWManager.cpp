@@ -38,7 +38,7 @@
         for ( const auto& kv: plans_ ) {
                 fftw_destroy_plan(kv.second);
 } 
-}fftw_plan FFTWManager::get_plan (int windowSize, int direction , int nThreads )         {
+}fftw_plan FFTWManager::get_plan (size_t windowSize, int direction , int nThreads )         {
         if ( windowSize<=0 ) {
                         throw std::invalid_argument("window size must be positive");
  
@@ -72,7 +72,7 @@
                                     fftw_plan_with_nthreads(nThreads);
  
 } 
-                auto dim  = fftw_iodim({.n=windowSize, .is=1, .os=1}); 
+                auto dim  = fftw_iodim({.n=static_cast<int>(windowSize), .is=1, .os=1}); 
         auto p  = fftw_plan_guru_dft(1, &dim, 0, nullptr, in, out, direction, FFTW_MEASURE); 
  
         if ( !wisdomFile.good() ) {

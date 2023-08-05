@@ -1045,7 +1045,8 @@
 	       
 	       "private:"
 	       (defmethod get_plan (windowSize &key (direction FFTW_FORWARD) (nThreads 1) )
-		 (declare (type int windowSize nThreads direction)
+		 (declare (type int nThreads direction)
+			  (type size_t windowSize)
 			  (values fftw_plan)
 			  #-memoize-plan (const))
 		 (when (<= windowSize 0)
@@ -1096,7 +1097,7 @@
 								      direction ;FFTW_FORWARD
 								      FFTW_MEASURE
 								      ))))
-			       #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n windowSize
+			       #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n (static_cast<int> windowSize)
 											  :is 1
 											  :os 1)))
 						 (p 

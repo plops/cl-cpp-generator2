@@ -14,7 +14,7 @@ class FFTWManager  {
         std::vector<std::complex<double>> ifft (const std::vector<std::complex<double>>& in, size_t windowSize)       ;   
          ~FFTWManager ()       ;   
         private:
-        fftw_plan get_plan (int windowSize, int direction = FFTW_FORWARD, int nThreads = 1)       ;   
+        fftw_plan get_plan (size_t windowSize, int direction = FFTW_FORWARD, int nThreads = 1)       ;   
         std::map<std::pair<int,int>,fftw_plan> plans_;
         int     number_threads_=6;
 
