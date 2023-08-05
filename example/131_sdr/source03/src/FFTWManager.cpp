@@ -94,9 +94,6 @@
  
  
  
-} else {
-                        std::cout<<"plan has been used recently, reuse it."<<std::endl<<std::flush;
- 
 } 
     return iter->second;
  

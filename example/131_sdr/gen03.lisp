@@ -40,17 +40,21 @@
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
 
+  (defparameter *benchmark-counter* 0)
   (defun benchmark (code)
-    (let ((start "startBenchmark")
-	  (end "endBenchmark"))
+    (let ((start (format nil "startBenchmark~2,'0d" *benchmark-counter*))
+	  (end (format nil "endBenchmark~2,'0d" *benchmark-counter*))
+	  (elapsed (format nil "elapsed~2,'0d" *benchmark-counter*))
+	  (elapsed_ms (format nil "elapsed_ms~2,'0d" *benchmark-counter*)))
+      (incf *benchmark-counter*)
       `(let ((,start (std--chrono--high_resolution_clock--now)))
 	 ,code
 	 (let ((,end (std--chrono--high_resolution_clock--now))
-	       (elapsed (std--chrono--duration<double> (- ,end ,start)))
-	       (elapsed_ms (* 1000 (elapsed.count)))
+	       (,elapsed (std--chrono--duration<double> (- ,end ,start)))
+	       (,elapsed_ms (* 1000 (dot ,elapsed (count))))
 	       )
 	   ,(lprint ; :msg (format nil "~a" (emit-c :code code :omit-redundant-parentheses t))
-	     :vars `(elapsed_ms))))))
+	     :vars `(,elapsed_ms))))))
 
   (defun decimate-plots (args)
     (destructuring-bind (&key x ys idx (points `(dot (ImGui--GetContentRegionAvail)
@@ -1137,8 +1141,11 @@
 							    :vars `((plans_.size) insertResult.second))))
 				  )
 			     ))
-		      #+memoize-plan (do0
-				      ,(lprint :msg "plan has been used recently, reuse it.")))
+		      
+		      
+		      #+nil (do0
+			     #+memoize-plan
+			     ,(lprint :msg "plan has been used recently, reuse it.")))
 		  
  		  #+memoize-plan (return iter->second)))
 	       ,@(remove-if #'null
@@ -1175,7 +1182,9 @@
 					;unistd.h
       cstdlib
 
-      cmath)
+      cmath
+
+      omp.h)
      (include
       
       implot.h
@@ -1219,7 +1228,8 @@
 	      (return (logand (== 0 (WEXITSTATUS exit_code))
 			      shm_files_exist))))
 	  (defun stopDaemon ()
-	    (std--system (string "ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"))
+	    (let ((ret (std--system (string "ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"))))
+	      ,(lprint :msg "stop daemon" :vars `(ret)))
 	    )
 	  (defun startDaemonIfNotRunning ()
 	    ,(lprint :msg "verify that sdr daemon is running")
@@ -1582,46 +1592,86 @@
 			      (let ((x_corr (std--vector<double> (out.size))))
 				(dotimes (i (x_corr.size))
 				  (setf (aref x_corr i) (* 1d0 i))))
-			      ( ;let ((code_idx 23))		;dotimes
-			       #+nil(code_idx 3 ; 32
-					      )
-					;for-range
-			       #+nil (code_idx (std--vector<int> (curly ;10 14 17 23
-								  9 ; 27 18
-								  )))
-			       dotimes (code_idx 32)
-			       (when (aref selectedSatellites code_idx)
-				 (let ((code (aref codes code_idx))
-				       (len (out.size))
-				       (prod (std--vector<std--complex<double>> len))
-				       (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
-								      sampleRate)))
-				       (dopEnd (static_cast<int> (/ (* 5000 len)
-								    sampleRate))))
-				   (for ((= "int dop" dopStart)
-					 (<= dop dopEnd)
-					 (incf dop))
-					(do0
-					 (dotimes (i (out.size))
-					   (let ((i1 (% (+ i -dop len) len)))
-					     (setf (aref prod i)
-						   (* (std--conj (aref out i))
-						      (aref code i1)))))
-					 (let ((corr (fftw.ifft prod (prod.size)))
-					       (corrAbs2 (std--vector<double> (out.size))))
-					   (dotimes (i (out.size))
-					     (let ((v (std--abs (aref corr i))))
-					       (setf (aref corrAbs2 i) #+nil (* 10 (std--log10
-										    ))
-								       (/ (* v v)
-									  windowSize)))))
-					 ,(decimate-plots `(:x x_corr :ys (corrAbs2)
-							    :idx (+ (std--to_string code_idx
-										    )
-								    (string "_")
-								    (std--to_string dop))
-							    :points 100))))
-				   )))
+
+			      ,(let ((l-result `((:name maxSnrDop :type int)
+						 (:name maxSnrIdx :type int)
+						 (:name maxSnr :type double))))
+				`(do0
+				  ,@(loop for e in l-result
+					  collect
+					  (destructuring-bind (&key name type) e
+					    (let ((aname (format nil "~a_vec" name)))
+					     `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
+				  "#pragma omp parallel for num_threads(12)"
+				 (dotimes (code_idx 32)
+				   (do0 ;when (aref selectedSatellites code_idx)
+				     (let  ((maxSnrDop 0)
+					    (maxSnrIdx 0)
+					    (maxSnr 0d0))
+				       (let ((code (aref codes code_idx))
+					     (len (out.size))
+					     (prod (std--vector<std--complex<double>> len))
+					     (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
+									    sampleRate)))
+					     (dopEnd (static_cast<int> (/ (* 5000 len)
+									  sampleRate))))
+					 (for ((= "int dop" dopStart)
+					       (<= dop dopEnd)
+					       (incf dop))
+					      (do0
+					       (dotimes (i (out.size))
+						 (let ((i1 (% (+ i -dop len) len)))
+						   (setf (aref prod i)
+							 (* (std--conj (aref out i))
+							    (aref code i1)))))
+					       (let ((corr (fftw.ifft prod (prod.size)))
+						     (corrAbs2 (std--vector<double> (out.size)))
+						     (sumPwr 0d0)
+						     (maxPwr 0d0)
+						     (maxPwrIdx 0))
+						 (dotimes (i (out.size))
+						   (let ((v (std--abs (aref corr i)))
+							 (pwr (/ (* v v)
+								 windowSize)))
+						     (when (< maxPwr pwr)
+						       (setf maxPwr pwr
+							     maxPwrIdx i))
+						     (setf (aref corrAbs2 i) pwr)
+						     (incf sumPwr pwr)))
+						 (let ((avgPwr (/ sumPwr (out.size)))
+						       (snr (/ maxPwr avgPwr)))
+						   (when (< maxSnr snr)
+						     (setf maxSnr snr
+							   maxSnrDop dop
+							 
+							   maxSnrIdx maxPwrIdx))))
+					       #+nil ,(decimate-plots `(:x x_corr :ys (corrAbs2)
+									:idx (+ (std--to_string code_idx
+												)
+										(string "_")
+										(std--to_string dop))
+									:points 100))
+					       ))
+					 )
+				       ,@(loop for e in l-result
+					       collect
+					  (destructuring-bind (&key name type) e
+					    (let ((aname (format nil "~a_vec" name)))
+					     `(setf (aref ,aname code_idx) ,name))))
+				       
+				       #+nil 
+				       ,(lprint :msg "sat"
+						:vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
+				 
+				 ,@(loop for e in l-result
+					 collect
+					 (destructuring-bind (&key name type) e
+					   (let ((aname (format nil "~a_vec" name)))
+					     `(dotimes (i 32)
+						(let ((,name (aref ,aname i)))
+						 ,(lprint :vars `(i ,name)))))))
+				 ))
+			      
 			      
 			      (ImPlot--EndPlot))
 			    (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")

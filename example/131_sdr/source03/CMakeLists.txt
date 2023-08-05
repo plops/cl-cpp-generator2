@@ -28,6 +28,7 @@ find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
 find_package(SoapySDR REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
+find_package(OpenMP)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -40,7 +41,6 @@ add_executable(
         src/FFTWManager.cpp
         src/SdrManager.cpp
 	src/ProcessMemoryInfo.cpp
-	#	src/FFTWAllocator.cpp
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp
@@ -60,6 +60,7 @@ target_link_libraries(
 	Boost::iostreams
 	PkgConfig::FFTW
 	SoapySDR
+	OpenMP::OpenMP_CXX
 )
 
 # Now you can build your app with

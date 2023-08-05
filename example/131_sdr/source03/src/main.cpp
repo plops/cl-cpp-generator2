@@ -4,7 +4,8 @@
 #include <deque>
 #include <filesystem>
 #include <cstdlib>
-#include <cmath> 
+#include <cmath>
+#include <omp.h> 
 #include "implot.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -50,7 +51,9 @@ bool isDaemonRunning ()        {
  
 
 void stopDaemon ()        {
-        std::system("ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9");
+            auto ret  = std::system("ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"); 
+    std::cout<<"stop daemon"<<" ret='"<<ret<<"' "<<std::endl<<std::flush;
+ 
 }
  
 
@@ -420,77 +423,91 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, SdrManager& sdr, FFTWMa
 
 } 
  
+                                                            auto maxSnrDop_vec  = std::vector<int>(32); 
+ 
+                                        auto maxSnrIdx_vec  = std::vector<int>(32); 
+ 
+                                        auto maxSnr_vec  = std::vector<double>(32); 
+ 
+                    #pragma omp parallel for num_threads(12)
                     for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
-                                                if ( selectedSatellites[code_idx] ) {
-                                                                                                                auto code  = codes[code_idx]; 
-                            auto len  = out.size(); 
-                            auto prod  = std::vector<std::complex<double>>(len); 
-                            auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
-                            auto dopEnd  = static_cast<int>((5000*len)/sampleRate); 
-                            for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
-                                                                                                for ( auto i = 0;i<out.size();i+=1 ) {
-                                                                                                            auto i1  = (i+-dop+len)%len; 
-                                                                        prod[i]=std::conj(out[i])*code[i1];
+                                                                                                auto maxSnrDop  = 0; 
+                        auto maxSnrIdx  = 0; 
+                        auto maxSnr  = 0.    ; 
+                                                auto code  = codes[code_idx]; 
+                        auto len  = out.size(); 
+                        auto prod  = std::vector<std::complex<double>>(len); 
+                        auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
+                        auto dopEnd  = static_cast<int>((5000*len)/sampleRate); 
+                        for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
+                                                                                    for ( auto i = 0;i<out.size();i+=1 ) {
+                                                                                                auto i1  = (i+-dop+len)%len; 
+                                                                prod[i]=std::conj(out[i])*code[i1];
 
 
  
 } 
-                                                                auto corr  = fftw.ifft(prod, prod.size()); 
-                                auto corrAbs2  = std::vector<double>(out.size()); 
-                                for ( auto i = 0;i<out.size();i+=1 ) {
-                                                                                                            auto v  = std::abs(corr[i]); 
-                                                                        corrAbs2[i]=((v*v)/windowSize);
+                                                        auto corr  = fftw.ifft(prod, prod.size()); 
+                            auto corrAbs2  = std::vector<double>(out.size()); 
+                            auto sumPwr  = 0.    ; 
+                            auto maxPwr  = 0.    ; 
+                            auto maxPwrIdx  = 0; 
+                            for ( auto i = 0;i<out.size();i+=1 ) {
+                                                                                                auto v  = std::abs(corr[i]); 
+                                auto pwr  = (v*v)/windowSize; 
+                                if ( maxPwr<pwr ) {
+                                                                                                                                                maxPwr=pwr;
+                                    maxPwrIdx=i;
+
+
+ 
+} 
+                                                                corrAbs2[i]=pwr;
+
+                                sumPwr+=pwr;
+ 
+} 
+                                                        auto avgPwr  = sumPwr/out.size(); 
+                            auto snr  = maxPwr/avgPwr; 
+                            if ( maxSnr<snr ) {
+                                                                                                                                maxSnr=snr;
+                                maxSnrDop=dop;
+                                maxSnrIdx=maxPwrIdx;
 
 
  
 } 
  
-                                {
-                                                                                                            auto pointsPerPixel  = static_cast<int>((x_corr.size())/100); 
  
-                                                                        if ( pointsPerPixel<=1 ) {
-                                                                                                                        ImPlot::PlotLine("corrAbs2", x_corr.data(), corrAbs2.data(), windowSize);
  
-} else {
-                                                                                                                        // Calculate upper bound for the number of pixels, preallocate memory for vectors, initialize counter.
+} 
  
-                                                                                auto pixels  = (x_corr.size()+pointsPerPixel+ -1)/pointsPerPixel; 
-                                        auto x_downsampled  = std::vector<double>(pixels); 
-                                                                                                                        auto y_max  = std::vector<double>(pixels); 
-                                        auto count  = 0; 
-                                        // Iterate over the data with steps of pointsPerPixel
- 
-                                        for ( int i=0;i<x_corr.size();i+=pointsPerPixel ) {
-                                                                                                                                    auto max_val  = corrAbs2[i]; 
-                                            // Iterate over the points under the same pixel
- 
-                                            for ( int j=i+1;j<i+pointsPerPixel&&j<x_corr.size();j++ ) {
-                                                                                                                                                max_val=std::max(max_val, corrAbs2[j]);
+                                                maxSnrDop_vec[code_idx]=maxSnrDop;
+
+                                                maxSnrIdx_vec[code_idx]=maxSnrIdx;
+
+                                                maxSnr_vec[code_idx]=maxSnr;
 
 
-} 
-                                                                                        y_max[count]=max_val;
-
-                                                                                        x_downsampled[count]=x_corr[i];
-
-                                            count++;
- 
-} 
- 
-                                        x_downsampled.resize(count);
-                                        y_max.resize(count);
-                                        ImPlot::PlotLine((std::string("y_max_corrAbs2_")+std::to_string(code_idx)+"_"+std::to_string(dop)).c_str(), x_downsampled.data(), y_max.data(), x_downsampled.size());
- 
  
  
 } 
+                    for ( auto i = 0;i<32;i+=1 ) {
+                                                                        auto maxSnrDop  = maxSnrDop_vec[i]; 
+                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnrDop='"<<maxSnrDop<<"' "<<std::endl<<std::flush;
+ 
 } 
+                    for ( auto i = 0;i<32;i+=1 ) {
+                                                                        auto maxSnrIdx  = maxSnrIdx_vec[i]; 
+                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnrIdx='"<<maxSnrIdx<<"' "<<std::endl<<std::flush;
+ 
+} 
+                    for ( auto i = 0;i<32;i+=1 ) {
+                                                                        auto maxSnr  = maxSnr_vec[i]; 
+                        std::cout<<""<<" i='"<<i<<"' "<<" maxSnr='"<<maxSnr<<"' "<<std::endl<<std::flush;
  
 } 
  
- 
-} 
-} 
                     ImPlot::EndPlot();
  
 } 
@@ -580,24 +597,24 @@ int main (int argc, char** argv)        {
                                                 // the first fft takes always long (even if wisdom is present). as a work around i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
  
                                 auto mini  = std::vector<std::complex<double>>(32); 
-                                auto startBenchmark  = std::chrono::high_resolution_clock::now(); 
+                                auto startBenchmark00  = std::chrono::high_resolution_clock::now(); 
                 fftw.fft(mini, 32);
-                                auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
-                auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
-                auto elapsed_ms  = 1000*elapsed.count(); 
-                std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
+                                auto endBenchmark00  = std::chrono::high_resolution_clock::now(); 
+                auto elapsed00  = std::chrono::duration<double>(endBenchmark00-startBenchmark00); 
+                auto elapsed_ms00  = 1000*elapsed00.count(); 
+                std::cout<<""<<" elapsed_ms00='"<<elapsed_ms00<<"' "<<std::endl<<std::flush;
  
  
  
  
 } 
-                                    auto startBenchmark  = std::chrono::high_resolution_clock::now(); 
+                                    auto startBenchmark01  = std::chrono::high_resolution_clock::now(); 
                         auto out  = fftw.fft(code, corrLength); 
  
-                        auto endBenchmark  = std::chrono::high_resolution_clock::now(); 
-            auto elapsed  = std::chrono::duration<double>(endBenchmark-startBenchmark); 
-            auto elapsed_ms  = 1000*elapsed.count(); 
-            std::cout<<""<<" elapsed_ms='"<<elapsed_ms<<"' "<<std::endl<<std::flush;
+                        auto endBenchmark01  = std::chrono::high_resolution_clock::now(); 
+            auto elapsed01  = std::chrono::duration<double>(endBenchmark01-startBenchmark01); 
+            auto elapsed_ms01  = 1000*elapsed01.count(); 
+            std::cout<<""<<" elapsed_ms01='"<<elapsed_ms01<<"' "<<std::endl<<std::flush;
  
  
                         std::cout<<"codes"<<" i='"<<i<<"' "<<" codes.size()='"<<codes.size()<<"' "<<" out.size()='"<<out.size()<<"' "<<std::endl<<std::flush;
