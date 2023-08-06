@@ -8,9 +8,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_LINKER mold)
 
 # set ccache for C and C++ compilers
-#set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
-set(CXX clang++)
+#set(CXX clang++)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -40,32 +40,26 @@ endif ()
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(Boost 1.65 REQUIRED COMPONENTS iostreams)
-find_package(SoapySDR REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
 find_package(OpenMP)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/../source03/src)
 
 add_executable(
         ${PROJECT_NAME}
-        src/imgui.cpp
-        src/imgui_draw.cpp
-        src/imgui_impl_opengl3.cpp
-        src/imgui_impl_glfw.cpp
-        src/imgui_stdlib.cpp
-        src/imgui_tables.cpp
-        src/imgui_widgets.cpp
-        src/implot.cpp
-        src/implot_items.cpp
+        ../source03/src/imgui.cpp
+        ../source03/src/imgui_draw.cpp
+        ../source03/src/imgui_impl_opengl3.cpp
+        ../source03/src/imgui_impl_glfw.cpp
+        ../source03/src/imgui_stdlib.cpp
+        ../source03/src/imgui_tables.cpp
+        ../source03/src/imgui_widgets.cpp
+        ../source03/src/implot.cpp
+        ../source03/src/implot_items.cpp
         src/main.cpp
-        src/GpsCACodeGenerator.cpp
-        src/MemoryMappedComplexShortFile.cpp
-        src/FFTWManager.cpp
-        src/SdrManager.cpp
-	src/ProcessMemoryInfo.cpp
 )
 
 #set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
@@ -82,9 +76,7 @@ target_link_libraries(
         PRIVATE
         glfw
         OpenGL::GL
-	Boost::iostreams
-	PkgConfig::FFTW
-	SoapySDR
+	#PkgConfig::FFTW
 	OpenMP::OpenMP_CXX
 )
 

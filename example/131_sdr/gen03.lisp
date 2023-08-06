@@ -19,7 +19,7 @@
 					;:dec-mean
 						    :guru-plan
 						    :memoize-plan
-						    :store
+						    ;:store
 						    )))
 
 
@@ -1947,7 +1947,9 @@
 		  (codes (initGps sampleRate fftw))
 		  (sdr (initSdr sampleRate))
 		  (file (initFile (string ;;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
-					 "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
+				   "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
+				   
+				   ;"/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
 					  ))))
 	      ;(declare (type "static FFTWManager" fftw))
 	      )

@@ -5,6 +5,7 @@
 | gen03    |       | C++  | GUI to decode GPS of recording                                      |
 | source04 |       | C    | reference PRN from http://www.jks.com/gps/SearchFFT.cpp             |
 | gen05    |       | py   | python code to load the raw gps signal                              |
+| gen06    |       | C++  | liquid dsp example                                                  |
 |          |       |      |                                                                     |
 
 
@@ -269,4 +270,20 @@ set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION O
 
 source03/cmake-build-release $ iwyu_tool.py -p . ../src/main.cpp 
 
+```
+
+# liquid dsp
+
+```
+cd ~/src
+
+git clone git://github.com/jgaeddert/liquid-dsp.git
+
+```
+
+- it is in gentoo:
+
+```
+sudo emacs /etc/portage/package.accept_keywords/package.accept_keywords 
+sudo emerge -av net-libs/liquid-dsp
 ```
