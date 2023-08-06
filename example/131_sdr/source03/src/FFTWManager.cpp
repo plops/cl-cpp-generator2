@@ -42,7 +42,6 @@
 } FFTWManager::~FFTWManager ()         {
             for ( const auto& kv: plans_ ) {
                         auto [size, threads]  = kv.first; 
-        std::cout<<"destroy plan"<<" size='"<<size<<"' "<<" threads='"<<threads<<"' "<<"\n"<<std::flush;
         fftw_destroy_plan(kv.second);
  
 } 
@@ -56,8 +55,7 @@
             auto iter  = plans_.find({windowSize, nThreads}); 
  
             if ( plans_.end()==iter ) {
-                        std::cout<<"The plan hasn't been used before. Try to load wisdom or generate it."<<" windowSize='"<<windowSize<<"' "<<" nThreads='"<<nThreads<<"' "<<"\n"<<std::flush;
-                        auto wisdom_filename  = "wisdom_"+std::to_string(windowSize)+".wis"; 
+                                        auto wisdom_filename  = "wisdom_"+std::to_string(windowSize)+".wis"; 
  
         if ( 1<nThreads ) {
                                                 wisdom_filename="wisdom_"+std::to_string(windowSize)+"_threads"+std::to_string(nThreads)+".wis";
@@ -86,7 +84,9 @@
         if ( nullptr==p ) {
                         std::cout<<"error: plan not successfully created"<<"\n"<<std::flush;
 } else {
-                        std::cout<<"plan successfully created"<<" windowSize='"<<windowSize<<"' "<<" nThreads='"<<nThreads<<"' "<<" p='"<<p<<"' "<<"\n"<<std::flush;
+                                    // plan successfully created
+ 
+ 
 } 
         if ( !wisdomFile.good() ) {
                                     std::cout<<"store wisdom to file"<<" wisdom_filename='"<<wisdom_filename<<"' "<<"\n"<<std::flush;
@@ -97,11 +97,10 @@
  
                 
  
-                std::cout<<"store plan in class"<<" windowSize='"<<windowSize<<"' "<<" nThreads='"<<nThreads<<"' "<<"\n"<<std::flush;
-                auto insertResult  = plans_.insert({{windowSize, nThreads}, p}); 
+                        auto insertResult  = plans_.insert({{windowSize, nThreads}, p}); 
                 iter=insertResult.first;
 
-        std::cout<<"inserted new key"<<" plans_.size()='"<<plans_.size()<<"' "<<" insertResult.second='"<<insertResult.second<<"' "<<"\n"<<std::flush;
+
  
  
  

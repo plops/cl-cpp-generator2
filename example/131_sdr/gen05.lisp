@@ -5,9 +5,9 @@
 (in-package :cl-py-generator)
 
 (progn
-  (defparameter *project* "109_mediapipe_segment")
-  (defparameter *idx* "01")
-  (defparameter *path* (format nil "/home/martin/stage/cl-py-generator/example/~a" *project*))
+  (defparameter *project* "131_sdr")
+  (defparameter *idx* "05")
+  (defparameter *path* (format nil "/home/martin/stage/cl-cpp-generator2/example/~a" *project*))
   (defparameter *day-names*
     '("Monday" "Tuesday" "Wednesday"
       "Thursday" "Friday" "Saturday"
@@ -36,15 +36,13 @@
 	 #+nil (cli-args `(
 			   (:short "-v" :long "--verbose" :help "enable verbose output" :action "store_true" :required nil))))
     (write-source
-     (format nil "~a/source/p~a_~a" *path* *idx* notebook-name)
+     (format nil "~a/source05/p~a_~a" *path* *idx* notebook-name)
      `(do0
        "#!/usr/bin/env python3"
        (do0
 	)
        (do0
-	(comments "python3 -m pip install --user mediapipe"
-		  "wget https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite"
-		  "16 MB download")
+	
 	#+nil
 	(do0
 	 
@@ -102,20 +100,19 @@
 					;bs4
 					;requests
 					
-					math
+					;math
 			
 					;(np jax.numpy)
 					;(mpf mplfinance)
 					;(fft scipy.fftpack)
 					;argparse
 					;torch
-					(mp mediapipe)
-		  mss
-		  (cv cv2)
+					;(mp mediapipe)
+					;mss
+					;(cv cv2)
 		  
 		  )))
-       (imports-from (mediapipe.tasks python)
-		     (mediapipe.tasks.python vision))
+       
        (setf start_time (time.time)
 	     debug True)
        (setf
@@ -142,66 +139,16 @@
 			   (- tz)))))
 
        (do0
-	(setf BaseOptions mp.tasks.BaseOptions
-	      ImageSegmenter mp.tasks.vision.ImageSegmenter
-	      ImageSegmenterOptions mp.tasks.vision.ImageSegmenterOptions
-	      VisionRunningMode mp.tasks.vision.RunningMode)
-
-	(def print_result (result output_image timestamp_ms)
-	  (declare (type "list[mp.Image]" result)
-		   (type mp.Image output_image)
-		   (type int timestamp_ms))
-	  (print (dot (string "segmented mask size: {}")
-		      (format (len result)))))
-
-	(do0
-	 (setf DESIRED_HEIGHT 256
-	       DESIRED_WIDTH 256)
-	 (def resize (image)
-	   (setf (ntuple h w)
-		 (aref image.shape (slice "" 2)))
-	   (if (< h w)
-	       (setf img (cv.resize image
-				     (tuple DESIRED_WIDTH
-					    (math.floor (/ h (/ w DESIRED_WIDTH))))))
-	       (setf img (cv.resize image
-				     (tuple (math.floor (/ w (/ h DESIRED_HEIGHT)))
-					    DESIRED_HEIGHT)
-				     )))))
-	
-
-	(setf options (ImageSegmenterOptions
-		       :base_options (BaseOptions
-				      :model_asset_path (string "selfie_multiclass_256x256.tflite")
-				      
-					:running_mode VisionRunningMode.LIVE_STREAM
-					;:output_category_mask True
-				       ; :output_confidence_masks False
-				      ;:display_names_locale en
-				      
-					;:result_callback
-				      #+nil (lambda ()
-					      ,(lprint :msg "result")))))
-	(with (as (ImageSegmenter.create_from_options options)
-		  segmenter)
-	      (with (as (mss.mss) sct)
-	       (do0
-		(setf grb (sct.grab
-				     (dictionary :top 160
-						 :left 0
-						 :width ,(/ 1920 2)
-						 :height ,(/ 1080 2))))
-		(setf img (np.array grb.pixels))
-		(setf mp_image (mp.Image
-				:image_format mp.ImageFormat.SRGB
-				:data img))
-		(setf segmentation_result (segmenter.segment
-					   mp_image))
-		(setf category_mask segmentation_result.category_mask)
-		,(lprint :msg "result"
-			 :vars `((aref segmentation_result 0)))
-		;(cv.imshow (string "bla") category_mask)
-		))))
+	(setf dt (np.dtype (list (tuple (string "real")
+					np.int16)
+				 (tuple (string "imag")
+					np.int16)))
+	      data_raw (np.fromfile (string "/mnt5/gps/out_pnr4_3_31_202308061610.dat")
+				:dtype dt
+				:count (// (* 10 1024 1024)
+					   4)))
+	(setf data (+ (aref data_raw (string "real"))
+		      (* 1j (aref data_raw (string "imag"))))))
 
        
        ))))

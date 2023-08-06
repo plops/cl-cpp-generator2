@@ -11,15 +11,16 @@
 						  :dec-max
 						  :dec-min
 						  :dec-mean
+						  :store
 						  )))
-(setf *features* (set-exclusive-or *features* (list  :more
-						     :dec-max
+(setf *features* (set-exclusive-or *features* (list :more
+						    :dec-max
 					;:dec-min
 					;:dec-mean
-						     :guru-plan
-						     :memoize-plan
-						     
-						     )))
+						    :guru-plan
+						    :memoize-plan
+						    :store
+						    )))
 
 
 (let* (;; (elem-type "float") (acq-sdr-type 'SOAPY_SDR_CF32)
@@ -711,6 +712,20 @@
 			,(lprint :msg "warning: readStream returned unexpected number of elements"
 				 :vars `(readStreamRet flags time_ns))
 			(return readStreamRet)))
+
+		     #+store
+		     (do0
+		      (comments "Append received data to binary file")
+		      (let ((file (std--ofstream (string "/mnt5/gps/out_pnr4_3_31_202308061610a.dat")
+						 (or std--ios--out
+						     std--ios--binary
+						     std--ios--app))))
+			(unless file
+			  ,(lprint :msg "can't open file for writing"))
+			(file.write (reinterpret_cast<char*> (buffs.data))
+				    (* numElems (sizeof std--complex<short>)))
+			(file.close)))
+		     
 		     (return numElems))))
 
 	       (defmethod close ()
@@ -1086,7 +1101,7 @@
 		  (for-range (	;(bracket (bracket size threads) plan)
 			      kv plans_)
 			     (let (((bracket size threads) kv.first))
-			       ,(lprint :msg "destroy plan" :vars `(size threads))
+			       #+nil ,(lprint :msg "destroy plan" :vars `(size threads))
 			       (fftw_destroy_plan  kv.second
 						   )))
 		  (plans_.clear))
@@ -1110,8 +1125,11 @@
 		 #+memoize-plan (let ((iter (plans_.find (curly windowSize nThreads))))) 
 		 (do0 
 		  (if #-memoize-plan true #+memoize-plan (== (plans_.end) iter)
-		      (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
-						   :vars `(windowSize nThreads))
+		      (do0
+
+		       #+nil
+		       (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
+						    :vars `(windowSize nThreads)))
 
 			   (do0 (let ((wisdom_filename (+ (string "wisdom_")
 							  (std--to_string windowSize)
@@ -1169,8 +1187,10 @@
 					     )
 			       (if (== nullptr p)
 				   ,(lprint :msg "error: plan not successfully created")
-				   ,(lprint :msg "plan successfully created"
-					    :vars `(windowSize nThreads p)))
+				   (do0
+				    (comments "plan successfully created")
+				    #+nil,(lprint :msg "plan successfully created"
+					     :vars `(windowSize nThreads p))))
 			       (unless (wisdomFile.good)
 				 ,(lprint :msg "store wisdom to file"
 					  :vars `(wisdom_filename))
@@ -1183,13 +1203,13 @@
 				   #-memoize-plan (return p)
 				   )
 				  #+memoize-plan(do0
-						 ,(lprint :msg "store plan in class"
+						 #+nil ,(lprint :msg "store plan in class"
 							  :vars `(windowSize nThreads))
 						 (let ((insertResult (dot plans_
 									  (insert (curly (curly windowSize nThreads) p))
 									  )))
 						   (setf iter (dot insertResult first))
-						   ,(lprint :msg "inserted new key"
+						   #+nil ,(lprint :msg "inserted new key"
 							    :vars `((plans_.size) insertResult.second))))
 				  )
 			     ))
@@ -1529,7 +1549,7 @@
 	(let ((DrawFourier
 		(lambda
 		    (sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites)
-		  ,(lprint :msg "DrawFourier")
+		  #+nil ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
 			(gps_freq 1575.42d6)
 			(lo_freq 4.092d6)
@@ -1649,7 +1669,7 @@
 						     `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
 				    
 					 "#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
-					 (dotimes (code_idx 32)
+					 (dotimes (code_idx 3)
 					   (do0 ;when (aref selectedSatellites code_idx)
 					    (let  ((maxSnrDop 0)
 						   (maxSnrIdx 0)
@@ -1710,13 +1730,7 @@
 					       (do0
 						(setf (aref selectedSatellites pnr_idx) true)
 						)
-					       (setf (aref selectedSatellites pnr_idx) false)))
-
-				    
-				    
-
-				    
-					 ))
+					       (setf (aref selectedSatellites pnr_idx) false)))))
 			       
 			       
 				    (ImPlot--EndPlot))
@@ -1730,69 +1744,71 @@
 		   (type "const std::vector<std::vector<std::complex<double>>> &" codes)
 		   (type "std::shared_ptr<SdrManager>" sdr)
 		   (type double sampleRate))
-       
-	  (DrawMemory)
-	  (DrawSdrInfo sdr)
-	  (let ((automaticGainMode (SelectAutoGain sdr))))
-	  (let (((bracket gainIF gainRf) (SelectGain sdr))))
+
 	  
-	  (let (((bracket start maxStart) (SelectStart file))))
-       
-	  (let ((windowSize (SelectWindowSize))))
-	  (SetBandwidth sdr)
-
-	  (let ((realtimeDisplay (SelectRealtimeDisplay file))))
-
-
-
-	  (let ((x (std--vector<double> windowSize))
-			(y1 (std--vector<double> windowSize))
-			(y2 (std--vector<double> windowSize))
-			(zfifo (,acq-vec-type windowSize)))
-	      
-	      (if realtimeDisplay
-		  (sdr->processFifo
-		(lambda (fifo)
-		  (declare (type ,(format nil "const ~a &" fifo-type) fifo)
-			   (capture "&"))
-		  (let ((n windowSize))
-		    (dotimes (i n)
-		      (let ((z (aref fifo i)))
-			(setf (aref zfifo i) z)
-			(setf (aref x i) i
-			      (aref y1 i) (z.real)
-			      (aref y2 i) (z.imag))))))
-		windowSize)
-		  (if (file.ready)
-		      (if (paren (logand (<= (+ start windowSize) maxStart)
-					 (< 0 windowSize)))
-			  (dotimes (i windowSize)
-			    (let ((z (aref file (+ start i))))
-			      (setf (aref x i) i ;(+ start i)
-				    (aref y1 i) (z.real)
-				    (aref y2 i) (z.imag))))
-			  (ImGui--Text (string "window outside of range stored in file start=%d windowSize=%d maxStart=%d")
-				       start windowSize maxStart))
-		      (ImGui--Text (string "file not ready"))))
-	    
-
-	      (DrawWaveform x y1 y2)
-	    
-	    )
-
-	  (let ((logScale (SelectLogScale))))
-
-	  (let ((selectedSatellites (SelectSatellites))))
 
 	  (handler-case
-		      (do0
-		       (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
-		       #+nil (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
-		       )
+	      (do0
+	       (do0
+		(DrawMemory)
+		(DrawSdrInfo sdr)
+		(let ((automaticGainMode (SelectAutoGain sdr))))
+		(let (((bracket gainIF gainRf) (SelectGain sdr))))
+		
+		(let (((bracket start maxStart) (SelectStart file))))
+		
+		(let ((windowSize (SelectWindowSize))))
+		(SetBandwidth sdr)
+
+		(let ((realtimeDisplay (SelectRealtimeDisplay file))))
+
+
+
+		(let ((x (std--vector<double> windowSize))
+		      (y1 (std--vector<double> windowSize))
+		      (y2 (std--vector<double> windowSize))
+		      (zfifo (,acq-vec-type windowSize)))
 		  
-		    ("const std::exception&" (e)
-		      (ImGui--Text (string "Error while processing signal: %s")
-				   (e.what))))
+		  (if realtimeDisplay
+		      (sdr->processFifo
+		       (lambda (fifo)
+			 (declare (type ,(format nil "const ~a &" fifo-type) fifo)
+				  (capture "&"))
+			 (let ((n windowSize))
+			   (dotimes (i n)
+			     (let ((z (aref fifo i)))
+			       (setf (aref zfifo i) z)
+			       (setf (aref x i) i
+				     (aref y1 i) (z.real)
+				     (aref y2 i) (z.imag))))))
+		       windowSize)
+		      (if (file.ready)
+			  (if (paren (logand (<= (+ start windowSize) maxStart)
+					     (< 0 windowSize)))
+			      (dotimes (i windowSize)
+				(let ((z (aref file (+ start i))))
+				  (setf (aref x i) i ;(+ start i)
+					(aref y1 i) (z.real)
+					(aref y2 i) (z.imag))))
+			      (ImGui--Text (string "window outside of range stored in file start=%d windowSize=%d maxStart=%d")
+					   start windowSize maxStart))
+			  (ImGui--Text (string "file not ready"))))
+		  
+
+		  (DrawWaveform x y1 y2)
+		  
+		  )
+
+		(let ((logScale (SelectLogScale))))
+
+		(let ((selectedSatellites (SelectSatellites)))))
+	       (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
+	       #+nil (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
+	       )
+	    
+	    ("const std::exception&" (e)
+	      (ImGui--Text (string "Error while processing signal: %s")
+			   (e.what))))
 	  
 	  )
 

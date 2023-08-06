@@ -286,7 +286,6 @@ auto SelectSatellites  = [] (){
 }; 
  
 auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto sdr, auto x, auto y1, auto y2, auto zfifo, auto file, auto start, auto logScale, auto selectedSatellites){
-        std::cout<<"DrawFourier"<<"\n"<<std::flush;
             auto in  = std::vector<std::complex<double>>(windowSize); 
     auto gps_freq  = 1.575420e+9; 
     static double lo_freq  = 4.0920e+6; 
@@ -413,7 +412,7 @@ auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, 
                         auto maxSnr_vec  = std::vector<double>(32); 
  
             #pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)
-            for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
+            for ( auto code_idx = 0;code_idx<3;code_idx+=1 ) {
                                                                 auto maxSnrDop  = 0; 
                 auto maxSnrIdx  = 0; 
                 auto maxSnr  = 0.    ; 
@@ -499,44 +498,31 @@ auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, 
  
 
 void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrManager> sdr, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
-        DrawMemory();
+        try {
+                                DrawMemory();
         DrawSdrInfo(sdr);
-            auto automaticGainMode  = SelectAutoGain(sdr); 
+                auto automaticGainMode  = SelectAutoGain(sdr); 
  
-            auto [gainIF, gainRf]  = SelectGain(sdr); 
+                auto [gainIF, gainRf]  = SelectGain(sdr); 
  
-            auto [start, maxStart]  = SelectStart(file); 
+                auto [start, maxStart]  = SelectStart(file); 
  
-            auto windowSize  = SelectWindowSize(); 
+                auto windowSize  = SelectWindowSize(); 
  
         SetBandwidth(sdr);
-            auto realtimeDisplay  = SelectRealtimeDisplay(file); 
+                auto realtimeDisplay  = SelectRealtimeDisplay(file); 
  
-            auto x  = std::vector<double>(windowSize); 
-    auto y1  = std::vector<double>(windowSize); 
-    auto y2  = std::vector<double>(windowSize); 
-    auto zfifo  = std::vector<std::complex<short>>(windowSize); 
-    if ( realtimeDisplay ) {
-                sdr->processFifo([&] (const std::deque<std::complex<short>> & fifo){
-                                    auto n  = windowSize; 
-            for ( auto i = 0;i<n;i+=1 ) {
-                                                auto z  = fifo[i]; 
-                                zfifo[i]=z;
+                auto x  = std::vector<double>(windowSize); 
+        auto y1  = std::vector<double>(windowSize); 
+        auto y2  = std::vector<double>(windowSize); 
+        auto zfifo  = std::vector<std::complex<short>>(windowSize); 
+        if ( realtimeDisplay ) {
+                        sdr->processFifo([&] (const std::deque<std::complex<short>> & fifo){
+                                                auto n  = windowSize; 
+                for ( auto i = 0;i<n;i+=1 ) {
+                                                            auto z  = fifo[i]; 
+                                        zfifo[i]=z;
 
-                                x[i]=i;
-                y1[i]=z.real();
-                y2[i]=z.imag();
-
-
- 
-} 
- 
-}, windowSize);
-} else {
-                if ( file.ready() ) {
-                        if ( (start+windowSize<=maxStart&&0<windowSize) ) {
-                                for ( auto i = 0;i<windowSize;i+=1 ) {
-                                                            auto z  = file[(start+i)]; 
                                         x[i]=i;
                     y1[i]=z.real();
                     y2[i]=z.imag();
@@ -544,21 +530,35 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrMana
 
  
 } 
+ 
+}, windowSize);
 } else {
-                                ImGui::Text("window outside of range stored in file start=%d windowSize=%d maxStart=%d", start, windowSize, maxStart);
+                        if ( file.ready() ) {
+                                if ( (start+windowSize<=maxStart&&0<windowSize) ) {
+                                        for ( auto i = 0;i<windowSize;i+=1 ) {
+                                                                        auto z  = file[(start+i)]; 
+                                                x[i]=i;
+                        y1[i]=z.real();
+                        y2[i]=z.imag();
+
+
+ 
 } 
 } else {
-                        ImGui::Text("file not ready");
+                                        ImGui::Text("window outside of range stored in file start=%d windowSize=%d maxStart=%d", start, windowSize, maxStart);
+} 
+} else {
+                                ImGui::Text("file not ready");
 } 
 } 
-    DrawWaveform(x, y1, y2);
+        DrawWaveform(x, y1, y2);
  
-            auto logScale  = SelectLogScale(); 
+                auto logScale  = SelectLogScale(); 
  
-            auto selectedSatellites  = SelectSatellites(); 
+                auto selectedSatellites  = SelectSatellites(); 
  
-        try {
-                                auto out  = DrawFourier(sampleRate, realtimeDisplay, windowSize, fftw, sdr, x, y1, y2, zfifo, file, start, logScale, selectedSatellites); 
+ 
+                auto out  = DrawFourier(sampleRate, realtimeDisplay, windowSize, fftw, sdr, x, y1, y2, zfifo, file, start, logScale, selectedSatellites); 
  
  
 }catch (const std::exception& e) {
