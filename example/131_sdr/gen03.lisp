@@ -1576,6 +1576,103 @@
 		       )))
 		  (return out)))))
 
+
+	(let ((DrawCrossCorrelation
+			   (lambda (codes out selectedSatellites windowSize fftw sampleRate)
+			    (let ((codesSize (dot (aref codes 0) (size))))
+			      (if (== (static_cast<size_t> windowSize) codesSize)
+				  (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
+				    (let ((x_corr (std--vector<double> (out.size))))
+				      (dotimes (i (x_corr.size))
+					(declare (type size_t i))
+					(setf (aref x_corr i) (static_cast<double> i))))
+
+				    ,(let ((l-result `((:name maxSnrDop :type int)
+						       (:name maxSnrIdx :type int)
+						       (:name maxSnr :type double)
+						       )))
+				       `(do0
+					 ,@(loop for e in l-result
+						 collect
+						 (destructuring-bind (&key name type) e
+						   (let ((aname (format nil "~a_vec" name)))
+						     `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
+				    
+					 "#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
+					 (dotimes (code_idx 32)
+					   (do0 ;when (aref selectedSatellites code_idx)
+					    (let  ((maxSnrDop 0)
+						   (maxSnrIdx 0)
+						   (maxSnr 0d0))
+					      (let ((code (aref codes code_idx))
+						    (len (out.size))
+						    (prod (std--vector<std--complex<double>> len))
+						    (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
+										   sampleRate)))
+						    (dopEnd (static_cast<int> (/ (* 5000 (static_cast<double> len))
+										 sampleRate))))
+						(for ((= "int dop" dopStart)
+						      (<= dop dopEnd)
+						      (incf dop))
+						     (do0
+						      (dotimes (i (out.size))
+							(declare (type size_t i))
+							(let ((i1 (% (+ i -dop len) len)))
+							  (setf (aref prod i)
+								(* (std--conj (aref out i))
+								   (aref code i1)))))
+						      (let ((corr (fftw.ifft prod (prod.size)))
+							    (corrAbs2 (std--vector<double> (out.size)))
+							    (sumPwr 0d0)
+							    (maxPwr 0d0)
+							    (maxPwrIdx 0))
+							(dotimes (i (static_cast<int> (out.size)))
+							  (let ((v (std--abs (aref corr i)))
+								(pwr (/ (* v v)
+									windowSize)))
+							    (when (< maxPwr pwr)
+							      (setf maxPwr pwr
+								    maxPwrIdx i))
+							    (setf (aref corrAbs2 i) pwr)
+							    (incf sumPwr pwr)))
+							(let ((avgPwr (/ sumPwr (static_cast<double> (out.size))))
+							      (snr (/ maxPwr avgPwr)))
+							  (when (< maxSnr snr)
+							    (setf maxSnr snr
+								  maxSnrDop dop
+							     
+								  maxSnrIdx maxPwrIdx))))
+						 
+						      ))
+						)
+					      ,@(loop for e in l-result
+						      collect
+						      (destructuring-bind (&key name type) e
+							(let ((aname (format nil "~a_vec" name)))
+							  `(setf (aref ,aname code_idx) ,name))))
+					 
+					      #+nil 
+					      ,(lprint :msg "sat"
+						       :vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
+
+					 (dotimes (pnr_idx 32)
+					   (if (< 18d0 (aref maxSnr_vec pnr_idx))
+					       (do0
+						(setf (aref selectedSatellites pnr_idx) true)
+						)
+					       (setf (aref selectedSatellites pnr_idx) false)))
+
+				    
+				    
+
+				    
+					 ))
+			       
+			       
+				    (ImPlot--EndPlot))
+				  (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
+					       windowSize codesSize)
+				  ))))))
 	
 	(defun DrawPlot (file sdr fftw codes sampleRate)
 	  (declare (type "const MemoryMappedComplexShortFile&" file)
@@ -1649,101 +1746,8 @@
 	      (handler-case
 		  (do0
 		   (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
-		   (let ((codesSize (dot (aref codes 0) (size))))
-		     (if (== (static_cast<size_t> windowSize) codesSize)
-			 (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
-			   (let ((x_corr (std--vector<double> (out.size)))
-				 )
-			     (dotimes (i (x_corr.size))
-			       (declare (type size_t i))
-			       (setf (aref x_corr i) (static_cast<double> i))))
-
-			   ,(let ((l-result `((:name maxSnrDop :type int)
-					      (:name maxSnrIdx :type int)
-					      (:name maxSnr :type double)
-					      )))
-			      `(do0
-				,@(loop for e in l-result
-					collect
-					(destructuring-bind (&key name type) e
-					  (let ((aname (format nil "~a_vec" name)))
-					    `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
-				    
-				"#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
-				(dotimes (code_idx 32)
-				  (do0 ;when (aref selectedSatellites code_idx)
-				   (let  ((maxSnrDop 0)
-					  (maxSnrIdx 0)
-					  (maxSnr 0d0))
-				     (let ((code (aref codes code_idx))
-					   (len (out.size))
-					   (prod (std--vector<std--complex<double>> len))
-					   (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
-									  sampleRate)))
-					   (dopEnd (static_cast<int> (/ (* 5000 (static_cast<double> len))
-									sampleRate))))
-				       (for ((= "int dop" dopStart)
-					     (<= dop dopEnd)
-					     (incf dop))
-					    (do0
-					     (dotimes (i (out.size))
-					       (declare (type size_t i))
-					       (let ((i1 (% (+ i -dop len) len)))
-						 (setf (aref prod i)
-						       (* (std--conj (aref out i))
-							  (aref code i1)))))
-					     (let ((corr (fftw.ifft prod (prod.size)))
-						   (corrAbs2 (std--vector<double> (out.size)))
-						   (sumPwr 0d0)
-						   (maxPwr 0d0)
-						   (maxPwrIdx 0))
-					       (dotimes (i (static_cast<int> (out.size)))
-						 (let ((v (std--abs (aref corr i)))
-						       (pwr (/ (* v v)
-							       windowSize)))
-						   (when (< maxPwr pwr)
-						     (setf maxPwr pwr
-							   maxPwrIdx i))
-						   (setf (aref corrAbs2 i) pwr)
-						   (incf sumPwr pwr)))
-					       (let ((avgPwr (/ sumPwr (static_cast<double> (out.size))))
-						     (snr (/ maxPwr avgPwr)))
-						 (when (< maxSnr snr)
-						   (setf maxSnr snr
-							 maxSnrDop dop
-							     
-							 maxSnrIdx maxPwrIdx))))
-						 
-					     ))
-				       )
-				     ,@(loop for e in l-result
-					     collect
-					     (destructuring-bind (&key name type) e
-					       (let ((aname (format nil "~a_vec" name)))
-						 `(setf (aref ,aname code_idx) ,name))))
-					 
-				     #+nil 
-				     ,(lprint :msg "sat"
-					      :vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
-
-				(dotimes (pnr_idx 32)
-				  (if (< 18d0 (aref maxSnr_vec pnr_idx))
-				      (do0
-				       (setf (aref selectedSatellites pnr_idx) true)
-				       )
-				      (setf (aref selectedSatellites pnr_idx) false)))
-
-				    
-				    
-
-				    
-				))
-			       
-			       
-			   (ImPlot--EndPlot))
-			 (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
-				      windowSize codesSize)
-			 )))
+		   (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
+		   )
 		  
 		("const std::exception&" (e)
 		  (ImGui--Text (string "Error while processing FFT: %s")

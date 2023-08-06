@@ -418,6 +418,108 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
         return out;
 }; 
  
+auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, auto windowSize, auto fftw, auto sampleRate){
+            auto codesSize  = codes[0].size(); 
+    if ( static_cast<size_t>(windowSize)==codesSize ) {
+                if ( ImPlot::BeginPlot("Cross-Correlations with PRN sequences") ) {
+                                                auto x_corr  = std::vector<double>(out.size()); 
+            for ( size_t i = 0;i<x_corr.size();i+=1 ) {
+                                                x_corr[i]=static_cast<double>(i);
+
+
+} 
+ 
+                                    auto maxSnrDop_vec  = std::vector<int>(32); 
+ 
+                        auto maxSnrIdx_vec  = std::vector<int>(32); 
+ 
+                        auto maxSnr_vec  = std::vector<double>(32); 
+ 
+            #pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)
+            for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
+                                                                auto maxSnrDop  = 0; 
+                auto maxSnrIdx  = 0; 
+                auto maxSnr  = 0.    ; 
+                                auto code  = codes[code_idx]; 
+                auto len  = out.size(); 
+                auto prod  = std::vector<std::complex<double>>(len); 
+                auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
+                auto dopEnd  = static_cast<int>((5000*static_cast<double>(len))/sampleRate); 
+                for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
+                                                            for ( size_t i = 0;i<out.size();i+=1 ) {
+                                                                        auto i1  = (i+-dop+len)%len; 
+                                                prod[i]=std::conj(out[i])*code[i1];
+
+
+ 
+} 
+                                        auto corr  = fftw.ifft(prod, prod.size()); 
+                    auto corrAbs2  = std::vector<double>(out.size()); 
+                    auto sumPwr  = 0.    ; 
+                    auto maxPwr  = 0.    ; 
+                    auto maxPwrIdx  = 0; 
+                    for ( auto i = 0;i<static_cast<int>(out.size());i+=1 ) {
+                                                                        auto v  = std::abs(corr[i]); 
+                        auto pwr  = (v*v)/windowSize; 
+                        if ( maxPwr<pwr ) {
+                                                                                                                maxPwr=pwr;
+                            maxPwrIdx=i;
+
+
+ 
+} 
+                                                corrAbs2[i]=pwr;
+
+                        sumPwr+=pwr;
+ 
+} 
+                                        auto avgPwr  = sumPwr/static_cast<double>(out.size()); 
+                    auto snr  = maxPwr/avgPwr; 
+                    if ( maxSnr<snr ) {
+                                                                                                maxSnr=snr;
+                        maxSnrDop=dop;
+                        maxSnrIdx=maxPwrIdx;
+
+
+ 
+} 
+ 
+ 
+ 
+} 
+ 
+                                maxSnrDop_vec[code_idx]=maxSnrDop;
+
+                                maxSnrIdx_vec[code_idx]=maxSnrIdx;
+
+                                maxSnr_vec[code_idx]=maxSnr;
+
+
+ 
+ 
+} 
+            for ( auto pnr_idx = 0;pnr_idx<32;pnr_idx+=1 ) {
+                                if ( 18.    <maxSnr_vec[pnr_idx] ) {
+                                                                                selectedSatellites[pnr_idx]=true;
+
+
+ 
+} else {
+                                                            selectedSatellites[pnr_idx]=false;
+
+
+} 
+} 
+ 
+            ImPlot::EndPlot();
+ 
+} 
+} else {
+                ImGui::Text("Don't perform correlation windowSize=%d codesSize=%ld", windowSize, codesSize);
+} 
+ 
+}; 
+ 
 
 void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrManager> sdr, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
         DrawMemory();
@@ -475,105 +577,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrMana
         try {
                                                 auto out  = DrawFourier(sampleRate, realtimeDisplay, windowSize, fftw, sdr, x, y1, y2, zfifo, file, start, logScale, selectedSatellites); 
  
-                        auto codesSize  = codes[0].size(); 
-            if ( static_cast<size_t>(windowSize)==codesSize ) {
-                                if ( ImPlot::BeginPlot("Cross-Correlations with PRN sequences") ) {
-                                                                                auto x_corr  = std::vector<double>(out.size()); 
-                    for ( size_t i = 0;i<x_corr.size();i+=1 ) {
-                                                                        x_corr[i]=static_cast<double>(i);
-
-
-} 
- 
-                                                            auto maxSnrDop_vec  = std::vector<int>(32); 
- 
-                                        auto maxSnrIdx_vec  = std::vector<int>(32); 
- 
-                                        auto maxSnr_vec  = std::vector<double>(32); 
- 
-                    #pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)
-                    for ( auto code_idx = 0;code_idx<32;code_idx+=1 ) {
-                                                                                                auto maxSnrDop  = 0; 
-                        auto maxSnrIdx  = 0; 
-                        auto maxSnr  = 0.    ; 
-                                                auto code  = codes[code_idx]; 
-                        auto len  = out.size(); 
-                        auto prod  = std::vector<std::complex<double>>(len); 
-                        auto dopStart  = static_cast<int>(( -5000*static_cast<int>(len))/sampleRate); 
-                        auto dopEnd  = static_cast<int>((5000*static_cast<double>(len))/sampleRate); 
-                        for ( int dop=dopStart;dop<=dopEnd;dop++ ) {
-                                                                                    for ( size_t i = 0;i<out.size();i+=1 ) {
-                                                                                                auto i1  = (i+-dop+len)%len; 
-                                                                prod[i]=std::conj(out[i])*code[i1];
-
-
- 
-} 
-                                                        auto corr  = fftw.ifft(prod, prod.size()); 
-                            auto corrAbs2  = std::vector<double>(out.size()); 
-                            auto sumPwr  = 0.    ; 
-                            auto maxPwr  = 0.    ; 
-                            auto maxPwrIdx  = 0; 
-                            for ( auto i = 0;i<static_cast<int>(out.size());i+=1 ) {
-                                                                                                auto v  = std::abs(corr[i]); 
-                                auto pwr  = (v*v)/windowSize; 
-                                if ( maxPwr<pwr ) {
-                                                                                                                                                maxPwr=pwr;
-                                    maxPwrIdx=i;
-
-
- 
-} 
-                                                                corrAbs2[i]=pwr;
-
-                                sumPwr+=pwr;
- 
-} 
-                                                        auto avgPwr  = sumPwr/static_cast<double>(out.size()); 
-                            auto snr  = maxPwr/avgPwr; 
-                            if ( maxSnr<snr ) {
-                                                                                                                                maxSnr=snr;
-                                maxSnrDop=dop;
-                                maxSnrIdx=maxPwrIdx;
-
-
- 
-} 
- 
- 
- 
-} 
- 
-                                                maxSnrDop_vec[code_idx]=maxSnrDop;
-
-                                                maxSnrIdx_vec[code_idx]=maxSnrIdx;
-
-                                                maxSnr_vec[code_idx]=maxSnr;
-
-
- 
- 
-} 
-                    for ( auto pnr_idx = 0;pnr_idx<32;pnr_idx+=1 ) {
-                                                if ( 18.    <maxSnr_vec[pnr_idx] ) {
-                                                                                                                selectedSatellites[pnr_idx]=true;
-
-
- 
-} else {
-                                                                                    selectedSatellites[pnr_idx]=false;
-
-
-} 
-} 
- 
-                    ImPlot::EndPlot();
- 
-} 
-} else {
-                                ImGui::Text("Don't perform correlation windowSize=%d codesSize=%ld", windowSize, codesSize);
-} 
- 
+            DrawCrossCorrelation(codes, out, selectedSatellites, windowSize, fftw, sampleRate);
  
 }catch (const std::exception& e) {
                         ImGui::Text("Error while processing FFT: %s", e.what());
