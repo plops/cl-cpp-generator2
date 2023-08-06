@@ -600,7 +600,7 @@ auto initGL  = [] (){
         return window;
 }; 
  
-auto initGps  = [] (double sampleRate, FFTWManager& fftw){
+auto initGps  = [] (auto sampleRate, auto fftw){
             // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
  
         const auto caFrequency  = 1.0230e+6; 

@@ -1832,7 +1832,7 @@
 
 
      (let ((initGps (lambda (sampleRate fftw)
-		      (declare (type double sampleRate) (type "FFTWManager&" fftw))
+		      ;(declare (type double sampleRate) (type "FFTWManager&" fftw))
 		      (do0
 		       (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
 		       (let (
@@ -1922,7 +1922,9 @@
 
        (handler-case
 	   (do0
-	    (let ((fftw (FFTWManager 6))
+	    (let ((fftw ;(std--make_shared<FFTWManager> 6)
+			(FFTWManager 6)
+			)
 		  (*window (initGL))
 		  (sampleRate		;5456d3
 		    10.0d6)
@@ -1930,7 +1932,10 @@
 		  (sdr (initSdr sampleRate))
 		  (file (initFile (string ;;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
 					 "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
-					  )))))	    
+					  ))))
+	      ;(declare (type "static FFTWManager" fftw))
+	      )
+	    
 	    
 	    
 	    (while (!glfwWindowShouldClose window)
