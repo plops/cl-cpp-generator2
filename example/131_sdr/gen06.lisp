@@ -91,18 +91,26 @@
 
 
      (let ((Sim (lambda ()
-		  (let ((phase_offset .8d0)
-			(frequency_offset .01d0)
+		  (let ((phase_offset .8)
+			(frequency_offset .01)
 			(n 40)
-			(x (std--complex<double> 0d0))
-			(y (std--complex<double> 0d0))
-			(phase_error 0d0)
-			(phi_hat 0d0)))
+			(x (std--complex<float> 0.0))
+			(y (std--complex<float> 0.0))
+			(phase_error 0.0)
+			(phi_hat .0)))
+		  (let ((wn .1)
+			(zeta .707)
+			(K 1000.0)
+			(a (std--vector<float> 3))
+			(b (std--vector<float> 3))
+			)
+		    (iirdes_pll_active_lag wn zeta K (b.data) (a.data)))
+		  
 		  (dotimes (i n)
-		    (setf x (std--exp (* (std--complex<double> 0d0 1d0)
+		    (setf x (std--exp (* (std--complex<float> 0d0 1d0)
 					 (+ phase_offset (* i frequency_offset)))))
-		    (setf y (std--exp (* (std--complex<double> 0d0 1d0)
-				    phi_hat)))
+		    (setf y (std--exp (* (std--complex<float> 0d0 1d0)
+					 phi_hat)))
 		    (setf phase_error (std--arg (* x (std--conj y))))
 		    ,(lprint :msg "result"
 			     :vars `(i phi_hat phase_error))
@@ -157,7 +165,8 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-
+       (Sim)
+       #+Nil
        (handler-case
 	   (do0
 	    (let ((*window (initGL))))

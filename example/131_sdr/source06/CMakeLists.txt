@@ -44,6 +44,7 @@ find_package(OpenGL REQUIRED)
 #pkg_check_modules(FFTW REQUIRED fftw3_threads IMPORTED_TARGET)
 find_package(OpenMP)
 
+find_library(LIQUID_LIBRARY liquid /usr/lib64)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/../source03/src)
@@ -78,6 +79,7 @@ target_link_libraries(
         OpenGL::GL
 	#PkgConfig::FFTW
 	OpenMP::OpenMP_CXX
+	${LIQUID_LIBRARY}
 )
 
 # Now you can build your app with
