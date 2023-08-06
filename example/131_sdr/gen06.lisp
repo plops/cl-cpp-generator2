@@ -197,11 +197,29 @@
 			(y (std--complex<float> 0.0))
 			(phase_error 0.0)
 			(phi_hat .0)))
-		  (let ((wn .1)
-			(zeta .707)
-			(K 1000.0)
-			(f (LoopFilter wn zeta K)))
+
+		  ,@(loop for e in `((:name wn :default .1 :min 1e-6 :max 1.0)
+				     (:name zeta :default .707 :min .0 :max 1.0)
+				     (:name Kgain :default 1000.0 :min 1.0 :max 10000.0))
+			  collect
+			  (destructuring-bind (&key name default min max) e
+			   `(let ((,name ,default))
+			      (declare (type "static float" ,name))
+			      (when (ImGui--SliderFloat (string ,name)
+					    (ref ,name) ,min ,max
+					    (string "%12.6f")
+					    ;ImGuiSliderFlags_AlwaysClamp
+					    )
+				(comments "bla")))))
+		  
+		  (let (
+			(f (LoopFilter wn zeta Kgain)))
 		    )
+
+
+		  
+		  
+		  
 		  (let ((helpx (std--vector<float> n))
 			(helpy (std--vector<float> n))))
 		  (dotimes (i n)
