@@ -12,7 +12,7 @@
 						  :dec-min
 						  :dec-mean
 						  )))
-(setf *features* (set-exclusive-or *features* (list  ;:more
+(setf *features* (set-exclusive-or *features* (list  :more
 						     :dec-max
 					;:dec-min
 					;:dec-mean
@@ -1082,8 +1082,12 @@
 	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
 		 #+memoize-plan
-		 (for-range (kv plans_)
-			    (fftw_destroy_plan kv.second)))
+		 (for-range (;(bracket (bracket size threads) plan)
+			     kv plans_)
+			    (let (((bracket size threads) kv.first))
+			      ,(lprint :msg "destroy plan" :vars `(size threads))
+			      (fftw_destroy_plan  kv.second
+						  ))))
 	       
 	       "private:"
 	       (defmethod get_plan (windowSize &key (direction FFTW_FORWARD) (nThreads 1) )
@@ -1091,6 +1095,8 @@
 			  (type size_t windowSize)
 			  (values fftw_plan)
 			  #-memoize-plan (const))
+		 ,(lprint :msg "get_plan"
+			  :vars `(windowSize direction nThreads))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 

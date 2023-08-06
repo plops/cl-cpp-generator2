@@ -25,7 +25,7 @@
 #include "ProcessMemoryInfo.h" 
 
 void glfw_error_callback (int err, const char* desc)        {
-        
+        std::cout<<"GLFW error:"<<" err='"<<err<<"' "<<" desc='"<<desc<<"' "<<"\n"<<std::flush;
 }
  
 
@@ -33,22 +33,22 @@ bool isDaemonRunning ()        {
             auto exit_code  = system("pidof sdrplay_apiService > /dev/null"); 
     auto shm_files_exist  = true; 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvRespSema") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvRespSema does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvCmdSema") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvCmdSema does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComMtx") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComMtx does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
     if ( !std::filesystem::exists("/dev/shm/Glbl\\sdrSrvComShMem") ) {
-                        
+                        std::cout<<"file /dev/shm/Glbl\\sdrSrvComShMem does not exist"<<"\n"<<std::flush;
         return false;
  
 } 
@@ -59,18 +59,18 @@ bool isDaemonRunning ()        {
 
 void stopDaemon ()        {
             auto ret  = std::system("ps axu|grep 'sdrplay_'|awk '{print $2}'|xargs kill -9"); 
-    
+    std::cout<<"stop daemon"<<" ret='"<<ret<<"' "<<"\n"<<std::flush;
  
 }
  
 
 void startDaemonIfNotRunning ()        {
-        
+        std::cout<<"verify that sdr daemon is running"<<"\n"<<std::flush;
         if ( !isDaemonRunning() ) {
-                        
+                        std::cout<<"sdrplay daemon is not running. start it"<<"\n"<<std::flush;
                 auto daemon_exit  = system("/usr/bin/sdrplay_apiService &"); 
  
-        
+        std::cout<<"return value"<<" daemon_exit='"<<daemon_exit<<"' "<<"\n"<<std::flush;
         sleep(1);
  
 } 
@@ -497,7 +497,7 @@ auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, 
 }; 
  
 
-void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrManager> sdr, const FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
+void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrManager> sdr, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
         DrawMemory();
         DrawSdrInfo(sdr);
             auto automaticGainMode  = SelectAutoGain(sdr); 
@@ -568,19 +568,22 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrMana
 auto initGL  = [] (){
             glfwSetErrorCallback(glfw_error_callback);
     if ( 0==glfwInit() ) {
-                        
+                        std::cout<<"glfw init failed"<<"\n"<<std::flush;
  
 } 
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+ 
         auto *window  = glfwCreateWindow(800, 600, "imgui_dsp", nullptr, nullptr); 
     if ( nullptr==window ) {
-                        
+                        std::cout<<"failed to create glfw window"<<"\n"<<std::flush;
  
 } 
     glfwMakeContextCurrent(window);
-    
+    std::cout<<"enable vsync"<<"\n"<<std::flush;
     glfwSwapInterval(1);
     IMGUI_CHECKVERSION();
-    
+    std::cout<<"create imgui context"<<"\n"<<std::flush;
     ImGui::CreateContext();
     ImPlot::CreateContext();
         auto &io  = ImGui::GetIO(); 
@@ -604,7 +607,7 @@ auto initGps  = [] (double sampleRate, FFTWManager& fftw){
     const auto corrWindowTime_ms  = 1.0    ; 
     const auto corrLength  = static_cast<int>((corrWindowTime_ms*sampleRate)/1000); 
     const auto caSequenceLength  = 1023; 
-    
+    std::cout<<"prepare CA code chips"<<" corrLength='"<<corrLength<<"' "<<"\n"<<std::flush;
         // the first fft takes always long (even if wisdom is present). as a workaround i just perform a very short fft. then it takes only a few milliseconds. subsequent large ffts are much faster
  
         auto mini  = std::vector<std::complex<double>>(32); 
@@ -652,7 +655,7 @@ auto initSdr  = [] (auto sampleRate){
             auto sdr  = std::make_shared<SdrManager>(64512, 1100000, 50000, 5000); 
     stopDaemon();
     startDaemonIfNotRunning();
-    
+    std::cout<<"initialize sdr manager"<<"\n"<<std::flush;
     sdr->initialize();
     sdr->set_gain_mode(false);
     sdr->setGainIF(20);
@@ -668,7 +671,7 @@ auto initSdr  = [] (auto sampleRate){
 auto initFile  = [] (auto fn){
             auto file  = MemoryMappedComplexShortFile(fn); 
     if ( file.ready() ) {
-                        
+                        std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<"\n"<<std::flush;
  
 } 
     return file;
@@ -713,10 +716,10 @@ int main (int argc, char** argv)        {
  
  
 }catch (const std::runtime_error& e) {
-                
+                std::cout<<"error 1422:"<<" e.what()='"<<e.what()<<"' "<<"\n"<<std::flush;
                 return -1;
 }catch (const std::exception& e) {
-                
+                std::cout<<"error 1426:"<<" e.what()='"<<e.what()<<"' "<<"\n"<<std::flush;
                 return -1;
 } 
         return 0;
