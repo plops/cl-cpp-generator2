@@ -222,7 +222,7 @@ Process finished with exit code 0
 
 ```
 
-sudo emerge -av mold
+sudo emerge -av mold ccache
 
 
 ```
