@@ -231,16 +231,21 @@ sudo emerge -av mold ccache
 
  Some standard types have forward declarations in #include <iosfwd>, but not all.
  
- ## unity build
- 
- ```
- 
+## unity build
+
+- the sequence of source files matters
+- name clashes between static variables can be problematic
+
+```
+set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
+
 # enable Unity build
 set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
 
 
 # exclude main.cpp from Unity build (this is useful if main.cpp is the only file that I edit right now)
 set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
 
 
  

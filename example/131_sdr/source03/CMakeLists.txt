@@ -49,12 +49,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_executable(
         ${PROJECT_NAME}
-        src/main.cpp
-        src/GpsCACodeGenerator.cpp
-        src/MemoryMappedComplexShortFile.cpp
-        src/FFTWManager.cpp
-        src/SdrManager.cpp
-	src/ProcessMemoryInfo.cpp
         src/imgui.cpp
         src/imgui_draw.cpp
         src/imgui_impl_opengl3.cpp
@@ -64,7 +58,15 @@ add_executable(
         src/imgui_widgets.cpp
         src/implot.cpp
         src/implot_items.cpp
+        src/main.cpp
+        src/GpsCACodeGenerator.cpp
+        src/MemoryMappedComplexShortFile.cpp
+        src/FFTWManager.cpp
+        src/SdrManager.cpp
+	src/ProcessMemoryInfo.cpp
 )
+
+set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
 
 # enable Unity build
 set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
