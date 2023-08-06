@@ -95,6 +95,8 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
   https://github.com/hamsternz/Full_Stack_GPS_Receiver/blob/master/fast_fsgps/gold_codes.c
 - http://www.jks.com/gps/gps.html
 - http://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle satellite orbit elements
+
+
 # gen03
 
 - pull in minimal code for implot
@@ -213,4 +215,7 @@ Process finished with exit code 0
 ```
 
 - i now have a 3.3v buck boost convert (i think) 
+# speed up C++ compilation
 
+- https://devtalk.blender.org/t/speed-up-c-compilation/30508
+- https://news.ycombinator.com/item?id=37014842
