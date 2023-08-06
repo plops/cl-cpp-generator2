@@ -202,7 +202,8 @@
 			(K 1000.0)
 			(f (LoopFilter wn zeta K)))
 		    )
-		  
+		  (let ((helpx (std--vector<float> n))
+			(helpy (std--vector<float> n))))
 		  (dotimes (i n)
 		    (setf x (std--exp (* (std--complex<float> 0d0 1d0)
 					 (+ phase_offset (* (static_cast<float> i)
@@ -211,9 +212,22 @@
 					 phi_hat)))
 		    (setf phase_error (std--arg (* x (std--conj y))))
 		    (setf phi_hat (f.execute phase_error))
+		    (setf (aref helpx i) (static_cast<float> i)
+			  (aref helpy i) phase_error)
 		    ,(lprint :msg "result"
 			     :vars `(i phi_hat phase_error))
 		    )
+
+
+		  
+		  (when (ImPlot--BeginPlot (string "LoopFilter"))
+		    (ImPlot--PlotLine (string "phase_error")
+				      (helpx.data)
+				      (helpy.data)
+				      (static_cast<int> (helpx.size)))
+		    (ImPlot--EndPlot))
+
+		  
 		  ))))
      
      (let ((DrawPlot (lambda ()
