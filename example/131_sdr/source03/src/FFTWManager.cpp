@@ -40,14 +40,15 @@
     return out;
  
 } FFTWManager::~FFTWManager ()         {
-        for ( const auto& kv: plans_ ) {
+            for ( const auto& kv: plans_ ) {
                         auto [size, threads]  = kv.first; 
         std::cout<<"destroy plan"<<" size='"<<size<<"' "<<" threads='"<<threads<<"' "<<"\n"<<std::flush;
         fftw_destroy_plan(kv.second);
  
 } 
+    plans_.clear();
+ 
 }fftw_plan FFTWManager::get_plan (size_t windowSize, int direction , int nThreads )         {
-        std::cout<<"get_plan"<<" windowSize='"<<windowSize<<"' "<<" direction='"<<direction<<"' "<<" nThreads='"<<nThreads<<"' "<<"\n"<<std::flush;
         if ( windowSize<=0 ) {
                         throw std::invalid_argument("window size must be positive");
  
@@ -83,8 +84,9 @@
         auto p  = fftw_plan_guru_dft(1, &dim, 0, nullptr, reinterpret_cast<fftw_complex*>(&in0[0]), reinterpret_cast<fftw_complex*>(&out0[0]), direction, FFTW_MEASURE); 
  
         if ( nullptr==p ) {
-                                    std::cout<<"error: plan not successfully created"<<"\n"<<std::flush;
- 
+                        std::cout<<"error: plan not successfully created"<<"\n"<<std::flush;
+} else {
+                        std::cout<<"plan successfully created"<<" windowSize='"<<windowSize<<"' "<<" nThreads='"<<nThreads<<"' "<<" p='"<<p<<"' "<<"\n"<<std::flush;
 } 
         if ( !wisdomFile.good() ) {
                                     std::cout<<"store wisdom to file"<<" wisdom_filename='"<<wisdom_filename<<"' "<<"\n"<<std::flush;

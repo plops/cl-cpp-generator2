@@ -286,6 +286,7 @@ auto SelectSatellites  = [] (){
 }; 
  
 auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto sdr, auto x, auto y1, auto y2, auto zfifo, auto file, auto start, auto logScale, auto selectedSatellites){
+        std::cout<<"DrawFourier"<<"\n"<<std::flush;
             auto in  = std::vector<std::complex<double>>(windowSize); 
     auto gps_freq  = 1.575420e+9; 
     static double lo_freq  = 4.0920e+6; 

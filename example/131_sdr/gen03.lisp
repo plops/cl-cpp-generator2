@@ -1082,12 +1082,15 @@
 	       (defmethod ~FFTWManager ()
 		 (declare (values :constructor))
 		 #+memoize-plan
-		 (for-range (;(bracket (bracket size threads) plan)
-			     kv plans_)
-			    (let (((bracket size threads) kv.first))
-			      ,(lprint :msg "destroy plan" :vars `(size threads))
-			      (fftw_destroy_plan  kv.second
-						  ))))
+		 (do0
+		  (for-range (	;(bracket (bracket size threads) plan)
+			      kv plans_)
+			     (let (((bracket size threads) kv.first))
+			       ,(lprint :msg "destroy plan" :vars `(size threads))
+			       (fftw_destroy_plan  kv.second
+						   )))
+		  (plans_.clear))
+		 )
 	       
 	       "private:"
 	       (defmethod get_plan (windowSize &key (direction FFTW_FORWARD) (nThreads 1) )
@@ -1095,7 +1098,7 @@
 			  (type size_t windowSize)
 			  (values fftw_plan)
 			  #-memoize-plan (const))
-		 ,(lprint :msg "get_plan"
+		 #+nil ,(lprint :msg "get_plan"
 			  :vars `(windowSize direction nThreads))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
@@ -1164,9 +1167,10 @@
 										 FFTW_UNALIGNED)
 								       )))
 					     )
-			       (when (== nullptr p)
-				 ,(lprint :msg "error: plan not successfully created"))
-			       #+nil ,(lprint :msg "plan successfully created")
+			       (if (== nullptr p)
+				   ,(lprint :msg "error: plan not successfully created")
+				   ,(lprint :msg "plan successfully created"
+					    :vars `(windowSize nThreads p)))
 			       (unless (wisdomFile.good)
 				 ,(lprint :msg "store wisdom to file"
 					  :vars `(wisdom_filename))
@@ -1525,8 +1529,9 @@
 	(let ((DrawFourier
 		(lambda
 		    (sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites)
+		  ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
-						(gps_freq 1575.42d6)
+			(gps_freq 1575.42d6)
 			(lo_freq 4.092d6)
 			(centerFrequency (? realtimeDisplay
 					    (sdr->get_frequency)
@@ -1550,27 +1555,27 @@
 				   (z (std--complex<double> zr zi)))
 			       (setf (aref in i) z))))
 			  #+nil (do0
-			   (dotimes (i windowSize)
-			     (let ((zs (aref file (+ start i)))
-				   #+nil (zr (static_cast<double> (zs.real)))
-				   #+nil (zi (static_cast<double> (zs.imag)))
-				   #+nil (z (std--complex<double> zr zi)))
-			       (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
-				     (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
-				 (declare (type "const auto " lo_sin lo_cos))
-				 (let ((re (? (^ (zs.real)
-						 (aref lo_sin (static_cast<int> lo_phase)))
-					      -1 1))
-				       (im (? (^ (zs.real)
-						 (aref lo_cos (static_cast<int> lo_phase)))
-					      -1 1)))
-				   (setf (aref in i)
-					 (std--complex<double>
-					  re im)))
-				 (incf lo_phase lo_rate)
-				 (when (<= 4 lo_phase)
-				   (decf lo_phase 4)))
-			       )))))
+				 (dotimes (i windowSize)
+				   (let ((zs (aref file (+ start i)))
+					 #+nil (zr (static_cast<double> (zs.real)))
+					 #+nil (zi (static_cast<double> (zs.imag)))
+					 #+nil (z (std--complex<double> zr zi)))
+				     (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
+					   (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
+				       (declare (type "const auto " lo_sin lo_cos))
+				       (let ((re (? (^ (zs.real)
+						       (aref lo_sin (static_cast<int> lo_phase)))
+						    -1 1))
+					     (im (? (^ (zs.real)
+						       (aref lo_cos (static_cast<int> lo_phase)))
+						    -1 1)))
+					 (setf (aref in i)
+					       (std--complex<double>
+						re im)))
+				       (incf lo_phase lo_rate)
+				       (when (<= 4 lo_phase)
+					 (decf lo_phase 4)))
+				     )))))
 		    (let ((out (fftw.fft in windowSize)))
 		      (if logScale
 			  (dotimes (i windowSize)
