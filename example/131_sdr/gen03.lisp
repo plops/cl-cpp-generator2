@@ -12,7 +12,7 @@
 						  :dec-min
 						  :dec-mean
 						  )))
-(setf *features* (set-exclusive-or *features* (list  :more
+(setf *features* (set-exclusive-or *features* (list  ;:more
 						     :dec-max
 					;:dec-min
 					;:dec-mean
@@ -1030,35 +1030,53 @@
 						(std--distance mid (in.end))))
 		   (return out)))
 
-	       (defmethod fft (in windowSize)
-		 (declare (type size_t windowSize)
-			  #-memoize-plan (const)
-			  (type "const std::vector<std::complex<double>>&" in)
-			  (values "std::vector<std::complex<double>>"))
-		 (when (!= windowSize (in.size))
-		   (throw (std--invalid_argument (string "Input size must match window size."))))
-		 (let ((out (std--vector<std--complex<double>> windowSize)))
-		   (fftw_execute_dft (get_plan windowSize FFTW_FORWARD number_threads_)
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (in.data)))
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (out.data))))
-		   (return (fftshift out))))
+	       ,@(loop for e in `((:name fft :dir FFTW_FORWARD )
+				  (:name ifft :dir FFTW_BACKWARD)
+				  )
+		       collect
+		       (destructuring-bind (&key name dir) e
+			`(defmethod ,name (in windowSize)
+			  (declare (type size_t windowSize)
+				   #-memoize-plan (const)
+				   (type "std::vector<std::complex<double>>&" in)
+				   (values "std::vector<std::complex<double>>"))
+			  (when (!= windowSize (in.size))
+			    (throw (std--invalid_argument (string "Input size must match window size."))))
+			  (let ((out (std--vector<std--complex<double>> windowSize))
+				(in1 ,(case name
+				       (`fft `in)
+				       (`ifft `(fftshift in))))
+				#+nil ((pout (reinterpret_cast<fftw_complex*>
+					      (const_cast<std--complex<double>*> (out.data))))
+					(pin (reinterpret_cast<fftw_complex*>
+					      (const_cast<std--complex<double>*> (in.data))))))
+			    (fftw_execute_dft (get_plan windowSize ,dir number_threads_)
+					;pin pout
+					      (reinterpret_cast<fftw_complex*> (ref (aref in1 0)))
+					      (reinterpret_cast<fftw_complex*> (ref (aref out 0)))
+					      )
+			    (return ,(case name
+				       (`fft `(fftshift out))
+				       (`ifft `out)))))))
 
+	       #+nil
 	       (defmethod ifft (in windowSize)
 		 (declare (type size_t windowSize)
 			  #-memoize-plan (const)
-			  (type "const std::vector<std::complex<double>>&" in)
+			  (type "std::vector<std::complex<double>>&" in)
 			  (values "std::vector<std::complex<double>>"))
 		 (when (!= windowSize (in.size))
 		   (throw (std--invalid_argument (string "Input size must match window size."))))
 		 (let ((in2 (fftshift in))
 		       (out (std--vector<std--complex<double>> windowSize)))
 		   (fftw_execute_dft (get_plan windowSize FFTW_BACKWARD number_threads_)
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (in2.data)))
-				     (reinterpret_cast<fftw_complex*>
-				      (const_cast<std--complex<double>*> (out.data))))
+				     (reinterpret_cast<fftw_complex*> (ref (aref in2 0)))
+				     (reinterpret_cast<fftw_complex*> (ref (aref out 0)))
+				     
+				     #+nil ((reinterpret_cast<fftw_complex*>
+					     (const_cast<std--complex<double>*> (in2.data)))
+					    (reinterpret_cast<fftw_complex*>
+					     (const_cast<std--complex<double>*> (out.data)))))
 		   (return out)))
 
 	       (defmethod ~FFTWManager ()
@@ -1099,8 +1117,8 @@
 			   
 			   (let ((in0 ("std::vector<std::complex<double>>" windowSize))
 				 (out0 ("std::vector<std::complex<double>>" windowSize))
-				 (*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
-				 (*out ("reinterpret_cast<double(*)[2]>" (out0.data))))
+				 #+nil ((*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
+				   (*out ("reinterpret_cast<double(*)[2]>" (out0.data)))))
 			     
 			     (let ((wisdomFile (std--ifstream wisdom_filename)))
 			       (if (wisdomFile.good)
@@ -1117,7 +1135,9 @@
 				   #+nil ,(lprint :msg "plan 1d fft without threads"
 						  :vars `(nThreads)))
 			       #-guru-plan (let ((p (fftw_plan_dft_1d windowSize
-								      in out
+								      ;in out
+								      (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
+								      (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
 								      direction ;FFTW_FORWARD
 								      FFTW_MEASURE
 								      ))))
@@ -1129,15 +1149,17 @@
 								       &dim ;; dims
 								       0 ;; howmany_rank
 								       nullptr ;; howmany_dims
-								       in ;; in 
-								       out ;; out
+								       ;; in out
+								       (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
+								       (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
 								       direction ;FFTW_FORWARD ;; sign
 								       FFTW_MEASURE ;; flags
 								       #+nil (or FFTW_MEASURE
 										 FFTW_UNALIGNED)
 								       )))
 					     )
-			       
+			       (when (== nullptr p)
+				 ,(lprint :msg "error: plan not successfully created"))
 			       #+nil ,(lprint :msg "plan successfully created")
 			       (unless (wisdomFile.good)
 				 ,(lprint :msg "store wisdom to file"
