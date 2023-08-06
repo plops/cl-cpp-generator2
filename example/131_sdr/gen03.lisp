@@ -303,7 +303,7 @@
 			)
      :implementation-preamble
      `(do0
-       (include<> fstream string unistd.h iostream))
+       (include<> fstream string unistd.h iostream sstream))
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
@@ -451,7 +451,7 @@
 		  algorithm
 		  stdexcept
 		  string
-					;fstream
+		  fstream
                   )
        #+more
        (include<> ;chrono
@@ -842,7 +842,7 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> cstddev string
+			(include<> cstddef string
 				   complex
 				   boost/iostreams/device/mapped_file.hpp)
 			)
@@ -950,7 +950,7 @@
 				   map
 				   vector
 				   complex
-				   stddef.h
+				   cstddef
 				   utility
 				   )
 			)
@@ -960,6 +960,7 @@
 		  algorithm
 		  iterator
 		  string
+		  fstream
 		  #+more iostream)
        
        #-leak (do0

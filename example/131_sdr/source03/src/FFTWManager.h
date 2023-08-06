@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 #include <complex>
-#include <stddef.h>
+#include <cstddef>
 #include <utility> 
 
 class FFTWManager  {
