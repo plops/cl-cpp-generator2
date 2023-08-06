@@ -38,6 +38,101 @@
 	   ,(lprint :msg (format nil "benchmark ~2,'0d" (- *benchmark-counter* 1))
 		    :vars `(,elapsed_ms))))))
 
+
+  (let* ((name `LoopFilter)
+	 (n-filt 3)
+	 (members `((wn :type float :param t)
+		    (zeta :type float :param t)
+		    (k :type float :param t)
+		    (a :type ,(format nil "std::array<float,~a>" n-filt))
+		    (b :type ,(format nil "std::array<float,~a>" n-filt))
+		    (loopfilter :type iirfilt_rrrf)
+		    )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector
+				   utility
+				   array
+				   cstddef))
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+		  cstring
+		  
+		  string
+		  liquid/liquid.h
+		  ))
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 (iirdes_pll_active_lag wn_ zeta_ k_ (b_.data) (a_.data))
+		 (setf loopfilter_ (iirfilt_rrrf_create (b_.data) ,n-filt (a_.data) ,n-filt)))
+
+	       (defmethod ,(format nil "~~~a" name) ()
+		 (declare (values :constructor))
+		 (iirfilt_rrrf_destroy loopfilter_))
+	       
+	       (defmethod execute (sample_in)
+		 (declare (type float sample_in)
+			  (values float))
+		 (let ((sample_out .0))
+		   (iirfilt_rrrf_execute loopfilter_ sample_in &sample_out)
+		   (return sample_out)))
+	       
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
+
+	       ))))
+  
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2
@@ -50,36 +145,38 @@
 					;string
 					;complex
       vector
-      ;algorithm
+					;algorithm
 					;queue
-      ;deque
+					;deque
 					;chrono
 
-      ;filesystem
+					;filesystem
 					;unistd.h
-      ;cstdlib
+					;cstdlib
 
       cmath
 
 					;omp.h
-      ;unistd.h
+					;unistd.h
       array
       complex
       exception
-      ;memory
+					;memory
       stdexcept
-      ;string
-      ;utility
+					;string
+					;utility
       liquid/liquid.h
       )
      (include
       
       implot.h
-      ;imgui.h
+					;imgui.h
       imgui_impl_glfw.h
       imgui_impl_opengl3.h
       GLFW/glfw3.h
       )
+
+     (include LoopFilter.h)
      
      
 
@@ -101,20 +198,20 @@
 		  (let ((wn .1)
 			(zeta .707)
 			(K 1000.0)
-			(a (std--vector<float> 3))
-			(b (std--vector<float> 3))
-			)
-		    (iirdes_pll_active_lag wn zeta K (b.data) (a.data)))
+			(f (LoopFilter wn zeta K)))
+		    )
 		  
 		  (dotimes (i n)
 		    (setf x (std--exp (* (std--complex<float> 0d0 1d0)
-					 (+ phase_offset (* i frequency_offset)))))
+					 (+ phase_offset (* (static_cast<float> i)
+							    frequency_offset)))))
 		    (setf y (std--exp (* (std--complex<float> 0d0 1d0)
 					 phi_hat)))
 		    (setf phase_error (std--arg (* x (std--conj y))))
 		    ,(lprint :msg "result"
 			     :vars `(i phi_hat phase_error))
-		    )))))
+		    )
+		  ))))
      
      (let ((DrawPlot (lambda ()
 		       (handler-case
@@ -131,7 +228,7 @@
 			    ,(lprint :msg "glfw init failed"))
 			  
 			  #+more
-			  (do0		 ;let ((glsl_version (string "#version 130")))
+			  (do0 ;let ((glsl_version (string "#version 130")))
 			   (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
 			   (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
 			  (let ((*window (glfwCreateWindow 800 600
@@ -165,8 +262,6 @@
        (declare (values int)
 		(type int argc)
 		(type char** argv))
-       (Sim) 
-       #+Nil
        (handler-case
 	   (do0
 	    (let ((*window (initGL))))

@@ -61,6 +61,7 @@ add_executable(
         ../source03/src/implot.cpp
         ../source03/src/implot_items.cpp
         src/main.cpp
+	src/LoopFilter.cpp
 )
 
 #set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
