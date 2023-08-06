@@ -94,6 +94,7 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 - MIT Licensed receiver:
   https://github.com/hamsternz/Full_Stack_GPS_Receiver/blob/master/fast_fsgps/gold_codes.c
 - http://www.jks.com/gps/gps.html
+- http://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle satellite orbit elements
 # gen03
 
 - pull in minimal code for implot
