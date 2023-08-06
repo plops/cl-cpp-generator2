@@ -230,3 +230,18 @@ sudo emerge -av mold ccache
 ## forward declaration
 
  Some standard types have forward declarations in #include <iosfwd>, but not all.
+ 
+ ## unity build
+ 
+ ```
+ 
+# enable Unity build
+set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+
+
+# exclude main.cpp from Unity build (this is useful if main.cpp is the only file that I edit right now)
+set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
+
+ 
+ ```

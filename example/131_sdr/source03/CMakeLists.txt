@@ -10,6 +10,9 @@ set(CMAKE_LINKER mold)
 # set ccache for C and C++ compilers
 set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
+# create compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
@@ -31,7 +34,7 @@ else ()
      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
 endif ()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
 
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -62,6 +65,13 @@ add_executable(
         src/implot.cpp
         src/implot_items.cpp
 )
+
+# enable Unity build
+set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+
+
+# exclude main.cpp from Unity build (this is useful if main.cpp is the only file that I edit right now)
+set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 target_link_libraries(
         ${PROJECT_NAME}
