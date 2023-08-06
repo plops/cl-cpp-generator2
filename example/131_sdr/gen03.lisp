@@ -1336,7 +1336,8 @@
 			    (let ((start 0)
 				  (maxStart (static_cast<int> (/ (file.size)
 								 (sizeof "std::complex<short>")))))
-			      (declare (type "static int" start ))
+			      (declare (type "static int" start maxStart ))
+			      
 			      (when (file.ready)
 				(ImGui--SliderInt (string "Start")
 						  &start 0 maxStart))
@@ -1473,8 +1474,7 @@
 		(lambda
 		    (sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites)
 		  (let ((in (std--vector<std--complex<double>> windowSize))
-			
-			(gps_freq 1575.42d6)
+						(gps_freq 1575.42d6)
 			(lo_freq 4.092d6)
 			(centerFrequency (? realtimeDisplay
 					    (sdr->get_frequency)
@@ -1482,14 +1482,12 @@
 			(windowSize2 (/ windowSize 2)))
 		    (declare (type "static double" centerFrequency lo_freq))
 		    (dotimes (i windowSize)
-		      
 		      (setf (aref x i) (+ centerFrequency
 					  (* sampleRate
 					     (/ (static_cast<double> (- i windowSize2))
-						windowSize))) ))
+						windowSize)))))
 
 		    (let ((lo_phase 0d0)
-			  
 			  (lo_rate (* (/ lo_freq sampleRate) 4)))
 		      (if realtimeDisplay
 			  (do0
@@ -1499,7 +1497,7 @@
 				   (zi (static_cast<double> (zs.imag)))
 				   (z (std--complex<double> zr zi)))
 			       (setf (aref in i) z))))
-			  (do0
+			  #+nil (do0
 			   (dotimes (i windowSize)
 			     (let ((zs (aref file (+ start i)))
 				   #+nil (zr (static_cast<double> (zs.real)))
@@ -1529,52 +1527,47 @@
 			  (dotimes (i windowSize)
 			    (setf (aref y1 i) (/ (std--abs (aref out i))
 						 (std--sqrt windowSize)))))
-		      (do0
-		       
-		       (do0
-			(comments "If there are more points than pixels on the screen, then I want to combine all the points under one pixel into three curves: the maximum, the mean and the minimum.")
-
+		      (when (ImPlot--BeginPlot (? logScale
+						  (string "FFT magnitude (dB)")
+						  (string "FFT magnitude (linear)")))
+			,(decimate-plots `(:x x :ys (y1) :idx (string "")))
 			
 			
-			(when (ImPlot--BeginPlot (? logScale
-						    (string "FFT magnitude (dB)")
-						    (string "FFT magnitude (linear)")))
-			  ,(decimate-plots `(:x x :ys (y1) :idx (string "")))
-			  
-			  
-			  (do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
-			       (let ((xmouse (dot (ImPlot--GetPlotMousePos) x))))
-			       (when (logand (ImPlot--IsPlotHovered)
-					     (logior (ImGui--IsMouseClicked 2)
-						     (ImGui--IsMouseDragging 2)))
-				 
-				 (if realtimeDisplay
-				     (do0
-				      (setf centerFrequency xmouse)
-				      (sdr->set_frequency centerFrequency))
-				     (do0
-				      
-				      (setf lo_freq
-					    (- xmouse
-					       centerFrequency))))))
-			  (ImPlot--EndPlot)
-			  
-			  (unless realtimeDisplay
-			    (ImGui--Text (string "lo_freq: %6.10f MHz")
-					 (* lo_freq 1d-6)))
-			  (ImGui--Text (string "xmouse: %6.10f GHz")
-				       (* xmouse 1d-9))
-			  (ImGui--Text (string "gps_freq-xmouse: %6.10f MHz")
-				       (* (- gps_freq xmouse) 1d-6))
-			  (ImGui--Text (string "centerFrequency-xmouse: %6.10f MHz")
-				       (* (- centerFrequency xmouse) 1d-6))
-			  (ImGui--Text (string "centerFrequency-gps_freq: %8.0f kHz")
-				       (* (- centerFrequency gps_freq) 1d-3))))
+			(do0 (comments "handle user input. clicking into the graph allow tuning the sdr receiver to the specified frequency.")
+			     (let ((xmouse (dot (ImPlot--GetPlotMousePos) x))))
+			     (when (logand (ImPlot--IsPlotHovered)
+					   (logior (ImGui--IsMouseClicked 2)
+						   (ImGui--IsMouseDragging 2)))
+			       
+			       (if realtimeDisplay
+				   (do0
+				    (setf centerFrequency xmouse)
+				    (sdr->set_frequency centerFrequency))
+				   (do0
+				    
+				    (setf lo_freq
+					  (- xmouse
+					     centerFrequency))))))
+			(ImPlot--EndPlot)
 
-		       
+			#+nil 
+			(do0
+			 (unless realtimeDisplay
+			   (ImGui--Text (string "lo_freq: %6.10f MHz")
+					(* lo_freq 1d-6)))
+			 (ImGui--Text (string "xmouse: %6.10f GHz")
+				      (* xmouse 1d-9))
+			 (ImGui--Text (string "gps_freq-xmouse: %6.10f MHz")
+				      (* (- gps_freq xmouse) 1d-6))
+			 (ImGui--Text (string "centerFrequency-xmouse: %6.10f MHz")
+				      (* (- centerFrequency xmouse) 1d-6))
+			 (ImGui--Text (string "centerFrequency-gps_freq: %8.0f kHz")
+				      (* (- centerFrequency gps_freq) 1d-3))))
 
-		       )))
-		  (return out)))))
+		      
+
+		      )
+		    (return out))))))
 
 
 	(let ((DrawCrossCorrelation
@@ -1691,67 +1684,60 @@
 	  (let ((windowSize (SelectWindowSize))))
 	  (SetBandwidth sdr)
 
-       
+	  (let ((realtimeDisplay (SelectRealtimeDisplay file))))
 
 
-       
-	  (when (logior (not (file.ready))
-			(paren (logand (<= (+ start windowSize) maxStart)
-				       (< 0 windowSize))))
 
-	    (let ((x (std--vector<double> windowSize))
-		  (y1 (std--vector<double> windowSize))
-		  (y2 (std--vector<double> windowSize))
-		  (zfifo (,acq-vec-type windowSize)))
+	  (let ((x (std--vector<double> windowSize))
+			(y1 (std--vector<double> windowSize))
+			(y2 (std--vector<double> windowSize))
+			(zfifo (,acq-vec-type windowSize)))
 	      
-	      (let ((realtimeDisplay (SelectRealtimeDisplay file))))
-
-	      
- 
 	      (if realtimeDisplay
-		  (do0
-		   (sdr->processFifo
-		    (lambda (fifo)
-		      (declare (type ,(format nil "const ~a &" fifo-type) fifo)
-			       (capture "&"))
-		      (let ((n windowSize))
-			(dotimes (i n)
-			  (let ((z (aref fifo i)))
-			    (setf (aref zfifo i) z)
-			    (setf (aref x i) i
-				  (aref y1 i) (z.real)
-				  (aref y2 i) (z.imag))))))
-		    windowSize))
-		  (do0
-		   
-		   (dotimes (i windowSize)
-		     (let ((z (aref file (+ start i))))
-		       (setf (aref x i) i ;(+ start i)
-			     (aref y1 i) (z.real)
-			     (aref y2 i) (z.imag))))))
+		  (sdr->processFifo
+		(lambda (fifo)
+		  (declare (type ,(format nil "const ~a &" fifo-type) fifo)
+			   (capture "&"))
+		  (let ((n windowSize))
+		    (dotimes (i n)
+		      (let ((z (aref fifo i)))
+			(setf (aref zfifo i) z)
+			(setf (aref x i) i
+			      (aref y1 i) (z.real)
+			      (aref y2 i) (z.imag))))))
+		windowSize)
+		  (if (file.ready)
+		      (if (paren (logand (<= (+ start windowSize) maxStart)
+					 (< 0 windowSize)))
+			  (dotimes (i windowSize)
+			    (let ((z (aref file (+ start i))))
+			      (setf (aref x i) i ;(+ start i)
+				    (aref y1 i) (z.real)
+				    (aref y2 i) (z.imag))))
+			  (ImGui--Text (string "window outside of range stored in file start=%d windowSize=%d maxStart=%d")
+				       start windowSize maxStart))
+		      (ImGui--Text (string "file not ready"))))
+	    
 
 	      (DrawWaveform x y1 y2)
+	    
+	    )
 
-	      
+	  (let ((logScale (SelectLogScale))))
 
-	      (let ((logScale (SelectLogScale))))
+	  (let ((selectedSatellites (SelectSatellites))))
 
-
-	      
-	      
-	      (let ((selectedSatellites (SelectSatellites))))
-
-
-	      
-	      (handler-case
-		  (do0
-		   (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
-		   (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
-		   )
+	  (handler-case
+		      (do0
+		       (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
+		       #+nil (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
+		       )
 		  
-		("const std::exception&" (e)
-		  (ImGui--Text (string "Error while processing FFT: %s")
-			       (e.what)))))))
+		    ("const std::exception&" (e)
+		      (ImGui--Text (string "Error while processing signal: %s")
+				   (e.what))))
+	  
+	  )
 
      (let ((initGL (lambda ()
 		     (do0 (glfwSetErrorCallback glfw_error_callback)
@@ -1885,8 +1871,8 @@
 		    10.0d6)
 		  (codes (initGps sampleRate fftw))
 		  (sdr (initSdr sampleRate))
-		  (file (initFile (string "/mnt5/gps.samples.cs16.fs5456.if4092.dat"
-					; "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
+		  (file (initFile (string ;;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
+					 "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
 					  )))))	    
 	    
 	    

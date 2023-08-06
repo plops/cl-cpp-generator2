@@ -235,6 +235,7 @@ sudo emerge -av mold ccache
 
 - the sequence of source files matters
 - name clashes between static variables can be problematic
+- you may want to create build commands json with unity disabled
 
 ```
 set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
