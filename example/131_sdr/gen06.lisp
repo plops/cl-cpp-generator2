@@ -44,7 +44,9 @@
 	 (members `((wn :type float :param t)
 		    (zeta :type float :param t)
 		    (k :type float :param t)
+		    ;; feedback coefficients:
 		    (a :type ,(format nil "std::array<float,~a>" n-filt))
+		    ;; feedforward coefficients:
 		    (b :type ,(format nil "std::array<float,~a>" n-filt))
 		    (loopfilter :type iirfilt_rrrf)
 		    )))
@@ -208,6 +210,7 @@
 		    (setf y (std--exp (* (std--complex<float> 0d0 1d0)
 					 phi_hat)))
 		    (setf phase_error (std--arg (* x (std--conj y))))
+		    (setf phi_hat (f.execute phase_error))
 		    ,(lprint :msg "result"
 			     :vars `(i phi_hat phase_error))
 		    )
