@@ -226,3 +226,7 @@ sudo emerge -av mold ccache
 
 
 ```
+
+## forward declaration
+
+ Some standard types have forward declarations in #include <iosfwd>, but not all.
