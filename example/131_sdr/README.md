@@ -219,3 +219,10 @@ Process finished with exit code 0
 
 - https://devtalk.blender.org/t/speed-up-c-compilation/30508
 - https://news.ycombinator.com/item?id=37014842
+
+```
+
+sudo emerge -av mold
+
+
+```

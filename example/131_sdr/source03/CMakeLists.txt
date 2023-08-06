@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
 project(imgui_dsp)
+
 set(CMAKE_CXX_STANDARD 20)
+
+# https://devtalk.blender.org/t/speed-up-c-compilation/30508
+# set the mold linker
+set(CMAKE_LINKER mold)
+
+# set ccache for C and C++ compilers
+set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
