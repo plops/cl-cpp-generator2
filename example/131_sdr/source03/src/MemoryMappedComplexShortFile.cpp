@@ -1,7 +1,8 @@
 // no preamble
  
-#include <stdexcept>
-#include <filesystem> 
+#include <filesystem>
+#include <fstream>
+#include <iostream> 
  
 #include "MemoryMappedComplexShortFile.h" 
  MemoryMappedComplexShortFile::MemoryMappedComplexShortFile (const std::string& filename)         : filename_(filename){

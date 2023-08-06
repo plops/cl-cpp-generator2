@@ -1,9 +1,8 @@
 #ifndef MEMORYMAPPEDCOMPLEXSHORTFILE_H
 #define MEMORYMAPPEDCOMPLEXSHORTFILE_H
 
-#include <iostream>
-#include <fstream>
-#include <vector>
+#include <cstddev>
+#include <string>
 #include <complex>
 #include <boost/iostreams/device/mapped_file.hpp> 
 

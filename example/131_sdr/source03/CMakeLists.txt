@@ -8,7 +8,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_LINKER mold)
 
 # set ccache for C and C++ compilers
-set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+#set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+
+set(CXX clang++)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -66,14 +68,14 @@ add_executable(
 	src/ProcessMemoryInfo.cpp
 )
 
-set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
+#set(CMAKE_UNITY_BUILD_BATCH_SIZE 10)
 
 # enable Unity build
-set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+#set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
 
 
 # exclude main.cpp from Unity build (this is useful if main.cpp is the only file that I edit right now)
-set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+#set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 target_link_libraries(
         ${PROJECT_NAME}

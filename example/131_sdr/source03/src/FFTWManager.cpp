@@ -1,7 +1,9 @@
 // no preamble
  
 #include <stdexcept>
-#include <fstream>
+#include <algorithm>
+#include <iterator>
+#include <string>
 #include <iostream> 
 #include <vector> 
  

@@ -175,15 +175,15 @@
      :headers `()
      :header-preamble `(do0
 			(include<> vector
-				   map
+				   utility
 				   array
 				   cstddef))
      :implementation-preamble
      `(do0
        (include<> stdexcept
 		  cstring
-		  cmath
-		  ;iostream
+		  
+		  string
 		  ))
      :code `(do0
 	     (defclass ,name ()
@@ -299,11 +299,11 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> fstream)
+			(include<> string)
 			)
      :implementation-preamble
      `(do0
-       (include<> fstream string sstream unistd.h iostream))
+       (include<> fstream string unistd.h iostream))
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
@@ -425,24 +425,36 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> SoapySDR/Device.hpp
-				   thread
-				   mutex
-				   deque
-				   condition_variable
-				   functional)
+			(include<> ;SoapySDR/Device.hpp
+			 SoapySDR/Constants.h
+			 chrono
+			 complex
+			 cstddef
+			 limits
+			 ratio
+			 vector
+			 thread
+			 mutex
+			 deque
+			 condition_variable
+			 functional)
+			"namespace SoapySDR { class Device; }"
+			"namespace SoapySDR { class Stream; }"
 			
 			)
      :implementation-preamble
      `(do0
        (include<> SoapySDR/Device.hpp
-					;SoapySDR/Types.hpp
+		  SoapySDR/Types.hpp
 		  SoapySDR/Formats.hpp
 		  SoapySDR/Errors.hpp
-		  fstream
+		  algorithm
+		  stdexcept
+		  string
+					;fstream
                   )
        #+more
-       (include<> chrono
+       (include<> ;chrono
 		  iostream
 		  iomanip))
      :code `(do0
@@ -830,16 +842,16 @@
      :name name
      :headers `()
      :header-preamble `(do0
-			(include<> iostream
-				   fstream
-				   vector
+			(include<> cstddev string
 				   complex
 				   boost/iostreams/device/mapped_file.hpp)
 			)
      :implementation-preamble
      `(do0
-       (include<> stdexcept
-		  filesystem)
+       (include<> 
+		  filesystem
+		  fstream
+		  iostream)
        )
      :code `(do0
 	     (defclass ,name ()
@@ -938,13 +950,16 @@
 				   map
 				   vector
 				   complex
+				   stddef.h
+				   utility
 				   )
 			)
      :implementation-preamble
      `(do0
        (include<> stdexcept
-		  fstream
-		  
+		  algorithm
+		  iterator
+		  string
 		  #+more iostream)
        
        #-leak (do0
@@ -1189,6 +1204,14 @@
       cmath
 
       ;omp.h
+      unistd.h
+      array
+      complex
+      exception
+      memory
+      stdexcept
+      string
+      utility
       )
      (include
       

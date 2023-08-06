@@ -251,3 +251,21 @@ set_source_files_properties(src/main.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION O
 
  
  ```
+## include-what-you-use
+
+```
+  mkdir iwyubuild && cd iwyubuild
+  CC="clang" CXX="clang++" cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use ..
+
+```
+
+- alternatively an older solution is to use the compilation database
+
+```
+ mkdir build && cd build
+  CC="clang" CXX="clang++" cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+  iwyu_tool.py -p .
+
+source03/cmake-build-release $ iwyu_tool.py -p . ../src/main.cpp 
+
+```

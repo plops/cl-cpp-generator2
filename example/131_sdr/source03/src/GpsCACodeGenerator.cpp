@@ -2,7 +2,7 @@
  
 #include <stdexcept>
 #include <cstring>
-#include <cmath> 
+#include <string> 
  
 #include "GpsCACodeGenerator.h" 
  GpsCACodeGenerator::GpsCACodeGenerator (const int prn)         : prn_(prn){

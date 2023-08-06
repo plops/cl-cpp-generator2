@@ -4,7 +4,9 @@
 #include <fftw3.h>
 #include <map>
 #include <vector>
-#include <complex> 
+#include <complex>
+#include <stddef.h>
+#include <utility> 
 
 class FFTWManager  {
         public:
