@@ -384,4 +384,12 @@ C2 = 1/(K_0 K_d) * 4 (omega_n T)^2 / (4 + 4 zeta omega_n T + (omega_n T)^2)
 omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 ```
 
-- with noise bandwidth in the loop B_L (10 to 60 Hz)
+- with noise bandwidth in the loop B_L (10 to 60 Hz, typically 20Hz)
+  - amount of noise allowed in the filter
+  - also influences settling time (with damping ratio zeta)
+  - in the example B_L = 60Hz is best to find a frequency that is 21
+    Hz off
+  - with 10Hz the tracking loop is not fast enough to reach real
+    frequency before phase shift occurs
+  - some implementations split the PLL into two filters: pull-in and
+    tracking
