@@ -411,3 +411,15 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
   the I-axis. a 180degree phase change just flips the sign, but the
   vector remains close to the I axis. therefore, the costas loop is
   insensitive to bit transitions.
+
+## code tracking
+
+- correlate (i think he means multiply) with three replicas of the
+  code (early, perfect, late), then integrate
+- use a spacing of +/- 1/2 chip
+
+- in the presence of phase errors on the local carrier wave, the
+  signal of this DLL can be noisy
+  
+- instead build a tracker with an I and a Q arm (6 correlators)
+- this makes the code tracking independent of the local carrier phase
