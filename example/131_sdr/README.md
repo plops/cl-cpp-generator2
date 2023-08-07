@@ -444,3 +444,7 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 
 - p. 106 has the diagram with both loops (code tracking and carrier
   tracking)
+
+# pseudo range
+
+- add the code phase to the time when the frame entered the receiver
