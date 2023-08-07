@@ -367,6 +367,8 @@ sudo emerge -av net-libs/liquid-dsp
 - carrier tracking (costas loop)
 - delay lock loop (DLL)
 
+
+## PLL
 ```
 C1 = 1/(K_0 K_d) * (8 zeta omega_n T) / (4 + 4 zeta omega_n T + (omega_n T)^2)
 
@@ -393,3 +395,14 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
     frequency before phase shift occurs
   - some implementations split the PLL into two filters: pull-in and
     tracking
+
+## carier tracking
+
+- costas loop is insensitive to 180degree phase shifts. this loop can
+  deal with navigation bit transitions
+
+- try to keep all energy in the I arm
+
+- the arctan discriminator is the most precise costas
+  discriminator. it will minimize the phase error
+  - other descriminators exist (with less computational burden)
