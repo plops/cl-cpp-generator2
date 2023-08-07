@@ -396,55 +396,60 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
   - some implementations split the PLL into two filters: pull-in and
     tracking
 
-## carier tracking
+## Carrier Tracking
 
-- costas loop is insensitive to 180degree phase shifts. this loop can
-  deal with navigation bit transitions
-
-- try to keep all energy in the I arm
-
-- the arctan discriminator is the most precise costas
-  discriminator. it will minimize the phase error
-  - other descriminators exist (with less computational burden)
-
-- in the phasor diagram the costas loop tries to align the vector with
-  the I-axis. a 180degree phase change just flips the sign, but the
-  vector remains close to the I axis. therefore, the costas loop is
-  insensitive to bit transitions.
-
-## code tracking
-
-- correlate (i think he means multiply) with three replicas of the
-  code (early, perfect, late), then integrate
-- use a spacing of +/- 1/2 chip
-
-- in the presence of phase errors on the local carrier wave, the
-  signal of this DLL can be noisy
+- The Costas loop remains unaffected by 180-degree phase shifts,
+  making it adept at managing navigation bit transitions.
   
-- instead build a tracker with an I and a Q arm (6 correlators)
-- this makes the code tracking independent of the local carrier phase
+- Aim to retain maximum energy in the I arm.
 
-- normalized noncoherent discriminator is more robust when the chip
-  error is larger than 1/2 chip
+- The arctan discriminator is the most precise choice of discriminator for
+  the Costas loop, effectively minimizing phase error.
+  - Note: There are other discriminators with lesser computational
+    requirements.
 
-- discriminator spacing can be adjusted: when signal-to-noise ratio
-  decreases use a wider spacing to avoide code lock loss
+- On the phasor diagram, the Costas loop aims to align the vector with
+  the I-axis. While a 180-degree phase change simply inverts the sign,
+  the vector still stays proximate to the I-axis. As a result, the
+  Costas loop doesn't react to bit transitions.
 
-### multipath
+## Code Tracking
 
-- a delayed part of the signal can interfere at the receiver
-- this produces additional correlation peaks
-- early-late correlator samples may not be centered on the true
-  arrival time
+- Multiply the signal with three versions of the code (early, perfect,
+  late) followed by integration.
+  
+- Implement a spacing of +/- 1/2 chip.
 
-- BOC(1,1) as used in Galileo is better to handle multipath signals
-  than GPS's C/A code signals.
+- Be mindful that, when phase errors are present on the local carrier
+  wave, the DLL signal might exhibit noise.
 
-### combining both loops
+- To counteract this, construct a tracker consisting of both an I and
+  Q arm (comprising 6 correlators). This configuration ensures that
+  code tracking isn't influenced by the local carrier phase.
 
-- p. 106 has the diagram with both loops (code tracking and carrier
-  tracking)
+- When the chip error exceeds 1/2 chip, the normalized noncoherent
+  discriminator is more resilient.
 
+- As the signal-to-noise ratio diminishes, you can adjust the
+  discriminator spacing. Wider spacings prevent potential code lock
+  losses.
+
+### Multipath
+
+- A delayed copy of the signal might cause interference at the
+  receiver, leading to additional correlation peaks.
+  
+- The early-late correlator samples might not be perfectly centered on
+  the true signal arrival time.
+
+- Compared to the C/A code signals of GPS, BOC(1,1) used in Galileo
+  offers superior handling of multipath signals.
+
+### Combining Both Loops
+
+- Refer to page 106 for a diagram illustrating the integration of both
+  loops (code tracking and carrier tracking).
+ 
 # pseudo range
 
 - add the code phase to the time when the frame entered the receiver
