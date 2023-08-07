@@ -437,6 +437,10 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 - early-late correlator samples may not be centered on the true
   arrival time
 
+- BOC(1,1) as used in Galileo is better to handle multipath signals
+  than GPS's C/A code signals.
+
 ### combining both loops
 
-- p. 105 has the diagram with both loops
+- p. 106 has the diagram with both loops (code tracking and carrier
+  tracking)
