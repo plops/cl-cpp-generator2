@@ -125,6 +125,17 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
       as described in the ICDs 203, 224 and 225. The PRN P-code for SV
       number i is a ranging code, Pi(t), 7 days long at a chipping
       rate of 10.23 Mbps.
+- why P-code?  https://www.ion.org/publications/abstract.cfm?articleID=5018
+  - P-Code is transmitted on two frequencies (Ll & L2). The difference
+    in chip rate contributes little to the fundamental increased
+    accuracy of P-Code because the difference in power levels
+    (C/A-code power is 3 dB higher than P-Code power) partially
+    compensates for the chip rate difference.
+  - when a single GPS receiver is used as in navigation applications,
+    P-Code outperforms C/A-Code by a large margin. With differential
+    GPS, the ionospheric delay uncer-tainties can be removed from a
+    C/A-Code system, thus enabling it to achieve position accuracies
+    almost as good as P-Code.
 - matlab code for tracking
   https://www.mathworks.com/help/satcom/ug/gps-receiver-acquisition-and-tracking-using-ca-code.html
 # gen03
