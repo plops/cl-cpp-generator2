@@ -160,11 +160,19 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 - https://gssc.esa.int/navipedia/index.php?title=GLONASS_Signal_Plan
 -  L1, 1602.0–1615.5 MHz, and L2, 1246.0–1256.5 MHz, at frequencies
    spaced by 0.5625 MHz at L1 and by 0.4375 MHz at L2.
+-  L1 a bipolar phase-shift key (BPSK) waveform with clock rates of
+   0.511 and 5.11 MHz for the standard and accuracy signals
+   respectively.
 - 14 channels for 24 satellites
 - two pseudorandom noise (PRN) ranging codes (all satellites have same code)
   - 511 chips with 1ms period
   - 33,554,432 chips long with a rate of 5.11 megachips per
     second. truncated to 1 sec
+	
+# galileo
+ - the minimum practical bandwidth for the Galileo L1 OS is 8 MHz
+   (Borre: A software defined GPS and Galileo receiver, p. 32)
+ 	
 # gen03
 
 - pull in minimal code for implot
