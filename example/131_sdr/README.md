@@ -436,3 +436,7 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 - this produces additional correlation peaks
 - early-late correlator samples may not be centered on the true
   arrival time
+
+### combining both loops
+
+- p. 105 has the diagram with both loops
