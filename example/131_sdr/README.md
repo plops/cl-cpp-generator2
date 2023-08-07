@@ -125,6 +125,8 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
       as described in the ICDs 203, 224 and 225. The PRN P-code for SV
       number i is a ranging code, Pi(t), 7 days long at a chipping
       rate of 10.23 Mbps.
+- matlab code for tracking
+  https://www.mathworks.com/help/satcom/ug/gps-receiver-acquisition-and-tracking-using-ca-code.html
 # gen03
 
 - pull in minimal code for implot
