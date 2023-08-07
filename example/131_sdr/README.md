@@ -99,7 +99,32 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
 - http://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle satellite orbit elements
 - https://gssc.esa.int/navipedia/index.php/GPS_Signal_Plan
   - thorough information about all the frequencies and modulation schemes with GPS
-
+  -  GPS L5 (1176.45 MHz) is transmitted at a higher power level than
+     current civil GPS signals, has a wider bandwidth and has lower
+     frequency which enhances reception for indoor users.
+   -  L2 band (1227.60 MHz) a modernized civil signal known as L2C
+      designed specifically to meet commercial needs as it enables the
+      development of dual-frequency solutions
+   - Of all the signals above, the C/A Code is the best known as most
+     of the receivers that have been built until today are based on
+     it. The C/A Code was open from the very beginning to all users,
+     although until May 1st, 2000 an artificial degradation was
+     introduced by means of the Select Availability (SA) mechanism
+     which added an intentional distortion to degrade the positioning
+     quality of the signal to non-desired users. As we have already
+     mentioned, the C/A Code was thought to be an aid for the P(Y)
+     Code (to realize a Coarse Acquisition).
+   - The new L1 Civil signal (L1C), defined in the [GPS ICD-800][3],
+     has been designed for interoperability with Galileo E1. It is
+     compatible with current L1 signal but broadcast at a higher power
+     level and includes advanced design for enhanced performance. It
+     consists of two main components
+    - The P Code is the precision signal and is coded by the precision
+      code. Moreover the Y-Code is used in place of the P-code
+      whenever the Anti-Spoofing (A/S) mode of operation is activated
+      as described in the ICDs 203, 224 and 225. The PRN P-code for SV
+      number i is a ranging code, Pi(t), 7 days long at a chipping
+      rate of 10.23 Mbps.
 # gen03
 
 - pull in minimal code for implot
