@@ -423,3 +423,16 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
   
 - instead build a tracker with an I and a Q arm (6 correlators)
 - this makes the code tracking independent of the local carrier phase
+
+- normalized noncoherent discriminator is more robust when the chip
+  error is larger than 1/2 chip
+
+- discriminator spacing can be adjusted: when signal-to-noise ratio
+  decreases use a wider spacing to avoide code lock loss
+
+### multipath
+
+- a delayed part of the signal can interfere at the receiver
+- this produces additional correlation peaks
+- early-late correlator samples may not be centered on the true
+  arrival time
