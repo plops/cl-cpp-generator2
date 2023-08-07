@@ -97,7 +97,8 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
   https://github.com/hamsternz/Full_Stack_GPS_Receiver/blob/master/fast_fsgps/gold_codes.c
 - http://www.jks.com/gps/gps.html
 - http://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle satellite orbit elements
-
+- https://gssc.esa.int/navipedia/index.php/GPS_Signal_Plan
+  - thorough information about all the frequencies and modulation schemes with GPS
 
 # gen03
 
