@@ -366,3 +366,14 @@ sudo emerge -av net-libs/liquid-dsp
 - (Borre: A software defined GPS and Galileo receiver, p. 89)
 - carrier tracking (costas loop)
 - delay lock loop (DLL)
+
+```
+C1 = 1/(K_0 K_d) * (8 zeta omega_n T) / (4 + 4 zeta omega_n T + (omega_n T)^2)
+
+C2 = 1/(K_0 K_d) * 4 (omega_n T)^2 / (4 + 4 zeta omega_n T + (omega_n T)^2)
+```
+
+- with loop gain `K0 * Kd`
+- damping ratio zeta (in range 0.3 to 1.1 or something like that)
+- natural frequency omega_n
+- sampling time T
