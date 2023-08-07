@@ -361,3 +361,8 @@ git clone git://github.com/jgaeddert/liquid-dsp.git
 sudo emacs /etc/portage/package.accept_keywords/package.accept_keywords 
 sudo emerge -av net-libs/liquid-dsp
 ```
+# gps tracking
+
+- (Borre: A software defined GPS and Galileo receiver, p. 89)
+- carrier tracking (costas loop)
+- delay lock loop (DLL)
