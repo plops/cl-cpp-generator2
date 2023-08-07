@@ -406,3 +406,8 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 - the arctan discriminator is the most precise costas
   discriminator. it will minimize the phase error
   - other descriminators exist (with less computational burden)
+
+- in the phasor diagram the costas loop tries to align the vector with
+  the I-axis. a 180degree phase change just flips the sign, but the
+  vector remains close to the I axis. therefore, the costas loop is
+  insensitive to bit transitions.
