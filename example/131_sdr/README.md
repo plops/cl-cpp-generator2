@@ -136,6 +136,14 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
     GPS, the ionospheric delay uncer-tainties can be removed from a
     C/A-Code system, thus enabling it to achieve position accuracies
     almost as good as P-Code.
+- esa atmospheric correction: GALILEO High Accuracy Service (HAS) will
+   provide free of charge high-accuracy PPP corrections, in the
+   Galileo E6-B data component and by terrestrial means, for Galileo
+   and GPS (single and multi-frequency) to achieve real-time improved
+   user positioning performances (positioning error of less than two
+   decimetres in nominal conditions).
+
+
 - matlab code for tracking
   https://www.mathworks.com/help/satcom/ug/gps-receiver-acquisition-and-tracking-using-ca-code.html
 # gen03
