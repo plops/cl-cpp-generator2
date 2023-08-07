@@ -136,16 +136,35 @@ martin@archlinux ~/stage/cl-cpp-generator2/example/131_sdr/source02 $ ./setup02_
     GPS, the ionospheric delay uncer-tainties can be removed from a
     C/A-Code system, thus enabling it to achieve position accuracies
     almost as good as P-Code.
-- esa atmospheric correction: GALILEO High Accuracy Service (HAS) will
-   provide free of charge high-accuracy PPP corrections, in the
-   Galileo E6-B data component and by terrestrial means, for Galileo
-   and GPS (single and multi-frequency) to achieve real-time improved
-   user positioning performances (positioning error of less than two
-   decimetres in nominal conditions).
-
-
+- esa atmospheric correction:
+   https://gssc.esa.int/navipedia/index.php/Galileo_High_Accuracy_Service_(HAS)
+   GALILEO High Accuracy Service (HAS) will provide free of charge
+   high-accuracy PPP corrections, in the Galileo E6-B data component
+   and by terrestrial means, for Galileo and GPS (single and
+   multi-frequency) to achieve real-time improved user positioning
+   performances (positioning error of less than two decimetres in
+   nominal conditions).
+   -  real time kinematic (RTK) and precise point positioning (PPP)
+   - also published over internet: Galileo HAS Internet Data
+     Distribution (IDD) interface: based on the Ntrip protocol.
+     Access to the Galileo HAS Internet Data Distribution is available
+     by
+     registration. https://www.gsc-europa.eu/galileo/services/galileo-high-accuracy-service-has
+	 - create account here: https://www.gsc-europa.eu/user/register
+	 - service definition
+       https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-HAS-SDD_v1.0.pdf
 - matlab code for tracking
   https://www.mathworks.com/help/satcom/ug/gps-receiver-acquisition-and-tracking-using-ca-code.html
+  
+# glonass
+- https://gssc.esa.int/navipedia/index.php?title=GLONASS_Signal_Plan
+-  L1, 1602.0–1615.5 MHz, and L2, 1246.0–1256.5 MHz, at frequencies
+   spaced by 0.5625 MHz at L1 and by 0.4375 MHz at L2.
+- 14 channels for 24 satellites
+- two pseudorandom noise (PRN) ranging codes (all satellites have same code)
+  - 511 chips with 1ms period
+  - 33,554,432 chips long with a rate of 5.11 megachips per
+    second. truncated to 1 sec
 # gen03
 
 - pull in minimal code for implot
