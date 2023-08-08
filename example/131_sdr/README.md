@@ -471,3 +471,7 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 - Carrier-phase or/and pseudorange measurements can be used in GPS
   relative positioning, depending on the accuracy requirements. The
   former provides the highest possible accuracy.
+
+- RTK surveying is a carrier phase-based relative positioning
+  technique that, like the previous methods, employs two (or more)
+  receivers simultaneously tracking the same satellites
