@@ -467,3 +467,7 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
 # pseudo range
 
 - add the code phase to the time when the frame entered the receiver
+
+- Carrier-phase or/and pseudorange measurements can be used in GPS
+  relative positioning, depending on the accuracy requirements. The
+  former provides the highest possible accuracy.
