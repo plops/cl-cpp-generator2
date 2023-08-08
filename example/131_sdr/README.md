@@ -371,7 +371,7 @@ sudo emerge -av net-libs/liquid-dsp
 - i use 10000 points at 10MHz sampling rate (1ms)
 
 - occasionally a preamble 10001011 or 01110100 occurs in the
-  datastream (every 30sec or so)
+  datastream at the beginning of each subframe(every 6sec)
 - would that be helpful to find satellites (i doubt it)
 
 
