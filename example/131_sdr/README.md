@@ -361,6 +361,20 @@ git clone git://github.com/jgaeddert/liquid-dsp.git
 sudo emacs /etc/portage/package.accept_keywords/package.accept_keywords 
 sudo emerge -av net-libs/liquid-dsp
 ```
+
+# initialization
+
+- find the code phase and doppler shift of each (visible) satellite
+
+- typically less than 10ms of the initial signal is used to avoid
+  signal loss due to sign inversion at the next datasymbol
+- i use 10000 points at 10MHz sampling rate (1ms)
+
+- occasionally a preamble 10001011 or 01110100 occurs in the
+  datastream (every 30sec or so)
+- would that be helpful to find satellites (i doubt it)
+
+
 # gps tracking
 
 - (Borre: A software defined GPS and Galileo receiver, p. 89)
