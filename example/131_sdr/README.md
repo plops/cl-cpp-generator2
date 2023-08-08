@@ -493,3 +493,58 @@ lambda / (2 pi) * sqrt(  B_n / (C/N0)  * (1 + 1/ (2TC/N0))) )
 - RTK surveying is a carrier phase-based relative positioning
   technique that, like the previous methods, employs two (or more)
   receivers simultaneously tracking the same satellites
+
+# Noise in Software Defined Radio
+
+The addition of a controlled amount of noise to a system to improve
+its performance might seem counterintuitive. However, in the context
+of analog-to-digital conversion (ADC) in software-defined radios
+(SDRs) and other applications, this technique, called "dithering", can
+indeed help mitigate the effects of quantization errors and certain
+non-linearities. Here's a breakdown of how it works:
+
+Quantization Error: When an analog signal is converted to digital via
+an ADC, it gets quantized to the nearest digital level. This results
+in quantization error. Without dither, this error is deterministic for
+a given input, leading to harmonic distortion in the frequency domain.
+
+Introduction of Dither: By adding a noise signal (dither) to the
+analog input prior to ADC, we randomize these quantization
+errors. This transforms the deterministic quantization error into a
+stochastic noise.
+
+Linearization Effect: Once the deterministic quantization errors
+become randomized, their spectral representation changes. Rather than
+manifesting as harmonic distortion, the error becomes spread out as
+broadband noise. This is generally more acceptable and less harmful
+than harmonic distortion, especially in many SDR applications.
+
+Noise Shaping: While basic dithering adds noise uniformly across the
+frequency spectrum, more sophisticated techniques can "shape" the
+noise to push it into frequency bands where it's less
+problematic. This is particularly useful in audio ADCs, but the
+principle can also be applied to SDR.
+
+Mitigating Non-linearities: Many ADC non-linearities result in
+deterministic errors. By adding dither, you can again randomize these
+errors. While this doesn’t eliminate the error, it makes the error
+manifest as noise rather than systematic distortion.
+
+Practical Considerations: The type and amount of dithering noise to be
+added depend on the specific ADC characteristics and the
+application. In general, the noise should be white (equal energy at
+all frequencies) and its amplitude should be around the ADC's least
+significant bit (LSB) level.
+
+Trade-offs: While dithering can effectively suppress harmonic
+distortion and certain non-linearities, it does so at the expense of
+increasing the overall noise floor. For applications where a very low
+noise floor is essential, the benefits of dithering have to be weighed
+against this drawback.
+
+In conclusion, the injection of controlled noise (or dithering) can be
+beneficial in improving the linearity of ADCs in SDR systems by
+randomizing deterministic errors, thereby transforming them from
+harmonic distortions to a more acceptable broadband noise. However,
+the implementation must be done carefully, considering the application
+requirements and specific characteristics of the ADC.
