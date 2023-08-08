@@ -409,6 +409,19 @@ omega_n = 8 zeta B_L / (4 zeta^2 + 1)
     frequency before phase shift occurs
   - some implementations split the PLL into two filters: pull-in and
     tracking
+	
+- https://gssc.esa.int/navipedia/index.php/Phase_Lock_Loop_(PLL)
+ - The PLL thermal noise jitter for an arctangent PLL can be written
+   (in meters) as:
+
+```
+lambda / (2 pi) * sqrt(  B_n / (C/N0)  * (1 + 1/ (2TC/N0))) ) 
+```
+
+- with wavelength of carrier signal lambda (in m), loop bandwidth B_n
+  (in Hz), carrier to noise ratio C/N0 (in Hz), integration time T (in
+  s).
+
 
 ## Carrier Tracking
 
