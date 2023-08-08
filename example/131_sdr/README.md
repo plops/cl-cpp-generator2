@@ -548,3 +548,65 @@ randomizing deterministic errors, thereby transforming them from
 harmonic distortions to a more acceptable broadband noise. However,
 the implementation must be done carefully, considering the application
 requirements and specific characteristics of the ADC.
+
+## Noise Shaping
+
+Noise shaping is a technique used primarily in digital audio and some other applications to manipulate the spectral shape and distribution of the quantization noise that arises from analog-to-digital conversion (ADC) and digital-to-analog conversion (DAC). The goal is to push or "shape" the noise into parts of the spectrum where it's less perceptually significant or into frequency bands where it's less of a concern.
+
+Here's a deeper look into noise shaping:
+
+1. **Basic Concept**: While the introduction of dither randomizes
+   quantization errors and converts them into white noise (with a flat
+   spectrum), noise shaping goes a step further. It shapes the noise
+   spectrum such that the noise energy is concentrated in frequency
+   regions where it's less perceptible or less problematic.
+
+2. **Feedback Loop**: Noise shaping often involves feeding back the
+   quantization error from one sample to subsequent samples. This
+   feedback loop effectively modifies or "shapes" the spectrum of the
+   noise.
+
+3. **Applications in Audio**: In audio processing, especially with
+   perceptual codecs and high-resolution audio formats, noise shaping
+   is very useful. The human ear has varying sensitivity to different
+   frequencies. Noise shaping leverages this by pushing the
+   quantization noise to frequency bands where the human ear is less
+   sensitive, thereby improving the perceived audio quality.
+
+4. **Pulse Density Modulation (PDM)**: This is a form of modulation
+   used in 1-bit Delta-Sigma (ΔΣ) converters, where noise shaping
+   plays a critical role. A ΔΣ modulator uses a feedback loop to shape
+   the quantization noise out of the baseband and into higher
+   frequencies. The result is that while the converter might have a
+   very coarse quantization (e.g., 1 bit), the effective resolution in
+   the baseband can be much higher due to noise shaping. This
+   high-frequency noise is then removed using a simple analog low-pass
+   filter.
+
+5. **Benefits**:
+   - **Improved Signal-to-Noise Ratio (SNR) in Desired Bands**: By
+     shaping noise away from certain frequency bands, the SNR in those
+     bands can be greatly improved.
+   - **Enhanced Perceptual Quality**: Especially in audio, by pushing
+     noise to frequency bands where it's less perceptible, the
+     perceived quality of audio can be much better than what the raw
+     SNR values might suggest.
+
+6. **Trade-offs**: Like any technique, noise shaping isn't a magic
+   bullet. By pushing noise into certain frequency bands, those bands
+   can have a much higher noise level. This isn't a problem in
+   applications like audio, where you can exploit the ear's
+   frequency-dependent sensitivity, but in other applications, it
+   might be less desirable.
+
+7. **Complexity**: Implementing noise shaping requires additional
+   processing, which can add complexity and cost to a system. The
+   benefits, however, often justify the added complexity, especially
+   in high-quality audio systems and other precision applications.
+
+In summary, noise shaping is a powerful tool to optimize the noise
+spectrum of a digital system, especially when there's knowledge of the
+system's or the human perception's frequency-dependent sensitivity. By
+smartly shaping noise, systems can achieve effective resolutions and
+perceptual qualities that are much higher than would be possible with
+simple quantization.
