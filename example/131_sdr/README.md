@@ -421,7 +421,12 @@ lambda / (2 pi) * sqrt(  B_n / (C/N0)  * (1 + 1/ (2TC/N0))) )
 - with wavelength of carrier signal lambda (in m), loop bandwidth B_n
   (in Hz), carrier to noise ratio C/N0 (in Hz), integration time T (in
   s).
-
+  
+- C/N0 35dB is C/N0 = 33.1
+- 14 dB -> 4.1
+- 20 dB -> 7.4
+- 25 dB -> 12.2
+- 30 dB -> 20.1
 
 ## Carrier Tracking
 
