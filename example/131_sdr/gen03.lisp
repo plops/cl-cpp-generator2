@@ -137,7 +137,7 @@
 		    (code_phase :type double  :initform 0d0)
 		    (phase_rate_estimate :type double  :initform 0d0)
 		    (phase_error_integral :type double  :initform 0d0)
-		    (local_oscillator :type double  :initform 0d0)
+		    (local_oscillator :type "std::complex<double>"  :initform "1,0")
 		    )))
     (write-class
      :dir (asdf:system-relative-pathname
