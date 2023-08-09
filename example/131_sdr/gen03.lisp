@@ -158,7 +158,7 @@
 		  string
 		  ))
      :code `(do0
-	     (comments "see Borre: A Softwar-defined GPS... p.106 for block diagram")
+	     (comments "see Borre: A Software-defined GPS... p.106 for block diagram")
 	     (defclass ,name ()
 	       "public:"
 	       (defmethod ,name (,@(remove-if #'null
