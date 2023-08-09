@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <fstream> 
+#include <fstream>
+#include <iostream> 
 #include <vector> 
  
  
@@ -18,7 +19,7 @@
     std::copy(in.begin(), mid, out.begin()+std::distance(mid, in.end()));
     return out;
  
-}std::vector<std::complex<double>> FFTWManager::fft (std::vector<std::complex<double>>& in, size_t windowSize) const        {
+}std::vector<std::complex<double>> FFTWManager::fft (std::vector<std::complex<double>>& in, size_t windowSize)         {
         if ( windowSize!=in.size() ) {
                         throw std::invalid_argument("Input size must match window size.");
  
@@ -28,7 +29,7 @@
     fftw_execute_dft(get_plan(windowSize, FFTW_FORWARD, number_threads_), reinterpret_cast<fftw_complex*>(&in1[0]), reinterpret_cast<fftw_complex*>(&out[0]));
     return fftshift(out);
  
-}std::vector<std::complex<double>> FFTWManager::ifft (std::vector<std::complex<double>>& in, size_t windowSize) const        {
+}std::vector<std::complex<double>> FFTWManager::ifft (std::vector<std::complex<double>>& in, size_t windowSize)         {
         if ( windowSize!=in.size() ) {
                         throw std::invalid_argument("Input size must match window size.");
  
@@ -39,12 +40,21 @@
     return out;
  
 } FFTWManager::~FFTWManager ()         {
-}fftw_plan FFTWManager::get_plan (size_t windowSize, int direction , int nThreads ) const        {
+            for ( const auto& kv: plans_ ) {
+                        auto [size, threads]  = kv.first; 
+        fftw_destroy_plan(kv.second);
+ 
+} 
+    plans_.clear();
+ 
+}fftw_plan FFTWManager::get_plan (size_t windowSize, int direction , int nThreads )         {
         if ( windowSize<=0 ) {
                         throw std::invalid_argument("window size must be positive");
  
 } 
-            if ( true ) {
+            auto iter  = plans_.find({windowSize, nThreads}); 
+ 
+            if ( plans_.end()==iter ) {
                                         auto wisdom_filename  = "wisdom_"+std::to_string(windowSize)+".wis"; 
  
         if ( 1<nThreads ) {
@@ -62,34 +72,42 @@
             fftw_import_wisdom_from_filename(wisdom_filename.c_str());
  
 } else {
-                        
+                        std::cout<<"can't find wisdom file"<<" wisdom_filename='"<<wisdom_filename<<"' "<<"\n"<<std::flush;
 } 
         if ( 1<nThreads ) {
                                     fftw_plan_with_nthreads(nThreads);
  
 } 
-                auto p  = fftw_plan_dft_1d(windowSize, reinterpret_cast<fftw_complex*>(&in0[0]), reinterpret_cast<fftw_complex*>(&out0[0]), direction, FFTW_MEASURE); 
+                auto dim  = fftw_iodim({.n=static_cast<int>(windowSize), .is=1, .os=1}); 
+        auto p  = fftw_plan_guru_dft(1, &dim, 0, nullptr, reinterpret_cast<fftw_complex*>(&in0[0]), reinterpret_cast<fftw_complex*>(&out0[0]), direction, FFTW_MEASURE); 
  
         if ( nullptr==p ) {
-                        
+                        std::cout<<"error: plan not successfully created"<<"\n"<<std::flush;
 } else {
                                     // plan successfully created
  
  
 } 
         if ( !wisdomFile.good() ) {
-                                    
+                                    std::cout<<"store wisdom to file"<<" wisdom_filename='"<<wisdom_filename<<"' "<<"\n"<<std::flush;
             wisdomFile.close();
             fftw_export_wisdom_to_filename(wisdom_filename.c_str());
  
 } 
  
-                        return p;
+                
+ 
+                        auto insertResult  = plans_.insert({{windowSize, nThreads}, p}); 
+                iter=insertResult.first;
+
+
+ 
  
  
  
  
 } 
+    return iter->second;
  
 } 
  

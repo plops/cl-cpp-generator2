@@ -125,6 +125,147 @@
 							 (dot ,e (data))
 							 (static_cast<int>
 							  (x_downsampled.size))))))))))))
+  (let* ((name `GpsTracker)
+	 (members `((prn-code :type "std::array<char,1023>" :param t)
+		    (pll-coeff1 :type double  :initform .1d0)
+		    (pll-coeff2 :type double  :initform .01d0)
+		    (dll-coeff1 :type double  :initform .1d0)
+		    (dll-coeff2 :type double  :initform .01d0)
+		    (code-phase :type double  :initform 0d0)
+		    (code_rate_estimate :type double  :initform 0d0)
+		    (code_error_integral :type double  :initform 0d0)
+		    (code_phase :type double  :initform 0d0)
+		    (phase_rate_estimate :type double  :initform 0d0)
+		    (phase_error_integral :type double  :initform 0d0)
+		    (local_oscillator :type double  :initform 0d0)
+		    )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector
+				   array
+				   cmath
+				   complex
+				   deque))
+     :implementation-preamble
+     `(do0
+       (include<> stdexcept
+		  cstring
+		  
+		  string
+		  ))
+     :code `(do0
+	     (comments "see Borre: A Softwar-defined GPS... p.106 for block diagram")
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor))
+		 )
+	       
+	       (defmethod process (input_sample)
+		 (declare (type "const std::complex<double>&" input_sample))
+
+		 (comments "Code Tracking Delay Locked Loop")
+		 (let ((early  (* input_sample (std--conj (aref prn_code_ (static_cast<int> (- code_phase_ .5))))))
+		       (prompt (* input_sample (std--conj (aref prn_code_ (static_cast<int> code_phase_ )))))
+		       (late   (* input_sample (std--conj (aref prn_code_ (static_cast<int> (+ code_phase_ .5))))))))
+		 (let ((code_error (/ (- (std--norm early)
+					 (std--norm late))
+				      (+ (std--norm early)
+					 (std--norm late))))))
+		 (incf code_rate_estimate_ (* dll_coeff2_ code_error))
+		 (incf code_error_integral_ (+ code_rate_estimate_ (* dll_coeff1_ code_error)))
+		 (incf code_phase_ code_error_integral_)
+
+		 
+		 (comments "Carrier Tracking Costas Loop")
+
+		 (let ((phase_error (std--arg prompt))))
+		 (incf phase_rate_estimate_ (* pll_coeff2_ phase_error))
+		 (incf phase_error_integral_ (+ phase_rate_estimate_ (* pll_coeff1_ phase_error)))
+		 (setf local_oscillator_
+		       (* local_oscillator (std--exp (std--complex<double> 0d0
+									   -phase_error_integral))))
+
+		 )
+	       
+	       "private:"
+
+	       (defmethod computeC1 (K0 Kd omega_n zeta tt)
+		 (declare (type double K0 Kd omega_n zeta tt)
+			  (values double))
+		 (let ((ot (* omega_n tt))
+		       (denominator (+ 4
+				       (* 4 zeta omega_n tt)
+				       (* ot ot)
+				       )))
+		   (return (/ (* 8 zeta omega_n tt)
+			      (* K0 Kd denominator))))
+		 )
+
+	       (defmethod computeC2 (K0 Kd omega_n zeta tt)
+		 (declare (type double K0 Kd omega_n zeta tt)
+			  (values double))
+		 (let ((ot (* omega_n tt))
+		       (denominator (+ 4
+				       (* 4 zeta omega_n tt)
+				       (* ot ot)
+				       )))
+		   (return (/ (* 4 ot ot)
+			      (* K0 Kd denominator))))
+		 )
+	       
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_))))))
+
+	       ))))
+
   (let* ((name `GpsCACodeGenerator)
 	 (sat-def `((2 6)
 		    (3 7)
@@ -346,9 +487,9 @@
 		  (values :constructor)))
 
 	       #+nil (defmethod getVirtualMemorySize ()
-		 (declare (const)
-			  (values int))
-		 (return (getMemoryInfo (string "VmSize:"))))
+		       (declare (const)
+				(values int))
+		       (return (getMemoryInfo (string "VmSize:"))))
 	       (defmethod getResidentMemorySize ()
 		 (declare (const)
 			  (values "[[nodiscard]] int"))
