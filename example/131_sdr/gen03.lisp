@@ -134,7 +134,6 @@
 		    (code-phase :type double  :initform 0d0)
 		    (code_rate_estimate :type double  :initform 0d0)
 		    (code_error_integral :type double  :initform 0d0)
-		    (code_phase :type double  :initform 0d0)
 		    (phase_rate_estimate :type double  :initform 0d0)
 		    (phase_error_integral :type double  :initform 0d0)
 		    (local_oscillator :type "std::complex<double>"  :initform "1,0")
@@ -204,9 +203,9 @@
 		 (declare (type "const std::complex<double>&" input_sample))
 
 		 (comments "Code Tracking Delay Locked Loop")
-		 (let ((early  (* input_sample (std--conj (aref prn_code_ (static_cast<int> (- code_phase_ .5))))))
+		 (let ((early  (* input_sample (std--conj (aref prn_code_ (static_cast<int> (- code_phase_ .5d0))))))
 		       (prompt (* input_sample (std--conj (aref prn_code_ (static_cast<int> code_phase_ )))))
-		       (late   (* input_sample (std--conj (aref prn_code_ (static_cast<int> (+ code_phase_ .5))))))))
+		       (late   (* input_sample (std--conj (aref prn_code_ (static_cast<int> (+ code_phase_ .5d0))))))))
 		 (let ((code_error (/ (- (std--norm early)
 					 (std--norm late))
 				      (+ (std--norm early)
@@ -222,8 +221,8 @@
 		 (incf phase_rate_estimate_ (* pll_coeff2_ phase_error))
 		 (incf phase_error_integral_ (+ phase_rate_estimate_ (* pll_coeff1_ phase_error)))
 		 (setf local_oscillator_
-		       (* local_oscillator (std--exp (std--complex<double> 0d0
-									   -phase_error_integral))))
+		       (* local_oscillator_ (std--exp (std--complex<double> 0d0
+									   -phase_error_integral_))))
 
 		 )
 	       
