@@ -1463,6 +1463,7 @@
 
 
      (let ((DrawMemory (lambda ()
+			 (declare (capture ""))
 			 (let ((memoryInfo) (residentMemoryFifo))
 			   (declare (type "static ProcessMemoryInfo" memoryInfo)
 				    (type "static std::deque<int>" residentMemoryFifo)
@@ -1497,6 +1498,7 @@
 			      (ImPlot--EndPlot))))))))
 
      (let ((DrawSdrInfo (lambda (sdr)
+			  (declare (capture ""))
 			  ,@(loop for e in `((:name sample-rate :type double)
 					     (:name bandwidth :type double)
 					     (:name frequency :type double)
@@ -1519,6 +1521,7 @@
 					)))) ))))
 
      (let ((SelectAutoGain (lambda (sdr)
+			     (declare (capture ""))
 			     (let ((automaticGainMode (sdr->get_gain_mode))
 				   (old_automaticGainMode automaticGainMode))
 			       (declare (type "static bool" automaticGainMode old_automaticGainMode))
@@ -1533,6 +1536,7 @@
 
 
      (let ((SelectGain (lambda (sdr)
+			 (declare (capture ""))
 			 ,@(loop for e in `((:name IF :min 20 :max 59)
 					    (:name RF :min 0 :max 3))
 				 collect
@@ -1549,17 +1553,19 @@
 
 
       (let ((SelectStart (lambda (file)
-			    (let ((start 0)
-				  (maxStart (static_cast<int> (/ (file.size)
-								 (sizeof "std::complex<short>")))))
-			      (declare (type "static int" start maxStart ))
+			   (declare (capture ""))
+			   (let ((start 0)
+				 (maxStart (static_cast<int> (/ (file.size)
+								(sizeof "std::complex<short>")))))
+			     (declare (type "static int" start maxStart ))
 			      
-			      (when (file.ready)
-				(ImGui--SliderInt (string "Start")
-						  &start 0 maxStart))
-			      (return (std--make_pair start maxStart)))))))
+			     (when (file.ready)
+			       (ImGui--SliderInt (string "Start")
+						 &start 0 maxStart))
+			     (return (std--make_pair start maxStart)))))))
 
       (let ((SelectWindowSize (lambda ()
+				(declare (capture ""))
 				,(let* ((combo-name "windowSize")
 					(l-combo `(1024 5456 8192 10000 20000 32768 40000 50000 65536 80000 100000 140000 1048576))
 					(l-default-index 3)
@@ -1596,74 +1602,78 @@
 				(return windowSize)))))
 
       	(let ((SetBandwidth (lambda (sdr)
-				 ,(let* ((combo-name "bandwidth")
-					 (l-combo `(200d3 300d3 600d3 1.536d6 5d6 6d6 7d6 8d6))
-					 (l-default-index 3	;(- (length l-combo) 1)
-							  )
-					 (var-index (format nil "~aIndex" combo-name))
-					 (i (format nil "~aIter" combo-name))
-					 (old-var-index (format nil "old_~aIndex" combo-name))
-					 (items-num (format nil "~aItemsNum" combo-name))
-					 (items-str (format nil "~aItemsStr" combo-name))
-					 (var-value (format nil "~aValue" combo-name)))
-				    `(let ((,var-index ,l-default-index)
-					   (,old-var-index ,l-default-index)
-					   (,items-num (std--vector<double> (curly ,@l-combo)))
+			      (declare (capture ""))
+			      ,(let* ((combo-name "bandwidth")
+				      (l-combo `(200d3 300d3 600d3 1.536d6 5d6 6d6 7d6 8d6))
+				      (l-default-index 3 ;(- (length l-combo) 1)
+						       )
+				      (var-index (format nil "~aIndex" combo-name))
+				      (i (format nil "~aIter" combo-name))
+				      (old-var-index (format nil "old_~aIndex" combo-name))
+				      (items-num (format nil "~aItemsNum" combo-name))
+				      (items-str (format nil "~aItemsStr" combo-name))
+				      (var-value (format nil "~aValue" combo-name)))
+				 `(let ((,var-index ,l-default-index)
+					(,old-var-index ,l-default-index)
+					(,items-num (std--vector<double> (curly ,@l-combo)))
 					;(,var-value (aref ,items-num ,var-index))
-					   (,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
-												  l-combo)))))
-				       (declare (type "static size_t" ,var-index ,old-var-index))
-				       (when (ImGui--BeginCombo (string ,combo-name)
-								(dot (aref ,items-str ,var-index)
-								     (c_str)))
-					 (dotimes (,i (dot ,items-str (size)))
-					   (declare (type size_t ,i))
-					   (let ((is_selected (== ,var-index ,i)))
-					     (when (ImGui--Selectable (dot (aref ,items-str ,i)
-									   (c_str))
-								      is_selected)
-					       (setf ,var-index ,i
+					(,items-str (std--vector<std--string> (curly ,@(mapcar #'(lambda (x) `(string ,x))
+											       l-combo)))))
+				    (declare (type "static size_t" ,var-index ,old-var-index))
+				    (when (ImGui--BeginCombo (string ,combo-name)
+							     (dot (aref ,items-str ,var-index)
+								  (c_str)))
+				      (dotimes (,i (dot ,items-str (size)))
+					(declare (type size_t ,i))
+					(let ((is_selected (== ,var-index ,i)))
+					  (when (ImGui--Selectable (dot (aref ,items-str ,i)
+									(c_str))
+								   is_selected)
+					    (setf ,var-index ,i
 					; ,var-value (aref ,items-num ,i)
-						     ))
-					     (when is_selected
-					       (ImGui--SetItemDefaultFocus))))
-					 (ImGui--EndCombo))
-				       (when (!= ,old-var-index
-						 ,var-index)
-					 (sdr->set_bandwidth (aref ,items-num ,var-index))
-					 (setf ,old-var-index ,var-index))))
+						  ))
+					  (when is_selected
+					    (ImGui--SetItemDefaultFocus))))
+				      (ImGui--EndCombo))
+				    (when (!= ,old-var-index
+					      ,var-index)
+				      (sdr->set_bandwidth (aref ,items-num ,var-index))
+				      (setf ,old-var-index ,var-index))))
 				 ))))
 
 
 	(let ((SelectRealtimeDisplay (lambda (file)
+				       (declare (capture ""))
 				       (let ((realtimeDisplay true))
-		(declare (type "static bool" realtimeDisplay))
-		(when (file.ready)
-		  (ImGui--Checkbox (string "Realtime display")
-				   &realtimeDisplay)))
+					 (declare (type "static bool" realtimeDisplay))
+					 (when (file.ready)
+					   (ImGui--Checkbox (string "Realtime display")
+							    &realtimeDisplay)))
 				       (return realtimeDisplay)))))
 
 	(let ((DrawWaveform (lambda (x y1 y2)
+			      (declare (capture ""))
 			      (let ((windowSize (x.size)))
-			       (when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
-				 #+nil
-				 (do0
-				  ,(decimate-plots `(:x x :ys (y1)
-						     :idx (string "y1")
-						     :points 100))
-				  ,(decimate-plots `(:x x :ys (y2)
-						     :idx (string "y2")
-						     :points 100)))
-				 #-nil
-				 ,@(loop for e in `(y1 y2)
-					 collect
-					 `(ImPlot--PlotLine (string ,e)
-							    (x.data)
-							    (dot ,e (data))
-							    windowSize))
-				 (ImPlot--EndPlot)))))))
+				(when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
+				  #+nil
+				  (do0
+				   ,(decimate-plots `(:x x :ys (y1)
+						      :idx (string "y1")
+						      :points 100))
+				   ,(decimate-plots `(:x x :ys (y2)
+						      :idx (string "y2")
+						      :points 100)))
+				  #-nil
+				  ,@(loop for e in `(y1 y2)
+					  collect
+					  `(ImPlot--PlotLine (string ,e)
+							     (x.data)
+							     (dot ,e (data))
+							     windowSize))
+				  (ImPlot--EndPlot)))))))
 
 	(let ((SelectLogScale (lambda ()
+				(declare (capture ""))
 				(let ((logScale true))
 				  (declare (type "static bool" logScale))
 				  (ImGui--Checkbox (string "Logarithmic Y-axis")
@@ -1673,22 +1683,24 @@
 
 
 	(let ((SelectSatellites (lambda ()
+				  (declare (capture ""))
 				  ,(let ((n-sat 32))
-			   `(do0
-			     (let ((selectedSatellites (curly false)))
-			       (declare (type ,(format nil "static std::array<bool,~a>" n-sat) selectedSatellites))
-			       (when (ImGui--Begin (string "Satellite"))
-				 (dotimes (i ,n-sat)
-				   (ImGui--Checkbox (dot (std--to_string (+ 1 i)) (c_str))
-						    (aref &selectedSatellites i))
-				   (when (!= i (- ,n-sat 1))
-				     (ImGui--SameLine)))
-				 (ImGui--End)))))
+				     `(do0
+				       (let ((selectedSatellites (curly false)))
+					 (declare (type ,(format nil "static std::array<bool,~a>" n-sat) selectedSatellites))
+					 (when (ImGui--Begin (string "Satellite"))
+					   (dotimes (i ,n-sat)
+					     (ImGui--Checkbox (dot (std--to_string (+ 1 i)) (c_str))
+							      (aref &selectedSatellites i))
+					     (when (!= i (- ,n-sat 1))
+					       (ImGui--SameLine)))
+					   (ImGui--End)))))
 				  (return selectedSatellites)))))
 
 	(let ((DrawFourier
 		(lambda
 		    (sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites)
+		  (declare (capture ""))
 		  #+nil ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
 			(gps_freq 1575.42d6)
@@ -1789,94 +1801,95 @@
 
 	(let ((DrawCrossCorrelation
 			   (lambda (codes out selectedSatellites windowSize fftw sampleRate)
-			    (let ((codesSize (dot (aref codes 0) (size))))
-			      (if (== (static_cast<size_t> windowSize) codesSize)
-				  (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
-				    (let ((x_corr (std--vector<double> (out.size))))
-				      (dotimes (i (x_corr.size))
-					(declare (type size_t i))
-					(setf (aref x_corr i) (static_cast<double> i))))
+			     (declare (capture ""))
+			     (let ((codesSize (dot (aref codes 0) (size))))
+			       (if (== (static_cast<size_t> windowSize) codesSize)
+				   (when (ImPlot--BeginPlot (string "Cross-Correlations with PRN sequences"))
+				     (let ((x_corr (std--vector<double> (out.size))))
+				       (dotimes (i (x_corr.size))
+					 (declare (type size_t i))
+					 (setf (aref x_corr i) (static_cast<double> i))))
 
-				    ,(let ((l-result `((:name maxSnrDop :type int)
-						       (:name maxSnrIdx :type int)
-						       (:name maxSnr :type double)
-						       )))
-				       `(do0
-					 ,@(loop for e in l-result
-						 collect
-						 (destructuring-bind (&key name type) e
-						   (let ((aname (format nil "~a_vec" name)))
-						     `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
+				     ,(let ((l-result `((:name maxSnrDop :type int)
+							(:name maxSnrIdx :type int)
+							(:name maxSnr :type double)
+							)))
+					`(do0
+					  ,@(loop for e in l-result
+						  collect
+						  (destructuring-bind (&key name type) e
+						    (let ((aname (format nil "~a_vec" name)))
+						      `(let ((,aname (,(format nil "std::vector<~a>" type) 32)))))))
 				    
-					 "#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
-					 (dotimes (code_idx 3)
-					   (do0 ;when (aref selectedSatellites code_idx)
-					    (let  ((maxSnrDop 0)
-						   (maxSnrIdx 0)
-						   (maxSnr 0d0))
-					      (let ((code (aref codes code_idx))
-						    (len (out.size))
-						    (prod (std--vector<std--complex<double>> len))
-						    (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
-										   sampleRate)))
-						    (dopEnd (static_cast<int> (/ (* 5000 (static_cast<double> len))
-										 sampleRate))))
-						(for ((= "int dop" dopStart)
-						      (<= dop dopEnd)
-						      (incf dop))
-						     (do0
-						      (dotimes (i (out.size))
-							(declare (type size_t i))
-							(let ((i1 (% (+ i -dop len) len)))
-							  (setf (aref prod i)
-								(* (std--conj (aref out i))
-								   (aref code i1)))))
-						      (let ((corr (fftw.ifft prod (prod.size)))
-							    (corrAbs2 (std--vector<double> (out.size)))
-							    (sumPwr 0d0)
-							    (maxPwr 0d0)
-							    (maxPwrIdx 0))
-							(dotimes (i (static_cast<int> (out.size)))
-							  (let ((v (std--abs (aref corr i)))
-								(pwr (/ (* v v)
-									windowSize)))
-							    (when (< maxPwr pwr)
-							      (setf maxPwr pwr
-								    maxPwrIdx i))
-							    (setf (aref corrAbs2 i) pwr)
-							    (incf sumPwr pwr)))
-							(let ((avgPwr (/ sumPwr (static_cast<double> (out.size))))
-							      (snr (/ maxPwr avgPwr)))
-							  (when (< maxSnr snr)
-							    (setf maxSnr snr
-								  maxSnrDop dop
+					  "#pragma omp parallel for default(none) num_threads(12) shared(selectedSatellites, codes, out, fftw, windowSize, maxSnrDop_vec, maxSnrIdx_vec, maxSnr_vec, sampleRate)"
+					  (dotimes (code_idx 3)
+					    (do0 ;when (aref selectedSatellites code_idx)
+					     (let  ((maxSnrDop 0)
+						    (maxSnrIdx 0)
+						    (maxSnr 0d0))
+					       (let ((code (aref codes code_idx))
+						     (len (out.size))
+						     (prod (std--vector<std--complex<double>> len))
+						     (dopStart (static_cast<int> (/ (* -5000 (static_cast<int> len))
+										    sampleRate)))
+						     (dopEnd (static_cast<int> (/ (* 5000 (static_cast<double> len))
+										  sampleRate))))
+						 (for ((= "int dop" dopStart)
+						       (<= dop dopEnd)
+						       (incf dop))
+						      (do0
+						       (dotimes (i (out.size))
+							 (declare (type size_t i))
+							 (let ((i1 (% (+ i -dop len) len)))
+							   (setf (aref prod i)
+								 (* (std--conj (aref out i))
+								    (aref code i1)))))
+						       (let ((corr (fftw.ifft prod (prod.size)))
+							     (corrAbs2 (std--vector<double> (out.size)))
+							     (sumPwr 0d0)
+							     (maxPwr 0d0)
+							     (maxPwrIdx 0))
+							 (dotimes (i (static_cast<int> (out.size)))
+							   (let ((v (std--abs (aref corr i)))
+								 (pwr (/ (* v v)
+									 windowSize)))
+							     (when (< maxPwr pwr)
+							       (setf maxPwr pwr
+								     maxPwrIdx i))
+							     (setf (aref corrAbs2 i) pwr)
+							     (incf sumPwr pwr)))
+							 (let ((avgPwr (/ sumPwr (static_cast<double> (out.size))))
+							       (snr (/ maxPwr avgPwr)))
+							   (when (< maxSnr snr)
+							     (setf maxSnr snr
+								   maxSnrDop dop
 							     
-								  maxSnrIdx maxPwrIdx))))
+								   maxSnrIdx maxPwrIdx))))
 						 
-						      ))
-						)
-					      ,@(loop for e in l-result
-						      collect
-						      (destructuring-bind (&key name type) e
-							(let ((aname (format nil "~a_vec" name)))
-							  `(setf (aref ,aname code_idx) ,name))))
+						       ))
+						 )
+					       ,@(loop for e in l-result
+						       collect
+						       (destructuring-bind (&key name type) e
+							 (let ((aname (format nil "~a_vec" name)))
+							   `(setf (aref ,aname code_idx) ,name))))
 					 
-					      #+nil 
-					      ,(lprint :msg "sat"
-						       :vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
+					       #+nil 
+					       ,(lprint :msg "sat"
+							:vars `((+ 1 code_idx) maxSnr maxSnrIdx maxSnrDop)))))
 
-					 (dotimes (pnr_idx 32)
-					   (if (< 18d0 (aref maxSnr_vec pnr_idx))
-					       (do0
-						(setf (aref selectedSatellites pnr_idx) true)
-						)
-					       (setf (aref selectedSatellites pnr_idx) false)))))
+					  (dotimes (pnr_idx 32)
+					    (if (< 18d0 (aref maxSnr_vec pnr_idx))
+						(do0
+						 (setf (aref selectedSatellites pnr_idx) true)
+						 )
+						(setf (aref selectedSatellites pnr_idx) false)))))
 			       
 			       
-				    (ImPlot--EndPlot))
-				  (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
-					       windowSize codesSize)
-				  ))))))
+				     (ImPlot--EndPlot))
+				   (ImGui--Text (string "Don't perform correlation windowSize=%d codesSize=%ld")
+						windowSize codesSize)
+				   ))))))
 	
 	(defun DrawPlot (file sdr fftw codes sampleRate)
 	  (declare (type "const MemoryMappedComplexShortFile&" file)
@@ -1953,42 +1966,44 @@
 	  )
 
      (let ((initGL (lambda ()
+		     (declare (capture ""))
 		     (do0 (glfwSetErrorCallback glfw_error_callback)
-	    (when (== 0 (glfwInit))
-	      ,(lprint :msg "glfw init failed"))
+			  (when (== 0 (glfwInit))
+			    ,(lprint :msg "glfw init failed"))
 	    
-	    #+more
-	    (do0		 ;let ((glsl_version (string "#version 130")))
-	     (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
-	     (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
-	    (let ((*window (glfwCreateWindow 800 600
-					     (string "imgui_dsp")
-					     nullptr nullptr)))
-	      (when (== nullptr window)
-		,(lprint :msg "failed to create glfw window")
-		)
-	      (glfwMakeContextCurrent window)
-	      ,(lprint :msg "enable vsync")
-	      (glfwSwapInterval 1)
-	      (IMGUI_CHECKVERSION)
-	      ,(lprint :msg "create imgui context")
-	      (ImGui--CreateContext)
-	      (ImPlot--CreateContext)
+			  #+more
+			  (do0 ;let ((glsl_version (string "#version 130")))
+			   (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+			   (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 0))
+			  (let ((*window (glfwCreateWindow 800 600
+							   (string "imgui_dsp")
+							   nullptr nullptr)))
+			    (when (== nullptr window)
+			      ,(lprint :msg "failed to create glfw window")
+			      )
+			    (glfwMakeContextCurrent window)
+			    ,(lprint :msg "enable vsync")
+			    (glfwSwapInterval 1)
+			    (IMGUI_CHECKVERSION)
+			    ,(lprint :msg "create imgui context")
+			    (ImGui--CreateContext)
+			    (ImPlot--CreateContext)
 
-	      (let ((&io (ImGui--GetIO)))
-		(setf io.ConfigFlags (or io.ConfigFlags
-					 ImGuiConfigFlags_NavEnableKeyboard)))
+			    (let ((&io (ImGui--GetIO)))
+			      (setf io.ConfigFlags (or io.ConfigFlags
+						       ImGuiConfigFlags_NavEnableKeyboard)))
 					;(ImGui--StyleColorsDark)
-	      (ImGui_ImplGlfw_InitForOpenGL window true)
-	      (ImGui_ImplOpenGL3_Init (string "#version 130"))
-	      (glClearColor  0 0 0 1)
-	      ))
+			    (ImGui_ImplGlfw_InitForOpenGL window true)
+			    (ImGui_ImplOpenGL3_Init (string "#version 130"))
+			    (glClearColor  0 0 0 1)
+			    ))
 		     (return window)
 		     ))))
 
 
      (let ((initGps (lambda (sampleRate fftw)
 		      ;(declare (type double sampleRate) (type "FFTWManager&" fftw))
+		      (declare (capture ""))
 		      (do0
 		       (comments "based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp")
 		       (let (
@@ -2019,33 +2034,34 @@
 			    (fftw.fft normal corrLength))
 			  )
 			 (let ((codes ("std::vector<std::vector<std::complex<double>>>" 32)))
-			     "#pragma omp parallel for default(none) num_threads(12) shared(codes,caSequenceLength,corrLength,caStep,fftw)"
-			     (dotimes (i 32)
-			       (comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
-			       (let ((ca (GpsCACodeGenerator (+ i 1)))
-				     (chips (ca.generate_sequence caSequenceLength))
-				     (code (std--vector<std--complex<double>> corrLength))
-				     (caPhase 0d0)
-				     (chipIndex 0))
+			   "#pragma omp parallel for default(none) num_threads(12) shared(codes,caSequenceLength,corrLength,caStep,fftw)"
+			   (dotimes (i 32)
+			     (comments "chatGPT decided to start PRN index with 1. I don't like it but leave it for now.")
+			     (let ((ca (GpsCACodeGenerator (+ i 1)))
+				   (chips (ca.generate_sequence caSequenceLength))
+				   (code (std--vector<std--complex<double>> corrLength))
+				   (caPhase 0d0)
+				   (chipIndex 0))
 
-				 (dotimes (l corrLength)
-				   (setf (aref code l) (? (aref chips (% chipIndex
-									 caSequenceLength))
-							  1d0 -1d0))
-				   (incf caPhase caStep)
-				   (when (<= 1 caPhase)
-				     (decf caPhase 1d0)
-				     (incf chipIndex)))
-				 #+nil ,(lprint :msg "compute FFT"
-						:vars `(i))
-				 (let ((out (fftw.fft code corrLength))))
-				 #+nil ,(lprint :msg "codes"
-						:vars `(i (codes.size) (out.size)))
-				 (setf (aref codes i) out)
-				 ))
-			     (return codes))))))))
+			       (dotimes (l corrLength)
+				 (setf (aref code l) (? (aref chips (% chipIndex
+								       caSequenceLength))
+							1d0 -1d0))
+				 (incf caPhase caStep)
+				 (when (<= 1 caPhase)
+				   (decf caPhase 1d0)
+				   (incf chipIndex)))
+			       #+nil ,(lprint :msg "compute FFT"
+					      :vars `(i))
+			       (let ((out (fftw.fft code corrLength))))
+			       #+nil ,(lprint :msg "codes"
+					      :vars `(i (codes.size) (out.size)))
+			       (setf (aref codes i) out)
+			       ))
+			   (return codes))))))))
 
      (let ((initSdr (lambda (sampleRate)
+		      (declare (capture ""))
 		      (let ((sdr (std--make_shared<SdrManager> 64512
 							       1100000 
 							       50000
@@ -2065,6 +2081,7 @@
 		      (return sdr)))))
 
      (let ((initFile (lambda (fn)
+		       (declare (capture ""))
 		       (let ((file (MemoryMappedComplexShortFile fn)))
 			 (when (file.ready)
 			   ,(lprint :msg "first element"

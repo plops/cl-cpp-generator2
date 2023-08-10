@@ -65,6 +65,7 @@ add_executable(
         src/MemoryMappedComplexShortFile.cpp
         src/FFTWManager.cpp
         src/SdrManager.cpp
+        src/GpsTracker.cpp
 	src/ProcessMemoryInfo.cpp
 )
 
