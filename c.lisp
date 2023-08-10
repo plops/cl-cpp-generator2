@@ -536,6 +536,9 @@ entry return-values contains a list of return values. currently supports type, v
   ;; (declare (capture &app bla)) will result in [&app, bla]
   (destructuring-bind (lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p) (consume-declare body)
+      ;; empty captures shall default to "&"
+      (when (null captures)
+	(setf captures `("&")))
       (multiple-value-bind (req-param opt-param res-param
 			    key-param other-key-p
 			    aux-param key-exist-p)

@@ -77,7 +77,7 @@ void startDaemonIfNotRunning ()        {
 }
  
  
-auto DrawMemory  = [] (){
+auto DrawMemory  = [&] (){
             static ProcessMemoryInfo memoryInfo ; 
     static std::deque<int> residentMemoryFifo ; 
         auto residentMemorySize  = memoryInfo.getResidentMemorySize(); 
@@ -110,7 +110,7 @@ auto DrawMemory  = [] (){
  
 }; 
  
-auto DrawSdrInfo  = [] (auto sdr){
+auto DrawSdrInfo  = [&] (auto sdr){
             ImGui::Text("sample-rate:");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "%f", sdr->get_sample_rate());
@@ -129,7 +129,7 @@ auto DrawSdrInfo  = [] (auto sdr){
  
 }; 
  
-auto SelectAutoGain  = [] (auto sdr){
+auto SelectAutoGain  = [&] (auto sdr){
             static bool automaticGainMode  = sdr->get_gain_mode(); 
     static bool old_automaticGainMode  = automaticGainMode; 
     ImGui::Checkbox("Automatic Gain Mode", &automaticGainMode);
@@ -144,7 +144,7 @@ auto SelectAutoGain  = [] (auto sdr){
         return automaticGainMode;
 }; 
  
-auto SelectGain  = [] (auto sdr){
+auto SelectGain  = [&] (auto sdr){
             static int gainIF  = 20; 
     if ( ImGui::SliderInt("gainIF", &gainIF, 20, 59, "%02d", ImGuiSliderFlags_AlwaysClamp) ) {
                         sdr->setGainIF(gainIF);
@@ -160,7 +160,7 @@ auto SelectGain  = [] (auto sdr){
         return std::make_pair(gainIF, gainRF);
 }; 
  
-auto SelectStart  = [] (auto file){
+auto SelectStart  = [&] (auto file){
             static int start  = 0; 
     static int maxStart  = static_cast<int>(file.size()/sizeof(std::complex<short>)); 
     if ( file.ready() ) {
@@ -171,7 +171,7 @@ auto SelectStart  = [] (auto file){
  
 }; 
  
-auto SelectWindowSize  = [] (){
+auto SelectWindowSize  = [&] (){
             static size_t windowSizeIndex  = 3; 
     static size_t old_windowSizeIndex  = 3; 
     auto windowSizeItemsNum  = std::vector<double>({1024, 5456, 8192, 10000, 20000, 32768, 40000, 50000, 65536, 80000, 100000, 140000, 1048576}); 
@@ -206,7 +206,7 @@ auto SelectWindowSize  = [] (){
         return windowSize;
 }; 
  
-auto SetBandwidth  = [] (auto sdr){
+auto SetBandwidth  = [&] (auto sdr){
             static size_t bandwidthIndex  = 3; 
     static size_t old_bandwidthIndex  = 3; 
     auto bandwidthItemsNum  = std::vector<double>({2.00e+5, 3.00e+5, 6.00e+5, 1.5360e+6, 5.00e+6, 6.00e+6, 7.00e+6, 8.00e+6}); 
@@ -239,7 +239,7 @@ auto SetBandwidth  = [] (auto sdr){
  
 }; 
  
-auto SelectRealtimeDisplay  = [] (auto file){
+auto SelectRealtimeDisplay  = [&] (auto file){
             static bool realtimeDisplay  = true; 
     if ( file.ready() ) {
                         ImGui::Checkbox("Realtime display", &realtimeDisplay);
@@ -249,7 +249,7 @@ auto SelectRealtimeDisplay  = [] (auto file){
         return realtimeDisplay;
 }; 
  
-auto DrawWaveform  = [] (auto x, auto y1, auto y2){
+auto DrawWaveform  = [&] (auto x, auto y1, auto y2){
             auto windowSize  = x.size(); 
     if ( ImPlot::BeginPlot("Waveform (I/Q)") ) {
                         ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
@@ -260,14 +260,14 @@ auto DrawWaveform  = [] (auto x, auto y1, auto y2){
  
 }; 
  
-auto SelectLogScale  = [] (){
+auto SelectLogScale  = [&] (){
             static bool logScale  = true; 
     ImGui::Checkbox("Logarithmic Y-axis", &logScale);
     return logScale;
  
 }; 
  
-auto SelectSatellites  = [] (){
+auto SelectSatellites  = [&] (){
                 static std::array<bool,32> selectedSatellites  = {false}; 
     if ( ImGui::Begin("Satellite") ) {
                         for ( auto i = 0;i<32;i+=1 ) {
@@ -285,7 +285,7 @@ auto SelectSatellites  = [] (){
         return selectedSatellites;
 }; 
  
-auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto sdr, auto x, auto y1, auto y2, auto zfifo, auto file, auto start, auto logScale, auto selectedSatellites){
+auto DrawFourier  = [&] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto sdr, auto x, auto y1, auto y2, auto zfifo, auto file, auto start, auto logScale, auto selectedSatellites){
             auto in  = std::vector<std::complex<double>>(windowSize); 
     auto gps_freq  = 1.575420e+9; 
     static double lo_freq  = 4.0920e+6; 
@@ -394,7 +394,7 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
  
 }; 
  
-auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, auto windowSize, auto fftw, auto sampleRate){
+auto DrawCrossCorrelation  = [&] (auto codes, auto out, auto selectedSatellites, auto windowSize, auto fftw, auto sampleRate){
             auto codesSize  = codes[0].size(); 
     if ( static_cast<size_t>(windowSize)==codesSize ) {
                 if ( ImPlot::BeginPlot("Cross-Correlations with PRN sequences") ) {
@@ -566,7 +566,7 @@ void DrawPlot (const MemoryMappedComplexShortFile& file, std::shared_ptr<SdrMana
 } 
 }
  
-auto initGL  = [] (){
+auto initGL  = [&] (){
             glfwSetErrorCallback(glfw_error_callback);
     if ( 0==glfwInit() ) {
                         std::cout<<"glfw init failed"<<"\n"<<std::flush;
@@ -600,7 +600,7 @@ auto initGL  = [] (){
         return window;
 }; 
  
-auto initGps  = [] (auto sampleRate, auto fftw){
+auto initGps  = [&] (auto sampleRate, auto fftw){
             // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
  
         const auto caFrequency  = 1.0230e+6; 
@@ -652,7 +652,7 @@ auto initGps  = [] (auto sampleRate, auto fftw){
  
 }; 
  
-auto initSdr  = [] (auto sampleRate){
+auto initSdr  = [&] (auto sampleRate){
             auto sdr  = std::make_shared<SdrManager>(64512, 1100000, 50000, 5000); 
     stopDaemon();
     startDaemonIfNotRunning();
@@ -669,7 +669,7 @@ auto initSdr  = [] (auto sampleRate){
         return sdr;
 }; 
  
-auto initFile  = [] (auto fn){
+auto initFile  = [&] (auto fn){
             auto file  = MemoryMappedComplexShortFile(fn); 
     if ( file.ready() ) {
                         std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<"\n"<<std::flush;
