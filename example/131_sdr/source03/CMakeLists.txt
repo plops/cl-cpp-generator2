@@ -4,6 +4,10 @@ project(imgui_dsp)
 set(CMAKE_CXX_STANDARD 20)
 
 option(USE_ADDRESS_SANITIZER "Use Address Sanitizer" OFF)
+option(USE_THREAD_SANITIZER "Use Thread Sanitizer" OFF)
+option(USE_UNDEFINED_BEHAVIOR_SANITIZER "Use Undefined Behavior Sanitizer" OFF)
+option(USE_MEMORY_SANITIZER "Use Memory Sanitizer" OFF)
+option(USE_LEAK_SANITIZER "Use Leak Sanitizer" OFF)
 
 # https://devtalk.blender.org/t/speed-up-c-compilation/30508
 # set the mold linker
@@ -22,16 +26,34 @@ if(USE_ADDRESS_SANITIZER)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
+if(USE_MEMORY_SANITIZER)
+    add_compile_options(-fsanitize=memory -fno-omit-frame-pointer)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=memory")
+endif()
+
+if(USE_THREAD_SANITIZER)
+    add_compile_options(-fsanitize=thread -fno-omit-frame-pointer)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+endif()
+
+if(USE_UNDEFINED_SANITIZER)
+    add_compile_options(-fsanitize=undefined)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+endif()
+
+add_compile_options(
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+)
+
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
             -g -g3 -ggdb -gdwarf-4
-            -Wall -Wextra -Wconversion -Wdouble-promotion
-            -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-            -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-            -Wshadow
-            -fvisibility=hidden
-            -fno-strict-overflow -Wno-strict-overflow
     )
 else ()
      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
