@@ -12,6 +12,7 @@
 						  :dec-min
 						  :dec-mean
 						  :store
+						  :sdr
 						  )))
 (setf *features* (set-exclusive-or *features* (list :more
 						    :dec-max
@@ -20,6 +21,7 @@
 						    :guru-plan
 						    :memoize-plan
 						    ;:store
+						    ;:sdr
 						    )))
 
 
@@ -1699,15 +1701,16 @@
 
 	(let ((DrawFourier
 		(lambda
-		    (sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites)
+		    (sampleRate realtimeDisplay windowSize fftw #+sdr sdr  x y1 y2 zfifo file start logScale selectedSatellites)
 		  (declare (capture ""))
 		  #+nil ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
 			(gps_freq 1575.42d6)
 			(lo_freq 4.092d6)
-			(centerFrequency (? realtimeDisplay
-					    (sdr->get_frequency)
-					    (- gps_freq lo_freq)))
+			(centerFrequency #+sdr (? realtimeDisplay
+						  (sdr->get_frequency)
+						  (- gps_freq lo_freq))
+					 #-sdr (- gps_freq lo_freq))
 			(windowSize2 (/ windowSize 2)))
 		    (declare (type "static double" centerFrequency lo_freq))
 		    (dotimes (i windowSize)
@@ -1768,8 +1771,8 @@
 					   (logior (ImGui--IsMouseClicked 2)
 						   (ImGui--IsMouseDragging 2)))
 			       
-			       (if realtimeDisplay
-				   (do0
+			       (#-sdr do0 #+sdr if #+sdr realtimeDisplay
+				   #+sdr (do0
 				    (setf centerFrequency xmouse)
 				    (sdr->set_frequency centerFrequency))
 				   (do0
@@ -1891,7 +1894,7 @@
 						windowSize codesSize)
 				   ))))))
 	
-	(defun DrawPlot (file sdr fftw codes sampleRate)
+	(defun DrawPlot (file #+sdr sdr fftw codes sampleRate)
 	  (declare (type "const MemoryMappedComplexShortFile&" file)
 		   (type #-memoize-plan "const FFTWManager&" #+memoize-plan "FFTWManager&" fftw)
 		   (type "const std::vector<std::vector<std::complex<double>>> &" codes)
@@ -1904,14 +1907,15 @@
 	      (do0
 	       (do0
 		(DrawMemory)
-		(DrawSdrInfo sdr)
-		(let ((automaticGainMode (SelectAutoGain sdr))))
-		(let (((bracket gainIF gainRf) (SelectGain sdr))))
+		#+sdr
+		(do0 (DrawSdrInfo sdr)
+		     (let ((automaticGainMode (SelectAutoGain sdr))))
+		     (let (((bracket gainIF gainRf) (SelectGain sdr)))))
 		
 		(let (((bracket start maxStart) (SelectStart file))))
 		
 		(let ((windowSize (SelectWindowSize))))
-		(SetBandwidth sdr)
+		#+sdr (SetBandwidth sdr)
 
 		(let ((realtimeDisplay (SelectRealtimeDisplay file))))
 
@@ -1922,8 +1926,8 @@
 		      (y2 (std--vector<double> windowSize))
 		      (zfifo (,acq-vec-type windowSize)))
 		  
-		  (if realtimeDisplay
-		      (sdr->processFifo
+		  (#-sdr do0 #+sdr if #+sdr realtimeDisplay
+		      #+sdr (sdr->processFifo
 		       (lambda (fifo)
 			 (declare (type ,(format nil "const ~a &" fifo-type) fifo)
 				  (capture "&"))
@@ -1955,7 +1959,7 @@
 		(let ((logScale (SelectLogScale))))
 
 		(let ((selectedSatellites (SelectSatellites)))))
-	       (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
+	       (let ((out (DrawFourier sampleRate realtimeDisplay windowSize fftw #+sdr sdr  x y1 y2 zfifo file start logScale selectedSatellites))))
 	       #+nil (DrawCrossCorrelation codes out selectedSatellites windowSize fftw sampleRate)
 	       )
 	    
@@ -2102,7 +2106,7 @@
 		  (sampleRate		;5456d3
 		    10.0d6)
 		  (codes (initGps sampleRate fftw))
-		  (sdr (initSdr sampleRate))
+		  #+sdr (sdr (initSdr sampleRate))
 		  (file (initFile (string ;;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
 				   "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
 				   
@@ -2118,7 +2122,7 @@
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
-		   (DrawPlot file sdr fftw codes sampleRate)
+		   (DrawPlot file #+sdr sdr fftw codes sampleRate)
 		   (ImGui--Render)
 		   (let ((w 0)
 			 (h 0))
@@ -2127,7 +2131,7 @@
 		     (glClear GL_COLOR_BUFFER_BIT))
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window))
-	    (do0 (sdr->stopCapture)
+	    #+sdr (do0 (sdr->stopCapture)
 		 (sdr->close))
 	    (do0
 	     (ImGui_ImplOpenGL3_Shutdown)
