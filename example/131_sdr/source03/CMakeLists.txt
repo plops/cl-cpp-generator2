@@ -3,6 +3,8 @@ project(imgui_dsp)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(USE_ADDRESS_SANITIZER "Use Address Sanitizer" OFF)
+
 # https://devtalk.blender.org/t/speed-up-c-compilation/30508
 # set the mold linker
 set(CMAKE_LINKER mold)
@@ -15,6 +17,11 @@ set(CXX clang++)
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+if(USE_ADDRESS_SANITIZER)
+    add_compile_options(-fsanitize=address)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+endif()
+
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
@@ -25,11 +32,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -Wshadow
             -fvisibility=hidden
             -fno-strict-overflow -Wno-strict-overflow
-           # -fsanitize=undefined
-	   -fsanitize=address
-            #-fanalyzer
     )
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 else ()
      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
