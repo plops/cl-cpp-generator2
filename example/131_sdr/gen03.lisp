@@ -1667,6 +1667,9 @@
 			      (declare (capture ""))
 			      (let ((windowSize (x.size)))
 				(when (ImPlot--BeginPlot (string "Waveform (I/Q)"))
+				  (ImPlot--SetupAxis ImAxis_Y1 (string "waveform") (or
+										    ImPlotAxisFlags_RangeFit
+										    ImPlotAxisFlags_AutoFit) )
 				  #+nil
 				  (do0
 				   ,(decimate-plots `(:x x :ys (y1)
@@ -1779,6 +1782,12 @@
 		      (when (ImPlot--BeginPlot (? logScale
 						  (string "FFT magnitude (dB)")
 						  (string "FFT magnitude (linear)")))
+			(ImPlot--SetupAxis ImAxis_Y1 (string "magnitude") (or
+									   ;ImPlotAxisFlags_RangeFit
+									   ImPlotAxisFlags_AutoFit) )
+			(ImPlot--SetupAxis ImAxis_X1 (string "frequency") (or
+									   ;ImPlotAxisFlags_RangeFit
+									   ImPlotAxisFlags_AutoFit) )
 			,(decimate-plots `(:x x :ys (y1) :idx (string "")))
 			
 			

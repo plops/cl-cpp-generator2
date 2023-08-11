@@ -251,7 +251,8 @@ auto SelectRealtimeDisplay  = [] (auto &file){
 auto DrawWaveform  = [] (auto x, auto y1, auto y2){
             auto windowSize  = x.size(); 
     if ( ImPlot::BeginPlot("Waveform (I/Q)") ) {
-                        ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
+                        ImPlot::SetupAxis(ImAxis_Y1, "waveform", ImPlotAxisFlags_RangeFit | ImPlotAxisFlags_AutoFit);
+        ImPlot::PlotLine("y1", x.data(), y1.data(), windowSize);
         ImPlot::PlotLine("y2", x.data(), y2.data(), windowSize);
         ImPlot::EndPlot();
  
@@ -338,7 +339,9 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
 } 
 } 
     if ( ImPlot::BeginPlot(logScale ? "FFT magnitude (dB)" : "FFT magnitude (linear)") ) {
-                        {
+                        ImPlot::SetupAxis(ImAxis_Y1, "magnitude", ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(ImAxis_X1, "frequency", ImPlotAxisFlags_AutoFit);
+        {
                                     auto pointsPerPixel  = static_cast<int>(static_cast<float>(x.size())/(ImGui::GetContentRegionAvail().x)); 
  
                         if ( pointsPerPixel<=1 ) {
