@@ -160,7 +160,7 @@ auto SelectGain  = [] (auto sdr){
         return std::make_pair(gainIF, gainRF);
 }; 
  
-auto SelectStart  = [] (auto file){
+auto SelectStart  = [] (auto &file){
             static int start  = 0; 
     static int maxStart  = static_cast<int>(file.size()/sizeof(std::complex<short>)); 
     if ( file.ready() ) {
@@ -239,7 +239,7 @@ auto SetBandwidth  = [] (auto sdr){
  
 }; 
  
-auto SelectRealtimeDisplay  = [] (auto file){
+auto SelectRealtimeDisplay  = [] (auto &file){
             static bool realtimeDisplay  = true; 
     if ( file.ready() ) {
                         ImGui::Checkbox("Realtime display", &realtimeDisplay);

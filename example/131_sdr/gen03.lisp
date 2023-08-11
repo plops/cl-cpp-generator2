@@ -1015,6 +1015,8 @@
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
+	       (space ,name (paren (space const ,name &)) = delete)
+	       (space ,name & operator= (paren (space const ,name &)) = delete)
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -1570,7 +1572,7 @@
 			 (return (std--make_pair gainIF gainRF))))))
 
 
-      (let ((SelectStart (lambda (file)
+      (let ((SelectStart (lambda (&file)
 			   (declare (capture ""))
 			   (let ((start 0)
 				 (maxStart (static_cast<int> (/ (file.size)
@@ -1660,7 +1662,7 @@
 				 ))))
 
 
-	(let ((SelectRealtimeDisplay (lambda (file)
+	(let ((SelectRealtimeDisplay (lambda (&file)
 				       (declare (capture ""))
 				       (let ((realtimeDisplay true))
 					 (declare (type "static bool" realtimeDisplay))
