@@ -1719,7 +1719,7 @@
 
 	(let ((DrawFourier
 		(lambda
-		    (sampleRate realtimeDisplay windowSize fftw #+sdr sdr  x y1 y2 zfifo file start logScale selectedSatellites)
+		    (sampleRate realtimeDisplay windowSize fftw #+sdr sdr  x y1 y2 zfifo &file start logScale selectedSatellites)
 		  (declare (capture ""))
 		  #+nil ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
@@ -2102,10 +2102,11 @@
 			(sdr->startCapture))
 		      (return sdr)))))
 
+     #+nil
      (let ((initFile (lambda (fn)
 		       (declare (capture ""))
 		       (let ((file (MemoryMappedComplexShortFile fn (* 128 1024 1024) 0)))
-			#+nil
+			 #+nil
 			 (when (file.ready)
 			   ,(lprint :msg "first element"
 				    :vars `(fn (dot (aref file 0) (real)))))
@@ -2126,8 +2127,15 @@
 		    10.0d6)
 		  (codes (initGps sampleRate fftw))
 		  #+sdr (sdr (initSdr sampleRate))
-		  (file (initFile (string
-				   ;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
+		  (file (MemoryMappedComplexShortFile (string
+					;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
+				   ;; "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
+				   
+				   "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
+				   )
+						      (* 128 1024 1024) 0))
+		  #+nil (file (initFile (string
+					;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
 				   ;; "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
 				   
 				   "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"

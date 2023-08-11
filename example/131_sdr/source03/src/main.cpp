@@ -285,7 +285,7 @@ auto SelectSatellites  = [] (){
         return selectedSatellites;
 }; 
  
-auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto x, auto y1, auto y2, auto zfifo, auto file, auto start, auto logScale, auto selectedSatellites){
+auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto fftw, auto x, auto y1, auto y2, auto zfifo, auto &file, auto start, auto logScale, auto selectedSatellites){
             auto in  = std::vector<std::complex<double>>(windowSize); 
     auto gps_freq  = 1.575420e+9; 
     static double lo_freq  = 4.0920e+6; 
@@ -640,12 +640,6 @@ auto initSdr  = [] (auto sampleRate){
         return sdr;
 }; 
  
-auto initFile  = [] (auto fn){
-            auto file  = MemoryMappedComplexShortFile(fn, 128*1024*1024, 0); 
-    return file;
- 
-}; 
- 
 
 int main (int argc, char** argv)        {
         try {
@@ -653,7 +647,7 @@ int main (int argc, char** argv)        {
         auto *window  = initGL(); 
         auto sampleRate  = 1.00e+7; 
         auto codes  = initGps(sampleRate, fftw); 
-        auto file  = initFile("/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"); 
+        auto file  = MemoryMappedComplexShortFile("/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin", 128*1024*1024, 0); 
  
         std::cout<<"access mmap"<<" file[0]='"<<file[0]<<"' "<<"\n"<<std::flush;
         while ( !glfwWindowShouldClose(window) ) {
