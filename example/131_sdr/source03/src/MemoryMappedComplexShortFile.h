@@ -9,7 +9,7 @@
 class MemoryMappedComplexShortFile  {
         public:
         explicit  MemoryMappedComplexShortFile (const std::string& filename, size_t length, size_t offset)       ;   
-        std::complex<short>& operator[] (std::size_t index) const      ;   
+        std::complex<short> operator[] (std::size_t index) const      ;   
         std::size_t size () const      ;   
         bool ready () const      ;   
          ~MemoryMappedComplexShortFile ()       ;   

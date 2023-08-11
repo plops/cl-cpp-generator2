@@ -491,7 +491,7 @@ auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, 
 }; 
  
 
-void DrawPlot (const MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
+void DrawPlot (MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
         try {
                                 DrawMemory();
                 auto [start, maxStart]  = SelectStart(file); 
@@ -641,11 +641,7 @@ auto initSdr  = [] (auto sampleRate){
 }; 
  
 auto initFile  = [] (auto fn){
-            auto file  = MemoryMappedComplexShortFile(fn, 400000, 0); 
-    if ( file.ready() ) {
-                        std::cout<<"first element"<<" fn='"<<fn<<"' "<<" file[0].real()='"<<file[0].real()<<"' "<<"\n"<<std::flush;
- 
-} 
+            auto file  = MemoryMappedComplexShortFile(fn, 128*1024*1024, 0); 
     return file;
  
 }; 
@@ -657,8 +653,9 @@ int main (int argc, char** argv)        {
         auto *window  = initGL(); 
         auto sampleRate  = 1.00e+7; 
         auto codes  = initGps(sampleRate, fftw); 
-        auto file  = initFile("/mnt5/gps.samples.cs16.fs5456.if4092.dat"); 
+        auto file  = initFile("/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"); 
  
+        std::cout<<"access mmap"<<" file[0]='"<<file[0]<<"' "<<"\n"<<std::flush;
         while ( !glfwWindowShouldClose(window) ) {
                         glfwPollEvents();
                         ImGui_ImplOpenGL3_NewFrame();

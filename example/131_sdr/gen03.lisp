@@ -1056,13 +1056,27 @@
 		 (when (std--filesystem--exists filename_)
 		   (file_.open filename length offset)
 		   (when (file_.is_open)
+		     ,(lprint :msg "MMAP" :vars `((file_.size)
+						  (file_.alignment)
+						  (aref (file_.data) 0)))
 		     (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
+		     ,(lprint :msg "entry mmap" :vars `((aref data_ 0)))
 		     (setf ready_ true))))
 
 	       (defmethod "operator[]" (index)
-		 (declare (type "std::size_t" index)
-			  (values "std::complex<short>&")
+		 (declare (type "std::size_t"
+				;"int"
+				index)
+			  (values "std::complex<short>")
 			  (const))
+		 #+nil (let ((a (dot file_ (data))))
+		   (return (std--complex<short> (+ (aref a (+ 0 (* 4 index)))
+						   ;(* 256 (aref a (+ 1 (* 4 index))))
+						   )
+						#+nil (+ (aref a (+ 2 (* 4 index)))
+						  (* 256 (aref a (+ 3 (* 4 index))))))
+					
+			  ))
 		 (return (aref data_ index)))
 
 	       (defmethod size ()
@@ -1897,7 +1911,7 @@
 				   ))))))
 	
 	(defun DrawPlot (file #+sdr sdr fftw codes sampleRate)
-	  (declare (type "const MemoryMappedComplexShortFile&" file)
+	  (declare (type "MemoryMappedComplexShortFile&" file)
 		   (type #-memoize-plan "const FFTWManager&" #+memoize-plan "FFTWManager&" fftw)
 		   (type "const std::vector<std::vector<std::complex<double>>> &" codes)
 		   (type "std::shared_ptr<SdrManager>" sdr)
@@ -2088,7 +2102,8 @@
 
      (let ((initFile (lambda (fn)
 		       (declare (capture ""))
-		       (let ((file (MemoryMappedComplexShortFile fn 400000 0)))
+		       (let ((file (MemoryMappedComplexShortFile fn (* 128 1024 1024) 0)))
+			#+nil
 			 (when (file.ready)
 			   ,(lprint :msg "first element"
 				    :vars `(fn (dot (aref file 0) (real)))))
@@ -2110,16 +2125,16 @@
 		  (codes (initGps sampleRate fftw))
 		  #+sdr (sdr (initSdr sampleRate))
 		  (file (initFile (string
-				   "/mnt5/gps.samples.cs16.fs5456.if4092.dat"
+				   ;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
 				   ;; "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
 				   
-					;"/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
+				   "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
 				   ))))
 	      ;(declare (type "static FFTWManager" fftw))
 	      )
 	    
 	    
-	    
+	    ,(lprint :msg "access mmap" :vars `((aref file 0)))
 	    (while (!glfwWindowShouldClose window)
 		   (glfwPollEvents)
 		   (ImGui_ImplOpenGL3_NewFrame)
