@@ -1977,7 +1977,7 @@
 			 (let ((n windowSize))
 			   (dotimes (i n)
 			     (let ((z (aref fifo i)))
-			       (setf (aref zfifo i) z)
+			       (setf (aref zfifo i) z) 
 			       (setf (aref x i) i
 				     (aref y1 i) (z.real)
 				     (aref y2 i) (z.imag))))))
