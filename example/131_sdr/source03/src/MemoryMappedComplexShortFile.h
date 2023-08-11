@@ -8,8 +8,9 @@
 
 class MemoryMappedComplexShortFile  {
         public:
-        MemoryMappedComplexShortFile (const MemoryMappedComplexShortFile &) = delete;
-        MemoryMappedComplexShortFile & operator= (const MemoryMappedComplexShortFile &) = delete;
+            MemoryMappedComplexShortFile (const MemoryMappedComplexShortFile &) = delete;
+    MemoryMappedComplexShortFile & operator= (const MemoryMappedComplexShortFile &) = delete;
+ 
         explicit  MemoryMappedComplexShortFile (const std::string& filename, size_t length, size_t offset)       ;   
         std::complex<short> operator[] (std::size_t index) const      ;   
         std::size_t size () const      ;   

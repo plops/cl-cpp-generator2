@@ -1015,8 +1015,9 @@
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
-	       (space ,name (paren (space const ,name &)) = delete)
-	       (space ,name & operator= (paren (space const ,name &)) = delete)
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -1130,6 +1131,9 @@
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -1479,12 +1483,13 @@
 			     (when (< (size_t 2000) (residentMemoryFifo.size))
 			       (residentMemoryFifo.pop_front)))
 			   (do0
-			    (let ((helpx (std--vector<int> (residentMemoryFifo.size)))
-				  (helpy (std--vector<int> (residentMemoryFifo.size))))
+			    (let ((helpx (std--vector<double> (residentMemoryFifo.size)))
+				  (helpy (std--vector<double> (residentMemoryFifo.size))))
 			      (dotimes (i (residentMemoryFifo.size))
 				(declare (type size_t i))
-				(setf (aref helpx i) (static_cast<int> i))
-				(setf (aref helpy i) (aref residentMemoryFifo i)))
+				(setf (aref helpx i) (static_cast<double> i))
+				(setf (aref helpy i) (/ (aref residentMemoryFifo i)
+							(* 1024d0 1024d0))))
 			      )
 	  
 			    #+nil (do0
@@ -1499,9 +1504,9 @@
 			    (when (ImPlot--BeginPlot (string "Resident Memory Usage")
 
 						     )
-			      (ImPlot--SetupAxis ImAxis_X1 (string "time") (or ;ImPlotAxisFlags_RangeFit
+			      (ImPlot--SetupAxis ImAxis_X1 (string "time (steps)") (or ;ImPlotAxisFlags_RangeFit
 									       ImPlotAxisFlags_AutoFit) )
-			      (ImPlot--SetupAxis ImAxis_Y1 (string "memory") (or ;ImPlotAxisFlags_RangeFit
+			      (ImPlot--SetupAxis ImAxis_Y1 (string "memory (GB)") (or ;ImPlotAxisFlags_RangeFit
 										 ImPlotAxisFlags_AutoFit) )
 			      (ImPlot--PlotLine (string "Resident Memory")
 						(helpx.data)
@@ -2031,7 +2036,7 @@
 		     ))))
 
 
-     (let ((initGps (lambda (sampleRate fftw)
+     (let ((initGps (lambda (sampleRate &fftw)
 		      ;(declare (type double sampleRate) (type "FFTWManager&" fftw))
 		      (declare (capture ""))
 		      (do0

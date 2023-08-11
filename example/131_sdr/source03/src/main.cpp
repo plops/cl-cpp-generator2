@@ -87,20 +87,20 @@ auto DrawMemory  = [] (){
  
 } 
  
-            auto helpx  = std::vector<int>(residentMemoryFifo.size()); 
-    auto helpy  = std::vector<int>(residentMemoryFifo.size()); 
+            auto helpx  = std::vector<double>(residentMemoryFifo.size()); 
+    auto helpy  = std::vector<double>(residentMemoryFifo.size()); 
     for ( size_t i = 0;i<residentMemoryFifo.size();i+=1 ) {
-                        helpx[i]=static_cast<int>(i);
+                        helpx[i]=static_cast<double>(i);
 
 
-                        helpy[i]=residentMemoryFifo[i];
+                        helpy[i]=((residentMemoryFifo[i])/(1024.    *1024.    ));
 
 
 } 
  
     if ( ImPlot::BeginPlot("Resident Memory Usage") ) {
-                        ImPlot::SetupAxis(ImAxis_X1, "time", ImPlotAxisFlags_AutoFit);
-        ImPlot::SetupAxis(ImAxis_Y1, "memory", ImPlotAxisFlags_AutoFit);
+                        ImPlot::SetupAxis(ImAxis_X1, "time (steps)", ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(ImAxis_Y1, "memory (GB)", ImPlotAxisFlags_AutoFit);
         ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), static_cast<int>(helpy.size()));
         ImPlot::EndPlot();
  
@@ -585,7 +585,7 @@ auto initGL  = [] (){
         return window;
 }; 
  
-auto initGps  = [] (auto sampleRate, auto fftw){
+auto initGps  = [] (auto sampleRate, auto &fftw){
             // based on Andrew Holme's code http://www.jks.com/gps/SearchFFT.cpp
  
         const auto caFrequency  = 1.0230e+6; 
