@@ -1714,7 +1714,7 @@
 
 	(let ((DrawFourier
 		(lambda
-		    (sampleRate realtimeDisplay windowSize fftw #+sdr sdr  x y1 y2 zfifo &file start logScale selectedSatellites)
+		    (sampleRate realtimeDisplay windowSize &fftw #+sdr sdr  &x &y1 &y2 &zfifo &file start logScale &selectedSatellites)
 		  (declare (capture ""))
 		  #+nil ,(lprint :msg "DrawFourier")
 		  (let ((in (std--vector<std--complex<double>> windowSize))
