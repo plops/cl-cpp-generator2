@@ -1959,7 +1959,8 @@
 		(let ((windowSize (SelectWindowSize))))
 		#+sdr (SetBandwidth sdr)
 
-		(let ((realtimeDisplay (SelectRealtimeDisplay file))))
+		
+		(let ((realtimeDisplay #-sdr false #+sdr (SelectRealtimeDisplay file))))
 
 
 

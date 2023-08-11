@@ -499,7 +499,7 @@ void DrawPlot (MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std:
  
                 auto windowSize  = SelectWindowSize(); 
  
-                auto realtimeDisplay  = SelectRealtimeDisplay(file); 
+                auto realtimeDisplay  = false; 
  
                 auto x  = std::vector<double>(windowSize); 
         auto y1  = std::vector<double>(windowSize); 
