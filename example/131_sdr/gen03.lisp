@@ -1058,27 +1058,13 @@
 		 (when (std--filesystem--exists filename_)
 		   (file_.open filename length offset)
 		   (when (file_.is_open)
-		     ,(lprint :msg "MMAP" :vars `((file_.size)
-						  (file_.alignment)
-						  (aref (file_.data) 0)))
 		     (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
-		     ,(lprint :msg "entry mmap" :vars `((aref data_ 0)))
 		     (setf ready_ true))))
 
 	       (defmethod "operator[]" (index)
-		 (declare (type "std::size_t"
-				;"int"
-				index)
+		 (declare (type "std::size_t" index)
 			  (values "std::complex<short>")
 			  (const))
-		 #+nil (let ((a (dot file_ (data))))
-		   (return (std--complex<short> (+ (aref a (+ 0 (* 4 index)))
-						   ;(* 256 (aref a (+ 1 (* 4 index))))
-						   )
-						#+nil (+ (aref a (+ 2 (* 4 index)))
-						  (* 256 (aref a (+ 3 (* 4 index))))))
-					
-			  ))
 		 (return (aref data_ index)))
 
 	       (defmethod size ()
@@ -1087,8 +1073,7 @@
 		 (return (dot file_ (size))))
 	       (defmethod ready ()
 		 (declare (values bool)
-			  (const)
-			  )
+			  (const))
 		 (return ready_))
 	       
 	       (defmethod ~MemoryMappedComplexShortFile ()
@@ -1502,7 +1487,8 @@
 				(setf (aref helpy i) (aref residentMemoryFifo i)))
 			      )
 	  
-			    (do0
+			    #+nil (do0
+			     
 			     (ImPlot--SetNextAxisLimits ImAxis_X1 0 (static_cast<int> (residentMemoryFifo.size)))
 			     (ImPlot--SetNextAxisLimits ImAxis_Y3 
 							(deref
@@ -1510,7 +1496,13 @@
 									   (helpy.end)))
 							(deref (std--max_element (helpy.begin)
 										 (helpy.end)))))
-			    (when (ImPlot--BeginPlot (string "Resident Memory Usage"))
+			    (when (ImPlot--BeginPlot (string "Resident Memory Usage")
+
+						     )
+			      (ImPlot--SetupAxis ImAxis_X1 (string "time") (or ;ImPlotAxisFlags_RangeFit
+									       ImPlotAxisFlags_AutoFit) )
+			      (ImPlot--SetupAxis ImAxis_Y1 (string "memory") (or ;ImPlotAxisFlags_RangeFit
+										 ImPlotAxisFlags_AutoFit) )
 			      (ImPlot--PlotLine (string "Resident Memory")
 						(helpx.data)
 						(helpy.data)
@@ -1747,28 +1739,35 @@
 				   (zi (static_cast<double> (zs.imag)))
 				   (z (std--complex<double> zr zi)))
 			       (setf (aref in i) z))))
-			  #+nil (do0
-				 (dotimes (i windowSize)
-				   (let ((zs (aref file (+ start i)))
-					 #+nil (zr (static_cast<double> (zs.real)))
-					 #+nil (zi (static_cast<double> (zs.imag)))
-					 #+nil (z (std--complex<double> zr zi)))
-				     (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
-					   (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
-				       (declare (type "const auto " lo_sin lo_cos))
-				       (let ((re (? (^ (zs.real)
-						       (aref lo_sin (static_cast<int> lo_phase)))
-						    -1 1))
-					     (im (? (^ (zs.real)
-						       (aref lo_cos (static_cast<int> lo_phase)))
-						    -1 1)))
-					 (setf (aref in i)
-					       (std--complex<double>
-						re im)))
-				       (incf lo_phase lo_rate)
-				       (when (<= 4 lo_phase)
-					 (decf lo_phase 4)))
-				     )))))
+			  (do0
+			    (dotimes (i windowSize)
+			     (let ((zs (aref file (+ start i)))
+				   (zr (static_cast<double> (zs.real)))
+				   (zi (static_cast<double> (zs.imag)))
+				   (z (std--complex<double> zr zi)))
+			       (setf (aref in i) z)))
+			   #+nil 
+			   (dotimes (i windowSize)
+			     (let ((zs (aref file (+ start i)))
+				   #+nil (zr (static_cast<double> (zs.real)))
+				   #+nil (zi (static_cast<double> (zs.imag)))
+				   #+nil (z (std--complex<double> zr zi)))
+			       (let ((lo_sin ("std::array<int,4>" (curly 1 1 0 0)))
+				     (lo_cos ("std::array<int,4>" (curly 1 0 0 1))))
+				 (declare (type "const auto " lo_sin lo_cos))
+				 (let ((re (? (^ (zs.real)
+						 (aref lo_sin (static_cast<int> lo_phase)))
+					      -1 1))
+				       (im (? (^ (zs.real)
+						 (aref lo_cos (static_cast<int> lo_phase)))
+					      -1 1)))
+				   (setf (aref in i)
+					 (std--complex<double>
+					  re im)))
+				 (incf lo_phase lo_rate)
+				 (when (<= 4 lo_phase)
+				   (decf lo_phase 4)))
+			       )))))
 		    (let ((out (fftw.fft in windowSize)))
 		      (if logScale
 			  (dotimes (i windowSize)
@@ -2134,12 +2133,7 @@
 				   "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
 				   )
 						      (* 128 1024 1024) 0))
-		  #+nil (file (initFile (string
-					;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
-				   ;; "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
-				   
-				   "/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
-				   ))))
+		  )
 	      ;(declare (type "static FFTWManager" fftw))
 	      )
 	    

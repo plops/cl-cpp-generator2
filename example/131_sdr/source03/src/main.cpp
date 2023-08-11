@@ -98,11 +98,10 @@ auto DrawMemory  = [] (){
 
 } 
  
-        ImPlot::SetNextAxisLimits(ImAxis_X1, 0, static_cast<int>(residentMemoryFifo.size()));
-    ImPlot::SetNextAxisLimits(ImAxis_Y3, *std::min_element(helpy.begin(), helpy.end()), *std::max_element(helpy.begin(), helpy.end()));
- 
     if ( ImPlot::BeginPlot("Resident Memory Usage") ) {
-                        ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), static_cast<int>(helpy.size()));
+                        ImPlot::SetupAxis(ImAxis_X1, "time", ImPlotAxisFlags_AutoFit);
+        ImPlot::SetupAxis(ImAxis_Y1, "memory", ImPlotAxisFlags_AutoFit);
+        ImPlot::PlotLine("Resident Memory", helpx.data(), helpy.data(), static_cast<int>(helpy.size()));
         ImPlot::EndPlot();
  
 } 
@@ -301,6 +300,18 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
     if ( realtimeDisplay ) {
                         for ( auto i = 0;i<windowSize;i+=1 ) {
                                     auto zs  = zfifo[i]; 
+            auto zr  = static_cast<double>(zs.real()); 
+            auto zi  = static_cast<double>(zs.imag()); 
+            auto z  = std::complex<double>(zr, zi); 
+                        in[i]=z;
+
+
+ 
+} 
+ 
+} else {
+                        for ( auto i = 0;i<windowSize;i+=1 ) {
+                                    auto zs  = file[(start+i)]; 
             auto zr  = static_cast<double>(zs.real()); 
             auto zi  = static_cast<double>(zs.imag()); 
             auto z  = std::complex<double>(zr, zi); 

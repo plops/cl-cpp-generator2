@@ -10,10 +10,8 @@
         if ( std::filesystem::exists(filename_) ) {
                         file_.open(filename, length, offset);
         if ( file_.is_open() ) {
-                                    std::cout<<"MMAP"<<" file_.size()='"<<file_.size()<<"' "<<" file_.alignment()='"<<file_.alignment()<<"' "<<" file_.data()[0]='"<<file_.data()[0]<<"' "<<"\n"<<std::flush;
-                        data_=reinterpret_cast<std::complex<short>*>(const_cast<char*>(file_.data()));
+                                                data_=reinterpret_cast<std::complex<short>*>(const_cast<char*>(file_.data()));
 
-            std::cout<<"entry mmap"<<" data_[0]='"<<data_[0]<<"' "<<"\n"<<std::flush;
                         ready_=true;
 
 
