@@ -5,10 +5,10 @@
 #include <iostream> 
  
 #include "MemoryMappedComplexShortFile.h" 
- MemoryMappedComplexShortFile::MemoryMappedComplexShortFile (const std::string& filename)         : filename_(filename){
+ MemoryMappedComplexShortFile::MemoryMappedComplexShortFile (const std::string& filename, size_t length, size_t offset)         : filename_(filename), length_(length), offset_(offset){
         std::cout<<"try to mmap file"<<" filename='"<<filename<<"' "<<" std::filesystem::exists(filename)='"<<std::filesystem::exists(filename)<<"' "<<"\n"<<std::flush;
         if ( std::filesystem::exists(filename_) ) {
-                        file_.open(filename);
+                        file_.open(filename, length, offset);
         if ( file_.is_open() ) {
                                                 data_=reinterpret_cast<std::complex<short>*>(const_cast<char*>(file_.data()));
 

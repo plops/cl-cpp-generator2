@@ -991,6 +991,8 @@
 	 (members `((file :type "boost::iostreams::mapped_file_source" :param nil)
 		    (data :type "std::complex<short>*" :initform-class nullptr :param nil)
 		    (filename :type "const std::string&" :param t)
+		    (length :type size_t :param t)
+		    (offset :type size_t :param t)
 		    (ready :type "bool" :initform-class false :param nil))))
     (write-class
      :dir (asdf:system-relative-pathname
@@ -1052,7 +1054,7 @@
 		 ,(lprint :msg "try to mmap file"
 			  :vars `(filename (std--filesystem--exists filename)))
 		 (when (std--filesystem--exists filename_)
-		   (file_.open filename)
+		   (file_.open filename length offset)
 		   (when (file_.is_open)
 		     (setf data_ (reinterpret_cast<std--complex<short>*> (const_cast<char*> (file_.data))))
 		     (setf ready_ true))))
@@ -2086,7 +2088,7 @@
 
      (let ((initFile (lambda (fn)
 		       (declare (capture ""))
-		       (let ((file (MemoryMappedComplexShortFile fn)))
+		       (let ((file (MemoryMappedComplexShortFile fn 400000 0)))
 			 (when (file.ready)
 			   ,(lprint :msg "first element"
 				    :vars `(fn (dot (aref file 0) (real)))))
@@ -2107,11 +2109,12 @@
 		    10.0d6)
 		  (codes (initGps sampleRate fftw))
 		  #+sdr (sdr (initSdr sampleRate))
-		  (file (initFile (string ;;"/mnt5/gps.samples.cs16.fs5456.if4092.dat"
-				   "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
+		  (file (initFile (string
+				   "/mnt5/gps.samples.cs16.fs5456.if4092.dat"
+				   ;; "/mnt5/gps/out_pnr4_3_31_202308061610.subset"
 				   
-				   ;"/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
-					  ))))
+					;"/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin"
+				   ))))
 	      ;(declare (type "static FFTWManager" fftw))
 	      )
 	    
