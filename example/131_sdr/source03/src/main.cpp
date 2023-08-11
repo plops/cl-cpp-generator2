@@ -298,31 +298,18 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
 } 
         auto lo_phase  = 0.    ; 
     auto lo_rate  = (lo_freq/sampleRate)*4; 
-    if ( realtimeDisplay ) {
-                        for ( auto i = 0;i<windowSize;i+=1 ) {
-                                    auto zs  = zfifo[i]; 
-            auto zr  = static_cast<double>(zs.real()); 
-            auto zi  = static_cast<double>(zs.imag()); 
-            auto z  = std::complex<double>(zr, zi); 
-                        in[i]=z;
+            for ( auto i = 0;i<windowSize;i+=1 ) {
+                        auto zs  = file[(start+i)]; 
+        auto zr  = static_cast<double>(zs.real()); 
+        auto zi  = static_cast<double>(zs.imag()); 
+        auto z  = std::complex<double>(zr, zi); 
+                in[i]=z;
 
 
  
 } 
  
-} else {
-                        for ( auto i = 0;i<windowSize;i+=1 ) {
-                                    auto zs  = file[(start+i)]; 
-            auto zr  = static_cast<double>(zs.real()); 
-            auto zi  = static_cast<double>(zs.imag()); 
-            auto z  = std::complex<double>(zr, zi); 
-                        in[i]=z;
-
-
  
-} 
- 
-} 
  
         auto out  = fftw.fft(in, windowSize); 
     if ( logScale ) {

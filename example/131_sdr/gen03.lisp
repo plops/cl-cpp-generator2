@@ -1750,8 +1750,8 @@
 
 		    (let ((lo_phase 0d0)
 			  (lo_rate (* (/ lo_freq sampleRate) 4)))
-		      (if realtimeDisplay
-			  (do0
+		      (#-sdr do0 #+sdr if #+sdr realtimeDisplay
+			  #+sdr (do0
 			   (dotimes (i windowSize)
 			     (let ((zs (aref zfifo i))
 				   (zr (static_cast<double> (zs.real)))
