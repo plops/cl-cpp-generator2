@@ -8,6 +8,9 @@
 
 class GpsCACodeGenerator  {
         public:
+            GpsCACodeGenerator (const GpsCACodeGenerator &) = delete;
+    GpsCACodeGenerator & operator= (const GpsCACodeGenerator &) = delete;
+ 
         explicit  GpsCACodeGenerator (const int prn)       ;   
         std::vector<bool> generate_sequence (size_t n)       ;   
         private:

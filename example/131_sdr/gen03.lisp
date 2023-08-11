@@ -163,6 +163,9 @@
 	     (comments "see Borre: A Software-defined GPS... p.106 for block diagram")
 	     (defclass ,name ()
 	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -331,6 +334,9 @@
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -450,6 +456,9 @@
      :code `(do0
 	     (defclass ,name ()
 	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
@@ -602,8 +611,10 @@
 		  iomanip))
      :code `(do0
 	     (defclass ,name ()
-	       
 	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
 	       (defmethod ,name (,@(remove-if #'null
 				    (loop for e in members
 					  collect
