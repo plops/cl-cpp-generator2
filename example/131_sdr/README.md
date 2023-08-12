@@ -689,3 +689,31 @@ GPS applications, modern systems often have built-in methods to
 measure and correct for these imperfections. It's essential to address
 these challenges to ensure reliable and accurate GPS reception and
 decoding.
+
+
+
+# Pipeline
+
+Create a pipeline to receive a single GPS satellite.
+
+A) read adc with soapysdr (output <N> complex samples per block)
+B) maximum filter (reads 2048 samples in, 200 samples out)
+C) fft correlation with PRN sequence (reads 10000 samples in, outputs doppler shift and code phase)
+D) gps tracker (block of 1024 samples in, outputs: prompt signal, current code phase, current doppler)
+E) visualizer
+
+Pipelines:
+P1: A->B->E
+P2a: A->C->E
+P2b: A->D->E
+
+P2a gets initial lock on satellite. Once established pipeline P2b takes over.
+Use std::async to start parallel execution where possible.
+Use boost::lockfree::queue for the output of A.
+Use boost spsc_queue for B->E, C->E and D->E.
+
+In case of overflow drop blocks in P1, C->E or D->E (increasing
+priority). Visualization isn't as important as keeping GPS
+lock. Visualization shall always show the most recent block (so drop
+intermediate blocks if necessary).
+
