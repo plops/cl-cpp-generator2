@@ -1112,100 +1112,85 @@
 		    (input-queue :type "boost::lockfree::spsc_queue<In>" :initform queue_size_)
 		    (output-queue :type "boost::lockfree::spsc_queue<Out>" :initform queue_size_)
 		    )))
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name name
-     :headers `()
-     :header-preamble `(do0
-			(include<> future
-				   vector
-				   complex
-				   boost/lockfree/queue.hpp
-				   boost/lockfree/spsc_queue.hpp
-				   )
-			)
-     :implementation-preamble
+    (write-source
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2
+      (merge-pathnames (format nil "~a.h" name)
+		       *source-dir*))
      `(do0
-       (include<> 
-		  filesystem
-		  fstream
-		  iostream)
-       )
-     :code `(do0
-	     (comments "object-oriented approach to encapsulate the logic of the queues inside pipeline blocks. The goal is to hide the details of the queues within the implementation of the pipeline blocks themselves, making the pipeline definition more abstract and extensible.")
-	     (defclass ,name ()
-	       "public:"
-	       (do0 ;; delete copy constructors 
-		(space ,name (paren (space const ,name &)) = delete)
-		(space ,name & operator= (paren (space const ,name &)) = delete))
-	       (defmethod ,name (,@(remove-if #'null
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (name &key type param initform initform-class) e
-					    (let ((nname (intern
-							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name))))))
-					      (when param
-						nname))))))
-		 (declare
-		  ,@(remove-if #'null
-			       (loop for e in members
-				     collect
-				     (destructuring-bind (name &key type param initform initform-class) e
-				       (let ((nname (intern
-						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name))))))
-					 (when param
-					   
-					   `(type ,type ,nname))))))
-		  (construct
+       (comments "object-oriented approach to encapsulate the logic of the queues inside pipeline blocks. The goal is to hide the details of the queues within the implementation of the pipeline blocks themselves, making the pipeline definition more abstract and extensible.")
+       (include<> future
+		  vector
+		  complex
+		  boost/lockfree/queue.hpp
+		  boost/lockfree/spsc_queue.hpp
+		  )
+       (space "template<typename In, typename Out>"
+	      (defclass+ ,name ()
+		"public:"
+		(do0 ;; delete copy constructors 
+		 (space ,name (paren (space const ,name &)) = delete)
+		 (space ,name & operator= (paren (space const ,name &)) = delete))
+		(defmethod ,name (,@(remove-if #'null
+				     (loop for e in members
+					   collect
+					   (destructuring-bind (name &key type param initform initform-class) e
+					     (let ((nname (intern
+							   (string-upcase
+							    (cl-change-case:snake-case (format nil "~a" name))))))
+					       (when param
+						 nname))))))
+		  (declare
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
 				      (destructuring-bind (name &key type param initform initform-class) e
-					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					      (nname_ (format nil "~a_"
-							      (cl-change-case:snake-case (format nil "~a" name)))))
-					  (cond
-					    (param
-					     `(,nname_ ,nname))
-					    (initform
-					     `(,nname_ ,initform)))))))
-		   )
-		  (explicit)	    
-		  (values :constructor)))
-
-	       (defmethod push (data)
-		 (declare (type "const In&" data))
-		 (while (!input_queue_.push data)))
-
-	       (defmethod pop (data)
-		 (declare (type "const Out&" data)
-			  (values bool))
-		 (return (output_queue_.pop data)))
-
-	       (defmethod execute ()
-		 (let ((input_data (In)))
-		   (while (input_queue_.pop input_data)
-			  (let ((result (func input_data)))
-			    (while (!output_queue_.push result))))))
-	       
-	       
-	       "private:"
-	       
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (name &key type param initform initform-class) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      (if initform-class
-					  `(space ,type (setf ,nname_ ,initform-class))
-					  `(space ,type ,nname_)))))))))
-
-    )
+					(let ((nname (intern
+						      (string-upcase
+						       (cl-change-case:snake-case (format nil "~a" name))))))
+					  (when param
+					    
+					    `(type ,type ,nname))))))
+		   (construct
+		    ,@(remove-if #'null
+				 (loop for e in members
+				       collect
+				       (destructuring-bind (name &key type param initform initform-class) e
+					 (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					       (nname_ (format nil "~a_"
+							       (cl-change-case:snake-case (format nil "~a" name)))))
+					   (cond
+					     (param
+					      `(,nname_ ,nname))
+					     (initform
+					      `(,nname_ ,initform))))))))
+		   (explicit)	    
+		   (values :constructor)))
+		(defmethod push (data)
+		  (declare (type "const In&" data))
+		  (while (!input_queue_.push data)))
+		(defmethod pop (data)
+		  (declare (type "const Out&" data)
+			   (values bool))
+		  (return (output_queue_.pop data)))
+		(defmethod execute ()
+		  (let ((input_data (In)))
+		    (while (input_queue_.pop input_data)
+			   (let ((result (func input_data)))
+			     (while (!output_queue_.push result))))))
+		"private:"
+		,@(remove-if #'null
+			     (loop for e in members
+				   collect
+				   (destructuring-bind (name &key type param initform initform-class) e
+				     (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					   (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				       (if initform-class
+					   `(space ,type (setf ,nname_ ,initform-class))
+					   `(space ,type ,nname_)))))))))
+     :omit-parens t
+     :format nil
+     :tidy nil))
 
   (let* ((name `FFTWManager)
 	 (members `(#+memoize-plan (plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
