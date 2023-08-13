@@ -190,6 +190,7 @@
 
 
      (let ((Sim (lambda ()
+		  (declare (capture ""))
 		  (let ((phase_offset .8)
 			(frequency_offset .01)
 			(n 40)
@@ -249,6 +250,7 @@
 		  ))))
      
      (let ((DrawPlot (lambda ()
+		       (declare (capture ""))
 		       (handler-case
 			   (do0
 			    (ImGui--Text (string "hello"))
@@ -258,6 +260,7 @@
 					(e.what))))))))
 
      (let ((initGL (lambda ()
+		     (declare (capture ""))
 		     (do0 (glfwSetErrorCallback glfw_error_callback)
 			  (when (== 0 (glfwInit))
 			    ,(lprint :msg "glfw init failed"))

@@ -285,11 +285,11 @@ auto SelectSatellites  = [] (){
         return selectedSatellites;
 }; 
  
-auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto &fftw, auto &x, auto &y1, auto &y2, auto &zfifo, auto &file, auto start, auto logScale, auto &selectedSatellites){
+auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, auto &fftw, auto sdr, auto &x, auto &y1, auto &y2, auto &zfifo, auto &file, auto start, auto logScale, auto &selectedSatellites){
             auto in  = std::vector<std::complex<double>>(windowSize); 
     auto gps_freq  = 1.575420e+9; 
     static double lo_freq  = 4.0920e+6; 
-    static double centerFrequency  = gps_freq-lo_freq; 
+    static double centerFrequency  = realtimeDisplay ? sdr->get_frequency() : (gps_freq-lo_freq); 
     auto windowSize2  = windowSize/2; 
     for ( auto i = 0;i<windowSize;i+=1 ) {
                         x[i]=centerFrequency+sampleRate*(static_cast<double>(i-windowSize2)/windowSize);
@@ -298,18 +298,31 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
 } 
         auto lo_phase  = 0.    ; 
     auto lo_rate  = (lo_freq/sampleRate)*4; 
-            for ( auto i = 0;i<windowSize;i+=1 ) {
-                        auto zs  = file[(start+i)]; 
-        auto zr  = static_cast<double>(zs.real()); 
-        auto zi  = static_cast<double>(zs.imag()); 
-        auto z  = std::complex<double>(zr, zi); 
-                in[i]=z;
+    if ( realtimeDisplay ) {
+                        for ( auto i = 0;i<windowSize;i+=1 ) {
+                                    auto zs  = zfifo[i]; 
+            auto zr  = static_cast<double>(zs.real()); 
+            auto zi  = static_cast<double>(zs.imag()); 
+            auto z  = std::complex<double>(zr, zi); 
+                        in[i]=z;
 
 
  
 } 
  
+} else {
+                        for ( auto i = 0;i<windowSize;i+=1 ) {
+                                    auto zs  = file[(start+i)]; 
+            auto zr  = static_cast<double>(zs.real()); 
+            auto zi  = static_cast<double>(zs.imag()); 
+            auto z  = std::complex<double>(zr, zi); 
+                        in[i]=z;
+
+
  
+} 
+ 
+} 
  
         auto out  = fftw.fft(in, windowSize); 
     if ( logScale ) {
@@ -373,11 +386,17 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
                 auto xmouse  = ImPlot::GetPlotMousePos().x; 
  
         if ( ImPlot::IsPlotHovered()&&(ImGui::IsMouseClicked(2)||ImGui::IsMouseDragging(2)) ) {
-                                                                        lo_freq=(xmouse-centerFrequency);
+                                    if ( realtimeDisplay ) {
+                                                                centerFrequency=xmouse;
+
+                sdr->set_frequency(centerFrequency);
+ 
+} else {
+                                                                lo_freq=(xmouse-centerFrequency);
 
 
  
- 
+} 
  
 } 
  
@@ -389,7 +408,7 @@ auto DrawFourier  = [] (auto sampleRate, auto realtimeDisplay, auto windowSize, 
  
 }; 
  
-auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, auto windowSize, auto fftw, auto sampleRate){
+auto DrawCrossCorrelation  = [] (auto &codes, auto &out, auto &selectedSatellites, auto windowSize, auto &fftw, auto sampleRate){
             auto codesSize  = codes[0].size(); 
     if ( static_cast<size_t>(windowSize)==codesSize ) {
                 if ( ImPlot::BeginPlot("Cross-Correlations with PRN sequences") ) {
@@ -492,23 +511,33 @@ auto DrawCrossCorrelation  = [] (auto codes, auto out, auto selectedSatellites, 
 }; 
  
 
-void DrawPlot (MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
+void DrawPlot (MemoryMappedComplexShortFile& file, std::shared_ptr<SdrManager> sdr, FFTWManager& fftw, const std::vector<std::vector<std::complex<double>>> & codes, double sampleRate)        {
         try {
                                 DrawMemory();
+                DrawSdrInfo(sdr);
+                auto automaticGainMode  = SelectAutoGain(sdr); 
+ 
+                auto [gainIF, gainRf]  = SelectGain(sdr); 
+ 
+ 
                 auto [start, maxStart]  = SelectStart(file); 
  
                 auto windowSize  = SelectWindowSize(); 
  
-                auto realtimeDisplay  = false; 
+        SetBandwidth(sdr);
+                auto realtimeDisplay  = SelectRealtimeDisplay(file); 
  
                 auto x  = std::vector<double>(windowSize); 
         auto y1  = std::vector<double>(windowSize); 
         auto y2  = std::vector<double>(windowSize); 
         auto zfifo  = std::vector<std::complex<short>>(windowSize); 
-                if ( file.ready() ) {
-                        if ( (start+windowSize<=maxStart&&0<windowSize) ) {
-                                for ( auto i = 0;i<windowSize;i+=1 ) {
-                                                            auto z  = file[(start+i)]; 
+        if ( realtimeDisplay ) {
+                        sdr->processFifo([&] (const std::deque<std::complex<short>> & fifo){
+                                                auto n  = windowSize; 
+                for ( auto i = 0;i<n;i+=1 ) {
+                                                            auto z  = fifo[i]; 
+                                        zfifo[i]=z;
+
                                         x[i]=i;
                     y1[i]=z.real();
                     y2[i]=z.imag();
@@ -516,13 +545,27 @@ void DrawPlot (MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std:
 
  
 } 
-} else {
-                                ImGui::Text("window outside of range stored in file start=%d windowSize=%d maxStart=%d", start, windowSize, maxStart);
-} 
-} else {
-                        ImGui::Text("file not ready");
-} 
  
+}, windowSize);
+} else {
+                        if ( file.ready() ) {
+                                if ( (start+windowSize<=maxStart&&0<windowSize) ) {
+                                        for ( auto i = 0;i<windowSize;i+=1 ) {
+                                                                        auto z  = file[(start+i)]; 
+                                                x[i]=i;
+                        y1[i]=z.real();
+                        y2[i]=z.imag();
+
+
+ 
+} 
+} else {
+                                        ImGui::Text("window outside of range stored in file start=%d windowSize=%d maxStart=%d", start, windowSize, maxStart);
+} 
+} else {
+                                ImGui::Text("file not ready");
+} 
+} 
         DrawWaveform(x, y1, y2);
  
                 auto logScale  = SelectLogScale(); 
@@ -530,7 +573,7 @@ void DrawPlot (MemoryMappedComplexShortFile& file, FFTWManager& fftw, const std:
                 auto selectedSatellites  = SelectSatellites(); 
  
  
-                auto out  = DrawFourier(sampleRate, realtimeDisplay, windowSize, fftw, x, y1, y2, zfifo, file, start, logScale, selectedSatellites); 
+                auto out  = DrawFourier(sampleRate, realtimeDisplay, windowSize, fftw, sdr, x, y1, y2, zfifo, file, start, logScale, selectedSatellites); 
  
  
 }catch (const std::exception& e) {
@@ -648,6 +691,7 @@ int main (int argc, char** argv)        {
         auto *window  = initGL(); 
         auto sampleRate  = 1.00e+7; 
         auto codes  = initGps(sampleRate, fftw); 
+        auto sdr  = initSdr(sampleRate); 
         auto file  = MemoryMappedComplexShortFile("/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin", 128*1024*1024, 0); 
  
         std::cout<<"access mmap"<<" file[0]='"<<file[0]<<"' "<<"\n"<<std::flush;
@@ -656,7 +700,7 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_NewFrame();
                         ImGui_ImplGlfw_NewFrame();
                         ImGui::NewFrame();
-                        DrawPlot(file, fftw, codes, sampleRate);
+                        DrawPlot(file, sdr, fftw, codes, sampleRate);
                         ImGui::Render();
                                     auto w  = 0; 
             auto h  = 0; 
@@ -667,6 +711,9 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                         glfwSwapBuffers(window);
 } 
+                sdr->stopCapture();
+        sdr->close();
+ 
                 ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImPlot::DestroyContext();

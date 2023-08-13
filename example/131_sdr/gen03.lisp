@@ -21,7 +21,7 @@
 						    :guru-plan
 						    :memoize-plan
 						    ;:store
-						    ;:sdr
+						    :sdr
 						    )))
 
 
@@ -1106,6 +1106,107 @@
 
     )
 
+  (let* ((name `PipelineBlock)
+	 (members `((func :type "std::function<Out(In)>" :param t)
+		    (queue-size :type size_t :param t)
+		    (input-queue :type "boost::lockfree::spsc_queue<In>" :initform queue_size_)
+		    (output-queue :type "boost::lockfree::spsc_queue<Out>" :initform queue_size_)
+		    )))
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> future
+				   vector
+				   complex
+				   boost/lockfree/queue.hpp
+				   boost/lockfree/spsc_queue.hpp
+				   )
+			)
+     :implementation-preamble
+     `(do0
+       (include<> 
+		  filesystem
+		  fstream
+		  iostream)
+       )
+     :code `(do0
+	     (comments "object-oriented approach to encapsulate the logic of the queues inside pipeline blocks. The goal is to hide the details of the queues within the implementation of the pipeline blocks themselves, making the pipeline definition more abstract and extensible.")
+	     (defclass ,name ()
+	       "public:"
+	       (do0 ;; delete copy constructors 
+		(space ,name (paren (space const ,name &)) = delete)
+		(space ,name & operator= (paren (space const ,name &)) = delete))
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param initform initform-class) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param initform initform-class) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param initform initform-class) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname))
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)))
+
+	       (defmethod push (data)
+		 (declare (type "const In&" data))
+		 (while (!input_queue_.push data)))
+
+	       (defmethod pop (data)
+		 (declare (type "const Out&" data)
+			  (values bool))
+		 (return (output_queue_.pop data)))
+
+	       (defmethod execute ()
+		 (let ((input_data (In)))
+		   (while (input_queue_.pop input_data)
+			  (let ((result (func input_data)))
+			    (while (!output_queue_.push result))))))
+	       
+	       
+	       "private:"
+	       
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param initform initform-class) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      (if initform-class
+					  `(space ,type (setf ,nname_ ,initform-class))
+					  `(space ,type ,nname_)))))))))
+
+    )
+
   (let* ((name `FFTWManager)
 	 (members `(#+memoize-plan (plans :type "std::map<std::pair<int,int>,fftw_plan>" :param nil)
 					;(window_size :type "int" :initform 512 :param t)
@@ -1210,29 +1311,29 @@
 				  )
 		       collect
 		       (destructuring-bind (&key name dir) e
-			`(defmethod ,name (in windowSize)
-			  (declare (type size_t windowSize)
-				   #-memoize-plan (const)
-				   (type "std::vector<std::complex<double>>&" in)
-				   (values "std::vector<std::complex<double>>"))
-			  (when (!= windowSize (in.size))
-			    (throw (std--invalid_argument (string "Input size must match window size."))))
-			  (let ((out (std--vector<std--complex<double>> windowSize))
-				(in1 ,(case name
-				       (`fft `in)
-				       (`ifft `(fftshift in))))
-				#+nil ((pout (reinterpret_cast<fftw_complex*>
-					      (const_cast<std--complex<double>*> (out.data))))
-					(pin (reinterpret_cast<fftw_complex*>
-					      (const_cast<std--complex<double>*> (in.data))))))
-			    (fftw_execute_dft (get_plan windowSize ,dir number_threads_)
+			 `(defmethod ,name (in windowSize)
+			    (declare (type size_t windowSize)
+				     #-memoize-plan (const)
+				     (type "std::vector<std::complex<double>>&" in)
+				     (values "std::vector<std::complex<double>>"))
+			    (when (!= windowSize (in.size))
+			      (throw (std--invalid_argument (string "Input size must match window size."))))
+			    (let ((out (std--vector<std--complex<double>> windowSize))
+				  (in1 ,(case name
+					  (`fft `in)
+					  (`ifft `(fftshift in))))
+				  #+nil ((pout (reinterpret_cast<fftw_complex*>
+						(const_cast<std--complex<double>*> (out.data))))
+					  (pin (reinterpret_cast<fftw_complex*>
+						(const_cast<std--complex<double>*> (in.data))))))
+			      (fftw_execute_dft (get_plan windowSize ,dir number_threads_)
 					;pin pout
-					      (reinterpret_cast<fftw_complex*> (ref (aref in1 0)))
-					      (reinterpret_cast<fftw_complex*> (ref (aref out 0)))
-					      )
-			    (return ,(case name
-				       (`fft `(fftshift out))
-				       (`ifft `out)))))))
+						(reinterpret_cast<fftw_complex*> (ref (aref in1 0)))
+						(reinterpret_cast<fftw_complex*> (ref (aref out 0)))
+						)
+			      (return ,(case name
+					 (`fft `(fftshift out))
+					 (`ifft `out)))))))
 
 	       #+nil
 	       (defmethod ifft (in windowSize)
@@ -1274,7 +1375,7 @@
 			  (values fftw_plan)
 			  #-memoize-plan (const))
 		 #+nil ,(lprint :msg "get_plan"
-			  :vars `(windowSize direction nThreads))
+				:vars `(windowSize direction nThreads))
 		 (when (<= windowSize 0)
 		   (throw (std--invalid_argument (string "window size must be positive"))))
 
@@ -1291,88 +1392,88 @@
 		       (do0 #+memoize-plan ,(lprint :msg "The plan hasn't been used before. Try to load wisdom or generate it."
 						    :vars `(windowSize nThreads)))
 
-			   (do0 (let ((wisdom_filename (+ (string "wisdom_")
-							  (std--to_string windowSize)
-							  (string ".wis")))))
-				(when (< 1 nThreads)
-				  (setf wisdom_filename
-					(+ (string "wisdom_")
-					   (std--to_string windowSize)
-					   (string "_threads")
-					   (std--to_string nThreads)
-					   (string ".wis")))))
+		       (do0 (let ((wisdom_filename (+ (string "wisdom_")
+						      (std--to_string windowSize)
+						      (string ".wis")))))
+			    (when (< 1 nThreads)
+			      (setf wisdom_filename
+				    (+ (string "wisdom_")
+				       (std--to_string windowSize)
+				       (string "_threads")
+				       (std--to_string nThreads)
+				       (string ".wis")))))
 			   
-			   (let ((in0 ("std::vector<std::complex<double>>" windowSize))
-				 (out0 ("std::vector<std::complex<double>>" windowSize))
-				 #+nil ((*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
-				   (*out ("reinterpret_cast<double(*)[2]>" (out0.data)))))
+		       (let ((in0 ("std::vector<std::complex<double>>" windowSize))
+			     (out0 ("std::vector<std::complex<double>>" windowSize))
+			     #+nil ((*in ("reinterpret_cast<double(*)[2]>" (in0.data)))
+				     (*out ("reinterpret_cast<double(*)[2]>" (out0.data)))))
 			     
-			     (let ((wisdomFile (std--ifstream wisdom_filename)))
-			       (if (wisdomFile.good)
-				   (do0 #+nil ,(lprint :msg "read wisdom from existing file"
-						       :vars `(wisdom_filename))
-					(wisdomFile.close)
-					(fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
-				   ,(lprint :msg "can't find wisdom file"
-					    :vars `(wisdom_filename)))
-			       (if (< 1 nThreads)
-				   (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
-						       :vars `(nThreads))
-					(fftw_plan_with_nthreads nThreads))
-				   #+nil ,(lprint :msg "plan 1d fft without threads"
-						  :vars `(nThreads)))
-			       #-guru-plan (let ((p (fftw_plan_dft_1d windowSize
-								      ;in out
-								      (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
-								      (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
-								      direction ;FFTW_FORWARD
-								      FFTW_MEASURE
-								      ))))
-			       #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n (static_cast<int> windowSize)
-											  :is 1
-											  :os 1)))
-						 (p 
-						   (fftw_plan_guru_dft 1 ;; rank
-								       &dim ;; dims
-								       0 ;; howmany_rank
-								       nullptr ;; howmany_dims
-								       ;; in out
-								       (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
-								       (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
-								       direction ;FFTW_FORWARD ;; sign
-								       FFTW_MEASURE ;; flags
-								       #+nil (or FFTW_MEASURE
-										 FFTW_UNALIGNED)
-								       )))
-					     )
-			       (if (== nullptr p)
-				   ,(lprint :msg "error: plan not successfully created")
-				   (do0
-				    (comments "plan successfully created")
-				    #+nil,(lprint :msg "plan successfully created"
-					     :vars `(windowSize nThreads p))))
-			       (unless (wisdomFile.good)
-				 ,(lprint :msg "store wisdom to file"
-					  :vars `(wisdom_filename))
-				 (wisdomFile.close)
-				 (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
-			       )
-			     (do0 (do0
+			 (let ((wisdomFile (std--ifstream wisdom_filename)))
+			   (if (wisdomFile.good)
+			       (do0 #+nil ,(lprint :msg "read wisdom from existing file"
+						   :vars `(wisdom_filename))
+				    (wisdomFile.close)
+				    (fftw_import_wisdom_from_filename (wisdom_filename.c_str)))
+			       ,(lprint :msg "can't find wisdom file"
+					:vars `(wisdom_filename)))
+			   (if (< 1 nThreads)
+			       (do0 #+nil ,(lprint :msg "plan 1d fft with threads"
+						   :vars `(nThreads))
+				    (fftw_plan_with_nthreads nThreads))
+			       #+nil ,(lprint :msg "plan 1d fft without threads"
+					      :vars `(nThreads)))
+			   #-guru-plan (let ((p (fftw_plan_dft_1d windowSize
+					;in out
+								  (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
+								  (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
+								  direction ;FFTW_FORWARD
+								  FFTW_MEASURE
+								  ))))
+			   #+guru-plan (let ((dim (fftw_iodim (designated-initializer :n (static_cast<int> windowSize)
+										      :is 1
+										      :os 1)))
+					     (p 
+					       (fftw_plan_guru_dft 1 ;; rank
+								   &dim ;; dims
+								   0 ;; howmany_rank
+								   nullptr ;; howmany_dims
+								   ;; in out
+								   (reinterpret_cast<fftw_complex*> (ref (aref in0 0)))
+								   (reinterpret_cast<fftw_complex*> (ref (aref out0 0)))
+								   direction ;FFTW_FORWARD ;; sign
+								   FFTW_MEASURE ;; flags
+								   #+nil (or FFTW_MEASURE
+									     FFTW_UNALIGNED)
+								   )))
+					 )
+			   (if (== nullptr p)
+			       ,(lprint :msg "error: plan not successfully created")
+			       (do0
+				(comments "plan successfully created")
+				#+nil,(lprint :msg "plan successfully created"
+					      :vars `(windowSize nThreads p))))
+			   (unless (wisdomFile.good)
+			     ,(lprint :msg "store wisdom to file"
+				      :vars `(wisdom_filename))
+			     (wisdomFile.close)
+			     (fftw_export_wisdom_to_filename (wisdom_filename.c_str)))
+			   )
+			 (do0 (do0
 					;,(lprint :msg "free in and out")
 				   
-				   #-memoize-plan (return p)
-				   )
-				  #+memoize-plan(do0
-						 #+nil ,(lprint :msg "store plan in class"
-							  :vars `(windowSize nThreads))
-						 (let ((insertResult (dot plans_
-									  (insert (curly (curly windowSize nThreads) p))
-									  )))
-						   (setf iter (dot insertResult first))
-						   #+nil ,(lprint :msg "inserted new key"
-							    :vars `((plans_.size) insertResult.second))))
-				  )
-			     ))
+			       #-memoize-plan (return p)
+			       )
+			      #+memoize-plan(do0
+					     #+nil ,(lprint :msg "store plan in class"
+							    :vars `(windowSize nThreads))
+					     (let ((insertResult (dot plans_
+								      (insert (curly (curly windowSize nThreads) p))
+								      )))
+					       (setf iter (dot insertResult first))
+					       #+nil ,(lprint :msg "inserted new key"
+							      :vars `((plans_.size) insertResult.second))))
+			      )
+			 ))
 		      
 		      
 		      #+nil (do0
@@ -1845,7 +1946,7 @@
 
 
 	(let ((DrawCrossCorrelation
-			   (lambda (codes out selectedSatellites windowSize fftw sampleRate)
+			   (lambda (&codes &out &selectedSatellites windowSize &fftw sampleRate)
 			     (declare (capture ""))
 			     (let ((codesSize (dot (aref codes 0) (size))))
 			       (if (== (static_cast<size_t> windowSize) codesSize)
