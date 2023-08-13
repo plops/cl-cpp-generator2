@@ -1173,9 +1173,12 @@
 		  (declare (type "const Out&" data)
 			   (values bool))
 		  (return (output_queue_.pop data)))
-		(defmethod execute ()
+		(defmethod execute (stoken)
+		  (declare (type "std::stop_token" stoken))
 		  (let ((input_data (In)))
-		    (while (input_queue_.pop input_data)
+		    (while (logand
+			    (!stoken.stop_requested)
+			    (input_queue_.pop input_data))
 			   (let ((result (func input_data)))
 			     (while (!output_queue_.push result))))))
 		"private:"
@@ -1525,7 +1528,8 @@
       MemoryMappedComplexShortFile.h
       FFTWManager.h
       SdrManager.h
-      ProcessMemoryInfo.h)
+      ProcessMemoryInfo.h
+      PipelineBlock.h)
      
 
      (defun glfw_error_callback (err desc)
@@ -2202,8 +2206,7 @@
 			(stopDaemon)
 			(startDaemonIfNotRunning)
 			,(lprint :msg "initialize sdr manager")
-			(sdr->initialize)
-			
+			(sdr->initialize)		
 			(sdr->set_gain_mode false)
 			(sdr->setGainIF 20)
 			(sdr->setGainRF 0)
@@ -2248,7 +2251,27 @@
 		  )
 	      ;(declare (type "static FFTWManager" fftw))
 	      )
-	    
+
+
+	    #+sdr
+	    (do0
+	     (let ((fftFilter (lambda (input)
+				(declare (type "const std::vector<std::complex<float>>&" input)
+					 (values "std::vector<float>"))
+				(let ((n (input.size))
+				      (z (fftw.fft input n))
+				      (out (std--vector<float> n)))
+				  (dotimes (i n)
+				    (setf (aref out i) (* 10d0 (log10 (/ (std--abs (aref z i))
+									 (std--sqrt n))))))
+				  (return out)
+				  
+				  )
+				))
+		   (blockAtoB ("PipelineBlock<std::vector<std::complex<float>>,std::vector<float>>" fftFilter 10000))
+		   (threadAtoB (std--jthread (lambda ()
+					      (blockAtoB.execute))))))
+	     )
 	    
 	    ,(lprint :msg "access mmap" :vars `((aref file 0)))
 	    (while (!glfwWindowShouldClose window)
@@ -2265,9 +2288,12 @@
 		     (glClear GL_COLOR_BUFFER_BIT))
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window))
-	    #+sdr (do0 (sdr->stopCapture)
-		 (sdr->close))
+	    #+sdr (do0
+		   (threadAtoB.join)
+		   (sdr->stopCapture)
+		   (sdr->close))
 	    (do0
+	     
 	     (ImGui_ImplOpenGL3_Shutdown)
 	     (ImGui_ImplGlfw_Shutdown)
 	     (ImPlot--DestroyContext)
