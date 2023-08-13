@@ -2281,6 +2281,12 @@
 		   (ImGui_ImplOpenGL3_NewFrame)
 		   (ImGui_ImplGlfw_NewFrame)
 		   (ImGui--NewFrame)
+		   #+nil
+		   (do0
+		    (blockAtoB.push data)
+		    (let ((result (std--vector<float>)))
+		      (when (blockAtoB.pop result)
+			(visualize result))))
 		   (DrawPlot file #+sdr sdr fftw codes sampleRate)
 		   (ImGui--Render)
 		   (let ((w 0)
