@@ -19,7 +19,7 @@
     std::copy(in.begin(), mid, out.begin()+std::distance(mid, in.end()));
     return out;
  
-}std::vector<std::complex<double>> FFTWManager::fft (std::vector<std::complex<double>>& in, size_t windowSize)         {
+}std::vector<std::complex<double>> FFTWManager::fft (const std::vector<std::complex<double>>& in, size_t windowSize)         {
         if ( windowSize!=in.size() ) {
                         throw std::invalid_argument("Input size must match window size.");
  
@@ -29,7 +29,7 @@
     fftw_execute_dft(get_plan(windowSize, FFTW_FORWARD, number_threads_), reinterpret_cast<fftw_complex*>(&in1[0]), reinterpret_cast<fftw_complex*>(&out[0]));
     return fftshift(out);
  
-}std::vector<std::complex<double>> FFTWManager::ifft (std::vector<std::complex<double>>& in, size_t windowSize)         {
+}std::vector<std::complex<double>> FFTWManager::ifft (const std::vector<std::complex<double>>& in, size_t windowSize)         {
         if ( windowSize!=in.size() ) {
                         throw std::invalid_argument("Input size must match window size.");
  

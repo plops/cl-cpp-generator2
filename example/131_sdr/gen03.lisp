@@ -1179,7 +1179,7 @@
 		    (while (logand
 			    (!stoken.stop_requested)
 			    (input_queue_.pop input_data))
-			   (let ((result (func input_data)))
+			   (let ((result (func_ input_data)))
 			     (while (!output_queue_.push result))))))
 		"private:"
 		,@(remove-if #'null
@@ -1302,7 +1302,7 @@
 			 `(defmethod ,name (in windowSize)
 			    (declare (type size_t windowSize)
 				     #-memoize-plan (const)
-				     (type "std::vector<std::complex<double>>&" in)
+				     (type "const std::vector<std::complex<double>>&" in)
 				     (values "std::vector<std::complex<double>>"))
 			    (when (!= windowSize (in.size))
 			      (throw (std--invalid_argument (string "Input size must match window size."))))
@@ -2256,21 +2256,23 @@
 	    #+sdr
 	    (do0
 	     (let ((fftFilter (lambda (input)
-				(declare (type "const std::vector<std::complex<float>>&" input)
-					 (values "std::vector<float>"))
+				(declare (type "const std::vector<std::complex<double>>&" input)
+					 ;(values "std::vector<float>")
+					 )
 				(let ((n (input.size))
 				      (z (fftw.fft input n))
 				      (out (std--vector<float> n)))
 				  (dotimes (i n)
-				    (setf (aref out i) (* 10d0 (log10 (/ (std--abs (aref z i))
-									 (std--sqrt n))))))
+				    (setf (aref out i) (static_cast<float> (* 10d0 (log10 (/ (std--abs (aref z i))
+									  (std--sqrt n)))))))
 				  (return out)
 				  
 				  )
 				))
-		   (blockAtoB ("PipelineBlock<std::vector<std::complex<float>>,std::vector<float>>" fftFilter 10000))
-		   (threadAtoB (std--jthread (lambda ()
-					      (blockAtoB.execute))))))
+		   (blockAtoB ("PipelineBlock<std::vector<std::complex<double>>,std::vector<float>>" fftFilter 3))
+		   (threadAtoB (std--jthread (lambda (stoken)
+					       (declare (type "std::stop_token" stoken))
+					       (blockAtoB.execute stoken))))))
 	     )
 	    
 	    ,(lprint :msg "access mmap" :vars `((aref file 0)))
@@ -2289,7 +2291,6 @@
 		   (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		   (glfwSwapBuffers window))
 	    #+sdr (do0
-		   (threadAtoB.join)
 		   (sdr->stopCapture)
 		   (sdr->close))
 	    (do0

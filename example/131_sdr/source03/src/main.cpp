@@ -695,21 +695,21 @@ int main (int argc, char** argv)        {
         auto sdr  = initSdr(sampleRate); 
         auto file  = MemoryMappedComplexShortFile("/mnt5/capturedData_L1_rate10MHz_bw5MHz_iq_short.bin", 128*1024*1024, 0); 
  
-                        auto fftFilter  = [&] (const std::vector<std::complex<float>>& input)-> std::vector<float> {
+                        auto fftFilter  = [&] (const std::vector<std::complex<double>>& input){
                                     auto n  = input.size(); 
             auto z  = fftw.fft(input, n); 
             auto out  = std::vector<float>(n); 
             for ( auto i = 0;i<n;i+=1 ) {
-                                                out[i]=10.    *log10(std::abs(z[i])/std::sqrt(n));
+                                                out[i]=static_cast<float>(10.    *log10(std::abs(z[i])/std::sqrt(n)));
 
 
 } 
             return out;
  
 }; 
-        auto blockAtoB  = PipelineBlock<std::vector<std::complex<float>>,std::vector<float>>(fftFilter, 10000); 
-        auto threadAtoB  = std::jthread([&] (){
-                        blockAtoB.execute();
+        auto blockAtoB  = PipelineBlock<std::vector<std::complex<double>>,std::vector<float>>(fftFilter, 3); 
+        auto threadAtoB  = std::jthread([&] (std::stop_token stoken){
+                        blockAtoB.execute(stoken);
 }); 
  
  
@@ -730,8 +730,7 @@ int main (int argc, char** argv)        {
                         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                         glfwSwapBuffers(window);
 } 
-                threadAtoB.join();
-        sdr->stopCapture();
+                sdr->stopCapture();
         sdr->close();
  
                 ImGui_ImplOpenGL3_Shutdown();
