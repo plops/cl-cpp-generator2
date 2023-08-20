@@ -17,3 +17,7 @@ cmake .. \
   -DCMAKE_INSTALL_PREFIX=/home/martin/moustrap
 
 ```
+
+# References
+
+https://news.ycombinator.com/item?id=37194317
