@@ -17,7 +17,8 @@ else()
   # Fallback to pkg-config
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(GRPC REQUIRED grpc++)
-  
+  pkg_check_modules(PROTOBUF REQUIRED protobuf)
+
   message(STATUS "Using gRPC via pkg-config")
 endif()
 
@@ -60,8 +61,17 @@ target_link_libraries(
 )
 if(gRPC_FOUND)
   target_link_libraries(${PROJECT_NAME} gRPC::grpc++)
-else()
-  target_link_libraries(${PROJECT_NAME} ${GRPC_LIBRARIES})
-  target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS})
-  target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
+else()					
+# Include directories			
+target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS})
+
+# Compiler options
+target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} 
+    ${GRPC_LIBRARIES} 
+    ${PROTOBUF_LIBRARIES}
+)
+
 endif()
