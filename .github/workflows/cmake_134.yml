@@ -5,6 +5,8 @@ on:
     branches: [ "master" ]
     paths:
       - 'example/134_grpc_glfw_imgui/source01/**'
+on:
+  workflow_dispatch:
 
 jobs:
   build:
