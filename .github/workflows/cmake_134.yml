@@ -22,8 +22,8 @@ jobs:
     - name: Create build directory
       run: mkdir build
 
-   # - name: Setup tmate session
-   #   uses: mxschmitt/action-tmate@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
 
     - name: Configure CMake
       run: cmake -S example/134_grpc_glfw_imgui/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
