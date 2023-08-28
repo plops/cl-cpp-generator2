@@ -11,6 +11,16 @@ set(
 
 find_package(gRPC CONFIG REQUIRED)
 
+if(gRPC_FOUND)
+  message(STATUS "Using gRPC ${gRPC_VERSION}")
+else()
+  # Fallback to pkg-config
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(GRPC REQUIRED grpc++)
+  
+  message(STATUS "Using gRPC via pkg-config")
+endif()
+
 include(FetchContent)
 FetchContent_Declare(
         imgui-glfw-glad-glm
@@ -46,6 +56,12 @@ target_link_libraries(
         ${PROJECT_NAME}
         imgui
         glm
-	gRPC::grpc++
+	
 )
- 
+if(gRPC_FOUND)
+  target_link_libraries(${PROJECT_NAME} gRPC::grpc++)
+else()
+  target_link_libraries(${PROJECT_NAME} ${GRPC_LIBRARIES})
+  target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS})
+  target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
+endif()
