@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(
         SOURCE_FILES
         src/main.cpp
+	src/glgui.grpc.pb.cc
+	src/glgui.pb.cc
 )
 
 find_package(gRPC CONFIG REQUIRED)

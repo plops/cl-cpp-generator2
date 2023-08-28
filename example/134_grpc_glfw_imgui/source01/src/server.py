@@ -20,7 +20,7 @@ class GLGuiService(glgui_pb2_grpc.GLGuiServiceServicer):
     def GetRandomRectangle(self, request, context):
         x1, y1 = random.uniform(0, 100), random.uniform(0, 100)
         x2, y2 = x1 + random.uniform(1, 20), y1 + random.uniform(1, 20)
-        return glgui_pb2.Rectangle(x1=x1, y1=y1, x2=x2, y2=y2)
+        return glgui_pb2.RectangleResponse(x1=x1, y1=y1, x2=x2, y2=y2)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
