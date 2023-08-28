@@ -9,7 +9,7 @@ set(
 	src/glgui.pb.cc
 )
 
-find_package(gRPC CONFIG REQUIRED)
+find_package(gRPC CONFIG )
 
 if(gRPC_FOUND)
   message(STATUS "Using gRPC ${gRPC_VERSION}")
