@@ -5,12 +5,13 @@
 
 (in-package :cl-cpp-generator2)
 
-(setf *features* (set-difference *features* (list :more)))
-(setf *features* (set-exclusive-or *features* (list :more)))
+(progn
+  (setf *features* (set-difference *features* (list :more)))
+  (setf *features* (set-exclusive-or *features* (list :more))))
 
 (progn
   (progn
-    (defparameter *source-dir* #P"example/132_v4l2/source02/src/")
+    (defparameter *source-dir* #P"example/134_grpc_glfw_imgui/source01/src/")
     (defparameter *full-source-dir* (asdf:system-relative-pathname
 				     'cl-cpp-generator2
 				     *source-dir*)))
@@ -20,222 +21,6 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
-
-  (defun xioctl (args)
-    (destructuring-bind (&key request var) args
-      `(xioctl ,(cl-change-case:constant-case (format nil "vidioc-~a" request))
-	       ,var
-	       #+more (string ,request))))
-
-  (let* ((name `V4L2Capture)
-	 (members `((device :type "const std::string&" :param t)
-		    (buffer-count :type int :param t)
-		    (buffers :type "std::vector<buffer>" :param nil)
-		    (fd :type "int" :param nil)
-		    (width :type int)
-		    (height :type int))))
-    
-    (write-class
-     :dir (asdf:system-relative-pathname
-	   'cl-cpp-generator2
-	   *source-dir*)
-     :name name
-     :headers `()
-     :header-preamble `(do0
-		       (include<> functional)
-			)
-     :implementation-preamble
-     `(do0
-       (include<> fcntl.h
-		  unistd.h
-		  sys/ioctl.h
-		  sys/mman.h
-		  linux/videodev2.h
-
-		  fstream
-		  iostream
-		  vector
-		  string
-		  cstring
-		  stdexcept))
-     :code `(do0
-	     (defclass ,name ()
-	       "public:"
-	       (defmethod ,name (,@(remove-if #'null
-				    (loop for e in members
-					  collect
-					  (destructuring-bind (name &key type param (initform 0)) e
-					    (let ((nname (intern
-							  (string-upcase
-							   (cl-change-case:snake-case (format nil "~a" name))))))
-					      (when param
-						nname))))))
-		 (declare
-		  ,@(remove-if #'null
-			       (loop for e in members
-				     collect
-				     (destructuring-bind (name &key type param (initform 0)) e
-				       (let ((nname (intern
-						     (string-upcase
-						      (cl-change-case:snake-case (format nil "~a" name))))))
-					 (when param
-					   
-					   `(type ,type ,nname))))))
-		  (construct
-		   ,@(remove-if #'null
-				(loop for e in members
-				      collect
-				      (destructuring-bind (name &key type param (initform 0)) e
-					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					      (nname_ (format nil "~a_"
-							      (cl-change-case:snake-case (format nil "~a" name)))))
-					  (cond
-					    (param
-					     `(,nname_ ,nname))
-					    (initform
-					     `(,nname_ ,initform)))))))
-		   )
-		  (explicit)	    
-		  (values :constructor))
-		 (setf fd_ (open (dot device_ (c_str))
-				 O_RDWR))
-		 (when (== -1 fd_)
-		   (throw (std--runtime_error (+ (string "opening video device failed")
-						 #+more (std--string (std--strerror errno)))))))
-
-	       (defmethod ~V4L2Capture ()
-		 (declare (values :constructor))
-		 (for-range (b buffers_)
-			    (munmap b.start b.length))
-		 (close fd_))
-
-	       (defmethod startCapturing ()
-		 ,(lprint :msg "startCapturing")
-		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
-		   ,(xioctl `(:request STREAMON :var &type))))
-	       
-	       (defmethod stopCapturing ()
-		 ,(lprint :msg "stopCapturing")
-		 (let ((type (v4l2_buf_type V4L2_BUF_TYPE_VIDEO_CAPTURE)))
-		   ,(xioctl `(:request STREAMOFF :var &type))
-		   ))
-
-	       (defmethod setupFormat (width height pixelFormat)
-		 (declare (type int width height pixelFormat))
-		 ,(lprint :msg "setupFormat"
-			  :vars `(width height pixelFormat))
-
-		 (let ((str (v4l2_streamparm (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE))))
-		   ,(xioctl `(:request g-parm :var &str))
-		   (setf (dot str parm capture timeperframe numerator) 1)
-		   (setf (dot str parm capture timeperframe denominator  ) 10)
-		   ,(xioctl `(:request s-parm :var &str)))
-		 
-		 (let ((f (v4l2_format (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE))))
-		   (setf (dot f fmt pix pixelformat ) pixelFormat
-			 (dot f fmt pix width) width
-			 (dot f fmt pix height) height
-			 (dot f fmt pix field) V4L2_FIELD_ANY
-			 )
-		   ,(xioctl `(:request s-fmt :var &f))
-		   (unless (== f.fmt.pix.pixelformat pixelFormat)
-		     ,(lprint :msg "warning: we don't get the requested pixel format"
-			      :vars `(f.fmt.pix.pixelformat
-				      pixelFormat)))
-		   (setf width_ (dot f fmt pix width)
-			 height_ (dot f fmt pix height))
-		   (let ((r (v4l2_requestbuffers (designated-initializer :count buffer_count_
-									 :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
-									 :memory V4L2_MEMORY_MMAP))))
-		     ,(lprint :msg "prepare several buffers"
-			      :vars `(buffer_count_))
-		     ,(xioctl `(:request reqbufs :var &r)) 
-		     (buffers_.resize r.count)
-		     (dotimes (i r.count)
-		       (let ((buf (v4l2_buffer
-				   (designated-initializer
-				    :index i
-				    :type  V4L2_BUF_TYPE_VIDEO_CAPTURE
-				    :memory V4L2_MEMORY_MMAP))))
-			 
-			 ,(xioctl `(:request querybuf :var &buf))
-			 (setf (dot (aref buffers_ i)
-				    length)
-			       buf.length
-			       (dot (aref buffers_ i)
-				    start) (mmap nullptr buf.length (or PROT_READ
-									PROT_WRITE)
-				    MAP_SHARED fd_ buf.m.offset) 
-			       )
-			 ,(lprint :msg "mmap memory for buffer"
-				  :vars `(i buf.length (dot (aref buffers_ i) start)))
-			 (when (== MAP_FAILED (dot (aref buffers_ i) start))
-			   (throw (std--runtime_error (string "mmap failed"))))
-			 ,(xioctl `(:request qbuf :var &buf)))))))
-
-	       (defmethod getFrameAndStore (filename)
-		 (declare (type "const std::string&" filename))
-		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
-								 :memory V4L2_MEMORY_MMAP))))
-					
-		   ,(xioctl `(:request dqbuf :var &buf))
-		   )
-		 (let ((outFile (std--ofstream filename std--ios--binary)))
-		   (<< outFile (string "P6\\n")
-		       width_
-		       (string " ")
-		       height_
-		       (string " 255\\n")
-		       
-		       )
-		   (outFile.write (static_cast<char*> (dot (aref buffers_ buf.index)
-							   start))
-				  buf.bytesused)
-		   (outFile.close)
-		   ,(xioctl `(:request qbuf :var &buf))))
-
-	       (defmethod getFrame (fun)
-		 (declare (type "std::function<void(void*,size_t)>" fun))
-		 (let ((buf (v4l2_buffer (designated-initializer :type V4L2_BUF_TYPE_VIDEO_CAPTURE
-								 :memory V4L2_MEMORY_MMAP))))
-					
-		   ,(xioctl `(:request dqbuf :var &buf)))
-		 (let ((b  (aref buffers_ buf.index)))
-		   (fun b.start b.length))
-		 ,(xioctl `(:request qbuf :var &buf)))
-	       	       
-	       "private:"
-	       (defstruct0 buffer
-		   (start void*)
-		 (length size_t))
-
-	       (defmethod xioctl (request arg #+more str)
-		 (declare (type "unsigned long" request)
-			  (type void* arg)
-			  (type "const std::string&" str))
-		 (let ((r 0))
-		   (space do
-			  (progn
-			    (setf r (ioctl fd_ request arg)))
-			  while (paren (logand (== -1 r)
-					       (== EINTR errno))))
-		   (when (== -1 r)
-		     (throw (std--runtime_error  (+ (string "ioctl ")
-						    #+more str
-						   #+more (string " ")
-						   #+more (std--strerror errno)
-						   ))))))
-
-	       
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))))))
-
-  
   
   (write-source 
    (asdf:system-relative-pathname
@@ -255,34 +40,26 @@
       thread
       
       filesystem
-      unistd.h
+      ;unistd.h
       cstdlib
 
-      cmath
-      linux/videodev2.h
+      ;cmath
+      ;linux/videodev2.h
 
       )
 
      (include<>
-      glad/gl.h)
-     
+      glad/gl.h) ;; this needs to come before glfw3.h
+     " "
      (include<>
 
       GLFW/glfw3.h
       
-      glm/glm.hpp
+      ;glm/glm.hpp
       imgui.h
       imgui_impl_glfw.h
-      imgui_impl_opengl3.h
-      
-      
-      )
-     (comments "wget https://raw.githubusercontent.com/nothings/stb/master/stb_image.h")
+      imgui_impl_opengl3.h)
      
-     (include 
-     ; stb_image.h
-      V4L2Capture.h)
-
      (setf "const char *vertexShaderSrc"
 	   (string-r
 	    ,(emit-c :code `(do0
@@ -331,8 +108,7 @@
 	(glfwSwapInterval 1)
 
 	(unless (gladLoaderLoadGL)
-	  (throw (std--runtime_error (string "Error initializing glad")))
-	  )
+	  (throw (std--runtime_error (string "Error initializing glad"))))
 
 	(do0
 	 ,(lprint :msg "get extensions")
@@ -408,96 +184,56 @@
 	)
 
        (do0
-	#+more
-	(do0 ,(lprint :msg "Create vertex array and buffers")
-	     (comments "TBD")) 
-
 	(glUseProgram program)
-	(glClearColor 1 1 1 1)
-
-	
-	)
+	(glClearColor 1 1 1 1))
 
        
        
-       (handler-case
-	   (let ((cap (V4L2Capture  (string "/dev/video0")
-				    3)))
-	     (let ((w ;320 ;
-		      1280
-		      )
-		   (h ;180 ;
-		      720
-		      ))
-	      (cap.setupFormat w h
-			       ;V4L2_PIX_FMT_RGB24
-			       V4L2_PIX_FMT_YUYV
-			       ;V4L2_PIX_FMT_YUV420
-			       ))
-	     (cap.startCapturing)
-
-	     (do0
-	      (let ((texture (GLuint 0)))
-		(glGenTextures 1 &texture)
-		(glBindTexture GL_TEXTURE_2D texture)
-		
-		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
-		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)))
-	     
-	     (while (!glfwWindowShouldClose window)
-		    (glfwPollEvents)
+       (let ((texture (GLuint 0)))
+	 (glGenTextures 1 &texture)
+	 (glBindTexture GL_TEXTURE_2D texture)
+	 
+	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR))
+       
+       (while (!glfwWindowShouldClose window)
+	      (glfwPollEvents)
 					;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
-		    (ImGui_ImplOpenGL3_NewFrame)
-		    (ImGui_ImplGlfw_NewFrame)
-		    (ImGui--NewFrame)
-		    (cap.getFrame
-		     (lambda (data size)
-		       (declare (type void* data)
-				(type size_t size)
-				(capture "&"))
-		       #+nil (do0 (glPixelStorei GL_UNPACK_ALIGNMENT 1)
-			    (glPixelStorei GL_UNPACK_ROW_LENGTH (/ w 2))
-			    (glPixelStorei GL_UNPACK_SKIP_PIXELS 0)
-			    (glPixelStorei GL_UNPACK_SKIP_ROWS 0))
-		       
-		       (glBindTexture GL_TEXTURE_2D texture)
-		       (glTexImage2D GL_TEXTURE_2D
-				     0
-				     GL_RGBA
-				     w h
-				     0
-				     GL_RG
-				     GL_UNSIGNED_BYTE
-				     data
-				     )
-		       (ImGui--Begin (string "camera feed"))
-		       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
-				     (ImVec2 w h))
-		       (ImGui--End)
-		  
-		       ))
+	      (ImGui_ImplOpenGL3_NewFrame)
+	      (ImGui_ImplGlfw_NewFrame)
+	      (ImGui--NewFrame)
+	      #+nil (cap.getFrame
+	       (lambda (data size)
+		 (declare (type void* data)
+			  (type size_t size)
+			  (capture "&"))
+		 (glBindTexture GL_TEXTURE_2D texture)
+		 (glTexImage2D GL_TEXTURE_2D
+			       0
+			       GL_RGBA
+			       w h
+			       0
+			       GL_RG
+			       GL_UNSIGNED_BYTE
+			       data
+			       )
+		 (ImGui--Begin (string "camera feed"))
+		 (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+			       (ImVec2 w h))
+		 (ImGui--End)
+		 
+		 ))
 
-		    (space static bool (setf showDemo false))
-		    (ImGui--ShowDemoWindow &showDemo)
-		    (ImGui--Render)
-		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-		    (glfwSwapBuffers window)
-		    (glClear GL_COLOR_BUFFER_BIT)
-		    (std--this_thread--sleep_for (std--chrono--milliseconds 16))
-		    )
-	     
-	     
-	     #+nil (cap.getFrame (+ (string "/dev/shm/frame_")
-			      (std--to_string i)
-			      (string ".ppm")))
-	     (cap.stopCapturing)
-	     
-	     )
-	 ("const std::runtime_error&" (e)
-	   #+more ,(lprint :msg "error"
-		    :vars `((e.what)))
-	   (return 1)))
-
+	      (space static bool (setf showDemo true))
+	      (ImGui--ShowDemoWindow &showDemo)
+	      (ImGui--Render)
+	      (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+	      (glfwSwapBuffers window)
+	      (glClear GL_COLOR_BUFFER_BIT)
+	      (std--this_thread--sleep_for (std--chrono--milliseconds 16))
+	      )
+       
+       
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)
 	(ImGui_ImplGlfw_Shutdown)
@@ -506,6 +242,6 @@
 	(glfwTerminate))
        (return 0)))
    :omit-parens t
-   :format nil
-   :tidy nil))
+   :format t
+   :tidy t))
 

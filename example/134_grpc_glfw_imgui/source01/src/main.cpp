@@ -1,18 +1,15 @@
-#include <GLFW/glfw3.h>
-#include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <glad/gl.h>
-#include <glm/glm.hpp>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include <iostream>
-#include <linux/videodev2.h>
-#include <string>
-#include <thread>
-#include <unistd.h>
-#include <vector>
 const char *vertexShaderSrc = R"(#version 450
 layout (location=0) in vec2 aPos;
 
