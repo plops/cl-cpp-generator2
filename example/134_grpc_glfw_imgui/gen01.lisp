@@ -60,7 +60,7 @@
       imgui_impl_glfw.h
       imgui_impl_opengl3.h)
      
-     (setf "const char *vertexShaderSrc"
+     (setf "const char *const vertexShaderSrc"
 	   (string-r
 	    ,(emit-c :code `(do0
 			     "#version 450"
@@ -69,7 +69,7 @@
 			       (setf gl_Position (vec4 aPos 1 1))))
 		     :omit-redundant-parentheses t)))
 
-     (setf "const char *fragmentShaderSrc"
+     (setf "const char * const fragmentShaderSrc"
 	   (string-r
 	    ,(emit-c :code `(do0
 			     "#version 450"
@@ -81,9 +81,9 @@
      #+more (defun message_callback (source type id severity length message user_param)
        (declare (type GLenum source type severity)
 		(type GLuint id)
-		(type GLsizei length)
+		(type "[[maybe_unused]] GLsizei" length)
 		(type "GLchar const *" message)
-		(type "void const *" user_param))
+		(type "[[maybe_unused]] void const *" user_param))
        ,(lprint :msg "gl"
 		:vars `(source type id severity message)))
 					     
@@ -102,18 +102,21 @@
 					(string "v4l")
 					nullptr nullptr)))
 	  (unless window
-	    (throw (std--runtime_error (string "Error creating glfw window")))))
+	    ,(lprint :msg "Error creating glfw window")
+	    (return -1)))
 
 	(glfwMakeContextCurrent window)
 	(glfwSwapInterval 1)
 
 	(unless (gladLoaderLoadGL)
-	  (throw (std--runtime_error (string "Error initializing glad"))))
+	  ,(lprint :msg "Error initializing glad")
+	  (return -2))
 
 	(do0
 	 ,(lprint :msg "get extensions")
-	 (let ((ext (glGetString GL_EXTENSIONS)))
-	   (unless (== nullptr ext)
+	 (do0 ;let ((ext (glGetString GL_EXTENSIONS)))
+	   (when (space auto (setf ext (glGetString GL_EXTENSIONS))
+			(!= nullptr ext))
 	     (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
 	       ,(lprint :msg "extensions"
 			:vars `(extstr)
@@ -136,7 +139,7 @@
 	 (let ((success 0)
 	       
 	       (vertexShader (glCreateShader GL_VERTEX_SHADER)))
-	   (glShaderSource vertexShader 1 &vertexShaderSrc 0)
+	   (glShaderSource vertexShader 1 &vertexShaderSrc nullptr)
 	   (glCompileShader vertexShader)
 
 	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
@@ -150,7 +153,7 @@
 	     (exit -1))
 	   )
 	 (let ((fragmentShader (glCreateShader GL_FRAGMENT_SHADER)))
-	   (glShaderSource fragmentShader 1 &fragmentShaderSrc 0)
+	   (glShaderSource fragmentShader 1 &fragmentShaderSrc nullptr)
 	   (glCompileShader fragmentShader)
 
 	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)

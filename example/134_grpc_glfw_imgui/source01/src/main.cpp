@@ -10,7 +10,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-const char *vertexShaderSrc = R"(#version 450
+const char *const vertexShaderSrc = R"(#version 450
 layout (location=0) in vec2 aPos;
 
 void main ()        {
@@ -21,7 +21,7 @@ void main ()        {
  
 )";
 
-const char *fragmentShaderSrc = R"(#version 450
+const char *const fragmentShaderSrc = R"(#version 450
 layout (location=0) out vec4 outColor;
 
 void main ()        {
@@ -33,8 +33,8 @@ void main ()        {
 )";
 
 void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
-                      GLsizei length, GLchar const *message,
-                      void const *user_param) {
+                      [[maybe_unused]] GLsizei length, GLchar const *message,
+                      [[maybe_unused]] void const *user_param) {
   std::cout << "gl"
             << " source='" << source << "' "
             << " type='" << type << "' "
@@ -50,17 +50,18 @@ int main(int argc, char **argv) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   auto window = glfwCreateWindow(800, 600, "v4l", nullptr, nullptr);
   if (!window) {
-    throw std::runtime_error("Error creating glfw window");
+    std::cout << "Error creating glfw window" << std::endl;
+    return -1;
   }
 
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
   if (!gladLoaderLoadGL()) {
-    throw std::runtime_error("Error initializing glad");
+    std::cout << "Error initializing glad" << std::endl;
+    return -2;
   }
   std::cout << "get extensions" << std::endl;
-  auto ext = glGetString(GL_EXTENSIONS);
-  if (!(nullptr == ext)) {
+  if (auto ext = glGetString(GL_EXTENSIONS); nullptr != ext) {
     auto extstr = std::string(reinterpret_cast<const char *>(ext));
     std::cout << "extensions"
               << " extstr='" << extstr << "' " << std::endl;
@@ -79,7 +80,7 @@ int main(int argc, char **argv) {
   std::cout << "Compile shader" << std::endl;
   auto success = 0;
   auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSrc, 0);
+  glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
   glCompileShader(vertexShader);
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
@@ -95,7 +96,7 @@ int main(int argc, char **argv) {
   }
 
   auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSrc, 0);
+  glShaderSource(fragmentShader, 1, &fragmentShaderSrc, nullptr);
   glCompileShader(fragmentShader);
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if (!success) {
