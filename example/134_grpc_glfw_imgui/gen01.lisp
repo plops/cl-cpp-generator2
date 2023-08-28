@@ -59,7 +59,14 @@
       ;glm/glm.hpp
       imgui.h
       imgui_impl_glfw.h
-      imgui_impl_opengl3.h)
+      imgui_impl_opengl3.h
+
+      grpcpp/grpcpp.h
+      )
+
+     (include
+      glgui.grpc.pb.h
+      )
      
      (setf "const char *const vertexShaderSrc"
 	   (string-r
@@ -93,6 +100,32 @@
 		(type int argc)
 		(type char** argv))
 
+       (let ((ch_args))
+	 (declare (type "grpc::ChannelArguments" ch_args))
+	 (comments "Increase max message size if needed")
+	 (ch_args.SetMaxReceiveMessageSize -1)
+	 (let ((channel (grpc--CreateCustomChannel (string "localhost:50051")
+						   (grpc--InsecureChannelCredentials)
+						   ch_args))
+	       (stub (glgui--GLGuiService--NewStub channel))
+	       ))
+	 (let ((request (glgui--RectangleRequest))
+	       (response (glgui--RectangleResponse))))
+
+	 (let ((context (grpc--ClientContext))))
+
+	 (let ((status (stub->GetRandomRectangle &context
+						 request
+						 &response))))
+
+	 (if (status.ok)
+	     (do0
+	      ,(lprint :vars `((response.x1))
+		       ))
+	     (do0
+	      ,(lprint :vars `((status.error_message)))))
+	 )
+       
        (do0
 	(glfwInit)
 	(glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 4)
@@ -115,13 +148,13 @@
 
 	(do0
 	 ,(lprint :msg "get extensions")
-	 (do0 ;let ((ext (glGetString GL_EXTENSIONS)))
-	   (when (space auto (setf ext (glGetString GL_EXTENSIONS))
-			(!= nullptr ext))
-	     (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
-	       ,(lprint :msg "extensions"
-			:vars `(extstr)
-			)))))
+	 (do0		      ;let ((ext (glGetString GL_EXTENSIONS)))
+	  (when (space auto (setf ext (glGetString GL_EXTENSIONS))
+		       (!= nullptr ext))
+	    (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
+	      ,(lprint :msg "extensions"
+		       :vars `(extstr)
+		       )))))
 
 	(do0
 	 (IMGUI_CHECKVERSION)
@@ -146,11 +179,11 @@
 	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-	       (glGetShaderInfoLog vertexShader n nullptr (infoLog.data) )
-	       ,(lprint :msg "vertex shader compilation failed"
-			:vars `((std--string (infoLog.begin)
-					     (infoLog.end))))
-	       )
+		      (glGetShaderInfoLog vertexShader n nullptr (infoLog.data) )
+		      ,(lprint :msg "vertex shader compilation failed"
+			       :vars `((std--string (infoLog.begin)
+						    (infoLog.end))))
+		      )
 	     (exit -1))
 	   )
 	 (let ((fragmentShader (glCreateShader GL_FRAGMENT_SHADER)))
@@ -160,11 +193,11 @@
 	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-	       (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data) )
-	       ,(lprint :msg "fragment shader compilation failed"
-			:vars `((std--string (infoLog.begin)
-					     (infoLog.end))))
-	       )
+		      (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data) )
+		      ,(lprint :msg "fragment shader compilation failed"
+			       :vars `((std--string (infoLog.begin)
+						    (infoLog.end))))
+		      )
 	     (exit -1))
 	   )
 	 (let ((program (glCreateProgram )))
@@ -174,11 +207,11 @@
 	   (glGetProgramiv program GL_LINK_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-	       (glGetShaderInfoLog program n nullptr (infoLog.data) )
-	       ,(lprint :msg "shader linking failed"
-			:vars `((std--string (infoLog.begin)
-					     (infoLog.end))))
-	       )
+		      (glGetShaderInfoLog program n nullptr (infoLog.data) )
+		      ,(lprint :msg "shader linking failed"
+			       :vars `((std--string (infoLog.begin)
+						    (infoLog.end))))
+		      )
 	     (exit -1))
 	   )
 	 (glDetachShader program vertexShader)

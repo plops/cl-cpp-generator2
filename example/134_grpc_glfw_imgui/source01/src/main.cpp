@@ -6,7 +6,9 @@
 #include <thread>
 #include <vector>
 
+#include "glgui.grpc.pb.h"
 #include <GLFW/glfw3.h>
+#include <grpcpp/grpcpp.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -33,6 +35,26 @@ void main ()        {
 )";
 
 int main(int argc, char **argv) {
+  grpc::ChannelArguments ch_args;
+  // Increase max message size if needed
+
+  ch_args.SetMaxReceiveMessageSize(-1);
+  auto channel = grpc::CreateCustomChannel(
+      "localhost:50051", grpc::InsecureChannelCredentials(), ch_args);
+  auto stub = glgui::GLGuiService::NewStub(channel);
+
+  auto request = glgui::RectangleRequest();
+  auto response = glgui::RectangleResponse();
+
+  auto context = grpc::ClientContext();
+
+  auto status = stub->GetRandomRectangle(&context, request, &response);
+
+  if (status.ok()) {
+
+  } else {
+  }
+
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
