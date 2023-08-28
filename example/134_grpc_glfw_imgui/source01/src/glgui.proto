@@ -3,7 +3,7 @@ syntax = "proto3";
 package glgui;
 
 // Rectangle message with x, y coordinates for the top-left and bottom-right corners
-message RectangleResposne {
+message RectangleResponse {
   float x1 = 1;
   float y1 = 2;
   float x2 = 3;
