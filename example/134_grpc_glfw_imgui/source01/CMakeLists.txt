@@ -7,6 +7,8 @@ set(
         src/main.cpp
 )
 
+find_package(gRPC CONFIG REQUIRED)
+
 include(FetchContent)
 FetchContent_Declare(
         imgui-glfw-glad-glm
@@ -42,5 +44,6 @@ target_link_libraries(
         ${PROJECT_NAME}
         imgui
         glm
+	gRPC::grpc++
 )
  
