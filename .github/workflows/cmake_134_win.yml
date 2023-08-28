@@ -1,0 +1,44 @@
+name:  Win Build 134
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'example/134_grpc_glfw_imgui/source01/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest  # Changed to Windows
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        choco install cmake ninja python protobuf
+        pip install grpcio grpcio-tools
+
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
+      
+    - name: Generate Protobuf and gRPC code
+      run: |
+        cd example/134_grpc_glfw_imgui/source01/src
+        protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=grpc_cpp_plugin.exe glgui.proto
+
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Configure CMake
+      run: cmake -S example/134_grpc_glfw_imgui/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with Ninja
+      run: ninja -C build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: imgui_grpc_artifact
+        path: build/imgui_grpc
