@@ -1,0 +1,28 @@
+name: CMake Build GLFW gRPC Example 134
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'example/134_grpc_glfw_imgui/source01/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y cmake ninja-build
+
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Configure CMake
+      run: cmake -S example/134_grpc_glfw_imgui/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with Ninja
+      run: ninja -C build
+
