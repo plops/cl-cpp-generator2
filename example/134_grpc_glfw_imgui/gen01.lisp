@@ -192,7 +192,7 @@
 
        
        
-       (let ((texture (GLuint 0)))
+       #+nil (let ((texture (GLuint 0)))
 	 (glGenTextures 1 &texture)
 	 (glBindTexture GL_TEXTURE_2D texture)
 	 
