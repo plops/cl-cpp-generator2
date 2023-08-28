@@ -31,3 +31,8 @@ jobs:
     - name: Build with Ninja
       run: ninja -C build
 
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: imgui_grpc_artifact
+        path: build/imgui_grpc
