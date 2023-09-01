@@ -615,7 +615,7 @@ entry return-values contains a list of return values. currently supports type, v
     ;(substitute #\e #\d (format nil "~,vG" digits a))
     ))
 (defparameter *operators*
-  `(comma semicolon space comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case))
+  `(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case))
 
 ;; https://en.cppreference.com/w/cpp/language/operator_precedence
 ;; FIXME: how to handle Associativity (right-to-left or
@@ -832,6 +832,13 @@ entry return-values contains a list of return values. currently supports type, v
 		     (make-instance 'string-op
 				    :string (format nil "~{~a~^ ~}" (mapcar #'emit args))
 				    :operator 'space)))
+		  (space-n
+		   ;; space-n {args}*
+		   ;; without semicolons
+		   (let ((args (cdr code)))
+		     (make-instance 'string-op
+				    :string (format nil "~{~a~^ ~}" (mapcar #'emit args))
+				    :operator 'space-n)))
 		  (comments (let ((args (cdr code)))
 			      (make-instance 'string-op
 					     :string (format nil "~{// ~a~%~}" args)
@@ -1075,7 +1082,8 @@ entry return-values contains a list of return values. currently supports type, v
 										defun defun* defmethod defclass
 										comments comment doc
 										namespace
-										handler-case)))
+										handler-case
+										space-n)))
 							;; don't place semicolon after specific operators
 							" " ;; ".4."
 							)
