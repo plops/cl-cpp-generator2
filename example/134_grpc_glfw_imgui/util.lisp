@@ -1,12 +1,15 @@
 (defun lprint (&key (msg "") (vars nil))
+  ;; this version of lprint tries to keep the C++ code small
   #-more ""
   #+more
   (let ((out `(<< std--cout)))
     (unless (string= msg "")
       (setf out (append out
 			(if vars
-			    `((string ,(format nil "~a"
-					       msg)))
+			    `((string ,(format nil "~a ~a='"
+					       msg
+					       (emit-c :code (first vars)
+						       :omit-redundant-parentheses t))))
 			    `((string ,(format nil "~a\\n"
 					       msg)))))))
     (setf out
@@ -14,12 +17,15 @@
 		  (loop for e in vars
 			and e-i from 0
 			appending
-			`((string ,(format nil " ~a='" (emit-c :code e)))
-			  ,e
-			  ,(if (eq e-i (- (length vars) 1))
-			       `(string "'\\n")
-			       `(string "' ")
-			       )))))
+			(remove-if #'null
+			 `(,(when (string= msg "")
+			      `(string ,(format nil " ~a='" (emit-c :code e
+								   :omit-redundant-parentheses t))))
+			   ,e
+			   ,(if (eq e-i (- (length vars) 1))
+				`(string "'\\n")
+				`(string "' ")
+				))))))
     out
     #+nil
     `(<< std--cout

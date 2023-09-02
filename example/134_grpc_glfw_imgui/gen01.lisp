@@ -167,23 +167,23 @@
 					(string "v4l")
 					nullptr nullptr)))
 	  (unless window
-	    ,(lprint :msg "Error creating glfw window")
+	    ,(lprint :msg "Error creating glfw window.")
 	    (return -1)))
 
 	(glfwMakeContextCurrent window)
 	(glfwSwapInterval 1)
 
 	(unless (gladLoaderLoadGL)
-	  ,(lprint :msg "Error initializing glad")
+	  ,(lprint :msg "Error initializing glad.")
 	  (return -2))
 
 	(do0
-	 ,(lprint :msg "get extensions")
+	 ,(lprint :msg "Get extensions.")
 	 (do0		      ;let ((ext (glGetString GL_EXTENSIONS)))
 	  (when (space auto (setf ext (glGetString GL_EXTENSIONS))
 		       (!= nullptr ext))
 	    (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
-	      ,(lprint :msg "extensions"
+	      ,(lprint :msg "extension"
 		       :vars `(extstr)
 		       )))))
 
@@ -200,7 +200,7 @@
 	 #+more (glDebugMessageCallback message_callback nullptr))
 
 	(do0
-	 #+more ,(lprint :msg "Compile shader")
+	 #+more ,(lprint :msg "Compile shader.")
 	 (let ((success 0)
 	       
 	       (vertexShader (glCreateShader GL_VERTEX_SHADER)))
@@ -213,7 +213,7 @@
 		      (glGetShaderInfoLog vertexShader n nullptr (infoLog.data))
 		      (let ((info (std--string (infoLog.begin)
 					       (infoLog.end)))))
-		      ,(lprint :msg "vertex shader compilation failed"
+		      ,(lprint :msg "Vertex shader compilation failed."
 			       :vars `(info))
 		      )
 	     (exit -1))
@@ -228,7 +228,7 @@
 		      (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data))
 		      (let ((info (std--string (infoLog.begin)
 					       (infoLog.end)))))
-		      ,(lprint :msg "fragment shader compilation failed"
+		      ,(lprint :msg "Fragment shader compilation failed."
 				:vars `(info))
 		      )
 	     (exit -1))
@@ -244,7 +244,7 @@
 		      (let ((info (std--string (infoLog.begin)
 					       (infoLog.end)))))
 		      
-		      ,(lprint :msg "shader linking failed"
+		      ,(lprint :msg "Shader linking failed."
 			       :vars `(info))
 		      )
 	     (exit -1))
