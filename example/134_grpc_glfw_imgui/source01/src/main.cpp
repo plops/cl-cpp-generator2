@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
   }
   std::cout << "Get extensions.\n";
   if (auto ext = glGetString(GL_EXTENSIONS); nullptr != ext) {
-    auto extstr = std::string(reinterpret_cast<const char *>(ext));
-    std::cout << "extension extstr='" << extstr << "'\n";
+    auto extension_str = std::string(reinterpret_cast<const char *>(ext));
+    std::cout << "extension extension_str='" << extension_str << "'\n";
   }
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -150,8 +150,9 @@ int main(int argc, char **argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   auto future = std::future<glgui::GetImageResponse>();
   auto update_texture_if_ready =
-      [&](std::unique_ptr<glgui::GLGuiService::Stub> &stub_,
-          std::future<glgui::GetImageResponse> &future_) {
+      [&texture_w, &texture_h, texture,
+       get_image](std::unique_ptr<glgui::GLGuiService::Stub> &stub_,
+                  std::future<glgui::GetImageResponse> &future_) {
         if (future_.valid()) {
           if (future_.wait_for(std::chrono::seconds(0)) ==
               std::future_status::ready) {

@@ -184,9 +184,9 @@
 	 (do0		      ;let ((ext (glGetString GL_EXTENSIONS)))
 	  (when (space auto (setf ext (glGetString GL_EXTENSIONS))
 		       (!= nullptr ext))
-	    (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
+	    (let ((extension_str (std--string ("reinterpret_cast<const char*>" ext))))
 	      ,(lprint :msg "extension"
-		       :vars `(extstr)
+		       :vars `(extension_str)
 		       )))))
 
 	(do0
@@ -275,7 +275,12 @@
        (let ((update_texture_if_ready
 	       (lambda (stub_ future_)
 		 (declare (type "std::future<glgui::GetImageResponse>&" future_)
-			  (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_))
+			  (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_)
+			  (capture &texture_w
+				   &texture_h
+				   texture
+				   get_image
+				   ))
 		 (if (future_.valid)
 		     (when (== (future_.wait_for (std--chrono--seconds 0))
 			     std--future_status--ready)
