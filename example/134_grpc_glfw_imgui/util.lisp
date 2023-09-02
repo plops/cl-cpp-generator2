@@ -1,18 +1,36 @@
-(defun lprint (&key (msg "")
-		 (vars nil)
-		 )
+(defun lprint (&key (msg "") (vars nil))
   #-more ""
-  #+more `(<< std--cout
-	      (string ,(format nil "~a"
-			       msg
-			
-			       ))
-	      ,@(loop for e in vars
-		      appending
-		      `((string ,(format nil " ~a='" (emit-c :code e)))
-			,e
-			(string "' ")))   
-	      std--endl))
+  #+more
+  (let ((out `(<< std--cout)))
+    (unless (string= msg "")
+      (setf out (append out
+			(if vars
+			    `((string ,(format nil "~a"
+					       msg)))
+			    `((string ,(format nil "~a\\n"
+					       msg)))))))
+    (setf out
+	  (append out
+		  (loop for e in vars
+			and e-i from 0
+			appending
+			`((string ,(format nil " ~a='" (emit-c :code e)))
+			  ,e
+			  ,(if (eq e-i (- (length vars) 1))
+			       `(string "'\\n")
+			       `(string "' ")
+			       )))))
+    out
+    #+nil
+    `(<< std--cout
+	 (string ,(format nil "~a"
+			  msg))
+	 ,@(loop for e in vars
+		 appending
+		 `((string ,(format nil " ~a='" (emit-c :code e)))
+		   ,e
+		   (string "' ")))   
+	 std--endl)))
 
 
 (defmacro only-write-when-hash-changed (fn str &key (formatter `(sb-ext:run-program "/usr/bin/clang-format"

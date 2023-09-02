@@ -210,10 +210,11 @@
 	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog vertexShader n nullptr (infoLog.data) )
+		      (glGetShaderInfoLog vertexShader n nullptr (infoLog.data))
+		      (let ((info (std--string (infoLog.begin)
+					       (infoLog.end)))))
 		      ,(lprint :msg "vertex shader compilation failed"
-			       :vars `((std--string (infoLog.begin)
-						    (infoLog.end))))
+			       :vars `(info))
 		      )
 	     (exit -1))
 	   )
@@ -224,10 +225,11 @@
 	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data) )
+		      (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data))
+		      (let ((info (std--string (infoLog.begin)
+					       (infoLog.end)))))
 		      ,(lprint :msg "fragment shader compilation failed"
-			       :vars `((std--string (infoLog.begin)
-						    (infoLog.end))))
+				:vars `(info))
 		      )
 	     (exit -1))
 	   )
@@ -238,10 +240,12 @@
 	   (glGetProgramiv program GL_LINK_STATUS &success)
 	   (unless success
 	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog program n nullptr (infoLog.data) )
+		      (glGetShaderInfoLog program n nullptr (infoLog.data))
+		      (let ((info (std--string (infoLog.begin)
+					       (infoLog.end)))))
+		      
 		      ,(lprint :msg "shader linking failed"
-			       :vars `((std--string (infoLog.begin)
-						    (infoLog.end))))
+			       :vars `(info))
 		      )
 	     (exit -1))
 	   )

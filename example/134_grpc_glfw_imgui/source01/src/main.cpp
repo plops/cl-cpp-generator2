@@ -36,7 +36,7 @@ void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
             << " type='" << type << "' "
             << " id='" << id << "' "
             << " severity='" << severity << "' "
-            << " message='" << message << "' " << std::endl;
+            << " message='" << message << "'\n";
 }
 
 int main(int argc, char **argv) {
@@ -54,12 +54,10 @@ int main(int argc, char **argv) {
         auto context = grpc::ClientContext();
         auto status = stub_->GetRandomRectangle(&context, request, &response);
         if (status.ok()) {
-          std::cout << ""
-                    << " response.x1()='" << response.x1() << "' " << std::endl;
+          std::cout << " response.x1()='" << response.x1() << "'\n";
         } else {
-          std::cout << ""
-                    << " status.error_message()='" << status.error_message()
-                    << "' " << std::endl;
+          std::cout << " status.error_message()='" << status.error_message()
+                    << "'\n";
         }
       };
   get_random_rectangle(stub);
@@ -73,9 +71,8 @@ int main(int argc, char **argv) {
     if (status.ok()) {
       return response;
     } else {
-      std::cout << ""
-                << " status.error_message()='" << status.error_message() << "' "
-                << std::endl;
+      std::cout << " status.error_message()='" << status.error_message()
+                << "'\n";
     }
   };
   glfwInit();
@@ -84,20 +81,20 @@ int main(int argc, char **argv) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   auto window = glfwCreateWindow(800, 600, "v4l", nullptr, nullptr);
   if (!window) {
-    std::cout << "Error creating glfw window" << std::endl;
+    std::cout << "Error creating glfw window\n";
     return -1;
   }
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
   if (!gladLoaderLoadGL()) {
-    std::cout << "Error initializing glad" << std::endl;
+    std::cout << "Error initializing glad\n";
     return -2;
   }
-  std::cout << "get extensions" << std::endl;
+  std::cout << "get extensions\n";
   if (auto ext = glGetString(GL_EXTENSIONS); nullptr != ext) {
     auto extstr = std::string(reinterpret_cast<const char *>(ext));
     std::cout << "extensions"
-              << " extstr='" << extstr << "' " << std::endl;
+              << " extstr='" << extstr << "'\n";
   }
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -107,7 +104,7 @@ int main(int argc, char **argv) {
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(message_callback, nullptr);
-  std::cout << "Compile shader" << std::endl;
+  std::cout << "Compile shader\n";
   auto success = 0;
   auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
@@ -117,10 +114,9 @@ int main(int argc, char **argv) {
     auto n = 512;
     auto infoLog = std::vector<char>(n);
     glGetShaderInfoLog(vertexShader, n, nullptr, infoLog.data());
+    auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "vertex shader compilation failed"
-              << " std::string(infoLog.begin(), infoLog.end())='"
-              << std::string(infoLog.begin(), infoLog.end()) << "' "
-              << std::endl;
+              << " info='" << info << "'\n";
     exit(-1);
   }
   auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -131,10 +127,9 @@ int main(int argc, char **argv) {
     auto n = 512;
     auto infoLog = std::vector<char>(n);
     glGetShaderInfoLog(fragmentShader, n, nullptr, infoLog.data());
+    auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "fragment shader compilation failed"
-              << " std::string(infoLog.begin(), infoLog.end())='"
-              << std::string(infoLog.begin(), infoLog.end()) << "' "
-              << std::endl;
+              << " info='" << info << "'\n";
     exit(-1);
   }
   auto program = glCreateProgram();
@@ -146,10 +141,9 @@ int main(int argc, char **argv) {
     auto n = 512;
     auto infoLog = std::vector<char>(n);
     glGetShaderInfoLog(program, n, nullptr, infoLog.data());
+    auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "shader linking failed"
-              << " std::string(infoLog.begin(), infoLog.end())='"
-              << std::string(infoLog.begin(), infoLog.end()) << "' "
-              << std::endl;
+              << " info='" << info << "'\n";
     exit(-1);
   }
   glDetachShader(program, vertexShader);
@@ -179,8 +173,7 @@ int main(int argc, char **argv) {
                            GL_RGB, GL_UNSIGNED_BYTE, response.data().c_str());
               future_ = std::future<glgui::GetImageResponse>();
             } catch (const std::exception &e) {
-              std::cout << ""
-                        << " e.what()='" << e.what() << "' " << std::endl;
+              std::cout << " e.what()='" << e.what() << "'\n";
             }
           }
         } else {
