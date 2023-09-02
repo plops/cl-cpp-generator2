@@ -9,10 +9,13 @@ set(
 	src/glgui.pb.cc
 )
 
-find_package(gRPC CONFIG )
+#find_package(gRPC CONFIG )
+#find_package(protobuf CONFIG )
 
-if(gRPC_FOUND)
+if(gRPC_FOUND ) #AND protobuf_FOUND) 
+  
   message(STATUS "Using gRPC ${gRPC_VERSION}")
+  #message(STATUS "Using protobuf ${protobuf_VERSION}")
 else()
   # Fallback to pkg-config
   find_package(PkgConfig REQUIRED)
@@ -115,4 +118,10 @@ target_link_libraries(${PROJECT_NAME}
 
 endif()
  
- 
+# https://github.com/faaxm/exmpl-cmake-grpc/blob/master/proto/CMakeLists.txt
+#set(PROTO_FILES
+#    src/glgui.proto
+#)
+#get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
+#protobuf_generate(TARGET myproto LANGUAGE cpp)
+#protobuf_generate(TARGET myproto LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")

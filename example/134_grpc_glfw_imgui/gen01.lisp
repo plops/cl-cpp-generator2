@@ -6,10 +6,8 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (setf *features* (set-difference *features* (list ; :more
-					       )))
-  (setf *features* (set-exclusive-or *features* (list  :more
-						 ))))
+  (setf *features* (set-difference *features* (list :more)))
+  (setf *features* (set-exclusive-or *features* (list :more))))
 
 (progn
   (progn
@@ -47,6 +45,7 @@
 
       ;cmath
       ;linux/videodev2.h
+      future
 
       )
 
@@ -63,6 +62,7 @@
       imgui_impl_opengl3.h
 
       grpcpp/grpcpp.h
+      
       )
 
      (include
@@ -110,21 +110,57 @@
 						   ch_args))
 	       (stub (glgui--GLGuiService--NewStub channel))
 	       ))
-	 (let ((request (glgui--RectangleRequest))
-	       (response (glgui--RectangleResponse))))
 
-	 (let ((context (grpc--ClientContext))))
+	 (let ((get_random_rectangle 
+		 (lambda (stub_)
+		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_)
+			    (capture ""))
+		   (let ((request (glgui--RectangleRequest))
+			 (response (glgui--RectangleResponse))))
+		   
+		   (let ((context (grpc--ClientContext))))
+		   
+		   (let ((status (stub_->GetRandomRectangle &context
+							   request
+							   &response))))
+		   (if (status.ok)
+		       (do0
+			,(lprint :vars `((response.x1))
+				 ))
+		       (do0
+			,(lprint :vars `((status.error_message)))))))))
+	 
+	 (get_random_rectangle stub)
 
-	 (let ((status (stub->GetRandomRectangle &context
-						 request
-						 &response))))
+	 (let ((get_image
+		 (lambda (stub_)
+		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_)
+			    (capture ""))
+		   (let ((request (glgui--GetImageRequest))
+			 (response (glgui--GetImageResponse))))
+		   (request.set_width 128)
+		   (request.set_height 128)
+		   
+		   (let ((context (grpc--ClientContext))))
 
-	 (if (status.ok)
-	     (do0
-	      ,(lprint :vars `((response.x1))
-		       ))
-	     (do0
-	      ,(lprint :vars `((status.error_message)))))
+		   (let ((future (std--async
+				  (lambda ()
+				    (let ((status (stub_->GetImage &context
+								   request
+								   &response)))
+				      (if (status.ok)
+					  (do0
+					   (comments "// do i need to copy response.data here?")
+					   (return response))
+					  (do0
+					   ,(lprint :vars `((status.error_message)))
+					   (throw (std--runtime_error (string "RPC failed")))
+					   ))))))))
+		   (return future)
+		   
+		   ))))
+	 
+	 
 	 )
        
        (do0
@@ -227,7 +263,9 @@
 
        
        
-       #+nil (let ((texture (GLuint 0)))
+       (let ((texture (GLuint 0))
+	     (texture_w 0)
+	     (texture_h 0))
 	 (glGenTextures 1 &texture)
 	 (glBindTexture GL_TEXTURE_2D texture)
 	 
@@ -240,29 +278,45 @@
 	      (ImGui_ImplOpenGL3_NewFrame)
 	      (ImGui_ImplGlfw_NewFrame)
 	      (ImGui--NewFrame)
-	      #+nil (cap.getFrame
-	       (lambda (data size)
-		 (declare (type void* data)
-			  (type size_t size)
-			  (capture "&"))
-		 (glBindTexture GL_TEXTURE_2D texture)
-		 (glTexImage2D GL_TEXTURE_2D
-			       0
-			       GL_RGBA
-			       w h
-			       0
-			       GL_RG
-			       GL_UNSIGNED_BYTE
-			       data
-			       )
-		 (ImGui--Begin (string "camera feed"))
-		 (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
-			       (ImVec2 w h))
-		 (ImGui--End)
-		 
-		 ))
 
-	      (space static bool (setf showDemo true))
+	      (let ((future (get_image stub)))
+		(handler-case
+		    (do0
+		     (let ((response (future.get)))
+		       (do0
+		     (glBindTexture GL_TEXTURE_2D texture)
+		     (setf texture_w
+			   (response.width)
+			   texture_h (response.height)
+			   )
+		     (glTexImage2D GL_TEXTURE_2D
+				   0
+				   GL_RGBA
+				   texture_w
+				   texture_h
+				   0
+				   GL_RGB
+				   GL_UNSIGNED_BYTE
+				   (dot response (data)
+					(c_str))
+				   )
+		     
+		     
+		     )))
+		  ("const std::exception&" (e)
+		    ,(lprint :msg "exception"
+			     :vars `((e.what))))))
+	      
+	       
+
+	       (do0
+		      (glBindTexture GL_TEXTURE_2D texture)
+		      (ImGui--Begin (string "camera feed"))
+		      (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+				    (ImVec2 texture_w texture_h))
+		      (ImGui--End))
+	       
+	       (space static bool (setf showDemo true))
 	      (ImGui--ShowDemoWindow &showDemo)
 	      (ImGui--Render)
 	      (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))

@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <filesystem>
+#include <future>
 #include <glad/gl.h>
 #include <iostream>
 #include <string>
@@ -54,22 +55,52 @@ int main(int argc, char **argv) {
       "localhost:50051", grpc::InsecureChannelCredentials(), ch_args);
   auto stub = glgui::GLGuiService::NewStub(channel);
 
-  auto request = glgui::RectangleRequest();
-  auto response = glgui::RectangleResponse();
+  auto get_random_rectangle =
+      [](std::unique_ptr<glgui::GLGuiService::Stub> &stub_) {
+        auto request = glgui::RectangleRequest();
+        auto response = glgui::RectangleResponse();
 
-  auto context = grpc::ClientContext();
+        auto context = grpc::ClientContext();
 
-  auto status = stub->GetRandomRectangle(&context, request, &response);
+        auto status = stub_->GetRandomRectangle(&context, request, &response);
 
-  if (status.ok()) {
-    std::cout << ""
-              << " response.x1()='" << response.x1() << "' " << std::endl;
+        if (status.ok()) {
+          std::cout << ""
+                    << " response.x1()='" << response.x1() << "' " << std::endl;
 
-  } else {
-    std::cout << ""
-              << " status.error_message()='" << status.error_message() << "' "
-              << std::endl;
-  }
+        } else {
+          std::cout << ""
+                    << " status.error_message()='" << status.error_message()
+                    << "' " << std::endl;
+        }
+      };
+
+  get_random_rectangle(stub);
+  auto get_image = [](std::unique_ptr<glgui::GLGuiService::Stub> &stub_) {
+    auto request = glgui::GetImageRequest();
+    auto response = glgui::GetImageResponse();
+
+    request.set_width(128);
+    request.set_height(128);
+    auto context = grpc::ClientContext();
+
+    auto future = std::async([&]() {
+      auto status = stub_->GetImage(&context, request, &response);
+      if (status.ok()) {
+        // // do i need to copy response.data here?
+
+        return response;
+
+      } else {
+        std::cout << ""
+                  << " status.error_message()='" << status.error_message()
+                  << "' " << std::endl;
+        throw std::runtime_error("RPC failed");
+      }
+    });
+
+    return future;
+  };
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -161,11 +192,40 @@ int main(int argc, char **argv) {
   glUseProgram(program);
   glClearColor(1, 1, 1, 1);
 
+  auto texture = GLuint(0);
+  auto texture_w = 0;
+  auto texture_h = 0;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    auto future = get_image(stub);
+    try {
+      auto response = future.get();
+      glBindTexture(GL_TEXTURE_2D, texture);
+      texture_w = response.width();
+      texture_h = response.height();
+
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0, GL_RGB,
+                   GL_UNSIGNED_BYTE, response.data().c_str());
+
+    } catch (const std::exception &e) {
+      std::cout << "exception"
+                << " e.what()='" << e.what() << "' " << std::endl;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    ImGui::Begin("camera feed");
+    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
+                 ImVec2(texture_w, texture_h));
+    ImGui::End();
+
     static bool showDemo = true;
 
     ImGui::ShowDemoWindow(&showDemo);
