@@ -15,28 +15,39 @@ from concurrent import futures
 import glgui_pb2
 import glgui_pb2_grpc
 import numpy as np
-import cv2
+
+#import cv2
 
 frame_counter = 0
 
 class GLGuiService(glgui_pb2_grpc.GLGuiServiceServicer):
 
     def GetRandomRectangle(self, request, context):
+        print('get-random-rectangle')
         x1, y1 = random.uniform(0, 100), random.uniform(0, 100)
         x2, y2 = x1 + random.uniform(1, 20), y1 + random.uniform(1, 20)
         return glgui_pb2.RectangleResponse(x1=x1, y1=y1, x2=x2, y2=y2)
 
     def GetImage(self, request, context):
         global frame_counter
-
+        print('get-image')
         w = request.width
         h = request.height
         image = np.zeros((h,w,3),dtype=np.uint8)
 
         M = min(w,h)
         circle_diameter = M/10.0 + (M/2.0-M/10.0) * np.sin(2*np.pi*frame_counter/20)/2
+        radius = int(circle_diameter // 2 )
+        # cv2.circle(image, (w//2,h//2), int(circle_diameter//2), (255,255,255), -1)
 
-        cv2.circle(image, (w//2,h//2), int(circle_diameter//2), (255,255,255), -1)
+        y, x = np.ogrid[:h, :w]
+        cx, cy = w//2, h//2
+
+        rho = np.sqrt((x-cx)**2+(y-cy)**2)
+
+        mask = rho <= radius
+        image[mask] = [255,255,255]
+        
         frame_counter += 1;
         return glgui_pb2.GetImageResponse(width=w,height=h,data=image.tobytes())
 

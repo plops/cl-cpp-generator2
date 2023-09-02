@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
     ImGui::NewFrame();
     update_texture_if_ready(stub, future);
     glBindTexture(GL_TEXTURE_2D, texture);
-    ImGui::Begin("camera feed");
+    ImGui::Begin("texture");
     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
                  ImVec2(texture_w, texture_h));
     ImGui::End();

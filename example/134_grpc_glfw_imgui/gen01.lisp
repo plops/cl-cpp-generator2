@@ -312,7 +312,7 @@
 	      (update_texture_if_ready stub future)
 	      (do0
 	       (glBindTexture GL_TEXTURE_2D texture)
-	       (ImGui--Begin (string "camera feed"))
+	       (ImGui--Begin (string "texture"))
 	       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
 			     (ImVec2 texture_w texture_h))
 	       (ImGui--End))
