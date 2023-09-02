@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(imgui_grpc)
 set(CMAKE_CXX_STANDARD 20)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(
         SOURCE_FILES
         src/main.cpp
@@ -85,6 +85,7 @@ else ()
             -ffunction-sections -fdata-sections
             -Wpadded
     )
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
 
