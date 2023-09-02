@@ -119,10 +119,11 @@
 			 (response (glgui--RectangleResponse))))
 		   
 		   (let ((context (grpc--ClientContext))))
-		   
+
 		   (let ((status (stub_->GetRandomRectangle &context
 							   request
 							   &response))))
+		   
 		   (if (status.ok)
 		       (do0
 			,(lprint :vars `((response.x1))
@@ -142,22 +143,15 @@
 		   (request.set_height 128)
 		   
 		   (let ((context (grpc--ClientContext))))
+		   (let ((status (stub_->GetImage &context
+							   request
+							   &response))))
 
-		   (let ((future (std--async
-				  (lambda ()
-				    (let ((status (stub_->GetImage &context
-								   request
-								   &response)))
-				      (if (status.ok)
-					  (do0
-					   (comments "// do i need to copy response.data here?")
-					   (return response))
-					  (do0
-					   ,(lprint :vars `((status.error_message)))
-					   (throw (std--runtime_error (string "RPC failed")))
-					   ))))))))
-		   (return future)
-		   
+		   (if (status.ok)
+		       (do0
+			(return response))
+		       (do0
+			,(lprint :vars `((status.error_message)))))		   
 		   ))))
 	 
 	 
@@ -261,8 +255,7 @@
 	(glUseProgram program)
 	(glClearColor 1 1 1 1))
 
-       
-       
+              
        (let ((texture (GLuint 0))
 	     (texture_w 0)
 	     (texture_h 0))
@@ -271,6 +264,41 @@
 	 
 	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
 	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR))
+
+       (let ((future (std--future<glgui--GetImageResponse>))))
+       (let ((update_texture_if_ready
+	       (lambda (stub_ future_)
+		 (declare (type "std::future<glgui::GetImageResponse>&" future_)
+			  (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_))
+		 (if (future_.valid)
+		     (when (== (future_.wait_for (std--chrono--seconds 0))
+			     std--future_status--ready)
+			 (handler-case
+			     (let ((response (future_.get)))
+			       (do0
+				(glBindTexture GL_TEXTURE_2D texture)
+				(setf texture_w (response.width)
+				      texture_h (response.height))
+				(glTexImage2D GL_TEXTURE_2D
+					      0
+					      GL_RGBA
+					      texture_w
+					      texture_h
+					      0
+					      GL_RGB
+					      GL_UNSIGNED_BYTE
+					      (dot response (data)
+						   (c_str)))
+				(comments "Invalidate the future")
+				(setf future_ (std--future<glgui--GetImageResponse>)))
+			       )
+			   ("const std::exception" (&e)
+			     ,(lprint :vars `((e.what))))))
+		     (setf future_ (std--async
+				   std--launch--async
+				   get_image
+				   (std--ref stub_))))
+		 ))))
        
        (while (!glfwWindowShouldClose window)
 	      (glfwPollEvents)
@@ -279,44 +307,17 @@
 	      (ImGui_ImplGlfw_NewFrame)
 	      (ImGui--NewFrame)
 
-	      (let ((future (get_image stub)))
-		(handler-case
-		    (do0
-		     (let ((response (future.get)))
-		       (do0
-		     (glBindTexture GL_TEXTURE_2D texture)
-		     (setf texture_w
-			   (response.width)
-			   texture_h (response.height)
-			   )
-		     (glTexImage2D GL_TEXTURE_2D
-				   0
-				   GL_RGBA
-				   texture_w
-				   texture_h
-				   0
-				   GL_RGB
-				   GL_UNSIGNED_BYTE
-				   (dot response (data)
-					(c_str))
-				   )
-		     
-		     
-		     )))
-		  ("const std::exception&" (e)
-		    ,(lprint :msg "exception"
-			     :vars `((e.what))))))
 	      
 	       
-
-	       (do0
-		      (glBindTexture GL_TEXTURE_2D texture)
-		      (ImGui--Begin (string "camera feed"))
-		      (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
-				    (ImVec2 texture_w texture_h))
-		      (ImGui--End))
+	      (update_texture_if_ready stub future)
+	      (do0
+	       (glBindTexture GL_TEXTURE_2D texture)
+	       (ImGui--Begin (string "camera feed"))
+	       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
+			     (ImVec2 texture_w texture_h))
+	       (ImGui--End))
 	       
-	       (space static bool (setf showDemo true))
+	      (space static bool (setf showDemo true))
 	      (ImGui--ShowDemoWindow &showDemo)
 	      (ImGui--Render)
 	      (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))

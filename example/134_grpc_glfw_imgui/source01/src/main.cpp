@@ -84,22 +84,16 @@ int main(int argc, char **argv) {
     request.set_height(128);
     auto context = grpc::ClientContext();
 
-    auto future = std::async([&]() {
-      auto status = stub_->GetImage(&context, request, &response);
-      if (status.ok()) {
-        // // do i need to copy response.data here?
+    auto status = stub_->GetImage(&context, request, &response);
 
-        return response;
+    if (status.ok()) {
+      return response;
 
-      } else {
-        std::cout << ""
-                  << " status.error_message()='" << status.error_message()
-                  << "' " << std::endl;
-        throw std::runtime_error("RPC failed");
-      }
-    });
-
-    return future;
+    } else {
+      std::cout << ""
+                << " status.error_message()='" << status.error_message() << "' "
+                << std::endl;
+    }
   };
 
   glfwInit();
@@ -200,26 +194,42 @@ int main(int argc, char **argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  auto future = std::future<glgui::GetImageResponse>();
+
+  auto update_texture_if_ready =
+      [&](std::unique_ptr<glgui::GLGuiService::Stub> &stub_,
+          std::future<glgui::GetImageResponse> &future_) {
+        if (future_.valid()) {
+          if (future_.wait_for(std::chrono::seconds(0)) ==
+              std::future_status::ready) {
+            try {
+              auto response = future_.get();
+              glBindTexture(GL_TEXTURE_2D, texture);
+              texture_w = response.width();
+              texture_h = response.height();
+
+              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0,
+                           GL_RGB, GL_UNSIGNED_BYTE, response.data().c_str());
+              // Invalidate the future
+
+              future_ = std::future<glgui::GetImageResponse>();
+
+            } catch (const std::exception &e) {
+              std::cout << ""
+                        << " e.what()='" << e.what() << "' " << std::endl;
+            }
+          }
+        } else {
+          future_ = std::async(std::launch::async, get_image, std::ref(stub_));
+        }
+      };
+
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    auto future = get_image(stub);
-    try {
-      auto response = future.get();
-      glBindTexture(GL_TEXTURE_2D, texture);
-      texture_w = response.width();
-      texture_h = response.height();
-
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0, GL_RGB,
-                   GL_UNSIGNED_BYTE, response.data().c_str());
-
-    } catch (const std::exception &e) {
-      std::cout << "exception"
-                << " e.what()='" << e.what() << "' " << std::endl;
-    }
-
+    update_texture_if_ready(stub, future);
     glBindTexture(GL_TEXTURE_2D, texture);
     ImGui::Begin("camera feed");
     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
