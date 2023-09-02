@@ -67,8 +67,7 @@ int main(int argc, char **argv) {
     if (status.ok()) {
       return response;
     } else {
-      std::cout << " status.error_message()='" << status.error_message()
-                << "'\n";
+      throw std::runtime_error(status.error_message());
     }
   };
   glfwInit();
@@ -156,17 +155,13 @@ int main(int argc, char **argv) {
         if (future_.valid()) {
           if (future_.wait_for(std::chrono::seconds(0)) ==
               std::future_status::ready) {
-            try {
-              auto response = future_.get();
-              glBindTexture(GL_TEXTURE_2D, texture);
-              texture_w = response.width();
-              texture_h = response.height();
-              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0,
-                           GL_RGB, GL_UNSIGNED_BYTE, response.data().c_str());
-              future_ = std::future<glgui::GetImageResponse>();
-            } catch (const std::exception &e) {
-              std::cout << " e.what()='" << e.what() << "'\n";
-            }
+            auto response = future_.get();
+            glBindTexture(GL_TEXTURE_2D, texture);
+            texture_w = response.width();
+            texture_h = response.height();
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0,
+                         GL_RGB, GL_UNSIGNED_BYTE, response.data().c_str());
+            future_ = std::future<glgui::GetImageResponse>();
           }
         } else {
           future_ = std::async(std::launch::async, get_image, std::ref(stub_));
@@ -180,8 +175,9 @@ int main(int argc, char **argv) {
     update_texture_if_ready(stub, future);
     glBindTexture(GL_TEXTURE_2D, texture);
     ImGui::Begin("texture");
-    ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
-                 ImVec2(texture_w, texture_h));
+    ImGui::Image(
+        reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
+        ImVec2(static_cast<float>(texture_w), static_cast<float>(texture_h)));
     ImGui::End();
     static bool showDemo = true;
     ImGui::ShowDemoWindow(&showDemo);

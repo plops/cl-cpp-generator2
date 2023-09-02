@@ -151,6 +151,8 @@
 		       (do0
 			(return response))
 		       (do0
+			(throw (std--runtime_error (status.error_message)))
+			#+nil
 			,(lprint :vars `((status.error_message)))))		   
 		   ))))
 	 
@@ -277,7 +279,7 @@
 		 (if (future_.valid)
 		     (when (== (future_.wait_for (std--chrono--seconds 0))
 			     std--future_status--ready)
-			 (handler-case
+			 (do0 ;handler-case
 			     (let ((response (future_.get)))
 			       (glBindTexture GL_TEXTURE_2D texture)
 			       (setf texture_w (response.width)
@@ -295,7 +297,7 @@
 			       ;(comments "Invalidate the future")
 			       (setf future_ (std--future<glgui--GetImageResponse>))
 			       )
-			   ("const std::exception" (&e)
+			   #+nil ("const std::exception" (&e)
 			     ,(lprint :vars `((e.what))))))
 		     (setf future_ (std--async
 				   std--launch--async
@@ -317,7 +319,8 @@
 	       (glBindTexture GL_TEXTURE_2D texture)
 	       (ImGui--Begin (string "texture"))
 	       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
-			     (ImVec2 texture_w texture_h))
+			     (ImVec2 (static_cast<float> texture_w)
+				     (static_cast<float> texture_h)))
 	       (ImGui--End))
 	       
 	      (space static bool (setf showDemo true))
