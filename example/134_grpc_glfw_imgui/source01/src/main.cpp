@@ -17,23 +17,16 @@ const char *const vertexShaderSrc = R"(#version 450
 layout (location=0) in vec2 aPos;
 
 void main ()        {
-            gl_Position=vec4(aPos, 1, 1);
-
-
+            gl_Position=vec4(aPos, 1, 1); 
 }
- 
-)";
-
+ )";
 const char *const fragmentShaderSrc = R"(#version 450
 layout (location=0) out vec4 outColor;
 
 void main ()        {
-            outColor=vec4(1, 0, 0, 1);
-
-
+            outColor=vec4(1, 0, 0, 1); 
 }
- 
-)";
+ )";
 
 void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
                       [[maybe_unused]] GLsizei length, GLchar const *message,
@@ -54,48 +47,37 @@ int main(int argc, char **argv) {
   auto channel = grpc::CreateCustomChannel(
       "localhost:50051", grpc::InsecureChannelCredentials(), ch_args);
   auto stub = glgui::GLGuiService::NewStub(channel);
-
   auto get_random_rectangle =
-      [](std::unique_ptr<glgui::GLGuiService::Stub> &stub_) {
+      [](std::unique_ptr<glgui::GLGuiService::Stub> const &stub_) {
         auto request = glgui::RectangleRequest();
         auto response = glgui::RectangleResponse();
-
         auto context = grpc::ClientContext();
-
         auto status = stub_->GetRandomRectangle(&context, request, &response);
-
         if (status.ok()) {
           std::cout << ""
                     << " response.x1()='" << response.x1() << "' " << std::endl;
-
         } else {
           std::cout << ""
                     << " status.error_message()='" << status.error_message()
                     << "' " << std::endl;
         }
       };
-
   get_random_rectangle(stub);
-  auto get_image = [](std::unique_ptr<glgui::GLGuiService::Stub> &stub_) {
+  auto get_image = [](std::unique_ptr<glgui::GLGuiService::Stub> const &stub_) {
     auto request = glgui::GetImageRequest();
     auto response = glgui::GetImageResponse();
-
     request.set_width(128);
     request.set_height(128);
     auto context = grpc::ClientContext();
-
     auto status = stub_->GetImage(&context, request, &response);
-
     if (status.ok()) {
       return response;
-
     } else {
       std::cout << ""
                 << " status.error_message()='" << status.error_message() << "' "
                 << std::endl;
     }
   };
-
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -105,7 +87,6 @@ int main(int argc, char **argv) {
     std::cout << "Error creating glfw window" << std::endl;
     return -1;
   }
-
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
   if (!gladLoaderLoadGL()) {
@@ -118,17 +99,14 @@ int main(int argc, char **argv) {
     std::cout << "extensions"
               << " extstr='" << extstr << "' " << std::endl;
   }
-
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 450 core");
   ImGui::StyleColorsClassic();
-
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(message_callback, nullptr);
-
   std::cout << "Compile shader" << std::endl;
   auto success = 0;
   auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -143,10 +121,8 @@ int main(int argc, char **argv) {
               << " std::string(infoLog.begin(), infoLog.end())='"
               << std::string(infoLog.begin(), infoLog.end()) << "' "
               << std::endl;
-
     exit(-1);
   }
-
   auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSrc, nullptr);
   glCompileShader(fragmentShader);
@@ -159,10 +135,8 @@ int main(int argc, char **argv) {
               << " std::string(infoLog.begin(), infoLog.end())='"
               << std::string(infoLog.begin(), infoLog.end()) << "' "
               << std::endl;
-
     exit(-1);
   }
-
   auto program = glCreateProgram();
   glAttachShader(program, vertexShader);
   glAttachShader(program, fragmentShader);
@@ -176,16 +150,12 @@ int main(int argc, char **argv) {
               << " std::string(infoLog.begin(), infoLog.end())='"
               << std::string(infoLog.begin(), infoLog.end()) << "' "
               << std::endl;
-
     exit(-1);
   }
-
   glDetachShader(program, vertexShader);
   glDetachShader(program, fragmentShader);
-
   glUseProgram(program);
   glClearColor(1, 1, 1, 1);
-
   auto texture = GLuint(0);
   auto texture_w = 0;
   auto texture_h = 0;
@@ -193,9 +163,7 @@ int main(int argc, char **argv) {
   glBindTexture(GL_TEXTURE_2D, texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
   auto future = std::future<glgui::GetImageResponse>();
-
   auto update_texture_if_ready =
       [&](std::unique_ptr<glgui::GLGuiService::Stub> &stub_,
           std::future<glgui::GetImageResponse> &future_) {
@@ -207,13 +175,9 @@ int main(int argc, char **argv) {
               glBindTexture(GL_TEXTURE_2D, texture);
               texture_w = response.width();
               texture_h = response.height();
-
               glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_w, texture_h, 0,
                            GL_RGB, GL_UNSIGNED_BYTE, response.data().c_str());
-              // Invalidate the future
-
               future_ = std::future<glgui::GetImageResponse>();
-
             } catch (const std::exception &e) {
               std::cout << ""
                         << " e.what()='" << e.what() << "' " << std::endl;
@@ -223,7 +187,6 @@ int main(int argc, char **argv) {
           future_ = std::async(std::launch::async, get_image, std::ref(stub_));
         }
       };
-
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
@@ -235,9 +198,7 @@ int main(int argc, char **argv) {
     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(texture)),
                  ImVec2(texture_w, texture_h));
     ImGui::End();
-
     static bool showDemo = true;
-
     ImGui::ShowDemoWindow(&showDemo);
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -250,6 +211,5 @@ int main(int argc, char **argv) {
   ImGui::DestroyContext();
   glfwDestroyWindow(window);
   glfwTerminate();
-
   return 0;
 }

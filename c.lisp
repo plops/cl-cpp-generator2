@@ -1108,7 +1108,7 @@ entry return-values contains a list of return values. currently supports type, v
 						   ;; or if x is an s-expression with a c thing that doesn't end with semicolon
 						   semicolon-maybe)))
 				     (cdr code)))
-			    (terpri s)
+			    ; (terpri s)
 					;(format t "</do0>~%")
 
 			    #+nil

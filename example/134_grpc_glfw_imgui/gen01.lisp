@@ -113,7 +113,7 @@
 
 	 (let ((get_random_rectangle 
 		 (lambda (stub_)
-		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_)
+		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub> const &" stub_)
 			    (capture ""))
 		   (let ((request (glgui--RectangleRequest))
 			 (response (glgui--RectangleResponse))))
@@ -135,7 +135,7 @@
 
 	 (let ((get_image
 		 (lambda (stub_)
-		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub>&" stub_)
+		   (declare (type "std::unique_ptr<glgui::GLGuiService::Stub> const &" stub_)
 			    (capture ""))
 		   (let ((request (glgui--GetImageRequest))
 			 (response (glgui--GetImageResponse))))
@@ -275,22 +275,21 @@
 			     std--future_status--ready)
 			 (handler-case
 			     (let ((response (future_.get)))
-			       (do0
-				(glBindTexture GL_TEXTURE_2D texture)
-				(setf texture_w (response.width)
-				      texture_h (response.height))
-				(glTexImage2D GL_TEXTURE_2D
-					      0
-					      GL_RGBA
-					      texture_w
-					      texture_h
-					      0
-					      GL_RGB
-					      GL_UNSIGNED_BYTE
-					      (dot response (data)
-						   (c_str)))
-				(comments "Invalidate the future")
-				(setf future_ (std--future<glgui--GetImageResponse>)))
+			       (glBindTexture GL_TEXTURE_2D texture)
+			       (setf texture_w (response.width)
+				     texture_h (response.height))
+			       (glTexImage2D GL_TEXTURE_2D
+					     0
+					     GL_RGBA
+					     texture_w
+					     texture_h
+					     0
+					     GL_RGB
+					     GL_UNSIGNED_BYTE
+					     (dot response (data)
+						  (c_str)))
+			       ;(comments "Invalidate the future")
+			       (setf future_ (std--future<glgui--GetImageResponse>))
 			       )
 			   ("const std::exception" (&e)
 			     ,(lprint :vars `((e.what))))))
