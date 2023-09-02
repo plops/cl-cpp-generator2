@@ -5,28 +5,28 @@ set(CMAKE_CXX_STANDARD 20)
 set(
         SOURCE_FILES
         src/main.cpp
-	src/glgui.grpc.pb.cc
-	src/glgui.pb.cc
+        src/glgui.grpc.pb.cc
+        src/glgui.pb.cc
 )
 
 #find_package(gRPC CONFIG )
 #find_package(protobuf CONFIG )
 
-if(gRPC_FOUND ) #AND protobuf_FOUND) 
-  
-  message(STATUS "Using gRPC ${gRPC_VERSION}")
-  #message(STATUS "Using protobuf ${protobuf_VERSION}")
-else()
-  # Fallback to pkg-config
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(GRPC REQUIRED grpc++)
-  pkg_check_modules(PROTOBUF REQUIRED protobuf)
+if (gRPC_FOUND) #AND protobuf_FOUND)
 
-  message(STATUS "Using gRPC via pkg-config")
-endif()
+    message(STATUS "Using gRPC ${gRPC_VERSION}")
+    #message(STATUS "Using protobuf ${protobuf_VERSION}")
+else ()
+    # Fallback to pkg-config
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GRPC REQUIRED grpc++)
+    pkg_check_modules(PROTOBUF REQUIRED protobuf)
+
+    message(STATUS "Using gRPC via pkg-config")
+endif ()
 
 include(FetchContent)
-FetchContent_Declare( 
+FetchContent_Declare(
         imgui-glfw-glad-glm
         GIT_REPOSITORY https://github.com/cmmw/imgui-glfw-glad-glm.git
         GIT_TAG v4.0.1
@@ -39,28 +39,28 @@ option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 if (ENABLE_ASAN)
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address)
-endif()
+endif ()
 
 # UndefinedBehaviorSanitizer
 option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 if (ENABLE_UBSAN)
     add_compile_options(-fsanitize=undefined)
     add_link_options(-fsanitize=undefined)
-endif()
+endif ()
 
 # ThreadSanitizer
 option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
 if (ENABLE_TSAN)
     add_compile_options(-fsanitize=thread)
     add_link_options(-fsanitize=thread)
-endif()
+endif ()
 
 # LeakSanitizer
 option(ENABLE_LSAN "Enable LeakSanitizer" OFF)
 if (ENABLE_LSAN)
     add_compile_options(-fsanitize=leak)
     add_link_options(-fsanitize=leak)
-endif()
+endif ()
 
 
 # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
@@ -99,25 +99,25 @@ target_link_libraries(
         ${PROJECT_NAME}
         imgui
         glm
-	
+
 )
-if(gRPC_FOUND)
-  target_link_libraries(${PROJECT_NAME} gRPC::grpc++)
-else()					
-# Include directories			
-target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS})
+if (gRPC_FOUND)
+    target_link_libraries(${PROJECT_NAME} gRPC::grpc++)
+else ()
+    # Include directories
+    target_include_directories(${PROJECT_NAME} PUBLIC ${GRPC_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS})
 
-# Compiler options
-target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
+    # Compiler options
+    target_compile_options(${PROJECT_NAME} PUBLIC ${GRPC_CFLAGS_OTHER})
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME} 
-    ${GRPC_LIBRARIES} 
-    ${PROTOBUF_LIBRARIES}
-)
+    # Link libraries
+    target_link_libraries(${PROJECT_NAME}
+            ${GRPC_LIBRARIES}
+            ${PROTOBUF_LIBRARIES}
+    )
 
-endif()
- 
+endif ()
+
 # https://github.com/faaxm/exmpl-cmake-grpc/blob/master/proto/CMakeLists.txt
 #set(PROTO_FILES
 #    src/glgui.proto
