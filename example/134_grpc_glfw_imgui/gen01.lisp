@@ -21,6 +21,18 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
+
+  (defun gl-shader-info-log (var-msg)
+	       #-more ""
+	       #+more
+	       (destructuring-bind (&key var msg) var-msg
+		`(let ((infoLog (std--vector<char> 512)))
+		   (glGetShaderInfoLog ,var (static_cast<GLsizei> (infoLog.size)) nullptr (infoLog.data))
+		   (let ((info (std--string (infoLog.begin)
+					    (infoLog.end)))))
+		   ,(lprint :msg msg
+			    :vars `(info))
+		   )))
   
   (write-source 
    (asdf:system-relative-pathname
@@ -40,11 +52,11 @@
       thread
       
       filesystem
-      ;unistd.h
+					;unistd.h
       cstdlib
 
-      ;cmath
-      ;linux/videodev2.h
+					;cmath
+					;linux/videodev2.h
       future
 
       )
@@ -56,7 +68,7 @@
 
       GLFW/glfw3.h
       
-      ;glm/glm.hpp
+					;glm/glm.hpp
       imgui.h
       imgui_impl_glfw.h
       imgui_impl_opengl3.h
@@ -88,13 +100,13 @@
 		     :omit-redundant-parentheses t)))
 
      #+more (defun message_callback (source type id severity length message user_param)
-       (declare (type GLenum source type severity)
-		(type GLuint id)
-		(type "[[maybe_unused]] GLsizei" length)
-		(type "GLchar const *" message)
-		(type "[[maybe_unused]] void const *" user_param))
-       ,(lprint :msg "gl"
-		:vars `(source type id severity message)))
+	      (declare (type GLenum source type severity)
+		       (type GLuint id)
+		       (type "[[maybe_unused]] GLsizei" length)
+		       (type "GLchar const *" message)
+		       (type "[[maybe_unused]] void const *" user_param))
+	      ,(lprint :msg "gl"
+		       :vars `(source type id severity message)))
 					     
      (defun main (argc argv)
        (declare (values int)
@@ -121,8 +133,8 @@
 		   (let ((context (grpc--ClientContext))))
 
 		   (let ((status (stub_->GetRandomRectangle &context
-							   request
-							   &response))))
+							    request
+							    &response))))
 		   
 		   (if (status.ok)
 		       (do0
@@ -144,8 +156,8 @@
 		   
 		   (let ((context (grpc--ClientContext))))
 		   (let ((status (stub_->GetImage &context
-							   request
-							   &response))))
+						  request
+						  &response))))
 
 		   (if (status.ok)
 		       (do0
@@ -211,13 +223,7 @@
 
 	   (glGetShaderiv vertexShader GL_COMPILE_STATUS &success)
 	   (unless success
-	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog vertexShader n nullptr (infoLog.data))
-		      (let ((info (std--string (infoLog.begin)
-					       (infoLog.end)))))
-		      ,(lprint :msg "Vertex shader compilation failed."
-			       :vars `(info))
-		      )
+	     ,(gl-shader-info-log `(:var vertexShader :msg "Vertex shader compilation failed."))
 	     (exit -1))
 	   )
 	 (let ((fragmentShader (glCreateShader GL_FRAGMENT_SHADER)))
@@ -226,13 +232,7 @@
 
 	   (glGetShaderiv fragmentShader GL_COMPILE_STATUS &success)
 	   (unless success
-	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog fragmentShader n nullptr (infoLog.data))
-		      (let ((info (std--string (infoLog.begin)
-					       (infoLog.end)))))
-		      ,(lprint :msg "Fragment shader compilation failed."
-				:vars `(info))
-		      )
+	     ,(gl-shader-info-log `(:var fragmentShader :msg "Fragment shader compilation failed."))
 	     (exit -1))
 	   )
 	 (let ((program (glCreateProgram )))
@@ -241,21 +241,11 @@
 	   (glLinkProgram program)
 	   (glGetProgramiv program GL_LINK_STATUS &success)
 	   (unless success
-	     #+more (let ((n 512) (infoLog (std--vector<char> n)))
-		      (glGetShaderInfoLog program n nullptr (infoLog.data))
-		      (let ((info (std--string (infoLog.begin)
-					       (infoLog.end)))))
-		      
-		      ,(lprint :msg "Shader linking failed."
-			       :vars `(info))
-		      )
+	     ,(gl-shader-info-log `(:var program :msg "Shader linking failed."))
 	     (exit -1))
 	   )
 	 (glDetachShader program vertexShader)
-	 (glDetachShader program fragmentShader))
-	
-	
-	)
+	 (glDetachShader program fragmentShader)))
 
        (do0
 	(glUseProgram program)
@@ -283,31 +273,31 @@
 				   ))
 		 (if (future_.valid)
 		     (when (== (future_.wait_for (std--chrono--seconds 0))
-			     std--future_status--ready)
-			 (do0 ;handler-case
-			     (let ((response (future_.get)))
-			       (glBindTexture GL_TEXTURE_2D texture)
-			       (setf texture_w (response.width)
-				     texture_h (response.height))
-			       (glTexImage2D GL_TEXTURE_2D
-					     0
-					     GL_RGBA
-					     texture_w
-					     texture_h
-					     0
-					     GL_RGB
-					     GL_UNSIGNED_BYTE
-					     (dot response (data)
-						  (c_str)))
-			       ;(comments "Invalidate the future")
-			       (setf future_ (std--future<glgui--GetImageResponse>))
-			       )
-			   #+nil ("const std::exception" (&e)
-			     ,(lprint :vars `((e.what))))))
+			       std--future_status--ready)
+		       (do0		;handler-case
+			(let ((response (future_.get)))
+			  (glBindTexture GL_TEXTURE_2D texture)
+			  (setf texture_w (response.width)
+				texture_h (response.height))
+			  (glTexImage2D GL_TEXTURE_2D
+					0
+					GL_RGBA
+					texture_w
+					texture_h
+					0
+					GL_RGB
+					GL_UNSIGNED_BYTE
+					(dot response (data)
+					     (c_str)))
+					;(comments "Invalidate the future")
+			  (setf future_ (std--future<glgui--GetImageResponse>))
+			  )
+			#+nil ("const std::exception" (&e)
+						      ,(lprint :vars `((e.what))))))
 		     (setf future_ (std--async
-				   std--launch--async
-				   get_image
-				   (std--ref stub_))))
+				    std--launch--async
+				    get_image
+				    (std--ref stub_))))
 		 ))))
        
        (while (!glfwWindowShouldClose window)

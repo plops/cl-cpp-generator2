@@ -105,9 +105,9 @@ int main(int argc, char **argv) {
   glCompileShader(vertexShader);
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
-    auto n = 512;
-    auto infoLog = std::vector<char>(n);
-    glGetShaderInfoLog(vertexShader, n, nullptr, infoLog.data());
+    auto infoLog = std::vector<char>(512);
+    glGetShaderInfoLog(vertexShader, static_cast<GLsizei>(infoLog.size()),
+                       nullptr, infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "Vertex shader compilation failed. info='" << info << "'\n";
     exit(-1);
@@ -117,9 +117,9 @@ int main(int argc, char **argv) {
   glCompileShader(fragmentShader);
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if (!success) {
-    auto n = 512;
-    auto infoLog = std::vector<char>(n);
-    glGetShaderInfoLog(fragmentShader, n, nullptr, infoLog.data());
+    auto infoLog = std::vector<char>(512);
+    glGetShaderInfoLog(fragmentShader, static_cast<GLsizei>(infoLog.size()),
+                       nullptr, infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "Fragment shader compilation failed. info='" << info << "'\n";
     exit(-1);
@@ -130,9 +130,9 @@ int main(int argc, char **argv) {
   glLinkProgram(program);
   glGetProgramiv(program, GL_LINK_STATUS, &success);
   if (!success) {
-    auto n = 512;
-    auto infoLog = std::vector<char>(n);
-    glGetShaderInfoLog(program, n, nullptr, infoLog.data());
+    auto infoLog = std::vector<char>(512);
+    glGetShaderInfoLog(program, static_cast<GLsizei>(infoLog.size()), nullptr,
+                       infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
     std::cout << "Shader linking failed. info='" << info << "'\n";
     exit(-1);
