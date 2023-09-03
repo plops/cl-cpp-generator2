@@ -2,15 +2,17 @@ cmake_minimum_required(VERSION 3.17)
 project(imgui_grpc)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+# before starting clion: 
+set(CMAKE_PREFIX_PATH /home/martin/grpc/)
 set(
         SOURCE_FILES
         src/main.cpp
-        src/glgui.grpc.pb.cc
-        src/glgui.pb.cc
+        #src/glgui.grpc.pb.cc
+        #src/glgui.pb.cc
 )
+find_package(protobuf CONFIG )
 
-#find_package(gRPC CONFIG )
-#find_package(protobuf CONFIG )
+find_package(gRPC CONFIG )
 
 if (gRPC_FOUND) #AND protobuf_FOUND)
 
@@ -90,9 +92,13 @@ else ()
 endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
+set(PROTO_FILES
+        src/glgui.proto
+)
 add_executable(
         ${PROJECT_NAME}
         ${SOURCE_FILES}
+        ${PROTO_FILES}
 )
 
 # It is sufficient to only link glm and ImGui since the latter one already contains Glad and GLFW
@@ -120,9 +126,9 @@ else ()
 endif ()
 
 # https://github.com/faaxm/exmpl-cmake-grpc/blob/master/proto/CMakeLists.txt
-#set(PROTO_FILES
-#    src/glgui.proto
-#)
-#get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-#protobuf_generate(TARGET myproto LANGUAGE cpp)
-#protobuf_generate(TARGET myproto LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}/src)
+
+get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
+protobuf_generate(TARGET ${PROJECT_NAME} LANGUAGE cpp)
+protobuf_generate(TARGET ${PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
