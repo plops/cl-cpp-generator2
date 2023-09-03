@@ -23,10 +23,10 @@ jobs:
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
       
-    - name: Generate Protobuf and gRPC code
-      run: |
-        cd example/134_grpc_glfw_imgui/source01/src
-        protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=grpc_cpp_plugin.exe glgui.proto
+#    - name: Generate Protobuf and gRPC code
+#      run: |
+#        cd example/134_grpc_glfw_imgui/source01/src
+#        protoc --cpp_out=. --grpc_out=. --plugin=protoc-gen-grpc=grpc_cpp_plugin.exe glgui.proto
 
     - name: Create build directory
       run: mkdir build
