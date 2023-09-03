@@ -2,8 +2,21 @@ cmake_minimum_required(VERSION 3.17)
 project(imgui_grpc)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-# before starting clion: 
-set(CMAKE_PREFIX_PATH /home/martin/grpc/)
+# before starting clion: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/grpc/lib:/home/martin/grpc/lib64
+if(NOT WIN32)
+    set(CMAKE_PREFIX_PATH /home/martin/grpc/)
+    # https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
+
+    add_compile_options(
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow -Wformat=2 -fno-common -fstack-usage
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+	)
+
+endif()
 set(
         SOURCE_FILES
         src/main.cpp
@@ -11,7 +24,6 @@ set(
         #src/glgui.pb.cc
 )
 find_package(protobuf CONFIG )
-
 find_package(gRPC CONFIG )
 
 if (gRPC_FOUND) #AND protobuf_FOUND)
@@ -65,16 +77,6 @@ if (ENABLE_LSAN)
 endif ()
 
 
-# https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags
-
-add_compile_options(
-        -Wall -Wextra -Wconversion -Wdouble-promotion
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-        -Wshadow -Wformat=2 -fno-common -fstack-usage
-        -fvisibility=hidden
-        -fno-strict-overflow -Wno-strict-overflow
-)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -121,7 +123,6 @@ else ()
     target_link_libraries(${PROJECT_NAME}
             ${GRPC_LIBRARIES}
             ${PROTOBUF_LIBRARIES}
-    )
 
 endif ()
 
