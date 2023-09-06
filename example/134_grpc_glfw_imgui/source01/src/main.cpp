@@ -31,8 +31,10 @@ void main ()        {
 void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
                       [[maybe_unused]] GLsizei length, GLchar const *message,
                       [[maybe_unused]] void const *user_param) {
-  std::cout << "gl source='" << source << "' " << type << "' " << id << "' "
-            << severity << "' " << message << "'\n";
+  std::cout << "gl source='" << source << "' type='" << type << "' "
+            << " id='" << id << "' "
+            << " severity='" << severity << "' "
+            << " message='" << message << "' ";
 }
 
 int main(int argc, char **argv) {

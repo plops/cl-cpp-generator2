@@ -123,6 +123,7 @@ else ()
     target_link_libraries(${PROJECT_NAME}
             ${GRPC_LIBRARIES}
             ${PROTOBUF_LIBRARIES}
+	    )
 
 endif ()
 

@@ -3,29 +3,39 @@
   #-more ""
   #+more
   (let ((out `(<< std--cout)))
-    (unless (string= msg "")
-      (setf out (append out
-			(if vars
-			    `((string ,(format nil "~a ~a='"
-					       msg
-					       (emit-c :code (first vars)
-						       :omit-redundant-parentheses t))))
-			    `((string ,(format nil "~a\\n"
-					       msg)))))))
+    ;; combine msg and first variable or message and newline
+    (setf out (append out
+		      (cond
+			  ((eq (length vars) 1)
+			   `((string ,(format nil "~a ~a='"
+					      msg
+					      (emit-c :code (first vars)
+						      :omit-redundant-parentheses t)))
+			     ,(first vars)
+			     (string "'\\n")))
+			  (vars
+			   `((string ,(format nil "~a ~a='"
+					      msg
+					      (emit-c :code (first vars)
+						      :omit-redundant-parentheses t)))
+			     ,(first vars)))
+			  (t
+			   `((string ,(format nil "~a\\n"
+					      msg)))))))
+    ;; print remaining variables (if more than one)
     (setf out
 	  (append out
-		  (loop for e in vars
+		  (loop for e in (rest vars)
 			and e-i from 0
 			appending
-			(remove-if #'null
-			 `(,(when (string= msg "")
-			      `(string ,(format nil " ~a='" (emit-c :code e
-								   :omit-redundant-parentheses t))))
-			   ,e
-			   ,(if (eq e-i (- (length vars) 1))
-				`(string "'\\n")
-				`(string "' ")
-				))))))
+			`((string ,(format nil "~a ~a='" (if (eq e-i 0) "'" "")
+					   (emit-c :code e
+						   :omit-redundant-parentheses t)))
+			    ,e
+			    ,(if (eq e-i (- (length vars) 1))
+				 `(string "'\\n")
+				 `(string "' ")
+				 )))))
     out
     #+nil
     `(<< std--cout
