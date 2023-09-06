@@ -28,14 +28,15 @@
 		  (loop for e in (rest vars)
 			and e-i from 0
 			appending
-			`((string ,(format nil "~a ~a='" (if (eq e-i 0) "'" "")
-					   (emit-c :code e
-						   :omit-redundant-parentheses t)))
-			    ,e
-			    ,(if (eq e-i (- (length vars) 1))
-				 `(string "'\\n")
-				 `(string "' ")
-				 )))))
+			(remove-if #'null
+				   `((string ,(format nil "' ~a='"
+						      (emit-c :code e
+							      :omit-redundant-parentheses t)))
+				     ,e
+				     ,(when (eq e-i (- (length vars) 1))
+					`(string "'\\n")
+				 
+					))))))
     out
     #+nil
     `(<< std--cout
