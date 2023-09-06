@@ -23,16 +23,17 @@
 			   `((string ,(format nil "~a\\n"
 					      msg)))))))
     ;; print remaining variables (if more than one)
-    (setf out
-	  (append out
-		  `(,@(loop for e in (rest vars)
-			 and e-i from 0
-			 appending
-			 `((string ,(format nil "' ~a='"
-					    (emit-c :code e
-						    :omit-redundant-parentheses t)))
-			   ,e))
-		    (string "'\\n"))))
+    (when (< 1 (length vars))
+     (setf out
+	   (append out
+		   `(,@(loop for e in (rest vars)
+			     and e-i from 0
+			     appending
+			     `((string ,(format nil "' ~a='"
+						(emit-c :code e
+							:omit-redundant-parentheses t)))
+			       ,e))
+		     (string "'\\n")))))
     out
     #+nil
     `(<< std--cout

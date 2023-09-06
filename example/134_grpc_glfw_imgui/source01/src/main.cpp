@@ -50,11 +50,9 @@ int main(int argc, char **argv) {
         auto context = grpc::ClientContext();
         auto status = stub_->GetRandomRectangle(&context, request, &response);
         if (status.ok()) {
-          std::cout << " response.x1()='" << response.x1() << "'\n"
-                    << "'\n";
+          std::cout << " response.x1()='" << response.x1() << "'\n";
         } else {
           std::cout << " status.error_message()='" << status.error_message()
-                    << "'\n"
                     << "'\n";
         }
       };
@@ -78,23 +76,19 @@ int main(int argc, char **argv) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   auto window = glfwCreateWindow(800, 600, "v4l", nullptr, nullptr);
   if (!window) {
-    std::cout << "Error creating glfw window.\n"
-              << "'\n";
+    std::cout << "Error creating glfw window.\n";
     return -1;
   }
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
   if (!gladLoaderLoadGL()) {
-    std::cout << "Error initializing glad.\n"
-              << "'\n";
+    std::cout << "Error initializing glad.\n";
     return -2;
   }
-  std::cout << "Get extensions.\n"
-            << "'\n";
+  std::cout << "Get extensions.\n";
   if (auto ext = glGetString(GL_EXTENSIONS); nullptr != ext) {
     auto extension_str = std::string(reinterpret_cast<const char *>(ext));
-    std::cout << "extension extension_str='" << extension_str << "'\n"
-              << "'\n";
+    std::cout << "extension extension_str='" << extension_str << "'\n";
   }
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -104,8 +98,7 @@ int main(int argc, char **argv) {
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(message_callback, nullptr);
-  std::cout << "Compile shader.\n"
-            << "'\n";
+  std::cout << "Compile shader.\n";
   auto success = 0;
   auto vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
@@ -116,8 +109,7 @@ int main(int argc, char **argv) {
     glGetShaderInfoLog(vertexShader, static_cast<GLsizei>(infoLog.size()),
                        nullptr, infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
-    std::cout << "Vertex shader compilation failed. info='" << info << "'\n"
-              << "'\n";
+    std::cout << "Vertex shader compilation failed. info='" << info << "'\n";
     exit(-1);
   }
   auto fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -129,8 +121,7 @@ int main(int argc, char **argv) {
     glGetShaderInfoLog(fragmentShader, static_cast<GLsizei>(infoLog.size()),
                        nullptr, infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
-    std::cout << "Fragment shader compilation failed. info='" << info << "'\n"
-              << "'\n";
+    std::cout << "Fragment shader compilation failed. info='" << info << "'\n";
     exit(-1);
   }
   auto program = glCreateProgram();
@@ -143,8 +134,7 @@ int main(int argc, char **argv) {
     glGetShaderInfoLog(program, static_cast<GLsizei>(infoLog.size()), nullptr,
                        infoLog.data());
     auto info = std::string(infoLog.begin(), infoLog.end());
-    std::cout << "Shader linking failed. info='" << info << "'\n"
-              << "'\n";
+    std::cout << "Shader linking failed. info='" << info << "'\n";
     exit(-1);
   }
   glDetachShader(program, vertexShader);
