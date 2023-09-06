@@ -25,18 +25,14 @@
     ;; print remaining variables (if more than one)
     (setf out
 	  (append out
-		  (loop for e in (rest vars)
-			and e-i from 0
-			appending
-			(remove-if #'null
-				   `((string ,(format nil "' ~a='"
-						      (emit-c :code e
-							      :omit-redundant-parentheses t)))
-				     ,e
-				     ,(when (eq e-i (- (length vars) 1))
-					`(string "'\\n")
-				 
-					))))))
+		  `(,@(loop for e in (rest vars)
+			 and e-i from 0
+			 appending
+			 `((string ,(format nil "' ~a='"
+					    (emit-c :code e
+						    :omit-redundant-parentheses t)))
+			   ,e))
+		    (string "'\\n"))))
     out
     #+nil
     `(<< std--cout
