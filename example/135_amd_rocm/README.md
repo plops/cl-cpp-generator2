@@ -391,6 +391,23 @@ Agent 2
 
 - Youtube channel of this Reddit user: https://www.youtube.com/@tech-practice9805
 
+### Youtube video Democratize AI: turn $95 AMD APU into a 16GB VRAM GPU AI workhorse. Demo of AI app. stable diffusion
+- https://www.youtube.com/watch?v=HPO7fu7Vyw4
+
+- Artificial intelligence is transforming industries but access is limited by high costs and technical expertise.  
+- GPU VRAM is an important factor for AI applications but consumer GPU prices have skyrocketed.  
+- Nvidia has reached a 1 trillion dollar market cap and becomes the world's largest chip company.  
+- To democratize AI, low cost consumer hardware and smart designed software are needed.  
+- AMD APU is introduced as a budget-friendly hardware solution, combining CPU and GPU on a single die.  
+- The least expensive AMD APU is 4600 G priced at 95 US dollars, while the slightly more expensive is 5600g at 127 US Dollars.  
+- The GPU can be turned into a 16 gigabytes VRAM GPU.  
+- System costs can be as low as 400 US dollars for all brand new components.  
+- The power consumption is around 66 Watts for idle system and around 96 Watts at full usage.  
+- The operation cost is about 2.4 US dollars for a month or 30 US dollars per year.  
+- The system can run mainstream machine learning frameworks such as PyTorch and TensorFlow, and state-of-the-art AI applications.  
+- The system has future expandability for more powerful discrete GPU.  
+- A demo of running stable diffusion using command line and automatic web UI running stable diffusion is provided.
+
 ### https://news.ycombinator.com/item?id=37162762
 
 - AMD Ryzen APU can be converted into a 16GB VRAM GPU.  
