@@ -1,5 +1,7 @@
 # Programs
 
+- on gentoo (state August 2023)
+
 ## rocm-smi
 ```
 ======================= ROCm System Management Interface =======================
@@ -352,3 +354,21 @@ Agent 2
                                                                         │
 
 ```
+
+# Rocm on APU
+
+## bruhnspace
+
+- https://bruhnspace.com/en/bruhnspace-rocm-for-amd-apus/
+
+- Bruhnspace AB, Unibap AB, and Mälardalen University are collaborating on a project for low-latency data processing on embedded systems.  
+- The project focuses on AMD's Accelerated Processing Units (APUs) and the AMD professional compute library ROCm.  
+- AMD ROCm is a foundation for advanced computing but does not officially support APUs.  
+- Bruhnspace provides experimental ROCm packages with APU support for research purposes.  
+- They have built and verified ROCm 3.10.0 and 3.3.0 packages that can run on APUs and are available for Ubuntu 20.04 LTS.  
+- The packages are built using Docker and should work with any standard 20.04 installation.  
+- Bruhnspace provides experimental builds of TensorFlow and pyTorch for AMD APUs.  
+- PlaidML works with ROCm for APUs as it has OpenCL support for APUs enabled in the AMD ROCm packages.  
+- The ROCm APU packages are strictly for development and testing; there is no warranty or guaranteed support.  
+- The project requires strict adherence to Linux kernel versions for APUs: Linux Kernel 4.18 or newer for AMD Carrizo/Bristol Ridge, Kernel 4.19 or newer for AMD Raven Ridge, and Kernel 5.4 or newer for AMD upcoming Renoir.  
+- Credits are given to AMD corporation for supporting their project but less so for not delivering promised APU support.
