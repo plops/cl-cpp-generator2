@@ -426,3 +426,20 @@ Agent 2
 - The APU can be used to set up a high-VRAM cluster due to its parallelization capabilities.  
 - The APU runs Pytorch and Tensorflow, making it useful for running most AI applications.  
 - The APU is slower but more affordable, which makes it appealing for those who don't have high-end GPUs.
+
+### ROCm github issue: Doesn't ROCm support AMD's integrated GPU (APU)? #2216
+
+- https://github.com/RadeonOpenCompute/ROCm/issues/2216
+
+- Issue: Lack of support for AMD's integrated GPU (APU) in ROCm, preventing PyTorch from using ROCm for CUDA equivalent processing.  
+- User has AMD Ryzen 5 5600G processor with integrated GPU and is using Linux Mint 21 Cinnamon.  
+- User installed PyTorch using pip3 install command but the output for checking ROCm support was 'False'.  
+- User requested a list of supported hardware and for support for integrated GPUs.  
+- User faced issues with 'rocminfo' command, as well as permission denied errors and 'No ROCM devices found' output.  
+- User tried setting the HSA_OVERRIDE_GFX_VERSION environment variable which made CUDA available show as 'True'.  
+- User faced issues with unmet dependencies during ROCm installation.  
+- User suggested that AMD could make the installation and usage of ROCm simpler, to better compete in the growing field of AI.  
+- Solution: The issue was caused by a version mismatch. The user had to uninstall the installed PyTorch, select PyTorch's Nightly version, and install ROCm with the correct commands.  
+- After successful installation, the user suggested improvements for the installation process, including an auto-detect script, automatic installation of necessary components and user groups, and more advertising of ROCm.  
+- User also suggested the creation of a module or interface to help any application seamlessly use the GPU, regardless of the version.  
+- The issue was closed as completed on July 28.
