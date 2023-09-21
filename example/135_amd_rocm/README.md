@@ -355,9 +355,9 @@ Agent 2
 
 ```
 
-# Rocm on APU
+# Resources for ROCm on APU
 
-## bruhnspace
+## Bruhnspace
 
 - https://bruhnspace.com/en/bruhnspace-rocm-for-amd-apus/
 
@@ -372,3 +372,40 @@ Agent 2
 - The ROCm APU packages are strictly for development and testing; there is no warranty or guaranteed support.  
 - The project requires strict adherence to Linux kernel versions for APUs: Linux Kernel 4.18 or newer for AMD Carrizo/Bristol Ridge, Kernel 4.19 or newer for AMD Raven Ridge, and Kernel 5.4 or newer for AMD upcoming Renoir.  
 - Credits are given to AMD corporation for supporting their project but less so for not delivering promised APU support.
+
+## AMD Ryzen APU turned into a 16GB VRAM GPU and it can run Stable Diffusion
+
+### Reddit post
+
+- The AMD 4600G, priced at $95, includes a 6-core CPU and a 7-core GPU.  
+- The 5600G, priced around $130, offers a better CPU but the same GPU as the 4600G.  
+- The 4600G can be turned into a 16GB VRAM GPU under Linux.  
+- The 4600G functions similarly to discrete AMD GPUs like the 5700XT and 6700XT.  
+- It supports the AMD software stack ROCm, and thus also supports AI applications like Pytorch and Tensorflow.  
+- The 16GB VRAM capability is significant as it surpasses most discrete GPUs.  
+- Despite being slower, the 4600G is beneficial as it prevents out-of-memory errors that can occur if an application requires 12GB or more of VRAM.  
+- For stable diffusion, it can generate a 50-step 512x512 image in about 1 minute and 50 seconds, outperforming some high-end CPUs.  
+- The 5600G has proven to be a popular product, and users are encouraged to test it.  
+- Tutorials for using the 5600G are available on the YouTube channel 'tech-practice9805'.  
+- Updates and future content can be found by following the Twitter handle @TechPractice1.
+
+- Youtube channel of this Reddit user: https://www.youtube.com/@tech-practice9805
+
+### https://news.ycombinator.com/item?id=37162762
+
+- AMD Ryzen APU can be converted into a 16GB VRAM GPU.  
+- It can run Stable Diffusion, an AI application, which is incredibly VRAM intensive.  
+- The APU runs slower, but it means the entire model can be loaded in memory instead of offloading chunks of it.  
+- Using DDR5 as VRAM results in slower read/write speeds compared to a proper GPU.  
+- Stable Diffusion is VRAM-bandwidth heavy and benefits from the higher-speed GDDR6 or HBM RAM on a high-end GPU.  
+- The APU can be useful for running older generation Nvidia gear with 24GB RAM.  
+- The APU, while having a large amount of memory, is slower and can be 50x-100x slower than a gamer card from the past couple of years.  
+- The potential for AMD to improve their speed with this configuration on later APUs could pose a threat to Nvidia.  
+- The 4600G supports two channels of DDR4-3200 which has a maximum memory bandwidth of around 50GB/s, whereas actual graphics cards are in the hundreds.  
+- AMD Phoenix APU, specifically 7840H, 7840HS, 7940H, or 7940HS, could be interesting to try as it has up to 54W TDP and supports two channels of DDR5-5600, providing a memory bandwidth of 138 GB/second.  
+- The APU can be set to use a certain amount of the system's RAM as VRAM. For example, a system with 32GB of RAM can potentially allocate up to 16GB as VRAM for the APU.  
+- The 4600G APU can theoretically achieve 710 FP32 GFlops on CPU and 1702 GFlops on the integrated GPU.  
+- AMD now supports APU, making it more accessible for AI applications.  
+- The APU can be used to set up a high-VRAM cluster due to its parallelization capabilities.  
+- The APU runs Pytorch and Tensorflow, making it useful for running most AI applications.  
+- The APU is slower but more affordable, which makes it appealing for those who don't have high-end GPUs.
