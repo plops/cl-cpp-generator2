@@ -80,7 +80,7 @@
 							      (cl-change-case:snake-case (format nil "~a" name)))))
 					  (cond
 					    (param
-					     `(,nname_ ,nname))
+					     `(,nname_ ,nname)) 
 					    (initform
 					     `(,nname_ ,initform)))))))
 		   )
