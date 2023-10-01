@@ -7,8 +7,10 @@ project(imgui_sdl2_bullet_gears_designer)
 # C++ Standard
 set(CMAKE_CXX_STANDARD 20)
 
-set(OpenGL_GL_PREFERENCE #GLVND
-  LEGACY )
+set(OpenGL_GL_PREFERENCE
+        GLVND
+        # LEGACY
+)
 
 # Add SDL2
 find_package(SDL2 REQUIRED)
