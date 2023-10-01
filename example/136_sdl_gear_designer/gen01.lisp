@@ -103,8 +103,8 @@
   
   (write-source 
    (asdf:system-relative-pathname
-    'cl-cpp-generator2
-    (merge-pathnames "main.cpp"
+    'cl-cpp-generator2 
+   (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
      

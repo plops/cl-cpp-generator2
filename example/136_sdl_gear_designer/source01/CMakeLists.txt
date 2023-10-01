@@ -58,6 +58,7 @@ else ()
             -ffunction-sections -fdata-sections
             -Wpadded
     )
+    # flto
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
@@ -85,6 +86,7 @@ include_directories(
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
         ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
         ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
