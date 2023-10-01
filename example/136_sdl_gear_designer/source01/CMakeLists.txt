@@ -16,16 +16,22 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
 
 # Add ImGui (Assuming you have the ImGui source files in a folder named "imgui")
-include_directories(${CMAKE_SOURCE_DIR}/imgui)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/imgui
+  ${CMAKE_SOURCE_DIR}/imgui/backendsn
+)
 
 # Define the executable
-add_executable(${PROJECT_NAME} main.cpp 
+add_executable(${PROJECT_NAME}
+    ${CMAKE_SOURCE_DIR}/src/main.cpp 
     ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
     ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/imgui_impl_sdl2.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/imgui_impl_opengl3.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
     ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
 )
 
 # Linking libraries
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+	${SDL2_LIBRARIES}
+	${OPENGL_LIBRARIES})
