@@ -9,15 +9,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 
-add_compile_options(
-        -Wall -Wextra -Wconversion -Wdouble-promotion
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
-        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
-        -Wshadow -Wformat=2 -fno-common -fstack-usage
-        -fvisibility=hidden
-        -fno-strict-overflow -Wno-strict-overflow
-)
-
 # AddressSanitizer
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 if (ENABLE_ASAN)
@@ -54,13 +45,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 else ()
     add_compile_options(
-            -Ofast
-            -ffunction-sections -fdata-sections
-            -Wpadded
+            -O3
+            #-ffunction-sections -fdata-sections # don't use together with flto
     )
     # flto
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+    #add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
 
 set(OpenGL_GL_PREFERENCE
@@ -85,6 +75,21 @@ include_directories(
 # Define the executable
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
+)
+
+target_compile_options(
+        ${PROJECT_NAME} PRIVATE
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow -Wformat=2 -fno-common -fstack-usage
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+        -Wpadded
+)
+
+
+add_library(imgui
         ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
@@ -93,8 +98,9 @@ add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui_tables.cpp
 )
-
 # Linking libraries
 target_link_libraries(${PROJECT_NAME}
         ${SDL2_LIBRARIES}
-        ${OPENGL_LIBRARIES})
+        ${OPENGL_LIBRARIES}
+        imgui
+)
