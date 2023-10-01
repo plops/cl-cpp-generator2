@@ -85,7 +85,7 @@ target_compile_options(
         -Wshadow -Wformat=2 -fno-common -fstack-usage
         -fvisibility=hidden
         -fno-strict-overflow -Wno-strict-overflow
-        -Wpadded
+        #-Wpadded
 )
 
 
