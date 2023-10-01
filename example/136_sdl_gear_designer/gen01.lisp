@@ -324,6 +324,32 @@
 	
 	)
 
+       (let ((done false)))
+       (while !done
+	      (let ((event (SDL_Event))))
+	      (while (SDL_PollEvent &event)
+		     (ImGui_ImplSDL2_ProcessEvent &event)
+		     (when (== 
+			    SDL_QUIT
+			    event.type)
+		       (setf done true))
+		     (when (logand (== SDL_WINDOWEVENT event.type)
+				   (== SDL_WINDOWEVENT_CLOSE event.window.event)
+				   (== event.window.windowID (SDL_GetWindowID window)))
+		       (setf done true)))
+
+	      (do0
+	       (ImGui_ImplOpenGL3_NewFrame)
+	       (ImGui_ImplSDL2_NewFrame)
+	       (ImGui--NewFrame))
+	      (do0
+	       (ImGui--Render)
+	       (glViewport 0 0 (static_cast<int> io.DisplaySize.x)
+			   (static_cast<int> io.DisplaySize.y))
+	       (glClearColor 0s0 0s0 0s0 1s0)
+	       (glClear GL_COLOR_BUFFER_BIT)
+	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+	       (SDL_GL_SwapWindow window)))
        
        #+nil 
        (handler-case

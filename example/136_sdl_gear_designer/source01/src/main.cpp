@@ -38,6 +38,31 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
   glEnable(GL_CULL_FACE);
+  auto done = false;
+  while (!done) {
+    auto event = SDL_Event();
+    while (SDL_PollEvent(&event)) {
+      ImGui_ImplSDL2_ProcessEvent(&event);
+      if (SDL_QUIT == event.type) {
+        done = true;
+      }
+      if (SDL_WINDOWEVENT == event.type &&
+          SDL_WINDOWEVENT_CLOSE == event.window.event &&
+          event.window.windowID == SDL_GetWindowID(window)) {
+        done = true;
+      }
+    }
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+    ImGui::Render();
+    glViewport(0, 0, static_cast<int>(io.DisplaySize.x),
+               static_cast<int>(io.DisplaySize.y));
+    glClearColor(0.F, 0.F, 0.F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(window);
+  }
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
