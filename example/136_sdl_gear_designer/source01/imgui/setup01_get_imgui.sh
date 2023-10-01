@@ -4,7 +4,7 @@
 BASE=https://raw.githubusercontent.com/ocornut/imgui/master/
 
 # List of files to download
-FILES=("imgui.h" "imconfig.h" "imgui.cpp" "imgui_draw.cpp" "imgui_internal.h" "imgui_tabes.cpp" 
+FILES=("imgui.h" "imconfig.h" "imgui.cpp" "imgui_draw.cpp" "imgui_internal.h" "imgui_tables.cpp" 
        "imgui_widgets.cpp" "imstb_rectpack.h" "imstb_truetype.h" "imstb_textedit.h" 
        "backends/imgui_impl_sdl2.h" "backends/imgui_impl_sdl2.cpp" 
        "backends/imgui_impl_opengl3.h" "backends/imgui_impl_opengl3_loader.h" "backends/imgui_impl_opengl3.cpp")

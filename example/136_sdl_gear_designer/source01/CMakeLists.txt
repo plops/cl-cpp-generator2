@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 project(imgui_sdl2_bullet_gears_designer)
 
 # C++ Standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 # Add SDL2
 find_package(SDL2 REQUIRED)
@@ -25,10 +25,10 @@ include_directories(
 add_executable(${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/src/main.cpp 
    	${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
-    #${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
-    #${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
-    #${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
-    #${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
 )
 
 # Linking libraries
