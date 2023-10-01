@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
   SDL_GL_SetSwapInterval(1);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  auto io = ImGui::GetIO();
-  io.ConfigFlags = io.ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
+  auto *io = &ImGui::GetIO();
+  io->ConfigFlags = io->ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
       ImGui::ShowDemoWindow(&show_demo);
     }
     ImGui::Render();
-    glViewport(0, 0, static_cast<int>(io.DisplaySize.x),
-               static_cast<int>(io.DisplaySize.y));
+    glViewport(0, 0, static_cast<int>(io->DisplaySize.x),
+               static_cast<int>(io->DisplaySize.y));
     glClearColor(0.F, 0.F, 0.F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -240,8 +240,8 @@
        (do0
 	 (IMGUI_CHECKVERSION)
 	 (ImGui--CreateContext)
-	 (let ((io (ImGui--GetIO))))
-	 (setf io.ConfigFlags (or io.ConfigFlags
+	 (let ((*io (ref (ImGui--GetIO)))))
+	 (setf io->ConfigFlags (or io->ConfigFlags
 				      ImGuiConfigFlags_NavEnableKeyboard))
 	 (ImGui--StyleColorsDark)
 	 (ImGui_ImplSDL2_InitForOpenGL window gl_context)
@@ -350,8 +350,8 @@
 		   (ImGui--ShowDemoWindow &show_demo))))
 	      (do0
 	       (ImGui--Render)
-	       (glViewport 0 0 (static_cast<int> io.DisplaySize.x)
-			   (static_cast<int> io.DisplaySize.y))
+	       (glViewport 0 0 (static_cast<int> io->DisplaySize.x)
+			   (static_cast<int> io->DisplaySize.y))
 	       (glClearColor 0s0 0s0 0s0 1s0)
 	       (glClear GL_COLOR_BUFFER_BIT)
 	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
