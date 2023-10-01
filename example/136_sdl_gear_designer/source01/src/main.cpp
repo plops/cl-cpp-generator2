@@ -6,7 +6,7 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-  if (0 != SDL_Init(SDL_INIT_VIDEO || SDL_INIT_TIMER)) {
+  if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
     std::cout << "Error"
               << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
     return -1;
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   auto *window = SDL_CreateWindow(
       "imgui_sdl2_bullet_gears_designer", SDL_WINDOWPOS_CENTERED,
       SDL_WINDOWPOS_CENTERED, 1280, 720,
-      SDL_WINDOW_OPENGL || SDL_WINDOW_RESIZABLE || SDL_WINDOW_ALLOW_HIGHDPI);
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   if (!window) {
     throw std::runtime_error("Error creating GL window");
   }
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   auto io = ImGui::GetIO();
-  io.ConfigFlags = io.ConfigFlags || ImGuiConfigFlags_NavEnableKeyboard;
+  io.ConfigFlags = io.ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);

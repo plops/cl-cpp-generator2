@@ -180,7 +180,7 @@
 		(type int argc)
        		(type char** argv))
 
-       (when (!= 0 (SDL_Init (logior SDL_INIT_VIDEO
+       (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
 				     SDL_INIT_TIMER
 				     ;SDL_INIT_GAMECONTROLLER
 				     ) ))
@@ -210,7 +210,7 @@
 		       SDL_WINDOWPOS_CENTERED
 		       1280
 		       720
-		       (logior SDL_WINDOW_OPENGL
+		       (or SDL_WINDOW_OPENGL
 			       SDL_WINDOW_RESIZABLE
 			       SDL_WINDOW_ALLOW_HIGHDPI
 			       )
@@ -241,7 +241,7 @@
 	 (IMGUI_CHECKVERSION)
 	 (ImGui--CreateContext)
 	 (let ((io (ImGui--GetIO))))
-	 (setf io.ConfigFlags (logior io.ConfigFlags
+	 (setf io.ConfigFlags (or io.ConfigFlags
 				      ImGuiConfigFlags_NavEnableKeyboard))
 	 (ImGui--StyleColorsDark)
 	 (ImGui_ImplSDL2_InitForOpenGL window gl_context)
