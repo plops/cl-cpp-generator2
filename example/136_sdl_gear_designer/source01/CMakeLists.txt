@@ -17,21 +17,22 @@ include_directories(${OPENGL_INCLUDE_DIR})
 
 # Add ImGui
 include_directories(
-  ${CMAKE_SOURCE_DIR}/imgui
-  ${CMAKE_SOURCE_DIR}/imgui/backends
+        ${CMAKE_SOURCE_DIR}/imgui
+        ${CMAKE_SOURCE_DIR}/imgui/backends
 )
 
 # Define the executable
 add_executable(${PROJECT_NAME}
-    ${CMAKE_SOURCE_DIR}/src/main.cpp 
-   	${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
-    ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
+        ${CMAKE_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
+        ${CMAKE_SOURCE_DIR}/imgui/imgui_tables.cpp
 )
 
 # Linking libraries
 target_link_libraries(${PROJECT_NAME}
-	${SDL2_LIBRARIES}
-	${OPENGL_LIBRARIES})
+        ${SDL2_LIBRARIES}
+        ${OPENGL_LIBRARIES})
