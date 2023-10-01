@@ -55,6 +55,10 @@ int main(int argc, char **argv) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+    static bool show_demo = true;
+    if (show_demo) {
+      ImGui::ShowDemoWindow(&show_demo);
+    }
     ImGui::Render();
     glViewport(0, 0, static_cast<int>(io.DisplaySize.x),
                static_cast<int>(io.DisplaySize.y));

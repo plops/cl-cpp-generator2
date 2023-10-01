@@ -342,6 +342,12 @@
 	       (ImGui_ImplOpenGL3_NewFrame)
 	       (ImGui_ImplSDL2_NewFrame)
 	       (ImGui--NewFrame))
+
+	      (do0
+	       (let ((show_demo true))
+		 (declare (type "static bool" show_demo))
+		 (when show_demo
+		   (ImGui--ShowDemoWindow &show_demo))))
 	      (do0
 	       (ImGui--Render)
 	       (glViewport 0 0 (static_cast<int> io.DisplaySize.x)
