@@ -6,12 +6,12 @@
 (in-package :cl-cpp-generator2)
 
 ;; https://github.com/ocornut/imgui/blob/master/examples/example_sdl2_opengl3/main.cpp
-
-(setf *features* (set-difference *features* (list :more
-						  :glad)))
-(setf *features* (set-exclusive-or *features* (list :more
-						    ;:glad
-						    )))
+(progn
+ (setf *features* (set-difference *features* (list :more
+						   :glad)))
+ (setf *features* (set-exclusive-or *features* (list :more
+					;:glad
+						     ))))
 
 (progn
   (progn
@@ -413,6 +413,6 @@
 	(SDL_Quit))
        (return 0)))
    :omit-parens t
-   :format nil
-   :tidy nil))
+   :format t
+   :tidy t))
 
