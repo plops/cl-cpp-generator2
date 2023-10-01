@@ -7,8 +7,11 @@
 
 ;; https://github.com/ocornut/imgui/blob/master/examples/example_sdl2_opengl3/main.cpp
 
-(setf *features* (set-difference *features* (list :more)))
-(setf *features* (set-exclusive-or *features* (list :more)))
+(setf *features* (set-difference *features* (list :more
+						  :glad)))
+(setf *features* (set-exclusive-or *features* (list :more
+						    ;:glad
+						    )))
 
 (progn
   (progn
@@ -124,7 +127,7 @@
 
       )
 
-     #+nil
+     #+glad
      (include<>
       glad/gl.h)
      
@@ -141,32 +144,36 @@
       SDL.h
       SDL_opengl.h
       )
-     (setf "const char *vertexShaderSrc"
-	   (string-r
-	    ,(emit-c :code `(do0
-			     "#version 450"
-			     (space layout (paren (= location 0)) in vec2 aPos)
-			     (defun main ()
-			       (setf gl_Position (vec4 aPos 1 1))))
-		     :omit-redundant-parentheses t)))
+     #+nil
+     (do0
+      (setf "const char *vertexShaderSrc"
+	    (string-r
+	     ,(emit-c :code `(do0
+			      "#version 450"
+			      (space layout (paren (= location 0)) in vec2 aPos)
+			      (defun main ()
+				(setf gl_Position (vec4 aPos 1 1))))
+		      :omit-redundant-parentheses t)))
 
-     (setf "const char *fragmentShaderSrc"
-	   (string-r
-	    ,(emit-c :code `(do0
-			     "#version 450"
-			     (space layout (paren (= location 0)) out vec4 outColor)
-			     (defun main ()
-			       (setf outColor (vec4 1 0 0 1))))
-		     :omit-redundant-parentheses t)))
+      (setf "const char *fragmentShaderSrc"
+	    (string-r
+	     ,(emit-c :code `(do0
+			      "#version 450"
+			      (space layout (paren (= location 0)) out vec4 outColor)
+			      (defun main ()
+				(setf outColor (vec4 1 0 0 1))))
+		      :omit-redundant-parentheses t))))
 
-     #+more (defun message_callback (source type id severity length message user_param)
-       (declare (type GLenum source type severity)
-		(type GLuint id)
-		(type GLsizei length)
-		(type "GLchar const *" message)
-		(type "void const *" user_param))
-       ,(lprint :msg "gl"
-		:vars `(source type id severity message)))
+     #+nil (do0
+      #+more
+      (defun message_callback (source type id severity length message user_param)
+	(declare (type GLenum source type severity)
+		 (type GLuint id)
+		 (type GLsizei length)
+		 (type "GLchar const *" message)
+		 (type "void const *" user_param))
+	,(lprint :msg "gl"
+		 :vars `(source type id severity message))))
 					     
      (defun main (argc argv)
        (declare (values int)
@@ -182,7 +189,7 @@
 	 (return -1))
        (let ((glsl_version (string "#version 130")))
 	 ,@(loop for e in `((:key context-flags :value 0)
-			    (:key context-profile-mask :value SDL_CONTEXT_PROFILE_CORE)
+			    (:key context-profile-mask :value SDL_GL_CONTEXT_PROFILE_CORE)
 			    (:key context-major-version :value 3)
 			    (:key context-minor-version :value 0)
 			    (:key doublebuffer :value 1)
@@ -216,42 +223,42 @@
 	 (SDL_GL_MakeCurrent window gl_context)
 	 (SDL_GL_SetSwapInterval 1))
 
-       #+nil 
+       #+glad
        (do0
-
-
-	(let ((window (glfwCreateWindow 800 600
-					(string "v4l")
-					nullptr nullptr)))
-	  )
-
-	(glfwMakeContextCurrent window)
-	(glfwSwapInterval 1)
-
 	(unless (gladLoaderLoadGL)
 	  (throw (std--runtime_error (string "Error initializing glad")))
-	  )
+	  (do0
+	   ,(lprint :msg "get extensions")
+	   (let ((ext (glGetString GL_EXTENSIONS)))
+	     (unless (== nullptr ext)
+	       (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
+		 ,(lprint :msg "extensions"
+			  :vars `(extstr)
+			  )))))
+	  ))
 
-	(do0
-	 ,(lprint :msg "get extensions")
-	 (let ((ext (glGetString GL_EXTENSIONS)))
-	   (unless (== nullptr ext)
-	     (let ((extstr (std--string ("reinterpret_cast<const char*>" ext))))
-	       ,(lprint :msg "extensions"
-			:vars `(extstr)
-			)))))
-
-	(do0
+       (do0
 	 (IMGUI_CHECKVERSION)
 	 (ImGui--CreateContext)
-	 (ImGui_ImplGlfw_InitForOpenGL window true)
-	 (ImGui_ImplOpenGL3_Init (string "#version 450 core"))
-	 (ImGui--StyleColorsClassic))
+	 (let ((io (ImGui--GetIO))))
+	 (setf io.ConfigFlags (logior io.ConfigFlags
+				      ImGuiConfigFlags_NavEnableKeyboard))
+	 (ImGui--StyleColorsDark)
+	 (ImGui_ImplSDL2_InitForOpenGL window gl_context)
+	 (ImGui_ImplOpenGL3_Init glsl_version)
+	 )
+
+       (do0 (glEnable GL_CULL_FACE)
+	     ; #+more (glEnable GL_DEBUG_OUTPUT)
+	      ;#+more (glDebugMessageCallback message_callback nullptr)
+	      )
+       
+       #+nil 
+       (do0
+	
 
 	(do0
-	 (glEnable GL_CULL_FACE)
-	 #+more (glEnable GL_DEBUG_OUTPUT)
-	 #+more (glDebugMessageCallback message_callback nullptr))
+	 )
 
 	(do0
 	 #+more ,(lprint :msg "Compile shader")
@@ -397,13 +404,13 @@
 		    :vars `((e.what)))
 	   (return 1)))
 
-       #+nil 
+       
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)
-	(ImGui_ImplGlfw_Shutdown)
+	(ImGui_ImplSDL2_Shutdown)
 	(ImGui--DestroyContext)
-	(glfwDestroyWindow window)
-	(glfwTerminate))
+	(SDL_GL_DeleteContext gl_context)
+	(SDL_Quit))
        (return 0)))
    :omit-parens t
    :format nil
