@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 project(imgui_sdl2_bullet_gears_designer)
 
 # C++ Standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 14)
 
 # Add SDL2
 find_package(SDL2 REQUIRED)
