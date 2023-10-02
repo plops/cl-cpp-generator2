@@ -345,7 +345,21 @@
 	  (let ((body (world.CreateBody &bodyDef))))))
        
        (let ((done false)))
-       (while !done
+       
+
+       #+nil 
+       (let ((texture (GLuint 0)))
+	 (glGenTextures 1 &texture)
+	 (glBindTexture GL_TEXTURE_2D texture)
+	     
+	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR))
+       
+       
+       (handler-case
+	   
+	   (do0
+	    (while !done
 	      (let ((event (SDL_Event))))
 	      (while (SDL_PollEvent &event)
 		     (ImGui_ImplSDL2_ProcessEvent &event)
@@ -376,84 +390,20 @@
 	       (glClear GL_COLOR_BUFFER_BIT)
 	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 	       (SDL_GL_SwapWindow window)))
-       
-       #+nil 
-       (handler-case
-	   (let ((cap (V4L2Capture  (string "/dev/video0")
-				    3)))
-	     (let ((w ;320 ;
-		      1280
-		      )
-		   (h ;180 ;
-		      720
-		      ))
-	      (cap.setupFormat w h
-			       ;V4L2_PIX_FMT_RGB24
-			       V4L2_PIX_FMT_YUYV
-			       ;V4L2_PIX_FMT_YUV420
-			       ))
-	     (cap.startCapturing)
-
-	     (do0
-	      (let ((texture (GLuint 0)))
-		(glGenTextures 1 &texture)
-		(glBindTexture GL_TEXTURE_2D texture)
-		
-		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
-		(glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)))
-	     
-	     (while (!glfwWindowShouldClose window)
-		    (glfwPollEvents)
-					;(glDrawElements GL_TRIANGLES 6 GL_UNSIGNED_INT nullptr)
-		    (ImGui_ImplOpenGL3_NewFrame)
-		    (ImGui_ImplGlfw_NewFrame)
-		    (ImGui--NewFrame)
-		    (cap.getFrame
-		     (lambda (data size)
-		       (declare (type void* data)
-				(type size_t size)
-				(capture "&"))
-		       #+nil (do0 (glPixelStorei GL_UNPACK_ALIGNMENT 1)
-			    (glPixelStorei GL_UNPACK_ROW_LENGTH (/ w 2))
-			    (glPixelStorei GL_UNPACK_SKIP_PIXELS 0)
-			    (glPixelStorei GL_UNPACK_SKIP_ROWS 0))
-		       
-		       (glBindTexture GL_TEXTURE_2D texture)
-		       (glTexImage2D GL_TEXTURE_2D
-				     0
-				     GL_RGBA
-				     w h
-				     0
-				     GL_RG
-				     GL_UNSIGNED_BYTE
-				     data
-				     )
-		       (ImGui--Begin (string "camera feed"))
-		       (ImGui--Image (reinterpret_cast<void*> (static_cast<intptr_t> texture))
-				     (ImVec2 w h))
-		       (ImGui--End)
-		  
-		       ))
-
-		    (space static bool (setf showDemo false))
-		    (ImGui--ShowDemoWindow &showDemo)
-		    (ImGui--Render)
-		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-		    (glfwSwapBuffers window)
-		    (glClear GL_COLOR_BUFFER_BIT)
-		    (std--this_thread--sleep_for (std--chrono--milliseconds 16))
-		    )
-	     
-	     
-	     #+nil (cap.getFrame (+ (string "/dev/shm/frame_")
-			      (std--to_string i)
-			      (string ".ppm")))
-	     (cap.stopCapturing)
-	     
-	     )
+	    )
+	 
+	   
+	 
+	 
 	 ("const std::runtime_error&" (e)
 	   #+more ,(lprint :msg "error"
 		    :vars `((e.what)))
+	   (do0
+	(ImGui_ImplOpenGL3_Shutdown)
+	(ImGui_ImplSDL2_Shutdown)
+	(ImGui--DestroyContext)
+	(SDL_GL_DeleteContext gl_context)
+	(SDL_Quit))
 	   (return 1)))
 
        
