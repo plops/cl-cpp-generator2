@@ -516,6 +516,7 @@
 	    (while
 	     !done
 	     (handle_events window &done)
+	     (new_frame )
 	     (let ((px 0s0)
 		   (py 0s0)
 		   (angle 0s0)
@@ -523,10 +524,10 @@
 	       (setf (std--tie px py angle)
 		     (physics->Step))
 	       (let ((draw
-		      (ImGui--GetBackgroundDrawList))
+		       (ImGui--GetBackgroundDrawList))
 		     (rad 100s0)
-		     (ppx (* 100 px))
-		     (ppy (* 100 py))
+		     (ppx (* 100 (+ 400 px)))
+		     (ppy (* 100 (+ 400  py)))
 		     (sx (sin angle))
 		     (sy (cos angle)))
 		 (draw->AddLine (ImVec2 ppx ppy)
@@ -534,7 +535,7 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Button)
 				4s0)))
-	     (new_frame )
+	     
 	     (demo_window)
 	     (swap)
 	     ))

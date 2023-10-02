@@ -79,19 +79,19 @@ int main(int argc, char **argv) {
   try {
     while (!done) {
       handle_events(window, &done);
+      new_frame();
       auto px = 0.F;
       auto py = 0.F;
       auto angle = 0.F;
       std::tie(px, py, angle) = physics->Step();
       auto draw = ImGui::GetBackgroundDrawList();
       auto rad = 1.00e+2F;
-      auto ppx = 100 * px;
-      auto ppy = 100 * py;
+      auto ppx = 100 * (400 + px);
+      auto ppy = 100 * (400 + py);
       auto sx = sin(angle);
       auto sy = cos(angle);
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Button), 4.0F);
-      new_frame();
       demo_window();
       swap();
     }
