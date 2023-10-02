@@ -855,10 +855,10 @@ entry return-values contains a list of return values. currently supports type, v
 			(format nil "~a"
 				(emit
 				 `(do0
-				   ,(format nil "/** ~a" (first args))
+				   ,(format nil "/** ~a~%" (first args))
 				   ,@(loop for line in (rest args)
 					   collect
-					   (format nil "* ~a" line))
+					   (format nil "* ~a~%" line))
 				   ,(format nil "*/"))))))
 		   )
 		  (paren*
