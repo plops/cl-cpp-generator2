@@ -72,6 +72,7 @@ find_package(OpenGL REQUIRED)
 # Define the executable
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_SOURCE_DIR}/src/Physics.cpp
 )
 
 target_compile_options(

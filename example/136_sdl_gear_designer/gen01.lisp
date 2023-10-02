@@ -26,10 +26,18 @@
       "Sunday"))
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
+
   
-  (let* ((name `Gear)
-	 (members `((radius :type double :param t)
-		 )))
+  
+  (let* ((name `Physics)
+	 (members `(
+		    (timeStep :type float :initform ,(/ 1s0 60s0))
+		    (velocityIterations :type int :initform 6)
+		    (positionIterations :type int :initform 2)
+		    (gravity :type b2Vec2 :initform (b2Vec2 0s0 -10s0))
+		    (world :type b2World :initform (b2World gravity_))
+		    (body :type b2Body* :initform nullptr )
+		)))
     
     (write-class
      :dir (asdf:system-relative-pathname
@@ -38,15 +46,135 @@
      :name name
      :headers `()
      :header-preamble `(do0
-		       )
+			(include<> box2d/box2d.h)
+			)
      :implementation-preamble
      `(do0
        (include<> 
-	;fstream
+					;fstream
 	iostream
-	;vector
-	;string
-	;cstring
+					;vector
+					;string
+					;cstring
+	stdexcept)
+       (include<> box2d/box2d.h))
+     :code `(do0
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname)) 
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 
+		 (comments "https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp")
+		 
+		 
+
+
+		 		 
+		 (do0
+		  
+		  (let (
+			(groundBodyDef (b2BodyDef)))
+		    
+		    (groundBodyDef.position.Set 0s0 -10s0)
+		    (let ((groundBody (world_.CreateBody &groundBodyDef))))
+		    (let ((groundBox (b2PolygonShape)))
+		      (groundBox.SetAsBox 50s0 10s0)
+		      )
+		    (groundBody->CreateFixture &groundBox 0s0)
+		    (let ((bodyDef (b2BodyDef)))
+		      (setf bodyDef.type b2_dynamicBody)
+		      (bodyDef.position.Set 0s0 4s0)
+		      
+		      )
+		    (setf body_ (world_.CreateBody &bodyDef))
+		    
+		    (let ((dynamicBox (b2PolygonShape)))
+		      (dynamicBox.SetAsBox 1s0 1s0))
+		    (let ((fixtureDef (b2FixtureDef)))
+		      (setf fixtureDef.shape &dynamicBox
+			    fixtureDef.density 1s0
+			    fixtureDef.friction .3s0))
+		    (body_->CreateFixture &fixtureDef)
+		    
+		    ))
+		 
+		 
+		 #+nil (throw (std--runtime_error (+ (string "opening video device failed")
+						     #+more (std--string (std--strerror errno))))))
+	       (defmethod Step ()
+		 (declare (values "std::tuple<float,float,float>"))
+		 (do0 (world_.Step time_step_ velocity_iterations_ position_iterations_)
+		      (let (( position (body_->GetPosition))))
+		      (let (( angle (body_->GetAngle))))
+		      ,(lprint :vars `(position.x position.y angle))
+		      (return (std--make_tuple position.x
+					       position.y
+					       angle)))
+		 )
+
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))))))
+   (let* ((name `Gear)
+	 (members `((radius :type double :param t)
+		    )))
+    
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			)
+     :implementation-preamble
+     `(do0
+       (include<> 
+					;fstream
+	iostream
+					;vector
+					;string
+					;cstring
 	stdexcept))
      :code `(do0
 	     (defclass ,name ()
@@ -89,7 +217,7 @@
 		  (values :constructor))
 		 
 		 #+nil (throw (std--runtime_error (+ (string "opening video device failed")
-					       #+more (std--string (std--strerror errno))))))
+						     #+more (std--string (std--strerror errno))))))
 
 	       "private:"
 	       ,@(remove-if #'null
@@ -105,25 +233,26 @@
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
-   (merge-pathnames "main.cpp"
+    (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
      
      (include<>
       iostream
-      ;string
+      memory
+					;string
 					;complex
-      ;vector
+					;vector
 					;algorithm
       
 					;chrono
-      ;thread
+					;thread
       
-      ;filesystem
-      ;unistd.h
-      ;cstdlib
+					;filesystem
+					;unistd.h
+					;cstdlib
 
-      ;cmath
+					;cmath
       
 
       )
@@ -134,9 +263,9 @@
      
      (include<>
 
-      ;GLFW/glfw3.h
+					;GLFW/glfw3.h
       
-      ;glm/glm.hpp
+					;glm/glm.hpp
       imgui.h 
       imgui_impl_sdl2.h
       imgui_impl_opengl3.h
@@ -146,6 +275,7 @@
       SDL_opengl.h
       )
      (include<> box2d/box2d.h)
+     (include "Physics.h")
      #+nil
      (do0
       (setf "const char *vertexShaderSrc"
@@ -167,15 +297,15 @@
 		      :omit-redundant-parentheses t))))
 
      #+nil (do0
-      #+more
-      (defun message_callback (source type id severity length message user_param)
-	(declare (type GLenum source type severity)
-		 (type GLuint id)
-		 (type GLsizei length)
-		 (type "GLchar const *" message)
-		 (type "void const *" user_param))
-	,(lprint :msg "gl"
-		 :vars `(source type id severity message))))
+	    #+more
+	    (defun message_callback (source type id severity length message user_param)
+	      (declare (type GLenum source type severity)
+		       (type GLuint id)
+		       (type GLsizei length)
+		       (type "GLchar const *" message)
+		       (type "void const *" user_param))
+	      ,(lprint :msg "gl"
+		       :vars `(source type id severity message))))
 					     
      (defun main (argc argv)
        (declare (values int)
@@ -183,9 +313,9 @@
        		(type char** argv))
 
        (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
-				     SDL_INIT_TIMER
-				     ;SDL_INIT_GAMECONTROLLER
-				     ) ))
+				 SDL_INIT_TIMER
+					;SDL_INIT_GAMECONTROLLER
+				 ) ))
 	 ,(lprint :msg "Error"
 		  :vars `((SDL_GetError)))
 	 (return -1))
@@ -197,7 +327,7 @@
 			    (:key doublebuffer :value 1)
 			    (:key depth-size :value 24)
 			    (:key stencil-size :value 8)
-			    ;(:key :value)
+					;(:key :value)
 			    )
 		 collect
 		 (destructuring-bind (&key key value) e
@@ -213,14 +343,14 @@
 		       1280
 		       720
 		       (or SDL_WINDOW_OPENGL
-			       SDL_WINDOW_RESIZABLE
-			       SDL_WINDOW_ALLOW_HIGHDPI
-			       )
+			   SDL_WINDOW_RESIZABLE
+			   SDL_WINDOW_ALLOW_HIGHDPI
+			   )
 		       ))
 	     
 	     )
 	 (unless window
-	    (throw (std--runtime_error (string "Error creating GL window"))))
+	   (throw (std--runtime_error (string "Error creating GL window"))))
 	 (let ((gl_context (SDL_GL_CreateContext window))))
 	 (SDL_GL_MakeCurrent window gl_context)
 	 (SDL_GL_SetSwapInterval 1))
@@ -240,20 +370,20 @@
 	  ))
 
        (do0
-	 (IMGUI_CHECKVERSION)
-	 (ImGui--CreateContext)
-	 (let ((*io (ref (ImGui--GetIO)))))
-	 (setf io->ConfigFlags (or io->ConfigFlags
-				      ImGuiConfigFlags_NavEnableKeyboard))
-	 (ImGui--StyleColorsDark)
-	 (ImGui_ImplSDL2_InitForOpenGL window gl_context)
-	 (ImGui_ImplOpenGL3_Init glsl_version)
-	 )
+	(IMGUI_CHECKVERSION)
+	(ImGui--CreateContext)
+	(let ((*io (ref (ImGui--GetIO)))))
+	(setf io->ConfigFlags (or io->ConfigFlags
+				  ImGuiConfigFlags_NavEnableKeyboard))
+	(ImGui--StyleColorsDark)
+	(ImGui_ImplSDL2_InitForOpenGL window gl_context)
+	(ImGui_ImplOpenGL3_Init glsl_version)
+	)
 
        (do0 (glEnable GL_CULL_FACE)
-	     ; #+more (glEnable GL_DEBUG_OUTPUT)
-	      ;#+more (glDebugMessageCallback message_callback nullptr)
-	      )
+					; #+more (glEnable GL_DEBUG_OUTPUT)
+					;#+more (glDebugMessageCallback message_callback nullptr)
+	    )
        
        #+nil 
        (do0
@@ -325,78 +455,7 @@
 
 	
 	)
-
-       (let ((physics (lambda ()
-			(declare (values "std::tuple<float,float,float>" ))
-			(comments "https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp")
-
-			(let ((timeStep (/ 1s0 60s0))
-				   (velocityIterations 6)
-				   (positionIterations 2)
-					;(position (body->GetPosition))
-					;(angle (body->GetAngle))
-				   )
-			       (declare (type "const auto" velocityIterations positionIterations timeStep)
-					)
-			       )
-			
-			(let ((is_initialized false)
-			      )
-			  (declare (type "static auto" is_initialized)))
-
-
-			(let ((world (b2World (b2Vec2 0s0 -10s0))))
-			  (declare (type "static auto" world)))
-			(let ((body nullptr))
-			  (declare (type "b2Body*" body)))
-			#+nil ,@(loop for (e f) in `((world_ b2World)
-						     (body_ b2Body*))
-				      collect
-				      `(let ((,e))
-					 (declare (type ,(format nil "static ~a" f) ,e))))
-			
-
-			
-			(unless is_initialized
-			  (do0
-			 
-			   (let (;(gravity (b2Vec2 0s0 -10s0))
-				 ;(world (b2World gravity))
-				 (groundBodyDef (b2BodyDef)))
-			     
-			     (groundBodyDef.position.Set 0s0 -10s0)
-			     (let ((groundBody (world.CreateBody &groundBodyDef))))
-			     (let ((groundBox (b2PolygonShape)))
-			       (groundBox.SetAsBox 50s0 10s0)
-			       )
-			     (groundBody->CreateFixture &groundBox 0s0)
-			     (let ((bodyDef (b2BodyDef)))
-			       (setf bodyDef.type b2_dynamicBody)
-			       (bodyDef.position.Set 0s0 4s0)
-	    
-			       )
-			     (setf body (world.CreateBody &bodyDef))
-			     #+nil (let (
-				   (body (world.CreateBody &bodyDef)))
-			       (declare (type "static auto" body)))
-			     (let ((dynamicBox (b2PolygonShape)))
-			       (dynamicBox.SetAsBox 1s0 1s0))
-			     (let ((fixtureDef (b2FixtureDef)))
-			       (setf fixtureDef.shape &dynamicBox
-				     fixtureDef.density 1s0
-				     fixtureDef.friction .3s0))
-			     (body->CreateFixture &fixtureDef)
-			     
-			     (setf is_initialized true)
-			     )))
-			(do0 (world.Step timeStep velocityIterations positionIterations)
-			     (let (( position (body->GetPosition)
-				     )))
-			     (let (( angle (body->GetAngle))))
-			     ,(lprint :vars `(position.x position.y angle)))
-			(return (std--make_tuple position.x
-						 position.y
-						 angle))))))
+       (let ((physics (std--make_unique<Physics>))))
        
 
        
@@ -415,7 +474,7 @@
 
        (let ((handle_events
 	       (lambda (*window_ *done_)
-		 ;(declare (type auto& done_))
+					;(declare (type auto& done_))
 		 (do0 (let ((event (SDL_Event))))
 		      (while (SDL_PollEvent &event)
 			     (ImGui_ImplSDL2_ProcessEvent &event)
@@ -427,37 +486,37 @@
 					   (== SDL_WINDOWEVENT_CLOSE event.window.event)
 					   (== event.window.windowID (SDL_GetWindowID window_)))
 			       (setf *done_ true)))))
-			    )))
+	       )))
        (let ((new_frame (lambda ()
 			  (do0
-		    (ImGui_ImplOpenGL3_NewFrame)
-		    (ImGui_ImplSDL2_NewFrame)
-		    (ImGui--NewFrame))))))
+			   (ImGui_ImplOpenGL3_NewFrame)
+			   (ImGui_ImplSDL2_NewFrame)
+			   (ImGui--NewFrame))))))
 
        (let ((demo_window
 	       (lambda ()
 		 (do0
-		    (let ((show_demo true))
-		      (declare (type "static bool" show_demo))
-		      (when show_demo
-			(ImGui--ShowDemoWindow &show_demo)))))
-			  )))
+		  (let ((show_demo true))
+		    (declare (type "static bool" show_demo))
+		    (when show_demo
+		      (ImGui--ShowDemoWindow &show_demo)))))
+	       )))
 
        (let ((swap (lambda ()
 		     (do0
-		    (ImGui--Render)
-		    (glViewport 0 0 (static_cast<int> io->DisplaySize.x)
-				(static_cast<int> io->DisplaySize.y))
-		    (glClearColor 0s0 0s0 0s0 1s0)
-		    (glClear GL_COLOR_BUFFER_BIT)
-		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-		    (SDL_GL_SwapWindow window))))))
+		      (ImGui--Render)
+		      (glViewport 0 0 (static_cast<int> io->DisplaySize.x)
+				  (static_cast<int> io->DisplaySize.y))
+		      (glClearColor 0s0 0s0 0s0 1s0)
+		      (glClear GL_COLOR_BUFFER_BIT)
+		      (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+		      (SDL_GL_SwapWindow window))))))
        (handler-case
 	   (do0
 	    (while
 	     !done
 	     (handle_events window &done)
-	     (physics)
+	     (physics->Step)
 	     (new_frame )
 	     (demo_window)
 	     (swap)

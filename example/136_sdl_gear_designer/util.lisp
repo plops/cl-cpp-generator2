@@ -104,6 +104,6 @@
 		    ,(if code
 			 code
 			 `(comments "no code")))
-		  :format nil
-		  :tidy nil
+		  :format t
+		  :tidy t
 		  :omit-parens t)))
