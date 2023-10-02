@@ -145,6 +145,7 @@
       SDL.h
       SDL_opengl.h
       )
+     (include<> box2d/box2d.h)
      #+nil
      (do0
       (setf "const char *vertexShaderSrc"
@@ -325,6 +326,24 @@
 	
 	)
 
+
+       (do0
+	(let ((gravity (b2Vec2 0s0 -10s0))
+	      (world (b2World gravity))
+	      (groundBodyDef (b2BodyDef)))
+	  (groundBodyDef.position.Set 0s0 -10s0)
+	  (let ((groundBody (world.CreateBody &groundBodyDef))))
+	  (let ((groundBox (b2PolygonShape)))
+	    (groundBox.SetAsBox 50s0 10s0)
+	    )
+	  (groundBody->CreateFixture &groundBox 0s0)
+	  (let ((bodyDef (b2BodyDef)))
+	    (setf bodyDef.type b2_dynamicBody)
+	    (bodyDef.position.Set 0s0 4s0)
+	    
+	    )
+	  (let ((body (world.CreateBody &bodyDef))))))
+       
        (let ((done false)))
        (while !done
 	      (let ((event (SDL_Event))))

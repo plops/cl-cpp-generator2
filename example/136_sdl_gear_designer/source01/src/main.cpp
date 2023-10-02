@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <box2d/box2d.h>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl2.h>
@@ -38,6 +39,18 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
   glEnable(GL_CULL_FACE);
+  auto gravity = b2Vec2(0.F, -10.F);
+  auto world = b2World(gravity);
+  auto groundBodyDef = b2BodyDef();
+  groundBodyDef.position.Set(0.F, -10.F);
+  auto groundBody = world.CreateBody(&groundBodyDef);
+  auto groundBox = b2PolygonShape();
+  groundBox.SetAsBox(50.F, 10.F);
+  groundBody->CreateFixture(&groundBox, 0.F);
+  auto bodyDef = b2BodyDef();
+  bodyDef.type = b2_dynamicBody;
+  bodyDef.position.Set(0.F, 4.0F);
+  auto body = world.CreateBody(&bodyDef);
   auto done = false;
   while (!done) {
     auto event = SDL_Event();

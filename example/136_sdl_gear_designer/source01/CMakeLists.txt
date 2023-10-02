@@ -103,4 +103,5 @@ target_link_libraries(${PROJECT_NAME}
         ${SDL2_LIBRARIES}
         ${OPENGL_LIBRARIES}
         imgui
+	box2d
 )
