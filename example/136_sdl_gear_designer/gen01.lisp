@@ -274,7 +274,7 @@
       SDL.h
       SDL_opengl.h
       )
-     (include<> box2d/box2d.h)
+     ;(include<> box2d/box2d.h)
      (include "Physics.h")
      #+nil
      (do0
@@ -516,7 +516,24 @@
 	    (while
 	     !done
 	     (handle_events window &done)
-	     (physics->Step)
+	     (let ((px 0s0)
+		   (py 0s0)
+		   (angle 0s0)
+		   )
+	       (setf (std--tie px py angle)
+		     (physics->Step))
+	       (let ((draw
+		      (ImGui--GetBackgroundDrawList))
+		     (rad 100s0)
+		     (ppx (* 100 px))
+		     (ppy (* 100 py))
+		     (sx (sin angle))
+		     (sy (cos angle)))
+		 (draw->AddLine (ImVec2 ppx ppy)
+				(ImVec2 (+ ppx (* rad sx))
+					(+ ppy (* rad sy)))
+				(ImGui--GetColorU32 ImGuiCol_Button)
+				4s0)))
 	     (new_frame )
 	     (demo_window)
 	     (swap)
