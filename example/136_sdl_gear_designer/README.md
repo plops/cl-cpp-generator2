@@ -1,5 +1,5 @@
 # Overview Box2D library
-
+- https://box2d.org/documentation/
   **Box2D 2.4.1**: A 2D rigid body simulation library written in portable C++ for game development.
   
   **Prerequisites**:
@@ -38,3 +38,31 @@
   - Not suitable for C++ beginners.
   - Don't use pixels for units.
   - Limit world sizes for better performance.
+
+# Overview Box2D Tutorial
+
+- https://box2d.org/documentation/md__d_1__git_hub_box2d_docs_hello.html
+- https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp
+
+- **Hello Box2D**
+  - Introductory "Hello World" example for Box2D; console-based, no graphics.
+  
+- **Creating a World**
+  - Initiate a `b2World` object to manage physics simulation.
+  - Define gravity and create the world object.
+
+- **Creating a Ground Box**
+  - Define a static "ground" body using `b2BodyDef`.
+  - Attach a box-shaped fixture to the ground body.
+
+- **Creating a Dynamic Body**
+  - Define a dynamic body that can move.
+  - Set its mass properties and create fixtures with specific density and friction.
+
+- **Simulating the World**
+  - Select time step and iteration counts for the physics solver.
+  - Run simulation loop, outputting position and rotation of dynamic body.
+
+- **Cleanup**
+  - Memory for world, bodies, fixtures, and joints auto-freed when world goes out of scope. 
+  - User pointers to these objects should be nullified.
