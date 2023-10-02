@@ -354,42 +354,59 @@
 	     
 	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
 	 (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR))
-       
-       
+
+
+       (let ((handle_events
+	       (lambda (*window_ *done_)
+		 ;(declare (type auto& done_))
+		 (do0 (let ((event (SDL_Event))))
+		      (while (SDL_PollEvent &event)
+			     (ImGui_ImplSDL2_ProcessEvent &event)
+			     (when (== 
+				    SDL_QUIT
+				    event.type)
+			       (setf *done_ true))
+			     (when (logand (== SDL_WINDOWEVENT event.type)
+					   (== SDL_WINDOWEVENT_CLOSE event.window.event)
+					   (== event.window.windowID (SDL_GetWindowID window_)))
+			       (setf *done_ true)))))
+			    )))
+       (let ((new_frame (lambda ()
+			  (do0
+		    (ImGui_ImplOpenGL3_NewFrame)
+		    (ImGui_ImplSDL2_NewFrame)
+		    (ImGui--NewFrame))))))
+
+       (let ((demo_window
+	       (lambda ()
+		 (do0
+		    (let ((show_demo true))
+		      (declare (type "static bool" show_demo))
+		      (when show_demo
+			(ImGui--ShowDemoWindow &show_demo)))))
+			  )))
+
+       (let ((swap (lambda ()
+		     (do0
+		    (ImGui--Render)
+		    (glViewport 0 0 (static_cast<int> io->DisplaySize.x)
+				(static_cast<int> io->DisplaySize.y))
+		    (glClearColor 0s0 0s0 0s0 1s0)
+		    (glClear GL_COLOR_BUFFER_BIT)
+		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
+		    (SDL_GL_SwapWindow window))))))
        (handler-case
 	   
 	   (do0
 	    (while !done
-	      (let ((event (SDL_Event))))
-	      (while (SDL_PollEvent &event)
-		     (ImGui_ImplSDL2_ProcessEvent &event)
-		     (when (== 
-			    SDL_QUIT
-			    event.type)
-		       (setf done true))
-		     (when (logand (== SDL_WINDOWEVENT event.type)
-				   (== SDL_WINDOWEVENT_CLOSE event.window.event)
-				   (== event.window.windowID (SDL_GetWindowID window)))
-		       (setf done true)))
+		   
+		   (handle_events window &done)
+		   (new_frame )
+		   
+		   (demo_window)
 
-	      (do0
-	       (ImGui_ImplOpenGL3_NewFrame)
-	       (ImGui_ImplSDL2_NewFrame)
-	       (ImGui--NewFrame))
-
-	      (do0
-	       (let ((show_demo true))
-		 (declare (type "static bool" show_demo))
-		 (when show_demo
-		   (ImGui--ShowDemoWindow &show_demo))))
-	      (do0
-	       (ImGui--Render)
-	       (glViewport 0 0 (static_cast<int> io->DisplaySize.x)
-			   (static_cast<int> io->DisplaySize.y))
-	       (glClearColor 0s0 0s0 0s0 1s0)
-	       (glClear GL_COLOR_BUFFER_BIT)
-	       (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
-	       (SDL_GL_SwapWindow window)))
+		   (swap)
+		   )
 	    )
 	 
 	   
@@ -397,13 +414,13 @@
 	 
 	 ("const std::runtime_error&" (e)
 	   #+more ,(lprint :msg "error"
-		    :vars `((e.what)))
+			   :vars `((e.what)))
 	   (do0
-	(ImGui_ImplOpenGL3_Shutdown)
-	(ImGui_ImplSDL2_Shutdown)
-	(ImGui--DestroyContext)
-	(SDL_GL_DeleteContext gl_context)
-	(SDL_Quit))
+	    (ImGui_ImplOpenGL3_Shutdown)
+	    (ImGui_ImplSDL2_Shutdown)
+	    (ImGui--DestroyContext)
+	    (SDL_GL_DeleteContext gl_context)
+	    (SDL_Quit))
 	   (return 1)))
 
        
