@@ -326,23 +326,53 @@
 	
 	)
 
-
-       (do0
-	(let ((gravity (b2Vec2 0s0 -10s0))
-	      (world (b2World gravity))
-	      (groundBodyDef (b2BodyDef)))
-	  (groundBodyDef.position.Set 0s0 -10s0)
-	  (let ((groundBody (world.CreateBody &groundBodyDef))))
-	  (let ((groundBox (b2PolygonShape)))
-	    (groundBox.SetAsBox 50s0 10s0)
-	    )
-	  (groundBody->CreateFixture &groundBox 0s0)
-	  (let ((bodyDef (b2BodyDef)))
-	    (setf bodyDef.type b2_dynamicBody)
-	    (bodyDef.position.Set 0s0 4s0)
+       (let ((physics (lambda ()
+			(comments "https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp")
+			(do0
+			 
+			 (let ((gravity (b2Vec2 0s0 -10s0))
+			       (world (b2World gravity))
+			       (groundBodyDef (b2BodyDef)))
+			   (declare (type "static auto" world))
+			   (groundBodyDef.position.Set 0s0 -10s0)
+			   (let ((groundBody (world.CreateBody &groundBodyDef))))
+			   (let ((groundBox (b2PolygonShape)))
+			     (groundBox.SetAsBox 50s0 10s0)
+			     )
+			   (groundBody->CreateFixture &groundBox 0s0)
+			   (let ((bodyDef (b2BodyDef)))
+			     (setf bodyDef.type b2_dynamicBody)
+			     (bodyDef.position.Set 0s0 4s0)
 	    
-	    )
-	  (let ((body (world.CreateBody &bodyDef))))))
+			     )
+			   (let ((body (world.CreateBody &bodyDef)))
+			     (declare (type "static auto" body)))
+			   (let ((dynamicBox (b2PolygonShape)))
+			     (dynamicBox.SetAsBox 1s0 1s0))
+			   (let ((fixtureDef (b2FixtureDef)))
+			     (setf fixtureDef.shape &dynamicBox
+				   fixtureDef.density 1s0
+				   fixtureDef.friction .3s0))
+			   (body->CreateFixture &fixtureDef)
+			   (let ((timeStep (/ 1s0 60s0))
+				 (velocityIterations 6)
+				 (positionIterations 2)
+				 ;(position (body->GetPosition))
+				 ;(angle (body->GetAngle))
+				 )
+			     (declare (type "const auto" velocityIterations positionIterations timeStep)
+				      )
+			     )))
+			(do0
+			 (dotimes (i 60)
+			   (world.Step timeStep velocityIterations positionIterations)
+			   (let (( position (body->GetPosition)
+				   )))
+			   (let (( angle (body->GetAngle))))
+			   ,(lprint :vars `(position.x position.y angle))))))))
+       (physics)
+
+       
        
        (let ((done false)))
        
@@ -396,22 +426,14 @@
 		    (ImGui_ImplOpenGL3_RenderDrawData (ImGui--GetDrawData))
 		    (SDL_GL_SwapWindow window))))))
        (handler-case
-	   
 	   (do0
-	    (while !done
-		   
-		   (handle_events window &done)
-		   (new_frame )
-		   
-		   (demo_window)
-
-		   (swap)
-		   )
-	    )
-	 
-	   
-	 
-	 
+	    (while
+	     !done
+	     (handle_events window &done)
+	     (new_frame )
+	     (demo_window)
+	     (swap)
+	     ))
 	 ("const std::runtime_error&" (e)
 	   #+more ,(lprint :msg "error"
 			   :vars `((e.what)))
@@ -422,8 +444,6 @@
 	    (SDL_GL_DeleteContext gl_context)
 	    (SDL_Quit))
 	   (return 1)))
-
-       
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)
 	(ImGui_ImplSDL2_Shutdown)

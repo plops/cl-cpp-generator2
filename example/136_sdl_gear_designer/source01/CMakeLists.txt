@@ -8,6 +8,11 @@ project(imgui_sdl2_bullet_gears_designer)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+option(ENABLE_MOLD "Enable Mold as Linker" ON)
+if (ENABLE_MOLD)
+    add_link_options(-fuse-ld=mold)
+endif ()
+
 
 # AddressSanitizer
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
@@ -60,17 +65,9 @@ set(OpenGL_GL_PREFERENCE
 
 # Add SDL2
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
 
 # Add OpenGL
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
-
-# Add ImGui
-include_directories(
-        ${CMAKE_SOURCE_DIR}/imgui
-        ${CMAKE_SOURCE_DIR}/imgui/backends
-)
 
 # Define the executable
 add_executable(${PROJECT_NAME}
@@ -98,10 +95,29 @@ add_library(imgui
         ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
         ${CMAKE_SOURCE_DIR}/imgui/imgui_tables.cpp
 )
+
+target_include_directories(
+        imgui
+        PRIVATE
+        ${SDL2_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
+        ${CMAKE_SOURCE_DIR}/imgui
+        ${CMAKE_SOURCE_DIR}/imgui/backends
+)
+
+target_include_directories(
+        ${PROJECT_NAME}
+        PRIVATE
+        ${SDL2_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
+        ${CMAKE_SOURCE_DIR}/imgui
+        ${CMAKE_SOURCE_DIR}/imgui/backends
+)
+
 # Linking libraries
 target_link_libraries(${PROJECT_NAME}
         ${SDL2_LIBRARIES}
         ${OPENGL_LIBRARIES}
         imgui
-	box2d
+        box2d
 )
