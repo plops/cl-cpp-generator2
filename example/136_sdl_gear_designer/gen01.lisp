@@ -327,50 +327,77 @@
 	)
 
        (let ((physics (lambda ()
+			(declare (values "std::tuple<float,float,float>" ))
 			(comments "https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp")
-			(do0
+
+			(let ((timeStep (/ 1s0 60s0))
+				   (velocityIterations 6)
+				   (positionIterations 2)
+					;(position (body->GetPosition))
+					;(angle (body->GetAngle))
+				   )
+			       (declare (type "const auto" velocityIterations positionIterations timeStep)
+					)
+			       )
+			
+			(let ((is_initialized false)
+			      )
+			  (declare (type "static auto" is_initialized)))
+
+
+			(let ((world (b2World (b2Vec2 0s0 -10s0))))
+			  (declare (type "static auto" world)))
+			(let ((body nullptr))
+			  (declare (type "b2Body*" body)))
+			#+nil ,@(loop for (e f) in `((world_ b2World)
+						     (body_ b2Body*))
+				      collect
+				      `(let ((,e))
+					 (declare (type ,(format nil "static ~a" f) ,e))))
+			
+
+			
+			(unless is_initialized
+			  (do0
 			 
-			 (let ((gravity (b2Vec2 0s0 -10s0))
-			       (world (b2World gravity))
-			       (groundBodyDef (b2BodyDef)))
-			   (declare (type "static auto" world))
-			   (groundBodyDef.position.Set 0s0 -10s0)
-			   (let ((groundBody (world.CreateBody &groundBodyDef))))
-			   (let ((groundBox (b2PolygonShape)))
-			     (groundBox.SetAsBox 50s0 10s0)
-			     )
-			   (groundBody->CreateFixture &groundBox 0s0)
-			   (let ((bodyDef (b2BodyDef)))
-			     (setf bodyDef.type b2_dynamicBody)
-			     (bodyDef.position.Set 0s0 4s0)
+			   (let (;(gravity (b2Vec2 0s0 -10s0))
+				 ;(world (b2World gravity))
+				 (groundBodyDef (b2BodyDef)))
+			     
+			     (groundBodyDef.position.Set 0s0 -10s0)
+			     (let ((groundBody (world.CreateBody &groundBodyDef))))
+			     (let ((groundBox (b2PolygonShape)))
+			       (groundBox.SetAsBox 50s0 10s0)
+			       )
+			     (groundBody->CreateFixture &groundBox 0s0)
+			     (let ((bodyDef (b2BodyDef)))
+			       (setf bodyDef.type b2_dynamicBody)
+			       (bodyDef.position.Set 0s0 4s0)
 	    
-			     )
-			   (let ((body (world.CreateBody &bodyDef)))
-			     (declare (type "static auto" body)))
-			   (let ((dynamicBox (b2PolygonShape)))
-			     (dynamicBox.SetAsBox 1s0 1s0))
-			   (let ((fixtureDef (b2FixtureDef)))
-			     (setf fixtureDef.shape &dynamicBox
-				   fixtureDef.density 1s0
-				   fixtureDef.friction .3s0))
-			   (body->CreateFixture &fixtureDef)
-			   (let ((timeStep (/ 1s0 60s0))
-				 (velocityIterations 6)
-				 (positionIterations 2)
-				 ;(position (body->GetPosition))
-				 ;(angle (body->GetAngle))
-				 )
-			     (declare (type "const auto" velocityIterations positionIterations timeStep)
-				      )
+			       )
+			     (setf body (world.CreateBody &bodyDef))
+			     #+nil (let (
+				   (body (world.CreateBody &bodyDef)))
+			       (declare (type "static auto" body)))
+			     (let ((dynamicBox (b2PolygonShape)))
+			       (dynamicBox.SetAsBox 1s0 1s0))
+			     (let ((fixtureDef (b2FixtureDef)))
+			       (setf fixtureDef.shape &dynamicBox
+				     fixtureDef.density 1s0
+				     fixtureDef.friction .3s0))
+			     (body->CreateFixture &fixtureDef)
+			     
+			     (setf is_initialized true)
 			     )))
-			(do0
-			 (dotimes (i 60)
-			   (world.Step timeStep velocityIterations positionIterations)
-			   (let (( position (body->GetPosition)
-				   )))
-			   (let (( angle (body->GetAngle))))
-			   ,(lprint :vars `(position.x position.y angle))))))))
-       (physics)
+			(do0 (world.Step timeStep velocityIterations positionIterations)
+			     (let (( position (body->GetPosition)
+				     )))
+			     (let (( angle (body->GetAngle))))
+			     ,(lprint :vars `(position.x position.y angle)))
+			(return (std--make_tuple position.x
+						 position.y
+						 angle))))))
+       
 
        
        
@@ -430,6 +457,7 @@
 	    (while
 	     !done
 	     (handle_events window &done)
+	     (physics)
 	     (new_frame )
 	     (demo_window)
 	     (swap)

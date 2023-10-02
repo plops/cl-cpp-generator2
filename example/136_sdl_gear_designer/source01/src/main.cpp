@@ -39,42 +39,44 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
   glEnable(GL_CULL_FACE);
-  auto physics = [&]() {
+  auto physics = [&]() -> std::tuple<float, float, float> {
     // https://github.com/erincatto/box2d/blob/main/unit-test/hello_world.cpp
 
-    auto gravity = b2Vec2(0.F, -10.F);
-    static auto world = b2World(gravity);
-    auto groundBodyDef = b2BodyDef();
-    groundBodyDef.position.Set(0.F, -10.F);
-    auto groundBody = world.CreateBody(&groundBodyDef);
-    auto groundBox = b2PolygonShape();
-    groundBox.SetAsBox(50.F, 10.F);
-    groundBody->CreateFixture(&groundBox, 0.F);
-    auto bodyDef = b2BodyDef();
-    bodyDef.type = b2_dynamicBody;
-    bodyDef.position.Set(0.F, 4.0F);
-    static auto body = world.CreateBody(&bodyDef);
-    auto dynamicBox = b2PolygonShape();
-    dynamicBox.SetAsBox(1.0F, 1.0F);
-    auto fixtureDef = b2FixtureDef();
-    fixtureDef.shape = &dynamicBox;
-    fixtureDef.density = 1.0F;
-    fixtureDef.friction = 0.30F;
-    body->CreateFixture(&fixtureDef);
     const auto timeStep = 1.0F / 60.F;
     const auto velocityIterations = 6;
     const auto positionIterations = 2;
-    for (auto i = 0; i < 60; i += 1) {
-      world.Step(timeStep, velocityIterations, positionIterations);
-      auto position = body->GetPosition();
-      auto angle = body->GetAngle();
-      std::cout << ""
-                << " position.x='" << position.x << "' "
-                << " position.y='" << position.y << "' "
-                << " angle='" << angle << "' " << std::endl;
+    static auto is_initialized = false;
+    static auto world = b2World(b2Vec2(0.F, -10.F));
+    b2Body *body = nullptr;
+    if (!is_initialized) {
+      auto groundBodyDef = b2BodyDef();
+      groundBodyDef.position.Set(0.F, -10.F);
+      auto groundBody = world.CreateBody(&groundBodyDef);
+      auto groundBox = b2PolygonShape();
+      groundBox.SetAsBox(50.F, 10.F);
+      groundBody->CreateFixture(&groundBox, 0.F);
+      auto bodyDef = b2BodyDef();
+      bodyDef.type = b2_dynamicBody;
+      bodyDef.position.Set(0.F, 4.0F);
+      body = world.CreateBody(&bodyDef);
+      auto dynamicBox = b2PolygonShape();
+      dynamicBox.SetAsBox(1.0F, 1.0F);
+      auto fixtureDef = b2FixtureDef();
+      fixtureDef.shape = &dynamicBox;
+      fixtureDef.density = 1.0F;
+      fixtureDef.friction = 0.30F;
+      body->CreateFixture(&fixtureDef);
+      is_initialized = true;
     }
+    world.Step(timeStep, velocityIterations, positionIterations);
+    auto position = body->GetPosition();
+    auto angle = body->GetAngle();
+    std::cout << ""
+              << " position.x='" << position.x << "' "
+              << " position.y='" << position.y << "' "
+              << " angle='" << angle << "' " << std::endl;
+    return std::make_tuple(position.x, position.y, angle);
   };
-  physics();
   auto done = false;
   auto handle_events = [&](auto *window_, auto *done_) {
     auto event = SDL_Event();
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
   try {
     while (!done) {
       handle_events(window, &done);
+      physics();
       new_frame();
       demo_window();
       swap();
