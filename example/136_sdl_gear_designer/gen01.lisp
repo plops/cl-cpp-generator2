@@ -642,7 +642,7 @@
 		  (ImGui--GetColorU32 ImGuiCol_Separator)
 		  num_segments
 		  )))
-	     ;(draw_all_sliders)
+	     (draw_all_sliders)
 	     (demo_window)
 	     (swap window)
 	     ))

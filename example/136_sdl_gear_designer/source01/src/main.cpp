@@ -154,6 +154,7 @@ int main(int argc, char **argv) {
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
                             circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),
                             num_segments);
+      draw_all_sliders();
       demo_window();
       swap(window);
     }
