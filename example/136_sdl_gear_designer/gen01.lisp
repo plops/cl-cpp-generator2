@@ -613,14 +613,17 @@
 	    
 	    (let ((done false)))
 	    ,(lprint :msg "start gui loop")
+
+	    (let (( slider1 (make_slider (string "circle_rad")))))
+	     (let (( slider2 (make_slider (string "scale")))))
+
 	    (while
 	     !done
 	     (handle_events window &done)
 	     (new_frame )
-	     (let (( slider1 (make_slider (string "circle_rad")))))
-	     (let (( slider2 (make_slider (string "scale")))))
-
-	    
+	     
+	     (draw_all_sliders)
+	     
 	     (let (((bracket px py angle) (physics->Step))
 		   )
 	       (let ((draw
@@ -636,7 +639,7 @@
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
 		 (let ((scale	       ;(make_slider (string "scale"))
-			 ;30s0
+					;30s0
 			 (slider2)))
 		   )
 		 (let ((circle_rad (slider1) 
@@ -651,7 +654,7 @@
 		  (ImGui--GetColorU32 ImGuiCol_Separator)
 		  num_segments
 		  )))
-	     (draw_all_sliders)
+	     
 	     (demo_window)
 	     (swap window)
 	     ))

@@ -129,11 +129,12 @@ int main(int argc, char **argv) {
     auto [make_slider, draw_all_sliders] = slider_factory();
     auto done = false;
     std::cout << "start gui loop" << std::endl;
+    auto slider1 = make_slider("circle_rad");
+    auto slider2 = make_slider("scale");
     while (!done) {
       handle_events(window, &done);
       new_frame();
-      auto slider1 = make_slider("circle_rad");
-      auto slider2 = make_slider("scale");
+      draw_all_sliders();
       auto [px, py, angle] = physics->Step();
       auto draw = ImGui::GetBackgroundDrawList();
       auto rad = 1.00e+2F;
@@ -150,7 +151,6 @@ int main(int argc, char **argv) {
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
                             circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),
                             num_segments);
-      draw_all_sliders();
       demo_window();
       swap(window);
     }
