@@ -309,7 +309,7 @@
      (defclass+ GuiException "public std::runtime_error"
        "public:"
        "using runtime_error::runtime_error;"
-       ;"explicit"
+					;"explicit"
        #+nil
        (defmethod GuiException (msg)
 	 (declare (explicit)
@@ -326,19 +326,19 @@
 
        (let ((set_gl_attributes (lambda ()
 				  ,@(loop for e in `((:key context-flags :value 0)
-				      (:key context-profile-mask :value SDL_GL_CONTEXT_PROFILE_CORE)
-				      (:key context-major-version :value 3)
-				      (:key context-minor-version :value 0)
-				      (:key doublebuffer :value 1)
-				      (:key depth-size :value 24)
-				      (:key stencil-size :value 8)
+						     (:key context-profile-mask :value SDL_GL_CONTEXT_PROFILE_CORE)
+						     (:key context-major-version :value 3)
+						     (:key context-minor-version :value 0)
+						     (:key doublebuffer :value 1)
+						     (:key depth-size :value 24)
+						     (:key stencil-size :value 8)
 					;(:key :value)
-				      )
-			   collect
-			   (destructuring-bind (&key key value) e
-			     `(SDL_GL_SetAttribute
-			       ,(cl-change-case:constant-case (format nil "sdl-gl-~a" key))
-			       ,value)))
+						     )
+					  collect
+					  (destructuring-bind (&key key value) e
+					    `(SDL_GL_SetAttribute
+					      ,(cl-change-case:constant-case (format nil "sdl-gl-~a" key))
+					      ,value)))
 				  (SDL_SetHint SDL_HINT_IME_SHOW_UI (string "1"))
 				  
 				  ))))
@@ -472,17 +472,17 @@
 
        
        (let ((init_imgui (lambda (window_ gl_context_)
-				       (do0
-					(IMGUI_CHECKVERSION)
-					(ImGui--CreateContext)
-					(let ((*io (ref (ImGui--GetIO)))))
-					(setf io->ConfigFlags (or io->ConfigFlags
-							       ImGuiConfigFlags_NavEnableKeyboard))
-					(ImGui--StyleColorsDark)
-					(ImGui_ImplSDL2_InitForOpenGL window_ gl_context_)
-					(let ((glsl_version (string "#version 130"))))
-					(ImGui_ImplOpenGL3_Init glsl_version)
-					)))))
+			   (do0
+			    (IMGUI_CHECKVERSION)
+			    (ImGui--CreateContext)
+			    (let ((*io (ref (ImGui--GetIO)))))
+			    (setf io->ConfigFlags (or io->ConfigFlags
+						      ImGuiConfigFlags_NavEnableKeyboard))
+			    (ImGui--StyleColorsDark)
+			    (ImGui_ImplSDL2_InitForOpenGL window_ gl_context_)
+			    (let ((glsl_version (string "#version 130"))))
+			    (ImGui_ImplOpenGL3_Init glsl_version)
+			    )))))
        
 
        
