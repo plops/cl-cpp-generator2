@@ -8,40 +8,45 @@
 #include <memory>
 
 int main(int argc, char **argv) {
-  if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
-    std::cout << "Error"
-              << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
-    return -1;
-  }
-  auto glsl_version = "#version 130";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-  SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-  auto *window = SDL_CreateWindow(
-      "imgui_sdl2_bullet_gears_designer", SDL_WINDOWPOS_CENTERED,
-      SDL_WINDOWPOS_CENTERED, 1280, 720,
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-  if (!window) {
-    throw std::runtime_error("Error creating GL window");
-  }
-  auto gl_context = SDL_GL_CreateContext(window);
-  SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1);
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  auto *io = &ImGui::GetIO();
-  io->ConfigFlags = io->ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
-  ImGui::StyleColorsDark();
-  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-  ImGui_ImplOpenGL3_Init(glsl_version);
-  glEnable(GL_CULL_FACE);
-  auto physics = std::make_unique<Physics>();
-  auto done = false;
+  void *gl_context = nullptr;
+  auto init_gl = [&](auto &gl_context_) {
+    if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
+      std::cout << "Error"
+                << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
+      throw std::runtime_error("Error in SDL_Init.");
+      std::invalid_argument
+    }
+    auto glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+    auto *window = SDL_CreateWindow(
+        "imgui_sdl2_bullet_gears_designer", SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED, 1280, 720,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    if (!window) {
+      throw std::runtime_error("Error creating GL window");
+    }
+    gl_context_ = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, gl_context_);
+    SDL_GL_SetSwapInterval(1);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    auto *io = &ImGui::GetIO();
+    io->ConfigFlags = io->ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context_);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    glEnable(GL_CULL_FACE);
+    return window;
+  };
   auto handle_events = [&](auto *window_, auto *done_) {
     auto event = SDL_Event();
     while (SDL_PollEvent(&event)) {
@@ -67,8 +72,9 @@ int main(int argc, char **argv) {
       ImGui::ShowDemoWindow(&show_demo);
     }
   };
-  auto swap = [&]() {
+  auto swap = [&](auto *window) {
     ImGui::Render();
+    auto const *io = &ImGui::GetIO();
     glViewport(0, 0, static_cast<int>(io->DisplaySize.x),
                static_cast<int>(io->DisplaySize.y));
     glClearColor(0.F, 0.F, 0.F, 1.0F);
@@ -76,7 +82,17 @@ int main(int argc, char **argv) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
   };
+  auto destroy_gl = [&](auto gl_context_) {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+    SDL_GL_DeleteContext(gl_context_);
+    SDL_Quit();
+  };
   try {
+    auto *window = init_gl(gl_context);
+    auto physics = std::make_unique<Physics>();
+    auto done = false;
     while (!done) {
       handle_events(window, &done);
       new_frame();
@@ -93,22 +109,14 @@ int main(int argc, char **argv) {
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Button), 4.0F);
       demo_window();
-      swap();
+      swap(window);
     }
   } catch (const std::runtime_error &e) {
     std::cout << "error"
               << " e.what()='" << e.what() << "' " << std::endl;
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-    SDL_GL_DeleteContext(gl_context);
-    SDL_Quit();
+    destroy_gl(gl_context);
     return 1;
   }
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
-  ImGui::DestroyContext();
-  SDL_GL_DeleteContext(gl_context);
-  SDL_Quit();
+  destroy_gl(gl_context);
   return 0;
 }
