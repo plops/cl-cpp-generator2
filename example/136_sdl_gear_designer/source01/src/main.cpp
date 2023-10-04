@@ -119,7 +119,10 @@ int main(int argc, char **argv) {
       auto sx = sin(angle);
       auto sy = cos(angle);
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
-                    ImGui::GetColorU32(ImGuiCol_Button), 4.0F);
+                    ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
+      auto scale = 30.F;
+      draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py), 30.F,
+                            ImGui::GetColorU32(ImGuiCol_Text));
       demo_window();
       swap(window);
     }

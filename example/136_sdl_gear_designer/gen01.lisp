@@ -575,8 +575,14 @@
 		 (draw->AddLine (ImVec2 ppx ppy)
 				(ImVec2 (+ ppx (* rad sx))
 					(+ ppy (* rad sy)))
-				(ImGui--GetColorU32 ImGuiCol_Button)
-				4s0)))
+				(ImGui--GetColorU32 ImGuiCol_Text)
+				4s0)
+		 (let ((scale 30s0)))
+		 (draw->AddCircleFilled
+		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))
+		  30s0
+		  (ImGui--GetColorU32 ImGuiCol_Text)
+		  )))
 	     
 	     (demo_window)
 	     (swap window)
