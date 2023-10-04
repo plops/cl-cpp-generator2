@@ -650,7 +650,9 @@
 					; (widget_slider)
 				   )
 		       (circum (* 2 std--numbers--pi_v<float> ; ,(coerce  pi 'single-float)
-				  circle_rad))
+				  circle_rad
+				  )
+			       )
 		       (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0)))))))
 		 (draw->AddCircleFilled
 		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))

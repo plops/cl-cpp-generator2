@@ -8,6 +8,8 @@ project(imgui_sdl2_bullet_gears_designer)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+set(CMAKE_CXX_COMPILER clang++)
+
 option(ENABLE_MOLD "Enable Mold as Linker" ON)
 if (ENABLE_MOLD)
     add_link_options(-fuse-ld=mold)
