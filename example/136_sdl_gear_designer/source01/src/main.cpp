@@ -14,7 +14,7 @@ public:
 auto slider_factory = []() {
   std::cout << "slider factory" << std::endl;
   static auto values = std::unordered_map<std::string, float>();
-  auto make_slider = [&](auto label) {
+  auto make_slider = [&](const std::string &label) {
     if (values.find(label) == values.end()) {
       std::cout << "make_slider init"
                 << " label='" << label << "' " << std::endl;

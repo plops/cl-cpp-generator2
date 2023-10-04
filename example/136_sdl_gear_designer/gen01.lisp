@@ -325,13 +325,14 @@
 		 (declare (type "static auto" values)))
 	       (let ((make_slider
 		       (lambda (label)
+			 (declare (type "const std::string&" label))
 			 (if (== (values.find label)
-				   (values.end))
+				 (values.end))
 			     (do0
 			      ,(lprint :msg "make_slider init"
 				       :vars `(label))
 			      (setf (aref values label) 100s0))
-			      (do0
+			     (do0
 			      ,(lprint :msg "make_slider repeated call"
 				       :vars `(label))))
 
