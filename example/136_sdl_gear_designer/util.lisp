@@ -105,5 +105,5 @@
 			 code
 			 `(comments "no code")))
 		  :format t
-		  :tidy t
+		  :tidy nil
 		  :omit-parens t)))

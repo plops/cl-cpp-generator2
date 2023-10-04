@@ -12,7 +12,7 @@ Physics::Physics()
 
   auto groundBodyDef = b2BodyDef();
   groundBodyDef.position.Set(0.F, -10.F);
-  auto *groundBody = world_.CreateBody(&groundBodyDef);
+  auto groundBody = world_.CreateBody(&groundBodyDef);
   auto groundBox = b2PolygonShape();
   groundBox.SetAsBox(50.F, 10.F);
   groundBody->CreateFixture(&groundBox, 0.F);

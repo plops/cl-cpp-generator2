@@ -6,9 +6,25 @@
 #include <imgui_impl_sdl2.h>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 class GuiException : public std::runtime_error {
 public:
   using runtime_error::runtime_error;
+};
+auto slider_factory = []() {
+  auto values = std::unordered_map<std::string, float>();
+  auto make_slider = [&](auto label) {
+    values[label] = 1.00e+2F;
+    return [&]() { return values[label]; };
+  };
+  auto draw_all_sliders = [&]() {
+    ImGui::Begin("all-sliders");
+    for (const auto &[key, value] : values) {
+      ImGui::SliderFloat(key.c_str(), &values[key], 1.00e+2F, 3.00e+2F);
+    }
+    ImGui::End();
+  };
+  return std::make_tuple(make_slider, draw_all_sliders);
 };
 
 int main(int argc, char **argv) {
@@ -100,26 +116,17 @@ int main(int argc, char **argv) {
     SDL_GL_DeleteContext(gl_context_);
     SDL_Quit();
   };
-  auto widget_slider = [&]() {
-    static float value = 1.00e+2F;
-    ImGui::Begin("slider");
-    if (ImGui::SliderFloat("slider", &value, 1.00e+2F, 3.00e+2F)) {
-    }
-    ImGui::End();
-    return value;
-  };
   try {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
     auto physics = std::make_unique<Physics>();
+    auto [make_slider, draw_all_sliders] = slider_factory();
+    auto slider1 = make_slider("circle_rad");
     auto done = false;
     while (!done) {
       handle_events(window, &done);
       new_frame();
-      auto px = 0.F;
-      auto py = 0.F;
-      auto angle = 0.F;
-      std::tie(px, py, angle) = physics->Step();
+      auto [px, py, angle] = physics->Step();
       auto draw = ImGui::GetBackgroundDrawList();
       auto rad = 1.00e+2F;
       auto ppx = 100 * (400 + px);
@@ -129,12 +136,13 @@ int main(int argc, char **argv) {
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       auto scale = 30.F;
-      auto circle_rad = widget_slider();
+      auto circle_rad = slider1();
       auto circum = 2 * 3.141593F * circle_rad;
-      auto num_segments = static_cast<int>(ceil(circum / 5.0F));
+      auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
-                            circle_rad, ImGui::GetColorU32(ImGuiCol_Text),
+                            circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),
                             num_segments);
+      draw_all_sliders();
       demo_window();
       swap(window);
     }

@@ -5,9 +5,9 @@
 
 (in-package :cl-cpp-generator2)
 
-;; https://github.com/ocornut/imgui/blob/master/examples/example_sdl2_opengl3/main.cpp
-;; sudo emerge -av box2d
 (progn
+  ;; https://github.com/ocornut/imgui/blob/master/examples/example_sdl2_opengl3/main.cpp
+  ;; sudo emerge -av box2d
   (setf *features* (set-difference *features* (list :more
 						    :glad)))
   (setf *features* (set-exclusive-or *features* (list :more
@@ -254,7 +254,7 @@
 
 					;cmath
       
-
+      unordered_map
       )
 
      #+glad
@@ -316,6 +316,27 @@
 		  (type "const std::string&" msg)
 		  (values :constructor)
 		  (construct (std--runtime_error msg)))))
+
+     (let ((slider_factory
+	     (lambda ()
+	       (declare (capture ""))
+	       (let ((values ("std::unordered_map<std::string, float>"))))
+	       (let ((make_slider
+		       (lambda (label)
+			 (setf (aref values label) 100s0)
+			 (return (lambda ()
+				   (return (aref values label))))))))
+	       (let ((draw_all_sliders
+		       (lambda ()
+			 (ImGui--Begin (string "all-sliders"))
+			 (for-range ((bracket key value) values)
+			      (ImGui--SliderFloat (key.c_str)
+						  (ref (aref values key))
+						  100s0
+						  300s0))
+			 (ImGui--End)))))
+	       (return (std--make_tuple make_slider
+					draw_all_sliders))))))
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
@@ -543,7 +564,7 @@
 			    (ImGui--DestroyContext)
 			    (SDL_GL_DeleteContext gl_context_)
 			    (SDL_Quit))))))
-
+       #+nil 
        (let ((widget_slider (lambda ()
 			      (let ((value 100s0))
 				(declare (type "static float" value)))
@@ -561,20 +582,25 @@
 	    
 	    (let ((physics (std--make_unique<Physics>))))
 	    
-
+	    (let (((bracket make_slider
+			    draw_all_sliders)
+		    (slider_factory))))
 	    
-	    
+	    (let (( slider1 (make_slider (string "circle_rad")))))
 	    (let ((done false)))
 	    
 	    (while
 	     !done
 	     (handle_events window &done)
 	     (new_frame )
-	     (let ((px 0s0)
-		   (py 0s0)
-		   (angle 0s0)
+
+	     
+	     (let (;(px 0s0)
+		   ;(py 0s0)
+		   ;(angle 0s0)
+		   ((bracket px py angle) (physics->Step))
 		   )
-	       (setf (std--tie px py angle)
+	       #+Nil (setf (std--tie px py angle)
 		     (physics->Step))
 	       (let ((draw
 		       (ImGui--GetBackgroundDrawList))
@@ -588,18 +614,21 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
-		 (let ((scale 30s0))
+		 (let ((scale	       ;(make_slider (string "scale"))
+			 30s0))
 		   )
-		 (let ((circle_rad (widget_slider))
+		 (let ((circle_rad (slider1) 
+					; (widget_slider)
+				   )
 		       (circum (* 2 ,(coerce  pi 'single-float) circle_rad))
-		       (num_segments (static_cast<int> (ceil (/ circum 5s0))))))
+		       (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0)))))))
 		 (draw->AddCircleFilled
 		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))
 		  circle_rad
-		  (ImGui--GetColorU32 ImGuiCol_Text)
+		  (ImGui--GetColorU32 ImGuiCol_Separator)
 		  num_segments
 		  )))
-	     
+	     (draw_all_sliders)
 	     (demo_window)
 	     (swap window)
 	     ))
@@ -612,5 +641,5 @@
        (return 0)))
    :omit-parens t
    :format t
-   :tidy t))
+   :tidy nil))
 
