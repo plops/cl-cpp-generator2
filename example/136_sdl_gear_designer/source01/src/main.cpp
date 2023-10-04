@@ -12,9 +12,14 @@ public:
   using runtime_error::runtime_error;
 };
 auto slider_factory = []() {
-  auto values = std::unordered_map<std::string, float>();
+  std::cout << "slider factory" << std::endl;
+  static auto values = std::unordered_map<std::string, float>();
   auto make_slider = [&](auto label) {
-    values[label] = 1.00e+2F;
+    if (values.find(label) == values.end()) {
+      std::cout << "make_slider init"
+                << " label='" << label << "' " << std::endl;
+      values[label] = 1.00e+2F;
+    }
     return [&]() { return values[label]; };
   };
   auto draw_all_sliders = [&]() {
@@ -28,7 +33,7 @@ auto slider_factory = []() {
 };
 
 int main(int argc, char **argv) {
-  std::cout << ""
+  std::cout << "main entry point"
             << " argc='" << argc << "' "
             << " (argv)[(0)]='" << argv[0] << "' " << std::endl;
   void *gl_context = nullptr;
@@ -44,6 +49,7 @@ int main(int argc, char **argv) {
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   };
   auto init_gl = [&](auto &gl_context_) {
+    std::cout << "init_gl" << std::endl;
     if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
       std::cout << "Error"
                 << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
@@ -65,6 +71,7 @@ int main(int argc, char **argv) {
     return window;
   };
   auto init_imgui = [&](auto window_, auto gl_context_) {
+    std::cout << "init_imgui" << std::endl;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     auto *io = &ImGui::GetIO();
@@ -110,6 +117,7 @@ int main(int argc, char **argv) {
     SDL_GL_SwapWindow(window);
   };
   auto destroy_gl = [&](auto gl_context_) {
+    std::cout << "destroy_gl" << std::endl;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -121,11 +129,12 @@ int main(int argc, char **argv) {
     init_imgui(window, gl_context);
     auto physics = std::make_unique<Physics>();
     auto [make_slider, draw_all_sliders] = slider_factory();
-    auto slider1 = make_slider("circle_rad");
     auto done = false;
+    std::cout << "start gui loop" << std::endl;
     while (!done) {
       handle_events(window, &done);
       new_frame();
+      auto slider1 = make_slider("circle_rad");
       auto [px, py, angle] = physics->Step();
       auto draw = ImGui::GetBackgroundDrawList();
       auto rad = 1.00e+2F;

@@ -320,14 +320,28 @@
      (let ((slider_factory
 	     (lambda ()
 	       (declare (capture ""))
-	       (let ((values ("std::unordered_map<std::string, float>"))))
+	       ,(lprint :msg "slider factory")
+	       (let ((values ("std::unordered_map<std::string, float>")))
+		 (declare (type "static auto" values)))
 	       (let ((make_slider
 		       (lambda (label)
-			 (setf (aref values label) 100s0)
+			 (if (== (values.find label)
+				   (values.end))
+			     (do0
+			      ,(lprint :msg "make_slider init"
+				       :vars `(label))
+			      (setf (aref values label) 100s0))
+			     #+nil (do0
+			      ,(lprint :msg "make_slider repeated call"
+				       :vars `(label))))
+
+			 
 			 (return (lambda ()
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
 		       (lambda ()
+			 #+nil ,(lprint :msg "draw_all_sliders"
+				  :vars `((values.size)))
 			 (ImGui--Begin (string "all-sliders"))
 			 (for-range ((bracket key value) values)
 			      (ImGui--SliderFloat (key.c_str)
@@ -341,7 +355,7 @@
        (declare (values int)
 		(type int argc)
        		(type char** argv))
-       ,(lprint :vars `(argc (aref argv 0)))
+       ,(lprint :msg "main entry point" :vars `(argc (aref argv 0)))
        (let ((gl_context nullptr))
 	 (declare (type void* gl_context)))
 
@@ -366,6 +380,7 @@
        
        (let ((init_gl
 	       (lambda (&gl_context_)
+		 ,(lprint :msg "init_gl")
 		 (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
 					   SDL_INIT_TIMER
 					;SDL_INIT_GAMECONTROLLER
@@ -494,6 +509,7 @@
        
        (let ((init_imgui (lambda (window_ gl_context_)
 			   (do0
+			    ,(lprint :msg "init_imgui")
 			    (IMGUI_CHECKVERSION)
 			    (ImGui--CreateContext)
 			    (let ((*io (ref (ImGui--GetIO)))))
@@ -559,6 +575,7 @@
 		      (SDL_GL_SwapWindow window))))))
        (let ((destroy_gl (lambda (gl_context_)
 			   (do0
+			    ,(lprint :msg "destroy_gl")
 			    (ImGui_ImplOpenGL3_Shutdown)
 			    (ImGui_ImplSDL2_Shutdown)
 			    (ImGui--DestroyContext)
@@ -586,22 +603,18 @@
 			    draw_all_sliders)
 		    (slider_factory))))
 	    
-	    (let (( slider1 (make_slider (string "circle_rad")))))
-	    (let ((done false)))
 	    
+	    (let ((done false)))
+	    ,(lprint :msg "start gui loop")
 	    (while
 	     !done
 	     (handle_events window &done)
 	     (new_frame )
+	     (let (( slider1 (make_slider (string "circle_rad")))))
 
-	     
-	     (let (;(px 0s0)
-		   ;(py 0s0)
-		   ;(angle 0s0)
-		   ((bracket px py angle) (physics->Step))
+	    
+	     (let (((bracket px py angle) (physics->Step))
 		   )
-	       #+Nil (setf (std--tie px py angle)
-		     (physics->Step))
 	       (let ((draw
 		       (ImGui--GetBackgroundDrawList))
 		     (rad 100s0)
