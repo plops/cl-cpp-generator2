@@ -306,27 +306,26 @@
 		       (type "void const *" user_param))
 	      ,(lprint :msg "gl"
 		       :vars `(source type id severity message))))
-     
+     (defclass+ GuiException "public std::runtime_error"
+       "public:"
+       "using runtime_error::runtime_error;"
+       ;"explicit"
+       #+nil
+       (defmethod GuiException (msg)
+	 (declare (explicit)
+		  (type "const std::string&" msg)
+		  (values :constructor)
+		  (construct (std--runtime_error msg)))))
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
        		(type char** argv))
-
+       ,(lprint :vars `(argc (aref argv 0)))
        (let ((gl_context nullptr))
 	 (declare (type void* gl_context)))
-       
-       (let ((init_gl
-	       (lambda (&gl_context_)
-		 (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
-					   SDL_INIT_TIMER
-					;SDL_INIT_GAMECONTROLLER
-					   ) ))
-		   
-		   ,(lprint :msg "Error"
-			    :vars `((SDL_GetError)))
-		   (throw (std--runtime_error (string "Error in SDL_Init."))))
-		 (let ((glsl_version (string "#version 130")))
-		   ,@(loop for e in `((:key context-flags :value 0)
+
+       (let ((set_gl_attributes (lambda ()
+				  ,@(loop for e in `((:key context-flags :value 0)
 				      (:key context-profile-mask :value SDL_GL_CONTEXT_PROFILE_CORE)
 				      (:key context-major-version :value 3)
 				      (:key context-minor-version :value 0)
@@ -340,8 +339,23 @@
 			     `(SDL_GL_SetAttribute
 			       ,(cl-change-case:constant-case (format nil "sdl-gl-~a" key))
 			       ,value)))
-		   (SDL_SetHint SDL_HINT_IME_SHOW_UI (string "1")))
+				  (SDL_SetHint SDL_HINT_IME_SHOW_UI (string "1"))
+				  
+				  ))))
+       
+       (let ((init_gl
+	       (lambda (&gl_context_)
+		 (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
+					   SDL_INIT_TIMER
+					;SDL_INIT_GAMECONTROLLER
+					   ) ))
+		   
+		   ,(lprint :msg "Error"
+			    :vars `((SDL_GetError)))
+		   (throw (GuiException (string "Error in SDL_Init."))))
+		 
 
+		 (set_gl_attributes)
 		 (let ((*window (SDL_CreateWindow
 				 (string "imgui_sdl2_bullet_gears_designer")
 				 SDL_WINDOWPOS_CENTERED
@@ -356,11 +370,16 @@
 		       
 		       )
 		   (unless window
-		     (throw (std--runtime_error (string "Error creating GL window"))))
+		     (throw (GuiException (string "Error creating GL window"))))
 		   (setf gl_context_ (SDL_GL_CreateContext window))
 		   (SDL_GL_MakeCurrent window gl_context_)
 		   (SDL_GL_SetSwapInterval 1))
+		 (do0 (glEnable GL_CULL_FACE)
+					; #+more (glEnable GL_DEBUG_OUTPUT)
+					;#+more (glDebugMessageCallback message_callback nullptr)
+		      )
 
+		 
 		 (do0
 		  #+glad
 		  (unless (gladLoaderLoadGL)
@@ -374,21 +393,9 @@
 				    :vars `(extstr)
 				    )))))
 		    ))
-
-		 (do0
-		  (IMGUI_CHECKVERSION)
-		  (ImGui--CreateContext)
-		  (let ((*io (ref (ImGui--GetIO)))))
-		  (setf io->ConfigFlags (or io->ConfigFlags
-					    ImGuiConfigFlags_NavEnableKeyboard))
-		  (ImGui--StyleColorsDark)
-		  (ImGui_ImplSDL2_InitForOpenGL window gl_context_)
-		  (ImGui_ImplOpenGL3_Init glsl_version)
-		  )
-		 (do0 (glEnable GL_CULL_FACE)
-					; #+more (glEnable GL_DEBUG_OUTPUT)
-					;#+more (glDebugMessageCallback message_callback nullptr)
-		      )
+		 
+		 
+		 
 
 
 		 #+nil
@@ -464,7 +471,18 @@
        
 
        
-
+       (let ((init_imgui (lambda (window_ gl_context_)
+				       (do0
+					(IMGUI_CHECKVERSION)
+					(ImGui--CreateContext)
+					(let ((*io (ref (ImGui--GetIO)))))
+					(setf io->ConfigFlags (or io->ConfigFlags
+							       ImGuiConfigFlags_NavEnableKeyboard))
+					(ImGui--StyleColorsDark)
+					(ImGui_ImplSDL2_InitForOpenGL window_ gl_context_)
+					(let ((glsl_version (string "#version 130"))))
+					(ImGui_ImplOpenGL3_Init glsl_version)
+					)))))
        
 
        
@@ -528,7 +546,8 @@
        (handler-case
 	   (do0
 	    (let ((*window (init_gl gl_context))))
-
+	    (init_imgui window gl_context)
+	    
 	    (let ((physics (std--make_unique<Physics>))))
 	    
 

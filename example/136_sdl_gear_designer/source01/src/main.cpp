@@ -6,17 +6,17 @@
 #include <imgui_impl_sdl2.h>
 #include <iostream>
 #include <memory>
+class GuiException : public std::runtime_error {
+public:
+  using runtime_error::runtime_error;
+};
 
 int main(int argc, char **argv) {
+  std::cout << ""
+            << " argc='" << argc << "' "
+            << " (argv)[(0)]='" << argv[0] << "' " << std::endl;
   void *gl_context = nullptr;
-  auto init_gl = [&](auto &gl_context_) {
-    if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
-      std::cout << "Error"
-                << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
-      throw std::runtime_error("Error in SDL_Init.");
-      std::invalid_argument
-    }
-    auto glsl_version = "#version 130";
+  auto set_gl_attributes = [&]() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);
@@ -26,26 +26,37 @@ int main(int argc, char **argv) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+  };
+  auto init_gl = [&](auto &gl_context_) {
+    if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
+      std::cout << "Error"
+                << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
+      throw GuiException("Error in SDL_Init.");
+    }
+    set_gl_attributes();
     auto *window = SDL_CreateWindow(
         "imgui_sdl2_bullet_gears_designer", SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, 1280, 720,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     if (!window) {
-      throw std::runtime_error("Error creating GL window");
+      throw GuiException("Error creating GL window");
     }
     gl_context_ = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, gl_context_);
     SDL_GL_SetSwapInterval(1);
+    glEnable(GL_CULL_FACE);
 
+    return window;
+  };
+  auto init_imgui = [&](auto window_, auto gl_context_) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     auto *io = &ImGui::GetIO();
     io->ConfigFlags = io->ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::StyleColorsDark();
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context_);
+    ImGui_ImplSDL2_InitForOpenGL(window_, gl_context_);
+    auto glsl_version = "#version 130";
     ImGui_ImplOpenGL3_Init(glsl_version);
-    glEnable(GL_CULL_FACE);
-    return window;
   };
   auto handle_events = [&](auto *window_, auto *done_) {
     auto event = SDL_Event();
@@ -91,6 +102,7 @@ int main(int argc, char **argv) {
   };
   try {
     auto *window = init_gl(gl_context);
+    init_imgui(window, gl_context);
     auto physics = std::make_unique<Physics>();
     auto done = false;
     while (!done) {
