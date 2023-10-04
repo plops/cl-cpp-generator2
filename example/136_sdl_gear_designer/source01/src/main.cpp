@@ -19,7 +19,7 @@ auto slider_factory = []() {
                 << " label='" << label << "' " << std::endl;
       values[label] = 1.00e+2F;
     }
-    return [label, &values]() { return values[label]; };
+    return [label]() { return values[label]; };
   };
   auto draw_all_sliders = [&]() {
     ImGui::Begin("all-sliders");

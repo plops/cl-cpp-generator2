@@ -342,7 +342,7 @@
 			 (return (lambda ()
 				   (declare (capture 
 						     label
-						     "&values"
+						    ; "&values"
 						     ))
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
