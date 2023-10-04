@@ -543,6 +543,17 @@
 			    (ImGui--DestroyContext)
 			    (SDL_GL_DeleteContext gl_context_)
 			    (SDL_Quit))))))
+
+       (let ((widget_slider (lambda ()
+			      (let ((value 100s0))
+				(declare (type "static float" value)))
+			      (ImGui--Begin (string "slider"))
+			      (when (ImGui--SliderFloat
+				     (string "slider")
+				     &value
+				     100s0 300s0))
+			      (ImGui--End)
+			      (return value)))))
        (handler-case
 	   (do0
 	    (let ((*window (init_gl gl_context))))
@@ -577,11 +588,16 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
-		 (let ((scale 30s0)))
+		 (let ((scale 30s0))
+		   )
+		 (let ((circle_rad (widget_slider))
+		       (circum (* 2 ,(coerce  pi 'single-float) circle_rad))
+		       (num_segments (static_cast<int> (ceil (/ circum 5s0))))))
 		 (draw->AddCircleFilled
 		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))
-		  30s0
+		  circle_rad
 		  (ImGui--GetColorU32 ImGuiCol_Text)
+		  num_segments
 		  )))
 	     
 	     (demo_window)
