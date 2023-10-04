@@ -12,18 +12,14 @@ public:
   using runtime_error::runtime_error;
 };
 auto slider_factory = []() {
-  std::cout << "slider factory" << std::endl;
   static auto values = std::unordered_map<std::string, float>();
   auto make_slider = [&](const std::string &label) {
-    if (values.find(label) == values.end()) {
+    if (!values.contains(label)) {
       std::cout << "make_slider init"
                 << " label='" << label << "' " << std::endl;
       values[label] = 1.00e+2F;
-    } else {
-      std::cout << "make_slider repeated call"
-                << " label='" << label << "' " << std::endl;
     }
-    return [&values, label]() { return values[label]; };
+    return [label, &values]() { return values[label]; };
   };
   auto draw_all_sliders = [&]() {
     ImGui::Begin("all-sliders");
@@ -52,7 +48,6 @@ int main(int argc, char **argv) {
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   };
   auto init_gl = [&](auto &gl_context_) {
-    std::cout << "init_gl" << std::endl;
     if (0 != SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
       std::cout << "Error"
                 << " SDL_GetError()='" << SDL_GetError() << "' " << std::endl;
@@ -150,7 +145,7 @@ int main(int argc, char **argv) {
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       auto scale = slider2();
       auto circle_rad = slider1();
-      auto circum = 2 * 3.141593F * circle_rad;
+      auto circum = 2 * std::numbers::pi_v<float> * circle_rad;
       auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
                             circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),

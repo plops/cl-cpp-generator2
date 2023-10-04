@@ -320,36 +320,42 @@
      (let ((slider_factory
 	     (lambda ()
 	       (declare (capture ""))
-	       ,(lprint :msg "slider factory")
+	       
 	       (let ((values ("std::unordered_map<std::string, float>")))
-		 (declare (type "static auto" values)))
+		 (declare (type "static auto" values))
+		 )
 	       (let ((make_slider
 		       (lambda (label)
-			 (declare (type "const std::string&" label))
-			 (if (== (values.find label)
-				 (values.end))
+			 (declare (type "const std::string&" label)
+				  ;(capture "&values")
+				  )
+			 (if (!values.contains label)
 			     (do0
 			      ,(lprint :msg "make_slider init"
 				       :vars `(label))
 			      (setf (aref values label) 100s0))
-			     (do0
-			      ,(lprint :msg "make_slider repeated call"
-				       :vars `(label))))
+			     #+nil (do0
+				    ,(lprint :msg "make_slider repeated call"
+					     :vars `(label))))
 
 			 
 			 (return (lambda ()
-				   (declare (capture "&values" label))
+				   (declare (capture 
+						     label
+						     "&values"
+						     ))
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
 		       (lambda ()
+			 ;(declare (capture "&values"))
 			 #+nil ,(lprint :msg "draw_all_sliders"
-				  :vars `((values.size)))
+					:vars `((values.size)))
 			 (ImGui--Begin (string "all-sliders"))
 			 (for-range ((bracket key value) values)
-			      (ImGui--SliderFloat (key.c_str)
-						  (ref (aref values key))
-						  100s0
-						  300s0))
+				    (ImGui--SliderFloat (key.c_str)
+							(ref (aref values key))
+							100s0
+							300s0))
 			 (ImGui--End)))))
 	       (return (std--make_tuple make_slider
 					draw_all_sliders))))))
@@ -382,7 +388,6 @@
        
        (let ((init_gl
 	       (lambda (&gl_context_)
-		 ,(lprint :msg "init_gl")
 		 (when (!= 0 (SDL_Init (or SDL_INIT_VIDEO
 					   SDL_INIT_TIMER
 					;SDL_INIT_GAMECONTROLLER
@@ -637,7 +642,8 @@
 		 (let ((circle_rad (slider1) 
 					; (widget_slider)
 				   )
-		       (circum (* 2 ,(coerce  pi 'single-float) circle_rad))
+		       (circum (* 2 std--numbers--pi_v<float> ; ,(coerce  pi 'single-float)
+				  circle_rad))
 		       (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0)))))))
 		 (draw->AddCircleFilled
 		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))
