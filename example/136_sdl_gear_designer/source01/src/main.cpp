@@ -19,8 +19,11 @@ auto slider_factory = []() {
       std::cout << "make_slider init"
                 << " label='" << label << "' " << std::endl;
       values[label] = 1.00e+2F;
+    } else {
+      std::cout << "make_slider repeated call"
+                << " label='" << label << "' " << std::endl;
     }
-    return [&]() { return values[label]; };
+    return [&values, label]() { return values[label]; };
   };
   auto draw_all_sliders = [&]() {
     ImGui::Begin("all-sliders");
@@ -151,7 +154,6 @@ int main(int argc, char **argv) {
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
                             circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),
                             num_segments);
-      draw_all_sliders();
       demo_window();
       swap(window);
     }

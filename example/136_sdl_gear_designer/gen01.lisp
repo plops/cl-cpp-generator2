@@ -331,12 +331,13 @@
 			      ,(lprint :msg "make_slider init"
 				       :vars `(label))
 			      (setf (aref values label) 100s0))
-			     #+nil (do0
+			      (do0
 			      ,(lprint :msg "make_slider repeated call"
 				       :vars `(label))))
 
 			 
 			 (return (lambda ()
+				   (declare (capture "&values" label))
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
 		       (lambda ()
@@ -641,7 +642,7 @@
 		  (ImGui--GetColorU32 ImGuiCol_Separator)
 		  num_segments
 		  )))
-	     (draw_all_sliders)
+	     ;(draw_all_sliders)
 	     (demo_window)
 	     (swap window)
 	     ))
