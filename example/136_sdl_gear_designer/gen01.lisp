@@ -612,6 +612,7 @@
 	     (handle_events window &done)
 	     (new_frame )
 	     (let (( slider1 (make_slider (string "circle_rad")))))
+	     (let (( slider2 (make_slider (string "scale")))))
 
 	    
 	     (let (((bracket px py angle) (physics->Step))
@@ -629,7 +630,8 @@
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
 		 (let ((scale	       ;(make_slider (string "scale"))
-			 30s0))
+			 ;30s0
+			 (slider2)))
 		   )
 		 (let ((circle_rad (slider1) 
 					; (widget_slider)
