@@ -613,9 +613,10 @@
 	    
 	    (let ((done false)))
 	    ,(lprint :msg "start gui loop")
-
-	    (let (( slider1 (make_slider (string "circle_rad")))))
-	     (let (( slider2 (make_slider (string "scale")))))
+	    #+nil
+	    (do0
+	     (let (( slider1 (make_slider (string "circle_rad")))))
+	     (let (( slider2 (make_slider (string "scale"))))))
 
 	    (while
 	     !done
@@ -638,11 +639,14 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
-		 (let ((scale	       ;(make_slider (string "scale"))
+		 (let ((scale
+			 ((make_slider (string "scale")))
 					;30s0
-			 (slider2)))
+					;(slider2)
+			 ))
 		   )
-		 (let ((circle_rad (slider1) 
+		 (let ((circle_rad ;(slider1)
+			 ((make_slider (string "circle_rad")))
 					; (widget_slider)
 				   )
 		       (circum (* 2 std--numbers--pi_v<float> ; ,(coerce  pi 'single-float)

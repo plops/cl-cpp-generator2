@@ -129,8 +129,6 @@ int main(int argc, char **argv) {
     auto [make_slider, draw_all_sliders] = slider_factory();
     auto done = false;
     std::cout << "start gui loop" << std::endl;
-    auto slider1 = make_slider("circle_rad");
-    auto slider2 = make_slider("scale");
     while (!done) {
       handle_events(window, &done);
       new_frame();
@@ -144,8 +142,8 @@ int main(int argc, char **argv) {
       auto sy = cos(angle);
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
-      auto scale = slider2();
-      auto circle_rad = slider1();
+      auto scale = (make_slider("scale"))();
+      auto circle_rad = (make_slider("circle_rad"))();
       auto circum = 2 * std::numbers::pi_v<float> * circle_rad;
       auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
       draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
