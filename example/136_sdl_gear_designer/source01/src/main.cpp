@@ -28,12 +28,12 @@ auto findCrossingTangentSegment = [](const Circle &c1, const Circle &c2)
   if (d <= std::abs(r1 - r2)) {
     return {0., 0.};
   }
-  auto theta = std::acos((r1 - r2) / d);
-  auto alpha = std::arg(diff);
-  auto angle1 = alpha + theta;
-  auto angle2 = alpha - theta;
-  auto p1 = c1.center + r1 * std::polar(1.0, angle1);
-  auto p2 = c2.center + r2 * std::polar(1.0, angle2);
+  auto angle_to_intersection = std::asin(r2 / d);
+  auto angle_to_centers = std::arg(diff);
+  auto angle1 = angle_to_centers + angle_to_intersection;
+  auto angle2 = angle_to_centers + angle_to_intersection + M_PI;
+  auto p1 = c1.center + std::polar(r1, angle1);
+  auto p2 = c2.center + std::polar(r2, angle2);
   return {p1, p2};
 };
 auto slider_factory = []() {
@@ -196,11 +196,17 @@ int main(int argc, char **argv) {
       auto posx1 = lookup_slider("circle1_posx");
       auto posy1 = lookup_slider("circle1_posy");
       auto radius1 = lookup_slider("circle1_radius");
-      auto [p1, p2] = findCrossingTangentSegment(
-          Circle({std::complex<double>(posx0, posy0), radius0}),
-          Circle({std::complex<double>(posx1, posy1), radius1}));
-      draw->AddLine(ImVec2(p1.real(), p1.imag()), ImVec2(p2.real(), p2.imag()),
-                    ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
+      auto imvec = [&](auto z) {
+        return ImVec2(static_cast<float>(z.real()),
+                      static_cast<float>(z.imag()));
+      };
+      auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
+      auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
+      auto [p1, p2] = findCrossingTangentSegment(c1, c2);
+      draw->AddLine(imvec(p1), imvec(p2), ImGui::GetColorU32(ImGuiCol_Text),
+                    4.0F);
+      draw->AddLine(imvec(c1.center), imvec(c2.center),
+                    ImGui::GetColorU32(ImGuiCol_Text), 2.0F);
       demo_window();
       swap(window);
     }
