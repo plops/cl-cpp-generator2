@@ -255,6 +255,7 @@
 					;cmath
       
       unordered_map
+      format
       )
 
      #+glad
@@ -588,17 +589,7 @@
 			    (ImGui--DestroyContext)
 			    (SDL_GL_DeleteContext gl_context_)
 			    (SDL_Quit))))))
-       #+nil 
-       (let ((widget_slider (lambda ()
-			      (let ((value 100s0))
-				(declare (type "static float" value)))
-			      (ImGui--Begin (string "slider"))
-			      (when (ImGui--SliderFloat
-				     (string "slider")
-				     &value
-				     100s0 300s0))
-			      (ImGui--End)
-			      (return value)))))
+      
        (handler-case
 	   (do0
 	    (let ((*window (init_gl gl_context))))
@@ -613,11 +604,39 @@
 	    
 	    (let ((done false)))
 	    ,(lprint :msg "start gui loop")
-	    #+nil
-	    (do0
-	     (let (( slider1 (make_slider (string "circle_rad")))))
-	     (let (( slider2 (make_slider (string "scale"))))))
+	  
 
+	    (let ((circle_factory
+			 (lambda ()
+			   (let ((count 0))
+			     (declare (type "static auto" count)))
+			   (let ((draw_circle
+				   (lambda ()
+				     (let ((draw
+					     (ImGui--GetBackgroundDrawList))
+					   (radius_name (std--format (string "circle{}_radius")
+									      count))
+					   (radius ((make_slider radius_name)))
+					   (posx_name (std--format (string "circle{}_x")
+									    count))
+					   (posx ((make_slider posx_name)))
+					   (posy_name (std--format (string "circle{}_y")
+									    count))
+					   (posy ((make_slider posy_name)))
+					   (circum (* 2 std--numbers--pi_v<float> radius))
+					   (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0))))))
+				       (declare (type "static auto" radius_name posx_name posy_name))
+				       (draw->AddCircleFilled
+					(ImVec2 posx posy) radius
+					(ImGui--GetColorU32 ImGuiCol_Separator)
+					num_segments
+					)
+				       )))))
+			   (incf count)
+			   (return draw_circle)
+			   ))))
+	    (let ((draw_circle0 (circle_factory))
+		  (draw_circle1 (circle_factory))))
 	    (while
 	     !done
 	     (handle_events window &done)
@@ -639,22 +658,26 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
-		 (let ((scale
-			 ((make_slider (string "scale")))
+
+		 (draw_circle0)
+		 (draw_circle1)
+		 #+nil (let ((scale
+			       ((make_slider (string "scale")))
 					;30s0
 					;(slider2)
-			 ))
-		   )
-		 (let ((circle_rad ;(slider1)
-			 ((make_slider (string "circle_rad")))
-					; (widget_slider)
-				   )
-		       (circum (* 2 std--numbers--pi_v<float> ; ,(coerce  pi 'single-float)
-				  circle_rad
-				  )
+			       ))
+			 )
+
+		 
+		 #+nil (let ((circle_rad 
+			       ((make_slider (string "circle_rad")))
 			       )
-		       (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0)))))))
-		 (draw->AddCircleFilled
+			     (circum (* 2 std--numbers--pi_v<float> ; ,(coerce  pi 'single-float)
+					circle_rad
+					)
+				     )
+			     (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0)))))))
+		#+nil (draw->AddCircleFilled
 		  (ImVec2 (+ 300 (* scale px)) (+ 300 (* scale py)))
 		  circle_rad
 		  (ImGui--GetColorU32 ImGuiCol_Separator)

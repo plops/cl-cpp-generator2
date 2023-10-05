@@ -1,6 +1,7 @@
 #include "Physics.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <format>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl2.h>
@@ -129,6 +130,27 @@ int main(int argc, char **argv) {
     auto [make_slider, draw_all_sliders] = slider_factory();
     auto done = false;
     std::cout << "start gui loop" << std::endl;
+    auto circle_factory = [&]() {
+      static auto count = 0;
+      auto draw_circle = [&]() {
+        auto draw = ImGui::GetBackgroundDrawList();
+        static auto radius_name = std::format("circle{}_radius", count);
+        auto radius = (make_slider(radius_name))();
+        static auto posx_name = std::format("circle{}_x", count);
+        auto posx = (make_slider(posx_name))();
+        static auto posy_name = std::format("circle{}_y", count);
+        auto posy = (make_slider(posy_name))();
+        auto circum = 2 * std::numbers::pi_v<float> * radius;
+        auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
+        draw->AddCircleFilled(ImVec2(posx, posy), radius,
+                              ImGui::GetColorU32(ImGuiCol_Separator),
+                              num_segments);
+      };
+      count++;
+      return draw_circle;
+    };
+    auto draw_circle0 = circle_factory();
+    auto draw_circle1 = circle_factory();
     while (!done) {
       handle_events(window, &done);
       new_frame();
@@ -142,13 +164,8 @@ int main(int argc, char **argv) {
       auto sy = cos(angle);
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
-      auto scale = (make_slider("scale"))();
-      auto circle_rad = (make_slider("circle_rad"))();
-      auto circum = 2 * std::numbers::pi_v<float> * circle_rad;
-      auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
-      draw->AddCircleFilled(ImVec2(300 + scale * px, 300 + scale * py),
-                            circle_rad, ImGui::GetColorU32(ImGuiCol_Separator),
-                            num_segments);
+      draw_circle0();
+      draw_circle1();
       demo_window();
       swap(window);
     }
