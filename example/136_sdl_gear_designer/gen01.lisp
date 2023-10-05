@@ -614,29 +614,23 @@
 				   (lambda ()
 				     (declare (capture "&make_slider" "count"))
 				     (let ((draw
-					     (ImGui--GetBackgroundDrawList))
-					   (radius_name (std--format (string "circle{}_radius")
-								     count))
-					   (radius ((make_slider radius_name)))
-					   (posx_name (std--format (string "circle{}_x")
-								   count))
-					   (posx ((make_slider posx_name)))
-					   (posy_name (std--format (string "circle{}_y")
-								   count))
-					   (posy ((make_slider posy_name)))
+					     (ImGui--GetBackgroundDrawList))					   
+					   ,@(loop for e in `(radius posx posy)
+							     collect
+							     `(,e ((make_slider (std--format (string ,(format nil "circle{}_~a" e))
+											     count)))))
 					   (circum (* 2 std--numbers--pi_v<float> radius))
 					   (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0))))))
-				       ;(declare (type "static auto" radius_name posx_name posy_name))
+					
 				       (draw->AddCircleFilled
 					(ImVec2 posx posy) radius
 					(ImGui--GetColorU32 ImGuiCol_Separator)
 					num_segments
 					)
 				       )))))
-			   (incf count)
 			   (return draw_circle)
 			   ))))
-	    (let ((draw_circle0 (circle_factory 0))
+	    #+nil (let ((draw_circle0 (circle_factory 0))
 		  (draw_circle1 (circle_factory 1))))
 	    (while
 	     !done
@@ -659,9 +653,10 @@
 					(+ ppy (* rad sy)))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
-
-		 (draw_circle0)
-		 (draw_circle1)
+		 ((circle_factory 0))
+		 ((circle_factory 1))
+		 #+nil (do0 (draw_circle0)
+		      (draw_circle1))
 		 #+nil (let ((scale
 			       ((make_slider (string "scale")))
 					;30s0

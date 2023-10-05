@@ -132,24 +132,18 @@ int main(int argc, char **argv) {
     std::cout << "start gui loop" << std::endl;
     auto circle_factory = [&make_slider](auto count) {
       auto draw_circle = [&make_slider, count]() {
-        auto draw = ImGui::cGetBackgroundDrawList();
-        auto radius_name = std::format("circle{}_radius", count);
-        auto radius = (make_slider(radius_name))();
-        auto posx_name = std::format("circle{}_x", count);
-        auto posx = (make_slider(posx_name))();
-        auto posy_name = std::format("circle{}_y", count);
-        auto posy = (make_slider(posy_name))();
+        auto draw = ImGui::GetBackgroundDrawList();
+        auto radius = (make_slider(std::format("circle{}_radius", count)))();
+        auto posx = (make_slider(std::format("circle{}_posx", count)))();
+        auto posy = (make_slider(std::format("circle{}_posy", count)))();
         auto circum = 2 * std::numbers::pi_v<float> * radius;
         auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
         draw->AddCircleFilled(ImVec2(posx, posy), radius,
                               ImGui::GetColorU32(ImGuiCol_Separator),
                               num_segments);
       };
-      count++;
       return draw_circle;
     };
-    auto draw_circle0 = circle_factory(0);
-    auto draw_circle1 = circle_factory(1);
     while (!done) {
       handle_events(window, &done);
       new_frame();
@@ -163,8 +157,8 @@ int main(int argc, char **argv) {
       auto sy = cos(angle);
       draw->AddLine(ImVec2(ppx, ppy), ImVec2(ppx + rad * sx, ppy + rad * sy),
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
-      draw_circle0();
-      draw_circle1();
+      (circle_factory(0))();
+      (circle_factory(1))();
       demo_window();
       swap(window);
     }
