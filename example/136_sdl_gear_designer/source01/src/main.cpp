@@ -29,7 +29,14 @@ auto slider_factory = []() {
     }
     ImGui::End();
   };
-  return std::make_tuple(make_slider, draw_all_sliders);
+  auto lookup_slider = [&](auto label) {
+    if (values.contains(label)) {
+      return values[label];
+    }
+    throw std::runtime_error(std::format("label '{}' undefined.", label));
+    return 0.F;
+  };
+  return std::make_tuple(make_slider, draw_all_sliders, lookup_slider);
 };
 
 int main(int argc, char **argv) {
@@ -127,7 +134,7 @@ int main(int argc, char **argv) {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
     auto physics = std::make_unique<Physics>();
-    auto [make_slider, draw_all_sliders] = slider_factory();
+    auto [make_slider, draw_all_sliders, lookup_slider] = slider_factory();
     auto done = false;
     std::cout << "start gui loop" << std::endl;
     auto circle_factory = [&make_slider](auto count) {
@@ -159,6 +166,9 @@ int main(int argc, char **argv) {
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       (circle_factory(0))();
       (circle_factory(1))();
+      auto x0 = lookup_slider("circle0_posx");
+      std::cout << ""
+                << " x0='" << x0 << "' " << std::endl;
       demo_window();
       swap(window);
     }

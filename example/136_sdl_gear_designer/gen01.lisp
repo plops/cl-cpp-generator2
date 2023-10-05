@@ -327,17 +327,12 @@
 		 )
 	       (let ((make_slider
 		       (lambda (label)
-			 (declare (type "const std::string&" label)
-				  ;(capture "&values")
-				  )
-			 (if (!values.contains label)
-			     (do0
-			      ,(lprint :msg "make_slider init"
-				       :vars `(label))
-			      (setf (aref values label) 100s0))
-			     #+nil (do0
-				    ,(lprint :msg "make_slider repeated call"
-					     :vars `(label))))
+			 (declare (type "const std::string&" label))
+			 (unless (values.contains label)
+			   (do0
+			    ,(lprint :msg "make_slider init"
+				     :vars `(label))
+			    (setf (aref values label) 100s0)))
 
 			 
 			 (return (lambda ()
@@ -348,9 +343,6 @@
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
 		       (lambda ()
-			 ;(declare (capture "&values"))
-			 #+nil ,(lprint :msg "draw_all_sliders"
-					:vars `((values.size)))
 			 (ImGui--Begin (string "all-sliders"))
 			 (for-range ((bracket key value) values)
 				    (ImGui--SliderFloat (key.c_str)
@@ -358,8 +350,16 @@
 							100s0
 							300s0))
 			 (ImGui--End)))))
+	       (let ((lookup_slider
+		       (lambda (label)
+			 (when (values.contains label)
+			   (return (aref values label)))
+			 (throw (std--runtime_error (std--format  (string "label '{}' undefined.")
+								  label)))
+			 (return 0s0)))))
 	       (return (std--make_tuple make_slider
-					draw_all_sliders))))))
+					draw_all_sliders
+					lookup_slider))))))
      (defun main (argc argv)
        (declare (values int)
 		(type int argc)
@@ -598,7 +598,8 @@
 	    (let ((physics (std--make_unique<Physics>))))
 	    
 	    (let (((bracket make_slider
-			    draw_all_sliders)
+			    draw_all_sliders
+			    lookup_slider)
 		    (slider_factory))))
 	    
 	    
@@ -655,8 +656,10 @@
 				4s0)
 		 ((circle_factory 0))
 		 ((circle_factory 1))
+		 (let ((x0 (lookup_slider (string "circle0_posx"))))
+		   ,(lprint :vars `(x0)))
 		 #+nil (do0 (draw_circle0)
-		      (draw_circle1))
+			    (draw_circle1))
 		 #+nil (let ((scale
 			       ((make_slider (string "scale")))
 					;30s0
