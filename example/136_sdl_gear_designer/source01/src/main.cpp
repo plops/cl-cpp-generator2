@@ -130,15 +130,14 @@ int main(int argc, char **argv) {
     auto [make_slider, draw_all_sliders] = slider_factory();
     auto done = false;
     std::cout << "start gui loop" << std::endl;
-    auto circle_factory = [&]() {
-      static auto count = 0;
-      auto draw_circle = [&]() {
-        auto draw = ImGui::GetBackgroundDrawList();
-        static auto radius_name = std::format("circle{}_radius", count);
+    auto circle_factory = [&make_slider](auto count) {
+      auto draw_circle = [&make_slider, count]() {
+        auto draw = ImGui::cGetBackgroundDrawList();
+        auto radius_name = std::format("circle{}_radius", count);
         auto radius = (make_slider(radius_name))();
-        static auto posx_name = std::format("circle{}_x", count);
+        auto posx_name = std::format("circle{}_x", count);
         auto posx = (make_slider(posx_name))();
-        static auto posy_name = std::format("circle{}_y", count);
+        auto posy_name = std::format("circle{}_y", count);
         auto posy = (make_slider(posy_name))();
         auto circum = 2 * std::numbers::pi_v<float> * radius;
         auto num_segments = std::max(7, static_cast<int>(ceil(circum / 5.0F)));
@@ -149,8 +148,8 @@ int main(int argc, char **argv) {
       count++;
       return draw_circle;
     };
-    auto draw_circle0 = circle_factory();
-    auto draw_circle1 = circle_factory();
+    auto draw_circle0 = circle_factory(0);
+    auto draw_circle1 = circle_factory(1);
     while (!done) {
       handle_events(window, &done);
       new_frame();

@@ -607,25 +607,26 @@
 	  
 
 	    (let ((circle_factory
-			 (lambda ()
-			   (let ((count 0))
-			     (declare (type "static auto" count)))
+			 (lambda (count)
+			   (declare (capture "&make_slider"))
+			   
 			   (let ((draw_circle
 				   (lambda ()
+				     (declare (capture "&make_slider" "count"))
 				     (let ((draw
 					     (ImGui--GetBackgroundDrawList))
 					   (radius_name (std--format (string "circle{}_radius")
-									      count))
+								     count))
 					   (radius ((make_slider radius_name)))
 					   (posx_name (std--format (string "circle{}_x")
-									    count))
+								   count))
 					   (posx ((make_slider posx_name)))
 					   (posy_name (std--format (string "circle{}_y")
-									    count))
+								   count))
 					   (posy ((make_slider posy_name)))
 					   (circum (* 2 std--numbers--pi_v<float> radius))
 					   (num_segments (std--max 7 (static_cast<int> (ceil (/ circum 5s0))))))
-				       (declare (type "static auto" radius_name posx_name posy_name))
+				       ;(declare (type "static auto" radius_name posx_name posy_name))
 				       (draw->AddCircleFilled
 					(ImVec2 posx posy) radius
 					(ImGui--GetColorU32 ImGuiCol_Separator)
@@ -635,8 +636,8 @@
 			   (incf count)
 			   (return draw_circle)
 			   ))))
-	    (let ((draw_circle0 (circle_factory))
-		  (draw_circle1 (circle_factory))))
+	    (let ((draw_circle0 (circle_factory 0))
+		  (draw_circle1 (circle_factory 1))))
 	    (while
 	     !done
 	     (handle_events window &done)
