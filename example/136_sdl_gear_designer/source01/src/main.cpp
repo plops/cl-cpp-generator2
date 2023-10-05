@@ -19,22 +19,31 @@ public:
   std::complex<double> center;
   double radius;
 };
-auto findCrossingTangentSegment = [](const Circle &c1, const Circle &c2)
-    -> std::pair<std::complex<double>, std::complex<double>> {
+// https://en.wikipedia.org/wiki/Tangent_lines_to_circles
+
+auto findInnerTangent = [](const Circle &c1, const Circle &c2) {
   auto diff = c2.center - c1.center;
+  auto dx = diff.real();
+  auto dy = diff.imag();
   auto d = std::abs(diff);
   auto r1 = c1.radius;
   auto r2 = c2.radius;
-  if (d <= std::abs(r1 - r2)) {
-    return {0., 0.};
+  auto dr = std::abs(r2 - r1);
+  if (d <= dr) {
+    return std::tuple(0., 0., 0.);
   }
-  auto angle_to_intersection = std::asin(r2 / d);
-  auto angle_to_centers = std::arg(diff);
-  auto angle1 = angle_to_centers + angle_to_intersection;
-  auto angle2 = angle_to_centers + angle_to_intersection + M_PI;
-  auto p1 = c1.center + std::polar(r1, angle1);
-  auto p2 = c2.center + std::polar(r2, angle2);
-  return {p1, p2};
+  auto X = dx / d;
+  auto Y = dy / d;
+  auto R = dr / d;
+  auto R2 = R * R;
+  // tangent to the right of the circles looking from c1 to c2
+
+  auto a = (R * X) - (Y * sqrt(1.0 - R2));
+  auto b = R * X + Y * sqrt(1.0 - R2);
+  auto x1 = c1.center.real();
+  auto y1 = c1.center.imag();
+  auto c = r1 - (a * x1 + b * y1);
+  return std::tuple(a, b, c);
 };
 auto slider_factory = []() {
   static auto values = std::unordered_map<std::string, float>();
@@ -202,9 +211,16 @@ int main(int argc, char **argv) {
       };
       auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
       auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
-      auto [p1, p2] = findCrossingTangentSegment(c1, c2);
-      draw->AddLine(imvec(p1), imvec(p2), ImGui::GetColorU32(ImGuiCol_Text),
-                    4.0F);
+      auto [a, b, c] = findInnerTangent(c1, c2);
+      auto pointOnLineY = [&](auto a, auto b, auto c, auto y) {
+        return ((-b * y) - c) / a;
+      };
+      auto pointOnLineX = [&](auto a, auto b, auto c, auto x) {
+        return ((-a * x) - c) / b;
+      };
+      draw->AddLine(ImVec2(0.F, pointOnLineX(a, b, c, 0.)),
+                    ImVec2(6.00e+2F, pointOnLineX(a, b, c, 6.00e+2)),
+                    ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       draw->AddLine(imvec(c1.center), imvec(c2.center),
                     ImGui::GetColorU32(ImGuiCol_Text), 2.0F);
       demo_window();

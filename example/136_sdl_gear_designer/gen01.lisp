@@ -324,25 +324,37 @@
        "public:"
        "std::complex<double> center;"
        "double radius;")
-     (let ((findCrossingTangentSegment
+     (comments "https://en.wikipedia.org/wiki/Tangent_lines_to_circles")
+     (let ((findInnerTangent
 	     (lambda (c1 c2)
 	       (declare (type "const Circle&" c1 c2)
-			(values "std::pair<std::complex<double>,std::complex<double>>")
+			#+nil (values "std::pair<std::complex<double>,std::complex<double>>")
 			(capture ""))
 	       (let ((diff (- c2.center c1.center))
+		     (dx (diff.real))
+		     (dy (diff.imag))
 		     (d (std--abs diff)))
 		 (let ((r1 c1.radius)
-		       (r2 c2.radius)))
-		 (when (<= d (std--abs (- r1 r2)))
-		   (return (curly 0d0 0d0)))
-		 (let ((angle_to_intersection (std--asin (/ r2 d)))
-		       (angle_to_centers (std--arg diff))
-		       (angle1 (+ angle_to_centers angle_to_intersection))
-		       (angle2 (+ angle_to_centers angle_to_intersection M_PI))
-		       (p1 (+ c1.center (std--polar r1 angle1)))
-		       (p2 (+ c2.center (std--polar r2 angle2))))
-		   (return (curly p1 p2)))
+		       (r2 c2.radius)
+		       (dr (std--abs (- r2 r1)))))
+		 (when (<= d dr)
+		   (return (std--tuple 0d0 0d0 0d0)))
+		 (let ((X (/ dx d))
+		       (Y (/ dy d))
+		       (R (/ dr d))
+		       (R2 (* R R ))))
+		 (comments "tangent to the right of the circles looking from c1 to c2")
+		 (let ((a (- (* R X)
+			     (* Y (sqrt (- 1d0 R2)))))
+		       (b (+ (* R X)
+			     (* Y (sqrt (- 1d0 R2)))))
+		       (x1 (c1.center.real))
+		       (y1 (c1.center.imag))
+		       (c (- r1 (+ (* a x1)
+				   (* b y1))))))
+		 (return (std--tuple a b c))
 		 )))))
+     
      (let ((slider_factory
 	     (lambda ()
 	       (declare (capture ""))
@@ -697,10 +709,24 @@
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)
 					  radius1)))))
-		 (let (((bracket p1 p2) (findCrossingTangentSegment c1 
-								    c2))))
-		 (draw->AddLine (imvec p1)
-				(imvec p2)
+		 (let (((bracket a b c) (findInnerTangent c1 
+							  c2))))
+
+		 (let ((pointOnLineY (lambda (a b c y)
+				       ;; ax + by + c = 0
+				       ;; x = (-by - c)/a
+				       (return (/ (- (* -b y)
+						     c)
+						  a ))))
+		       (pointOnLineX (lambda (a b c x)
+				       ;; ax + by + c = 0
+				       ;; y = (-ax - c)/b
+				       (return (/ (- (* -a x)
+						     c)
+						  b )))))
+		   )
+		 (draw->AddLine (ImVec2 0s0 (pointOnLineX a b c 0d0))
+				(ImVec2 600s0 (pointOnLineX a b c 600d0))
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
 
