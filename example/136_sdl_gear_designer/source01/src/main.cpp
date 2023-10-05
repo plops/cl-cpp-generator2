@@ -1,6 +1,8 @@
 #include "Physics.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <cmath>
+#include <complex>
 #include <format>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -11,6 +13,28 @@
 class GuiException : public std::runtime_error {
 public:
   using runtime_error::runtime_error;
+};
+class Circle {
+public:
+  std::complex<double> center;
+  double radius;
+};
+auto findCrossingTangentSegment = [](const Circle &c1, const Circle &c2)
+    -> std::pair<std::complex<double>, std::complex<double>> {
+  auto diff = c2.center - c1.center;
+  auto d = std::abs(diff);
+  auto r1 = c1.radius;
+  auto r2 = c2.radius;
+  if (d <= std::abs(r1 - r2)) {
+    return {0., 0.};
+  }
+  auto theta = std::acos((r1 - r2) / d);
+  auto alpha = std::arg(diff);
+  auto angle1 = alpha + theta;
+  auto angle2 = alpha - theta;
+  auto p1 = c1.center + r1 * std::polar(1.0, angle1);
+  auto p2 = c2.center + r2 * std::polar(1.0, angle2);
+  return {p1, p2};
 };
 auto slider_factory = []() {
   static auto values = std::unordered_map<std::string, float>();
@@ -25,7 +49,7 @@ auto slider_factory = []() {
   auto draw_all_sliders = [&]() {
     ImGui::Begin("all-sliders");
     for (const auto &[key, value] : values) {
-      ImGui::SliderFloat(key.c_str(), &values[key], 1.00e+2F, 3.00e+2F);
+      ImGui::SliderFloat(key.c_str(), &values[key], 10.F, 6.00e+2F);
     }
     ImGui::End();
   };
@@ -166,9 +190,17 @@ int main(int argc, char **argv) {
                     ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       (circle_factory(0))();
       (circle_factory(1))();
-      auto x0 = lookup_slider("circle0_posx");
-      std::cout << ""
-                << " x0='" << x0 << "' " << std::endl;
+      auto posx0 = lookup_slider("circle0_posx");
+      auto posy0 = lookup_slider("circle0_posy");
+      auto radius0 = lookup_slider("circle0_radius");
+      auto posx1 = lookup_slider("circle1_posx");
+      auto posy1 = lookup_slider("circle1_posy");
+      auto radius1 = lookup_slider("circle1_radius");
+      auto [p1, p2] = findCrossingTangentSegment(
+          Circle({std::complex<double>(posx0, posy0), radius0}),
+          Circle({std::complex<double>(posx1, posy1), radius1}));
+      draw->AddLine(ImVec2(p1.real(), p1.imag()), ImVec2(p2.real(), p2.imag()),
+                    ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
       demo_window();
       swap(window);
     }

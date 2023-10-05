@@ -252,8 +252,9 @@
 					;unistd.h
 					;cstdlib
 
-					;cmath
-      
+
+      cmath
+      complex
       unordered_map
       format
       )
@@ -318,6 +319,31 @@
 		  (values :constructor)
 		  (construct (std--runtime_error msg)))))
 
+
+     (defclass+ Circle ()
+       "public:"
+       "std::complex<double> center;"
+       "double radius;")
+     (let ((findCrossingTangentSegment
+	     (lambda (c1 c2)
+	       (declare (type "const Circle&" c1 c2)
+			(values "std::pair<std::complex<double>,std::complex<double>>")
+			(capture ""))
+	       (let ((diff (- c2.center c1.center))
+		     (d (std--abs diff)))
+		 (let ((r1 c1.radius)
+		       (r2 c2.radius)))
+		 (when (<= d (std--abs (- r1 r2)))
+		   (return (curly 0d0 0d0)))
+		 (let ((theta (std--acos (/ (- r1 r2)
+					    d)))
+		       (alpha (std--arg diff))
+		       (angle1 (+ alpha theta))
+		       (angle2 (- alpha theta))
+		       (p1 (+ c1.center (* r1 (std--polar 1d0 angle1))))
+		       (p2 (+ c2.center (* r2 (std--polar 1d0 angle2)))))
+		   (return (curly p1 p2)))
+		 )))))
      (let ((slider_factory
 	     (lambda ()
 	       (declare (capture ""))
@@ -337,9 +363,9 @@
 			 
 			 (return (lambda ()
 				   (declare (capture 
-						     label
-						    ; "&values"
-						     ))
+					     label
+					; "&values"
+					     ))
 				   (return (aref values label))))))))
 	       (let ((draw_all_sliders
 		       (lambda ()
@@ -347,8 +373,8 @@
 			 (for-range ((bracket key value) values)
 				    (ImGui--SliderFloat (key.c_str)
 							(ref (aref values key))
-							100s0
-							300s0))
+							10s0
+							600s0))
 			 (ImGui--End)))))
 	       (let ((lookup_slider
 		       (lambda (label)
@@ -656,8 +682,22 @@
 				4s0)
 		 ((circle_factory 0))
 		 ((circle_factory 1))
-		 (let ((x0 (lookup_slider (string "circle0_posx"))))
-		   ,(lprint :vars `(x0)))
+
+		 ,@(loop for e in `(0 1)
+			 appending
+			 (loop for f in `(posx posy radius)
+			       collect
+			       `(let ((,(format nil "~a~a" f e)
+					(lookup_slider (string ,(format nil "circle~a_~a" e f)))))
+				 )))
+		 (let (((bracket p1 p2) (findCrossingTangentSegment (Circle (curly (std--complex<double> posx0 posy0)
+										   radius0))
+								    (Circle (curly (std--complex<double> posx1 posy1)
+										   radius1))))))
+		 (draw->AddLine (ImVec2 (p1.real) (p1.imag))
+				(ImVec2 (p2.real) (p2.imag))
+				(ImGui--GetColorU32 ImGuiCol_Text)
+				4s0)
 		 #+nil (do0 (draw_circle0)
 			    (draw_circle1))
 		 #+nil (let ((scale
