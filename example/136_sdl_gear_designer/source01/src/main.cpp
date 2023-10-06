@@ -19,31 +19,28 @@ public:
   std::complex<double> center;
   double radius;
 };
-// https://en.wikipedia.org/wiki/Tangent_lines_to_circles
-
-auto findInnerTangent = [](const Circle &c1, const Circle &c2) {
+auto findInnerTangent = [](const Circle &c1, const Circle &c2)
+    -> std::pair<std::complex<double>, std::complex<double>> {
   auto diff = c2.center - c1.center;
-  auto dx = diff.real();
-  auto dy = diff.imag();
   auto d = std::abs(diff);
   auto r1 = c1.radius;
   auto r2 = c2.radius;
   auto dr = std::abs(r2 - r1);
   if (d <= dr) {
-    return std::tuple(0., 0., 0.);
+    return std::make_pair(c1.center, c2.center);
   }
-  auto X = dx / d;
-  auto Y = dy / d;
-  auto R = dr / d;
-  auto R2 = R * R;
-  // tangent to the right of the circles looking from c1 to c2
+  // https://mathworld.wolfram.com/InternalSimilitudeCenter.html
 
-  auto a = (R * X) - (Y * sqrt(1.0 - R2));
-  auto b = R * X + Y * sqrt(1.0 - R2);
-  auto x1 = c1.center.real();
-  auto y1 = c1.center.imag();
-  auto c = r1 - (a * x1 + b * y1);
-  return std::tuple(a, b, c);
+  // https://en.wikipedia.org/wiki/Tangent_lines_to_circles
+
+  auto isc = (r1 * c2.center + r2 * c1.center) / (r1 + r2);
+  auto isc0 = isc - c1.center;
+  auto d02 = std::norm(isc0);
+  auto r12 = c1.radius * c1.radius;
+  auto a = r12 / d02;
+  auto b = (c1.radius * std::sqrt(d02 - r12)) / d02;
+  auto z1 = a * isc0 + b * std::complex(-1 * isc0.imag(), isc0.real());
+  return std::make_pair(isc, c1.center + z1);
 };
 auto slider_factory = []() {
   static auto values = std::unordered_map<std::string, float>();
@@ -211,16 +208,9 @@ int main(int argc, char **argv) {
       };
       auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
       auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
-      auto [a, b, c] = findInnerTangent(c1, c2);
-      auto pointOnLineY = [&](auto a, auto b, auto c, auto y) {
-        return ((-b * y) - c) / a;
-      };
-      auto pointOnLineX = [&](auto a, auto b, auto c, auto x) {
-        return ((-a * x) - c) / b;
-      };
-      draw->AddLine(ImVec2(0.F, pointOnLineX(a, b, c, 0.)),
-                    ImVec2(6.00e+2F, pointOnLineX(a, b, c, 6.00e+2)),
-                    ImGui::GetColorU32(ImGuiCol_Text), 4.0F);
+      auto [z0, z1] = findInnerTangent(c1, c2);
+      draw->AddLine(imvec(z0), imvec(z1), ImGui::GetColorU32(ImGuiCol_Text),
+                    4.0F);
       draw->AddLine(imvec(c1.center), imvec(c2.center),
                     ImGui::GetColorU32(ImGuiCol_Text), 2.0F);
       demo_window();

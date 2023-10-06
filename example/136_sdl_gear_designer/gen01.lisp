@@ -324,35 +324,44 @@
        "public:"
        "std::complex<double> center;"
        "double radius;")
-     (comments "https://en.wikipedia.org/wiki/Tangent_lines_to_circles")
+     
      (let ((findInnerTangent
 	     (lambda (c1 c2)
 	       (declare (type "const Circle&" c1 c2)
-			#+nil (values "std::pair<std::complex<double>,std::complex<double>>")
+		        (values "std::pair<std::complex<double>,std::complex<double>>")
 			(capture ""))
 	       (let ((diff (- c2.center c1.center))
-		     (dx (diff.real))
-		     (dy (diff.imag))
+		     ;(dx (diff.real))
+		     ;(dy (diff.imag))
 		     (d (std--abs diff)))
 		 (let ((r1 c1.radius)
 		       (r2 c2.radius)
-		       (dr (std--abs (- r2 r1)))))
+		       (dr (std--abs (- r2 r1)))
+		       ))
 		 (when (<= d dr)
-		   (return (std--tuple 0d0 0d0 0d0)))
-		 (let ((X (/ dx d))
-		       (Y (/ dy d))
-		       (R (/ dr d))
-		       (R2 (* R R ))))
-		 (comments "tangent to the right of the circles looking from c1 to c2")
-		 (let ((a (- (* R X)
-			     (* Y (sqrt (- 1d0 R2)))))
-		       (b (+ (* R X)
-			     (* Y (sqrt (- 1d0 R2)))))
-		       (x1 (c1.center.real))
-		       (y1 (c1.center.imag))
-		       (c (- r1 (+ (* a x1)
-				   (* b y1))))))
-		 (return (std--tuple a b c))
+		   (return (std--make_pair c1.center
+					   c2.center)))
+		 (comments "https://mathworld.wolfram.com/InternalSimilitudeCenter.html")
+		 (comments "https://en.wikipedia.org/wiki/Tangent_lines_to_circles")
+		 (let ((isc (/ (+ (* r1 c2.center)
+				  (* r2 c1.center))
+			       (+ r1 r2)))
+		       (isc0 (- isc c1.center))
+		       ;(d0 (std--abs isc0))
+		       (d02 (std--norm isc0))
+		       (r12 (*  c1.radius
+				 c1.radius))
+		       (a (/ r12
+			     d02))
+		       (b (/ (* c1.radius (std--sqrt (- d02 r12)))
+			     d02))
+		       (z1 (+ (* a isc0)
+			      (* b (std--complex (* -1 (isc0.imag))
+						 (isc0.real)))))
+		       ))
+		 (return (std--make_pair
+			  isc
+			  (+ c1.center z1)))
 		 )))))
      
      (let ((slider_factory
@@ -709,24 +718,12 @@
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)
 					  radius1)))))
-		 (let (((bracket a b c) (findInnerTangent c1 
+		 (let (((bracket z0 z1) (findInnerTangent c1 
 							  c2))))
 
-		 (let ((pointOnLineY (lambda (a b c y)
-				       ;; ax + by + c = 0
-				       ;; x = (-by - c)/a
-				       (return (/ (- (* -b y)
-						     c)
-						  a ))))
-		       (pointOnLineX (lambda (a b c x)
-				       ;; ax + by + c = 0
-				       ;; y = (-ax - c)/b
-				       (return (/ (- (* -a x)
-						     c)
-						  b )))))
-		   )
-		 (draw->AddLine (ImVec2 0s0 (pointOnLineX a b c 0d0))
-				(ImVec2 600s0 (pointOnLineX a b c 600d0))
+		 
+		 (draw->AddLine (imvec z0)
+				(imvec z1)
 				(ImGui--GetColorU32 ImGuiCol_Text)
 				4s0)
 
