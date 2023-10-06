@@ -211,6 +211,9 @@ int main(int argc, char **argv) {
       auto [z0, z1] = findInnerTangent(c1, c2);
       draw->AddLine(imvec(z0), imvec(z1), ImGui::GetColorU32(ImGuiCol_Text),
                     4.0F);
+      auto [z00, z2] = findInnerTangent(c2, c1);
+      draw->AddLine(imvec(z1), imvec(z2), ImGui::GetColorU32(ImGuiCol_Text),
+                    4.0F);
       draw->AddLine(imvec(c1.center), imvec(c2.center),
                     ImGui::GetColorU32(ImGuiCol_Text), 2.0F);
       demo_window();

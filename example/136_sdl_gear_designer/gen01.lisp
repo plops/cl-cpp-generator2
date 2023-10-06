@@ -331,8 +331,6 @@
 		        (values "std::pair<std::complex<double>,std::complex<double>>")
 			(capture ""))
 	       (let ((diff (- c2.center c1.center))
-		     ;(dx (diff.real))
-		     ;(dy (diff.imag))
 		     (d (std--abs diff)))
 		 (let ((r1 c1.radius)
 		       (r2 c2.radius)
@@ -347,7 +345,6 @@
 				  (* r2 c1.center))
 			       (+ r1 r2)))
 		       (isc0 (- isc c1.center))
-		       ;(d0 (std--abs isc0))
 		       (d02 (std--norm isc0))
 		       (r12 (*  c1.radius
 				 c1.radius))
@@ -718,14 +715,24 @@
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)
 					  radius1)))))
-		 (let (((bracket z0 z1) (findInnerTangent c1 
-							  c2))))
+		 (do0
+		  (let (((bracket z0 z1) (findInnerTangent c1 
+							   c2))))
 
-		 
-		 (draw->AddLine (imvec z0)
-				(imvec z1)
-				(ImGui--GetColorU32 ImGuiCol_Text)
-				4s0)
+		  
+		  (draw->AddLine (imvec z0)
+				 (imvec z1)
+				 (ImGui--GetColorU32 ImGuiCol_Text)
+				 4s0))
+		 (do0
+		  (let (((bracket z00 z2) (findInnerTangent c2 
+							    c1))))
+
+		  
+		  (draw->AddLine (imvec z1)
+				 (imvec z2)
+				 (ImGui--GetColorU32 ImGuiCol_Text)
+				 4s0))
 
 		 (draw->AddLine (imvec c1.center)
 				(imvec c2.center)
