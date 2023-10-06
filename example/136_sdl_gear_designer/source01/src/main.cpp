@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 class GuiException : public std::runtime_error {
 public:
   using runtime_error::runtime_error;
@@ -39,7 +40,7 @@ auto findInnerTangent = [](const Circle &c1, const Circle &c2)
   auto r12 = c1.radius * c1.radius;
   auto a = r12 / d02;
   auto b = (c1.radius * std::sqrt(d02 - r12)) / d02;
-  auto z1 = a * isc0 + b * std::complex(-1 * isc0.imag(), isc0.real());
+  auto z1 = a * isc0 + b * std::complex<double>(-1 * isc0.imag(), isc0.real());
   return std::make_pair(isc, c1.center + z1);
 };
 auto slider_factory = []() {
@@ -206,6 +207,30 @@ int main(int argc, char **argv) {
         return ImVec2(static_cast<float>(z.real()),
                       static_cast<float>(z.imag()));
       };
+      auto draw_involute = [&](auto cx, auto cy, auto radius, auto tmax,
+                               auto max_arc_step) {
+        auto points = std::vector<ImVec2>();
+        auto dt = std::sqrt((2 * max_arc_step) / radius);
+        auto tt = 0.;
+        auto s_prev = 0.;
+        while (tt <= tmax) {
+          auto circ = std::exp(std::complex<double>(0., tt));
+          auto tang = std::complex<double>(circ.imag(), -1 * circ.real());
+          auto s = 0.50 * radius * tt * tt;
+          auto z = radius * (circ + tt * tang);
+          points.emplace_back(imvec(z));
+          s_prev = s;
+          auto ds_dt = radius * tt;
+          auto dt = 0 < ds_dt ? (max_arc_step / ds_dt) : max_arc_step;
+          tt += dt;
+        }
+        auto draw = ImGui::GetBackgroundDrawList();
+        draw->AddPolyline(points.data(), points.size(),
+                          ImGui::GetColorU32(ImGuiCol_Text),
+                          ImDrawListFlags_AntiAliasedLines, 3.0F);
+      };
+      draw_involute(static_cast<double>(posx0), static_cast<double>(posy0),
+                    static_cast<double>(radius0), 23., 5.0);
       auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
       auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
       auto [z0, z1] = findInnerTangent(c1, c2);

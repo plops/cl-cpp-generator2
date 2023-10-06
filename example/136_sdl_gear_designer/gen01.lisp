@@ -241,8 +241,8 @@
       iostream
       memory
 					;string
-					;complex
-					;vector
+
+      vector
 					;algorithm
       
 					;chrono
@@ -353,7 +353,7 @@
 		       (b (/ (* c1.radius (std--sqrt (- d02 r12)))
 			     d02))
 		       (z1 (+ (* a isc0)
-			      (* b (std--complex (* -1 (isc0.imag))
+			      (* b (std--complex<double> (* -1 (isc0.imag))
 						 (isc0.real)))))
 		       ))
 		 (return (std--make_pair
@@ -711,6 +711,43 @@
 				(return (ImVec2 (static_cast<float> (z.real))
 						(static_cast<float> (z.imag)))))
 			      )))
+
+		 (let ((draw_involute (lambda (cx cy radius tmax max_arc_step)
+					(let ((points (std--vector<ImVec2>))))
+					(let ((dt (std--sqrt (/ (* 2 max_arc_step)
+								radius)))))
+					(let ((tt .0d0)
+					      (s_prev .0d0)))
+					(while (<= tt tmax)
+					       (let ((circ (std--exp (std--complex<double> 0d0 tt)))
+						     (tang (std--complex<double> (circ.imag)
+									 (* -1 (circ.real))))
+						     (s (* .5d0 radius tt tt))
+						     
+						     (z (* radius (+ circ (* tt tang))))
+						     )
+						 (points.emplace_back (imvec z))
+						 (setf s_prev s)
+						 (let ((ds_dt (* radius tt))
+						       (dt (? (< 0 ds_dt)
+							      (/ max_arc_step ds_dt)
+							      max_arc_step))))
+						 (incf tt dt)
+						 
+						 ))
+					(let ((draw
+						(ImGui--GetBackgroundDrawList))))
+					(draw->AddPolyline (dot points (data))
+							   (points.size)
+							   (ImGui--GetColorU32 ImGuiCol_Text)
+							   ImDrawListFlags_AntiAliasedLines
+							   3s0
+							   )))))
+		 (draw_involute (static_cast<double> posx0)
+				(static_cast<double> posy0)
+				(static_cast<double> radius0)
+				23d0
+				5d0)
 		 (let ((c1 (Circle (curly (std--complex<double> posx0 posy0)
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)
