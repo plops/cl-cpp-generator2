@@ -726,7 +726,8 @@
 						     
 						     (z (* radius (+ circ (* tt tang))))
 						     )
-						 (points.emplace_back (imvec z))
+						 (points.emplace_back (imvec (+ (std--complex<double> cx cy)
+										z)))
 						 (setf s_prev s)
 						 (let ((ds_dt (* radius tt))
 						       (dt (? (< 0 ds_dt)
@@ -746,8 +747,8 @@
 		 (draw_involute (static_cast<double> posx0)
 				(static_cast<double> posy0)
 				(static_cast<double> radius0)
-				23d0
-				5d0)
+				26d0 ;(* 2 M_PI)
+				.05d0)
 		 (let ((c1 (Circle (curly (std--complex<double> posx0 posy0)
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)

@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
           auto tang = std::complex<double>(circ.imag(), -1 * circ.real());
           auto s = 0.50 * radius * tt * tt;
           auto z = radius * (circ + tt * tang);
-          points.emplace_back(imvec(z));
+          points.emplace_back(imvec(std::complex<double>(cx, cy) + z));
           s_prev = s;
           auto ds_dt = radius * tt;
           auto dt = 0 < ds_dt ? (max_arc_step / ds_dt) : max_arc_step;
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
                           ImDrawListFlags_AntiAliasedLines, 3.0F);
       };
       draw_involute(static_cast<double>(posx0), static_cast<double>(posy0),
-                    static_cast<double>(radius0), 23., 5.0);
+                    static_cast<double>(radius0), 26., 5.00e-2);
       auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
       auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
       auto [z0, z1] = findInnerTangent(c1, c2);
