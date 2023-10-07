@@ -713,6 +713,7 @@
 			      )))
 
 		 (let ((draw_involute (lambda (cx cy radius tmax max_arc_step)
+					(comments "https://mathworld.wolfram.com/CircleInvolute.html")
 					(let ((points (std--vector<ImVec2>))))
 					(let ((dt (std--sqrt (/ (* 2 max_arc_step)
 								radius)))))
@@ -723,32 +724,39 @@
 						     (tang (std--complex<double> (circ.imag)
 									 (* -1 (circ.real))))
 						     (s (* .5d0 radius tt tt))
+						     (tangential_angle tt)
 						     
 						     (z (* radius (+ circ (* tt tang))))
 						     )
 						 (points.emplace_back (imvec (+ (std--complex<double> cx cy)
 										z)))
-						 (setf s_prev s)
+						 
+						 
 						 (let ((ds_dt (* radius tt))
 						       (dt (? (< 0 ds_dt)
 							      (/ max_arc_step ds_dt)
-							      max_arc_step))))
+							      (* .02 max_arc_step)))))
+						 #+nil (let ((ds (- s s_prev)))
+						   ,(lprint :msg "involute"
+							    :vars `(tt s ds ds_dt dt (points.size))))
+						 (setf s_prev s)
 						 (incf tt dt)
 						 
 						 ))
+					
 					(let ((draw
 						(ImGui--GetBackgroundDrawList))))
 					(draw->AddPolyline (dot points (data))
 							   (points.size)
 							   (ImGui--GetColorU32 ImGuiCol_Text)
 							   ImDrawListFlags_AntiAliasedLines
-							   3s0
+							   1s0
 							   )))))
 		 (draw_involute (static_cast<double> posx0)
 				(static_cast<double> posy0)
 				(static_cast<double> radius0)
 				26d0 ;(* 2 M_PI)
-				.05d0)
+				10d0)
 		 (let ((c1 (Circle (curly (std--complex<double> posx0 posy0)
 					  radius0)))
 		       (c2 (Circle (curly (std--complex<double> posx1 posy1)
