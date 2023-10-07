@@ -757,13 +757,13 @@
 					(draw->AddPolyline (dot points (data))
 							   (points.size)
 							   (ImGui--GetColorU32 ImGuiCol_Text)
-							   ImDrawListFlags_AntiAliasedLines
-							   1s0
+							   ImDrawFlags_None
+							   3s0
 							   )))))
 		 (draw_involute (static_cast<double> posx0)
 				(static_cast<double> posy0)
 				(static_cast<double> radius0)
-				26d0 ;(* 2 M_PI)
+				(* .5 M_PI) ;26d0 ;(* 2 M_PI)
 				4d0
 				;30
 				)
