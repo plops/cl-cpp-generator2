@@ -212,21 +212,26 @@ int main(int argc, char **argv) {
         // https://mathworld.wolfram.com/CircleInvolute.html
 
         auto points = std::vector<ImVec2>();
+        auto count = 0;
         auto dt = std::sqrt((2 * max_arc_step) / radius);
         auto tt = 0.;
         auto s_prev = 0.;
         while (tt <= tmax) {
+          auto ds_dt = radius * tt;
+          auto dt =
+              0 < ds_dt ? (max_arc_step / ds_dt) : (2.00e-2F * max_arc_step);
+          if (count < 4) {
+            dt = 8.00e-2F;
+          }
           auto circ = std::exp(std::complex<double>(0., tt));
           auto tang = std::complex<double>(circ.imag(), -1 * circ.real());
           auto s = 0.50 * radius * tt * tt;
           auto tangential_angle = tt;
           auto z = radius * (circ + tt * tang);
           points.emplace_back(imvec(std::complex<double>(cx, cy) + z));
-          auto ds_dt = radius * tt;
-          auto dt =
-              0 < ds_dt ? (max_arc_step / ds_dt) : (2.00e-2F * max_arc_step);
           s_prev = s;
           tt += dt;
+          count++;
         }
         auto draw = ImGui::GetBackgroundDrawList();
         draw->AddPolyline(points.data(), points.size(),
@@ -234,7 +239,7 @@ int main(int argc, char **argv) {
                           ImDrawListFlags_AntiAliasedLines, 1.0F);
       };
       draw_involute(static_cast<double>(posx0), static_cast<double>(posy0),
-                    static_cast<double>(radius0), 26., 10.);
+                    static_cast<double>(radius0), 26., 4.0);
       auto c1 = Circle({std::complex<double>(posx0, posy0), radius0});
       auto c2 = Circle({std::complex<double>(posx1, posy1), radius1});
       auto [z0, z1] = findInnerTangent(c1, c2);
