@@ -33,12 +33,35 @@
      
      (space-n service View
 	      "{"
-	      (space rpc (ClearColor ClearColorRequest) (returns ClearColorReply) "{}")
+	      ,@(loop for e in l-proto
+		      collect
+		      (destructuring-bind (&key name request reply) e
+			(let ((function-name (cl-change-case:pascal-case (format nil "~a" name)))
+			      (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
+			      (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
+			 `(space rpc (,function-name ,request-name) (returns ,reply-name) "{}"))))
 	      "}")
-     (space-n message ClearColorRequest
-	      "{"
-	      (space string (setf name 1))
-	      "}")
+     ,@(loop for e in l-proto
+		      appending
+		      (destructuring-bind (&key name request reply) e
+			(let ((function-name (cl-change-case:pascal-case (format nil "~a" name)))
+			      (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
+			      (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
+			  `((space rpc (,function-name ,request-name) (returns ,reply-name) "{}")
+			    (space-n message ,request-name
+				     "{"
+				     ,@(loop for (var type) in request
+					     and i from 0
+					     collect
+					     `(space ,type (setf ,var ,i)))
+				     "}")
+			    (space-n message ,reply-name
+				     "{"
+				     ,@(loop for (var type) in reply
+					     and i from 0
+					     collect
+					     `(space ,type (setf ,var ,i)))
+				     "}")))))
      )
    :omit-parens t
    :format t
