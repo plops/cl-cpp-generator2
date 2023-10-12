@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
-project(imgui_sdl2_bullet_gears_designer)
+project(imgui_sdl2_grpc_viewer)
 
 # C++ Standard
 set(CMAKE_CXX_STANDARD 20)
@@ -52,11 +52,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 else ()
     add_compile_options(
-            -O3
+            -O0 #3
             #-ffunction-sections -fdata-sections # don't use together with flto
     )
-    # flto
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
     #add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
 
@@ -71,10 +70,12 @@ find_package(SDL2 REQUIRED)
 # Add OpenGL
 find_package(OpenGL REQUIRED)
 
+find_package(protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+
 # Define the executable
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
-        ${CMAKE_SOURCE_DIR}/src/Physics.cpp
 )
 
 target_compile_options(
@@ -88,6 +89,25 @@ target_compile_options(
         #-Wpadded
 )
 
+
+# gRPC service definition
+set(PROTO_FILES
+    proto/gl.proto
+)
+
+add_library(glproto ${PROTO_FILES})
+target_link_libraries(glproto
+    PUBLIC
+        protobuf::libprotobuf
+        gRPC::grpc
+        gRPC::grpc++
+)
+target_include_directories(glproto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+# Compile protobuf and grpc files in myproto target to cpp
+get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
+protobuf_generate(TARGET glproto LANGUAGE cpp)
+protobuf_generate(TARGET glproto LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
 
 add_library(imgui
         ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
@@ -122,5 +142,5 @@ target_link_libraries(${PROJECT_NAME}
         ${SDL2_LIBRARIES}
         ${OPENGL_LIBRARIES}
         imgui
-        box2d
+	glproto
 )

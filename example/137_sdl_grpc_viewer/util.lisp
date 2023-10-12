@@ -2,6 +2,13 @@
 		 (vars nil)
 		 )
   `(<< std--cout
+       (std--format
+	(string ,(format nil "~a~{ ~a='{}'~}\\n"
+			 msg
+			 (loop for e in vars collect (emit-c :code e  :omit-redundant-parentheses t)) ))
+	,@vars))
+  #+nil
+  `(<< std--cout
        (string ,(format nil "~a"
 			msg
 			
