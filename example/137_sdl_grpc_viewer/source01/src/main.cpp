@@ -133,10 +133,11 @@ int main(int argc, char **argv) {
   try {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
-    auto service = GLProto();
+    auto service = GLProto::AsyncService();
     auto builder = grpc::ServerBuilder();
     builder.AddListeningPort("0.0.0.0:7777", grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
+    auto cq = builder.AddCompletionQueue();
     auto server = builder.BuildAndStart();
     server->Wait();
     auto [make_slider, draw_all_sliders, lookup_slider] = slider_factory();

@@ -378,11 +378,13 @@
 	    (let ((*window (init_gl gl_context))))
 	    (init_imgui window gl_context)
 
-	    (let ((service (GLProto))
-		  (builder (grpc--ServerBuilder)))
+	    (let ((service (GLProto--AsyncService))
+		  (builder (grpc--ServerBuilder))
+		 )
 	      (dot builder (AddListeningPort (string "0.0.0.0:7777")
 					     (grpc--InsecureServerCredentials)))
 	      (dot builder (RegisterService &service))
+	      (let ((cq (dot builder (AddCompletionQueue)))))
 	      (let ((server (builder.BuildAndStart)))
 		(server->Wait)))
 	    
