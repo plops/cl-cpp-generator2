@@ -1,0 +1,6 @@
+syntax = "proto3";
+package glproto;
+service View {
+  rpc ClearColor(ClearColorRequest) returns (ClearColorReply) {}
+}
+message ClearColorRequest { string name = 1; }
