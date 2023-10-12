@@ -3,14 +3,13 @@ package glproto;
 service View {
   rpc ClearColor(ClearColorRequest) returns (ClearColorReply) {}
 }
-rpc ClearColor(ClearColorRequest) returns (ClearColorReply) {};
 message ClearColorRequest {
-  float red = 0;
-  float green = 1;
-  float blue = 2;
-  float alpha = 3;
+  float red = 1;
+  float green = 2;
+  float blue = 3;
+  float alpha = 4;
 }
 message ClearColorReply {
-  bool success = 0;
-  float elapsed_ms = 1;
+  bool success = 1;
+  float elapsed_ms = 2;
 }

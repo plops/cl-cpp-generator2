@@ -39,26 +39,26 @@
 			(let ((function-name (cl-change-case:pascal-case (format nil "~a" name)))
 			      (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
 			      (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
-			 `(space rpc (,function-name ,request-name) (returns ,reply-name) "{}"))))
+			  `(space rpc (,function-name ,request-name) (returns ,reply-name) "{}"))))
 	      "}")
      ,@(loop for e in l-proto
 		      appending
 		      (destructuring-bind (&key name request reply) e
-			(let ((function-name (cl-change-case:pascal-case (format nil "~a" name)))
+			(let (; (function-name (cl-change-case:pascal-case (format nil "~a" name)))
 			      (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
 			      (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
-			  `((space rpc (,function-name ,request-name) (returns ,reply-name) "{}")
+			  `(
 			    (space-n message ,request-name
 				     "{"
 				     ,@(loop for (var type) in request
-					     and i from 0
+					     and i from 1
 					     collect
 					     `(space ,type (setf ,var ,i)))
 				     "}")
 			    (space-n message ,reply-name
 				     "{"
 				     ,@(loop for (var type) in reply
-					     and i from 0
+					     and i from 1
 					     collect
 					     `(space ,type (setf ,var ,i)))
 				     "}")))))
