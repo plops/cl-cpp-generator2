@@ -3,4 +3,13 @@
 #include "GLProto.h"
 #include <iostream>
 #include <stdexcept>
-GLProto::GLProto() : command_queue_(0), queue_mutex_(0), cv_(0) {}
+GLProto::GLProto() {}
+grpc::Status GLProto::ClearColor(grpc::ServerContext *context,
+                                 const glproto::ClearColorRequest *request,
+                                 glproto::ClearColorReply *reply) {
+  std::cout << std::format(
+      "clear-color request->red()='{}' request->green()='{}' "
+      "request->blue()='{}' request->alpha()='{}'\n",
+      request->red(), request->green(), request->blue(), request->alpha());
+  return grpc::Status::OK;
+}

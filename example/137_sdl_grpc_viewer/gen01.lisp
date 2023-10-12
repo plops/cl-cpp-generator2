@@ -42,59 +42,147 @@
 			  `(space rpc (,function-name ,request-name) (returns ,reply-name) "{}"))))
 	      "}")
      ,@(loop for e in l-proto
-		      appending
-		      (destructuring-bind (&key name request reply) e
-			(let (; (function-name (cl-change-case:pascal-case (format nil "~a" name)))
-			      (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
-			      (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
-			  `(
-			    (space-n message ,request-name
-				     "{"
-				     ,@(loop for (var type) in request
-					     and i from 1
-					     collect
-					     `(space ,type (setf ,var ,i)))
-				     "}")
-			    (space-n message ,reply-name
-				     "{"
-				     ,@(loop for (var type) in reply
-					     and i from 1
-					     collect
-					     `(space ,type (setf ,var ,i)))
-				     "}")))))
-     )
+	     appending
+	     (destructuring-bind (&key name request reply) e
+	       (let ( ; (function-name (cl-change-case:pascal-case (format nil "~a" name)))
+		     (reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
+		     (request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
+		 `(
+		   (space-n message ,request-name
+			    "{"
+			    ,@(loop for (var type) in request
+				    and i from 1
+				    collect
+				    `(space ,type (setf ,var ,i)))
+			    "}")
+		   (space-n message ,reply-name
+			    "{"
+			    ,@(loop for (var type) in reply
+				    and i from 1
+				    collect
+				    `(space ,type (setf ,var ,i)))
+			    "}"))))))
    :omit-parens t
    :format t
    :tidy nil)
+
+  (let* ((name `GLProto)
+	 (members `(;(commandQueue :type std--queue<Command>)
+		    (queue-mutex :type std--mutex :initform nil)
+		    (cv :type std--condition_variable :initform nil))))
+    
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> grpc++/grpc++.h
+				   proto/gl.grpc.pb.h
+				   queue
+				   mutex
+				   condition_variable))
+     :implementation-preamble
+     `(do0
+       (include<> 
+					;fstream
+	iostream
+					;vector
+					;string
+					;cstring
+	stdexcept)
+       )
+     :code `(do0
+	     (defclass ,name "public glproto::View::Service"
+	       "public:"
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname)) 
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  ))
+	       ,@(loop for e in l-proto
+			collect
+			(destructuring-bind (&key name request reply) e
+			  (let ((function-name (cl-change-case:pascal-case (format nil "~a" name)))
+				(reply-name (cl-change-case:pascal-case (format nil "~a-reply" name)))
+				(request-name (cl-change-case:pascal-case (format nil "~a-request" name))))
+			    `(defmethod ,function-name (context request reply)
+			       (declare (type "grpc::ServerContext*" context)
+					(type ,(format nil "const glproto::~a*" request-name)  request)
+					(type ,(format nil "glproto::~a*" reply-name)  reply)
+					(values "grpc::Status"))
+			       ,(lprint :msg (format nil "~a" name)
+					:vars (loop for (var type) in request
+						     collect
+						     `(-> request (,var))))
+			       (return grpc--Status--OK)
+			       ))))
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))))))
+  
   (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     
      (include<>
       iostream
       memory
 					;string
-
       vector
 					;algorithm
-      
-					;chrono
+      					;chrono
 					;thread
-      
-					;filesystem
+      					;filesystem
 					;unistd.h
 					;cstdlib
-
-
       cmath
       complex
       unordered_map
       format
+      thread
+      
       )
-     
      (include<>
       imgui.h 
       imgui_impl_sdl2.h
@@ -104,6 +192,7 @@
       SDL.h
       SDL_opengl.h
       )
+     (include "GLProto.h")
 
      (defclass+ GuiException "public std::runtime_error"
        "public:"
@@ -281,12 +370,21 @@
 			    (ImGui--DestroyContext)
 			    (SDL_GL_DeleteContext gl_context_)
 			    (SDL_Quit))))))
+
+       
       
        (handler-case
 	   (do0
 	    (let ((*window (init_gl gl_context))))
 	    (init_imgui window gl_context)
-	    
+
+	    (let ((service (GLProto))
+		  (builder (grpc--ServerBuilder)))
+	      (dot builder (AddListeningPort (string "0.0.0.0:7777")
+					     (grpc--InsecureServerCredentials)))
+	      (dot builder (RegisterService &service))
+	      (let ((server (builder.BuildAndStart)))
+		(server->Wait)))
 	    
 	    (let (((bracket make_slider
 			    draw_all_sliders

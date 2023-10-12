@@ -76,6 +76,7 @@ find_package(gRPC CONFIG REQUIRED)
 # Define the executable
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_SOURCE_DIR}/src/GLProto.cpp
 )
 
 target_compile_options(
@@ -92,12 +93,12 @@ target_compile_options(
 
 # gRPC service definition
 set(PROTO_FILES
-    proto/gl.proto
+        proto/gl.proto
 )
 
 add_library(glproto ${PROTO_FILES})
 target_link_libraries(glproto
-    PUBLIC
+        PUBLIC
         protobuf::libprotobuf
         gRPC::grpc
         gRPC::grpc++
@@ -142,5 +143,5 @@ target_link_libraries(${PROJECT_NAME}
         ${SDL2_LIBRARIES}
         ${OPENGL_LIBRARIES}
         imgui
-	glproto
+        glproto
 )

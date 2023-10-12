@@ -6,16 +6,11 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable> 
-class GLProto : public glproto::Service {
+class GLProto : public glproto::View::Service {
         public:
         explicit  GLProto ()       ;   
-        defmethod;
-        ClearColor
-        context(request, reply);
-        declare(type(grpc::ServerContext*, context), type(ClearColorRequest*, request), type(ClearColorReply*, reply), values(grpc::Status));
-        return grpc::Status::OK;
+        grpc::Status ClearColor (grpc::ServerContext* context, const glproto::ClearColorRequest* request, glproto::ClearColorReply* reply)       ;   
         private:
-        std::queue<Command> command_queue_;
         std::mutex queue_mutex_;
         std::condition_variable cv_;
 };

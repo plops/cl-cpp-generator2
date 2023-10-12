@@ -1,3 +1,4 @@
+#include "GLProto.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <cmath>
@@ -8,6 +9,7 @@
 #include <imgui_impl_sdl2.h>
 #include <iostream>
 #include <memory>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 class GuiException : public std::runtime_error {
@@ -131,6 +133,12 @@ int main(int argc, char **argv) {
   try {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
+    auto service = GLProto();
+    auto builder = grpc::ServerBuilder();
+    builder.AddListeningPort("0.0.0.0:7777", grpc::InsecureServerCredentials());
+    builder.RegisterService(&service);
+    auto server = builder.BuildAndStart();
+    server->Wait();
     auto [make_slider, draw_all_sliders, lookup_slider] = slider_factory();
     auto done = false;
     std::cout << std::format("start gui loop\n");
