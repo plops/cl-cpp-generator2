@@ -378,7 +378,7 @@
 	    (let ((*window (init_gl gl_context))))
 	    (init_imgui window gl_context)
 
-	    (let ((service (GLProto--AsyncService))
+	    (let ((service (glproto--View--AsyncService))
 		  (builder (grpc--ServerBuilder))
 		 )
 	      (dot builder (AddListeningPort (string "0.0.0.0:7777")

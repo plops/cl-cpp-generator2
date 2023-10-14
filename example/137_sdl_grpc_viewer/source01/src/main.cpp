@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
   try {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
-    auto service = GLProto::AsyncService();
+    auto service = glproto::View::AsyncService();
     auto builder = grpc::ServerBuilder();
     builder.AddListeningPort("0.0.0.0:7777", grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
