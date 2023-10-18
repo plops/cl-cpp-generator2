@@ -139,7 +139,12 @@ int main(int argc, char **argv) {
     builder.RegisterService(&service);
     auto cq = builder.AddCompletionQueue();
     auto server = builder.BuildAndStart();
-    server->Wait();
+    auto context = grpc::ServerContext();
+    auto request = glproto::ClearColorRequest();
+    auto responder =
+        grpc::ServerAsyncResponseWriter<glproto::ClearColorReply>();
+    service.ClearColor(&context, &request, &responder, &cq, &cq,
+                       reinterpret_cast<void *>(1));
     auto [make_slider, draw_all_sliders, lookup_slider] = slider_factory();
     auto done = false;
     std::cout << std::format("start gui loop\n");

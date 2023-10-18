@@ -158,6 +158,100 @@
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
 				      `(space ,type ,nname_)))))))))
+
+
+  (let* ((name `CallData)
+	 (members `((service :type glproto--View--AsyncService* :param t)
+		    (cq :type grpc--ServerCompletionQueue* :param t)
+		    (ctx :type "const grpc::ServerContext &" :param t)
+		    (request :type glproto--ClearColorRequest :param nil :initform nil)
+		    (reply :type glproto--ClearColorReply :param nil :initform nil)
+		    (responder :type grpc--ServerAsyncResponseWriter<glproto--ClearColorReply> :initform ctx :param nil)
+		    (status :type CallStatus :initform CREATE :param nil))))
+    
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> grpc++/grpc++.h
+				   proto/gl.grpc.pb.h
+				   ))
+     :implementation-preamble
+     `(do0
+       (include<> 
+					;fstream
+	iostream
+					;vector
+					;string
+					;cstring
+	stdexcept)
+       )
+     :code `(do0
+	     (defclass ,name "public glproto::View::Service"
+	       "public:"
+	       (space enum CallStatus (curly CREATE PROCESS FINISH))
+	       (defmethod ,name (,@(remove-if #'null
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
+		 (declare
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname)) 
+					    (initform
+					     `(,nname_ ,initform)))))))
+		  ) 
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 (Proceed))
+	       (defmethod Proceed ()
+		 (cond ((== CREATE status_)
+			(setf status_ PROCESS)
+			(-> service_ (RequestClearColor &ctx_ &responder_
+						 cq_ cq_ this)))
+		       ((== PROCESS status_)
+			(new (CallData service_ cq_))
+			(reply_.set_success true)
+			(setf status_ FINISH)
+			(responder_.Finish reply_ grpc--Status--OK this))
+		       (t
+			(GPR_ASSERT (== status_ FINISH))
+			(delete this))))
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))))))
   
   (write-source 
    (asdf:system-relative-pathname
@@ -380,13 +474,21 @@
 
 	    (let ((service (glproto--View--AsyncService))
 		  (builder (grpc--ServerBuilder))
-		 )
+		  )
 	      (dot builder (AddListeningPort (string "0.0.0.0:7777")
 					     (grpc--InsecureServerCredentials)))
 	      (dot builder (RegisterService &service))
 	      (let ((cq (dot builder (AddCompletionQueue)))))
 	      (let ((server (builder.BuildAndStart)))
-		(server->Wait)))
+		))
+
+
+	    (do0
+	     (let ((context (grpc--ServerContext))))
+	     (let ((request (glproto--ClearColorRequest))))
+	     (let ((responder (grpc--ServerAsyncResponseWriter<glproto--ClearColorReply>))))
+	     (service.ClearColor &context &request &responder &cq &cq (reinterpret_cast<void*> 1)))
+	    
 	    
 	    (let (((bracket make_slider
 			    draw_all_sliders

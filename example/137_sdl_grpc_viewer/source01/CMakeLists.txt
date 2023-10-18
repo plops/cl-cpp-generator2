@@ -77,6 +77,7 @@ find_package(gRPC CONFIG REQUIRED)
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
         ${CMAKE_SOURCE_DIR}/src/GLProto.cpp
+        ${CMAKE_SOURCE_DIR}/src/CallData.cpp
 )
 
 target_compile_options(
