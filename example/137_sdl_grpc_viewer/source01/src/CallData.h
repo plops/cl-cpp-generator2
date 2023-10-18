@@ -1,0 +1,21 @@
+#ifndef CALLDATA_H
+#define CALLDATA_H
+
+#include <grpc++/grpc++.h>
+#include <proto/gl.grpc.pb.h> 
+class CallData : public glproto::View::Service {
+        public:
+        enum CallStatus {CREATE, PROCESS, FINISH};
+        explicit  CallData (glproto::View::AsyncService* service, grpc::ServerCompletionQueue* cq, grpc::ServerContext ctx)       ;   
+        void Proceed ()       ;   
+        private:
+        glproto::View::AsyncService* service_;
+        grpc::ServerCompletionQueue* cq_;
+        grpc::ServerContext ctx_;
+        glproto::ClearColorRequest request_;
+        glproto::ClearColorReply reply_;
+        grpc::ServerAsyncResponseWriter<glproto::ClearColorReply> responder_;
+        CallStatus status_;
+};
+
+#endif /* !CALLDATA_H */
