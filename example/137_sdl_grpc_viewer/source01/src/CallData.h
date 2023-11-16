@@ -14,7 +14,6 @@ class CallData : public glproto::View::Service {
         const grpc::ServerContext & ctx_;
         glproto::ClearColorRequest request_;
         glproto::ClearColorReply reply_;
-        grpc::ServerAsyncResponseWriter<glproto::ClearColorReply> responder_;
         CallStatus status_;
 };
 

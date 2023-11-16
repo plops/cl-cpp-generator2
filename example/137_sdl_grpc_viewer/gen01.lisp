@@ -166,7 +166,7 @@
 		    (ctx :type "const grpc::ServerContext &" :param t)
 		    (request :type glproto--ClearColorRequest :param nil :initform nil)
 		    (reply :type glproto--ClearColorReply :param nil :initform nil)
-		    (responder :type grpc--ServerAsyncResponseWriter<glproto--ClearColorReply> :initform ctx :param nil)
+		    #+nil (responder :type grpc--ServerAsyncResponseWriter<glproto--ClearColorReply> :initform ctx :param nil)
 		    (status :type CallStatus :initform CREATE :param nil))))
     
     (write-class
@@ -232,7 +232,7 @@
 		  )
 		 (Proceed))
 	       (defmethod Proceed ()
-		 (cond ((== CREATE status_)
+		 #+nil (cond ((== CREATE status_)
 			(setf status_ PROCESS)
 			(-> service_ (RequestClearColor &ctx_ &responder_
 						 cq_ cq_ this)))
@@ -472,6 +472,7 @@
 	    (let ((*window (init_gl gl_context))))
 	    (init_imgui window gl_context)
 
+	    #+grpc
 	    (let ((service (glproto--View--AsyncService))
 		  (builder (grpc--ServerBuilder))
 		  )
@@ -482,6 +483,8 @@
 	      (let ((server (builder.BuildAndStart)))
 		))
 
+
+	    #+grpc
 
 	    (do0
 	     (let ((context (grpc--ServerContext))))

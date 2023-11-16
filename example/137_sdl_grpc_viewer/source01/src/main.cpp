@@ -133,18 +133,6 @@ int main(int argc, char **argv) {
   try {
     auto *window = init_gl(gl_context);
     init_imgui(window, gl_context);
-    auto service = glproto::View::AsyncService();
-    auto builder = grpc::ServerBuilder();
-    builder.AddListeningPort("0.0.0.0:7777", grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    auto cq = builder.AddCompletionQueue();
-    auto server = builder.BuildAndStart();
-    auto context = grpc::ServerContext();
-    auto request = glproto::ClearColorRequest();
-    auto responder =
-        grpc::ServerAsyncResponseWriter<glproto::ClearColorReply>();
-    service.ClearColor(&context, &request, &responder, &cq, &cq,
-                       reinterpret_cast<void *>(1));
     auto [make_slider, draw_all_sliders, lookup_slider] = slider_factory();
     auto done = false;
     std::cout << std::format("start gui loop\n");

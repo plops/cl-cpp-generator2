@@ -1,15 +1,5 @@
-syntax = "proto3";
-package glproto;
-service View {
-  rpc ClearColor(ClearColorRequest) returns (ClearColorReply) {}
-}
-message ClearColorRequest {
-  float red = 1;
-  float green = 2;
-  float blue = 3;
-  float alpha = 4;
-}
-message ClearColorReply {
-  bool success = 1;
-  float elapsed_ms = 2;
-}
+syntax="proto3"; 
+package glproto; 
+service View { rpc ClearColor(ClearColorRequest) returns(ClearColorReply) {} } 
+message ClearColorRequest { float red=1; float green=2; float blue=3; float alpha=4; } 
+message ClearColorReply { bool success=1; float elapsed_ms=2; } 
