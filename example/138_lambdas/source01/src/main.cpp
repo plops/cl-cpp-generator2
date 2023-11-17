@@ -2,18 +2,16 @@
 #include <complex>
 #include <format>
 #include <iostream>
-template <typename... Ts> struct overload : Ts... {
-  // operator of of all of these types so which means if you write using TS
-  // operator param paren dot dot it means that whatever types we give it.   you
-  // know if like the call operators of those types are going to be callable
-  // directly through this overload object so it's kind of inheriting the call
-  // Operator so to say overload is an aggregate, no user defined constructor,
-  // no private members. elements of that aggregate are the base classes.
-  // initialize the overload object with aggregate initializaton using curly
-  // braces and give it a bunch of lambdas as base classes for the overload set.
-  // it will inherit the call operator from them. this behaves similar to
-  // typecase in common lisp
+// The overload set behaves similar to typecase in Common Lisp. This code
+// defines a struct called 'overload' that inherits from types provided by Ts.
+// The call operators of the types can be invoked directly through this
+// 'overload' struct, which it inherits. The 'overload' struct does not have a
+// user-defined constructor or private members and is considered an aggregate.
 
+// During creation the object is provided with a set of lambdas as base classes
+// for the overload set, it will inherit the call operator from these lambdas.
+
+template <typename... Ts> struct overload : Ts... {
   using Ts::operator()...;
 };
 
