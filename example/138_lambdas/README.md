@@ -1,0 +1,1 @@
+- experiments with c++ lambdas: youtube.com/watch?v=xBAduq0RGes
