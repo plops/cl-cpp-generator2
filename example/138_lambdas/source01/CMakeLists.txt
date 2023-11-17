@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
-project(imgui_sdl2_grpc_viewer)
+project(learn_lambda)
 
 # C++ Standard
 set(CMAKE_CXX_STANDARD 20)
@@ -59,25 +59,9 @@ else ()
     #add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 endif ()
 
-set(OpenGL_GL_PREFERENCE
-        GLVND
-        # LEGACY
-)
-
-# Add SDL2
-find_package(SDL2 REQUIRED)
-
-# Add OpenGL
-find_package(OpenGL REQUIRED)
-
-find_package(protobuf CONFIG REQUIRED)
-find_package(gRPC CONFIG REQUIRED)
-
 # Define the executable
 add_executable(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/main.cpp
-        ${CMAKE_SOURCE_DIR}/src/GLProto.cpp
-        ${CMAKE_SOURCE_DIR}/src/CallData.cpp
 )
 
 target_compile_options(
@@ -92,57 +76,10 @@ target_compile_options(
 )
 
 
-# gRPC service definition
-set(PROTO_FILES
-        proto/gl.proto
-)
-
-add_library(glproto ${PROTO_FILES})
-target_link_libraries(glproto
-        PUBLIC
-        protobuf::libprotobuf
-        gRPC::grpc
-        gRPC::grpc++
-)
-target_include_directories(glproto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-
-# Compile protobuf and grpc files in myproto target to cpp
-get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-protobuf_generate(TARGET glproto LANGUAGE cpp)
-protobuf_generate(TARGET glproto LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
-
-add_library(imgui
-        ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_sdl2.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp
-        ${CMAKE_SOURCE_DIR}/imgui/imgui_tables.cpp
-)
-
-target_include_directories(
-        imgui
-        PRIVATE
-        ${SDL2_INCLUDE_DIRS}
-        ${OPENGL_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/imgui
-        ${CMAKE_SOURCE_DIR}/imgui/backends
-)
-
 target_include_directories(
         ${PROJECT_NAME}
         PRIVATE
-        ${SDL2_INCLUDE_DIRS}
-        ${OPENGL_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/imgui
-        ${CMAKE_SOURCE_DIR}/imgui/backends
 )
 
-# Linking libraries
 target_link_libraries(${PROJECT_NAME}
-        ${SDL2_LIBRARIES}
-        ${OPENGL_LIBRARIES}
-        imgui
-        glproto
 )
