@@ -57,12 +57,18 @@
 
        (do0
 	(comments "45:00 overload sets")
-	(let ((f (curly ,@(loop for e in `((int16_t int16 )
+	(let ((f (curly ,@(loop for e in `((int8_t int8 )
+					   (int16_t int16 )
+					   
 					   (int32_t int32
-					    )
+						    )
 					   (int64_t int64 )
 					   (float)
 					   (double)
+					   ("std::complex<int8_t>" cint8)
+					   ("std::complex<int16_t>" cint16)
+					   ("std::complex<int32_t>" cint32)
+					   ("std::complex<int64_t>" cint64)
 					   ("std::complex<float>" cfloat)
 					   ("std::complex<double>" cdouble))
 				collect
@@ -73,9 +79,14 @@
 				     ,(lprint :msg (format nil "~a thingy" type))))))))
 	  (declare (type overload f))))
 
-       (f 2)
-       (f 2.0)
-       (f 2d0)
+       "using namespace std::complex_literals;"
+       ,@(loop for e in `(int8_t int16_t int32_t int64_t float double)
+			 collect
+			 `(f (,(format nil "static_cast<~a>" e) 2)))
+       ,@(loop for e in `(int8_t int16_t int32_t int64_t float double)
+	       collect
+	       `(f (,(format nil "static_cast<std::complex<~a>>" e) 2 1)))
+      
        
        ))
    :omit-parens t
