@@ -76,16 +76,21 @@
 				  `(lambda (v)
 				     (declare (type ,type v)
 					      (capture ""))
-				     ,(lprint :msg (format nil "~a thingy" type))))))))
+				     ,(if (eq #\c (aref (format nil "~a" short) 0))
+					  (lprint :msg (format nil "~a thingy" type)
+						  :vars `((std--real v)
+							  (std--imag v)))
+					  (lprint :msg (format nil "~a thingy" type)
+						  :vars `(v)))))))))
 	  (declare (type overload f))))
 
        "using namespace std::complex_literals;"
        ,@(loop for e in `(int8_t int16_t int32_t int64_t float double)
 			 collect
-			 `(f (,(format nil "static_cast<~a>" e) 2)))
+			 `(f (,(format nil "~a" e) 2)))
        ,@(loop for e in `(int8_t int16_t int32_t int64_t float double)
 	       collect
-	       `(f (,(format nil "static_cast<std::complex<~a>>" e) 2 1)))
+	       `(f (,(format nil "std::complex<~a>" e) 2 1)))
       
        
        ))

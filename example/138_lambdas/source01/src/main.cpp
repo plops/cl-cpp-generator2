@@ -20,41 +20,54 @@ int main(int argc, char **argv) {
                            argv[0]);
   // 45:00 overload sets
 
-  overload f = {[](int8_t v) { std::cout << std::format("int8_t thingy\n"); },
-                [](int16_t v) { std::cout << std::format("int16_t thingy\n"); },
-                [](int32_t v) { std::cout << std::format("int32_t thingy\n"); },
-                [](int64_t v) { std::cout << std::format("int64_t thingy\n"); },
-                [](float v) { std::cout << std::format("float thingy\n"); },
-                [](double v) { std::cout << std::format("double thingy\n"); },
-                [](std::complex<int8_t> v) {
-                  std::cout << std::format("std::complex<int8_t> thingy\n");
-                },
-                [](std::complex<int16_t> v) {
-                  std::cout << std::format("std::complex<int16_t> thingy\n");
-                },
-                [](std::complex<int32_t> v) {
-                  std::cout << std::format("std::complex<int32_t> thingy\n");
-                },
-                [](std::complex<int64_t> v) {
-                  std::cout << std::format("std::complex<int64_t> thingy\n");
-                },
-                [](std::complex<float> v) {
-                  std::cout << std::format("std::complex<float> thingy\n");
-                },
-                [](std::complex<double> v) {
-                  std::cout << std::format("std::complex<double> thingy\n");
-                }};
+  overload f = {
+      [](int8_t v) { std::cout << std::format("int8_t thingy v='{}'\n", v); },
+      [](int16_t v) { std::cout << std::format("int16_t thingy v='{}'\n", v); },
+      [](int32_t v) { std::cout << std::format("int32_t thingy v='{}'\n", v); },
+      [](int64_t v) { std::cout << std::format("int64_t thingy v='{}'\n", v); },
+      [](float v) { std::cout << std::format("float thingy v='{}'\n", v); },
+      [](double v) { std::cout << std::format("double thingy v='{}'\n", v); },
+      [](std::complex<int8_t> v) {
+        std::cout << std::format(
+            "std::complex<int8_t> thingy std::real(v)='{}' std::imag(v)='{}'\n",
+            std::real(v), std::imag(v));
+      },
+      [](std::complex<int16_t> v) {
+        std::cout << std::format("std::complex<int16_t> thingy "
+                                 "std::real(v)='{}' std::imag(v)='{}'\n",
+                                 std::real(v), std::imag(v));
+      },
+      [](std::complex<int32_t> v) {
+        std::cout << std::format("std::complex<int32_t> thingy "
+                                 "std::real(v)='{}' std::imag(v)='{}'\n",
+                                 std::real(v), std::imag(v));
+      },
+      [](std::complex<int64_t> v) {
+        std::cout << std::format("std::complex<int64_t> thingy "
+                                 "std::real(v)='{}' std::imag(v)='{}'\n",
+                                 std::real(v), std::imag(v));
+      },
+      [](std::complex<float> v) {
+        std::cout << std::format(
+            "std::complex<float> thingy std::real(v)='{}' std::imag(v)='{}'\n",
+            std::real(v), std::imag(v));
+      },
+      [](std::complex<double> v) {
+        std::cout << std::format(
+            "std::complex<double> thingy std::real(v)='{}' std::imag(v)='{}'\n",
+            std::real(v), std::imag(v));
+      }};
   using namespace std::complex_literals;
-  f(static_cast<int8_t>(2));
-  f(static_cast<int16_t>(2));
-  f(static_cast<int32_t>(2));
-  f(static_cast<int64_t>(2));
-  f(static_cast<float>(2));
-  f(static_cast<double>(2));
-  f(static_cast<std::complex<int8_t>>(2, 1));
-  f(static_cast<std::complex<int16_t>>(2, 1));
-  f(static_cast<std::complex<int32_t>>(2, 1));
-  f(static_cast<std::complex<int64_t>>(2, 1));
-  f(static_cast<std::complex<float>>(2, 1));
-  f(static_cast<std::complex<double>>(2, 1));
+  f(int8_t(2));
+  f(int16_t(2));
+  f(int32_t(2));
+  f(int64_t(2));
+  f(float(2));
+  f(double(2));
+  f(std::complex<int8_t>(2, 1));
+  f(std::complex<int16_t>(2, 1));
+  f(std::complex<int32_t>(2, 1));
+  f(std::complex<int64_t>(2, 1));
+  f(std::complex<float>(2, 1));
+  f(std::complex<double>(2, 1));
 }
