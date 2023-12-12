@@ -23,7 +23,7 @@
     (merge-pathnames "user.cpp"
 		     *source-dir*))
    `(do0
-     (space Import Vector)
+     (space import Vector)
      (include<>
       cmath)
 
@@ -31,10 +31,12 @@
 	       "https://www.reddit.com/r/cpp/comments/zswkp8/modules_in_the_big_three_compilers_a_small/")
 
      (defun sqrt_sum (v)
-       (declare (type "Vector&" v))
+       (declare (type "Vector&" v)
+		(values double))
        (let ((sum 0d0))
 	 (dotimes (i (v.size))
-	   (incf sum (std--sqrt (aref v i))))
+	   (incf sum #+Nil (std--sqrt (aref v i))
+		 (aref v i)))
 	 (return sum)))
      
      (defun main (argc argv)
@@ -43,7 +45,8 @@
        		(type char** argv))
 
        #+nil ,(lprint :msg "main entry point" :vars `(argc (aref argv 0)))
-       (sqrt_sum (Vector 3))
+       (let ((v (Vector 3)))
+	 (sqrt_sum v))
        ))
    :omit-parens t
    :format t
