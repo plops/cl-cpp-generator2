@@ -24,7 +24,9 @@
 		     *source-dir*))
    `(do0
      (space import Vector)
-     (include<>
+     #+nil (space import (string "cmath")
+	    )
+     #-nil(include<>
       cmath)
 
      (comments "Stroustrup Tour of C++ (2022) page 35"
