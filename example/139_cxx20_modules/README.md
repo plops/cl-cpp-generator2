@@ -1,0 +1,2 @@
+- discussion of cmake support for modules: https://www.kitware.com/import-cmake-c20-modules/
+- cmake has to parse c++ to get dependencies (it uses c++ compiler for this)
