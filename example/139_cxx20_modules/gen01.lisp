@@ -58,6 +58,7 @@
     (merge-pathnames "Vector.cpp"
 		     *source-dir*))
    `(do0
+     (space module)
      (space export module Vector)
      (space export
 	    (defclass+ Vector ()

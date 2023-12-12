@@ -1,3 +1,4 @@
+module;
 export module Vector;
 export class Vector {
 public:
