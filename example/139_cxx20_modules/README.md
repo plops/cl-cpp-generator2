@@ -13,3 +13,4 @@
 - clang compiler version 16 or newer contains the p1689 implementation
   required for CMake
 
+- i installed cmake 3.28 and use clang16 on gentoo. compilation works

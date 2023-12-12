@@ -71,11 +71,13 @@
 		)
 	      (defmethod "operator[]" (i)
 		(declare (type int i)
+			 (const)
 			 (values double&))
 		(return (aref elem i)))
 	      
 	      (defmethod size ()
-		(declare (values int))
+		(declare (values int)
+			 (const))
 		(return sz))
 	      "private:"
 	      "double* elem;"
