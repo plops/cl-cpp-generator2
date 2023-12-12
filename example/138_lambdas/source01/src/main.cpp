@@ -68,6 +68,6 @@ int main(int argc, char **argv) {
   f(std::complex<int16_t>(2, 1));
   f(std::complex<int32_t>(2, 1));
   f(std::complex<int64_t>(2, 1));
-  f(std::complex<float>(2, 1));
+  f(std::complex<float>(2, 1));c
   f(std::complex<double>(2, 1));
 }

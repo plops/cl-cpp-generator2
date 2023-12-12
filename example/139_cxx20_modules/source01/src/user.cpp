@@ -1,6 +1,7 @@
 Import Vector;
 #include <cmath>
 // Stroustrup Tour of C++ (2022) page 35
+// https://www.reddit.com/r/cpp/comments/zswkp8/modules_in_the_big_three_compilers_a_small/
 
 void sqrt_sum(Vector &v) {
   auto sum = 0.;
@@ -10,8 +11,4 @@ void sqrt_sum(Vector &v) {
   return sum;
 }
 
-int main(int argc, char **argv) {
-  std::cout << std::format("main entry point argc='{}' argv[0]='{}'\n", argc,
-                           argv[0]);
-  sqrt_sum(Vector(3));
-}
+int main(int argc, char **argv) { sqrt_sum(Vector(3)); }
