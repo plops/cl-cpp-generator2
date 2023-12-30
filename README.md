@@ -253,6 +253,11 @@ between the - and + operators.
   time.  In a module system, you define consteval functions in a
   module interface unit. This is akin to a header file but is part of
   a module.
+- like for and if statement can introduce a variable and test it. i'm not sure how to map this to lisp
+```
+if ( auto n = v.size(); n!=0 ) { ...
+```
+
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
