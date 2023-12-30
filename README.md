@@ -250,7 +250,9 @@ between the - and + operators.
 - Stroustrup encurages {} over = for initialization
 - consteval defmethods should be declared in the header because they
   need to be visible to all translation units that use them at compile
-  time (how does that interact with C++20 modules)
+  time.  In a module system, you define consteval functions in a
+  module interface unit. This is akin to a header file but is part of
+  a module.
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
