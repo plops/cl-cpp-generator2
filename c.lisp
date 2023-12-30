@@ -292,7 +292,8 @@ entry return-values contains a list of return values. currently supports type, v
 			   ,@(loop for decl in decls collect
 						     (if (listp decl) ;; split into name and initform
 							 (destructuring-bind (name &optional value) decl
-							   (format nil "~a ~@[ = ~a~];"
+							   (format nil ;"~a ~@[ = ~a~];"
+								   "~a ~@[{~a}~];"
 								   (variable-declaration :name name :env env :emit emit)
 
 								   (when value
