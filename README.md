@@ -246,7 +246,10 @@ between the - and + operators.
 
  
 
-## Remarks
+## Remarks 2023-12-30
+
+I started reading Stroustrup: A Tour of C++. In this section I note
+some ideas how the Lisp code could be improved.
 
 ### Initialization Preferences
 
