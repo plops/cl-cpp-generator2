@@ -256,7 +256,7 @@ some ideas how the Lisp code could be improved.
 - Bjarne Stroustrup, the creator of C++, recommends using braces `{}`
   for initialization over the equals sign `=`. This approach, known as
   brace initialization, offers advantages such as uniform syntax and
-  prevention of narrowing conversions.
+  prevention of narrowing conversions (if the type is not auto).
 
 ### `consteval` Functions
 
