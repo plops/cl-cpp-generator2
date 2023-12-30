@@ -245,18 +245,49 @@ may suggest the need to modify the precedence table, differentiating
 between the - and + operators.
 
  
+
 ## Remarks
 
-- Stroustrup encurages {} over = for initialization
-- consteval defmethods should be declared in the header because they
-  need to be visible to all translation units that use them at compile
-  time.  In a module system, you define consteval functions in a
-  module interface unit. This is akin to a header file but is part of
-  a module.
-- like for and if statement can introduce a variable and test it. i'm not sure how to map this to lisp
-```
-if ( auto n = v.size(); n!=0 ) { ...
-```
+### Initialization Preferences
+
+- Bjarne Stroustrup, the creator of C++, recommends using braces `{}`
+  for initialization over the equals sign `=`. This approach, known as
+  brace initialization, offers advantages such as uniform syntax and
+  prevention of narrowing conversions.
+
+### `consteval` Functions
+
+- Functions declared as `consteval` must be evaluated at compile time
+  and thus should be defined in a way that makes them accessible to
+  all relevant translation units. In traditional C++ with header
+  files, this means declaring `consteval` methods in the header. In
+  the context of C++20 modules, `consteval` functions are defined
+  within a module interface unit, which functions similarly to a
+  header but is integrated into the module system.
+
+### Variable Introduction in Control Structures
+
+- C++ allows the introduction of a variable within the condition of
+  control structures like `for` and `if`. This feature enables both
+  the declaration of a variable and its conditional evaluation in a
+  single statement. For example:
+  
+  ```cpp
+  if (auto n = v.size(); n != 0) { ...
+  ```
+
+#### Mapping to Lisp
+
+- When considering how to map this C++ feature to Lisp, a
+  straightforward approach would be using `if` with `let`:
+  
+  ```lisp
+  (if (let ((n (v.size))) (!= n 0)) ...)
+  ```
+- However, this Lisp translation might only necessitate one comparison
+  and one semicolon. Given its infrequent occurrence in the code,
+  implementing a direct equivalent may not be sufficiently beneficial
+  to justify the effort.
 
 
 ## History
