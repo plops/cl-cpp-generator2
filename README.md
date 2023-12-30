@@ -245,6 +245,12 @@ may suggest the need to modify the precedence table, differentiating
 between the - and + operators.
 
  
+## Remarks
+
+- Stroustrup encurages {} over = for initialization
+- consteval defmethods should be declared in the header because they
+  need to be visible to all translation units that use them at compile
+  time (how does that interact with C++20 modules)
 
 ## History
 cl-cpp-generator2 is the tenth in a series of code generators. It
