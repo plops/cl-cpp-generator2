@@ -23,6 +23,7 @@
 		     *source-dir*))
    `(do0
      (include "Halide.h")
+     (include<> format)
      "using namespace Halide;"
      (defun main (argc argv)
        (declare (type int argc)
@@ -31,16 +32,18 @@
        (let ((gradient (Func))
 	     (x (Var))
 	     (y (Var))
-	     (e (Expr (+ x y)))
-	     )
+	     (e (Expr (+ x y))))
 	 (setf (gradient x y)
 	       e)
 	 (let ((output (Buffer<int32_t> (gradient.realize (curly 800 600))))))
 	 (dotimes (j (output.height))
 	   (dotimes (i (output.width))
-	     (unless (== (output i j)
+	     (when (!= (output i j)
 			 (+ i j))
+	       ,(lprint :msg "error"
+			:vars `(i j))
 	       (return -1))))
+	 ,(lprint :msg "success")
 	 (return 0))))
    :omit-parens t
    :format t
