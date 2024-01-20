@@ -5,4 +5,4 @@ g++ \
      -Wl,-rpath=/home/martin/src/Halide/b/src/
 
 # ./lesson01 -g my_first_generator -o . target=host-vulkan
-# HL_JIT_TARGET=host-vulkan ./lesson01
+HL_JIT_TARGET=host-vulkan ./lesson01
