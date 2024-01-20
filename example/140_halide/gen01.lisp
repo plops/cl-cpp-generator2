@@ -35,7 +35,7 @@
 	     )
 	 (setf (gradient x y)
 	       e)
-	 (let ((output (gradient.realize (curly 800 600)))))
+	 (let ((output (Buffer<int32_t> (gradient.realize (curly 800 600))))))
 	 (dotimes (j (output.height))
 	   (dotimes (i (output.width))
 	     (unless (== (output i j)
