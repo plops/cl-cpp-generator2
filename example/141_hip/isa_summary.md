@@ -1,3 +1,36 @@
+
+Abstract:
+   
+This document provides a comprehensive guide to the AMD Graphics Core
+Next (GCN) processor, a parallel micro-architecture optimized for
+computer graphics and general data parallel tasks. The GCN
+architecture is adept at handling computationally and
+bandwidth-intensive applications due to its array of data-parallel
+processors, command processor, memory controller, and other logic
+components. The command processor efficiently manages interrupts,
+while the memory controller orchestrates direct-memory access and
+computes memory-address offsets.
+   
+The terminology section clarifies key concepts such as wavefronts,
+work-items, and the roles of scalar and vector ALUs. The subsequent
+chapters delve into the details of program organization, including the
+execution of GCN kernels, compute shaders, data sharing, device
+memory, and kernel state management. The document thoroughly explains
+the scalar and vector ALU operations, scalar and vector memory
+operations, flat memory instructions, and data share operations. It
+also covers the exporting of pixel and vertex data, providing a
+foundation for understanding how the GCN processor handles data flow
+and manipulation.
+   
+Additionally, the document outlines the microcode formats used in the
+GCN architecture, ensuring a clear understanding of the encoding and
+execution of instructions. It lists all GCN Vega Generation
+instructions by format, along with their respective microcode fields
+and operational details. This guide serves as an invaluable resource
+for developers working with AMD's GCN processor, offering insights
+into its capabilities, instruction sets, and programming model for
+efficient application development.
+
 - **Chapter 1. Introduction**  
   - AMD GCN processor designed for parallel micro-architecture applications in both computer graphics and general data parallel tasks.  
   - Supports computationally and bandwidth-intensive applications.  
