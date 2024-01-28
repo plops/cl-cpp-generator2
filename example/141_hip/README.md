@@ -39,3 +39,6 @@ CLRX: GCN 1.4.0
 -documentation
 
 https://gpuopen.com/wp-content/uploads/2019/11/Vega_7nm_Shader_ISA_26November2019.pdf
+
+- see isa_summary.md for an overview of this document
+
