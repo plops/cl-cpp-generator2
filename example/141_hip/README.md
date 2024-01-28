@@ -2,7 +2,7 @@
 
 - from https://www.techpowerup.com/gpu-specs/radeon-graphics-448sp.c3833
 
-integrated graphics
+- integrated graphics
 | Generation    | Vega II IGP (Cezanne) |
 | Predecessor   | Vega IGP              |
 | Successor     | Navi II IGP           |
@@ -18,10 +18,19 @@ integrated graphics
 | FP64 (double)           | 106.4 GFLOPS (1:16) |
 
 
-Render config
+- Render config
 | Shading Units | 448 |
 | TMUs          | 28  |
 | ROPs          |     |
 | Compute Units |     |
 
 
+- Cezanne GPU Notes
+Generation: Vega
+Graphics/Compute: 9.3.0
+Shader ISA: GFX9 (gfx90c)
+Display Core Next: 2.1.0
+Video Core Next: 2.2.0
+System DMA: 4.1.1
+Platform Security Processor: 12.0.1
+CLRX: GCN 1.4.0
