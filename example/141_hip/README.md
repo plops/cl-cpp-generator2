@@ -34,3 +34,8 @@ Video Core Next: 2.2.0
 System DMA: 4.1.1
 Platform Security Processor: 12.0.1
 CLRX: GCN 1.4.0
+
+
+-documentation
+
+https://gpuopen.com/wp-content/uploads/2019/11/Vega_7nm_Shader_ISA_26November2019.pdf
