@@ -49,3 +49,4 @@ https://gpuopen.com/wp-content/uploads/2019/11/Vega_7nm_Shader_ISA_26November201
 
 - see isa_summary.md for an overview of this document
 
+- hip example https://github.com/amd/GenAI-contest/tree/main/03-HIP_LLM_Acceleration/hip_basics
