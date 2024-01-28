@@ -1,5 +1,12 @@
 - radeon vega 7
 
+- from https://www.techpowerup.com/gpu-specs/radeon-graphics-448sp.c3833
+
+integrated graphics
+| Generation    | Vega II IGP (Cezanne) |
+| Predecessor   | Vega IGP              |
+| Successor     | Navi II IGP           |
+| Bus Interface | IGP                   |
 
 
 | Theoretical performance |                     |
@@ -16,3 +23,5 @@ Render config
 | TMUs          | 28  |
 | ROPs          |     |
 | Compute Units |     |
+
+
