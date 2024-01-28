@@ -1,5 +1,7 @@
+The following summary was created with gpt4-1106 from https://gpuopen.com/wp-content/uploads/2019/11/Vega_7nm_Shader_ISA_26November2019.pdf
 
-Abstract:
+
+Abstract of original document:
    
 This document provides a comprehensive guide to the AMD Graphics Core
 Next (GCN) processor, a parallel micro-architecture optimized for
