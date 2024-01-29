@@ -4,12 +4,14 @@
 
 - integrated graphics
 
-| architecture  |                       |
-|---------------|-----------------------|
-| Generation    | Vega II IGP (Cezanne) |
-| Predecessor   | Vega IGP              |
-| Successor     | Navi II IGP           |
-| Bus Interface | IGP                   |
+| architecture    |                       |
+|-----------------|-----------------------|
+| Generation      | Vega II IGP (Cezanne) |
+| Predecessor     | Vega IGP              |
+| Successor       | Navi II IGP           |
+| Bus Interface   | IGP                   |
+| Name (rocminfo) | gfx90c                |
+
 
 
 | Theoretical performance |                     |
