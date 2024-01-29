@@ -57,7 +57,7 @@ add_executable(${PROJECT_NAME}
 	${RYZEN_DIR}/lib/libsmu.c
 	${RYZEN_DIR}/pm_tables.c
 	${RYZEN_DIR}/readinfo.c
-	#${RYZEN_DIR}/ryzen_monitor.c
+	${RYZEN_DIR}/ryzen_monitor.c
 	)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)

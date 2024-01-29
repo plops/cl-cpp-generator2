@@ -29,14 +29,19 @@
 	      )
      (include<> GLFW/glfw3.h
 		format
-		iostream)
+		iostream
+		unistd.h)
      (space extern "\"C\""
 	    (progn
 	      
 	      (include<> libsmu.h
 			 readinfo.h
 			 pm_tables.h)
-	      "smu_obj_t obj;"))
+	      "extern smu_obj_t obj;"
+	      "void start_pm_monitor(unsigned int);"
+	      ))
+
+     
      
      (defun glfw_error_callback (err description)
        (declare (type int err)
@@ -47,6 +52,24 @@
 		(type char** argv)
 		(values int))
 
+      #+nil (let ((update_time_s 1)
+	     (show_disabled_cores 0)))
+
+       (when (logand (!= 0 (getuid))
+		     (!= 0 (geteuid)))
+	 ,(lprint :msg "Program must be run as root")
+	 (return 1))
+
+       (let ((ret (static_cast<smu_return_val> (smu_init &obj))))
+	 ;(declare (type smu_return_val ret))
+	 (unless (== SMU_Return_OK ret)
+	   ,(lprint :msg "error"
+		    :vars `((smu_return_to_str ret)))
+	   (return 1)))
+
+       (let ((force 0))
+	 (start_pm_monitor force))
+       
        (do0
 	(glfwSetErrorCallback glfw_error_callback)
 	(unless (glfwInit)

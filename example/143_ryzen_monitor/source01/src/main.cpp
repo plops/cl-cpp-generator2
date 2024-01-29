@@ -5,11 +5,13 @@
 #include <GLFW/glfw3.h>
 #include <format>
 #include <iostream>
+#include <unistd.h>
 extern "C" {
 #include <libsmu.h>
 #include <pm_tables.h>
 #include <readinfo.h>
-smu_obj_t obj;
+extern smu_obj_t obj;
+void start_pm_monitor(unsigned int);
 };
 
 void glfw_error_callback(int err, const char *description) {
@@ -17,6 +19,18 @@ void glfw_error_callback(int err, const char *description) {
 }
 
 int main(int argc, char **argv) {
+  if (0 != getuid() && 0 != geteuid()) {
+    std::cout << std::format("Program must be run as root\n");
+    return 1;
+  }
+  auto ret{static_cast<smu_return_val>(smu_init(&obj))};
+  if (!(SMU_Return_OK == ret)) {
+    std::cout << std::format("error smu_return_to_str(ret)='{}'\n",
+                             smu_return_to_str(ret));
+    return 1;
+  }
+  auto force{0};
+  start_pm_monitor(force);
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
     std::cout << std::format("glfwInit failed\n");
