@@ -52,6 +52,7 @@
 
 
      (defun start_pm_monitor2 ()
+       (declare (values "std::pair<system_info,unsigned char*>"))
        (unless (smu_pm_tables_supported &obj)
 	 ,(lprint :msg "pm tables not supported on this platform")
 	 (exit 0))
@@ -77,7 +78,24 @@
        (setf sysinfo.enabled_cores_count pmt.max_cores
 	     sysinfo.cpu_name (get_processor_name)
 	     sysinfo.codename (smu_codename_to_str &obj)
-	     sysinfo.smu_fw_ver (smu_get_fw_version &obj)))
+	     sysinfo.smu_fw_ver (smu_get_fw_version &obj))
+       (when (== (hex #x400005)
+		 obj.pm_table_version)
+	 (when (== SMU_Return_OK
+		   (smu_read_pm_table &obj pm_buf obj.pm_table_size))
+	   ,(lprint :msg "PMT hack for cezanne's core_disabled_map")
+	   (disabled_cores_0x400005 &pmt &sysinfo)))
+       (get_processor_topology &sysinfo
+			       pmt.zen_version)
+       (case obj.smu_if_version
+	 ,@(loop for i from 9 upto 13 collect
+		 `(,(format nil "IF_VERSION_~a" i)
+		   (setf sysinfo.if_ver ,i)))
+	 (t (setf sysinfo.if_ver 0)))
+
+       (return (std--make_pair sysinfo pm_buf))
+       
+       )
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -101,7 +119,7 @@
 
        #+nil(let ((force 0))
 	 (start_pm_monitor force))
-       (start_pm_monitor2)
+       
        
        (do0
 	(glfwSetErrorCallback glfw_error_callback)
@@ -132,7 +150,12 @@
 	  (ImGui_ImplOpenGL3_Init glsl_version))
 	)
 
+       
+
        (do0
+
+	(let (((bracket sysinfo pm_buf) (start_pm_monitor2))))
+	
 	(let ((show_demo_window true)
 	      (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
 	  (while (!glfwWindowShouldClose window)
@@ -143,6 +166,15 @@
 		 (when show_demo_window
 		   (ImGui--ShowDemoWindow &show_demo_window)
 		   (ImPlot--ShowDemoWindow))
+
+		 (do0
+		  (when (== SMU_Return_OK
+			    (smu_read_pm_table &obj pm_buf obj.pm_table_size))
+		    (when sysinfo.available
+		      (ImGui--Begin (string "Ryzen"))
+		      (ImGui--Text (string "CPU Model %s") sysinfo.cpu_name)
+		      (ImGui--End))))
+		 
 		 (ImGui--Render)
 		 (let ((w 0)
 		       (h 0))

@@ -21,7 +21,7 @@ void glfw_error_callback(int err, const char *description) {
   std::cout << std::format(" err='{}' description='{}'\n", err, description);
 }
 
-void start_pm_monitor2() {
+std::pair<system_info, unsigned char *> start_pm_monitor2() {
   if (!smu_pm_tables_supported(&obj)) {
     std::cout << std::format("pm tables not supported on this platform\n");
     exit(0);
@@ -47,6 +47,40 @@ void start_pm_monitor2() {
   sysinfo.cpu_name = get_processor_name();
   sysinfo.codename = smu_codename_to_str(&obj);
   sysinfo.smu_fw_ver = smu_get_fw_version(&obj);
+  if (0x400005 == obj.pm_table_version) {
+    if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
+      std::cout << std::format("PMT hack for cezanne's core_disabled_map\n");
+      disabled_cores_0x400005(&pmt, &sysinfo);
+    }
+  }
+  get_processor_topology(&sysinfo, pmt.zen_version);
+  switch (obj.smu_if_version) {
+  case IF_VERSION_9: {
+    sysinfo.if_ver = 9;
+    break;
+  };
+  case IF_VERSION_10: {
+    sysinfo.if_ver = 10;
+    break;
+  };
+  case IF_VERSION_11: {
+    sysinfo.if_ver = 11;
+    break;
+  };
+  case IF_VERSION_12: {
+    sysinfo.if_ver = 12;
+    break;
+  };
+  case IF_VERSION_13: {
+    sysinfo.if_ver = 13;
+    break;
+  };
+  default: {
+    sysinfo.if_ver = 0;
+    break;
+  };
+  }
+  return std::make_pair(sysinfo, pm_buf);
 }
 
 int main(int argc, char **argv) {
@@ -60,7 +94,6 @@ int main(int argc, char **argv) {
                              smu_return_to_str(ret));
     return 1;
   }
-  start_pm_monitor2();
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
     std::cout << std::format("glfwInit failed\n");
@@ -84,6 +117,7 @@ int main(int argc, char **argv) {
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
+  auto [sysinfo, pm_buf]{start_pm_monitor2()};
   auto show_demo_window{true};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   while (!glfwWindowShouldClose(window)) {
@@ -94,6 +128,13 @@ int main(int argc, char **argv) {
     if (show_demo_window) {
       ImGui::ShowDemoWindow(&show_demo_window);
       ImPlot::ShowDemoWindow();
+    }
+    if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
+      if (sysinfo.available) {
+        ImGui::Begin("Ryzen");
+        ImGui::Text("CPU Model %s", sysinfo.cpu_name);
+        ImGui::End();
+      }
     }
     ImGui::Render();
     auto w{0};
