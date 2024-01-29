@@ -30,13 +30,15 @@
      (include<> GLFW/glfw3.h
 		format
 		iostream
-		unistd.h)
+		unistd.h
+		cmath)
      (space extern "\"C\""
 	    (progn
 	      
 	      (include<> libsmu.h
 			 readinfo.h
-			 pm_tables.h)
+			 pm_tables.h
+			 )
 	      "extern smu_obj_t obj;"
 	      "void start_pm_monitor(unsigned int);"
 	      "int select_pm_table_version(unsigned int version, pm_table *pmt, unsigned char *pm_buf);"
@@ -52,7 +54,7 @@
 
 
      (defun start_pm_monitor2 ()
-       (declare (values "std::pair<system_info,unsigned char*>"))
+       (declare (values "std::tuple<system_info,unsigned char*,pm_table>"))
        (unless (smu_pm_tables_supported &obj)
 	 ,(lprint :msg "pm tables not supported on this platform")
 	 (exit 0))
@@ -93,9 +95,12 @@
 		   (setf sysinfo.if_ver ,i)))
 	 (t (setf sysinfo.if_ver 0)))
 
-       (return (std--make_pair sysinfo pm_buf))
+       (return (std--make_tuple sysinfo pm_buf pmt))
        
        )
+
+     "#define pmta(elem) ((pmt.elem)?(*(pmt.elem)):std::nanf(\"1\"))"
+     "#define pmta0(elem) ((pmt.elem)?(*(pmt.elem)):0F)"
      
      (defun main (argc argv)
        (declare (type int argc)
@@ -118,7 +123,7 @@
 	   (return 1)))
 
        #+nil(let ((force 0))
-	 (start_pm_monitor force))
+	      (start_pm_monitor force))
        
        
        (do0
@@ -154,7 +159,7 @@
 
        (do0
 
-	(let (((bracket sysinfo pm_buf) (start_pm_monitor2))))
+	(let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
 	
 	(let ((show_demo_window true)
 	      (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
@@ -172,25 +177,69 @@
 			    (smu_read_pm_table &obj pm_buf obj.pm_table_size))
 		    (when sysinfo.available
 		      (ImGui--Begin (string "Ryzen"))
-		      ,@(loop for e in `((:var cpu_name :name "CPU Model" :fmt "%s" )
-					 (:var codename :name "Processor Code Name" :fmt "%s" )
-					 (:var cores :fmt "%d")
-					 (:var ccds :fmt "%d")
-					 (:var ccxs :fmt "%d")
-					 (:var cores_per_ccx :fmt "%d")
-					 (:var smu_fw_ver :fmt "%s")
-					 (:var if_ver :fmt "%d")
-					 )
+		      
+
+		      ,@(loop for var in `(cpu_name codename cores ccds ccxs
+						    ;; fixme: different for older ryzen
+						    cores_per_ccx smu_fw_ver if_ver)
 			      collect
-			      (destructuring-bind (&key var ( name var) fmt ) e
-			       `(ImGui--Text
-				 (dot (std--format
-				   (string ,(format nil "~a='{}'"
-						    name))
-				   (dot sysinfo ,var))
-				      (c_str))
-				 ;(string ,(format nil "~a ~a" name fmt)) (dot sysinfo ,var)
-				 )))
+			      `(ImGui--Text
+				(string "%s")
+				(dot (std--format
+				      (string ,(format nil "~a='{}'"
+						       var))
+				      (dot sysinfo ,var))
+				     (c_str))))
+
+		      (let ((package_sleep_time 0s0)
+			    (average_voltage 0s0)))
+		      
+		      (if pmt.PC6
+			  (setf package_sleep_time (/ (pmta PC6) 100s0)
+				average_voltage (/ (- (pmta CPU_TELEMETRY_VOLTAGE)
+						      (* .2s0 package_sleep_time))
+						   (- 1s0 package_sleep_time)))
+			  (setf average_voltage (pmta CPU_TELEMETRY_VOLTAGE)))
+		      
+		      
+		      (dotimes (i pmt.max_cores)
+			(let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
+				(core_frequency (* (pmta (aref CORE_FREQEFF i))
+						  1000s0))
+			       (core_voltage_true (pmta (aref CORE_VOLTAGE i)))
+			       (core_sleep_time (/ (pmta (aref CORE_CC6 i))
+						   100s0))
+			       (core_voltage (+ (* (- 1s0 core_sleep_time)
+						   average_voltage)
+						(* .2 core_sleep_time))))
+
+			    (unless core_disabled
+			      (if (<= 6s0 (pmta (aref CORE_C0 i)))
+				  (do0
+				   (ImGui--Text (string "%s")
+						
+						(dot (std--format
+						      (string "{:2} Sleep {:6.3f}W {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
+						      i (pmta (aref CORE_POWER i))
+						      core_voltage (pmta (aref CORE_TEMP i))
+						      (pmta (aref CORE_C0 i))
+						      (pmta (aref CORE_CC1 i))
+						      (pmta (aref CORE_CC6 i)))
+						     (c_str))))
+				  (do0
+				   (ImGui--Text (string "%s")
+						
+						(dot (std--format
+						      (string "{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
+						      
+						      i core_frequency
+						      (pmta (aref CORE_POWER i))
+						      core_voltage (pmta (aref CORE_TEMP i))
+						      (pmta (aref CORE_C0 i))
+						      (pmta (aref CORE_CC1 i))
+						      (pmta (aref CORE_CC6 i)))
+						     (c_str))))
+				  ))))
 		      (ImGui--End))))
 		 
 		 (ImGui--Render)

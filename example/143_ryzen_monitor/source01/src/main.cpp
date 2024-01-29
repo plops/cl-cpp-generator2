@@ -3,6 +3,7 @@
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <format>
 #include <iostream>
 #include <unistd.h>
@@ -21,7 +22,7 @@ void glfw_error_callback(int err, const char *description) {
   std::cout << std::format(" err='{}' description='{}'\n", err, description);
 }
 
-std::pair<system_info, unsigned char *> start_pm_monitor2() {
+std::tuple<system_info, unsigned char *, pm_table> start_pm_monitor2() {
   if (!smu_pm_tables_supported(&obj)) {
     std::cout << std::format("pm tables not supported on this platform\n");
     exit(0);
@@ -80,8 +81,11 @@ std::pair<system_info, unsigned char *> start_pm_monitor2() {
     break;
   };
   }
-  return std::make_pair(sysinfo, pm_buf);
+  return std::make_tuple(sysinfo, pm_buf, pmt);
 }
+
+#define pmta(elem) ((pmt.elem) ? (*(pmt.elem)) : std::nanf("1"))
+#define pmta0(elem) ((pmt.elem) ? (*(pmt.elem)) : 0F)
 
 int main(int argc, char **argv) {
   if (0 != getuid() && 0 != geteuid()) {
@@ -117,7 +121,7 @@ int main(int argc, char **argv) {
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
-  auto [sysinfo, pm_buf]{start_pm_monitor2()};
+  auto [sysinfo, pm_buf, pmt]{start_pm_monitor2()};
   auto show_demo_window{true};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   while (!glfwWindowShouldClose(window)) {
@@ -132,16 +136,57 @@ int main(int argc, char **argv) {
     if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
       if (sysinfo.available) {
         ImGui::Begin("Ryzen");
-        ImGui::Text(std::format("CPU Model='{}'", sysinfo.cpu_name).c_str());
+        ImGui::Text("%s",
+                    std::format("cpu_name='{}'", sysinfo.cpu_name).c_str());
+        ImGui::Text("%s",
+                    std::format("codename='{}'", sysinfo.codename).c_str());
+        ImGui::Text("%s", std::format("cores='{}'", sysinfo.cores).c_str());
+        ImGui::Text("%s", std::format("ccds='{}'", sysinfo.ccds).c_str());
+        ImGui::Text("%s", std::format("ccxs='{}'", sysinfo.ccxs).c_str());
         ImGui::Text(
-            std::format("Processor Code Name='{}'", sysinfo.codename).c_str());
-        ImGui::Text(std::format("cores='{}'", sysinfo.cores).c_str());
-        ImGui::Text(std::format("ccds='{}'", sysinfo.ccds).c_str());
-        ImGui::Text(std::format("ccxs='{}'", sysinfo.ccxs).c_str());
-        ImGui::Text(
+            "%s",
             std::format("cores_per_ccx='{}'", sysinfo.cores_per_ccx).c_str());
-        ImGui::Text(std::format("smu_fw_ver='{}'", sysinfo.smu_fw_ver).c_str());
-        ImGui::Text(std::format("if_ver='{}'", sysinfo.if_ver).c_str());
+        ImGui::Text("%s",
+                    std::format("smu_fw_ver='{}'", sysinfo.smu_fw_ver).c_str());
+        ImGui::Text("%s", std::format("if_ver='{}'", sysinfo.if_ver).c_str());
+        auto package_sleep_time{0.F};
+        auto average_voltage{0.F};
+        if (pmt.PC6) {
+          package_sleep_time = (pmta(PC6) / 1.00e+2F);
+          average_voltage =
+              ((pmta(CPU_TELEMETRY_VOLTAGE) - (0.20F * package_sleep_time)) /
+               (1.0F - package_sleep_time));
+        } else {
+          average_voltage = pmta(CPU_TELEMETRY_VOLTAGE);
+        }
+        for (auto i = 0; i < pmt.max_cores; i += 1) {
+          auto core_disabled{sysinfo.core_disable_map >> i & 1};
+          auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
+          auto core_voltage_true{pmta(CORE_VOLTAGE[i])};
+          auto core_sleep_time{pmta(CORE_CC6[i]) / 1.00e+2F};
+          auto core_voltage{(1.0F - core_sleep_time) * average_voltage +
+                            0.20F * core_sleep_time};
+          if (!core_disabled) {
+            if (6.0F <= pmta(CORE_C0[i])) {
+              ImGui::Text("%s",
+                          std::format("{:2} Sleep {:6.3f}W {:5.3f}V {:6.2f}C "
+                                      "C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
+                                      i, pmta(CORE_POWER[i]), core_voltage,
+                                      pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
+                                      pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
+                              .c_str());
+            } else {
+              ImGui::Text(
+                  "%s", std::format(
+                            "{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:6.2f}C C0: "
+                            "{:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
+                            i, core_frequency, pmta(CORE_POWER[i]),
+                            core_voltage, pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
+                            pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
+                            .c_str());
+            }
+          }
+        }
         ImGui::End();
       }
     }
