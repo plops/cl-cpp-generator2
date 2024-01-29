@@ -39,6 +39,8 @@
 			 pm_tables.h)
 	      "extern smu_obj_t obj;"
 	      "void start_pm_monitor(unsigned int);"
+	      "int select_pm_table_version(unsigned int version, pm_table *pmt, unsigned char *pm_buf);"
+	      "void disabled_cores_0x400005(pm_table *pmt, system_info *sysinfo);"
 	      ))
 
      
@@ -47,13 +49,43 @@
        (declare (type int err)
 		(type "const char*" description))
        ,(lprint :vars `(err description)))
+
+
+     (defun start_pm_monitor2 ()
+       (unless (smu_pm_tables_supported &obj)
+	 ,(lprint :msg "pm tables not supported on this platform")
+	 (exit 0))
+       (let ((pm_buf ("static_cast<unsigned char*>"
+		      (calloc obj.pm_table_size
+			      (sizeof "unsigned char")))))
+	 
+	 (unless pm_buf
+	   ,(lprint :msg "could not allocate PM Table")
+	   (exit 0)))
+       (let ((pmt (pm_table)))
+	(unless (select_pm_table_version
+		 obj.pm_table_version
+		 &pmt
+		 pm_buf)
+	  ,(lprint :msg "pm table version not supported")
+	  (exit 0)))
+
+       (when (< obj.pm_table_size pmt.min_size)
+	 ,(lprint :msg "pm table larger than the table returned by smu")
+	 (exit 0))
+       (let ((sysinfo (system_info))))
+       (setf sysinfo.enabled_cores_count pmt.max_cores
+	     sysinfo.cpu_name (get_processor_name)
+	     sysinfo.codename (smu_codename_to_str &obj)
+	     sysinfo.smu_fw_ver (smu_get_fw_version &obj)))
+     
      (defun main (argc argv)
        (declare (type int argc)
 		(type char** argv)
 		(values int))
 
-      #+nil (let ((update_time_s 1)
-	     (show_disabled_cores 0)))
+       #+nil (let ((update_time_s 1)
+		   (show_disabled_cores 0)))
 
        (when (logand (!= 0 (getuid))
 		     (!= 0 (geteuid)))
@@ -61,14 +93,15 @@
 	 (return 1))
 
        (let ((ret (static_cast<smu_return_val> (smu_init &obj))))
-	 ;(declare (type smu_return_val ret))
+					;(declare (type smu_return_val ret))
 	 (unless (== SMU_Return_OK ret)
 	   ,(lprint :msg "error"
 		    :vars `((smu_return_to_str ret)))
 	   (return 1)))
 
-       (let ((force 0))
+       #+nil(let ((force 0))
 	 (start_pm_monitor force))
+       (start_pm_monitor2)
        
        (do0
 	(glfwSetErrorCallback glfw_error_callback)

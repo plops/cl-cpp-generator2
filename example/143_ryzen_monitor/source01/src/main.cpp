@@ -12,10 +12,41 @@ extern "C" {
 #include <readinfo.h>
 extern smu_obj_t obj;
 void start_pm_monitor(unsigned int);
+int select_pm_table_version(unsigned int version, pm_table *pmt,
+                            unsigned char *pm_buf);
+void disabled_cores_0x400005(pm_table *pmt, system_info *sysinfo);
 };
 
 void glfw_error_callback(int err, const char *description) {
   std::cout << std::format(" err='{}' description='{}'\n", err, description);
+}
+
+void start_pm_monitor2() {
+  if (!smu_pm_tables_supported(&obj)) {
+    std::cout << std::format("pm tables not supported on this platform\n");
+    exit(0);
+  }
+  auto pm_buf{static_cast<unsigned char *>(
+      calloc(obj.pm_table_size, sizeof(unsigned char)))};
+  if (!pm_buf) {
+    std::cout << std::format("could not allocate PM Table\n");
+    exit(0);
+  }
+  auto pmt{pm_table()};
+  if (!select_pm_table_version(obj.pm_table_version, &pmt, pm_buf)) {
+    std::cout << std::format("pm table version not supported\n");
+    exit(0);
+  }
+  if (obj.pm_table_size < pmt.min_size) {
+    std::cout << std::format(
+        "pm table larger than the table returned by smu\n");
+    exit(0);
+  }
+  auto sysinfo{system_info()};
+  sysinfo.enabled_cores_count = pmt.max_cores;
+  sysinfo.cpu_name = get_processor_name();
+  sysinfo.codename = smu_codename_to_str(&obj);
+  sysinfo.smu_fw_ver = smu_get_fw_version(&obj);
 }
 
 int main(int argc, char **argv) {
@@ -29,8 +60,7 @@ int main(int argc, char **argv) {
                              smu_return_to_str(ret));
     return 1;
   }
-  auto force{0};
-  start_pm_monitor(force);
+  start_pm_monitor2();
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
     std::cout << std::format("glfwInit failed\n");
