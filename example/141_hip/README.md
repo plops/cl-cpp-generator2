@@ -29,6 +29,7 @@
 | texture mapping units | 28  |
 | render output unit    | 8   |
 | Compute Units         | 7   |
+| max memory            | 2GB |
 |                       |     |
 
 
