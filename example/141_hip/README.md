@@ -23,14 +23,14 @@
 | FP64 (double)           | 106.4 GFLOPS (1:16) |
 
 
-| Render config         |     |
-|-----------------------|-----|
-| Shading Units         | 448 |
-| texture mapping units | 28  |
-| render output unit    | 8   |
-| Compute Units         | 7   |
-| max memory            | 2GB |
-|                       |     |
+| Render config         |                                 |
+|-----------------------|---------------------------------|
+| Shading Units         | 448 (64 shaders / compute unit) |
+| texture mapping units | 28                              |
+| render output unit    | 8                               |
+| Compute Units         | 7                               |
+| max memory            | 2GB                             |
+|                       |                                 |
 
 
 
