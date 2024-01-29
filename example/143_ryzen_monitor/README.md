@@ -1,5 +1,15 @@
 - i want to have graphs of the data that ryzen monitor shows
 
+# dependencies
+
+```
+cd ~/src
+
+git clone https://github.com/glfw/glfw
+git clone https://github.com/orcornut/
+git clone https://github.com/epezent/implot
+```
+
 # references:
 
 ## https://hattedsquirrel.net/2020/12/power-consumption-of-ryzen-5000-series-cpus/
