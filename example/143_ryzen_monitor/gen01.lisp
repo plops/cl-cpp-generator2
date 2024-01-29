@@ -172,7 +172,25 @@
 			    (smu_read_pm_table &obj pm_buf obj.pm_table_size))
 		    (when sysinfo.available
 		      (ImGui--Begin (string "Ryzen"))
-		      (ImGui--Text (string "CPU Model %s") sysinfo.cpu_name)
+		      ,@(loop for e in `((:var cpu_name :name "CPU Model" :fmt "%s" )
+					 (:var codename :name "Processor Code Name" :fmt "%s" )
+					 (:var cores :fmt "%d")
+					 (:var ccds :fmt "%d")
+					 (:var ccxs :fmt "%d")
+					 (:var cores_per_ccx :fmt "%d")
+					 (:var smu_fw_ver :fmt "%s")
+					 (:var if_ver :fmt "%d")
+					 )
+			      collect
+			      (destructuring-bind (&key var ( name var) fmt ) e
+			       `(ImGui--Text
+				 (dot (std--format
+				   (string ,(format nil "~a='{}'"
+						    name))
+				   (dot sysinfo ,var))
+				      (c_str))
+				 ;(string ,(format nil "~a ~a" name fmt)) (dot sysinfo ,var)
+				 )))
 		      (ImGui--End))))
 		 
 		 (ImGui--Render)

@@ -132,7 +132,16 @@ int main(int argc, char **argv) {
     if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
       if (sysinfo.available) {
         ImGui::Begin("Ryzen");
-        ImGui::Text("CPU Model %s", sysinfo.cpu_name);
+        ImGui::Text(std::format("CPU Model='{}'", sysinfo.cpu_name).c_str());
+        ImGui::Text(
+            std::format("Processor Code Name='{}'", sysinfo.codename).c_str());
+        ImGui::Text(std::format("cores='{}'", sysinfo.cores).c_str());
+        ImGui::Text(std::format("ccds='{}'", sysinfo.ccds).c_str());
+        ImGui::Text(std::format("ccxs='{}'", sysinfo.ccxs).c_str());
+        ImGui::Text(
+            std::format("cores_per_ccx='{}'", sysinfo.cores_per_ccx).c_str());
+        ImGui::Text(std::format("smu_fw_ver='{}'", sysinfo.smu_fw_ver).c_str());
+        ImGui::Text(std::format("if_ver='{}'", sysinfo.if_ver).c_str());
         ImGui::End();
       }
     }
