@@ -24,7 +24,9 @@
    `(do0
      (include "imgui.h"
 	      "imgui_impl_glfw.h"
-	      "imgui_impl_opengl3.h")
+	      "imgui_impl_opengl3.h"
+	      implot.h
+	      )
      (include<> GLFW/glfw3.h
 		format
 		iostream)

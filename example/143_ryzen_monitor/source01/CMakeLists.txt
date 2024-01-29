@@ -26,6 +26,11 @@ include_directories(${GLFW_DIR}/include)
 set(IMGUI_DIR /home/martin/src/imgui)
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 
+# ImPlot
+set(IMPLOT_DIR /home/martin/src/implot)
+include_directories(${IMPLOT_DIR})
+
+
 # Libraries
 find_package(OpenGL REQUIRED)
 set(LIBRARIES "glfw;OpenGL")
@@ -34,6 +39,17 @@ include_directories(${GLFW_DIR}/deps)
 
 file(GLOB sources src/*.cpp)
 
-add_executable(${PROJECT_NAME} ${sources} ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_tables.cpp ${IMGUI_DIR}/imgui_widgets.cpp)
+add_executable(${PROJECT_NAME}
+	${sources}
+	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+	${IMGUI_DIR}/imgui.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui_widgets.cpp
+	${IMPLOT_DIR}/implot.cpp
+	${IMPLOT_DIR}/implot_items.cpp
+	)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
