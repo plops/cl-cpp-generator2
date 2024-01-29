@@ -4,7 +4,7 @@
 #  cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 
 cmake_minimum_required(VERSION 3.28)
-project(ryzen_mon_glgui CXX)
+project(ryzen_mon_glgui CXX C)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
@@ -30,6 +30,9 @@ include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 set(IMPLOT_DIR /home/martin/src/implot)
 include_directories(${IMPLOT_DIR})
 
+# Ryzen
+set(RYZEN_DIR /home/martin/src/ryzen_monitor/src)
+include_directories(${RYZEN_DIR} ${RYZEN_DIR}/lib)
 
 # Libraries
 find_package(OpenGL REQUIRED)
@@ -50,6 +53,11 @@ add_executable(${PROJECT_NAME}
 	${IMGUI_DIR}/imgui_widgets.cpp
 	${IMPLOT_DIR}/implot.cpp
 	${IMPLOT_DIR}/implot_items.cpp
+	${IMPLOT_DIR}/implot_demo.cpp
+	${RYZEN_DIR}/lib/libsmu.c
+	${RYZEN_DIR}/pm_tables.c
+	${RYZEN_DIR}/readinfo.c
+	#${RYZEN_DIR}/ryzen_monitor.c
 	)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)

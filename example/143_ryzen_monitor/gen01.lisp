@@ -30,6 +30,14 @@
      (include<> GLFW/glfw3.h
 		format
 		iostream)
+     (space extern "\"C\""
+	    (progn
+	      
+	      (include<> libsmu.h
+			 readinfo.h
+			 pm_tables.h)
+	      "smu_obj_t obj;"))
+     
      (defun glfw_error_callback (err description)
        (declare (type int err)
 		(type "const char*" description))
@@ -58,6 +66,7 @@
 	  (glfwSwapInterval 1)
 	  (IMGUI_CHECKVERSION)
 	  (ImGui--CreateContext)
+	  (ImPlot--CreateContext)
 	  (let ((io (ImGui--GetIO)))
 	    (setf io.ConfigFlags
 		  (or io.ConfigFlags
@@ -76,7 +85,8 @@
 		 (ImGui_ImplGlfw_NewFrame)
 		 (ImGui--NewFrame)
 		 (when show_demo_window
-		   (ImGui--ShowDemoWindow &show_demo_window))
+		   (ImGui--ShowDemoWindow &show_demo_window)
+		   (ImPlot--ShowDemoWindow))
 		 (ImGui--Render)
 		 (let ((w 0)
 		       (h 0))
@@ -93,6 +103,7 @@
        (do0
 	(ImGui_ImplOpenGL3_Shutdown)
 	(ImGui_ImplGlfw_Shutdown)
+	(ImPlot--DestroyContext)
 	(ImGui--DestroyContext)
 	(glfwDestroyWindow window)
 	(glfwTerminate)

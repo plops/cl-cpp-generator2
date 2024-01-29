@@ -1,9 +1,16 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "implot.h"
 #include <GLFW/glfw3.h>
 #include <format>
 #include <iostream>
+extern "C" {
+#include <libsmu.h>
+#include <pm_tables.h>
+#include <readinfo.h>
+smu_obj_t obj;
+};
 
 void glfw_error_callback(int err, const char *description) {
   std::cout << std::format(" err='{}' description='{}'\n", err, description);
@@ -27,6 +34,7 @@ int main(int argc, char **argv) {
   glfwSwapInterval(1);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
+  ImPlot::CreateContext();
   auto io{ImGui::GetIO()};
   io.ConfigFlags = io.ConfigFlags | ImGuiConfigFlags_NavEnableKeyboard;
   ImGui::StyleColorsDark();
@@ -41,6 +49,7 @@ int main(int argc, char **argv) {
     ImGui::NewFrame();
     if (show_demo_window) {
       ImGui::ShowDemoWindow(&show_demo_window);
+      ImPlot::ShowDemoWindow();
     }
     ImGui::Render();
     auto w{0};
@@ -55,6 +64,7 @@ int main(int argc, char **argv) {
   }
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
+  ImPlot::DestroyContext();
   ImGui::DestroyContext();
   glfwDestroyWindow(window);
   glfwTerminate();
