@@ -89,6 +89,9 @@ add_executable(unit_tests
 target_link_libraries(unit_tests gtest_main)
 target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
+# Register the test with CTest  
+add_test(NAME unit_tests COMMAND unit_tests)  
+
 # Optionally, you can add a custom command to run the tests after building
 add_custom_command(
   TARGET unit_tests
