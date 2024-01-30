@@ -54,7 +54,7 @@
 				   string))
      :implementation-preamble
      `(do0
-       (include imgui.h)
+       
        (include<> sched.h
 		  stdexcept
 		  )
@@ -132,7 +132,7 @@
 		   (when (!= 0 (sched_setaffinity pid_ (sizeof cpu_set_t) &cpuset))
 		     (throw (std--runtime_error (string "Failed to set CPU affinity"))))))
 	       
-	       "private:"
+	       "protected:"
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
@@ -156,12 +156,15 @@
 				   unistd.h
 				   bitset
 				   cstring
-				   string))
+				   string
+				   )
+			(include CpuAffinityManagerBase.h))
      :implementation-preamble
      `(do0
        (include imgui.h)
        (include<> sched.h
 		  stdexcept
+		  
 		  )
        )
      :code `(do0

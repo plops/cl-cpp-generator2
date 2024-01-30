@@ -1,22 +1,21 @@
-#ifndef CPUAFFINITYMANAGER_H
-#define CPUAFFINITYMANAGER_H
+#ifndef CPUAFFINITYMANAGERBASE_H
+#define CPUAFFINITYMANAGERBASE_H
 
 #include <sched.h>
 #include <unistd.h>
 #include <bitset>
 #include <cstring>
 #include <string> 
-class CpuAffinityManager  {
+class CpuAffinityManagerBase  {
         public:
-        explicit  CpuAffinityManager (pid_t pid)       ;   
+        explicit  CpuAffinityManagerBase (pid_t pid)       ;   
         std::bitset<12> GetSelectedCpus ()       ;   
         void SetSelectedCpus (std::bitset<12> selected_cpus)       ;   
         std::bitset<12> GetAffinity ()       ;   
         void ApplyAffinity ()       ;   
-        void RenderGui ()       ;   
-        private:
+        protected:
         std::bitset<12> selected_cpus_;
         pid_t pid_;
 };
 
-#endif /* !CPUAFFINITYMANAGER_H */
+#endif /* !CPUAFFINITYMANAGERBASE_H */
