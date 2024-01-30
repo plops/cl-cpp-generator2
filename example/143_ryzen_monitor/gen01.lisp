@@ -33,9 +33,42 @@
      (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
 	    (progn
 	      (let ((manager (CpuAffinityManagerBase (getpid)))))
-
+	      (comments "FIXME: this only works on a twelf core cpu")
 	      (let ((expected_result (std--bitset<12> (string "111111111111")))
 		    (actual_result (manager.GetSelectedCpus))))
+	      (EXPECT_EQ actual_result expected_result)))
+
+      (space (TEST ,name SetSelectedCpus_Set_ValidBitset)
+	    (progn
+	      (let ((manager (CpuAffinityManagerBase (getpid)))))
+	      (comments "FIXME: this only works on a twelf core cpu")
+	      (let ((expected_result (std--bitset<12> (string "101010101010")))
+		    ))
+	      (manager.SetSelectedCpus expected_result)
+	      (let ((actual_result (manager.GetSelectedCpus))))
+	      (EXPECT_EQ actual_result expected_result)))
+
+      (space (TEST ,name GetAffinity_Initialized_FullBitset)
+	    (progn
+	      (let ((manager (CpuAffinityManagerBase (getpid)))))
+	      (comments "FIXME: this only works on a twelf core cpu")
+	      (let ((expected_result (std--bitset<12> (string "111111111111")))
+		    ))
+	      
+	      (let ((actual_result (manager.GetAffinity))))
+	      (EXPECT_EQ actual_result expected_result)))
+
+      (space (TEST ,name ApplyAffinity_Set_ValidBitset)
+	    (progn
+	      (let ((manager (CpuAffinityManagerBase (getpid)))))
+	      (comments "FIXME: this only works on a twelf core cpu")
+	      (let ((expected_result (std--bitset<12> (string "101010101010")))
+		    ))
+
+	      (manager.SetSelectedCpus expected_result)
+	      (manager.ApplyAffinity)
+	      
+	      (let ((actual_result (manager.GetAffinity))))
 	      (EXPECT_EQ actual_result expected_result))))
    :omit-parens t
    :format t
