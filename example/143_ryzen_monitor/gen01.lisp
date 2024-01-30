@@ -181,7 +181,7 @@
 						 ,(coerce g 'single-float)
 						 ,(coerce b 'single-float)
 						 1s0)))))
-		  (maxDataPoints 100)
+		  (maxDataPoints 728)
 		  (timePoints (std--deque<float>))
 		  ,@(loop for e in l-store
 			  collect

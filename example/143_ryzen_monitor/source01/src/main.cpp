@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
        ImVec4(0.F, 0.F, 1.0F, 1.0F), ImVec4(1.0F, 1.0F, 0.F, 1.0F),
        ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
        ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
-  auto maxDataPoints{100};
+  auto maxDataPoints{728};
   auto timePoints{std::deque<float>()};
   auto coreFrequency{std::vector<std::deque<float>>(pmt.max_cores)};
   auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
