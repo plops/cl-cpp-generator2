@@ -35,7 +35,10 @@
 				   string))
      :implementation-preamble
      `(do0
-       (include<> sched.h)
+       (include imgui.h)
+       (include<> sched.h
+		  stdexcept
+		  )
        )
      :code `(do0
 	     (defclass ,name ()
@@ -77,19 +80,19 @@
 		  (explicit)	    
 		  (values :constructor)
 		  )
-		 (let (cpuset (cpu_set_t))
-		   (if (== 0 (sched_getaffinity git (sizeof cpu_set_t) &cpuset))
+		 (let ((cpuset (cpu_set_t)))
+		   (if (== 0 (sched_getaffinity pid_ (sizeof cpu_set_t) &cpuset))
 		       (dotimes (i 12)
 			 (when (CPU_ISSET i &cpuset)
-			   (selectedCpus_.set i)))
+			   (selected_cpus_.set i)))
 		       (throw (std--runtime_error (string "Failed to get CPU affinity"))))))
 	       (defmethod ApplyAffinity ()
 		 (let ((cpuset (cpu_set_t)))
 		   (CPU_ZERO &cpuset)
 		   (dotimes (i 12)
-		     (when (aref selectedCpus_ i)
+		     (when (aref selected_cpus_ i)
 		       (CPU_SET i &cpuset)))
-		   (when (!= 0 (sched_setaffinity pid (sizeof cpu_set_t) &cpuset))
+		   (when (!= 0 (sched_setaffinity pid_ (sizeof cpu_set_t) &cpuset))
 		     (throw (std--runtime_error (string "Failed to set CPU affinity"))))))
 	       (defmethod RenderGui ()
 		 (ImGui--Begin (string "CPU Affinity"))
@@ -98,8 +101,12 @@
 		   (dotimes (i 12)
 		     (let ((label (+ (std--string (string "CPU "))
 				     (std--to_string i)))))
-		     (when (ImGui--CheckBox (label.c_str)
-					    (aref &selectedCpus_ i))
+		     (let ((isSelected  (aref selected_cpus_ i)))
+		       (declare (type bool isSelected))
+		       )
+		     (when (ImGui--Checkbox (label.c_str)
+					    &isSelected)
+		       (setf (aref selected_cpus_ i) isSelected)
 		       (setf affinityChanged true)))
 		   (when affinityChanged
 		     (ApplyAffinity))
@@ -124,6 +131,7 @@
 	      imgui_impl_glfw.h
 	      imgui_impl_opengl3.h
 	      implot.h
+	      CpuAffinityManager.h
 	      )
      (include<> GLFW/glfw3.h
 		format
@@ -289,7 +297,8 @@
 			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
 		    (startTime (std--chrono--steady_clock--now))))
 
-	  
+	      (let ((affinityManager (CpuAffinityManager (getpid)))))
+	      
 	      (while (!glfwWindowShouldClose window)
 		     (glfwPollEvents)
 		     (ImGui_ImplOpenGL3_NewFrame)
@@ -305,7 +314,7 @@
 			(when sysinfo.available
 			  (ImGui--Begin (string "Ryzen"))
 
-
+			  (affinityManager.RenderGui)
 			  (when (ImGui--Checkbox (string "vsync")
 						 &vsyncOn)
 			    (glfwSwapInterval (? vsyncOn 1 0)))

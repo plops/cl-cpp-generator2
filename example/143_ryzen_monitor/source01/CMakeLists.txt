@@ -1,3 +1,4 @@
+
 # Example usage:
 #  mkdir build
 #  cd build
@@ -40,7 +41,9 @@ set(LIBRARIES "glfw;OpenGL")
 
 include_directories(${GLFW_DIR}/deps)
 
-file(GLOB sources src/*.cpp)
+set(sources src/main.cpp src/CpuAffinityManager.cpp)
+
+#file(GLOB sources src/*.cpp)
 
 add_executable(${PROJECT_NAME}
 	${sources}
