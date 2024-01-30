@@ -30,11 +30,11 @@
      (include<> gtest/gtest.h
 		unistd.h)
 
-     (space (TEST ,name GetSelectedCpus_Initialized_ZeroBitset)
+     (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
 	    (progn
 	      (let ((manager (CpuAffinityManagerBase (getpid)))))
 
-	      (let ((expected_result (std--bitset<12>))
+	      (let ((expected_result (std--bitset<12> (string "111111111111")))
 		    (actual_result (manager.GetSelectedCpus))))
 	      (EXPECT_EQ actual_result expected_result))))
    :omit-parens t

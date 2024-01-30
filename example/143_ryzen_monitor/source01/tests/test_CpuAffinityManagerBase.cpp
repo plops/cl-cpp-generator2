@@ -3,7 +3,7 @@
 #include <unistd.h>
 TEST(CpuAffinityManagerBase, GetSelectedCpus_Initialized_ZeroBitset) {
   auto manager{CpuAffinityManagerBase(getpid())};
-  auto expected_result{std::bitset<12>()};
+  auto expected_result{std::bitset<12>("111111111111")};
   auto actual_result{manager.GetSelectedCpus()};
   EXPECT_EQ(actual_result, expected_result);
 };
