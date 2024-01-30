@@ -143,7 +143,8 @@
 	    ,(lprint :msg "Can't open glfw window")
 	    (return 1))
 	  (glfwMakeContextCurrent window)
-	  (glfwSwapInterval 1)
+	  (let ((vsyncOn true)))
+	  (glfwSwapInterval (? vsyncOn 1 0))
 	  (IMGUI_CHECKVERSION)
 	  (ImGui--CreateContext)
 	  (ImPlot--CreateContext)
@@ -181,7 +182,7 @@
 						 ,(coerce g 'single-float)
 						 ,(coerce b 'single-float)
 						 1s0)))))
-		  (maxDataPoints 728)
+		  (maxDataPoints 2048)
 		  (timePoints (std--deque<float>))
 		  ,@(loop for e in l-store
 			  collect
@@ -202,7 +203,11 @@
 			      (smu_read_pm_table &obj pm_buf obj.pm_table_size))
 		      (when sysinfo.available
 			(ImGui--Begin (string "Ryzen"))
-		      
+
+
+		      (when (ImGui--Checkbox (string "vsync")
+					     &vsyncOn)
+			(glfwSwapInterval (? vsyncOn 1 0)))
 
 			,@(loop for var in `(cpu_name codename cores ccds ccxs
 						      ;; fixme: different for older ryzen

@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   glfwMakeContextCurrent(window);
+  
   glfwSwapInterval(1);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -132,7 +133,7 @@ int main(int argc, char **argv) {
        ImVec4(0.F, 0.F, 1.0F, 1.0F), ImVec4(1.0F, 1.0F, 0.F, 1.0F),
        ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
        ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
-  auto maxDataPoints{728};
+  auto maxDataPoints{2048};
   auto timePoints{std::deque<float>()};
   auto coreFrequency{std::vector<std::deque<float>>(pmt.max_cores)};
   auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
