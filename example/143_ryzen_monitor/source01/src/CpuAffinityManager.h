@@ -9,6 +9,9 @@
 class CpuAffinityManager  {
         public:
         explicit  CpuAffinityManager (pid_t pid)       ;   
+        std::bitset<12> GetSelectedCpus ()       ;   
+        void SetSelectedCpus (std::bitset<12> selected_cpus)       ;   
+        std::bitset<12> GetAffinity ()       ;   
         void ApplyAffinity ()       ;   
         void RenderGui ()       ;   
         private:

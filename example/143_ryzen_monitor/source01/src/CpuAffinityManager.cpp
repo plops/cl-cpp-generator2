@@ -16,6 +16,23 @@ CpuAffinityManager::CpuAffinityManager(pid_t pid) : pid_(pid) {
     throw std::runtime_error("Failed to get CPU affinity");
   }
 }
+std::bitset<12> CpuAffinityManager::GetSelectedCpus() { return selected_cpus_; }
+void CpuAffinityManager::SetSelectedCpus(std::bitset<12> selected_cpus) {
+  selected_cpus_ = selected_cpus;
+}
+std::bitset<12> CpuAffinityManager::GetAffinity() {
+  auto cpuset{cpu_set_t()};
+  if (0 == sched_getaffinity(pid_, sizeof(cpu_set_t), &cpuset)) {
+    auto affinity{std::bitset<12>()};
+    for (auto i = 0; i < 12; i += 1) {
+      if (CPU_ISSET(i, &cpuset)) {
+        affinity.set(i);
+      }
+    }
+    return affinity;
+  }
+  throw std::runtime_error("Failed to get CPU affinity");
+}
 void CpuAffinityManager::ApplyAffinity() {
   auto cpuset{cpu_set_t()};
   CPU_ZERO(&cpuset);

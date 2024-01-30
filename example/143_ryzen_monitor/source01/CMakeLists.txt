@@ -12,6 +12,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
+enable_testing()
 
 # GLFW
 set(GLFW_DIR /home/martin/src/glfw) # Set this to point to an up-to-date GLFW repo
@@ -64,3 +65,32 @@ add_executable(${PROJECT_NAME}
 	)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
+
+
+
+# Fetch Google Test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG release-1.10.0  # specify the commit hash or tag here
+)
+FetchContent_MakeAvailable(googletest)
+
+# Define the test executable
+add_executable(unit_tests
+  tests/test_CpuAffinityManager.cpp
+  src/CpuAffinityManager.cpp  # Include the source file with actual implementation
+)
+
+# Link the test executable with Google Test and the necessary libraries
+target_link_libraries(unit_tests gtest_main)
+target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+# Optionally, you can add a custom command to run the tests after building
+add_custom_command(
+  TARGET unit_tests
+  COMMENT "Running unit tests"
+  POST_BUILD
+  COMMAND unit_tests
+)

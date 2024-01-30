@@ -20,7 +20,26 @@
   (let* ((name `CpuAffinityManager)
 	 (members `((selectedCpus :type std--bitset<12> :initform nil)
 		    (pid :type pid_t :param t))))
-    
+    (write-source 
+   (asdf:system-relative-pathname
+    'cl-cpp-generator2 
+    (merge-pathnames (format nil "../tests/test_~a.cpp" name)
+		     *source-dir*))
+   `(do0
+     (include CpuAffinityManager.h)
+     (include<> gtest/gtest.h
+		unistd.h)
+
+     (space TEST (,name GetSelectedCpus_Initialized_ZeroBitset)
+	    (progn
+	      (let ((manager (CpuAffinityManager (getpid)))))
+
+	      (let ((expected_result (std--bitset<12>))
+		    (actual_result (manager.GetSelectedCpus))))
+	      (EXPECT_EQ actual_result expected_result))))
+   :omit-parens t
+   :format t
+   :tidy nil)
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
@@ -86,6 +105,24 @@
 			 (when (CPU_ISSET i &cpuset)
 			   (selected_cpus_.set i)))
 		       (throw (std--runtime_error (string "Failed to get CPU affinity"))))))
+	       (defmethod GetSelectedCpus ()
+		 (declare (values "std::bitset<12>"))
+		 (return selected_cpus_))
+	       (defmethod SetSelectedCpus (selected_cpus)
+		 (declare (type "std::bitset<12>" selected_cpus))
+		 (setf selected_cpus_ selected_cpus))
+	       (defmethod GetAffinity ()
+		 (declare (values "std::bitset<12>"))
+		 (let ((cpuset (cpu_set_t)))
+		   (when (== 0 (sched_getaffinity pid_
+						  (sizeof cpu_set_t)
+						  &cpuset))
+		     (let ((affinity (std--bitset<12>)))
+		       (dotimes (i 12)
+			 (when (CPU_ISSET i &cpuset)
+			   (affinity.set i)))
+		       (return affinity)))
+		   (throw (std--runtime_error (string "Failed to get CPU affinity")))))
 	       (defmethod ApplyAffinity ()
 		 (let ((cpuset (cpu_set_t)))
 		   (CPU_ZERO &cpuset)
