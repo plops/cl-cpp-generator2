@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
     return 1;
   }
   glfwMakeContextCurrent(window);
-  
-  glfwSwapInterval(1);
+  auto vsyncOn{true};
+  glfwSwapInterval(vsyncOn ? 1 : 0);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
@@ -134,6 +134,8 @@ int main(int argc, char **argv) {
        ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
        ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
   auto maxDataPoints{2048};
+  auto x{std::vector<float>(maxDataPoints)};
+  auto y{std::vector<float>(maxDataPoints)};
   auto timePoints{std::deque<float>()};
   auto coreFrequency{std::vector<std::deque<float>>(pmt.max_cores)};
   auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
@@ -151,6 +153,9 @@ int main(int argc, char **argv) {
     if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
       if (sysinfo.available) {
         ImGui::Begin("Ryzen");
+        if (ImGui::Checkbox("vsync", &vsyncOn)) {
+          glfwSwapInterval(vsyncOn ? 1 : 0);
+        }
         ImGui::Text("%s",
                     std::format("cpu_name='{}'", sysinfo.cpu_name).c_str());
         ImGui::Text("%s",
@@ -246,9 +251,8 @@ int main(int argc, char **argv) {
         if (ImPlot::BeginPlot("coreFrequency")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
             ImPlot::SetNextLineStyle(coreColors[i]);
-            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
-            auto y{std::vector<float>(
-                {coreFrequency[i].begin(), coreFrequency[i].end()})};
+            x.assign(timePoints.begin(), timePoints.end());
+            y.assign(coreFrequency[i].begin(), coreFrequency[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
                               ImPlotAxisFlags_AutoFit);
             ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
@@ -259,9 +263,8 @@ int main(int argc, char **argv) {
         if (ImPlot::BeginPlot("corePower")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
             ImPlot::SetNextLineStyle(coreColors[i]);
-            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
-            auto y{
-                std::vector<float>({corePower[i].begin(), corePower[i].end()})};
+            x.assign(timePoints.begin(), timePoints.end());
+            y.assign(corePower[i].begin(), corePower[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
                               ImPlotAxisFlags_AutoFit);
             ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
@@ -272,9 +275,8 @@ int main(int argc, char **argv) {
         if (ImPlot::BeginPlot("coreTemperature")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
             ImPlot::SetNextLineStyle(coreColors[i]);
-            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
-            auto y{std::vector<float>(
-                {coreTemperature[i].begin(), coreTemperature[i].end()})};
+            x.assign(timePoints.begin(), timePoints.end());
+            y.assign(coreTemperature[i].begin(), coreTemperature[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
                               ImPlotAxisFlags_AutoFit);
             ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
