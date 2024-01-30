@@ -3,10 +3,13 @@
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
 #include <GLFW/glfw3.h>
+#include <chrono>
 #include <cmath>
+#include <deque>
 #include <format>
 #include <iostream>
 #include <unistd.h>
+#include <vector>
 extern "C" {
 #include <libsmu.h>
 #include <pm_tables.h>
@@ -124,6 +127,17 @@ int main(int argc, char **argv) {
   auto [sysinfo, pm_buf, pmt]{start_pm_monitor2()};
   auto show_demo_window{true};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
+  auto coreColors{std::vector<ImVec4>(
+      {ImVec4(1.0F, 0.F, 0.F, 1.0F), ImVec4(0.F, 1.0F, 0.F, 1.0F),
+       ImVec4(0.F, 0.F, 1.0F, 1.0F), ImVec4(1.0F, 1.0F, 0.F, 1.0F),
+       ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
+       ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
+  auto maxDataPoints{100};
+  auto timePoints{std::deque<float>()};
+  auto coreFrequency{std::vector<std::deque<float>>(pmt.max_cores)};
+  auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
+  auto coreTemperature{std::vector<std::deque<float>>(pmt.max_cores)};
+  auto startTime{std::chrono::steady_clock::now()};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
@@ -159,6 +173,36 @@ int main(int argc, char **argv) {
         } else {
           average_voltage = pmta(CPU_TELEMETRY_VOLTAGE);
         }
+        auto currentTime{std::chrono::steady_clock::now()};
+        auto elapsedTime{
+            std::chrono::duration<float>(currentTime - startTime).count()};
+        // If the deque has reached its maximum size, remove the oldest data
+        // point
+
+        if (maxDataPoints <= timePoints.size()) {
+          timePoints.pop_front();
+          // Also remove the oldest data point from each core's frequency and
+          // power data
+
+          for (auto &deq : coreFrequency) {
+            if (!deq.empty()) {
+              deq.pop_front();
+            }
+          }
+          for (auto &deq : corePower) {
+            if (!deq.empty()) {
+              deq.pop_front();
+            }
+          }
+          for (auto &deq : coreTemperature) {
+            if (!deq.empty()) {
+              deq.pop_front();
+            }
+          }
+        }
+        // Add the new timepoint
+
+        timePoints.push_back(elapsedTime);
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
@@ -166,26 +210,76 @@ int main(int argc, char **argv) {
           auto core_sleep_time{pmta(CORE_CC6[i]) / 1.00e+2F};
           auto core_voltage{(1.0F - core_sleep_time) * average_voltage +
                             0.20F * core_sleep_time};
-          if (!core_disabled) {
+          auto core_temperature{pmta(CORE_TEMP[i])};
+          // Update the frequency, power and temperature data for each core
+
+          coreFrequency[i].push_back(core_frequency);
+          corePower[i].push_back(core_voltage);
+          coreTemperature[i].push_back(core_temperature);
+          if (core_disabled) {
+            ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
+          } else {
             if (6.0F <= pmta(CORE_C0[i])) {
-              ImGui::Text("%s",
-                          std::format("{:2} Sleep {:6.3f}W {:5.3f}V {:6.2f}C "
-                                      "C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
-                                      i, pmta(CORE_POWER[i]), core_voltage,
-                                      pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
-                                      pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
-                              .c_str());
+              ImGui::Text(
+                  "%s",
+                  std::format("{:2} Sleeping   {:6.3f}W {:5.3f}V {:5.3f}V "
+                              "{:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
+                              i, pmta(CORE_POWER[i]), core_voltage,
+                              core_voltage_true, pmta(CORE_TEMP[i]),
+                              pmta(CORE_C0[i]), pmta(CORE_CC1[i]),
+                              pmta(CORE_CC6[i]))
+                      .c_str());
             } else {
               ImGui::Text(
-                  "%s", std::format(
-                            "{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:6.2f}C C0: "
-                            "{:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
-                            i, core_frequency, pmta(CORE_POWER[i]),
-                            core_voltage, pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
-                            pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
-                            .c_str());
+                  "%s",
+                  std::format("{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:5.3f}V "
+                              "{:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
+                              i, core_frequency, pmta(CORE_POWER[i]),
+                              core_voltage, core_voltage_true,
+                              pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
+                              pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
+                      .c_str());
             }
           }
+        }
+        if (ImPlot::BeginPlot("coreFrequency")) {
+          for (auto i = 0; i < pmt.max_cores; i += 1) {
+            ImPlot::SetNextLineStyle(coreColors[i]);
+            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
+            auto y{std::vector<float>(
+                {coreFrequency[i].begin(), coreFrequency[i].end()})};
+            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
+                              ImPlotAxisFlags_AutoFit);
+            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
+                             y.data(), y.size());
+          }
+          ImPlot::EndPlot();
+        }
+        if (ImPlot::BeginPlot("corePower")) {
+          for (auto i = 0; i < pmt.max_cores; i += 1) {
+            ImPlot::SetNextLineStyle(coreColors[i]);
+            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
+            auto y{
+                std::vector<float>({corePower[i].begin(), corePower[i].end()})};
+            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
+                              ImPlotAxisFlags_AutoFit);
+            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
+                             y.data(), y.size());
+          }
+          ImPlot::EndPlot();
+        }
+        if (ImPlot::BeginPlot("coreTemperature")) {
+          for (auto i = 0; i < pmt.max_cores; i += 1) {
+            ImPlot::SetNextLineStyle(coreColors[i]);
+            auto x{std::vector<float>({timePoints.begin(), timePoints.end()})};
+            auto y{std::vector<float>(
+                {coreTemperature[i].begin(), coreTemperature[i].end()})};
+            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
+                              ImPlotAxisFlags_AutoFit);
+            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
+                             y.data(), y.size());
+          }
+          ImPlot::EndPlot();
         }
         ImGui::End();
       }
