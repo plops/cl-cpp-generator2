@@ -17,16 +17,21 @@
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
 
-  (let* ((name `CpuAffinityManagerBase)
-	 (members `((selectedCpus :type std--bitset<12> :initform nil)
-		    (pid :type pid_t :param t))))
+  (let* ((name `DiagramBase)
+	 (members `((max-cores :type int :param t)
+		    (max-points :type int :param t)
+		    ;(colors :type "std::vector<ImVec4>" :param t)
+		    (diagrams :type "std::vector<DiagramData>")
+		    (x :type "std::vector<float>")
+		    (y :type "std::vector<float>")
+		    (time-points :type "std::deque<float>"))))
     (write-source 
    (asdf:system-relative-pathname
     'cl-cpp-generator2 
     (merge-pathnames (format nil "../tests/test_~a.cpp" name)
 		     *source-dir*))
    `(do0
-     (include CpuAffinityManagerBase.h)
+     (include ,(format nil "~a.h" name))
      (include<> gtest/gtest.h
 		unistd.h)
 
@@ -36,43 +41,167 @@
 	      (comments "FIXME: this only works on a twelf core cpu")
 	      (let ((expected_result (std--bitset<12> (string "111111111111")))
 		    (actual_result (manager.GetSelectedCpus))))
-	      (EXPECT_EQ actual_result expected_result)))
-
-      (space (TEST ,name SetSelectedCpus_Set_ValidBitset)
-	    (progn
-	      (let ((manager (CpuAffinityManagerBase (getpid)))))
-	      (comments "FIXME: this only works on a twelf core cpu")
-	      (let ((expected_result (std--bitset<12> (string "101010101010")))
-		    ))
-	      (manager.SetSelectedCpus expected_result)
-	      (let ((actual_result (manager.GetSelectedCpus))))
-	      (EXPECT_EQ actual_result expected_result)))
-
-      (space (TEST ,name GetAffinity_Initialized_FullBitset)
-	    (progn
-	      (let ((manager (CpuAffinityManagerBase (getpid)))))
-	      (comments "FIXME: this only works on a twelf core cpu")
-	      (let ((expected_result (std--bitset<12> (string "111111111111")))
-		    ))
-	      
-	      (let ((actual_result (manager.GetAffinity))))
-	      (EXPECT_EQ actual_result expected_result)))
-
-      (space (TEST ,name ApplyAffinity_Set_ValidBitset)
-	    (progn
-	      (let ((manager (CpuAffinityManagerBase (getpid)))))
-	      (comments "FIXME: this only works on a twelf core cpu")
-	      (let ((expected_result (std--bitset<12> (string "101010101010")))
-		    ))
-
-	      (manager.SetSelectedCpus expected_result)
-	      (manager.ApplyAffinity)
-	      
-	      (let ((actual_result (manager.GetAffinity))))
 	      (EXPECT_EQ actual_result expected_result))))
    :omit-parens t
    :format t
    :tidy nil)
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector deque string)
+			(space struct Color (progn "float r,g,b,a;")))
+     :implementation-preamble
+     `(do0
+       
+       (include<>
+		  stdexcept
+		  format
+		  )
+       )
+     :code `(do0
+	     
+	     (defclass ,name ()
+	       "public:"
+	       (defmethod ,name (colors ,@(remove-if #'null
+					   (loop for e in members
+						 collect
+						 (destructuring-bind (name &key type param (initform 0)) e
+						   (let ((nname (intern
+								 (string-upcase
+								  (cl-change-case:snake-case (format nil "~a" name))))))
+						     (when param
+						       nname))))))
+		 (declare
+		  (type "const std::vector<Color>&" colors)
+		  ,@(remove-if #'null
+			       (loop for e in members
+				     collect
+				     (destructuring-bind (name &key type param (initform 0)) e
+				       (let ((nname (intern
+						     (string-upcase
+						      (cl-change-case:snake-case (format nil "~a" name))))))
+					 (when param
+					   
+					   `(type ,type ,nname))))))
+		  (construct
+		   ,@(remove-if #'null
+				(loop for e in members
+				      collect
+				      (destructuring-bind (name &key type param (initform 0)) e
+					(let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					      (nname_ (format nil "~a_"
+							      (cl-change-case:snake-case (format nil "~a" name)))))
+					  (cond
+					    (param
+					     `(,nname_ ,nname)) 
+					    (initform
+					     `(,nname_ ,initform)))))))
+		   )
+		  (explicit)	    
+		  (values :constructor)
+		  )
+		 (dotimes (i max_cores_)
+		   (diagrams_.push_back (curly (std--format (string "Core {}")
+							    i)
+					       (curly)
+					       (aref colors (% i (colors.size))))))
+		 (x.reserve max_points_)
+		 (y.reserve max_points_)
+		 )
+
+	       (defmethod AddDataPoint (coreIndex time value)
+		 (declare (type int coreIndex)
+			  (type float time)
+			  (type float value))
+		 (when (logior (< coreIndex 0)
+			       (<= (diagrams_.size) coreIndex))
+		   (throw (std--out_of_range (string "Invalid core index for diagram set"))))
+		 (when (<= max_points_ (time_points_.size))
+		   (time_points_.pop_front)
+		   (for-range (diagram diagrams_)
+			      (declare (type "auto&" diagram))
+			      (unless (diagram_.values.empty)
+				(diagram_.values.pop_front))))
+		 (time_points_.push_back time)
+		 (dot (aref diagrams_ coreIndex)
+		      values
+		      (push_back value)))
+	       
+	       "protected:"
+	       
+	       (space struct DiagramData (progn
+					   "std::string name;"
+					   "std::deque<float> values;"
+					   "Color color;"))
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))))))
+  
+
+  (let* ((name `CpuAffinityManagerBase)
+	 (members `((selectedCpus :type std--bitset<12> :initform nil)
+		    (pid :type pid_t :param t))))
+    (write-source 
+     (asdf:system-relative-pathname
+      'cl-cpp-generator2 
+      (merge-pathnames (format nil "../tests/test_~a.cpp" name)
+		       *source-dir*))
+     `(do0
+       (include CpuAffinityManagerBase.h)
+       (include<> gtest/gtest.h
+		  unistd.h)
+
+       (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
+	      (progn
+		(let ((manager (CpuAffinityManagerBase (getpid)))))
+		(comments "FIXME: this only works on a twelf core cpu")
+		(let ((expected_result (std--bitset<12> (string "111111111111")))
+		      (actual_result (manager.GetSelectedCpus))))
+		(EXPECT_EQ actual_result expected_result)))
+
+       (space (TEST ,name SetSelectedCpus_Set_ValidBitset)
+	      (progn
+		(let ((manager (CpuAffinityManagerBase (getpid)))))
+		(comments "FIXME: this only works on a twelf core cpu")
+		(let ((expected_result (std--bitset<12> (string "101010101010")))
+		      ))
+		(manager.SetSelectedCpus expected_result)
+		(let ((actual_result (manager.GetSelectedCpus))))
+		(EXPECT_EQ actual_result expected_result)))
+
+       (space (TEST ,name GetAffinity_Initialized_FullBitset)
+	      (progn
+		(let ((manager (CpuAffinityManagerBase (getpid)))))
+		(comments "FIXME: this only works on a twelf core cpu")
+		(let ((expected_result (std--bitset<12> (string "111111111111")))
+		      ))
+	      
+		(let ((actual_result (manager.GetAffinity))))
+		(EXPECT_EQ actual_result expected_result)))
+
+       (space (TEST ,name ApplyAffinity_Set_ValidBitset)
+	      (progn
+		(let ((manager (CpuAffinityManagerBase (getpid)))))
+		(comments "FIXME: this only works on a twelf core cpu")
+		(let ((expected_result (std--bitset<12> (string "101010101010")))
+		      ))
+
+		(manager.SetSelectedCpus expected_result)
+		(manager.ApplyAffinity)
+	      
+		(let ((actual_result (manager.GetAffinity))))
+		(EXPECT_EQ actual_result expected_result))))
+     :omit-parens t
+     :format t
+     :tidy nil)
     (write-class
      :dir (asdf:system-relative-pathname
 	   'cl-cpp-generator2
