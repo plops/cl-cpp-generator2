@@ -42,7 +42,9 @@ set(LIBRARIES "glfw;OpenGL")
 
 include_directories(${GLFW_DIR}/deps)
 
-set(sources src/main.cpp src/CpuAffinityManager.cpp)
+set(sources src/main.cpp
+	    src/CpuAffinityManagerBase.cpp
+	    src/CpuAffinityManagerWithGui.cpp)
 
 #file(GLOB sources src/*.cpp)
 
@@ -79,8 +81,8 @@ FetchContent_MakeAvailable(googletest)
 
 # Define the test executable
 add_executable(unit_tests
-  tests/test_CpuAffinityManager.cpp
-  src/CpuAffinityManager.cpp  # Include the source file with actual implementation
+  tests/test_CpuAffinityManagerBase.cpp
+  src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation
 )
 
 # Link the test executable with Google Test and the necessary libraries

@@ -17,7 +17,7 @@
   (ensure-directories-exist *full-source-dir*)
   (load "util.lisp")
 
-  (let* ((name `CpuAffinityManager)
+  (let* ((name `CpuAffinityManagerBase)
 	 (members `((selectedCpus :type std--bitset<12> :initform nil)
 		    (pid :type pid_t :param t))))
     (write-source 
@@ -26,13 +26,13 @@
     (merge-pathnames (format nil "../tests/test_~a.cpp" name)
 		     *source-dir*))
    `(do0
-     (include CpuAffinityManager.h)
+     (include CpuAffinityManagerBase.h)
      (include<> gtest/gtest.h
 		unistd.h)
 
-     (space TEST (,name GetSelectedCpus_Initialized_ZeroBitset)
+     (space (TEST ,name GetSelectedCpus_Initialized_ZeroBitset)
 	    (progn
-	      (let ((manager (CpuAffinityManager (getpid)))))
+	      (let ((manager (CpuAffinityManagerBase (getpid)))))
 
 	      (let ((expected_result (std--bitset<12>))
 		    (actual_result (manager.GetSelectedCpus))))
@@ -131,6 +131,43 @@
 		       (CPU_SET i &cpuset)))
 		   (when (!= 0 (sched_setaffinity pid_ (sizeof cpu_set_t) &cpuset))
 		     (throw (std--runtime_error (string "Failed to set CPU affinity"))))))
+	       
+	       "private:"
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(space ,type ,nname_)))))))))
+
+  (let* ((name `CpuAffinityManagerWithGui)
+	 (members `((selectedCpus :type std--bitset<12> :initform nil)
+		    (pid :type pid_t :param t))))
+  
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> sched.h
+				   unistd.h
+				   bitset
+				   cstring
+				   string))
+     :implementation-preamble
+     `(do0
+       (include imgui.h)
+       (include<> sched.h
+		  stdexcept
+		  )
+       )
+     :code `(do0
+	     (defclass ,name "public CpuAffinityManagerBase"
+	       "public:"
+	       "using CpuAffinityManagerBase::CpuAffinityManagerBase;"
 	       (defmethod RenderGui ()
 		 (ImGui--Begin (string "CPU Affinity"))
 		 (ImGui--Text  (string "Select CPUs for process ID: %d") pid_)
@@ -149,14 +186,7 @@
 		     (ApplyAffinity))
 		   (ImGui--End)
 		   ))
-	       "private:"
-	       ,@(remove-if #'null
-			    (loop for e in members
-				  collect
-				  (destructuring-bind (name &key type param (initform 0)) e
-				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
-					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))))))
+	       ))))
   
   (write-source 
    (asdf:system-relative-pathname
@@ -168,7 +198,7 @@
 	      imgui_impl_glfw.h
 	      imgui_impl_opengl3.h
 	      implot.h
-	      CpuAffinityManager.h
+	      CpuAffinityManagerWithGui.h
 	      )
      (include<> GLFW/glfw3.h
 		format
@@ -334,7 +364,7 @@
 			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
 		    (startTime (std--chrono--steady_clock--now))))
 
-	      (let ((affinityManager (CpuAffinityManager (getpid)))))
+	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
 	      (while (!glfwWindowShouldClose window)
 		     (glfwPollEvents)

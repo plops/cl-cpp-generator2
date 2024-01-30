@@ -1,4 +1,4 @@
-#include "CpuAffinityManager.h"
+#include "CpuAffinityManagerWithGui.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
   auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
   auto coreTemperature{std::vector<std::deque<float>>(pmt.max_cores)};
   auto startTime{std::chrono::steady_clock::now()};
-  auto affinityManager{CpuAffinityManager(getpid())};
+  auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
