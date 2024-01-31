@@ -20,7 +20,7 @@ enable_testing()
 
 # Set DEP_DIR with a command line flag
 if(NOT DEP_DIR)
-	set(DEP_DIR "/home/runner/work/" CACHE PATH "Path to dependencies directory")
+	set(DEP_DIR "/home/runner/work/cl-cpp-generator2/" CACHE PATH "Path to dependencies directory")
 endif()
 
 # GLFW
