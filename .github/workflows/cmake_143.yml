@@ -57,7 +57,10 @@ jobs:
 #      uses: mxschmitt/action-tmate@v3
 
     - name: Configure CMake
-      run: cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DDEP_DIR=`pwd` -DCMAKE_BUILD_TYPE=Release  -DGLFW_BUILD_WAYLAND=OFF
+      run: |
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
+        cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DDEP_DIR=`pwd` -DCMAKE_BUILD_TYPE=Release  -DGLFW_BUILD_WAYLAND=OFF
 
     - name: Build with Ninja
       run: ninja -C build

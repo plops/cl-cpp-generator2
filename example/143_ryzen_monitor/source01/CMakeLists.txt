@@ -7,10 +7,6 @@
 cmake_minimum_required(VERSION 3.28)
 project(ryzen_mon_glgui CXX C)
 
-# switch to clang++ compiler (for <format> support on ubuntu 22.04)
-set(CMAKE_C_COMPILER /usr/bin/clang)
-set(CMAKE_CXX_COMPILER /usr/bin/clang++)
-
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
