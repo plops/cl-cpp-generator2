@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD 20)
 enable_testing()
 
 # GLFW
-set(GLFW_DIR /home/martin/src/glfw) # Set this to point to an up-to-date GLFW repo
+set(GLFW_DIR ${DEP_DIR}/glfw) # Set this to point to an up-to-date GLFW repo
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
@@ -25,15 +25,15 @@ add_subdirectory(${GLFW_DIR} binary_dir EXCLUDE_FROM_ALL)
 include_directories(${GLFW_DIR}/include)
 
 # Dear ImGui
-set(IMGUI_DIR /home/martin/src/imgui)
+set(IMGUI_DIR ${DEP_DIR}/imgui)
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 
 # ImPlot
-set(IMPLOT_DIR /home/martin/src/implot)
+set(IMPLOT_DIR ${DEP_DIR}/implot)
 include_directories(${IMPLOT_DIR})
 
 # Ryzen
-set(RYZEN_DIR /home/martin/src/ryzen_monitor/src)
+set(RYZEN_DIR ${DEP_DIR}/ryzen_monitor/src)
 include_directories(${RYZEN_DIR} ${RYZEN_DIR}/lib)
 
 # Libraries
