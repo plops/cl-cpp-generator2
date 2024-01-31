@@ -28,6 +28,9 @@ jobs:
     - name: Install ImPlot dependency from repo
       run: cd .. ; git clone --depth 1 https://github.com/epezent/implot
 
+    - name: Install ryzen_monitor dependency from repo
+      run: cd ..; git clone --depth 1 https://github.com/hattedsquirrel/ryzen_monitor.git
+      
     - name: Create build directory
       run: mkdir build
 
