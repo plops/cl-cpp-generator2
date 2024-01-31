@@ -60,6 +60,7 @@ jobs:
       run: |
         export CC=/usr/bin/clang
         export CXX=/usr/bin/clang++
+        export CXXFLAGS="-stdlib=libc++ -std=c++20"
         cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DDEP_DIR=`pwd` -DCMAKE_BUILD_TYPE=Release  -DGLFW_BUILD_WAYLAND=OFF
 
     - name: Build with Ninja
