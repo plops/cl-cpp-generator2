@@ -262,7 +262,6 @@ int main(int argc, char **argv) {
         diagramVoltage.RenderGui();
         if (ImPlot::BeginPlot("coreFrequency")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
-            ImPlot::SetNextLineStyle(coreColors[i]);
             x.assign(timePoints.begin(), timePoints.end());
             y.assign(coreFrequency[i].begin(), coreFrequency[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
@@ -274,7 +273,6 @@ int main(int argc, char **argv) {
         }
         if (ImPlot::BeginPlot("corePower")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
-            ImPlot::SetNextLineStyle(coreColors[i]);
             x.assign(timePoints.begin(), timePoints.end());
             y.assign(corePower[i].begin(), corePower[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
@@ -286,7 +284,6 @@ int main(int argc, char **argv) {
         }
         if (ImPlot::BeginPlot("coreTemperature")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
-            ImPlot::SetNextLineStyle(coreColors[i]);
             x.assign(timePoints.begin(), timePoints.end());
             y.assign(coreTemperature[i].begin(), coreTemperature[i].end());
             ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,

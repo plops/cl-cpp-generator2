@@ -808,7 +808,7 @@
 				  collect
 				  `(when (ImPlot--BeginPlot (string ,e))
 				     (dotimes (i pmt.max_cores)
-				       (ImPlot--SetNextLineStyle (aref coreColors i))
+				       ;(ImPlot--SetNextLineStyle (aref coreColors i))
 				       (x.assign (timePoints.begin)
 						 (timePoints.end))
 				       (y.assign (dot (aref ,e i) (begin))
