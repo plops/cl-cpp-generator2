@@ -129,18 +129,7 @@ int main(int argc, char **argv) {
   auto [sysinfo, pm_buf, pmt]{start_pm_monitor2()};
   auto show_demo_window{true};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
-  auto coreColors{std::vector<ImVec4>(
-      {ImVec4(1.0F, 0.F, 0.F, 1.0F), ImVec4(0.F, 1.0F, 0.F, 1.0F),
-       ImVec4(0.F, 0.F, 1.0F, 1.0F), ImVec4(1.0F, 1.0F, 0.F, 1.0F),
-       ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
-       ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
   auto maxDataPoints{1024};
-  auto x{std::vector<float>(maxDataPoints)};
-  auto y{std::vector<float>(maxDataPoints)};
-  auto timePoints{std::deque<float>()};
-  auto coreFrequency{std::vector<std::deque<float>>(pmt.max_cores)};
-  auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
-  auto coreTemperature{std::vector<std::deque<float>>(pmt.max_cores)};
   auto startTime{std::chrono::steady_clock::now()};
   auto diagramVoltage{DiagramWithGui(
       {Color(1.0F, 0.F, 0.F), Color(0.F, 1.0F, 0.F), Color(0.F, 0.F, 1.0F),
@@ -190,34 +179,7 @@ int main(int argc, char **argv) {
         auto currentTime{std::chrono::steady_clock::now()};
         auto elapsedTime{
             std::chrono::duration<float>(currentTime - startTime).count()};
-        // If the deque has reached its maximum size, remove the oldest data
-        // point
-
-        if (maxDataPoints <= timePoints.size()) {
-          timePoints.pop_front();
-          // Also remove the oldest data point from each core's frequency and
-          // power data
-
-          for (auto &deq : coreFrequency) {
-            if (!deq.empty()) {
-              deq.pop_front();
-            }
-          }
-          for (auto &deq : corePower) {
-            if (!deq.empty()) {
-              deq.pop_front();
-            }
-          }
-          for (auto &deq : coreTemperature) {
-            if (!deq.empty()) {
-              deq.pop_front();
-            }
-          }
-        }
-        // Add the new timepoint
-
-        timePoints.push_back(elapsedTime);
-        auto voltageValues{std::vector<float>()};
+        auto voltageValues{std::vector<float>(pmt.max_cores)};
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
@@ -226,12 +188,7 @@ int main(int argc, char **argv) {
           auto core_voltage{(1.0F - core_sleep_time) * average_voltage +
                             0.20F * core_sleep_time};
           auto core_temperature{pmta(CORE_TEMP[i])};
-          voltageValues.push_back(core_voltage_true);
-          // Update the frequency, power and temperature data for each core
-
-          coreFrequency[i].push_back(core_frequency);
-          corePower[i].push_back(core_voltage);
-          coreTemperature[i].push_back(core_temperature);
+          voltageValues[i] = core_voltage_true;
           if (core_disabled) {
             ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
           } else {
@@ -260,39 +217,6 @@ int main(int argc, char **argv) {
         }
         diagramVoltage.AddDataPoint(elapsedTime, voltageValues);
         diagramVoltage.RenderGui();
-        if (ImPlot::BeginPlot("coreFrequency")) {
-          for (auto i = 0; i < pmt.max_cores; i += 1) {
-            x.assign(timePoints.begin(), timePoints.end());
-            y.assign(coreFrequency[i].begin(), coreFrequency[i].end());
-            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
-                              ImPlotAxisFlags_AutoFit);
-            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
-                             y.data(), y.size());
-          }
-          ImPlot::EndPlot();
-        }
-        if (ImPlot::BeginPlot("corePower")) {
-          for (auto i = 0; i < pmt.max_cores; i += 1) {
-            x.assign(timePoints.begin(), timePoints.end());
-            y.assign(corePower[i].begin(), corePower[i].end());
-            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
-                              ImPlotAxisFlags_AutoFit);
-            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
-                             y.data(), y.size());
-          }
-          ImPlot::EndPlot();
-        }
-        if (ImPlot::BeginPlot("coreTemperature")) {
-          for (auto i = 0; i < pmt.max_cores; i += 1) {
-            x.assign(timePoints.begin(), timePoints.end());
-            y.assign(coreTemperature[i].begin(), coreTemperature[i].end());
-            ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
-                              ImPlotAxisFlags_AutoFit);
-            ImPlot::PlotLine(std::format("Core {:2}", i).c_str(), x.data(),
-                             y.data(), y.size());
-          }
-          ImPlot::EndPlot();
-        }
         ImGui::End();
       }
     }

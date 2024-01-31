@@ -643,7 +643,7 @@
 		  (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
 	      
 	  
-	      (let ((coreColors (std--vector<ImVec4>
+	      (let (#+q(coreColors (std--vector<ImVec4>
 				 (curly
 				  ,@(loop for (r g b name) in `((1 0 0 red)
 								(0 1 0 green)
@@ -660,10 +660,10 @@
 						   1s0)))))
 		    (maxDataPoints 1024
 				   )
-		    (x (std--vector<float> maxDataPoints))
-		    (y (std--vector<float> maxDataPoints))
-		    (timePoints (std--deque<float>))
-		    ,@(loop for e in l-store
+		    #+q(x (std--vector<float> maxDataPoints))
+		    #+q(y (std--vector<float> maxDataPoints))
+		    #+q(timePoints (std--deque<float>))
+		    #+q,@(loop for e in l-store
 			    collect
 			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
 		    (startTime (std--chrono--steady_clock--now))))
@@ -733,20 +733,22 @@
 				(elapsedTime (dot (std--chrono--duration<float> (- currentTime startTime))
 						  (count)))))
 
-			  (comments "If the deque has reached its maximum size, remove the oldest data point  ")
-			  (when (<= maxDataPoints (timePoints.size))
-			    (timePoints.pop_front)
-			    (comments "Also remove the oldest data point from each core's frequency and power data  ")
-			    ,@(loop for e in l-store
-				    collect
-				    `(for-range (deq ,e)
-						(declare (type "auto&" deq))
-						(unless (deq.empty)
-						  (deq.pop_front)))))
-			  (comments "Add the new timepoint")
-			  (timePoints.push_back elapsedTime)
+			  #+nil (do0
+			   (comments "If the deque has reached its maximum size, remove the oldest data point  ")
+			   (when (<= maxDataPoints (timePoints.size))
+			     (timePoints.pop_front)
+			     (comments "Also remove the oldest data point from each core's frequency and power data  ")
+			     ,@(loop for e in l-store
+				     collect
+				     `(for-range (deq ,e)
+						 (declare (type "auto&" deq))
+						 (unless (deq.empty)
+						   (deq.pop_front))))))
+			  #+nil (do0
+			   (comments "Add the new timepoint")
+			   (timePoints.push_back elapsedTime))
 			
-			  (let ((voltageValues (std--vector<float> ; pmt.max_cores
+			  (let ((voltageValues (std--vector<float>  pmt.max_cores
 						))))
 			  (dotimes (i pmt.max_cores)
 			    (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
@@ -761,14 +763,15 @@
 				  (core_temperature (pmta (aref CORE_TEMP i))))
 			      
 			      (do0
-			       (voltageValues.push_back core_voltage_true)
-			       #+nil
+			       ;(voltageValues.push_back core_voltage_true)
+			       ;#+nil
 			       (setf (aref voltageValues i) core_voltage_true))
 
-			      (comments "Update the frequency, power and temperature data for each core  ")
-			      ,@(loop for e in l-store and f in `(core_frequency core_voltage core_temperature)
-				      collect
-				      `(dot (aref ,e i) (push_back ,f) ))
+			      #+nil(do0
+			       (comments "Update the frequency, power and temperature data for each core  ")
+			       ,@(loop for e in l-store and f in `(core_frequency core_voltage core_temperature)
+				       collect
+				       `(dot (aref ,e i) (push_back ,f) )))
 			    
 			      (if core_disabled
 				  (ImGui--Text (string "%s")
@@ -804,11 +807,12 @@
 			  (diagramVoltage.AddDataPoint elapsedTime
 						       voltageValues)
 			  (diagramVoltage.RenderGui)
+			  #+nil 
 			  ,@(loop for e in l-store
 				  collect
 				  `(when (ImPlot--BeginPlot (string ,e))
 				     (dotimes (i pmt.max_cores)
-				       ;(ImPlot--SetNextLineStyle (aref coreColors i))
+					;(ImPlot--SetNextLineStyle (aref coreColors i))
 				       (x.assign (timePoints.begin)
 						 (timePoints.end))
 				       (y.assign (dot (aref ,e i) (begin))
