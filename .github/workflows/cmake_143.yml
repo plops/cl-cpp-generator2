@@ -50,7 +50,8 @@ jobs:
     - name: Install clang17
       run: |
         wget https://apt.llvm.org/llvm.sh
-        echo ""|sudo sh ./llvm.sh 17
+        chmod a+x llvm.sh
+        echo ""|sudo ./llvm.sh 18
 
     - name: Create build directory
       run: |
@@ -63,8 +64,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        export CC=/usr/bin/clang-17
-        export CXX=/usr/bin/clang++-17
+        export CC=/usr/bin/clang-18
+        export CXX=/usr/bin/clang++-18
         # this is required for chrono but it doesnt support std::format
         # export CXXFLAGS="-stdlib=libc++ -std=c++20"
         export CXXFLAGS="-std=c++20"
