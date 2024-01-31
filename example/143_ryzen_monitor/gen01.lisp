@@ -191,7 +191,9 @@
 			  (type "const std::vector<float>&" values))
 		 (unless (== (values.size)
 			     (diagrams_.size))
-		   (throw (std--invalid_argument (string "Number of values doesn't match the number of diagrams"))))
+		   (throw (std--invalid_argument (std--format (string "Number of values doesn't match the number of diagrams. expected: {} actual: {}")
+							      (values.size)
+							      (diagrams_.size)))))
 		 (when (<= max_points_ (time_points_.size))
 		   (time_points_.pop_front)
 		   (for-range (diagram diagrams_)
@@ -246,6 +248,7 @@
        (include<>
 		  stdexcept
 		  format
+		  iostream
 		  
 		  )
        (include implot.h)
@@ -285,7 +288,7 @@
 					     (c_str))
 					
 					getter
-					nullptr
+					(reinterpret_cast<void*> &data)
 					(time_points_.size)))
 		   (ImPlot--EndPlot))
 		 )
@@ -469,7 +472,8 @@
 				   cstring
 				   string
 				   )
-			(include CpuAffinityManagerBase.h))
+			(include CpuAffinityManagerBase.h
+				 DiagramWithGui.h))
      :implementation-preamble
      `(do0
        (include imgui.h)
@@ -490,8 +494,7 @@
 		     (let ((label (+ (std--string (string "CPU "))
 				     (std--to_string i)))))
 		     (let ((isSelected  (aref selected_cpus_ i)))
-		       (declare (type bool isSelected))
-		       )
+		       (declare (type bool isSelected)))
 		     (when (ImGui--Checkbox (label.c_str)
 					    &isSelected)
 		       (setf (aref selected_cpus_ i) isSelected)
@@ -652,7 +655,7 @@
 	
 	    (let ((show_demo_window true)
 		  (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
-
+	      
 	  
 	      (let ((coreColors (std--vector<ImVec4>
 				 (curly
@@ -669,7 +672,8 @@
 						   ,(coerce g 'single-float)
 						   ,(coerce b 'single-float)
 						   1s0)))))
-		    (maxDataPoints 2048)
+		    (maxDataPoints 1024
+				   )
 		    (x (std--vector<float> maxDataPoints))
 		    (y (std--vector<float> maxDataPoints))
 		    (timePoints (std--deque<float>))
@@ -678,6 +682,23 @@
 			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
 		    (startTime (std--chrono--steady_clock--now))))
 
+	      (let ((diagramVoltage (DiagramWithGui (curly
+				  ,@(loop for (r g b name) in `((1 0 0 red)
+								(0 1 0 green)
+								(0 0 1 blue)
+								(1 1 0 yellow) 
+								(1 0 1 magenta)
+								(0 1 1 cyan)
+								(.5 .5 .5 gray)
+								(1 .5 0 orange))
+					  collect
+					  `(Color ,(coerce r 'single-float)
+						   ,(coerce g 'single-float)
+						   ,(coerce b 'single-float)
+						   )))
+						    8
+						    maxDataPoints))))
+	      
 	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
 	      (while (!glfwWindowShouldClose window)
@@ -739,7 +760,8 @@
 			  (comments "Add the new timepoint")
 			  (timePoints.push_back elapsedTime)
 			
-
+			  (let ((voltageValues (std--vector<float> ; pmt.max_cores
+						))))
 			  (dotimes (i pmt.max_cores)
 			    (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
 				  (core_frequency (* (pmta (aref CORE_FREQEFF i))
@@ -751,6 +773,11 @@
 						      average_voltage)
 						   (* .2 core_sleep_time)))
 				  (core_temperature (pmta (aref CORE_TEMP i))))
+			      
+			      (do0
+			       (voltageValues.push_back core_voltage_true)
+			       #+nil
+			       (setf (aref voltageValues i) core_voltage_true))
 
 			      (comments "Update the frequency, power and temperature data for each core  ")
 			      ,@(loop for e in l-store and f in `(core_frequency core_voltage core_temperature)
@@ -788,7 +815,9 @@
 							  (pmta (aref CORE_CC6 i)))
 							 (c_str))))
 				      ))))
-
+			  (diagramVoltage.AddDataPoint elapsedTime
+						       voltageValues)
+			  (diagramVoltage.RenderGui)
 			  ,@(loop for e in l-store
 				  collect
 				  `(when (ImPlot--BeginPlot (string ,e))

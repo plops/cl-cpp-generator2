@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
        ImVec4(0.F, 0.F, 1.0F, 1.0F), ImVec4(1.0F, 1.0F, 0.F, 1.0F),
        ImVec4(1.0F, 0.F, 1.0F, 1.0F), ImVec4(0.F, 1.0F, 1.0F, 1.0F),
        ImVec4(0.50F, 0.50F, 0.50F, 1.0F), ImVec4(1.0F, 0.50F, 0.F, 1.0F)})};
-  auto maxDataPoints{2048};
+  auto maxDataPoints{1024};
   auto x{std::vector<float>(maxDataPoints)};
   auto y{std::vector<float>(maxDataPoints)};
   auto timePoints{std::deque<float>()};
@@ -142,6 +142,11 @@ int main(int argc, char **argv) {
   auto corePower{std::vector<std::deque<float>>(pmt.max_cores)};
   auto coreTemperature{std::vector<std::deque<float>>(pmt.max_cores)};
   auto startTime{std::chrono::steady_clock::now()};
+  auto diagramVoltage{DiagramWithGui(
+      {Color(1.0F, 0.F, 0.F), Color(0.F, 1.0F, 0.F), Color(0.F, 0.F, 1.0F),
+       Color(1.0F, 1.0F, 0.F), Color(1.0F, 0.F, 1.0F), Color(0.F, 1.0F, 1.0F),
+       Color(0.50F, 0.50F, 0.50F), Color(1.0F, 0.50F, 0.F)},
+      8, maxDataPoints)};
   auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -212,6 +217,7 @@ int main(int argc, char **argv) {
         // Add the new timepoint
 
         timePoints.push_back(elapsedTime);
+        auto voltageValues{std::vector<float>()};
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
@@ -220,6 +226,7 @@ int main(int argc, char **argv) {
           auto core_voltage{(1.0F - core_sleep_time) * average_voltage +
                             0.20F * core_sleep_time};
           auto core_temperature{pmta(CORE_TEMP[i])};
+          voltageValues.push_back(core_voltage_true);
           // Update the frequency, power and temperature data for each core
 
           coreFrequency[i].push_back(core_frequency);
@@ -251,6 +258,8 @@ int main(int argc, char **argv) {
             }
           }
         }
+        diagramVoltage.AddDataPoint(elapsedTime, voltageValues);
+        diagramVoltage.RenderGui();
         if (ImPlot::BeginPlot("coreFrequency")) {
           for (auto i = 0; i < pmt.max_cores; i += 1) {
             ImPlot::SetNextLineStyle(coreColors[i]);

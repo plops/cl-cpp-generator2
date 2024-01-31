@@ -6,7 +6,8 @@
 #include <bitset>
 #include <cstring>
 #include <string> 
-#include "CpuAffinityManagerBase.h" 
+#include "CpuAffinityManagerBase.h"
+#include "DiagramWithGui.h" 
 class CpuAffinityManagerWithGui : public CpuAffinityManagerBase {
         public:
         using CpuAffinityManagerBase::CpuAffinityManagerBase; 
