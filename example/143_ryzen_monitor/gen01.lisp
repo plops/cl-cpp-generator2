@@ -244,17 +244,10 @@
 			(include DiagramBase.h))
      :implementation-preamble
      `(do0
-       
-       (include<>
-		  stdexcept
-		  format
-		  iostream
-		  
-		  )
-       (include implot.h)
-       )
+       (include<> stdexcept
+		  format)
+       (include implot.h))
      :code `(do0
-	     
 	     (defclass ,name "public DiagramBase"
 	       "public:"
 	       "using DiagramBase::DiagramBase;"
@@ -282,21 +275,14 @@
 					(string "Y")
 					ImPlotAxisFlags_AutoFit
 					ImPlotAxisFlags_AutoFit)
-		     (ImPlot--SetupFinish)
+		     ;(ImPlot--SetupFinish)
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
-							  i )
+							  i)
 					     (c_str))
-					
 					getter
 					(reinterpret_cast<void*> &data)
 					(time_points_.size)))
-		   (ImPlot--EndPlot))
-		 )
-	       
-	       )))
-
-    )
-  
+		   (ImPlot--EndPlot)))))))
 
   (let* ((name `CpuAffinityManagerBase)
 	 (members `((selectedCpus :type std--bitset<12> :initform nil)
