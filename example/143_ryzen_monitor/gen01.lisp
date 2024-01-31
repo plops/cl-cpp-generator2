@@ -23,6 +23,7 @@
 		    (diagrams :type "std::vector<DiagramData>")
 		    ;(x :type "std::vector<float>")
 		    ;(y :type "std::vector<float>")
+		    (name-y :type "std::string" :param t)
 		    (time-points :type "std::deque<float>"))))
     (write-source 
    (asdf:system-relative-pathname
@@ -40,7 +41,8 @@
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
 		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
-					  10))
+					  10
+					  (string "1")))
 		    ))
 	      
 	      (comments Act)
@@ -57,7 +59,8 @@
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
 		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
-					  10))
+					  10
+					  (string "1")))
 		    ))
 	      
 	      (comments Act)
@@ -75,7 +78,8 @@
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
 		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
-					  3))
+					  3
+					  (string "1")))
 		    ))
 	      
 	      (comments Act)
@@ -94,7 +98,8 @@
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
 		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  2
-					  3))
+					  3
+					  (string "1")))
 		    ))
 	      
 	      (comments Act)
@@ -258,7 +263,8 @@
 			  "const std::deque<float>& time_points_;"
 			  "const std::vector<DiagramData>& diagrams_;"
 			  "int i;"))
-		 (when (ImPlot--BeginPlot (string ""))
+		 (when (ImPlot--BeginPlot (dot name_y_ (c_str)) ;(string "")
+					  )
 		   (dotimes (i max_cores_)
 		     (let ((data (PlotData time_points_ diagrams_ i))))
 		     (let ((getter (lambda (idx data)
@@ -683,10 +689,14 @@
 						   ,(coerce b 'single-float)
 						   )))
 						    8
-						    maxDataPoints))
-		    (diagramTemperature (DiagramWithGui 8 maxDataPoints))
-		    (diagramFrequency (DiagramWithGui 8 maxDataPoints))
-		    (diagramPower (DiagramWithGui 8 maxDataPoints))))
+						    maxDataPoints
+						    (string "voltage")))
+		    (diagramTemperature (DiagramWithGui 8 maxDataPoints
+							(string "temperature")))
+		    (diagramFrequency (DiagramWithGui 8 maxDataPoints
+						      (string "frequency")))
+		    (diagramPower (DiagramWithGui 8 maxDataPoints
+						  (string "power")))))
 	      
 	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
@@ -791,32 +801,22 @@
 					       (dot (std--format (string "{:2} Disabled")
 								 i )
 						    (c_str)))
-				  (if (<= 6s0 (pmta (aref CORE_C0 i)))
-				      (do0
-				       (ImGui--Text (string "%s")
-						
-						    (dot (std--format
-							  (string "{:2} Sleeping   {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
-							  i (pmta (aref CORE_POWER i))
-							  core_voltage core_voltage_true (pmta (aref CORE_TEMP i))
-							  (pmta (aref CORE_C0 i))
-							  (pmta (aref CORE_CC1 i))
-							  (pmta (aref CORE_CC6 i)))
-							 (c_str))))
-				      (do0
-				       (ImGui--Text (string "%s")
-						
-						    (dot (std--format
-							  (string "{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
-						      
-							  i core_frequency
-							  (pmta (aref CORE_POWER i))
-							  core_voltage core_voltage_true (pmta (aref CORE_TEMP i))
-							  (pmta (aref CORE_C0 i))
-							  (pmta (aref CORE_CC1 i))
-							  (pmta (aref CORE_CC6 i)))
-							 (c_str))))
-				      ))))
+				  (ImGui--Text (string "%s")
+					       
+					       (dot (std--format
+						     (string "{:2} {} {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
+						     
+						     i (? (<= 6s0 (pmta (aref CORE_C0 i)))
+							  (string "Sleeping  ")
+							  (std--format (string "{:7.1f}MHz")
+								       core_frequency ))
+						     core_power
+						     core_voltage core_voltage_true core_temperature
+						     (pmta (aref CORE_C0 i))
+						     (pmta (aref CORE_CC1 i))
+						     (pmta (aref CORE_CC6 i)))
+						    (c_str)))
+				  )))
 			  (diagramVoltage.AddDataPoint elapsedTime
 						       voltageValues)
 			  (diagramFrequency.AddDataPoint elapsedTime

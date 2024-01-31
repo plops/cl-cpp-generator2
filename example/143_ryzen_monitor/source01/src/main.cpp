@@ -131,10 +131,10 @@ int main(int argc, char **argv) {
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
-  auto diagramVoltage{DiagramWithGui(8, maxDataPoints)};
-  auto diagramTemperature{DiagramWithGui(8, maxDataPoints)};
-  auto diagramFrequency{DiagramWithGui(8, maxDataPoints)};
-  auto diagramPower{DiagramWithGui(8, maxDataPoints)};
+  auto diagramVoltage{DiagramWithGui(8, maxDataPoints, "voltage")};
+  auto diagramTemperature{DiagramWithGui(8, maxDataPoints, "temperature")};
+  auto diagramFrequency{DiagramWithGui(8, maxDataPoints, "frequency")};
+  auto diagramPower{DiagramWithGui(8, maxDataPoints, "power")};
   auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -198,27 +198,18 @@ int main(int argc, char **argv) {
           if (core_disabled) {
             ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
           } else {
-            if (6.0F <= pmta(CORE_C0[i])) {
-              ImGui::Text(
-                  "%s",
-                  std::format("{:2} Sleeping   {:6.3f}W {:5.3f}V {:5.3f}V "
-                              "{:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
-                              i, pmta(CORE_POWER[i]), core_voltage,
-                              core_voltage_true, pmta(CORE_TEMP[i]),
-                              pmta(CORE_C0[i]), pmta(CORE_CC1[i]),
-                              pmta(CORE_CC6[i]))
-                      .c_str());
-            } else {
-              ImGui::Text(
-                  "%s",
-                  std::format("{:2} {:7.1f}MHz {:6.3f}W {:5.3f}V {:5.3f}V "
-                              "{:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
-                              i, core_frequency, pmta(CORE_POWER[i]),
-                              core_voltage, core_voltage_true,
-                              pmta(CORE_TEMP[i]), pmta(CORE_C0[i]),
-                              pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
-                      .c_str());
-            }
+            ImGui::Text(
+                "%s",
+                std::format("{:2} {} {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: "
+                            "{:5.1f}% C1: {:5.1f}% C6: {:5.1f}%",
+                            i,
+                            6.0F <= pmta(CORE_C0[i])
+                                ? "Sleeping  "
+                                : std::format("{:7.1f}MHz", core_frequency),
+                            core_power, core_voltage, core_voltage_true,
+                            core_temperature, pmta(CORE_C0[i]),
+                            pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
+                    .c_str());
           }
         }
         diagramVoltage.AddDataPoint(elapsedTime, voltageValues);
