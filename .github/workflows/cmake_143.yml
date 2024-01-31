@@ -1,0 +1,47 @@
+name: CMake Build Ryzen Monitor ImGui
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'example/143_ryzen_monitor/source01/**'
+      
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get install -y cmake ninja-build libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev 
+
+    - name: Install GLFW dependency from repo
+      run: cd .. ; git clone https://github.com/glfw/glfw
+
+    - name: Install ImGui dependency from repo
+      run: cd .. ; git clone https://github.com/orcornut/
+
+    - name: Install ImPlot dependency from repo
+      run: cd .. ; git clone https://github.com/epezent/implot
+
+    - name: Create build directory
+      run: mkdir build
+
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
+
+    - name: Configure CMake
+      run: cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with Ninja
+      run: ninja -C build
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: imgui_grpc_artifact
+        path: build/ryzen_mon_glgui
