@@ -11,6 +11,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
+# GCC 13, CLANG 14 and MSVC 16.10/VS 2019 all have the {fmt} based std::format 
+
 set(CMAKE_CXX_STANDARD 20)
 enable_testing()
 
