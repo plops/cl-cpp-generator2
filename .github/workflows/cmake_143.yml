@@ -35,7 +35,7 @@ jobs:
 #      uses: mxschmitt/action-tmate@v3
 
     - name: Configure CMake
-      run: cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DDEP_DIR=`pwd`/..
+      run: cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DDEP_DIR=`pwd`/.. -DGLFW_USE_WAYLAND=OFF
 
     - name: Build with Ninja
       run: ninja -C build
@@ -43,5 +43,5 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ryzen_mon_glgui_artifact
+        name: ryzen_mon_glgui_artifact1
         path: build/ryzen_mon_glgui
