@@ -9,6 +9,9 @@ void DiagramWithGui::RenderGui() {
     const std::deque<float> &time_points_;
     const std::vector<DiagramData> &diagrams_;
     int i;
+    PlotData(const std::deque<float> &time_points,
+             const std::vector<DiagramData> &diagrams, int index)
+        : time_points_(time_points), diagrams_(diagrams), i(index) {}
   };
   if (ImPlot::BeginPlot(name_y_.c_str())) {
     for (auto i = 0; i < max_cores_; i += 1) {

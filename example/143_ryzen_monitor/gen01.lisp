@@ -262,7 +262,8 @@
 			(progn
 			  "const std::deque<float>& time_points_;"
 			  "const std::vector<DiagramData>& diagrams_;"
-			  "int i;"))
+			  "int i;"
+			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_(time_points), diagrams_(diagrams), i(index) {}"))
 		 (when (ImPlot--BeginPlot (dot name_y_ (c_str)) ;(string "")
 					  )
 		   (dotimes (i max_cores_)
