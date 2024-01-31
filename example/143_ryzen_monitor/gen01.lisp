@@ -37,17 +37,78 @@
      (space (TEST ,name AddDataPoint_AddPointToEmpty_HaveOnePoint)
 	    (progn
 	      (comments Arrange)
-	      (let ((diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
-					  12
+	      (let ((values (std--vector<float> (curly 10s0 11s0)))
+		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+					  (values.size)
 					  10))
-		    (expected_result 1)))
+		    ))
+	      
 	      (comments Act)
-	      (diagram.AddDataPoint 0 1s0 10s0)
-	      ;(let ((actual_result (diagram.GetDataPointCount))))
-	      ;(comments Assert)
-	      ;(EXPECT_EQ actual_result expected_result)
+	      (diagram.AddDataPoint 1s0 values)
+
+	      (comments Assert)
+	      
 	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 1)
-	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 1))))
+	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 1)))
+
+     (space (TEST ,name AddDataPoint_AddPointToOne_HaveTwoPoints)
+	    (progn
+	      (comments Arrange)
+	      (let ((values (std--vector<float> (curly 10s0 11s0)))
+		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+					  (values.size)
+					  10))
+		    ))
+	      
+	      (comments Act)
+	      (diagram.AddDataPoint 1s0 values)
+	      (diagram.AddDataPoint 2s0 values)
+
+	      (comments Assert)
+	      
+	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 2)
+	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 2)))
+
+     (space (TEST ,name AddDataPoint_AddLastPoint_HaveThreePoints)
+	    (progn
+	      (comments Arrange)
+	      (let ((values (std--vector<float> (curly 10s0 11s0)))
+		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+					  (values.size)
+					  3))
+		    ))
+	      
+	      (comments Act)
+	      (diagram.AddDataPoint 1s0 values)
+	      (diagram.AddDataPoint 2s0 values)
+	      (diagram.AddDataPoint 3s0 values)
+
+	      (comments Assert)
+	      
+	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 3)
+	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 3)))
+
+     (space (TEST ,name AddDataPoint_AddOneMorePointsThanFit_HaveThreePoints)
+	    (progn
+	      (comments Arrange)
+	      (let ((values (std--vector<float> (curly 10s0 11s0)))
+		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+					  2
+					  3))
+		    ))
+	      
+	      (comments Act)
+	      (diagram.AddDataPoint 1s0 (curly 10s0 100s0))
+	      (diagram.AddDataPoint 2s0 (curly 20s0 200s0))
+	      (diagram.AddDataPoint 3s0 (curly 30s0 300s0))
+	      (diagram.AddDataPoint 4s0 (curly 40s0 400s0))
+
+	      (comments Assert)
+	      
+	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 3)
+	      (EXPECT_EQ (dot diagram (GetTimePoints) (at 2)) 4s0)
+	      (EXPECT_EQ (dot diagram (GetDiagrams) (at 0) values (size)) 3)
+	      (EXPECT_EQ (dot diagram (GetDiagrams) (at 0) values (at 2)) 40s0))))
    :omit-parens t
    :format t
    :tidy nil)
@@ -123,13 +184,13 @@
 		 (y_.reserve max_points_)
 		 )
 
-	       (defmethod AddDataPoint (coreIndex time value)
-		 (declare (type int coreIndex)
+	       (defmethod AddDataPoint (time values)
+		 (declare 
 			  (type float time)
-			  (type float value))
-		 (when (logior (< coreIndex 0)
-			       (<= (diagrams_.size) coreIndex))
-		   (throw (std--out_of_range (string "Invalid core index for diagram set"))))
+			  (type "const std::vector<float>&" values))
+		 (unless (== (values.size)
+			     (diagrams_.size))
+		   (throw (std--invalid_argument (string "Number of values doesn't match the number of diagrams"))))
 		 (when (<= max_points_ (time_points_.size))
 		   (time_points_.pop_front)
 		   (for-range (diagram diagrams_)
@@ -137,9 +198,10 @@
 			      (unless (diagram.values.empty)
 				(diagram.values.pop_front))))
 		 (time_points_.push_back time)
-		 (dot (aref diagrams_ coreIndex)
-		      values
-		      (push_back value)))
+		 (dotimes (i (values.size))
+		  (dot (aref diagrams_ i)
+		       values
+		       (push_back (aref values i)))))
 
 	       ,@(remove-if #'null
 			    (loop for e in members
