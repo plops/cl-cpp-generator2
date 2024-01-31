@@ -51,7 +51,7 @@ jobs:
       run: |
         cp ryzen_monitor/src/ryzen_monitor.c .
         cat ryzen_monitor.c | sed 's/main(/main2(/g' > ryzen_monitor/src/ryzen_monitor.c
-          
+
     - name: Install clang17
       run: |
         wget https://apt.llvm.org/llvm.sh
@@ -60,7 +60,7 @@ jobs:
 
     - name: Create build directory
       run: |
-        rm -rf build
+        #rm -rf build
         mkdir build
         du -hs build
 
