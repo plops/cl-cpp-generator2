@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
+# 22 has gcc 11 and clang 14
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -58,8 +58,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        #export CC=/usr/bin/clang
-        #export CXX=/usr/bin/clang++
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
         cmake -S example/143_ryzen_monitor/source01 -B build -G Ninja -DDEP_DIR=`pwd` -DCMAKE_BUILD_TYPE=Release  -DGLFW_BUILD_WAYLAND=OFF
 
     - name: Build with Ninja
