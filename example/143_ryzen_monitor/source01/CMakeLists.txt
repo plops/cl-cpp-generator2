@@ -82,8 +82,10 @@ FetchContent_MakeAvailable(googletest)
 # Define the test executable
 add_executable(unit_tests
   tests/test_CpuAffinityManagerBase.cpp
+  tests/test_DiagramBase.cpp
   src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation
-)
+  src/DiagramBase.cpp
+  )
 
 # Link the test executable with Google Test and the necessary libraries
 target_link_libraries(unit_tests gtest_main)

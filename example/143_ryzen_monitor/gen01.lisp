@@ -35,12 +35,17 @@
      (include<> gtest/gtest.h
 		unistd.h)
 
-     (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
+     (space (TEST ,name AddDataPoint_AddPointToEmpty_HaveOnePoint)
 	    (progn
-	      (let ((manager (CpuAffinityManagerBase (getpid)))))
-	      (comments "FIXME: this only works on a twelf core cpu")
-	      (let ((expected_result (std--bitset<12> (string "111111111111")))
-		    (actual_result (manager.GetSelectedCpus))))
+	      (comments Arrange)
+	      (let ((diagram (DiagramBase))
+		    (expected_result 1)))
+	      (comments Act)
+	      (diagram.AddDataPoint 0 1s0 10s0)
+	      
+	      (let (
+		    (actual_result (diagram.GetDataPointCount))))
+	      (comments Assert)
 	      (EXPECT_EQ actual_result expected_result))))
    :omit-parens t
    :format t
@@ -53,7 +58,11 @@
      :headers `()
      :header-preamble `(do0
 			(include<> vector deque string)
-			(space struct Color (progn "float r,g,b,a;")))
+			(space struct Color (progn "float r,g,b,a;"))
+			(space struct DiagramData (progn
+					   "std::string name;"
+					   "std::deque<float> values;"
+					   "Color color;")))
      :implementation-preamble
      `(do0
        
@@ -109,8 +118,8 @@
 							    i)
 					       (curly)
 					       (aref colors (% i (colors.size))))))
-		 (x.reserve max_points_)
-		 (y.reserve max_points_)
+		 (x_.reserve max_points_)
+		 (y_.reserve max_points_)
 		 )
 
 	       (defmethod AddDataPoint (coreIndex time value)
@@ -124,19 +133,27 @@
 		   (time_points_.pop_front)
 		   (for-range (diagram diagrams_)
 			      (declare (type "auto&" diagram))
-			      (unless (diagram_.values.empty)
-				(diagram_.values.pop_front))))
+			      (unless (diagram.values.empty)
+				(diagram.values.pop_front))))
 		 (time_points_.push_back time)
 		 (dot (aref diagrams_ coreIndex)
 		      values
 		      (push_back value)))
+
+	       ,@(remove-if #'null
+			    (loop for e in members
+				  collect
+				  (destructuring-bind (name &key type param (initform 0)) e
+				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
+					  (get (cl-change-case:pascal-case (format nil "get-~a" name)))
+					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
+				      `(defmethod ,get ()
+					 (declare (values ,type))
+					 (return ,nname_))))))
 	       
 	       "protected:"
 	       
-	       (space struct DiagramData (progn
-					   "std::string name;"
-					   "std::deque<float> values;"
-					   "Color color;"))
+	       
 	       ,@(remove-if #'null
 			    (loop for e in members
 				  collect
