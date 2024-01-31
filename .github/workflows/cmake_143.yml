@@ -43,5 +43,5 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v3
       with:
-        name: imgui_grpc_artifact
+        name: ryzen_mon_glgui_artifact
         path: build/ryzen_mon_glgui
