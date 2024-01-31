@@ -63,8 +63,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        export CC=/usr/bin/clang
-        export CXX=/usr/bin/clang++
+        export CC=/usr/bin/clang-17
+        export CXX=/usr/bin/clang++-17
         # this is required for chrono but it doesnt support std::format
         # export CXXFLAGS="-stdlib=libc++ -std=c++20"
         export CXXFLAGS="-std=c++20"
