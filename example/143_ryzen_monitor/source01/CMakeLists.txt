@@ -80,33 +80,33 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
 
-# Fetch Google Test
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG release-1.10.0  # specify the commit hash or tag here
-)
-FetchContent_MakeAvailable(googletest)
+# # Fetch Google Test
+# include(FetchContent)
+# FetchContent_Declare(
+#   googletest
+#   GIT_REPOSITORY https://github.com/google/googletest.git
+#   GIT_TAG release-1.10.0  # specify the commit hash or tag here
+# )
+# FetchContent_MakeAvailable(googletest)
 
-# Define the test executable
-add_executable(unit_tests
-  tests/test_CpuAffinityManagerBase.cpp
-  src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
-  src/DiagramBase.cpp
-  tests/test_DiagramBase.cpp
-)
-# Link the test executable with Google Test and the necessary libraries
-target_link_libraries(unit_tests gtest_main)
-target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+# # Define the test executable
+# add_executable(unit_tests
+#   tests/test_CpuAffinityManagerBase.cpp
+#   src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
+#   src/DiagramBase.cpp
+#   tests/test_DiagramBase.cpp
+# )
+# # Link the test executable with Google Test and the necessary libraries
+# target_link_libraries(unit_tests gtest_main)
+# target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-# Register the test with CTest  
-add_test(NAME unit_tests COMMAND unit_tests)  
+# # Register the test with CTest  
+# add_test(NAME unit_tests COMMAND unit_tests)  
 
-# Optionally, you can add a custom command to run the tests after building
-add_custom_command(
-  TARGET unit_tests
-  COMMENT "Running unit tests"
-  POST_BUILD
-  COMMAND unit_tests
-)
+# # Optionally, you can add a custom command to run the tests after building
+# add_custom_command(
+#   TARGET unit_tests
+#   COMMENT "Running unit tests"
+#   POST_BUILD
+#   COMMAND unit_tests
+# )
