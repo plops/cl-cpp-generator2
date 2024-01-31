@@ -50,7 +50,7 @@ jobs:
     - name: Install clang17
       run: |
         wget https://apt.llvm.org/llvm.sh
-        echo ""|sudo ./llvm.sh 17
+        echo ""|sudo sh ./llvm.sh 17
 
     - name: Create build directory
       run: |
