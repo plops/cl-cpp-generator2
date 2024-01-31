@@ -17,22 +17,40 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install dependencies
-      run: sudo apt-get install -y cmake ninja-build clang libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev 
+      run: |
+        sudo apt-get install -y cmake ninja-build \
+          clang libxrandr-dev libxinerama-dev \
+          libxcursor-dev libxi-dev libgl1-mesa-dev 
 
     - name: Install GLFW dependency from repo
-      run: git clone --depth 1 https://github.com/glfw/glfw ; du -hs glfw; pwd
+      run: |
+        git clone --depth 1 https://github.com/glfw/glfw 
+        du -hs glfw
+        pwd
 
     - name: Install ImGui dependency from repo
-      run: git clone --depth 1 https://github.com/ocornut/imgui ; du -hs imgui; pwd; find `pwd`
+      run: | 
+      git clone --depth 1 https://github.com/ocornut/imgui 
+      du -hs imgui
+      pwd
+      find `pwd`
 
     - name: Install ImPlot dependency from repo
-      run: git clone --depth 1 https://github.com/epezent/implot ; du -hs implot; pwd
+      run: |
+      git clone --depth 1 https://github.com/epezent/implot 
+      du -hs implot
+      pwd
 
     - name: Install ryzen_monitor dependency from repo
-      run: git clone --depth 1 https://github.com/hattedsquirrel/ryzen_monitor.git ; du -hs ryzen_monitor ;pwd 
+      run: |
+      git clone --depth 1 https://github.com/hattedsquirrel/ryzen_monitor.git 
+      du -hs ryzen_monitor 
+      pwd 
 
     - name: Create build directory
-      run: mkdir build
+      run: |
+      mkdir build
+      du -hs build
 
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
