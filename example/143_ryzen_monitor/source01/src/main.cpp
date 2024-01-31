@@ -132,6 +132,9 @@ int main(int argc, char **argv) {
   auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
   auto diagramVoltage{DiagramWithGui(8, maxDataPoints)};
+  auto diagramTemperature{DiagramWithGui(8, maxDataPoints)};
+  auto diagramFrequency{DiagramWithGui(8, maxDataPoints)};
+  auto diagramPower{DiagramWithGui(8, maxDataPoints)};
   auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -176,6 +179,9 @@ int main(int argc, char **argv) {
         auto elapsedTime{
             std::chrono::duration<float>(currentTime - startTime).count()};
         auto voltageValues{std::vector<float>(pmt.max_cores)};
+        auto temperatureValues{std::vector<float>(pmt.max_cores)};
+        auto frequencyValues{std::vector<float>(pmt.max_cores)};
+        auto powerValues{std::vector<float>(pmt.max_cores)};
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
@@ -184,7 +190,11 @@ int main(int argc, char **argv) {
           auto core_voltage{(1.0F - core_sleep_time) * average_voltage +
                             0.20F * core_sleep_time};
           auto core_temperature{pmta(CORE_TEMP[i])};
-          voltageValues[i] = core_voltage_true;
+          auto core_power{pmta(CORE_POWER[i])};
+          voltageValues[i] = core_voltage;
+          temperatureValues[i] = core_temperature;
+          frequencyValues[i] = core_frequency;
+          powerValues[i] = core_power;
           if (core_disabled) {
             ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
           } else {
@@ -212,6 +222,12 @@ int main(int argc, char **argv) {
           }
         }
         diagramVoltage.AddDataPoint(elapsedTime, voltageValues);
+        diagramFrequency.AddDataPoint(elapsedTime, frequencyValues);
+        diagramTemperature.AddDataPoint(elapsedTime, temperatureValues);
+        diagramPower.AddDataPoint(elapsedTime, powerValues);
+        diagramTemperature.RenderGui();
+        diagramPower.RenderGui();
+        diagramFrequency.RenderGui();
         diagramVoltage.RenderGui();
         ImGui::End();
       }

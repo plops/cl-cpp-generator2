@@ -683,7 +683,10 @@
 						   ,(coerce b 'single-float)
 						   )))
 						    8
-						    maxDataPoints))))
+						    maxDataPoints))
+		    (diagramTemperature (DiagramWithGui 8 maxDataPoints))
+		    (diagramFrequency (DiagramWithGui 8 maxDataPoints))
+		    (diagramPower (DiagramWithGui 8 maxDataPoints))))
 	      
 	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
@@ -749,6 +752,12 @@
 			   (timePoints.push_back elapsedTime))
 			
 			  (let ((voltageValues (std--vector<float>  pmt.max_cores
+						))
+				(temperatureValues (std--vector<float>  pmt.max_cores
+						))
+				(frequencyValues (std--vector<float>  pmt.max_cores
+						))
+				(powerValues (std--vector<float>  pmt.max_cores
 						))))
 			  (dotimes (i pmt.max_cores)
 			    (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
@@ -760,12 +769,16 @@
 				  (core_voltage (+ (* (- 1s0 core_sleep_time)
 						      average_voltage)
 						   (* .2 core_sleep_time)))
-				  (core_temperature (pmta (aref CORE_TEMP i))))
+				  (core_temperature (pmta (aref CORE_TEMP i)))
+				  (core_power (pmta (aref CORE_POWER i))))
 			      
 			      (do0
 			       ;(voltageValues.push_back core_voltage_true)
 			       ;#+nil
-			       (setf (aref voltageValues i) core_voltage_true))
+			       (setf (aref voltageValues i) core_voltage
+				     (aref temperatureValues i) core_temperature
+				     (aref frequencyValues i) core_frequency
+				      (aref powerValues i) core_power))
 
 			      #+nil(do0
 			       (comments "Update the frequency, power and temperature data for each core  ")
@@ -806,7 +819,19 @@
 				      ))))
 			  (diagramVoltage.AddDataPoint elapsedTime
 						       voltageValues)
+			  (diagramFrequency.AddDataPoint elapsedTime
+						       frequencyValues)
+			  (diagramTemperature.AddDataPoint elapsedTime
+							   temperatureValues)
+			  (diagramPower.AddDataPoint elapsedTime
+							   powerValues)
+			  
+			  (diagramTemperature.RenderGui)
+			  (diagramPower.RenderGui)
+			  (diagramFrequency.RenderGui)
 			  (diagramVoltage.RenderGui)
+			  
+			  
 			  #+nil 
 			  ,@(loop for e in l-store
 				  collect
