@@ -42,9 +42,13 @@ set(LIBRARIES "glfw;OpenGL")
 
 include_directories(${GLFW_DIR}/deps)
 
-set(sources src/main.cpp
-	    src/CpuAffinityManagerBase.cpp
-	    src/CpuAffinityManagerWithGui.cpp)
+set(sources 
+	src/main.cpp
+	src/CpuAffinityManagerBase.cpp
+	src/CpuAffinityManagerWithGui.cpp
+	src/DiagramBase.cpp
+	src/DiagramWithGui.cpp	
+)
 
 #file(GLOB sources src/*.cpp)
 

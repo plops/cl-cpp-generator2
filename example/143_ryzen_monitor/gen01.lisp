@@ -21,8 +21,8 @@
 	 (members `((max-cores :type int :param t)
 		    (max-points :type int :param t)
 		    (diagrams :type "std::vector<DiagramData>")
-		    (x :type "std::vector<float>")
-		    (y :type "std::vector<float>")
+		    ;(x :type "std::vector<float>")
+		    ;(y :type "std::vector<float>")
 		    (time-points :type "std::deque<float>"))))
     (write-source 
    (asdf:system-relative-pathname
@@ -175,13 +175,14 @@
 		  (explicit)	    
 		  (values :constructor)
 		  )
+		 (diagrams_.reserve max_cores_)
 		 (dotimes (i max_cores_)
 		   (diagrams_.push_back (curly (std--format (string "Core {}")
 							    i)
 					       (curly)
 					       (aref colors (% i (colors.size))))))
-		 (x_.reserve max_points_)
-		 (y_.reserve max_points_)
+		 ;(x_.reserve max_points_)
+		 ;(y_.reserve max_points_)
 		 )
 
 	       (defmethod AddDataPoint (time values)
@@ -223,7 +224,75 @@
 				  (destructuring-bind (name &key type param (initform 0)) e
 				    (let ((nname (cl-change-case:snake-case (format nil "~a" name)))
 					  (nname_ (format nil "~a_" (cl-change-case:snake-case (format nil "~a" name)))))
-				      `(space ,type ,nname_)))))))))
+				      `(space ,type ,nname_))))))))
+
+    )
+
+  (let* ((name `DiagramWithGui)
+	 (members `()))
+   
+    (write-class
+     :dir (asdf:system-relative-pathname
+	   'cl-cpp-generator2
+	   *source-dir*)
+     :name name
+     :headers `()
+     :header-preamble `(do0
+			(include<> vector deque string )
+			(include DiagramBase.h))
+     :implementation-preamble
+     `(do0
+       
+       (include<>
+		  stdexcept
+		  format
+		  
+		  )
+       (include implot.h)
+       )
+     :code `(do0
+	     
+	     (defclass ,name "public DiagramBase"
+	       "public:"
+	       "using DiagramBase::DiagramBase;"
+	       
+	       (defmethod RenderGui ()
+		 (space struct PlotData
+			(progn
+			  "const std::deque<float>& time_points_;"
+			  "const std::vector<DiagramData>& diagrams_;"
+			  "int i;"))
+		 (when (ImPlot--BeginPlot (string ""))
+		   (dotimes (i max_cores_)
+		     (let ((data (PlotData time_points_ diagrams_ i))))
+		     (let ((getter (lambda (idx data)
+				     (declare (type void* data)
+					      (type int idx)
+					      (values ImPlotPoint)
+					      (capture ""))
+				     (let ((*d (static_cast<PlotData*> data))))
+				     (let ((x (dot d->time_points_ (at idx)))
+					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
+				     (return (ImPlotPoint x y))))))
+					;(ImPlot--SetNextLineStyle (aref coreColors i))
+		     (ImPlot--SetupAxes (string "X")
+					(string "Y")
+					ImPlotAxisFlags_AutoFit
+					ImPlotAxisFlags_AutoFit)
+		     (ImPlot--SetupFinish)
+		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
+							  i )
+					     (c_str))
+					
+					getter
+					nullptr
+					(time_points_.size)))
+		   (ImPlot--EndPlot))
+		 )
+	       
+	       )))
+
+    )
   
 
   (let* ((name `CpuAffinityManagerBase)
