@@ -30,27 +30,28 @@ jobs:
 
     - name: Install ImGui dependency from repo
       run: | 
-      git clone --depth 1 https://github.com/ocornut/imgui 
-      du -hs imgui
-      pwd
-      find `pwd`
+        git clone --depth 1 https://github.com/ocornut/imgui 
+        du -hs imgui
+        pwd
+        find `pwd`
 
     - name: Install ImPlot dependency from repo
       run: |
-      git clone --depth 1 https://github.com/epezent/implot 
-      du -hs implot
-      pwd
+        git clone --depth 1 https://github.com/epezent/implot 
+        du -hs implot
+        pwd
 
     - name: Install ryzen_monitor dependency from repo
       run: |
-      git clone --depth 1 https://github.com/hattedsquirrel/ryzen_monitor.git 
-      du -hs ryzen_monitor 
-      pwd 
+        git clone --depth 1 https://github.com/hattedsquirrel/ryzen_monitor.git 
+        du -hs ryzen_monitor 
+        pwd 
 
     - name: Create build directory
       run: |
-      mkdir build
-      du -hs build
+        rm -rf build
+        mkdir build
+        du -hs build
 
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
