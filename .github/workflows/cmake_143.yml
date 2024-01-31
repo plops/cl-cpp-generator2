@@ -23,7 +23,7 @@ jobs:
       run: cd .. ; git clone https://github.com/glfw/glfw
 
     - name: Install ImGui dependency from repo
-      run: cd .. ; git clone https://github.com/orcornut/
+      run: cd .. ; git clone https://github.com/orcornut/imgui
 
     - name: Install ImPlot dependency from repo
       run: cd .. ; git clone https://github.com/epezent/implot

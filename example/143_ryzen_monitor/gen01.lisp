@@ -664,8 +664,7 @@
 						   ,(coerce g 'single-float)
 						   ,(coerce b 'single-float)
 						   1s0)))))
-		    (maxDataPoints 1024
-				   )
+		    (maxDataPoints 1024)
 		    #+q(x (std--vector<float> maxDataPoints))
 		    #+q(y (std--vector<float> maxDataPoints))
 		    #+q(timePoints (std--deque<float>))
