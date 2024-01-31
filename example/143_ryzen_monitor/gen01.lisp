@@ -38,7 +38,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
 					  10))
 		    ))
@@ -55,7 +55,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
 					  10))
 		    ))
@@ -73,7 +73,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  (values.size)
 					  3))
 		    ))
@@ -92,7 +92,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
 					  2
 					  3))
 		    ))
@@ -120,11 +120,11 @@
      :headers `()
      :header-preamble `(do0
 			(include<> vector deque string)
-			(space struct Color (progn "float r,g,b,a;"))
+			#+color (space struct Color (progn "float r,g,b,a;"))
 			(space struct DiagramData (progn
 					   "std::string name;"
 					   "std::deque<float> values;"
-					   "Color color;")))
+					   #+color "Color color;")))
      :implementation-preamble
      `(do0
        
@@ -137,7 +137,7 @@
 	     
 	     (defclass ,name ()
 	       "public:"
-	       (defmethod ,name (colors ,@(remove-if #'null
+	       (defmethod ,name (#+color colors ,@(remove-if #'null
 					   (loop for e in members
 						 collect
 						 (destructuring-bind (name &key type param (initform 0)) e
@@ -147,7 +147,7 @@
 						     (when param
 						       nname))))))
 		 (declare
-		  (type "const std::vector<Color>&" colors)
+		  #+color (type "const std::vector<Color>&" colors)
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
@@ -180,7 +180,7 @@
 		   (diagrams_.push_back (curly (std--format (string "Core {}")
 							    i)
 					       (curly)
-					       (aref colors (% i (colors.size))))))
+					       #+color (aref colors (% i (colors.size))))))
 		 ;(x_.reserve max_points_)
 		 ;(y_.reserve max_points_)
 		 )
@@ -668,7 +668,7 @@
 			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
 		    (startTime (std--chrono--steady_clock--now))))
 
-	      (let ((diagramVoltage (DiagramWithGui (curly
+	      (let ((diagramVoltage (DiagramWithGui #+color (curly
 				  ,@(loop for (r g b name) in `((1 0 0 red)
 								(0 1 0 green)
 								(0 0 1 blue)

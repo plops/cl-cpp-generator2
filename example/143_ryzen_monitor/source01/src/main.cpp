@@ -131,11 +131,7 @@ int main(int argc, char **argv) {
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
-  auto diagramVoltage{DiagramWithGui(
-      {Color(1.0F, 0.F, 0.F), Color(0.F, 1.0F, 0.F), Color(0.F, 0.F, 1.0F),
-       Color(1.0F, 1.0F, 0.F), Color(1.0F, 0.F, 1.0F), Color(0.F, 1.0F, 1.0F),
-       Color(0.50F, 0.50F, 0.50F), Color(1.0F, 0.50F, 0.F)},
-      8, maxDataPoints)};
+  auto diagramVoltage{DiagramWithGui(8, maxDataPoints)};
   auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();

@@ -5,7 +5,7 @@ TEST(DiagramBase, AddDataPoint_AddPointToEmpty_HaveOnePoint) {
   // Arrange
 
   auto values{std::vector<float>({10.F, 11.F})};
-  auto diagram{DiagramBase({{1.0F, 0.F, 0.F, 1.0F}}, values.size(), 10)};
+  auto diagram{DiagramBase(values.size(), 10)};
   // Act
 
   diagram.AddDataPoint(1.0F, values);
@@ -18,7 +18,7 @@ TEST(DiagramBase, AddDataPoint_AddPointToOne_HaveTwoPoints) {
   // Arrange
 
   auto values{std::vector<float>({10.F, 11.F})};
-  auto diagram{DiagramBase({{1.0F, 0.F, 0.F, 1.0F}}, values.size(), 10)};
+  auto diagram{DiagramBase(values.size(), 10)};
   // Act
 
   diagram.AddDataPoint(1.0F, values);
@@ -32,7 +32,7 @@ TEST(DiagramBase, AddDataPoint_AddLastPoint_HaveThreePoints) {
   // Arrange
 
   auto values{std::vector<float>({10.F, 11.F})};
-  auto diagram{DiagramBase({{1.0F, 0.F, 0.F, 1.0F}}, values.size(), 3)};
+  auto diagram{DiagramBase(values.size(), 3)};
   // Act
 
   diagram.AddDataPoint(1.0F, values);
@@ -47,7 +47,7 @@ TEST(DiagramBase, AddDataPoint_AddOneMorePointsThanFit_HaveThreePoints) {
   // Arrange
 
   auto values{std::vector<float>({10.F, 11.F})};
-  auto diagram{DiagramBase({{1.0F, 0.F, 0.F, 1.0F}}, 2, 3)};
+  auto diagram{DiagramBase(2, 3)};
   // Act
 
   diagram.AddDataPoint(1.0F, {10.F, 1.00e+2F});
