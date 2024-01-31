@@ -23,7 +23,7 @@ jobs:
       run: git clone --depth 1 https://github.com/glfw/glfw ; du -hs glfw; pwd
 
     - name: Install ImGui dependency from repo
-      run: git clone --depth 1 https://github.com/ocornut/imgui ; du -hs imgui; pwd
+      run: git clone --depth 1 https://github.com/ocornut/imgui ; du -hs imgui; pwd; find .
 
     - name: Install ImPlot dependency from repo
       run: git clone --depth 1 https://github.com/epezent/implot ; du -hs implot; pwd
