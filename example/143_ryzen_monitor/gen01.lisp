@@ -20,7 +20,6 @@
   (let* ((name `DiagramBase)
 	 (members `((max-cores :type int :param t)
 		    (max-points :type int :param t)
-		    ;(colors :type "std::vector<ImVec4>" :param t)
 		    (diagrams :type "std::vector<DiagramData>")
 		    (x :type "std::vector<float>")
 		    (y :type "std::vector<float>")
@@ -38,15 +37,17 @@
      (space (TEST ,name AddDataPoint_AddPointToEmpty_HaveOnePoint)
 	    (progn
 	      (comments Arrange)
-	      (let ((diagram (DiagramBase))
+	      (let ((diagram (DiagramBase (curly (curly 1s0 0s0 0s0 1s0))
+					  12
+					  10))
 		    (expected_result 1)))
 	      (comments Act)
 	      (diagram.AddDataPoint 0 1s0 10s0)
-	      
-	      (let (
-		    (actual_result (diagram.GetDataPointCount))))
-	      (comments Assert)
-	      (EXPECT_EQ actual_result expected_result))))
+	      ;(let ((actual_result (diagram.GetDataPointCount))))
+	      ;(comments Assert)
+	      ;(EXPECT_EQ actual_result expected_result)
+	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 1)
+	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 1))))
    :omit-parens t
    :format t
    :tidy nil)
