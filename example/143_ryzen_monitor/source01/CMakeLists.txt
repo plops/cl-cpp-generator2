@@ -18,6 +18,11 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 enable_testing()
 
+# Set DEP_DIR with a command line flag
+if(NOT DEP_DIR)
+	set(DEP_DIR "/home/martin/src" CACHE PATH "Path to dependencies directory")
+endif()
+
 # GLFW
 set(GLFW_DIR ${DEP_DIR}/glfw) # Set this to point to an up-to-date GLFW repo
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
