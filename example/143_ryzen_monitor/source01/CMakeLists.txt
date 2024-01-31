@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(ryzen_mon_glgui CXX C)
 
-# switch to clang++ compiler
+# switch to clang++ compiler (for <format> support on ubuntu 22.04)
 set(CMAKE_C_COMPILER /usr/bin/clang)
 set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 
@@ -20,7 +20,7 @@ enable_testing()
 
 # Set DEP_DIR with a command line flag
 if(NOT DEP_DIR)
-	set(DEP_DIR "/home/martin/src" CACHE PATH "Path to dependencies directory")
+	set(DEP_DIR "/home/runner/work/" CACHE PATH "Path to dependencies directory")
 endif()
 
 # GLFW
