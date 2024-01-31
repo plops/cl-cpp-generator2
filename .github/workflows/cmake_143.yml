@@ -20,13 +20,13 @@ jobs:
       run: sudo apt-get install -y cmake ninja-build libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev 
 
     - name: Install GLFW dependency from repo
-      run: cd .. ; git clone https://github.com/glfw/glfw
+      run: cd .. ; git clone --depth 1 https://github.com/glfw/glfw
 
     - name: Install ImGui dependency from repo
-      run: cd .. ; git clone https://github.com/orcornut/imgui
+      run: cd .. ; git clone --depth 1 https://github.com/orcornut/imgui
 
     - name: Install ImPlot dependency from repo
-      run: cd .. ; git clone https://github.com/epezent/implot
+      run: cd .. ; git clone --depth 1 https://github.com/epezent/implot
 
     - name: Create build directory
       run: mkdir build
