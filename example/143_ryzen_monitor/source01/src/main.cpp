@@ -230,13 +230,13 @@ int main(int argc, char **argv) {
         c0Diagram.AddDataPoint(elapsedTime, c0Values);
         cc1Diagram.AddDataPoint(elapsedTime, cc1Values);
         cc6Diagram.AddDataPoint(elapsedTime, cc6Values);
-        temperatureDiagram.RenderGui();
-        powerDiagram.RenderGui();
-        frequencyDiagram.RenderGui();
-        voltageDiagram.RenderGui();
-        c0Diagram.RenderGui();
-        cc1Diagram.RenderGui();
-        cc6Diagram.RenderGui();
+        temperatureDiagram.RenderGui(false);
+        powerDiagram.RenderGui(false);
+        frequencyDiagram.RenderGui(false);
+        voltageDiagram.RenderGui(false);
+        c0Diagram.RenderGui(false);
+        cc1Diagram.RenderGui(false);
+        cc6Diagram.RenderGui(true);
         ImGui::End();
       }
     }

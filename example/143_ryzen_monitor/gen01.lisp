@@ -246,7 +246,8 @@
 	       "public:"
 	       "using DiagramBase::DiagramBase;"
 	       
-	       (defmethod RenderGui ()
+	       (defmethod RenderGui (&key (xticks false))
+		 (declare (type bool xticks))
 		 (space struct PlotData
 			(progn
 			  "const std::deque<float>& time_points_;"
@@ -272,11 +273,10 @@
 					(dot name_y_ (c_str))
 					(or ImPlotAxisFlags_AutoFit
 					    ImPlotAxisFlags_NoLabel
-					    (? (< i (- max_cores_ 1))
-					       ImPlotAxisFlags_NoTickLabels
-					       ImPlotAxisFlags_None))
+					    (? xticks 0 ImPlotAxisFlags_NoTickLabels))
 					ImPlotAxisFlags_AutoFit
-					    )
+					)
+		     
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
@@ -756,10 +756,13 @@
 					    (AddDataPoint elapsedTime ,val))))
 			    
 			    ,@(loop for e in l-columns
+				    and e-i from 1
 				    collect
 				    (let ((dia (format nil "~aDiagram" e)))
 				      `(dot ,dia
-					    (RenderGui))))
+					    (RenderGui ,(if (eq e-i (length l-columns))
+							    `true
+							    `false)))))
 			    
 			    (ImGui--End))))
 		 

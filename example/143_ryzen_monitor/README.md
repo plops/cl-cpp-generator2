@@ -10,6 +10,13 @@ git clone https://github.com/orcornut/
 git clone https://github.com/epezent/implot
 ```
 
+also see the yaml file for the github action
+
+# Place load on different cores
+```
+ for i in `seq 0 2 12` ; do taskset -c $i stress -c 1 --timeout 1;done
+```
+
 # references:
 
 ## https://hattedsquirrel.net/2020/12/power-consumption-of-ryzen-5000-series-cpus/

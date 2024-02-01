@@ -4,7 +4,7 @@
 #include "implot.h"
 #include <format>
 #include <stdexcept>
-void DiagramWithGui::RenderGui() {
+void DiagramWithGui::RenderGui(bool xticks) {
   struct PlotData {
     const std::deque<float> &time_points_;
     const std::vector<DiagramData> &diagrams_;
@@ -25,8 +25,7 @@ void DiagramWithGui::RenderGui() {
       }};
       ImPlot::SetupAxes("X", name_y_.c_str(),
                         ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel |
-                            (i < (max_cores_ - 1) ? ImPlotAxisFlags_NoTickLabels
-                                                  : ImPlotAxisFlags_None),
+                            (xticks ? 0 : ImPlotAxisFlags_NoTickLabels),
                         ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getter,
                         reinterpret_cast<void *>(&data), time_points_.size());
