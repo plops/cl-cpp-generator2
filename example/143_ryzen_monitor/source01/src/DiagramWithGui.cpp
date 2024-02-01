@@ -13,7 +13,8 @@ void DiagramWithGui::RenderGui() {
              const std::vector<DiagramData> &diagrams, int index)
         : time_points_(time_points), diagrams_(diagrams), i(index) {}
   };
-  if (ImPlot::BeginPlot(name_y_.c_str())) {
+  if (ImPlot::BeginPlot(name_y_.c_str(), ImVec2(-1, 130),
+                        ImPlotFlags_NoFrame)) {
     for (auto i = 0; i < max_cores_; i += 1) {
       auto data{PlotData(time_points_, diagrams_, i)};
       auto getter{[](int idx, void *data) -> ImPlotPoint {
@@ -22,8 +23,9 @@ void DiagramWithGui::RenderGui() {
         auto y{d->diagrams_.at(d->i).values.at(idx)};
         return ImPlotPoint(x, y);
       }};
-      ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit,
-                        ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxes("X", "Y",
+                        ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel,
+                        ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel);
       ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getter,
                         reinterpret_cast<void *>(&data), time_points_.size());
     }

@@ -131,10 +131,13 @@ int main(int argc, char **argv) {
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
-  auto diagramVoltage{DiagramWithGui(8, maxDataPoints, "voltage")};
-  auto diagramTemperature{DiagramWithGui(8, maxDataPoints, "temperature")};
-  auto diagramFrequency{DiagramWithGui(8, maxDataPoints, "frequency")};
-  auto diagramPower{DiagramWithGui(8, maxDataPoints, "power")};
+  auto temperatureDiagram{DiagramWithGui(8, maxDataPoints, "temperature")};
+  auto powerDiagram{DiagramWithGui(8, maxDataPoints, "power")};
+  auto frequencyDiagram{DiagramWithGui(8, maxDataPoints, "frequency")};
+  auto voltageDiagram{DiagramWithGui(8, maxDataPoints, "voltage")};
+  auto c0Diagram{DiagramWithGui(8, maxDataPoints, "c0")};
+  auto cc1Diagram{DiagramWithGui(8, maxDataPoints, "cc1")};
+  auto cc6Diagram{DiagramWithGui(8, maxDataPoints, "cc6")};
   auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -178,10 +181,13 @@ int main(int argc, char **argv) {
         auto currentTime{std::chrono::steady_clock::now()};
         auto elapsedTime{
             std::chrono::duration<float>(currentTime - startTime).count()};
-        auto voltageValues{std::vector<float>(pmt.max_cores)};
         auto temperatureValues{std::vector<float>(pmt.max_cores)};
-        auto frequencyValues{std::vector<float>(pmt.max_cores)};
         auto powerValues{std::vector<float>(pmt.max_cores)};
+        auto frequencyValues{std::vector<float>(pmt.max_cores)};
+        auto voltageValues{std::vector<float>(pmt.max_cores)};
+        auto c0Values{std::vector<float>(pmt.max_cores)};
+        auto cc1Values{std::vector<float>(pmt.max_cores)};
+        auto cc6Values{std::vector<float>(pmt.max_cores)};
         for (auto i = 0; i < pmt.max_cores; i += 1) {
           auto core_disabled{sysinfo.core_disable_map >> i & 1};
           auto core_frequency{pmta(CORE_FREQEFF[i]) * 1.00e+3F};
@@ -191,10 +197,16 @@ int main(int argc, char **argv) {
                             0.20F * core_sleep_time};
           auto core_temperature{pmta(CORE_TEMP[i])};
           auto core_power{pmta(CORE_POWER[i])};
-          voltageValues[i] = core_voltage;
+          auto core_c0{pmta(CORE_C0[i])};
+          auto core_cc1{pmta(CORE_CC1[i])};
+          auto core_cc6{pmta(CORE_CC6[i])};
           temperatureValues[i] = core_temperature;
-          frequencyValues[i] = core_frequency;
           powerValues[i] = core_power;
+          frequencyValues[i] = core_frequency;
+          voltageValues[i] = core_voltage;
+          c0Values[i] = core_c0;
+          cc1Values[i] = core_cc1;
+          cc6Values[i] = core_cc6;
           if (core_disabled) {
             ImGui::Text("%s", std::format("{:2} Disabled", i).c_str());
           } else {
@@ -207,19 +219,24 @@ int main(int argc, char **argv) {
                                 ? "Sleeping  "
                                 : std::format("{:7.1f}MHz", core_frequency),
                             core_power, core_voltage, core_voltage_true,
-                            core_temperature, pmta(CORE_C0[i]),
-                            pmta(CORE_CC1[i]), pmta(CORE_CC6[i]))
+                            core_temperature, core_c0, core_cc1, core_cc6)
                     .c_str());
           }
         }
-        diagramVoltage.AddDataPoint(elapsedTime, voltageValues);
-        diagramFrequency.AddDataPoint(elapsedTime, frequencyValues);
-        diagramTemperature.AddDataPoint(elapsedTime, temperatureValues);
-        diagramPower.AddDataPoint(elapsedTime, powerValues);
-        diagramTemperature.RenderGui();
-        diagramPower.RenderGui();
-        diagramFrequency.RenderGui();
-        diagramVoltage.RenderGui();
+        temperatureDiagram.AddDataPoint(elapsedTime, temperatureValues);
+        powerDiagram.AddDataPoint(elapsedTime, powerValues);
+        frequencyDiagram.AddDataPoint(elapsedTime, frequencyValues);
+        voltageDiagram.AddDataPoint(elapsedTime, voltageValues);
+        c0Diagram.AddDataPoint(elapsedTime, c0Values);
+        cc1Diagram.AddDataPoint(elapsedTime, cc1Values);
+        cc6Diagram.AddDataPoint(elapsedTime, cc6Values);
+        temperatureDiagram.RenderGui();
+        powerDiagram.RenderGui();
+        frequencyDiagram.RenderGui();
+        voltageDiagram.RenderGui();
+        c0Diagram.RenderGui();
+        cc1Diagram.RenderGui();
+        cc6Diagram.RenderGui();
         ImGui::End();
       }
     }

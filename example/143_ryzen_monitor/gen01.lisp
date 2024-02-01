@@ -253,8 +253,9 @@
 			  "const std::vector<DiagramData>& diagrams_;"
 			  "int i;"
 			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_(time_points), diagrams_(diagrams), i(index) {}"))
-		 (when (ImPlot--BeginPlot (dot name_y_ (c_str)) ;(string "")
-					  )
+		 (when (ImPlot--BeginPlot (dot name_y_ (c_str))
+					  (ImVec2 -1 130)
+					  ImPlotFlags_NoFrame)
 		   (dotimes (i max_cores_)
 		     (let ((data (PlotData time_points_ diagrams_ i))))
 		     (let ((getter (lambda (idx data)
@@ -268,8 +269,10 @@
 				     (return (ImPlotPoint x y))))))
 		     (ImPlot--SetupAxes (string "X")
 					(string "Y")
-					ImPlotAxisFlags_AutoFit
-					ImPlotAxisFlags_AutoFit)
+					(or ImPlotAxisFlags_AutoFit
+					    ImPlotAxisFlags_NoLabel)
+					(or ImPlotAxisFlags_AutoFit
+					    ImPlotAxisFlags_NoLabel))
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
@@ -628,7 +631,7 @@
 	)
 
        
-       ,(let ((l-store `(coreFrequency corePower coreTemperature)))
+       ,(let ((l-columns `(temperature power frequency voltage c0 cc1 cc6 )))
 	  `(do0
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
@@ -640,15 +643,12 @@
 	      (let ((maxDataPoints 1024)
 		    (startTime (std--chrono--steady_clock--now))))
 
-	      (let ((diagramVoltage (DiagramWithGui 8
+	      ,@(loop for e in l-columns
+		      collect
+		      (let ((dia (format nil "~aDiagram" e)))
+		       `(let ((,dia (DiagramWithGui 8
 						    maxDataPoints
-						    (string "voltage")))
-		    (diagramTemperature (DiagramWithGui 8 maxDataPoints
-							(string "temperature")))
-		    (diagramFrequency (DiagramWithGui 8 maxDataPoints
-						      (string "frequency")))
-		    (diagramPower (DiagramWithGui 8 maxDataPoints
-						  (string "power")))))
+						    (string ,e)))))))
 	      
 	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
@@ -660,106 +660,104 @@
 		     (when show_demo_window
 		       (ImGui--ShowDemoWindow &show_demo_window)
 		       (ImPlot--ShowDemoWindow))
-
 		     (do0
-		      (when (== SMU_Return_OK
-				(smu_read_pm_table &obj pm_buf obj.pm_table_size))
-			(when sysinfo.available
-			  (ImGui--Begin (string "Ryzen"))
+			(when (== SMU_Return_OK
+				  (smu_read_pm_table &obj pm_buf obj.pm_table_size))
+			  (when sysinfo.available
+			    (ImGui--Begin (string "Ryzen"))
 
-			  (affinityManager.RenderGui)
-			  (when (ImGui--Checkbox (string "vsync")
-						 &vsyncOn)
-			    (glfwSwapInterval (? vsyncOn 1 0)))
+			    (affinityManager.RenderGui)
+			    (when (ImGui--Checkbox (string "vsync")
+						   &vsyncOn)
+			      (glfwSwapInterval (? vsyncOn 1 0)))
 
-			  ,@(loop for var in `(cpu_name codename cores ccds ccxs
-							;; fixme: different for older ryzen
-							cores_per_ccx smu_fw_ver if_ver)
-				  collect
-				  `(ImGui--Text
-				    (string "%s")
-				    (dot (std--format
-					  (string ,(format nil "~a='{}'"
-							   var))
-					  (dot sysinfo ,var))
-					 (c_str))))
+			    ,@(loop for var in `(cpu_name codename cores ccds ccxs
+							  ;; fixme: different for older ryzen
+							  cores_per_ccx smu_fw_ver if_ver)
+				    collect
+				    `(ImGui--Text
+				      (string "%s")
+				      (dot (std--format
+					    (string ,(format nil "~a='{}'"
+							     var))
+					    (dot sysinfo ,var))
+					   (c_str))))
 
-			  (let ((package_sleep_time 0s0)
-				(average_voltage 0s0)))
-		      
-			  (if pmt.PC6
-			      (setf package_sleep_time (/ (pmta PC6) 100s0)
-				    average_voltage (/ (- (pmta CPU_TELEMETRY_VOLTAGE)
-							  (* .2s0 package_sleep_time))
-						       (- 1s0 package_sleep_time)))
-			      (setf average_voltage (pmta CPU_TELEMETRY_VOLTAGE)))
+			    (let ((package_sleep_time 0s0)
+				  (average_voltage 0s0)))
+			    
+			    (if pmt.PC6
+				(setf package_sleep_time (/ (pmta PC6) 100s0)
+				      average_voltage (/ (- (pmta CPU_TELEMETRY_VOLTAGE)
+							    (* .2s0 package_sleep_time))
+							 (- 1s0 package_sleep_time)))
+				(setf average_voltage (pmta CPU_TELEMETRY_VOLTAGE)))
 
-			  (let ((currentTime (std--chrono--steady_clock--now))
-				(elapsedTime (dot (std--chrono--duration<float> (- currentTime startTime))
-						  (count)))))
+			    (let ((currentTime (std--chrono--steady_clock--now))
+				  (elapsedTime (dot (std--chrono--duration<float> (- currentTime startTime))
+						    (count)))))
 
-			  (let ((voltageValues (std--vector<float>  pmt.max_cores
-						))
-				(temperatureValues (std--vector<float>  pmt.max_cores
-						))
-				(frequencyValues (std--vector<float>  pmt.max_cores
-						))
-				(powerValues (std--vector<float>  pmt.max_cores
-						))))
-			  (dotimes (i pmt.max_cores)
-			    (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
-				  (core_frequency (* (pmta (aref CORE_FREQEFF i))
-						     1000s0))
-				  (core_voltage_true (pmta (aref CORE_VOLTAGE i)))
-				  (core_sleep_time (/ (pmta (aref CORE_CC6 i))
-						      100s0))
-				  (core_voltage (+ (* (- 1s0 core_sleep_time)
-						      average_voltage)
-						   (* .2 core_sleep_time)))
-				  (core_temperature (pmta (aref CORE_TEMP i)))
-				  (core_power (pmta (aref CORE_POWER i))))
-			      
-			      (setf (aref voltageValues i) core_voltage
-				    (aref temperatureValues i) core_temperature
-				    (aref frequencyValues i) core_frequency
-				    (aref powerValues i) core_power)
+			    ,@(loop for e in l-columns
+				    collect
+				    `(let ((,(format nil "~aValues" e) (std--vector<float> pmt.max_cores)))))
+			    
+			    (dotimes (i pmt.max_cores)
+			      (let ((core_disabled (and (>> sysinfo.core_disable_map i) 1))
+				    (core_frequency (* (pmta (aref CORE_FREQEFF i))
+						       1000s0))
+				    (core_voltage_true (pmta (aref CORE_VOLTAGE i)))
+				    (core_sleep_time (/ (pmta (aref CORE_CC6 i))
+							100s0))
+				    (core_voltage (+ (* (- 1s0 core_sleep_time)
+							average_voltage)
+						     (* .2 core_sleep_time)))
+				    (core_temperature (pmta (aref CORE_TEMP i)))
+				    (core_power (pmta (aref CORE_POWER i)))
+				    (core_c0 (pmta (aref CORE_C0 i)))
+				    (core_cc1 (pmta (aref CORE_CC1 i)))
+				    (core_cc6 (pmta (aref CORE_CC6 i))))
+				,@(loop for e in l-columns
+					collect
+					`(setf (aref ,(format nil "~aValues" e) i)
+					       ,(format nil "core_~a" e)))
+				
+				(if core_disabled
+				    (ImGui--Text (string "%s")
+						 (dot (std--format (string "{:2} Disabled")
+								   i )
+						      (c_str)))
+				    (ImGui--Text (string "%s")
+						 
+						 (dot (std--format
+						       (string "{:2} {} {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
+						       
+						       i (? (<= 6s0 (pmta (aref CORE_C0 i)))
+							    (string "Sleeping  ")
+							    (std--format (string "{:7.1f}MHz")
+									 core_frequency ))
+						       core_power
+						       core_voltage core_voltage_true core_temperature
+						       core_c0
+						       core_cc1
+						       core_cc6
+						       )
+						      (c_str)))
+				    )))
 
-			      (if core_disabled
-				  (ImGui--Text (string "%s")
-					       (dot (std--format (string "{:2} Disabled")
-								 i )
-						    (c_str)))
-				  (ImGui--Text (string "%s")
-					       
-					       (dot (std--format
-						     (string "{:2} {} {:6.3f}W {:5.3f}V {:5.3f}V {:6.2f}C C0: {:5.1f}% C1: {:5.1f}% C6: {:5.1f}%")
-						     
-						     i (? (<= 6s0 (pmta (aref CORE_C0 i)))
-							  (string "Sleeping  ")
-							  (std--format (string "{:7.1f}MHz")
-								       core_frequency ))
-						     core_power
-						     core_voltage core_voltage_true core_temperature
-						     (pmta (aref CORE_C0 i))
-						     (pmta (aref CORE_CC1 i))
-						     (pmta (aref CORE_CC6 i)))
-						    (c_str)))
-				  )))
-			  (diagramVoltage.AddDataPoint elapsedTime
-						       voltageValues)
-			  (diagramFrequency.AddDataPoint elapsedTime
-						       frequencyValues)
-			  (diagramTemperature.AddDataPoint elapsedTime
-							   temperatureValues)
-			  (diagramPower.AddDataPoint elapsedTime
-							   powerValues)
-			  
-			  (diagramTemperature.RenderGui)
-			  (diagramPower.RenderGui)
-			  (diagramFrequency.RenderGui)
-			  (diagramVoltage.RenderGui)
-			  
-			  (ImGui--End))))
+			    ,@(loop for e in l-columns
+				    collect
+				    (let ((val (format nil "~aValues" e))
+					  (dia (format nil "~aDiagram" e)))
+				      `(dot ,dia
+					    (AddDataPoint elapsedTime ,val))))
+			    
+			    ,@(loop for e in l-columns
+				    collect
+				    (let ((dia (format nil "~aDiagram" e)))
+				      `(dot ,dia
+					    (RenderGui))))
+			    
+			    (ImGui--End))))
 		 
 		     (ImGui--Render)
 		     (let ((w 0)
