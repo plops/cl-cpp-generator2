@@ -24,7 +24,9 @@ void DiagramWithGui::RenderGui() {
         return ImPlotPoint(x, y);
       }};
       ImPlot::SetupAxes("X", name_y_.c_str(),
-                        ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel,
+                        ImPlotAxisFlags_AutoFit | ImPlotAxisFlags_NoLabel |
+                            (i < (max_cores_ - 1) ? ImPlotAxisFlags_NoTickLabels
+                                                  : ImPlotAxisFlags_None),
                         ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLineG(std::format("Core {:2}", i).c_str(), getter,
                         reinterpret_cast<void *>(&data), time_points_.size());

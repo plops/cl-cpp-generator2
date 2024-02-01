@@ -85,12 +85,12 @@ jobs:
         name: ryzen_mon_glgui_artifact1
         path: build/ryzen_mon_glgui
 
-    - name: Upload Release Asset  
-      uses: actions/upload-release-asset@v1  
-      env:  
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-      with:  
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing its `id`  
-        asset_path: ./build/ryzen_mon_glgui  
-        asset_name: ryzen_mon_glgui_artifact1.zip # Name of the asset to display on the release page  
-        asset_content_type: application/zip  
+    # - name: Upload Release Asset  
+    #   uses: actions/upload-release-asset@v1  
+    #   env:  
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+    #   with:  
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing its `id`  
+    #     asset_path: ./build/ryzen_mon_glgui  
+    #     asset_name: ryzen_mon_glgui_artifact1.zip # Name of the asset to display on the release page  
+    #     asset_content_type: application/zip  

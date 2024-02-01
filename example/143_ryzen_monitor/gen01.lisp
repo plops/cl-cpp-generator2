@@ -271,7 +271,10 @@
 		     (ImPlot--SetupAxes (string "X")
 					(dot name_y_ (c_str))
 					(or ImPlotAxisFlags_AutoFit
-					    ImPlotAxisFlags_NoLabel)
+					    ImPlotAxisFlags_NoLabel
+					    (? (< i (- max_cores_ 1))
+					       ImPlotAxisFlags_NoTickLabels
+					       ImPlotAxisFlags_None))
 					ImPlotAxisFlags_AutoFit
 					    )
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
