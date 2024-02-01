@@ -3,7 +3,7 @@
 #include <unistd.h>
 TEST(CpuAffinityManagerBase, GetSelectedCpus_Initialized_FullBitset) {
   auto manager{CpuAffinityManagerBase(getpid())};
-  // FIXME: this only works on a twelf core cpu
+  // FIXME: this only works on a twelve core cpu
 
   auto expected_result{std::bitset<12>("111111111111")};
   auto actual_result{manager.GetSelectedCpus()};
@@ -11,7 +11,7 @@ TEST(CpuAffinityManagerBase, GetSelectedCpus_Initialized_FullBitset) {
 };
 TEST(CpuAffinityManagerBase, SetSelectedCpus_Set_ValidBitset) {
   auto manager{CpuAffinityManagerBase(getpid())};
-  // FIXME: this only works on a twelf core cpu
+  // FIXME: this only works on a twelve core cpu
 
   auto expected_result{std::bitset<12>("101010101010")};
   manager.SetSelectedCpus(expected_result);
@@ -20,7 +20,7 @@ TEST(CpuAffinityManagerBase, SetSelectedCpus_Set_ValidBitset) {
 };
 TEST(CpuAffinityManagerBase, GetAffinity_Initialized_FullBitset) {
   auto manager{CpuAffinityManagerBase(getpid())};
-  // FIXME: this only works on a twelf core cpu
+  // FIXME: this only works on a twelve core cpu
 
   auto expected_result{std::bitset<12>("111111111111")};
   auto actual_result{manager.GetAffinity()};
@@ -28,7 +28,7 @@ TEST(CpuAffinityManagerBase, GetAffinity_Initialized_FullBitset) {
 };
 TEST(CpuAffinityManagerBase, ApplyAffinity_Set_ValidBitset) {
   auto manager{CpuAffinityManagerBase(getpid())};
-  // FIXME: this only works on a twelf core cpu
+  // FIXME: this only works on a twelve core cpu
 
   auto expected_result{std::bitset<12>("101010101010")};
   manager.SetSelectedCpus(expected_result);

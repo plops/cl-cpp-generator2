@@ -39,8 +39,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
-					  (values.size)
+		    (diagram (DiagramBase (values.size)
 					  10
 					  (string "1")))
 		    ))
@@ -57,11 +56,9 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
-					  (values.size)
+		    (diagram (DiagramBase (values.size)
 					  10
-					  (string "1")))
-		    ))
+					  (string "1")))))
 	      
 	      (comments Act)
 	      (diagram.AddDataPoint 1s0 values)
@@ -76,8 +73,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
-					  (values.size)
+		    (diagram (DiagramBase (values.size)
 					  3
 					  (string "1")))
 		    ))
@@ -96,8 +92,7 @@
 	    (progn
 	      (comments Arrange)
 	      (let ((values (std--vector<float> (curly 10s0 11s0)))
-		    (diagram (DiagramBase #+color (curly (curly 1s0 0s0 0s0 1s0))
-					  2
+		    (diagram (DiagramBase 2
 					  3
 					  (string "1")))
 		    ))
@@ -125,11 +120,10 @@
      :headers `()
      :header-preamble `(do0
 			(include<> vector deque string)
-			#+color (space struct Color (progn "float r,g,b,a;"))
 			(space struct DiagramData (progn
 					   "std::string name;"
 					   "std::deque<float> values;"
-					   #+color "Color color;")))
+					   )))
      :implementation-preamble
      `(do0
        
@@ -142,7 +136,7 @@
 	     
 	     (defclass ,name ()
 	       "public:"
-	       (defmethod ,name (#+color colors ,@(remove-if #'null
+	       (defmethod ,name (,@(remove-if #'null
 					   (loop for e in members
 						 collect
 						 (destructuring-bind (name &key type param (initform 0)) e
@@ -152,7 +146,6 @@
 						     (when param
 						       nname))))))
 		 (declare
-		  #+color (type "const std::vector<Color>&" colors)
 		  ,@(remove-if #'null
 			       (loop for e in members
 				     collect
@@ -184,11 +177,7 @@
 		 (dotimes (i max_cores_)
 		   (diagrams_.push_back (curly (std--format (string "Core {}")
 							    i)
-					       (curly)
-					       #+color (aref colors (% i (colors.size))))))
-		 ;(x_.reserve max_points_)
-		 ;(y_.reserve max_points_)
-		 )
+					       (curly)))))
 
 	       (defmethod AddDataPoint (time values)
 		 (declare 
@@ -277,12 +266,10 @@
 				     (let ((x (dot d->time_points_ (at idx)))
 					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
 				     (return (ImPlotPoint x y))))))
-					;(ImPlot--SetNextLineStyle (aref coreColors i))
 		     (ImPlot--SetupAxes (string "X")
 					(string "Y")
 					ImPlotAxisFlags_AutoFit
 					ImPlotAxisFlags_AutoFit)
-		     ;(ImPlot--SetupFinish)
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
@@ -307,7 +294,7 @@
        (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
 	      (progn
 		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelf core cpu")
+		(comments "FIXME: this only works on a twelve core cpu")
 		(let ((expected_result (std--bitset<12> (string "111111111111")))
 		      (actual_result (manager.GetSelectedCpus))))
 		(EXPECT_EQ actual_result expected_result)))
@@ -315,7 +302,7 @@
        (space (TEST ,name SetSelectedCpus_Set_ValidBitset)
 	      (progn
 		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelf core cpu")
+		(comments "FIXME: this only works on a twelve core cpu")
 		(let ((expected_result (std--bitset<12> (string "101010101010")))
 		      ))
 		(manager.SetSelectedCpus expected_result)
@@ -325,7 +312,7 @@
        (space (TEST ,name GetAffinity_Initialized_FullBitset)
 	      (progn
 		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelf core cpu")
+		(comments "FIXME: this only works on a twelve core cpu")
 		(let ((expected_result (std--bitset<12> (string "111111111111")))
 		      ))
 	      
@@ -335,7 +322,7 @@
        (space (TEST ,name ApplyAffinity_Set_ValidBitset)
 	      (progn
 		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelf core cpu")
+		(comments "FIXME: this only works on a twelve core cpu")
 		(let ((expected_result (std--bitset<12> (string "101010101010")))
 		      ))
 
@@ -650,45 +637,10 @@
 		  (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
 	      
 	  
-	      (let (#+q(coreColors (std--vector<ImVec4>
-				 (curly
-				  ,@(loop for (r g b name) in `((1 0 0 red)
-								(0 1 0 green)
-								(0 0 1 blue)
-								(1 1 0 yellow) 
-								(1 0 1 magenta)
-								(0 1 1 cyan)
-								(.5 .5 .5 gray)
-								(1 .5 0 orange))
-					  collect
-					  `(ImVec4 ,(coerce r 'single-float)
-						   ,(coerce g 'single-float)
-						   ,(coerce b 'single-float)
-						   1s0)))))
-		    (maxDataPoints 1024)
-		    #+q(x (std--vector<float> maxDataPoints))
-		    #+q(y (std--vector<float> maxDataPoints))
-		    #+q(timePoints (std--deque<float>))
-		    #+q,@(loop for e in l-store
-			    collect
-			    `(,e (std--vector<std--deque<float>> pmt.max_cores)))
+	      (let ((maxDataPoints 1024)
 		    (startTime (std--chrono--steady_clock--now))))
 
-	      (let ((diagramVoltage (DiagramWithGui #+color (curly
-				  ,@(loop for (r g b name) in `((1 0 0 red)
-								(0 1 0 green)
-								(0 0 1 blue)
-								(1 1 0 yellow) 
-								(1 0 1 magenta)
-								(0 1 1 cyan)
-								(.5 .5 .5 gray)
-								(1 .5 0 orange))
-					  collect
-					  `(Color ,(coerce r 'single-float)
-						   ,(coerce g 'single-float)
-						   ,(coerce b 'single-float)
-						   )))
-						    8
+	      (let ((diagramVoltage (DiagramWithGui 8
 						    maxDataPoints
 						    (string "voltage")))
 		    (diagramTemperature (DiagramWithGui 8 maxDataPoints
@@ -746,21 +698,6 @@
 				(elapsedTime (dot (std--chrono--duration<float> (- currentTime startTime))
 						  (count)))))
 
-			  #+nil (do0
-			   (comments "If the deque has reached its maximum size, remove the oldest data point  ")
-			   (when (<= maxDataPoints (timePoints.size))
-			     (timePoints.pop_front)
-			     (comments "Also remove the oldest data point from each core's frequency and power data  ")
-			     ,@(loop for e in l-store
-				     collect
-				     `(for-range (deq ,e)
-						 (declare (type "auto&" deq))
-						 (unless (deq.empty)
-						   (deq.pop_front))))))
-			  #+nil (do0
-			   (comments "Add the new timepoint")
-			   (timePoints.push_back elapsedTime))
-			
 			  (let ((voltageValues (std--vector<float>  pmt.max_cores
 						))
 				(temperatureValues (std--vector<float>  pmt.max_cores
@@ -782,20 +719,11 @@
 				  (core_temperature (pmta (aref CORE_TEMP i)))
 				  (core_power (pmta (aref CORE_POWER i))))
 			      
-			      (do0
-			       ;(voltageValues.push_back core_voltage_true)
-			       ;#+nil
-			       (setf (aref voltageValues i) core_voltage
-				     (aref temperatureValues i) core_temperature
-				     (aref frequencyValues i) core_frequency
-				      (aref powerValues i) core_power))
+			      (setf (aref voltageValues i) core_voltage
+				    (aref temperatureValues i) core_temperature
+				    (aref frequencyValues i) core_frequency
+				    (aref powerValues i) core_power)
 
-			      #+nil(do0
-			       (comments "Update the frequency, power and temperature data for each core  ")
-			       ,@(loop for e in l-store and f in `(core_frequency core_voltage core_temperature)
-				       collect
-				       `(dot (aref ,e i) (push_back ,f) )))
-			    
 			      (if core_disabled
 				  (ImGui--Text (string "%s")
 					       (dot (std--format (string "{:2} Disabled")
@@ -831,35 +759,6 @@
 			  (diagramFrequency.RenderGui)
 			  (diagramVoltage.RenderGui)
 			  
-			  
-			  #+nil 
-			  ,@(loop for e in l-store
-				  collect
-				  `(when (ImPlot--BeginPlot (string ,e))
-				     (dotimes (i pmt.max_cores)
-					;(ImPlot--SetNextLineStyle (aref coreColors i))
-				       (x.assign (timePoints.begin)
-						 (timePoints.end))
-				       (y.assign (dot (aref ,e i) (begin))
-						 (dot (aref ,e i) (end)))
-				       #+nil (let ((x (std--vector<float> (curly (timePoints.begin)
-										 (timePoints.end))))
-						   (y (std--vector<float> (curly (dot (aref ,e i) (begin))
-										 (dot (aref ,e i) (end)))))))
-				       #+nil(let ((x_min (deref (std--min_element (timePoints.begin)
-										  (timePoints.end))))
-						  (x_max (deref (std--max_element (timePoints.begin)
-										  (timePoints.end)))))
-					      (ImPlot--SetNextAxisLimits x_min x_max ImGuiCond_Always))
-				       (ImPlot--SetupAxes (string "X") (string "Y") ImPlotAxisFlags_AutoFit
-							  ImPlotAxisFlags_AutoFit)
-				       (ImPlot--PlotLine (dot (std--format (string "Core {:2}")
-									   i )
-							      (c_str))
-							 (x.data)
-							 (y.data)
-							 (y.size)))
-				     (ImPlot--EndPlot)))
 			  (ImGui--End))))
 		 
 		     (ImGui--Render)
