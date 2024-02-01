@@ -255,7 +255,8 @@
 			  "PlotData(const std::deque<float> &time_points, const std::vector<DiagramData> &diagrams, int index) : time_points_(time_points), diagrams_(diagrams), i(index) {}"))
 		 (when (ImPlot--BeginPlot (dot name_y_ (c_str))
 					  (ImVec2 -1 130)
-					  ImPlotFlags_NoFrame)
+					  (or ImPlotFlags_NoFrame
+					      ImPlotFlags_NoTitle))
 		   (dotimes (i max_cores_)
 		     (let ((data (PlotData time_points_ diagrams_ i))))
 		     (let ((getter (lambda (idx data)
@@ -268,11 +269,11 @@
 					   (y (dot d->diagrams_ (at d->i) values (at idx)))))
 				     (return (ImPlotPoint x y))))))
 		     (ImPlot--SetupAxes (string "X")
-					(string "Y")
+					(dot name_y_ (c_str))
 					(or ImPlotAxisFlags_AutoFit
 					    ImPlotAxisFlags_NoLabel)
-					(or ImPlotAxisFlags_AutoFit
-					    ImPlotAxisFlags_NoLabel))
+					ImPlotAxisFlags_AutoFit
+					    )
 		     (ImPlot--PlotLineG (dot (std--format (string "Core {:2}")
 							  i)
 					     (c_str))
