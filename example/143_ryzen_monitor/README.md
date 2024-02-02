@@ -29,11 +29,14 @@ metrics in real-time graphs.
    
   ![Screenshot](https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/143_ryzen_monitor/source01/doc/screenshot.png)
 
-- The y-Axis is the time in seconds. A stress test was run for on each
-  of the 12 CPU threads of a Ryzen 5625U. The 6 different cores show
-  up. Note that the Ryzen (System Management Unit) (SMU) reports 8
-  cores, two of which are disabled. While these don't compute, they
-  still measure temperature.
+
+The y-axis represents time in seconds. A stress test was conducted on
+each of the 12 threads of a Ryzen 5625U CPU. The graph reflects
+activity across 6 distinct cores. Although the Ryzen System Management
+Unit (SMU) indicates 8 cores, two are disabled and do not perform
+computations. However, these inactive cores still record temperature
+data.
+
    
 ## GitHub Actions  
 The `.github/workflows/cmake_143.yml` file sets up a GitHub Action to
