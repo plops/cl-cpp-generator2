@@ -57,8 +57,8 @@ include_directories(${GLFW_DIR}/deps)
 
 set(sources 
 	src/main.cpp
-#	src/CpuAffinityManagerBase.cpp
-#	src/CpuAffinityManagerWithGui.cpp
+	src/CpuAffinityManagerBase.cpp
+	src/CpuAffinityManagerWithGui.cpp
 	src/DiagramBase.cpp
 	src/DiagramWithGui.cpp	
 )

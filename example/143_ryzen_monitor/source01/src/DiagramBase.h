@@ -8,6 +8,9 @@ struct DiagramData {
         std::string name; 
         std::deque<float> values; 
 };
+/** @brief The DiagramBase class represents a base class for diagrams.
+
+*/ 
 class DiagramBase  {
         public:
             /** @brief Constructs a DiagramBase object with the specified maximum number of cores, maximum number of points, and y-axis name.

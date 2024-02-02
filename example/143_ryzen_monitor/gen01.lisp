@@ -11,7 +11,7 @@
 						    :affinity)))
   (setf *features* (set-exclusive-or *features* (list :more
 						      ;:demo
-						      ;:affinity
+						      :affinity
 						      ))))
 
 (let ()
@@ -363,7 +363,16 @@
 				   unistd.h
 				   bitset
 				   cstring
-				   string))
+				   string)
+			(doc " @brief The CpuAffinityManagerBase class is used to limit execution of the Ryzen Monitor GUI on one (or more) particular cores.
+  
+  This class allows for the separation of the impact of the GUI rendering on the diagrams of other cores during benchmarks.
+  The class is currently hardcoded for 12 cores of the Ryzen 5625U processor.
+  
+  The CpuAffinityManagerWithGui class is derived from this one and provides a method to render checkboxes.
+  This separation is done so that the Affinity Business Logic can be tested in Unit Tests without having to link in OpenGL into the test.
+  
+  Note: There is a bug where the program will crash if no core is selected."))
      :implementation-preamble
      `(do0
        

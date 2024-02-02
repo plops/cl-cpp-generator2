@@ -1,3 +1,4 @@
+#include "CpuAffinityManagerWithGui.h"
 #include "DiagramWithGui.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -137,6 +138,7 @@ int main(int argc, char **argv) {
   auto c0Diagram{DiagramWithGui(8, maxDataPoints, "c0")};
   auto cc1Diagram{DiagramWithGui(8, maxDataPoints, "cc1")};
   auto cc6Diagram{DiagramWithGui(8, maxDataPoints, "cc6")};
+  auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
@@ -145,6 +147,7 @@ int main(int argc, char **argv) {
     if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
       if (sysinfo.available) {
         ImGui::Begin("Ryzen");
+        affinityManager.RenderGui();
         if (ImGui::Checkbox("vsync", &vsyncOn)) {
           glfwSwapInterval(vsyncOn ? 1 : 0);
         }
