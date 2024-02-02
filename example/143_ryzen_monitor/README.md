@@ -19,6 +19,9 @@ also see the yaml file for the github action
 
 # references:
 
+## ebpf
+- https://www.evilsocket.net/2022/08/15/Process-behaviour-anomaly-detection-using-eBPF-and-unsupervised-learning-Autoencoders/
+
 ## https://hattedsquirrel.net/2020/12/power-consumption-of-ryzen-5000-series-cpus/
 - Little known about Ryzen 5000 series power consumption in idle and light load scenarios.  
 - Analysis conducted using Ryzen 9 5900X.  
