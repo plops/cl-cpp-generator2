@@ -7,8 +7,10 @@
 
 (progn
   (setf *features* (set-difference *features* (list :more
+						    :demo
 						    :affinity)))
   (setf *features* (set-exclusive-or *features* (list :more
+						      ;:demo
 						      ;:affinity
 						      ))))
 
@@ -506,6 +508,7 @@
 	      imgui_impl_opengl3.h
 	      implot.h
 	      #+affinity CpuAffinityManagerWithGui.h
+	      DiagramWithGui.h
 	      )
      (include<> GLFW/glfw3.h
 		format
@@ -643,7 +646,7 @@
 
 	    (let (((bracket sysinfo pm_buf pmt) (start_pm_monitor2))))
 	
-	    (let ((show_demo_window true)
+	    (let (#+demo (show_demo_window true)
 		  (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
 	      
 	  
@@ -664,7 +667,7 @@
 		     (ImGui_ImplOpenGL3_NewFrame)
 		     (ImGui_ImplGlfw_NewFrame)
 		     (ImGui--NewFrame)
-		     (when show_demo_window
+		     #+demo (when show_demo_window
 		       (ImGui--ShowDemoWindow &show_demo_window)
 		       (ImPlot--ShowDemoWindow))
 		     (do0

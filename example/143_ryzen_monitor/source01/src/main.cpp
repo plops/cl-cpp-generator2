@@ -1,4 +1,4 @@
-#include "CpuAffinityManagerWithGui.h"
+#include "DiagramWithGui.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -127,7 +127,6 @@ int main(int argc, char **argv) {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
   auto [sysinfo, pm_buf, pmt]{start_pm_monitor2()};
-  auto show_demo_window{true};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
   auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
@@ -138,20 +137,14 @@ int main(int argc, char **argv) {
   auto c0Diagram{DiagramWithGui(8, maxDataPoints, "c0")};
   auto cc1Diagram{DiagramWithGui(8, maxDataPoints, "cc1")};
   auto cc6Diagram{DiagramWithGui(8, maxDataPoints, "cc6")};
-  auto affinityManager{CpuAffinityManagerWithGui(getpid())};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    if (show_demo_window) {
-      ImGui::ShowDemoWindow(&show_demo_window);
-      ImPlot::ShowDemoWindow();
-    }
     if (SMU_Return_OK == smu_read_pm_table(&obj, pm_buf, obj.pm_table_size)) {
       if (sysinfo.available) {
         ImGui::Begin("Ryzen");
-        affinityManager.RenderGui();
         if (ImGui::Checkbox("vsync", &vsyncOn)) {
           glfwSwapInterval(vsyncOn ? 1 : 0);
         }
