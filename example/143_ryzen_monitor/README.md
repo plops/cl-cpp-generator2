@@ -61,6 +61,11 @@ fidelity.
 - Implement data transmission using gRPC to allow external Python
   tools to perform data analysis and facilitate the benchmarking of
   CPU components.
+  
+- Here is a ![Die Shot of Ryzen
+  CPU](https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/143_ryzen_monitor/source01/doc/die_shot_from_techpowerup.jpg). It
+  would be interesting to see if the Zen3 core closest to the Vega
+  Compute units gets heated with GPU load.
    
 ### Placing Load on Different Cores  
 Experiment with allocating stress to specific cores using the following command:
