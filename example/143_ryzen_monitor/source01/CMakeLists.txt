@@ -14,7 +14,6 @@ endif()
 # GCC 13, CLANG 14 and MSVC 16.10/VS 2019 all have the {fmt} based std::format 
 
 set(CMAKE_CXX_STANDARD 20)
-enable_testing()
 
 # Set DEP_DIR with a command line flag
 if(NOT DEP_DIR)
@@ -87,33 +86,32 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
 
-# Fetch Google Test
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG release-1.10.0  # specify the commit hash or tag here
-)
-FetchContent_MakeAvailable(googletest)
 
 # Define the test executable
-add_executable(unit_tests
-  tests/test_CpuAffinityManagerBase.cpp
-  src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
-  src/DiagramBase.cpp
-  tests/test_DiagramBase.cpp
-)
-# Link the test executable with Google Test and the necessary libraries
-target_link_libraries(unit_tests gtest_main)
-target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+option(ENABLE_TESTS "Enable unit tests" OFF)  # Declare the ENABLE_TESTS option
 
-# Register the test with CTest  
-add_test(NAME unit_tests COMMAND unit_tests)  
+if(ENABLE_TESTS)
+	enable_testing()
 
-# # Optionally, you can add a custom command to run the tests after building
-# add_custom_command(
-#   TARGET unit_tests
-#   COMMENT "Running unit tests"
-#   POST_BUILD
-#   COMMAND unit_tests
-# )
+	# Fetch Google Test
+	include(FetchContent)
+	FetchContent_Declare(
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG release-1.10.0  # specify the commit hash or tag here
+	)
+	FetchContent_MakeAvailable(googletest)
+
+	add_executable(unit_tests
+		tests/test_CpuAffinityManagerBase.cpp
+		src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
+		src/DiagramBase.cpp
+		tests/test_DiagramBase.cpp
+	)
+	# Link the test executable with Google Test and the necessary libraries
+	target_link_libraries(unit_tests gtest_main)
+	target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+	# Register the test with CTest  
+	add_test(NAME unit_tests COMMAND unit_tests)  
+endif()
