@@ -77,15 +77,11 @@ Subsequent development might focus on a new project designed
 exclusively for data collection, eliminating the GUI and OpenGL
 dependencies to meet the stated improvement goals.
    
-## References  
+# References  
 The development of this code was informed by a review of various
 sources, particularly concerning eBPF technology, which offers
 intriguing possibilities for correlating CPU measurements with system
 calls.
-
-# References:
-
-the following sections contain summaries of websites that i read while developing this code
 
 ## Tracing System calls with eBPF
 
