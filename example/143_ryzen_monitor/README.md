@@ -1,91 +1,89 @@
-revise this readme of my github project:
+# Ryzen Monitor README  
+   
+## Introduction  
 
-- for a while i use ryzen monitor. it displays information about power
-  consumption and temperature in ryzen cpus like this:
 
-```
-╭─────────┬────────────┬──────────┬─────────┬──────────┬─────────────┬─────────────┬─────────────╮
-│  Core 0 │   Sleeping |  0.008 W | 0.203 V |  49.95 C | C0:   0.5 % | C1:   0.3 % | C6:  99.2 % │
-│  Core 1 │   Sleeping |  0.074 W | 0.373 V |  50.17 C | C0:   3.4 % | C1:  43.9 % | C6:  52.7 % │
-│  Core 2 │   Sleeping |  0.028 W | 0.212 V |  50.29 C | C0:   1.7 % | C1:   1.7 % | C6:  96.7 % │
-│  Core 3 │   Sleeping |  0.010 W | 0.207 V |  50.04 C | C0:   0.8 % | C1:   1.0 % | C6:  98.2 % │
-│  Core 4 │   Sleeping |  0.019 W | 0.208 V |  50.26 C | C0:   1.3 % | C1:   1.0 % | C6:  97.7 % │
-│  Core 5 │   Sleeping |  0.016 W | 0.208 V |  50.00 C | C0:   1.4 % | C1:   0.8 % | C6:  97.8 % │
-╰─────────┴────────────┴──────────┴─────────┴──────────┴─────────────┴─────────────┴─────────────╯
-```
+Ryzen Monitor (https://github.com/hattedsquirrel/ryzen_monitor) is a
+console application that provides real-time insights into power
+consumption, voltage, and temperature across the cores of Ryzen
+CPUs. The application presents the data in a tabular format, as shown
+below:
+   
+```  
+╭─────────┬────────────┬──────────┬─────────┬──────────┬─────────────┬─────────────┬─────────────╮  
+│  Core 0 │   Sleeping │  0.008 W │ 0.203 V │  49.95 C │ C0:   0.5 % │ C1:   0.3 % │ C6:  99.2 % │  
+│  Core 1 │   Sleeping │  0.074 W │ 0.373 V │  50.17 C │ C0:   3.4 % │ C1:  43.9 % │ C6:  52.7 % │  
+...  
+╰─────────┴────────────┴──────────┴─────────┴──────────┴─────────────┴─────────────┴─────────────╯  
+```  
+   
+While the application only provides instantaneous readings, the desire
+to visualize trends and interactions between CPU cores motivated the
+development of this project, which utilizes Dear ImGui to plot these
+metrics in real-time graphs.
+   
+## Features  
+- Real-time graphical visualization of power, voltage, and temperature data for Ryzen CPUs.  
+- High refresh rate capable of revealing transient spikes during short bursts of computational load.  
+- A screenshot of the software's interface is available at `source01/doc/screenshot.png`.  
+   
+## GitHub Actions  
+The `.github/workflows/cmake_143.yml` file sets up a GitHub Action to
+compile the binary on Ubuntu 22 with Clang 18. To access the final
+build artifact, navigate to: [GitHub Actions
+Workflow](https://github.com/plops/cl-cpp-generator2/actions/workflows/cmake_143.yml),
+select a successful build, and download the artifact.
+   
+## Dependencies  
+The project relies on several external repositories, which are cloned as follows:
+```  
+cd ~/src  
+git clone https://github.com/glfw/glfw  
+git clone https://github.com/orcornut/imgui  
+git clone https://github.com/epezent/implot  
+git clone https://github.com/hattedsquirrel/ryzen_monitor  
+```  
+   
+Our CMake configuration includes the necessary source files from these
+dependencies to produce a statically linked binary. Currently, the
+build is configured for GLFW with X11 support, as Wayland support has
+not been tested.
+   
+Regarding ImPlot, the default settings for coordinate precision have
+not been modified, but improvements in this area could enhance graph
+fidelity.
+   
+## Future Improvements  
+- Optimize data reading code for minimal system impact in terms of
+  load, power consumption, and temperature.
+- Implement data transmission using gRPC to allow external Python
+  tools to perform data analysis and facilitate the benchmarking of
+  CPU components.
+   
+### Placing Load on Different Cores  
+Experiment with allocating stress to specific cores using the following command:
+```  
+for i in `seq 0 2 12`; do taskset -c $i stress -c 1 --timeout 1; done  
+```  
+   
+Subsequent development might focus on a new project designed
+exclusively for data collection, eliminating the GUI and OpenGL
+dependencies to meet the stated improvement goals.
+   
+## References  
+The development of this code was informed by a review of various
+sources, particularly concerning eBPF technology, which offers
+intriguing possibilities for correlating CPU measurements with system
+calls.
 
-- the console application only shows the measurement values at the current moment
-- i always wanted to see graphs of this data. in order to find trends
-  or measure crosstalk between the cores of the processor.
-- this program uses imgui to plot diagrams in realtime. it turns out
-  that a very fast update rate is possible and even short (sub-second)
-  durations of heavy computation can show up in the temperature graph.
-- i tried 
-
-- the image source01/doc/screenshot.png is a screenshot of the software
-
-# github action
-
-also see the yaml file .github/workflows/cmake_143.yml configures a
-github action to build the binary on ubuntu 22 with clang 18.
-
-the final artifact can be found by going to this link:
-https://github.com/plops/cl-cpp-generator2/actions/workflows/cmake_143.yml
-and clicking on the any green build run and download the artifact.
-
-# dependencies
-
-you can read in the yaml file, how i download the
-dependencies. basically, i get the following three repositories:
-
-```
-cd ~/src
-
-git clone https://github.com/glfw/glfw
-git clone https://github.com/orcornut/imgui
-git clone https://github.com/epezent/implot
-git clone https://github.com/hattedsquirrel/ryzen_monitor
-
-```
-
-the cmakefile of my program includes appropriate source files from
-these directories, so that a statically linked binary can be produced.
-
-i only tried glfw with x11 and (currently) disable wayland support in
-the build action as i have no way to test it.
-
-implot suggests that some default settings should be changed so
-represent coordinates as 32bit numbers instead of 16bit numbers. i
-didn't do that yet, and the plots seem to look okay so far.
-
-# outlook
-
-this gui is quite entertaining but of limited usefulness. i see two
-points that can be improved. write code that reads the measurements
-with minimal impact on the system. we don't want the measurement code
-produce a lot of load, power consumption and temperature.
-
-another interesting idea would be to send the data via grpc. so that a
-python tool can collect the data. then it would be possible to start
-small benchmarks on different components of the cpu and measure
-crosstalk between components.
-
-## Place load on different cores
-```
- for i in `seq 0 2 12` ; do taskset -c $i stress -c 1 --timeout 1;done
-```
-
-if i decide to continue to work on this i think i would start an
-entire new project without gui or opengl to achieve these goals.
-
-# references:
+# References:
 
 the following sections contain summaries of websites that i read while developing this code
 
-## ebpf
+## Tracing System calls with eBPF
 
-it might be interesting to combine measurement of the cpu's
-temperature and power with systemcalls that are being executed
+Combining CPU temperature and power metrics with system call data
+could reveal how certain operations affect CPU performance.
 
 - https://www.evilsocket.net/2022/08/15/Process-behaviour-anomaly-detection-using-eBPF-and-unsupervised-learning-Autoencoders/
 
