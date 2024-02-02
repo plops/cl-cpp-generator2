@@ -77,35 +77,11 @@ Subsequent development might focus on a new project designed
 exclusively for data collection, eliminating the GUI and OpenGL
 dependencies to meet the stated improvement goals.
    
-# References  
+# References
+
 The development of this code was informed by a review of various
-sources, particularly concerning eBPF technology, which offers
-intriguing possibilities for correlating CPU measurements with system
-calls.
+sources.
 
-## Tracing System calls with eBPF
-
-Combining CPU temperature and power metrics with system call data
-could reveal how certain operations affect CPU performance.
-
-- https://www.evilsocket.net/2022/08/15/Process-behaviour-anomaly-detection-using-eBPF-and-unsupervised-learning-Autoencoders/
-
-- Introduction to process behavior anomaly detection with eBPF and unsupervised learning using autoencoders.  
-- Traditional anomaly detection methods vs. a novel approach that avoids predefined system call lists and considers the rate of system call usage.  
-- Explanation of eBPF (Extended Berkeley Packet Filter) technology for sandboxed kernel runtime interception.  
-- Description of how eBPF enables innovation within the Linux kernel without modifying source code or loading kernel modules.  
-- Usage of the Python BCC (BPF Compiler Collection) package for eBPF program compilation and execution.  
-- Details on system call tracing with eBPF using tracepoints or kprobes/kretprobes and challenges associated with argument fetching and buffer throughput.  
-- Alternative approach: Histogram-based tracing of `sys_enter` events to circumvent argument reading issues and buffer throughput limitations.  
-- Code snippets demonstrating eBPF program setup and user space vector polling to compute the rate of change for every system call.  
-- Introduction to autoencoders for anomaly detection without labeled data, capable of internal data representation and output.  
-- Neural network architecture for the autoencoder with 512 inputs and outputs and an internal representation layer half the size.  
-- Model training using CSV dataset split into training and testing/validation data, with mean square error loss function for reconstruction error.  
-- Establishment of a reference error threshold based on the maximum reconstruction error on normal data.  
-- Example demonstration using Spotify on Linux as a test case for live process monitoring and anomaly detection during unusual actions like "Connect with Facebook."  
-- Instructions for capturing live data, training the model, saving it to a file, and then using it for real-time anomaly detection.  
-- Results demonstrating anomaly detection in practice, with output indicating the cumulative error and the most anomalous system calls.  
-- Conclusion highlighting the effectiveness of the method, potential for performance improvement, and accuracy tuning.
 
 
 ## https://hattedsquirrel.net/2020/12/power-consumption-of-ryzen-5000-series-cpus/
@@ -178,3 +154,28 @@ could reveal how certain operations affect CPU performance.
   - Notes peak temperatures can be 5-10 degrees higher than THM  
   - Warns of potential crashes due to throttling issues with inadequate cooling solutions  
   - Thanks the developer for the great work
+
+
+## Tracing System calls with eBPF
+
+Combining CPU temperature and power metrics with system call data
+could reveal how certain operations affect CPU performance.
+
+- https://www.evilsocket.net/2022/08/15/Process-behaviour-anomaly-detection-using-eBPF-and-unsupervised-learning-Autoencoders/
+
+- Introduction to process behavior anomaly detection with eBPF and unsupervised learning using autoencoders.  
+- Traditional anomaly detection methods vs. a novel approach that avoids predefined system call lists and considers the rate of system call usage.  
+- Explanation of eBPF (Extended Berkeley Packet Filter) technology for sandboxed kernel runtime interception.  
+- Description of how eBPF enables innovation within the Linux kernel without modifying source code or loading kernel modules.  
+- Usage of the Python BCC (BPF Compiler Collection) package for eBPF program compilation and execution.  
+- Details on system call tracing with eBPF using tracepoints or kprobes/kretprobes and challenges associated with argument fetching and buffer throughput.  
+- Alternative approach: Histogram-based tracing of `sys_enter` events to circumvent argument reading issues and buffer throughput limitations.  
+- Code snippets demonstrating eBPF program setup and user space vector polling to compute the rate of change for every system call.  
+- Introduction to autoencoders for anomaly detection without labeled data, capable of internal data representation and output.  
+- Neural network architecture for the autoencoder with 512 inputs and outputs and an internal representation layer half the size.  
+- Model training using CSV dataset split into training and testing/validation data, with mean square error loss function for reconstruction error.  
+- Establishment of a reference error threshold based on the maximum reconstruction error on normal data.  
+- Example demonstration using Spotify on Linux as a test case for live process monitoring and anomaly detection during unusual actions like "Connect with Facebook."  
+- Instructions for capturing live data, training the model, saving it to a file, and then using it for real-time anomaly detection.  
+- Results demonstrating anomaly detection in practice, with output indicating the cumulative error and the most anomalous system calls.  
+- Conclusion highlighting the effectiveness of the method, potential for performance improvement, and accuracy tuning.
