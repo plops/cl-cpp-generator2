@@ -128,7 +128,8 @@
 			(space struct DiagramData (progn
 					   "std::string name;"
 					   "std::deque<float> values;"
-					   )))
+					   ))
+			(doc "@brief The DiagramBase class represents a base class for diagrams."))
      :implementation-preamble
      `(do0
        
@@ -141,15 +142,20 @@
 	     
 	     (defclass ,name ()
 	       "public:"
+	       (doc "@brief Constructs a DiagramBase object with the specified maximum number of cores, maximum number of points, and y-axis name.
+
+@param max_cores The maximum number of cores.
+@param max_points The maximum number of points.
+@param name_y The name of the y-axis.")
 	       (defmethod ,name (,@(remove-if #'null
-					   (loop for e in members
-						 collect
-						 (destructuring-bind (name &key type param (initform 0)) e
-						   (let ((nname (intern
-								 (string-upcase
-								  (cl-change-case:snake-case (format nil "~a" name))))))
-						     (when param
-						       nname))))))
+				    (loop for e in members
+					  collect
+					  (destructuring-bind (name &key type param (initform 0)) e
+					    (let ((nname (intern
+							  (string-upcase
+							   (cl-change-case:snake-case (format nil "~a" name))))))
+					      (when param
+						nname))))))
 		 (declare
 		  ,@(remove-if #'null
 			       (loop for e in members

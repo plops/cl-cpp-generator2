@@ -10,6 +10,13 @@ struct DiagramData {
 };
 class DiagramBase  {
         public:
+            /** @brief Constructs a DiagramBase object with the specified maximum number of cores, maximum number of points, and y-axis name.
+
+@param max_cores The maximum number of cores.
+@param max_points The maximum number of points.
+@param name_y The name of the y-axis.
+
+    */ 
         explicit  DiagramBase (int max_cores, int max_points, std::string name_y)       ;   
         void AddDataPoint (float time, const std::vector<float>& values)       ;   
         int GetMaxCores ()       ;   

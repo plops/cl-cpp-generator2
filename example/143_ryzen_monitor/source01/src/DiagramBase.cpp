@@ -3,6 +3,9 @@
 #include "DiagramBase.h"
 #include <format>
 #include <stdexcept>
+/** @brief The DiagramBase class represents a base class for diagrams.
+
+*/
 DiagramBase::DiagramBase(int max_cores, int max_points, std::string name_y)
     : max_cores_(max_cores), max_points_(max_points), diagrams_(0),
       name_y_(name_y), time_points_(0) {
