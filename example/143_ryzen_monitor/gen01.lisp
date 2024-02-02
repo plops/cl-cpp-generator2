@@ -6,8 +6,11 @@
 (in-package :cl-cpp-generator2)
 
 (progn
-  (setf *features* (set-difference *features* (list :more)))
-  (setf *features* (set-exclusive-or *features* (list :more))))
+  (setf *features* (set-difference *features* (list :more
+						    :affinity)))
+  (setf *features* (set-exclusive-or *features* (list :more
+						      ;:affinity
+						      ))))
 
 (let ()
   (defparameter *source-dir* #P"example/143_ryzen_monitor/source01/src/")
@@ -502,7 +505,7 @@
 	      imgui_impl_glfw.h
 	      imgui_impl_opengl3.h
 	      implot.h
-	      CpuAffinityManagerWithGui.h
+	      #+affinity CpuAffinityManagerWithGui.h
 	      )
      (include<> GLFW/glfw3.h
 		format
@@ -654,7 +657,7 @@
 						    maxDataPoints
 						    (string ,e)))))))
 	      
-	      (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
+	      #+affinity (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
 	      
 	      (while (!glfwWindowShouldClose window)
 		     (glfwPollEvents)
@@ -670,7 +673,7 @@
 			  (when sysinfo.available
 			    (ImGui--Begin (string "Ryzen"))
 
-			    (affinityManager.RenderGui)
+			    #+affinity (affinityManager.RenderGui)
 			    (when (ImGui--Checkbox (string "vsync")
 						   &vsyncOn)
 			      (glfwSwapInterval (? vsyncOn 1 0)))
