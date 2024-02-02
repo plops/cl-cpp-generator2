@@ -27,6 +27,8 @@ metrics in real-time graphs.
 - High refresh rate capable of revealing transient spikes during short bursts of computational load.  
 - A screenshot of the software's interface is available at `source01/doc/screenshot.png`.  
    
+  ![Screenshot](https://raw.githubusercontent.com/plops/cl-cpp-generator2/master/example/143_ryzen_monitor/source01/doc/screenshot.png)
+   
 ## GitHub Actions  
 The `.github/workflows/cmake_143.yml` file sets up a GitHub Action to
 compile the binary on Ubuntu 22 with Clang 18. To access the final
