@@ -476,6 +476,6 @@ openat(AT_FDCWD, "/home/martin/stage/cl-cpp-generator2/example/143_ryzen_monitor
 openat(AT_FDCWD, "/home/martin/stage/cl-cpp-generator2/example/143_ryzen_monitor/source01/b/CMakeFiles/unit_tests.dir/tests/test_CpuAffinityManagerBase.cpp.gcda", O_RDWR|O_CREAT, 0666) = 3
 
 ```
-
+ 
 - I also verified that `ctest` runs the unit_tests binary and writes
   the *.gcda files.
