@@ -378,7 +378,7 @@
 			(EXPECT_EQ actual_result expected_result)))
        
        )
-     :omit-parens t
+     :omit-parens t 
      :format t
      :tidy nil)
     (write-class
