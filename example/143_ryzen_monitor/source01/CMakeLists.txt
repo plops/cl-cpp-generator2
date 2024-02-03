@@ -103,6 +103,10 @@ option(ENABLE_TESTS "Enable unit tests" OFF)  # Declare the ENABLE_TESTS option
 if(ENABLE_TESTS)
 	enable_testing()
 
+	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
+	include(coverage)
+	add_coverage_target("*/tests/*")
+
 	# Fetch Google Test
 	include(FetchContent)
 	FetchContent_Declare(
