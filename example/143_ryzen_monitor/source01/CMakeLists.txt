@@ -124,7 +124,9 @@ if(ENABLE_RYZEN_TESTS)
 	)    
 	
 	# Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
-    target_compile_options(unit_tests PRIVATE -O0)  
+    target_compile_options(unit_tests PRIVATE
+		-O0 -fprofile-arcs -ftest-coverage --coverage)  
+	target_link_options(unit_tests PRIVATE --coverage)  # Link with the coverage library
 
 	# Link the test executable with Google Test and the necessary libraries
 	target_link_libraries(unit_tests gtest_main)

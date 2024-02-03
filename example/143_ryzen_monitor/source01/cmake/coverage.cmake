@@ -17,8 +17,8 @@ function(add_coverage_target exclude)
 
     if (LCOV AND GCOV AND GENHTML)
         set(covname cov.info)
-        add_compile_options(-fprofile-arcs -ftest-coverage)
-        add_link_options(--coverage)
+        #add_compile_options(-fprofile-arcs -ftest-coverage)
+        #add_link_options(--coverage)
         add_custom_target(cov DEPENDS ${covname})
         add_custom_command(
             OUTPUT  ${covname}
