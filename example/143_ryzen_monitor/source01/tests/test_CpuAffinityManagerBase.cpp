@@ -3,12 +3,13 @@
 #include <thread>
 #include <unistd.h>
 class CpuAffinityManagerBaseTest : public ::testing::Test {
+public:
+  CpuAffinityManagerBaseTest()
+      : n(std::thread::hardware_concurrency()), pid(getpid()),
+        manager(CpuAffinityManagerBase(pid, n)) {}
+
 protected:
-  void SetUp() {
-    n = std::thread::hardware_concurrency();
-    pid = getpid();
-    manager = CpuAffinityManagerBase(pid, n);
-  }
+  void SetUp() {}
   void TearDown() {}
   int n, pid;
   CpuAffinityManagerBase manager;
@@ -18,7 +19,7 @@ TEST_F(CpuAffinityManagerBaseTest, GetSelectedCpus_Initialized_FullBitset) {
   auto actual_result{manager.GetSelectedCpus()};
   EXPECT_EQ(actual_result, expected_result);
 };
-TEST_F(CpuAffinityManagerBase, SetSelectedCpus_Set_ValidBitset) {
+TEST_F(CpuAffinityManagerBaseTest, SetSelectedCpus_Set_ValidBitset) {
   auto expected_result{std::vector<bool>(n, true)};
   expected_result[0] = false;
   manager.SetSelectedCpus(expected_result);

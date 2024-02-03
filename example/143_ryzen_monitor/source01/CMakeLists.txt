@@ -124,7 +124,9 @@ if(ENABLE_RYZEN_TESTS)
 		tests/main.cpp
 	)
 	# Link the test executable with Google Test and the necessary libraries
-	target_link_libraries(unit_tests gtest_main)
+	target_link_libraries(unit_tests 
+	gtest_main
+	)
 	target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 	# Register the test with CTest  

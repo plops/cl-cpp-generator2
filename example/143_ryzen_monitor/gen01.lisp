@@ -312,10 +312,13 @@
        (include CpuAffinityManagerBase.h)
        (include<> gtest/gtest.h
 		  thread
-		  unistd.h)
+		  unistd.h
+		  ;memory
+		  )
 
        (defclass+ CpuAffinityManagerBaseTest "public ::testing::Test"
-	 #+nil (defmethod CpuAffinityManagerBaseTest ()
+	 "public:"
+	 (defmethod CpuAffinityManagerBaseTest ()
 	   (declare (values :constructor)
 		    (construct (n ("std::thread::hardware_concurrency"))
 			       (pid (getpid))
@@ -323,13 +326,17 @@
 	 "protected:"
 	 (defmethod SetUp ()
 	   (declare (override))
-	   (setf n ("std::thread::hardware_concurrency")
+	   #+nil (setf n ("std::thread::hardware_concurrency")
 		 pid (getpid)
-		 manager (CpuAffinityManagerBase pid n)))
+		 manager (CpuAffinityManagerBase pid n))
+	   ;(setf manager (std--make_unique<CpuAffinityManagerBase> pid n))
+	   )
 	 (defmethod TearDown ()
 	   (declare (override)))
 	 "int n, pid;"
-	 "CpuAffinityManagerBase manager;")
+	 "CpuAffinityManagerBase manager;"
+	 ;"std::unique_ptr<CpuAffinityManagerBase> manager;"
+	 )
        
        (space (TEST_F ,test GetSelectedCpus_Initialized_FullBitset)
 	      (progn
@@ -337,8 +344,8 @@
 		(let ((expected_result (std--vector<bool> n true))
 		      (actual_result (manager.GetSelectedCpus))))
 		(EXPECT_EQ actual_result expected_result)))
-       #+nil
-       (space (TEST_F ,name SetSelectedCpus_Set_ValidBitset)
+       
+       (space (TEST_F ,test SetSelectedCpus_Set_ValidBitset)
 		      (progn
 			
 			(let ((expected_result (std--vector<bool> n true))
