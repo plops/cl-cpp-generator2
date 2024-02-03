@@ -10,6 +10,7 @@
 #include <deque>
 #include <format>
 #include <iostream>
+#include <popl.hpp>
 #include <unistd.h>
 #include <vector>
 extern "C" {
@@ -93,6 +94,18 @@ std::tuple<system_info, unsigned char *, pm_table> start_pm_monitor2() {
 #define pmta0(elem) ((pmt.elem) ? (*(pmt.elem)) : 0F)
 
 int main(int argc, char **argv) {
+  auto op{popl::OptionParser("allowed options")};
+  auto maxThreads{int(12)};
+  auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
+  auto verboseOption{
+      op.add<popl::Switch>("v", "verbose", "produce verbose output")};
+  auto maxThreadsOption{op.add<popl::Value<int>>("t", "maxThreads", "parameter",
+                                                 12, &maxThreads)};
+  op.parse(argc, argv);
+  if (helpOption->count()) {
+    std::cout << op << std::endl;
+    exit(0);
+  }
   if (0 != getuid() && 0 != geteuid()) {
     std::cout << std::format("Program must be run as root\n");
     return 1;
@@ -138,7 +151,7 @@ int main(int argc, char **argv) {
   auto c0Diagram{DiagramWithGui(8, maxDataPoints, "c0")};
   auto cc1Diagram{DiagramWithGui(8, maxDataPoints, "cc1")};
   auto cc6Diagram{DiagramWithGui(8, maxDataPoints, "cc6")};
-  auto affinityManager{CpuAffinityManagerWithGui(getpid())};
+  auto affinityManager{CpuAffinityManagerWithGui(getpid(), maxThreads)};
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();

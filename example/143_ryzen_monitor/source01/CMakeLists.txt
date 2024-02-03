@@ -65,6 +65,16 @@ set(sources
 
 #file(GLOB sources src/*.cpp)
 
+include(FetchContent)
+FetchContent_Declare(
+	popl
+	GIT_REPOSITORY https://github.com/badaix/popl.git
+	GIT_TAG v1.3.0
+	)
+FetchContent_MakeAvailable(popl)
+
+include_directories(${popl_SOURCE_DIR}/include)
+
 add_executable(${PROJECT_NAME}
 	${sources}
 	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp

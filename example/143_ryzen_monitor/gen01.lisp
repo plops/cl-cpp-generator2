@@ -297,8 +297,11 @@
 		   (ImPlot--EndPlot)))))))
 
   (let* ((name `CpuAffinityManagerBase)
-	 (members `((selectedCpus :type std--bitset<12> :initform nil)
-		    (pid :type pid_t :param t))))
+	 (members `((selectedCpus :type std--vector<bool> ;std--bitset<64>
+				  :initform nil)
+		    
+		    (pid :type pid_t :param t)
+		    (threads :type int :param t))))
     (write-source 
      (asdf:system-relative-pathname
       'cl-cpp-generator2 
@@ -363,7 +366,8 @@
 				   unistd.h
 				   bitset
 				   cstring
-				   string)
+				   string
+				   vector)
 			(doc " @brief The CpuAffinityManagerBase class is used to limit execution of the Ryzen Monitor GUI on one (or more) particular cores.
   
   This class allows for the separation of the impact of the GUI rendering on the diagrams of other cores during benchmarks.
@@ -404,6 +408,7 @@
 					   
 					   `(type ,type ,nname))))))
 		  (construct
+		   (selected_cpus_ (std--vector<bool> threads false))
 		   ,@(remove-if #'null
 				(loop for e in members
 				      collect
@@ -420,34 +425,42 @@
 		  (explicit)	    
 		  (values :constructor)
 		  )
+		 
 		 (let ((cpuset (cpu_set_t)))
 		   (if (== 0 (sched_getaffinity pid_ (sizeof cpu_set_t) &cpuset))
-		       (dotimes (i 12)
+		       (dotimes (i threads_)
 			 (when (CPU_ISSET i &cpuset)
-			   (selected_cpus_.set i)))
+			   ;(selected_cpus_.set i)
+			   (setf (aref selected_cpus_ i) true)
+			   ))
 		       (throw (std--runtime_error (string "Failed to get CPU affinity"))))))
 	       (defmethod GetSelectedCpus ()
-		 (declare (values "std::bitset<12>"))
+		 (declare (values ; "std::bitset<12>"
+			   "std::vector<bool>"))
 		 (return selected_cpus_))
 	       (defmethod SetSelectedCpus (selected_cpus)
-		 (declare (type "std::bitset<12>" selected_cpus))
+		 (declare (type "std::vector<bool>"  ;"std::bitset<12>"
+				selected_cpus))
 		 (setf selected_cpus_ selected_cpus))
 	       (defmethod GetAffinity ()
-		 (declare (values "std::bitset<12>"))
+		 (declare (values "std::vector<bool>" ; "std::bitset<12>"
+				  ))
 		 (let ((cpuset (cpu_set_t)))
 		   (when (== 0 (sched_getaffinity pid_
 						  (sizeof cpu_set_t)
 						  &cpuset))
-		     (let ((affinity (std--bitset<12>)))
-		       (dotimes (i 12)
+		     (let ((affinity (std--vector<bool> threads_ false)	;(std--bitset<12>)
+			     ))
+		       (dotimes (i threads_)
 			 (when (CPU_ISSET i &cpuset)
-			   (affinity.set i)))
+			   ;(affinity.set i)
+			   (setf (aref affinity i) true)))
 		       (return affinity)))
 		   (throw (std--runtime_error (string "Failed to get CPU affinity")))))
 	       (defmethod ApplyAffinity ()
 		 (let ((cpuset (cpu_set_t)))
 		   (CPU_ZERO &cpuset)
-		   (dotimes (i 12)
+		   (dotimes (i threads_)
 		     (when (aref selected_cpus_ i)
 		       (CPU_SET i &cpuset)))
 		   (when (!= 0 (sched_setaffinity pid_ (sizeof cpu_set_t) &cpuset))
@@ -463,7 +476,8 @@
 				      `(space ,type ,nname_)))))))))
 
   (let* ((name `CpuAffinityManagerWithGui)
-	 (members `((selectedCpus :type std--bitset<12> :initform nil)
+	 (members `((selectedCpus :type std--vector<bool> ; std--bitset<12>
+				  :initform nil)
 		    (pid :type pid_t :param t))))
   
     (write-class
@@ -497,7 +511,7 @@
 		 (ImGui--Begin (string "CPU Affinity"))
 		 (ImGui--Text  (string "Select CPUs for process ID: %d") pid_)
 		 (let ((affinityChanged false))
-		   (dotimes (i 12)
+		   (dotimes (i threads_)
 		     (let ((label (+ (std--string (string "CPU "))
 				     (std--to_string i)))))
 		     (let ((isSelected  (aref selected_cpus_ i)))
@@ -530,7 +544,8 @@
 		iostream
 		unistd.h
 		vector deque chrono
-		cmath)
+		cmath
+		popl.hpp)
      (space extern "\"C\""
 	    (progn
 	      
@@ -606,6 +621,51 @@
 		(type char** argv)
 		(values int))
 
+       ,(let ((l `((:name maxThreads :default 12 :short t)
+		   )))
+	 `(let ((op (popl--OptionParser (string "allowed options")))
+		,@(loop for e in l collect
+				   (destructuring-bind (&key name default short) e
+				     `(,name (int ,default))))
+		,@(loop for e in `((:long help :short h :type Switch :msg "produce help message")
+				   (:long verbose :short v :type Switch :msg "produce verbose output")
+				   ,@(loop for f in l
+					   collect
+					   (destructuring-bind (&key name default short) f
+					     `(:long ,name
+					       :short ,short
+					       :type int :msg "parameter"
+					       :default ,default :out ,(format nil "&~a" name))))
+
+				   )
+			appending
+			(destructuring-bind (&key long short type msg default out) e
+			  `((,(format nil "~aOption" long)
+			     ,(let ((cmd `(,(format nil "add<~a>"
+						    (if (eq type 'Switch)
+							"popl::Switch"
+							(format nil "popl::Value<~a>" type)))
+					   (string ,short)
+					   (string ,long)
+					   (string ,msg))))
+				(when default
+				  (setf cmd (append cmd `(,default)))
+				  )
+				(when out
+				  (setf cmd (append cmd `(,out)))
+				  )
+				`(dot op ,cmd)
+				))))
+			))
+	    (op.parse argc argv)
+	    (when (helpOption->count)
+	      (<< std--cout
+		  op
+		  std--endl)
+	      (exit 0))
+
+	    ))
+
        #+nil (let ((update_time_s 1)
 		   (show_disabled_cores 0)))
 
@@ -675,7 +735,7 @@
 						    maxDataPoints
 						    (string ,e)))))))
 	      
-	      #+affinity (let ((affinityManager (CpuAffinityManagerWithGui (getpid)))))
+	      #+affinity (let ((affinityManager (CpuAffinityManagerWithGui (getpid) maxThreads))))
 	      
 	      (while (!glfwWindowShouldClose window)
 		     (glfwPollEvents)
