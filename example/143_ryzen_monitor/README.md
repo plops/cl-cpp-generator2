@@ -45,7 +45,7 @@ build artifact, navigate to: [GitHub Actions
 Workflow](https://github.com/plops/cl-cpp-generator2/actions/workflows/cmake_143.yml),
 select a successful build, and download the artifact.
    
-## Dependencies  
+## Build Dependencies  
 The project relies on several external repositories, which are cloned as follows:
 ```  
 cd ~/src  
@@ -70,6 +70,20 @@ I installed the dependencies for code coverage in Gentoo like this:
 
 ```
  sudo emerge -av lcov  dev-util/gcovr
+```
+
+## Runtime Dependencies
+
+On my cpu I need this kernel module. Unfortunately, the newest commits
+don't work anymore. I have to use this particular commit from Sun Dec
+5 17:29:33 2021, because that one works. I haven't looked into why
+newer commits don't work.
+
+
+```
+git clone https://gitlab.com/leogx9r/ryzen_smu.git ryzen_smu
+cd ryzen_smu
+git checkout de976a9b43d629b7fa0c32e5124bc28bc91d47ef  
 ```
 
 ## Future Improvements  
