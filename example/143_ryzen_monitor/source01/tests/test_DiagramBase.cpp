@@ -1,5 +1,6 @@
 #include "DiagramBase.h"
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include <unistd.h>
 TEST(DiagramBase, AddDataPoint_AddPointToEmpty_HaveOnePoint) {
   // Arrange
@@ -27,6 +28,10 @@ TEST(DiagramBase, AddDataPoint_AddPointToOne_HaveTwoPoints) {
 
   EXPECT_EQ(diagram.GetTimePoints().size(), 2);
   EXPECT_EQ(diagram.GetDiagrams()[0].values.size(), 2);
+};
+TEST(DiagramBase, AddDataPoint_AddPointWithEmptyValues_ThrowsException) {
+  auto diagram{DiagramBase(2, 3, "1")};
+  EXPECT_THROW(diagram.AddDataPoint(1.0F, {}), std::invalid_argument);
 };
 TEST(DiagramBase, AddDataPoint_AddLastPoint_HaveThreePoints) {
   // Arrange

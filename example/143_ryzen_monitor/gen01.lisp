@@ -38,7 +38,8 @@
    `(do0
      (include ,(format nil "~a.h" name))
      (include<> gtest/gtest.h
-		unistd.h)
+		unistd.h
+		stdexcept)
 
      (space (TEST ,name AddDataPoint_AddPointToEmpty_HaveOnePoint)
 	    (progn
@@ -74,6 +75,13 @@
 	      (EXPECT_EQ (dot diagram (GetTimePoints) (size)) 2)
 	      (EXPECT_EQ (dot diagram (aref (GetDiagrams) 0) values (size)) 2)))
 
+     (space (TEST ,name AddDataPoint_AddPointWithEmptyValues_ThrowsException)
+	    (progn
+	      (let ((diagram (DiagramBase 2
+					  3
+					  (string "1")))))
+	      (EXPECT_THROW (diagram.AddDataPoint 1s0 (curly))
+			    std--invalid_argument)))
      (space (TEST ,name AddDataPoint_AddLastPoint_HaveThreePoints)
 	    (progn
 	      (comments Arrange)
