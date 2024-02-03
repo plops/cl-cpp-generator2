@@ -52,7 +52,7 @@ jobs:
         cp ryzen_monitor/src/ryzen_monitor.c .
         cat ryzen_monitor.c | sed 's/main(/main2(/g' > ryzen_monitor/src/ryzen_monitor.c
 
-    - name: Install clang17
+    - name: Install clang18
       run: |
         wget https://apt.llvm.org/llvm.sh
         chmod a+x llvm.sh
