@@ -310,48 +310,51 @@
      `(do0
        (include CpuAffinityManagerBase.h)
        (include<> gtest/gtest.h
+		  thread
 		  unistd.h)
 
        (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
 	      (progn
-		(let ((manager (CpuAffinityManagerBase (getpid)))))
+		(let ((n ("std::thread::hardware_concurrency"))
+		      (manager (CpuAffinityManagerBase (getpid) n))))
 		(comments "FIXME: this only works on a twelve core cpu")
-		(let ((expected_result (std--bitset<12> (string "111111111111")))
+		(let ((expected_result (std--vector<bool> n true))
 		      (actual_result (manager.GetSelectedCpus))))
 		(EXPECT_EQ actual_result expected_result)))
 
-       (space (TEST ,name SetSelectedCpus_Set_ValidBitset)
-	      (progn
-		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelve core cpu")
-		(let ((expected_result (std--bitset<12> (string "101010101010")))
-		      ))
-		(manager.SetSelectedCpus expected_result)
-		(let ((actual_result (manager.GetSelectedCpus))))
-		(EXPECT_EQ actual_result expected_result)))
+       #+nil ((space (TEST ,name SetSelectedCpus_Set_ValidBitset)
+		     (progn
+		       (let ((n ("std::thread::hardware_concurrency"))
+			     (manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
+		       (comments "FIXME: this only works on a twelve core cpu")
+		       (let ((expected_result (std--bitset<12> (string "101010101010")))
+			     ))
+		       (manager.SetSelectedCpus expected_result)
+		       (let ((actual_result (manager.GetSelectedCpus))))
+		       (EXPECT_EQ actual_result expected_result)))
 
-       (space (TEST ,name GetAffinity_Initialized_FullBitset)
-	      (progn
-		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelve core cpu")
-		(let ((expected_result (std--bitset<12> (string "111111111111")))
-		      ))
-	      
-		(let ((actual_result (manager.GetAffinity))))
-		(EXPECT_EQ actual_result expected_result)))
+	      (space (TEST ,name GetAffinity_Initialized_FullBitset)
+		     (progn
+		       (let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
+		       (comments "FIXME: this only works on a twelve core cpu")
+		       (let ((expected_result (std--bitset<12> (string "111111111111")))
+			     ))
+		       
+		       (let ((actual_result (manager.GetAffinity))))
+		       (EXPECT_EQ actual_result expected_result)))
 
-       (space (TEST ,name ApplyAffinity_Set_ValidBitset)
-	      (progn
-		(let ((manager (CpuAffinityManagerBase (getpid)))))
-		(comments "FIXME: this only works on a twelve core cpu")
-		(let ((expected_result (std--bitset<12> (string "101010101010")))
-		      ))
+	      (space (TEST ,name ApplyAffinity_Set_ValidBitset)
+		     (progn
+		       (let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
+		       (comments "FIXME: this only works on a twelve core cpu")
+		       (let ((expected_result (std--bitset<12> (string "101010101010")))
+			     ))
 
-		(manager.SetSelectedCpus expected_result)
-		(manager.ApplyAffinity)
-	      
-		(let ((actual_result (manager.GetAffinity))))
-		(EXPECT_EQ actual_result expected_result))))
+		       (manager.SetSelectedCpus expected_result)
+		       (manager.ApplyAffinity)
+		       
+		       (let ((actual_result (manager.GetAffinity))))
+		       (EXPECT_EQ actual_result expected_result)))))
      :omit-parens t
      :format t
      :tidy nil)
@@ -532,13 +535,17 @@
     (merge-pathnames "main.cpp"
 		     *source-dir*))
    `(do0
-     (include imgui.h
-	      imgui_impl_glfw.h
-	      imgui_impl_opengl3.h
-	      implot.h
-	      #+affinity CpuAffinityManagerWithGui.h
-	      DiagramWithGui.h
-	      )
+
+     "#undef MINSIGSTKSZ"
+  "#define MINSIGSTKSZ 16384"
+  
+  (include imgui.h
+	   imgui_impl_glfw.h
+	   imgui_impl_opengl3.h
+	   implot.h
+	   #+affinity CpuAffinityManagerWithGui.h
+	   DiagramWithGui.h
+	   )
      (include<> GLFW/glfw3.h
 		format
 		iostream

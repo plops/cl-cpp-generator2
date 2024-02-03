@@ -1,3 +1,5 @@
+#undef MINSIGSTKSZ
+#define MINSIGSTKSZ 16384
 #include "CpuAffinityManagerWithGui.h"
 #include "DiagramWithGui.h"
 #include "imgui.h"

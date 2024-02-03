@@ -64,6 +64,14 @@ Regarding ImPlot, the default settings for coordinate precision have
 not been modified, but improvements in this area could enhance graph
 fidelity.
    
+## Dependencies for code coverage
+
+I installed the dependencies for code coverage in Gentoo like this:
+
+```
+ sudo emerge -av lcov  dev-util/gcovr
+```
+
 ## Future Improvements  
 - Optimize data reading code for minimal system impact in terms of
   load, power consumption, and temperature.

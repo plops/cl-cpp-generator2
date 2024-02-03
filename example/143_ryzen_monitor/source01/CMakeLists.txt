@@ -98,9 +98,9 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
 
 
 # Define the test executable
-option(ENABLE_TESTS "Enable unit tests" OFF)  # Declare the ENABLE_TESTS option
+option(ENABLE_RYZEN_TESTS "Enable unit tests for the ryzen monitor gui" OFF)  # Declare the ENABLE_RYZEN_TESTS option
 
-if(ENABLE_TESTS)
+if(ENABLE_RYZEN_TESTS)
 	enable_testing()
 
 	set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
