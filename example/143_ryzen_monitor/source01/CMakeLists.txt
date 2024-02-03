@@ -112,25 +112,22 @@ if(ENABLE_RYZEN_TESTS)
 	FetchContent_Declare(
 		googletest
 		GIT_REPOSITORY https://github.com/google/googletest.git
-		GIT_TAG release-1.10.0  # specify the commit hash or tag here
+		GIT_TAG v1.14.0  # specify the commit hash or tag here
 	)
 	FetchContent_MakeAvailable(googletest)
 
 	add_executable(unit_tests
 		tests/test_CpuAffinityManagerBase.cpp
+		tests/test_DiagramBase.cpp
 		src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
 		src/DiagramBase.cpp
-		tests/test_DiagramBase.cpp
-		#tests/main.cpp
 	)    
 	
 	# Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
     target_compile_options(unit_tests PRIVATE -O0)  
 
 	# Link the test executable with Google Test and the necessary libraries
-	target_link_libraries(unit_tests 
-	gtest_main
-	)
+	target_link_libraries(unit_tests gtest_main)
 	target_include_directories(unit_tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 	# Register the test with CTest  
