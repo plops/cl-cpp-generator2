@@ -26,3 +26,18 @@ TEST_F(CpuAffinityManagerBaseTest, SetSelectedCpus_Set_ValidBitset) {
   auto actual_result{manager.GetSelectedCpus()};
   EXPECT_EQ(actual_result, expected_result);
 };
+TEST_F(CpuAffinityManagerBaseTest, GetAffinity_Initialized_FullBitset) {
+  auto expected_result{std::vector<bool>(n, true)};
+  auto actual_result{manager.GetAffinity()};
+  EXPECT_EQ(actual_result, expected_result);
+};
+TEST_F(CpuAffinityManagerBaseTest, ApplyAffinity_Set_ValidBitset) {
+  auto manager{
+      CpuAffinityManagerBase(getpid(), std::thread::hardware_concurrency())};
+  auto expected_result{std::vector<bool>(n, true)};
+  expected_result[0] = false;
+  manager.SetSelectedCpus(expected_result);
+  manager.ApplyAffinity();
+  auto actual_result{manager.GetAffinity()};
+  EXPECT_EQ(actual_result, expected_result);
+};

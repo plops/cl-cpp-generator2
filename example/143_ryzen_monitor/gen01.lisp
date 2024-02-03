@@ -354,31 +354,30 @@
 			(manager.SetSelectedCpus expected_result)
 			(let ((actual_result (manager.GetSelectedCpus))))
 			(EXPECT_EQ actual_result expected_result)))
-       
-       #+neil (
 
-	       (space (TEST ,name GetAffinity_Initialized_FullBitset)
+       (space (TEST_F ,test GetAffinity_Initialized_FullBitset)
 		      (progn
-			(let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
-			(comments "FIXME: this only works on a twelve core cpu")
-			(let ((expected_result (std--bitset<12> (string "111111111111")))
+			(let ((expected_result (std--vector<bool> n true))
 			      ))
 			
 			(let ((actual_result (manager.GetAffinity))))
 			(EXPECT_EQ actual_result expected_result)))
 
-	       (space (TEST ,name ApplyAffinity_Set_ValidBitset)
+       (space (TEST_F ,test ApplyAffinity_Set_ValidBitset)
 		      (progn
 			(let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
-			(comments "FIXME: this only works on a twelve core cpu")
-			(let ((expected_result (std--bitset<12> (string "101010101010")))
+
+			(let ((expected_result (std--vector<bool> n true))
 			      ))
+			(setf (aref expected_result 0) false)
 
 			(manager.SetSelectedCpus expected_result)
 			(manager.ApplyAffinity)
 			
 			(let ((actual_result (manager.GetAffinity))))
-			(EXPECT_EQ actual_result expected_result)))))
+			(EXPECT_EQ actual_result expected_result)))
+       
+       )
      :omit-parens t
      :format t
      :tidy nil)

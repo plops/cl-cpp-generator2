@@ -121,7 +121,7 @@ if(ENABLE_RYZEN_TESTS)
 		src/CpuAffinityManagerBase.cpp  # Include the source file with actual implementation 
 		src/DiagramBase.cpp
 		tests/test_DiagramBase.cpp
-		tests/main.cpp
+		#tests/main.cpp
 	)
 	# Link the test executable with Google Test and the necessary libraries
 	target_link_libraries(unit_tests 
