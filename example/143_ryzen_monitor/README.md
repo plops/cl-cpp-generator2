@@ -188,3 +188,19 @@ could reveal how certain operations affect CPU performance.
 - Instructions for capturing live data, training the model, saving it to a file, and then using it for real-time anomaly detection.  
 - Results demonstrating anomaly detection in practice, with output indicating the cumulative error and the most anomalous system calls.  
 - Conclusion highlighting the effectiveness of the method, potential for performance improvement, and accuracy tuning.
+
+
+## Unit tests and code coverage
+
+- https://dev.to/askrodney/cmake-coverage-example-with-github-actions-and-codecovio-5bjp
+
+- Rodney Lab explains how to set up code coverage for a C++ project using CMake with GitHub Actions and codecov.io.  
+- The project used as an example is an arkanoid-clone game, with Catch2 unit tests integrated.  
+- Catch2 tests are added to the CMake project and configured to run automatically.  
+- A custom target for code coverage is added to the CMake configuration, using tools like gcov, lcov, and genhtml.  
+- A GitHub Action is created to build the project, run tests, and upload coverage reports to codecov.io on every push or pull request.  
+- The GitHub Action includes steps for installing dependencies, configuring the build environment, running tests, generating coverage reports, and uploading to codecov.io.  
+- A `requirements.txt` file is needed for installing Python packages like gcovr, which are used to convert coverage data to XML.  
+- Code coverage results are visible on codecov.io and within GitHub pull requests.  
+- Rodney Lab invites feedback, suggestions for improvements, and sharing of the article on social media.  
+- The post includes a call for contributions and interaction with the community on various topics related to game development.
