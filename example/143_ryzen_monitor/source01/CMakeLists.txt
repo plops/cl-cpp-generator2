@@ -122,7 +122,11 @@ if(ENABLE_RYZEN_TESTS)
 		src/DiagramBase.cpp
 		tests/test_DiagramBase.cpp
 		#tests/main.cpp
-	)
+	)    
+	
+	# Set specific compiler options for the unit_tests target (turn of optimizations for coverage)
+    target_compile_options(unit_tests PRIVATE -O0)  
+
 	# Link the test executable with Google Test and the necessary libraries
 	target_link_libraries(unit_tests 
 	gtest_main
