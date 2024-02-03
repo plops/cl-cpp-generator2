@@ -96,11 +96,14 @@ std::tuple<system_info, unsigned char *, pm_table> start_pm_monitor2() {
 int main(int argc, char **argv) {
   auto op{popl::OptionParser("allowed options")};
   auto maxThreads{int(12)};
+  auto maxDataPoints{int(1024)};
   auto helpOption{op.add<popl::Switch>("h", "help", "produce help message")};
   auto verboseOption{
       op.add<popl::Switch>("v", "verbose", "produce verbose output")};
   auto maxThreadsOption{op.add<popl::Value<int>>("t", "maxThreads", "parameter",
                                                  12, &maxThreads)};
+  auto maxDataPointsOption{op.add<popl::Value<int>>(
+      "n", "maxDataPoints", "parameter", 1024, &maxDataPoints)};
   op.parse(argc, argv);
   if (helpOption->count()) {
     std::cout << op << std::endl;
@@ -142,7 +145,6 @@ int main(int argc, char **argv) {
   ImGui_ImplOpenGL3_Init(glsl_version);
   auto [sysinfo, pm_buf, pmt]{start_pm_monitor2()};
   auto clear_color{ImVec4(0.40F, 0.50F, 0.60F, 1.0F)};
-  auto maxDataPoints{1024};
   auto startTime{std::chrono::steady_clock::now()};
   auto temperatureDiagram{DiagramWithGui(8, maxDataPoints, "temperature")};
   auto powerDiagram{DiagramWithGui(8, maxDataPoints, "power")};

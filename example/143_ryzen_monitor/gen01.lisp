@@ -621,7 +621,9 @@
 		(type char** argv)
 		(values int))
 
-       ,(let ((l `((:name maxThreads :default 12 :short t)
+       ,(let ((l `(
+		   (:name maxThreads :default 12 :short t)
+		   (:name maxDataPoints :default 1024 :short n)
 		   )))
 	 `(let ((op (popl--OptionParser (string "allowed options")))
 		,@(loop for e in l collect
@@ -725,7 +727,7 @@
 		  (clear_color (ImVec4 .4s0 .5s0 .6s0 1s0)))
 	      
 	  
-	      (let ((maxDataPoints 1024)
+	      (let (;(maxDataPoints 1024)
 		    (startTime (std--chrono--steady_clock--now))))
 
 	      ,@(loop for e in l-columns
