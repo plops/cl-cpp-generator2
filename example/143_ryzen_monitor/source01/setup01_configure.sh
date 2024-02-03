@@ -1,3 +1,11 @@
 mkdir b
 cd b
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_RYZEN_TESTS=ON .. -DDEP_DIR=/home/martin/src
+cmake -G Ninja \
+ -DCMAKE_BUILD_TYPE=Release \
+ -DENABLE_RYZEN_TESTS=ON \
+ -DBUILD_EXAMPLE=OFF \
+ -DBUILD_GMOCK=OFF \
+ -DBUILD_TESTS=OFF \
+ -DGLFW_BUILD_WAYLAND=OFF \
+ -DDEP_DIR=/home/martin/src \
+ ..
