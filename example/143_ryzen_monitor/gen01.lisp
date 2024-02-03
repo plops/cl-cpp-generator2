@@ -370,7 +370,7 @@
 			(let ((expected_result (std--vector<bool> n true))
 			      ))
 			(setf (aref expected_result 0) false)
-
+ 
 			(manager.SetSelectedCpus expected_result)
 			(manager.ApplyAffinity)
 			
