@@ -297,6 +297,7 @@
 		   (ImPlot--EndPlot)))))))
 
   (let* ((name `CpuAffinityManagerBase)
+	 (test `CpuAffinityManagerBaseTest)
 	 (members `((selectedCpus :type std--vector<bool> ;std--bitset<64>
 				  :initform nil)
 		    
@@ -313,48 +314,62 @@
 		  thread
 		  unistd.h)
 
-       (space (TEST ,name GetSelectedCpus_Initialized_FullBitset)
+       (defclass+ CpuAffinityManagerBaseTest "public ::testing::Test"
+	 (defmethod CpuAffinityManagerBaseTest ()
+	   (declare (values :constructor)
+		    (construct (n ("std::thread::hardware_concurrency"))
+			       (pid (getpid))
+			       (manager (CpuAffinityManagerBase pid n)))))
+	 "protected:"
+	 (defmethod SetUp ()
+	   (declare (override))
+	   #+nil(setf n ("std::thread::hardware_concurrency")
+		 pid (getpid)
+		 manager (CpuAffinityManagerBase pid n)))
+	 "int n, pid;"
+	 "CpuAffinityManagerBase manager;")
+       
+       (space (TEST_F ,test GetSelectedCpus_Initialized_FullBitset)
 	      (progn
-		(let ((n ("std::thread::hardware_concurrency"))
-		      (manager (CpuAffinityManagerBase (getpid) n))))
-		(comments "FIXME: this only works on a twelve core cpu")
+		
 		(let ((expected_result (std--vector<bool> n true))
 		      (actual_result (manager.GetSelectedCpus))))
 		(EXPECT_EQ actual_result expected_result)))
 
-       #+nil ((space (TEST ,name SetSelectedCpus_Set_ValidBitset)
-		     (progn
-		       (let ((n ("std::thread::hardware_concurrency"))
-			     (manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
-		       (comments "FIXME: this only works on a twelve core cpu")
-		       (let ((expected_result (std--bitset<12> (string "101010101010")))
-			     ))
-		       (manager.SetSelectedCpus expected_result)
-		       (let ((actual_result (manager.GetSelectedCpus))))
-		       (EXPECT_EQ actual_result expected_result)))
+       (space (TEST_F ,name SetSelectedCpus_Set_ValidBitset)
+		      (progn
+			
+			(let ((expected_result (std--vector<bool> n true))
+			      ))
+			(setf (aref expected_result 0) false)
+			(manager.SetSelectedCpus expected_result)
+			(let ((actual_result (manager.GetSelectedCpus))))
+			(EXPECT_EQ actual_result expected_result)))
+       
+       #+neil (
 
-	      (space (TEST ,name GetAffinity_Initialized_FullBitset)
-		     (progn
-		       (let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
-		       (comments "FIXME: this only works on a twelve core cpu")
-		       (let ((expected_result (std--bitset<12> (string "111111111111")))
-			     ))
-		       
-		       (let ((actual_result (manager.GetAffinity))))
-		       (EXPECT_EQ actual_result expected_result)))
+	       (space (TEST ,name GetAffinity_Initialized_FullBitset)
+		      (progn
+			(let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
+			(comments "FIXME: this only works on a twelve core cpu")
+			(let ((expected_result (std--bitset<12> (string "111111111111")))
+			      ))
+			
+			(let ((actual_result (manager.GetAffinity))))
+			(EXPECT_EQ actual_result expected_result)))
 
-	      (space (TEST ,name ApplyAffinity_Set_ValidBitset)
-		     (progn
-		       (let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
-		       (comments "FIXME: this only works on a twelve core cpu")
-		       (let ((expected_result (std--bitset<12> (string "101010101010")))
-			     ))
+	       (space (TEST ,name ApplyAffinity_Set_ValidBitset)
+		      (progn
+			(let ((manager (CpuAffinityManagerBase (getpid) ("std::thread::hardware_concurrency")))))
+			(comments "FIXME: this only works on a twelve core cpu")
+			(let ((expected_result (std--bitset<12> (string "101010101010")))
+			      ))
 
-		       (manager.SetSelectedCpus expected_result)
-		       (manager.ApplyAffinity)
-		       
-		       (let ((actual_result (manager.GetAffinity))))
-		       (EXPECT_EQ actual_result expected_result)))))
+			(manager.SetSelectedCpus expected_result)
+			(manager.ApplyAffinity)
+			
+			(let ((actual_result (manager.GetAffinity))))
+			(EXPECT_EQ actual_result expected_result)))))
      :omit-parens t
      :format t
      :tidy nil)
@@ -536,8 +551,8 @@
 		     *source-dir*))
    `(do0
 
-     "#undef MINSIGSTKSZ"
-  "#define MINSIGSTKSZ 16384"
+  ;   "#undef MINSIGSTKSZ"
+  ;"#define MINSIGSTKSZ 16384"
   
   (include imgui.h
 	   imgui_impl_glfw.h
