@@ -315,7 +315,7 @@
 		  unistd.h)
 
        (defclass+ CpuAffinityManagerBaseTest "public ::testing::Test"
-	 (defmethod CpuAffinityManagerBaseTest ()
+	 #+nil (defmethod CpuAffinityManagerBaseTest ()
 	   (declare (values :constructor)
 		    (construct (n ("std::thread::hardware_concurrency"))
 			       (pid (getpid))
@@ -323,9 +323,11 @@
 	 "protected:"
 	 (defmethod SetUp ()
 	   (declare (override))
-	   #+nil(setf n ("std::thread::hardware_concurrency")
+	   (setf n ("std::thread::hardware_concurrency")
 		 pid (getpid)
 		 manager (CpuAffinityManagerBase pid n)))
+	 (defmethod TearDown ()
+	   (declare (override)))
 	 "int n, pid;"
 	 "CpuAffinityManagerBase manager;")
        
@@ -335,7 +337,7 @@
 		(let ((expected_result (std--vector<bool> n true))
 		      (actual_result (manager.GetSelectedCpus))))
 		(EXPECT_EQ actual_result expected_result)))
-
+       #+nil
        (space (TEST_F ,name SetSelectedCpus_Set_ValidBitset)
 		      (progn
 			

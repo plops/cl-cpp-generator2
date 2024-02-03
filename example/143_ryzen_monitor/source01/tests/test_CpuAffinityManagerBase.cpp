@@ -3,12 +3,13 @@
 #include <thread>
 #include <unistd.h>
 class CpuAffinityManagerBaseTest : public ::testing::Test {
-  CpuAffinityManagerBaseTest()
-      : n(std::thread::hardware_concurrency()), pid(getpid()),
-        manager(CpuAffinityManagerBase(pid, n)) {}
-
 protected:
-  void SetUp() {}
+  void SetUp() {
+    n = std::thread::hardware_concurrency();
+    pid = getpid();
+    manager = CpuAffinityManagerBase(pid, n);
+  }
+  void TearDown() {}
   int n, pid;
   CpuAffinityManagerBase manager;
 };
