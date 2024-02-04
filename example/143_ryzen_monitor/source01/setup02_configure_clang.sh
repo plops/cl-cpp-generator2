@@ -2,6 +2,7 @@ mkdir bclang
 cd bclang
 export CC=clang
 export CXX=clang++
+export CXXFLAGS="-march=native -fomit-frame-pointer -O3 -pipe"
 cmake -G Ninja \
  -DCMAKE_BUILD_TYPE=Release \
  -DENABLE_RYZEN_TESTS=OFF \
