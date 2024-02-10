@@ -40,7 +40,10 @@
      (space namespace (setf py pybind11))
      (space using namespace olc--utils--geom2d)
      (space using namespace olc)
-
+     (doc "@brief Python bindings for the olcUTIL_Geometry2D module.
+ 
+This module provides Python bindings for the olcUTIL_Geometry2D module,
+allowing users to interact with the geometry functions in Python.")
      (space
       (PYBIND11_MODULE ,module-name m)
       (progn

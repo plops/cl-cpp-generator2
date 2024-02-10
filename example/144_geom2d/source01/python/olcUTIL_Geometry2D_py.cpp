@@ -11,6 +11,12 @@
 namespace py = pybind11;
 using namespace olc::utils::geom2d;
 using namespace olc;
+/** @brief Python bindings for the olcUTIL_Geometry2D module.
+
+This module provides Python bindings for the olcUTIL_Geometry2D module,
+allowing users to interact with the geometry functions in Python.
+
+*/
 PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
   // Expose the v_2d<float> class to Python as "v"
 
