@@ -16,6 +16,15 @@ cd build
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/vulkan
 ninja install # no build required
 
+cd ~/src
+git clone https://github.com/glfw/glfw
+mkdir -p glfw/build
+cd glfw/build
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=~/vulkan
+ninja
+ninja install
+
 
 git clone https://github.com/Ipotrick/Daxa # 15MB
 cd Daxa
