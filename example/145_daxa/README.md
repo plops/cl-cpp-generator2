@@ -25,6 +25,26 @@ ninja install
 
 martin@archlinux ~/src/Daxa/build $ du -hs ~/vulkan/
 1.9M    /home/martin/vulkan/
+
+cd ~/src 
+wget https://sdk.lunarg.com/sdk/download/1.3.275.0/linux/vulkansdk-linux-x86_64-1.3.275.0.tar.xz # 247M
+tar xaf vulkansdk-linux-x86_64-1.3.275.0.tar.xz
+cd 1.3.275.0 # 1.6GB (binaries)
+mkdir build
+cd build
+cmake .. \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_FLAGS="-DNDEBUG" \
+  -DCMAKE_CXX_FLAGS="-DNDEBUG" \
+  -DCMAKE_SKIP_RPATH=ON \ 
+  -DBUILD_TESTS=OFF \
+  -DBUILD_WSI_WAYLAND_SUPPORT=OFF \
+  -DBUILD_WSI_XCB_SUPPORT=ON \
+  -DBUILD_WSI_XLIB_SUPPORT=ON \
+  -DVULKAN_HEADERS_INSTALL_DIR=~/vulkan \
+  -DCMAKE_PREFIX_PATH=~/vulkan \
+  -DENABLE_WERROR=OFF
 ```
 - vscode extensions:
 ```
