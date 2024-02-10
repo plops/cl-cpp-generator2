@@ -10,7 +10,7 @@ using namespace daxa::types;
 using HWND = void *;
 #elif defined(__linux__)
 #define GLFW_EXPOSE_NATIVE_X11
-#define GLFW_EXPOSE_NATIVE_WAYLAND
+//#define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <GLFW/glfw3native.h>
 
@@ -59,7 +59,7 @@ struct VWindow{
         switch (get_native_platform())
         {
             case daxa::NativeWindowPlatform::WAYLAND_API:
-                return reinterpret_cast<daxa::NativeWindowHandle>(glfwGetWaylandWindow(glfw_window_ptr));
+	      //return reinterpret_cast<daxa::NativeWindowHandle>(glfwGetWaylandWindow(glfw_window_ptr));
             case daxa::NativeWindowPlatform::XLIB_API:
             default:
                 return reinterpret_cast<daxa::NativeWindowHandle>(glfwGetX11Window(glfw_window_ptr));
@@ -69,14 +69,14 @@ struct VWindow{
 
     static auto get_native_platform() -> daxa::NativeWindowPlatform
     {
-      return daxa::NativeWindowPlatform::XLIB_API;
-        // switch(glfwGetPlatform())
-        // {
-        //     case GLFW_PLATFORM_WIN32: return daxa::NativeWindowPlatform::WIN32_API;
-        //     case GLFW_PLATFORM_X11: return daxa::NativeWindowPlatform::XLIB_API;
-        //     case GLFW_PLATFORM_WAYLAND: return daxa::NativeWindowPlatform::WAYLAND_API;
-        //     default: return daxa::NativeWindowPlatform::UNKNOWN;
-        // }
+      //return daxa::NativeWindowPlatform::XLIB_API;
+        switch(glfwGetPlatform())
+        {
+            case GLFW_PLATFORM_WIN32: return daxa::NativeWindowPlatform::WIN32_API;
+            case GLFW_PLATFORM_X11: return daxa::NativeWindowPlatform::XLIB_API;
+            case GLFW_PLATFORM_WAYLAND: return daxa::NativeWindowPlatform::WAYLAND_API;
+            default: return daxa::NativeWindowPlatform::UNKNOWN;
+        }
     }
 
     inline void set_mouse_capture(bool should_capture) const
