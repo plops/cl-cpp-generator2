@@ -1,5 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (ql:quickload "cl-cpp-generator2"))
+  (ql:quickload "cl-cpp-generator2")
+  (ql:quickload "alexandria"))
 
 (in-package :cl-cpp-generator2)
 
@@ -156,10 +157,20 @@
 				    ,(format nil "&~a<float>::~a" name fun)
 				    ))
 			 ))))
-	(do0
-	 (comments "Expose the contains function for circle and point")
-	 (m.def (string "contains")
-		"(bool (*) (const circle<float>&, const v_2d<float>&)) &contains"))
+	,@(loop for (a b) in #+nil `((circle v_2d)
+			       (rect v_2d)
+			       (triangle v_2d)
+			       (line v_2d)
+			       (circle rect)
+			       (circle triangle)
+			       (rect triangle))
+		(alexandria:permutations `(v_2d circle rect triangle line))
+		collect
+		`(do0
+		  (comments ,(format nil "contains(~a,~a)" a b))
+		  (m.def (string "contains")
+			 ,(format nil "(bool (*) (const ~a<float>&, const ~a<float>&)) &contains"
+				  a b))))
 	#+nil
 	(dot (py--class_<utils--geom2d--line<float>> m (string "line"))
 	     (def ("py::init<v_2d<float>,v_2d<float>>"))
@@ -185,4 +196,11 @@
    :tidy nil))
 
 
+(defparameter *bla*
 
+ (let ((res))
+   (alexandria:map-permutations #'(lambda (x)
+				    (push x res))
+				`(a b c)
+				:length 2)
+   res))

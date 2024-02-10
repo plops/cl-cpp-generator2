@@ -67,8 +67,32 @@ PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
                     " radius=" + std::to_string(arg.radius) + ">";
            })
       .def("area", &circle<float>::area);
-  // Expose the contains function for circle and point
+  // contains(circle,v_2d)
 
   m.def("contains",
         (bool (*)(const circle<float> &, const v_2d<float> &)) & contains);
+  // contains(rect,v_2d)
+
+  m.def("contains",
+        (bool (*)(const rect<float> &, const v_2d<float> &)) & contains);
+  // contains(triangle,v_2d)
+
+  m.def("contains",
+        (bool (*)(const triangle<float> &, const v_2d<float> &)) & contains);
+  // contains(line,v_2d)
+
+  m.def("contains",
+        (bool (*)(const line<float> &, const v_2d<float> &)) & contains);
+  // contains(circle,rect)
+
+  m.def("contains",
+        (bool (*)(const circle<float> &, const rect<float> &)) & contains);
+  // contains(circle,triangle)
+
+  m.def("contains",
+        (bool (*)(const circle<float> &, const triangle<float> &)) & contains);
+  // contains(rect,triangle)
+
+  m.def("contains",
+        (bool (*)(const rect<float> &, const triangle<float> &)) & contains);
 };
