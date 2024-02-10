@@ -10,20 +10,16 @@ these bindings.
 
 **Features**
 
-* **Core Functionality:** Currently exposes the `contains` function for all combinations of the following geometric types: 
+* **Core Functionality:** Currently exposes the `contains`, `overlaps`, `intersects`, `closest`, `envelope_r` and `envelope_b` function for all combinations of the following geometric types: 
     *  `v` (formerly `v_2d`): Represents a 2D vector/point.
     * `circle` 
     * `rect` (rectangle)
     * `line`
     * `triangle`
-* **Planned Expansion:** Support for the following functions from olcUTIL_Geometry2D is intended:
-    * `overlaps`
-    * `intersects`
-    * `closest`
-    * `envelope_r`
-    * `envelope_b`
+* **Planned Expansion:** Support for the `ray` object and the following functions from olcUTIL_Geometry2D is intended:
     * `reflects`
     * `collision`
+	
 
 **Building the Module**
 
