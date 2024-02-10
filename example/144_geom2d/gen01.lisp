@@ -44,8 +44,8 @@
      (space
       (PYBIND11_MODULE ,module-name m)
       (progn
-	(comments "Expose the v_2d<float> class to Python as \"Vector2D\"")
-	(dot (py--class_<v_2d<float>> m (string "Vector2D"))
+	(comments "Expose the v_2d<float> class to Python as \"v_2d\"")
+	(dot (py--class_<v_2d<float>> m (string "v_2d"))
 	     (def ("py::init<float,float>"))
 	     ,@(loop for e in `(x y)
 		     collect
@@ -114,18 +114,29 @@
 		`(setf (m.attr (string ,e))
 		       ,(format nil "utils::geom2d::~a" e)))
 
-	,@(loop for e in `((:name line :py-name Line
+	,@(loop for e in `((:name line 
 			    :constructor-args "const v_2d<float>&, const v_2d<float>&"
 			    :elements (start end)
 			    :elements-to-string (nil nil)
 			    :functions (length vector))
-			   (:name circle :py-name Circle
+			   (:name rect
+			    :constructor-args "const v_2d<float>&, const v_2d<float>&"
+			    :elements (pos size)
+			    :elements-to-string (nil nil)
+			    :functions (area))
+			   (:name triangle
+			    :constructor-args "const v_2d<float>&, const v_2d<float>&, const v_2d<float>&"
+			    ;:elements ("pos[0]" "pos[1]" "pos[2]")
+			    ;:elements-to-string (nil nil nil)
+			    :functions (area))
+			   (:name circle 
 			    :constructor-args "const v_2d<float>&, float"
 			    :elements (pos radius)
 			    :elements-to-string (nil t)
-			    :functions (area)))
+			    :functions (area))
+			   )
 		collect
-		(destructuring-bind (&key name py-name constructor-args elements elements-to-string functions) e
+		(destructuring-bind (&key name (py-name name) constructor-args elements elements-to-string functions) e
 		  `(do0
 		    (comments ,(format nil "Expose the ~a<float> class to Python as \"~a\""
 				       name py-name))
@@ -157,14 +168,13 @@
 				    ,(format nil "&~a<float>::~a" name fun)
 				    ))
 			 ))))
-	,@(loop for (a b) in #+nil `((circle v_2d)
-			       (rect v_2d)
-			       (triangle v_2d)
-			       (line v_2d)
-			       (circle rect)
-			       (circle triangle)
-			       (rect triangle))
-		(alexandria:permutations `(v_2d circle rect triangle line))
+	,@(loop for (a b) in 
+		(let ((res))
+		  (alexandria:map-permutations #'(lambda (x)
+						   (push x res))
+					       `(v_2d circle line rect triangle)
+					       :length 2)
+		  res)
 		collect
 		`(do0
 		  (comments ,(format nil "contains(~a,~a)" a b))
@@ -196,11 +206,4 @@
    :tidy nil))
 
 
-(defparameter *bla*
 
- (let ((res))
-   (alexandria:map-permutations #'(lambda (x)
-				    (push x res))
-				`(a b c)
-				:length 2)
-   res))
