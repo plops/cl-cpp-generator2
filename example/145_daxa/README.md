@@ -58,7 +58,7 @@ CMake Error at CMakeLists.txt:17 (find_package):
   of the following names:
 
     VulkanConfig.cmake
-    vulkan-config.cmak
+    vulkan-config.cmake
 ```
 
 
