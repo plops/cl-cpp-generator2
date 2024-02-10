@@ -46,6 +46,22 @@ cmake .. \
   -DCMAKE_PREFIX_PATH=~/vulkan \
   -DENABLE_WERROR=OFF
 ```
+
+```
+cd ~/stage/cl-cpp-generator2/example/145_daxa/source01/b
+ cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+```
+- i'm currently stuck with this error:
+```
+CMake Error at CMakeLists.txt:17 (find_package):
+  Could not find a package configuration file provided by "Vulkan" with any
+  of the following names:
+
+    VulkanConfig.cmake
+    vulkan-config.cmak
+```
+
+
 - vscode extensions:
 ```
 C/C++ Extension Pack (ms-vscode.cpptools-extension-pack)
