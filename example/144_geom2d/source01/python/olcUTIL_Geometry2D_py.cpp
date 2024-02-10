@@ -6,7 +6,6 @@
 // olcUTIL_Geometry2D_py$(python3-config --extension-suffix)
 
 #include "olcUTIL_Geometry2D.h"
-#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
 using namespace olc::utils::geom2d;
@@ -89,84 +88,176 @@ PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
                     " radius=" + std::to_string(arg.radius) + ">";
            })
       .def("area", &circle<float>::area);
+  m.def("envelope_c", [](const v_2d<float> &arg) { return envelope_c(arg); });
+  m.def("envelope_r", [](const v_2d<float> &arg) { return envelope_r(arg); });
+  m.def("envelope_c", [](const circle<float> &arg) { return envelope_c(arg); });
+  m.def("envelope_r", [](const circle<float> &arg) { return envelope_r(arg); });
+  m.def("envelope_c", [](const line<float> &arg) { return envelope_c(arg); });
+  m.def("envelope_r", [](const line<float> &arg) { return envelope_r(arg); });
+  m.def("envelope_c", [](const rect<float> &arg) { return envelope_c(arg); });
+  m.def("envelope_r", [](const rect<float> &arg) { return envelope_r(arg); });
+  m.def("envelope_c",
+        [](const triangle<float> &arg) { return envelope_c(arg); });
+  m.def("envelope_r",
+        [](const triangle<float> &arg) { return envelope_r(arg); });
   // contains(triangle,rect)
 
   m.def("contains",
         (bool (*)(const triangle<float> &, const rect<float> &)) & contains);
+  // overlaps(triangle,rect)
+
+  m.def("overlaps",
+        (bool (*)(const triangle<float> &, const rect<float> &)) & overlaps);
   // contains(rect,triangle)
 
   m.def("contains",
         (bool (*)(const rect<float> &, const triangle<float> &)) & contains);
+  // overlaps(rect,triangle)
+
+  m.def("overlaps",
+        (bool (*)(const rect<float> &, const triangle<float> &)) & overlaps);
   // contains(triangle,line)
 
   m.def("contains",
         (bool (*)(const triangle<float> &, const line<float> &)) & contains);
+  // overlaps(triangle,line)
+
+  m.def("overlaps",
+        (bool (*)(const triangle<float> &, const line<float> &)) & overlaps);
   // contains(line,triangle)
 
   m.def("contains",
         (bool (*)(const line<float> &, const triangle<float> &)) & contains);
+  // overlaps(line,triangle)
+
+  m.def("overlaps",
+        (bool (*)(const line<float> &, const triangle<float> &)) & overlaps);
   // contains(rect,line)
 
   m.def("contains",
         (bool (*)(const rect<float> &, const line<float> &)) & contains);
+  // overlaps(rect,line)
+
+  m.def("overlaps",
+        (bool (*)(const rect<float> &, const line<float> &)) & overlaps);
   // contains(line,rect)
 
   m.def("contains",
         (bool (*)(const line<float> &, const rect<float> &)) & contains);
+  // overlaps(line,rect)
+
+  m.def("overlaps",
+        (bool (*)(const line<float> &, const rect<float> &)) & overlaps);
   // contains(triangle,circle)
 
   m.def("contains",
         (bool (*)(const triangle<float> &, const circle<float> &)) & contains);
+  // overlaps(triangle,circle)
+
+  m.def("overlaps",
+        (bool (*)(const triangle<float> &, const circle<float> &)) & overlaps);
   // contains(circle,triangle)
 
   m.def("contains",
         (bool (*)(const circle<float> &, const triangle<float> &)) & contains);
+  // overlaps(circle,triangle)
+
+  m.def("overlaps",
+        (bool (*)(const circle<float> &, const triangle<float> &)) & overlaps);
   // contains(rect,circle)
 
   m.def("contains",
         (bool (*)(const rect<float> &, const circle<float> &)) & contains);
+  // overlaps(rect,circle)
+
+  m.def("overlaps",
+        (bool (*)(const rect<float> &, const circle<float> &)) & overlaps);
   // contains(circle,rect)
 
   m.def("contains",
         (bool (*)(const circle<float> &, const rect<float> &)) & contains);
+  // overlaps(circle,rect)
+
+  m.def("overlaps",
+        (bool (*)(const circle<float> &, const rect<float> &)) & overlaps);
   // contains(line,circle)
 
   m.def("contains",
         (bool (*)(const line<float> &, const circle<float> &)) & contains);
+  // overlaps(line,circle)
+
+  m.def("overlaps",
+        (bool (*)(const line<float> &, const circle<float> &)) & overlaps);
   // contains(circle,line)
 
   m.def("contains",
         (bool (*)(const circle<float> &, const line<float> &)) & contains);
+  // overlaps(circle,line)
+
+  m.def("overlaps",
+        (bool (*)(const circle<float> &, const line<float> &)) & overlaps);
   // contains(triangle,v_2d)
 
   m.def("contains",
         (bool (*)(const triangle<float> &, const v_2d<float> &)) & contains);
+  // overlaps(triangle,v_2d)
+
+  m.def("overlaps",
+        (bool (*)(const triangle<float> &, const v_2d<float> &)) & overlaps);
   // contains(v_2d,triangle)
 
   m.def("contains",
         (bool (*)(const v_2d<float> &, const triangle<float> &)) & contains);
+  // overlaps(v_2d,triangle)
+
+  m.def("overlaps",
+        (bool (*)(const v_2d<float> &, const triangle<float> &)) & overlaps);
   // contains(rect,v_2d)
 
   m.def("contains",
         (bool (*)(const rect<float> &, const v_2d<float> &)) & contains);
+  // overlaps(rect,v_2d)
+
+  m.def("overlaps",
+        (bool (*)(const rect<float> &, const v_2d<float> &)) & overlaps);
   // contains(v_2d,rect)
 
   m.def("contains",
         (bool (*)(const v_2d<float> &, const rect<float> &)) & contains);
+  // overlaps(v_2d,rect)
+
+  m.def("overlaps",
+        (bool (*)(const v_2d<float> &, const rect<float> &)) & overlaps);
   // contains(line,v_2d)
 
   m.def("contains",
         (bool (*)(const line<float> &, const v_2d<float> &)) & contains);
+  // overlaps(line,v_2d)
+
+  m.def("overlaps",
+        (bool (*)(const line<float> &, const v_2d<float> &)) & overlaps);
   // contains(v_2d,line)
 
   m.def("contains",
         (bool (*)(const v_2d<float> &, const line<float> &)) & contains);
+  // overlaps(v_2d,line)
+
+  m.def("overlaps",
+        (bool (*)(const v_2d<float> &, const line<float> &)) & overlaps);
   // contains(circle,v_2d)
 
   m.def("contains",
         (bool (*)(const circle<float> &, const v_2d<float> &)) & contains);
+  // overlaps(circle,v_2d)
+
+  m.def("overlaps",
+        (bool (*)(const circle<float> &, const v_2d<float> &)) & overlaps);
   // contains(v_2d,circle)
 
   m.def("contains",
         (bool (*)(const v_2d<float> &, const circle<float> &)) & contains);
+  // overlaps(v_2d,circle)
+
+  m.def("overlaps",
+        (bool (*)(const v_2d<float> &, const circle<float> &)) & overlaps);
 };

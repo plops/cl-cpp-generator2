@@ -35,7 +35,7 @@
 					;cmath
       pybind11/pybind11.h
       ;pybind11/stl.h
-      pybind11/functional.h
+      ;pybind11/functional.h
       )
      (space namespace (setf py pybind11))
      (space using namespace olc--utils--geom2d)
@@ -168,19 +168,36 @@
 				    ,(format nil "&~a<float>::~a" name fun)
 				    ))
 			 ))))
-	,@(loop for (a b) in 
-		(let ((res))
-		  (alexandria:map-permutations #'(lambda (x)
-						   (push x res))
-					       `(v_2d circle line rect triangle)
-					       :length 2)
-		  res)
+	,@(loop for e in `(v_2d circle line rect triangle)
 		collect
 		`(do0
-		  (comments ,(format nil "contains(~a,~a)" a b))
-		  (m.def (string "contains")
-			 ,(format nil "(bool (*) (const ~a<float>&, const ~a<float>&)) &contains"
-				  a b))))
+		  ,@(loop for fun in `(envelope_c envelope_r)
+			  collect
+			  `(m.def (string ,fun)
+				  (lambda (arg)
+				    (declare (type ,(format nil "const ~a<float>&" e) arg)
+					     (capture ""))
+				    (return (,fun arg)))))))
+	,@(loop for (a b) in 
+			  (let ((res))
+			    (alexandria:map-permutations #'(lambda (x)
+							     (push x res))
+							 `(v_2d circle line rect triangle)
+							 :length 2)
+			    res)
+		collect
+		`(do0
+		  ,@(loop for fun in `(contains 
+						overlaps
+						;closest
+						;intersects
+						)
+			  collect
+			  `(do0
+			    (comments ,(format nil "~a(~a,~a)" fun a b))
+			    (m.def (string ,fun)
+				   ,(format nil "(bool (*) (const ~a<float>&, const ~a<float>&)) & ~a"
+					    a b fun))))))
 	#+nil
 	(dot (py--class_<utils--geom2d--line<float>> m (string "line"))
 	     (def ("py::init<v_2d<float>,v_2d<float>>"))
