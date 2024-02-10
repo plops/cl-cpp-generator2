@@ -113,28 +113,48 @@
 		`(setf (m.attr (string ,e))
 		       ,(format nil "utils::geom2d::~a" e)))
 
-
-	(comments "Expose the circle<float> class to Python as \"Circle\"")
-	(dot (py--class_<circle<float>> m (string "Circle"))
-	     (def ("py::init<const v_2d<float>&, float>"))
-	     ,@(loop for e in `(pos radius)
-		     collect
-		     `(def_readwrite
-			  (string ,(format nil "~a" e))
-			  ,(format nil "&circle<float>::~a" e)))
-	     (def (string "__repr__")
-		 (lambda (c)
-		   (declare (capture "")
-			    (type "const circle<float>&" c))
-		   (return (+ (string "<Circle pos=")
-			      (dot c pos (str))
-			      (string ", radius=")
-			      (std--to_string c.radius)
-			      (string ">")))))
-	     )
-	(comments "Expose the contains function for circle and point")
-	(m.def (string "contains")
-	       "(bool (*) (const circle<float>&, const v_2d<float>&)) &contains")
+	,@(loop for e in `((:name line :py-name Line
+			    :constructor-args "const v_2d<float>&, const v_2d<float>&"
+			    :elements (start end)
+			    :elements-to-string (nil nil)
+			    :functions (length vector))
+			   (:name circle :py-name Circle
+			    :constructor-args "const v_2d<float>&, float"
+			    :elements (pos radius)
+			    :elements-to-string (nil t)
+			    :functions (area)))
+		collect
+		(destructuring-bind (&key name py-name constructor-args elements elements-to-string functions) e
+		  `(do0
+		    (comments ,(format nil "Expose the ~a<float> class to Python as \"~a\""
+				       name py-name))
+		    (dot (,(format nil "py::class_<~a<float>>" name) m (string ,py-name))
+			 (def (,(format nil "py::init<~a>" constructor-args)))
+			 ,@(loop for el in elements
+				 collect
+				 `(def_readwrite
+				      (string ,(format nil "~a" el))
+				      ,(format nil "&~a<float>::~a" name el)))
+			 #+nil (def (string "__repr__")
+			     (lambda (arg)
+			       (declare (capture "")
+					(type ,(format nil "const ~a<float>&" name) arg))
+			       (return (+ (std--string (string ,(format nil "<~a" py-name)))
+					  ,@(loop for el in elements and
+						  conversion in elements-to-string
+						  appending
+						  `((string ,(format nil " ~a=" el))
+						    ,(if conversion
+							 `(std--to_string (dot arg ,el))
+							 `(dot arg ,el (str))
+							 )
+						    ))
+					  (string ">")))))
+			 ))))
+	(do0
+	 (comments "Expose the contains function for circle and point")
+	 (m.def (string "contains")
+		"(bool (*) (const circle<float>&, const v_2d<float>&)) &contains"))
 	#+nil
 	(dot (py--class_<utils--geom2d--line<float>> m (string "line"))
 	     (def ("py::init<v_2d<float>,v_2d<float>>"))

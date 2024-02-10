@@ -42,16 +42,18 @@ PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
       .def("__str__", &v_2d<float>::str);
   m.attr("pi") = utils::geom2d::pi;
   m.attr("epsilon") = utils::geom2d::epsilon;
+  // Expose the line<float> class to Python as "Line"
+
+  py::class_<line<float>>(m, "Line")
+      .def(py::init<const v_2d<float> &, const v_2d<float> &>())
+      .def_readwrite("start", &line<float>::start)
+      .def_readwrite("end", &line<float>::end);
   // Expose the circle<float> class to Python as "Circle"
 
   py::class_<circle<float>>(m, "Circle")
       .def(py::init<const v_2d<float> &, float>())
       .def_readwrite("pos", &circle<float>::pos)
-      .def_readwrite("radius", &circle<float>::radius)
-      .def("__repr__", [](const circle<float> &c) {
-        return "<Circle pos=" + c.pos.str() +
-               ", radius=" + std::to_string(c.radius) + ">";
-      });
+      .def_readwrite("radius", &circle<float>::radius);
   // Expose the contains function for circle and point
 
   m.def("contains",
