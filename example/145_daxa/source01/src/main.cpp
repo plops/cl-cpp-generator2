@@ -31,8 +31,32 @@ int main(int argc, char const *argv[])
     },
     .name = "my device",
 });
-    // Daxa code goes here...
 
+    auto swapchain = device.create_swapchain({
+    // this handle is given by the windowing API
+    .native_window = window.get_native_handle(),
+    // The platform would also be retrieved from the windowing API,
+    // or by hard-coding it depending on the OS.
+    .native_window_platform = window.get_native_platform(),
+    // Here we can supply a user-defined surface format selection
+    // function, to rate formats. If you don't care what format the
+    // swapchain images are in, then you can just omit this argument
+    // because it defaults to `daxa::default_format_score(...)`
+    .surface_format_selector = [](daxa::Format format)
+    {
+        switch (format)
+        {
+        case daxa::Format::R8G8B8A8_UINT: return 100;
+        default: return daxa::default_format_score(format);
+        }
+    },
+    .present_mode = daxa::PresentMode::MAILBOX,
+    .image_usage = daxa::ImageUsageFlagBits::TRANSFER_DST,
+    .name = "my swapchain",
+});
+
+    auto swapchain_image = swapchain.acquire_next_image();
+    // Daxa code goes here...
     while (!window.should_close())
     {
         window.update();
