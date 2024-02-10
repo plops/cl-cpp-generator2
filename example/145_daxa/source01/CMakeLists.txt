@@ -16,27 +16,25 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(daxa CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-
-
-#find_package(OpenGL REQUIRED)
-#set(LIBRARIES "glfw;OpenGL")
+find_package(fmt CONFIG REQUIRED)
 
 include_directories(${GLFW_DIR}/deps)
 
-set(sources 
-        src/main.cpp
-        
-)
+#set(sources 
+#        src/main.cpp        
+#)
 file(GLOB sources src/*.cpp)
 
 
 add_executable(${PROJECT_NAME}
         ${sources}
 )
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+
 target_link_libraries(${PROJECT_NAME}
-#	${LIBRARIES}
 	daxa::daxa
 )
+
 #target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)
 
