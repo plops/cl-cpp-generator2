@@ -14,13 +14,13 @@ using HWND = void *;
 #endif
 #include <GLFW/glfw3native.h>
 
-struct Window{
+struct VWindow{
     GLFWwindow * glfw_window_ptr;
     u32 width, height;
     bool minimized = false;
     bool swapchain_out_of_date = false;
 
-    explicit Window(char const * window_name, u32 sx = 800, u32 sy = 600) : width{sx}, height{sy} {
+    explicit VWindow(char const * window_name, u32 sx = 800, u32 sy = 600) : width{sx}, height{sy} {
         // Initialize GLFW
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -39,14 +39,14 @@ struct Window{
 
         // When the window is resized, update the width and height and mark the swapchain as out of date
         glfwSetWindowContentScaleCallback(glfw_window_ptr, [](GLFWwindow* window, float xscale, float yscale){
-            auto* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+            auto* win = static_cast<VWindow*>(glfwGetWindowUserPointer(window));
             win->width = static_cast<u32>(xscale);
             win->height = static_cast<u32>(yscale);
             win->swapchain_out_of_date = true;
         });
     }
 
-    ~Window() {
+    ~VWindow() {
         glfwDestroyWindow(glfw_window_ptr);
         glfwTerminate();
     }

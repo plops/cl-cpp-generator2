@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "VWindow.h"
 
 #include <iostream>
 
@@ -12,7 +12,7 @@ using namespace daxa::types;
 int main(int argc, char const *argv[])
 {
     // Create a window
-    auto window = Window("Learn Daxa", 860, 640);
+    auto window = VWindow("Learn Daxa", 860, 640);
 
     // Daxa code goes here...
 
