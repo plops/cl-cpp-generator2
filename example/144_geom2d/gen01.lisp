@@ -34,7 +34,7 @@
 					;vector deque chrono
 					;cmath
       pybind11/pybind11.h
-      ;pybind11/stl.h
+      pybind11/stl.h
       ;pybind11/functional.h
       )
      (space namespace (setf py pybind11))

@@ -7,6 +7,7 @@
 
 #include "olcUTIL_Geometry2D.h"
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 namespace py = pybind11;
 using namespace olc::utils::geom2d;
 using namespace olc;

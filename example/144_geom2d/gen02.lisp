@@ -53,12 +53,33 @@
      `(do0
        "#!/usr/bin/env python3"
        
-       (imports-from  (,module-name v circle rect line triangle contains))
+       (imports-from  (,module-name v circle rect line triangle contains closest overlaps intersects envelope_c envelope_r))
        (setf p (v 1 2)
 	     c (circle (v 0 0) 5)
 	     l (line (v 0 0) (v 1 1))
 	     r (rect (v 0 0) (v 1 1))
 	     d (triangle (v 0 0) (v 1 1) (v 0 1)))
+
+       ,@(loop for e in `(p c l r d)
+	       collect
+	       `(print (dot (string ,(format nil "circle around ~a {}" e))
+			    (format (envelope_c ,e)))))
+       ,@(loop for e in `(p c l r d)
+	       collect
+	       `(print (dot (string ,(format nil "bbox around ~a {}" e))
+			    (format (envelope_r ,e)))))
+       ,@(loop for (a b) in 
+			 (let ((res))
+			   (alexandria:map-permutations #'(lambda (x)
+							    (push x res))
+							`(p c l r d)
+							:length 2)
+			   res)
+	       collect
+	       `(if (contains ,a ,b)
+		    (print (string ,(format nil "~a is inside ~a" a b)))
+		    (print (string ,(format nil "~a is not inside ~a" a b)))))
+
        ,@(loop for (a b) in 
 		(let ((res))
 		  (alexandria:map-permutations #'(lambda (x)
@@ -67,9 +88,9 @@
 					       :length 2)
 		  res)
 		collect
-		`(if (contains ,a ,b)
-		     (print (string ,(format nil "~a is inside ~a" a b)))
-		     (print (string ,(format nil "~a is not inside ~a" a b)))))
+		`(print (dot (string ,(format nil "~a intersects ~a in {}" a b))
+			     (format (intersects ,a ,b))))
+		 )
        ))))
 
  
