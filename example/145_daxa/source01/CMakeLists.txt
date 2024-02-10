@@ -17,6 +17,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(daxa CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(glslang CONFIG REQUIRED)
 
 include_directories(${GLFW_DIR}/deps)
 
@@ -34,6 +35,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(${PROJECT_NAME}
 	daxa::daxa
+	glfw
 )
 
 #target_compile_definitions(${PROJECT_NAME} PUBLIC -DImTextureID=ImU64)

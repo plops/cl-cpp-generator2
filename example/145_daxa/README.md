@@ -21,7 +21,11 @@ git clone https://github.com/Ipotrick/Daxa # 15MB
 cd Daxa
 mkdir build
 cd build
-cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/vulkan
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=~/vulkan \
+  -DDAXA_ENABLE_UTILS_TASK_GRAPH=ON \
+  -DDAXA_ENABLE_UTILS_PIPELINE_MANAGER_GLSLANG=ON 
+  
 time ninja # 8sec
 ninja install
 
