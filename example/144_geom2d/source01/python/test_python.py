@@ -1,7 +1,7 @@
-import pygeometry
+import olcUTIL_Geometry2D_py as g
 
-p = pygeometry.v_2d(1.0, 2.0)
-c = pygeometry.circle(pygeometry.v_2d(0.0, 0.0), 5.0)
+p = g.Vector2D(1.0, 2.0)
+c = g.Circle(g.Vector2D(0.0, 0.0), 5.0)
 
-if pygeometry.contains(c, p):
+if g.contains(c, p):
     print("Point is inside the circle")
