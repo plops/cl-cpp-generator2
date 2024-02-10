@@ -195,28 +195,75 @@
 			  collect
 			  `(do0
 			    (comments ,(format nil "~a(~a,~a)" fun a b))
+			    #+nil(m.def (string ,fun)
+				   (lambda (arg1 arg2)
+				    (declare (type ,(format nil "const ~a<float>&" a) arg1)
+					     (type ,(format nil "const ~a<float>&" b) arg2)
+					     (capture ""))
+				    (return (,fun arg1 arg2))))
+			    
 			    (m.def (string ,fun)
 				   ,(format nil "(bool (*) (const ~a<float>&, const ~a<float>&)) & ~a"
 					    a b fun))))))
-	#+nil
-	(dot (py--class_<utils--geom2d--line<float>> m (string "line"))
-	     (def ("py::init<v_2d<float>,v_2d<float>>"))
-	    
 
-	     ,@(loop for e in `(vector length length2 rpoint upoint side coefficients)
-		     collect
-		     `(def
-			  (string ,(format nil "~a" e))
-			  ,(format nil "&utils::geom2d::line<float>::~a" e))))
+	,@(loop for (a b) in 
+			  (let ((res))
+			    (alexandria:map-permutations #'(lambda (x)
+							     (push x res))
+							 `(v_2d circle line rect triangle)
+							 :length 2)
+			    res)
+		collect
+		`(do0
+		  ,@(loop for fun in `(;contains 
+					;	overlaps
+						;closest
+					intersects
+						)
+			  collect
+			  `(do0
+			    (comments ,(format nil "~a(~a,~a)" fun a b))
+			    (m.def (string ,fun)
+				   (lambda (arg1 arg2)
+				    (declare (type ,(format nil "const ~a<float>&" a) arg1)
+					     (type ,(format nil "const ~a<float>&" b) arg2)
+					     (capture ""))
+				    (return (,fun arg1 arg2))))
+			    #+nil
+			    (m.def (string ,fun)
+				   ,(format nil "(bool (*) (const ~a<float>&, const ~a<float>&)) & ~a"
+					    a b fun))))))
 	
+	,@(loop for (a b) in `((v_2d v_2d)
+			       (v_2d line)
+			       (v_2d rect)
+			       (v_2d circle)
+			       (v_2d triangle)
 
-	
-	#+nil
-	(dot (py--class_<circle<float>> m (string "circle"))
-	     (def ("py::init<float,float>"))
-	     (def_readwrite (string "x") "&v_2d<float>::x")
-	     (def_readwrite (string "y") "&v_2d<float>::y")
-	     )))
+			       (line v_2d)
+			       (line circle)
+			       (rect v_2d)
+			       (circle v_2d)
+			       (circle line)
+			       (triangle v_2d)
+			       )
+		collect
+		`(do0
+		  ,@(loop for fun in `(	;contains 
+					;	overlaps
+				       closest
+					;intersects
+				       )
+			  collect
+			  `(do0
+			    (comments ,(format nil "~a(~a,~a)" fun a b))
+			    (m.def (string ,fun)
+				   (lambda (arg1 arg2)
+				     (declare (type ,(format nil "const ~a<float>&" a) arg1)
+					      (type ,(format nil "const ~a<float>&" b) arg2)
+					      (capture ""))
+				     (return (,fun arg1 arg2))))))))
+	))
      )
    :omit-parens t
    :format t

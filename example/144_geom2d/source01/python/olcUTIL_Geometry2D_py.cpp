@@ -260,4 +260,161 @@ PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
 
   m.def("overlaps",
         (bool (*)(const v_2d<float> &, const circle<float> &)) & overlaps);
+  // intersects(triangle,rect)
+
+  m.def("intersects", [](const triangle<float> &arg1, const rect<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(rect,triangle)
+
+  m.def("intersects", [](const rect<float> &arg1, const triangle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(triangle,line)
+
+  m.def("intersects", [](const triangle<float> &arg1, const line<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(line,triangle)
+
+  m.def("intersects", [](const line<float> &arg1, const triangle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(rect,line)
+
+  m.def("intersects", [](const rect<float> &arg1, const line<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(line,rect)
+
+  m.def("intersects", [](const line<float> &arg1, const rect<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(triangle,circle)
+
+  m.def("intersects",
+        [](const triangle<float> &arg1, const circle<float> &arg2) {
+          return intersects(arg1, arg2);
+        });
+  // intersects(circle,triangle)
+
+  m.def("intersects",
+        [](const circle<float> &arg1, const triangle<float> &arg2) {
+          return intersects(arg1, arg2);
+        });
+  // intersects(rect,circle)
+
+  m.def("intersects", [](const rect<float> &arg1, const circle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(circle,rect)
+
+  m.def("intersects", [](const circle<float> &arg1, const rect<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(line,circle)
+
+  m.def("intersects", [](const line<float> &arg1, const circle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(circle,line)
+
+  m.def("intersects", [](const circle<float> &arg1, const line<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(triangle,v_2d)
+
+  m.def("intersects", [](const triangle<float> &arg1, const v_2d<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(v_2d,triangle)
+
+  m.def("intersects", [](const v_2d<float> &arg1, const triangle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(rect,v_2d)
+
+  m.def("intersects", [](const rect<float> &arg1, const v_2d<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(v_2d,rect)
+
+  m.def("intersects", [](const v_2d<float> &arg1, const rect<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(line,v_2d)
+
+  m.def("intersects", [](const line<float> &arg1, const v_2d<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(v_2d,line)
+
+  m.def("intersects", [](const v_2d<float> &arg1, const line<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(circle,v_2d)
+
+  m.def("intersects", [](const circle<float> &arg1, const v_2d<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // intersects(v_2d,circle)
+
+  m.def("intersects", [](const v_2d<float> &arg1, const circle<float> &arg2) {
+    return intersects(arg1, arg2);
+  });
+  // closest(v_2d,v_2d)
+
+  m.def("closest", [](const v_2d<float> &arg1, const v_2d<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(v_2d,line)
+
+  m.def("closest", [](const v_2d<float> &arg1, const line<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(v_2d,rect)
+
+  m.def("closest", [](const v_2d<float> &arg1, const rect<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(v_2d,circle)
+
+  m.def("closest", [](const v_2d<float> &arg1, const circle<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(v_2d,triangle)
+
+  m.def("closest", [](const v_2d<float> &arg1, const triangle<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(line,v_2d)
+
+  m.def("closest", [](const line<float> &arg1, const v_2d<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(line,circle)
+
+  m.def("closest", [](const line<float> &arg1, const circle<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(rect,v_2d)
+
+  m.def("closest", [](const rect<float> &arg1, const v_2d<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(circle,v_2d)
+
+  m.def("closest", [](const circle<float> &arg1, const v_2d<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(circle,line)
+
+  m.def("closest", [](const circle<float> &arg1, const line<float> &arg2) {
+    return closest(arg1, arg2);
+  });
+  // closest(triangle,v_2d)
+
+  m.def("closest", [](const triangle<float> &arg1, const v_2d<float> &arg2) {
+    return closest(arg1, arg2);
+  });
 };
