@@ -51,7 +51,7 @@ if contains(c, p):
 
 **Testing**
 
-The included `test_python.py` file validates the `contains` functionality for all permutations of supported geometric types.
+The included `test_python.py` file runs the `contains` functionality for all permutations of supported geometric types.
 
 **Notes**
 
