@@ -1,5 +1,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
-  (ql:quickload "cl-py-generator"))
+  (ql:quickload "cl-py-generator")
+  (ql:quickload "alexandria"))
 
 (in-package :cl-py-generator)
 
@@ -23,6 +24,7 @@
   
   
   (let* ((notebook-name "split")
+	 (module-name "olcUTIL_Geometry2D_py")
 	 (cli-args `((:short "c" :long "chunk_size" :type int :default 500
 		      :help "Approximate number of words per chunk")
 		     (:short "p" :long "prompt" :type str
@@ -33,11 +35,41 @@
      `(do0
        "#!/usr/bin/env python3"
        (imports-from  (setuptools setup Extension))
-       (setf ext_module (Extension
-			 (string "pygeometry")
-			 :sources (list (string "pygeom.cpp"))
-			 :include_dirs (list (pybind11.get_include))
-			 :language (string "c++20")))
-       (setup :name (string "pygeometry")
-	      :ext_modules (list ext_module))))))
+       (imports-from  (pybind11.setup_helpers Pybind11Extension))
+       (setf ext_modules (list
+			  (Pybind11Extension
+			   (string ,module-name)
+			   :sources (list (string ,(format nil "~a.cpp" module-name)))
+			   ;:include_dirs (list (pybind11.get_include))
+			   :language (string "c++20"))))
+       (setup :name (string ,module-name)
+	      :version (string "0.0.1")
+	      :author (string "Developers of olcUTIL_Geometry2D")
+	      :description (string "Python bindings for olcUTIL_Geometry2D library using Pybind11")
+	      :ext_modules ext_modules)))
 
+    (write-source
+     (format nil "~a/test_python" *full-source-dir* )
+     `(do0
+       "#!/usr/bin/env python3"
+       
+       (imports-from  (,module-name v circle rect line triangle contains))
+       (setf p (v 1 2)
+	     c (circle (v 0 0) 5)
+	     l (line (v 0 0) (v 1 1))
+	     r (rect (v 0 0) (v 1 1))
+	     d (triangle (v 0 0) (v 1 1) (v 0 1)))
+       ,@(loop for (a b) in 
+		(let ((res))
+		  (alexandria:map-permutations #'(lambda (x)
+						   (push x res))
+					       `(p c l r d)
+					       :length 2)
+		  res)
+		collect
+		`(if (contains ,a ,b)
+		     (print (string ,(format nil "~a is inside ~a" a b)))
+		     (print (string ,(format nil "~a is not inside ~a" a b)))))
+       ))))
+
+ 

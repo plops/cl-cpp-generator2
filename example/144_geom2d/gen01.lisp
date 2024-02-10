@@ -44,8 +44,8 @@
      (space
       (PYBIND11_MODULE ,module-name m)
       (progn
-	(comments "Expose the v_2d<float> class to Python as \"v_2d\"")
-	(dot (py--class_<v_2d<float>> m (string "v_2d"))
+	(comments "Expose the v_2d<float> class to Python as \"v\"")
+	(dot (py--class_<v_2d<float>> m (string "v"))
 	     (def ("py::init<float,float>"))
 	     ,@(loop for e in `(x y)
 		     collect
@@ -56,7 +56,7 @@
 		 (lambda (v)
 		   (declare (capture "")
 			    (type "const v_2d<float> &" v))
-		   (return (+ (string "<Vector2D x=")
+		   (return (+ (string "<v x=")
 			      (std--to_string v.x)
 			      (string ", y=")
 			      (std--to_string v.y)

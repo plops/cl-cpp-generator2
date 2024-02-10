@@ -12,15 +12,15 @@ namespace py = pybind11;
 using namespace olc::utils::geom2d;
 using namespace olc;
 PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
-  // Expose the v_2d<float> class to Python as "v_2d"
+  // Expose the v_2d<float> class to Python as "v"
 
-  py::class_<v_2d<float>>(m, "v_2d")
+  py::class_<v_2d<float>>(m, "v")
       .def(py::init<float, float>())
       .def_readwrite("x", &v_2d<float>::x)
       .def_readwrite("y", &v_2d<float>::y)
       .def("__repr__",
            [](const v_2d<float> &v) {
-             return "<Vector2D x=" + std::to_string(v.x) +
+             return "<v x=" + std::to_string(v.x) +
                     ", y=" + std::to_string(v.y) + ">";
            })
       .def("area", &v_2d<float>::area)
