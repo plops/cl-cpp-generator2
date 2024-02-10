@@ -135,7 +135,7 @@
 				 `(def_readwrite
 				      (string ,(format nil "~a" el))
 				      ,(format nil "&~a<float>::~a" name el)))
-			 #+nil (def (string "__repr__")
+			 (def (string "__repr__")
 			     (lambda (arg)
 			       (declare (capture "")
 					(type ,(format nil "const ~a<float>&" name) arg))
@@ -150,6 +150,11 @@
 							 )
 						    ))
 					  (string ">")))))
+			 ,@(loop for fun in functions
+				 collect
+				 `(def (string ,fun)
+				    ,(format nil "&~a<float>::~a" name fun)
+				    ))
 			 ))))
 	(do0
 	 (comments "Expose the contains function for circle and point")

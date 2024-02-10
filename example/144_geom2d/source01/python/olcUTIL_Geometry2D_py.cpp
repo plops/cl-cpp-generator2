@@ -47,13 +47,26 @@ PYBIND11_MODULE(olcUTIL_Geometry2D_py, m) {
   py::class_<line<float>>(m, "Line")
       .def(py::init<const v_2d<float> &, const v_2d<float> &>())
       .def_readwrite("start", &line<float>::start)
-      .def_readwrite("end", &line<float>::end);
+      .def_readwrite("end", &line<float>::end)
+      .def("__repr__",
+           [](const line<float> &arg) {
+             return std::string("<Line") + " start=" + arg.start.str() +
+                    " end=" + arg.end.str() + ">";
+           })
+      .def("length", &line<float>::length)
+      .def("vector", &line<float>::vector);
   // Expose the circle<float> class to Python as "Circle"
 
   py::class_<circle<float>>(m, "Circle")
       .def(py::init<const v_2d<float> &, float>())
       .def_readwrite("pos", &circle<float>::pos)
-      .def_readwrite("radius", &circle<float>::radius);
+      .def_readwrite("radius", &circle<float>::radius)
+      .def("__repr__",
+           [](const circle<float> &arg) {
+             return std::string("<Circle") + " pos=" + arg.pos.str() +
+                    " radius=" + std::to_string(arg.radius) + ">";
+           })
+      .def("area", &circle<float>::area);
   // Expose the contains function for circle and point
 
   m.def("contains",
