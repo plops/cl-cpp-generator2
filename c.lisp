@@ -82,6 +82,7 @@
     (delete-file tmp)))
 
 
+
 (defun write-source (name code &key
 				 (dir (user-homedir-pathname))
 				 ignore-hash
@@ -89,6 +90,22 @@
 				 (tidy t)
 				 (omit-parens nil)
 				 )
+	"This function writes the given code into a file specified by the name and directory.
+	 It also provides options to control the behavior of the writing process.
+
+	 Parameters:
+		 name - the name of the file to be written
+		 code - the code to be written into the file (s-expression)
+		 dir - the directory where the file will be written (default is user's home directory)
+		 ignore-hash - a flag indicating whether to ignore the hash value of the file, which means the code will be written into the file if the hash value is different from the previous one (default is nil)
+		 format - a flag indicating whether to format the code using clang-format (default is t)
+		 tidy - a flag indicating whether to tidy the code using clang-tidy (default is t)
+		 omit-parens - a flag indicating whether to omit redundant parentheses in the code (default is nil)
+
+	 Example usage:
+		 (write-source \"myfile.cpp\" `(defun foo () (declare (values int)) (return 42)) :dir \"/path/to/directory\" :format nil)"
+
+
   ;(format t "<write-source code='~a'>~%" code)
   (let* ((fn (merge-pathnames (format nil "~a" name)
 			      dir))
