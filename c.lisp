@@ -162,9 +162,31 @@
 
 ;; FIXME: misses const override
 (defun consume-declare (body)
-  "take a list of instructions from body, parse type declarations,
-return the body without them and a hash table with an environment. the
-entry return-values contains a list of return values. currently supports type, values, construct and capture declarations. construct is member assignment in constructors. capture is for lambda functions"
+  "Take a list of instructions from `body`, parse type declarations,
+return the `body` without them and a hash table with an environment. The
+entry `return-values` contains a list of return values. Currently supports
+type, values, construct, and capture declarations. Construct is member 
+assignment in constructors. Capture is for lambda functions.
+
+Parameters:
+- `body` (list): The list of instructions to process.
+
+Returns:
+- `new-body` (list): The modified `body` without the type declarations.
+- `env` (hash-table): The hash table containing the environment.
+- `captures` (list): The list of captured variables.
+- `constructs` (list): The list of constructed variables.
+- `const-p` (boolean): Indicates if the `const` declaration is present.
+- `explicit-p` (boolean): Indicates if the `explicit` declaration is present.
+- `inline-p` (boolean): Indicates if the `inline` declaration is present.
+- `static-p` (boolean): Indicates if the `static` declaration is present.
+- `virtual-p` (boolean): Indicates if the `virtual` declaration is present.
+- `noexcept-p` (boolean): Indicates if the `noexcept` declaration is present.
+- `final-p` (boolean): Indicates if the `final` declaration is present.
+- `override-p` (boolean): Indicates if the `override` declaration is present.
+- `pure-p` (boolean): Indicates if the `pure` declaration is present.
+- `template` (symbol): The template declaration.
+- `template-instance` (symbol): The template instance declaration."
   (let ((env (make-hash-table))
 	(captures nil)
 	(constructs nil)
@@ -230,7 +252,7 @@ entry return-values contains a list of return values. currently supports type, v
 			;; if no values specified parse-defun will emit void
 			;; if (values :constructor) then nothing will be emitted
 			(let ((types nil))
-			  ;; only collect types until occurrance of &optional
+			  ;; only collect types until occurrence of &optional
 			  (loop for type in types-opt do
 			    (unless (eq #\& (aref (format nil "~a" type) 0))
 			      (push type types)))
