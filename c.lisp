@@ -336,7 +336,21 @@ A string representing the variable declaration."
 		      (funcall emit name)))
 
 (defun parse-let (code emit)
-  "let ({var | (var [init-form])}*) declaration* form*"
+  "Parse a Common Lisp LET form and emit similar C++ code.
+
+  This function takes a Common Lisp LET form and generates equivalent C++ code. The LET form consists of variable declarations and an optional DECLARE form. The DECLARE form can be used to declare types for the variables. If types are not declared, the 'auto' keyword will be used in C++.
+
+  Initial values for the variables are assigned using the C++ initializer list. For example, the input code '(let ((a (std--vector<int> (curly 1 2 3)))))' will generate the output 'auto a{std::vector<int>{1, 2, 3}};'.
+
+  The supported grammar for the LET form is as follows:
+  let ({var | (var [init-form])}*) declaration* form*
+
+  Parameters:
+    - code: The Common Lisp LET form to parse.
+    - emit: The function used to emit C++ code.
+
+  Returns:
+    The generated C++ code as a string."
   (destructuring-bind (decls &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body)
       (with-output-to-string (s)
