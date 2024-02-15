@@ -333,7 +333,7 @@ A string representing the variable declaration."
 			  #+generic-c "__auto_type"
 			  #-generic-c "auto"
 			  )
-		      (funcall emit name)))))
+		      (funcall emit name)))
 
 (defun parse-let (code emit)
   "let ({var | (var [init-form])}*) declaration* form*"
