@@ -647,13 +647,39 @@ Common Lisp DEFMETHOD form.
 	    (format s "~a" (funcall emit `(progn ,@body)))))))))
 
 (defun parse-lambda (code emit)
-  ;;  lambda lambda-list [declaration*] form*
-  ;; no return value:
-  ;;  [] (int a, float b) { body }
-  ;; with (declaration (values float)):
-  ;;  [] (int a, float b) -> float { body }
-  ;; support for captures (placed into the first set of brackets)
-  ;; (declare (capture &app bla)) will result in [&app, bla]
+  "Parse a Common Lisp LAMBDA form and emit similar C++ code.
+
+  This function takes a Common Lisp LAMBDA form and generates
+  equivalent C++ code.
+  
+  Arguments:
+    - code: The Common Lisp LAMBDA form to parse.
+    - emit: A function used to emit C++ code.
+
+  Returns:
+    A string containing the generated C++ code.
+
+  Supported Grammar:
+    lambda lambda-list [declaration*] form*
+
+  Example without return value:
+    [] (int a, float b) { body }
+
+  Example with return type declaration:
+    [] (int a, float b) -> float { body }
+
+  Support for captures:
+    Captures can be specified using the (declare (capture ...))
+    syntax. Captures are placed into the first set of brackets in the
+    generated C++ code.
+
+  Parameters:
+    - lambda-list: The lambda list of the Common Lisp LAMBDA form.
+    - body: The body of the Common Lisp LAMBDA form.
+
+  Returns:
+    A string containing the generated C++ code."
+ 
   (destructuring-bind (lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p) (consume-declare body)
       ;; empty captures shall default to "&"
