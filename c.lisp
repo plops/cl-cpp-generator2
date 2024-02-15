@@ -774,7 +774,10 @@ of digits.
 		;(substitute #\e #\d (format nil "~,vG" digits a))
 		))
 (defparameter *operators*
-  `(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case))
+	`(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case)
+  "This variable stores a list of operators that are supported by the EMIT-C function.
+ It is used in the PAREN* form to determine whether parentheses are needed.")
+
 
 ;; https://en.cppreference.com/w/cpp/language/operator_precedence
 ;; FIXME: how to handle Associativity (right-to-left or
