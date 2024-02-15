@@ -268,36 +268,51 @@ Returns:
 	    const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance)))
 
 (defun lookup-type (name &key env)
-  "get the type of a variable from an environment"
-  (gethash name env))
+	"Get the type of a variable from an environment.
+
+	This function takes a variable name and an environment and returns the type of the variable.
+	
+	Parameters:
+		- name: The name of the variable.
+		- env: The environment containing the variable.
+
+	Returns:
+		The type of the variable, or nil if the variable is not found in the environment."
+	(gethash name env))
 
 (defun variable-declaration (&key name env emit)
-  (let* ((type (lookup-type name :env env)))
-    (cond ((null type)
+	"Find the type of variable NAME in environment ENV and emit the type and name as a 
+concatenated string using EMIT. If the variable is not present in the environment,
+emit 'auto'. If the type is an array, emit a string 'type name[dimension]'.
 
-	   (format nil "~a ~a"
-					;#+generic-c "__auto_type"
-					; #-generic-c "auto"
-		   *auto-keyword*
-		   (funcall emit name)))
-	  ((and (listp type)
-		(eq 'array (first type)))
-	   (progn
-	     ;; array
-	     (destructuring-bind (array_ element-type &rest dims) type
-	       (assert (eq array_ 'array))
-	       (format nil "~a ~a~{[~a]~}"
-		       (funcall emit element-type)
-		       (funcall emit name)
-		       (mapcar emit dims)))))
-	  (t (format nil "~a ~a"
-		     (if type
-			 (funcall emit type)
-					;#+generic-c "__auto_type"
-					;#-generic-c "auto"
-			 *auto-keyword*
-			 )
-		     (funcall emit name))))
+Parameters:
+- NAME: The name of the variable.
+- ENV: The environment in which to look up the variable.
+- EMIT: A function used to emit the type and name as a string.
+
+Returns:
+A string representing the variable declaration."
+
+	(let* ((type (lookup-type name :env env)))
+		(cond ((null type)
+					 (format nil "~a ~a"
+									 *auto-keyword*
+									 (funcall emit name)))
+					((and (listp type)
+								(eq 'array (first type)))
+					 (progn
+						 ;; array
+						 (destructuring-bind (array_ element-type &rest dims) type
+							 (assert (eq array_ 'array))
+							 (format nil "~a ~a~{[~a]~}"
+											 (funcall emit element-type)
+											 (funcall emit name)
+											 (mapcar emit dims)))))
+					(t (format nil "~a ~a"
+										 (if type
+												 (funcall emit type)
+												 *auto-keyword*)
+										 (funcall emit name))))))
     #+nil (if (listp type)
 	      (if (null type)
 		  (format nil "~a ~a"
