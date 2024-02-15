@@ -948,15 +948,11 @@ of digits.
 	(make-instance 'string-op
 		 :string str
 		 :operator op))
-		 
-(defun m (op str)
-  "Create a STRING-OP object. I need to make a lot of these instances, so a short function name is important."
-  (make-instance 'string-op
-		 :string str
-		 :operator op))
+
 
 (defun m-of (obj-or-string)
-  "This function is a shortcut to convert all types that can occur inside emit-c into a string. Except lists: Those stay lists."
+  "This function is a shortcut to convert all types that can occur inside
+emit-c into a string. Except lists: Those stay lists."
   (typecase obj-or-string
     (string-op
      (string-of obj-or-string))
@@ -973,10 +969,27 @@ of digits.
   (defun emit-c (&key code (str nil)  (level 0) (hook-defun nil) (hook-defclass)
 		   (current-class nil) (header-only nil) (in-class nil) (diag nil)
 		   (omit-redundant-parentheses nil))
-    "evaluate s-expressions in code, emit a string or string-op class. if hook-defun is not nil, 
-     hook-defun will be called with every function definition. this functionality is intended to collect function 
-     declarations. When omit-redundant-parentheses is not nil, the feature to avoid redundant parentheses is active."
-    
+
+	  "Evaluates s-expressions in CODE and emits a string or STRING-OP class.
+     If HOOK-DEFUN is not nil, it calls hook-defun with every function definition.
+     This functionality is intended to collect function declarations.
+     When omit-redundant-parentheses is not nil, the feature to avoid redundant parentheses is active.
+
+     Args:
+     - code: The code as s-expressions to emit as C++.
+     - str: A string to write the result into.
+     - level: The indentation level.
+     - hook-defun: The function to call with every function definition.
+     - hook-defclass: The function to call with every class definition.
+     - current-class: The current class.
+     - header-only: A flag indicating whether to emit only the header. This flag can is used to emit only function declarations.
+     - in-class: A flag indicating whether we are currently inside a class. This flag is used to emit method declarations or implementations. 
+     - diag: If true, write diagnostic information as log output.
+     - omit-redundant-parentheses: A flag indicating whether to avoid redundant parentheses.
+
+     Returns:
+     - The emitted string or string-op class."	   
+ 
 					;(format t "~a~%" code)
 					;(format t "header-only=~a~%" header-only)
     (flet ((emit (code &key (dl 0) (class current-class) (header-only-p header-only) (hook-fun hook-defun)
