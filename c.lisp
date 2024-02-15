@@ -927,10 +927,30 @@ of digits.
 	     :initform (error "Must supply an operator."))))
 
 (defmethod print-object ((object string-op) stream)
+"Prints the string representation of STRING-OP object to a stream."
   (format stream "~a" (string-of object)))
 
 (defun m (op str)
-  "I need to make a lot of these instances, so a short function name is important."
+	"Create a STRING-OP object.
+
+	This function creates an instance of the STRING-OP class with
+	the given operator and string values. The purpose of this
+	function is to conveniently create multiple instances of
+	STRING-OP objects with a concise function name.
+
+	Parameters:
+		- op: The operator value for the STRING-OP object.
+		- str: The string value for the STRING-OP object.
+
+	Returns:
+		A new instance of the STRING-OP class."
+
+	(make-instance 'string-op
+		 :string str
+		 :operator op))
+		 
+(defun m (op str)
+  "Create a STRING-OP object. I need to make a lot of these instances, so a short function name is important."
   (make-instance 'string-op
 		 :string str
 		 :operator op))
