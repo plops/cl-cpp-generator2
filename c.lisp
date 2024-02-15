@@ -713,43 +713,56 @@ Common Lisp DEFMETHOD form.
 	  (format s "~a" (funcall emit `(progn ,@body))))))))
 
 (defun print-sufficient-digits-f32 (f)
-  "print a single floating point number as a string with a given nr. of
-  digits. parse it again and increase nr. of digits until the same bit
-  pattern."
-  (let* ((a f)
-         (digits 1)
-         (b (- a 1)))
-    (unless (= a 0)
-      (loop while (and (< 1e-6 (/ (abs (- a b))
+	"Prints a single floating point number as a string with a given number
+of digits. Parses it again and increases the number of digits until
+the same bit pattern is obtained.
+	 
+	 Args:
+		 f: The floating point number to be printed.
+	 
+	 Returns:
+		 The string representation of the floating point number with sufficient digits."
+	(let* ((a f)
+				 (digits 1)
+				 (b (- a 1)))
+		(unless (= a 0)
+			(loop while (and (< 1e-6 (/ (abs (- a b))
 				  (abs a)))
 		       (< digits 30))
-            do
-               (setf b (read-from-string (format nil "~,v,,,,,'eG"
+						do
+							 (setf b (read-from-string (format nil "~,v,,,,,'eG"
 					;"~,vG"
 						 digits a
 						 )))
-               (incf digits)))
+							 (incf digits)))
 					;(format nil "~,vG" digits a)
 					;(format nil "~,v,,,,,'eGf" digits a)
-    (let ((str
+		(let ((str
 	    (format nil "~,v,,,,,'eG" digits a)))
-      (format nil "~aF" (string-trim '(#\Space) str))
-      #+nil
-      (if (find #\e str)
+			(format nil "~aF" (string-trim '(#\Space) str))
+			#+nil
+			(if (find #\e str)
 	  str
 	  (format nil "~af" (string-trim '(#\Space) str))))))
 
 
 (defun print-sufficient-digits-f64 (f)
-  "print a double floating point number as a string with a given nr. of
-  digits. parse it again and increase nr. of digits until the same bit
-  pattern."
+	"Prints a double floating point number as a string with a given number
+of digits.
 
-  (let* ((a f)
-         (digits 1)
-         (b (- a 1)))
-    (unless (= a 0)
-      (loop while (and (< 1d-12
+	 Parses it again and increases the number of digits until the
+	 same bit pattern of the 64-bit float is obtained.
+
+	 Args:
+	 - f: The double floating point number to be printed.
+
+	 Returns:
+	 - The string representation of the double floating point number with sufficient digits."
+	(let* ((a f)
+				 (digits 1)
+				 (b (- a 1)))
+		(unless (= a 0)
+			(loop while (and (< 1d-12
 			  (/ (abs (- a b))
 			     (abs a))
 			  )
@@ -757,9 +770,9 @@ Common Lisp DEFMETHOD form.
 			 (setf b (read-from-string (format nil "~,vG" digits a)))
 			 (incf digits)))
 					;(format t "~,v,,,,,'eG~%" digits a)
-    (format nil "~,v,,,,,'eG" digits a)
-    ;(substitute #\e #\d (format nil "~,vG" digits a))
-    ))
+		(format nil "~,v,,,,,'eG" digits a)
+		;(substitute #\e #\d (format nil "~,vG" digits a))
+		))
 (defparameter *operators*
   `(comma semicolon space space-n comments paren* paren angle bracket curly designated-initializer new indent split-header-and-code do0 pragma include include<> progn namespace do defclass+ defclass protected public defmethod defun defun* defun+ return co_return co_await co_yield throw cast let setf not bitwise-not deref ref + - * ^ xor & / or and logior logand = /= *= ^= <= < != == % << >> incf decf string string-r string-u8 char hex ? if when unless dot aref -> lambda case for for-range dotimes foreach while deftype struct defstruct0 handler-case))
 
