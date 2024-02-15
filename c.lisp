@@ -338,7 +338,11 @@ A string representing the variable declaration."
 (defun parse-let (code emit)
   "Parse a Common Lisp LET form and emit similar C++ code.
 
-  This function takes a Common Lisp LET form and generates equivalent C++ code. The LET form consists of variable declarations and an optional DECLARE form. The DECLARE form can be used to declare types for the variables. If types are not declared, the 'auto' keyword will be used in C++.
+  This function takes a Common Lisp LET form and generates equivalent
+  C++ code. The LET form consists of variable declarations and an
+  optional DECLARE form. The DECLARE form can be used to declare types
+  for the variables. If types are not declared, the 'auto' keyword
+  will be used in C++.
 
   Initial values for the variables are assigned using the C++ initializer list. For example, the input code '(let ((a (std--vector<int> (curly 1 2 3)))))' will generate the output 'auto a{std::vector<int>{1, 2, 3}};'.
 
@@ -347,7 +351,7 @@ A string representing the variable declaration."
 
   Parameters:
     - code: The Common Lisp LET form to parse.
-    - emit: The function used to emit C++ code.
+    - emit: The function used to emit child forms below the LET form as C++ code.
 
   Returns:
     The generated C++ code as a string."
@@ -371,7 +375,24 @@ A string representing the variable declaration."
 			   ,@body)))))))
 
 (defun parse-defun (code emit &key header-only (class nil))
-  ;; defun function-name lambda-list [declaration*] form*
+	"Emit a C++ function definition or declaration from a Common Lisp DEFUN form.
+	
+	Arguments:
+	- CODE: The DEFUN form to parse.
+	- EMIT: The function to emit the C++ code.
+	- HEADER-ONLY: If true, the function will be emitted as a declaration only.
+	- CLASS: The class name if the function is a member of a class.
+
+	Returns:
+	- The C++ function definition or declaration as a string.
+
+	Example:
+	(defun foo (a b)
+		(declare (values int) inline (type int a b))
+		(return (+ a b)))
+	will be emitted as 'inline int foo(int a, int b) { return a + b; }'
+
+	Supported grammar: defun function-name lambda-list [declaration*] form*"
   (destructuring-bind (name lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
@@ -478,7 +499,37 @@ A string representing the variable declaration."
 ;; void f() final is the same as virtual f() final override
 
 (defun parse-defmethod (code emit &key header-only (class nil) (in-class-p nil))
-  ;; defun function-name lambda-list [declaration*] form*
+	"Emit a C++ class member function definition or declaration from a
+Common Lisp DEFMETHOD form.
+	
+	This function takes a DEFMETHOD form in Common Lisp and
+	generates the corresponding C++ class member function
+	definition or declaration. The generated code can be emitted
+	using the provided EMIT function.
+
+	Arguments:
+	- CODE: The DEFMETHOD form to parse.
+	- EMIT: The function to emit the C++ code.
+	- HEADER-ONLY: If true, the function will be emitted as a declaration only.
+	- CLASS: The class name if the function is a member of a class.
+	- IN-CLASS-P: Selects if a declaration is emitted inside of a
+          class (e.g. in the header) or if a function definition is
+          written in an implementation .cpp file. In the latter case,
+          the class name is prepended to the function name.
+
+	Returns:
+	- The C++ function definition or declaration as a string.
+
+	Example:
+        (defclass+ A ()
+         \"public:\"
+	(defmethod foo (a b)
+		(declare (values int) (type int a b))
+		(return (+ a b))))
+	will be emitted as 'int A::foo(int a, int b) { return a + b; }'
+
+	Supported grammar: defmethod function-name lambda-list [declaration*] form*"
+
   (destructuring-bind (name lambda-list &rest body) (cdr code)
     (multiple-value-bind (body env captures constructs const-p explicit-p inline-p static-p virtual-p noexcept-p final-p override-p pure-p template template-instance) (consume-declare body) ;; py
       (multiple-value-bind (req-param opt-param res-param
