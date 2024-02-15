@@ -121,6 +121,106 @@ Similarly, function return values can be specified using declare:
 )
 ```
 
+### List of supported s-expression forms
+
+Here is the list of supported forms:  
+   
+- comma .. Comma separated list. Example: `(comma 1 2 3)` => `1, 2, 3`  
+- semicolon .. Semicolon separated list. Example `(semicolon 1 2 3)` => `1; 2; 3`  
+- scope .. Merge a C++ name using scopes. Example: `(scope std vector)` => `std::vector`  
+- space .. Merge several objects with space in between. Example: `(space TEST (progn))` => `TEST {}`  
+- space-n .. Like `space` but without semicolons. Example: `(space-n "TEST" "XYZ")` => `TEST XYZ`  
+- comments .. C++ style comments. Example: `(comments "This is a comment")` => `// This is a comment`  
+- lines .. Like comments but without the comment syntax. Example: `(lines "line1" "line2")` => `line1\nline2`  
+- doc .. JavaDoc style comments. Example: `(doc "Brief description" "Detailed description")` => `/** Brief description\n * Detailed description\n */`  
+- paren* .. Place parentheses only when needed. Example: `(paren* + 5)` => `5`  
+- paren .. Parentheses with comma separated values. Example: `(paren 1 2 3)` => `(1, 2, 3)`  
+- angle .. Angle brackets with comma separated values. Example: `(angle "typename T" "int N")` => `<typename T, int N>`  
+- bracket .. Square brackets with comma separated values. Example: `(bracket 1 2 3)` => `[1, 2, 3]`  
+- curly .. Curly braces with comma separated values. Example: `(curly "public:" "void func()")` => `{public: void func()}`  
+- designated-initializer .. C designated initializer syntax. Example: `(designated-initializer key1 val1 key2 val2)` => `{.key1 = val1, .key2 = val2}`  
+- new .. C++ new operator. Example: `(new int)` => `new int`  
+- indent .. Increase indentation. Example: `(indent "code")` => `    code`  
+- split-header-and-code .. Split header and code block.  
+- do0 .. Execute forms, each in a new line.  
+- pragma .. C pragma directive. Example: `(pragma once)` => `#pragma once`  
+- include .. C include directive. Example: `(include "myheader.h")` => `#include "myheader.h"`  
+- include<> .. C include directive with angle brackets. Example: `(include<> "stdio.h")` => `#include <stdio.h>`  
+- progn .. Group a sequence of forms. Example: `(progn (stmt1) (stmt2))` => `{stmt1; stmt2;}`  
+- namespace .. C++ namespace definition. Example: `(namespace ns (code))` => `namespace ns {code}`  
+- defclass+ .. C++ class definition (force emission of defintion). Example: `(defclass+ name (parent) (code))`  
+- defclass .. C++ class definition with only headers (allows to split implementation and declaration). Example: `(defclass name (parent) (code))`  
+- protected .. C++ protected section in class. Example: `(protected "void func()")` => `protected: void func();`  
+- public .. C++ public section in class. Example: `(public "void func()")` => `public: void func();`  
+- defmethod .. C++ class method definition. Example: `(defmethod type "name" (args) (code))`  
+- defun .. C++ function definition. Example: `(defun type "name" (args) (code))`  
+- return .. C++ return statement. Example: `(return value)` => `return value;`  
+- co_return .. C++ coroutine return statement. Example: `(co_return value)` => `co_return value;`  
+- co_await .. C++ coroutine await statement. Example: `(co_await expression)` => `co_await expression;`  
+- co_yield .. C++ coroutine yield statement. Example: `(co_yield expression)` => `co_yield expression;`  
+- throw .. C++ throw statement. Example: `(throw expression)` => `throw expression;`  
+- cast .. C++ cast operation. Example: `(cast type value)` => `(type) value`  
+- let .. Lisp-like let construct. Example: `(let ((x 5)) (use x))`  
+- setf .. Assign values to variables. Example: `(setf x 5)` => `x = 5;`  
+- using .. Alias declaration or type alias. Example: `(using alias type)` => `using alias = type;`  
+- not .. C++ logical not operation. Example: `(not x)` => `!x`  
+- bitwise-not .. C++ bitwise not operation. Example: `(bitwise-not x)` => `~x`  
+- deref .. C++ pointer dereference. Example: `(deref ptr)` => `*ptr`  
+- ref .. C++ address-of operation. Example: `(ref var)` => `&var`  
+- + .. C++ addition operation. Example: `(+ x y)` => `x + y`  
+- - .. C++ subtraction operation. Example: `(- x y)` => `x - y`  
+- * .. C++ multiplication operation. Example: `(* x y)` => `x * y`  
+- ^ .. C++ bitwise XOR operation. Example: `(^ x y)` => `x ^ y`  
+- xor .. C++ bitwise XOR operation. Example: `(xor x y)` => `x ^ y`  
+- & .. C++ bitwise AND operation. Example: `(& x y)` => `x & y`  
+- / .. C++ division operation. Example: `(/ x y)` => `x / y`  
+- or .. C++ bitwise OR operation. Example: `(or x y)` => `x | y`  
+- and .. C++ bitwise AND operation. Example: `(and x y)` => `x & y`  
+- logior .. C++ logical OR operation. Example: `(logior x y)` => `x || y`  
+- logand .. C++ logical AND operation. Example: `(logand x y)` => `x && y`  
+- = .. C++ assignment operation. Example: `(= x y)` => `x = y`  
+- /= .. C++ division assignment operation. Example: `(/= x y)` => `x /= y`  
+- *= .. C++ multiplication assignment operation. Example: `(*= x y)` => `x *= y`  
+- ^= .. C++ XOR assignment operation. Example: `(^= x y)` => `x ^= y`  
+- <=> .. C++ spaceship (three-way comparison) operator. Example: `(<=> x y)` => `x <=> y`  
+- <= .. C++ less than or equal to comparison. Example: `(<= x y)` => `x <= y`  
+- < .. C++ less than comparison. Example: `(< x y)` => `x < y`  
+- != .. C++ not equal to comparison. Example: `(!= x y)` => `x != y`  
+- == .. C++ equality comparison. Example: `(== x y)` => `x == y`  
+- % .. C++ modulo operation. Example: `(% x y)` => `x % y`  
+- << .. C++ left shift operation. Example: `(<< x y)` => `x << y`  
+- >> .. C++ right shift operation. Example: `(>> x y)` => `x >> y`  
+- incf .. C++ increment operation. Example: `(incf x)` => `x++`  
+- decf .. C++ decrement operation. Example: `(decf x)` => `x--`  
+- string .. C++ string literal. Example: `(string "hello")` => `"hello"`  
+- string-r .. C++ raw string literal. Example: `(string-r "hello")` => `R"(hello)"`  
+- string-u8 .. C++ UTF-8 string literal. Example: `(string-u8 "hello")` => `u8"(hello)"`  
+- char .. C++ char literal. Example: `(char 'a')` => `'a'`  
+- hex .. C++ hexadecimal literal. Example: `(hex 255)` => `0xff`  
+- ? .. C++ ternary conditional operator. Example: `( ? x y z)` => `x ? y : z`  
+- if .. C++ if statement. Example: `(if condition true-branch false-branch)`  
+- when .. C++ if statement without else branch. Example: `(when condition body)`  
+- unless .. C++ if not statement. Example: `(unless condition body)`  
+- cond .. C++ switch-case structure. Example: `(cond (cond1 body1) (cond2 body2) (t default))`  
+- dot .. C++ member access operator. Example: `(dot object member)` => `object.member`  
+- aref .. C++ array access operator. Example: `(aref array index)` => `array[index]`  
+- -> .. C++ pointer member access operator. Example: `(-> object member)` => `object->member`  
+- lambda .. C++ lambda expression. Example: `(lambda (args) (body))`  
+- case .. C++ switch-case statement. Example: `(case key (case1 body1) (case2 body2))`  
+- for .. C++ for loop. Example: `(for (init cond iter) body)`  
+- for-range .. C++ range-based for loop. Example: `(for-range (var range) body)`  
+- dotimes .. C++ for loop with fixed iterations. Example: `(dotimes (i n step) body)`  
+- foreach .. C++ range-based for loop. Example: `(foreach (item collection) body)`  
+- while .. C++ while loop. Example: `(while condition body)`  
+- deftype .. C++ typedef statement. Example: `(deftype name (type))`  
+- struct .. C++ struct keyword. Example: `(struct name)`  
+- defstruct0 .. C++ struct definition without initialization. Example: `(defstruct0 name slots)`  
+- handler-case .. C++ try-catch block. Example: `(handler-case body (exception-type handler) ...)`  
+   
+Some entries like `defun*`, `defun+`, and certain variants of
+expressions were omitted. The are variations to separate implementation from declaration.
+
+
 ### C/C++ Specifics
 
 In addition to the basic uses, cl-cpp-generator2 uses the declare
