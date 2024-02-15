@@ -889,11 +889,13 @@ of digits.
 				     &= ^-	; |=
 				     ) :assoc r)
 			     (:op (comma) :assoc l)
-			     ))
-
+			     )
+  "This variable contains the C++ operator precedence table. 
+   It is used in the PAREN* form to determine whether placing parentheses is necessary.")
 
 
 (defun lookup-precedence (operator )
+  "This function looks up the precedence of an operator in the precedence table."
   (loop for e in *precedence*
 	and e-i from 0
 	do
@@ -902,18 +904,20 @@ of digits.
 	      (return e-i)))))
 
 (defun lookup-associativity (operator )
+	"This function looks up the associativity of an operator in the precedence table."
   (loop for e in *precedence*
 	do
 	   (destructuring-bind (&key op (assoc 'l)) e
 	     (when (member operator op)
 	       (return assoc)))))
 
-;; the emit function used to expand branches of the abstract syntax
-;; tree into strings. in order to avoid placing redundant parentheses
-;; i have to introduce the string-op class that will print like a
-;; string but also remembers the most recent operator. the operator
-;; can be used to perform a lookup and precedence comparison with the
-;; next operator.
+;; The `string-op` class is used in the `emit-c` function for the
+;; implementation of the PAREN* form to expand branches of the
+;; abstract syntax tree into strings.  The `string-op` class
+;; represents a string that also remembers the most recent operator
+;; used. This operator can be used for lookup and precedence
+;; comparison with the next operator.
+
 (defclass string-op ()
   ((string :accessor string-of
 	   :initarg :string
@@ -921,6 +925,7 @@ of digits.
    (operator :accessor operator-of
 	     :initarg :operator
 	     :initform (error "Must supply an operator."))))
+
 (defmethod print-object ((object string-op) stream)
   (format stream "~a" (string-of object)))
 
