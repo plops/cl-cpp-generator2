@@ -26,6 +26,7 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 - contains board schematic, datasheet for MCU
 - SDK and USB flash tool (but only for windows)
 - Example code
+- I think this is a good place to start: Examples/CH592/ble/broadcaster/User/main.c
 ```
 
 
