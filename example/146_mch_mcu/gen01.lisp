@@ -40,6 +40,7 @@
      
       )
      (defun main ()
+       (declare (values int))
        (do0
 	(comments "Enable DCDC")
 	(PWR_DCDCCfg ENABLE))
@@ -60,6 +61,7 @@
        (do0
 	(PRINT (string "%s\\n") VER_LIB)
 	)
+       (return 0)
        
        )
      )

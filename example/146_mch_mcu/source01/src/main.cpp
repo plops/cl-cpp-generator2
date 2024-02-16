@@ -2,7 +2,7 @@
 #include "/home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/APP/include/broadcaster.h"
 #include "/home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/HAL/include/HAL.h"
 
-void main() {
+int main() {
   // Enable DCDC
 
   PWR_DCDCCfg(ENABLE);
@@ -17,4 +17,5 @@ void main() {
   GPIOA_ModeCfg(bTXD1, GPIO_ModeOut_PP_5mA);
   UART1_DefInit();
   PRINT("%s\n", VER_LIB);
+  return 0;
 }
