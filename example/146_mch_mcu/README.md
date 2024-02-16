@@ -15,11 +15,16 @@ cd risc
 wget http://file.mounriver.com/tools/MRS_Toolchain_Linux_x64_V1.90.tar.xz
 # 308MB
 tar xaf MRS_Toolchain_Linux_x64_V1.90.tar.xz 
+- contains GCC12, OpenOCD, datasheet for MCU
 
 cd ~/src
 git clone https://github.com/openwch/ch592 # 87MB
  
+ 
+ 
 git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
+- contains board schematic, datasheet for MCU
+- SDK and USB flash tool (but only for windows)
 ```
 
 
