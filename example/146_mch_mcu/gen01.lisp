@@ -27,15 +27,41 @@
 		     *source-dir*))
    
    `(do0
-     
-     (include<> stdio.h
+     (include 
+	      /home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/StdPeriphDriver/inc/CH59x_common.h
+	      /home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/HAL/include/HAL.h
+	      /home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/APP/include/broadcaster.h
+	      )
+    #+nil (include<> stdio.h
 					;format
 					;unistd.h
 					;vector deque chrono
 					;cmath
      
       )
-     (defun main ())
+     (defun main ()
+       (do0
+	(comments "Enable DCDC")
+	(PWR_DCDCCfg ENABLE))
+       (SetSysClock CLK_SOURCE_PLL_60MHz)
+
+       (do0
+	(comments "Enable Sleep.")
+	(GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
+	(GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
+
+       (do0
+	(comments "For Debugging")
+	(GPIOA_SetBits bTXD1)
+	(GPIOA_ModeCfg bTXD1 GPIO_ModeOut_PP_5mA)
+	(UART1_DefInit))
+
+
+       (do0
+	(PRINT (string "%s\\n") VER_LIB)
+	)
+       
+       )
      )
    :omit-parens t
    :format t
