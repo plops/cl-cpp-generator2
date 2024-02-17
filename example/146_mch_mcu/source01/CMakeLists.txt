@@ -14,14 +14,30 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #endif()
 
 
+
+# set compiler flags
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(
+            -g -g3 -ggdb -gdwarf-4
+    )
+else ()
+    add_compile_options(
+            #-O0
+            -O3 -ffunction-sections -fdata-sections # don't use together with flto
+    )
+    #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
+    add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+endif ()
+
+
+
+
 set(SDK_PREFIX /home/martin/risc/)
 set(RISCV_TOOLCHAIN_PATH ${SDK_PREFIX}/RISC-V_Embedded_GCC12/bin/)
 set(OPENOCD_PATH ${SDK_PREFIX}/OpenOCD/bin/)
 
 set(DEPENDENCY_PREFIX /home/martin/src/)
 set(BROADCASTER_PATH  ${DEPENDENCY_PREFIX}/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/StdPeriphDriver/)
-
-find_program(RISCV_GCC riscv-none-elf-g++ PATHS ${RISCV_TOOLCHAIN_PATH})
 
 # Source Files
 add_executable(${PROJECT_NAME} src/main.cpp 
