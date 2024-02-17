@@ -327,6 +327,7 @@ https://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
 
 ## A Rust Tool to program using WCH Link
 
+https://github.com/ch32-rs/wlink
 
 ## Programming via USB ISP
 
