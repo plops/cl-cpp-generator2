@@ -85,3 +85,7 @@ CHF2.11x2
 
 - in  Settings->Build, Execution, Deployment->CMake create a Release configuration that uses this toolchain and press apply
 - press build
+
+## Use OpenOCD to program the device
+
+I am reading this article: https://robbert-groen.medium.com/getting-started-with-the-gd32vf103-risc-v-microcontroller-22cb34718b0d
