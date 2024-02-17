@@ -277,3 +277,8 @@ Licensed under GNU GPL v2
 
 
 ```
+
+
+### Risc-V Processor Manual
+
+https://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
