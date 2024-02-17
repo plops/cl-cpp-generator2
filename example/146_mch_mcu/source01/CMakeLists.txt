@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.10)  # Adjust if you need a different minimum version
 
-project(risc_test)  # Name your project
+project(risc_test CXX C)  # Name your project
 
-# Toolchain and Compiler Settings
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR riscv)
+set(CMAKE_CXX_STANDARD 20)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Create a CMake Option to enable adress sanitizer (not supported by sdk)
+#option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+#if(ENABLE_ASAN)
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+#        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+#endif()
+
 
 set(SDK_PREFIX /home/martin/risc/)
 set(RISCV_TOOLCHAIN_PATH ${SDK_PREFIX}/RISC-V_Embedded_GCC12/bin/)
@@ -14,9 +22,6 @@ set(DEPENDENCY_PREFIX /home/martin/src/)
 set(BROADCASTER_PATH  ${DEPENDENCY_PREFIX}/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/StdPeriphDriver/)
 
 find_program(RISCV_GCC riscv-none-elf-g++ PATHS ${RISCV_TOOLCHAIN_PATH})
-
-# Set compiler flags
-set(CMAKE_C_FLAGS "-O0 -Wall") # Existing flags
 
 # Source Files
 add_executable(${PROJECT_NAME} src/main.cpp 
@@ -30,6 +35,8 @@ include_directories(
     ${BROADCASTER_PATH}/../RVMSIS/
     ${BROADCASTER_PATH}/../ble/LIB/
     ${BROADCASTER_PATH}/inc
+    ${BROADCASTER_PATH}/../ble/APP/include/
+    ${BROADCASTER_PATH}/../ble/HAL/include/
 )
 
 # Libraries

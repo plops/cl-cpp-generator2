@@ -1,6 +1,6 @@
-#include "/home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/StdPeriphDriver/inc/CH59x_common.h"
-#include "/home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/APP/include/broadcaster.h"
-#include "/home/martin/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble/HAL/include/HAL.h"
+#include <CH59x_common.h>
+#include <HAL.h>
+#include <broadcaster.h>
 
 int main() {
   // Enable DCDC

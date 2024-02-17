@@ -49,3 +49,39 @@ CHF2.11x2
 ```
 
 ## Gpio Example
+
+
+## Configure Visual Studio Code
+
+- install cmake extension in visual studio code and specify the risc-v
+  compiler as a cmake kit by adding the following settings to
+  ~/.local/share/CMakeTools/cmake-tools-kits.json
+
+```
+  {
+    "name": "GCC 12.2 risc-v",
+    "compilers": {
+      "C": "/home/martin/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-gcc",
+      "CXX": "/home/martin/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-g++"
+    },
+    "isTrusted": true
+  }
+```
+
+- go to cmake pane, configure the project, press build
+
+## Configure CLion
+
+- go to Settings->Build, Execution, Deployment->Toolchains
+- create a new toolchain by pressing the Plus "+" icon in the top left
+- name the toolchain. i named it Riscv
+- specify the three entries for C compiler, C++ Compiler and Debugger with absolute paths. in my configuration it looks like this
+
+```
+/home/martin/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-gcc
+/home/martin/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-g++
+/home/martin/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-gdb
+```
+
+- in  Settings->Build, Execution, Deployment->CMake create a Release configuration that uses this toolchain and press apply
+- press build
