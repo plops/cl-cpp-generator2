@@ -277,7 +277,9 @@ Licensed under GNU GPL v2
 
 
 ```
+- i watch this video: https://www.youtube.com/watch?v=L9Wrv7nW-S8 EEVblog 1524 - The 10 CENT RISC V Processor! CH32V003
 
+- output of hex file generation visible here: https://youtu.be/L9Wrv7nW-S8?t=626
 
 ### Risc-V Processor Manual
 
