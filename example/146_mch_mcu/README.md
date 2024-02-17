@@ -93,6 +93,7 @@ I am reading this article: https://robbert-groen.medium.com/getting-started-with
 
 
 ### The programmer
+- user manual: https://www.wch-ic.com/downloads/WCH-LinkUserManual_PDF.html
 
 - dmesg output when plugging in:
 ```
