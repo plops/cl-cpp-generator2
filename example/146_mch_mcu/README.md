@@ -87,6 +87,14 @@ CHF2.11x2
 - in  Settings->Build, Execution, Deployment->CMake create a Release configuration that uses this toolchain and press apply
 - press build
 
+## Create hex file
+
+- output of hex file generation visible here: https://youtu.be/L9Wrv7nW-S8?t=626
+
+```
+
+```
+
 ## Use OpenOCD to program the device
 
 I am reading this article: https://robbert-groen.medium.com/getting-started-with-the-gd32vf103-risc-v-microcontroller-22cb34718b0d
@@ -279,7 +287,7 @@ Licensed under GNU GPL v2
 ```
 - i watch this video: https://www.youtube.com/watch?v=L9Wrv7nW-S8 EEVblog 1524 - The 10 CENT RISC V Processor! CH32V003
 
-- output of hex file generation visible here: https://youtu.be/L9Wrv7nW-S8?t=626
+
 
 ### Risc-V Processor Manual
 
