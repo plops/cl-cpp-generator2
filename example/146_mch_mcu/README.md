@@ -94,7 +94,11 @@ I am reading this article: https://robbert-groen.medium.com/getting-started-with
 
 ### The programmer
 - user manual: https://www.wch-ic.com/downloads/WCH-LinkUserManual_PDF.html
-
+- how to connect to CH592
+  - swdio <-> PB14
+  - swclk <-> PB15
+  - also 3v3 and gnds
+  
 - dmesg output when plugging in:
 ```
 [ 9065.746131] usb 3-1: new full-speed USB device number 3 using xhci_hcd
@@ -243,6 +247,33 @@ Device Descriptor:
         bInterval               1
 Device Status:     0x0000
   (Bus Powered)
+
+
+```
+
+
+- install udev stuff
+
+```
+cd /home/martin/risc/beforeinstall
+cp 50-wch.rules /etc/udev/rules.d/
+cp 60-openocd.rules /etc/udev/rules.d/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/risc/beforeinstall/
+# /home/martin/risc/OpenOCD/bin/openocd -h
+Open On-Chip Debugger 0.11.0+dev-02415-gfad123a16-dirty (2023-10-11-14:01)
+Licensed under GNU GPL v2
+For bug reports, read
+        http://openocd.org/doc/doxygen/bugs.html
+Open On-Chip Debugger
+Licensed under GNU GPL v2
+--help       | -h       display this help
+--version    | -v       display OpenOCD version
+--file       | -f       use configuration file <name>
+--search     | -s       dir to search for config files and scripts
+--debug      | -d       set debug level to 3
+             | -d<n>    set debug level to <level>
+--log_output | -l       redirect log output to file <name>
+--command    | -c       run <command>
 
 
 ```
