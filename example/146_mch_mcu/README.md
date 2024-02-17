@@ -287,7 +287,22 @@ Licensed under GNU GPL v2
 ```
 - i watch this video: https://www.youtube.com/watch?v=L9Wrv7nW-S8 EEVblog 1524 - The 10 CENT RISC V Processor! CH32V003
 
+- i found chinese documentation of openocd usage in MounRiverStudio Community
 
+- i translated it with gemini and placed it in doc/README_openocd.md
+
+```
+sudo su
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/martin/risc/beforeinstall
+export PATH=$PATH:/home/martin/risc/OpenOCD/bin/:/home/martin/risc/RISC-V_Embedded_GCC12/bin
+
+openocd -f /home/martin/risc/OpenOCD/bin/wch-riscv.cfg -c init -c halt -c "flash erase_sector wch_riscv 0 last " -c exit
+
+
+
+cd /home/martin/stage/cl-cpp-generator2/example/146_mch_mcu/source01
+openocd -f wch-riscv.cfg -c init -c halt -c "program b/risc_test " -c exit
+```
 
 ### Risc-V Processor Manual
 
