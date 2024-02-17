@@ -44,3 +44,15 @@ target_link_libraries(${PROJECT_NAME}
 ${BROADCASTER_PATH}/../ble/LIB/LIBCH59xBLE.a
 ${BROADCASTER_PATH}/libISP592.a
 )
+
+target_compile_options(
+        ${PROJECT_NAME} PRIVATE
+        -Wall -Wextra -Wconversion -Wdouble-promotion
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
+        -Wvla -Wframe-larger-than=5000 -Wstack-usage=10000
+        -Wshadow -Wformat=2 -fno-common -fstack-usage
+        -fvisibility=hidden
+        -fno-strict-overflow -Wno-strict-overflow
+        #-Wpadded
+)
+

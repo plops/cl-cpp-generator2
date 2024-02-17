@@ -1,6 +1,6 @@
+extern "C" {
 #include <CH59x_common.h>
-#include <HAL.h>
-#include <broadcaster.h>
+};
 
 int main() {
   // Enable DCDC

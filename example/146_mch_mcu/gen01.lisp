@@ -27,11 +27,14 @@
 		     *source-dir*))
    
    `(do0
-     (include<> 
-	      CH59x_common.h
-	      HAL.h
-	      broadcaster.h
-	      )
+     (space extern "\"C\""
+	    (progn
+	      
+	      (include<> 
+	       CH59x_common.h
+					;HAL.h
+					;broadcaster.h
+	       )))
     #+nil (include<> stdio.h
 					;format
 					;unistd.h
