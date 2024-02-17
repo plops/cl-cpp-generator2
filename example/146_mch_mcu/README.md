@@ -304,6 +304,31 @@ cd /home/martin/stage/cl-cpp-generator2/example/146_mch_mcu/source01
 openocd -f wch-riscv.cfg -c init -c halt -c "program b/risc_test " -c exit
 ```
 
+- not working
+
+- i tried some sample projects in MounRiverStudio. i think i managed
+  to compile the adc example but downloading wanted to update the
+  programmer. which may not have worked:
+
+```
+20:16:02:245 >> Attempt to open link device and upgrade firmware if necessary...
+20:16:07:153 >> WCH-Link not found.
+```
+
+- now lsusb shows
+
+```
+Bus 003 Device 009: ID 4348:55e0 WinChipHead 
+
+```
 ### Risc-V Processor Manual
 
 https://www.wch-ic.com/downloads/QingKeV4_Processor_Manual_PDF.html
+
+## A Rust Tool to program using WCH Link
+
+
+## Programming via USB ISP
+
+- https://github.com/jmaselbas/wch-isp (C)
+- https://github.com/ch32-rs/wchisp/releases/tag/nightly (Rust)
