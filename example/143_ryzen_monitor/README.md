@@ -479,3 +479,46 @@ openat(AT_FDCWD, "/home/martin/stage/cl-cpp-generator2/example/143_ryzen_monitor
  
 - I also verified that `ctest` runs the unit_tests binary and writes
   the *.gcda files.
+
+
+## Change Power Limit for Processor
+
+
+- use this: https://github.com/FlyGoat/RyzenAdj
+
+```
+src/RyzenAdj/b # ./ryzenadj -i
+CPU Family: Cezanne
+SMU BIOS Interface Version: 18
+Version: v0.14.0 
+PM Table Version: 400005
+|        Name         |   Value   |     Parameter      |
+|---------------------|-----------|--------------------|
+| STAPM LIMIT         |    25.000 | stapm-limit        |
+| STAPM VALUE         |     4.698 |                    |
+| PPT LIMIT FAST      |    32.000 | fast-limit         |
+| PPT VALUE FAST      |     7.729 |                    |
+| PPT LIMIT SLOW      |    26.000 | slow-limit         |
+| PPT VALUE SLOW      |     5.176 |                    |
+| StapmTimeConst      |     1.000 | stapm-time         |
+| SlowPPTTimeConst    |    30.000 | slow-time          |
+| PPT LIMIT APU       |    37.500 | apu-slow-limit     |
+| PPT VALUE APU       |     5.176 |                    |
+| TDC LIMIT VDD       |    44.000 | vrm-current        |
+| TDC VALUE VDD       |     1.529 |                    |
+| TDC LIMIT SOC       |    13.000 | vrmsoc-current     |
+| TDC VALUE SOC       |     0.905 |                    |
+| EDC LIMIT VDD       |    95.000 | vrmmax-current     |
+| EDC VALUE VDD       |    44.151 |                    |
+| EDC LIMIT SOC       |    17.000 | vrmsocmax-current  |
+| EDC VALUE SOC       |     0.000 |                    |
+| THM LIMIT CORE      |   100.000 | tctl-temp          |
+| THM VALUE CORE      |    67.119 |                    |
+| STT LIMIT APU       |    49.000 | apu-skin-temp      |
+| STT VALUE APU       |    55.763 |                    |
+| STT LIMIT dGPU      |     0.000 | dgpu-skin-temp     |
+| STT VALUE dGPU      |     0.000 |                    |
+| CCLK Boost SETPOINT |    50.000 | power-saving /     |
+| CCLK BUSY VALUE     |    38.098 | max-performance    |
+
+```
