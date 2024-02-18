@@ -32,7 +32,8 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 - blue LED D2 indicates is connected to PA8 and 3v3. i think it will emit light when PA8 is gnd
 - 32.768 kHz +/- 10ppm oscillator
 - 32MHz +/- 10ppm oscillator
-
+- key 1 on PB23 (rst)
+- key 2 on PB22 (boot)
 
 ## Aliexpress order
 

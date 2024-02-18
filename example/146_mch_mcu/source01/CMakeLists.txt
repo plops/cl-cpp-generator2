@@ -40,11 +40,18 @@ set(DEPENDENCY_PREFIX /home/martin/src/)
 set(BROADCASTER_PATH  ${DEPENDENCY_PREFIX}/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/StdPeriphDriver/)
 
 # Source Files
-add_executable(${PROJECT_NAME} src/main.cpp 
+add_executable(${PROJECT_NAME}
+src/main.cpp 
 ${BROADCASTER_PATH}/CH59x_pwr.c 
 ${BROADCASTER_PATH}/CH59x_gpio.c
 ${BROADCASTER_PATH}/CH59x_sys.c
-${BROADCASTER_PATH}/CH59x_uart1.c)
+${BROADCASTER_PATH}/CH59x_uart1.c
+${BROADCASTER_PATH}/CH59x_adc.c
+${BROADCASTER_PATH}/../ble/HAL/LED.c
+${BROADCASTER_PATH}/../ble/HAL/MCU.c
+${BROADCASTER_PATH}/../ble/HAL/KEY.c
+${BROADCASTER_PATH}/../ble/APP/broadcaster.c
+)
 
 # Include Directories
 include_directories(
@@ -53,6 +60,7 @@ include_directories(
     ${BROADCASTER_PATH}/inc
     ${BROADCASTER_PATH}/../ble/APP/include/
     ${BROADCASTER_PATH}/../ble/HAL/include/
+    ${BROADCASTER_PATH}/../ble/Profile/include/
 )
 
 # Libraries
