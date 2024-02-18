@@ -44,16 +44,19 @@
       )
      (defun main ()
        (declare (values int))
+       #+nil
        (do0
 	(comments "Enable DCDC")
 	(PWR_DCDCCfg ENABLE))
        (SetSysClock CLK_SOURCE_PLL_60MHz)
 
+       #+nil
        (do0
 	(comments "Enable Sleep.")
 	(GPIOA_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU)
 	(GPIOB_ModeCfg GPIO_Pin_All GPIO_ModeIN_PU))
 
+       #+nil
        (do0
 	(comments "For Debugging")
 	(GPIOA_SetBits bTXD1)
