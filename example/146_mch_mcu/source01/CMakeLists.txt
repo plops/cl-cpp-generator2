@@ -15,7 +15,15 @@ add_link_options(-nostartfiles -static)
 # QingKe 32-bit RISC-V4C core: Supports RV32IMAC instruction set and
 # self-extending instructions
 
-add_compile_options( -march=rv32imac ) 
+add_compile_options( -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+
+add_link_options(-march=rv32imac -mabi=ilp32)
+##add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
+#add_link_options(-Wl,-check-sections -Wl,-fatal-warnings -Wl,--gc-sections -Wl,--print-memory-usage)
+#add_link_options(-T?${LINKER_SCRIPT})
+#add_link_options(-nostartfiles -Xlinker --gc-sections)
+#add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
+#add_link_options(--specs=nano.specs --specs=nosys.specs)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -25,7 +33,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     add_compile_options(
             #-O0
-            -O3 -ffunction-sections -fdata-sections # don't use together with flto
+            -Os -ffunction-sections -fdata-sections # don't use together with flto
     )
     #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
