@@ -660,3 +660,6 @@ They link to a specification of a PCB antenna that they verified to
 work up to 100m in free space:
 https://www.cnblogs.com/gscw/p/17387204.html . Longer distances
 require a power amplifier.
+
+If the chip is supposed the BLE host, then an external 32kHz
+oscillator is required.
