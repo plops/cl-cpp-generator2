@@ -15,9 +15,13 @@ add_link_options(-nostartfiles -static)
 # QingKe 32-bit RISC-V4C core: Supports RV32IMAC instruction set and
 # self-extending instructions
 
-add_compile_options( -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+#add_compile_options( -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+#add_link_options(-march=rv32imac -mabi=ilp32)
 
-add_link_options(-march=rv32imac -mabi=ilp32)
+add_compile_options( -march=rv32imac_zicsr_zifencei -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore ) 
+add_link_options(-march=rv32imac_zicsr_zifencei -mabi=ilp32)
+
+
 ##add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
 #add_link_options(-Wl,-check-sections -Wl,-fatal-warnings -Wl,--gc-sections -Wl,--print-memory-usage)
 #add_link_options(-T?${LINKER_SCRIPT})
