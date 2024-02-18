@@ -532,3 +532,113 @@ WPROTECT: 0xFFFFFFFF
 00:02:51 [INFO] Device reset
 
 ```
+
+
+## BLE Library
+
+The library for bluetooth is not contained in MounRiverStudio or the SDK.
+Only the PCB supplier has this library in the example programs:
+
+```
+martin@archlinux ~/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble $ find . -type f
+./LIB/CH59xBLE_ROM_PERI.hex
+./LIB/LIBCH59xBLE.a
+./LIB/ble_task_scheduler.S
+./LIB/CH59xBLE_ROM.h
+./LIB/CH59xBLE_ROM.hex
+./LIB/CH59xBLE_LIB.h
+./LIB/CH59xBLE_ROMx.hex
+./HAL/KEY.c
+./HAL/RTC.c
+./HAL/MCU.c
+./HAL/LED.c
+./HAL/SLEEP.c
+./HAL/include/SLEEP.h
+./HAL/include/KEY.h
+./HAL/include/LED.h
+./HAL/include/HAL.h
+./HAL/include/RTC.h
+./HAL/include/CONFIG.h
+./Profile/devinfoservice.c
+./Profile/include/devinfoservice.h
+./APP/broadcaster.c
+./APP/include/broadcaster.h
+martin@archlinux ~/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/ble $ du -sh
+3.1M    .
+
+```
+
+I'm reluctant to add 3MB of binary files to my repository.
+
+A CONFIG.h file seems to contain a lot of bluetooth related configurations:
+```
+#ifdef CH59xBLE_ROM
+#include "CH59xBLE_ROM.h"
+#else
+#include "CH59xBLE_LIB.h"
+#endif
+
+```
+
+The file has some comments in chinese. Here is Gemini Advanced 1.0 translation:
+
+**MAC**
+*BLE_MAC* - Whether to customize the Bluetooth MAC address (Default: FALSE - Uses chip's built-in MAC address). Requires modifying MAC address definition in main.c
+
+**DCDC**
+*DCDC_ENABLE* - Whether to enable DCDC (Default: FALSE) 
+
+**SLEEP**
+*HAL_SLEEP* - Whether to enable sleep functionality (Default: FALSE)
+*SLEEP_RTC_MIN_TIME* - Minimum time for sleep mode (in RTC clock cycles)
+*SLEEP_RTC_MAX_TIME* - Maximum time for sleep mode (in RTC clock cycles)
+*WAKE_UP_RTC_MAX_TIME* - Wait time for 32MHz crystal oscillator stabilization (in RTC clock cycles). Different values used for different sleep modes:
+   * Sleep Mode/Power Down Mode - 45 (Default)
+   * Pause Mode - 45
+   * Idle Mode - 5
+
+**TEMPERATION**
+*TEM_SAMPLE* -  Whether to enable temperature-based calibration function. Single calibration takes less than 10ms (Default: TRUE)
+
+**CALIBRATION**
+*BLE_CALIBRATION_ENABLE* -  Whether to enable the periodic calibration function. Single calibration takes less than 10ms (Default: TRUE)
+*BLE_CALIBRATION_PERIOD* - Calibration period in milliseconds (Default: 120000)
+
+**SNV**
+*BLE_SNV* - Whether to enable SNV functionality for storing bonding information (Default: TRUE)
+*BLE_SNV_ADDR* - SNV information storage address, using the last block of data flash (Default: 0x77E00)
+*BLE_SNV_BLOCK*  - Size of SNV storage block (Default: 256)
+*BLE_SNV_NUM* - Number of SNV storage blocks (Default: 1)
+
+**RTC**
+*CLK_OSC32K* - RTC clock selection. Must use an external 32KHz crystal oscillator for the host role.  (0: External (32768Hz), Default: 1: Internal (32000Hz), 2: Internal (32768Hz))
+
+**MEMORY**
+*BLE_MEMHEAP_SIZE* -  RAM size used by the Bluetooth protocol stack (must be at least 6K (Default: (1024*6))
+
+**DATA**
+*BLE_BUFF_MAX_LEN* - Maximum packet length for single connection (Default: 27 (ATT_MTU=23), Range: [27~516])
+*BLE_BUFF_NUM* - Number of packets the controller buffers (Default: 5)
+*BLE_TX_NUM_EVENT* - Maximum number of data packets that can be sent for a single connection event (Default: 1)
+*BLE_TX_POWER* - Transmit power (Default: LL_TX_POWEER_0_DBM (0dBm))
+
+**MULTICONN**
+*PERIPHERAL_MAX_CONNECTION* - Maximum number of peripheral connections (Default: 1)
+*CENTRAL_MAX_CONNECTION* - Maximum number of central connections (Default: 3)
+
+#define CLK_OSC32K     1  // Comment stating implications of changing this definition  
+
+**Explanation**
+
+These settings configure a Bluetooth Low Energy (BLE) chip. Here's a breakdown of the concepts:
+
+* **MAC Address:** Unique identifier for the BLE device.
+* **DCDC:** A voltage regulator for improved power efficiency.
+* **Sleep:**  Low-power modes for energy conservation.
+* **Calibration:** Ensures timing accuracy, especially across temperature changes.
+* **SNV:** Non-volatile storage for pairing/bonding information.
+* **RTC:** Real-time clock for timekeeping (32KHz clock source selection is important).
+* **Memory:** RAM allocation for the BLE stack.
+* **Data:**  Packet sizes and buffering settings.
+* **Multi-connection:** How many simultaneous BLE connections are supported.
+
