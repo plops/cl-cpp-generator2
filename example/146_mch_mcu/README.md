@@ -579,6 +579,8 @@ martin@archlinux ~/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/b
 
 I'm reluctant to add 3MB of binary files to my repository.
 
+I only find a chinese manual for this library and created a summary / translation using Gemini Advanced 1.0. The english summary is in README_BLE_CH59x.md 
+
 A CONFIG.h file seems to contain a lot of bluetooth related configurations:
 ```
 #ifdef CH59xBLE_ROM
