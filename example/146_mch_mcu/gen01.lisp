@@ -60,7 +60,7 @@
 	(printf (string "key pressed\\n"))
 	(HalLedSet HAL_LED_ALL
 		   HAL_LED_MODE_OFF)
-	(HalLedBlink 1 2 30 1000)))
+	(HalLedBlink 1 2 30 1000))) 
     
     (defun main ()
       (declare (values int))
