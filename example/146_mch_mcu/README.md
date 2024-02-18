@@ -31,7 +31,8 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 
 ```
 
-- i think newer versions of the cross compiler can be obtained here:
+- i think newer versions of the cross compiler can be obtained here
+  (at time of writing gcc 13.2.0):
   https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack
 
 - blue LED D2 indicates is connected to PA8 and 3v3. i think it will emit light when PA8 is gnd
