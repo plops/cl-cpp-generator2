@@ -1,8 +1,8 @@
-export CC=~/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-gcc
-export CXX=~/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-g++
+#export CC=~/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-gcc
+#export CXX=~/risc/RISC-V_Embedded_GCC12/bin/riscv-none-elf-g++
 
-#export CC=~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc
-#export CXX=~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-g++
+export CC=~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc
+export CXX=~/risc/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-g++
 
 
 mkdir b

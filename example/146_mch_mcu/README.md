@@ -46,9 +46,11 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 wget https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-linux-x64.tar.gz
 ```
 
-- i get a lot of assembly instruction errors. probably MCH modified
-the compiler. xpack compiler not working is also mentioned here:
-https://www.wch.cn/bbs/thread-93964-1.html
+- initially i had a lot of assembly instruction errors. this problem
+with the xpack compiler not working is also mentioned here:
+https://www.wch.cn/bbs/thread-93964-1.html . eventually, i got the
+xpack gcc 13.2 working by using the option `-march=rv32imac
+-mabi=ilp32`.
 
 ### Hardware Abstraction Layer (HAL) for CH592
 

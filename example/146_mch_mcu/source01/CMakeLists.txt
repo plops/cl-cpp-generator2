@@ -25,9 +25,9 @@ add_link_options(-march=rv32imac_zicsr_zifencei -mabi=ilp32)
 ##add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
 #add_link_options(-Wl,-check-sections -Wl,-fatal-warnings -Wl,--gc-sections -Wl,--print-memory-usage)
 #add_link_options(-T?${LINKER_SCRIPT})
-#add_link_options(-nostartfiles -Xlinker --gc-sections)
+add_link_options(-Xlinker --gc-sections)
 #add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
-#add_link_options(--specs=nano.specs --specs=nosys.specs)
+add_link_options(--specs=nano.specs --specs=nosys.specs)
 
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -37,7 +37,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else ()
     add_compile_options(
             #-O0
-            -Os -ffunction-sections -fdata-sections # don't use together with flto
+            -O3 -ffunction-sections -fdata-sections # don't use together with flto
     )
     #set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # flto
     add_link_options(-Wl,-gc-sections,--print-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
