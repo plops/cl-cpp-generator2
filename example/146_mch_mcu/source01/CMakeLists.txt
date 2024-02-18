@@ -58,6 +58,8 @@ ${HAL_PATH}/StdPeriphDriver/*.c
 ${HAL_PATH}/RVMSIS/*.c
 ${HAL_PATH}/Startup/*.S
 ${HAL_PATH}/board.c
+${HAL_PATH}/../BLE/HAL/*.c
+${HAL_PATH}/../BLE/LIB/*.S
 )
 
 # Source Files
@@ -71,6 +73,8 @@ include_directories(
     ${HAL_PATH}/RVMSIS/
     ${HAL_PATH}/StdPeriphDriver/inc
     ${HAL_PATH}/User/
+    ${HAL_PATH}/../BLE/HAL/include
+    ${HAL_PATH}/../BLE/LIB
 )
 
 # Use the custom linker script to link the firmware
@@ -79,7 +83,10 @@ set(LINKER_SCRIPT ${HAL_PATH}/Ld/Link.ld)
 target_link_options(${PROJECT_NAME} PRIVATE -T ${LINKER_SCRIPT})
 
 # Libraries
-target_link_libraries(${PROJECT_NAME} ${HAL_PATH}/StdPeriphDriver/libISP592.a)
+target_link_libraries(${PROJECT_NAME}
+${HAL_PATH}/StdPeriphDriver/libISP592.a
+${HAL_PATH}/../BLE/LIB/LIBCH59xBLE.a
+)
 
 target_compile_options(
         ${PROJECT_NAME} PRIVATE

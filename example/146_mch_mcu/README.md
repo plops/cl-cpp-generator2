@@ -584,7 +584,13 @@ martin@archlinux ~/src/WeActStudio.WCH-BLE-Core/Examples/CH592/ble/broadcaster/b
 
 I'm reluctant to add 3MB of binary files to my repository.
 
-I only find a chinese manual for this library and created a summary / translation using Gemini Advanced 1.0. The english summary is in README_BLE_CH59x.md 
+I only find a chinese manual for this library and created a summary /
+translation using Gemini Advanced 1.0. The english summary is in
+README_BLE_CH59x.md
+
+I copied HAL and LIB into my folder 146_mch_mcu/BLE/ from the folder
+ch592/EVT/EXAM/BLE of this repository:
+https://github.com/openwch/ch592 .
 
 A CONFIG.h file seems to contain a lot of bluetooth related configurations:
 ```
