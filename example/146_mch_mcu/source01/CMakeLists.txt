@@ -9,6 +9,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options(-nostartfiles -static)
 add_link_options(-nostartfiles -static)
 
+# gcc --target-help
+# shows possible options
+
+# QingKe 32-bit RISC-V4C core: Supports RV32IMAC instruction set and
+# self-extending instructions
+
+add_compile_options( -march=rv32imac ) 
+
 # set compiler flags
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
