@@ -28,6 +28,7 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 - Example code
 - I think this is a good place to start: Examples/CH592/ble/broadcaster/User/main.c
 - even better might be the Examples/CH592/template, which seems to blink an LED 
+
 ```
 
 - blue LED D2 indicates is connected to PA8 and 3v3. i think it will emit light when PA8 is gnd
@@ -35,6 +36,12 @@ git clone https://github.com/WeActStudio/WeActStudio.WCH-BLE-Core # 178MB
 - 32MHz +/- 10ppm oscillator
 - key 1 on PB23 (rst)
 - key 2 on PB22 (boot)
+
+
+### Hardware Abstraction Layer (HAL) for CH592
+
+- i think the best source for this code is the example that comes with MounRiverStudio:
+MounRiver_Studio_Community_Linux_x64_V160/MRS_Community/template/wizard/WCH/RISC-V/CH59X/NoneOS/CH592F.zip (112kB)
 
 ## Aliexpress order
 
